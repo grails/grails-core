@@ -101,8 +101,10 @@ Targets:
     </target>
 
     <target name="generate-controller" depends="init-props" description="Generates a controller from a domain class">
+                
+		<input addproperty="domain.class.name" message="Enter domain class name:" />
 
-		<path id="test.classpath">
+        <path id="test.classpath">
 			<!--<pathelement location="${grails.home}/src/web-app/WEB-INF"/>-->
             <pathelement location="${basedir}/tmp/war/WEB-INF"/>
             <pathelement location="${basedir}/tmp/war/WEB-INF/classes"/>
