@@ -287,13 +287,14 @@ public class DefaultGrailsApplication implements GrailsApplication {
             GrailsControllerClass controllerClass = controllerClasses[i];
             if(controllerClass.isScaffolding()) {
                 Class scaffoldedClass = controllerClass.getScaffoldedClass();
-                if(scaffoldedClass == null && domainClass.getName().equals(controllerClass.getName())) {
-                    return controllerClass;
+                if(scaffoldedClass != null) {
+                    if(domainClass.getClazz().getName().equals(scaffoldedClass.getName())) {
+                        return controllerClass;
+                    }
                 }
-                else if(domainClass.getClazz().equals(scaffoldedClass)) {
-                    return controllerClass;
+                else if(domainClass.getName().equals(controllerClass.getName())) {
+                       return controllerClass;
                 }
-
             }
         }
         return null;

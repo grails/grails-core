@@ -264,6 +264,7 @@ public class GrailsReloadServletFilter extends OncePerRequestFilter {
         GrailsControllerClass controllerClass = application.getScaffoldingController(domainClass);
         if(controllerClass != null && controllerClass.isScaffolding()) {
             // generate new views
+            LOG.info("Re-generating views for scaffold controller ["+controllerClass.getFullName()+"]");
             templateGenerator.generateViews(domainClass,getServletContext().getRealPath("/WEB-INF"));
             // overwrite with user defined views
             copyScript.copyViews(true);
