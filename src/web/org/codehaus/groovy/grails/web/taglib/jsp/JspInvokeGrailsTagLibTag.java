@@ -47,13 +47,13 @@ import java.util.regex.Matcher;
 
 /**
  * A tag that invokes a tag defined in a the Grails dynamic tag library. Authors of Grails tags
- * who want their tags to work in JSP should sub-class this class and call "setName" to set
- * the name of the tag within the Grails taglib
+ * who want their tags to work in JSP should sub-class this class and call "setTagName" to set
+ * the tagName of the tag within the Grails taglib
  *
  * This tag can of course be used standalone to invoke a Grails tag from JSP:
  *
  * <code>
- *   <gr:invokeTag name="myTag" />
+ *   <gr:invokeTag tagName="myTag" />
  * </code>
  *
  * @author Graeme Rocher
@@ -63,10 +63,10 @@ public class JspInvokeGrailsTagLibTag extends BodyTagSupport implements DynamicA
 
     private static final String ZERO_ARGUMENTS = "zeroArgumentsFlag";
     private static final String GROOVY_DEFAULT_ARGUMENT = "it";
-    private static final String NAME_ATTRIBUTE = "name";
+    private static final String NAME_ATTRIBUTE = "tagName";
     private static final Pattern ATTRIBUTE_MAP = Pattern.compile("(\\s*(\\S+)\\s*:\\s*(\\S+?)(,|$){1}){1}");
 
-    private String name;
+    private String tagName;
     private int invocationCount;
     private List invocationArgs = new ArrayList();
     private List invocationBodyContent = new ArrayList();
@@ -164,16 +164,16 @@ public class JspInvokeGrailsTagLibTag extends BodyTagSupport implements DynamicA
     }
 
     protected int doStartTagInternal() {
-      GroovyObject tagLib = getTagLib(getName());
+      GroovyObject tagLib = getTagLib(getTagName());
         if(tagLib != null) {
             sw = new StringWriter();
             out = new PrintWriter(sw);
             tagLib.setProperty( TagLibDynamicMethods.OUT_PROPERTY, out );
             Object tagLibProp;
             try {
-                tagLibProp = tagLib.getProperty(getName());
+                tagLibProp = tagLib.getProperty(getTagName());
             } catch (MissingPropertyException mpe) {
-                throw new GrailsTagException("Tag ["+getName()+"] does not exist in tag library ["+tagLib.getClass().getName()+"]");
+                throw new GrailsTagException("Tag ["+getTagName()+"] does not exist in tag library ["+tagLib.getClass().getName()+"]");
             }
             if(tagLibProp instanceof Closure) {
                 Closure body = new Closure(this) {
@@ -209,11 +209,11 @@ public class JspInvokeGrailsTagLibTag extends BodyTagSupport implements DynamicA
                     tag.call( new Object[] { attributes, body });
                 }
             }else {
-               throw new GrailsTagException("Tag ["+getName()+"] does not exist in tag library ["+tagLib.getClass().getName()+"]");
+               throw new GrailsTagException("Tag ["+getTagName()+"] does not exist in tag library ["+tagLib.getClass().getName()+"]");
             }
         }
         else {
-            throw new GrailsTagException("Tag ["+getName()+"] does not exist. No tag library found.");
+            throw new GrailsTagException("Tag ["+getTagName()+"] does not exist. No tag library found.");
         }
 
         Collections.reverse(invocationArgs);
@@ -275,12 +275,12 @@ public class JspInvokeGrailsTagLibTag extends BodyTagSupport implements DynamicA
             return EVAL_BODY_BUFFERED;
     }
 
-    public String getName() {
-        return name;
+    public String getTagName() {
+        return tagName;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setTagName(String tagName) {
+        this.tagName = tagName;
     }
 
     public final void setDynamicAttribute(String uri, String localName, Object value) throws JspException {
