@@ -28,7 +28,7 @@ public interface GrailsDomainClassProperty {
 	String TRANSIENT = "transients";
 	String CONSTRAINTS = "constraints";
 	String EVANESCENT = "evanescent";
-	String RELATIONSHIPS = "relationships";
+	String RELATES_TO_MANY = "relatesToMany";
 	String META_CLASS = "metaClass";
 	String CLASS = "class";
 	String MAPPED_BY = "mappedBy";

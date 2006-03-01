@@ -57,7 +57,7 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
 		PropertyDescriptor[] propertyDescriptors = getReference().getPropertyDescriptors();
 		
 		this.propertyMap = new HashMap();
-		this.relationshipMap = (Map)getPropertyValue( GrailsDomainClassProperty.RELATIONSHIPS, Map.class );
+		this.relationshipMap = (Map)getPropertyValue( GrailsDomainClassProperty.RELATES_TO_MANY, Map.class );
 		if(this.relationshipMap == null) {
 			this.relationshipMap = new HashMap();
 		}
@@ -89,7 +89,7 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
 				if(!descriptor.getName().equals( GrailsDomainClassProperty.META_CLASS ) &&
 				   !descriptor.getName().equals( GrailsDomainClassProperty.CLASS ) &&
 				   !descriptor.getName().equals( GrailsDomainClassProperty.TRANSIENT) &&
-				   !descriptor.getName().equals( GrailsDomainClassProperty.RELATIONSHIPS) &&
+				   !descriptor.getName().equals( GrailsDomainClassProperty.RELATES_TO_MANY) &&
 				   !descriptor.getName().equals( GrailsDomainClassProperty.EVANESCENT) &&
 				   !descriptor.getName().equals( GrailsDomainClassProperty.OPTIONAL) &&
 				   !descriptor.getName().equals( GrailsDomainClassProperty.CONSTRAINTS )&&
@@ -200,7 +200,7 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
 				
 				// check the relationship defined in the referenced type
 				// if it is also a Set/domain class etc.
-				Map relatedClassRelationships = (Map)GrailsClassUtils.getPropertyValue( relatedClassType, GrailsDomainClassProperty.RELATIONSHIPS, Map.class );
+				Map relatedClassRelationships = (Map)GrailsClassUtils.getPropertyValue( relatedClassType, GrailsDomainClassProperty.RELATES_TO_MANY, Map.class );
 				Class relatedClassPropertyType = null;
 				
 				// if the related type has a relationships map it may be a many-to-many
@@ -284,7 +284,7 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
 	private void establishDomainClassRelationship(DefaultGrailsDomainClassProperty property) {
 		Class propType = property.getType();
 		// establish relationship to type
-		Map relatedClassRelationships = (Map)GrailsClassUtils.getPropertyValue( propType, GrailsDomainClassProperty.RELATIONSHIPS, Map.class );		
+		Map relatedClassRelationships = (Map)GrailsClassUtils.getPropertyValue( propType, GrailsDomainClassProperty.RELATES_TO_MANY, Map.class );
 		Class relatedClassPropertyType = null;
 		
 		// if there is a relationships map use that to find out 
