@@ -23,7 +23,6 @@ import org.springframework.orm.hibernate3.HibernateCallback;
 import org.springframework.orm.hibernate3.HibernateTemplate;
 import org.springframework.validation.Errors;
 
-import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.Iterator;
 import java.util.List;
@@ -71,7 +70,7 @@ public class ConstrainedPersistentProperty extends ConstrainedProperty {
 	 * 
      * A constraint that validates the uniqueness of a property
 	 */
-	static private class UniqueConstraint extends AbstractPersistentConstraint {
+	static public class UniqueConstraint extends AbstractPersistentConstraint {
 		
 		private boolean unique;
 
@@ -102,7 +101,7 @@ public class ConstrainedPersistentProperty extends ConstrainedProperty {
             if(unique) {
                 List results = this.constraintHibernateTemplate.executeFind( new HibernateCallback() {
 
-                    public Object doInHibernate(Session session) throws HibernateException, SQLException {
+                    public Object doInHibernate(Session session) throws HibernateException {
                         return session.createCriteria( constraintOwningClass )
                                             .add( Restrictions.eq( constraintPropertyName, propertyValue ) )
                                             .list();
@@ -162,13 +161,13 @@ public class ConstrainedPersistentProperty extends ConstrainedProperty {
 		Constraint c = (Constraint)this.appliedConstraints.get( UNIQUE_CONSTRAINT );
 			
 		if(c != null) {
-			c.setParameter( new Boolean(unique) );				
+			c.setParameter(Boolean.valueOf(unique) );
 		}
 		else {
 			c = new UniqueConstraint();
 			c.setOwningClass(this.owningClass);
 			c.setPropertyName(this.propertyName);
-			c.setParameter(new Boolean(unique));					
+			c.setParameter(Boolean.valueOf(unique));
 			this.appliedConstraints.put( UNIQUE_CONSTRAINT,c );				
 		}	
 	}
