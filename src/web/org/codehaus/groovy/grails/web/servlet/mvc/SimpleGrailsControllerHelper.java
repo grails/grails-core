@@ -17,6 +17,7 @@ package org.codehaus.groovy.grails.web.servlet.mvc;
 
 import groovy.lang.Closure;
 import groovy.lang.GroovyObject;
+import groovy.lang.MissingPropertyException;
 import groovy.lang.ProxyMetaClass;
 import groovy.util.Proxy;
 import org.apache.commons.collections.BeanMap;
@@ -47,6 +48,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.beans.IntrospectionException;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -262,18 +264,29 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
         String viewName = controllerClass.getViewByURI(uri);
 
         // Step 6: get closure from closure property
-        Closure action = (Closure)controller.getProperty(actionName);
-
-        if(action == null)
-            throw new IllegalStateException("Scaffolder supports action ["+actionName +"] for controller ["+controllerClass.getFullName()+"] but getAction returned null!");
-
-
-        // Step 7: process the action
-        Object returnValue = handleAction( controller,action,request,response,params );
+        Closure action;
+        try {
+        	action = (Closure)controller.getProperty(actionName);
+            // Step 7: process the action
+            Object returnValue = handleAction( controller,action,request,response,params );
 
 
-        // Step 8: determine return value type and handle accordingly
-        return handleActionResponse(controller,returnValue,actionName,viewName);
+            // Step 8: determine return value type and handle accordingly
+            return handleActionResponse(controller,returnValue,actionName,viewName);        	
+        }
+        catch(MissingPropertyException mpe) {
+            if(controllerClass.isScaffolding())
+                throw new IllegalStateException("Scaffolder supports action ["+actionName +"] for controller ["+controllerClass.getFullName()+"] but getAction returned null!");
+            else {
+            	try {
+					response.sendError(HttpServletResponse.SC_NOT_FOUND);
+					return null;
+				} catch (IOException e) {
+						throw new ControllerExecutionException("I/O error sending 404 error",e);
+				}
+            }
+        }
+
     }
 
     public GrailsApplicationAttributes getGrailsAttributes() {
