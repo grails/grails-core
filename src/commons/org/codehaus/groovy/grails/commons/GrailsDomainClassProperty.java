@@ -74,10 +74,10 @@ public interface GrailsDomainClassProperty {
 	 */
 	public GrailsDomainClass getDomainClass();
 	/**
-	 * Returns true if the domain class property is a persistant property
+	 * Returns true if the domain class property is a persistent property
 	 * @return Whether the property is persistent
 	 */
-	public boolean isPersistant();
+	public boolean isPersistent();
 	/**
 	 * Returns true if the property is required
 	 * @return Whether the property is optional

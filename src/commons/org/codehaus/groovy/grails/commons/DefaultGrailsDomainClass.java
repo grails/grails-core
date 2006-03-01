@@ -128,7 +128,7 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
 		Collection tempList = new ArrayList();
 		for(Iterator i = this.propertyMap.values().iterator();i.hasNext();) {
 			GrailsDomainClassProperty currentProp = (GrailsDomainClassProperty)i.next();
-			if(currentProp.isPersistant() && !currentProp.isIdentity() && !currentProp.getName().equals( GrailsDomainClassProperty.VERSION )) {
+			if(currentProp.isPersistent() && !currentProp.isIdentity() && !currentProp.getName().equals( GrailsDomainClassProperty.VERSION )) {
 				tempList.add(currentProp);
 			}
 		}
@@ -167,13 +167,13 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
 			// if it is a Set and there are relationships defined
 			// and it is defined as persistent
 			if(	currentPropType.equals( Set.class ) && 
-				currentProp.isPersistant() ) {
+				currentProp.isPersistent() ) {
 				
 				establishRelationshipForSet( currentProp);
 			}
 			// otherwise if the type is a domain class establish relationship
 			else if(GrailsClassUtils.isDomainClass(currentPropType) && 
-					currentProp.isPersistant()) {
+					currentProp.isPersistent()) {
 				
 				establishDomainClassRelationship( currentProp );
 			}			

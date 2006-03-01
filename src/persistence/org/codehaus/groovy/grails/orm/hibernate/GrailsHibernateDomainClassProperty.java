@@ -70,7 +70,7 @@ public class GrailsHibernateDomainClassProperty implements GrailsDomainClassProp
         return this.domainClass;
     }
 
-    public boolean isPersistant() {
+    public boolean isPersistent() {
         return true;
     }
 

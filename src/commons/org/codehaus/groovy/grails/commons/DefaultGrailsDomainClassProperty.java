@@ -129,7 +129,7 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
 	/* (non-Javadoc)
 	 * @see org.codehaus.groovy.grails.domain.GrailsDomainClassProperty#isPersistant()
 	 */
-	public boolean isPersistant() {
+	public boolean isPersistent() {
 		return this.persistant;
 	}
 
@@ -319,7 +319,7 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
         return new ToStringBuilder(this)
                         .append("name", this.name)
                         .append("type", this.type)
-                        .append("persistent", isPersistant())
+                        .append("persistent", isPersistent())
                         .append("optional", isOptional())
                         .append("association", isAssociation())
                         .append("bidirectional", isBidirectional())

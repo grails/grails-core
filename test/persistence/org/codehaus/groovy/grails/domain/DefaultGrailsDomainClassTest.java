@@ -63,9 +63,16 @@ public class DefaultGrailsDomainClassTest extends TestCase {
 	public void testDefaultGrailsDomainClass()
 		throws Exception {
 	
-		Class clazz = cl.parseClass("class UserTest { @Property int id; @Property int version; @Property List transients = [ \"age\" ]; @Property List optionals  = [ \"lastName\" ]; @Property String firstName; @Property String lastName; @Property java.util.Date age; }");
-				
-		
+		Class clazz = cl.parseClass("class UserTest { " +
+                "@Property int id; " +
+                "@Property int version; " +
+                "@Property List transients = [ \"age\" ]; " +
+                "@Property List optionals  = [ \"lastName\" ]; " +
+                "@Property String firstName; " +
+                "@Property String lastName; " +
+                "@Property java.util.Date age; " +
+                "}");
+
 		GrailsDomainClass domainClass = new DefaultGrailsDomainClass(clazz);
 				
 		assertEquals("UserTest",domainClass.getName());
@@ -84,7 +91,7 @@ public class DefaultGrailsDomainClassTest extends TestCase {
 		
 		GrailsDomainClassProperty age = domainClass.getPropertyByName( "age" );
 		assertNotNull(age);
-		assertFalse(age.isPersistant());
+		assertFalse(age.isPersistent());
 		
 		GrailsDomainClassProperty lastName = domainClass.getPropertyByName( "lastName" );
 		assertNotNull(lastName);
@@ -93,12 +100,12 @@ public class DefaultGrailsDomainClassTest extends TestCase {
 		GrailsDomainClassProperty firstName = domainClass.getPropertyByName( "firstName" );
 		assertNotNull(firstName);
 		assertFalse(firstName.isOptional());
-		assertTrue(firstName.isPersistant());
+		assertTrue(firstName.isPersistent());
 		
 
 		GrailsDomainClassProperty[] persistantProperties = domainClass.getPersistantProperties();
 		for(int i = 0; i < persistantProperties.length;i++) {
-			assertTrue(persistantProperties[i].isPersistant());
+			assertTrue(persistantProperties[i].isPersistent());
 		}
 	}
 
@@ -114,13 +121,13 @@ public class DefaultGrailsDomainClassTest extends TestCase {
 		// test relationship property
 		assertEquals( c1dc.getPropertyByName("ones").getOtherSide(), c2dc.getPropertyByName("other") );
 		assertTrue( c1dc.getPropertyByName( "ones" ).isOneToMany() );
-		assertTrue( c1dc.getPropertyByName( "ones" ).isPersistant() );
+		assertTrue( c1dc.getPropertyByName( "ones" ).isPersistent() );
 		assertFalse( c1dc.getPropertyByName( "ones" ).isManyToMany() );
 		assertFalse( c1dc.getPropertyByName( "ones" ).isManyToOne() );
 		assertFalse( c1dc.getPropertyByName( "ones" ).isOneToOne() );		
 		
 		assertEquals( c2dc.getPropertyByName("other").getOtherSide(), c1dc.getPropertyByName("ones") );
-		assertTrue( c2dc.getPropertyByName( "other" ).isPersistant() );
+		assertTrue( c2dc.getPropertyByName( "other" ).isPersistent() );
 		assertTrue( c2dc.getPropertyByName( "other" ).isManyToOne() );	
 		assertFalse( c2dc.getPropertyByName( "other" ).isManyToMany() );
 		assertFalse( c2dc.getPropertyByName( "other" ).isOneToOne() );
@@ -136,13 +143,13 @@ public class DefaultGrailsDomainClassTest extends TestCase {
 		GrailsDomainClass c2dc = new DefaultGrailsDomainClass(manyToManyClass);
 		
 		// test relationships
-		assertTrue( c1dc.getPropertyByName( "manys" ).isPersistant() );
+		assertTrue( c1dc.getPropertyByName( "manys" ).isPersistent() );
 		assertTrue( c1dc.getPropertyByName( "manys" ).isManyToMany() );		
 		assertFalse( c1dc.getPropertyByName( "manys" ).isOneToMany() );
 		assertFalse( c1dc.getPropertyByName( "manys" ).isManyToOne() );
 		assertFalse( c1dc.getPropertyByName( "manys" ).isOneToOne() );			
 		
-		assertTrue( c2dc.getPropertyByName( "manys" ).isPersistant() );
+		assertTrue( c2dc.getPropertyByName( "manys" ).isPersistent() );
 		assertTrue( c2dc.getPropertyByName( "manys" ).isManyToMany() );
 		assertFalse( c2dc.getPropertyByName( "manys" ).isManyToOne() );
 		assertFalse( c2dc.getPropertyByName( "manys" ).isOneToOne() );
@@ -155,13 +162,13 @@ public class DefaultGrailsDomainClassTest extends TestCase {
 		GrailsDomainClass c2dc = new DefaultGrailsDomainClass(oneToOneClass);		
 		
 		// test relationships
-		assertTrue( c1dc.getPropertyByName( "one" ).isPersistant() );		
+		assertTrue( c1dc.getPropertyByName( "one" ).isPersistent() );
 		assertTrue( c1dc.getPropertyByName( "one" ).isOneToOne() );	
 		assertFalse( c1dc.getPropertyByName( "one" ).isManyToMany() );
 		assertFalse( c1dc.getPropertyByName( "one" ).isManyToOne() );
 		assertFalse( c1dc.getPropertyByName( "one" ).isOneToMany() );
 		
-		assertTrue( c2dc.getPropertyByName( "other" ).isPersistant() );		
+		assertTrue( c2dc.getPropertyByName( "other" ).isPersistent() );
 		assertTrue( c2dc.getPropertyByName( "other" ).isOneToOne() );
 		assertFalse( c2dc.getPropertyByName( "other" ).isManyToMany() );
 		assertFalse( c2dc.getPropertyByName( "other" ).isManyToOne() );
