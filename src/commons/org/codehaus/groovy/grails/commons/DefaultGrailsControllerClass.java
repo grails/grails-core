@@ -19,7 +19,6 @@ import groovy.lang.Closure;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.WordUtils;
 import org.codehaus.groovy.grails.scaffolding.DefaultGrailsScaffolder;
-import org.codehaus.groovy.grails.scaffolding.GrailsScaffolder;
 
 import java.beans.PropertyDescriptor;
 import java.util.*;
@@ -60,13 +59,17 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass
         if(defaultActionName == null) {
             defaultActionName = INDEX_ACTION;
         }
-        Boolean tmp = (Boolean)getPropertyValue(SCAFFOLDING_PROPERTY, Boolean.class);
-        if(tmp != null) {
-            this.scaffolding = tmp.booleanValue();
-        }
         this.scaffoldedClass = (Class)getPropertyValue(SCAFFOLDING_PROPERTY, Class.class);
         if(this.scaffoldedClass != null) {
             this.scaffolding = true;
+        }
+        else {
+        	if(getReference().isReadableProperty(SCAFFOLDING_PROPERTY)) {
+            	Object tmp = getReference().getPropertyValue(SCAFFOLDING_PROPERTY);
+            	if(tmp instanceof Boolean) {
+                    this.scaffolding = ((Boolean)tmp).booleanValue();        		
+            	}        		
+        	}
         }
 
         Collection closureNames = new ArrayList();
