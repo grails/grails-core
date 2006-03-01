@@ -100,10 +100,13 @@ Targets:
         <touch file="${path}grails-app/i18n/messages.properties"></touch>
     </target>
 
-    <target name="generate-controller" depends="init-props" description="Generates a controller from a domain class">
-                
-		<input addproperty="domain.class.name" message="Enter domain class name:" />
-
+    <target name="input-domain-class">
+        <input addproperty="domain.class.name" message="Enter domain class name:" />
+    </target>
+    <target name="generate-controller" depends="package,input-domain-class" description="Generates a controller from a domain class">
+            <antcall target="generate-controller:impl" />
+    </target>
+    <target name="generate-controller:impl" description="Generates a controller from a domain class">
         <path id="test.classpath">
 			<!--<pathelement location="${grails.home}/src/web-app/WEB-INF"/>-->
             <pathelement location="${basedir}/tmp/war/WEB-INF"/>
@@ -120,10 +123,11 @@ Targets:
 		</java>
     </target>
 
-    <target name="generate-views" depends="package" description="Generates the views from a domain class">
+    <target name="generate-views" depends="package,input-domain-class" description="Generates the views from a domain class">
+        <antcall target="generate-views:impl" />
+    </target>
 
-		<input addproperty="domain.class.name" message="Enter domain class name:" />
-
+    <target name="generate-views:impl">
 		<path id="test.classpath">
             <pathelement location="${basedir}/tmp/war/WEB-INF"/>
             <pathelement location="${basedir}/tmp/war/WEB-INF/classes"/>
@@ -137,25 +141,9 @@ Targets:
 		</java>
     </target>
 
-    <target name="generate-all" depends="package" description="Generates the all artifacts from a domain class">
-
-		<input addproperty="domain.class.name" message="Enter domain class name:" />
-
-		<path id="test.classpath">
-            <pathelement location="${basedir}/tmp/war/WEB-INF"/>
-            <pathelement location="${basedir}/tmp/war/WEB-INF/classes"/>
-            <fileset dir="${grails.home}/lib"/>
-			<fileset dir="${grails.home}/dist"/>
-			<fileset dir="lib"/>
-		</path>
-		<java classpathref="test.classpath" classname="grails.util.GenerateUtils" fork="true">
-             <arg value="view" />
-             <arg value="${domain.class.name}" />
-		</java>
-		<java classpathref="test.classpath" classname="grails.util.GenerateUtils" fork="true">
-             <arg value="controller" />
-             <arg value="${domain.class.name}" />
-		</java>
+    <target name="generate-all" depends="package,input-domain-class" description="Generates the all artifacts from a domain class">
+        <antcall target="generate-controller:impl" />
+        <antcall target="generate-views:impl" />
     </target>
 
 
