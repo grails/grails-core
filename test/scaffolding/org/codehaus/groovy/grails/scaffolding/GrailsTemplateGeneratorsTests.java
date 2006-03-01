@@ -42,10 +42,10 @@ public class GrailsTemplateGeneratorsTests extends TestCase {
 
         generator.generateController(domainClass,"test");
 
-        File generatedFile = new File("test/TestController.groovy");
+        File generatedFile = new File("test/grails-app/controllers/TestController.groovy");
         assertTrue(generatedFile.exists());
 
-        String text = (String)new GroovyShell().evaluate("new File('test/TestController.groovy').text");
+        String text = (String)new GroovyShell().evaluate("new File('test/grails-app/controllers/TestController.groovy').text");
 
         assertTrue(text.indexOf("class TestController") > -1);
         assertTrue(text.indexOf("@Property list") > -1);
