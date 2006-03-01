@@ -1,7 +1,7 @@
 class Entry { 
 	@Property Long id; 
 	@Property Long version; 
-	@Property relationships = [ "comments" : Comment.class ]
+	@Property relatesToMany = [ "comments" : Comment.class ]
 	
 	@Property String title
 	@Property Date date = new Date()
