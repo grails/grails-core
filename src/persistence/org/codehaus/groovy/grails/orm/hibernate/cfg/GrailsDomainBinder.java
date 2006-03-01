@@ -191,7 +191,7 @@ public final class GrailsDomainBinder {
 				String entityName = oneToMany.getReferencedEntityName();
 				PersistentClass referenced = mappings.getClass( entityName );
 				Backref prop = new Backref();
-                prop.setEntityName(entityName);
+                prop.setEntityName(property.getDomainClass().getFullName());
                 prop.setName( '_' + property.getName() + "Backref" );
 				prop.setUpdateable( true );
 				prop.setInsertable( true );
