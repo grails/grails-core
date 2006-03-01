@@ -2,27 +2,27 @@ package org.codehaus.groovy.grails.web.metaclass;
 
 import groovy.lang.*;
 import junit.framework.TestCase;
-import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
 import org.codehaus.groovy.grails.commons.metaclass.PropertyAccessProxyMetaClass;
+import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsControllerHelper;
 import org.codehaus.groovy.grails.web.servlet.mvc.SimpleGrailsControllerHelper;
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.beans.factory.config.ConstructorArgumentValues;
 import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.mock.web.MockServletContext;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.util.Map;
 
 public class ControllerMetaClassTests extends TestCase {
 
 
     private GenericApplicationContext context;
+
 
     public void testMetaClassProxy()
         throws Exception {
@@ -70,9 +70,12 @@ public class ControllerMetaClassTests extends TestCase {
                          "}" );
 
 
-         GrailsApplication application = new DefaultGrailsApplication(new Class[] { groovyClass },gcl);
-         registerBeanDefinition(groovyClass,application, request,response);
-         GrailsControllerHelper helper1 = new SimpleGrailsControllerHelper(application,context,new MockServletContext());
+
+         GrailsApplication application = createGrailsApplication(new Class[] { groovyClass },gcl);
+         MockServletContext mockContext =new MockServletContext();
+         mockContext.setAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT,context); 
+
+         GrailsControllerHelper helper1 = new SimpleGrailsControllerHelper(application,context,mockContext);
          try {
              helper1.handleURI("/test/list",request,response);
              GroovyObject go = (GroovyObject)request.getAttribute(GrailsApplicationAttributes.CONTROLLER);
@@ -116,12 +119,11 @@ public class ControllerMetaClassTests extends TestCase {
                 "}\n" +
                 "}" );
 
-        GrailsApplication application = new DefaultGrailsApplication(new Class[] { groovyClass,secondController },gcl);
-        registerBeanDefinition(groovyClass, application,request,response);
-        registerBeanDefinition(secondController, application,request,response);
-
-        GrailsControllerHelper helper1 = new SimpleGrailsControllerHelper(application,context,new MockServletContext());
-        GrailsControllerHelper helper2 = new SimpleGrailsControllerHelper(application,context,new MockServletContext());
+        GrailsApplication application = createGrailsApplication(new Class[] { groovyClass,secondController },gcl);
+        MockServletContext mockContext =new MockServletContext();
+        mockContext.setAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT,context);
+        GrailsControllerHelper helper1 = new SimpleGrailsControllerHelper(application,context,mockContext);
+        GrailsControllerHelper helper2 = new SimpleGrailsControllerHelper(application,context,mockContext);
 
         // first test redirection within the same controller
         try {
@@ -137,6 +139,8 @@ public class ControllerMetaClassTests extends TestCase {
         try {
             request = new MockHttpServletRequest();
             response = new MockHttpServletResponse();
+
+
             helper2.handleURI("/second/list",request,response);
         }
         catch(MissingMethodException mme) {
@@ -173,8 +177,8 @@ public class ControllerMetaClassTests extends TestCase {
                  "}" );
 		
          GrailsApplication application = new DefaultGrailsApplication(new Class[] { groovyClass,secondController },gcl);
-         GroovyObject go = registerBeanDefinition(groovyClass, application,request,response);
-         GroovyObject go2 = registerBeanDefinition(secondController, application,request,response);
+         GroovyObject go = createGrailsApplication(groovyClass, application,request,response);
+         GroovyObject go2 = createGrailsApplication(secondController, application,request,response);
 		
          // first test redirection within the same controller
          try {
@@ -213,14 +217,27 @@ public class ControllerMetaClassTests extends TestCase {
          }
      } */
 
-    private void registerBeanDefinition(Class groovyClass,GrailsApplication application, HttpServletRequest request, HttpServletResponse response)
+    private GrailsApplication createGrailsApplication(Class[] groovyClasses,GroovyClassLoader gcl)
         throws Exception {
-        ProxyMetaClass pmc = PropertyAccessProxyMetaClass.getInstance(groovyClass);
-        // proof of concept to try out proxy meta class
-        if(context == null)
-            this.context = new GenericApplicationContext();
 
-        BeanDefinition bd = new RootBeanDefinition(groovyClass,false);
-        context.registerBeanDefinition( groovyClass.getName(), bd );
+        // proof of concept to try out proxy meta class
+
+        this.context = new GenericApplicationContext();
+        ConstructorArgumentValues cav = new ConstructorArgumentValues();
+        cav.addGenericArgumentValue(groovyClasses);
+        cav.addGenericArgumentValue(gcl);
+        BeanDefinition ga = new RootBeanDefinition(DefaultGrailsApplication.class,cav,null);
+
+        this.context.registerBeanDefinition(GrailsApplication.APPLICATION_ID,ga);
+        GrailsApplication application = (GrailsApplication)this.context.getBean(GrailsApplication.APPLICATION_ID);
+
+        for (int i = 0; i < groovyClasses.length; i++) {
+            Class groovyClass = groovyClasses[i];
+            ProxyMetaClass pmc = PropertyAccessProxyMetaClass.getInstance(groovyClass);
+            BeanDefinition bd = new RootBeanDefinition(groovyClass,false);
+            context.registerBeanDefinition( groovyClass.getName(), bd );
+        }
+        return application;
+
     }
 }
