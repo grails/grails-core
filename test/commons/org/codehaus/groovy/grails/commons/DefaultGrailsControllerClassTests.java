@@ -38,7 +38,7 @@ public class DefaultGrailsControllerClassTests extends TestCase {
 		GroovyClassLoader cl = new GroovyClassLoader();
 		Class clazz = cl.parseClass("class OverviewController { }");
 		GrailsControllerClass grailsClass = new DefaultGrailsControllerClass(clazz);
-		assertEquals(0, grailsClass.getURIs().length);
+		assertEquals(2, grailsClass.getURIs().length);
 	}
 	
 	public void testDefaultGrailsControllerViewNames() throws Exception {
@@ -48,7 +48,7 @@ public class DefaultGrailsControllerClassTests extends TestCase {
 		assertEquals("Overview", grailsClass.getName());
 		assertEquals("OverviewController", grailsClass.getFullName());
 		assertEquals("/overview/listPage", grailsClass.getViewByURI("/overview/list"));
-		assertEquals(2, grailsClass.getURIs().length);
+		assertEquals(4, grailsClass.getURIs().length);
 	}
 
 }
