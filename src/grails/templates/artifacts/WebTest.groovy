@@ -9,7 +9,7 @@ class @webtest.name.caps@Test extends grails.util.WebTest {
     }
 
     def test@webtest.name.caps@ListNewDelete() {
-        webtest('@webtest.name.caps@ basic operations: view list, create new entry, back to view, delete, view'){
+        webtest('@webtest.name.caps@ basic operations: view list, create new entry, view, edit, delete, view'){
             invoke(url:'@webtest.name.lower@')
             verifyText(text:'Home')
 
@@ -19,12 +19,26 @@ class @webtest.name.caps@Test extends grails.util.WebTest {
             verifyText(text:'Create @webtest.name.caps@')
             clickButton(label:'Create')
             verifyText(text:'Show @webtest.name.caps@', description:'Detail page')
-            clickElement(xpath:"//button[text()='Back']")
+            clickLink(label:'List', description:'Back to list view')
 
             verifyListPage(1)
 
-            clickLink(href:'delete', description:'delete the first element (there is only one)')
-            verifyXPath(xpath:"//div[@class='message']", text:/@webtest.name.caps@.*deleted./, regex:true)
+            group(description:'edit the one element') {
+                clickLink(label:'Show', description:'go to detail view')
+                clickButton(label:'Edit')
+                verifyText(text:'Edit @webtest.name.caps@')
+                clickButton(label:'Update')
+                verifyText(text:'Show @webtest.name.caps@')
+                clickLink(label:'List', description:'Back to list view')
+            }
+
+            verifyListPage(1)
+
+            group(description:'delete the only element') {
+                clickLink(label:'Show', description:'go to detail view')
+                clickButton(label:'Delete')
+                verifyXPath(xpath:"//div[@class='message']", text:/@webtest.name.caps@.*deleted./, regex:true)
+            }
 
             verifyListPage(0)
 
