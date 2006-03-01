@@ -17,13 +17,6 @@ package org.codehaus.groovy.grails.orm.hibernate;
 
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyObject;
-
-import java.sql.SQLException;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
-
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
@@ -37,6 +30,12 @@ import org.springframework.orm.hibernate3.SessionFactoryUtils;
 import org.springframework.orm.hibernate3.SessionHolder;
 import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
+
+import java.sql.SQLException;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
 
 /**
  * @author Graeme Rocher
@@ -58,9 +57,7 @@ public class GrailsHibernateConfigurationTests extends AbstractDependencyInjecti
 	protected void onSetUp() throws Exception {
 		Thread.currentThread().setContextClassLoader(cl);
 		
-		cl.loadClass( "org.codehaus.groovy.grails.domain.RelationshipsTest" );
-		cl.loadClass( "org.codehaus.groovy.grails.domain.Test1" );
-		cl.loadClass( "org.codehaus.groovy.grails.domain.Test2" );
+
 		
 		Class[] loadedClasses = cl.getLoadedClasses();
 		grailsApplication = new DefaultGrailsApplication(loadedClasses,cl);

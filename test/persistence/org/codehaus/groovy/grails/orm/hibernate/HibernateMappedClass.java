@@ -1,5 +1,5 @@
 package org.codehaus.groovy.grails.orm.hibernate;
-class HibernateMappedClass {
+public class HibernateMappedClass {
 	
 	private Integer id;
 	private String myProp;
