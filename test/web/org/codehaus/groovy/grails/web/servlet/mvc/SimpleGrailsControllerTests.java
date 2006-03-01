@@ -25,6 +25,7 @@ import junit.framework.TestCase;
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.spring.SpringConfig;
+import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.ConstructorArgumentValues;
@@ -33,6 +34,7 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.mock.web.MockServletContext;
 import org.springframework.web.servlet.ModelAndView;
 import org.springmodules.beans.factory.drivers.xml.XmlApplicationContextDriver;
 
@@ -107,8 +109,9 @@ public class SimpleGrailsControllerTests extends TestCase {
 				springConfig.getBeanReferences(), this.localContext);
 		
 		this.controller = (SimpleGrailsController)appCtx.getBean("simpleGrailsController");
-		
-		
+		MockServletContext servletContext = new MockServletContext();
+		servletContext.setAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT,appCtx);
+		controller.setServletContext(servletContext);
 		assertNotNull(appCtx);		
 		super.setUp();
 	}
@@ -131,7 +134,7 @@ public class SimpleGrailsControllerTests extends TestCase {
 	
 	
 	public void testSimpleControllerSuccess() throws Exception {
-		ModelAndView modelAndView = execute("/test", null);
+		ModelAndView modelAndView = execute("/test/test", null);
 		assertNotNull(modelAndView);
 	}
 		
