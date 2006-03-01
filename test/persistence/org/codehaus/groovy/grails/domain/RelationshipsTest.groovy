@@ -1,7 +1,7 @@
 package org.codehaus.groovy.grails.domain;
 
 class RelationshipsTest {
-  @Property relationships = [ 	"ones" : OneToManyTest2.class,
+  @Property relatesToMany = [ 	"ones" : OneToManyTest2.class,
   								"manys" : ManyToManyTest.class,
   								"uniones" : UniOneToManyTest.class ];
 
