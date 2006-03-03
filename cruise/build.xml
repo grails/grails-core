@@ -1,9 +1,37 @@
 <project name="grails-cruisecontrol-starter" default="cruise">
 
-	<target name="cruise">
-	    <echo> starting in cruise build in ${basedir}</echo>
-	    <mkdir dir="../build/log"/>
-	    <ant dir=".." antfile="build.xml" />
+	<property name="cvs.repository" value=":pserver:anonymous@cvs.grails.codehaus.org:/home/projects/grails/scm"/>
+
+	<target name="cruise" depends="update, delegate, tagLastBuild"/>
+	
+	<!--
+    	label is given by CruiseControl, provides a default value here for the case where
+    	the admin starts this script manually.
+	-->
+	<property name="label" value="manualBuild"/>
+	
+	<target name="update">
+		<echo message="Getting the detected modifications...."/>
+		<cvs cvsroot="${cvs.repository}" dest=".." command="-z9 -q update -P -d"/>
+		<cvs cvsroot="${cvs.repository}" dest=".." command="status build.xml"/>
+		<chmod dir="../bin" includes="*.sh" perm="755"/>
+	</target>
+	<target name="delegate">
+		<echo message="*** Starting the Grails specific build parts ***"/>
+		<ant dir=".." antfile="build.xml">
+			<property name="buildnumber" value="${label}"/>
+		</ant>
+		<echo message="*** Grails build successfully ended          ***"/>
+	</target>
+
+	<target name="tagLastBuild">
+		<cvs cvsroot="${cvs.repository}" dest=".." command="-z9 -q tag -d LAST_BUILD"/>
+		<cvs cvsroot="${cvs.repository}" dest=".." command="-z9 -Q tag -F LAST_BUILD"/>
+		<cvs cvsroot="${cvs.repository}" dest=".." command="-z9 -Q tag ${label}"/>
+	</target>
+
+	<target name="testCVS">
+		<cvs cvsroot="${cvs.repository}" command="log"/>
 	</target>
 			
 </project>
