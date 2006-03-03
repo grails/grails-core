@@ -1,7 +1,9 @@
 <project name="grails-cruisecontrol-starter" default="cruise">
 
 	<target name="cruise">
-	    <echo> starting in ${basedir}</echo>
+	    <echo> starting in cruise build in ${basedir}</echo>
+	    <mkdir dir="../build/log"/>
+	    <ant dir=".." antfile="build.xml" />
 	</target>
 			
 </project>
