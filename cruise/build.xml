@@ -1,0 +1,7 @@
+<project name="grails-cruisecontrol-starter" default="cruise">
+
+	<target name="cruise">
+	    <echo> starting in ${basedir}</echo>
+	</target>
+			
+</project>
