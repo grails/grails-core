@@ -99,7 +99,7 @@
 		
 		<javadoc sourcepath="${grails.src.commons},${grails.src.web}" destdir="${grails.javadoc}" windowtitle="Grails ${grails.version}" source="1.3" access="package" author="true" version="true" use="true" defaultexcludes="true">
 			<doctitle><![CDATA[<h1>Grails</h1>]]></doctitle>
-			<bottom><![CDATA[<i>Copyright (c) 2005 The Grails project</i>]]></bottom>
+			<bottom><![CDATA[<i>Copyright (c) 2005-2006 The Grails project</i>]]></bottom>
 			<classpath refid="classpath"/>
 			<packageset dir="${grails.src.commons}">
 				<include name="org/codehaus/groovy/grails/**"/>
@@ -119,4 +119,5 @@
 		<tar compression="gzip" destfile="../grails-${grails.version}.tar.gz" basedir="." excludes="**/CVS/**/*"/>
 	</target>	
 	
+    <target name="cruise" depends="build, test, jar, javadoc"/>	
 </project>

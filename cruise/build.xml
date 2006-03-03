@@ -18,7 +18,7 @@
 	</target>
 	<target name="delegate">
 		<echo message="*** Starting the Grails specific build parts ***"/>
-		<ant dir=".." antfile="build.xml">
+		<ant dir=".." antfile="build.xml" target="cruise">
 			<property name="buildnumber" value="${label}"/>
 		</ant>
 		<echo message="*** Grails build successfully ended          ***"/>
