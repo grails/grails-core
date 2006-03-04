@@ -18,11 +18,11 @@
 		<rss version="2.0">
 			<channel>
 
-				<title>Canoo WebTest Build Status</title>
+				<title>Grails Build Status</title>
 
-				<link>http://webtest.canoo.com/</link>
+				<link>http://grails.codehaus.org/</link>
 
-				<description>CruiseControl build status feed for the Canoo WebTest project.</description>
+				<description>CruiseControl build status feed for the Grails project.</description>
 
 				<item>
 
