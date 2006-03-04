@@ -2,7 +2,7 @@
 
 	<property name="cvs.repository" value=":pserver:anonymous@cvs.grails.codehaus.org:/home/projects/grails/scm"/>
 
-	<target name="cruise" depends="update, delegate, tagLastBuild"/>
+	<target name="cruise" depends="copy-reporting-app, update, delegate, tagLastBuild"/>
 	
 	<!--
     	label is given by CruiseControl, provides a default value here for the case where
@@ -29,6 +29,13 @@
 		<cvs cvsroot="${cvs.repository}" dest=".." command="-z9 -q tag -d LAST_BUILD"/>
 		<cvs cvsroot="${cvs.repository}" dest=".." command="-z9 -Q tag -F LAST_BUILD"/>
 		<cvs cvsroot="${cvs.repository}" dest=".." command="-z9 -Q tag ${label}"/>
+	</target>
+	
+	<target name="copy-reporting-app">
+	    <fail unless="reporting-app-dir" message="The property reporting-app-dir must be set from outside!" />
+		<copy todir="${reporting-app-dir}" >  <!-- overwrite="true" can be needed occasionally -->
+		    <fileset dir="reporting-app" />   <!-- only changes to web.xml need context reload -->
+		</copy>
 	</target>
 
 	<target name="testCVS">
