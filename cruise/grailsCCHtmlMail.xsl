@@ -6,7 +6,7 @@
 	<xsl:template match="/">
 		<html>
 			<head>
-				<title>WebTest's CruiseControl Build Result</title>
+				<title>Grail's CruiseControl Build Result</title>
 			</head>
 			<body>
 				<xsl:apply-imports/>
