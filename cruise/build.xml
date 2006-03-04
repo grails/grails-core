@@ -2,7 +2,7 @@
 
 	<property name="cvs.repository" value=":pserver:anonymous@cvs.grails.codehaus.org:/home/projects/grails/scm"/>
 
-	<target name="cruise" depends="copy-reporting-app, update, delegate, tagLastBuild"/>
+	<target name="cruise" depends="update, copy-reporting-app, delegate, tagLastBuild"/>
 	
 	<!--
     	label is given by CruiseControl, provides a default value here for the case where
