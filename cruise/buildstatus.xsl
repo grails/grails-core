@@ -43,7 +43,7 @@
 							<xsl:otherwise>Build Succeeded</xsl:otherwise>
 						</xsl:choose>
 					</title>
-					<link>http://webtest.canoo.com/buildservlet/BuildServlet</link>
+					<link>http://build.canoo.com/grails/</link>
 					<description>
 						<xsl:choose>
 							<xsl:when test="cruisecontrol/build/@error">
