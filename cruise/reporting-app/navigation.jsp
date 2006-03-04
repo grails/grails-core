@@ -36,7 +36,7 @@
  ********************************************************************************--%>
 <%@ taglib uri="/WEB-INF/cruisecontrol-jsp11.tld" prefix="cruisecontrol"%>
         
-        <a href="http://grails.codehaus.org" border="0"><img src="images/logo.gif" border="0"></a><p>
+        <DIV class=logo><a href="http://grails.codehaus.org" border="0"><img src="images/logo.gif" border="0"></a><div><p>
         <table border="0" align="center" width="98%">
             <tr><td><cruisecontrol:currentbuildstatus/></td></tr>
             <tr><td>&nbsp;</td></tr>

@@ -1,71 +1,135 @@
-.host {	
-    background-color:           #FFFFAA;
-	background-image:			url(/grails/images/yellowGreenBack.png);
-	background-repeat:			repeat-x;
-	background-position:		0 -25px;
-	text-align:                 right;
-
-	font-size:					80%;	
-	font-family:				verdana, helvetica, arial, sans-serif;
-	line-height:				1.6em;
-	height:                     100px;
-	
+.host {
+	BACKGROUND-POSITION: 0px -25px; FONT-SIZE: 80%; BACKGROUND-IMAGE: url(/grails/images/yellowGreenBack.png); BACKGROUND-REPEAT: repeat-x; FONT-FAMILY: verdana, helvetica, arial, sans-serif; HEIGHT: 75px; BACKGROUND-COLOR: #ffffaa; TEXT-ALIGN: right
 }
 .canoo {
-        position:absolute;
-        top:20px;
-        right:20px;
+	RIGHT: 20px; POSITION: absolute; TOP: 4px
+}
+.logo {
+    LEFT: 30px; POSITION: absolute; TOP: 10px
 }
 
-.white { color:#FFFFFF }
-
-.navigation { background-color:#FFFFAA }
-
-.index { background-color:#FFFFFF }
-.index-passed { color:#004400 }
-.index-failed { color:#FF0000; font-weight:bold }
-.index-header { font-weight:bold }
-
-.link { font-family:arial,helvetica,sans-serif; font-size:10pt; color:#336699; text-decoration:none; }
-
-.tab-table { margin: 0em 0em 0.5em 0em; }
-.tabs { font-family:arial,helvetica,sans-serif; font-size:8pt; color:#000000; font-weight:bold; padding: 0em 2em; background-color:#CCCCFF; }
-.tabs-link { color:#000000; text-decoration:none; }
-.tabs-link:visited { color:#000000; text-decoration:none; }
-.tabs-selected { font-family:arial,helvetica,sans-serif; font-size:8pt; color:#000000; font-weight:bold; padding: 0em 2em; }
-.tabs-selected { border: inset; }
-
-.header-title { font-family:arial,helvetica,sans-serif; font-size:12pt; color:#336699; font-weight:bold; }
-.header-label { font-weight:bold; }
-.header-data { font-family:arial,helvetica,sans-serif; font-size:10pt; color:#336699; }
-
-.modifications-data { font-family:arial,helvetica,sans-serif; font-size:8pt; color:#000000; }
-.modifications-sectionheader { background-color:#FFFFAA; font-family:arial,helvetica,sans-serif; font-size:10pt; color:#336699; }
-.modifications-oddrow { background-color:#CCCCFF }
-.modifications-evenrow { background-color:#FFFFCC }
-
-.changelists-oddrow { background-color:#CCCCFF }
-.changelists-evenrow { background-color:#FFFFCC }
-.changelists-file-spacer { background-color:#FFFFFF }
-.changelists-file-evenrow { background-color:#EEEEEE }
-.changelists-file-oddrow { background-color:#FFFFEE }
-.changelists-file-header { background-color:#666666; font-family:arial,helvetica,sans-serif; font-size:8pt; color:#FFFFFF; }
-
-.compile-data { font-family:arial,helvetica,sans-serif; font-size:8pt; color:#000000; }
-.compile-error-data { font-family:arial,helvetica,sans-serif; font-size:8pt; color:#FF0000; }
-.compile-warn-data { font-family:arial,helvetica,sans-serif; font-size:8pt; color:#CC9900; }
-.compile-sectionheader { background-color:#FFFFAA; font-family:arial,helvetica,sans-serif; font-size:10pt; color:#336699; }
-
-.distributables-data { font-family:arial,helvetica,sans-serif; font-size:8pt; color:#000000; }
-.distributables-sectionheader { background-color:#FFFFAA; font-family:arial,helvetica,sans-serif; font-size:10pt; color:#336699; }
-.distributables-oddrow { background-color:#CCCCFF }
-
-.unittests-sectionheader { background-color:#FFFFAA; font-family:arial,helvetica,sans-serif; font-size:10pt; color:#336699; }
-.unittests-oddrow { background-color:#CCCCFF }
-.unittests-data { font-family:arial,helvetica,sans-serif; font-size:8pt; color:#000000; }
-.unittests-error { font-family:arial,helvetica,sans-serif; font-size:8pt; color:#901090; }
-.unittests-failure { font-family:arial,helvetica,sans-serif; font-size:8pt; color:#FF0000; }
-
-.checkstyle-oddrow { background-color:#CCCCFF }
-.checkstyle-data { font-family:arial,helvetica,sans-serif; font-size:8pt; color:#000000; }
-.checkstyle-sectionheader { background-color:#FFFFAA; font-family:arial,helvetica,sans-serif; font-size:10pt; color:#336699; }
+.white {
+	COLOR: #ffffff
+}
+.navigation {
+    padding-top: 20px;
+    padding-left: 10px;
+	BACKGROUND-COLOR: #ffffaa
+}
+.index {
+	BACKGROUND-COLOR: #ffffff
+}
+.index-passed {
+	COLOR: #004400
+}
+.index-failed {
+	FONT-WEIGHT: bold; COLOR: #ff0000
+}
+.index-header {
+	FONT-WEIGHT: bold
+}
+.link {
+	FONT-SIZE: 10pt; COLOR: #336699; FONT-FAMILY: arial,helvetica,sans-serif; TEXT-DECORATION: none
+}
+.tab-table {
+	MARGIN: 0em 0em 0.5em
+}
+.tabs {
+	PADDING-RIGHT: 2em; PADDING-LEFT: 2em; FONT-WEIGHT: bold; FONT-SIZE: 8pt; PADDING-BOTTOM: 0em; COLOR: #000000; PADDING-TOP: 0em; FONT-FAMILY: arial,helvetica,sans-serif; BACKGROUND-COLOR: #ccccff
+}
+.tabs-link {
+	COLOR: #000000; TEXT-DECORATION: none
+}
+.tabs-link:visited {
+	COLOR: #000000; TEXT-DECORATION: none
+}
+.tabs-selected {
+	PADDING-RIGHT: 2em; PADDING-LEFT: 2em; FONT-WEIGHT: bold; FONT-SIZE: 8pt; PADDING-BOTTOM: 0em; COLOR: #000000; PADDING-TOP: 0em; FONT-FAMILY: arial,helvetica,sans-serif
+}
+.tabs-selected {
+	BORDER-RIGHT: inset; BORDER-TOP: inset; BORDER-LEFT: inset; BORDER-BOTTOM: inset
+}
+.header-title {
+	FONT-WEIGHT: bold; FONT-SIZE: 12pt; COLOR: #336699; FONT-FAMILY: arial,helvetica,sans-serif
+}
+.header-label {
+	FONT-WEIGHT: bold
+}
+.header-data {
+	FONT-SIZE: 10pt; COLOR: #336699; FONT-FAMILY: arial,helvetica,sans-serif
+}
+.modifications-data {
+	FONT-SIZE: 8pt; COLOR: #000000; FONT-FAMILY: arial,helvetica,sans-serif
+}
+.modifications-sectionheader {
+	FONT-SIZE: 10pt; COLOR: #336699; FONT-FAMILY: arial,helvetica,sans-serif; BACKGROUND-COLOR: #ffffaa
+}
+.modifications-oddrow {
+	BACKGROUND-COLOR: #ccccff
+}
+.modifications-evenrow {
+	BACKGROUND-COLOR: #ffffcc
+}
+.changelists-oddrow {
+	BACKGROUND-COLOR: #ccccff
+}
+.changelists-evenrow {
+	BACKGROUND-COLOR: #ffffcc
+}
+.changelists-file-spacer {
+	BACKGROUND-COLOR: #ffffff
+}
+.changelists-file-evenrow {
+	BACKGROUND-COLOR: #eeeeee
+}
+.changelists-file-oddrow {
+	BACKGROUND-COLOR: #ffffee
+}
+.changelists-file-header {
+	FONT-SIZE: 8pt; COLOR: #ffffff; FONT-FAMILY: arial,helvetica,sans-serif; BACKGROUND-COLOR: #666666
+}
+.compile-data {
+	FONT-SIZE: 8pt; COLOR: #000000; FONT-FAMILY: arial,helvetica,sans-serif
+}
+.compile-error-data {
+	FONT-SIZE: 8pt; COLOR: #ff0000; FONT-FAMILY: arial,helvetica,sans-serif
+}
+.compile-warn-data {
+	FONT-SIZE: 8pt; COLOR: #cc9900; FONT-FAMILY: arial,helvetica,sans-serif
+}
+.compile-sectionheader {
+	FONT-SIZE: 10pt; COLOR: #336699; FONT-FAMILY: arial,helvetica,sans-serif; BACKGROUND-COLOR: #ffffaa
+}
+.distributables-data {
+	FONT-SIZE: 8pt; COLOR: #000000; FONT-FAMILY: arial,helvetica,sans-serif
+}
+.distributables-sectionheader {
+	FONT-SIZE: 10pt; COLOR: #336699; FONT-FAMILY: arial,helvetica,sans-serif; BACKGROUND-COLOR: #ffffaa
+}
+.distributables-oddrow {
+	BACKGROUND-COLOR: #ccccff
+}
+.unittests-sectionheader {
+	FONT-SIZE: 10pt; COLOR: #336699; FONT-FAMILY: arial,helvetica,sans-serif; BACKGROUND-COLOR: #ffffaa
+}
+.unittests-oddrow {
+	BACKGROUND-COLOR: #ccccff
+}
+.unittests-data {
+	FONT-SIZE: 8pt; COLOR: #000000; FONT-FAMILY: arial,helvetica,sans-serif
+}
+.unittests-error {
+	FONT-SIZE: 8pt; COLOR: #901090; FONT-FAMILY: arial,helvetica,sans-serif
+}
+.unittests-failure {
+	FONT-SIZE: 8pt; COLOR: #ff0000; FONT-FAMILY: arial,helvetica,sans-serif
+}
+.checkstyle-oddrow {
+	BACKGROUND-COLOR: #ccccff
+}
+.checkstyle-data {
+	FONT-SIZE: 8pt; COLOR: #000000; FONT-FAMILY: arial,helvetica,sans-serif
+}
+.checkstyle-sectionheader {
+	FONT-SIZE: 10pt; COLOR: #336699; FONT-FAMILY: arial,helvetica,sans-serif; BACKGROUND-COLOR: #ffffaa
+}
