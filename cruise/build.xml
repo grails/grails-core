@@ -20,6 +20,7 @@
 		<echo message="*** Starting the Grails specific build parts ***"/>
 		<ant dir=".." antfile="build.xml" target="cruise">
 			<property name="buildnumber" value="${label}"/>
+			<property name="grails.javadoc" value="dist/doc/api"/>
 		</ant>
 		<echo message="*** Grails build successfully ended          ***"/>
 	</target>
