@@ -1,6 +1,6 @@
 .host {	
     background-color:           #FFFFAA;
-	background-image:			url(images/yellowGreenBack.png);
+	background-image:			url(/grails/images/yellowGreenBack.png);
 	background-repeat:			repeat-x;
 	background-position:		0 -25px;
 	text-align:                 right;

@@ -44,7 +44,7 @@
 </head>
 <body topmargin="0" leftmargin="0" marginheight="0" marginwidth="0">
   <table border="0" align="center" cellpadding="0" cellspacing="0" width="100%">
-    <tr><td colspan="2" class="host">Hosted by<br><a href="www.canoo.com"><img border="0" height="20" width="112" src="images/canoo_rgb_pos.gif"></a></td></tr>
+    <tr><td colspan="2" class="host">Hosted by<br><a href="http://www.canoo.com"><img border="0" height="20" width="112" src="images/canoo_rgb_pos.gif"></a></td></tr>
     <tr>
       <td valign="top" class="navigation">
         <%@ include file="navigation.jsp" %>
