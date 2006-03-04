@@ -8,6 +8,13 @@
 	font-size:					80%;	
 	font-family:				verdana, helvetica, arial, sans-serif;
 	line-height:				1.6em;
+	height:                     100px;
+	
+}
+.canoo {
+        position:absolute;
+        top:20px;
+        right:20px;
 }
 
 .white { color:#FFFFFF }
