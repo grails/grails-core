@@ -1,30 +1,43 @@
+.host {	
+    background-color:           #FFFFAA;
+	background-image:			url(images/yellowGreenBack.png);
+	background-repeat:			repeat-x;
+	background-position:		0 -25px;
+	text-align:                 right;
+
+	font-size:					80%;	
+	font-family:				verdana, helvetica, arial, sans-serif;
+	line-height:				1.6em;
+}
 
 .white { color:#FFFFFF }
+
+.navigation { background-color:#FFFFAA }
 
 .index { background-color:#FFFFFF }
 .index-passed { color:#004400 }
 .index-failed { color:#FF0000; font-weight:bold }
 .index-header { font-weight:bold }
 
-.link { font-family:arial,helvetica,sans-serif; font-size:10pt; color:#FFFFFF; text-decoration:none; }
+.link { font-family:arial,helvetica,sans-serif; font-size:10pt; color:#336699; text-decoration:none; }
 
 .tab-table { margin: 0em 0em 0.5em 0em; }
-.tabs { font-family:arial,helvetica,sans-serif; font-size:8pt; color:#000000; font-weight:bold; padding: 0em 2em; background-color:#EEEEEE; }
+.tabs { font-family:arial,helvetica,sans-serif; font-size:8pt; color:#000000; font-weight:bold; padding: 0em 2em; background-color:#CCCCFF; }
 .tabs-link { color:#000000; text-decoration:none; }
 .tabs-link:visited { color:#000000; text-decoration:none; }
 .tabs-selected { font-family:arial,helvetica,sans-serif; font-size:8pt; color:#000000; font-weight:bold; padding: 0em 2em; }
 .tabs-selected { border: inset; }
 
-.header-title { font-family:arial,helvetica,sans-serif; font-size:12pt; color:#000000; font-weight:bold; }
+.header-title { font-family:arial,helvetica,sans-serif; font-size:12pt; color:#336699; font-weight:bold; }
 .header-label { font-weight:bold; }
-.header-data { font-family:arial,helvetica,sans-serif; font-size:10pt; color:#000000; }
+.header-data { font-family:arial,helvetica,sans-serif; font-size:10pt; color:#336699; }
 
 .modifications-data { font-family:arial,helvetica,sans-serif; font-size:8pt; color:#000000; }
-.modifications-sectionheader { background-color:#000066; font-family:arial,helvetica,sans-serif; font-size:10pt; color:#FFFFFF; }
-.modifications-oddrow { background-color:#CCCCCC }
+.modifications-sectionheader { background-color:#FFFFAA; font-family:arial,helvetica,sans-serif; font-size:10pt; color:#336699; }
+.modifications-oddrow { background-color:#CCCCFF }
 .modifications-evenrow { background-color:#FFFFCC }
 
-.changelists-oddrow { background-color:#CCCCCC }
+.changelists-oddrow { background-color:#CCCCFF }
 .changelists-evenrow { background-color:#FFFFCC }
 .changelists-file-spacer { background-color:#FFFFFF }
 .changelists-file-evenrow { background-color:#EEEEEE }
@@ -34,18 +47,18 @@
 .compile-data { font-family:arial,helvetica,sans-serif; font-size:8pt; color:#000000; }
 .compile-error-data { font-family:arial,helvetica,sans-serif; font-size:8pt; color:#FF0000; }
 .compile-warn-data { font-family:arial,helvetica,sans-serif; font-size:8pt; color:#CC9900; }
-.compile-sectionheader { background-color:#000066; font-family:arial,helvetica,sans-serif; font-size:10pt; color:#FFFFFF; }
+.compile-sectionheader { background-color:#FFFFAA; font-family:arial,helvetica,sans-serif; font-size:10pt; color:#336699; }
 
 .distributables-data { font-family:arial,helvetica,sans-serif; font-size:8pt; color:#000000; }
-.distributables-sectionheader { background-color:#000066; font-family:arial,helvetica,sans-serif; font-size:10pt; color:#FFFFFF; }
-.distributables-oddrow { background-color:#CCCCCC }
+.distributables-sectionheader { background-color:#FFFFAA; font-family:arial,helvetica,sans-serif; font-size:10pt; color:#336699; }
+.distributables-oddrow { background-color:#CCCCFF }
 
-.unittests-sectionheader { background-color:#000066; font-family:arial,helvetica,sans-serif; font-size:10pt; color:#FFFFFF; }
-.unittests-oddrow { background-color:#CCCCCC }
+.unittests-sectionheader { background-color:#FFFFAA; font-family:arial,helvetica,sans-serif; font-size:10pt; color:#336699; }
+.unittests-oddrow { background-color:#CCCCFF }
 .unittests-data { font-family:arial,helvetica,sans-serif; font-size:8pt; color:#000000; }
 .unittests-error { font-family:arial,helvetica,sans-serif; font-size:8pt; color:#901090; }
 .unittests-failure { font-family:arial,helvetica,sans-serif; font-size:8pt; color:#FF0000; }
 
-.checkstyle-oddrow { background-color:#CCCCCC }
+.checkstyle-oddrow { background-color:#CCCCFF }
 .checkstyle-data { font-family:arial,helvetica,sans-serif; font-size:8pt; color:#000000; }
-.checkstyle-sectionheader { background-color:#000066; font-family:arial,helvetica,sans-serif; font-size:10pt; color:#FFFFFF; }
+.checkstyle-sectionheader { background-color:#FFFFAA; font-family:arial,helvetica,sans-serif; font-size:10pt; color:#336699; }

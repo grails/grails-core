@@ -38,14 +38,15 @@
 <%@ taglib uri="/WEB-INF/cruisecontrol-jsp11.tld" prefix="cruisecontrol"%>
 <html>
 <head>
-  <title>CruiseControl Build Results</title>
+  <title>Grails: CruiseControl Build Results</title>
   <base href="<%=request.getScheme()%>://<%=request.getServerName()%>:<%=request.getServerPort()%><%=request.getContextPath()%>/" />
   <link type="text/css" rel="stylesheet" href="css/cruisecontrol.css"/>
 </head>
-<body background="images/bluebg.gif" topmargin="0" leftmargin="0" marginheight="0" marginwidth="0">
-  <table border="0" align="center" cellpadding="0" cellspacing="0" width="98%">
+<body topmargin="0" leftmargin="0" marginheight="0" marginwidth="0">
+  <table border="0" align="center" cellpadding="0" cellspacing="0" width="100%">
+    <tr><td colspan="2" class="host">Hosted by<br><a href="www.canoo.com"><img border="0" height="20" width="112" src="images/canoo_rgb_pos.gif"></a></td></tr>
     <tr>
-      <td valign="top">
+      <td valign="top" class="navigation">
         <%@ include file="navigation.jsp" %>
       </td>
       <td valign="top">

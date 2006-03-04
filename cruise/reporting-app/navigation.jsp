@@ -35,8 +35,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  ********************************************************************************--%>
 <%@ taglib uri="/WEB-INF/cruisecontrol-jsp11.tld" prefix="cruisecontrol"%>
-        <img src="images/blank8.gif" border="0"><br>
-        <a href="http://cruisecontrol.sourceforge.net" border="0"><img src="images/logo.gif" border="0"></a><p>
+        
+        <a href="http://grails.codehaus.org" border="0"><img src="images/logo.gif" border="0"></a><p>
         <table border="0" align="center" width="98%">
             <tr><td><cruisecontrol:currentbuildstatus/></td></tr>
             <tr><td>&nbsp;</td></tr>
