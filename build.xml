@@ -81,7 +81,8 @@
 				
 			<formatter type="xml" />
 			<batchtest todir="${grails.test.reports}" fork="yes" failureproperty="grails.test.failure">
-				<fileset dir="${grails.test.build}" includes="**/*Tests.class" excludes="**/Abstract*"/>
+				<fileset dir="${grails.test.build}" includes="**/*Tests.class"
+                         excludes="**/Abstract*, **/ControllerScaffoldingTests.*"/>
 			</batchtest>
 			
 		</junit>
