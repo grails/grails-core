@@ -49,7 +49,7 @@ public class GrailsResourceLoader implements GroovyResourceLoader {
         String groovyFile = resource.replace('.', '/') + ".groovy";
         Resource foundResource = null;
         for (int i = 0; resources != null && i < resources.length; i++) {
-            if (resources[i].getFilename().endsWith(groovyFile)) {
+            if (resources[i].getFilename().equals(groovyFile)) {
                 if (foundResource == null) {
                     foundResource = resources[i];
                 } else {
