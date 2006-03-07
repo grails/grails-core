@@ -29,7 +29,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.web.util.ExpressionEvaluationUtils;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.servlet.jsp.JspException;
 import javax.servlet.jsp.JspTagException;
 import javax.servlet.jsp.JspWriter;
@@ -42,8 +41,8 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.*;
-import java.util.regex.Pattern;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * A tag that invokes a tag defined in a the Grails dynamic tag library. Authors of Grails tags
@@ -77,8 +76,10 @@ public class JspInvokeGrailsTagLibTag extends BodyTagSupport implements DynamicA
     private JspWriter jspWriter;
     private GrailsApplicationAttributes grailsAttributes;
     private GrailsApplication application;
-    private ApplicationContext appContext;;
+    private ApplicationContext appContext;
     private static final String TAG_LIBS_ATTRIBUTE = "org.codehaus.groovy.grails.TAG_LIBS";
+    private String tagContent;
+    private boolean bodyInvokation;
 
 
     public JspInvokeGrailsTagLibTag() {
@@ -132,7 +133,6 @@ public class JspInvokeGrailsTagLibTag extends BodyTagSupport implements DynamicA
             initPageState();
 
         HttpServletRequest request = (HttpServletRequest)this.pageContext.getRequest();
-        HttpServletResponse response = (HttpServletResponse)this.pageContext.getResponse();
         Map tagLibs = (Map)pageContext.getAttribute(TAG_LIBS_ATTRIBUTE);
         if(tagLibs == null) {
             tagLibs = new HashMap();
@@ -240,6 +240,7 @@ public class JspInvokeGrailsTagLibTag extends BodyTagSupport implements DynamicA
             if(b != null) {
                 jspWriter = b.getEnclosingWriter();
                 invocationBodyContent.add(b.getString());
+                bodyInvokation = true;
                 b.clearBody();
             }
         }
@@ -247,8 +248,7 @@ public class JspInvokeGrailsTagLibTag extends BodyTagSupport implements DynamicA
         invocationCount--;
         setCurrentArgument();
         if(invocationCount <= 0)  {
-            String tagContent = sw.toString();
-
+            this.tagContent = sw.toString();
             int i = 1;
             StringBuffer buf = new StringBuffer();
             for (Iterator iter = invocationBodyContent.iterator(); iter.hasNext();i++) {
@@ -260,19 +260,39 @@ public class JspInvokeGrailsTagLibTag extends BodyTagSupport implements DynamicA
                         .append(body)
                         .append(tagContent.substring(j + replaceFlag.length(), tagContent.length()));
                     tagContent = buf.toString();
+                    if(tagContent != null) {
+                        try {
+                            jspWriter.write(tagContent);
+                            out.close();
+                        } catch (IOException e) {
+                            throw new JspTagException("I/O error writing tag contents ["+tagContent +"] to response out");
+                        }
+                    }
                     buf.delete(0, buf.length());
                 }
-            }
-            try {
-                jspWriter.write(tagContent);
-                out.close();
-            } catch (IOException e) {
-                throw new JspTagException("I/O error writing tag contents ["+tagContent +"] to response out");
             }
             return SKIP_BODY;
         }
         else
             return EVAL_BODY_BUFFERED;
+    }
+
+    public int doEndTag() throws JspException {
+        if(!bodyInvokation) {
+            if(this.tagContent == null)
+                this.tagContent = sw.toString();
+
+            if(tagContent != null) {
+                try {
+                    jspWriter =  pageContext.getOut();
+                    jspWriter.write(tagContent);
+                    out.close();
+                } catch (IOException e) {
+                    throw new JspTagException("I/O error writing tag contents ["+tagContent +"] to response out");
+                }
+            }
+        }
+        return SKIP_BODY;
     }
 
     public String getTagName() {
