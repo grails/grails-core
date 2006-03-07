@@ -434,7 +434,7 @@ class ${className}Controller {
            </div>
         </div>
     </body>
-</body>
+</html>
             '''
 
             def t = engine.createTemplate(templateText)
