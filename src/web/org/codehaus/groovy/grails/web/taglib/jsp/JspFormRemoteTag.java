@@ -30,9 +30,72 @@ public class JspFormRemoteTag extends JspInvokeGrailsTagLibTag {
     private String method;
     private String asynchronous;
     private String url;
+    private String params;
+    private String onSuccess;
+    private String onFailure;
+    private String onComplete;
+    private String onLoading;
+    private String onLoaded;
+    private String onInteractive;
 
     public JspFormRemoteTag() {
         setTagName(TAG_NAME);
+    }
+
+    public String getParams() {
+        return params;
+    }
+
+    public void setParams(String params) {
+        this.params = params;
+    }
+
+    public String getOnSuccess() {
+        return onSuccess;
+    }
+
+    public void setOnSuccess(String onSuccess) {
+        this.onSuccess = onSuccess;
+    }
+
+    public String getOnFailure() {
+        return onFailure;
+    }
+
+    public void setOnFailure(String onFailure) {
+        this.onFailure = onFailure;
+    }
+
+    public String getOnComplete() {
+        return onComplete;
+    }
+
+    public void setOnComplete(String onComplete) {
+        this.onComplete = onComplete;
+    }
+
+    public String getOnLoading() {
+        return onLoading;
+    }
+
+    public void setOnLoading(String onLoading) {
+        this.onLoading = onLoading;
+    }
+
+    public String getOnLoaded() {
+        return onLoaded;
+    }
+
+    public void setOnLoaded(String onLoaded) {
+        this.onLoaded = onLoaded;
+    }
+
+    public String getOnInteractive() {
+        return onInteractive;
+    }
+
+    public void setOnInteractive(String onInteractive) {
+        this.onInteractive = onInteractive;
     }
 
     public String getUrl() {

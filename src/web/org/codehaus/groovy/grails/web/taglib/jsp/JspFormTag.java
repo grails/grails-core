@@ -28,9 +28,18 @@ public class JspFormTag extends JspInvokeGrailsTagLibTag {
     private String id;
     private String url;
     private String params;
+    private String method;
 
     public JspFormTag() {
         setTagName(TAG_NAME);
+    }
+
+    public String getMethod() {
+        return method;
+    }
+
+    public void setMethod(String method) {
+        this.method = method;
     }
 
     public String getParams() {
