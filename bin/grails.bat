@@ -25,12 +25,22 @@ shift
 goto loopArguments
 
 :getClasspath
-set GRAILS_ANT_CLASSPATH="%GRAILS_HOME%\lib\bsf.jar;%GRAILS_HOME%\lib\groovy-all-1.0-jsr-05-SNAPSHOT.jar;%GRAILS_HOME%\lib\org.mortbay.jetty.jar;%GRAILS_HOME%\lib\commons-logging.jar;%GRAILS_HOME%\lib\commons-el.jar;%GRAILS_HOME%\lib\javax.servlet.jar;%GRAILS_HOME%\lib\log4j-1.2.8.jar;%GRAILS_HOME%\lib\jasper-compiler.jar;%GRAILS_HOME%\lib\jasper-runtime.jar;%GRAILS_HOME%\lib\xml-apis.jar;%GRAILS_HOME%\lib\xercesImpl.jar"
+set GRAILS_ANT_CLASSPATH="%GRAILS_HOME%\lib\bsf.jar
+set GRAILS_ANT_CLASSPATH=%GRAILS_ANT_CLASSPATH%;%GRAILS_HOME%\lib\groovy-all-1.0-RC-01-SNAPSHOT.jar
+set GRAILS_ANT_CLASSPATH=%GRAILS_ANT_CLASSPATH%;%GRAILS_HOME%\lib\org.mortbay.jetty.jar
+set GRAILS_ANT_CLASSPATH=%GRAILS_ANT_CLASSPATH%;%GRAILS_HOME%\lib\commons-logging.jar
+set GRAILS_ANT_CLASSPATH=%GRAILS_ANT_CLASSPATH%;%GRAILS_HOME%\lib\commons-el.jar
+set GRAILS_ANT_CLASSPATH=%GRAILS_ANT_CLASSPATH%;%GRAILS_HOME%\lib\javax.servlet.jar
+set GRAILS_ANT_CLASSPATH=%GRAILS_ANT_CLASSPATH%;%GRAILS_HOME%\lib\log4j-1.2.8.jar
+set GRAILS_ANT_CLASSPATH=%GRAILS_ANT_CLASSPATH%;%GRAILS_HOME%\lib\jasper-compiler.jar
+set GRAILS_ANT_CLASSPATH=%GRAILS_ANT_CLASSPATH%;%GRAILS_HOME%\lib\jasper-runtime.jar
+set GRAILS_ANT_CLASSPATH=%GRAILS_ANT_CLASSPATH%;%GRAILS_HOME%\lib\xml-apis.jar
+set GRAILS_ANT_CLASSPATH=%GRAILS_ANT_CLASSPATH%;%GRAILS_HOME%\lib\xercesImpl.jar"
 goto startGrails
 
 :startGrails
 set ANT_HOME=%GRAILS_HOME%\ant
-call %ANT_HOME%\bin\ant.bat -lib %GRAILS_ANT_CLASSPATH% -f %GRAILS_HOME%\src\grails\build.xml -Dbasedir="%CD%" %GRAILS_ARGUMENTS%
+call %ANT_HOME%\bin\ant.bat -lib %GRAILS_ANT_CLASSPATH% -f %GRAILS_HOME%\src\grails\build.xml -Dbasedir="%CD%" -Dgrails.home="%GRAILS_HOME%" %GRAILS_ARGUMENTS%
 
 :errorExit
 
