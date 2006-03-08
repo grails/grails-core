@@ -17,12 +17,14 @@ package org.codehaus.groovy.grails.web.pages;
 
 import groovy.lang.Writable;
 import groovy.text.Template;
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
+import org.codehaus.groovy.grails.web.errors.GrailsWrappedRuntimeException;
 import org.codehaus.groovy.grails.web.servlet.DefaultGrailsApplicationAttributes;
+import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
+import javax.servlet.RequestDispatcher;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -134,6 +136,11 @@ public class GroovyPagesServlet extends HttpServlet /*implements GroovyObject*/ 
         Writer out = GSPResonseWriter.getInstance(response, 8192);
         try {
             w.writeTo(out);
+        }
+        catch(Exception e) {
+            request.setAttribute("exception",new GrailsWrappedRuntimeException(context,e));
+            RequestDispatcher rd = request.getRequestDispatcher("/WEB-INF/grails-app/views/error.jsp");
+            rd.forward(request,response);
         }
         finally {
             if (out != null) out.close();

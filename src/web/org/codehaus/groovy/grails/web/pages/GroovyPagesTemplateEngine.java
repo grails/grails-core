@@ -62,10 +62,41 @@ public class GroovyPagesTemplateEngine {
         this.classLoader = classLoader;
     }
 
+    /**
+     * Set whether to show the compiled source in the response
+     * @param showSource
+     */
     public void setShowSource(boolean showSource) {
         this.showSource = showSource;
     }
 
+    /**
+     * Retrieves a line number matrix for the specified page that can be used
+     * to retrieve the actual line number within the GSP page if the line number within the
+     * compiled GSP is known
+     *
+     * @param context
+     * @param url
+     * @return An array where the index is the line number witin the compiled GSP and the value is the line number within the source
+     */
+    public int[] getLineNumbersForPage(ServletContext context,String url) {
+        URL pageUrl;
+        try {
+            pageUrl = getPageUrl(context, url);
+            if(pageUrl != null) {
+                PageMeta pm = getPage(url,context,pageUrl,false);
+                if(pm != null) {
+                    return pm.lineNumbers;
+                }
+            }
+        } catch (Exception e) {
+            // ignore, non critical method used for retrieving debug info
+            LOG.warn("Exception retrieving line numbers from GSP: " + url + ", message: " + e.getMessage());
+            LOG.debug("Full stack trace of error", e);
+        }
+
+        return new int[0];  //To change body of created methods use File | Settings | File Templates.
+    }
 
 
     private static class PageMeta {
@@ -74,11 +105,9 @@ public class GroovyPagesTemplateEngine {
         private Map dependencies = new HashMap();
         private InputStream groovySource;
         public String contentType;
+        public int[] lineNumbers;
     } // PageMeta
 
-
-    public GroovyPagesTemplateEngine() {
-    }
 
     /**
      * Create a template for the current request
@@ -192,10 +221,10 @@ public class GroovyPagesTemplateEngine {
                              boolean spillGroovy) throws IOException, ServletException {
         Parse parse = new Parse(uri, groovyScriptConn.getInputStream());
         InputStream in = parse.parse();
-
         // Make a new pageMeta
         PageMeta pageMeta = new PageMeta();
         pageMeta.contentType = parse.getContentType();
+        pageMeta.lineNumbers = parse.getLineNumberMatrix();
 
             // just return groovy and don't compile if asked
         if (spillGroovy) {
@@ -243,6 +272,8 @@ public class GroovyPagesTemplateEngine {
     } // isPageNew()
 
     /**
+     * An instance of the groovy.text.Template interface that knows how to
+     * make in instance of GroovyPageTemplateWritable
      *
      * @author Graeme Rocher
      * @since 12-Jan-2006
@@ -280,7 +311,9 @@ public class GroovyPagesTemplateEngine {
     }
 
     /**
-     *
+     * An instance of groovy.lang.Writable that writes itself to the specified
+     * writer, typically the response writer
+     * 
      * @author Graeme Rocher
      * @since 12-Jan-2006
      */

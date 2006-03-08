@@ -33,7 +33,7 @@ import java.util.regex.Pattern;
  *
  * @author Troy Heninger
  * @author Graeme Rocher
- * 
+ *
  * Date: Jan 10, 2004
  *
  */
@@ -58,12 +58,16 @@ public class Parse implements Tokens {
 
     private StringBuffer whiteSpaceBuffer = new StringBuffer();
     private int[] lineNumbers = new int[1000];
-    private int currentOutputLine;
+    private int currentOutputLine = 1;
     private String contentType = "text/html;charset=UTF-8";
 
 
     public String getContentType() {
         return this.contentType;
+    }
+
+    public int getCurrentOutputLineNumber() {
+        return currentOutputLine;
     }
 
     class TagMeta  {
@@ -79,19 +83,18 @@ public class Parse implements Tokens {
     } // Parse()
 
     public int[] getLineNumberMatrix() {
-        return this.lineNumbers;
+        return out.getLineNumbers();
     }
     public InputStream parse() {
 
         StringWriter sw = new StringWriter();
-        out = new GSPWriter(sw);
+        out = new GSPWriter(sw,this);
         page();
         finalPass = true;
         scan.reset();
         page();
 //		if (DEBUG) System.out.println(buf);
         InputStream in = new ByteArrayInputStream(sw.toString().getBytes());
-        out = null;
         scan = null;
         return in;
     } // parse()
@@ -382,16 +385,14 @@ public class Parse implements Tokens {
         if(Pattern.compile("\\S").matcher(text).find())
             bufferWhiteSpace = false;
 
-        Matcher m = LINE_BREAK.matcher(text);
-        while(m.find()) {
-            incrementLineNumber();
-        }
-
         buf.append('\'');
         for (int ix = 0, ixz = text.length(); ix < ixz; ix++) {
             char c = text.charAt(ix);
             String rep = null;
-            if (c == '\n') rep = "\\n";
+            if (c == '\n') {
+                incrementLineNumber();
+                rep = "\\n";
+            }
             else if (c == '\r') rep = "\\r";
             else if (c == '\t') rep = "\\t";
             else if (c == '\'') rep = "\\'";
@@ -485,22 +486,6 @@ public class Parse implements Tokens {
     } // write()
 
     private void incrementLineNumber() {
-        if(currentOutputLine >= lineNumbers.length) {
-            lineNumbers = (int[])resizeArray(lineNumbers, lineNumbers.length * 2);
-        }
-        else {
-            lineNumbers[currentOutputLine++] = out.getCurrentLineNumber();
-        }
+        currentOutputLine++;
     }
-
-    private Object resizeArray (Object oldArray, int newSize) {
-       int oldSize = java.lang.reflect.Array.getLength(oldArray);
-       Class elementType = oldArray.getClass().getComponentType();
-       Object newArray = java.lang.reflect.Array.newInstance(
-             elementType,newSize);
-       int preserveLength = Math.min(oldSize,newSize);
-       if (preserveLength > 0)
-          System.arraycopy (oldArray,0,newArray,0,preserveLength);
-       return newArray;
-   }
 } // Parse

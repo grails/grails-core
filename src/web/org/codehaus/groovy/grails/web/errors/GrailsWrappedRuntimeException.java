@@ -19,6 +19,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.exceptions.GrailsException;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
+import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
+import org.codehaus.groovy.grails.web.servlet.DefaultGrailsApplicationAttributes;
+import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
 
 import javax.servlet.ServletContext;
 import java.io.*;
@@ -35,6 +38,7 @@ public class GrailsWrappedRuntimeException extends GrailsException {
 
     private static final Pattern PARSE_DETAILS_STEP1 = Pattern.compile("\\((\\w+)\\.groovy:(\\d+)\\)");
     private static final Pattern PARSE_DETAILS_STEP2 = Pattern.compile("at\\s{1}(\\w+)\\$_closure\\d+\\.doCall\\(\\1:(\\d+)\\)");
+    private static final Pattern PARSE_GSP_DETAILS_STEP1 = Pattern.compile("(\\w+?)_\\w+?_gsp.run\\((\\w+\\.gsp):(\\d+)\\)");
     public static final String URL_PREFIX = "/WEB-INF/grails-app/";
     private static final Log LOG  = LogFactory.getLog(GrailsWrappedRuntimeException.class);
     private Throwable t;
@@ -42,6 +46,8 @@ public class GrailsWrappedRuntimeException extends GrailsException {
     private int lineNumber = - 1;
     private String stackTrace;
     private String[] codeSnippet = new String[0];
+    private boolean isGSP;
+    private String gspFile;
 
 
     /**
@@ -59,35 +65,59 @@ public class GrailsWrappedRuntimeException extends GrailsException {
 
         Matcher m1 = PARSE_DETAILS_STEP1.matcher(stackTrace);
         Matcher m2 = PARSE_DETAILS_STEP2.matcher(stackTrace);
+        Matcher gsp = PARSE_GSP_DETAILS_STEP1.matcher(stackTrace);
         try {
-            if(m1.find()) {
-                this.className = m1.group(1);
-                this.lineNumber = Integer.parseInt(m1.group(2));
+            if(gsp.find()) {
+                isGSP = true;
+                this.className = gsp.group(2);
+                this.lineNumber = Integer.parseInt(gsp.group(3));
+                this.gspFile = URL_PREFIX + "views/" + gsp.group(1)  + '/' + this.className;
             }
-            else if(m2.find()) {
-                this.className = m2.group(1);
-                this.lineNumber = Integer.parseInt(m2.group(2));
+            else {
+                if(m1.find()) {
+                    this.className = m1.group(1);
+                    this.lineNumber = Integer.parseInt(m1.group(2));
+                }
+                else if(m2.find()) {
+                    this.className = m2.group(1);
+                    this.lineNumber = Integer.parseInt(m2.group(2));
+                }
             }
         }
         catch(NumberFormatException nfex) {
             // ignore
         }
 
+
         LineNumberReader reader = null;
         try {
             if(getLineNumber() > -1) {
-                String fileName = this.className.replace('.', '/') + ".groovy";
-                String urlPrefix = URL_PREFIX;
-                if(GrailsClassUtils.isControllerClass(className) || GrailsClassUtils.isPageFlowClass(className)) {
-                    urlPrefix += "/controllers/";
+                String url;
+                if(gspFile == null) {
+                    String fileName = this.className.replace('.', '/') + ".groovy";
+                    String urlPrefix = URL_PREFIX;
+                    if(GrailsClassUtils.isControllerClass(className) || GrailsClassUtils.isPageFlowClass(className)) {
+                        urlPrefix += "/controllers/";
+                    }
+                    else if(GrailsClassUtils.isTagLibClass(className)) {
+                        urlPrefix += "/taglib/";
+                    }
+                    else if(GrailsClassUtils.isService(className)) {
+                       urlPrefix += "/services/";
+                    }
+                    url = urlPrefix + fileName;
                 }
-                else if(GrailsClassUtils.isTagLibClass(className)) {
-                    urlPrefix += "/taglib/";
+                else {
+                    url = gspFile;
+                    GrailsApplicationAttributes attrs = new DefaultGrailsApplicationAttributes(servletContext);
+                    GroovyPagesTemplateEngine engine = attrs.getPagesTemplateEngine();
+                    int[] lineNumbers = engine.getLineNumbersForPage(servletContext,url);
+                    if(this.lineNumber < lineNumbers.length) {
+                        this.lineNumber = lineNumbers[this.lineNumber - 1];
+                    }
                 }
-                else if(GrailsClassUtils.isService(className)) {
-                   urlPrefix += "/services/";
-                }
-                InputStream in = servletContext.getResourceAsStream(urlPrefix + fileName);
+
+                InputStream in = servletContext.getResourceAsStream(url);
                 if(in != null) {
                     reader = new LineNumberReader(new InputStreamReader( in ));
                     String currentLine = reader.readLine();
