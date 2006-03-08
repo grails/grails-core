@@ -325,6 +325,7 @@ class ${className}Controller {
             def templateText = '''
 <html>
     <head>
+         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
          <title>${className} List</title>
          <link rel="stylesheet" href="\\${createLinkTo(dir:'css',file:'main.css')}"></link>
     </head>
@@ -385,6 +386,7 @@ class ${className}Controller {
             def templateText = '''
 <html>
     <head>
+         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
          <title>Show ${className}</title>
          <link rel="stylesheet" href="\\${createLinkTo(dir:'css',file:'main.css')}"></link>
     </head>
@@ -453,6 +455,7 @@ class ${className}Controller {
             def templateText = '''
 <html>
     <head>
+         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
          <title>Edit ${className}</title>
          <link rel="stylesheet" href="\\${createLinkTo(dir:'css',file:'main.css')}"></link>
     </head>
@@ -521,6 +524,7 @@ class ${className}Controller {
             def templateText = '''
 <html>
     <head>
+         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
          <title>Create ${className}</title>
          <link rel="stylesheet" href="\\${createLinkTo(dir:'css',file:'main.css')}"></link>
     </head>

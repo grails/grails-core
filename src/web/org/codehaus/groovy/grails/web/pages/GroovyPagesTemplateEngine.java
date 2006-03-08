@@ -55,7 +55,6 @@ public class GroovyPagesTemplateEngine {
 
     private static final Log LOG = LogFactory.getLog(GroovyPagesTemplateEngine.class);
     private static Map pageCache = Collections.synchronizedMap(new HashMap());
-    private ClassLoader parent;
     private boolean showSource;
     private GroovyClassLoader classLoader;
 
@@ -74,6 +73,7 @@ public class GroovyPagesTemplateEngine {
         private long lastModified;
         private Map dependencies = new HashMap();
         private InputStream groovySource;
+        public String contentType;
     } // PageMeta
 
 
@@ -91,7 +91,7 @@ public class GroovyPagesTemplateEngine {
      * @throws ServletException
      */
     public Template createTemplate(ServletContext context, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-        parent = Thread.currentThread().getContextClassLoader();
+        ClassLoader parent = Thread.currentThread().getContextClassLoader();
         if (parent == null) parent = getClass().getClassLoader();
 
         String uri = getPageId(request);
@@ -195,6 +195,7 @@ public class GroovyPagesTemplateEngine {
 
         // Make a new pageMeta
         PageMeta pageMeta = new PageMeta();
+        pageMeta.contentType = parse.getContentType();
 
             // just return groovy and don't compile if asked
         if (spillGroovy) {
@@ -316,7 +317,10 @@ public class GroovyPagesTemplateEngine {
                 pageMeta.groovySource = null;
             } else {
                 // Set it to HTML by default
-                response.setContentType("text/html"); // must come before response.getWriter()
+                if(LOG.isDebugEnabled()) {
+                    LOG.debug("Writing response with content type: " + pageMeta.contentType);
+                }
+                response.setContentType(pageMeta.contentType); // must come before response.getWriter()
                 Binding binding = getBinding(request, response, out);
                 Script page = InvokerHelper.createScript(pageMeta.servletScriptClass, binding);
                 page.run();

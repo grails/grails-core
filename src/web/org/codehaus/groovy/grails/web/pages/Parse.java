@@ -27,7 +27,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * NOTE: Based on work done by on the GSP standalone project (https://gsp.dev.java.net/)
+ * NOTE: Based on work done by the GSP standalone project (https://gsp.dev.java.net/)
  *
  * Parsing implementation for GSP files
  *
@@ -47,13 +47,10 @@ public class Parse implements Tokens {
     private static final Pattern PARSE_TAG_SECOND_PASS = Pattern.compile("(\\s*(\\S+)\\s*=\\s*[']([^']*)['][\\s|>]{1}){1}");
 
     private Scan scan;
-    //private StringBuffer buf;
-    private StringWriter sw;
     private GSPWriter out;
     private String className;
     private boolean finalPass = false;
     private int tagIndex;
-    private int dynamicTagIndex;
     private Map tagContext;
     private List tagMetaStack = new ArrayList();
     private GrailsTagRegistry tagRegistry = GrailsTagRegistry.getInstance();
@@ -62,6 +59,12 @@ public class Parse implements Tokens {
     private StringBuffer whiteSpaceBuffer = new StringBuffer();
     private int[] lineNumbers = new int[1000];
     private int currentOutputLine;
+    private String contentType = "text/html;charset=UTF-8";
+
+
+    public String getContentType() {
+        return this.contentType;
+    }
 
     class TagMeta  {
         String name;
@@ -80,7 +83,7 @@ public class Parse implements Tokens {
     }
     public InputStream parse() {
 
-        sw = new StringWriter();
+        StringWriter sw = new StringWriter();
         out = new GSPWriter(sw);
         page();
         finalPass = true;
@@ -121,9 +124,14 @@ public class Parse implements Tokens {
             String name = mat.group(1);
             String value = mat.group(2);
             if (name.equals("import")) pageImport(value);
+            if (name.equals("contentType")) contentType(value);
             ix = mat.end();
         }
     } // directPage()
+
+    private void contentType(String value) {
+        this.contentType = value;
+    }
 
     private void expr() {
         if (!finalPass) return;
@@ -268,7 +276,6 @@ public class Parse implements Tokens {
           else {
                out.println("invokeTag('"+tagName+"',[:],body"+tagIndex+")");
           }
-          dynamicTagIndex--;
        }
        tagIndex--;
     }
@@ -327,7 +334,6 @@ public class Parse implements Tokens {
             tm.instance = tag;
         }
         else {
-            dynamicTagIndex++;
             if(attrs.size() > 0) {
                 out.print("attrs"+tagIndex+" = [");
                 for (Iterator i = attrs.keySet().iterator(); i.hasNext();) {
