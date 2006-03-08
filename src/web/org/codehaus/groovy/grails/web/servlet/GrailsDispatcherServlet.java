@@ -84,6 +84,7 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
             getServletContext().setAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT,webContext );
         }
 
+        getServletContext().setAttribute(GrailsApplication.APPLICATION_ID,application);
         // configure scaffolders
         GrailsConfigUtils.configureScaffolders(application, webContext);
 
