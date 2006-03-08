@@ -22,6 +22,7 @@ interface Tokens {
 	static final int GSCRIPT = 12; // %{ ... }%
 	static final int GDIRECT = 13; // @{ ... }
 	static final int GDECLAR = 14; // !{ ... }!
-    static final int GSTART_TAG = 15; // <gr:..>
-    static final int GEND_TAG = 16; // </gr:..>
+    static final int GSTART_TAG = 15; // <g:..>
+    static final int GEND_TAG = 16; // </g:..>
+    static final int GTAG_EXPR = 17; // ${..}
 }

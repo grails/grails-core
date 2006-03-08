@@ -129,6 +129,9 @@ class Scan implements Tokens {
 					}
 					break;
                 case GSTART_TAG:
+                    if(c == '$' && c1 == '{') {
+                        return found(GTAG_EXPR, 2);
+                    }
                     if(c == '>') {
                         return found(HTML,1);
                     }
@@ -140,6 +143,10 @@ class Scan implements Tokens {
                     if(c == '>') {
                         return found(HTML,1);
                     }
+                    break;
+                case GTAG_EXPR:
+                    if(c == '}')
+                        return found(GSTART_TAG,1);
                     break;
                 case GEXPR:
 				case GDIRECT:

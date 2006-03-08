@@ -41,7 +41,6 @@ public class Parse implements Tokens {
     public static final Log LOG = LogFactory.getLog(Parse.class);
 
     private static final Pattern PARA_BREAK = Pattern.compile("/p>\\s*<p[^>]*>", Pattern.CASE_INSENSITIVE);
-    private static final Pattern LINE_BREAK = Pattern.compile("\\r\\n|\\n|\\r");
     private static final Pattern ROW_BREAK = Pattern.compile("((/td>\\s*</tr>\\s*<)?tr[^>]*>\\s*<)?td[^>]*>", Pattern.CASE_INSENSITIVE);
     private static final Pattern PARSE_TAG_FIRST_PASS = Pattern.compile("(\\s*(\\S+)\\s*=\\s*[\"]([^\"]*)[\"][\\s|>]{1}){1}");
     private static final Pattern PARSE_TAG_SECOND_PASS = Pattern.compile("(\\s*(\\S+)\\s*=\\s*[']([^']*)['][\\s|>]{1}){1}");
@@ -57,9 +56,10 @@ public class Parse implements Tokens {
     private boolean bufferWhiteSpace ;
 
     private StringBuffer whiteSpaceBuffer = new StringBuffer();
-    private int[] lineNumbers = new int[1000];
     private int currentOutputLine = 1;
     private String contentType = "text/html;charset=UTF-8";
+    private boolean doNextScan = true;
+    private int state;
 
 
     public String getContentType() {
@@ -220,7 +220,11 @@ public class Parse implements Tokens {
             out.println("import org.codehaus.groovy.grails.web.taglib.*");
         }
         loop: for (;;) {
-            int state = scan.nextToken();
+            if(doNextScan)
+                state = scan.nextToken();
+            else
+                doNextScan = true;
+
             switch (state) {
                 case EOF: break loop;
                 case HTML: html(); break;
@@ -287,7 +291,25 @@ public class Parse implements Tokens {
         if (!finalPass) return;
         tagIndex++;
 
-        String text = scan.getToken().trim();
+        String text;
+        StringBuffer buf = new StringBuffer( scan.getToken().trim() );
+
+        state = scan.nextToken();
+        while(state != HTML && state != GEND_TAG) {
+            if(state == GTAG_EXPR) {
+                buf.append("${");
+                buf.append(scan.getToken().trim());
+                buf.append("}");
+            }
+            else {
+                buf.append(scan.getToken().trim());
+            }
+            state = scan.nextToken();
+        }
+        doNextScan = false;
+
+        text = buf.toString();
+
         String tagName;
         Map attrs = new HashMap();
         if(text.indexOf(' ') > -1) {
