@@ -62,6 +62,7 @@ Targets:
         <mkdir dir="${path}web-app"/>
         <mkdir dir="${path}web-app/js"/>
         <mkdir dir="${path}web-app/css"/>
+        <mkdir dir="${path}web-app/images"/>
         <mkdir dir="${path}web-app/WEB-INF/classes"/>
         <!--<mkdir dir="${path}
 "/>-->
@@ -86,6 +87,12 @@ Targets:
         </copy>
         <copy todir="${path}web-app/css">
             <fileset dir="${grails.home}/src/war/css"/>
+        </copy>
+        <copy todir="${path}web-app/images">
+            <fileset dir="${grails.home}/src/war/images"/>
+        </copy>
+        <copy todir="${path}web-app">
+            <fileset dir="${grails.home}/src/war" includes="*"/>
         </copy>
         <copy todir="${path}web-app/WEB-INF/tld">
             <fileset dir="${grails.home}/src/war/WEB-INF/tld/${servlet.version}"/>
