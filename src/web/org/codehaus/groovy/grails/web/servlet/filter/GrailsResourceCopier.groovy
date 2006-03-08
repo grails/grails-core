@@ -15,6 +15,11 @@ class GrailsResourceCopier implements ResourceCopier {
                 fileset(dir:"${basedir}/grails-app/i18n",includes:"**")
             }
         }
+        if(new File("${basedir}/web-app").exists()) {
+            ant.copy(todir:"${destdir}",failonerror:false) {
+                fileset(dir:"${basedir}/web-app",includes:"**",excludes:"${basedir}/web-app/WEB-INF")
+            }
+        }
     }
 
     public void copyViews(boolean shouldOverwrite) {
