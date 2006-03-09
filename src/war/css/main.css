@@ -2,7 +2,7 @@ a:active,a:link,a:visited,a:hover {
     color:#0D5798;    
 }
 .menuButton {
-	background-color:#80B0DA;
+	background-color:#8CAFCD;
 	border: 1px solid white;
 	border-style: none solid none none ;
 	margin-left:0px;
@@ -11,8 +11,10 @@ a:active,a:link,a:visited,a:hover {
 
 .menuButton a:active,.menuButton a:link,.menuButton a:visited,.menuButton a:hover {
 	font-family:Arial,sans-serif;
-	color: white;	
-	text-decoration:none;
+    font-size:0.9em;
+    color: white;
+    font-weight:bold;
+    text-decoration:none;
 	padding:20px;
 }
 .actionButton a:active,.actionButton a:link,.actionButton a:visited,.actionButton a:hover {
