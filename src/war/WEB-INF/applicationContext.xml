@@ -15,5 +15,11 @@
               <value>**/*.groovy</value>
         </property>
     </bean>
-	
+
+   <bean id="characterEncodingFilter"
+      class="org.springframework.web.filter.CharacterEncodingFilter">
+        <property name="encoding">
+          <value>utf-8</value>
+        </property>
+   </bean>    	
 </beans>
