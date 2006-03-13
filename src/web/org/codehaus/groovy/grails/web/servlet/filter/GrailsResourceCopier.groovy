@@ -11,9 +11,6 @@ class GrailsResourceCopier implements ResourceCopier {
             ant.copy(todir:"${destdir}/WEB-INF/grails-app",failonerror:false) {
                 fileset(dir:"${basedir}/grails-app",includes:"**")
             }
-            ant.copy(todir:"${destdir}/WEB-INF/classes",failonerror:false) {
-                fileset(dir:"${basedir}/grails-app/i18n",includes:"**")
-            }
         }
         if(new File("${basedir}/web-app").exists()) {
             ant.copy(todir:"${destdir}",failonerror:false) {

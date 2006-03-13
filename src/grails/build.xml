@@ -425,9 +425,6 @@ Targets:
         <copy todir="tmp/war/WEB-INF/grails-app">
             <fileset dir="grails-app" includes="**"/>
         </copy>
-        <copy todir="tmp/war/WEB-INF/classes">
-            <fileset dir="grails-app/i18n" includes="**"/>
-        </copy>
         <copy todir="tmp/war/WEB-INF/spring">
             <fileset dir="spring" includes="**"/>
         </copy>

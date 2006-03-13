@@ -14,6 +14,9 @@
  */ 
 package org.codehaus.groovy.grails.orm.hibernate.validation;
 
+import java.util.Iterator;
+import java.util.List;
+
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 import org.codehaus.groovy.grails.validation.Constraint;
 import org.hibernate.HibernateException;
@@ -22,10 +25,6 @@ import org.hibernate.criterion.Restrictions;
 import org.springframework.orm.hibernate3.HibernateCallback;
 import org.springframework.orm.hibernate3.HibernateTemplate;
 import org.springframework.validation.Errors;
-
-import java.text.MessageFormat;
-import java.util.Iterator;
-import java.util.List;
 /**
  * Extends ConstrainedProperty to provide additional validation against database specific constraints
  * 
@@ -34,13 +33,17 @@ import java.util.List;
  */
 public class ConstrainedPersistentProperty extends ConstrainedProperty {
 
+	private static final String DEFAULT_NOT_UNIQUE_MESSAGE_CODE = "default.not.unique.message";
+
+
 	public static final String UNIQUE_CONSTRAINT = "unique";
 
 	
-	private static final String DEFAULT_NOT_UNIQUE_MESSAGE = bundle.getString("default.not.unique.message");
+	private static final String DEFAULT_NOT_UNIQUE_MESSAGE = bundle.getString(DEFAULT_NOT_UNIQUE_MESSAGE_CODE);
 	private HibernateTemplate hibernateTemplate;
 	
-	static {		
+	static {
+		DEFAULT_MESSAGES.put(DEFAULT_NOT_UNIQUE_MESSAGE_CODE,DEFAULT_NOT_UNIQUE_MESSAGE);
 		constraints.put( UNIQUE_CONSTRAINT, UniqueConstraint.class );
 	}
 	
@@ -111,7 +114,7 @@ public class ConstrainedPersistentProperty extends ConstrainedProperty {
                 });
                 if(results.size() > 0) {
                     Object[] args = new Object[] { constraintPropertyName, constraintOwningClass, propertyValue };
-                    super.rejectValue(errors,UNIQUE_CONSTRAINT,args,MessageFormat.format( DEFAULT_NOT_UNIQUE_MESSAGE, args ));
+                    super.rejectValue(errors,UNIQUE_CONSTRAINT,args,getDefaultMessage( DEFAULT_NOT_UNIQUE_MESSAGE_CODE, args ));
                 }
             }
         }
@@ -178,8 +181,9 @@ public class ConstrainedPersistentProperty extends ConstrainedProperty {
 	
 		for (Iterator i = this.appliedConstraints.values().iterator(); i.hasNext();) {
 			Constraint c = (Constraint) i.next();
+			c.setMessageSource( this.messageSource );
 			if(c instanceof PersistentConstraint) {
-				PersistentConstraint pc = (PersistentConstraint)c;
+				PersistentConstraint pc = (PersistentConstraint)c;				
 				pc.setHibernateTemplate(this.hibernateTemplate);
 				pc.validate( propertyValue, errors );
 			}
@@ -188,6 +192,5 @@ public class ConstrainedPersistentProperty extends ConstrainedProperty {
 			}
 		}
 	}
-
 	
 }

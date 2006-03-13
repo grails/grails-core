@@ -15,9 +15,21 @@
 package org.codehaus.groovy.grails.validation;
 
 
+import groovy.lang.IntRange;
 import groovy.lang.MissingPropertyException;
 import groovy.lang.Range;
-import groovy.lang.IntRange;
+
+import java.lang.reflect.Array;
+import java.text.MessageFormat;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.ResourceBundle;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.logging.Log;
@@ -25,15 +37,13 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.commons.validator.CreditCardValidator;
 import org.apache.commons.validator.EmailValidator;
 import org.apache.commons.validator.UrlValidator;
-import org.codehaus.groovy.grails.validation.exceptions.ConstraintException;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
+import org.codehaus.groovy.grails.validation.exceptions.ConstraintException;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
+import org.springframework.context.MessageSource;
+import org.springframework.context.NoSuchMessageException;
 import org.springframework.validation.Errors;
-
-import java.lang.reflect.Array;
-import java.text.MessageFormat;
-import java.util.*;
 
 /**
  * Provides the ability to set contraints against a properties of a class. Constraints can either be
@@ -60,7 +70,46 @@ import java.util.*;
  */
 public class ConstrainedProperty   {
 
-    public static final String CREDIT_CARD_CONSTRAINT = "creditCard";
+    private static final String DEFAULT_NULL_MESSAGE_CODE = "default.null.message";
+	private static final String DEFAULT_INVALID_MIN_SIZE_MESSAGE_CODE = "default.invalid.min.size.message";
+	private static final String DEFAULT_INVALID_MIN_LENGTH_MESSAGE_CODE = "default.invalid.min.length.message";
+	private static final String DEFAULT_INVALID_MAX_SIZE_MESSAGE_CODE = "default.invalid.max.size.message";
+	private static final String DEFAULT_INVALID_MAX_LENGTH_MESSAGE_CODE = "default.invalid.max.length.message";
+	private static final String DEFAULT_NOT_EQUAL_MESSAGE_CODE = "default.not.equal.message";
+	private static final String DEFAULT_INVALID_MIN_MESSAGE_CODE = "default.invalid.min.message";
+	private static final String DEFAULT_INVALID_MAX_MESSAGE_CODE = "default.invalid.max.message";
+	private static final String DEFAULT_INVALID_LENGTH_MESSAGE_CODE = "default.invalid.length.message";
+	private static final String DEFAULT_INVALID_SIZE_MESSAGE_CODE = "default.invalid.size.message";
+	private static final String DEFAULT_NOT_INLIST_MESSAGE_CODE = "default.not.inlist.message";
+	private static final String DEFAULT_INVALID_RANGE_MESSAGE_CODE = "default.invalid.range.message";
+	private static final String DEFAULT_INVALID_EMAIL_MESSAGE_CODE = "default.invalid.email.message";
+	private static final String DEFAULT_INVALID_CREDIT_CARD_MESSAGE_CODE = "default.invalid.creditCard.message";
+	private static final String DEFAULT_INVALID_URL_MESSAGE_CODE = "default.invalid.url.message";
+	private static final String DEFAULT_DOESNT_MATCH_MESSAGE_CODE = "default.doesnt.match.message";
+	private static final String DEFAULT_BLANK_MESSAGE_CODE = "default.blank.message";
+	
+	protected static final ResourceBundle bundle = ResourceBundle.getBundle( "org.codehaus.groovy.grails.validation.DefaultErrorMessages" );
+	
+	private static final String DEFAULT_BLANK_MESSAGE = bundle.getString( DEFAULT_BLANK_MESSAGE_CODE );
+	private static final String DEFAULT_DOESNT_MATCH_MESSAGE = bundle.getString( DEFAULT_DOESNT_MATCH_MESSAGE_CODE );
+	private static final String DEFAULT_INVALID_URL_MESSAGE = bundle.getString( DEFAULT_INVALID_URL_MESSAGE_CODE );
+    private static final String DEFAULT_INVALID_CREDIT_CARD_MESSAGE = bundle.getString( DEFAULT_INVALID_CREDIT_CARD_MESSAGE_CODE );
+    //private static final String DEFAULT_INVALID_MESSAGE = bundle.getString( "default.invalid.message" );
+	private static final String DEFAULT_INVALID_EMAIL_MESSAGE  = bundle.getString( DEFAULT_INVALID_EMAIL_MESSAGE_CODE );
+	private static final String DEFAULT_INVALID_RANGE_MESSAGE = bundle.getString( DEFAULT_INVALID_RANGE_MESSAGE_CODE );	
+	private static final String DEFAULT_NOT_IN_LIST_MESSAGE = bundle.getString( DEFAULT_NOT_INLIST_MESSAGE_CODE );
+	private static final String DEFAULT_INVALID_SIZE_MESSAGE = bundle.getString( DEFAULT_INVALID_SIZE_MESSAGE_CODE );
+	private static final String DEFAULT_INVALID_LENGTH_MESSAGE = bundle.getString( DEFAULT_INVALID_LENGTH_MESSAGE_CODE );
+	private static final String DEFAULT_INVALID_MAX_MESSAGE = bundle.getString( DEFAULT_INVALID_MAX_MESSAGE_CODE );
+	private static final String DEFAULT_INVALID_MIN_MESSAGE = bundle.getString( DEFAULT_INVALID_MIN_MESSAGE_CODE );
+	private static final String DEFAULT_NOT_EQUAL_MESSAGE = bundle.getString( DEFAULT_NOT_EQUAL_MESSAGE_CODE );
+	private static final String DEFAULT_INVALID_MAX_LENGTH_MESSAGE = bundle.getString( DEFAULT_INVALID_MAX_LENGTH_MESSAGE_CODE );
+	private static final String DEFAULT_INVALID_MAX_SIZE_MESSAGE = bundle.getString( DEFAULT_INVALID_MAX_SIZE_MESSAGE_CODE );
+	private static final String DEFAULT_INVALID_MIN_LENGTH_MESSAGE = bundle.getString( DEFAULT_INVALID_MIN_LENGTH_MESSAGE_CODE );
+	private static final String DEFAULT_INVALID_MIN_SIZE_MESSAGE = bundle.getString( DEFAULT_INVALID_MIN_SIZE_MESSAGE_CODE );
+	private static final String DEFAULT_NULL_MESSAGE = bundle.getString( DEFAULT_NULL_MESSAGE_CODE );
+	
+	public static final String CREDIT_CARD_CONSTRAINT = "creditCard";
     public static final String EMAIL_CONSTRAINT = "email";
 	public static final String BLANK_CONSTRAINT = "blank";
 	public static final String RANGE_CONSTRAINT = "range";
@@ -88,8 +137,27 @@ public class ConstrainedProperty   {
 	protected static final String TOOSHORT_SUFFIX = ".tooshort";
 	
 	protected static Map constraints = new HashMap();
+	protected static final Map DEFAULT_MESSAGES = new HashMap();
 	
 	static {
+		DEFAULT_MESSAGES.put(DEFAULT_BLANK_MESSAGE_CODE,DEFAULT_BLANK_MESSAGE);
+		DEFAULT_MESSAGES.put(DEFAULT_DOESNT_MATCH_MESSAGE_CODE,DEFAULT_DOESNT_MATCH_MESSAGE);
+		DEFAULT_MESSAGES.put(DEFAULT_INVALID_CREDIT_CARD_MESSAGE_CODE,DEFAULT_INVALID_CREDIT_CARD_MESSAGE);
+		DEFAULT_MESSAGES.put(DEFAULT_INVALID_EMAIL_MESSAGE_CODE,DEFAULT_INVALID_EMAIL_MESSAGE);
+		DEFAULT_MESSAGES.put(DEFAULT_INVALID_LENGTH_MESSAGE_CODE,DEFAULT_INVALID_LENGTH_MESSAGE);
+		DEFAULT_MESSAGES.put(DEFAULT_INVALID_MAX_LENGTH_MESSAGE_CODE,DEFAULT_INVALID_MAX_LENGTH_MESSAGE);
+		DEFAULT_MESSAGES.put(DEFAULT_INVALID_MAX_MESSAGE_CODE,DEFAULT_INVALID_MAX_MESSAGE);
+		DEFAULT_MESSAGES.put(DEFAULT_INVALID_MAX_SIZE_MESSAGE_CODE,DEFAULT_INVALID_MAX_SIZE_MESSAGE);
+		DEFAULT_MESSAGES.put(DEFAULT_INVALID_MIN_LENGTH_MESSAGE_CODE,DEFAULT_INVALID_MIN_LENGTH_MESSAGE);
+		DEFAULT_MESSAGES.put(DEFAULT_INVALID_MIN_MESSAGE_CODE,DEFAULT_INVALID_MIN_MESSAGE);
+		DEFAULT_MESSAGES.put(DEFAULT_INVALID_MIN_SIZE_MESSAGE_CODE,DEFAULT_INVALID_MIN_SIZE_MESSAGE);
+		DEFAULT_MESSAGES.put(DEFAULT_INVALID_RANGE_MESSAGE_CODE,DEFAULT_INVALID_RANGE_MESSAGE);
+		DEFAULT_MESSAGES.put(DEFAULT_INVALID_SIZE_MESSAGE_CODE,DEFAULT_INVALID_SIZE_MESSAGE);
+		DEFAULT_MESSAGES.put(DEFAULT_INVALID_URL_MESSAGE_CODE,DEFAULT_INVALID_URL_MESSAGE);
+		DEFAULT_MESSAGES.put(DEFAULT_NOT_EQUAL_MESSAGE_CODE,DEFAULT_NOT_EQUAL_MESSAGE);
+		DEFAULT_MESSAGES.put(DEFAULT_NOT_INLIST_MESSAGE_CODE,DEFAULT_NOT_IN_LIST_MESSAGE);
+		DEFAULT_MESSAGES.put(DEFAULT_NULL_MESSAGE_CODE,DEFAULT_NULL_MESSAGE);
+		
         constraints.put( CREDIT_CARD_CONSTRAINT, CreditCardConstraint.class );
         constraints.put( EMAIL_CONSTRAINT, EmailConstraint.class );
 		constraints.put( BLANK_CONSTRAINT, BlankConstraint.class );
@@ -109,27 +177,9 @@ public class ConstrainedProperty   {
 		constraints.put( NOT_EQUAL_CONSTRAINT, NotEqualConstraint.class );
 	}
 	
-	protected static final ResourceBundle bundle = ResourceBundle.getBundle( "defaultErrorMessages" );
+
 	protected static final Log LOG = LogFactory.getLog(ConstrainedProperty.class);
 	
-	private static final String DEFAULT_BLANK_MESSAGE = bundle.getString( "default.blank.message" );
-	private static final String DEFAULT_DOESNT_MATCH_MESSAGE = bundle.getString( "default.doesnt.match.message" );
-	private static final String DEFAULT_INVALID_URL_MESSAGE = bundle.getString( "default.invalid.url.message" );
-    private static final String DEFAULT_INVALID_CREDIT_CARD_MESSAGE = bundle.getString( "default.invalid.creditCard.message" );
-    //private static final String DEFAULT_INVALID_MESSAGE = bundle.getString( "default.invalid.message" );
-	private static final String DEFAULT_INVALID_EMAIL_MESSAGE  = bundle.getString( "default.invalid.email.message" );
-	private static final String DEFAULT_INVALID_RANGE_MESSAGE = bundle.getString( "default.invalid.range.message" );	
-	private static final String DEFAULT_NOT_IN_LIST_MESSAGE = bundle.getString( "default.not.inlist.message" );
-	private static final String DEFAULT_INVALID_SIZE_MESSAGE = bundle.getString( "default.invalid.size.message" );
-	private static final String DEFAULT_INVALID_LENGTH_MESSAGE = bundle.getString( "default.invalid.length.message" );
-	private static final String DEFAULT_INVALID_MAX_MESSAGE = bundle.getString( "default.invalid.max.message" );
-	private static final String DEFAULT_INVALID_MIN_MESSAGE = bundle.getString( "default.invalid.min.message" );
-	private static final String DEFAULT_NOT_EQUAL_MESSAGE = bundle.getString( "default.not.equal.message" );
-	private static final String DEFAULT_INVALID_MAX_LENGTH_MESSAGE = bundle.getString( "default.invalid.max.length.message" );
-	private static final String DEFAULT_INVALID_MAX_SIZE_MESSAGE = bundle.getString( "default.invalid.max.size.message" );
-	private static final String DEFAULT_INVALID_MIN_LENGTH_MESSAGE = bundle.getString( "default.invalid.min.length.message" );
-	private static final String DEFAULT_INVALID_MIN_SIZE_MESSAGE = bundle.getString( "default.invalid.min.size.message" );
-	private static final String DEFAULT_NULL_MESSAGE = bundle.getString( "default.null.message" );
 	// move these to subclass	
 
 	protected String propertyName;
@@ -142,12 +192,13 @@ public class ConstrainedProperty   {
 	// simple constraints
 	private boolean display = true; // whether the property should be displayed
 	private boolean editable = true; // whether the property is editable
-    private boolean file; // whether the property is a file
+    //private boolean file; // whether the property is a file
     private int order; // what order to property appears in
     private String format; // the format of the property (for example a date pattern)
     private String widget; // the widget to use to render the property
     private boolean password; // whether the property is a password
     private Map attributes = Collections.EMPTY_MAP; // a map of attributes of property
+	protected MessageSource messageSource;
 
 
     /**
@@ -155,12 +206,21 @@ public class ConstrainedProperty   {
 	 * Abstract class for constraints to implement
 	 */
 	abstract protected static class AbstractConstraint implements Constraint {
+		
 		protected String constraintPropertyName;
 		protected Class constraintOwningClass;
 		protected Object constraintParameter;
         protected String classShortName;
+		protected MessageSource messageSource;
 
-        public String getPropertyName() {
+        /* (non-Javadoc)
+		 * @see org.codehaus.groovy.grails.validation.Constraint#setMessageSource(org.springframework.context.MessageSource)
+		 */
+		public void setMessageSource(MessageSource source) {
+				this.messageSource = source;
+		}
+
+		public String getPropertyName() {
             return this.constraintPropertyName;
         }
 
@@ -195,7 +255,18 @@ public class ConstrainedProperty   {
 			processValidate(propertyValue, errors);
 		}		
 		public void rejectValue(Errors errors, String code,String defaultMessage) {
+
 			errors.rejectValue(constraintPropertyName,classShortName + '.'  + constraintPropertyName + '.' + code, defaultMessage);
+		}
+		protected String getDefaultMessage(String code, Object[] args) {
+			String defaultMessage;
+			try {
+				defaultMessage = messageSource.getMessage(code,args,Locale.getDefault());
+			}
+			catch(NoSuchMessageException nsme) {
+				defaultMessage = (String)DEFAULT_MESSAGES.get(code);
+			}			
+			return defaultMessage;
 		}
 		public void rejectValue(Errors errors, String code,Object[] args,String defaultMessage) {
 			errors.rejectValue(constraintPropertyName,classShortName + '.'  + constraintPropertyName + '.' + code, args,defaultMessage);
@@ -240,7 +311,7 @@ public class ConstrainedProperty   {
 		protected void processValidate(Object propertyValue, Errors errors) {			
 			if(!this.constraintParameter.equals( propertyValue )) {
 				Object[] args = new Object[] { constraintPropertyName, constraintOwningClass, propertyValue, constraintParameter  };
-				super.rejectValue( errors, NOT_EQUAL_CONSTRAINT,args, MessageFormat.format( DEFAULT_NOT_EQUAL_MESSAGE, args ) );
+				super.rejectValue( errors, NOT_EQUAL_CONSTRAINT,args, getDefaultMessage(DEFAULT_NOT_EQUAL_MESSAGE_CODE, args));
 			}			
 		}
 		
@@ -277,7 +348,7 @@ public class ConstrainedProperty   {
         protected void processValidate(Object propertyValue, Errors errors) {
             if(!nullable && propertyValue == null) {
                 Object[] args = new Object[] { constraintPropertyName, constraintOwningClass};
-                super.rejectValue( errors, NULLABLE_CONSTRAINT,args, MessageFormat.format( DEFAULT_NULL_MESSAGE, args ) );
+                super.rejectValue( errors, NULLABLE_CONSTRAINT,args, getDefaultMessage(DEFAULT_NULL_MESSAGE_CODE, args) );
             }
         }
 		
@@ -321,7 +392,7 @@ public class ConstrainedProperty   {
                 if(propertyValue instanceof String) {
                     if(StringUtils.isBlank((String)propertyValue)) {
                         Object[] args = new Object[] { constraintPropertyName, constraintOwningClass };
-                        super.rejectValue( errors, BLANK_CONSTRAINT,args, MessageFormat.format( DEFAULT_BLANK_MESSAGE, args ) );
+                        super.rejectValue( errors, BLANK_CONSTRAINT,args, getDefaultMessage(DEFAULT_BLANK_MESSAGE_CODE, args) );
                     }
                 }
             }
@@ -341,7 +412,7 @@ public class ConstrainedProperty   {
 
                 if(!validator.isValid(propertyValue.toString())  ) {
                     Object[] args = new Object[] { constraintPropertyName, constraintOwningClass, propertyValue };
-                    super.rejectValue(errors,CREDIT_CARD_CONSTRAINT + INVALID_SUFFIX,args,MessageFormat.format( DEFAULT_INVALID_CREDIT_CARD_MESSAGE, args ));
+                    super.rejectValue(errors,CREDIT_CARD_CONSTRAINT + INVALID_SUFFIX,args,getDefaultMessage(DEFAULT_INVALID_CREDIT_CARD_MESSAGE_CODE, args));
                 }
             }
         }
@@ -405,7 +476,7 @@ public class ConstrainedProperty   {
                 EmailValidator emailValidator = EmailValidator.getInstance();
                 if(!emailValidator.isValid(propertyValue.toString())  ) {
                     Object[] args = new Object[] { constraintPropertyName, constraintOwningClass, propertyValue };
-                    super.rejectValue(errors,EMAIL_CONSTRAINT + INVALID_SUFFIX,args,MessageFormat.format( DEFAULT_INVALID_EMAIL_MESSAGE, args ));
+                    super.rejectValue(errors,EMAIL_CONSTRAINT + INVALID_SUFFIX,args,getDefaultMessage(DEFAULT_INVALID_EMAIL_MESSAGE_CODE, args));
                 }
             }
         }
@@ -451,7 +522,7 @@ public class ConstrainedProperty   {
 
                 if(!urlValidator.isValid(propertyValue.toString())) {
                     Object[] args = new Object[] { constraintPropertyName, constraintOwningClass, propertyValue };
-                    super.rejectValue(errors,URL_CONSTRAINT + INVALID_SUFFIX,args,MessageFormat.format( DEFAULT_INVALID_URL_MESSAGE, args ));
+                    super.rejectValue(errors,URL_CONSTRAINT + INVALID_SUFFIX,args,getDefaultMessage(DEFAULT_INVALID_URL_MESSAGE_CODE, args));
                 }
             }
         }
@@ -503,13 +574,13 @@ public class ConstrainedProperty   {
                 Object[] args = new Object[] { constraintPropertyName, constraintOwningClass, propertyValue, range.getFrom(), range.getTo()  };
 
                 if(propertyValue == null) {
-                    super.rejectValue(errors,RANGE_CONSTRAINT + INVALID_SUFFIX,args,MessageFormat.format( DEFAULT_INVALID_RANGE_MESSAGE, args ));
+                    super.rejectValue(errors,RANGE_CONSTRAINT + INVALID_SUFFIX,args,getDefaultMessage(DEFAULT_INVALID_RANGE_MESSAGE_CODE, args));
                 }
                 else if(range.getFrom().compareTo( propertyValue ) == 1) {
-                    super.rejectValue(errors,SIZE_CONSTRAINT + TOOSMALL_SUFFIX,args,MessageFormat.format( DEFAULT_INVALID_SIZE_MESSAGE, args ));
+                    super.rejectValue(errors,SIZE_CONSTRAINT + TOOSMALL_SUFFIX,args,getDefaultMessage(DEFAULT_INVALID_SIZE_MESSAGE_CODE, args));
                 }
                 else if(range.getTo().compareTo(propertyValue) == -1) {
-                    super.rejectValue(errors,SIZE_CONSTRAINT + TOOBIG_SUFFIX,args,MessageFormat.format( DEFAULT_INVALID_SIZE_MESSAGE, args ));
+                    super.rejectValue(errors,SIZE_CONSTRAINT + TOOBIG_SUFFIX,args,getDefaultMessage(DEFAULT_INVALID_SIZE_MESSAGE_CODE, args));
                 }
 
 
@@ -565,7 +636,7 @@ public class ConstrainedProperty   {
         protected void processValidate(Object propertyValue, Errors errors) {
             if(maxValue.compareTo(propertyValue) > 0) {
                 Object[] args = new Object[] { constraintPropertyName, constraintOwningClass, propertyValue, maxValue  };
-                super.rejectValue(errors,MAX_CONSTRAINT + EXCEEDED_SUFFIX,args,MessageFormat.format( DEFAULT_INVALID_MAX_MESSAGE, args ));
+                super.rejectValue(errors,MAX_CONSTRAINT + EXCEEDED_SUFFIX,args,getDefaultMessage(DEFAULT_INVALID_MAX_MESSAGE_CODE, args));
             }
         }
 	}
@@ -618,7 +689,7 @@ public class ConstrainedProperty   {
         protected void processValidate(Object propertyValue, Errors errors)		{
             if(minValue.compareTo(propertyValue) < 0) {
                 Object[] args = new Object[] { constraintPropertyName, constraintOwningClass, propertyValue, minValue  };
-                super.rejectValue(errors,MIN_CONSTRAINT + NOTMET_SUFFIX,args,MessageFormat.format( DEFAULT_INVALID_MIN_MESSAGE, args ));
+                super.rejectValue(errors,MIN_CONSTRAINT + NOTMET_SUFFIX,args,getDefaultMessage(DEFAULT_INVALID_MIN_MESSAGE_CODE, args));
             }
         }
 	}	
@@ -661,7 +732,7 @@ public class ConstrainedProperty   {
         protected void processValidate(Object propertyValue, Errors errors) {
             if(!this.list.contains(propertyValue)) {
                 Object[] args = new Object[] { constraintPropertyName, constraintOwningClass, propertyValue, list  };
-                super.rejectValue(errors,NOT_PREFIX + IN_LIST_CONSTRAINT,args,MessageFormat.format( DEFAULT_NOT_IN_LIST_MESSAGE,args ));
+                super.rejectValue(errors,NOT_PREFIX + IN_LIST_CONSTRAINT,args,getDefaultMessage(DEFAULT_NOT_INLIST_MESSAGE_CODE, args));
             }
         }
 		
@@ -709,7 +780,7 @@ public class ConstrainedProperty   {
         protected void processValidate(Object propertyValue, Errors errors) {
             if(propertyValue.toString().matches( regex )) {
                 Object[] args = new Object[] { constraintPropertyName, constraintOwningClass, propertyValue, regex  };
-                super.rejectValue(errors,MATCHES_CONSTRAINT + INVALID_SUFFIX,args,MessageFormat.format( DEFAULT_DOESNT_MATCH_MESSAGE, args ));
+                super.rejectValue(errors,MATCHES_CONSTRAINT + INVALID_SUFFIX,args,getDefaultMessage(DEFAULT_DOESNT_MATCH_MESSAGE_CODE, args));
             }
 
         }
@@ -776,10 +847,10 @@ public class ConstrainedProperty   {
                 if(!range.contains(length)) {
 
                     if(range.getFrom().compareTo( length ) == 1) {
-                        super.rejectValue(errors,LENGTH_CONSTRAINT + TOOSHORT_SUFFIX,args,MessageFormat.format( DEFAULT_INVALID_LENGTH_MESSAGE, args ));
+                        super.rejectValue(errors,LENGTH_CONSTRAINT + TOOSHORT_SUFFIX,args,getDefaultMessage(DEFAULT_INVALID_LENGTH_MESSAGE_CODE, args));
                     }
                     else if(range.getTo().compareTo(length) == -1) {
-                        super.rejectValue(errors,LENGTH_CONSTRAINT + TOOLONG_SUFFIX,args,MessageFormat.format( DEFAULT_INVALID_LENGTH_MESSAGE, args ));
+                        super.rejectValue(errors,LENGTH_CONSTRAINT + TOOLONG_SUFFIX,args,getDefaultMessage(DEFAULT_INVALID_LENGTH_MESSAGE_CODE, args));
                     }
                     return;
                 }
@@ -788,29 +859,29 @@ public class ConstrainedProperty   {
                 Integer collectionSize = new Integer(((Collection)propertyValue).size());
                 if(!range.contains( collectionSize )) {
                     if(range.getFrom().compareTo( collectionSize ) == 1) {
-                        super.rejectValue(errors,SIZE_CONSTRAINT + TOOSMALL_SUFFIX,args,MessageFormat.format( DEFAULT_INVALID_SIZE_MESSAGE, args ));
+                        super.rejectValue(errors,SIZE_CONSTRAINT + TOOSMALL_SUFFIX,args,getDefaultMessage(DEFAULT_INVALID_SIZE_MESSAGE_CODE, args));
                     }
                     else if(range.getTo().compareTo(collectionSize) == -1) {
-                        super.rejectValue(errors,SIZE_CONSTRAINT + TOOBIG_SUFFIX,args,MessageFormat.format( DEFAULT_INVALID_SIZE_MESSAGE, args ));
+                        super.rejectValue(errors,SIZE_CONSTRAINT + TOOBIG_SUFFIX,args,getDefaultMessage(DEFAULT_INVALID_SIZE_MESSAGE_CODE, args));
                     }
                 }
             }
             else if(propertyValue instanceof Number) {
                 if(range.getFrom().compareTo( propertyValue ) == 1) {
-                    super.rejectValue(errors,SIZE_CONSTRAINT + TOOSMALL_SUFFIX,args,MessageFormat.format( DEFAULT_INVALID_SIZE_MESSAGE, args ));
+                    super.rejectValue(errors,SIZE_CONSTRAINT + TOOSMALL_SUFFIX,args,getDefaultMessage(DEFAULT_INVALID_SIZE_MESSAGE_CODE, args));
                 }
                 else if(range.getTo().compareTo(propertyValue) == -1) {
-                    super.rejectValue(errors,SIZE_CONSTRAINT + TOOBIG_SUFFIX,args,MessageFormat.format( DEFAULT_INVALID_SIZE_MESSAGE, args ));
+                    super.rejectValue(errors,SIZE_CONSTRAINT + TOOBIG_SUFFIX,args,getDefaultMessage(DEFAULT_INVALID_SIZE_MESSAGE_CODE, args));
                 }
             }
             else if(propertyValue instanceof String) {
                 Integer stringLength =  new Integer(((String)propertyValue ).length());
                 if(!range.contains(stringLength)) {
                     if(range.getFrom().compareTo( stringLength ) == 1) {
-                        super.rejectValue(errors,LENGTH_CONSTRAINT + TOOSHORT_SUFFIX,args,MessageFormat.format( DEFAULT_INVALID_LENGTH_MESSAGE, args ));
+                        super.rejectValue(errors,LENGTH_CONSTRAINT + TOOSHORT_SUFFIX,args,getDefaultMessage(DEFAULT_INVALID_LENGTH_MESSAGE_CODE, args));
                     }
                     else if(range.getTo().compareTo(stringLength) == -1) {
-                        super.rejectValue(errors,LENGTH_CONSTRAINT + TOOLONG_SUFFIX,args,MessageFormat.format( DEFAULT_INVALID_LENGTH_MESSAGE, args ));
+                        super.rejectValue(errors,LENGTH_CONSTRAINT + TOOLONG_SUFFIX,args,getDefaultMessage(DEFAULT_INVALID_LENGTH_MESSAGE_CODE, args));
                     }
                 }
             }
@@ -862,27 +933,27 @@ public class ConstrainedProperty   {
 		protected void processValidate(Object propertyValue, Errors errors) {
 			Object[] args = new Object[] { constraintPropertyName, constraintOwningClass, propertyValue, new Integer(maxSize) };
 			if(propertyValue == null) {
-				super.rejectValue(errors,MAX_LENGTH_CONSTRAINT + EXCEEDED_SUFFIX,args,MessageFormat.format( DEFAULT_INVALID_MAX_LENGTH_MESSAGE, args ));
+				super.rejectValue(errors,MAX_LENGTH_CONSTRAINT + EXCEEDED_SUFFIX,args,getDefaultMessage(DEFAULT_INVALID_MAX_LENGTH_MESSAGE_CODE, args));
             }
 			else if(propertyValue.getClass().isArray()) {
 				int length = Array.getLength( propertyValue );
 				if(length > maxSize) {
-					super.rejectValue(errors,MAX_LENGTH_CONSTRAINT + EXCEEDED_SUFFIX,args,MessageFormat.format( DEFAULT_INVALID_MAX_LENGTH_MESSAGE, args ));
+					super.rejectValue(errors,MAX_LENGTH_CONSTRAINT + EXCEEDED_SUFFIX,args,getDefaultMessage(DEFAULT_INVALID_MAX_LENGTH_MESSAGE_CODE, args));
                 }
 			}
 			else if(propertyValue instanceof Collection) {
                 if (((Collection) propertyValue).size() > maxSize) {
-                    super.rejectValue(errors, MAX_SIZE_CONSTRAINT + EXCEEDED_SUFFIX, args, MessageFormat.format(DEFAULT_INVALID_MAX_SIZE_MESSAGE, args));
+                    super.rejectValue(errors, MAX_SIZE_CONSTRAINT + EXCEEDED_SUFFIX, args, getDefaultMessage(DEFAULT_INVALID_MAX_SIZE_MESSAGE_CODE, args));
                 } else if (propertyValue instanceof Number) {
                     int numberSize = ((Number) propertyValue).intValue();
                     if (numberSize > maxSize) {
-                        super.rejectValue(errors, MAX_SIZE_CONSTRAINT + EXCEEDED_SUFFIX, args, MessageFormat.format(DEFAULT_INVALID_MAX_SIZE_MESSAGE, args));
+                        super.rejectValue(errors, MAX_SIZE_CONSTRAINT + EXCEEDED_SUFFIX, args, getDefaultMessage(DEFAULT_INVALID_MAX_SIZE_MESSAGE_CODE, args));
                     }
                 }
             }
             else if (propertyValue instanceof String) {
                 if (((String) propertyValue).length() > maxSize) {
-                    super.rejectValue(errors, MAX_LENGTH_CONSTRAINT + EXCEEDED_SUFFIX, args, MessageFormat.format(DEFAULT_INVALID_MAX_LENGTH_MESSAGE, args));
+                    super.rejectValue(errors, MAX_LENGTH_CONSTRAINT + EXCEEDED_SUFFIX, args, getDefaultMessage(DEFAULT_INVALID_MAX_LENGTH_MESSAGE_CODE, args));
                 }
             }
         }
@@ -936,28 +1007,28 @@ public class ConstrainedProperty   {
 		protected void processValidate(Object propertyValue, Errors errors) {
 			Object[] args = new Object[] { constraintPropertyName, constraintOwningClass, propertyValue, new Integer(minSize) };
 			if(propertyValue == null) {
-				super.rejectValue(errors,MIN_LENGTH_CONSTRAINT + NOTMET_SUFFIX,args,MessageFormat.format( DEFAULT_INVALID_MIN_LENGTH_MESSAGE, args ));
+				super.rejectValue(errors,MIN_LENGTH_CONSTRAINT + NOTMET_SUFFIX,args,getDefaultMessage(DEFAULT_INVALID_MIN_LENGTH_MESSAGE_CODE, args));
             }
 			else if(propertyValue.getClass().isArray()) {
 				int length = Array.getLength( propertyValue );
 				if(length < minSize) {
-					super.rejectValue(errors,MIN_LENGTH_CONSTRAINT + NOTMET_SUFFIX,args,MessageFormat.format( DEFAULT_INVALID_MIN_LENGTH_MESSAGE, args ));
+					super.rejectValue(errors,MIN_LENGTH_CONSTRAINT + NOTMET_SUFFIX,args,getDefaultMessage(DEFAULT_INVALID_MIN_LENGTH_MESSAGE_CODE, args));
                 }
 			}
 			else if(propertyValue instanceof Collection) {
 				if( ((Collection)propertyValue).size() < minSize ) {
-					super.rejectValue(errors,MIN_SIZE_CONSTRAINT + NOTMET_SUFFIX,args,MessageFormat.format( DEFAULT_INVALID_MIN_SIZE_MESSAGE, args ));
+					super.rejectValue(errors,MIN_SIZE_CONSTRAINT + NOTMET_SUFFIX,args,getDefaultMessage(DEFAULT_INVALID_MIN_LENGTH_MESSAGE_CODE, args));
 				}
 			}
 			else if(propertyValue instanceof Number) {				
 				int numberSize = ((Number)propertyValue).intValue();
 				if( numberSize < minSize ) {
-					super.rejectValue(errors,MIN_SIZE_CONSTRAINT + NOTMET_SUFFIX,args,MessageFormat.format( DEFAULT_INVALID_MIN_SIZE_MESSAGE, args ));
+					super.rejectValue(errors,MIN_SIZE_CONSTRAINT + NOTMET_SUFFIX,args,getDefaultMessage(DEFAULT_INVALID_MIN_SIZE_MESSAGE_CODE, args));
                 }
 			}
 			else if(propertyValue instanceof String) {
 				if(((String)propertyValue ).length() < minSize) {
-					super.rejectValue(errors,MIN_LENGTH_CONSTRAINT + NOTMET_SUFFIX,args,MessageFormat.format( DEFAULT_INVALID_MIN_LENGTH_MESSAGE, args ));
+					super.rejectValue(errors,MIN_LENGTH_CONSTRAINT + NOTMET_SUFFIX,args,getDefaultMessage(DEFAULT_INVALID_MIN_LENGTH_MESSAGE_CODE, args));
 				}
 			}
 		}		
@@ -1706,6 +1777,14 @@ public class ConstrainedProperty   {
     }
 
     /**
+     * The message source used to evaluate error messages
+     * @param source
+     */
+	public void setMessageSource(MessageSource source) {
+		this.messageSource = source;
+	}
+    
+    /**
 	 * Validate this constrainted property against specified property value
 	 * 
 	 * @param propertyValue
@@ -1714,7 +1793,8 @@ public class ConstrainedProperty   {
 	public void validate(Object propertyValue, Errors errors) {
 		
 		for (Iterator i = this.appliedConstraints.values().iterator(); i.hasNext();) {
-			Constraint c = (Constraint) i.next();			
+			Constraint c = (Constraint) i.next();		
+			c.setMessageSource( this.messageSource );
 			c.validate( propertyValue, errors);
 		}
 	}

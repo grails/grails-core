@@ -136,7 +136,7 @@ public class SpringConfig {
 	private void populateI18nSupport(Collection beanReferences) {
 		// setup message source
 		Bean messageSource = SpringConfigUtils.createSingletonBean( ReloadableResourceBundleMessageSource.class );
-		messageSource.setProperty( "basename", SpringConfigUtils.createLiteralValue("classpath:messages"));				
+		messageSource.setProperty( "basename", SpringConfigUtils.createLiteralValue("WEB-INF/grails-app/i18n/messages"));				
 		beanReferences.add(SpringConfigUtils.createBeanReference("messageSource", messageSource));
 		
 		// setup locale change interceptor
@@ -431,6 +431,7 @@ public class SpringConfig {
 			Bean validatorBean = SpringConfigUtils.createSingletonBean( GrailsDomainClassValidator.class);
 			validatorBean.setProperty( "domainClass" ,SpringConfigUtils.createBeanReference(grailsDomainClass.getFullName() + "DomainClass") );
 			validatorBean.setProperty( "sessionFactory" ,SpringConfigUtils.createBeanReference("sessionFactory") );
+			validatorBean.setProperty( "messageSource" ,SpringConfigUtils.createBeanReference("messageSource") );
 			beanReferences.add( SpringConfigUtils.createBeanReference( grailsDomainClass.getFullName() + "Validator", validatorBean ) );			
 		}
 	}

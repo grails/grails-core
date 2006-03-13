@@ -14,6 +14,7 @@
  */ 
 package org.codehaus.groovy.grails.validation;
 
+import org.springframework.context.MessageSource;
 import org.springframework.validation.Errors;
 /**
  * Interface that defines a validatable constraint 
@@ -69,6 +70,13 @@ public interface Constraint {
      * @return The property name of the constraint
      */
     String getPropertyName();
+    
+    /**
+     * The message source to evaluate the default messages from
+     * 
+     * @param source
+     */
+	void setMessageSource(MessageSource source);
 
     
 }

@@ -21,6 +21,7 @@ import org.codehaus.groovy.runtime.InvokerHelper;
 import org.hibernate.SessionFactory;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
+import org.springframework.context.MessageSource;
 import org.springframework.orm.hibernate3.HibernateTemplate;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
@@ -41,6 +42,7 @@ public class GrailsDomainClassValidator implements Validator {
     private HibernateTemplate template;
     private GrailsDomainClass domainClass;
     private SessionFactory sessionFactory;
+    private MessageSource messageSource;
 
     public boolean supports(Class clazz) {
         return this.targetClass.equals( clazz );
@@ -65,7 +67,15 @@ public class GrailsDomainClassValidator implements Validator {
         this.template = new HibernateTemplate(this.sessionFactory);
     }
 
-    public void validate(Object obj, Errors errors) {
+    /**
+	 * @param messageSource The messageSource to set.
+	 */
+	public void setMessageSource(MessageSource messageSource) {
+		this.messageSource = messageSource;
+	}
+
+
+	public void validate(Object obj, Errors errors) {
         if(!domainClass.getClazz().isInstance(obj))
             throw new IllegalArgumentException("Argument ["+obj+"] is not an instance of ["+domainClass.getClazz()+"] which this validator is configured for");
 
@@ -74,6 +84,7 @@ public class GrailsDomainClassValidator implements Validator {
         for (Iterator i = constrainedProperties.iterator(); i.hasNext();) {
             ConstrainedPersistentProperty c = (ConstrainedPersistentProperty)i.next();
             c.setHibernateTemplate(this.template);
+            c.setMessageSource(this.messageSource);
             c.validate(bean.getPropertyValue( c.getPropertyName() ),errors);
         }
 
