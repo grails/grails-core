@@ -781,7 +781,7 @@ public class ConstrainedProperty   {
         }
 
         protected void processValidate(Object propertyValue, Errors errors) {
-            if(propertyValue.toString().matches( regex )) {
+            if(!propertyValue.toString().matches( regex )) {
                 Object[] args = new Object[] { constraintPropertyName, constraintOwningClass, propertyValue, regex  };
                 super.rejectValue(errors,MATCHES_CONSTRAINT + INVALID_SUFFIX,args,getDefaultMessage(DEFAULT_DOESNT_MATCH_MESSAGE_CODE, args));
             }
