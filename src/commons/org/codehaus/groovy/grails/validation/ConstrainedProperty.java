@@ -261,7 +261,10 @@ public class ConstrainedProperty   {
 		protected String getDefaultMessage(String code, Object[] args) {
 			String defaultMessage;
 			try {
-				defaultMessage = messageSource.getMessage(code,args,Locale.getDefault());
+				if(messageSource != null)
+					defaultMessage = messageSource.getMessage(code,args,Locale.getDefault());
+				else
+					defaultMessage = (String)DEFAULT_MESSAGES.get(code);
 			}
 			catch(NoSuchMessageException nsme) {
 				defaultMessage = (String)DEFAULT_MESSAGES.get(code);
