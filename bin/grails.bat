@@ -40,7 +40,7 @@ goto startGrails
 
 :startGrails
 set ANT_HOME=%GRAILS_HOME%\ant
-call %ANT_HOME%\bin\ant.bat -lib %GRAILS_ANT_CLASSPATH% -f %GRAILS_HOME%\src\grails\build.xml -Dbasedir="%CD%" -Dgrails.home="%GRAILS_HOME%" %GRAILS_ARGUMENTS%
+call "%ANT_HOME%\bin\ant.bat" -lib %GRAILS_ANT_CLASSPATH% -f "%GRAILS_HOME%\src\grails\build.xml" -Dbasedir="%CD%" -Dgrails.home="%GRAILS_HOME%" %GRAILS_ARGUMENTS%
 
 :errorExit
 
