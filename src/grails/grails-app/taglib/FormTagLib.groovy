@@ -82,8 +82,14 @@ class FormTagLib extends ApplicationTagLib {
     @Property datePicker = { attrs ->
         def value = (attrs['value'] ? attrs['value'] : new Date())
         def name = attrs['name']
-        def c = new GregorianCalendar();
-        c.setTime(value)
+        def c = null
+        if(value instanceof Calendar) {
+        	c = value
+        }
+        else {
+	        c = new GregorianCalendar();
+	        c.setTime(value)        
+        }
         def day = c.get(GregorianCalendar.DAY_OF_MONTH)
         def month = c.get(GregorianCalendar.MONTH)
         def year = c.get(GregorianCalendar.YEAR)

@@ -54,6 +54,8 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator  {
                 buf << renderBooleanEditor(domainClass,property)
             else if(property.type == Date.class)
                 buf << renderDateEditor(domainClass,property)
+            else if(property.type == Calendar.class)
+                buf << renderDateEditor(domainClass,property)                
             else if(property.type == TimeZone.class)
                 buf << renderSelectTypeEditor("timeZone",domainClass,property)
             else if(property.type == Locale.class)

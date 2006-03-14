@@ -111,7 +111,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
                 Class type = super.getBeanWrapper().getPropertyType(propertyName);
                 // if its a date check that it hasn't got structured parameters in the request
                 // this is used as an alternative to specifying the date format
-                if(type == Date.class) {
+                if(type == Date.class || type == Calendar.class) {
                     try {
                         int year = Integer.parseInt(request.getParameter(propertyName + "_year"));
                         int month = Integer.parseInt(request.getParameter(propertyName + "_month"));
@@ -120,7 +120,10 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
                         int minute = Integer.parseInt(request.getParameter(propertyName + "_minute"));
 
                         Calendar c = new GregorianCalendar(year,month - 1,day,hour,minute);
-                        mpvs.setPropertyValueAt(new PropertyValue(propertyName,c.getTime()),i);
+                        if(type == Date.class)
+                        	mpvs.setPropertyValueAt(new PropertyValue(propertyName,c.getTime()),i);
+                        else 
+                        	mpvs.setPropertyValueAt(new PropertyValue(propertyName,c),i);
                     }
                     catch(NumberFormatException nfe) {
                          LOG.warn("Unable to parse structured date from request for date ["+propertyName+"]",nfe);
