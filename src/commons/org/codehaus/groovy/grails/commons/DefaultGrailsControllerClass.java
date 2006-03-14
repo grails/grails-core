@@ -36,7 +36,6 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass
 
     private static final String SLASH = "/";
     private static final String VIEW = "View";
-    private static final String TYPED_VIEWS = "TypedViews";
     private static final String DEFAULT_CLOSURE_PROPERTY = "defaultAction";
 	private static final String SCAFFOLDING_PROPERTY = "scaffold";
 
@@ -108,37 +107,19 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass
                 if(viewName == null) {
                     viewName = propertyDescriptor.getName();
                 }
-                Map typedViews = (Map)getPropertyValue(propertyDescriptor.getName() + TYPED_VIEWS, Map.class);
+
                 String tmpUri = uri + SLASH + propertyDescriptor.getName();
                 String viewUri = uri + SLASH + viewName;
+
+                uri2closureMap.put(tmpUri,closureName);
                 if (StringUtils.isNotBlank(viewName)) {
                     this.uri2viewMap.put(tmpUri, viewUri);
                     this.viewNames.put( closureName, viewUri );
                 }
-                closure = (Closure)getPropertyValue(propertyDescriptor.getName(), Closure.class);
-                if (closure != null) {
-                    this.uri2closureMap.put(tmpUri, propertyDescriptor.getName());
-                    this.uri2closureMap.put(tmpUri + "/**", propertyDescriptor.getName());
-                    // TODO: This code is likely broken and needs re-thinking as there may be a better way to
-                    // handle typed views
-                    if (typedViews != null) {
-                        for (Iterator iter = typedViews.keySet().iterator(); iter.hasNext();) {
-                            String viewType = (String)iter.next();
-                            String typedViewName = (String)typedViews.get(viewType);
-                            String typedUri = tmpUri + SLASH + viewType;
-                            this.uri2viewMap.put(typedUri, typedViewName);
-                            this.uri2closureMap.put(typedUri, propertyDescriptor.getName());
-                            if (defaultActionName != null && defaultActionName.equals(propertyDescriptor.getName())) {
-                                this.uri2closureMap.put(uri + SLASH + viewType, propertyDescriptor.getName());
-                                this.uri2viewMap.put(uri + SLASH + viewType, typedViewName);
-                            }
-                        }
-                    }
-                }
             }
         }
 
-        if (defaultActionName != null) {
+        if (getReference().isReadableProperty(defaultActionName)) {
             this.uri2closureMap.put(uri, defaultActionName);
             this.uri2closureMap.put(uri + SLASH, defaultActionName);
             this.uri2viewMap.put(uri + SLASH, uri + SLASH + defaultActionName);
@@ -148,18 +129,9 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass
 
         if (closureNames.size() == 1) {
             String closureName = ((String)closureNames.iterator().next());
-            this.uri2closureMap.put(uri, this.uri2closureMap.values().iterator().next());
+            this.uri2closureMap.put(uri, closureName);
             if (!this.uri2viewMap.isEmpty()) {
                 this.uri2viewMap.put(uri, this.uri2viewMap.values().iterator().next());
-            }
-            Map typedViews = (Map)getPropertyValue(closureName + TYPED_VIEWS, Map.class);
-            if (typedViews != null) {
-                for (Iterator iter = typedViews.keySet().iterator(); iter.hasNext();) {
-                    String viewType = (String)iter.next();
-                    String typedViewName = (String)typedViews.get(viewType);
-                    this.uri2closureMap.put(uri + SLASH + viewType, this.uri2closureMap.values().iterator().next());
-                    this.uri2viewMap.put(uri + SLASH + viewType, typedViewName);
-                }
             }
         }
         this.uris  = (String[])this.uri2closureMap.keySet().toArray(new String[this.uri2closureMap.keySet().size()]);

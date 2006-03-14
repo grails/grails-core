@@ -185,6 +185,9 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
             actionName = GrailsClassUtils.getPropertyNameRepresentation(request.getParameter(DISPATCH_ACTION_PARAMETER));
             uri = '/' + controllerName + '/' + actionName;
         }
+        if(uri.endsWith("/"))
+            uri = uri.substring(0,uri.length() - 1);
+
         // if the id is blank check if its a request parameter
         if(StringUtils.isBlank(id) && request.getParameter(ID_PARAMETER) != null) {
             id = request.getParameter(ID_PARAMETER);
@@ -198,13 +201,12 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
         // Step 2: lookup the controller in the application.
         GrailsControllerClass controllerClass = getControllerClassByURI(uri);
 
-        // parse the uri in its individual tokens
-        controllerName = WordUtils.uncapitalize(controllerClass.getName());
-
         if (controllerClass == null) {
             throw new UnknownControllerException("No controller found for URI [" + uri + "]!");
         }
 
+        // parse the uri in its individual tokens
+        controllerName = WordUtils.uncapitalize(controllerClass.getName());
 
         // Step 3: load controller from application context.
         GroovyObject controller = getControllerInstance(controllerClass);

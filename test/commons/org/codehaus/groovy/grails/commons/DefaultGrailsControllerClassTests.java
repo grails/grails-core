@@ -38,17 +38,22 @@ public class DefaultGrailsControllerClassTests extends TestCase {
 		GroovyClassLoader cl = new GroovyClassLoader();
 		Class clazz = cl.parseClass("class OverviewController { }");
 		GrailsControllerClass grailsClass = new DefaultGrailsControllerClass(clazz);
-		assertEquals(2, grailsClass.getURIs().length);
+		assertEquals(0, grailsClass.getURIs().length);
 	}
 	
 	public void testDefaultGrailsControllerViewNames() throws Exception {
 		GroovyClassLoader cl = new GroovyClassLoader();
-		Class clazz = cl.parseClass("class OverviewController { @Property String listView = \"listPage\"; @Property Closure list = { request, response -> return null }; } ");
+		Class clazz = cl.parseClass("class TestController { @Property action = { return null }; } ");
 		GrailsControllerClass grailsClass = new DefaultGrailsControllerClass(clazz);
-		assertEquals("Overview", grailsClass.getName());
-		assertEquals("OverviewController", grailsClass.getFullName());
-		assertEquals("/overview/listPage", grailsClass.getViewByURI("/overview/list"));
-		assertEquals(4, grailsClass.getURIs().length);
-	}
+
+        assertEquals("Test", grailsClass.getName());
+		assertEquals("TestController", grailsClass.getFullName());
+		assertEquals("/test/action", grailsClass.getViewByURI("/test/action"));
+        assertEquals("action",grailsClass.getClosurePropertyName("/test"));
+        assertEquals("action",grailsClass.getClosurePropertyName("/test/action"));
+        assertEquals(2, grailsClass.getURIs().length);
+        assertTrue(grailsClass.mapsToURI("/test"));
+        assertTrue(grailsClass.mapsToURI("/test/action"));
+    }
 
 }
