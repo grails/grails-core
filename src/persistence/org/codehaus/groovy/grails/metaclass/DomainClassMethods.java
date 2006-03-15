@@ -41,7 +41,8 @@ public class DomainClassMethods extends AbstractDynamicMethods {
 			throws IntrospectionException {
 		super(theClass);
 		// dynamic methods
-		addDynamicMethodInvocation(new SavePersistentMethod(sessionFactory, classLoader,application));
+        addDynamicMethodInvocation(new IdentDynamicMethod(application));
+        addDynamicMethodInvocation(new SavePersistentMethod(sessionFactory, classLoader,application));
 		addDynamicMethodInvocation(new DeletePersistentMethod(sessionFactory, classLoader));
 		addDynamicMethodInvocation(new RefreshPersistentMethod(sessionFactory, classLoader));		
 		addDynamicMethodInvocation(new ValidatePersistentMethod(sessionFactory, classLoader, application ));

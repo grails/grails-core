@@ -111,6 +111,10 @@ public class PersistentMethodTests extends AbstractDependencyInjectionSpringCont
 
         obj.invokeMethod("save", null);
 
+        // test ident method to retrieve value of id
+        Object id = obj.invokeMethod("ident", null);
+        assertNotNull(id);
+        assertTrue(id instanceof Long);
     }
 
     public void testValidatePersistentMethod() {
