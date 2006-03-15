@@ -23,6 +23,7 @@ import groovy.lang.Writable;
 import groovy.text.Template;
 import groovy.xml.StreamingMarkupBuilder;
 import org.apache.commons.collections.BeanMap;
+import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.grails.commons.GrailsControllerClass;
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
@@ -58,6 +59,7 @@ public class RenderDynamicMethod extends AbstractDynamicControllerMethod {
     public static final String ARGUMENT_BEAN = "bean";
     public static final String ARGUMENT_COLLECTION = "collection";
     public static final String ARGUMENT_BUILDER = "builder";
+    public static final String ARGUMENT_VAR = "var";
     private static final String DEFAULT_ARGUMENT = "it";
     private static final String BUILDER_TYPE_RICO = "rico";
 
@@ -162,7 +164,7 @@ public class RenderDynamicMethod extends AbstractDynamicControllerMethod {
             }
             else if(argMap.containsKey(ARGUMENT_TEMPLATE)) {
                 String templateName = (String)argMap.get(ARGUMENT_TEMPLATE);
-
+                String var = (String)argMap.get(ARGUMENT_VAR);
                 // get the template uri
                 GrailsApplicationAttributes attrs = (GrailsApplicationAttributes)controller.getProperty(ControllerDynamicMethods.GRAILS_ATTRIBUTES);
                 String templateUri = attrs.getTemplateUri(templateName,request);
@@ -173,7 +175,10 @@ public class RenderDynamicMethod extends AbstractDynamicControllerMethod {
                     Map binding = new HashMap();
 
                     if(argMap.containsKey(ARGUMENT_BEAN)) {
-                        binding.put(DEFAULT_ARGUMENT, argMap.get(ARGUMENT_BEAN));
+                    	if(StringUtils.isBlank(var))
+                    		binding.put(DEFAULT_ARGUMENT, argMap.get(ARGUMENT_BEAN));
+                    	else
+                    		binding.put(var, argMap.get(ARGUMENT_BEAN));
                         Writable w = t.make(binding);
                         w.writeTo(out);
                     }
@@ -183,13 +188,20 @@ public class RenderDynamicMethod extends AbstractDynamicControllerMethod {
                              Collection c = (Collection) colObject;
                             for (Iterator i = c.iterator(); i.hasNext();) {
                                 Object o = i.next();
-                                binding.put(DEFAULT_ARGUMENT, o);
+                            	if(StringUtils.isBlank(var))
+                            		binding.put(DEFAULT_ARGUMENT, o);
+                            	else                                
+                            		binding.put(var, o);
                                 Writable w = t.make(binding);
                                 w.writeTo(out);
                             }
                         }
                         else {
-                            binding.put(DEFAULT_ARGUMENT, colObject);
+                        	if(StringUtils.isBlank(var))
+                        		binding.put(DEFAULT_ARGUMENT, argMap.get(ARGUMENT_BEAN));
+                        	else                        	
+                                binding.put(var, colObject);
+                        	
                             Writable w = t.make(binding);
                             w.writeTo(out);
                         }

@@ -121,6 +121,7 @@ class ApplicationTagLib {
         def uri = '/WEB-INF/grails-app/views' << grailsAttributes.getControllerUri(request)
         uri << "/_${attrs['template']}.gsp"
         uri = uri.toString()
+        def var = attrs['var']
 
         def url = servletContext.getResource(uri)
         if(!url)
@@ -136,11 +137,25 @@ class ApplicationTagLib {
         }
         else if(attrs['collection']) {
             attrs['collection'].each {
-                t.make( ['it': it] ).writeTo(out)
+            	if(var) {
+            		def b = [:]
+            		b.put(var, it)
+            		t.make(b).writeTo(out)
+            	}
+            	else {
+	                t.make( ['it': it] ).writeTo(out)
+	            }
             }
         }
         else if(attrs['bean']) {
-            t.make( [ 'it' : attrs['bean'] ] ).writeTo(out)
+        	if(var) {
+        		def b = [:]
+        		b.put(var, attrs['bean'])
+        		t.make(b).writeTo(out)
+        	}
+        	else {        
+	            t.make( [ 'it' : attrs['bean'] ] ).writeTo(out)
+	        }
         }
     }
 
