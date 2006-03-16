@@ -51,7 +51,7 @@ public class DefaultGrailsControllerClassTests extends TestCase {
 		assertEquals("/test/action", grailsClass.getViewByURI("/test/action"));
         assertEquals("action",grailsClass.getClosurePropertyName("/test"));
         assertEquals("action",grailsClass.getClosurePropertyName("/test/action"));
-        assertEquals(2, grailsClass.getURIs().length);
+        assertEquals(3, grailsClass.getURIs().length);
         assertTrue(grailsClass.mapsToURI("/test"));
         assertTrue(grailsClass.mapsToURI("/test/action"));
     }
