@@ -370,7 +370,7 @@ class ${className}Controller {
            </table>
         </div>
     </body>
-</body>
+</html>
             '''
 
             def t = engine.createTemplate(templateText)
@@ -507,7 +507,7 @@ class ${className}Controller {
             </g:form>
         </div>
     </body>
-</body>
+</html>
             '''
 
             def t = engine.createTemplate(templateText)
@@ -571,7 +571,7 @@ class ${className}Controller {
             </g:form>
         </div>
     </body>
-</body>
+</html>
             '''
 
             def t = engine.createTemplate(templateText)
