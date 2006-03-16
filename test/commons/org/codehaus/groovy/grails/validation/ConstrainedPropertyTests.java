@@ -3,21 +3,14 @@ package org.codehaus.groovy.grails.validation;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyObject;
 import groovy.lang.IntRange;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
+import junit.framework.TestCase;
 import org.codehaus.groovy.grails.commons.DefaultGrailsDomainClass;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.springframework.validation.BindException;
 import org.springframework.validation.Errors;
 import org.springframework.validation.FieldError;
 
-import junit.framework.TestCase;
+import java.util.*;
 
 public class ConstrainedPropertyTests extends TestCase {
 
@@ -173,7 +166,7 @@ public class ConstrainedPropertyTests extends TestCase {
 		Constraint c = null;
 		for (Iterator i = cp.getAppliedConstraints().iterator(); i.hasNext();) {
 			c = (Constraint) i.next();			
-			c.validate(this.testEmail, errors);			
+			c.validate(this, this.testEmail, errors);
 		}
 		assertTrue(errors.hasErrors());
 		FieldError error = errors.getFieldError("testEmail");
@@ -182,7 +175,7 @@ public class ConstrainedPropertyTests extends TestCase {
 		
 		this.testEmail = "avalidemail@hotmail.com";
 		errors = new BindException(this,"testObject");
-		c.validate(this.testEmail,errors);
+		c.validate(this, this.testEmail,errors);
 		assertFalse(errors.hasErrors());
 		
 		// test validate url
@@ -194,7 +187,7 @@ public class ConstrainedPropertyTests extends TestCase {
 		
 		for (Iterator i = cp.getAppliedConstraints().iterator(); i.hasNext();) {
 			c = (Constraint) i.next();			
-			c.validate(this.testURL, errors);			
+			c.validate(this, this.testURL, errors);
 		}
 		assertTrue(errors.hasErrors());
 		error = errors.getFieldError("testURL");
@@ -203,7 +196,7 @@ public class ConstrainedPropertyTests extends TestCase {
 		
 		this.testURL = "http://www.google.com";
 		errors = new BindException(this,"testObject");
-		c.validate(this.testURL,errors);
+		c.validate(this, this.testURL,errors);
 		assertFalse(errors.hasErrors());	
 		
 		// test blank constraint
@@ -215,7 +208,7 @@ public class ConstrainedPropertyTests extends TestCase {
 		this.testURL = "";
 		for (Iterator i = cp.getAppliedConstraints().iterator(); i.hasNext();) {
 			c = (Constraint) i.next();			
-			c.validate(this.testURL, errors);			
+			c.validate(this, this.testURL, errors);
 		}	
 		assertTrue(errors.hasErrors());
 		error = errors.getFieldError("testURL");
@@ -230,7 +223,7 @@ public class ConstrainedPropertyTests extends TestCase {
 		this.testURL = null;
 		for (Iterator i = cp.getAppliedConstraints().iterator(); i.hasNext();) {
 			c = (Constraint) i.next();			
-			c.validate(this.testURL, errors);			
+			c.validate(this, this.testURL, errors);
 		}	
 		assertTrue(errors.hasErrors());
 		error = errors.getFieldError("testURL");
@@ -249,7 +242,7 @@ public class ConstrainedPropertyTests extends TestCase {
 		errors = new BindException(this,"testObject");
 		for (Iterator i = cp.getAppliedConstraints().iterator(); i.hasNext();) {
 			c = (Constraint) i.next();			
-			c.validate(this.testURL, errors);			
+			c.validate(this, this.testURL, errors);
 		}	
 		assertTrue(errors.hasErrors());
 		error = errors.getFieldError("testURL");
@@ -258,7 +251,7 @@ public class ConstrainedPropertyTests extends TestCase {
 		
 		this.testURL = "two";
 		errors = new BindException(this,"testObject");
-		c.validate(this.testURL,errors);
+		c.validate(this, this.testURL,errors);
 		assertFalse(errors.hasErrors());
 		
 		// test length constraint
@@ -268,7 +261,7 @@ public class ConstrainedPropertyTests extends TestCase {
 		errors = new BindException(this,"testObject");
 		for (Iterator i = cp.getAppliedConstraints().iterator(); i.hasNext();) {
 			c = (Constraint) i.next();			
-			c.validate(this.testURL, errors);			
+			c.validate(this, this.testURL, errors);
 		}		
 		
 		assertTrue(errors.hasErrors());
@@ -278,7 +271,7 @@ public class ConstrainedPropertyTests extends TestCase {
 		
 		this.testURL = "absolutelytotallytoolong";
 		errors = new BindException(this,"testObject");
-		c.validate(this.testURL,errors);
+		c.validate(this, this.testURL,errors);
 		assertTrue(errors.hasErrors());		
 	}
 
@@ -310,12 +303,12 @@ public class ConstrainedPropertyTests extends TestCase {
 		GroovyObject go = (GroovyObject)groovyClass.newInstance();
 		go.setProperty("email", "rubbish_email");
 		Errors errors = new BindException(go, "TestClass");
-		emailConstraint.validate( go.getProperty("email"), errors );
+		emailConstraint.validate(go, go.getProperty("email"), errors );
 		
 		assertTrue(errors.hasErrors());
 		go.setProperty("email", "valid@email.com");
 		errors = new BindException(go, "TestClass");
-		emailConstraint.validate( go.getProperty("email"), errors );
+		emailConstraint.validate(go, go.getProperty("email"), errors );
 		assertFalse(errors.hasErrors());
 	}
 }

@@ -14,17 +14,19 @@
  */ 
 package org.codehaus.groovy.grails.orm.hibernate.validation;
 
-import java.util.Iterator;
-import java.util.List;
-
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 import org.codehaus.groovy.grails.validation.Constraint;
+import org.codehaus.groovy.grails.metaclass.IdentDynamicMethod;
+import org.codehaus.groovy.runtime.InvokerHelper;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.orm.hibernate3.HibernateCallback;
 import org.springframework.orm.hibernate3.HibernateTemplate;
 import org.springframework.validation.Errors;
+
+import java.util.Iterator;
+import java.util.List;
 /**
  * Extends ConstrainedProperty to provide additional validation against database specific constraints
  * 
@@ -61,11 +63,11 @@ public class ConstrainedPersistentProperty extends ConstrainedProperty {
 		/* (non-Javadoc)
 		 * @see org.codehaus.groovy.grails.validation.ConstrainedProperty.AbstractConstraint#validate(java.lang.Object, org.springframework.validation.Errors)
 		 */
-		public void validate(Object propertyValue, Errors errors) {
+		public void validate(Object target, Object propertyValue, Errors errors) {
 			if(constraintHibernateTemplate == null)
 				throw new IllegalStateException("PersistentConstraint requires an instance of HibernateTemplate.");
 			
-			super.validate(propertyValue, errors);
+			super.validate(target, propertyValue, errors);
 		}				
 	}
 	
@@ -99,9 +101,10 @@ public class ConstrainedPersistentProperty extends ConstrainedProperty {
             return UNIQUE_CONSTRAINT;
         }
 
-        protected void processValidate(final Object propertyValue, Errors errors) {
+        protected void processValidate(Object target, final Object propertyValue, Errors errors) {
 
             if(unique) {
+                final Object id = InvokerHelper.invokeMethod(target, IdentDynamicMethod.METHOD_SIGNATURE,null);
                 List results = this.constraintHibernateTemplate.executeFind( new HibernateCallback() {
 
                     public Object doInHibernate(Session session) throws HibernateException {
@@ -112,9 +115,23 @@ public class ConstrainedPersistentProperty extends ConstrainedProperty {
                     }
 
                 });
+
                 if(results.size() > 0) {
-                    Object[] args = new Object[] { constraintPropertyName, constraintOwningClass, propertyValue };
-                    super.rejectValue(errors,UNIQUE_CONSTRAINT,args,getDefaultMessage( DEFAULT_NOT_UNIQUE_MESSAGE_CODE, args ));
+                    boolean reject = false;
+                    if(id != null) {
+                        Object existing = results.get(0);
+                        Object existingId = InvokerHelper.invokeMethod(existing, IdentDynamicMethod.METHOD_SIGNATURE,null);
+                        if(!id.equals(existingId)) {
+                            reject = true;
+                        }
+                    }
+                    else {
+                        reject = true;
+                    }
+                    if(reject) {
+                        Object[] args = new Object[] { constraintPropertyName, constraintOwningClass, propertyValue };
+                        super.rejectValue(errors,UNIQUE_CONSTRAINT,args,getDefaultMessage( DEFAULT_NOT_UNIQUE_MESSAGE_CODE, args ));
+                    }
                 }
             }
         }
@@ -177,7 +194,7 @@ public class ConstrainedPersistentProperty extends ConstrainedProperty {
 	/* (non-Javadoc)
 	 * @see org.codehaus.groovy.grails.validation.ConstrainedProperty#validate(java.lang.Object, org.springframework.validation.Errors)
 	 */
-	public void validate(Object propertyValue, Errors errors) {
+	public void validate(Object target, Object propertyValue, Errors errors) {
 	
 		for (Iterator i = this.appliedConstraints.values().iterator(); i.hasNext();) {
 			Constraint c = (Constraint) i.next();
@@ -185,10 +202,10 @@ public class ConstrainedPersistentProperty extends ConstrainedProperty {
 			if(c instanceof PersistentConstraint) {
 				PersistentConstraint pc = (PersistentConstraint)c;				
 				pc.setHibernateTemplate(this.hibernateTemplate);
-				pc.validate( propertyValue, errors );
+				pc.validate(target, propertyValue, errors );
 			}
 			else {
-				c.validate( propertyValue, errors);
+				c.validate(target, propertyValue, errors);
 			}
 		}
 	}

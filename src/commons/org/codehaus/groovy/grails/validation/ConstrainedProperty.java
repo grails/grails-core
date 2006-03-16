@@ -18,18 +18,6 @@ package org.codehaus.groovy.grails.validation;
 import groovy.lang.IntRange;
 import groovy.lang.MissingPropertyException;
 import groovy.lang.Range;
-
-import java.lang.reflect.Array;
-import java.text.MessageFormat;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.ResourceBundle;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.logging.Log;
@@ -44,6 +32,10 @@ import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.context.MessageSource;
 import org.springframework.context.NoSuchMessageException;
 import org.springframework.validation.Errors;
+
+import java.lang.reflect.Array;
+import java.text.MessageFormat;
+import java.util.*;
 
 /**
  * Provides the ability to set contraints against a properties of a class. Constraints can either be
@@ -243,7 +235,7 @@ public class ConstrainedProperty   {
 		public void setParameter(Object constraintParameter) {
 			this.constraintParameter = constraintParameter;
 		}
-		public void validate(Object propertyValue, Errors errors) {
+		public void validate(Object target, Object propertyValue, Errors errors) {
 			//ValidationUtils.rejectIfEmpty( errors, constraintPropertyName, constraintPropertyName+".empty" );
 			if(StringUtils.isBlank(this.constraintPropertyName))
 				throw new IllegalStateException("Property 'propertyName' must be set on the constraint");
@@ -252,7 +244,7 @@ public class ConstrainedProperty   {
 			if(constraintParameter == null)
 				throw new IllegalStateException("Property 'constraintParameter' must be set on the constraint");
 			
-			processValidate(propertyValue, errors);
+			processValidate(target, propertyValue, errors);
 		}		
 		public void rejectValue(Errors errors, String code,String defaultMessage) {
 
@@ -274,7 +266,7 @@ public class ConstrainedProperty   {
 		public void rejectValue(Errors errors, String code,Object[] args,String defaultMessage) {
 			errors.rejectValue(constraintPropertyName,classShortName + '.'  + constraintPropertyName + '.' + code, args,defaultMessage);
 		}		
-		protected abstract void processValidate(Object propertyValue, Errors errors);
+		protected abstract void processValidate(Object target, Object propertyValue, Errors errors);
 
 		/* (non-Javadoc)
 		 * @see java.lang.Object#toString()
@@ -311,7 +303,7 @@ public class ConstrainedProperty   {
             return this.constraintParameter;
         }
 
-		protected void processValidate(Object propertyValue, Errors errors) {			
+		protected void processValidate(Object target, Object propertyValue, Errors errors) {
 			if(!this.constraintParameter.equals( propertyValue )) {
 				Object[] args = new Object[] { constraintPropertyName, constraintOwningClass, propertyValue, constraintParameter  };
 				super.rejectValue( errors, NOT_EQUAL_CONSTRAINT,args, getDefaultMessage(DEFAULT_NOT_EQUAL_MESSAGE_CODE, args));
@@ -348,7 +340,7 @@ public class ConstrainedProperty   {
             return NULLABLE_CONSTRAINT;
         }
 
-        protected void processValidate(Object propertyValue, Errors errors) {
+        protected void processValidate(Object target, Object propertyValue, Errors errors) {
             if(!nullable && propertyValue == null) {
                 Object[] args = new Object[] { constraintPropertyName, constraintOwningClass};
                 super.rejectValue( errors, NULLABLE_CONSTRAINT,args, getDefaultMessage(DEFAULT_NULL_MESSAGE_CODE, args) );
@@ -389,7 +381,7 @@ public class ConstrainedProperty   {
             return BLANK_CONSTRAINT;
         }
 
-        protected void processValidate(Object propertyValue, Errors errors) {
+        protected void processValidate(Object target, Object propertyValue, Errors errors) {
 
             if(!blank) {
                 if(propertyValue instanceof String) {
@@ -409,7 +401,7 @@ public class ConstrainedProperty   {
         private boolean creditCard;
 
 
-        protected void processValidate(Object propertyValue, Errors errors) {
+        protected void processValidate(Object target, Object propertyValue, Errors errors) {
             if(creditCard) {
                 CreditCardValidator validator = new CreditCardValidator();
 
@@ -474,7 +466,7 @@ public class ConstrainedProperty   {
             return EMAIL_CONSTRAINT;
         }
 
-        protected void processValidate(Object propertyValue, Errors errors) {
+        protected void processValidate(Object target, Object propertyValue, Errors errors) {
             if(email) {
                 EmailValidator emailValidator = EmailValidator.getInstance();
                 if(!emailValidator.isValid(propertyValue.toString())  ) {
@@ -519,7 +511,7 @@ public class ConstrainedProperty   {
             return URL_CONSTRAINT;
         }
 
-        protected void processValidate(Object propertyValue, Errors errors) {
+        protected void processValidate(Object target, Object propertyValue, Errors errors) {
             if(url) {
                 UrlValidator urlValidator = new UrlValidator(UrlValidator.ALLOW_ALL_SCHEMES + UrlValidator.ALLOW_2_SLASHES);
 
@@ -572,7 +564,7 @@ public class ConstrainedProperty   {
             return RANGE_CONSTRAINT;
         }
 
-        protected void processValidate(Object propertyValue, Errors errors) {
+        protected void processValidate(Object target, Object propertyValue, Errors errors) {
             if(!this.range.contains(propertyValue)) {
                 Object[] args = new Object[] { constraintPropertyName, constraintOwningClass, propertyValue, range.getFrom(), range.getTo()  };
 
@@ -636,7 +628,7 @@ public class ConstrainedProperty   {
         }
 
 
-        protected void processValidate(Object propertyValue, Errors errors) {
+        protected void processValidate(Object target, Object propertyValue, Errors errors) {
             if(maxValue.compareTo(propertyValue) > 0) {
                 Object[] args = new Object[] { constraintPropertyName, constraintOwningClass, propertyValue, maxValue  };
                 super.rejectValue(errors,MAX_CONSTRAINT + EXCEEDED_SUFFIX,args,getDefaultMessage(DEFAULT_INVALID_MAX_MESSAGE_CODE, args));
@@ -689,7 +681,7 @@ public class ConstrainedProperty   {
         }
 
 
-        protected void processValidate(Object propertyValue, Errors errors)		{
+        protected void processValidate(Object target, Object propertyValue, Errors errors)		{
             if(minValue.compareTo(propertyValue) < 0) {
                 Object[] args = new Object[] { constraintPropertyName, constraintOwningClass, propertyValue, minValue  };
                 super.rejectValue(errors,MIN_CONSTRAINT + NOTMET_SUFFIX,args,getDefaultMessage(DEFAULT_INVALID_MIN_MESSAGE_CODE, args));
@@ -732,7 +724,7 @@ public class ConstrainedProperty   {
             return IN_LIST_CONSTRAINT;
         }
 
-        protected void processValidate(Object propertyValue, Errors errors) {
+        protected void processValidate(Object target, Object propertyValue, Errors errors) {
             if(!this.list.contains(propertyValue)) {
                 Object[] args = new Object[] { constraintPropertyName, constraintOwningClass, propertyValue, list  };
                 super.rejectValue(errors,NOT_PREFIX + IN_LIST_CONSTRAINT,args,getDefaultMessage(DEFAULT_NOT_INLIST_MESSAGE_CODE, args));
@@ -780,7 +772,7 @@ public class ConstrainedProperty   {
             return MATCHES_CONSTRAINT;
         }
 
-        protected void processValidate(Object propertyValue, Errors errors) {
+        protected void processValidate(Object target, Object propertyValue, Errors errors) {
             if(!propertyValue.toString().matches( regex )) {
                 Object[] args = new Object[] { constraintPropertyName, constraintOwningClass, propertyValue, regex  };
                 super.rejectValue(errors,MATCHES_CONSTRAINT + INVALID_SUFFIX,args,getDefaultMessage(DEFAULT_DOESNT_MATCH_MESSAGE_CODE, args));
@@ -838,7 +830,7 @@ public class ConstrainedProperty   {
         }
 
 
-        protected void processValidate(Object propertyValue, Errors errors) {
+        protected void processValidate(Object target, Object propertyValue, Errors errors) {
 
             Object[] args = new Object[] { constraintPropertyName, constraintOwningClass, propertyValue,  range.getFrom(), range.getTo()  };
             if(propertyValue == null) {
@@ -933,7 +925,7 @@ public class ConstrainedProperty   {
                     type.isArray();
         }
 
-		protected void processValidate(Object propertyValue, Errors errors) {
+		protected void processValidate(Object target, Object propertyValue, Errors errors) {
 			Object[] args = new Object[] { constraintPropertyName, constraintOwningClass, propertyValue, new Integer(maxSize) };
 			if(propertyValue == null) {
 				super.rejectValue(errors,MAX_LENGTH_CONSTRAINT + EXCEEDED_SUFFIX,args,getDefaultMessage(DEFAULT_INVALID_MAX_LENGTH_MESSAGE_CODE, args));
@@ -1007,7 +999,7 @@ public class ConstrainedProperty   {
                     type.isArray();
         }
 		
-		protected void processValidate(Object propertyValue, Errors errors) {
+		protected void processValidate(Object target, Object propertyValue, Errors errors) {
 			Object[] args = new Object[] { constraintPropertyName, constraintOwningClass, propertyValue, new Integer(minSize) };
 			if(propertyValue == null) {
 				super.rejectValue(errors,MIN_LENGTH_CONSTRAINT + NOTMET_SUFFIX,args,getDefaultMessage(DEFAULT_INVALID_MIN_LENGTH_MESSAGE_CODE, args));
@@ -1790,15 +1782,16 @@ public class ConstrainedProperty   {
     /**
 	 * Validate this constrainted property against specified property value
 	 * 
-	 * @param propertyValue
-	 * @param errors
-	 */
-	public void validate(Object propertyValue, Errors errors) {
+	 * @param target
+     * @param propertyValue
+     * @param errors
+     */
+	public void validate(Object target, Object propertyValue, Errors errors) {
 		
 		for (Iterator i = this.appliedConstraints.values().iterator(); i.hasNext();) {
 			Constraint c = (Constraint) i.next();		
 			c.setMessageSource( this.messageSource );
-			c.validate( propertyValue, errors);
+			c.validate(target, propertyValue, errors);
 		}
 	}
 

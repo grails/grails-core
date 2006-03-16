@@ -85,7 +85,7 @@ public class GrailsDomainClassValidator implements Validator {
             ConstrainedPersistentProperty c = (ConstrainedPersistentProperty)i.next();
             c.setHibernateTemplate(this.template);
             c.setMessageSource(this.messageSource);
-            c.validate(bean.getPropertyValue( c.getPropertyName() ),errors);
+            c.validate(obj, bean.getPropertyValue( c.getPropertyName() ),errors);
         }
 
          if(obj instanceof GroovyObject) {

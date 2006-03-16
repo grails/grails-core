@@ -33,10 +33,11 @@ public interface Constraint {
 	/**
 	 * Validate this constraint against a property value
 	 * 
-	 * @param propertyValue The property value to validate
-	 * @param errors The errors instance to record errors against
-	 */
-	void validate(Object propertyValue, Errors errors);
+	 * @param target
+     * @param propertyValue The property value to validate
+     * @param errors The errors instance to record errors against
+     */
+	void validate(Object target, Object propertyValue, Errors errors);
 	
 	/**
 	 * The parameter which the constraint is validated against
