@@ -1,6 +1,8 @@
 <project name="grails" default="help">
 
-	<property name="servlet.version" value="2.3"/>
+	<property name="server.port" value="8080"/>
+
+    <property name="servlet.version" value="2.3"/>
 	<property name="path" value="" />
 
     <taskdef name="groovyc" classname="org.codehaus.groovy.ant.Groovyc" />
@@ -122,7 +124,7 @@ Targets:
 			<fileset dir="${grails.home}/dist"/>
 			<fileset dir="lib"/>
 		</path>
-		<java classpathref="test.classpath" classname="grails.util.GenerateUtils" fork="true">
+		<java classpathref="test.classpath" classname="grails.util.GenerateUtils" fork="true" failonerror="true">
              <arg value="controller" />
              <arg value="${domain.class.name}" />
 <!--			<jvmarg value="-Xdebug"/>
@@ -142,7 +144,7 @@ Targets:
 			<fileset dir="${grails.home}/dist"/>
 			<fileset dir="lib"/>
 		</path>
-		<java classpathref="test.classpath" classname="grails.util.GenerateUtils" fork="true">
+		<java classpathref="test.classpath" classname="grails.util.GenerateUtils" fork="true" failonerror="true">
              <arg value="view" />
              <arg value="${domain.class.name}" />
 		</java>
@@ -313,7 +315,7 @@ Targets:
 			<fileset dir="${grails.home}/dist"/>
 			<fileset dir="lib"/>
 		</path>
-		<java classpathref="test.classpath" classname="grails.util.RunTests" fork="true">
+		<java classpathref="test.classpath" classname="grails.util.RunTests" fork="true" failonerror="true">
 <!--			<jvmarg value="-Xdebug"/>
 			<jvmarg value="-Xrunjdwp:transport=dt_socket,address=50010,suspend=y,server=y"/> -->
 		</java>
@@ -468,7 +470,7 @@ Targets:
             def server = new Server()
             try {
                 def listener = new SocketListener()
-                listener.setPort(8080)
+                listener.setPort(properties.'server.port'.toInteger())
                 server.addListener(listener)
                 server.addWebApplication("/" + properties."project.dir", 'tmp/war')
                 server.start()
@@ -494,7 +496,16 @@ Targets:
         <antcall target="wait-forever" />
     </target>
 
-    <target name="init-webtest" depends="init-props" >
+    <target name="check-webtest-too-old">
+        <groovy><![CDATA[
+            def file = new File(properties.'grails.home' + '/downloads/webtest.zip')
+            if (file && file.exists() && new Date()-30 > new Date(file.lastModified())) {
+                properties.'webtest-too-old' = true
+            }
+        ]]></groovy>
+    </target>
+
+    <target name="init-webtest" depends="init-props, check-webtest-too-old" if="webtest-too-old" >
         <!--
             Download WebTest distro if needed.
             Users may need to use the <setproxy/> task to when behind a firewall!
@@ -543,7 +554,7 @@ Targets:
     </target>
 
     <target name="webtest-impl">
-        <java classname="groovy.ui.GroovyMain" >
+        <java classname="groovy.ui.GroovyMain" failonerror="true">
             <arg line="webtest/tests/TestSuite"/>
             <classpath>
                 <pathelement location="webtest/tests"/>
