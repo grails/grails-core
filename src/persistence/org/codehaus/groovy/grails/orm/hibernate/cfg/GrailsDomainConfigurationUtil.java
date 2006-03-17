@@ -67,11 +67,14 @@ public class GrailsDomainConfigurationUtil {
             for (int j = 0; j < props.length; j++) {
                 if(props[j].isAssociation()) {
                     GrailsDomainClassProperty prop = props[j];
-                    GrailsDomainClassProperty[] referencedProperties =  prop.getReferencedDomainClass().getPersistantProperties();
-                    for (int k = 0; k < referencedProperties.length; k++) {
-                        if(referencedProperties[k].getReferencedPropertyType().equals( domainClasses[i].getClazz())) {
-                            prop.setOtherSide(referencedProperties[k]);
-                            break;
+                    GrailsDomainClass referenced = prop.getReferencedDomainClass();
+                    if(referenced != null) {
+                        GrailsDomainClassProperty[] referencedProperties =  referenced.getPersistantProperties();
+                        for (int k = 0; k < referencedProperties.length; k++) {
+                            if(referencedProperties[k].getReferencedPropertyType().equals( domainClasses[i].getClazz())) {
+                                prop.setOtherSide(referencedProperties[k]);
+                                break;
+                            }
                         }
                     }
                 }
