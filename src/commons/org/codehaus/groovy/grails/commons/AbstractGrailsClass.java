@@ -114,7 +114,7 @@ public abstract class AbstractGrailsClass implements GrailsClass {
 	}
 
     public String getPropertyName() {
-        return GrailsClassUtils.getPropertyNameRepresentation(getName());
+        return GrailsClassUtils.getPropertyNameRepresentation(getShortName());
     }
 
     public String getPackageName() {
