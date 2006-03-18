@@ -71,7 +71,7 @@ public class GrailsDomainConfigurationUtil {
                     if(referenced != null) {
                         GrailsDomainClassProperty[] referencedProperties =  referenced.getPersistantProperties();
                         for (int k = 0; k < referencedProperties.length; k++) {
-                            if(referencedProperties[k].getReferencedPropertyType().equals( domainClasses[i].getClazz())) {
+                            if(domainClasses[i].getClazz().equals(referencedProperties[k].getReferencedPropertyType())) {
                                 prop.setOtherSide(referencedProperties[k]);
                                 break;
                             }
