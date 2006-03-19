@@ -81,7 +81,7 @@ public class RenderDynamicMethod extends AbstractDynamicControllerMethod {
         GroovyObject controller = (GroovyObject)target;
         if(arguments[0] instanceof String) {
             try {
-                response.getWriter().write((String)arguments[0]);
+                response.getWriter().write(arguments[0].toString());
                 renderView = false;
             } catch (IOException e) {
                 throw new ControllerExecutionException(e.getMessage(),e);
@@ -102,11 +102,11 @@ public class RenderDynamicMethod extends AbstractDynamicControllerMethod {
            PrintWriter out;
            try {
                if(argMap.containsKey(ARGUMENT_CONTENT_TYPE) && argMap.containsKey(ARGUMENT_ENCODING)) {
-                   out = response.getWriter((String)argMap.get(ARGUMENT_CONTENT_TYPE),
-                                            (String)argMap.get(ARGUMENT_ENCODING));
+                   out = response.getWriter(argMap.get(ARGUMENT_CONTENT_TYPE).toString(),
+                                            argMap.get(ARGUMENT_ENCODING).toString());
                }
                else if(argMap.containsKey(ARGUMENT_CONTENT_TYPE)) {
-                   out = response.getWriter((String)argMap.get(ARGUMENT_CONTENT_TYPE));
+                   out = response.getWriter(argMap.get(ARGUMENT_CONTENT_TYPE).toString());
                }
                else {
                    out = response.getWriter();
@@ -143,12 +143,12 @@ public class RenderDynamicMethod extends AbstractDynamicControllerMethod {
                renderView = false;
             }
             else if(argMap.containsKey(ARGUMENT_TEXT)) {
-               String text = (String)argMap.get(ARGUMENT_TEXT);
+               String text = argMap.get(ARGUMENT_TEXT).toString();
                out.write(text);
                renderView = false;
             }
             else if(argMap.containsKey(ARGUMENT_VIEW)) {
-               String viewName = (String)argMap.get(ARGUMENT_VIEW);
+               String viewName = argMap.get(ARGUMENT_VIEW).toString();
                GrailsControllerClass controllerClass = helper.getControllerClassByName(target.getClass().getName());
                String viewUri = controllerClass.getViewByName(viewName);
 
@@ -163,7 +163,7 @@ public class RenderDynamicMethod extends AbstractDynamicControllerMethod {
                 controller.setProperty( ControllerDynamicMethods.MODEL_AND_VIEW_PROPERTY, new ModelAndView(viewUri,model) );
             }
             else if(argMap.containsKey(ARGUMENT_TEMPLATE)) {
-                String templateName = (String)argMap.get(ARGUMENT_TEMPLATE);
+                String templateName = argMap.get(ARGUMENT_TEMPLATE).toString();
                 String var = (String)argMap.get(ARGUMENT_VAR);
                 // get the template uri
                 GrailsApplicationAttributes attrs = (GrailsApplicationAttributes)controller.getProperty(ControllerDynamicMethods.GRAILS_ATTRIBUTES);
