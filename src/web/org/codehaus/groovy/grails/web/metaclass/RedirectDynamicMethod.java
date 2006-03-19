@@ -44,6 +44,7 @@ public class RedirectDynamicMethod extends AbstractDynamicControllerMethod {
 
     public static final String METHOD_SIGNATURE = "redirect";
     public static final String ARGUMENT_URI = "uri";
+    public static final String ARGUMENT_URL = "url";
     public static final String ARGUMENT_CONTROLLER = "controller";
     public static final String ARGUMENT_ACTION = "action";
     public static final String ARGUMENT_ID = "id";
@@ -69,6 +70,7 @@ public class RedirectDynamicMethod extends AbstractDynamicControllerMethod {
         String controllerName = null;
         Object id = null;
         Object uri = null;
+        String url = null;
         Map params;
         Errors errors;
         GroovyObject controller = (GroovyObject)target;
@@ -77,6 +79,9 @@ public class RedirectDynamicMethod extends AbstractDynamicControllerMethod {
             Map argMap = (Map)arguments[0];
             if(argMap.containsKey(ARGUMENT_URI)) {
                  uri = argMap.get(ARGUMENT_URI);
+            }
+            else if(argMap.containsKey(ARGUMENT_URL)) {
+            	url = argMap.get(ARGUMENT_URL).toString();
             }
             else {
                 actionRef = argMap.get(ARGUMENT_ACTION);
@@ -98,23 +103,6 @@ public class RedirectDynamicMethod extends AbstractDynamicControllerMethod {
             controller.setProperty( ControllerDynamicMethods.ERRORS_PROPERTY, errors);
         }
 
-        String actionName = null;
-        if(actionRef instanceof String) {
-           actionName = (String)actionRef;
-        }
-        else if(actionRef instanceof Closure) {
-            Closure c = (Closure)actionRef;
-            PropertyDescriptor prop = GrailsClassUtils.getPropertyDescriptorForValue(target,c);
-            if(prop != null) {
-                actionName = prop.getName();
-            }
-            else {
-                GrailsScaffolder scaffolder = helper.getScaffolderForController(target.getClass().getName());
-                if(scaffolder != null) {
-                        actionName = scaffolder.getActionName(c);
-                }
-            }
-        }
         String actualUri = null;
 
         GrailsApplicationAttributes attrs = helper.getGrailsAttributes();
@@ -122,7 +110,27 @@ public class RedirectDynamicMethod extends AbstractDynamicControllerMethod {
         if(uri != null) {
             actualUri = uri.toString();
         }
+        else if(url != null) {
+        	actualUri = url;
+        }
         else {
+            String actionName = null;
+            if(actionRef instanceof String) {
+               actionName = (String)actionRef;
+            }
+            else if(actionRef instanceof Closure) {
+                Closure c = (Closure)actionRef;
+                PropertyDescriptor prop = GrailsClassUtils.getPropertyDescriptorForValue(target,c);
+                if(prop != null) {
+                    actionName = prop.getName();
+                }
+                else {
+                    GrailsScaffolder scaffolder = helper.getScaffolderForController(target.getClass().getName());
+                    if(scaffolder != null) {
+                            actionName = scaffolder.getActionName(c);
+                    }
+                }
+            }        	
             if(actionName != null) {
                 StringBuffer actualUriBuf = new StringBuffer(attrs.getApplicationUri(request));
                 if(controllerName != null) {
