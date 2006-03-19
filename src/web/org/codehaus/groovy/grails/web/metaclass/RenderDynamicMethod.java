@@ -16,10 +16,7 @@
 package org.codehaus.groovy.grails.web.metaclass;
 
 import grails.util.OpenRicoBuilder;
-import groovy.lang.Closure;
-import groovy.lang.GroovyObject;
-import groovy.lang.MissingMethodException;
-import groovy.lang.Writable;
+import groovy.lang.*;
 import groovy.text.Template;
 import groovy.xml.StreamingMarkupBuilder;
 import org.apache.commons.collections.BeanMap;
@@ -79,7 +76,7 @@ public class RenderDynamicMethod extends AbstractDynamicControllerMethod {
 
         boolean renderView = true;
         GroovyObject controller = (GroovyObject)target;
-        if(arguments[0] instanceof String) {
+        if((arguments[0] instanceof String)||(arguments[0] instanceof GString)) {
             try {
                 response.getWriter().write(arguments[0].toString());
                 renderView = false;
