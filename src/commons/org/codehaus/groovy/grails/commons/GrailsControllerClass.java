@@ -15,7 +15,9 @@
  */ 
 package org.codehaus.groovy.grails.commons;
 
-import org.codehaus.groovy.grails.scaffolding.GrailsScaffolder;
+import groovy.lang.Closure;
+import groovy.lang.GroovyObject;
+
 
 
 /**
@@ -29,6 +31,52 @@ public interface GrailsControllerClass extends InjectableGrailsClass {
      * The name of the index action
      */
     public String INDEX_ACTION = "index";
+    
+    /**
+     * The name of the before interceptor property
+     */
+    public String BEFORE_INTERCEPTOR = "beforeInterceptor";
+    /**
+     * The name of the after interceptor property
+     */
+    public String AFTER_INTERCEPTOR = "afterInterceptor";   
+    
+    /**
+     * Checks whether the specified action is intercepted for the
+     * specified controller instance
+     * 
+     * @param controller The instance of the controller
+     * @param action The action to check
+     * @return True if it is intercepted
+     */
+    boolean isInterceptedBefore(GroovyObject controller, String action);
+    
+    /**
+     * Checks whether the specified action is intercepted after for the specified
+     * controller instance
+     * 
+     * @param controller The controller instance
+     * @param action The action to check
+     * @return True if it is intercepted
+     */
+    boolean isInterceptedAfter(GroovyObject controller, String action);
+    
+    /**
+     * Retrieves the before interceptor for the specified controller instance
+     * 
+     * @param controller The controller instance
+     * @return The before interceptor as a Closure or null if non exists
+     */
+    Closure getBeforeInterceptor(GroovyObject controller);
+    
+    /**
+     * Retrieves the after interceptor for the specified controller instance
+     * 
+     * @param controller The controller instance
+     * @return The after interceptor as a Closure or null if non exists
+     */
+    Closure getAfterInterceptor(GroovyObject controller);    
+    
     /**
      * <p>Gets the list of all possible URI's available in this controller.
      *

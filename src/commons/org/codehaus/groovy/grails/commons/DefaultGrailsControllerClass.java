@@ -16,6 +16,9 @@
 package org.codehaus.groovy.grails.commons;
 
 import groovy.lang.Closure;
+import groovy.lang.GroovyObject;
+import groovy.lang.MissingPropertyException;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.WordUtils;
 import org.codehaus.groovy.grails.scaffolding.DefaultGrailsScaffolder;
@@ -38,6 +41,10 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass
     private static final String VIEW = "View";
     private static final String DEFAULT_CLOSURE_PROPERTY = "defaultAction";
 	private static final String SCAFFOLDING_PROPERTY = "scaffold";
+
+	private static final String EXCEPT = "except";
+	private static final String ONLY = "only";
+	private static final String ACTION = "action";
 
 	
 
@@ -190,4 +197,80 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass
         this.scaffolding = scaffolding;
     }
 
+	public boolean isInterceptedBefore(GroovyObject controller, String action) {		
+		try {
+			return isIntercepted(controller.getProperty(BEFORE_INTERCEPTOR),action);
+		} catch (MissingPropertyException mpe) {
+			return false;
+		}
+	}
+
+	private boolean isIntercepted(Object bip, String action) {
+		if(bip instanceof Map) {
+			Map bipMap = (Map)bip;
+			if(bipMap.containsKey(EXCEPT)) {
+				Object excepts = bipMap.get(EXCEPT);
+				if(excepts instanceof String) {
+					if(!excepts.equals(action))
+						return true;							
+				}
+				else if(excepts instanceof List) {
+					if(!((List)excepts).contains(action))
+						return true;
+				}
+			}
+			else if(bipMap.containsKey(ONLY)) {
+				Object onlys = bipMap.get(ONLY);
+				if(onlys instanceof String) {
+					if(onlys.equals(action))
+						return true;
+				}
+				else if(onlys instanceof List) {
+					if(((List)onlys).contains(action))
+						return true;
+				}
+			}
+		}
+		else if(bip instanceof Closure) {
+			return true;
+		}
+		return false;
+	}
+
+	public boolean isInterceptedAfter(GroovyObject controller, String action) {
+		try {
+			return isIntercepted(controller.getProperty(AFTER_INTERCEPTOR),action);
+		} catch (MissingPropertyException mpe) {
+			return false;
+		}
+	}
+
+	public Closure getBeforeInterceptor(GroovyObject controller) {
+		try {
+			return getInterceptor(controller.getProperty(BEFORE_INTERCEPTOR));
+		} catch (MissingPropertyException mpe) {
+			return null;
+		}
+	}
+
+	public Closure getAfterInterceptor(GroovyObject controller) {
+		try {
+			return getInterceptor(controller.getProperty(AFTER_INTERCEPTOR));
+		} catch (MissingPropertyException mpe) {
+			return null;
+		}
+	}
+
+	private Closure getInterceptor(Object ip) {
+		if(ip instanceof Map) {
+			Map ipMap = (Map)ip;
+			if(ipMap.containsKey(ACTION)) {
+				return (Closure)ipMap.get(ACTION);
+			}
+		}
+		else if(ip instanceof Closure) {
+			return (Closure)ip;
+		}
+		return null;
+	}
 }

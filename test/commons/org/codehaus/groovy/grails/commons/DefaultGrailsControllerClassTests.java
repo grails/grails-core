@@ -15,7 +15,9 @@
  */ 
 package org.codehaus.groovy.grails.commons;
 
+import groovy.lang.Closure;
 import groovy.lang.GroovyClassLoader;
+import groovy.lang.GroovyObject;
 import junit.framework.TestCase;
 
 /**
@@ -56,4 +58,36 @@ public class DefaultGrailsControllerClassTests extends TestCase {
         assertTrue(grailsClass.mapsToURI("/test/action"));
     }
 
+	public void testInterceptors() throws Exception {
+		GroovyClassLoader cl = new GroovyClassLoader();
+		Class clazz = cl.parseClass("class TestController { \n" +
+										"@Property beforeInterceptor = [action:this.&before,only:'list']\n" +
+										"def before() { return 'success' }\n" +
+										"@Property list = { return 'test' }\n " +										
+									"} ");
+		GrailsControllerClass grailsClass = new DefaultGrailsControllerClass(clazz);
+		GroovyObject controller = (GroovyObject)grailsClass.newInstance();
+		
+		
+		assertTrue(grailsClass.isInterceptedBefore(controller,"list"));
+		assertFalse(grailsClass.isInterceptedAfter(controller,"list"));
+		
+		Closure bi = grailsClass.getBeforeInterceptor(controller);
+		assertNotNull(bi);
+		assertEquals("success", bi.call());
+		assertNull(grailsClass.getAfterInterceptor(controller));
+		
+		clazz = cl.parseClass("class AfterController { \n" +
+				"@Property afterInterceptor = [action:this.&before,except:'list']\n" +
+				"def after() { return 'success' }\n" +
+				"@Property list = { return 'test' }\n " +
+				"@Property save = { return 'test' }\n " +
+			"} ");	
+		
+		grailsClass = new DefaultGrailsControllerClass(clazz);
+		controller = (GroovyObject)grailsClass.newInstance();	
+		
+		assertFalse(grailsClass.isInterceptedAfter(controller,"list"));
+		assertTrue(grailsClass.isInterceptedAfter(controller,"save"));
+	}
 }

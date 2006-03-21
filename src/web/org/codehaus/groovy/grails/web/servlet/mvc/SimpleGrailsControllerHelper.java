@@ -265,6 +265,21 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
         // Step 5: get the view name for this URI.
         String viewName = controllerClass.getViewByURI(uri);
 
+        // Step 5a: Check if there is a before interceptor if there is execute it
+        boolean executeAction = true;
+        if(controllerClass.isInterceptedBefore(controller,actionName)) {
+        	Closure beforeInterceptor = controllerClass.getBeforeInterceptor(controller);
+        	if(beforeInterceptor!= null) {
+        		Object interceptorResult = beforeInterceptor.call();
+        		if(interceptorResult instanceof Boolean) {
+        			executeAction = ((Boolean)interceptorResult).booleanValue();
+        		}
+        	}
+        }
+        // if the interceptor returned false don't execute the action
+        if(!executeAction)
+        	return null;
+        
         // Step 6: get closure from closure property
         Closure action;
         try {
@@ -274,7 +289,14 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
 
 
             // Step 8: determine return value type and handle accordingly
-            return handleActionResponse(controller,returnValue,actionName,viewName);        	
+            ModelAndView mv = handleActionResponse(controller,returnValue,actionName,viewName);
+            
+            // Step 9: Check if there is after interceptor
+            if(controllerClass.isInterceptedAfter(controller,actionName)) {
+            	Closure afterInterceptor = controllerClass.getAfterInterceptor(controller);
+            	afterInterceptor.call(new Object[]{ mv.getModel() });
+            }
+            return mv;
         }
         catch(MissingPropertyException mpe) {
             if(controllerClass.isScaffolding())
