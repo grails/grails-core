@@ -20,17 +20,15 @@ import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.grails.commons.spring.GrailsResourceHolder;
 import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException;
 import org.codehaus.groovy.grails.exceptions.MoreThanOneActiveDataSourceException;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsDomainConfigurationUtil;
-import org.codehaus.groovy.grails.commons.spring.GrailsResourceHolder;
 import org.springframework.core.io.Resource;
 
 import java.io.IOException;
 import java.lang.reflect.Modifier;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Default implementation of the GrailsApplication interface that manages application loading,
@@ -55,7 +53,6 @@ public class DefaultGrailsApplication implements GrailsApplication {
     private Map domainMap = null;
     private Map pageFlowMap = null;
     private Map serviceMap = null;
-    private Map bootstrapMap = null;
     private Map taglibMap = null;
 
     private Class[] allClasses = null;
@@ -133,7 +130,7 @@ public class DefaultGrailsApplication implements GrailsApplication {
         this.controllerMap = new HashMap();
         this.pageFlowMap = new HashMap();
         this.serviceMap = new HashMap();
-        this.bootstrapMap = new HashMap();
+        Map bootstrapMap = new HashMap();
         this.taglibMap = new HashMap();
         for (int i = 0; i < classes.length; i++) {
             if (Modifier.isAbstract(classes[i].getModifiers())) {
@@ -164,7 +161,7 @@ public class DefaultGrailsApplication implements GrailsApplication {
             }
             else if(GrailsClassUtils.isBootstrapClass(classes[i])) {
                 GrailsBootstrapClass grailsBootstrapClass = new DefaultGrailsBootstrapClass(classes[i]);
-                this.bootstrapMap.put(grailsBootstrapClass.getFullName(),grailsBootstrapClass);
+                bootstrapMap.put(grailsBootstrapClass.getFullName(),grailsBootstrapClass);
             }
             else if(GrailsClassUtils.isTagLibClass(classes[i])) {
                 GrailsTagLibClass grailsTagLibClass = new DefaultGrailsTagLibClass(classes[i]);
@@ -176,7 +173,7 @@ public class DefaultGrailsApplication implements GrailsApplication {
         this.pageFlows = ((GrailsPageFlowClass[])pageFlowMap.values().toArray(new GrailsPageFlowClass[pageFlowMap.size()]));
         this.domainClasses = ((GrailsDomainClass[])this.domainMap.values().toArray(new GrailsDomainClass[domainMap.size()]));
         this.services = ((GrailsServiceClass[])this.serviceMap.values().toArray(new GrailsServiceClass[serviceMap.size()]));
-        this.bootstrapClasses = ((GrailsBootstrapClass[])this.bootstrapMap.values().toArray(new GrailsBootstrapClass[bootstrapMap.size()]));
+        this.bootstrapClasses = ((GrailsBootstrapClass[])bootstrapMap.values().toArray(new GrailsBootstrapClass[bootstrapMap.size()]));
         this.taglibClasses = ((GrailsTagLibClass[])this.taglibMap.values().toArray(new GrailsTagLibClass[taglibMap.size()]));
 
         configureDomainClassRelationships();
@@ -371,10 +368,7 @@ public class DefaultGrailsApplication implements GrailsApplication {
         if(domainClass == null)
             return false;
 
-        if(domainMap.containsKey(domainClass.getName())) {
-            return true;
-        }
-        return false;  
+        return domainMap.containsKey(domainClass.getName());
     }
 
     public GrailsDomainClass getGrailsDomainClass(String name) {
