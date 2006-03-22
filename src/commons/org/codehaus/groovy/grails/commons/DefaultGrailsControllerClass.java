@@ -104,7 +104,7 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass
                     this.viewNames.put( DefaultGrailsScaffolder.ACTION_NAMES[i], viewUri );
                 }
                 this.uri2closureMap.put(tmpUri, DefaultGrailsScaffolder.ACTION_NAMES[i]);
-                this.uri2closureMap.put(tmpUri + "/**", DefaultGrailsScaffolder.ACTION_NAMES[i]);
+                this.uri2closureMap.put(tmpUri + SLASH +"**", DefaultGrailsScaffolder.ACTION_NAMES[i]);
             }
         }
 
@@ -125,6 +125,7 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass
                 String viewUri = uri + SLASH + viewName;
 
                 uri2closureMap.put(tmpUri,closureName);
+                uri2closureMap.put(tmpUri + SLASH + "**",closureName);
                 if (StringUtils.isNotBlank(viewName)) {
                     this.uri2viewMap.put(tmpUri, viewUri);
                     this.viewNames.put( closureName, viewUri );
