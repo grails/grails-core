@@ -265,12 +265,12 @@ public final class GrailsDomainBinder {
 	 */
 	public static void bindClass(GrailsDomainClass domainClass, Mappings mappings)
 		throws MappingException {		
-		if(domainClass.getClazz().getSuperclass() == java.lang.Object.class) {
+		//if(domainClass.getClazz().getSuperclass() == java.lang.Object.class) {
 			bindRoot(domainClass, mappings);
-		}
-		else {
-			throw new MappingException("Grails domain classes do not support inheritance");				
-		}		
+		//}
+		//else {
+		//	throw new MappingException("Grails domain classes do not support inheritance");				
+		//}
 	}
 
 	/**
