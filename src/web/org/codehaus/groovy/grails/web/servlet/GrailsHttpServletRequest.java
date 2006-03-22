@@ -17,10 +17,12 @@ package org.codehaus.groovy.grails.web.servlet;
 
 import groovy.lang.GroovyObject;
 import org.codehaus.groovy.grails.web.metaclass.GetParamsDynamicProperty;
+import org.springframework.beans.BeanWrapper;
+import org.springframework.beans.BeanWrapperImpl;
 
+import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
-import javax.servlet.ServletRequest;
 import java.util.*;
 
 /**
@@ -36,13 +38,16 @@ import java.util.*;
 public class GrailsHttpServletRequest extends HttpServletRequestWrapper implements Map {
 
     Map controllerParams = Collections.EMPTY_MAP;
+    BeanWrapper requestBean;
 
     public GrailsHttpServletRequest(HttpServletRequest delegate) {
         super(delegate);
+         requestBean = new BeanWrapperImpl(delegate);
     }
 
     public GrailsHttpServletRequest(HttpServletRequest request, GroovyObject controller) {
         super(request);
+        requestBean = new BeanWrapperImpl(request);
         controllerParams = (Map)controller.getProperty(GetParamsDynamicProperty.PROPERTY_NAME);
     }
 
@@ -80,8 +85,13 @@ public class GrailsHttpServletRequest extends HttpServletRequestWrapper implemen
     }
 
     public Object get(Object key) {
-        if(key instanceof String)
-            return getRequest().getAttribute((String)key);
+        if(key instanceof String)     {
+            Object result = getRequest().getAttribute(key.toString());
+            if(result == null && requestBean.isReadableProperty(key.toString()))
+                return requestBean.getPropertyValue(key.toString());
+            else
+                return result;
+        }
         else
             return null;
     }
