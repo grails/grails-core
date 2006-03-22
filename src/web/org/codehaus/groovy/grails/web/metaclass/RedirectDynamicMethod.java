@@ -131,6 +131,9 @@ public class RedirectDynamicMethod extends AbstractDynamicControllerMethod {
                     }
                 }
             }
+            else {
+                actionName = ""; // default action
+            }
             if(actionName != null) {
                 StringBuffer actualUriBuf = new StringBuffer(attrs.getApplicationUri(request));
                 if(actionName.indexOf('/') > -1) {
