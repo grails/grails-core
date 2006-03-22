@@ -102,7 +102,9 @@ public class SavePersistentMethod extends AbstractDynamicPersistentMethod {
                             BeanWrapper propBean = new BeanWrapperImpl(propValue);
 
                             Serializable id = (Serializable)propBean.getPropertyValue(otherSide.getIdentifier().getName());
-                            bean.setPropertyValue(prop.getName(),t.get(prop.getType(),id));
+                            if(id != null) {
+                                bean.setPropertyValue(prop.getName(),t.get(prop.getType(),id));    
+                            }
                         }
                     }
                 }
