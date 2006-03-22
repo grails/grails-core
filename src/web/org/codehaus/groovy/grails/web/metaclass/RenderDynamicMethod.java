@@ -146,8 +146,18 @@ public class RenderDynamicMethod extends AbstractDynamicControllerMethod {
             }
             else if(argMap.containsKey(ARGUMENT_VIEW)) {
                String viewName = argMap.get(ARGUMENT_VIEW).toString();
-               GrailsControllerClass controllerClass = helper.getControllerClassByName(target.getClass().getName());
-               String viewUri = controllerClass.getViewByName(viewName);
+
+               String viewUri;
+                if(viewName.indexOf('/') > -1) {
+                    if(!viewName.startsWith("/"))
+                       viewName = '/' + viewName;
+                    viewUri = viewName;
+                }
+                else {
+                    GrailsControllerClass controllerClass = helper.getControllerClassByName(target.getClass().getName());
+                    viewUri = controllerClass.getViewByName(viewName);
+                }
+
 
                Map model;
                Object modelObject = argMap.get(ARGUMENT_MODEL);
@@ -164,7 +174,16 @@ public class RenderDynamicMethod extends AbstractDynamicControllerMethod {
                 String var = (String)argMap.get(ARGUMENT_VAR);
                 // get the template uri
                 GrailsApplicationAttributes attrs = (GrailsApplicationAttributes)controller.getProperty(ControllerDynamicMethods.GRAILS_ATTRIBUTES);
-                String templateUri = attrs.getTemplateUri(templateName,request);
+                String templateUri;
+                if(templateName.indexOf('/') > -1) {
+                    if(!templateName.startsWith("/"))
+                       templateName = '/' + templateName;                    
+                    templateUri = templateName;
+                }
+                else {
+                    templateUri = attrs.getTemplateUri(templateName,request);
+                }
+
                 // retrieve gsp engine
                 GroovyPagesTemplateEngine engine = attrs.getPagesTemplateEngine();
                 try {
