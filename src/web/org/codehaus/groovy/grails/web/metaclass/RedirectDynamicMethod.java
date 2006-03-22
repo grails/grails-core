@@ -103,7 +103,7 @@ public class RedirectDynamicMethod extends AbstractDynamicControllerMethod {
             controller.setProperty( ControllerDynamicMethods.ERRORS_PROPERTY, errors);
         }
 
-        String actualUri = null;
+        String actualUri;
 
         GrailsApplicationAttributes attrs = helper.getGrailsAttributes();
 
@@ -130,15 +130,20 @@ public class RedirectDynamicMethod extends AbstractDynamicControllerMethod {
                             actionName = scaffolder.getActionName(c);
                     }
                 }
-            }        	
+            }
             if(actionName != null) {
                 StringBuffer actualUriBuf = new StringBuffer(attrs.getApplicationUri(request));
-                if(controllerName != null) {
-                    actualUriBuf.append('/')
-                             .append(controllerName);
+                if(actionName.indexOf('/') > -1) {
+                      actualUriBuf.append(actionName);
                 }
                 else {
-                    actualUriBuf.append(attrs.getControllerUri(request));
+                    if(controllerName != null) {
+                        actualUriBuf.append('/')
+                                 .append(controllerName);
+                    }
+                    else {
+                        actualUriBuf.append(attrs.getControllerUri(request));
+                    }
                 }
                 actualUriBuf.append('/')
                          .append(actionName);
