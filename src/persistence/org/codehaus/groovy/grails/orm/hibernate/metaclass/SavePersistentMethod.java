@@ -84,8 +84,6 @@ public class SavePersistentMethod extends AbstractDynamicPersistentMethod {
             }
         }
         HibernateTemplate t = getHibernateTemplate();
-        t.setFlushMode(HibernateTemplate.FLUSH_COMMIT);
-
         // this piece of code will retrieve a persistent instant
         // of a domain class property is only the id is set thus
         // relieving this burden off the developer
