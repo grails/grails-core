@@ -67,7 +67,7 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
     private GrailsScaffolder scaffolder;
     private ServletContext servletContext;
     private GrailsApplicationAttributes grailsAttributes;
-    private Pattern uriPattern = Pattern.compile("/(\\w+)/?(\\w*)/?(\\w*)/?(.*)");
+    private Pattern uriPattern = Pattern.compile("/(\\w+)/?(\\w*)/?(.*)/?(.*)");
     private static final Log LOG = LogFactory.getLog(SimpleGrailsControllerHelper.class);
     private static final String DISPATCH_ACTION_PARAMETER = "_action";
     private static final String ID_PARAMETER = "id";
