@@ -42,11 +42,12 @@ class ValidationTagLib extends ApplicationTagLib {
         else {
 			if(request.attributeNames) {
 				request.attributeNames.each {
-					def ra = request[it]
-					if(ra instanceof Errors)
-						checkList << ra
-					else if(grailsApplication.isGrailsDomainClass(ra.class))
-						checkList << ra
+					if(ra) {
+                        if(ra instanceof Errors)
+                            checkList << ra
+                        else if(grailsApplication.isGrailsDomainClass(ra.class))
+                            checkList << ra
+					}
 				}
 			}
         }
@@ -90,10 +91,12 @@ class ValidationTagLib extends ApplicationTagLib {
         else {
             request.attributeNames.each {
                 def ra = request[it]
-                if(ra instanceof Errors)
-                    errorList << ra
-                else if(grailsApplication.isGrailsDomainClass(ra.class))
-                    errorList << ra
+                if(ra) {
+                    if(ra instanceof Errors)
+                        errorList << ra
+                    else if(grailsApplication.isGrailsDomainClass(ra.class))
+                        errorList << ra
+                }
             }
         }
 
