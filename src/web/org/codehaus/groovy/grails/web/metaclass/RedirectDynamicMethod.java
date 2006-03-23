@@ -108,7 +108,7 @@ public class RedirectDynamicMethod extends AbstractDynamicControllerMethod {
         GrailsApplicationAttributes attrs = helper.getGrailsAttributes();
 
         if(uri != null) {
-            actualUri = uri.toString();
+            actualUri = attrs.getApplicationUri(request) + uri.toString();
         }
         else if(url != null) {
         	actualUri = url;
