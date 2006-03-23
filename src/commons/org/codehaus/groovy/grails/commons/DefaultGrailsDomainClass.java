@@ -166,7 +166,7 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
 			// establish if the property is a one-to-many
 			// if it is a Set and there are relationships defined
 			// and it is defined as persistent
-			if(	currentPropType.equals( Set.class ) && 
+			if(	Set.class.isAssignableFrom(currentPropType) && 
 				currentProp.isPersistent() ) {
 				
 				establishRelationshipForSet( currentProp);
@@ -263,7 +263,7 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
 			property.setOneToMany(true);			
 			property.setBidirectional(false);
 		}		
-		else if( relatedClassPropertyType.equals( Set.class ) ){
+		else if( Set.class.isAssignableFrom(relatedClassPropertyType) ){
 			// many-to-many
 			property.setManyToMany(true);
 			property.setBidirectional(true);
@@ -332,7 +332,7 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
 			property.setBidirectional(false);
 		}
 		// bi-directional many-to-one
-		else if(relatedClassPropertyType.equals( Set.class )) {
+		else if(Set.class.isAssignableFrom(relatedClassPropertyType)) {
 			property.setManyToOne(true);
 			property.setBidirectional(true);
 		}

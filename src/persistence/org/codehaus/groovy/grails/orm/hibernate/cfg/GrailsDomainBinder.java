@@ -83,10 +83,11 @@ public final class GrailsDomainBinder {
 		private static final Map INSTANCES = new HashMap();
 		
 		static {
-			INSTANCES.put( SET.toString(), SET );			
+			INSTANCES.put( Set.class, SET );
+			INSTANCES.put( SortedSet.class, SET );
 		}
 		public static CollectionType collectionTypeForClass(Class clazz) {
-			return (CollectionType)INSTANCES.get( clazz.getName() );
+			return (CollectionType)INSTANCES.get( clazz );
 		}
 	}
 
@@ -136,6 +137,11 @@ public final class GrailsDomainBinder {
 			oneToMany.setAssociatedClass( associatedClass );
 			collection.setCollectionTable( associatedClass.getTable() );
 			collection.setLazy(true);
+			
+			// is it sorted?
+			if(SortedSet.class.isAssignableFrom(property.getType())) {
+				collection.setSorted(true);
+			}
 			
 			LOG.info( "Mapping collection: "
 					+ collection.getRole()
