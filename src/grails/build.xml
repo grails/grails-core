@@ -33,15 +33,15 @@ Targets:
         <fail unless="env.GRAILS_HOME" message="GRAILS_HOME is not set."/>
         <property name="grails.home" location="${env.GRAILS_HOME}"/>
         <groovy >
-            // reusable code blocks, a pitty we cannot store Closures in the project...
-            properties.lower = 'x[0].toLowerCase() + x[1..-1]'
-            properties.caps  = 'x[0].toUpperCase() + x[1..-1]'
-            properties.normCaps = '''
-                x = x.replaceAll(' ','')
+            // reusable code blocks, stored as Closure references
+            project.addReference('lower'){ it[0].toLowerCase() + it[1..-1] }
+            project.addReference('caps') { it[0].toUpperCase() + it[1..-1] }
+            project.addReference('normCaps') {
+                def x = it.replaceAll(' ','')
                 x = x[0].toUpperCase() + x[1..-1]
                 if (x.endsWith(y)) x = x[0..(x.size()-y.size()-1)]
                 return x
-            '''
+            }
         </groovy>
     </target>
 
@@ -166,7 +166,7 @@ Targets:
 
 		<groovy>
 			def projName = properties."project.name"
-			properties."project.class.name" =  Eval.x(projName, properties.lower)
+			properties."project.class.name" = project.references['lower'](projName)
 		</groovy>
 
 			<copy 	file="${grails.home}/src/grails/templates/artifacts/DataSource.groovy"
@@ -181,7 +181,7 @@ Targets:
 
 		<groovy>
 			def ctrlName = properties."controller.name"
-			properties."controller.class.name" = Eval.xy(ctrlName,'Controller', properties.normCaps)
+			properties."controller.class.name" =  project.references['normCaps'](ctrlName, 'Controller')
 		</groovy>
 
 		<copy 	file="${grails.home}/src/grails/templates/artifacts/Controller.groovy"
@@ -202,7 +202,7 @@ Targets:
 
         <groovy>
 			def serviceName = properties."service.name"
-			properties."service.class.name" = Eval.xy(serviceName,'Service', properties.normCaps)
+			properties."service.class.name" = project.references['normCaps'](serviceName, 'Service')
 		</groovy>
 
         <copy 	file="${grails.home}/src/grails/templates/artifacts/Service.groovy"
@@ -223,7 +223,7 @@ Targets:
 
          <groovy>
 			def domainName = properties."domain.class.name"
-			properties."domain.class.name" = Eval.x(domainName, properties.caps)
+			properties."domain.class.name" = project.references['caps'](domainName)
 		</groovy>
 
 
@@ -250,7 +250,7 @@ Targets:
     <target name="internal-create-test-suite">
         <groovy>
 			def suiteName = properties."test.suite.name"
-			properties."test.suite.name" = Eval.xy(suiteName,'Tests', properties.normCaps)
+			properties."test.suite.name" = project.references['normCaps'](suiteName, 'Tests')
 		</groovy>
 
         <copy 	file="${grails.home}/src/grails/templates/artifacts/Tests.groovy"
@@ -351,13 +351,13 @@ Targets:
                 def match = it.name =~ "(\\w+)(Controller.groovy\$)"
                 if(match) {
                     def controllerName = match[0][1]
-                    controllerName = Eval.x(controllerName, properties.lower)
+                    controllerName = project.references['lower'](controllerName)
                     controllers << controllerName
                 }
                 match = it.name =~ "(\\w+)(PageFlow.groovy\$)"
                 if(match) {
                     def flowName = match[0][1]
-                    flowName = Eval.x(flowName, properties.lower)
+                    flowName = project.references['lower'](flowName)
                     flows << flowName
                 }
             }
@@ -532,7 +532,7 @@ Targets:
 
         <groovy>
             def domainName = properties."domain.class.name"
-            properties."webtest.name" = Eval.x(domainName, properties.caps)
+            properties."webtest.name" = project.references['caps'](domainName)
         </groovy>
 
         <copy file="${grails.home}/src/grails/templates/artifacts/WebTest.groovy"
