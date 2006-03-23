@@ -6,6 +6,17 @@ class GrailsResourceCopier implements ResourceCopier {
 
     def ant = new AntBuilder()
 
+	public void cleanControllers() {
+        if(new File("${basedir}/grails-app/controllers").exists()) {	
+        	ant.delete {
+        		fileset(dir:"${destdir}/WEB-INF/grails-app/controllers",includes:"*.groovy")
+        	}
+            ant.copy(todir:"${destdir}/WEB-INF/grails-app/controllers",failonerror:false) {
+                fileset(dir:"${basedir}/grails-app/controllers",includes:"**")
+            }        	
+        }
+	}
+	
     public void copyGrailsApp() {
         if(new File("${basedir}/grails-app").exists()) {
             ant.copy(todir:"${destdir}/WEB-INF/grails-app",failonerror:false) {

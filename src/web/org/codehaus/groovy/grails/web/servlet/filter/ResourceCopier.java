@@ -49,4 +49,9 @@ public interface ResourceCopier {
      * Re-generates the web.xml file
      */
     void generateWebXml();
+    
+    /**
+     * Cleans out controllers replacing them with new ones
+     */
+    void cleanControllers();
 }

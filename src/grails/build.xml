@@ -483,17 +483,38 @@ Targets:
         </groovy>
     </target>
 
-    <target name="wait-forever" >
-        <script language="groovy">
+    <target name="run-app:watch-context" >
+    	<basename property="project.dir" file="."/>
+    	
+        <groovy><![CDATA[
+			import org.mortbay.jetty.*
+			import org.mortbay.http.*
+        	
+        	def f = new File('tmp/war/WEB-INF/web.xml')
+        	long lastModified = f.lastModified()
             while(true) {
-                sleep(Long.MAX_VALUE)
+        		if(lastModified < f.lastModified()) {
+        			println 'Web Context changed. Reloading...'
+		        	lastModified = f.lastModified()
+					def svr = HttpServer.httpServers.iterator().next()
+        			def ctx = svr.getContext("/" + properties."project.dir")
+        			if(ctx) {
+        				println 'New Controller added. Restarting Grails context: /' + properties."project.dir"
+        				ctx.stop(true)
+        				ctx.start()
+        			}
+        			else {
+        				println 'WARNING: Cannot get server context, new Controller not added'
+        			}
+	        	}
+                sleep(2000)
 			}
-		</script>
+        ]]></groovy>
 	</target>
 
     <target name="run-app" depends="dev, package" description="Run the application locally and wait">
         <antcall target="run-app:impl" />
-        <antcall target="wait-forever" />
+        <antcall target="run-app:watch-context" />
     </target>
 
     <target name="check-webtest-too-old">

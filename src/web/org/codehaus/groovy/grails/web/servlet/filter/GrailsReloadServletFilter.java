@@ -276,7 +276,9 @@ public class GrailsReloadServletFilter extends OncePerRequestFilter {
         if(controllerClass != null) {
              // if its a new controller re-generate web.xml, reload app context
             if(isNew) {
-                reloadApplicationContext();
+            	// clean controllers
+            	copyScript.cleanControllers();
+            	// re-generate web.xml
                 LOG.info("New controller added, re-generating web.xml");
                 copyScript.generateWebXml();
             }
