@@ -190,12 +190,20 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
 		// is it a relationship
 		Class relatedClassType = getRelatedClassType( property.getName() );
 		
+		
 		if(relatedClassType != null) {
 			// set the referenced type in the property
 			property.setReferencedPropertyType(relatedClassType);
+
+			// if the related class is the same as this class
+			// its a circular one-to-many
+			if(relatedClassType.equals(getClazz())){
+				property.setOneToMany(true);
+				property.setBidirectional(true);
+			}
 			// if the related type is a domain class
-			// then figure out what kind of relationship it is
-			if(GrailsClassUtils.isDomainClass( relatedClassType )) {
+			// then figure out what kind of relationship it is			
+			else if(GrailsClassUtils.isDomainClass( relatedClassType )) {
 				
 				
 				// check the relationship defined in the referenced type

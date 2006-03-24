@@ -14,12 +14,16 @@
  */ 
 package org.codehaus.groovy.grails.domain;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
 import org.codehaus.groovy.grails.commons.DefaultGrailsDomainClass;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
 import org.codehaus.groovy.grails.exceptions.InvalidPropertyException;
+import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsDomainConfigurationUtil;
 
 import groovy.lang.GroovyClassLoader;
 import junit.framework.TestCase;
@@ -134,6 +138,28 @@ public class DefaultGrailsDomainClassTest extends TestCase {
 		assertFalse( c2dc.getPropertyByName( "other" ).isOneToMany() );				
 	}
 	
+	public void testCircularOneToManyRelationship() throws Exception {
+		GroovyClassLoader gcl = new GroovyClassLoader();
+		Class a = gcl.parseClass("class A { \n" +
+									"@Property Long id\n" +
+									"@Property Long version\n" +
+									"@Property relatesToMany = [ children : A]\n" +
+									"@Property A parent\n" +
+									"@Property Set children\n" +
+									"}");
+		GrailsDomainClass dc = new DefaultGrailsDomainClass(a);
+		GrailsDomainClass[] dcs = new GrailsDomainClass[1];
+		dcs[0] =dc;
+		Map domainMap = new HashMap();
+		domainMap.put(dc.getFullName(),dc);
+		GrailsDomainConfigurationUtil.configureDomainClassRelationships(dcs,domainMap);
+		
+		assertTrue(dc.getPropertyByName("children").isAssociation());
+		assertTrue(dc.getPropertyByName("children").isOneToMany());
+		assertTrue(dc.getPropertyByName("parent").isAssociation());
+		assertTrue(dc.getPropertyByName("parent").isManyToOne());
+	
+	}
 	public void testManyToManyRelationships()
 		throws Exception {
 		
