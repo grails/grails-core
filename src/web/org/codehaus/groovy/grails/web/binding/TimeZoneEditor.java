@@ -16,7 +16,6 @@ package org.codehaus.groovy.grails.web.binding;
 
 import org.apache.commons.lang.StringUtils;
 
-import java.util.Currency;
 import java.util.TimeZone;
 import java.beans.PropertyEditorSupport;
 

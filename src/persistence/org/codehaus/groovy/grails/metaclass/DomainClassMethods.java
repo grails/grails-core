@@ -17,6 +17,7 @@ package org.codehaus.groovy.grails.metaclass;
 
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.metaclass.AbstractDynamicMethods;
+import org.codehaus.groovy.grails.commons.metaclass.CreateDynamicMethod;
 import org.codehaus.groovy.grails.commons.metaclass.WeakGenericDynamicProperty;
 import org.codehaus.groovy.grails.commons.metaclass.AbstractDynamicMethodInvocation;
 import org.codehaus.groovy.grails.orm.hibernate.metaclass.*;
@@ -70,6 +71,7 @@ public class DomainClassMethods extends AbstractDynamicMethods {
         addStaticMethodInvocation(new ExistsPersistentMethod(application,sessionFactory, classLoader));
         addStaticMethodInvocation(new CountPersistentMethod(sessionFactory, classLoader));
         addStaticMethodInvocation(new CreateCriteriaPersistentMethod(sessionFactory, classLoader));
+        addStaticMethodInvocation(new CreateDynamicMethod());
 		
 		// add dynamic properties
 		addDynamicProperty( new SetPropertiesDynamicProperty() );

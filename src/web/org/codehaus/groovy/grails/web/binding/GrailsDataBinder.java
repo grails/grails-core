@@ -16,6 +16,9 @@ package org.codehaus.groovy.grails.web.binding;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.grails.commons.metaclass.CreateDynamicMethod;
+import org.codehaus.groovy.runtime.InvokerHelper;
+import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.InvalidPropertyException;
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.PropertyValue;
@@ -26,6 +29,11 @@ import org.springframework.web.bind.ServletRequestParameterPropertyValues;
 import org.springframework.web.multipart.support.ByteArrayMultipartFileEditor;
 import org.springframework.web.multipart.support.StringMultipartFileEditor;
 import org.springframework.web.servlet.support.RequestContextUtils;
+
+import groovy.lang.GroovyObject;
+import groovy.lang.GroovyRuntimeException;
+import groovy.lang.MetaClass;
+import groovy.lang.MissingMethodException;
 
 import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
@@ -97,10 +105,55 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
         checkMultipartFiles(request, mpvs);
 
         checkStructuredDateDefinitions(request,mpvs);
+        autoCreateIfPossible(mpvs);
         super.doBind(mpvs);
     }
 
-    private void checkStructuredDateDefinitions(ServletRequest request, MutablePropertyValues mpvs) {
+    /**
+     * Method that auto-creates the a type if it is null and is possible to auto-create
+     * 
+     * @param mpvs A MutablePropertyValues instance
+     */
+    private void autoCreateIfPossible(MutablePropertyValues mpvs) {
+        PropertyValue[] pvs = mpvs.getPropertyValues();
+        for (int i = 0; i < pvs.length; i++) {
+            PropertyValue pv = pvs[i];
+
+            String propertyName = pv.getName();
+            BeanWrapper bean = super.getBeanWrapper();
+            if(propertyName.indexOf('.') > -1) {
+            	propertyName = propertyName.split("\\.")[0];
+            }
+            Class type = bean.getPropertyType(propertyName);
+            LOG.debug("Checking if auto-create is possible for property ["+propertyName+"] and type ["+type+"]");
+            if(type != null) {
+                if(GroovyObject.class.isAssignableFrom(type)) {
+                	if(bean.getPropertyValue(propertyName) == null) {
+                		if(bean.isWritableProperty(propertyName)) {
+                			try {
+                				MetaClass mc = InvokerHelper
+				                					.getInstance()
+				                					.getMetaRegistry()
+				                					.getMetaClass(type);
+                				if(mc!=null) {
+                    				Object created = mc.invokeStaticMethod(type.getName(),CreateDynamicMethod.METHOD_NAME, new Object[0]);
+                    				bean.setPropertyValue(propertyName,created);
+                				}
+                			}
+                			catch(MissingMethodException mme) {
+                				LOG.warn("Unable to auto-create type, 'create' method not found");
+                			}            			
+                			catch(GroovyRuntimeException gre) {
+                				LOG.warn("Unable to auto-create type, Groovy Runtime error: " + gre.getMessage(),gre) ;
+                			}                   			
+                		}
+                	}
+                }            	
+            }
+        }
+	}
+
+	private void checkStructuredDateDefinitions(ServletRequest request, MutablePropertyValues mpvs) {
 
         PropertyValue[] pvs = mpvs.getPropertyValues();
         for (int i = 0; i < pvs.length; i++) {
