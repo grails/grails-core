@@ -233,7 +233,7 @@ class ${className}Controller {
         def sw = new StringWriter()
         def pw = new PrintWriter(sw)
         pw.println '<ul>'
-        pw.println "    <g:each var='${property.name[0]}' in='\${${domainClass.propertyName}.${property.name}}'>"
+        pw.println "    <g:each var='${property.name[0]}' in='\${${domainClass.propertyName}?.${property.name}?}'>"
         pw.println "        <li><g:link controller='${property.referencedDomainClass.propertyName}' action='show' id='\${${property.name[0]}.id}'>\${${property.name[0]}}</g:link></li>"
         pw.println "    </g:each>"
         pw.println "</ul>"
