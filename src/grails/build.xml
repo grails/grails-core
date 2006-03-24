@@ -485,11 +485,11 @@ Targets:
 
     <target name="run-app:watch-context" >
     	<basename property="project.dir" file="."/>
-    	
+
         <groovy><![CDATA[
 			import org.mortbay.jetty.*
 			import org.mortbay.http.*
-        	
+
         	def f = new File('tmp/war/WEB-INF/web.xml')
         	long lastModified = f.lastModified()
             while(true) {
@@ -520,7 +520,8 @@ Targets:
     <target name="check-webtest-too-old">
         <groovy><![CDATA[
             def file = new File(properties.'grails.home' + '/downloads/webtest.zip')
-            if (file && file.exists() && new Date()-30 > new Date(file.lastModified())) {
+            assert file, "Problem creating/detecting webtest.zip"
+            if (!file.exists() || new Date()-30 > new Date(file.lastModified())) {
                 properties.'webtest-too-old' = true
             }
         ]]></groovy>
@@ -530,6 +531,7 @@ Targets:
         <!--
             Download WebTest distro if needed.
             Users may need to use the <setproxy/> task to when behind a firewall!
+            In this case, you also need to add ant-nodeps.jar to the ant lib dir.
             Downloads are expanded below the downloads dir.
             Todo: expanded dirs need to deleted if download cache is updated
             Todo: fail gracefully if not online
