@@ -135,7 +135,31 @@ public class PersistentMethodTests extends AbstractDependencyInjectionSpringCont
         assertTrue(errors.hasErrors());
 
     }
+    
+    public void testFindPersistentMethods() {
+        GrailsDomainClass domainClass = this.grailsApplication.getGrailsDomainClass("PersistentMethodTests");
 
+        GroovyObject obj = (GroovyObject)domainClass.newInstance();
+        obj.setProperty( "id", new Long(1) );
+        obj.setProperty( "firstName", "fred" );
+        obj.setProperty( "lastName", "flintstone" );
+        obj.setProperty( "age", new Integer(45));
+
+        obj.invokeMethod("save", null);  
+        
+        // test find with HQL query
+        List params = new ArrayList();
+        params.add("fre%");
+        Object returnValue = obj.getMetaClass().invokeStaticMethod(obj, "find", new Object[] { "from PersistentMethodTests where firstName like ?", params });
+        assertNotNull(returnValue);    
+        
+        returnValue = obj.getMetaClass().invokeStaticMethod(obj, "findAll", new Object[] { "from PersistentMethodTests where firstName like ?", params });
+        assertNotNull(returnValue);
+        assertTrue(returnValue instanceof List);
+        List returnList = (List)returnValue;
+        assertEquals(1, returnList.size());
+    }
+    
     public void testFindByPersistentMethods() {
         GrailsDomainClass domainClass = this.grailsApplication.getGrailsDomainClass("PersistentMethodTests");
 
