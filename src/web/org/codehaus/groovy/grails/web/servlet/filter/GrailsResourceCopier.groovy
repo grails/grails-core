@@ -4,9 +4,9 @@ class GrailsResourceCopier implements ResourceCopier {
     @Property String basedir = "."
     @Property String destdir = "./tmp/war"
 
-    def ant = new AntBuilder()
 
 	public void cleanControllers() {
+	    def ant = new AntBuilder()	
         if(new File("${basedir}/grails-app/controllers").exists()) {	
         	ant.delete {
         		fileset(dir:"${destdir}/WEB-INF/grails-app/controllers",includes:"*.groovy")
@@ -18,6 +18,7 @@ class GrailsResourceCopier implements ResourceCopier {
 	}
 	
     public void copyGrailsApp() {
+	    def ant = new AntBuilder()    
         if(new File("${basedir}/grails-app").exists()) {
             ant.copy(todir:"${destdir}/WEB-INF/grails-app",failonerror:false) {
                 fileset(dir:"${basedir}/grails-app",includes:"**")
@@ -31,6 +32,7 @@ class GrailsResourceCopier implements ResourceCopier {
     }
 
     public void copyViews(boolean shouldOverwrite) {
+	    def ant = new AntBuilder()    
         if(new File("${basedir}/grails-app/views").exists()) {
             ant.copy(todir:"${destdir}/WEB-INF/grails-app/views",failonerror:false,overwrite:shouldOverwrite) {
                 fileset(dir:"${basedir}/grails-app/views",includes:"**")
