@@ -36,10 +36,10 @@ Targets:
             // reusable code blocks, stored as Closure references
             project.addReference('lower'){ it[0].toLowerCase() + it[1..-1] }
             project.addReference('caps') { it[0].toUpperCase() + it[1..-1] }
-            project.addReference('normCaps') {
-                def x = it.replaceAll(' ','')
+            project.addReference('normCaps') {x, y ->
+                x = x.replaceAll(' ','')
                 x = x[0].toUpperCase() + x[1..-1]
-                if (x.endsWith(y)) x = x[0..(x.size()-y.size()-1)]
+                if (x.endsWith(y)) x = x[0..(x.size() - y.size()-1)]
                 return x
             }
         </groovy>
@@ -193,7 +193,7 @@ Targets:
 					value="${controller.class.name}" />
 		<echo>Created controller: grails-app/controllers/${controller.class.name}Controller.groovy</echo>
         <property name="test.suite.name" value="${controller.class.name}" />
-        <antcall target="internal-create-test-suite"  />
+        <antcall target="internal-create-test-suite" inheritRefs="true" inheritAll="true" />
     </target>
 
 	<target name="create-service" depends="init-props" description="Create a new service">
@@ -214,7 +214,7 @@ Targets:
 					value="${service.class.name}" />
 		<echo>Created service: grails-app/services/${service.class.name}Service.groovy</echo>
         <property name="test.suite.name" value="${service.class.name}" />
-        <antcall target="internal-create-test-suite" inheritall="true" />
+        <antcall target="internal-create-test-suite" inheritRefs="true" inheritAll="true"/>
     </target>
 
 	<target name="create-domain-class" depends="init-props" description="Create a new domain class">
@@ -236,21 +236,21 @@ Targets:
             value="${domain.class.name}" />
         <echo>Domain class created: grails-app/domain/${domain.class.name}.groovy</echo>
         <property name="test.suite.name" value="${domain.class.name}" />
-        <antcall target="internal-create-test-suite" inheritall="true" />
+        <antcall target="internal-create-test-suite" inheritRefs="true" inheritAll="true"/>
     </target>
 
     <target name="create-test-suite" depends="init-props" description="Create a new test suite">
 
         <input addproperty="test.suite.name" message="Enter test suite name:" />
 
-        <antcall target="internal-create-test-suite" inheritall="true" />
+        <antcall target="internal-create-test-suite" inheritRefs="true" inheritAll="true"/>
 
     </target>
 
     <target name="internal-create-test-suite">
         <groovy>
 			def suiteName = properties."test.suite.name"
-			properties."test.suite.name" = project.references['normCaps'](suiteName, 'Tests')
+			properties."test.suite.name" = project.references['normCaps']( suiteName, 'Tests' )
 		</groovy>
 
         <copy 	file="${grails.home}/src/grails/templates/artifacts/Tests.groovy"

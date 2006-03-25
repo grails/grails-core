@@ -36,4 +36,4 @@ case "`uname`" in
     GRAILS_HOME=`cygpath --windows "$GRAILS_HOME"`
    ;;
 esac
-${ANT_BIN} -lib "${GRAILS_ANT_CLASSPATH}" -f ${GRAILS_BUILD_FILE} -Dbasedir=${BASEDIR} -Dgrails.home=${GRAILS_HOME} $@
+${ANT_BIN} --noconfig -lib "${GRAILS_ANT_CLASSPATH}" -f ${GRAILS_BUILD_FILE} -Dbasedir=${BASEDIR} -Dgrails.home=${GRAILS_HOME} $@
