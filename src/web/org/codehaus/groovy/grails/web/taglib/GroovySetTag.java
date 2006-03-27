@@ -55,6 +55,6 @@ public class GroovySetTag extends GroovySyntaxTag {
     }
 
     public boolean hasPrecedingContent() {
-        return false;
+        return true;
     }
 }
