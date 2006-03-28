@@ -38,6 +38,8 @@ import org.springframework.beans.factory.config.MethodInvokingFactoryBean;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.orm.hibernate3.HibernateTransactionManager;
+import org.springframework.orm.hibernate3.HibernateAccessor;
+import org.springframework.orm.hibernate3.support.OpenSessionInViewInterceptor;
 import org.springframework.transaction.interceptor.TransactionProxyFactoryBean;
 import org.springframework.util.Assert;
 import org.springframework.web.servlet.i18n.CookieLocaleResolver;
@@ -214,8 +216,8 @@ public class SpringConfig {
 		Bean simpleGrailsController = SpringConfigUtils.createSingletonBean(SimpleGrailsController.class);
 		simpleGrailsController.setAutowire("byType");
 		beanReferences.add(SpringConfigUtils.createBeanReference(SimpleGrailsController.APPLICATION_CONTEXT_ID, simpleGrailsController));
-		
-		Bean grailsViewResolver = SpringConfigUtils.createSingletonBean(GrailsViewResolver.class);
+
+        Bean grailsViewResolver = SpringConfigUtils.createSingletonBean(GrailsViewResolver.class);
 		
 		grailsViewResolver.setProperty("viewClass",SpringConfigUtils.createLiteralValue("org.springframework.web.servlet.view.JstlView"));
 		grailsViewResolver.setProperty("prefix", SpringConfigUtils.createLiteralValue("/WEB-INF/grails-app/views/"));
@@ -231,6 +233,17 @@ public class SpringConfig {
             args.add(simpleUrlHandlerMapping);
             Bean simpleUrlHandlerMappingTargetSource = SpringConfigUtils.createSingletonBean(HotSwappableTargetSource.class, args);
             beanReferences.add(SpringConfigUtils.createBeanReference(GrailsUrlHandlerMapping.APPLICATION_CONTEXT_TARGET_SOURCE,simpleUrlHandlerMappingTargetSource));
+
+            // configure handler interceptors
+            Bean openSessionInViewInterceptor = SpringConfigUtils.createSingletonBean(OpenSessionInViewInterceptor.class);
+            openSessionInViewInterceptor.setProperty("flushMode",SpringConfigUtils.createLiteralValue(String.valueOf(HibernateAccessor.FLUSH_AUTO)));
+            openSessionInViewInterceptor.setProperty("sessionFactory", SpringConfigUtils.createBeanReference("sessionFactory"));
+            beanReferences.add(SpringConfigUtils.createBeanReference("openSessionInViewInterceptor",openSessionInViewInterceptor));
+
+
+            Collection interceptors = new ArrayList();
+            interceptors.add(SpringConfigUtils.createBeanReference("openSessionInViewInterceptor"));
+            simpleUrlHandlerMapping.setProperty("interceptors", SpringConfigUtils.createList(interceptors));            
 
             Bean simpleUrlHandlerMappingProxy = SpringConfigUtils.createSingletonBean(ProxyFactoryBean.class);
             simpleUrlHandlerMappingProxy.setProperty("targetSource", SpringConfigUtils.createBeanReference(GrailsUrlHandlerMapping.APPLICATION_CONTEXT_TARGET_SOURCE));
