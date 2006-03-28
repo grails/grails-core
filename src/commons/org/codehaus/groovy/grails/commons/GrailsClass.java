@@ -60,6 +60,14 @@ public interface GrailsClass {
      */
     public String getPropertyName();
 
+
+    /**
+     * <p>Returns the logical name of the class as a property name
+     *
+     * @return The logical property name
+     */
+    public String getLogicalPropertyName();
+
     /**
      * <p>Returns the name of the property in natural terms (eg. 'lastName' becomes 'Last Name')
      * @return The natural property name

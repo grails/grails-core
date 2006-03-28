@@ -15,7 +15,7 @@
         <div class="dialog" style="margin-left:20px;width:60%;">
             <ul>
               <c:forEach var="c" items="${applicationScope.grailsApplication.controllers}">
-                    <li class="controller"><a href="<c:out value='${c.propertyName}' />/"><c:out value="${c.fullName}" /></a> </li>
+                    <li class="controller"><a href="<c:out value='${c.logicalPropertyName}' />/"><c:out value="${c.fullName}" /></a> </li>
               </c:forEach>
             </ul>
         </div>
