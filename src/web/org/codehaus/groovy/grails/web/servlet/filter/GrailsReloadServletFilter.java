@@ -31,6 +31,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.Resource;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.web.servlet.HandlerInterceptor;
 import org.springmodules.beans.factory.drivers.xml.XmlApplicationContextDriver;
 
 import javax.servlet.FilterChain;
@@ -38,12 +39,10 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.File;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
 /**
  * A servlet filter that copies resources from the source on content change and manages reloading if necessary
@@ -192,31 +191,34 @@ public class GrailsReloadServletFilter extends OncePerRequestFilter {
                             rm.lastModified = c.getLastModified();
                         }
                     }
+                    // if the loaded class is not null then we have a change
+                    if(loadedClass != null) {
+                          loadGrailsClass(loadedClass,isNew);
+                    }
                 }
                 catch(ClassNotFoundException cnfex) {
                      LOG.error("Unabled to reload class ["+className+"], class not found: " + cnfex.getMessage(),cnfex);
-                }
-
-                // if the loaded class is not null then we have a change
-                if(loadedClass != null) {
-                    // so establish the type and take the appropriate action
-                    if(GrailsClassUtils.isControllerClass(loadedClass)) {
-                        loadControllerClass(loadedClass,isNew);
-                    }
-                    else if(GrailsClassUtils.isDomainClass(loadedClass)) {
-                        loadDomainClass(loadedClass,isNew);
-                    }
-                    else if(GrailsClassUtils.isService(loadedClass)) {
-                        loadServiceClass(loadedClass,isNew);
-                    }
-                    else if(GrailsClassUtils.isTagLibClass(loadedClass)) {
-                        loadTagLibClass(loadedClass, isNew);
-                    }
                 }
             }
         }
 
         filterChain.doFilter(httpServletRequest,httpServletResponse);
+    }
+
+    private void loadGrailsClass(Class loadedClass, boolean isNew) throws ClassNotFoundException {
+        // so establish the type and take the appropriate action
+        if(GrailsClassUtils.isControllerClass(loadedClass)) {
+            loadControllerClass(loadedClass,isNew);
+        }
+        else if(GrailsClassUtils.isDomainClass(loadedClass)) {
+            loadDomainClass(loadedClass,isNew);
+        }
+        else if(GrailsClassUtils.isService(loadedClass)) {
+            loadServiceClass(loadedClass,isNew);
+        }
+        else if(GrailsClassUtils.isTagLibClass(loadedClass)) {
+            loadTagLibClass(loadedClass, isNew);
+        }
     }
 
     private void loadServiceClass(Class loadedClass, boolean isNew) {
@@ -257,17 +259,49 @@ public class GrailsReloadServletFilter extends OncePerRequestFilter {
         }
     }
 
-    private void loadDomainClass(Class loadedClass, boolean isNew) {
+    private void loadDomainClass(Class loadedClass, boolean isNew) throws ClassNotFoundException {
         GrailsDomainClass domainClass = application.addDomainClass(loadedClass);
+        Collection loadedDomainClasses = new ArrayList();
+        loadedDomainClasses.add( domainClass );
+
+        // go through all domain classes an establish if they are related to this one.
+        GrailsDomainClass[] domainClasses = application.getGrailsDomainClasses();
+        for (int i = 0; i < domainClasses.length; i++) {
+            GrailsDomainClass grailsDomainClass = domainClasses[i];
+            if(!grailsDomainClass.equals(domainClass)) {
+                GrailsDomainClassProperty[] properties = grailsDomainClass.getPersistantProperties();
+                for (int j = 0; j < properties.length; j++) {
+                    GrailsDomainClassProperty property = properties[j];
+                    if(property.getType().getName().equals(domainClass.getFullName())) {
+                        ResourceMeta rm = (ResourceMeta)resourceMetas.get(grailsDomainClass.getClazz().getName());
+                        if(rm != null) {
+                            File groovyFile = new File(rm.url.getFile());
+                            if(groovyFile.exists()) {
+                                groovyFile.setLastModified(System.currentTimeMillis());
+
+                                Class relatedClass = application
+                                                        .getClassLoader()
+                                                        .loadClass(grailsDomainClass.getClazz().getName(),true,false);
+                                loadedDomainClasses.add( application.addDomainClass(relatedClass) );
+                            }
+                        }
+                    }
+                }
+            }
+        }
 
         reloadApplicationContext();
-        GrailsControllerClass controllerClass = application.getScaffoldingController(domainClass);
-        if(controllerClass != null && controllerClass.isScaffolding()) {
-            // generate new views
-            LOG.info("Re-generating views for scaffold controller ["+controllerClass.getFullName()+"]");
-            templateGenerator.generateViews(domainClass,getServletContext().getRealPath("/WEB-INF"));
-            // overwrite with user defined views
-            copyScript.copyViews(true);
+        for (Iterator i = loadedDomainClasses.iterator(); i.hasNext();) {
+            GrailsDomainClass grailsDomainClass = (GrailsDomainClass) i.next();
+            GrailsControllerClass controllerClass = application.getScaffoldingController(grailsDomainClass);
+            if(controllerClass != null && controllerClass.isScaffolding()) {
+                // generate new views
+                LOG.info("Re-generating views for scaffold controller ["+controllerClass.getFullName()+"]");
+                templateGenerator.generateViews(domainClass,getServletContext().getRealPath("/WEB-INF"));
+                // overwrite with user defined views
+                copyScript.copyViews(true);
+            }
+
         }
     }
 
@@ -276,9 +310,9 @@ public class GrailsReloadServletFilter extends OncePerRequestFilter {
         if(controllerClass != null) {
              // if its a new controller re-generate web.xml, reload app context
             if(isNew) {
-            	// clean controllers
-            	copyScript.cleanControllers();
-            	// re-generate web.xml
+                // clean controllers
+                copyScript.cleanControllers();
+                // re-generate web.xml
                 LOG.info("New controller added, re-generating web.xml");
                 copyScript.generateWebXml();
             }
@@ -302,7 +336,16 @@ public class GrailsReloadServletFilter extends OncePerRequestFilter {
                 GrailsUrlHandlerMapping urlMappings = new GrailsUrlHandlerMapping();
                 urlMappings.setApplicationContext(context);
                 urlMappings.setMappings(mappings);
+                String[] interceptorNames = context.getBeanNamesForType(HandlerInterceptor.class);
+                HandlerInterceptor[] interceptors = new HandlerInterceptor[interceptorNames.length];
+                for (int i = 0; i < interceptorNames.length; i++) {
+                    String interceptorName = interceptorNames[i];
+                    interceptors[i] = (HandlerInterceptor)context.getBean(interceptorName);
+                }
+                LOG.info("Re-adding " + interceptors.length + " interceptors to mapping");
+                urlMappings.setInterceptors(interceptors);
                 urlMappings.initApplicationContext();
+
 
                 urlMappingsTargetSource.swap(urlMappings);
 
