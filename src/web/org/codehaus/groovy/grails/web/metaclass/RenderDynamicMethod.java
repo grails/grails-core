@@ -177,7 +177,7 @@ public class RenderDynamicMethod extends AbstractDynamicControllerMethod {
                 String templateUri;
                 if(templateName.indexOf('/') > -1) {
                     if(!templateName.startsWith("/"))
-                       templateName = '/' + templateName;                    
+                       templateName = '/' + templateName;
                     templateUri = templateName;
                 }
                 else {
@@ -252,7 +252,8 @@ public class RenderDynamicMethod extends AbstractDynamicControllerMethod {
         else {
             throw new MissingMethodException(METHOD_SIGNATURE,target.getClass(),arguments);
         }
-        controller.setProperty(ControllerDynamicMethods.RENDER_VIEW_PROPERTY,Boolean.valueOf(renderView));
+        if(controller!=null)
+            controller.setProperty(ControllerDynamicMethods.RENDER_VIEW_PROPERTY,Boolean.valueOf(renderView));
         return null;
     }
 }

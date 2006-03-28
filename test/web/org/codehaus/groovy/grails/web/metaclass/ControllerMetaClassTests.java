@@ -151,6 +151,33 @@ public class ControllerMetaClassTests extends TestCase {
         }
     }
 
+    public void testRenderDynamicMethod() throws Exception {
+        GroovyClassLoader gcl = new GroovyClassLoader();
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        MockHttpServletResponse response = new MockHttpServletResponse();
+
+
+
+        GrailsApplication application = createGrailsApplication(new Class[0],gcl);
+        MockServletContext mockContext =new MockServletContext();
+        mockContext.setAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT,context);
+        GrailsControllerHelper helper1 = new SimpleGrailsControllerHelper(application,context,mockContext);
+
+        RenderDynamicMethod rdm = new RenderDynamicMethod(helper1,request,response);
+        GroovyObject go = (GroovyObject)gcl.parseClass("class ClosureClass {\n" +
+                                    "@Property closure = {\n" +
+                                        "test(attr:'hello') {\n" +
+                                            "nested()" +
+                                        "}" +
+                                    "}" +
+                                    "}")
+                                    .newInstance();
+
+        assertNotNull(go.getProperty("closure"));
+        rdm.invoke(null, new Object[] {go.getProperty("closure")});
+        assertEquals("<test attr='hello'><nested/></test>",response.getContentAsString());
+    }
+
     /*public void testChainDynamicMethod() throws Exception {
 
          GroovyClassLoader gcl = new GroovyClassLoader();
