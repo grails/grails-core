@@ -310,6 +310,7 @@ Targets:
 		<path id="test.classpath">
 			<!--<pathelement location="${grails.home}/src/web-app/WEB-INF"/>-->
             <pathelement location="${basedir}/tmp/war/WEB-INF"/>
+            <pathelement location="${basedir}/tmp/war/WEB-INF/grails-app/tests"/>
             <pathelement location="${basedir}/tmp/war/WEB-INF/classes"/>
             <fileset dir="${grails.home}/lib"/>
 			<fileset dir="${grails.home}/dist"/>
@@ -334,7 +335,7 @@ Targets:
                 <exclude name="WEB-INF/*.template.xml"/>
             </fileset>
         </copy>
-
+        <delete dir="tmp/war/WEB-INF/grails-app/tests" failonerror="false" />
         <property name="controllers.home" location="grails-app/controllers"></property>
         <property name="web.xml.template"  location="web-app/WEB-INF/web.template.xml"></property>
         <property name="target.web.xml"  location="tmp/war/WEB-INF/web.xml"></property>
