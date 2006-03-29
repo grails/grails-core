@@ -124,7 +124,7 @@
 		</javadoc>
 	</target>
 
-    <target name="cruise" depends="package"/>
+    <target name="cruise" depends="jar,javadoc"/>
 
     <!-- RELEASE BUILD -->
     <target name="create-tmp-release-dir">
