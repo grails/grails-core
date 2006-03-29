@@ -14,23 +14,18 @@
  */ 
 package org.codehaus.groovy.grails.orm.hibernate.cfg;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.GrailsDomainClass;
-import org.codehaus.groovy.grails.metaclass.DomainClassMethods;
-import org.hibernate.HibernateException;
-import org.hibernate.MappingException;
-import org.hibernate.SessionFactory;
-import org.hibernate.EntityMode;
-import org.hibernate.metadata.ClassMetadata;
-import org.hibernate.cfg.Configuration;
-
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
-import java.util.Collection;
-import java.beans.IntrospectionException;
+
+//import org.apache.commons.logging.Log;
+//import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.commons.GrailsDomainClass;
+import org.hibernate.HibernateException;
+import org.hibernate.MappingException;
+import org.hibernate.SessionFactory;
+import org.hibernate.cfg.Configuration;
 
 /**
  * Creates runtime configuration mappings for the Grails domain classes
@@ -41,7 +36,7 @@ import java.beans.IntrospectionException;
  */
 public class DefaultGrailsDomainConfiguration extends Configuration implements GrailsDomainConfiguration {
 
-    private static final Log LOG  = LogFactory.getLog(DefaultGrailsDomainConfiguration.class);
+    //private static final Log LOG  = LogFactory.getLog(DefaultGrailsDomainConfiguration.class);
     /**
      *
      */
