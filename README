@@ -1,0 +1,64 @@
+                                                                     
+                                                                     
+                                                                     
+                                             
+GROOVY ON RAILS (GRAILS), release 0.1 (March 2006)
+--------------------------------------------------
+http://grails.codehaus.org
+
+
+1. INTRODUCTION
+
+Grails is a web based application framework based on the Groovy language that endorses the DRY (don't repeat yourself) and coding-by-convention philosophies. Grails runs on the Java Virtual Machine and thus has access to the entire Java Platform.
+
+With Grails you can easily create web applications thanks to:
+
+- a complete development and deployment environment. All dependencies and configuration that is required to the run Grails applications in a web server are provided by Grails. The only thing you have to worry about is your application code.
+
+- inclusion of a web server for your convenience.
+
+- development mode that automatically reloads changes made to application code, without having to restart the web server.
+
+- automatic persistence mapping of domain classes with automatic relationship management.
+
+- scaffolding on data access classes for rapid development of CRUD (Create, Read, Update, Delete) operations.
+
+- powerful web framework with dynamic tag libraries and support for Groovy Server Pages (GSP)
+
+2. GETTING STARTED
+
+To get started takes these steps: 
+
+- create a GRAILS_HOME environment variable that points to the path of the Grails distribution (the folder contain this file).
+
+- add the bin folder in the Grails distribution to the PATH environment variable
+
+On a Windows computer these step are done as follows:
+
+> set GRAILS_HOME=C:\download\grails
+> echo %GRAILS_HOME%
+C:\download\grails
+> set PATH=%GRAILS_HOME%\bin;%PATH%
+
+On a Unix-like computer these steps are done as follows:
+
+> set GRAILS_HOME=~/download/grails
+> export GRAILS_HOME
+> echo ${GRAILS_HOME}
+~/download/grails
+> cd ${GRAILS_HOME}
+> chmod a+x bin/grails
+> set PATH=${GRAILS_HOME}/bin:${PATH}
+> export PATH
+
+You can now run the grails command, as follows:
+
+> grails
+
+When this command shows a help message you are ready to start using Grails and are invited to take a look at the Grails homepage and glance over the documentation:
+
+http://grails.codehaus.org
+
+Enjoy working with Grails.
+
+The Grails team

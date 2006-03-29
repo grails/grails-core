@@ -166,6 +166,7 @@
                 <include name="build.properties"/>
                 <include name="LICENSE"/>
                 <include name="INSTALL"/>
+                <include name="README"/>            	
             </fileset>
         </copy>
     </target>
