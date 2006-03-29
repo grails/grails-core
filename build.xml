@@ -17,6 +17,7 @@
 		<delete dir="${grails.test.build}"/>
 	</target>
 	<target name="build-init">
+		<mkdir dir="${grails.build}"/>		
 		<mkdir dir="${grails.build}"/>
 		<mkdir dir="${grails.test.build}"/>
 		<mkdir dir="${grails.test.reports}"/>
@@ -132,6 +133,7 @@
     </target>
 
     <target name="copy-dir">
+        <mkdir dir="${dir.location}"/>    	
         <copy todir="${dir.destination}" failonerror="true" overwrite="true" verbose="false">
             <fileset dir="${dir.location}">
                 <exclude name="**/CVS/**"/>
