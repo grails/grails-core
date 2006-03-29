@@ -20,28 +20,27 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 var Scriptaculous = {
-  Version: '1.5.0',
+  Version: '1.6',
   require: function(libraryName) {
     // inserting via DOM fails in Safari 2.0, so brute force approach
     document.write('<script type="text/javascript" src="'+libraryName+'"></script>');
   },
   load: function() {
-    if((typeof Prototype=='undefined') ||
-      parseFloat(Prototype.Version.split(".")[0] + "." +
-                 Prototype.Version.split(".")[1]) < 1.4)
-      throw("script.aculo.us requires the Prototype JavaScript framework >= 1.4.0");
-    var scriptTags = document.getElementsByTagName("script");
-    for(var i=0;i<scriptTags.length;i++) {
-      if(scriptTags[i].src && scriptTags[i].src.match(/scriptaculous\.js(\?.*)?$/)) {
-        var path = scriptTags[i].src.replace(/scriptaculous\.js(\?.*)?$/,'');
-        this.require(path + 'builder.js');
-        this.require(path + 'effects.js');
-        this.require(path + 'dragdrop.js');
-        this.require(path + 'controls.js');
-        this.require(path + 'slider.js');
-        break;
-      }
-    }
+    if((typeof Prototype=='undefined') || 
+       (typeof Element == 'undefined') || 
+       (typeof Element.Methods=='undefined') ||
+       parseFloat(Prototype.Version.split(".")[0] + "." +
+                  Prototype.Version.split(".")[1]) < 1.5)
+       throw("script.aculo.us requires the Prototype JavaScript framework >= 1.5.0");
+    
+    $A(document.getElementsByTagName("script")).findAll( function(s) {
+      return (s.src && s.src.match(/scriptaculous\.js(\?.*)?$/))
+    }).each( function(s) {
+      var path = s.src.replace(/scriptaculous\.js(\?.*)?$/,'');
+      var includes = s.src.match(/\?.*load=([a-z,]*)/);
+      (includes ? includes[1] : 'builder,effects,dragdrop,controls,slider').split(',').each(
+       function(include) { Scriptaculous.require(path+include+'.js') });
+    });
   }
 }
 
