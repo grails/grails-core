@@ -71,6 +71,10 @@ public class GrailsDomainConfigurationUtil {
                     if(referenced != null) {
                         GrailsDomainClassProperty[] referencedProperties =  referenced.getPersistantProperties();
                         for (int k = 0; k < referencedProperties.length; k++) {
+                        	// for circular dependencies we don't want the other side 
+                        	// to be equal to self 
+                        	if(prop.equals(referencedProperties[k]))
+                        		continue;
                             if(domainClasses[i].getClazz().equals(referencedProperties[k].getReferencedPropertyType())) {
                                 prop.setOtherSide(referencedProperties[k]);
                                 break;
