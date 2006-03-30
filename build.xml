@@ -219,10 +219,7 @@
         <antcall target="copy-common-release-content">
             <param name="release.dir" value="${grails.release.dir}"/>
         </antcall>
-        <antcall>
-            <target name="${extra.target}"/>
-            <param name="release.dir" value="${grails.release.dir}"/>
-        </antcall>
+		<antcall target="create-release-package:extra-target" />  	
         <antcall target="create-archives">
             <param name="archive" value="${grails.release}"/>
             <param name="archive.dir" value="tmp"/>
@@ -230,6 +227,13 @@
         <delete dir="${grails.release.dir}" failonerror="true"/>
     </target>
 
+	<target name="create-release-package:extra-target" if="extra.target">
+		<echo>Copying extra binary release content</echo>
+    	<antcall target="${extra.target}">
+    		<param name="release.dir" value="${grails.release.dir}"/>
+    	</antcall>	
+	</target>
+	
     <target name="create-binary-release">
         <antcall target="create-release-package">
             <param name="release.name" value="grails-bin"/>
