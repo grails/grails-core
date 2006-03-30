@@ -13,6 +13,7 @@
     <taskdef name="groovyc"  classname="org.codehaus.groovy.ant.Groovyc" classpathref="classpath" />
 
 	<target name="clean" description="Clean the build directory.">
+		<delete dir="${grails.dist}"/>		
 		<delete dir="${grails.build}"/>
 		<delete dir="${grails.test.build}"/>
 	</target>
@@ -94,6 +95,14 @@
 		<jar destfile="${grails.dist}/${grails.dist.jar}" basedir="${grails.build}"/>
 	</target>
 	<target name="package" depends="clean,test,jar,javadoc" description="Create the release archives for Grails.">
+    	<delete>
+		  <fileset dir="${grails.dist}">
+		  		<include name="*.zip"/>
+     	  		<include name="*.tar.gz"/>		  	
+		  </fileset>
+		</delete>
+        <delete  file="${grails.dist}/${archive}.zip" failonerror="true"/>    	
+        <delete file="${grails.dist}/${archive}.tar.gz" failonerror="true"/>  		
         <antcall target="create-binary-release"/>
         <antcall target="create-source-release"/>
     </target>
@@ -182,10 +191,12 @@
             <param name="dir.location" value="src/war"/>
             <param name="dir.destination" value="${release.dir}/src/war"/>
         </antcall>
-        <antcall target="copy-dir">
-            <param name="dir.location" value="dist"/>
-            <param name="dir.destination" value="${release.dir}/dist"/>
-        </antcall>
+    	<copy todir="${release.dir}/dist">
+          	<fileset dir="${grails.dist}" includes="*.jar">
+            		<exclude name="*.zip"/>
+               		<exclude name="*.tar.gz"/>        		
+          	</fileset>    	
+    	</copy>
     </target>
 
     <target name="copy-exclusive-source-release-content">
@@ -197,21 +208,23 @@
             <param name="dir.location" value="test"/>
             <param name="dir.destination" value="${release.dir}/test"/>
         </antcall>
-        <antcall target="copy-dir">
-            <param name="dir.location" value="dist"/>
-            <param name="dir.destination" value="${release.dir}/dist"/>
-        </antcall>
+    	<copy todir="${release.dir}/dist">
+          	<fileset dir="${grails.dist}" includes="*.jar">
+            		<exclude name="*.zip"/>
+               		<exclude name="*.tar.gz"/>        		
+          	</fileset>    	
+    	</copy>
     </target>
 
-    <target name="create-archives">
-        <delete file="${archive}.zip" failonerror="true"/>
-        <zip basedir="${archive.dir}" destfile="../${archive}.zip"/>
+    <target name="create-archives"> 	    	
+        <delete file="${archive}.zip" failonerror="true"/>    	
+        <zip basedir="${archive.dir}" destfile="${grails.dist}/${archive}.zip" />
         <delete file="${archive}.tar.gz" failonerror="true"/>
-        <tar basedir="${archive.dir}" destfile="../${archive}.tar.gz" compression="gzip" longfile="gnu"/>
+        <tar basedir="${archive.dir}" destfile="dist/${archive}.tar.gz" compression="gzip" longfile="gnu"/>
     </target>
 
     <target name="create-release-package">
-        <property name="grails.release" value="${release.name}-${grails.version}"/>
+        <property name="grails.release" value="${release.name}"/>
         <property name="grails.release.dir" location="tmp/grails-${grails.version}"/>
         <antcall target="create-tmp-release-dir">
             <param name="dir.location" value="${grails.release.dir}"/>
@@ -236,14 +249,14 @@
 	
     <target name="create-binary-release">
         <antcall target="create-release-package">
-            <param name="release.name" value="grails-bin"/>
+            <param name="release.name" value="${grails.dist.binary}"/>
             <param name="extra.target" value="copy-exclusive-binary-release-content"/>
         </antcall>
     </target>
 
     <target name="create-source-release">
         <antcall target="create-release-package">
-            <param name="release.name" value="grails-src"/>
+            <param name="release.name" value="${grails.dist.source}"/>
             <param name="extra.target" value="copy-exclusive-source-release-content"/>
         </antcall>
     </target>
