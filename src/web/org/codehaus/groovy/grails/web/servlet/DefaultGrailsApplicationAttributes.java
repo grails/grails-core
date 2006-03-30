@@ -78,12 +78,31 @@ public class DefaultGrailsApplicationAttributes implements GrailsApplicationAttr
     }
 
     public String getTemplateUri(String templateName, ServletRequest request) {
-       return new StringBuffer("/WEB-INF/grails-app/views")
-                                   .append(getControllerUri(request))
-                                   .append("/_")
-                                   .append(templateName)
-                                   .append(".gsp")
-                                   .toString();
+       	
+       StringBuffer buf = new StringBuffer(PATH_TO_VIEWS);
+       
+       if(templateName.startsWith("/")) {
+    	   String tmp = templateName.substring(1,templateName.length());
+    	   if(tmp.indexOf('/') > -1) {
+    		   buf.append('/');
+    		   buf.append(tmp.substring(0,tmp.lastIndexOf('/')));
+    		   buf.append("/_");
+    		   buf.append(tmp.substring(tmp.lastIndexOf('/') + 1,tmp.length()));
+    	   }
+    	   else {
+    		   buf.append("/_");
+    		   buf.append(templateName.substring(1,templateName.length()));
+    	   }
+       }
+       else {
+           buf.append(getControllerUri(request))
+           .append("/_")
+           .append(templateName);
+    	   
+       }
+       return buf
+       			.append(".gsp")
+       			.toString();
    }
 
     public String getControllerActionUri(ServletRequest request) {

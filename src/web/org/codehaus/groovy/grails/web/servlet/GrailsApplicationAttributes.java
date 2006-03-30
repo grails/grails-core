@@ -1,6 +1,5 @@
 package org.codehaus.groovy.grails.web.servlet;
 
-import org.springframework.web.context.WebApplicationContext;
 import org.springframework.validation.Errors;
 import org.springframework.context.ApplicationContext;
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
@@ -18,6 +17,7 @@ import javax.servlet.ServletContext;
  */
 public interface GrailsApplicationAttributes {
 
+	String PATH_TO_VIEWS = "/WEB-INF/grails-app/views";
     String GSP_TEMPLATE_ENGINE = "org.codehaus.groovy.grails.GSP_TEMPLATE_ENGINE";
     String APPLICATION_CONTEXT = "org.codehaus.groovy.grails.APPLICATION_CONTEXT";
     String FLASH_SCOPE = "org.codehaus.groovy.grails.FLASH_SCOPE";

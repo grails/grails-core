@@ -174,15 +174,7 @@ public class RenderDynamicMethod extends AbstractDynamicControllerMethod {
                 String var = (String)argMap.get(ARGUMENT_VAR);
                 // get the template uri
                 GrailsApplicationAttributes attrs = (GrailsApplicationAttributes)controller.getProperty(ControllerDynamicMethods.GRAILS_ATTRIBUTES);
-                String templateUri;
-                if(templateName.indexOf('/') > -1) {
-                    if(!templateName.startsWith("/"))
-                       templateName = '/' + templateName;
-                    templateUri = templateName;
-                }
-                else {
-                    templateUri = attrs.getTemplateUri(templateName,request);
-                }
+                String templateUri = attrs.getTemplateUri(templateName,request);
 
                 // retrieve gsp engine
                 GroovyPagesTemplateEngine engine = attrs.getPagesTemplateEngine();
