@@ -243,9 +243,9 @@ public final class GrailsDomainBinder {
 			
 			OneToMany oneToMany = new OneToMany( collection.getOwner() );
 			collection.setElement( oneToMany );
-			if(property.isBidirectional()) {
+/*			if(property.isBidirectional()) {
 				collection.setReferencedPropertyName( property.getOtherSide().getName() );
-			}
+			}*/
 			
 			bindOneToMany( property, oneToMany, mappings );			
 		}
