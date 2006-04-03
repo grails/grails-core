@@ -23,7 +23,7 @@ import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU;
 * @author Graeme Rocher
 * @since 24-March-2006
 */
-class UITagLib extends ApplicationTagLib {
+class UITagLib {
 
     /**
      * A tree widget based on the Yahoo UI library
@@ -58,6 +58,9 @@ class UITagLib extends ApplicationTagLib {
 			}						
 			if(attrs.root) {
 				out.println "var ${attrs.id}Root = new YAHOO.widget.TextNode({label:'$attrs.root',id:'${attrs.root.ident()}'},${attrs.id}.getRoot(), false);"
+				if(attrs.onNodeClick) {					
+					out.println "YAHOO.util.Event.addListener(${attrs.id}Root.labelElId, 'click', ${attrs.onNodeClick});"																																	
+				}				
 		
 				if(attrs.childrenProperty) {
 					def children = attrs.root.getProperty(attrs.childrenProperty)
@@ -119,5 +122,39 @@ class UITagLib extends ApplicationTagLib {
 				}											
 			}					
 		}	
+	}
+	
+	/**
+	 * A Rich Text Editor component that by default uses fckeditor with a basepath of /fckeditor.
+	 * TODO: Add support for other rich text editing components like those from the Dojo framework
+	 *
+	 * Example:
+	 *
+	 * <g:richTextEditor name="editor" height="400" />
+	 */
+	@Property richTextEditor = { attrs ->
+		withTag(name:'script',attributes:[type:'text/javascript']) {
+			if(attrs.onComplete) {
+				out.println "function FCKeditor_OnComplete( editorInstance ) {"
+					out.println "${attrs.onComplete}(editorInstance);"					
+				out.println "}"
+			}
+			out << """
+			var oFCKeditor = new FCKeditor( '${attrs.name}' ) ;
+			oFCKeditor.BasePath	 = \""""
+			if(attrs.basepath) {
+				createLinkTo(dir:attrs.basepath)
+			}
+			else {
+				createLinkTo(dir:"fckeditor/")
+			}
+			out.println '";'
+			if(attrs.height)			
+				out.println "oFCKeditor.Height	= ${attrs.height};"
+			if(attrs.value)
+				out.println "oFCKeditor.Value	= '${attrs.value}' ;"
+			
+			out.println "oFCKeditor.Create();"			
+		}
 	}
 }
