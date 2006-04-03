@@ -24,7 +24,7 @@ import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU;
 * @since 17-Jan-2006
 */
 
-class ValidationTagLib extends ApplicationTagLib {
+class ValidationTagLib {
     /**
      * Checks if the request has errors either for a field or global errors
      */

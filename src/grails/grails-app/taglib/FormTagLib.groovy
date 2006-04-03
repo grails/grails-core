@@ -24,7 +24,7 @@ import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU;
  * @since 17-Jan-2006
  */
 
-class FormTagLib extends ApplicationTagLib {
+class FormTagLib {
     /**
      *  General linking to controllers, actions etc. Examples:
      *
