@@ -23,7 +23,7 @@ import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU;
  * @author Graeme Rocher
  * @since 17-Jan-2006
  */
-class JavascriptTagLib extends ApplicationTagLib  {
+class JavascriptTagLib  {
 
 	/**
 	 * Mappings to the relevant files to be included for each library
@@ -41,6 +41,19 @@ class JavascriptTagLib extends ApplicationTagLib  {
 	}									
 	/**
 	 * Includes a javascript src file, library or inline script
+	 * if the tag has no 'src' or 'library' attributes its assumed to be an inline script:
+	 *
+	 * <g:javascript>alert('hello')</g:javascript>
+	 *
+	 * The 'library' attribute will attempt to use the library mappings defined above to import the 
+	 * right js files and not duplicate imports eg.
+	 *
+	 * <g:javascript library="scripaculous" /> // imports all the necessary js for the scriptaculous library
+	 *
+	 * The 'src' attribute will merely import the js file but within the right context (ie inside the /js/ directory of 
+	 * the Grails application:
+	 *
+	 * <g:javascript src="myscript.js" /> // actually imports '/app/js/myscript.js'
 	 **/
 	@Property javascript = { attrs, body ->
 		if(!request[INCLUDED_JS]) request[INCLUDED_JS] = []
@@ -288,7 +301,8 @@ class JavascriptTagLib extends ApplicationTagLib  {
 			   out << '</form>'
 		    }
 			else if(isYahoo) {		
-				def url = outToString(createLink,attrs)
+				def url = TagLibUtil.outToString(createLink,attrs)
+				println "retrieved remote url $url"
 				def onsubmit = []
 				if(attrs.before) {
 					onsubmit << attrs.before	
@@ -318,43 +332,6 @@ class JavascriptTagLib extends ApplicationTagLib  {
 		}
     }
 
-	/**
-	 * Helper method for outputting to a string instead of the the output write
-	 */
-	def outToString(tag,attrs) {
-		def saveOut = out
-		def sw = new StringWriter()
-		def result = null
-		try {
-			this.out = new PrintWriter(sw)
-			tag(attrs)
-		}
-		finally {
-			out = saveOut;
-		}
-		return sw.toString()
-	}
-	/**
-	 * Helper method for creating tags
-	 */
-	def withTag = { params, body ->
-		out << "<${params.name}"
-		if(params.attrs) {
-			params.attrs.each{ k,v ->
-				if(v instanceof Closure) {
-					out << " $k=\""
-				    v()
-					out << '"'
-				}
-				else {
-					out << " $k=\"$v\""
-				}					
-			}
-		}
-		out << '>'
-		body()
-		out << "</${params.name}>"			
-	}
     /**
      *  Creates a form submit button that submits the current form to a remote ajax call
      */
