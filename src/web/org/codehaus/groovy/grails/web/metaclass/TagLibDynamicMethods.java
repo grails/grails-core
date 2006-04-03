@@ -18,13 +18,14 @@ package org.codehaus.groovy.grails.web.metaclass;
 import groovy.lang.GroovyObject;
 import groovy.lang.MissingMethodException;
 import groovy.lang.ProxyMetaClass;
-import org.codehaus.groovy.grails.commons.metaclass.AbstractDynamicMethodInvocation;
-import org.codehaus.groovy.grails.commons.metaclass.GenericDynamicProperty;
-import org.codehaus.groovy.grails.commons.metaclass.GroovyDynamicMethodsInterceptor;
-import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
 
 import java.beans.IntrospectionException;
 import java.io.Writer;
+
+import org.codehaus.groovy.grails.commons.metaclass.AbstractDynamicMethodInvocation;
+import org.codehaus.groovy.grails.commons.metaclass.AbstractDynamicMethodsInterceptor;
+import org.codehaus.groovy.grails.commons.metaclass.GenericDynamicProperty;
+import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
 
 /**
  * <p>Represents a controller class in Grails.
@@ -32,17 +33,21 @@ import java.io.Writer;
  * @author Graeme Rocher
  * @since Jan 14, 20056
  */
-public class TagLibDynamicMethods extends GroovyDynamicMethodsInterceptor {
+public class TagLibDynamicMethods extends AbstractDynamicMethodsInterceptor {
+
+	
     public static final String OUT_PROPERTY = "out";
     private static final String THROW_TAG_ERROR_METHOD = "throwTagError";
 
-    public TagLibDynamicMethods(GroovyObject taglib, GroovyObject controller) throws IntrospectionException {
-        super(taglib);
-
+    public TagLibDynamicMethods(GroovyObject taglib, GroovyObject controller) throws IntrospectionException {    	
+        
+    	ProxyMetaClass pmc = TagLibMetaClass.getTagLibInstance(taglib.getClass());
+ 		pmc.setInterceptor( this );
+ 		taglib.setMetaClass(pmc);	
+        
         ProxyMetaClass controllerMetaClass = (ProxyMetaClass)controller.getMetaClass();
         ControllerDynamicMethods controllerDynamicMethods = (ControllerDynamicMethods)controllerMetaClass.getInterceptor();
-
-
+        
         addDynamicProperty(new GenericDynamicProperty(OUT_PROPERTY, Writer.class,false));
 
         // add dynamic properties (shared with controller)
@@ -62,5 +67,5 @@ public class TagLibDynamicMethods extends GroovyDynamicMethodsInterceptor {
                 throw new GrailsTagException(arguments[0].toString());
             }
         });
-    }
+    }      
 }
