@@ -35,7 +35,7 @@ public abstract class AbstractDynamicMethodsInterceptor extends AbstractDynamicM
 	public Object beforeInvoke(Object target, String methodName,
 			Object[] arguments) {
 		InvocationCallback callback = new InvocationCallback();
-		this.returnValue = super.invokeMethod(target, methodName, arguments, callback);
+		this.returnValue = invokeMethod(target, methodName, arguments, callback);
 		// if the method was invoked as dynamic 
 		// don't invoke true target
 		if (callback.isInvoked()) {
@@ -58,7 +58,7 @@ public abstract class AbstractDynamicMethodsInterceptor extends AbstractDynamicM
 
 	public Object beforeGet(Object object, String property) {
 		InvocationCallback callback = new InvocationCallback();
-		Object returnValue = super.getProperty(object,property,callback);
+		Object returnValue = getProperty(object,property,callback);
 		// if the method was invoked as dynamic 
 		// don't invoke true target
 		if (callback.isInvoked()) {
@@ -72,7 +72,7 @@ public abstract class AbstractDynamicMethodsInterceptor extends AbstractDynamicM
 
 	public void beforeSet(Object object, String property, Object newValue) {
 		InvocationCallback callback = new InvocationCallback();
-		super.setProperty(object,property,newValue,callback);
+		setProperty(object,property,newValue,callback);
 		// if the method was invoked as dynamic 
 		// don't invoke true target
 		if (callback.isInvoked()) {
