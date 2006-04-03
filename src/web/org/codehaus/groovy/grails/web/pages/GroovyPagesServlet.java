@@ -17,6 +17,9 @@ package org.codehaus.groovy.grails.web.pages;
 
 import groovy.lang.Writable;
 import groovy.text.Template;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.web.errors.GrailsWrappedRuntimeException;
 import org.codehaus.groovy.grails.web.servlet.DefaultGrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
@@ -58,6 +61,9 @@ import java.util.Map;
  *
  */
 public class GroovyPagesServlet extends HttpServlet /*implements GroovyObject*/ {
+	
+	private static final Log LOG = LogFactory.getLog(GroovyPagesServlet.class);
+	
     Object x;
     private ServletContext context;
     private boolean showSource = false;
@@ -138,6 +144,7 @@ public class GroovyPagesServlet extends HttpServlet /*implements GroovyObject*/ 
             w.writeTo(out);
         }
         catch(Exception e) {
+        	LOG.debug("Error processing GSP: " + e.getMessage(), e);
             request.setAttribute("exception",new GrailsWrappedRuntimeException(context,e));
             RequestDispatcher rd = request.getRequestDispatcher("/WEB-INF/grails-app/views/error.jsp");
             rd.forward(request,response);
