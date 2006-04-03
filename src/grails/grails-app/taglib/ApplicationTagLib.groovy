@@ -31,7 +31,7 @@ class ApplicationTagLib {
      *
      * eg. <link type="text/css" href="${createLinkTo(dir:'css',file:'main.css')}" />
      */
-    @Property createLinkTo = { attrs, body ->
+    @Property createLinkTo = { attrs ->
          out << grailsAttributes.getApplicationUri(request)
          if(attrs['dir']) {
             out << "/${attrs['dir']}"
@@ -213,4 +213,30 @@ class ApplicationTagLib {
             return findUriForType(type.superClass)
         }
     }
+	
+	/**
+	 * Helper method for creating tags called like:
+	 *
+	 * withTag(name:'script',attrs:[type:'text/javascript']) {
+	 *
+	 * }
+	 */
+	@Property withTag = { attrs, body ->
+		out << "<${attrs.name}"
+		if(attrs.attrs) {
+			attrs.attrs.each{ k,v ->
+				if(v instanceof Closure) {
+					out << " $k=\""
+				    v()
+					out << '"'
+				}
+				else {
+					out << " $k=\"$v\""
+				}					
+			}
+		}
+		out << '>'
+		body()
+		out << "</${attrs.name}>"			
+	}	
 }
