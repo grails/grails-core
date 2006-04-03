@@ -23,6 +23,7 @@ public interface GrailsApplicationAttributes {
     String FLASH_SCOPE = "org.codehaus.groovy.grails.FLASH_SCOPE";
     String CONTROLLER = "org.codehaus.groovy.grails.CONTROLLER";
     String ERRORS =  "org.codehaus.groovy.grails.ERRORS";
+    String TAG_CACHE = "org.codehaus.groovy.grails.TAG_CACHE";
     String ID_PARAM = "id";
     String PARENT_APPLICATION_CONTEXT = "org.codehaus.groovy.grails.PARENT_APPLICATION_CONTEXT";
 
@@ -95,4 +96,12 @@ public interface GrailsApplicationAttributes {
      * @return Retrieves the grails application instance
      */
     GrailsApplication getGrailsApplication();
+
+    /**
+     * Retrieves a Grails tag library from the request for the named tag
+     * @param tagName The name of the tag that contains the tag library
+     * 
+     * @return An instance of the tag library or null if not found
+     */
+	GroovyObject getTagLibraryForTag(ServletRequest request,String tagName);
 }

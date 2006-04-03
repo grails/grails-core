@@ -61,8 +61,6 @@ public abstract class GroovyPage extends Script {
     public static final String FLASH = "flash";
     private GrailsApplication application;
     private GrailsApplicationAttributes grailsAttributes;
-    private ApplicationContext appContext;
-    private Map tagLibs = new HashMap();
 
     /**
      * Convert from HTML to Unicode text.  This function converts many of the encoded HTML
@@ -204,7 +202,6 @@ public abstract class GroovyPage extends Script {
             ServletContext context = (ServletContext)getBinding().getVariable(SERVLET_CONTEXT);
             this.grailsAttributes = new DefaultGrailsApplicationAttributes(context);
             this.application = grailsAttributes.getGrailsApplication();
-            this.appContext = grailsAttributes.getApplicationContext();
         }
     }
 
@@ -213,26 +210,8 @@ public abstract class GroovyPage extends Script {
             initPageState();
         Binding binding = getBinding();
         HttpServletRequest request = (HttpServletRequest)binding.getVariable(GroovyPage.REQUEST);
-        HttpServletResponse response = (HttpServletResponse)binding.getVariable(GroovyPage.RESPONSE);
 
-        GrailsTagLibClass tagLibClass = application.getTagLibClassForTag(tagName);
-        if(tagLibClass == null)
-            return null;
-        
-        GroovyObject tagLib;
-        if(tagLibs.containsKey(tagLibClass.getFullName())) {
-             tagLib = (GroovyObject)tagLibs.get(tagLibClass.getFullName());
-        }
-        else {
-            tagLib = (GroovyObject)appContext.getBean(tagLibClass.getFullName());
-            try {
-                new TagLibDynamicMethods(tagLib,grailsAttributes.getController(request));
-            } catch (IntrospectionException e) {
-                throw new GrailsTagException("Error instantiating taglib ["+tagLibClass.getFullName()+"]: " + e.getMessage(),e);
-            }
-            tagLibs.put(tagLibClass.getFullName(),tagLib);
-        }
-        return tagLib;
+        return grailsAttributes.getTagLibraryForTag(request,tagName);
     }
 
     /**

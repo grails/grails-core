@@ -14,16 +14,26 @@
  */
 package org.codehaus.groovy.grails.web.servlet;
 
+import java.beans.IntrospectionException;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.web.util.UrlPathHelper;
 import org.springframework.validation.Errors;
 import org.springframework.context.ApplicationContext;
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
+import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
 import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods;
+import org.codehaus.groovy.grails.web.metaclass.TagLibDynamicMethods;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.commons.GrailsTagLibClass;
+
 import groovy.lang.GroovyObject;
 
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletContext;
+import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
@@ -34,6 +44,7 @@ import javax.servlet.http.HttpSession;
 public class DefaultGrailsApplicationAttributes implements GrailsApplicationAttributes {
 
     private UrlPathHelper urlHelper = new UrlPathHelper();
+    
     private ServletContext context;
 
     public DefaultGrailsApplicationAttributes(ServletContext context) {
@@ -129,4 +140,32 @@ public class DefaultGrailsApplicationAttributes implements GrailsApplicationAttr
         return (GrailsApplication)getApplicationContext()
                                     .getBean(GrailsApplication.APPLICATION_ID);
     }
+
+	public GroovyObject getTagLibraryForTag(ServletRequest request, String tagName) {
+		Map tagCache = (Map)request.getAttribute(TAG_CACHE);
+		if(tagCache == null) {
+			tagCache = new HashMap();
+			request.setAttribute(TAG_CACHE,tagCache);
+		}
+		if(tagCache.containsKey(tagName)) {
+			return (GroovyObject)tagCache.get(tagName);
+		}
+		else {
+			GrailsTagLibClass tagLibClass = getGrailsApplication()
+												.getTagLibClassForTag(tagName);
+			if(tagLibClass == null)return null;
+			
+			GroovyObject controller = getController(request);
+			
+			GroovyObject tagLib = (GroovyObject)getApplicationContext()
+													.getBean(tagLibClass.getFullName());
+			try {
+				new TagLibDynamicMethods(tagLib,controller);
+			} catch (IntrospectionException e) {
+				throw new ControllerExecutionException("Introspection error creating tag library methods for tag ["+tagName+"]: " + e.getMessage(),e);
+			}
+			tagCache.put(tagName,tagLib);
+			return tagLib;
+		}
+	}
 }
