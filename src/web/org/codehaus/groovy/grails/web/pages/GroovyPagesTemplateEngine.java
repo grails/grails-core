@@ -239,6 +239,7 @@ public class GroovyPagesTemplateEngine {
             scriptClass =
                 loader.parseClass(in, uri.substring(1));
         } catch (CompilationFailedException e) {
+        	LOG.error("Compilation error compiling GSP ["+uri+"]:" + e.getMessage(), e);
             throw new ServletException("Could not parse script: " + uri, e);
         }
         pageMeta.servletScriptClass = scriptClass;
