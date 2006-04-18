@@ -31,6 +31,7 @@ import java.util.Locale;
 public class GrailsHttpServletResponse implements HttpServletResponse {
 
 	private HttpServletResponse delegate = null;
+	private boolean contentTypeSet;
 	
 	public GrailsHttpServletResponse(HttpServletResponse delegate) {
 		super();
@@ -121,7 +122,7 @@ public class GrailsHttpServletResponse implements HttpServletResponse {
 	}
 
 	public ServletOutputStream getOutputStream(String contentType, String characterEncoding) throws IOException {
-		this.delegate.setContentType(contentType + ";charset=" + characterEncoding);
+		setContentType(contentType + ";charset=" + characterEncoding);
 		return this.delegate.getOutputStream();
 	}
 	
@@ -130,12 +131,12 @@ public class GrailsHttpServletResponse implements HttpServletResponse {
 	}
 
 	public PrintWriter getWriter(String contentType, String characterEncoding) throws IOException {
-		this.delegate.setContentType(contentType + ";charset=" + characterEncoding);
+		setContentType(contentType + ";charset=" + characterEncoding);
 		return this.delegate.getWriter();
 	}
 
 	public PrintWriter getWriter(String contentType) throws IOException {
-		this.delegate.setContentType(contentType);
+		setContentType(contentType);
 		return this.delegate.getWriter();
 	}
 
@@ -148,7 +149,10 @@ public class GrailsHttpServletResponse implements HttpServletResponse {
 	}
 
 	public void setContentType(String contentType) {
-		this.delegate.setContentType(contentType);
+		if(!contentTypeSet) {
+			this.contentTypeSet = true;
+			this.delegate.setContentType(contentType);
+		}
 	}
 
 	public void setBufferSize(int bufferSize) {

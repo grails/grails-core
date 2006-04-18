@@ -19,6 +19,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
+import org.codehaus.groovy.grails.web.servlet.GrailsHttpServletResponse;
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.context.ServletContextAware;
 import org.springframework.web.servlet.ModelAndView;
@@ -75,7 +76,7 @@ public class SimpleGrailsController implements Controller, ServletContextAware {
 
         ApplicationContext context = (ApplicationContext)this.servletContext.getAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT);
         this.helper = new SimpleGrailsControllerHelper(this.application,context,this.servletContext);
-        ModelAndView mv = helper.handleURI(uri,request,response);
+        ModelAndView mv = helper.handleURI(uri,request,new GrailsHttpServletResponse(response));
 
         if(LOG.isDebugEnabled()) {
             if(mv != null) {

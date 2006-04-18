@@ -228,6 +228,9 @@ public class GroovyPagesTemplateEngine {
 
             // just return groovy and don't compile if asked
         if (spillGroovy) {
+        	if(LOG.isDebugEnabled()){
+        		LOG.debug("Show source enabled, display generated GSP source...");
+        	}
             pageMeta.groovySource = in;
             return pageMeta;
         }
@@ -323,6 +326,7 @@ public class GroovyPagesTemplateEngine {
         private HttpServletRequest request;
         private PageMeta pageMeta;
         private boolean showSource;
+        
         private ServletContext context;
         private Map additionalBinding = new HashMap();
 
@@ -345,16 +349,18 @@ public class GroovyPagesTemplateEngine {
 
         public Writer writeTo(Writer out) throws IOException {
             if (showSource) {
-                    // Set it to TEXT
+                // Set it to TEXT
                 response.setContentType("text/plain"); // must come before response.getOutputStream()
                 send(pageMeta.groovySource, out);
                 pageMeta.groovySource = null;
             } else {
                 // Set it to HTML by default
-                if(LOG.isDebugEnabled()) {
+                if(LOG.isDebugEnabled() && !response.isCommitted()) {
                     LOG.debug("Writing response with content type: " + pageMeta.contentType);
                 }
-                response.setContentType(pageMeta.contentType); // must come before response.getWriter()
+                if(!response.isCommitted())
+                	response.setContentType(pageMeta.contentType); // must come before response.getWriter()
+                
                 Binding binding = getBinding(request, response, out);
                 Script page = InvokerHelper.createScript(pageMeta.servletScriptClass, binding);
                 page.run();

@@ -67,7 +67,7 @@ public class RenderDynamicMethod extends AbstractDynamicControllerMethod {
     public RenderDynamicMethod(GrailsControllerHelper helper, HttpServletRequest request, HttpServletResponse response) {
         super(METHOD_SIGNATURE, request, response);
         this.helper = helper;
-        this.response = new GrailsHttpServletResponse(response);
+        this.response = (GrailsHttpServletResponse)response;
     }
 
     public Object invoke(Object target, Object[] arguments) {
