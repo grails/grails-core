@@ -27,9 +27,6 @@ import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU;
 class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants {
 
     protected getPage() {
-    	request.attributeNames.each {
-    		println it
-    	}
     	return request[PAGE]
     }
     
