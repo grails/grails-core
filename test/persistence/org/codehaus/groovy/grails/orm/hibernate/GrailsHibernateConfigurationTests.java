@@ -210,7 +210,7 @@ public class GrailsHibernateConfigurationTests extends AbstractDependencyInjecti
 		assertNotNull(many2one);
 		set = new HashSet();
 		one2many.setProperty("ones", set);
-		//template.save(one2many);
+		template.save(one2many);
 									
 		// create many-to-one relationship
 				

@@ -599,12 +599,12 @@ public final class GrailsDomainBinder {
             else if(grailsProperty.isManyToOne() || grailsProperty.isOneToOne()) {
                 GrailsDomainClass domainClass = grailsProperty.getDomainClass();
                 if(domainClass.isOwningClass(grailsProperty.getType())) {
-                    prop.setCascade("save-update");
+                    prop.setCascade("merge");
                 }
                 else {
                     GrailsDomainClassProperty otherSide = grailsProperty.getOtherSide();
                     if(otherSide != null && otherSide.isOneToMany()) {
-                        prop.setCascade("save-update");
+                        prop.setCascade("merge");
                     }
                     else {
                         prop.setCascade("all");
