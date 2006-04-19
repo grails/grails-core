@@ -37,10 +37,28 @@ class UITagLib {
 	            throwTagError("Tag [tree] is missing required attribute [id]")		
 	        if(!attrs.root)
 	            throwTagError("Tag [tree] is missing required attribute [root]")			            
-	            
+	          
+			def nodeEvents = attrs.findAll { k,v -> k ==~ /^onNode\w*/ }
+			
 			out << """
 			<div id='${attrs.id}'></div>
 			<script type=\"text/javascript\">
+					YAHOO.widget.TreeView.prototype.resetEvents = function(children) {
+						if(children == null)
+							children = this.getRoot().children;	
+							for(var i = 0;i<children.length;i++) {
+								"""
+								nodeEvents.each { k,v ->
+									def name = k[6..k.size()-1].toLowerCase()
+									out.println "YAHOO.util.Event.addListener(children[i].labelElId, '$name', $v);"
+								}								
+			out << """
+								if(children[i].hasChildren(false)) {
+									this.resetEvents(children[i].children);	
+								}
+							}
+						
+					}
 					var ${attrs.id} = new YAHOO.widget.TreeView(\"${attrs.id}\")
 					${attrs.id}.setExpandAnim(YAHOO.widget.TVAnim.FADE_IN);
 					${attrs.id}.setCollapseAnim(YAHOO.widget.TVAnim.FADE_OUT);"""					
@@ -58,9 +76,12 @@ class UITagLib {
 			}						
 			if(attrs.root) {
 				out.println "var ${attrs.id}Root = new YAHOO.widget.TextNode({label:'$attrs.root',id:'${attrs.root.ident()}'},${attrs.id}.getRoot(), false);"
-				if(attrs.onNodeClick) {					
-					out.println "YAHOO.util.Event.addListener(${attrs.id}Root.labelElId, 'click', ${attrs.onNodeClick});"																																	
-				}				
+				
+				
+				nodeEvents.each { k,v ->
+					def name = k[6..k.size()-1].toLowerCase()
+					out.println "YAHOO.util.Event.addListener(${attrs.id}Root.labelElId, '$name', $v);"
+				}
 		
 				if(attrs.childrenProperty) {
 					def children = attrs.root.getProperty(attrs.childrenProperty)
@@ -85,14 +106,13 @@ class UITagLib {
 								}
 							
 								onCompleteCallback();"""
-								
-					if(attrs.onNodeClick) {					
-						out << """
-								for(var i = 0; i < node.children.length;i++) {
-									YAHOO.util.Event.addListener(node.children[i].labelElId, "click", ${attrs.onNodeClick});																		
-								}"""
-	     							
-	     		    }
+					nodeEvents.each { k,v ->
+						def name = k[6..k.size()-1].toLowerCase()
+						out.println "for(var i = 0; i < node.children.length;i++) {"
+							out.println "YAHOO.util.Event.addListener(node.children[i].labelElId, '$name', $v);"
+						out.println "}"
+					}								
+
      							
 					out <<	"""}});																			
 						}

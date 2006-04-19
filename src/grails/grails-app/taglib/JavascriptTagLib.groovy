@@ -102,8 +102,8 @@ class JavascriptTagLib  {
      *  Creates a remote function call using the prototype library
      */
     @Property remoteFunction = { attrs  ->    
-		def isPrototype = request[JavascriptTagLib.INCLUDED_LIBRARIES].contains('prototype');
-		def isYahoo = request[JavascriptTagLib.INCLUDED_LIBRARIES].contains('yahoo');
+		def isPrototype = request[JavascriptTagLib.INCLUDED_LIBRARIES]?.contains('prototype');
+		def isYahoo = request[JavascriptTagLib.INCLUDED_LIBRARIES]?.contains('yahoo');
 		
 		if(!request[JavascriptTagLib.INCLUDED_LIBRARIES] || (!isYahoo && !isPrototype)) {
 			out << 'function() { alert("Grails Message: The remoteFunction tag requires the \'prototype\' or \'yahoo\' libraries to be included with the <g:javascript library=\'prototype\' /> tag"); }'		
@@ -282,8 +282,8 @@ class JavascriptTagLib  {
      * A form which used prototype to serialize its parameters and submit via an asynchronous ajax call
      */
     @Property formRemote = { attrs, body ->
-		def isPrototype = request[JavascriptTagLib.INCLUDED_LIBRARIES].contains('prototype');
-		def isYahoo = request[JavascriptTagLib.INCLUDED_LIBRARIES].contains('yahoo');
+		def isPrototype = request[JavascriptTagLib.INCLUDED_LIBRARIES]?.contains('prototype');
+		def isYahoo = request[JavascriptTagLib.INCLUDED_LIBRARIES]?.contains('yahoo');
 		
 		if(!request[JavascriptTagLib.INCLUDED_LIBRARIES] || (!isYahoo && !isPrototype)) {
 			out << 'function() { alert("Grails Message: The remoteFunction tag requires the \'prototype\' or \'yahoo\' libraries to be included with the <g:javascript library=\'prototype\' /> tag"); }'		
