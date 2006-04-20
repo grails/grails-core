@@ -103,6 +103,7 @@
 		</delete>
         <delete  file="${grails.dist}/${archive}.zip" failonerror="true"/>    	
         <delete file="${grails.dist}/${archive}.tar.gz" failonerror="true"/>  		
+        <delete dir="tmp" failonerror="true"/>  				
         <antcall target="create-binary-release"/>
         <antcall target="create-source-release"/>
     </target>
