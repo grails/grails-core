@@ -75,6 +75,13 @@ Targets:
         <mkdir dir="${grails.home}/dist"/>
 
         <copy todir="${path}web-app/WEB-INF">
+            <fileset dir="${grails.home}/src/war">
+				 <include name="**/**"/>
+                <exclude name="WEB-INF"/>
+            </fileset>
+        </copy>
+		
+        <copy todir="${path}web-app/WEB-INF">
             <fileset dir="${grails.home}/src/war/WEB-INF">
                 <include name="applicationContext.xml"/>
             </fileset>
@@ -84,18 +91,7 @@ Targets:
         </copy>
         <copy file="${grails.home}/src/war/WEB-INF/web${servlet.version}.template.xml" tofile="${path}web-app/WEB-INF/web.template.xml"/>
         <copy file="${grails.home}/src/war/WEB-INF/sitemesh.xml" tofile="${path}web-app/WEB-INF/sitemesh.xml"/>
-        <copy todir="${path}web-app/js">
-            <fileset dir="${grails.home}/src/war/js"/>
-        </copy>
-        <copy todir="${path}web-app/css">
-            <fileset dir="${grails.home}/src/war/css"/>
-        </copy>
-        <copy todir="${path}web-app/images">
-            <fileset dir="${grails.home}/src/war/images"/>
-        </copy>
-        <copy todir="${path}web-app">
-            <fileset dir="${grails.home}/src/war" includes="*"/>
-        </copy>
+
         <copy todir="${path}web-app/WEB-INF/tld">
             <fileset dir="${grails.home}/src/war/WEB-INF/tld/${servlet.version}"/>
             <fileset dir="${grails.home}/src/war/WEB-INF/tld" includes="spring.tld"/>
@@ -182,12 +178,15 @@ Targets:
 		<groovy>
 			def ctrlName = properties."controller.name"
 			properties."controller.class.name" =  project.references['normCaps'](ctrlName, 'Controller')
+			properties."controller.property.name" =  project.references['lower'](ctrlName)			
 		</groovy>
 
 		<copy 	file="${grails.home}/src/grails/templates/artifacts/Controller.groovy"
 				tofile="grails-app/controllers/${controller.class.name}Controller.groovy"
                 overwrite="false"/>
-
+			
+		<mkdir dir="grails-app/views/${controller.property.name}" />
+		
 		<replace 	file="grails-app/controllers/${controller.class.name}Controller.groovy"
 					token="@controller.name@"
 					value="${controller.class.name}" />
@@ -313,6 +312,7 @@ Targets:
             <pathelement location="${basedir}/tmp/war/WEB-INF/grails-app/tests"/>
             <pathelement location="${basedir}/tmp/war/WEB-INF/classes"/>
             <fileset dir="${grails.home}/lib"/>
+			<fileset dir="${grails.home}/ant/lib"/>
 			<fileset dir="${grails.home}/dist"/>
 			<fileset dir="lib"/>
 		</path>
