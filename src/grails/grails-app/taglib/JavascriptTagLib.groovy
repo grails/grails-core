@@ -185,7 +185,7 @@ class JavascriptTagLib  {
 			success: function(o) {'''
 			if(attrs.update) {
 				if(attrs.update instanceof Map) {
-					if(attrs.update.sucess) {
+					if(attrs.update.success) {
 						out.println "document.getElementById('${attrs.update.success}').innerHTML = o.responseText;"									
 					}								
 				}
