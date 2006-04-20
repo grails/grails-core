@@ -15,6 +15,7 @@
  */ 
 package org.codehaus.groovy.grails.commons.metaclass;
 
+import groovy.lang.MetaClass;
 import groovy.lang.MetaClassImpl;
 
 import java.beans.IntrospectionException;
@@ -25,11 +26,14 @@ import org.codehaus.groovy.runtime.InvokerHelper;
  * 
  * 
  * @author Steven Devijver
+ * @author Graeme Rocher
+ * 
  * @since Aug 8, 2005
  */
 public class DelegatingMetaClass extends MetaClassImpl {
 
 	DynamicMethods dynamicMethods = null;
+	MetaClass adaptee = null;
 	
 	public DelegatingMetaClass(Class clazz, DynamicMethods dynamicMethods)
 			throws IntrospectionException {
@@ -41,6 +45,7 @@ public class DelegatingMetaClass extends MetaClassImpl {
 		super(InvokerHelper.getInstance().getMetaRegistry(), clazz);
 		this.dynamicMethods = dynamicMethods;
 		if(inRegistry) {
+			adaptee = registry.getMetaClass(clazz);
 			registry.setMetaClass(clazz, this);
 		}
 	}	
@@ -51,7 +56,7 @@ public class DelegatingMetaClass extends MetaClassImpl {
 		if (callback.isInvoked()) {
 			return returnValue;
 		} else {
-			return super.invokeMethod(target, methodName, arguments);
+			return adaptee.invokeMethod(target, methodName, arguments);
 		}
 	}
 	
@@ -61,7 +66,7 @@ public class DelegatingMetaClass extends MetaClassImpl {
 		if (callback.isInvoked()) {
 			return returnValue;
 		} else {
-			return super.invokeStaticMethod(target, methodName, arguments);
+			return adaptee.invokeStaticMethod(target, methodName, arguments);
 		}
 	}
 
@@ -69,7 +74,7 @@ public class DelegatingMetaClass extends MetaClassImpl {
 		InvocationCallback callback = new InvocationCallback();
 		this.dynamicMethods.setProperty(object,property,newValue,callback);
 		if (!callback.isInvoked()) {
-			super.setProperty(object, property, newValue);
+			adaptee.setProperty(object, property, newValue);
 		}		
 	}
 
@@ -79,7 +84,7 @@ public class DelegatingMetaClass extends MetaClassImpl {
 		if (callback.isInvoked()) {
 			return returnValue;
 		} else {
-			return super.getProperty(object,property);
+			return adaptee.getProperty(object,property);
 		}	
 	}
 	
