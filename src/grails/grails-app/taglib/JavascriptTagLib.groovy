@@ -152,8 +152,8 @@ class JavascriptTagLib  {
 			}
 	
 
-	        if(attrs['url']) {
-	            createLink(attrs['url'])
+	        if(attrs.url) {
+	            createLink(attrs.url)
 	        }
 	        else {
 	            createLink(attrs)
@@ -174,6 +174,7 @@ class JavascriptTagLib  {
 	        // after remote function
 	        if(after)
 	           out <<  after		
+	           
 		}
 
     }
@@ -236,17 +237,19 @@ class JavascriptTagLib  {
             else
                 ajaxOptions << "evalScripts:true"
 
-            if(options['params']) {
-                ajaxOptions << "parameters:${options.remove('parameters')}"
+            if(options.params) {
+                ajaxOptions << "parameters:${options.remove('params')}"
             }
             // remaining options
             options.each { k, v ->
-                 switch(v) {
-                    case 'true': ajaxOptions << "${k}:${v}"; break;
-                    case 'false': ajaxOptions << "${k}:${v}"; break;
-                    case ~/\s*function(\w*)\s*/: ajaxOptions << "${k}:${v}"; break;
-                    default:ajaxOptions << "${k}:'${v}'"; break;
-                 }
+            	if(k!='url') {
+	                 switch(v) {
+	                    case 'true': ajaxOptions << "${k}:${v}"; break;
+	                    case 'false': ajaxOptions << "${k}:${v}"; break;
+	                    case ~/\s*function(\w*)\s*/: ajaxOptions << "${k}:${v}"; break;
+	                    default:ajaxOptions << "${k}:'${v}'"; break;
+	                 }            	
+            	}
             }
         }
         // set defaults
@@ -282,6 +285,12 @@ class JavascriptTagLib  {
      * A form which used prototype to serialize its parameters and submit via an asynchronous ajax call
      */
     @Property formRemote = { attrs, body ->
+        if(!attrs.name) {
+            throwTagError("Tag [formRemote] is missing required attribute [name]")
+        }        
+        if(!attrs.name) {
+            throwTagError("Tag [formRemote] is missing required attribute [url]")
+        }        
 		def isPrototype = request[JavascriptTagLib.INCLUDED_LIBRARIES]?.contains('prototype');
 		def isYahoo = request[JavascriptTagLib.INCLUDED_LIBRARIES]?.contains('yahoo');
 		
@@ -289,11 +298,16 @@ class JavascriptTagLib  {
 			out << 'function() { alert("Grails Message: The remoteFunction tag requires the \'prototype\' or \'yahoo\' libraries to be included with the <g:javascript library=\'prototype\' /> tag"); }'		
 		}    
 		else {	
-			if(isPrototype) {				
-			   attrs['parameters'] = "Form.serialize(this)"
-			   out << '<form onsubmit="' << remoteFunction(attrs) << ';return false;" '
+			if(isPrototype) {		
+			   def url = attrs.url.clone()
+			   attrs.params = "Form.serialize(this)"
+			   out << '<form onsubmit="' 
+			   remoteFunction(attrs)
+			   out << 'return false;" '
 			   out << 'method="' <<  (attrs['method'] ? attrs['method'] : 'post') << '" '
-			   out << 'action="' <<  (attrs['action'] ? attrs['action'] : createLink(attrs['url'])) << '">'
+			   out << 'action="' 
+			   attrs.action ? out << attrs.action : createLink(url)			   
+			   out << '">'
 		
 				// output body
 				   body()
@@ -302,7 +316,6 @@ class JavascriptTagLib  {
 		    }
 			else if(isYahoo) {		
 				def url = TagLibUtil.outToString(createLink,attrs)
-				println "retrieved remote url $url"
 				def onsubmit = []
 				if(attrs.before) {
 					onsubmit << attrs.before	
@@ -336,7 +349,7 @@ class JavascriptTagLib  {
      *  Creates a form submit button that submits the current form to a remote ajax call
      */
     @Property submitToRemote = { attrs, body ->
-        attrs['parameters'] = "Form.serialize(this.form)"
+        attrs.params = "Form.serialize(this.form)"
         out << "<input type='button' name='${attrs.remove('name')}' value='${attrs.remove('value')}' "
         out << 'onclick="'
         remoteFunction(attrs)
