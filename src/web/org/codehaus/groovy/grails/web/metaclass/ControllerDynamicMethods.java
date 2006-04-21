@@ -17,6 +17,7 @@ package org.codehaus.groovy.grails.web.metaclass;
 
 import groovy.lang.Closure;
 import groovy.lang.GroovyObject;
+import groovy.lang.MissingMethodException;
 import groovy.lang.MissingPropertyException;
 import org.codehaus.groovy.grails.commons.GrailsControllerClass;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
@@ -56,30 +57,34 @@ public class ControllerDynamicMethods extends
 	public static final String MODEL_AND_VIEW_PROPERTY = "modelAndView";
     public static final String ACTION_URI_PROPERTY = "actionUri";
     public static final String CONTROLLER_URI_PROPERTY = "controllerUri";
+	private static final String GET_VIEW_URI = null;
+	private static final String GET_TEMPLATE_URI = null;
 
 
     protected GrailsControllerClass controllerClass;
 	protected GrailsScaffolder scaffolder;
 	private boolean scaffolding;
+	private GrailsApplicationAttributes grailsAttributes;
 
 
 
-    public ControllerDynamicMethods( GroovyObject controller,GrailsControllerHelper helper,HttpServletRequest request, HttpServletResponse response) throws IntrospectionException {
+    public ControllerDynamicMethods( GroovyObject controller,GrailsControllerHelper helper,final HttpServletRequest request, HttpServletResponse response) throws IntrospectionException {
         super(controller);
 
         this.controllerClass = helper.getControllerClassByName(controller.getClass().getName());
-
+        this.grailsAttributes = helper.getGrailsAttributes();
+        
         // add dynamic properties
         addDynamicProperty(new GetParamsDynamicProperty(request,response));
         addDynamicProperty(new GetSessionDynamicProperty(request,response));
         addDynamicProperty(new GenericDynamicProperty(REQUEST_PROPERTY, HttpServletRequest.class,new GrailsHttpServletRequest( request,controller),true) );
         addDynamicProperty(new GenericDynamicProperty(RESPONSE_PROPERTY, HttpServletResponse.class,response,true) );
         addDynamicProperty(new GenericDynamicProperty(SERVLET_CONTEXT, ServletContext.class,helper.getServletContext(),true) );
-        addDynamicProperty(new GenericDynamicProperty(FLASH_SCOPE_PROPERTY, FlashScope.class,helper.getGrailsAttributes().getFlashScope(request),false) );
+        addDynamicProperty(new GenericDynamicProperty(FLASH_SCOPE_PROPERTY, FlashScope.class,grailsAttributes.getFlashScope(request),false) );
         addDynamicProperty(new GenericDynamicProperty(ERRORS_PROPERTY, Errors.class, null, false));
         addDynamicProperty(new GenericDynamicProperty(MODEL_AND_VIEW_PROPERTY, ModelAndView.class,null,false));
-        addDynamicProperty(new GenericDynamicProperty(GRAILS_ATTRIBUTES, GrailsApplicationAttributes.class,helper.getGrailsAttributes(),true));
-        addDynamicProperty(new GenericDynamicProperty(GRAILS_APPLICATION, GrailsApplication.class,helper.getGrailsAttributes().getGrailsApplication(),true));        
+        addDynamicProperty(new GenericDynamicProperty(GRAILS_ATTRIBUTES, GrailsApplicationAttributes.class,grailsAttributes,true));
+        addDynamicProperty(new GenericDynamicProperty(GRAILS_APPLICATION, GrailsApplication.class,grailsAttributes.getGrailsApplication(),true));        
         addDynamicProperty(new GenericDynamicProperty(ACTION_URI_PROPERTY,String.class,null,false));
         addDynamicProperty(new GenericDynamicProperty(CONTROLLER_URI_PROPERTY,String.class,null,false));
         addDynamicProperty(new GenericDynamicProperty(RENDER_VIEW_PROPERTY,Boolean.class, Boolean.TRUE,false));
@@ -89,6 +94,36 @@ public class ControllerDynamicMethods extends
         addDynamicMethodInvocation( new ChainDynamicMethod(helper, request, response ) );
         addDynamicMethodInvocation( new RenderDynamicMethod(helper,request,response));
         addDynamicMethodInvocation( new BindDynamicMethod(request,response));
+        
+        // the getViewUri(name,request) method that retrieves the name of a view for current controller
+        addDynamicMethodInvocation( new AbstractDynamicMethodInvocation(GET_VIEW_URI){
+
+			public Object invoke(Object target, Object[] arguments) {
+				if(arguments.length==0)
+					throw new MissingMethodException(GET_VIEW_URI,target.getClass(),arguments);
+				if(!(arguments[0] instanceof String))
+						throw new MissingMethodException(GET_VIEW_URI,target.getClass(),arguments);
+				
+				
+				
+				return grailsAttributes.getViewUri((String)arguments[0], request);
+			}
+        	
+        });
+        
+        // the getTemplateUri(name,request) method that retrieves the name of a template for current controller        
+        addDynamicMethodInvocation( new AbstractDynamicMethodInvocation(GET_TEMPLATE_URI){
+
+			public Object invoke(Object target, Object[] arguments) {
+				if(arguments.length==0)
+					throw new MissingMethodException(GET_TEMPLATE_URI,target.getClass(),arguments);
+				if(!(arguments[0] instanceof String))
+						throw new MissingMethodException(GET_TEMPLATE_URI,target.getClass(),arguments);		
+								
+				return grailsAttributes.getTemplateUri((String)arguments[0],request);
+			}
+        	
+        });        
 
         // the hasErrors() dynamic method that checks of there are any errors in the controller
         addDynamicMethodInvocation( new AbstractDynamicMethodInvocation(HAS_ERRORS_METHOD) {

@@ -14,28 +14,26 @@
  */
 package org.codehaus.groovy.grails.web.servlet;
 
+import groovy.lang.GroovyObject;
+
 import java.beans.IntrospectionException;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.springframework.web.util.UrlPathHelper;
-import org.springframework.validation.Errors;
-import org.springframework.context.ApplicationContext;
-import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
-import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
-import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods;
-import org.codehaus.groovy.grails.web.metaclass.TagLibDynamicMethods;
-import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.GrailsTagLibClass;
-
-import groovy.lang.GroovyObject;
-
-import javax.servlet.ServletRequest;
 import javax.servlet.ServletContext;
-import javax.servlet.ServletResponse;
+import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+
+import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.commons.GrailsTagLibClass;
+import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods;
+import org.codehaus.groovy.grails.web.metaclass.TagLibDynamicMethods;
+import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
+import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.validation.Errors;
+import org.springframework.web.util.UrlPathHelper;
 
 /**
  * @author Graeme Rocher
@@ -167,5 +165,32 @@ public class DefaultGrailsApplicationAttributes implements GrailsApplicationAttr
 			tagCache.put(tagName,tagLib);
 			return tagLib;
 		}
+	}
+
+	public String getViewUri(String viewName, HttpServletRequest request) {
+	       StringBuffer buf = new StringBuffer(PATH_TO_VIEWS);
+	       
+	       if(viewName.startsWith("/")) {
+	    	   String tmp = viewName.substring(1,viewName.length());
+	    	   if(tmp.indexOf('/') > -1) {
+	    		   buf.append('/');
+	    		   buf.append(tmp.substring(0,tmp.lastIndexOf('/')));
+	    		   buf.append("/");
+	    		   buf.append(tmp.substring(tmp.lastIndexOf('/') + 1,tmp.length()));
+	    	   }
+	    	   else {
+	    		   buf.append("/");
+	    		   buf.append(viewName.substring(1,viewName.length()));
+	    	   }
+	       }
+	       else {
+	           buf.append(getControllerUri(request))
+	           .append("/")
+	           .append(viewName);
+	    	   
+	       }
+	       return buf
+	       			.append(".gsp")
+	       			.toString();
 	}
 }

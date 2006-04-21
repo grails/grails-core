@@ -8,6 +8,7 @@ import groovy.lang.GroovyObject;
 
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * An interface defining the names of and methods to retrieve Grails specific request and servlet attributes
@@ -70,6 +71,15 @@ public interface GrailsApplicationAttributes {
      * @return The uri of a named template for the current controller
      */
     String getTemplateUri(String templateName, ServletRequest request);
+    
+	/**
+	 * Retrieves the uri of a named view
+	 * 
+	 * @param viewName The name of the view
+	 * @param request The request instance
+	 * @return The name of the view
+	 */
+	String getViewUri(String viewName, HttpServletRequest request);    
 
     /**
      *
@@ -104,4 +114,6 @@ public interface GrailsApplicationAttributes {
      * @return An instance of the tag library or null if not found
      */
 	GroovyObject getTagLibraryForTag(ServletRequest request,String tagName);
+
+
 }

@@ -27,6 +27,24 @@ public class GrailsApplicationAttributesTests extends TestCase {
 		 assertEquals("/WEB-INF/grails-app/views/shared/_test.gsp",attrs.getTemplateUri("/shared/test", new MockHttpServletRequest()));
 	}
 
+	/*
+	 * Test method for 'org.codehaus.groovy.grails.web.servlet.DefaultGrailsApplicationAttributes.getViewUri(String, ServletRequest)'
+	 */
+	public void testGetViewUri() throws Exception {
+		GrailsApplicationAttributes attrs = new DefaultGrailsApplicationAttributes(new MockServletContext());
+		GroovyClassLoader gcl = new GroovyClassLoader();
+        Class controllerClass = gcl.parseClass( "class TestController {\n" +
+                "@Property "+ControllerDynamicMethods.CONTROLLER_URI_PROPERTY+" = '/test'\n" +
+                "}" );	
+        
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setAttribute(GrailsApplicationAttributes.CONTROLLER, controllerClass.newInstance());
+        
+		 
+		 assertEquals("/WEB-INF/grails-app/views/test/aView.gsp",attrs.getViewUri("aView", request));
+		 assertEquals("/WEB-INF/grails-app/views/shared.gsp",attrs.getViewUri("/shared", request));
+	}
+	
 	public void testGetTagLibForTag() throws Exception {
 		GroovyClassLoader gcl = new GroovyClassLoader();
         Class controllerClass = gcl.parseClass( "class TestController {\n" +
