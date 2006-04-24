@@ -173,7 +173,34 @@ public class GroovyPagesTemplateEngine {
         if(LOG.isDebugEnabled()) {
             LOG.debug("Loading GSP for url ["+pageId+"]");
         }
-        return context.getResource(pageId);
+        URL url = context.getResource(pageId);
+        if(url == null) {
+        	StringBuffer buf = new StringBuffer();
+        	String[] tokens;
+        	if(pageId.startsWith("/"))
+        		tokens = pageId.substring(1).split("/");
+        	else
+        		tokens = pageId.split("/");
+        	  
+        	buf.append(GrailsApplicationAttributes.PATH_TO_VIEWS);
+        	buf.append('/');
+        	if(tokens.length > 0) {
+        		buf.append(tokens[0]);
+        		buf.append('/');
+        	}
+        	if(tokens.length > 1) {
+        		buf.append(tokens[1]);
+        	}        	
+        	buf.append(GrailsApplicationAttributes.GSP_FILE_EXTENSION);
+        	
+        	String secondTry = buf.toString();
+        	
+            if(LOG.isDebugEnabled()) {
+                LOG.debug("Page ["+pageId+"] doesn't exist, trying ["+secondTry+"]");
+            }        	
+        	url = context.getResource(secondTry);
+        }
+        return url;
     } // getPageUrl()
 
     /**
@@ -269,6 +296,7 @@ public class GroovyPagesTemplateEngine {
                     return true;
                 }
             } catch (IOException ioe) {
+            	LOG.debug("I/O exception checking last modified date of GSP: " + ioe.getMessage(),ioe);
                 return true;
             }
         }
