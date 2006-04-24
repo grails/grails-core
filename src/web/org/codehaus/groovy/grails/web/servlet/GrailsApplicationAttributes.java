@@ -18,6 +18,7 @@ import javax.servlet.http.HttpServletRequest;
  */
 public interface GrailsApplicationAttributes {
 
+	String GSP_FILE_EXTENSION = ".gsp";
 	String PATH_TO_VIEWS = "/WEB-INF/grails-app/views";
     String GSP_TEMPLATE_ENGINE = "org.codehaus.groovy.grails.GSP_TEMPLATE_ENGINE";
     String APPLICATION_CONTEXT = "org.codehaus.groovy.grails.APPLICATION_CONTEXT";
@@ -27,6 +28,7 @@ public interface GrailsApplicationAttributes {
     String TAG_CACHE = "org.codehaus.groovy.grails.TAG_CACHE";
     String ID_PARAM = "id";
     String PARENT_APPLICATION_CONTEXT = "org.codehaus.groovy.grails.PARENT_APPLICATION_CONTEXT";
+	String GSP_TO_RENDER = "org.codehaus.groovy.grails.GSP_TO_RENDER";
 
     /**
      * @return The application context for servlet
