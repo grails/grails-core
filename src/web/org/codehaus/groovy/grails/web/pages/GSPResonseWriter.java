@@ -152,7 +152,9 @@ public class GSPResonseWriter extends PrintWriter {
 	 */
 	public void print(Object obj) {
 		if (obj == null) obj = "";
-		write(String.valueOf(obj));
+		String out = String.valueOf(obj);
+		if(out == null)out = "";
+		write(out);
 	}
 
 	/**
