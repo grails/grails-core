@@ -18,25 +18,23 @@ package org.codehaus.groovy.grails.web.pages;
 import groovy.lang.Writable;
 import groovy.text.Template;
 
+import java.io.IOException;
+import java.io.Writer;
+import java.net.URL;
+
+import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.web.errors.GrailsWrappedRuntimeException;
 import org.codehaus.groovy.grails.web.servlet.DefaultGrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
-
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.RequestDispatcher;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.io.Writer;
-import java.net.URL;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * NOTE: Based on work done by on the GSP standalone project (https://gsp.dev.java.net/)
@@ -68,7 +66,6 @@ public class GroovyPagesServlet extends HttpServlet /*implements GroovyObject*/ 
     private ServletContext context;
     private boolean showSource = false;
 
-    private static Map pageCache = Collections.synchronizedMap(new HashMap());
     private static ClassLoader parent;
     private GroovyPagesTemplateEngine engine;
     private GrailsApplicationAttributes grailsAttributes;
@@ -129,7 +126,10 @@ public class GroovyPagesServlet extends HttpServlet /*implements GroovyObject*/ 
         this.engine = grailsAttributes.getPagesTemplateEngine();
         this.engine.setShowSource(this.showSource);
         
-        String pageId = engine.getPageId(request);
+        
+        String pageId = (String)request.getAttribute(GrailsApplicationAttributes.GSP_TO_RENDER);
+        if(pageId == null)
+        	pageId = engine.getPageId(request);
         URL pageUrl = engine.getPageUrl(context,pageId);
         if (pageUrl == null) {
             context.log("GroovyPagesServlet:  \"" + pageUrl + "\" not found");
@@ -138,6 +138,11 @@ public class GroovyPagesServlet extends HttpServlet /*implements GroovyObject*/ 
         }
 
         Template t = engine.createTemplate(context,request,response);
+        if(t == null) {
+            context.log("GroovyPagesServlet:  \"" + pageUrl + "\" not found");
+            response.sendError(404, "\"" + pageUrl + "\" not found.");
+            return;        	
+        }
         Writable w = t.make();
         Writer out = GSPResonseWriter.getInstance(response, 8192);
         try {
