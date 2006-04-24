@@ -15,25 +15,28 @@
  */
 package org.codehaus.groovy.grails.web.pages;
 
-import groovy.lang.*;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.GrailsTagLibClass;
-import org.codehaus.groovy.grails.web.metaclass.TagLibDynamicMethods;
-import org.codehaus.groovy.grails.web.servlet.DefaultGrailsApplicationAttributes;
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
-import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
-import org.springframework.context.ApplicationContext;
+import groovy.lang.Binding;
+import groovy.lang.Closure;
+import groovy.lang.GroovyObject;
+import groovy.lang.MissingMethodException;
+import groovy.lang.MissingPropertyException;
+import groovy.lang.Script;
 
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.beans.IntrospectionException;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.HashMap;
 import java.util.Map;
+
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.web.metaclass.TagLibDynamicMethods;
+import org.codehaus.groovy.grails.web.servlet.DefaultGrailsApplicationAttributes;
+import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
+import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
 
 /**
  * NOTE: Based on work done by on the GSP standalone project (https://gsp.dev.java.net/)
