@@ -16,6 +16,10 @@
 package org.codehaus.groovy.grails.web.pages;
 
 import javax.servlet.ServletResponse;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import java.io.*;
 
 /**
@@ -31,6 +35,7 @@ import java.io.*;
  *
  */
 public class GSPResonseWriter extends PrintWriter {
+	private static final Log LOG = LogFactory.getLog(GSPResonseWriter.class);
 	private ServletResponse response;
 	private CharArrayWriter out0 = new CharArrayWriter();
 	private Writer out1;
@@ -62,15 +67,6 @@ public class GSPResonseWriter extends PrintWriter {
         this.out1 = writer;
         this.max = max;
 	}
-
-    /**
-	 * Make sure streams get closed eventually.
-	 * @throws Throwable
-	 */
-	protected void finalize() throws Throwable {
-		close();
-		super.finalize();
-	} // finalize()
 
 	/**
 	 * Flush the stream if it's not closed and check its error state.
@@ -108,6 +104,7 @@ public class GSPResonseWriter extends PrintWriter {
 			try {
 				out1 = response.getWriter();
 			} catch (IOException e) {
+				LOG.debug("I/O excepton flushing output in GSP response writer: " + e.getMessage(),e  );
 				trouble = true;
 				return;
 			}
@@ -116,6 +113,7 @@ public class GSPResonseWriter extends PrintWriter {
 			out1.write(out0.toCharArray());
 			out0.reset();
 		} catch (IOException e) {
+			LOG.debug("I/O excepton flushing output in GSP response writer: " + e.getMessage(),e  );
 			trouble = true;
 		}
 	} // flush()
