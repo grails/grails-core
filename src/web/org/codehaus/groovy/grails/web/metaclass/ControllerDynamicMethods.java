@@ -101,12 +101,10 @@ public class ControllerDynamicMethods extends
 			public Object invoke(Object target, Object[] arguments) {
 				if(arguments.length==0)
 					throw new MissingMethodException(GET_VIEW_URI,target.getClass(),arguments);
-				if(!(arguments[0] instanceof String))
-						throw new MissingMethodException(GET_VIEW_URI,target.getClass(),arguments);
+				if(arguments[0] == null)
+					throw new IllegalArgumentException("Argument [viewName] of method [" + GET_VIEW_URI + "] cannot be null");
 				
-				
-				
-				return grailsAttributes.getViewUri((String)arguments[0], request);
+				return grailsAttributes.getViewUri(arguments[0].toString(), request);
 			}
         	
         });
@@ -117,10 +115,10 @@ public class ControllerDynamicMethods extends
 			public Object invoke(Object target, Object[] arguments) {
 				if(arguments.length==0)
 					throw new MissingMethodException(GET_TEMPLATE_URI,target.getClass(),arguments);
-				if(!(arguments[0] instanceof String))
-						throw new MissingMethodException(GET_TEMPLATE_URI,target.getClass(),arguments);		
-								
-				return grailsAttributes.getTemplateUri((String)arguments[0],request);
+				if(arguments[0] == null)
+					throw new IllegalArgumentException("Argument [templateName] of method [" + GET_TEMPLATE_URI + "] cannot be null");
+				
+				return grailsAttributes.getTemplateUri(arguments[0].toString(),request);
 			}
         	
         });        
