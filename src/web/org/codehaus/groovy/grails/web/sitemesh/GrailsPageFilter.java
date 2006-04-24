@@ -25,6 +25,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 
 import com.opensymphony.module.sitemesh.Decorator;
 import com.opensymphony.module.sitemesh.Page;
@@ -56,13 +57,23 @@ public class GrailsPageFilter extends PageFilter {
                     context = context.getContext(decorator.getURIPath());
                 }
             }    		
-            
-            if(LOG.isDebugEnabled()) {
-            	LOG.debug("Rendering layout using include: " + decorator.getURIPath());
-            }
+                      
             RequestDispatcher rd = request.getRequestDispatcher(decorator.getURIPath());
-            rd.forward(request, response);
-    		
+            if(!response.isCommitted()) {
+                if(LOG.isDebugEnabled()) {
+                	LOG.debug("Rendering layout using forward: " + decorator.getURIPath());
+                }            	            	
+            	rd.forward(request, response);
+            } 
+            else {
+                if(LOG.isDebugEnabled()) {
+                	LOG.debug("Rendering layout using include: " + decorator.getURIPath());
+                }
+                request.setAttribute(GrailsApplicationAttributes.GSP_TO_RENDER,decorator.getURIPath());
+                rd.include(request,response);
+                request.removeAttribute(GrailsApplicationAttributes.GSP_TO_RENDER);
+            }
+            
             // set the headers specified as decorator init params
             while (decorator.getInitParameterNames().hasNext()) {
                 String initParam = (String) decorator.getInitParameterNames().next();
@@ -70,7 +81,6 @@ public class GrailsPageFilter extends PageFilter {
                     response.setHeader(initParam.substring(initParam.indexOf('.')), decorator.getInitParameter(initParam));
                 }
             }
-
             request.removeAttribute(PAGE);        		        		
     	}
     	else {
