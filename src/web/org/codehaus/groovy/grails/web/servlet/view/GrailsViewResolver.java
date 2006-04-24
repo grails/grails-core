@@ -32,7 +32,6 @@ import java.net.URL;
  * @since 11-Jan-2006
  */
 public class GrailsViewResolver extends InternalResourceViewResolver {
-    private String localSuffix;
     private String localPrefix;
     private static final String GSP_SUFFIX = ".gsp";
     private Map resolvedCache = new HashMap();
@@ -44,7 +43,6 @@ public class GrailsViewResolver extends InternalResourceViewResolver {
 
     public void setSuffix(String suffix) {
         super.setSuffix(suffix);
-        this.localSuffix = suffix;
     }
 
     protected View loadView(String viewName, Locale locale) throws Exception {
@@ -73,9 +71,5 @@ public class GrailsViewResolver extends InternalResourceViewResolver {
         view.setApplicationContext(getApplicationContext());
         view.afterPropertiesSet();
         return view;
-    }
-
-    private String localUrlForView(String viewName) {
-        return null;
     }
 }
