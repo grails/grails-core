@@ -109,7 +109,7 @@ public class SavePersistentMethod extends AbstractDynamicPersistentMethod {
             }
         }
 
-        t.merge(target);
+        t.saveOrUpdate(target);
 
         return success;
     }
