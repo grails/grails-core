@@ -17,7 +17,6 @@ package org.codehaus.groovy.grails.web.pages;
 
 import java.io.PrintWriter;
 import java.io.Writer;
-import java.util.regex.Pattern;
 
 /**
  * A PrintWriter used in the generation of GSP pages that allows printing to the target output stream and
@@ -29,7 +28,7 @@ import java.util.regex.Pattern;
 public class GSPWriter extends PrintWriter {
     private int lineNumber = 1;
     private int[] lineNumbers = new int[1000];
-    private static final Pattern LINE_BREAK = Pattern.compile("\\r\\n|\\n|\\r");
+    //private static final Pattern LINE_BREAK = Pattern.compile("\\r\\n|\\n|\\r");
     private Parse parse;
 
     public GSPWriter(Writer out, Parse parse) {
