@@ -17,6 +17,7 @@ package grails.orm;
 
 import grails.util.ExtendProxy;
 import groovy.lang.MissingMethodException;
+import groovy.lang.MissingPropertyException;
 import groovy.util.BuilderSupport;
 import groovy.util.Proxy;
 
@@ -27,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.hibernate.Criteria;
+import org.hibernate.FetchMode;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.criterion.Criterion;
@@ -99,7 +101,7 @@ public class HibernateCriteriaBuilder extends BuilderSupport {
 	private static final String ROOT_CALL = "doCall";
 	private static final String LIST_CALL = "list";
 	private static final String GET_CALL = "get";
-	private static final String SETTER_PREFIX = "set";
+	private static final String SCROLL_CALL = "scroll";
 	
 	
 	private SessionFactory sessionFactory;
@@ -113,6 +115,7 @@ public class HibernateCriteriaBuilder extends BuilderSupport {
 	private List logicalExpressions = new ArrayList();
 	private List logicalExpressionArgs = new ArrayList();
 	private boolean participate;
+	private boolean scroll;
 	
 	
 	public HibernateCriteriaBuilder(Class targetClass, SessionFactory sessionFactory) {
@@ -132,6 +135,17 @@ public class HibernateCriteriaBuilder extends BuilderSupport {
 		this.uniqueResult = uniqueResult;
 	}
 	
+	/**
+	 * Sets the fetch mode of an associated path
+	 * 
+	 * @param associationPath The name of the associated path
+	 * @param fetchMode The fetch mode to set
+	 */
+	public void fetchMode(String associationPath, FetchMode fetchMode) {
+		if(criteria!=null) {
+			criteria.setFetchMode(associationPath, fetchMode);
+		}
+	}
 	/**
 	 * Creates a Criterion that compares to class properties for equality
 	 * @param propertyName The first property name
@@ -552,13 +566,16 @@ public class HibernateCriteriaBuilder extends BuilderSupport {
 	}
 	
 	protected Object createNode(Object name, Map attributes) {		
-		if(name.equals(ROOT_CALL) || name.equals(LIST_CALL) || name.equals(GET_CALL)) {
+		if(name.equals(ROOT_CALL) || name.equals(LIST_CALL) || name.equals(GET_CALL) || name.equals(SCROLL_CALL)) {
 			
 			if(this.criteria != null)
 				throwRuntimeException( new IllegalArgumentException("call to [" + name + "] not supported here"));
 				
 			if(name.equals(GET_CALL))
 				this.uniqueResult = true;
+			if(name.equals(SCROLL_CALL)) {
+				this.scroll = true;
+			}
 			
 			if(TransactionSynchronizationManager.hasResource(sessionFactory)) {
 				this.participate = true;
@@ -590,9 +607,16 @@ public class HibernateCriteriaBuilder extends BuilderSupport {
 	protected void nodeCompleted(Object parent, Object node) {
 		if(node instanceof Proxy) {
 			if(!uniqueResult) {
-				resultProxy.setAdaptee(
-						this.criteria.list()
-				);
+				if(scroll) {
+					resultProxy.setAdaptee(
+							this.criteria.scroll()
+					);					
+				}
+				else {
+					resultProxy.setAdaptee(
+							this.criteria.list()
+					);
+				}
 			}
 			else {
 				resultProxy.setAdaptee(
@@ -718,17 +742,17 @@ public class HibernateCriteriaBuilder extends BuilderSupport {
 			return c;
 		}
 		else {
-			String nameString = (String)name;
-			nameString = SETTER_PREFIX + nameString.substring(0,1).toUpperCase() + nameString.substring(1);
+			String nameString = name.toString();
 			if(parent instanceof Proxy) {
-					try {
-						criteriaProxy.invokeMethod(nameString, value);
-						return this.criteria;
-					}
-					catch(MissingMethodException mme) {
-						throwRuntimeException( new MissingMethodException(nameString, getClass(), new Object[] {value}) );
-					}
+				try {
+					criteriaProxy.setProperty(nameString, value);
+					return criteria;
+				}
+				catch(MissingPropertyException mpe) {
+					throwRuntimeException( new MissingMethodException(nameString, getClass(), new Object[] {value}) );				
+				}
 			}
+			
 			throwRuntimeException( new MissingMethodException(nameString, getClass(), new Object[] {value}));
 		}
 		return c;
