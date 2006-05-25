@@ -164,4 +164,15 @@ public abstract class AbstractDynamicMethods implements DynamicMethods {
 	public DynamicProperty getDynamicProperty(String propertyName) {
 		return (DynamicProperty)this.dynamicProperties.get(propertyName);
 	}
+	
+	public DynamicMethodInvocation getDynamicMethod(String method_signature) {
+		for (Iterator iter = this.dynamicMethodInvocations.iterator(); iter.hasNext();) {
+			DynamicMethodInvocation methodInvocation = (DynamicMethodInvocation)iter.next();
+			if (methodInvocation.isMethodMatch(method_signature)) {
+
+				return methodInvocation;
+			}
+		}		
+		return null;
+	}	
 }

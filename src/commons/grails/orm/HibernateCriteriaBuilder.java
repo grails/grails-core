@@ -33,6 +33,8 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.criterion.Criterion;
 import org.hibernate.criterion.Order;
+import org.hibernate.criterion.ProjectionList;
+import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.orm.hibernate3.SessionHolder;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
@@ -44,6 +46,9 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
  * <pre>
  * 		def c = Account.createCriteria()
  * 		def results = c {
+ * 			projections {
+ * 				groupProperty("branch")
+ * 			}
  * 			like("holderFirstName", "Fred%")
  * 			and {
  * 				between("balance", 500, 1000)
@@ -100,8 +105,10 @@ public class HibernateCriteriaBuilder extends BuilderSupport {
 
 	private static final String ROOT_CALL = "doCall";
 	private static final String LIST_CALL = "list";
+	private static final String COUNT_CALL = "count";
 	private static final String GET_CALL = "get";
 	private static final String SCROLL_CALL = "scroll";
+	private static final String PROJECTIONS = "projections";
 	
 	
 	private SessionFactory sessionFactory;
@@ -116,6 +123,8 @@ public class HibernateCriteriaBuilder extends BuilderSupport {
 	private List logicalExpressionArgs = new ArrayList();
 	private boolean participate;
 	private boolean scroll;
+	private boolean count;
+	private ProjectionList projectionList;
 	
 	
 	public HibernateCriteriaBuilder(Class targetClass, SessionFactory sessionFactory) {
@@ -134,6 +143,118 @@ public class HibernateCriteriaBuilder extends BuilderSupport {
 	public void setUniqueResult(boolean uniqueResult) {
 		this.uniqueResult = uniqueResult;
 	}
+	
+	/**
+	 * Adds a projection that allows the criteria to return the property average value
+	 * 
+	 * @param propertyName The name of the property
+	 */
+	public void avg(String propertyName) {
+		if(this.projectionList == null) {
+			throwRuntimeException( new IllegalArgumentException("call to [avg] must be within a [projections] node"));
+		}
+		else {
+			this.projectionList.add(Projections.avg(propertyName));		
+		}
+	}
+	
+	/**
+	 * Adds a projection that allows the criteria to return the property count
+	 * 
+	 * @param propertyName The name of the property
+	 */
+	public void count(String propertyName) {
+		if(this.projectionList == null) {
+			throwRuntimeException( new IllegalArgumentException("call to [count] must be within a [projections] node"));
+		}
+		else {
+			this.projectionList.add(Projections.count(propertyName));		
+		}
+	}
+	
+	/**
+	 * Adds a projection that allows the criteria to return the distinct property count
+	 * 
+	 * @param propertyName The name of the property
+	 */
+	public void countDistinct(String propertyName) {
+		if(this.projectionList == null) {
+			throwRuntimeException( new IllegalArgumentException("call to [countDistinct] must be within a [projections] node"));
+		}
+		else {
+			this.projectionList.add(Projections.countDistinct(propertyName));		
+		}
+	}		
+	
+	/**
+	 * Adds a projection that allows the criteria's result to be grouped by a property
+	 * 
+	 * @param propertyName The name of the property
+	 */
+	public void groupProperty(String propertyName) {
+		if(this.projectionList == null) {
+			throwRuntimeException( new IllegalArgumentException("call to [groupProperty] must be within a [projections] node"));
+		}
+		else {
+			this.projectionList.add(Projections.groupProperty(propertyName));		
+		}
+	}	
+	
+	/**
+	 * Adds a projection that allows the criteria to retrieve a  maximum property value
+	 * 
+	 * @param propertyName The name of the property
+	 */
+	public void max(String propertyName) {
+		if(this.projectionList == null) {
+			throwRuntimeException( new IllegalArgumentException("call to [max] must be within a [projections] node"));
+		}
+		else {
+			this.projectionList.add(Projections.max(propertyName));		
+		}
+	}		
+	
+	/**
+	 * Adds a projection that allows the criteria to retrieve a  minimum property value
+	 * 
+	 * @param propertyName The name of the property
+	 */
+	public void min(String propertyName) {
+		if(this.projectionList == null) {
+			throwRuntimeException( new IllegalArgumentException("call to [min] must be within a [projections] node"));
+		}
+		else {
+			this.projectionList.add(Projections.min(propertyName));		
+		}
+	}	
+	
+	/**
+	 * Adds a projection that allows the criteria to return the row count
+	 * 
+	 * @param propertyName The name of the property
+	 */
+	public void rowCount() {
+		if(this.projectionList == null) {
+			throwRuntimeException( new IllegalArgumentException("call to [rowCount] must be within a [projections] node"));
+		}
+		else {
+			this.projectionList.add(Projections.rowCount());		
+		}
+	}	
+	
+	/**
+	 * Adds a projection that allows the criteria to retrieve the sum of the results of a property
+	 * 
+	 * @param propertyName The name of the property
+	 */
+	public void sum(String propertyName) {
+		if(this.projectionList == null) {
+			throwRuntimeException( new IllegalArgumentException("call to [sum] must be within a [projections] node"));
+		}
+		else {
+			this.projectionList.add(Projections.sum(propertyName));		
+		}
+	}		
 	
 	/**
 	 * Sets the fetch mode of an associated path
@@ -566,7 +687,11 @@ public class HibernateCriteriaBuilder extends BuilderSupport {
 	}
 	
 	protected Object createNode(Object name, Map attributes) {		
-		if(name.equals(ROOT_CALL) || name.equals(LIST_CALL) || name.equals(GET_CALL) || name.equals(SCROLL_CALL)) {
+		if(name.equals(ROOT_CALL) || 
+				name.equals(LIST_CALL) || 
+				name.equals(GET_CALL) || 
+				name.equals(COUNT_CALL) ||
+				name.equals(SCROLL_CALL)) {
 			
 			if(this.criteria != null)
 				throwRuntimeException( new IllegalArgumentException("call to [" + name + "] not supported here"));
@@ -575,6 +700,9 @@ public class HibernateCriteriaBuilder extends BuilderSupport {
 				this.uniqueResult = true;
 			if(name.equals(SCROLL_CALL)) {
 				this.scroll = true;
+			}
+			else if(name.equals(COUNT_CALL)) {
+				this.count = true;
 			}
 			
 			if(TransactionSynchronizationManager.hasResource(sessionFactory)) {
@@ -587,6 +715,7 @@ public class HibernateCriteriaBuilder extends BuilderSupport {
 			this.criteria = this.session.createCriteria(targetClass);
 			this.criteriaProxy = new ExtendProxy();
 			this.criteriaProxy.setAdaptee(this.criteria);
+			resultProxy = new ExtendProxy();
 			this.parent = resultProxy;
 						
 			return resultProxy;
@@ -598,7 +727,15 @@ public class HibernateCriteriaBuilder extends BuilderSupport {
 			
 			this.logicalExpressions.add(name);
 			return name;
+		} else if(name.equals( PROJECTIONS )) {
+			if(this.criteria == null)
+				throwRuntimeException( new IllegalArgumentException("call to [" + name + "] not supported here"));
+			
+			this.projectionList = Projections.projectionList();
+			
+			return name;
 		}
+		
 		closeSessionFollowingException();
 		throw new MissingMethodException((String) name, getClass(), new Object[] {}) ;		
 	}	
@@ -611,6 +748,12 @@ public class HibernateCriteriaBuilder extends BuilderSupport {
 					resultProxy.setAdaptee(
 							this.criteria.scroll()
 					);					
+				}
+				else if(count) {
+					this.criteria.setProjection(Projections.rowCount());
+					resultProxy.setAdaptee(
+								this.criteria.uniqueResult()
+							);
 				}
 				else {
 					resultProxy.setAdaptee(
@@ -669,6 +812,11 @@ public class HibernateCriteriaBuilder extends BuilderSupport {
 				this.logicalExpressionArgs.add( Restrictions.not( c ) );
 				this.logicalExpressions.remove(this.logicalExpressions.size() - 1);
 			}			
+		}
+		else if(node.equals(PROJECTIONS)) {
+			if(this.projectionList != null && this.projectionList.getLength() > 0) {
+				this.criteria.setProjection(this.projectionList);
+			}
 		}
 		super.nodeCompleted(parent, node);
 	}

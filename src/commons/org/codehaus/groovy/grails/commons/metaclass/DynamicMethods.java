@@ -50,6 +50,13 @@ public interface DynamicMethods {
 	 */
 	public abstract DynamicProperty getDynamicProperty(String propertyName);
 	
+	/**
+	 * Retrieves a dynamic method for the specified method name
+	 * @param method_signature Then signature of the method
+	 * @return The method instance or null if non exists
+	 */
+	public DynamicMethodInvocation getDynamicMethod(String method_signature);
+	
 	public abstract Object getProperty(Object object, String propertyName,
 			InvocationCallback callback);
 

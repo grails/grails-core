@@ -13,7 +13,7 @@
 
 	<filter>
 	   	<filter-name>sitemesh</filter-name>
-	    <filter-class>com.opensymphony.module.sitemesh.filter.PageFilter</filter-class>
+	    <filter-class>org.codehaus.groovy.grails.web.sitemesh.GrailsPageFilter</filter-class>
 	</filter>
 
      <filter>

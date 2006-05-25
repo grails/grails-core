@@ -108,32 +108,31 @@ class ${className}Controller {
     @Property index = { redirect(action:list,params:params) }
 
     @Property list = {
-        if(!params['max']) params['max'] = 10
         [ ${propertyName}List: ${className}.list( params ) ]
     }
 
     @Property show = {
-        [ ${propertyName} : ${className}.get( params['id'] ) ]
+        [ ${propertyName} : ${className}.get( params.id ) ]
     }
 
     @Property delete = {
-        def ${propertyName} = ${className}.get( params['id'] )
+        def ${propertyName} = ${className}.get( params.id )
         if(${propertyName}) {
             ${propertyName}.delete()
-            flash['message'] = "${className} \\${params['id']} deleted."
+            flash.message = "${className} \\${params.id} deleted."
             redirect(action:list)
         }
         else {
-            flash['message'] = "${className} not found with id \\${params['id']}"
+            flash.message = "${className} not found with id \\${params.id}"
             redirect(action:list)
         }
     }
 
     @Property edit = {
-        def ${propertyName} = ${className}.get( params['id'] )
+        def ${propertyName} = ${className}.get( params.id )
 
         if(!${propertyName}) {
-                flash['message'] = "${className} not found with id \\${params['id']}"
+                flash.message = "${className} not found with id \\${params.id}"
                 redirect(action:list)
         }
         else {
@@ -142,7 +141,7 @@ class ${className}Controller {
     }
 
     @Property update = {
-        def ${propertyName} = ${className}.get( params['id'] )
+        def ${propertyName} = ${className}.get( params.id )
         if(${propertyName}) {
              ${propertyName}.properties = params
             if(${propertyName}.save()) {
@@ -153,8 +152,8 @@ class ${className}Controller {
             }
         }
         else {
-            flash['message'] = "${className} not found with id \\${params['id']}"
-            redirect(action:edit,id:params['id'])
+            flash['message'] = "${className} not found with id \\${params.id}"
+            redirect(action:edit,id:params.id)
         }
     }
 
@@ -194,7 +193,7 @@ class ${className}Controller {
             return "<input type='text' name='${property.name}' value='\${${domainClass.propertyName}?.${property.name}}' />"
         }
         else {
-            if(cp.maxLength > 250 && !cp.password && !cp.inList) {
+			if(cp.maxLength > 250 && cp.maxLength != Integer.MAX_VALUE && !cp.password && !cp.inList) {
                 return "<textarea rows='1' cols='1' name='${property.name}'>\${${domainClass.propertyName}?.${property.name}}</textarea>"
             }
             else {

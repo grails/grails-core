@@ -41,7 +41,7 @@ class ValidationTagLib {
         }
         else {
 			if(request.attributeNames) {
-				request.attributeNames.each {
+				request.attributeNames.each { ra ->
 					if(ra) {
                         if(ra instanceof Errors)
                             checkList << ra

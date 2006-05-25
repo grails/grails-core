@@ -40,6 +40,10 @@ import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.orm.hibernate3.HibernateTransactionManager;
 import org.springframework.orm.hibernate3.HibernateAccessor;
 import org.springframework.orm.hibernate3.support.OpenSessionInViewInterceptor;
+import org.springframework.scheduling.quartz.CronTriggerBean;
+import org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean;
+import org.springframework.scheduling.quartz.SchedulerFactoryBean;
+import org.springframework.scheduling.quartz.SimpleTriggerBean;
 import org.springframework.transaction.interceptor.TransactionProxyFactoryBean;
 import org.springframework.util.Assert;
 import org.springframework.web.servlet.i18n.CookieLocaleResolver;
@@ -121,7 +125,7 @@ public class SpringConfig {
 		populateServiceClassReferences(beanReferences);
 		
 		// configure grails page flows
-		LOG.info("[SpringConfig] Configuring Grails page flows");
+		LOG.info("[SpringConfig] Configuring GrabuildSessionFactoryils page flows");
 		populatePageFlowReferences(beanReferences, urlMappings);
 	
 		// configure grails controllers
@@ -132,9 +136,73 @@ public class SpringConfig {
 		LOG.info("[SpringConfig] Configuring Grails scaffolding");
 		populateScaffoldingReferences(beanReferences);
 		
+		// configure tasks
+		LOG.info("[SpringConfig] Configuring Grails tasks");
+		populateTasksReferences(beanReferences);		
+		
 				
 		return beanReferences;
 	}
+	
+	// configures tasks
+	private void populateTasksReferences(Collection beanReferences) {
+		GrailsTaskClass[] grailsTaskClasses = application.getGrailsTasksClasses();
+		
+        Collection schedulerReferences = new ArrayList();
+		
+        // todo jdbc job loading
+        
+		for (int i = 0; i < grailsTaskClasses.length; i++) {
+			GrailsTaskClass grailsTaskClass = grailsTaskClasses[i];
+			
+			Bean taskClassBean = 	SpringConfigUtils.createSingletonBean(MethodInvokingFactoryBean.class);
+			taskClassBean.setProperty("targetObject", SpringConfigUtils.createBeanReference("grailsApplication"));
+			taskClassBean.setProperty("targetMethod", SpringConfigUtils.createLiteralValue("getGrailsTaskClass"));
+			taskClassBean.setProperty("arguments", SpringConfigUtils.createLiteralValue(grailsTaskClass.getFullName()));
+			beanReferences.add(SpringConfigUtils.createBeanReference(grailsTaskClass.getFullName() + "Class", taskClassBean));			
+
+			/* additional indirrection so that autowireing would be possible */
+			Bean taskInstance = SpringConfigUtils.createSingletonBean();
+			taskInstance.setFactoryBean(SpringConfigUtils.createBeanReference(grailsTaskClass.getFullName() + "Class"));
+			taskInstance.setFactoryMethod("newInstance");
+			taskInstance.setAutowire("byName");
+			beanReferences.add(SpringConfigUtils.createBeanReference( grailsTaskClass.getFullName(), taskInstance));
+			
+			Bean jobDetailFactoryBean = SpringConfigUtils.createSingletonBean( MethodInvokingJobDetailFactoryBean.class );
+			jobDetailFactoryBean.setProperty("targetObject", SpringConfigUtils.createBeanReference( grailsTaskClass.getFullName() ));
+			jobDetailFactoryBean.setProperty("targetMethod", SpringConfigUtils.createLiteralValue(GrailsTaskClassProperty.EXECUTE));
+			jobDetailFactoryBean.setProperty("group", SpringConfigUtils.createLiteralValue(grailsTaskClass.getGroup()));			
+			beanReferences.add(SpringConfigUtils.createBeanReference(grailsTaskClass.getFullName()+"JobDetail", jobDetailFactoryBean));
+			
+			if( !grailsTaskClass.isCronExpressionConfigured() ){		/* configuring Task using startDelay and timeOut */
+			
+				Bean triggerBean = SpringConfigUtils.createSingletonBean(SimpleTriggerBean.class);
+				triggerBean.setProperty("jobDetail", SpringConfigUtils.createBeanReference(grailsTaskClass.getFullName()+"JobDetail"));
+				triggerBean.setProperty("startDelay", SpringConfigUtils.createLiteralValue( grailsTaskClass.getStartDelay() ));
+				triggerBean.setProperty("repeatInterval", SpringConfigUtils.createLiteralValue( grailsTaskClass.getTimeout() ));				
+				beanReferences.add(SpringConfigUtils.createBeanReference(grailsTaskClass.getFullName()+"SimpleTrigger", triggerBean));
+				
+				schedulerReferences.add(SpringConfigUtils.createBeanReference(grailsTaskClass.getFullName()+"SimpleTrigger"));
+			
+			}else{	/* configuring Task using cronExpression */
+				
+				Bean triggerBean = SpringConfigUtils.createSingletonBean(CronTriggerBean.class);
+				triggerBean.setProperty("jobDetail", SpringConfigUtils.createBeanReference(grailsTaskClass.getFullName()+"JobDetail"));
+				triggerBean.setProperty("cronExpression", SpringConfigUtils.createLiteralValue(grailsTaskClass.getCronExpression()));
+				beanReferences.add(SpringConfigUtils.createBeanReference(grailsTaskClass.getFullName()+"CronTrigger", triggerBean));
+				
+				schedulerReferences.add(SpringConfigUtils.createBeanReference(grailsTaskClass.getFullName()+"CronTrigger"));				
+				
+			}
+		
+		}
+		
+		Bean schedulerFactoryBean = SpringConfigUtils.createSingletonBean(SchedulerFactoryBean.class);
+        schedulerFactoryBean.setProperty("triggers", SpringConfigUtils.createList(schedulerReferences));
+        beanReferences.add(SpringConfigUtils.createBeanReference("GrailsSchedulerBean",schedulerFactoryBean));
+		
+	}
+
 	private void populateI18nSupport(Collection beanReferences) {
 		// setup message source
 		Bean messageSource = SpringConfigUtils.createSingletonBean( ReloadableResourceBundleMessageSource.class );
@@ -213,6 +281,7 @@ public class SpringConfig {
 	}
 
 	private void populateControllerReferences(Collection beanReferences, Map urlMappings) {
+
 		Bean simpleGrailsController = SpringConfigUtils.createSingletonBean(SimpleGrailsController.class);
 		simpleGrailsController.setAutowire("byType");
 		beanReferences.add(SpringConfigUtils.createBeanReference(SimpleGrailsController.APPLICATION_CONTEXT_ID, simpleGrailsController));

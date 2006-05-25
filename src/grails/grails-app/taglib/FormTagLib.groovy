@@ -116,7 +116,7 @@ class FormTagLib {
 		dfs.months.eachWithIndex { m,i ->
 			if(m) {
 				def monthIndex = i + 1
-				out << "<option value='${i}'"
+				out << "<option value='${monthIndex}'"
 				if(month == i) out << 'selected="selected"'
 				out << '>'
 				out << m
@@ -225,6 +225,7 @@ class FormTagLib {
      */
     @Property select = { attrs ->
         def from = attrs.remove('from')
+		def keys = attrs.remove('keys')
         def optionKey = attrs.remove('optionKey')
         def optionValue = attrs.remove('optionValue')
         def value = attrs.remove('value')
@@ -238,37 +239,44 @@ class FormTagLib {
         out.println()
         // create options from list
         if(from) {
-            from.each {
+            from.eachWithIndex { el,i ->
                 out << '<option '
-                if(optionKey) {
+				if(keys) {
+					out << 'value="' << keys[i] << '" '
+					if(keys[i] == value) {
+						out << 'selected="selected" '
+					}
+				}
+               else if(optionKey) {
                     if(optionKey instanceof Closure) {
-                         out << 'value="' << optionKey(it) << '" '
+                         out << 'value="' << optionKey(el) << '" '
                     }
                     else {
-                        out << 'value="' << it.properties[optionKey] << '" '
+                        out << 'value="' << el.properties[optionKey] << '" '
                     }
 
-                    if(it.properties[optionKey] == value) {
+                    if(el.properties[optionKey] == value) {
                         out << 'selected="selected" '
                     }
                 }
                 else {
-                    out << "value='${it}' "
-                    if(it == value) {
+                    out << "value='${el}' "
+                    if(el == value) {
                         out << 'selected="selected" '
                     }
                 }
                 out << '>'
                 if(optionValue) {
                     if(optionValue instanceof Closure) {
-                         out << optionValue(it)
+                         out << optionValue(el)
                     }
                     else {
-                        out << it.properties[optionValue]
+                        out << el.properties[optionValue]
                     }
                 }
                 else {
-                   out << it
+					def s = el.toString()
+					if(s) out << s                     
                 }
                 out << '</option>'
                 out.println()
@@ -301,5 +309,25 @@ class FormTagLib {
         out << ' />'
 
     }
-
+	
+	/**
+	 * A helper tag for creating radio buttons
+	 */
+	 @Property radio = { attrs ->
+          def value = attrs.remove('value')
+          def name = attrs.remove('name')
+		  def checked = (attrs.remove('checked') ? true : false)
+          out << '<input type="radio" '
+          out << "name='${name}' "
+          if(checked) {
+                out << 'checked="checked" '
+          }
+          out << "value=\"$value\" "
+        // process remaining attributes
+        attrs.each { k,v ->
+            out << k << "=\"" << v << "\" "
+        }
+        // close the tag, with no body
+        out << ' ></input>'		   
+	 }
 }

@@ -4,6 +4,7 @@
 package org.codehaus.groovy.grails.orm.hibernate.metaclass;
 
 import java.sql.SQLException;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -37,7 +38,7 @@ public class ListOrderByPersistentMethod extends AbstractStaticPersistentMethod 
 	 * @see org.codehaus.groovy.grails.orm.hibernate.metaclass.AbstractStaticPersistentMethod#doInvokeInternal(java.lang.Class, java.lang.String, java.lang.Object[])
 	 */
 	protected Object doInvokeInternal(final Class clazz, String methodName,
-			Object[] arguments) {
+			final Object[] arguments) {
 
 		Matcher match = getPattern().matcher( methodName );
 		// find match
@@ -46,24 +47,18 @@ public class ListOrderByPersistentMethod extends AbstractStaticPersistentMethod 
 		String nameInSignature = match.group(2);
 		final String propertyName = nameInSignature.substring(0,1).toLowerCase() +
 										nameInSignature.substring(1);
-		
-		int temp = -1;
-		if(arguments.length > 0) {
-			Object arg = arguments[0];
-			if(arg instanceof Integer) {
-				temp = ((Integer)arg).intValue();
-			}
-		}
-		final int max = temp;
-		
+				
 		return super.getHibernateTemplate().executeFind( new HibernateCallback() {
 
 			public Object doInHibernate(Session session) throws HibernateException, SQLException {
 				
 				Criteria crit = session.createCriteria(clazz);
 				crit.addOrder( Order.asc( propertyName ) );
-				if(max > -1) {
-					crit.setMaxResults(max);
+				if(arguments.length > 0) {
+					if(arguments[0] instanceof Map) {
+						Map argMap = (Map)arguments[0];
+						populateArgumentsForCriteria(crit,argMap);										
+					}
 				}
 				return crit.list();
 			}

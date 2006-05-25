@@ -59,7 +59,6 @@ public class SavePersistentMethod extends AbstractDynamicPersistentMethod {
         GrailsDomainClass domainClass = application.getGrailsDomainClass( target.getClass().getName() );
         Validator validator = null;
         boolean doValidation = true;
-        Boolean success = Boolean.TRUE;
         if(domainClass != null) {
             validator = domainClass.getValidator();
             doValidation = true;
@@ -79,7 +78,7 @@ public class SavePersistentMethod extends AbstractDynamicPersistentMethod {
                 if(errors.hasErrors()) {
                     DelegatingMetaClass metaClass = (DelegatingMetaClass)InvokerHelper.getInstance().getMetaRegistry().getMetaClass(target.getClass());
                     metaClass.setProperty(target,DomainClassMethods.ERRORS_PROPERTY,errors);
-                    return Boolean.valueOf(!errors.hasErrors());
+                    return null;
                 }
             }
         }
@@ -111,7 +110,7 @@ public class SavePersistentMethod extends AbstractDynamicPersistentMethod {
 
         t.saveOrUpdate(target);
 
-        return success;
+        return target;
     }
 
 }

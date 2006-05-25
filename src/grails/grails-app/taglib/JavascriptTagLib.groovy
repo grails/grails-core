@@ -105,78 +105,72 @@ class JavascriptTagLib  {
 		def isPrototype = request[JavascriptTagLib.INCLUDED_LIBRARIES]?.contains('prototype');
 		def isYahoo = request[JavascriptTagLib.INCLUDED_LIBRARIES]?.contains('yahoo');
 		
-		if(!request[JavascriptTagLib.INCLUDED_LIBRARIES] || (!isYahoo && !isPrototype)) {
-			out << 'function() { alert("Grails Message: The remoteFunction tag requires the \'prototype\' or \'yahoo\' libraries to be included with the <g:javascript library=\'prototype\' /> tag"); }'		
-		}    
-		else {
-	        // before remote function
-	        def after = ''
-	        if(attrs["before"])
-	            out << "${attrs.remove('before')};"
-	        if(attrs["after"])
-	            after = "${attrs.remove('after')};"
-	
-			// if the prototype library is included use it
-			if(isPrototype) {
-				out << 'new Ajax.'
-				if(attrs["update"]) {
-					out << 'Updater('
-					if(attrs["update"] instanceof Map) {
-						out << "{"
-						def update = []
-						if(attrs["update"]["success"]) {
-							update << "success:'${attrs['update']['success']}'"
-						}
-						if(attrs["update"]["failure"]) {
-							update << "failure:'${attrs['update']['failure']}'"
-						}
-						out << update.join(',')
-						out << "},"
+		if(!isYahoo && !isPrototype) isPrototype = true   
+		// before remote function
+		def after = ''
+		if(attrs["before"])
+			out << "${attrs.remove('before')};"
+		if(attrs["after"])
+			after = "${attrs.remove('after')};"
+
+		// if the prototype library is included use it
+		if(isPrototype) {
+			out << 'new Ajax.'
+			if(attrs["update"]) {
+				out << 'Updater('
+				if(attrs["update"] instanceof Map) {
+					out << "{"
+					def update = []
+					if(attrs["update"]["success"]) {
+						update << "success:'${attrs['update']['success']}'"
 					}
-					else {
-						out << "'" << attrs["update"] << "',"
+					if(attrs["update"]["failure"]) {
+						update << "failure:'${attrs['update']['failure']}'"
 					}
-					attrs.remove("update")
+					out << update.join(',')
+					out << "},"
 				}
 				else {
-					out << "Request("
+					out << "'" << attrs["update"] << "',"
 				}
-				out << "'"				
+				attrs.remove("update")
 			}
-			// otherwise try yahoo
-			else if(isYahoo) {
-				out.println 'function() {'
-				buildYahooCallback(attrs)							
-				def method = (attrs.method ? attrs.method : 'POST' )
-				out << "YAHOO.util.Connect.asyncRequest('${method}','"
+			else {
+				out << "Request("
 			}
-	
-
-	        if(attrs.url) {
-	            createLink(attrs.url)
-	        }
-	        else {
-	            createLink(attrs)
-	        }
-	
-			if(isPrototype) {
-				out << "',"
-		
-				// process options
-				out << getAjaxOptions(attrs)
-				// close
-				out << ');'
-			}
-			else if(isYahoo) {
-				out << "',callback,null); }"
-			}
-	
-	        // after remote function
-	        if(after)
-	           out <<  after		
-	           
+			out << "'"				
+		}
+		// otherwise try yahoo
+		else if(isYahoo) {
+			out.println 'function() {'
+			buildYahooCallback(attrs)							
+			def method = (attrs.method ? attrs.method : 'POST' )
+			out << "YAHOO.util.Connect.asyncRequest('${method}','"
 		}
 
+
+		if(attrs.url) {
+			createLink(attrs.url)
+		}
+		else {
+			createLink(attrs)
+		}
+
+		if(isPrototype) {
+			out << "',"
+	
+			// process options
+			out << getAjaxOptions(attrs)
+			// close
+			out << ');'
+		}
+		else if(isYahoo) {
+			out << "',callback,null); }"
+		}
+
+		// after remote function
+		if(after)
+		   out <<  after			           		   
     }
 
 	// helper method to create yahoo callback object
@@ -293,55 +287,51 @@ class JavascriptTagLib  {
         }        
 		def isPrototype = request[JavascriptTagLib.INCLUDED_LIBRARIES]?.contains('prototype');
 		def isYahoo = request[JavascriptTagLib.INCLUDED_LIBRARIES]?.contains('yahoo');
-		
-		if(!request[JavascriptTagLib.INCLUDED_LIBRARIES] || (!isYahoo && !isPrototype)) {
-			out << 'function() { alert("Grails Message: The remoteFunction tag requires the \'prototype\' or \'yahoo\' libraries to be included with the <g:javascript library=\'prototype\' /> tag"); }'		
-		}    
-		else {	
-			if(isPrototype) {		
-			   def url = attrs.url.clone()
-			   attrs.params = "Form.serialize(this)"
-			   out << '<form onsubmit="' 
-			   remoteFunction(attrs)
-			   out << 'return false;" '
-			   out << 'method="' <<  (attrs['method'] ? attrs['method'] : 'post') << '" '
-			   out << 'action="' 
-			   attrs.action ? out << attrs.action : createLink(url)			   
-			   out << '">'
-		
-				// output body
-				   body()
-				// close tag
-			   out << '</form>'
-		    }
-			else if(isYahoo) {		
-				def url = TagLibUtil.outToString(createLink,attrs)
-				def onsubmit = []
-				if(attrs.before) {
-					onsubmit << attrs.before	
-				}
-				onsubmit << "${attrs.name}RemoteFunction()"
-				if(attrs.after) {
-					onsubmit << attrs.after	
-				}
-				onsubmit << "return false;"
-				
-				withTag(name:'form',
-						attrs: [ 	name: attrs.name,
-									onsubmit: onsubmit.join(';'),
-									method: (attrs.method ? attrs.method : 'post'),
-									action: (attrs.action ? attrs.action : url)
-								] ) {
-					body()
-				}
-				withTag(name:'script',attrs:[type:'text/javascript']) {
-					out << """
-					function ${attrs.name}RemoteFunction() {						
-						YAHOO.util.Connect.setForm('${attrs.name}');"""
-					buildYahooCallback(attrs)
-					out <<	"var cObj = YAHOO.util.Connect.asyncRequest('POST', '$url', callback);}"					
-				}				
+		if(!isYahoo && !isPrototype) isPrototype = true
+			
+		if(isPrototype) {		
+		   def url = attrs.url.clone()
+		   attrs.params = "Form.serialize(this)"
+		   out << '<form onsubmit="' 
+		   remoteFunction(attrs)
+		   out << 'return false;" '
+		   out << 'method="' <<  (attrs['method'] ? attrs['method'] : 'post') << '" '
+		   out << 'action="' 
+		   attrs.action ? out << attrs.action : createLink(url)			   
+		   out << '">'
+	
+			// output body
+			   body()
+			// close tag
+		   out << '</form>'
+		}
+		else if(isYahoo) {		
+			def url = TagLibUtil.outToString(createLink,attrs)
+			def onsubmit = []
+			if(attrs.before) {
+				onsubmit << attrs.before	
 			}
+			onsubmit << "${attrs.name}RemoteFunction()"
+			if(attrs.after) {
+				onsubmit << attrs.after	
+			}
+			onsubmit << "return false;"
+			
+			withTag(name:'form',
+					attrs: [ 	name: attrs.name,
+								onsubmit: onsubmit.join(';'),
+								method: (attrs.method ? attrs.method : 'post'),
+								action: (attrs.action ? attrs.action : url)
+							] ) {
+				body()
+			}
+			withTag(name:'script',attrs:[type:'text/javascript']) {
+				out << """
+				function ${attrs.name}RemoteFunction() {						
+					YAHOO.util.Connect.setForm('${attrs.name}');"""
+				buildYahooCallback(attrs)
+				out <<	"var cObj = YAHOO.util.Connect.asyncRequest('POST', '$url', callback);}"					
+			}				
 		}
     }
 
@@ -355,5 +345,33 @@ class JavascriptTagLib  {
         remoteFunction(attrs)
         out << ';return false;" />'
     }
+	
+	/**
+	 * Escapes a javasacript string replacing single/double quotes and new lines
+	 *
+	 * <g:escapeJavascript>This is some "text" to be escaped</g:escapeJavascript>
+	 */
+	@Property escapeJavascript = { attrs,body ->
+		def js = ''
+		if(body instanceof Closure) {
+			def tmp = out
+			def sw = new StringWriter()
+			out = new PrintWriter(out)
+			// invoke body
+			body()
+			// restore out
+			out = tmp
+			js = sw.toString()
+			
+		}
+		else if(body instanceof String) {
+			js = body
+		}
+		else if(attrs instanceof String) {
+			js = attrs	
+		}
+		out << 	js.replaceAll(/\r\n|\n|\r/, '\\\\n')
+					.replaceAll("[\"']",{ (it[0] == '"'? '\\"' : "\\'") } )
+	}
 
 }

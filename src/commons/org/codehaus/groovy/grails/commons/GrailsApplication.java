@@ -28,7 +28,7 @@ public interface GrailsApplication {
      * The id of the grails application within a bean context
      */
     String APPLICATION_ID = "grailsApplication";
-
+    
     /**
      * <p>Returns all controllers in an application
      *
@@ -52,6 +52,21 @@ public interface GrailsApplication {
      */
     public GrailsControllerClass getControllerByURI(String uri);
 
+    /**
+     * <p>Returns all tasks in an application.</p>
+     *
+     * @return page flows in an application.
+     */
+    public GrailsTaskClass[] getGrailsTasksClasses();
+    
+    /**
+     * <p>Returns the task class with the given full name or null if no task was found with that name.
+     *
+     * @param fullname name of the task class to retrieve
+     * @return the retrieved task class
+     */    
+    public GrailsTaskClass getGrailsTaskClass( String fullname );
+    
     /**
      * <p>Returns all page flows in an application.
      *
@@ -183,7 +198,6 @@ public interface GrailsApplication {
      * @param domainClass The domain class to add
      * @return The GrailsDomainClass instance or null if the class is abstract and was not added
      */
-    
     GrailsDomainClass addDomainClass(GrailsDomainClass domainClass);
 
     /**
@@ -193,6 +207,13 @@ public interface GrailsApplication {
      * @return An instance of GrailsControllerClass                                      
      */
     GrailsControllerClass getScaffoldingController(GrailsDomainClass domainClass);
+
+    /**
+     * Adds a new task class to the grails application
+     * @param domainClass The task class to add
+     * @return The GrailsDomainClass instance or null if the class is abstract and was not added
+     */
+	public GrailsTaskClass addTaskClass(Class loadedClass);
 
 
 }

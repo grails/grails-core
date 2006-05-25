@@ -47,7 +47,7 @@ class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants 
             if (!propertyValue)
                 propertyValue = attrs.'default';
 
-            if (propertyValue != null) {
+            if (propertyValue) {
                 if (attrs.writeEntireProperty) {
                     out << ' '
                     out << propertyName.substring(propertyName.lastIndexOf('.') + 1)
@@ -58,6 +58,43 @@ class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants 
                 }
             }    
     }
+	
+	/**
+	 * Invokes the body of this tag if the page property exists:
+	 * 
+	 * <g:ifPageProperty name="meta.index">body to invoke</g:ifPageProperty>
+	 *
+	 * of it equals a certain value:
+	 *
+	 *<g:ifPageProperty name="meta.index" equals="blah">body to invoke</g:ifPageProperty>
+	 */ 
+	@Property ifPageProperty = { attrs, body ->
+		if(attrs.name) {
+			def htmlPage = getPage()
+			def names = ((attrs.name instanceof List) ? attrs.name : [attrs.name])
+			
+			
+			def invokeBody = true
+			for(i in 0..<names.size()) {
+				String propertyValue = htmlPage.getProperty(names[i])
+				if(propertyValue) {
+					if(attrs.equals instanceof List) {
+						invokeBody = (attrs.equals[i]==propertyValue)
+					}
+					else if(attrs.equals instanceof String) {
+						invokeBody = (attrs.equals == propertyValue)	
+					}
+				}
+				else {
+					invokeBody = false
+					break	
+				}
+			}
+			if(invokeBody) {
+				body();	
+			}
+		}
+	}
     /**
      * Used in layouts to render the page title from the SiteMesh page
      *
@@ -85,6 +122,66 @@ class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants 
      */		
 	@Property layoutHead = { attrs ->
 		getPage().writeHead(out)	
+	}
+	
+	
+	/**
+	 * Creates next/previous links to support pagination for the current controller
+	 *
+	 * <g:paginate total="${Account.count()}" />
+	 */
+	@Property paginate = { attrs ->
+        if(attrs.total == null)
+            throwTagError("Tag [paginate] is missing required attribute [total]")
+		
+		def mkp = new groovy.xml.MarkupBuilder(out)
+		def total = attrs.total.toInteger()
+		def max = params.max?.toInteger()
+		def offset = params.offset?.toInteger() 
+		def action = (attrs.action? attrs.action : 'list')
+		def breadcrumb = true
+		if(attrs.breadcrumb) breadcrumb = Boolean.valueOf(attrs.breadcrumb)
+			
+		if(!max) max = (attrs.max ? attrs.max.toInteger() : 10)
+		if(!offset) offset = (attrs.offset ? attrs.offset.toInteger() : 0)
+		
+		def linkParams = [offset:offset-10,max:max]
+		def linkTagAttrs = ['class':'prevLink',action:action]
+		if(attrs.controller) {
+			linkTagAttrs.controller = attrs.controller	
+		}
+		if(attrs.id) {
+			linkTagAttrs.id = attrs.id	
+		}
+		if(attrs.params)linkParams.putAll(attrs.params)
+		linkTagAttrs.params = linkParams
+	
+		def combined = max + offset
+		if(offset > 0) {			
+			link(linkTagAttrs.clone(),{out<< (attrs.prev? attrs.prev : 'Previous' ) })
+		}
+		
+		if(total > max) {
+			linkTagAttrs.'class' = 'step'
+			if(breadcrumb) {
+				def j = 0
+				0.step(total,max) { i ->
+					if(offset == i) {
+						mkp.a('class':'step',"${++j}")	
+					}
+					else {
+						linkParams.offset=i
+						link(linkTagAttrs.clone(),{out<<++j})	
+					}
+				}			
+			}			
+		}
+		linkParams.offset = offset+10
+		if(combined < total) {	
+			linkTagAttrs.'class'='nextLink'			
+			link(linkTagAttrs,{out<< (attrs.'next'? attrs.'next' : 'Next' )})			
+		}
+
 	}
 
     /**
@@ -135,6 +232,9 @@ class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants 
         	else {        
 	            t.make( [ 'it' : attrs.bean ] ).writeTo(out)
 	        }
+        }
+        else {
+        	t.make().writeTo(out)
         }
     }
 

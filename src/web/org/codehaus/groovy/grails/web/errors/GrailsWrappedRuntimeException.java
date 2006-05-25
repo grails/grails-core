@@ -15,18 +15,26 @@
  */ 
 package org.codehaus.groovy.grails.web.errors;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.exceptions.GrailsException;
-import org.codehaus.groovy.grails.commons.GrailsClassUtils;
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
-import org.codehaus.groovy.grails.web.servlet.DefaultGrailsApplicationAttributes;
-import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
-
-import javax.servlet.ServletContext;
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.LineNumberReader;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import javax.servlet.ServletContext;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.control.MultipleCompilationErrorsException;
+import org.codehaus.groovy.control.messages.SyntaxErrorMessage;
+import org.codehaus.groovy.grails.commons.GrailsClassUtils;
+import org.codehaus.groovy.grails.exceptions.GrailsException;
+import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
+import org.codehaus.groovy.grails.web.servlet.DefaultGrailsApplicationAttributes;
+import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 
 /**
  *  An exception that wraps a Grails RuntimeException and attempts to extract more relevent diagnostic messages from the stack trace
@@ -41,13 +49,12 @@ public class GrailsWrappedRuntimeException extends GrailsException {
     private static final Pattern PARSE_GSP_DETAILS_STEP1 = Pattern.compile("(\\w+?)_\\w+?_gsp.run\\((\\w+\\.gsp):(\\d+)\\)");
     public static final String URL_PREFIX = "/WEB-INF/grails-app/";
     private static final Log LOG  = LogFactory.getLog(GrailsWrappedRuntimeException.class);
-    private Throwable t;
     private String className = "Unknown";
     private int lineNumber = - 1;
     private String stackTrace;
     private String[] codeSnippet = new String[0];
-    private boolean isGSP;
     private String gspFile;
+	private Throwable cause;
 
 
     /**
@@ -56,39 +63,64 @@ public class GrailsWrappedRuntimeException extends GrailsException {
      */
     public GrailsWrappedRuntimeException(ServletContext servletContext, Throwable t) {
         super(t.getMessage(), t);
-        this.t = t;
-
+        this.cause = t;
         StringWriter sw  = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
-        this.t.printStackTrace(pw);
+        cause.printStackTrace(pw);
         this.stackTrace = sw.toString();
-
-        Matcher m1 = PARSE_DETAILS_STEP1.matcher(stackTrace);
-        Matcher m2 = PARSE_DETAILS_STEP2.matcher(stackTrace);
-        Matcher gsp = PARSE_GSP_DETAILS_STEP1.matcher(stackTrace);
-        try {
-            if(gsp.find()) {
-                isGSP = true;
-                this.className = gsp.group(2);
-                this.lineNumber = Integer.parseInt(gsp.group(3));
-                this.gspFile = URL_PREFIX + "views/" + gsp.group(1)  + '/' + this.className;
-            }
-            else {
-                if(m1.find()) {
-                    this.className = m1.group(1);
-                    this.lineNumber = Integer.parseInt(m1.group(2));
-                }
-                else if(m2.find()) {
-                    this.className = m2.group(1);
-                    this.lineNumber = Integer.parseInt(m2.group(2));
-                }
-            }
+        
+        while(t.getCause()!=cause) {
+        	if(t.getCause() == null) {
+        		cause = t;
+        		break;
+        	}
+        	cause = t.getCause();
         }
-        catch(NumberFormatException nfex) {
-            // ignore
+        
+
+        if(cause instanceof MultipleCompilationErrorsException) {
+        	MultipleCompilationErrorsException mcee = (MultipleCompilationErrorsException)cause;
+        	Object message = mcee.getErrorCollector().getErrors().iterator().next();
+        	if(message instanceof SyntaxErrorMessage) {
+        		SyntaxErrorMessage sem = (SyntaxErrorMessage)message;
+        		this.lineNumber = sem.getCause().getLine();
+                sw  = new StringWriter();
+                pw = new PrintWriter(sw);
+                sem.write(pw);
+                String messageText = sw.toString();
+                if(messageText.indexOf(':') > -1) {
+                	this.className = sw.toString().substring(0,messageText.indexOf(':'));
+                }
+        	}
+        	
         }
+        else {
 
+            Matcher m1 = PARSE_DETAILS_STEP1.matcher(stackTrace);
+            Matcher m2 = PARSE_DETAILS_STEP2.matcher(stackTrace);
+            Matcher gsp = PARSE_GSP_DETAILS_STEP1.matcher(stackTrace);
+            try {
+                if(gsp.find()) {
+                    this.className = gsp.group(2);
+                    this.lineNumber = Integer.parseInt(gsp.group(3));
+                    this.gspFile = URL_PREFIX + "views/" + gsp.group(1)  + '/' + this.className;
+                }
+                else {
+                    if(m1.find()) {
+                        this.className = m1.group(1);
+                        this.lineNumber = Integer.parseInt(m1.group(2));
+                    }
+                    else if(m2.find()) {
+                        this.className = m2.group(1);
+                        this.lineNumber = Integer.parseInt(m2.group(2));
+                    }
+                }
+            }
+            catch(NumberFormatException nfex) {
+                // ignore
+            }
 
+        }
         LineNumberReader reader = null;
         try {
             if(getLineNumber() > -1) {
@@ -154,6 +186,7 @@ public class GrailsWrappedRuntimeException extends GrailsException {
                     // ignore
                 }
         }
+        
     }
 
     /**
@@ -188,7 +221,7 @@ public class GrailsWrappedRuntimeException extends GrailsException {
       * @see groovy.lang.GroovyRuntimeException#getMessage()
       */
     public String getMessage() {
-        return t.getMessage();
+        return cause.getMessage();
     }
 
 

@@ -17,6 +17,7 @@ Targets:
 "create-service"      - Create a new service
 "create-domain-class" - Create a new domain class
 "create-test-suite"   - Create a new test suite
+"create-job"         - Create a quartz scheduled job
 "generate-controller" - Generates a controller from a domain class
 "generate-views"      - Generates the views from a domain class
 "generate-all"        - Generates the all artifacts from a domain class
@@ -24,6 +25,7 @@ Targets:
 "run-app"             - Run the application locally and wait
 "create-webtest"      - Create the functional test layout
 "run-webtest"         - Run the functional tests for a running app
+"war"        		  - Creates a deployable Web Application Archive (WAR)
         </echo>
 	</target>
 
@@ -74,7 +76,7 @@ Targets:
         <mkdir dir="${path}hibernate"/>
         <mkdir dir="${grails.home}/dist"/>
 
-        <copy todir="${path}web-app/WEB-INF">
+        <copy todir="${path}web-app">
             <fileset dir="${grails.home}/src/war">
 				 <include name="**/**"/>
                 <exclude name="WEB-INF"/>
@@ -169,6 +171,13 @@ Targets:
 				    tofile="${project.name}/grails-app/conf/ApplicationDataSource.groovy"/>
 			<copy 	file="${grails.home}/src/grails/templates/artifacts/BootStrap.groovy"
 					tofile="${project.name}/grails-app/conf/ApplicationBootStrap.groovy"/>
+					
+		<copy todir="${project.name}">
+			<fileset dir="${grails.home}/src/grails/templates/ide-support/eclipse" includes="*.*" excludes=".launch" />
+		</copy>
+    	<copy file="${grails.home}/src/grails/templates/ide-support/eclipse/.launch" tofile="${project.name}/${project.name}.launch" />
+    	
+		<replace dir="${project.name}" includes="*.*" token="@grails.project.name@" value="${project.name}"/>
 	</target>
 
 	<target name="create-controller" depends="init-props" description="Create a new controller">
@@ -237,6 +246,26 @@ Targets:
         <property name="test.suite.name" value="${domain.class.name}" />
         <antcall target="internal-create-test-suite" inheritRefs="true" inheritAll="true"/>
     </target>
+	
+	<target name="create-task" depends="init-props" description="Create a new task">
+
+		<input addproperty="job.class.name" message="Enter job class name:" />
+
+         <groovy>
+			def jobName = properties."job.class.name"
+			properties."job.class.name" = project.references['caps'](jobName)
+		</groovy>
+
+		<mkdir dir="grails-app/jobs" />
+        <copy 	file="${grails.home}/src/grails/templates/artifacts/Job.groovy"
+            tofile="grails-app/jobs/${job.class.name}.groovy"
+            overwrite="false"/>
+
+        <replace 	file="grails-app/jobs/${job.class.name}.groovy"
+            token="@job.class.name@"
+            value="${job.class.name}" />
+        <echo>Schedules job created: grails-app/jobs/${job.class.name}.groovy</echo>
+    </target>	
 
     <target name="create-test-suite" depends="init-props" description="Create a new test suite">
 
@@ -420,6 +449,7 @@ Targets:
                 <include name="commons-validator.jar"/>
                 <include name="commons-fileupload.jar"/>
                 <include name="jakarta-oro-2.0.8.jar"/>
+                <include name="quartz-1.5.2.jar"/>            	            	
             </fileset>
             <fileset dir="${grails.home}/dist"/>
             <fileset dir="lib"/>

@@ -35,23 +35,22 @@ public class GrailsScaffoldDomain extends DefaultScaffoldDomain implements Scaff
     }
 
     public boolean save(Object domainObject, ScaffoldCallback callback) {
-        Boolean b = (Boolean)InvokerHelper.invokeMethod(domainObject,SavePersistentMethod.METHOD_SIGNATURE, new Object[0]);
-        boolean success = b.booleanValue();
-        if(!success) {
+        Object result = InvokerHelper.invokeMethod(domainObject,SavePersistentMethod.METHOD_SIGNATURE, new Object[0]);
+        
+        if(result == null) {
             callback.setErrors((Errors)InvokerHelper.getProperty(domainObject, DomainClassMethods.ERRORS_PROPERTY));
         }
 
-        return success;
+        return result != null;
     }
 
     public boolean update(final Object domainObject, final ScaffoldCallback callback) {
-        Boolean b = (Boolean)InvokerHelper.invokeMethod(domainObject,SavePersistentMethod.METHOD_SIGNATURE, new Object[0]);
-        boolean success = b.booleanValue();
-        if(!success) {
+        Object result = InvokerHelper.invokeMethod(domainObject,SavePersistentMethod.METHOD_SIGNATURE, new Object[0]);
+        if(result == null) {
             callback.setErrors((Errors)InvokerHelper.getProperty(domainObject, DomainClassMethods.ERRORS_PROPERTY));
         }
 
-        return success;
+        return result != null;
     }
 
     public Object delete(Serializable id) {

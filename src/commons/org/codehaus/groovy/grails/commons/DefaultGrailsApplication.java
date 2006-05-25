@@ -48,12 +48,14 @@ public class DefaultGrailsApplication implements GrailsApplication {
     private GrailsServiceClass[] services = null;
     private GrailsBootstrapClass[] bootstrapClasses = null;
     private GrailsTagLibClass[] taglibClasses = null;
+    private GrailsTaskClass[] taskClasses = null;
 
     private Map controllerMap = null;
     private Map domainMap = null;
     private Map pageFlowMap = null;
     private Map serviceMap = null;
     private Map taglibMap = null;
+    private Map taskMap = null;
 
     private Class[] allClasses = null;
 
@@ -132,8 +134,10 @@ public class DefaultGrailsApplication implements GrailsApplication {
         this.serviceMap = new HashMap();
         Map bootstrapMap = new HashMap();
         this.taglibMap = new HashMap();
+        this.taskMap = new HashMap();
         for (int i = 0; i < classes.length; i++) {
-            if (Modifier.isAbstract(classes[i].getModifiers())) {
+            if (Modifier.isAbstract(classes[i].getModifiers()) ||
+            		GrailsClassUtils.isDomainClass(classes[i])) {
                 continue;
             }
             if (GrailsClassUtils.isControllerClass(classes[i])  /* && not ends with FromController */) {
@@ -167,6 +171,11 @@ public class DefaultGrailsApplication implements GrailsApplication {
                 GrailsTagLibClass grailsTagLibClass = new DefaultGrailsTagLibClass(classes[i]);
                 this.taglibMap.put(grailsTagLibClass.getFullName(),grailsTagLibClass);
             }
+            else if(GrailsClassUtils.isTaskClass(classes[i])){
+            	GrailsTaskClass grailsTaskClass = new DefaultGrailsTaskClass(classes[i]);
+            	taskMap.put(grailsTaskClass.getFullName(), grailsTaskClass);
+            	log.debug("[" + classes[i].getName() + "] is a task class.");
+            }
         }
 
         this.controllerClasses = ((GrailsControllerClass[])controllerMap.values().toArray(new GrailsControllerClass[controllerMap.size()]));
@@ -175,6 +184,7 @@ public class DefaultGrailsApplication implements GrailsApplication {
         this.services = ((GrailsServiceClass[])this.serviceMap.values().toArray(new GrailsServiceClass[serviceMap.size()]));
         this.bootstrapClasses = ((GrailsBootstrapClass[])bootstrapMap.values().toArray(new GrailsBootstrapClass[bootstrapMap.size()]));
         this.taglibClasses = ((GrailsTagLibClass[])this.taglibMap.values().toArray(new GrailsTagLibClass[taglibMap.size()]));
+        this.taskClasses = ((GrailsTaskClass[])this.taskMap.values().toArray(new GrailsTaskClass[taskMap.size()]));
 
         configureDomainClassRelationships();
         configureTagLibraries();
@@ -407,6 +417,31 @@ public class DefaultGrailsApplication implements GrailsApplication {
     public GrailsTagLibClass getTagLibClassForTag(String tagName) {
         return (GrailsTagLibClass)this.tag2libMap.get(tagName);
     }
+	public GrailsTaskClass[] getGrailsTasksClasses() {
+		return this.taskClasses;
+	}
+	public GrailsTaskClass getGrailsTaskClass(String name) {
+		return (GrailsTaskClass)this.taskMap.get(name);
+	}
+
+	public GrailsTaskClass addTaskClass(Class loadedClass) {
+        if (Modifier.isAbstract(loadedClass.getModifiers())) {
+            return null;
+        }
+        if (GrailsClassUtils.isTaskClass(loadedClass)) {
+            GrailsTaskClass grailsTaskClass = new DefaultGrailsTaskClass(loadedClass);
+            if (grailsTaskClass.getAvailable()) {
+                this.taskMap.put(grailsTaskClass.getFullName(), grailsTaskClass);
+            }
+
+            this.taskClasses = ((GrailsTaskClass[])this.taskMap.values().toArray(new GrailsTaskClass[taskMap.size()]));
+
+            return grailsTaskClass;
+        }
+        else {
+            throw new GrailsConfigurationException("Cannot load task class ["+loadedClass+"]. It is not a task!");
+        }
+	}
 
 
 

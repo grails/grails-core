@@ -63,7 +63,6 @@ class UITagLib {
 					${attrs.id}.setExpandAnim(YAHOO.widget.TVAnim.FADE_IN);
 					${attrs.id}.setCollapseAnim(YAHOO.widget.TVAnim.FADE_OUT);"""					
 
-			println "onExpand = ${attrs.onExpand}"
 			if(attrs.onExpand) {
 				out << """
 				${attrs.id}.onExpand =${attrs.onExpand}
@@ -89,10 +88,10 @@ class UITagLib {
 				}
 				else if(attrs.dynamicLoadUri) {
 					out.println "${attrs.id}.setDynamicLoad(${attrs.id}DynamicTreeLoad);"							
-					
+					def method = (attrs.method? attrs.method : 'GET')
 					out << """
 						function ${attrs.id}DynamicTreeLoad(node,onCompleteCallback)  {
-							var cObj = YAHOO.util.Connect.asyncRequest('POST', '"""
+							var cObj = YAHOO.util.Connect.asyncRequest('$method', '"""
 							
 					createLink(attrs.dynamicLoadUri)
 				
@@ -169,10 +168,16 @@ class UITagLib {
 				createLinkTo(dir:"fckeditor/")
 			}
 			out.println '";'
+			if(attrs.toolbar) {
+				out << "oFCKeditor.ToolbarSet	 = '${attrs.toolbar}';" 	
+			}			
 			if(attrs.height)			
 				out.println "oFCKeditor.Height	= ${attrs.height};"
-			if(attrs.value)
-				out.println "oFCKeditor.Value	= '${attrs.value}' ;"
+			if(attrs.value) {
+				out << "oFCKeditor.Value	= \""
+				escapeJavascript(Collections.EMPTY_MAP,attrs.value)
+				out.println "\" ;"
+			}
 			
 			out.println "oFCKeditor.Create();"			
 		}

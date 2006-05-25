@@ -49,7 +49,7 @@ public abstract class AbstractDynamicMethodsInterceptor extends AbstractDynamicM
 
 	public Object afterInvoke(Object object, String methodName,
 			Object[] arguments, Object result) {
-		return this.returnValue;
+		return doInvoke?result: this.returnValue;
 	}
 
 	public boolean doInvoke() {

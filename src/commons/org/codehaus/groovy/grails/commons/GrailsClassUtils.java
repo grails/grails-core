@@ -129,6 +129,21 @@ public class GrailsClassUtils {
             return false;
         }
     }
+    
+	public static boolean isTaskClass(Class clazz) {
+        try {
+			clazz.getDeclaredMethod( GrailsTaskClassProperty.EXECUTE , new Class[]{});
+		} catch (SecurityException e) {
+			return false;
+		} catch (NoSuchMethodException e) {
+			return false;
+		}
+		return isTaskClass(clazz.getName());
+	}    
+	
+	public static boolean isTaskClass(String className) {
+		return className.endsWith(DefaultGrailsTaskClass.JOB);
+	}    	
 
     /**
      *
@@ -396,6 +411,8 @@ public class GrailsClassUtils {
         }
         return buf.toString();
     }
+
+
 
 
 }

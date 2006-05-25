@@ -14,6 +14,7 @@
  */ 
 package org.codehaus.groovy.grails.orm.hibernate.metaclass;
 
+import groovy.lang.GString;
 import groovy.lang.MissingMethodException;
 
 import java.util.ArrayList;
@@ -105,7 +106,11 @@ public abstract class AbstractClausedStaticPersistentMethod extends
 				if(args[i] == null)
 					throw new IllegalArgumentException("Argument " + args[0] + " cannot be null");
 				
-				if(!prop.getType().isAssignableFrom( args[i].getClass() ))
+				// convert GStrings to strings
+				if(prop.getType() == String.class && (args[i] instanceof GString)) {
+					args[i] = args[i].toString();
+				}
+				else if(!prop.getType().isAssignableFrom( args[i].getClass() ))
 					throw new IllegalArgumentException("Argument " + args[0] + " does not match property '"+propertyName+"' of type " + prop.getType());				
 			}
 

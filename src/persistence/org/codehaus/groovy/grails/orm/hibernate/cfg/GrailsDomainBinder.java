@@ -198,7 +198,7 @@ public final class GrailsDomainBinder {
 				PersistentClass referenced = mappings.getClass( entityName );
 				Backref prop = new Backref();
                 prop.setEntityName(property.getDomainClass().getFullName());
-                prop.setName( '_' + property.getName() + "Backref" );
+                prop.setName('_' + property.getDomainClass().getShortName() + '_' + property.getName() + "Backref" );
 				prop.setUpdateable( true );
 				prop.setInsertable( true );
 				prop.setCollectionRole( collection.getRole() );
@@ -319,12 +319,16 @@ public final class GrailsDomainBinder {
 	 * @param mappings The Hibernate Mappings object
 	 */
 	public static void bindRoot(GrailsDomainClass domainClass, Mappings mappings) {
-		
-		RootClass root = new RootClass();
-		bindClass(domainClass, root, mappings);		
-		bindRootPersistentClassCommonValues(domainClass, root, mappings);
-		
-		mappings.addClass(root);
+		if(mappings.getClass(domainClass.getFullName()) == null) {
+			RootClass root = new RootClass();
+			bindClass(domainClass, root, mappings);		
+			bindRootPersistentClassCommonValues(domainClass, root, mappings);
+			
+			mappings.addClass(root);
+		}
+		else {
+			LOG.info("[GrailsDomainBinder] Class ["+domainClass.getFullName()+"] is already mapped, skipping.. ");
+		}
 	}
 
 
@@ -653,10 +657,10 @@ w	 * Binds a simple value to the Hibernate metamodel. A simple value is
 	private static void bindColumn(GrailsDomainClassProperty grailsProp, Column column) {						
 		if(grailsProp.isAssociation()) {
 			if(grailsProp.isOneToMany()) {							
-				column.setName( grailsProp.getDomainClass().getTableName() + FOREIGN_KEY_SUFFIX );
+				column.setName( grailsProp.getFieldName() + FOREIGN_KEY_SUFFIX );
 			}
 			else if(grailsProp.isManyToOne()) {							
-				column.setName( grailsProp.getReferencedDomainClass().getTableName() + FOREIGN_KEY_SUFFIX );
+				column.setName( grailsProp.getFieldName() + FOREIGN_KEY_SUFFIX );
 			}			
 			else {
 				column.setName( grailsProp.getFieldName() + FOREIGN_KEY_SUFFIX );
@@ -667,8 +671,8 @@ w	 * Binds a simple value to the Hibernate metamodel. A simple value is
 			column.setNullable(grailsProp.isOptional());
 			column.setName(grailsProp.getFieldName());
 		}
-		if(LOG.isTraceEnabled()) 
-			LOG.trace("[GrailsDomainBinder] bound property [" + grailsProp + "] to column name ["+column.getName()+"]");		
+ 
+		LOG.info("[GrailsDomainBinder] bound property [" + grailsProp.getName() + "] to column name ["+column.getName()+"]");		
 	}
 
 
