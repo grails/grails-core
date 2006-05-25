@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
+
+<beans>
+    <bean class="org.codehaus.groovy.grails.plugins.support.aware.AwarePlugin"/>
+
+    <bean class="org.codehaus.groovy.grails.plugins.PluginTests$MyAwarePlugin"/>
+
+    <bean class="org.codehaus.groovy.grails.plugins.support.classeditor.ClassEditorPlugin"/>
+
+    <bean class="org.codehaus.groovy.grails.plugins.PluginTests$MyClassEditorPlugin"/>
+
+    <bean class="org.codehaus.groovy.grails.web.plugins.support.exceptionResolver.GrailsExceptionResolverPlugin"/>
+
+    <bean class="org.codehaus.groovy.grails.web.plugins.support.multipartresolver.CommonsMultipartResolverPlugin"/>
+
+    <bean class="org.codehaus.groovy.grails.web.plugins.support.i18n.ReloadableResourceBundleMessageSourcePlugin"/>
+
+    <bean class="org.codehaus.groovy.grails.web.plugins.support.i18n.LocaleChangeInterceptorPlugin"/>
+
+    <bean class="org.codehaus.groovy.grails.web.plugins.support.i18n.CookieLocaleResolverPlugin"/>
+
+    <bean class="org.codehaus.groovy.grails.plugins.support.services.GrailsServicesPlugin"/>
+
+    <bean class="org.codehaus.groovy.grails.plugins.datasource.PooledDatasourcePlugin"/>
+
+    <bean class="org.codehaus.groovy.grails.plugins.datasource.NonPooledDataSourcePlugin"/>
+
+    <bean class="org.codehaus.groovy.grails.plugins.hibernate.ConfigurableLocalSessionFactoryPlugin"/>
+
+    <!--<bean class="org.codehaus.groovy.grails.plugins.hibernate.HibernateDialectDetectorPlugin">-->
+        <!--<property name="vendorMappings">-->
+            <!--<props>-->
+                <!--<prop key="HSQL Database Engine">org.hibernate.dialect.HSQLDialect</prop>-->
+                <!--<prop key="MySQL">org.hibernate.dialect.MySQLDialect</prop>-->
+            <!--</props>-->
+        <!--</property>-->
+    <!--</bean>-->
+
+    <bean class="org.codehaus.groovy.grails.plugins.hibernate.HibernateTransactionManagerPlugin"/>
+</beans>
