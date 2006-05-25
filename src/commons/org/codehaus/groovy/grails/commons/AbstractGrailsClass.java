@@ -147,25 +147,28 @@ public abstract class AbstractGrailsClass implements GrailsClass {
 	 */
 	protected Object getPropertyValue(String name, Class type) {
 		BeanWrapper ref = getReference();
-		if (ref.isReadableProperty(name) && ref.getPropertyType(name).isAssignableFrom(type)) {
+		if (ref.isReadableProperty(name)) {
 			Object value = ref.getPropertyValue(name);
-			if(value != null && type.isAssignableFrom(value.getClass())) {
+			if(value != null && (type.isAssignableFrom(value.getClass()) || org.codehaus.groovy.grails.support.ClassUtils.isMatchBetweenPrimativeAndWrapperTypes(type, value.getClass()))) {
 				return value;
 			}
-			return null;
-		} else {
-			try {
-				Field field = ref.getWrappedClass().getField(name);
-				if (Modifier.isStatic(field.getModifiers()) && Modifier.isPublic(field.getModifiers()) && field.getType().equals(type)) {
-					return field.get(ref.getWrappedInstance());
-				}
-			} catch (NoSuchFieldException e) {
-				// ignore
-			} catch (IllegalAccessException e) {
-				// ignore
-			}
 		}
-		
+        try {
+            Field field = ref.getWrappedClass().getField(name);
+            if (Modifier.isStatic(field.getModifiers()) && Modifier.isPublic(field.getModifiers())) {
+                Object value = field.get(ref.getWrappedInstance());
+                if (value != null && (type.equals(value.getClass()) || org.codehaus.groovy.grails.support.ClassUtils.isMatchBetweenPrimativeAndWrapperTypes(type, value.getClass()))) {
+                    return value;
+                } else {
+                    return null;
+                }
+            }
+        } catch (NoSuchFieldException e) {
+            // ignore
+        } catch (IllegalAccessException e) {
+            // ignore
+        }
+
 		return null;
 	}
 }
