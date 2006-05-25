@@ -82,15 +82,26 @@ public class SpringConfig {
 	public Collection getBeanReferences() {
 		Collection beanReferences = new ArrayList();
 		Map urlMappings = new HashMap();
-		
-		Assert.notNull(application);
+
+        /**
+         * Regarding conversion to plugins:
+         *
+         * N/A: not applicable, does not need to be converted
+         * OK: already converted to plugin (please mention plugin name
+         */
+
+
+        Assert.notNull(application);
 
 		// configure general references
-		Bean classLoader = SpringConfigUtils.createSingletonBean(MethodInvokingFactoryBean.class);
+        // N/A
+        Bean classLoader = SpringConfigUtils.createSingletonBean(MethodInvokingFactoryBean.class);
 		classLoader.setProperty("targetObject", SpringConfigUtils.createBeanReference("grailsApplication"));
 		classLoader.setProperty("targetMethod", SpringConfigUtils.createLiteralValue("getClassLoader"));
-		
-		Bean classEditor = SpringConfigUtils.createSingletonBean(ClassEditor.class);
+
+        // Register custom class editor
+        // OK: org.codehaus.groovy.grails.plugins.support.classeditor.ClassEditorPlugin
+        Bean classEditor = SpringConfigUtils.createSingletonBean(ClassEditor.class);
 		classEditor.setProperty("classLoader", classLoader);
 		
 		Bean propertyEditors = SpringConfigUtils.createSingletonBean(CustomEditorConfigurer.class);
@@ -100,11 +111,13 @@ public class SpringConfig {
 		beanReferences.add(SpringConfigUtils.createBeanReference("customEditors", propertyEditors));
 			
 		// configure exception handler
-		Bean exceptionHandler = SpringConfigUtils.createSingletonBean(GrailsExceptionResolver.class);
+        // OK: org.codehaus.groovy.grails.web.plugins.support.exceptionResolver.GrailsExceptionResolverPlugin
+        Bean exceptionHandler = SpringConfigUtils.createSingletonBean(GrailsExceptionResolver.class);
 		exceptionHandler.setProperty("exceptionMappings", SpringConfigUtils.createLiteralValue("java.lang.Exception=error"));
 		beanReferences.add(SpringConfigUtils.createBeanReference("exceptionHandler", exceptionHandler));
 
         // configure multipart support
+        // OK: org.codehaus.groovy.grails.web.plugins.support.multipartresolver.CommonsMultipartResolverPlugin
         Bean multipartResolver = SpringConfigUtils.createSingletonBean(CommonsMultipartResolver.class);
         beanReferences.add(SpringConfigUtils.createBeanReference("multipartResolver", multipartResolver));
 
@@ -205,17 +218,20 @@ public class SpringConfig {
 
 	private void populateI18nSupport(Collection beanReferences) {
 		// setup message source
-		Bean messageSource = SpringConfigUtils.createSingletonBean( ReloadableResourceBundleMessageSource.class );
-		messageSource.setProperty( "basename", SpringConfigUtils.createLiteralValue("WEB-INF/grails-app/i18n/messages"));				
+        // OK: org.codehaus.groovy.grails.web.plugins.support.i18n.ReloadableResourceBundleMessageSourcePlugin
+        Bean messageSource = SpringConfigUtils.createSingletonBean( ReloadableResourceBundleMessageSource.class );
+		messageSource.setProperty( "basename", SpringConfigUtils.createLiteralValue("WEB-INF/classes/grails-app/i18n/messages"));
 		beanReferences.add(SpringConfigUtils.createBeanReference("messageSource", messageSource));
 		
 		// setup locale change interceptor
-		Bean localeChangeInterceptor = SpringConfigUtils.createSingletonBean(LocaleChangeInterceptor.class);
+        // OK: org.codehaus.groovy.grails.web.plugins.support.i18n.LocaleChangeInterceptorPlugin
+        Bean localeChangeInterceptor = SpringConfigUtils.createSingletonBean(LocaleChangeInterceptor.class);
 		localeChangeInterceptor.setProperty("paramName", SpringConfigUtils.createLiteralValue("lang"));
 		beanReferences.add(SpringConfigUtils.createBeanReference("localeChangeInterceptor", localeChangeInterceptor));
 		
 		// setup locale resolver
-		Bean localeResolver = SpringConfigUtils.createSingletonBean(CookieLocaleResolver.class);
+        // OK: org.codehaus.groovy.grails.web.plugins.support.i18n.CookieLocaleResolverPlugin
+        Bean localeResolver = SpringConfigUtils.createSingletonBean(CookieLocaleResolver.class);
 		beanReferences.add(SpringConfigUtils.createBeanReference("localeResolver", localeResolver));
 	}
 	// configures scaffolding
@@ -289,7 +305,7 @@ public class SpringConfig {
         Bean grailsViewResolver = SpringConfigUtils.createSingletonBean(GrailsViewResolver.class);
 		
 		grailsViewResolver.setProperty("viewClass",SpringConfigUtils.createLiteralValue("org.springframework.web.servlet.view.JstlView"));
-		grailsViewResolver.setProperty("prefix", SpringConfigUtils.createLiteralValue("/WEB-INF/grails-app/views/"));
+		grailsViewResolver.setProperty("prefix", SpringConfigUtils.createLiteralValue("/WEB-INF/classes/grails-app/views/"));
 		grailsViewResolver.setProperty("suffix", SpringConfigUtils.createLiteralValue(".jsp"));
 		beanReferences.add(SpringConfigUtils.createBeanReference("jspViewResolver", grailsViewResolver));
 		
@@ -399,8 +415,10 @@ public class SpringConfig {
         Bean localSessionFactoryBean = SpringConfigUtils.createSingletonBean(ConfigurableLocalSessionFactoryBean.class);
 
         if (grailsDataSource != null) {
-			
-			Bean dataSource;
+
+            // OK: org.codehaus.groovy.grails.plugins.datasource.PooledDatasourcePlugin
+            // OK: org.codehaus.groovy.grails.plugins.datasource.NonPooledDataSourcePlugin
+            Bean dataSource;
 			if (grailsDataSource.isPooled()) {
 				dataSource = SpringConfigUtils.createSingletonBean(BasicDataSource.class);
 				dataSource.setDestroyMethod("close");
@@ -417,6 +435,7 @@ public class SpringConfig {
             }
             beanReferences.add(SpringConfigUtils.createBeanReference("dataSource", dataSource));
 		} else {
+            // N/A
 			Bean dataSource = SpringConfigUtils.createSingletonBean(BasicDataSource.class);
 			dataSource.setDestroyMethod("close");
 			dataSource.setProperty("driverClassName", SpringConfigUtils.createLiteralValue("org.hsqldb.jdbcDriver"));
@@ -434,8 +453,9 @@ public class SpringConfig {
 			beanReferences.add(SpringConfigUtils.createBeanReference("hsqldbServer", hsqldbServer));
 			dependsOnHsqldbServer = true;
 		}
-		
-		Map vendorNameDialectMappings = new HashMap();
+
+        // OK: org.codehaus.groovy.grails.plugins.hibernate.HibernateDialectDetectorPlugin
+        Map vendorNameDialectMappings = new HashMap();
 		vendorNameDialectMappings.put("HSQL Database Engine", HSQLDialect.class.getName());
 		vendorNameDialectMappings.put("MySQL", MySQLDialect.class.getName());
 			
@@ -460,8 +480,9 @@ public class SpringConfig {
 		}
 		Bean hibernateProperties = SpringConfigUtils.createSingletonBean(MapToPropertiesFactoryBean.class);
 		hibernateProperties.setProperty("map", SpringConfigUtils.createMap(hibernatePropertiesMap));
-				
-		Bean grailsClassLoader = SpringConfigUtils.createSingletonBean(MethodInvokingFactoryBean.class);
+
+        // N/A
+        Bean grailsClassLoader = SpringConfigUtils.createSingletonBean(MethodInvokingFactoryBean.class);
 		grailsClassLoader.setProperty("targetObject", SpringConfigUtils.createBeanReference("grailsApplication"));
 		grailsClassLoader.setProperty("targetMethod", SpringConfigUtils.createLiteralValue("getClassLoader"));
 		
@@ -476,8 +497,9 @@ public class SpringConfig {
 		localSessionFactoryBean.setProperty("grailsApplication", SpringConfigUtils.createBeanReference("grailsApplication"));
 		localSessionFactoryBean.setProperty("classLoader", grailsClassLoader);
 		beanReferences.add(SpringConfigUtils.createBeanReference("sessionFactory", localSessionFactoryBean));
-		
-		Bean transactionManager = SpringConfigUtils.createSingletonBean(HibernateTransactionManager.class);
+
+        // OK: org.codehaus.groovy.grails.plugins.hibernate.HibernateTransactionManagerPlugin
+        Bean transactionManager = SpringConfigUtils.createSingletonBean(HibernateTransactionManager.class);
 		transactionManager.setProperty("sessionFactory", SpringConfigUtils.createBeanReference("sessionFactory"));
 		beanReferences.add(SpringConfigUtils.createBeanReference("transactionManager", transactionManager));
 	}
