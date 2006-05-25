@@ -1,0 +1,222 @@
+a:active,a:link,a:visited,a:hover {
+    color:#0D5798;    
+}
+.menuButton {
+	background-color:#8CAFCD;
+	border: 1px solid white;
+	border-style: none solid none none ;
+	margin-left:0px;
+	padding-bottom: 5px;
+}
+.paginateButtons {
+	margin:10px;	
+    margin-bottom:20px;
+
+}
+.step {
+	margin-left:5px;
+	margin-right:5px;	
+}
+.menuButton a:active,.menuButton a:link,.menuButton a:visited,.menuButton a:hover {
+	font-family:Arial,sans-serif;
+    font-size:0.9em;
+    color: white;
+    font-weight:bold;
+    text-decoration:none;
+	padding:20px;
+}
+.actionButton a:active,.actionButton a:link,.actionButton a:visited,.actionButton a:hover {
+	font-family:Arial,sans-serif;
+	font-size:0.8em;
+	font-weight:bold;
+	color: #578BB8;	
+}
+
+
+h1 {
+	font-family:Arial,sans-serif;
+	color:#578BB8;
+	font-size:1.6em;
+}
+
+body {
+	margin:0px;
+	font-family:Arial,sans-serif;
+	color: #616161;
+}
+textarea {
+	width: 300px;
+	height: 100px;
+}
+table {
+	width: 100%;
+}
+.body {
+	padding: 25px;
+}
+.nav {
+	width:100%;
+	margin-top: 30px;
+	background-color:#D6D6D6;
+	height: 30px;
+	border: 2px solid #578BB8;
+	border-style: solid none none none ;	
+}
+
+.dialog th {
+	background-color:#578BB8;
+	color:white;
+	font-family:Arial,sans-serif;
+	padding:5px;
+	
+}
+.dialog td {
+	background-color:#F0F0F0;
+	text-align:center;
+}
+.dialog 
+{
+	padding: 15px;
+	background-color:#F0F0F0;
+	
+}
+.smallDialog
+{
+	border: 1px solid #8CAFCD;
+	width:350px;
+}
+.smallDialog .title {
+	font-size:1.2em;
+	font-weight:bold;	
+	color:#578BB8;
+	margin-bottom: 20px;
+	font-weight:bold;
+}
+.dialog label{
+	width: 120px;
+	font-weight: bold;
+}
+
+.dialog .textfield, textarea{
+	width: 180px;
+	margin-bottom: 5px;
+}
+
+textarea{
+	width: 250px;
+	height: 150px;
+}
+.prop {
+	padding: 5px;
+}
+.buttons {
+	margin-top: 15px;
+}
+.actionButtons {
+	width:100px;
+}
+div .errors {
+	border: 2px solid red;
+	padding: 5px;
+	margin-top:10px;
+	margin-bottom:10px;
+}
+td .errors {
+   border: 1px solid red;
+}
+.message {
+	border: 1px solid #FFCC00;
+	padding: 5px;
+	margin-top:10px;
+	margin-bottom:10px;
+}
+.prop .name {
+	font-weight:bold;
+}
+.contextMenu {
+	background-color:#F0F0F0;
+	padding: 5px;
+	border: 1px solid #8CAFCD;
+	z-index: 100;
+}
+#addPageDialog {
+	z-index:101;	
+}
+.tree {
+	z-index:0;	
+	width:200px;
+}
+.error {
+	border: 1px solid red;
+	font-weight:bold;
+	padding:3px;	
+}
+.message {
+	border: 1px solid orange;
+	font-weight:bold;
+	padding:3px;	
+}
+#description {
+  margin:15px;
+
+}
+.post {
+ margin:5px;
+ margin-bottom:45px;
+}
+.post .controls {
+ margin:10px;
+}
+.post .title {
+  font-weight:bold;
+}
+.post .leftBy {
+  margin-top:10px;
+}
+.post .msg {
+ padding:10px;
+ border: 1px solid grey;
+}
+th {
+   text-align:left;
+
+}
+.topic {
+   border: 1px solid grey;
+   margin: 5px;
+   padding:5px;
+}
+.topic .desc {
+   margin-top:5px;
+
+}
+#addCommentLink {
+   margin-left:10px;
+}
+.comment {
+  margin-bottom:10px;
+  margin-top:10px;
+}
+.cmessage {
+  border:1px solid grey;
+  padding: 10px;
+}
+.cuser {
+   text-align:right;
+   margin-top:3px;
+}
+.commentBox {
+   margin-top: 10px;   
+}
+.commentBox textarea {
+   width:400px;
+   height:75px;
+}
+.loader {
+   border: 1px solid grey;
+   background-color:white;
+   font-size: 1.6em;
+   padding:10px;
+   width:250px;
+   text-align:center;
+}

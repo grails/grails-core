@@ -1,0 +1,95 @@
+body {
+font-size: 90%;
+background-image:url(img/loginbackground.gif);
+}
+input {
+   width:100px;
+}
+#sitename {
+background-color: transparent;
+width: 200px;
+height: 60px;
+left: 50%;
+margin-left: -200px;
+}
+.buttons {
+	margin-top: 5px;
+	padding-bottom: 0px;
+}
+#container {
+position: absolute;
+background-color: transparent;
+background-image:none;
+width: 100%;
+margin: 0;
+padding: 0;
+top: 0;
+}
+
+#wrapper {
+position: absolute;
+background-color: transparent;
+background-image:none;
+margin: 0;
+padding: 0;
+left: 50%;
+margin-left: -200px;
+top: 74px;
+width: 440px;
+background-image:url(img/loginimage.gif);
+background-repeat:no-repeat;
+background-position: 120px 232px;
+height: 600px;
+}
+
+#content {
+padding:0;
+margin:0;
+left:inherit;
+right:inherit;
+top: 0;
+left: 0;
+background-color: transparent;
+}
+
+#body {
+padding:0;
+margin:0;
+left:inherit;
+right:inherit;
+top: 0;
+left: 0;
+
+}
+
+.body {
+padding:0;
+margin:0;
+left:inherit;
+right:inherit;
+}
+
+
+#body form {
+padding:0;
+margin:0;
+left:inherit;
+right:inherit;
+}
+
+
+#footer {	
+   margin-top:10px;
+}
+
+
+table, tr, td, input, label, a, h1 {
+	margin: 0;
+	padding: 0;
+}
+
+p { 
+	margin: 0;
+	padding: 0;
+
+}
