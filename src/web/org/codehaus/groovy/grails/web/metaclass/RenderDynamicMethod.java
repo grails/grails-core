@@ -15,6 +15,7 @@
  */
 package org.codehaus.groovy.grails.web.metaclass;
 
+import grails.util.JSonBuilder;
 import grails.util.OpenRicoBuilder;
 import groovy.lang.*;
 import groovy.text.Template;
@@ -59,6 +60,7 @@ public class RenderDynamicMethod extends AbstractDynamicControllerMethod {
     public static final String ARGUMENT_VAR = "var";
     private static final String DEFAULT_ARGUMENT = "it";
     private static final String BUILDER_TYPE_RICO = "rico";
+    private static final String BUILDER_TYPE_JSON = "json";
 
     private GrailsControllerHelper helper;
     protected GrailsHttpServletResponse response;
@@ -127,6 +129,16 @@ public class RenderDynamicMethod extends AbstractDynamicControllerMethod {
                     }
                     orb.invokeMethod("ajax", new Object[]{ arguments[arguments.length - 1] });
                 }
+                else if(BUILDER_TYPE_JSON.equals(argMap.get(ARGUMENT_BUILDER))){
+                	JSonBuilder jsonBuilder;
+                	try{
+                		jsonBuilder = new JSonBuilder(response);
+                		renderView = false;
+                	}catch(IOException e){
+                        throw new ControllerExecutionException("I/O error executing render method for arguments ["+argMap+"]: " + e.getMessage(),e);                		
+                	}
+                	jsonBuilder.invokeMethod("json", new Object[]{ arguments[arguments.length - 1] });
+                }
                 else {
                     StreamingMarkupBuilder b = new StreamingMarkupBuilder();
                     Writable markup = (Writable)b.bind(arguments[arguments.length - 1]);
@@ -183,6 +195,10 @@ public class RenderDynamicMethod extends AbstractDynamicControllerMethod {
                 GroovyPagesTemplateEngine engine = attrs.getPagesTemplateEngine();
                 try {
                     Template t = engine.createTemplate(templateUri,attrs.getServletContext(),request,response);
+					
+					if(t == null) {
+						throw new ControllerExecutionException("Unable to load template for uri ["+templateUri+"]. Template not found.");	
+					}
                     Map binding = new HashMap();
 
                     if(argMap.containsKey(ARGUMENT_BEAN)) {
