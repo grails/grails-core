@@ -27,7 +27,7 @@ public class JSonBuilderTest extends TestCase {
 		};
 	}	
 	
-	private void parse(String groovy) throws Exception {
+	private String parse(String groovy) throws Exception {
 		GroovyClassLoader cl = new GroovyClassLoader();
 		Class clazz = cl.parseClass("import grails.util.*; class TestClass { List names = [\"Steven\", \"Hans\", \"Erwin\"]; @Property Closure test = { response -> new JSonBuilder(response)." + groovy + "; } }");
 		GroovyObject go = (GroovyObject)clazz.newInstance();
@@ -35,20 +35,26 @@ public class JSonBuilderTest extends TestCase {
 		StringWriter sw = new StringWriter();
 		closure.call(getResponse(sw));
 		System.out.println(sw.getBuffer().toString());
+		return sw.getBuffer().toString();
 	}
 	
 	public void testOpenRicoBuilderElement() throws Exception {
 		
-		parse("json(){ message('Hello World') }");
+		assertEquals( "{\"message\":\"Hello World\"}",
+						parse("json(){ message('Hello World') }"));
 		
-		parse("json{ message 'Hello World' }");
+		assertEquals( "{\"integer\":10}",
+				parse("json{ integer 5+5 }"));
 		
-		parse("json{ integer 5+5 }");
+		assertEquals( "{\"message\":5.1}",
+				parse("json{ message 5.1 }"));
 		
-		parse("json{ message 5.1 }");		
+		assertEquals( "{\"names\":[{\"firstName\":\"Steven\"},{\"firstName\":\"Hans\"},{\"firstName\":\"Erwin\"}]}",
+				parse("json(){ names{ for( cc in names ){ name( \"firstName\" : cc ) }  }  }"));
 		
-		parse("json(){ names{ for( cc in names ){ name( \"firstName\" : cc ) }  }  }");
-
+		assertEquals( "{\"names\":[\"Steven\",\"Hans\",\"Erwin\"]}",
+				parse("json(){ names(names) }"));		
+		
 		try {
 			parse("json{ message( \"Hello World\" ){ item() } }");
 			fail();

@@ -19,6 +19,7 @@ import groovy.util.BuilderSupport;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Writer;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Stack;
@@ -48,7 +49,10 @@ import org.codehaus.groovy.grails.web.servlet.GrailsHttpServletResponse;
  * <pre>{"message":"Hello World"}</pre>
  * 
  * @author Michał Kłujszo
- * @since May, 18, 2006
+ * @author Graeme Rocher
+ * @since 0.2
+ * 
+ * Date Created: May, 18, 2006
  */
 public class JSonBuilder extends BuilderSupport {
 
@@ -128,11 +132,31 @@ public class JSonBuilder extends BuilderSupport {
 				writeObject();
 				retVal = 1;
 			}
-			writer.key(String.valueOf(key)).value(value);
+			if(value instanceof Collection) {
+				Collection c = (Collection)value;
+				writer.key(String.valueOf(key));
+				handleCollectionRecurse(c);
+			}
+			else {
+				writer.key(String.valueOf(key)).value(value);
+			}
 			return retVal != 0 ? Integer.valueOf(retVal) : null;			
 		} catch (JSONException e) {
 			throw new IllegalArgumentException( JSON_BUILDER + "invalid element" ,e );
 		}
+	}
+
+	private void handleCollectionRecurse(Collection c) throws JSONException {		
+		writer.array();		
+		for (Iterator i = c.iterator(); i.hasNext();) {
+			Object element = i.next();
+			if(element instanceof Collection) {
+				handleCollectionRecurse((Collection)element);
+			}else {
+				writer.value(element);
+			}
+		}
+		writer.endArray();
 	}
 
 	protected void nodeCompleted(Object parent, Object node) {
