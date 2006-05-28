@@ -107,7 +107,8 @@ public class JSonBuilder extends BuilderSupport {
 	}
 
 	protected Object createNode(Object key, Map valueMap) {
-		try {
+		try {			
+			if( stack.peek().equals(OBJECT) ) writer.key(String.valueOf(key)); 
 			writer.object();			
 			for (Iterator iter = valueMap.entrySet().iterator(); iter.hasNext();) {
 				Map.Entry element = (Map.Entry) iter.next();

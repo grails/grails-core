@@ -55,6 +55,10 @@ public class JSonBuilderTest extends TestCase {
 		assertEquals( "{\"names\":[\"Steven\",\"Hans\",\"Erwin\"]}",
 				parse("json(){ names(names) }"));		
 		
+		assertEquals("{\"book\":{\"title\":\"test1\",\"title2\":\"test2\"}}",
+			parse("json(){book(title:\"test1\",title2:\"test2\")}"));
+		
+		
 		try {
 			parse("json{ message( \"Hello World\" ){ item() } }");
 			fail();
