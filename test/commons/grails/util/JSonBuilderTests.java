@@ -16,7 +16,7 @@ import org.springframework.mock.web.MockHttpServletResponse;
 
 import junit.framework.TestCase;
 
-public class JSonBuilderTest extends TestCase {
+public class JSonBuilderTests extends TestCase {
 
 	private HttpServletResponse getResponse(Writer writer) {
 		final PrintWriter printer = new PrintWriter(writer);
