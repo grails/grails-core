@@ -1,6 +1,6 @@
 <project name="grails-cruisecontrol-starter" default="cruise">
 
-	<property name="cvs.repository" value=":pserver:anonymous@cvs.grails.codehaus.org:/home/projects/grails/scm"/>
+	<property name="cvs.repository" value=":pserver:anonymous@cvs.grails.codehaus.org:/cvs/grails"/>
 
 	<target name="cruise" depends="update, copy-reporting-app, delegate, tagLastBuild"/>
 	
