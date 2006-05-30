@@ -294,6 +294,9 @@ Targets:
 	<target name="clean">
 		<delete file="grails-app.war"/>
 		<delete dir="tmp" />
+		<delete failonerror="false">
+			<fileset dir="web-app/WEB-INF/classes"/>
+		</delete>		
 	</target>
 
 	<target name="build" depends="init-props">
@@ -302,9 +305,6 @@ Targets:
 			<fileset dir="${grails.home}/lib"/>
 			<fileset dir="${grails.home}/dist"/>
 		</path>
-		<delete failonerror="false">
-			<fileset dir="web-app/WEB-INF/classes"/>
-		</delete>
 		<javac srcdir="src/java" destdir="web-app/WEB-INF/classes" classpathref="classpath" debug="on" deprecation="on" optimize="off"/>
 
 		<groovyc srcdir="src/groovy" destdir="web-app/WEB-INF/classes" classpathref="classpath" />
