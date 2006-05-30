@@ -6,5 +6,6 @@
     <session-factory>      
         <mapping package="com.recipes" />
         <mapping class="com.recipes.Recipe" />
+        <mapping class="com.recipes.Ingredient" />        
     </session-factory>
 </hibernate-configuration>
