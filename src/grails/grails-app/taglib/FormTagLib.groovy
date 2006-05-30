@@ -248,14 +248,21 @@ class FormTagLib {
 					}
 				}
                else if(optionKey) {
+            	    def keyValue = null
                     if(optionKey instanceof Closure) {
-                         out << 'value="' << optionKey(el) << '" '
+                    	keyValue = optionKey(el)
+                         out << 'value="' << keyValue << '" '
+                    }
+                    else if(optionKey == 'id') {
+                    	keyValue = el.ident()
+                        out << 'value="' << keyValue << '" '                    	
                     }
                     else {
-                        out << 'value="' << el.properties[optionKey] << '" '
+                    	keyValue = el.properties[optionKey]
+                        out << 'value="' << keyValue << '" '
                     }
 
-                    if(el.properties[optionKey] == value) {
+                    if(keyValue == value) {
                         out << 'selected="selected" '
                     }
                 }
