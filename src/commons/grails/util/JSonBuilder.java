@@ -103,7 +103,7 @@ public class JSonBuilder extends BuilderSupport {
 			throw new IllegalArgumentException( JSON_BUILDER + "invalid element" );
 		}
 		
-		return Integer.valueOf(retVal);
+		return new Integer(retVal);
 	}
 
 	protected Object createNode(Object key, Map valueMap) {
@@ -141,7 +141,7 @@ public class JSonBuilder extends BuilderSupport {
 			else {
 				writer.key(String.valueOf(key)).value(value);
 			}
-			return retVal != 0 ? Integer.valueOf(retVal) : null;			
+			return retVal != 0 ? new Integer(retVal) : null;
 		} catch (JSONException e) {
 			throw new IllegalArgumentException( JSON_BUILDER + "invalid element");
 		}
