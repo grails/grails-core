@@ -104,6 +104,7 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator  {
             destFile.parentFile.mkdirs()
 
             def templateText = '''
+<%=packageName ? "import ${packageName}.${className}" : ''%>            
 class ${className}Controller {
     @Property index = { redirect(action:list,params:params) }
 
@@ -175,8 +176,8 @@ class ${className}Controller {
     }
 
 }'''
-
-            def binding = [ className: domainClass.shortName, propertyName:domainClass.propertyName ]
+		
+            def binding = [ packageName:domainClass.packageName,className: domainClass.shortName, propertyName:domainClass.propertyName ]
             def t = engine.createTemplate(templateText)
 
             destFile.withWriter { w ->
