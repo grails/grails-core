@@ -100,7 +100,7 @@ public class JSonBuilder extends BuilderSupport {
 				stack.push(ARRAY);
 			}
 		} catch (JSONException e) {
-			throw new IllegalArgumentException( JSON_BUILDER + "invalid element" ,e );
+			throw new IllegalArgumentException( JSON_BUILDER + "invalid element" );
 		}
 		
 		return Integer.valueOf(retVal);
@@ -117,7 +117,7 @@ public class JSonBuilder extends BuilderSupport {
 			writer.endObject();
 			return null;			
 		} catch (JSONException e) {
-			throw new IllegalArgumentException( JSON_BUILDER + "invalid element" ,e );
+			throw new IllegalArgumentException( JSON_BUILDER + "invalid element" );
 		}
 	}
 
@@ -143,7 +143,7 @@ public class JSonBuilder extends BuilderSupport {
 			}
 			return retVal != 0 ? Integer.valueOf(retVal) : null;			
 		} catch (JSONException e) {
-			throw new IllegalArgumentException( JSON_BUILDER + "invalid element" ,e );
+			throw new IllegalArgumentException( JSON_BUILDER + "invalid element");
 		}
 	}
 
@@ -173,7 +173,7 @@ public class JSonBuilder extends BuilderSupport {
     			}
     		}
     		catch (JSONException e) {
-    			throw new IllegalArgumentException( JSON_BUILDER + "invalid element on the stack" ,e );
+    			throw new IllegalArgumentException( JSON_BUILDER + "invalid element on the stack" );
     		}
     	}
     }
