@@ -1,4 +1,4 @@
-<project name="grails-cruisecontrol-starter" default="cruise">
+<project name="grails-cruisecontrol-starter" default="cruise"> 
 
 	<property name="cvs.repository" value=":pserver:anonymous@cvs.grails.codehaus.org:/cvs/grails"/>
 
