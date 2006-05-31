@@ -247,7 +247,7 @@ Targets:
         <antcall target="internal-create-test-suite" inheritRefs="true" inheritAll="true"/>
     </target>
 	
-	<target name="create-task" depends="init-props" description="Create a new task">
+	<target name="create-job" depends="init-props" description="Create a new job">
 
 		<input addproperty="job.class.name" message="Enter job class name:" />
 
