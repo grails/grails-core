@@ -101,14 +101,16 @@ public class GrailsDomainConfigurationUtil {
 
             // if its not a grails domain class and one written in java then add it
             // to grails
-            if(application.getGrailsDomainClass(persistentClass.getName()) == null) {
+            if(application != null && persistentClass != null) {
+                if(application.getGrailsDomainClass(persistentClass.getName()) == null) {
                     application.addDomainClass(new GrailsHibernateDomainClass(persistentClass, sf,cmd));
-            }
-            LOG.info("[GrailsDomainConfiguration] Registering dynamic methods on class ["+persistentClass+"]");
-            try {
-                new DomainClassMethods(application,persistentClass,sf,application.getClassLoader());
-            } catch (IntrospectionException e) {
-                LOG.warn("[GrailsDomainConfiguration] Introspection exception registering dynamic methods for ["+persistentClass+"]:" + e.getMessage(), e);
+	            }
+	            LOG.info("[GrailsDomainConfiguration] Registering dynamic methods on class ["+persistentClass+"]");
+	            try {
+	                new DomainClassMethods(application,persistentClass,sf,application.getClassLoader());
+	            } catch (IntrospectionException e) {
+	                LOG.warn("[GrailsDomainConfiguration] Introspection exception registering dynamic methods for ["+persistentClass+"]:" + e.getMessage(), e);
+	            }            	
             }
         }
     }
