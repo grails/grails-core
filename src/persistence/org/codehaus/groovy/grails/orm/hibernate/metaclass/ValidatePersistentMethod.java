@@ -55,15 +55,31 @@ public class ValidatePersistentMethod extends AbstractDynamicPersistentMethod {
 		if(domainClass != null)
 			validator = application.getGrailsDomainClass( target.getClass().getName() ).getValidator();
 		
-		Boolean valid = new Boolean(true);
+		Boolean valid = Boolean.TRUE;		
 		if(validator != null) {
+			// should evict?
+			boolean evict = false;
+			if(arguments.length > 0) {
+				if(arguments[0] instanceof Boolean) {
+					evict = ((Boolean)arguments[0]).booleanValue();
+				}
+			}
             if(validator instanceof GrailsDomainClassValidator) {
                  ((GrailsDomainClassValidator)validator).setHibernateTemplate(getHibernateTemplate());
             }
             validator.validate(target,errors);
 			
 			if(errors.hasErrors()) {
-				valid = new Boolean(!errors.hasErrors());	
+				valid = Boolean.valueOf(false);
+				if(evict) {
+					// if an boolean argument 'true' is passed to the method
+					// and validation fails then the object will be evicted
+					// from the session, ensuring it is not saved later when
+					// flush is called
+					if(getHibernateTemplate().contains(target)) {
+						getHibernateTemplate().evict(target);
+					}
+				}
 				DelegatingMetaClass metaClass = (DelegatingMetaClass)InvokerHelper.getInstance().getMetaRegistry().getMetaClass(target.getClass());
 				metaClass.setProperty(target,DomainClassMethods.ERRORS_PROPERTY,errors);
 			}

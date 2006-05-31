@@ -25,6 +25,7 @@ public class PersistentMethodTests extends AbstractDependencyInjectionSpringCont
     protected GrailsApplication grailsApplication = null;
     private GroovyClassLoader cl = new GroovyClassLoader();
     private SessionFactory sessionFactory;
+	private org.hibernate.classic.Session hibSession;
 
 
     /**
@@ -72,7 +73,7 @@ public class PersistentMethodTests extends AbstractDependencyInjectionSpringCont
 
 
         if(!TransactionSynchronizationManager.hasResource(this.sessionFactory)) {
-            Session hibSession = this.sessionFactory.openSession();
+            this.hibSession = this.sessionFactory.openSession();
             TransactionSynchronizationManager.bindResource(this.sessionFactory, new SessionHolder(hibSession));
         }
 
@@ -276,6 +277,21 @@ public class PersistentMethodTests extends AbstractDependencyInjectionSpringCont
         assertEquals(returnValue.getClass(),domainClass.getClazz());
     }
 
+    public void testDiscardMethod() {
+        GrailsDomainClass domainClass = this.grailsApplication.getGrailsDomainClass("PersistentMethodTests");
+
+        GroovyObject obj = (GroovyObject)domainClass.newInstance();
+        obj.setProperty( "id", new Long(1) );
+        obj.setProperty( "firstName", "fred" );
+        obj.setProperty( "lastName", "flintstone" );
+
+        obj.invokeMethod("save", null);
+        
+        assertTrue(hibSession.contains(obj));
+        obj.invokeMethod("discard", null);
+        assertFalse(hibSession.contains(obj));
+        
+    }
     public void testFindAllPersistentMethod() {
         GrailsDomainClass domainClass = this.grailsApplication.getGrailsDomainClass("PersistentMethodTests");
 

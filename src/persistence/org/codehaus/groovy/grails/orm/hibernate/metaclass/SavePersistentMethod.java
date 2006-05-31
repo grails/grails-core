@@ -55,6 +55,7 @@ public class SavePersistentMethod extends AbstractDynamicPersistentMethod {
 
     protected Object doInvokeInternal(Object target, Object[] arguments) {
 
+    	HibernateTemplate t = getHibernateTemplate();
         Errors errors = new BindException(target, target.getClass().getName());
         GrailsDomainClass domainClass = application.getGrailsDomainClass( target.getClass().getName() );
         Validator validator = null;
@@ -76,13 +77,19 @@ public class SavePersistentMethod extends AbstractDynamicPersistentMethod {
                 validator.validate(target,errors);
 
                 if(errors.hasErrors()) {
+                	// if the target is within the session evict it
+                	// this is so that if validation fails hibernate doesn't save
+                	// the object automatically when the session is flushed
+                	if(t.contains(target)) {
+                		t.evict(target);
+                	}
                     DelegatingMetaClass metaClass = (DelegatingMetaClass)InvokerHelper.getInstance().getMetaRegistry().getMetaClass(target.getClass());
                     metaClass.setProperty(target,DomainClassMethods.ERRORS_PROPERTY,errors);
                     return null;
                 }
             }
         }
-        HibernateTemplate t = getHibernateTemplate();
+        
         // this piece of code will retrieve a persistent instant
         // of a domain class property is only the id is set thus
         // relieving this burden off the developer
