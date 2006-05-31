@@ -15,15 +15,37 @@
  */ 
 package org.codehaus.groovy.grails.commons.spring;
 
+import java.io.IOException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Properties;
+
 import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.commons.lang.WordUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.commons.*;
+import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.commons.GrailsControllerClass;
+import org.codehaus.groovy.grails.commons.GrailsDataSource;
+import org.codehaus.groovy.grails.commons.GrailsDomainClass;
+import org.codehaus.groovy.grails.commons.GrailsPageFlowClass;
+import org.codehaus.groovy.grails.commons.GrailsServiceClass;
+import org.codehaus.groovy.grails.commons.GrailsTagLibClass;
+import org.codehaus.groovy.grails.commons.GrailsTaskClass;
+import org.codehaus.groovy.grails.commons.GrailsTaskClassProperty;
 import org.codehaus.groovy.grails.orm.hibernate.ConfigurableLocalSessionFactoryBean;
 import org.codehaus.groovy.grails.orm.hibernate.support.HibernateDialectDetectorFactoryBean;
 import org.codehaus.groovy.grails.orm.hibernate.validation.GrailsDomainClassValidator;
-import org.codehaus.groovy.grails.scaffolding.*;
+import org.codehaus.groovy.grails.scaffolding.DefaultGrailsResponseHandlerFactory;
+import org.codehaus.groovy.grails.scaffolding.DefaultGrailsScaffoldViewResolver;
+import org.codehaus.groovy.grails.scaffolding.DefaultGrailsScaffolder;
+import org.codehaus.groovy.grails.scaffolding.DefaultScaffoldRequestHandler;
+import org.codehaus.groovy.grails.scaffolding.GrailsScaffoldDomain;
+import org.codehaus.groovy.grails.scaffolding.ViewDelegatingScaffoldResponseHandler;
 import org.codehaus.groovy.grails.support.ClassEditor;
 import org.codehaus.groovy.grails.web.errors.GrailsExceptionResolver;
 import org.codehaus.groovy.grails.web.pageflow.GrailsFlowBuilder;
@@ -31,14 +53,14 @@ import org.codehaus.groovy.grails.web.pageflow.execution.servlet.GrailsServletFl
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsUrlHandlerMapping;
 import org.codehaus.groovy.grails.web.servlet.mvc.SimpleGrailsController;
 import org.codehaus.groovy.grails.web.servlet.view.GrailsViewResolver;
-import org.hibernate.dialect.HSQLDialect;
-import org.hibernate.dialect.MySQLDialect;
+import org.springframework.aop.framework.ProxyFactoryBean;
+import org.springframework.aop.target.HotSwappableTargetSource;
 import org.springframework.beans.factory.config.CustomEditorConfigurer;
 import org.springframework.beans.factory.config.MethodInvokingFactoryBean;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
-import org.springframework.orm.hibernate3.HibernateTransactionManager;
 import org.springframework.orm.hibernate3.HibernateAccessor;
+import org.springframework.orm.hibernate3.HibernateTransactionManager;
 import org.springframework.orm.hibernate3.support.OpenSessionInViewInterceptor;
 import org.springframework.scheduling.quartz.CronTriggerBean;
 import org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean;
@@ -46,22 +68,14 @@ import org.springframework.scheduling.quartz.SchedulerFactoryBean;
 import org.springframework.scheduling.quartz.SimpleTriggerBean;
 import org.springframework.transaction.interceptor.TransactionProxyFactoryBean;
 import org.springframework.util.Assert;
+import org.springframework.web.multipart.commons.CommonsMultipartResolver;
 import org.springframework.web.servlet.i18n.CookieLocaleResolver;
 import org.springframework.web.servlet.i18n.LocaleChangeInterceptor;
-import org.springframework.web.multipart.commons.CommonsMultipartResolver;
 import org.springframework.webflow.config.FlowFactoryBean;
 import org.springframework.webflow.mvc.FlowController;
-import org.springframework.aop.target.HotSwappableTargetSource;
-import org.springframework.aop.framework.ProxyFactoryBean;
 import org.springmodules.beans.factory.config.MapToPropertiesFactoryBean;
 import org.springmodules.beans.factory.drivers.Bean;
 import org.springmodules.db.hsqldb.ServerBean;
-
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * <p>Creates beans and bean references for a Grails application.
@@ -456,8 +470,22 @@ public class SpringConfig {
 
         // OK: org.codehaus.groovy.grails.plugins.hibernate.HibernateDialectDetectorPlugin
         Map vendorNameDialectMappings = new HashMap();
-		vendorNameDialectMappings.put("HSQL Database Engine", HSQLDialect.class.getName());
-		vendorNameDialectMappings.put("MySQL", MySQLDialect.class.getName());
+		URL hibernateDialects = this.application.getClassLoader().getResource("hibernate-dialects.properties");
+		if(hibernateDialects != null) {
+			Properties p = new Properties();
+			try {
+				p.load(hibernateDialects.openStream());
+				Iterator iter = p.entrySet().iterator();
+				while(iter.hasNext()) {
+					Map.Entry e = (Map.Entry)iter.next();
+					// Note: the entry is reversed in the properties file since the database product
+					// name can contain spaces.
+					vendorNameDialectMappings.put(e.getValue(), "org.hibernate.dialect." + e.getKey());
+				}
+			} catch (IOException e) {
+				LOG.info("[SpringConfig] Error loading hibernate-dialects.properties file: " + e.getMessage());
+			}
+		}
 			
 		Bean dialectDetector = SpringConfigUtils.createSingletonBean(HibernateDialectDetectorFactoryBean.class);
 		dialectDetector.setProperty("dataSource", SpringConfigUtils.createBeanReference("dataSource"));

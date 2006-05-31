@@ -21,6 +21,7 @@ import javax.sql.DataSource;
 
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.grails.orm.hibernate.exceptions.CouldNotDetermineHibernateDialectException;
+import org.hibernate.HibernateException;
 import org.hibernate.dialect.Dialect;
 import org.hibernate.dialect.DialectFactory;
 import org.springframework.beans.factory.FactoryBean;
@@ -76,9 +77,13 @@ public class HibernateDialectDetectorFactoryBean implements FactoryBean,
 		String dbName = (String)JdbcUtils.extractDatabaseMetaData(this.dataSource, "getDatabaseProductName");
 		Integer majorVersion = (Integer)JdbcUtils.extractDatabaseMetaData(this.dataSource, "getDatabaseMajorVersion");
 		
-		this.hibernateDialect = DialectFactory.determineDialect(dbName,majorVersion.intValue());
-		this.hibernateDialectClassName = this.hibernateDialect.getClass().getName();
-		//this.hibernateDialectClassName = this.vendorNameDialectMappings.getProperty(dbName);
+		try {
+			this.hibernateDialect = DialectFactory.determineDialect(dbName,majorVersion.intValue());
+			this.hibernateDialectClassName = this.hibernateDialect.getClass().getName();
+		}
+		catch (HibernateException e) {
+			this.hibernateDialectClassName = this.vendorNameDialectMappings.getProperty(dbName);
+		}
 		
 		if (StringUtils.isBlank(this.hibernateDialectClassName)) {
 			throw new CouldNotDetermineHibernateDialectException("Could not determine Hibernate dialect for database name [" + dbName + "]!");
