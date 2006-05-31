@@ -50,6 +50,7 @@ import org.codehaus.groovy.grails.support.ClassEditor;
 import org.codehaus.groovy.grails.web.errors.GrailsExceptionResolver;
 import org.codehaus.groovy.grails.web.pageflow.GrailsFlowBuilder;
 import org.codehaus.groovy.grails.web.pageflow.execution.servlet.GrailsServletFlowExecutionManager;
+import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsUrlHandlerMapping;
 import org.codehaus.groovy.grails.web.servlet.mvc.SimpleGrailsController;
 import org.codehaus.groovy.grails.web.servlet.view.GrailsViewResolver;
@@ -319,7 +320,7 @@ public class SpringConfig {
         Bean grailsViewResolver = SpringConfigUtils.createSingletonBean(GrailsViewResolver.class);
 		
 		grailsViewResolver.setProperty("viewClass",SpringConfigUtils.createLiteralValue("org.springframework.web.servlet.view.JstlView"));
-		grailsViewResolver.setProperty("prefix", SpringConfigUtils.createLiteralValue("/WEB-INF/classes/grails-app/views/"));
+		grailsViewResolver.setProperty("prefix", SpringConfigUtils.createLiteralValue(GrailsApplicationAttributes.PATH_TO_VIEWS));
 		grailsViewResolver.setProperty("suffix", SpringConfigUtils.createLiteralValue(".jsp"));
 		beanReferences.add(SpringConfigUtils.createBeanReference("jspViewResolver", grailsViewResolver));
 		
