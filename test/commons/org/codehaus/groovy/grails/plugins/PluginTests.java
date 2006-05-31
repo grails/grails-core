@@ -43,7 +43,7 @@ public class PluginTests extends TestCase {
         assertEquals(2, grailsApplicationAwares.size());
 
         Map classLoaderAwares = appCtx.getBeansOfType(ClassLoaderAware.class);
-        assertEquals(2, classLoaderAwares.size());
+        assertEquals(1, classLoaderAwares.size());
     }
 
     public void testTestBeanGetClass() {
