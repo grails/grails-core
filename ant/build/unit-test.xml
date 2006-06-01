@@ -1,0 +1,36 @@
+<project name="grails-unit-test">
+
+	<target name="build-test" depends="build">
+		<javac debug="on" deprecation="on" destdir="${grails.test.build}" source="1.3" target="1.3" includes="**/*">
+			<src path="${grails.test.src.commons}"/>
+			<src path="${grails.test.src.web}"/>
+			<src path="${grails.test.src.persistence}"/>
+			<src path="${grails.test.src.scaffolding}"/>
+			<classpath refid="classpath"/>
+			<classpath location="${grails.build}"/>
+		</javac>
+	</target>
+
+	<target name="test" depends="build-test" description="compile and run the unit-tests" >
+        <delete dir="${grails.test.reports}"/>
+        <mkdir dir="${grails.test.reports}"/>
+        <junit>
+			<classpath refid="classpath"/>
+			<classpath location="${grails.build}"/>
+			<classpath location="${grails.test.build}"/>
+			<classpath location="${grails.test.src.web}"/>
+			<classpath location="${grails.test.src.commons}"/>
+			<classpath location="${grails.test.src.persistence}"/>
+			<classpath location="${grails.test.src.scaffolding}"/>
+
+			<formatter type="xml" />
+			<batchtest todir="${grails.test.reports}" fork="yes" failureproperty="grails.test.failure">
+				<fileset dir="${grails.test.build}" includes="**/*Tests.class"
+                         excludes="**/Abstract*, **/ControllerScaffoldingTests.*"/>
+			</batchtest>
+
+		</junit>
+        <fail if="grails.test.failure">The tests failed. Have a look at ${grails.test.reports}</fail>
+    </target>
+
+</project>

@@ -1,0 +1,128 @@
+<project name="grails-release">
+
+    <target name="create-tmp-release-dir">
+        <delete dir="${dir.location}" failonerror="false" quiet="true"/>
+        <mkdir dir="${dir.location}"/>
+    </target>
+
+    <target name="copy-dir">
+        <mkdir dir="${dir.location}"/>
+        <copy todir="${dir.destination}" failonerror="true" overwrite="true" verbose="false">
+            <fileset dir="${dir.location}">
+                <exclude name="**/CVS/**"/>
+            </fileset>
+        </copy>
+    </target>
+
+    <target name="copy-common-release-content">
+        <antcall target="copy-dir">
+            <param name="dir.location" value="lib"/>
+            <param name="dir.destination" value="${release.dir}/lib"/>
+        </antcall>
+        <antcall target="copy-dir">
+            <param name="dir.location" value="bin"/>
+            <param name="dir.destination" value="${release.dir}/bin"/>
+        </antcall>
+        <antcall target="copy-dir">
+            <param name="dir.location" value="ant"/>
+            <param name="dir.destination" value="${release.dir}/ant"/>
+        </antcall>
+        <antcall target="copy-dir">
+            <param name="dir.location" value="samples"/>
+            <param name="dir.destination" value="${release.dir}/samples"/>
+        </antcall>
+        <antcall target="copy-dir">
+            <param name="dir.location" value="doc"/>
+            <param name="dir.destination" value="${release.dir}/doc"/>
+        </antcall>
+        <copy todir="${release.dir}">
+            <fileset dir=".">
+                <include name="build.xml"/>
+                <include name="build.properties"/>
+                <include name="LICENSE"/>
+                <include name="INSTALL"/>
+                <include name="README"/>
+            </fileset>
+        </copy>
+    </target>
+
+    <target name="copy-exclusive-binary-release-content">
+        <antcall target="copy-dir">
+            <param name="dir.location" value="src/grails"/>
+            <param name="dir.destination" value="${release.dir}/src/grails"/>
+        </antcall>
+        <antcall target="copy-dir">
+            <param name="dir.location" value="src/war"/>
+            <param name="dir.destination" value="${release.dir}/src/war"/>
+        </antcall>
+    	<copy todir="${release.dir}/dist">
+          	<fileset dir="${grails.dist}" includes="*.jar">
+            		<exclude name="*.zip"/>
+               		<exclude name="*.tar.gz"/>
+          	</fileset>
+    	</copy>
+    </target>
+
+    <target name="copy-exclusive-source-release-content">
+        <antcall target="copy-dir">
+            <param name="dir.location" value="src"/>
+            <param name="dir.destination" value="${release.dir}/src"/>
+        </antcall>
+        <antcall target="copy-dir">
+            <param name="dir.location" value="test"/>
+            <param name="dir.destination" value="${release.dir}/test"/>
+        </antcall>
+    	<copy todir="${release.dir}/dist">
+          	<fileset dir="${grails.dist}" includes="*.jar">
+            		<exclude name="*.zip"/>
+               		<exclude name="*.tar.gz"/>
+          	</fileset>
+    	</copy>
+    </target>
+
+    <target name="create-archives">
+        <delete file="${archive}.zip" failonerror="true"/>
+        <zip basedir="${archive.dir}" destfile="${grails.dist}/${archive}.zip" />
+        <delete file="${archive}.tar.gz" failonerror="true"/>
+        <tar basedir="${archive.dir}" destfile="dist/${archive}.tar.gz" compression="gzip" longfile="gnu"/>
+    </target>
+
+    <target name="create-release-package">
+        <property name="grails.release" value="${release.name}"/>
+        <property name="grails.release.dir" location="tmp/grails-${grails.version}"/>
+        <antcall target="create-tmp-release-dir">
+            <param name="dir.location" value="${grails.release.dir}"/>
+        </antcall>
+        <antcall target="copy-common-release-content">
+            <param name="release.dir" value="${grails.release.dir}"/>
+        </antcall>
+		<antcall target="create-release-package:extra-target" />
+        <antcall target="create-archives">
+            <param name="archive" value="${grails.release}"/>
+            <param name="archive.dir" value="tmp"/>
+        </antcall>
+        <delete dir="${grails.release.dir}" failonerror="true"/>
+    </target>
+
+	<target name="create-release-package:extra-target" if="extra.target">
+		<echo>Copying extra binary release content</echo>
+    	<antcall target="${extra.target}">
+    		<param name="release.dir" value="${grails.release.dir}"/>
+    	</antcall>
+	</target>
+
+    <target name="create-binary-release">
+        <antcall target="create-release-package">
+            <param name="release.name" value="${grails.dist.binary}"/>
+            <param name="extra.target" value="copy-exclusive-binary-release-content"/>
+        </antcall>
+    </target>
+
+    <target name="create-source-release">
+        <antcall target="create-release-package">
+            <param name="release.name" value="${grails.dist.source}"/>
+            <param name="extra.target" value="copy-exclusive-source-release-content"/>
+        </antcall>
+    </target>
+
+</project>

@@ -1,0 +1,22 @@
+<project name="grails-bundle">
+
+	<target name="jar" depends="build-test" description="Build the entire source, run all tests and create the Grails JAR file.">
+		<delete file="${grails.dist}/${grails.dist.jar}"/>
+		<jar destfile="${grails.dist}/${grails.dist.jar}" basedir="${grails.build}"/>
+	</target>
+
+    <target name="package" depends="clean,test,jar,javadoc" description="Create the release archives for Grails.">
+    	<delete>
+		  <fileset dir="${grails.dist}">
+		  		<include name="*.zip"/>
+     	  		<include name="*.tar.gz"/>
+		  </fileset>
+		</delete>
+        <delete  file="${grails.dist}/${archive}.zip" failonerror="true"/>
+        <delete file="${grails.dist}/${archive}.tar.gz" failonerror="true"/>
+        <delete dir="tmp" failonerror="true"/>
+        <antcall target="create-binary-release"/>
+        <antcall target="create-source-release"/>
+    </target>
+
+</project>
