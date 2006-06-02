@@ -18,7 +18,7 @@
     <property name="coverage.report" value="cruise/coverage/report"/>
 
     <target name="clean-instrumented">
-        <delete><fileset dir="${coverage.build}"/></delete>
+        <delete quiet="true" dir="${coverage.build}"/>
         <mkdir dir="${coverage.build}"/>
     </target>
 
