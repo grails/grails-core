@@ -19,6 +19,7 @@
 
     <target name="clean-instrumented">
         <delete><fileset dir="${coverage.build}"/></delete>
+        <mkdir dir="${coverage.build}"/>
     </target>
 
     <target name="instrument-for-coverage" depends="clean-instrumented">
