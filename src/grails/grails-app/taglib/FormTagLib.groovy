@@ -300,8 +300,8 @@ class FormTagLib {
           def value = attrs.remove('value')
           def name = attrs.remove('name')
           if(!value) value = false
-          out << '<input type="hidden"'
-          out << "name='_${name}' />"
+          out << '<input type="hidden" '
+          out << "name=\"_${name}\" />"
           out << '<input type="checkbox" '
           out << "name='${name}' "
           if(value) {
