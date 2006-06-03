@@ -14,13 +14,9 @@
  */ 
 package org.codehaus.groovy.grails.validation.metaclass;
 
-import groovy.lang.Closure;
-
-
+import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.commons.metaclass.AbstractDynamicProperty;
-import org.codehaus.groovy.grails.validation.ConstrainedPropertyBuilder;
-import org.springframework.beans.BeanWrapper;
-import org.springframework.beans.BeanWrapperImpl;
 /**
  * This is a dynamic property that instead of returning the closure sets a new proxy meta class for the scope 
  * of the call and invokes the closure itself which builds up a list of ConstrainedProperty instances
@@ -30,18 +26,17 @@ import org.springframework.beans.BeanWrapperImpl;
  */
 public class ConstraintsDynamicProperty extends AbstractDynamicProperty {
 	public static final String PROPERTY_NAME = "constraints";
+
+	private GrailsApplication application;
 	
-	public ConstraintsDynamicProperty() {
+	public ConstraintsDynamicProperty(GrailsApplication application) {		
 		super(PROPERTY_NAME);
+		this.application = application;
 	}
 
-	public Object get(Object object) {
-		BeanWrapper bean = new BeanWrapperImpl(object);
-		Closure c = (Closure)bean.getPropertyValue(PROPERTY_NAME);
-		ConstrainedPropertyBuilder delegate = new ConstrainedPropertyBuilder(object);
-		c.setDelegate(delegate);
-		c.call();
-		return delegate.getConstrainedProperties();
+	public Object get(Object object)  {
+		GrailsDomainClass domainClass = application.getGrailsDomainClass(object.getClass().getName());
+		return domainClass.getConstrainedProperties();		
 	}
 
 	public void set(Object object, Object newValue) {

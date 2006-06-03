@@ -70,21 +70,4 @@ public class Recipe {
     public void setDate(Date date) {
         this.date = date;
     }
-
-    @Transient
-    public Map getConstraints() {
-        ConstrainedProperty titleConstraint = new ConstrainedPersistentProperty(Recipe.class, "title", String.class );
-        titleConstraint.setOrder(1);
-        titleConstraint.setLength(new IntRange(5,15));
-        ConstrainedProperty descConstraint = new ConstrainedPersistentProperty(Recipe.class, "title", String.class );
-        descConstraint.setOrder(2);
-        descConstraint.setWidget("textarea");
-
-
-        Map constraints = new HashMap();
-        constraints.put("title", titleConstraint);
-        constraints.put("description", descConstraint);
-
-        return constraints;
-    }
 }

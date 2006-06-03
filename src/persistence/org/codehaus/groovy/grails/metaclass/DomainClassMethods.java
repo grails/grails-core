@@ -78,7 +78,7 @@ public class DomainClassMethods extends AbstractDynamicMethods {
 
 		// add dynamic properties
 		addDynamicProperty( new SetPropertiesDynamicProperty() );
-		addDynamicProperty( new ConstraintsDynamicProperty() );
+		addDynamicProperty( new ConstraintsDynamicProperty(application) );
 		addDynamicProperty( new WeakGenericDynamicProperty(ERRORS_PROPERTY, Errors.class,null,false) );
 
 	}

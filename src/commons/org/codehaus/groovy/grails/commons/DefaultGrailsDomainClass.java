@@ -17,6 +17,18 @@ package org.codehaus.groovy.grails.commons;
 
 import groovy.lang.Closure;
 import groovy.lang.GroovyObject;
+
+import java.beans.IntrospectionException;
+import java.beans.PropertyDescriptor;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import org.apache.commons.lang.ClassUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -24,12 +36,8 @@ import org.codehaus.groovy.grails.commons.metaclass.DynamicMethods;
 import org.codehaus.groovy.grails.commons.metaclass.GroovyDynamicMethodsInterceptor;
 import org.codehaus.groovy.grails.exceptions.GrailsDomainException;
 import org.codehaus.groovy.grails.exceptions.InvalidPropertyException;
-import org.codehaus.groovy.grails.validation.metaclass.ConstraintsDynamicProperty;
+import org.codehaus.groovy.grails.validation.metaclass.ConstraintsEvaluatingDynamicProperty;
 import org.springframework.validation.Validator;
-
-import java.beans.IntrospectionException;
-import java.beans.PropertyDescriptor;
-import java.util.*;
 
 /**
  * @author Graeme Rocher
@@ -145,7 +153,7 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
 			GroovyObject instance = (GroovyObject)getReference().getWrappedInstance();
 			try {
 				DynamicMethods interceptor = new GroovyDynamicMethodsInterceptor(instance);
-				interceptor.addDynamicProperty( new ConstraintsDynamicProperty() );
+				interceptor.addDynamicProperty( new ConstraintsEvaluatingDynamicProperty() );
 				
 				this.constraints = (Map)instance.getProperty(GrailsDomainClassProperty.CONSTRAINTS);				
 				

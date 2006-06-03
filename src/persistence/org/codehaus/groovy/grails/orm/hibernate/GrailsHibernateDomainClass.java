@@ -14,21 +14,35 @@
  */
 package org.codehaus.groovy.grails.orm.hibernate;
 
+import groovy.lang.Interceptor;
+import groovy.lang.MetaClass;
+import groovy.lang.MetaClassRegistry;
+import groovy.lang.ProxyMetaClass;
+
+import java.beans.IntrospectionException;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.AbstractGrailsClass;
 import org.codehaus.groovy.grails.commons.ExternalGrailsDomainClass;
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
+import org.codehaus.groovy.grails.commons.metaclass.AbstractDynamicMethodsInterceptor;
+import org.codehaus.groovy.grails.commons.metaclass.DynamicMethods;
+import org.codehaus.groovy.grails.commons.metaclass.PropertyAccessProxyMetaClass;
 import org.codehaus.groovy.grails.orm.hibernate.validation.GrailsDomainClassValidator;
-import org.codehaus.groovy.grails.validation.ConstrainedProperty;
-import org.hibernate.SessionFactory;
+import org.codehaus.groovy.grails.validation.metaclass.ConstraintsEvaluatingDynamicProperty;
+import org.codehaus.groovy.runtime.InvokerHelper;
 import org.hibernate.EntityMode;
+import org.hibernate.SessionFactory;
 import org.hibernate.engine.SessionFactoryImplementor;
 import org.hibernate.metadata.ClassMetadata;
-import org.hibernate.type.Type;
 import org.hibernate.type.AssociationType;
+import org.hibernate.type.Type;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.validation.Validator;
-
-import java.util.*;
 
 /**
  * An implementation of the GrailsDomainClass interface that allows Classes mapped in
@@ -38,11 +52,15 @@ import java.util.*;
  * @since 18-Feb-2006
  */
 public class GrailsHibernateDomainClass extends AbstractGrailsClass implements ExternalGrailsDomainClass {
+	
+	private static final Log LOG  = LogFactory.getLog(GrailsHibernateDomainClass.class);
+	
     private static final String HIBERNATE = "hibernate";
     private GrailsHibernateDomainClassProperty identifier;
     private GrailsDomainClassProperty[] properties;
     private Map propertyMap = new HashMap();
     private Validator validator;
+	private Map constraints = Collections.EMPTY_MAP;
 
     /**
      * <p>Contructor to be used by all child classes to create a
@@ -95,8 +113,45 @@ public class GrailsHibernateDomainClass extends AbstractGrailsClass implements E
         }
 
         this.properties = (GrailsDomainClassProperty[])propertyMap.values().toArray(new GrailsDomainClassProperty[propertyMap.size()]);
+		// process the constraints
+		evaluateConstraints();        
     }
 
+	
+	/**
+	 * Evaluates the constraints closure to build the list of constraints
+	 *
+	 */
+	private void evaluateConstraints() {
+		Map existing = (Map)getPropertyValue( GrailsDomainClassProperty.CONSTRAINTS, Map.class );
+		if(existing == null) {
+			Object instance = getReference().getWrappedInstance();
+			try {
+				DynamicMethods interceptor = new AbstractDynamicMethodsInterceptor() {};
+				
+				interceptor.addDynamicProperty( new ConstraintsEvaluatingDynamicProperty() );
+		        MetaClassRegistry metaRegistry = InvokerHelper.getInstance().getMetaRegistry();
+		        MetaClass meta = metaRegistry.getMetaClass(instance.getClass());
+		        
+				try {
+					ProxyMetaClass pmc = new PropertyAccessProxyMetaClass(metaRegistry, instance.getClass(), meta);
+					pmc.setInterceptor((Interceptor)interceptor);
+					
+					this.constraints = (Map)pmc.getProperty(instance,GrailsDomainClassProperty.CONSTRAINTS);													        
+				}
+				finally {
+					metaRegistry.setMetaClass(instance.getClass(),meta);
+				}				
+				
+			} catch (IntrospectionException e) {
+				LOG.error("Introspection error reading domain class ["+getFullName()+"] constraints: " + e.getMessage(), e);
+			}
+		}		
+		else {
+			this.constraints = existing;
+		}
+	}
+    
     public boolean isOwningClass(Class domainClass) {
         throw new UnsupportedOperationException("Method 'isOwningClass' is not supported by implementation");
     }
@@ -161,27 +216,7 @@ public class GrailsHibernateDomainClass extends AbstractGrailsClass implements E
     }
 
     public Map getConstrainedProperties() {
-        if(getReference().isReadableProperty(GrailsDomainClassProperty.CONSTRAINTS)) {
-            List constraintsList = (List)getPropertyValue(GrailsDomainClassProperty.CONSTRAINTS,List.class);
-            if(constraintsList != null) {
-                Map constraintsMap = new HashMap();
-                for (Iterator i = constraintsList.iterator(); i.hasNext();) {
-                    ConstrainedProperty cp = (ConstrainedProperty) i.next();
-                    constraintsMap.put(cp.getPropertyName(),cp);
-                }
-                return constraintsMap;
-            }
-            else {
-               Map constraintsMap = (Map)getPropertyValue(GrailsDomainClassProperty.CONSTRAINTS,Map.class);
-               if(constraintsMap == null) {
-                   return Collections.EMPTY_MAP;
-               }
-               else {
-                    return constraintsMap;
-               }
-            }
-        }
-        return Collections.EMPTY_MAP;
+    	return this.constraints;
     }
 
     public Validator getValidator() {

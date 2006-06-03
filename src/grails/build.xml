@@ -463,6 +463,11 @@ Targets:
         </copy>
         <copy todir="tmp/war/WEB-INF/classes">
             <fileset dir="hibernate" includes="**"/>
+            <fileset dir="src/java">
+            	<include name="**/**"/>
+            	<exclude name="**/*.java" />
+            	<exclude name="*CVS*" />
+            </fileset>
         </copy>
         <copy todir="tmp/war/WEB-INF">
             <fileset dir="${grails.home}/src/war/WEB-INF">
