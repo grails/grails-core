@@ -38,6 +38,8 @@ public class DefaultGrailsDataSource extends AbstractInjectableGrailsClass
 	private static final String POOLING = "pooling";
 	private static final String DB_CREATE = "dbCreate";
 	private static final String CONFIG_CLASS = "configClass";
+	private static final String LOG_SQL = "logSql";
+	private static final String DIALECT = "dialect";
 
     private boolean pooled = true;
 	private String driverClassName = null;
@@ -46,7 +48,8 @@ public class DefaultGrailsDataSource extends AbstractInjectableGrailsClass
 	private String password = null;
 	private String dbCreate = null;
     private Class configClass = null;
-
+    private boolean sqlLogging = false;
+    private Class dialect = null;
 
     public DefaultGrailsDataSource(Class clazz) {
         super(clazz, DATA_SOURCE);
@@ -56,6 +59,13 @@ public class DefaultGrailsDataSource extends AbstractInjectableGrailsClass
         if (getPropertyValue(POOLING, boolean.class) != null) {
             this.pooled = getPropertyValue(POOLING, boolean.class).equals(Boolean.TRUE) ? true : false;
         }
+        if (getPropertyValue(LOG_SQL, boolean.class) != null) {
+            this.sqlLogging = getPropertyValue(LOG_SQL, boolean.class).equals(Boolean.TRUE) ? true : false;
+        }        
+        if(getPropertyValue(DIALECT,Class.class) != null) {
+        	this.dialect =  (Class)getPropertyValue(DIALECT, Class.class); 
+        }
+        
         if (getPropertyValue(DB_CREATE, String.class) != null) {
             String _dbCreate = (String)getPropertyValue(DB_CREATE, String.class);
             if(_dbCreate.equals( "create-drop" ) || _dbCreate.equals("create") || _dbCreate.equals("update"))
@@ -118,5 +128,13 @@ public class DefaultGrailsDataSource extends AbstractInjectableGrailsClass
     public Class getConfigurationClass() {
         return this.configClass;
     }
+
+	public Class getDialect() {
+		return this.dialect;
+	}
+
+	public boolean isLoggingSql() {
+		return this.sqlLogging;
+	}
 
 }

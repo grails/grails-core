@@ -78,4 +78,17 @@ public interface GrailsDataSource extends InjectableGrailsClass {
      * @return The configuration class to use when setting up the database
      */
     public Class getConfigurationClass();
+    
+    /**
+     * The dialect implementation to use
+     * @return The dialect class or null if none configured
+     */
+    public Class getDialect();
+    
+    /**
+     * Whether SQL logging is enabled
+     * 
+     * @return True if SQL logging is enabled
+     */
+    public boolean isLoggingSql();
 }

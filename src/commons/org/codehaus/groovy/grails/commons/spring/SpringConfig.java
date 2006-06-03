@@ -498,7 +498,18 @@ public class SpringConfig {
 		}
 		
 		Map hibernatePropertiesMap = new HashMap();
-		hibernatePropertiesMap.put(SpringConfigUtils.createLiteralValue("hibernate.dialect"), dialectDetector);
+		// enable sql logging yes/no
+		if(grailsDataSource != null && grailsDataSource.isLoggingSql()) {
+			hibernatePropertiesMap.put(SpringConfigUtils.createLiteralValue("hibernate.show_sql"),SpringConfigUtils.createLiteralValue("true"));
+			hibernatePropertiesMap.put(SpringConfigUtils.createLiteralValue("hibernate.format_sql"),SpringConfigUtils.createLiteralValue("true"));
+		}
+		// configure dialect
+		if(grailsDataSource != null && grailsDataSource.getDialect()!= null) {
+			hibernatePropertiesMap.put(SpringConfigUtils.createLiteralValue("hibernate.dialect"), SpringConfigUtils.createLiteralValue(grailsDataSource.getDialect().getName()));
+		}
+		else {
+			hibernatePropertiesMap.put(SpringConfigUtils.createLiteralValue("hibernate.dialect"), dialectDetector);
+		}
 		if(grailsDataSource == null ) {
 			hibernatePropertiesMap.put(SpringConfigUtils.createLiteralValue("hibernate.hbm2ddl.auto"), SpringConfigUtils.createLiteralValue("create-drop"));
 		}

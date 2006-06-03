@@ -1,5 +1,7 @@
 package org.codehaus.groovy.grails.commons;
 
+import org.hibernate.dialect.MySQLDialect;
+
 import junit.framework.TestCase;
 import groovy.lang.GroovyClassLoader;
 
@@ -24,4 +26,35 @@ public class DefaultGrailsDataSourceTests extends TestCase {
         assertNotNull(ds.getConfigurationClass());
 
     }
+    
+    public void testCustomDialect() throws Exception {
+        GroovyClassLoader gcl = new GroovyClassLoader();
+        Class dsClass = gcl.parseClass("class TestDataSource {" +
+                "@Property String driverClassName = 'test.driverClass'\n" +
+                "@Property String url = 'jdbc://testurl'\n" +
+                "@Property String username ='sa'\n" +
+                "@Property String password = 'pass'\n" +
+                "@Property dialect = org.hibernate.dialect.MySQLDialect.class" +
+                "}");
+
+        GrailsDataSource ds = new DefaultGrailsDataSource(dsClass);
+        assertNotNull(ds.getDialect());
+        assertEquals(MySQLDialect.class,ds.getDialect());
+    }
+    
+    public void testLoggingEnabled() throws Exception {
+        GroovyClassLoader gcl = new GroovyClassLoader();
+        Class dsClass = gcl.parseClass("class TestDataSource {" +
+                "@Property String driverClassName = 'test.driverClass'\n" +
+                "@Property String url = 'jdbc://testurl'\n" +
+                "@Property String username ='sa'\n" +
+                "@Property String password = 'pass'\n" +
+                "@Property logSql = true" +
+                "}");
+
+        GrailsDataSource ds = new DefaultGrailsDataSource(dsClass);
+        assertTrue(ds.isLoggingSql());
+    }
+    
+    
 }
