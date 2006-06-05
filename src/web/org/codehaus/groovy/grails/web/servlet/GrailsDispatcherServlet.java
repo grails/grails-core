@@ -110,13 +110,14 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
                 for (int i = 0; i < bootstraps.length; i++) {
                     bootstraps[i].callInit(  getServletContext() );
                 }
-            }
-
-            finally {
-                if (!participate) {
+                if(!participate) {
                     if(!FlushMode.NEVER.equals(session.getFlushMode())) {
                         session.flush();
-                    }
+                    }                	
+                }
+            }
+            finally {
+                if (!participate) {
                     // single session mode
                     TransactionSynchronizationManager.unbindResource(sessionFactory);
                     logger.debug("Closing single Hibernate session in GrailsDispatcherServlet");
