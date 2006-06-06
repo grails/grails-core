@@ -44,8 +44,8 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator  {
         if(!display) return ''
         
 	def buf = new StringBuffer("<tr class='prop'>")
-	buf << "<td valign='top' style='text-align:left;' width='20%'><label for='${property.name}'>${property.naturalName}:</label></td>"
-	buf << "<td valign='top' style='text-align:left;' width='80%' class='\${hasErrors(bean:${domainClass.propertyName},field:'${property.name}','errors')}'>"
+	buf << "<td valign='top' class='name'><label for='${property.name}'>${property.naturalName}:</label></td>"
+	buf << "<td valign='top' class='value \${hasErrors(bean:${domainClass.propertyName},field:'${property.name}','errors')}'>"
             if(Number.class.isAssignableFrom(property.type))
                 buf << renderNumberEditor(domainClass,property)
             else if(property.type == String.class)
@@ -328,11 +328,10 @@ class ${className}Controller {
 <html>
     <head>
          <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+         <meta name="layout" content="main" />
          <title>${className} List</title>
-         <link rel="stylesheet" href="\\${createLinkTo(dir:'css',file:'main.css')}"></link>
     </head>
     <body>
-        <div class="logo"><img src="\\${createLinkTo(dir:'images',file:'grails_logo.jpg')}" alt="Grails" /></div>
         <div class="nav">
             <span class="menuButton"><a href="\\${createLinkTo(dir:'')}">Home</a></span>
             <span class="menuButton"><g:link action="create">New ${className}</g:link></span>
@@ -390,11 +389,10 @@ class ${className}Controller {
 <html>
     <head>
          <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+          <meta name="layout" content="main" />
          <title>Show ${className}</title>
-         <link rel="stylesheet" href="\\${createLinkTo(dir:'css',file:'main.css')}"></link>
     </head>
     <body>
-        <div class="logo"><img src="\\${createLinkTo(dir:'images',file:'grails_logo.jpg')}" alt="Grails" /></div>
         <div class="nav">
             <span class="menuButton"><a href="\\${createLinkTo(dir:'')}">Home</a></span>
             <span class="menuButton"><g:link action="list">${className} List</g:link></span>
@@ -413,7 +411,7 @@ class ${className}Controller {
                    %>
                    <%props.each { p ->%>
                         <tr class="prop">
-                              <td valign="top" style="text-align:left;" width="20%" class="name">${p.naturalName}:</td>
+                              <td valign="top" class="name">${p.naturalName}:</td>
                               <% if(p.oneToMany) { %>
                                      <td  valign="top" style="text-align:left;" class="value">
                                         <ul>
@@ -423,9 +421,9 @@ class ${className}Controller {
                                         </ul>
                                      </td>
                               <% } else if(p.manyToOne || p.oneToOne) { %>
-                                    <td valign="top" style="text-align:left;" class="value"><g:link controller="${p.referencedDomainClass?.propertyName}" action="show" id="\\${${propertyName}?.${p.name}?.id}">\\${${propertyName}?.${p.name}}</g:link></td>
+                                    <td valign="top" class="value"><g:link controller="${p.referencedDomainClass?.propertyName}" action="show" id="\\${${propertyName}?.${p.name}?.id}">\\${${propertyName}?.${p.name}}</g:link></td>
                               <% } else  { %>
-                                    <td valign="top" style="text-align:left;" class="value">\\${${propertyName}.${p.name}}</td>
+                                    <td valign="top" class="value">\\${${propertyName}.${p.name}}</td>
                               <% } %>
                         </tr>
                    <%}%>
@@ -460,11 +458,10 @@ class ${className}Controller {
 <html>
     <head>
          <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+         <meta name="layout" content="main" />
          <title>Edit ${className}</title>
-         <link rel="stylesheet" href="\\${createLinkTo(dir:'css',file:'main.css')}"></link>
     </head>
     <body>
-        <div class="logo"><img src="\\${createLinkTo(dir:'images',file:'grails_logo.jpg')}" alt="Grails" /></div>
         <div class="nav">
             <span class="menuButton"><a href="\\${createLinkTo(dir:'')}">Home</a></span>
             <span class="menuButton"><g:link action="list">${className} List</g:link></span>
@@ -530,11 +527,10 @@ class ${className}Controller {
 <html>
     <head>
          <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-         <title>Create ${className}</title>
-         <link rel="stylesheet" href="\\${createLinkTo(dir:'css',file:'main.css')}"></link>
+         <meta name="layout" content="main" />
+         <title>Create ${className}</title>         
     </head>
     <body>
-        <div class="logo"><img src="\\${createLinkTo(dir:'images',file:'grails_logo.jpg')}" alt="Grails" /></div>
         <div class="nav">
             <span class="menuButton"><a href="\\${createLinkTo(dir:'')}">Home</a></span>
             <span class="menuButton"><g:link action="list">${className} List</g:link></span>

@@ -113,4 +113,10 @@ td .errors {
 }
 .prop .name {
 	font-weight:bold;
+	text-align:left;
+	width:20%;
+}
+.prop .value {
+	text-align:left;
+	width:80%;
 }
