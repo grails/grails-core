@@ -57,6 +57,8 @@ public class ControllerDynamicMethods extends
 	public static final String MODEL_AND_VIEW_PROPERTY = "modelAndView";
     public static final String ACTION_URI_PROPERTY = "actionUri";
     public static final String CONTROLLER_URI_PROPERTY = "controllerUri";
+    public static final String ACTION_NAME_PROPERTY = "actionName";
+    public static final String CONTROLLER_NAME_PROPERTY = "controllerName";    
     public static final String GET_VIEW_URI = "getViewUri";
     public static final String GET_TEMPLATE_URI = "getTemplateUri";
 
@@ -87,6 +89,8 @@ public class ControllerDynamicMethods extends
         addDynamicProperty(new GenericDynamicProperty(GRAILS_APPLICATION, GrailsApplication.class,grailsAttributes.getGrailsApplication(),true));        
         addDynamicProperty(new GenericDynamicProperty(ACTION_URI_PROPERTY,String.class,null,false));
         addDynamicProperty(new GenericDynamicProperty(CONTROLLER_URI_PROPERTY,String.class,null,false));
+        addDynamicProperty(new GenericDynamicProperty(ACTION_NAME_PROPERTY,String.class,null,false));
+        addDynamicProperty(new GenericDynamicProperty(CONTROLLER_NAME_PROPERTY,String.class,null,false));        
         addDynamicProperty(new GenericDynamicProperty(RENDER_VIEW_PROPERTY,Boolean.class, Boolean.TRUE,false));
 
         // add dynamic methods

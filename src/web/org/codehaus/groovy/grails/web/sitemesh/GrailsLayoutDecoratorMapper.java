@@ -15,16 +15,22 @@
  */ 
 package org.codehaus.groovy.grails.web.sitemesh;
 
+import groovy.lang.GroovyObject;
+
+import java.net.MalformedURLException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
+import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods;
+import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 
 import com.opensymphony.module.sitemesh.Config;
 import com.opensymphony.module.sitemesh.Decorator;
@@ -40,16 +46,18 @@ import com.opensymphony.module.sitemesh.mapper.DefaultDecorator;
  */
 public class GrailsLayoutDecoratorMapper extends AbstractDecoratorMapper implements DecoratorMapper {
 
-	private static final String DEFAULT_DECORATOR_PATH = "/WEB-INF/grails-app/views/layouts";
+	private static final String DEFAULT_DECORATOR_PATH = GrailsApplicationAttributes.PATH_TO_VIEWS+"/layouts";
 	private static final String DEFAULT_VIEW_TYPE = ".gsp";
 	
 	private static final Log LOG = LogFactory.getLog( GrailsLayoutDecoratorMapper.class );
 	
 	
 	private Map decoratorMap = new HashMap();
+	private ServletContext servletContext;
 	
-	public void init(Config config, Properties properties, DecoratorMapper parent) throws InstantiationException {
+	public void init(Config config, Properties properties, DecoratorMapper parent) throws InstantiationException {		
 		super.init(config,properties,parent);
+		this.servletContext = config.getServletContext();
 	}
 
 	public Decorator getDecorator(HttpServletRequest request, Page page) {
@@ -58,13 +66,48 @@ public class GrailsLayoutDecoratorMapper extends AbstractDecoratorMapper impleme
 		}			
 		String layoutName = page.getProperty("meta.layout");
 		
-		if(StringUtils.isBlank(layoutName))
-			return super.getDecorator(request, page);
+		if(StringUtils.isBlank(layoutName)) {		
+			GroovyObject controller = (GroovyObject)request.getAttribute(GrailsApplicationAttributes.CONTROLLER);		
+			if(controller != null) {
+				if(LOG.isDebugEnabled())
+					LOG.debug("Found controller in request, checking for layout");
+				
+				String controllerName = (String)controller.getProperty(ControllerDynamicMethods.CONTROLLER_NAME_PROPERTY);
+				String actionUri = (String)controller.getProperty(ControllerDynamicMethods.ACTION_URI_PROPERTY);
+				
+				Decorator d = getNamedDecorator(request, actionUri.substring(1));
+			    if(d!=null) {
+			    	return d;
+			    } else {
+					if(LOG.isDebugEnabled())
+						LOG.debug("Action layout not found, trying controller");
+					
+					d = getNamedDecorator(request, controllerName);
+					if(d != null) {
+						return d;
+					}
+					else {
+						return parent != null ? super.getDecorator(request, page) : null;	
+					}			    	
+									    	
+			    }					
+
+			}
+			else {
+				return parent != null ? super.getDecorator(request, page) : null;			
+			}			
+		}					
 		
 		if(LOG.isDebugEnabled()) {
 			LOG.debug("Evaluated layout for page: " + layoutName);
 		}		
-		return getNamedDecorator(request, layoutName);
+		Decorator d = getNamedDecorator(request, layoutName);
+		if(d != null) {
+			return d;
+		}
+		else {
+			return parent != null ? super.getDecorator(request, page) : null;
+		}
 	}
 
 	public Decorator getNamedDecorator(HttpServletRequest request, String name) {
@@ -79,12 +122,25 @@ public class GrailsLayoutDecoratorMapper extends AbstractDecoratorMapper impleme
 			}
 			String decoratorPage = DEFAULT_DECORATOR_PATH + '/' + name;
 			
-			if(LOG.isInfoEnabled()) 
-				LOG.info("Using decorator " + decoratorPage);
-			
-			Decorator d = new DefaultDecorator(decoratorName,request.getRequestURI(),decoratorPage, Collections.EMPTY_MAP);
-			decoratorMap.put(decoratorName,d);
-			return d;
+			try {
+				if(servletContext.getResource(decoratorPage) == null) {
+					if(LOG.isDebugEnabled()) 
+						LOG.debug("No decorator found at " + decoratorPage);
+					
+					return null;
+				}
+				else {
+					if(LOG.isDebugEnabled()) 
+						LOG.debug("Using decorator " + decoratorPage);
+					
+					Decorator d = new DefaultDecorator(decoratorName,request.getRequestURI(),decoratorPage, Collections.EMPTY_MAP);
+					decoratorMap.put(decoratorName,d);
+					return d;				
+				}
+			} catch (MalformedURLException e) {
+				LOG.error("Invalid URL retrieving decorator ["+decoratorPage+"]",e);
+				return null;
+			}
 		}	
 	}
 

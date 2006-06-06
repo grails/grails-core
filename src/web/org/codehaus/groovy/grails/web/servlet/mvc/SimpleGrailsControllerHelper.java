@@ -240,7 +240,8 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
         }
 
         // Step 4a: Set dynamic properties on controller
-
+        controller.setProperty(ControllerDynamicMethods.CONTROLLER_NAME_PROPERTY, controllerName);
+        controller.setProperty(ControllerDynamicMethods.ACTION_NAME_PROPERTY, actionName);
         controller.setProperty(ControllerDynamicMethods.CONTROLLER_URI_PROPERTY, '/' + controllerName);
         controller.setProperty(ControllerDynamicMethods.ACTION_URI_PROPERTY, '/' + controllerName + '/' + actionName);
 
