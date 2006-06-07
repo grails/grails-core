@@ -31,13 +31,14 @@ class JavascriptTagLib  {
 	static final INCLUDED_LIBRARIES = "org.codehaus.grails.INCLUDED_JS_LIBRARIES"
 	static final INCLUDED_JS = "org.codehaus.grails.INCLUDED_JS"	
 	static final LIBRARY_MAPPINGS = [
-										prototype : ['prototype'],
-										yahoo : [ 'YAHOO','connect', 'dom','event','animation']										
+										prototype : ['prototype/prototype'],
+										yahoo : [ 'yahoo/yahoo-min','yahoo/connection-min', 'yahoo/dom-min','yahoo/event-min','yahoo/animation-min'],
+										dojo : [ 'dojo/dojo']
 									]
 										
 	static {
-		LIBRARY_MAPPINGS.scriptaculous = LIBRARY_MAPPINGS.prototype + ['scriptaculous','builder','controls','effects','slider','draganddrop']		
-		LIBRARY_MAPPINGS.rico = LIBRARY_MAPPINGS.prototype + ['rico']				
+		LIBRARY_MAPPINGS.scriptaculous = LIBRARY_MAPPINGS.prototype + ['prototype/scriptaculous','prototype/builder','prototype/controls','prototype/effects','prototype/slider','prototype/draganddrop']		
+		LIBRARY_MAPPINGS.rico = LIBRARY_MAPPINGS.prototype + ['prototype/rico']				
 	}									
 	/**
 	 * Includes a javascript src file, library or inline script
@@ -102,10 +103,6 @@ class JavascriptTagLib  {
      *  Creates a remote function call using the prototype library
      */
     @Property remoteFunction = { attrs  ->    
-		def isPrototype = request[JavascriptTagLib.INCLUDED_LIBRARIES]?.contains('prototype');
-		def isYahoo = request[JavascriptTagLib.INCLUDED_LIBRARIES]?.contains('yahoo');
-		
-		if(!isYahoo && !isPrototype) isPrototype = true   
 		// before remote function
 		def after = ''
 		if(attrs["before"])
@@ -113,98 +110,207 @@ class JavascriptTagLib  {
 		if(attrs["after"])
 			after = "${attrs.remove('after')};"
 
-		// if the prototype library is included use it
-		if(isPrototype) {
-			out << 'new Ajax.'
-			if(attrs["update"]) {
-				out << 'Updater('
-				if(attrs["update"] instanceof Map) {
-					out << "{"
-					def update = []
-					if(attrs["update"]["success"]) {
-						update << "success:'${attrs['update']['success']}'"
-					}
-					if(attrs["update"]["failure"]) {
-						update << "failure:'${attrs['update']['failure']}'"
-					}
-					out << update.join(',')
-					out << "},"
-				}
-				else {
-					out << "'" << attrs["update"] << "',"
-				}
-				attrs.remove("update")
-			}
-			else {
-				out << "Request("
-			}
-			out << "'"				
-		}
-		// otherwise try yahoo
-		else if(isYahoo) {
-			out.println 'function() {'
-			buildYahooCallback(attrs)							
-			def method = (attrs.method ? attrs.method : 'POST' )
-			out << "YAHOO.util.Connect.asyncRequest('${method}','"
-		}
-
-
-		if(attrs.url) {
-			createLink(attrs.url)
-		}
-		else {
-			createLink(attrs)
-		}
-
-		if(isPrototype) {
-			out << "',"
-	
-			// process options
-			out << getAjaxOptions(attrs)
-			// close
-			out << ');'
-		}
-		else if(isYahoo) {
-			out << "',callback,null); }"
-		}
-
+		def p = getProvider()
+		p.doRemoteFunction(owner,attrs,out)
+		attrs.remove('update')
 		// after remote function
 		if(after)
 		   out <<  after			           		   
     }
 
-	// helper method to create yahoo callback object
-	def buildYahooCallback(attrs) {
-		out.println ''' var callback = {
-			success: function(o) {'''
-			if(attrs.update) {
-				if(attrs.update instanceof Map) {
-					if(attrs.update.success) {
-						out.println "document.getElementById('${attrs.update.success}').innerHTML = o.responseText;"									
-					}								
-				}
-				else {
-					out.println "document.getElementById('${attrs.update}').innerHTML = o.responseText;"
-				}
-			}
-			if(attrs.onSuccess) {
-				out.println "${attrs.onSuccess}(o);"
-			}							
+    /**
+     * A link to a remote uri that used the prototype library to invoke the link via ajax
+     */
+    @Property remoteLink = { attrs, body ->
+       out << "<a href=\"#\" onclick=\""
+        // create remote function
+        remoteFunction(attrs)
+        out << 'return false;" '
+        // process remaining attributes
+        attrs.each { k,v ->
+            out << k << "=\"" << v << "\" "
+        }
+        out << ">"
+        // output the body
+        body()
 
-			out << '''},
-			failure: function(o) {'''
-			if(attrs.update && attrs.update.failure) {
-				out.println "document.getElementById('${attrs.update.failure}').innerHTML = o.responseText;"							
+        // close tag
+        out << "</a>"
+    }
+
+    /**
+     * A form which used prototype to serialize its parameters and submit via an asynchronous ajax call
+     */
+    @Property formRemote = { attrs, body ->
+        if(!attrs.name) {
+            throwTagError("Tag [formRemote] is missing required attribute [name]")
+        }        
+        if(!attrs.url) {
+            throwTagError("Tag [formRemote] is missing required attribute [url]")
+        }        
+        
+        // get javascript provider
+ 		def p = getProvider()				
+		def url = attrs.url.clone()
+ 		
+		// prepare form settings
+		prepareAjaxForm(p,attrs)
+        
+        def params = [  onsubmit:TagLibUtil.outToString(remoteFunction,attrs) + 'return false',
+					    method: (attrs.method? attrs.method : 'POST' ),
+					    action: (attrs.action? attrs.action : TagLibUtil.outToString(createLink,url))		                 
+		             ]
+		attrs.remove('url')		             
+	    params.putAll(attrs)
+	    withTag(name:'form',attrs:params) {
+			body()   
+	    }		
+    }
+
+    /**
+     *  Creates a form submit button that submits the current form to a remote ajax call
+     */
+    @Property submitToRemote = { attrs, body ->
+    	// get javascript provider
+		def p = getProvider()    
+		// prepare form settings
+		prepareAjaxForm(p,attrs)    
+        def params = [  onclick:TagLibUtil.outToString(remoteFunction,attrs) + 'return false',
+					    type: 'button',
+					    name: attrs.remove('name'),
+					    value: attrs.remove('value'),
+		             ]
+		             
+		withTag(name:'input', attrs:params) {
+			body()	
+		}
+    }
+	
+	 private prepareAjaxForm(provider,attrs) {
+		if(provider instanceof PrototypeProvider) {
+		    attrs.params = "Form.serialize(this)"
+		}
+		else if(provider instanceof YahooProvider) {
+			if(attrs.before) {
+				attrs.before += ";YAHOO.util.Connect.setForm('${attrs.name}')"
 			}
-			if(attrs.onFailure) {
-				out.println "${attrs.onFailure}(o);"
-			}											
-			out.println '}'
-			if(attrs.params) {
-					// todo add arguments
+			else {
+				attrs.before = "YAHOO.util.Connect.setForm('${attrs.name}')"
 			}
-			out.println '}'		
+		}
+		else if(provider instanceof DojoProvider) {
+			if(attrs.params) attrs.params.formNode = "dojo.byId('${attrs.name}')"
+			else {
+				attrs.params = [formNode:"dojo.byId('${attrs.name}')"]
+			}
+		}
+	 }
+	/**
+	 * Escapes a javasacript string replacing single/double quotes and new lines
+	 *
+	 * <g:escapeJavascript>This is some "text" to be escaped</g:escapeJavascript>
+	 */
+	@Property escapeJavascript = { attrs,body ->
+		def js = ''
+		if(body instanceof Closure) {
+			def tmp = out
+			def sw = new StringWriter()
+			out = new PrintWriter(out)
+			// invoke body
+			body()
+			// restore out
+			out = tmp
+			js = sw.toString()
+			
+		}
+		else if(body instanceof String) {
+			js = body
+		}
+		else if(attrs instanceof String) {
+			js = attrs	
+		}
+		out << 	js.replaceAll(/\r\n|\n|\r/, '\\\\n')
+					.replaceAll("[\"']",{ (it[0] == '"'? '\\"' : "\\'") } )
 	}
+
+	/**
+	 * Returns the provider of the necessary function calls to perform Javascript functions
+	 *
+	 **/
+	private JavascriptProvider getProvider() {					
+		if(request[JavascriptTagLib.INCLUDED_LIBRARIES]?.contains('yahoo')) {
+			return new YahooProvider()
+		}
+		else if(request[JavascriptTagLib.INCLUDED_LIBRARIES]?.contains('dojo')) {
+			return new DojoProvider()
+		}		
+		else {
+			return new PrototypeProvider()
+		}
+	}
+}
+/**
+ * Interface defining methods that a JavaScript provider should implement
+ *
+ * @author Graeme Rocher
+ **/
+interface JavascriptProvider {
+	/**
+	 * Creates a remote function call
+	 *
+	 * @param The attributes to use
+	 * @param The output to write to
+	 */
+	def doRemoteFunction(taglib,attrs, out)
+}
+
+/**
+ * Prototype implementation of JavaScript provider
+ *
+ * @author Graeme Rocher
+ */
+class PrototypeProvider implements JavascriptProvider {
+	def doRemoteFunction(taglib,attrs, out) {
+		out << 'new Ajax.'
+		if(attrs.update) {
+			out << 'Updater('
+			if(attrs.update instanceof Map) {
+				out << "{"
+				def update = []
+				if(attrs.update?.success) {
+					update << "success:'${attrs['update']['success']}'"
+				}
+				if(attrs.update?.failure) {
+					update << "failure:'${attrs['update']['failure']}'"
+				}
+				out << update.join(',')
+				out << "},"
+			}
+			else {
+				out << "'" << attrs.update << "',"
+			}
+			attrs.remove("update")
+		}
+		else {
+			out << "Request("
+		}
+		out << "'"						
+		
+		if(attrs.url) {
+			taglib.createLink(attrs.url)
+		}
+		else {
+			taglib.createLink(attrs)
+		}		
+		
+		out << "',"
+		
+		// process options
+		out << getAjaxOptions(attrs)
+		// close
+		out << ');'		
+	}
+	
     // helper function to build ajax options
     def getAjaxOptions(options) {
         def ajaxOptions = []
@@ -254,124 +360,95 @@ class JavascriptTagLib  {
 
         return "{${ajaxOptions.join(',')}}"
     }
-
-    /**
-     * A link to a remote uri that used the prototype library to invoke the link via ajax
-     */
-    @Property remoteLink = { attrs, body ->
-       out << "<a href=\"#\" onclick=\""
-        // create remote function
-        remoteFunction(attrs)
-        out << 'return false;" '
-        // process remaining attributes
-        attrs.each { k,v ->
-            out << k << "=\"" << v << "\" "
-        }
-        out << ">"
-        // output the body
-        body()
-
-        // close tag
-        out << "</a>"
-    }
-
-    /**
-     * A form which used prototype to serialize its parameters and submit via an asynchronous ajax call
-     */
-    @Property formRemote = { attrs, body ->
-        if(!attrs.name) {
-            throwTagError("Tag [formRemote] is missing required attribute [name]")
-        }        
-        if(!attrs.name) {
-            throwTagError("Tag [formRemote] is missing required attribute [url]")
-        }        
-		def isPrototype = request[JavascriptTagLib.INCLUDED_LIBRARIES]?.contains('prototype');
-		def isYahoo = request[JavascriptTagLib.INCLUDED_LIBRARIES]?.contains('yahoo');
-		if(!isYahoo && !isPrototype) isPrototype = true
-			
-		if(isPrototype) {		
-		   def url = attrs.url.clone()
-		   attrs.params = "Form.serialize(this)"
-		   out << '<form onsubmit="' 
-		   remoteFunction(attrs)
-		   out << 'return false;" '
-		   out << 'method="' <<  (attrs['method'] ? attrs['method'] : 'post') << '" '
-		   out << 'action="' 
-		   attrs.action ? out << attrs.action : createLink(url)			   
-		   out << '">'
 	
-			// output body
-			   body()
-			// close tag
-		   out << '</form>'
-		}
-		else if(isYahoo) {		
-			def url = TagLibUtil.outToString(createLink,attrs)
-			def onsubmit = []
-			if(attrs.before) {
-				onsubmit << attrs.before	
-			}
-			onsubmit << "${attrs.name}RemoteFunction()"
-			if(attrs.after) {
-				onsubmit << attrs.after	
-			}
-			onsubmit << "return false;"
-			
-			withTag(name:'form',
-					attrs: [ 	name: attrs.name,
-								onsubmit: onsubmit.join(';'),
-								method: (attrs.method ? attrs.method : 'post'),
-								action: (attrs.action ? attrs.action : url)
-							] ) {
-				body()
-			}
-			withTag(name:'script',attrs:[type:'text/javascript']) {
-				out << """
-				function ${attrs.name}RemoteFunction() {						
-					YAHOO.util.Connect.setForm('${attrs.name}');"""
-				buildYahooCallback(attrs)
-				out <<	"var cObj = YAHOO.util.Connect.asyncRequest('POST', '$url', callback);}"					
-			}				
-		}
-    }
+}
 
-    /**
-     *  Creates a form submit button that submits the current form to a remote ajax call
-     */
-    @Property submitToRemote = { attrs, body ->
-        attrs.params = "Form.serialize(this.form)"
-        out << "<input type='button' name='${attrs.remove('name')}' value='${attrs.remove('value')}' "
-        out << 'onclick="'
-        remoteFunction(attrs)
-        out << ';return false;" />'
-    }
+/**
+ * A implementation for the Yahoo library
+ *
+ * @author Graeme Rocher
+ **/
+class YahooProvider implements JavascriptProvider {
+	def doRemoteFunction(taglib,attrs, out)	{
+		def method = (attrs.method ? attrs.method : 'GET' )
+		out << "YAHOO.util.Connect.asyncRequest('${method}','"
+				
+		if(attrs.url) {
+			taglib.createLink(attrs.url)
+		}
+		else {
+			taglib.createLink(attrs)
+		}		
+		
+		out << "',"
+		buildYahooCallback(attrs,out)
+		out << ',null);'
+	}	
 	
-	/**
-	 * Escapes a javasacript string replacing single/double quotes and new lines
-	 *
-	 * <g:escapeJavascript>This is some "text" to be escaped</g:escapeJavascript>
-	 */
-	@Property escapeJavascript = { attrs,body ->
-		def js = ''
-		if(body instanceof Closure) {
-			def tmp = out
-			def sw = new StringWriter()
-			out = new PrintWriter(out)
-			// invoke body
-			body()
-			// restore out
-			out = tmp
-			js = sw.toString()
-			
-		}
-		else if(body instanceof String) {
-			js = body
-		}
-		else if(attrs instanceof String) {
-			js = attrs	
-		}
-		out << 	js.replaceAll(/\r\n|\n|\r/, '\\\\n')
-					.replaceAll("[\"']",{ (it[0] == '"'? '\\"' : "\\'") } )
-	}
 
+	// helper method to create yahoo callback object
+	def buildYahooCallback(attrs,out) {
+		out << '{ '
+			if(attrs.update) {
+			  out <<'success: function(o) { '
+				if(attrs.update instanceof Map) {
+					if(attrs.update.success) {
+						out << "YAHOO.util.Dom.get('${attrs.update.success}').innerHTML = o.responseText;"									
+					}								
+				}
+				else {
+					out <<  "YAHOO.util.Dom.get('${attrs.update}').innerHTML = o.responseText;"
+				}
+				if(attrs.onSuccess) {
+					out << ";${attrs.onSuccess}(o);"
+				}			  
+				out << ' }'
+				out << 	', failure: function(o) {'									
+				if(attrs.update instanceof Map) {
+					if(attrs.update.failure) {
+						out << "YAHOO.util.Dom.get('${attrs.update.failure}').innerHTML = o.statusText;"																				
+					}
+				}
+				if(attrs.onFailure) {
+					out << "${attrs.onFailure}(o);"
+				}										
+				out << '}'				
+			}			
+			out << '}'		
+	}	
+}
+/**
+ * An implementation for the Dojo javascript library
+ *
+ * @author Graeme Rocher
+ */
+class DojoProvider implements JavascriptProvider {
+	 def doRemoteFunction(taglib,attrs, out) {
+		 out << 'dojo.io.bind({url:\''
+		 taglib.createLink(attrs)
+		 out << '\',load:function(type,data,evt) {'
+		 if(attrs.update) {			
+			out << 'dojo.html.textContent( dojo.byId(\''
+			out << (attrs.update instanceof Map ? attrs.update.success : attrs.update)
+			out << '\'),data);'		
+		 }
+		if(attrs.onSuccess) {
+			out << ";${attrs.onSuccess}(type,data,evt);"
+		}
+		out << '}'
+		out << ',error:function(type,error) { '
+		if(attrs.update instanceof Map) {
+			if(attrs.update.failure) {
+				out << "dojo.html.textContent( dojo.byId('${attrs.update.failure}'),error.message);"									
+			}
+		}
+		if(attrs.onFailure) {
+			out << ";${attrs.onFailure}(type,error.message);"
+		}			
+	     out << '}'
+	     attrs.params?.each {k,v ->
+	     	out << ",$k:$v"
+	     }
+		 out << '});'
+	 }
 }
