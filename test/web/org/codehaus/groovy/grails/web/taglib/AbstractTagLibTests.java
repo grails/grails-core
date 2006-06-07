@@ -10,6 +10,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.codehaus.groovy.control.CompilationFailedException;
+import org.codehaus.groovy.grails.MockApplicationContext;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsControllerClass;
 import org.codehaus.groovy.grails.commons.GrailsTagLibClass;
@@ -84,13 +85,26 @@ public abstract class AbstractTagLibTests extends
 		GroovyObject tagLibrary = (GroovyObject)tagClass.newInstance();
 		
 		MockServletContext servletContext = new MockServletContext();
-		servletContext.setAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT,applicationContext);
+		MockApplicationContext appContext = new MockApplicationContext();
+		appContext.registerMockBean("grailsApplication", grailsApplication);
 		
-		GrailsControllerHelper helper = new SimpleGrailsControllerHelper(grailsApplication,applicationContext,servletContext);
-		HttpServletRequest request = new MockHttpServletRequest();
+		servletContext.setAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT,appContext);
+		
+		GrailsControllerHelper helper = new SimpleGrailsControllerHelper(grailsApplication,appContext,servletContext);
+		HttpServletRequest request = new MockHttpServletRequest(servletContext);
+		request.setAttribute(GrailsApplicationAttributes.CONTROLLER, mockController);
+		
 		HttpServletResponse response = new MockHttpServletResponse();
 		new ControllerDynamicMethods(mockController,helper,request,response);
 		new TagLibDynamicMethods(tagLibrary,mockController);
+		
+		
+		for(int i = 0; i<grailsApplication.getGrailsTabLibClasses().length;i++) {
+			GroovyObject instance = (GroovyObject)grailsApplication.getGrailsTabLibClasses()[i].newInstance();
+			new TagLibDynamicMethods(instance,mockController);
+			instance.setProperty(TagLibDynamicMethods.OUT_PROPERTY,out);
+			appContext.registerMockBean(grailsApplication.getGrailsTabLibClasses()[i].getFullName(), instance);
+		}
 		
 		tagLibrary.setProperty(TagLibDynamicMethods.OUT_PROPERTY,out);
 		return (Closure)tagLibrary.getProperty(name);
