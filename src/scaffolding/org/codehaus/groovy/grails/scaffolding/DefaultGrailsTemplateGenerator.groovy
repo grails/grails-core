@@ -347,7 +347,7 @@ class ${className}Controller {
                <tr>
                    <%
                         props = domainClass.properties.findAll { it.name != 'version' && it.type != Set.class }
-                        Collections.sort(props, new org.codehaus.groovy.grails.scaffolding.DomainClassPropertyComparator(domainClass))
+                   Collections.sort(props, comparator.constructors[0].newInstance([domainClass] as Object[]))
                    %>
                    <%props.eachWithIndex { p,i ->
                    	if(i < 6) {%>                   
@@ -373,7 +373,10 @@ class ${className}Controller {
             '''
 
             def t = engine.createTemplate(templateText)
-            def binding = [ domainClass: domainClass, className:domainClass.shortName,propertyName:domainClass.propertyName ]
+            def binding = [ domainClass: domainClass, 
+                            className:domainClass.shortName,
+                            propertyName:domainClass.propertyName,
+                            comparator:org.codehaus.groovy.grails.scaffolding.DomainClassPropertyComparator.class]
 
             listFile.withWriter { w ->
                 t.make(binding).writeTo(w)
@@ -407,7 +410,7 @@ class ${className}Controller {
                  <table>
                    <%
                         props = domainClass.properties.findAll { it.name != 'version' }
-                        Collections.sort(props, new org.codehaus.groovy.grails.scaffolding.DomainClassPropertyComparator(domainClass))
+                        Collections.sort(props, comparator.constructors[0].newInstance([domainClass] as Object[]))
                    %>
                    <%props.each { p ->%>
                         <tr class="prop">
@@ -442,7 +445,10 @@ class ${className}Controller {
             '''
 
             def t = engine.createTemplate(templateText)
-            def binding = [ domainClass: domainClass, className:domainClass.shortName,propertyName:domainClass.propertyName ]
+            def binding = [ domainClass: domainClass, 
+                            className:domainClass.shortName,
+                            propertyName:domainClass.propertyName, 
+                            comparator:org.codehaus.groovy.grails.scaffolding.DomainClassPropertyComparator.class ]
 
             showFile.withWriter { w ->
                 t.make(binding).writeTo(w)
@@ -489,7 +495,7 @@ class ${className}Controller {
 
                        <%
                             props = domainClass.properties.findAll { it.name != 'version' && it.name != 'id' }
-                            Collections.sort(props, new org.codehaus.groovy.grails.scaffolding.DomainClassPropertyComparator(domainClass))
+                       Collections.sort(props, comparator.constructors[0].newInstance([domainClass] as Object[]))
                        %>
                        <%props.each { p ->%>
 				${renderEditor(p)}
@@ -511,7 +517,8 @@ class ${className}Controller {
             def binding = [ domainClass: domainClass,
                             className:domainClass.shortName,
                             propertyName:domainClass.propertyName,
-                            renderEditor:renderEditor ]
+                            renderEditor:renderEditor,
+                            comparator:org.codehaus.groovy.grails.scaffolding.DomainClassPropertyComparator.class]
 
             editFile.withWriter { w ->
                 t.make(binding).writeTo(w)
@@ -551,7 +558,7 @@ class ${className}Controller {
 
                        <%
                             props = domainClass.properties.findAll { it.name != 'version' && it.name != 'id' }
-                            Collections.sort(props, new org.codehaus.groovy.grails.scaffolding.DomainClassPropertyComparator(domainClass))
+                       Collections.sort(props, comparator.constructors[0].newInstance([domainClass] as Object[]))
                        %>
                        <%props.each { p ->
                             if(p.type != Set.class) { %>
@@ -574,7 +581,8 @@ class ${className}Controller {
             def binding = [ domainClass: domainClass,
                             className:domainClass.shortName,
                             propertyName:domainClass.propertyName,
-                            renderEditor:renderEditor ]
+                            renderEditor:renderEditor,
+                            comparator:org.codehaus.groovy.grails.scaffolding.DomainClassPropertyComparator.class]
 
             createFile.withWriter { w ->
                 t.make(binding).writeTo(w)

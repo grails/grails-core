@@ -23,22 +23,22 @@ public class TagLibMetaClassTests extends TestCase {
 	
 	public void testInvokeOneTagLibFromOther() throws Exception {
 		GroovyClassLoader gcl = new GroovyClassLoader();
-        Class controllerClass = gcl.parseClass( "class TestController {\n" +
+        gcl.parseClass( "class TestController {\n" +
 									                "@Property list = {\n" +
 									                "}\n" +
-									                "}" );
-        Class tagLibClass1 = gcl.parseClass( "class FirstTagLib {\n" +
-								                "@Property firstTag = { attrs ->\n" +
-								                "attrs.remove('test')" +
-								                "}\n" +
-								                "}" ); 
-        Class tagLibClass2 = gcl.parseClass( "class SecondTagLib {\n" +
-                "@Property secondTag = { attrs ->\n" +
-                	"firstTag(attrs)\n" +                	
-                "}\n" +
+									                "}\n" +
+						"class FirstTagLib {\n" +
+						       "@Property firstTag = { attrs ->\n" +
+						               "attrs.remove('test')" +
+						        "}\n" +
+						"}\n" +
+				"class SecondTagLib {\n" +
+                	"@Property secondTag = { attrs ->\n" +
+                			"firstTag(attrs)\n" +                	
+                	"}\n" +
                 "}" );        
         
-		GrailsApplicationAttributes attrs = getAttributesForClasses(new Class[]{controllerClass,tagLibClass1,tagLibClass2},gcl);
+		GrailsApplicationAttributes attrs = getAttributesForClasses(gcl.getLoadedClasses(),gcl);
 		assertNotNull(attrs);
 		assertNotNull(attrs.getApplicationContext());
 		assertNotNull(attrs.getGrailsApplication());

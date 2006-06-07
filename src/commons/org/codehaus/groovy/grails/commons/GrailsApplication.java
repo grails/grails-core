@@ -215,5 +215,9 @@ public interface GrailsApplication {
      */
 	public GrailsTaskClass addTaskClass(Class loadedClass);
 
-
+	/**
+	 * Retrieves all java.lang.Class instances loaded by the Grails class loader
+	 * @return An array of classes
+	 */
+	public Class[] getAllClasses();
 }

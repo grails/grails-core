@@ -80,6 +80,7 @@ public class DefaultGrailsApplication implements GrailsApplication {
         GrailsResourceHolder resourceHolder = new GrailsResourceHolder();
 
         this.cl = new GroovyClassLoader();
+        this.cl.setShouldRecompile(Boolean.TRUE);
         this.cl.setResourceLoader(resourceLoader);
            Collection loadedResources = new ArrayList();
 

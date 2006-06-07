@@ -62,8 +62,7 @@ public class DefaultGrailsControllerClassTests extends TestCase {
 	public void testScaffoldedController() throws Exception {
 		
 		GroovyClassLoader cl = new GroovyClassLoader();
-		cl.parseClass("class Test { @Property Long id\n@Property Long version\n}");
-		Class clazz = cl.parseClass("class TestController { @Property scaffold = Test.class } ");
+		Class clazz = cl.parseClass("class TestController { @Property scaffold = Test.class } \nclass Test { @Property Long id\n@Property Long version\n}");
 		GrailsControllerClass grailsClass = new DefaultGrailsControllerClass(clazz);
 
         assertEquals("Test", grailsClass.getName());

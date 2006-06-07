@@ -82,13 +82,13 @@ public class GrailsReloadServletFilter extends OncePerRequestFilter {
       }
 
       if(copyScript == null) {
-          GroovyClassLoader gcl = new GroovyClassLoader(Thread.currentThread().getContextClassLoader());
+          GroovyClassLoader gcl = new GroovyClassLoader(getClass().getClassLoader());
 
           Class groovyClass;
           try {
               groovyClass = gcl.parseClass(gcl.getResource("org/codehaus/groovy/grails/web/servlet/filter/GrailsResourceCopier.groovy").openStream());
               copyScript = (ResourceCopier)groovyClass.newInstance();
-              groovyClass = gcl.parseClass(gcl.getResource("org/codehaus/groovy/grails/scaffolding/DefaultGrailsTemplateGenerator.groovy").openStream());
+              groovyClass = gcl.loadClass("org.codehaus.groovy.grails.scaffolding.DefaultGrailsTemplateGenerator");
               templateGenerator = (GrailsTemplateGenerator)groovyClass.newInstance();
               templateGenerator.setOverwrite(true);
               // perform initial generation of views

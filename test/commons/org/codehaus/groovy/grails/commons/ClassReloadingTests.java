@@ -13,7 +13,8 @@ import java.net.URL;
 public class ClassReloadingTests extends TestCase {
 
 	public void testReloadingClasses() throws Exception {
-		final GroovyClassLoader cl = new GroovyClassLoader(Thread.currentThread().getContextClassLoader());
+		final GroovyClassLoader cl = new GroovyClassLoader(getClass().getClassLoader());
+		cl.setShouldRecompile(Boolean.TRUE);
 		cl.setResourceLoader( new GroovyResourceLoader() {
 			public URL loadGroovySource(String filename) throws MalformedURLException {
 				filename = filename.replace('.', '/') + ".groovy";

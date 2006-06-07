@@ -47,20 +47,20 @@ public class GrailsApplicationAttributesTests extends TestCase {
 	
 	public void testGetTagLibForTag() throws Exception {
 		GroovyClassLoader gcl = new GroovyClassLoader();
-        Class controllerClass = gcl.parseClass( "class TestController {\n" +
+        gcl.parseClass( "class TestController {\n" +
 									                "@Property list = {\n" +
 									                "}\n" +
-									                "}" );
-        Class tagLibClass1 = gcl.parseClass( "class FirstTagLib {\n" +
-								                "@Property firstTag = {\n" +
-								                "}\n" +
-								                "}" ); 
-        Class tagLibClass2 = gcl.parseClass( "class SecondTagLib {\n" +
-                "@Property secondTag = {\n" +
-                "}\n" +
+									                "}\n" +
+			             "class FirstTagLib {\n" +
+						              "@Property firstTag = {\n" +
+						              "}\n" +
+						 "}\n" +
+						 "class SecondTagLib {\n" +
+						 	"@Property secondTag = {\n" +
+						 "}\n" +
                 "}" );        
         
-		GrailsApplicationAttributes attrs = getAttributesForClasses(new Class[]{controllerClass,tagLibClass1,tagLibClass2},gcl);
+		GrailsApplicationAttributes attrs = getAttributesForClasses(gcl.getLoadedClasses(),gcl);
 		assertNotNull(attrs);
 		assertNotNull(attrs.getApplicationContext());
 		assertNotNull(attrs.getGrailsApplication());

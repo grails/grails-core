@@ -38,7 +38,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
  * @since 08-Jul-2005
  */
 public class CircularRelationshipTests extends AbstractDependencyInjectionSpringContextTests  {
-	GroovyClassLoader cl = new GroovyClassLoader();
+	GroovyClassLoader cl = new GroovyClassLoader(getClass().getClassLoader());
 	
 	
 	protected GrailsApplication grailsApplication = null;
@@ -52,7 +52,7 @@ public class CircularRelationshipTests extends AbstractDependencyInjectionSpring
 	
 	protected void onSetUp() throws Exception {
 		Thread.currentThread().setContextClassLoader(cl);
-		cl.loadClass("org.codehaus.groovy.grails.domain.CircularRelationship");
+		cl.loadClass("org.codehaus.groovy.grails.domain.CircularRelationship",true,false);
 		Class[] loadedClasses = cl.getLoadedClasses();
 		grailsApplication = new DefaultGrailsApplication(loadedClasses,cl);
 		
