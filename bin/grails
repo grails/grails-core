@@ -1,15 +1,27 @@
 #!/bin/sh
 
+# OS specific support. $var must be set to either true or false.
+cygwin=false
+os400=false
+case "`uname`" in
+CYGWIN*) cygwin=true;;
+esac
+
+if $cygwin; then
+JAVA_HOME=`cygpath --windows "$JAVA_HOME"`
+GRAILS_HOME=`cygpath --windows "$GRAILS_HOME"`
+fi
+
 if [ -z "$JAVA_HOME" ] ; then
-  echo "Error: JAVA_HOME is not defined"
-  echo "Please set the JAVA_HOME environment variable and start Grails again"
-  exit 1
+echo "Error: JAVA_HOME is not defined"
+echo "Please set the JAVA_HOME environment variable and start Grails again"
+exit 1
 fi
 
 if [ -z "$GRAILS_HOME" ] ; then
-  echo "Error: GRAILS_HOME is not defined"
-  echo "Please define GRAIL_HOME and start Grails again"
-  exit 1
+echo "Error: GRAILS_HOME is not defined"
+echo "Please define GRAIL_HOME and start Grails again"
+exit 1
 fi
 
 ANT_HOME=${GRAILS_HOME}/ant
@@ -29,11 +41,14 @@ ANT_BIN=${ANT_HOME}/bin/ant
 BASEDIR=`pwd`
 
 case "`uname`" in
-  CYGWIN*)
-    GRAILS_BUILD_FILE=`cygpath --windows "$GRAILS_BUILD_FILE"`;
-    GRAILS_ANT_CLASSPATH=`cygpath --windows -p "$GRAILS_ANT_CLASSPATH"`
-    BASEDIR=`cygpath --windows "$BASEDIR"`
-    GRAILS_HOME=`cygpath --windows "$GRAILS_HOME"`
-   ;;
+CYGWIN*)
+GRAILS_BUILD_FILE=`cygpath --windows "$GRAILS_BUILD_FILE"`;
+GRAILS_ANT_CLASSPATH=`cygpath --windows -p "$GRAILS_ANT_CLASSPATH"`
+BASEDIR=`cygpath --windows "$BASEDIR"`
+GRAILS_HOME=`cygpath --windows "$GRAILS_HOME"`
+;;
 esac
-${ANT_BIN} --noconfig -lib "${GRAILS_ANT_CLASSPATH}" -f ${GRAILS_BUILD_FILE} -Dbasedir=${BASEDIR} -Dgrails.home=${GRAILS_HOME} $@
+
+${ANT_BIN} --noconfig -lib "${GRAILS_ANT_CLASSPATH}" -f
+${GRAILS_BUILD_FILE} -Dbasedir=${BASEDIR} -Dgrails.home=${GRAILS_HOME}
+$@
