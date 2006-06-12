@@ -14,6 +14,7 @@
  */
 package org.codehaus.groovy.grails.commons;
 
+import groovy.lang.GroovyClassLoader;
 import junit.framework.TestCase;
 
 /**
@@ -28,4 +29,36 @@ public class GrailsClassUtilsTests extends TestCase {
             assertEquals("Local URL", GrailsClassUtils.getNaturalName("localURL"));
             assertEquals("URL local", GrailsClassUtils.getNaturalName("URLlocal"));
         }
+        
+        public void testIsDomainClass() throws Exception {
+    		GroovyClassLoader gcl = new GroovyClassLoader();
+    		
+    		Class c = gcl.parseClass("class Test { Long id;Long version;}\n" );
+    		
+        	assertTrue(GrailsClassUtils.isDomainClass(c));
+        }
+        
+        public void testIsController() throws Exception {
+    		GroovyClassLoader gcl = new GroovyClassLoader();
+    		
+    		Class c = gcl.parseClass("class TestController { }\n" );
+    		
+        	assertTrue(GrailsClassUtils.isControllerClass(c));
+        }
+        
+        public void testIsTagLib() throws Exception {
+    		GroovyClassLoader gcl = new GroovyClassLoader();
+    		
+    		Class c = gcl.parseClass("class TestTagLib { }\n" );
+    		
+        	assertTrue(GrailsClassUtils.isTagLibClass(c));
+        }                
+        
+        public void testIsBootStrap() throws Exception {
+    		GroovyClassLoader gcl = new GroovyClassLoader();
+    		
+    		Class c = gcl.parseClass("class TestBootStrap { }\n" );
+    		
+        	assertTrue(GrailsClassUtils.isBootstrapClass(c));
+        }                
 }

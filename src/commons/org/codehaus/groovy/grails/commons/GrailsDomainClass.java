@@ -15,6 +15,7 @@
 package org.codehaus.groovy.grails.commons;
 
 import java.util.Map;
+import java.util.Set;
 
 import org.springframework.validation.Validator;
 
@@ -71,12 +72,14 @@ public interface GrailsDomainClass extends GrailsClass {
 	/**
 	 * Returns the field name for the given property name
 	 * @param propertyName
-	 * @return
+	 * @return The field representation of the property name
 	 */
 	public String getFieldName(String propertyName);
 	
 	/**
 	 * Returns the table name for this class
+	 * 
+	 * @return the table name representation of the class name
 	 */
 	public String getTableName();
 	
@@ -84,7 +87,7 @@ public interface GrailsDomainClass extends GrailsClass {
 	 * <p>Returns the default property name of the GrailsClass. For example the property name for 
 	 * a class called "User" would be "user"</p>
 	 * 
-	 * @return
+	 * @return The property name representation of the class name
 	 */
 	public String getPropertyName();
 	
@@ -142,4 +145,18 @@ public interface GrailsDomainClass extends GrailsClass {
 	 * @return The name of the ORM implementation used to map the domain class (default is "GORM")
 	 */
 	public String getMappedBy();
+	
+	/**
+	 * Whether the class is the root of a heirarchy
+	 * 
+	 * @return True if it is the root of the heirarchy
+	 */
+	public boolean isRoot();
+	
+	/**
+	 * Returns the sub-classes for this class if any
+	 * 
+	 * @return A set of sub classes or an empty set if none exist
+	 */
+	public Set getSubClasses();
 }

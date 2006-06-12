@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -58,12 +59,16 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
 	private Validator validator;
 	private String mappedBy = GrailsDomainClass.GORM;
     private List owners = new ArrayList();
+    private boolean root = true;
+    private Set subClasses = new HashSet();
 	
 	public DefaultGrailsDomainClass(Class clazz) {
 		super(clazz, "");
-		
 		PropertyDescriptor[] propertyDescriptors = getReference().getPropertyDescriptors();
 		
+		if(!clazz.getSuperclass().equals( GroovyObject.class ) && !clazz.getSuperclass().equals(Object.class)) {
+			this.root = false;
+		}
 		this.propertyMap = new HashMap();
 		this.relationshipMap = (Map)getPropertyValue( GrailsDomainClassProperty.RELATES_TO_MANY, Map.class );
 		if(this.relationshipMap == null) {
@@ -482,5 +487,13 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
 	 */	
 	public String getMappedBy() {
 		return this.mappedBy;
+	}
+
+	public boolean isRoot() {
+		return this.root;
+	}
+
+	public Set getSubClasses() {
+		return this.subClasses;
 	}	
 }

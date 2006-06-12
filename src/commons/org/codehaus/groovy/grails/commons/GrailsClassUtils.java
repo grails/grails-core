@@ -16,6 +16,8 @@ package org.codehaus.groovy.grails.commons;
 
 
 import groovy.lang.Closure;
+import groovy.lang.GroovyObject;
+
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
@@ -113,21 +115,28 @@ public class GrailsClassUtils {
      * @return A boolean value
      */
     public static boolean isDomainClass( Class clazz ) {
-        try {
-            // make sure the identify and version field exist
-            clazz.getDeclaredField( GrailsDomainClassProperty.IDENTITY );
-            clazz.getDeclaredField( GrailsDomainClassProperty.VERSION );
-            // and its not a closure
-            if(Closure.class.isAssignableFrom(clazz)) {
-                return false;
+        // its not a closure
+    	if(clazz == null)return false;
+        if(Closure.class.isAssignableFrom(clazz)) {
+            return false;
+        }  
+        Class testClass = clazz;
+        boolean result = false;
+        while(testClass!=null&&!testClass.equals(GroovyObject.class)&&!testClass.equals(Object.class)) {
+            try {
+                // make sure the identify and version field exist        	
+            	testClass.getDeclaredField( GrailsDomainClassProperty.IDENTITY );
+            	testClass.getDeclaredField( GrailsDomainClassProperty.VERSION );
+
+                // passes all conditions return true
+                result = true;
+                break;
+            } catch (SecurityException e) {
+            } catch (NoSuchFieldException e) {
             }
-            // passes all conditions return true
-            return true;
-        } catch (SecurityException e) {
-            return false;
-        } catch (NoSuchFieldException e) {
-            return false;
+            testClass = testClass.getSuperclass();
         }
+        return result;
     }
     
 	public static boolean isTaskClass(Class clazz) {

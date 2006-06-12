@@ -23,7 +23,9 @@ import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
  * Hibernate to integrate with Grails' validation, dynamic methods etc. seamlessly
  *
  * @author Graeme Rocher
- * @since 18-Feb-2006
+ * @since 0.1
+ * 
+ * Created - 18-Feb-2006
  */
 public class GrailsHibernateDomainClassProperty implements GrailsDomainClassProperty {
     private GrailsHibernateDomainClass domainClass;
@@ -170,4 +172,8 @@ public class GrailsHibernateDomainClassProperty implements GrailsDomainClassProp
     public void setRelatedClassType(Class relatedType) {
         this.relatedClassType = relatedType;
     }
+
+	public boolean isInherited() {
+		throw new UnsupportedOperationException("Method 'isInherited' is not supported by implementation");
+	}
 }

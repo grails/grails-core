@@ -27,6 +27,7 @@ import org.hibernate.cfg.SecondPass;
 import org.hibernate.id.PersistentIdentifierGenerator;
 import org.hibernate.mapping.*;
 import org.hibernate.mapping.Collection;
+import org.hibernate.persister.entity.SingleTableEntityPersister;
 import org.hibernate.util.StringHelper;
 
 import java.util.*;
@@ -275,7 +276,9 @@ public final class GrailsDomainBinder {
 	public static void bindClass(GrailsDomainClass domainClass, Mappings mappings)
 		throws MappingException {		
 		//if(domainClass.getClazz().getSuperclass() == java.lang.Object.class) {
+		if(domainClass.isRoot()) {
 			bindRoot(domainClass, mappings);
+		}
 		//}
 		//else {
 		//	throw new MappingException("Grails domain classes do not support inheritance");				
@@ -324,11 +327,101 @@ public final class GrailsDomainBinder {
 			bindClass(domainClass, root, mappings);		
 			bindRootPersistentClassCommonValues(domainClass, root, mappings);
 			
+			if(!domainClass.getSubClasses().isEmpty()) {
+				// if the root class has children create a discriminator property
+				bindDiscriminatorProperty(root.getTable(), root, mappings);
+				// bind the sub classes
+				bindSubClasses(domainClass,root,mappings);
+			}
 			mappings.addClass(root);
 		}
 		else {
 			LOG.info("[GrailsDomainBinder] Class ["+domainClass.getFullName()+"] is already mapped, skipping.. ");
 		}
+	}
+
+	/**
+	 * Binds the sub classes of a root class using table-per-heirarchy inheritance mapping 
+	 * 
+	 * @param domainClass The root domain class to bind
+	 * @param root The root instance
+	 * @param mappings The mappings instance
+	 */
+	private static void bindSubClasses(GrailsDomainClass domainClass, RootClass root, Mappings mappings) {
+		Set subClasses = domainClass.getSubClasses();
+		
+		for (Iterator i = subClasses.iterator(); i.hasNext();) {
+			GrailsDomainClass sub = (GrailsDomainClass) i.next();
+			
+			bindSubClass(domainClass,sub,root,mappings);
+		}
+	}
+
+	/**
+	 * Binds a sub class
+	 * 
+	 * @param domainClass The root domain class instance
+	 * @param sub The sub domain class instance
+	 * @param root The root persistent class instance
+	 * @param mappings The mappings instance
+	 */
+	private static void bindSubClass(GrailsDomainClass domainClass, GrailsDomainClass sub, RootClass root, Mappings mappings) {
+		Subclass subClass = new SingleTableSubclass( root );
+		
+		bindSubClass(sub,subClass,mappings);
+		// set the descriminator value as the name of the class. This is the 
+		// value used by Hibernate to decide what the type of the class is
+		// to perform polymorphic queries
+		subClass.setDiscriminatorValue(domainClass.getFullName());
+		
+		root.addSubclass( subClass );
+		mappings.addClass( subClass );
+	}
+
+	/**
+	 * Binds a sub-class using table-per-heirarchy in heritance mapping
+	 * 
+	 * @param sub The Grails domain class instance representing the sub-class
+	 * @param subClass The Hibernate SubClass instance
+	 * @param mappings The mappings instance
+	 */
+	private static void bindSubClass(GrailsDomainClass sub, Subclass subClass, Mappings mappings) {
+		bindClass( sub, subClass, mappings );
+
+		if ( subClass.getEntityPersisterClass() == null ) {
+			subClass.getRootClass()
+					.setEntityPersisterClass( SingleTableEntityPersister.class );
+		}
+
+		LOG.info(
+				"Mapping subclass: " + subClass.getEntityName() +
+				" -> " + subClass.getTable().getName()
+			);
+
+		// properties
+		createClassProperties( sub, subClass, mappings);
+	}
+
+	/**
+	 * Creates and binds the discriminator property used in table-per-heirarchy inheritance to 
+	 * discriminate between sub class instances
+	 * 
+	 * @param table The table to bind onto 
+	 * @param entity The root class entity
+	 * @param mappings The mappings instance
+	 */
+	private static void bindDiscriminatorProperty(Table table, RootClass entity, Mappings mappings) {
+		SimpleValue d = new SimpleValue( table );
+		entity.setDiscriminator( d );
+		bindSimpleValue(
+				"string",
+				d,
+				false,
+				RootClass.DEFAULT_DISCRIMINATOR_COLUMN_NAME,
+				mappings
+			);
+
+		entity.setPolymorphic( true );
 	}
 
 
@@ -381,9 +474,14 @@ public final class GrailsDomainBinder {
 		for(int i = 0; i < persistantProperties.length;i++) {
 			
 			GrailsDomainClassProperty currentGrailsProp = persistantProperties[i];
+			// if its inherited skip
+			if(currentGrailsProp.isInherited())
+				continue;
+			
 			// TODO: Implement support for many from many relationships
 			if(currentGrailsProp.isManyToMany())
 				continue;
+			
 /*			if(currentGrailsProp.isManyToOne() && currentGrailsProp.isBidirectional() ) {
 				GrailsDomainClassProperty otherSide = currentGrailsProp.getOtherSide();
 				if(otherSide.isOneToMany())
@@ -647,7 +745,27 @@ w	 * Binds a simple value to the Hibernate metamodel. A simple value is
 		
 		simpleValue.addColumn(column);		
 	}
+
+	/**
+	 * Binds a value for the specified parameters to the meta model.
+	 * 
+	 * @param type The type of the property
+	 * @param simpleValue  The simple value instance
+	 * @param nullable Whether it is nullable
+	 * @param propertyName The property name
+	 * @param mappings The mappings
+	 */
+	private static void bindSimpleValue(String type,SimpleValue simpleValue, boolean nullable, String propertyName, Mappings mappings) {
+		simpleValue.setTypeName(type);
+		Table t = simpleValue.getTable();
+		Column column = new Column();
+		column.setNullable(nullable);
+		column.setValue(simpleValue);
+		column.setName(StringHelper.unqualify(propertyName));
+		if(t!=null)t.addColumn(column);
 	
+		simpleValue.addColumn(column);
+	}	
 
 	/**
 	 * Binds a Column instance to the Hibernate meta model

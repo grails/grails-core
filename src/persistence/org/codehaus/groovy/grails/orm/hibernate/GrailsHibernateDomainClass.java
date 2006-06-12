@@ -23,6 +23,7 @@ import java.beans.IntrospectionException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -49,7 +50,9 @@ import org.springframework.validation.Validator;
  * Hibernate to integrate with Grails' validation, dynamic methods etc. seamlessly
  *
  * @author Graeme Rocher
- * @since 18-Feb-2006
+ * @since 0.1
+ * 
+ * Created - 18-Feb-2006
  */
 public class GrailsHibernateDomainClass extends AbstractGrailsClass implements ExternalGrailsDomainClass {
 	
@@ -235,4 +238,14 @@ public class GrailsHibernateDomainClass extends AbstractGrailsClass implements E
     public String getMappedBy() {
         return HIBERNATE;
     }
+
+
+	public Set getSubClasses() {
+		throw new UnsupportedOperationException("Method 'getSubClasses' is not supported by implementation");
+	}
+
+
+	public boolean isRoot() {
+		return getClazz().getSuperclass().equals(Object.class);
+	}
 }

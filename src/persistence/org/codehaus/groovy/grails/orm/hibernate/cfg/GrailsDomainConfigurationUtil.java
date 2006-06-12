@@ -25,6 +25,8 @@ import org.hibernate.EntityMode;
 import org.hibernate.SessionFactory;
 import org.hibernate.metadata.ClassMetadata;
 
+import groovy.lang.GroovyObject;
+
 import java.beans.IntrospectionException;
 import java.util.Collection;
 import java.util.Iterator;
@@ -47,7 +49,18 @@ public class GrailsDomainConfigurationUtil {
      */
     public static void configureDomainClassRelationships(GrailsDomainClass[] domainClasses, Map domainMap) {
 
+    	// configure super/sub class relationships
+    	// and configure how domain class properties reference each other
         for (int i = 0; i < domainClasses.length; i++) {
+        	
+        	if(!domainClasses[i].isRoot()) {
+        		Class superClass = domainClasses[i].getClazz().getSuperclass();
+        		while(!superClass.equals(Object.class)&&!superClass.equals(GroovyObject.class)) {
+            		GrailsDomainClass gdc = (GrailsDomainClass)domainMap.get(superClass.getName());
+            		gdc.getSubClasses().add(domainClasses[i]);
+            		superClass = superClass.getSuperclass();
+        		}
+        	}        	
             GrailsDomainClassProperty[] props = domainClasses[i].getPersistantProperties();
 
             for (int j = 0; j < props.length; j++) {
@@ -61,6 +74,7 @@ public class GrailsDomainConfigurationUtil {
 
         }
 
+        // now configure so that the 'other side' of a property can be resolved by the property itself
         for (int i = 0; i < domainClasses.length; i++) {
             GrailsDomainClassProperty[] props = domainClasses[i].getPersistantProperties();
 

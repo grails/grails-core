@@ -16,6 +16,8 @@ package org.codehaus.groovy.grails.commons;
 
 import org.apache.commons.lang.ClassUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
+import org.springframework.beans.BeanWrapper;
+import org.springframework.beans.BeanWrapperImpl;
 
 import java.beans.PropertyDescriptor;
 import java.util.ArrayList;
@@ -47,6 +49,7 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
 	private GrailsDomainClass referencedDomainClass;
 	private GrailsDomainClassProperty otherSide;
     private String naturalName;
+	private boolean inherited;
 
 
     public DefaultGrailsDomainClassProperty(DefaultGrailsDomainClass domainClass, PropertyDescriptor descriptor)  {
@@ -59,6 +62,15 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
         this.naturalName = GrailsClassUtils.getNaturalName(descriptor.getName());
         this.type = descriptor.getPropertyType();
         this.identity = descriptor.getName().equals( IDENTITY );
+        // figure out if this property is inherited
+        if(!domainClass.isRoot()) {
+        	Class superClass = domainClass.getClazz().getSuperclass();
+        	
+        	BeanWrapper superBean = new BeanWrapperImpl(superClass);
+        	if(superBean.isReadableProperty(this.name)) {
+        		this.inherited = true;
+        	}
+        }        
         // get the not required descritor from the owner bean
         List optionalProps;
         List transientProps;
@@ -337,6 +349,11 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
 
 	public void setOtherSide(GrailsDomainClassProperty property) {
 		this.otherSide = property;
+	}
+
+
+	public boolean isInherited() {
+		return this.inherited;
 	}
 
 

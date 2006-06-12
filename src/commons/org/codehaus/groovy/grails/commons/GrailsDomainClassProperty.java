@@ -151,4 +151,10 @@ public interface GrailsDomainClassProperty {
      * @param referencedProperty
      */
     void setOtherSide(GrailsDomainClassProperty referencedProperty);
+    
+    /**
+     * Whether the property is inherited from a super class
+     * @return True if its inherited
+     */
+    boolean isInherited();
 }
