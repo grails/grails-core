@@ -481,9 +481,10 @@ public final class GrailsDomainBinder {
 			if(currentGrailsProp.isInherited())
 				continue;
 			
-			// TODO: Implement support for many from many relationships
-			if(currentGrailsProp.isManyToMany())
-				continue;
+			// TODO: Implement support for many to many relationships
+			if(currentGrailsProp.isManyToMany()) {
+				throw new MappingException("Many-to-many relationships are currently not supported by Grails, but one found: " + currentGrailsProp.getName());
+			}
 			
 /*			if(currentGrailsProp.isManyToOne() && currentGrailsProp.isBidirectional() ) {
 				GrailsDomainClassProperty otherSide = currentGrailsProp.getOtherSide();
