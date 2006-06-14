@@ -22,7 +22,9 @@ import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
 import org.hibernate.FetchMode;
 import org.hibernate.MappingException;
+import org.hibernate.cfg.ImprovedNamingStrategy;
 import org.hibernate.cfg.Mappings;
+import org.hibernate.cfg.NamingStrategy;
 import org.hibernate.cfg.SecondPass;
 import org.hibernate.id.PersistentIdentifierGenerator;
 import org.hibernate.mapping.*;
@@ -45,8 +47,9 @@ import java.util.Set;
  */
 public final class GrailsDomainBinder {
 	
-	private static final String FOREIGN_KEY_SUFFIX = "_ID";
+	private static final String FOREIGN_KEY_SUFFIX = "_id";
 	private static final Log LOG = LogFactory.getLog( GrailsDomainBinder.class );
+	private static final NamingStrategy namingStrategy = ImprovedNamingStrategy.INSTANCE;
 	
 	/**
 	 * A Collection type, for the moment only Set is supported
@@ -251,12 +254,12 @@ public final class GrailsDomainBinder {
 			bindOneToMany( property, oneToMany, mappings );			
 		}
 		else {
-			String tableName = property.getReferencedDomainClass().getName();
+			String referencedClassName = property.getReferencedDomainClass().getFullName();
 			
 			Table table = mappings.addTable(
 								mappings.getSchemaName(),
 								mappings.getCatalogName(),
-								tableName,
+								namingStrategy.classToTableName(referencedClassName),
 								null,
 								false
 							);
@@ -442,7 +445,7 @@ public final class GrailsDomainBinder {
 		Table table = mappings.addTable(
 				schema,
 				catalog,
-				domainClass.getTableName(),
+				namingStrategy.classToTableName(domainClass.getFullName()),
 				null,
 				false
 		);
@@ -761,7 +764,7 @@ w	 * Binds a simple value to the Hibernate metamodel. A simple value is
 		Column column = new Column();
 		column.setNullable(nullable);
 		column.setValue(simpleValue);
-		column.setName(StringHelper.unqualify(propertyName));
+		column.setName(namingStrategy.propertyToColumnName(propertyName));
 		if(t!=null)t.addColumn(column);
 	
 		simpleValue.addColumn(column);
@@ -774,20 +777,12 @@ w	 * Binds a simple value to the Hibernate metamodel. A simple value is
 	 */
 	private static void bindColumn(GrailsDomainClassProperty grailsProp, Column column) {						
 		if(grailsProp.isAssociation()) {
-			if(grailsProp.isOneToMany()) {							
-				column.setName( grailsProp.getFieldName() + FOREIGN_KEY_SUFFIX );
-			}
-			else if(grailsProp.isManyToOne()) {							
-				column.setName( grailsProp.getFieldName() + FOREIGN_KEY_SUFFIX );
-			}			
-			else {
-				column.setName( grailsProp.getFieldName() + FOREIGN_KEY_SUFFIX );
-			}			
+			column.setName( namingStrategy.propertyToColumnName(grailsProp.getName()) + FOREIGN_KEY_SUFFIX );
 			column.setNullable(true);
 			
 		} else {
 			column.setNullable(grailsProp.isOptional());
-			column.setName(grailsProp.getFieldName());
+			column.setName(namingStrategy.propertyToColumnName(grailsProp.getName()));
 		}
  
 		LOG.info("[GrailsDomainBinder] bound property [" + grailsProp.getName() + "] to column name ["+column.getName()+"]");		
