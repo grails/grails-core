@@ -1,7 +1,7 @@
-class @task.class.name@Job {
-	@Property timeout = 1000
+class @job.class.name@Job {
+	def timeout = 1000
 
-	@Property execute = {	
+	def execute = {	
 	    // execute task
 	}
 }

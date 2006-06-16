@@ -1,7 +1,7 @@
 class ApplicationBootStrap {
 
-     @Property Closure init = { servletContext ->
+     def init = { servletContext ->
      }
-     @Property Closure destroy = {
+     def destroy = {
      }
 } 

@@ -1,6 +1,6 @@
 class @domain.class.name@ { 
-	@Property Long id
-	@Property Long version
+	Long id
+	Long version
 
     String toString() { "${this.class.name} :  $id" }
 	

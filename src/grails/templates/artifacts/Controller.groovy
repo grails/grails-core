@@ -1,5 +1,5 @@
 class @controller.name@Controller {
 
-	@Property index = { }
+	def index = { }
 }
 

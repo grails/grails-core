@@ -1,6 +1,6 @@
 class @service.name@Service {
 	
-	@Property boolean transactional = true
+	boolean transactional = true
 	
 	def serviceMethod() {
 		// TODO
