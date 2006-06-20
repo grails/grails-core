@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
+
+<beans>
+	<bean id="resource" class="org.springframework.beans.factory.config.ResourceFactoryBean">
+	    <property name="location">
+	        <value>classpath:org/codehaus/groovy/grails/injection/grails-app/domain/TestInjection.groovy</value>
+	    </property>
+	</bean>		
+	
+	<bean id="domainInjector" class="org.codehaus.groovy.grails.injection.DefaultGrailsDomainClassInjector">	
+	</bean>
+	
+	<bean id="injectionOperation" class="org.codehaus.groovy.grails.injection.GrailsInjectionOperation">	
+	</bean>
+</beans>

@@ -20,14 +20,19 @@ import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.control.CompilationUnit;
+import org.codehaus.groovy.control.CompilerConfiguration;
+import org.codehaus.groovy.control.Phases;
 import org.codehaus.groovy.grails.commons.spring.GrailsResourceHolder;
 import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException;
 import org.codehaus.groovy.grails.exceptions.MoreThanOneActiveDataSourceException;
+import org.codehaus.groovy.grails.injection.GrailsInjectionOperation;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsDomainConfigurationUtil;
 import org.springframework.core.io.Resource;
 
 import java.io.IOException;
 import java.lang.reflect.Modifier;
+import java.security.CodeSource;
 import java.util.*;
 
 /**
@@ -71,15 +76,36 @@ public class DefaultGrailsApplication implements GrailsApplication {
         configureLoadedClasses(classes);
         this.cl = classLoader;
     }
+    
     public DefaultGrailsApplication(final Resource[] resources) throws IOException {
+    	this(resources,null);
+    }
+    
+    public DefaultGrailsApplication(final Resource[] resources, final GrailsInjectionOperation injectionOperation) throws IOException {
         super();
 
         log.debug("Loading Grails application.");
 
-        GrailsResourceLoader resourceLoader = new GrailsResourceLoader(resources);
+        final GrailsResourceLoader resourceLoader = new GrailsResourceLoader(resources);
         GrailsResourceHolder resourceHolder = new GrailsResourceHolder();
+        
+        if(injectionOperation == null) {
+        	this.cl = new GroovyClassLoader();
+        }else {
+            this.cl = new GroovyClassLoader() {
 
-        this.cl = new GroovyClassLoader();
+    			/* (non-Javadoc)
+    			 * @see groovy.lang.GroovyClassLoader#createCompilationUnit(org.codehaus.groovy.control.CompilerConfiguration, java.security.CodeSource)
+    			 */
+    			protected CompilationUnit createCompilationUnit(CompilerConfiguration config, CodeSource source) {				
+    				CompilationUnit cu = super.createCompilationUnit(config, source);
+    				injectionOperation.setResourceLoader(resourceLoader);
+    				cu.addPhaseOperation(injectionOperation, Phases.CONVERSION);
+    				return cu;
+    			}
+            	        	
+            };        	
+        }
         this.cl.setShouldRecompile(Boolean.TRUE);
         this.cl.setResourceLoader(resourceLoader);
            Collection loadedResources = new ArrayList();
@@ -443,8 +469,4 @@ public class DefaultGrailsApplication implements GrailsApplication {
             throw new GrailsConfigurationException("Cannot load task class ["+loadedClass+"]. It is not a task!");
         }
 	}
-
-
-
-
 }

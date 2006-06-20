@@ -220,4 +220,5 @@ public interface GrailsApplication {
 	 * @return An array of classes
 	 */
 	public Class[] getAllClasses();
+
 }
