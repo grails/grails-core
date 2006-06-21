@@ -21,6 +21,7 @@ import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.commons.spring.SpringConfig;
 import org.codehaus.groovy.grails.scaffolding.GrailsTemplateGenerator;
+import org.springframework.binding.support.Assert;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
@@ -38,6 +39,7 @@ public class GenerateUtils {
     private static Log LOG = LogFactory.getLog(RunTests.class);
     private static final String VIEWS = "view";
     private static final String CONTROLLER = "controller";
+	private static final String ALL = "all";
 
     public static void main(String[] args) throws Exception {
         if(args.length < 2)
@@ -59,6 +61,7 @@ public class GenerateUtils {
             ConfigurableApplicationContext appCtx = (ConfigurableApplicationContext)
                 new XmlApplicationContextDriver().getApplicationContext(
                     config.getBeanReferences(), parent);
+            Assert.notNull(appCtx);
         }
 
         // retry
@@ -73,11 +76,11 @@ public class GenerateUtils {
         GrailsTemplateGenerator generator = (GrailsTemplateGenerator)gcl.parseClass(gcl.getResourceAsStream("org/codehaus/groovy/grails/scaffolding/DefaultGrailsTemplateGenerator.groovy"))
                                                                             .newInstance();
 
-        if(VIEWS.equals(type)) {
+        if(VIEWS.equals(type) || ALL.equals(type)) {
             LOG.info("Generating views for domain class ["+domainClass.getName()+"]");
             generator.generateViews(domainClass,".");
         }
-        else if(CONTROLLER.equals(type)) {
+        else if(CONTROLLER.equals(type)|| ALL.equals(type)) {
            LOG.info("Generating controller for domain class ["+domainClass.getName()+"]");
            generator.generateController(domainClass,".");
         }

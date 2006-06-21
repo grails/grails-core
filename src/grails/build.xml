@@ -26,6 +26,8 @@ Targets:
 "create-webtest"      - Create the functional test layout
 "run-webtest"         - Run the functional tests for a running app
 "war"        		  - Creates a deployable Web Application Archive (WAR)
+"shell"               - Opens the Grails interactive command line shell
+"console"             - Opens the Grails interactive swing console
         </echo>
 	</target>
 
@@ -351,6 +353,34 @@ Targets:
 		</java>
 		<delete dir="${basedir}/tmp/war/WEB-INF/grails-app/tests"></delete>
 	</target>
+	
+	<target name="shell" depends="package" description="Opens the Grails shell">
+		<path id="shell.classpath">
+			<!--<pathelement location="${grails.home}/src/web-app/WEB-INF"/>-->
+            <pathelement location="${basedir}/tmp/war/WEB-INF"/>
+            <pathelement location="${basedir}/tmp/war/WEB-INF/classes"/>
+            <fileset dir="${grails.home}/lib"/>
+			<fileset dir="${grails.home}/ant/lib"/>
+			<fileset dir="${grails.home}/dist"/>
+			<fileset dir="lib"/>
+		</path>
+		<java classpathref="shell.classpath" classname="grails.ui.InteractiveShell" fork="true" failonerror="true">
+		</java>
+	</target>	
+	
+	<target name="console" depends="package" description="Opens the Grails console">
+		<path id="console.classpath">
+			<!--<pathelement location="${grails.home}/src/web-app/WEB-INF"/>-->
+            <pathelement location="${basedir}/tmp/war/WEB-INF"/>
+            <pathelement location="${basedir}/tmp/war/WEB-INF/classes"/>
+            <fileset dir="${grails.home}/lib"/>
+			<fileset dir="${grails.home}/ant/lib"/>
+			<fileset dir="${grails.home}/dist"/>
+			<fileset dir="lib"/>
+		</path>
+		<java classpathref="console.classpath" classname="grails.ui.Console" fork="true" failonerror="true">
+		</java>
+	</target>		
 
     <target name="dev">
         <property name="dev.run" value="true" />

@@ -15,20 +15,17 @@
  */ 
 package grails.util;
 
+import java.lang.reflect.Modifier;
+
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 import junit.textui.TestRunner;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
-import org.codehaus.groovy.grails.commons.spring.SpringConfig;
+import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.support.GrailsTestSuite;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
-import org.springmodules.beans.factory.drivers.xml.XmlApplicationContextDriver;
-
-import java.lang.reflect.Modifier;
 
 /**
  * 
@@ -41,12 +38,8 @@ public class RunTests {
 	private static Log log = LogFactory.getLog(RunTests.class);
 	
 	public static void main(String[] args) {
-		ApplicationContext parent = new ClassPathXmlApplicationContext("applicationContext.xml");
-		DefaultGrailsApplication application = (DefaultGrailsApplication)parent.getBean("grailsApplication", DefaultGrailsApplication.class);
-		SpringConfig config = new SpringConfig(application);
-		ConfigurableApplicationContext appCtx = (ConfigurableApplicationContext) 
-			new XmlApplicationContextDriver().getApplicationContext(
-				config.getBeanReferences(), parent);
+		ConfigurableApplicationContext appCtx = (ConfigurableApplicationContext)GrailsUtil.bootstrapGrailsFromClassPath();
+		GrailsApplication application = (GrailsApplication)appCtx.getBean(GrailsApplication.APPLICATION_ID);
 		
 		Class[] allClasses = application.getAllClasses();
         log.debug("Going through ["+allClasses.length+"] classes");
