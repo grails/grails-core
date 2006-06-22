@@ -16,9 +16,13 @@
 package org.codehaus.groovy.grails.web.servlet;
 
 import groovy.lang.GroovyObject;
+import groovy.lang.MissingMethodException;
+
 import org.codehaus.groovy.grails.web.metaclass.GetParamsDynamicProperty;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
 
 import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
@@ -35,7 +39,7 @@ import java.util.*;
  * @see javax.servlet.http.HttpServletRequest
  * @see java.util.Map
  */
-public class GrailsHttpServletRequest extends HttpServletRequestWrapper implements Map {
+public class GrailsHttpServletRequest extends HttpServletRequestWrapper implements Map, MultipartHttpServletRequest {
 
     Map controllerParams = Collections.EMPTY_MAP;
     BeanWrapper requestBean;
@@ -146,5 +150,35 @@ public class GrailsHttpServletRequest extends HttpServletRequestWrapper implemen
     public Set entrySet() {
         throw new UnsupportedOperationException("Method java.util.Map.entrySet() is not supported by ["+getClass()+"]");
     }
+
+	public MultipartFile getFile(String name) {
+		ServletRequest r = getRequest();
+		if(r instanceof MultipartHttpServletRequest) {
+			return ((MultipartHttpServletRequest)r).getFile(name);
+		}
+		else {
+			throw new MissingMethodException("getFile", GrailsHttpServletRequest.class,new Object[]{name});
+		}
+	}
+
+	public Map getFileMap() {
+		ServletRequest r = getRequest();
+		if(r instanceof MultipartHttpServletRequest) {
+			return ((MultipartHttpServletRequest)r).getFileMap();
+		}
+		else {
+			throw new MissingMethodException("getFileMap", GrailsHttpServletRequest.class,new Object[0]);
+		}
+	}
+
+	public Iterator getFileNames() {
+		ServletRequest r = getRequest();
+		if(r instanceof MultipartHttpServletRequest) {
+			return ((MultipartHttpServletRequest)r).getFileNames();
+		}
+		else {
+			throw new MissingMethodException("getFileNames", GrailsHttpServletRequest.class,new Object[0]);
+		}
+	}
 
 }
