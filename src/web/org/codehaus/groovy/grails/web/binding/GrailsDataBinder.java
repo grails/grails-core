@@ -37,6 +37,8 @@ import groovy.lang.MissingMethodException;
 
 import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletRequestWrapper;
+
 import java.text.DateFormat;
 import java.util.*;
 
@@ -102,6 +104,9 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
 
     public void bind(ServletRequest request) {
         MutablePropertyValues mpvs = new ServletRequestParameterPropertyValues(request);
+        if(request instanceof HttpServletRequestWrapper) {
+        	request = ((HttpServletRequestWrapper)request).getRequest();
+        }
         checkMultipartFiles(request, mpvs);
 
         checkStructuredDateDefinitions(request,mpvs);
