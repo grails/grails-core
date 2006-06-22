@@ -5,9 +5,9 @@ package grails.util
 
 class WebTest {
 
-    @Property grailsHome
-    @Property props
-    @Property ant = new AntBuilder()    // may be initialize lazily for memory opt. in subclasses
+    def grailsHome
+    def props
+    def ant = new AntBuilder()    // may be initialized lazily for memory opt. in subclasses
 
     public webtestHome
     public Map configMap
@@ -33,12 +33,9 @@ class WebTest {
         initProps()
         initConfigMap()
         prepare()
-
-        suite()     // template method call
-
+            suite()     // template method call
         style()
     }
-
 
     void initProps () {
         ant.property(file:        'webtest/conf/webtest.properties')
