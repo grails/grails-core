@@ -534,17 +534,15 @@ Targets:
 
             System.setProperty('org.mortbay.xml.XmlParser.NotValidating', 'true')
             def server = new Server()
+            project.addReference('server', server)
             try {
                 def listener = new SocketListener()
                 listener.setPort(properties.'server.port'.toInteger())
                 server.addListener(listener)
                 server.addWebApplication("/" + properties."project.dir", 'tmp/war')
                 server.start()
-                if (properties.'runTests') ant.antcall(target:'webtest-impl')
             } catch(Throwable t) {
                 t.printStackTrace()
-			} finally {
-                if (properties.'runTests') server.stop()
             }
         </groovy>
     </target>
@@ -636,13 +634,16 @@ Targets:
 
     </target>
 
-    <target name="run-webtest" depends="init-props" description="Run the functional tests for a running app">
-        <antcall target="run-app:impl">
-            <param name="runTests" value="true"/>
-        </antcall>
+    <target name="run-webtest"  description="Run the functional tests for a running app"
+            depends="dev, package, run-app:impl, webtest-impl, stop-server"/>
+
+    <target name="stop-server" >
+        <groovy>
+            project.references.server.stop()
+        </groovy>
     </target>
 
-    <target name="webtest-impl">
+    <target name="webtest-impl" >
         <java classname="groovy.ui.GroovyMain" failonerror="true">
             <arg line="webtest/tests/TestSuite"/>
             <classpath>
