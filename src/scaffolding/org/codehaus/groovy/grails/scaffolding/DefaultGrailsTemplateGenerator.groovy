@@ -55,7 +55,9 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator  {
             else if(property.type == Date.class)
                 buf << renderDateEditor(domainClass,property)
             else if(property.type == Calendar.class)
-                buf << renderDateEditor(domainClass,property)                
+                buf << renderDateEditor(domainClass,property)  
+            else if(property.type == URL.class) 
+           		buf << renderStringEditor(domainClass,property)
             else if(property.type == TimeZone.class)
                 buf << renderSelectTypeEditor("timeZone",domainClass,property)
             else if(property.type == Locale.class)
@@ -64,6 +66,8 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator  {
                 buf << renderSelectTypeEditor("currency",domainClass,property)
             else if(property.type==([] as Byte[]).class) //TODO: Bug in groovy means i have to do this :(
                 buf << renderByteArrayEditor(domainClass,property)
+            else if(property.type==([] as byte[]).class) //TODO: Bug in groovy means i have to do this :(
+                buf << renderByteArrayEditor(domainClass,property)                
             else if(property.manyToOne || property.oneToOne)
                 buf << renderManyToOne(domainClass,property)
             else if(property.oneToMany || property.manyToMany)
@@ -106,17 +110,17 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator  {
             def templateText = '''
 <%=packageName ? "import ${packageName}.${className}" : ''%>            
 class ${className}Controller {
-    @Property index = { redirect(action:list,params:params) }
+    def index = { redirect(action:list,params:params) }
 
-    @Property list = {
+    def list = {
         [ ${propertyName}List: ${className}.list( params ) ]
     }
 
-    @Property show = {
+    def show = {
         [ ${propertyName} : ${className}.get( params.id ) ]
     }
 
-    @Property delete = {
+    def delete = {
         def ${propertyName} = ${className}.get( params.id )
         if(${propertyName}) {
             ${propertyName}.delete()
@@ -129,7 +133,7 @@ class ${className}Controller {
         }
     }
 
-    @Property edit = {
+    def edit = {
         def ${propertyName} = ${className}.get( params.id )
 
         if(!${propertyName}) {
@@ -141,7 +145,7 @@ class ${className}Controller {
         }
     }
 
-    @Property update = {
+    def update = {
         def ${propertyName} = ${className}.get( params.id )
         if(${propertyName}) {
              ${propertyName}.properties = params
@@ -158,13 +162,13 @@ class ${className}Controller {
         }
     }
 
-    @Property create = {
+    def create = {
         def ${propertyName} = new ${className}()
         ${propertyName}.properties = params
         return ['${propertyName}':${propertyName}]
     }
 
-    @Property save = {
+    def save = {
         def ${propertyName} = new ${className}()
         ${propertyName}.properties = params
         if(${propertyName}.save()) {
@@ -488,7 +492,7 @@ class ${className}Controller {
 	      <span class="value">\\${${propertyName}?.id}</span>
 	      <input type="hidden" name="${propertyName}.id" value="\\${${propertyName}?.id}" />
            </div>           
-           <g:form controller="${propertyName}" method="post">
+           <g:form controller="${propertyName}" method="post" <%= multiPart ? ' enctype="multipart/form-data"' : '' %>>
                <input type="hidden" name="id" value="\\${${propertyName}?.id}" />
                <div class="dialog">
                 <table>
@@ -514,7 +518,9 @@ class ${className}Controller {
             '''
 
             def t = engine.createTemplate(templateText)
+            def multiPart = domainClass.properties.find{it.type==([] as Byte[]).class || it.type==([] as byte[]).class}
             def binding = [ domainClass: domainClass,
+                            multiPart:multiPart,
                             className:domainClass.shortName,
                             propertyName:domainClass.propertyName,
                             renderEditor:renderEditor,
@@ -552,7 +558,7 @@ class ${className}Controller {
                     <g:renderErrors bean="\\${${propertyName}}" as="list" />
                 </div>
            </g:hasErrors>
-           <g:form action="save" method="post">
+           <g:form action="save" method="post" <%= multiPart ? ' enctype="multipart/form-data"' : '' %>>
                <div class="dialog">
                 <table>
 
@@ -578,7 +584,10 @@ class ${className}Controller {
             '''
 
             def t = engine.createTemplate(templateText)
+            def multiPart = domainClass.properties.find{it.type==([] as Byte[]).class || it.type==([] as byte[]).class}
+            
             def binding = [ domainClass: domainClass,
+                            multiPart:multiPart,
                             className:domainClass.shortName,
                             propertyName:domainClass.propertyName,
                             renderEditor:renderEditor,
