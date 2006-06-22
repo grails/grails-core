@@ -78,7 +78,7 @@ public class FindPersistentMethod extends AbstractStaticPersistentMethod {
 				public Object doInHibernate(Session session) throws HibernateException, SQLException {										
 					Query q = session.createQuery(query);
 					Object[] queryArgs = null;
-					int max = -1;
+
 					if(arguments.length > 1) {
 						if(arguments[1] instanceof List) {
 							queryArgs = ((List)arguments[1]).toArray();
@@ -87,37 +87,20 @@ public class FindPersistentMethod extends AbstractStaticPersistentMethod {
 							queryArgs = (Object[])arguments[1];
 						}
 					}					
-					max = retrieveMaxValue(arguments);
 					if(queryArgs != null) {					
 						for (int i = 0; i < queryArgs.length; i++) {
 							q.setParameter(i, queryArgs[i]);
 						}
 					}
-					if(max > -1) {
-						q.setMaxResults(max);
-					}
+					// only want one result, could have used uniqueObject here
+					// but it throws an exception if its not unique which is 
+					// undesirable
+					q.setMaxResults(1);
 					List results = q.list();
 					if(results.size() > 0)
 						return results.get(0);
 					return null;
-				}
-
-				private int retrieveMaxValue(Object[] arguments) {
-					int max = -1;
-					if(arguments.length > 1) {
-						if(arguments[1] instanceof Integer) {
-							max = ((Integer)arguments[1]).intValue();
-						}
-						if(arguments.length > 2) {
-							if(arguments[2] instanceof Integer) {
-								max = ((Integer)arguments[2]).intValue();
-							}							
-						}
-					}
-					
-					return max;
-				}
-				
+				}				
 			});						
 		}
 		if(clazz.isAssignableFrom( arg.getClass() )) {			
