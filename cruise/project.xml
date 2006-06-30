@@ -10,7 +10,7 @@ defaultmailhost
 
 <project name="Grails" buildafterfailed="false">
 		<modificationset quietperiod="120">
-			<cvs localworkingcopy="&basedir;/grails/cruisecontrol/checkout"/>
+			<svn localworkingcopy="&basedir;/grails/cruisecontrol/checkout"/>
 		</modificationset>
 		<schedule>
 			<!-- buildfile is relative to checkout dir -->
