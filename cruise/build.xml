@@ -12,8 +12,8 @@
 	
 	<target name="update">
 		<echo message="Getting the detected modifications...."/>
-		<cvs cvsroot="${cvs.repository}" dest=".." command="-z9 -q update -P -d"/>
-		<cvs cvsroot="${cvs.repository}" dest=".." command="status build.xml"/>
+		<exec executable="svn"><arg line="update --non-interactive"/></exec>
+	
 		<chmod dir="../bin" includes="*.sh" perm="755"/>
 	</target>
 	<target name="delegate">
@@ -26,9 +26,8 @@
 	</target>
 
 	<target name="tagLastBuild">
-		<cvs cvsroot="${cvs.repository}" dest=".." command="-z9 -q tag -d LAST_BUILD"/>
-		<cvs cvsroot="${cvs.repository}" dest=".." command="-z9 -Q tag -F LAST_BUILD"/>
-		<cvs cvsroot="${cvs.repository}" dest=".." command="-z9 -Q tag ${label}"/>
+
+
 	</target>
 	
 	<target name="copy-reporting-app">
