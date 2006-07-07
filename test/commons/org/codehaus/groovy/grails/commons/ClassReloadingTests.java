@@ -48,6 +48,9 @@ public class ClassReloadingTests extends TestCase {
 						"@Property hello = \"goodbye\"\n" +
 					"}");
             fw.close();
+            
+            // wait a second
+            Thread.sleep(1000);
 
             // reload
 			groovyClass = cl.loadClass("org.codehaus.groovy.grails.commons.TestReload",true,false);			

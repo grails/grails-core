@@ -37,7 +37,7 @@ public class GrailsTemplateGeneratorsTests extends TestCase {
                                                     .newInstance();
 
 
-        Class dc = gcl.parseClass("class Test { \n@Property Long id;\n @Property Long version;  }");
+        Class dc = gcl.parseClass("class Test { \n Long id;\n  Long version;  }");
         GrailsDomainClass domainClass = new DefaultGrailsDomainClass(dc);
 
         generator.generateController(domainClass,"test");
@@ -48,12 +48,12 @@ public class GrailsTemplateGeneratorsTests extends TestCase {
         String text = (String)new GroovyShell().evaluate("new File('test/grails-app/controllers/TestController.groovy').text");
 
         assertTrue(text.indexOf("class TestController") > -1);
-        assertTrue(text.indexOf("@Property list") > -1);
-        assertTrue(text.indexOf("@Property update") > -1);
-        assertTrue(text.indexOf("@Property create") > -1);
-        assertTrue(text.indexOf("@Property show") > -1);
-        assertTrue(text.indexOf("@Property edit") > -1);
-        assertTrue(text.indexOf("@Property delete") > -1);
+        assertTrue(text.indexOf("def list") > -1);
+        assertTrue(text.indexOf("def update") > -1);
+        assertTrue(text.indexOf("def create") > -1);
+        assertTrue(text.indexOf("def show") > -1);
+        assertTrue(text.indexOf("def edit") > -1);
+        assertTrue(text.indexOf("def delete") > -1);
     }
 
     public void testGenerateViews() throws Exception {
@@ -66,14 +66,14 @@ public class GrailsTemplateGeneratorsTests extends TestCase {
 
 
         Class dc = gcl.parseClass("class Test { " +
-                                        "\n@Property Long id;" +
-                                        "\n@Property Long version;" +
-                                        "\n@Property String name;" +
-                                        "\n@Property TimeZone tz;" +
-                                        "\n@Property Locale locale;" +
-                                        "\n@Property Currency currency;" +
-                                        "\n@Property Boolean active;" +
-                                        "\n@Property Date age  }");
+                                        "\n Long id;" +
+                                        "\n Long version;" +
+                                        "\n String name;" +
+                                        "\n TimeZone tz;" +
+                                        "\n Locale locale;" +
+                                        "\n Currency currency;" +
+                                        "\n Boolean active;" +
+                                        "\n Date age  }");
         GrailsDomainClass domainClass = new DefaultGrailsDomainClass(dc);
 
         generator.generateViews(domainClass,"test");
