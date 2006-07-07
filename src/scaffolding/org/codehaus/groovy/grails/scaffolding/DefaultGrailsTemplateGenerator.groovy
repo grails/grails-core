@@ -46,12 +46,12 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator  {
 	def buf = new StringBuffer("<tr class='prop'>")
 	buf << "<td valign='top' class='name'><label for='${property.name}'>${property.naturalName}:</label></td>"
 	buf << "<td valign='top' class='value \${hasErrors(bean:${domainClass.propertyName},field:'${property.name}','errors')}'>"
-            if(Number.class.isAssignableFrom(property.type))
+		    if(property.type == Boolean.class || property.type == boolean.class)
+		        buf << renderBooleanEditor(domainClass,property)	
+            else if(Number.class.isAssignableFrom(property.type) || (property.type.isPrimitive() && property.type != boolean.class))
                 buf << renderNumberEditor(domainClass,property)
             else if(property.type == String.class)
                 buf << renderStringEditor(domainClass,property)
-            else if(property.type == Boolean.class || property.type == boolean.class)
-                buf << renderBooleanEditor(domainClass,property)
             else if(property.type == Date.class)
                 buf << renderDateEditor(domainClass,property)
             else if(property.type == Calendar.class)
@@ -157,7 +157,7 @@ class ${className}Controller {
             }
         }
         else {
-            flash['message'] = "${className} not found with id \\${params.id}"
+            flash.message = "${className} not found with id \\${params.id}"
             redirect(action:edit,id:params.id)
         }
     }
@@ -342,9 +342,9 @@ class ${className}Controller {
         </div>
         <div class="body">
            <h1>${className} List</h1>
-            <g:if test="flash['message']">
+            <g:if test="\\${flash.message}">
                  <div class="message">
-                       \\${flash['message']}
+                       \\${flash.message}
                  </div>
             </g:if>
            <table>
@@ -407,8 +407,8 @@ class ${className}Controller {
         </div>
         <div class="body">
            <h1>Show ${className}</h1>
-           <g:if test="\\${flash['message']}">
-                 <div class="message">\\${flash['message']}</div>
+           <g:if test="\\${flash.message}">
+                 <div class="message">\\${flash.message}</div>
            </g:if>
            <div class="dialog">
                  <table>
@@ -479,8 +479,8 @@ class ${className}Controller {
         </div>
         <div class="body">
            <h1>Edit ${className}</h1>
-           <g:if test="\\${flash['message']}">
-                 <div class="message">\\${flash['message']}</div>
+           <g:if test="\\${flash.message}">
+                 <div class="message">\\${flash.message}</div>
            </g:if>
            <g:hasErrors bean="\\${${propertyName}}">
                 <div class="errors">
@@ -550,8 +550,8 @@ class ${className}Controller {
         </div>
         <div class="body">
            <h1>Create ${className}</h1>
-           <g:if test="\\${flash['message']}">
-                 <div class="message">\\${flash['message']}</div>
+           <g:if test="\\${flash.message}">
+                 <div class="message">\\${flash.message}</div>
            </g:if>
            <g:hasErrors bean="\\${${propertyName}}">
                 <div class="errors">
