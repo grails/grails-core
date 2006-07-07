@@ -53,12 +53,19 @@ public class ListOrderByPersistentMethod extends AbstractStaticPersistentMethod 
 			public Object doInHibernate(Session session) throws HibernateException, SQLException {
 				
 				Criteria crit = session.createCriteria(clazz);
-				crit.addOrder( Order.asc( propertyName ) );
+				
 				if(arguments.length > 0) {
 					if(arguments[0] instanceof Map) {
 						Map argMap = (Map)arguments[0];
+						argMap.put(ARGUMENT_SORT,propertyName);
 						populateArgumentsForCriteria(crit,argMap);										
 					}
+					else {
+						crit.addOrder( Order.asc( propertyName ) );												
+					}
+				}
+				else {
+					crit.addOrder( Order.asc( propertyName ) );
 				}
 				return crit.list();
 			}

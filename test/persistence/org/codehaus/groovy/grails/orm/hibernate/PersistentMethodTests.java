@@ -385,17 +385,23 @@ public class PersistentMethodTests extends AbstractDependencyInjectionSpringCont
         returnList = (List)returnValue;
         assertEquals(1, returnList.size());
 
-        // test list with order by
-        returnValue = obj.getMetaClass().invokeStaticMethod(obj,"listOrderByFirstName", new Object[]{});
+        // test list with order by desc
+        argsMap = new HashMap();
+        argsMap.put("order", "desc");
+        argsMap.put("sort", "firstName");
+
+        returnValue = obj.getMetaClass().invokeStaticMethod(obj,
+        "listOrderByFirstName", new Object[] { argsMap });
         assertNotNull(returnValue);
         assertTrue(returnValue instanceof List);
 
-        returnList = (List)returnValue;
-        obj = (GroovyObject)returnList.get(0);
-        obj2 = (GroovyObject)returnList.get(1);
+        returnList = (List) returnValue;
+        obj = (GroovyObject) returnList.get(0);
+        obj2 = (GroovyObject) returnList.get(1);
 
-        assertEquals("dino", obj.getProperty("firstName"));
+        assertEquals("wilma", obj.getProperty("firstName"));
         assertEquals("fred", obj2.getProperty("firstName"));
+
 
     }
 
