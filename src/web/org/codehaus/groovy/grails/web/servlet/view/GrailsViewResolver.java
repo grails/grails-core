@@ -49,23 +49,20 @@ public class GrailsViewResolver extends InternalResourceViewResolver {
         AbstractUrlBasedView view = buildView(viewName);
 
         ServletContext context = getServletContext();
-        if(this.resolvedCache.containsKey(viewName)) {
-            view.setUrl((String)this.resolvedCache.get(viewName));
-        }
-        else {
             URL res = context.getResource(view.getUrl());
-            // try GSP if res is null
-            if(res == null) {
-                String gspView = localPrefix + viewName + GSP_SUFFIX;
-                res = context.getResource(gspView);
-                if(res != null) {
-                    view.setUrl(gspView);
-                    this.resolvedCache.put(viewName,gspView);
-                }
-            }
-            else {
-                this.resolvedCache.put(viewName,view.getUrl());
-            }
+        // try GSP if res is null
+        if(res == null) {
+        	if(resolvedCache.containsKey(viewName)) {
+        		view.setUrl(resolvedCache.get(viewName).toString());
+        	}
+        	else {
+	            String gspView = localPrefix +'/'+ viewName + GSP_SUFFIX;
+	            res = context.getResource(gspView);
+	            if(res != null) {
+	                view.setUrl(gspView);
+	                this.resolvedCache.put(viewName,gspView);
+	            }
+        	}
         }
 
         view.setApplicationContext(getApplicationContext());
