@@ -28,7 +28,7 @@ class ValidationTagLib {
     /**
      * Checks if the request has errors either for a field or global errors
      */
-    @Property hasErrors = { attrs, body ->
+    def hasErrors = { attrs, body ->
         def model = attrs['model']
         def checkList = []
         if(model) {
@@ -77,7 +77,7 @@ class ValidationTagLib {
     /**
      * Loops through each error for either field or global errors
      */
-    @Property eachError = { attrs, body ->
+    def eachError = { attrs, body ->
         def model = attrs['model']
         def errorList = []
         if(model) {
@@ -129,7 +129,7 @@ class ValidationTagLib {
     /**
      * Loops through each error and renders it using one of the supported mechanisms (defaults to "list" if unsupported)
      */
-    @Property renderErrors = { attrs, body ->
+    def renderErrors = { attrs, body ->
         def renderAs = attrs.remove('as')
         if(!renderAs) renderAs = 'list'
 
@@ -147,7 +147,7 @@ class ValidationTagLib {
     /**
      * Resolves a message code for a given error or code from the resource bundle
      */
-    @Property message = { attrs ->
+    def message = { attrs ->
           def messageSource = grailsAttributes
                                 .getApplicationContext()
                                 .getBean("messageSource")
@@ -170,9 +170,7 @@ class ValidationTagLib {
           }
           if(attrs['code']) {
                 def code = attrs['code']
-                def defaultMessage = ( attrs['default'] ? attrs['default'] : error.defaultMessage )
-                if(!defaultMessage)
-                    defaultMessage = code
+                def defaultMessage = ( attrs['default'] ? attrs['default'] : code )
 
                 def message = messageSource.getMessage( code,
                                                         null,
@@ -203,7 +201,7 @@ class ValidationTagLib {
      *
      * TODO: This tag is a work in progress
      */
-    @Property validate = { attrs, body ->
+    def validate = { attrs, body ->
         def form = attrs["form"]
         def againstClass = attrs["against"]
         if(!form)
