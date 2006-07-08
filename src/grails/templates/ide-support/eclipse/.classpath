@@ -54,5 +54,6 @@
 	<classpathentry kind="var" path="GRAILS_HOME/lib/xml-apis.jar"/>
 	<classpathentry kind="var" path="GRAILS_HOME/dist/grails-0.2-SNAPSHOT.jar"/>
 	<classpathentry kind="var" path="GRAILS_HOME/ant/lib/ant.jar"/>
+	<classpathentry kind="var" path="JAVA_HOME/tools.jar"/>	
 	<classpathentry kind="output" path="bin"/>
 </classpath>
