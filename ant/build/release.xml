@@ -65,6 +65,10 @@
 
     <target name="copy-exclusive-source-release-content">
         <antcall target="copy-dir">
+            <param name="dir.location" value="cruise/coverage/lib"/>
+            <param name="dir.destination" value="${release.dir}/cruise/coverage/lib"/>
+        </antcall>    	
+        <antcall target="copy-dir">
             <param name="dir.location" value="src"/>
             <param name="dir.destination" value="${release.dir}/src"/>
         </antcall>
