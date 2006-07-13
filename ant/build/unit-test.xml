@@ -78,8 +78,8 @@
                          **/ClassReloadingTests*"/>
 			</batchtest>
             <!-- GrailsHibernateConfigurationTests needs it's own VM -->
-            <test name="org.codehaus.groovy.grails.orm.hibernate.GrailsHibernateConfigurationTests" fork="true"/>
-            <test name="org.codehaus.groovy.grails.commons.ClassReloadingTests" fork="true"/>
+            <test todir="${grails.test.reports}" name="org.codehaus.groovy.grails.orm.hibernate.GrailsHibernateConfigurationTests" fork="true"/>
+            <test todir="${grails.test.reports}" name="org.codehaus.groovy.grails.commons.ClassReloadingTests" fork="true"/>
 
         </junit>
         <fail if="grails.test.failure">The tests failed. Have a look at ${grails.test.reports}</fail>
