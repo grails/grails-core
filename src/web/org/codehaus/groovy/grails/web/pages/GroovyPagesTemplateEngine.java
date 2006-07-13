@@ -23,6 +23,7 @@ import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods;
 import org.codehaus.groovy.grails.web.metaclass.GetParamsDynamicProperty;
 import org.codehaus.groovy.grails.web.metaclass.GetSessionDynamicProperty;
+import org.codehaus.groovy.grails.web.metaclass.GrailsParameterMap;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.springframework.context.ApplicationContext;
@@ -49,7 +50,9 @@ import java.util.*;
  * </code>
  *
  * @author Graeme Rocher
- * @since 12-Jan-2006
+ * @since 0.1
+ * 
+ * Created: 12-Jan-2006
  */
 public class GroovyPagesTemplateEngine {
 
@@ -430,17 +433,33 @@ public class GroovyPagesTemplateEngine {
             Binding binding = new Binding();
             
             GroovyObject controller = (GroovyObject)request.getAttribute(GrailsApplicationAttributes.CONTROLLER);
-            binding.setVariable(GroovyPage.REQUEST, controller.getProperty(ControllerDynamicMethods.REQUEST_PROPERTY));
-            binding.setVariable(GroovyPage.RESPONSE, controller.getProperty(ControllerDynamicMethods.RESPONSE_PROPERTY));
-            binding.setVariable(GroovyPage.FLASH, controller.getProperty(ControllerDynamicMethods.FLASH_SCOPE_PROPERTY));
-            binding.setVariable(GroovyPage.SERVLET_CONTEXT, context);
-            ApplicationContext appContext = (ApplicationContext)context.getAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT);
-            binding.setVariable(GroovyPage.APPLICATION_CONTEXT, appContext);
-            binding.setVariable(GrailsApplication.APPLICATION_ID, appContext.getBean(GrailsApplication.APPLICATION_ID));
-            binding.setVariable(GrailsApplicationAttributes.CONTROLLER, controller);
-            binding.setVariable(GroovyPage.SESSION, controller.getProperty(GetSessionDynamicProperty.PROPERTY_NAME));
-            binding.setVariable(GroovyPage.PARAMS, controller.getProperty(GetParamsDynamicProperty.PROPERTY_NAME));
-            binding.setVariable(GroovyPage.OUT, out);
+            if(controller!=null) {
+	            binding.setVariable(GroovyPage.REQUEST, controller.getProperty(ControllerDynamicMethods.REQUEST_PROPERTY));
+	            binding.setVariable(GroovyPage.RESPONSE, controller.getProperty(ControllerDynamicMethods.RESPONSE_PROPERTY));
+	            binding.setVariable(GroovyPage.FLASH, controller.getProperty(ControllerDynamicMethods.FLASH_SCOPE_PROPERTY));
+	            binding.setVariable(GroovyPage.SERVLET_CONTEXT, context);
+	            ApplicationContext appContext = (ApplicationContext)context.getAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT);
+	            binding.setVariable(GroovyPage.APPLICATION_CONTEXT, appContext);
+	            binding.setVariable(GrailsApplication.APPLICATION_ID, appContext.getBean(GrailsApplication.APPLICATION_ID));
+	            binding.setVariable(GrailsApplicationAttributes.CONTROLLER, controller);
+	            binding.setVariable(GroovyPage.SESSION, controller.getProperty(GetSessionDynamicProperty.PROPERTY_NAME));
+	            binding.setVariable(GroovyPage.PARAMS, controller.getProperty(GetParamsDynamicProperty.PROPERTY_NAME));
+	            binding.setVariable(GroovyPage.OUT, out);
+            }
+            else {
+            	// if there is no controller in the request configure using existing attributes, creating objects where necessary
+            	GrailsApplicationAttributes attrs = (GrailsApplicationAttributes)request.getAttribute(GrailsApplicationAttributes.REQUEST_SCOPE_ID);            	
+	            binding.setVariable(GroovyPage.REQUEST, request);
+	            binding.setVariable(GroovyPage.RESPONSE, response);
+	            binding.setVariable(GroovyPage.FLASH, attrs.getFlashScope(request));
+	            binding.setVariable(GroovyPage.SERVLET_CONTEXT, context);
+	            ApplicationContext appContext = (ApplicationContext)context.getAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT);
+	            binding.setVariable(GroovyPage.APPLICATION_CONTEXT, appContext);
+	            binding.setVariable(GrailsApplication.APPLICATION_ID, appContext.getBean(GrailsApplication.APPLICATION_ID));	            
+	            binding.setVariable(GroovyPage.SESSION, request.getSession());
+	            binding.setVariable(GroovyPage.PARAMS, new GrailsParameterMap(request));
+	            binding.setVariable(GroovyPage.OUT, out);            	
+            }
 
 
             // Go through request attributes and add them to the binding as the model

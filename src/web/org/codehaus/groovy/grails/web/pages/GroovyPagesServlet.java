@@ -62,7 +62,6 @@ public class GroovyPagesServlet extends HttpServlet /*implements GroovyObject*/ 
 	
 	private static final Log LOG = LogFactory.getLog(GroovyPagesServlet.class);
 	
-    Object x;
     private ServletContext context;
     private boolean showSource = false;
 
@@ -123,6 +122,8 @@ public class GroovyPagesServlet extends HttpServlet /*implements GroovyObject*/ 
      * @throws IOException
      */
     public void doPage(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    	request.setAttribute(GrailsApplicationAttributes.REQUEST_SCOPE_ID, grailsAttributes);
+    	
         this.engine = grailsAttributes.getPagesTemplateEngine();
         this.engine.setShowSource(this.showSource);
         

@@ -23,11 +23,13 @@ import java.util.Map;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsTagLibClass;
 import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods;
+import org.codehaus.groovy.grails.web.metaclass.GrailsParameterMap;
 import org.codehaus.groovy.grails.web.metaclass.TagLibDynamicMethods;
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
@@ -139,7 +141,7 @@ public class DefaultGrailsApplicationAttributes implements GrailsApplicationAttr
                                     .getBean(GrailsApplication.APPLICATION_ID);
     }
 
-	public GroovyObject getTagLibraryForTag(ServletRequest request, String tagName) {
+	public GroovyObject getTagLibraryForTag(HttpServletRequest request, HttpServletResponse response,String tagName) {
 		Map tagCache = (Map)request.getAttribute(TAG_CACHE);
 		if(tagCache == null) {
 			tagCache = new HashMap();
@@ -158,7 +160,12 @@ public class DefaultGrailsApplicationAttributes implements GrailsApplicationAttr
 			GroovyObject tagLib = (GroovyObject)getApplicationContext()
 													.getBean(tagLibClass.getFullName());
 			try {
-				new TagLibDynamicMethods(tagLib,controller);
+				if(controller == null) {
+					new TagLibDynamicMethods(tagLib,request,response);
+				}
+				else  {
+					new TagLibDynamicMethods(tagLib,controller);
+				}				
 			} catch (IntrospectionException e) {
 				throw new ControllerExecutionException("Introspection error creating tag library methods for tag ["+tagName+"]: " + e.getMessage(),e);
 			}
@@ -192,5 +199,17 @@ public class DefaultGrailsApplicationAttributes implements GrailsApplicationAttr
 	       return buf
 	       			.append(".gsp")
 	       			.toString();
+	}
+
+	public GrailsParameterMap getParamsMap(ServletRequest request) {
+		if(request instanceof HttpServletRequest) {
+			GrailsParameterMap params = (GrailsParameterMap)request.getAttribute(PARAMS_OBJECT);
+			if(params == null) {
+				params = new GrailsParameterMap((HttpServletRequest)request);
+				request.setAttribute(PARAMS_OBJECT,params);
+			}
+			return params;
+		}
+		return null;
 	}
 }

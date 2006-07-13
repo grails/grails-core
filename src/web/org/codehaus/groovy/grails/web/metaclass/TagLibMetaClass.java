@@ -23,7 +23,8 @@ import groovy.lang.MissingPropertyException;
 
 import java.beans.IntrospectionException;
 
-import javax.servlet.ServletRequest;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -61,8 +62,9 @@ public class TagLibMetaClass extends PropertyAccessProxyMetaClass {
 		catch(MissingMethodException mme) {
 			GroovyObject taglib = (GroovyObject)object;
 			GrailsApplicationAttributes applicationAttributes = (GrailsApplicationAttributes)taglib.getProperty(ControllerDynamicMethods.GRAILS_ATTRIBUTES);
-			ServletRequest request = (ServletRequest)taglib.getProperty(ControllerDynamicMethods.REQUEST_PROPERTY);
-			GroovyObject tagLibrary = applicationAttributes.getTagLibraryForTag(request,methodName);
+			HttpServletRequest request = (HttpServletRequest)taglib.getProperty(ControllerDynamicMethods.REQUEST_PROPERTY);
+			HttpServletResponse response = (HttpServletResponse)taglib.getProperty(ControllerDynamicMethods.RESPONSE_PROPERTY);
+			GroovyObject tagLibrary = applicationAttributes.getTagLibraryForTag(request,response,methodName);
 			if(tagLibrary == null) throw mme;
 			if(tagLibrary.getClass().equals(object.getClass())) throw mme;
 			
@@ -83,8 +85,9 @@ public class TagLibMetaClass extends PropertyAccessProxyMetaClass {
 		catch(MissingPropertyException mpe) {
 			GroovyObject taglib = (GroovyObject)object;
 			GrailsApplicationAttributes applicationAttributes = (GrailsApplicationAttributes)taglib.getProperty(ControllerDynamicMethods.GRAILS_ATTRIBUTES);
-			ServletRequest request = (ServletRequest)taglib.getProperty(ControllerDynamicMethods.REQUEST_PROPERTY);
-			GroovyObject tagLibrary = applicationAttributes.getTagLibraryForTag(request,property);
+			HttpServletRequest request = (HttpServletRequest)taglib.getProperty(ControllerDynamicMethods.REQUEST_PROPERTY);
+			HttpServletResponse response = (HttpServletResponse)taglib.getProperty(ControllerDynamicMethods.RESPONSE_PROPERTY);
+			GroovyObject tagLibrary = applicationAttributes.getTagLibraryForTag(request,response,property);
 			if(tagLibrary == null) throw mpe;
 			
 			if(LOG.isDebugEnabled())

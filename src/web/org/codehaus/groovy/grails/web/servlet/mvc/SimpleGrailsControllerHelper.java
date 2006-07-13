@@ -56,6 +56,14 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * A helper class for handling controller requests
+ *
+ * @author Graeme Rocher
+ * @since 0.1
+ * 
+ * Created: 12-Jan-2006
+ */
 public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
 
     private static final String SCAFFOLDER = "Scaffolder";
@@ -68,6 +76,7 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
     private ServletContext servletContext;
     private GrailsApplicationAttributes grailsAttributes;
     private Pattern uriPattern = Pattern.compile("/(\\w+)/?(\\w*)/?(.*)/?(.*)");
+    
     private static final Log LOG = LogFactory.getLog(SimpleGrailsControllerHelper.class);
     private static final String DISPATCH_ACTION_PARAMETER = "_action";
     private static final String ID_PARAMETER = "id";
@@ -262,6 +271,9 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
         fs.next();
 
         controller.setProperty(ControllerDynamicMethods.FLASH_SCOPE_PROPERTY,fs);
+        
+        // Step 4b: Set grails attributes in request scope
+        request.setAttribute(GrailsApplicationAttributes.REQUEST_SCOPE_ID,this.grailsAttributes);
 
         // Step 5: get the view name for this URI.
         String viewName = controllerClass.getViewByURI(uri);

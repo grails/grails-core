@@ -29,6 +29,7 @@ import java.util.Map;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -213,8 +214,9 @@ public abstract class GroovyPage extends Script {
             initPageState();
         Binding binding = getBinding();
         HttpServletRequest request = (HttpServletRequest)binding.getVariable(GroovyPage.REQUEST);
+        HttpServletResponse response = (HttpServletResponse)binding.getVariable(GroovyPage.RESPONSE);
 
-        return grailsAttributes.getTagLibraryForTag(request,tagName);
+        return grailsAttributes.getTagLibraryForTag(request,response,tagName);
     }
 
     /**
