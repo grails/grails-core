@@ -35,7 +35,7 @@ class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants 
      *
      * <g:pageProperty default="defaultValue" name="body.onload" />
      */    
-    @Property pageProperty = { attrs ->
+    def pageProperty = { attrs ->
             if(!attrs.name) {
 	            throwTagError("Tag [pageProperty] is missing required attribute [name]")
             }    
@@ -68,7 +68,7 @@ class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants 
 	 *
 	 *<g:ifPageProperty name="meta.index" equals="blah">body to invoke</g:ifPageProperty>
 	 */ 
-	@Property ifPageProperty = { attrs, body ->
+	def ifPageProperty = { attrs, body ->
 		if(attrs.name) {
 			def htmlPage = getPage()
 			def names = ((attrs.name instanceof List) ? attrs.name : [attrs.name])
@@ -100,9 +100,9 @@ class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants 
      *
      * <g:layoutTitle default="The Default title" />
      */
-	@Property layoutTitle = { attrs ->
+	def layoutTitle = { attrs ->
         String title = page.title
-        if (!title) title = attrs.defaultTitle
+        if (!title && attrs.'default') title = attrs.'default'
         if (title) out << title;		
 	}
 	
@@ -111,7 +111,7 @@ class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants 
      *
      * <g:layoutBody />
      */	
-	@Property layoutBody = { attrs ->
+	def layoutBody = { attrs ->
 		getPage().writeBody(out)
 	}
 	
@@ -120,7 +120,7 @@ class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants 
      *
      * <g:layoutHead />
      */		
-	@Property layoutHead = { attrs ->
+	def layoutHead = { attrs ->
 		getPage().writeHead(out)	
 	}
 	
@@ -130,7 +130,7 @@ class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants 
 	 *
 	 * <g:paginate total="${Account.count()}" />
 	 */
-	@Property paginate = { attrs ->
+	def paginate = { attrs ->
         if(attrs.total == null)
             throwTagError("Tag [paginate] is missing required attribute [total]")
 		
@@ -191,7 +191,7 @@ class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants 
      *  <g:render template="atemplate" model="[user:user,company:company]" />
      *  <g:render template="atemplate" bean="${user}" />
      */
-    @Property render = { attrs, body ->
+    def render = { attrs, body ->
         if(!attrs.template)
             throwTagError("Tag [render] is missing required attribute [template]")
 
@@ -242,7 +242,7 @@ class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants 
      * Attempts to render input for a property value based by attempting to choose a rendering component
      * to use based on the property type
      */
-    @Property renderInput = { attrs, body ->
+    def renderInput = { attrs, body ->
         def bean = attrs['bean']
         if(!bean) {
             throwTagError("Tag [renderInput] is missing required attribute [bean]")
