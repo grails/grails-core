@@ -40,7 +40,9 @@ public class ClassReloadingTests extends TestCase {
 			GroovyObject go = (GroovyObject)groovyClass.newInstance();
 			
 			assertEquals("hello", go.getProperty("hello"));
-			
+
+            // wait a second
+            Thread.sleep(1000);			
 			// change class
 			fw = new FileWriter(file);
 			fw.write(  "package org.codehaus.groovy.grails.commons;\n" +
@@ -49,8 +51,7 @@ public class ClassReloadingTests extends TestCase {
 					"}");
             fw.close();
             
-            // wait a second
-            Thread.sleep(1000);
+
 
             // reload
 			groovyClass = cl.loadClass("org.codehaus.groovy.grails.commons.TestReload",true,false);			
