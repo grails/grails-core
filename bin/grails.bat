@@ -1,7 +1,10 @@
 @echo off
 
+rem Set local scope for the variables with windows NT shell
+if "%OS%"=="Windows_NT" setlocal
+
 if "%JAVA_HOME%"=="" goto javaHomeNotSet
-if "%GRAILS_HOME"=="" goto grailsHomeNotSet
+if "%GRAILS_HOME%"=="" goto grailsHomeNotSet
 goto getArguments
 
 :javaHomeNotSet
@@ -10,9 +13,13 @@ echo Please set the JAVA_HOME environment variable and start Grails again
 goto errorExit
 
 :grailsHomeNotSet
+if "%OS%"=="Windows_NT" set GRAILS_HOME=%~dp0%..
+if not "%GRAILS_HOME%" == "" goto okGrailsHome
 echo Error: GRAILS_HOME is not defined
 echo Please set the GRAILS_HOME environment variable and start Grails again
 goto errorExit
+
+:okGrailsHome
 
 :getArguments
 set GRAILS_ARGUMENTS=%1
@@ -44,3 +51,5 @@ call "%ANT_HOME%\bin\ant.bat" -lib %GRAILS_ANT_CLASSPATH% -f "%GRAILS_HOME%\src\
 
 :errorExit
 
+rem End local scope for the variables with windows NT shell
+if "%OS%"=="Windows_NT" endlocal
