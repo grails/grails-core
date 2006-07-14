@@ -14,6 +14,7 @@ import org.codehaus.groovy.grails.web.servlet.DefaultGrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.mvc.SimpleGrailsControllerHelper;
 import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.mock.web.MockServletContext;
 
 import junit.framework.TestCase;
@@ -44,12 +45,13 @@ public class TagLibMetaClassTests extends TestCase {
 		assertNotNull(attrs.getGrailsApplication());
 		
 		MockHttpServletRequest request = new MockHttpServletRequest();
+		MockHttpServletResponse response = new MockHttpServletResponse();
 		GroovyObject controller = (GroovyObject)attrs.getApplicationContext().getBean("TestController");
 		SimpleGrailsControllerHelper helper = new SimpleGrailsControllerHelper(attrs.getGrailsApplication(),attrs.getApplicationContext(),attrs.getServletContext());
 		new ControllerDynamicMethods(controller,helper,request,null);
 		
 		request.setAttribute(GrailsApplicationAttributes.CONTROLLER,controller );
-		GroovyObject tagLib2 = attrs.getTagLibraryForTag(request,"secondTag");
+		GroovyObject tagLib2 = attrs.getTagLibraryForTag(request,response,"secondTag");
 		assertNotNull(tagLib2);
 
 		Closure secondTag = (Closure)tagLib2.getProperty("secondTag");

@@ -13,6 +13,7 @@ import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods;
 import org.codehaus.groovy.grails.web.servlet.mvc.SimpleGrailsControllerHelper;
 import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.mock.web.MockServletContext;
 
 public class GrailsApplicationAttributesTests extends TestCase {
@@ -66,12 +67,13 @@ public class GrailsApplicationAttributesTests extends TestCase {
 		assertNotNull(attrs.getGrailsApplication());
 		
 		MockHttpServletRequest request = new MockHttpServletRequest();
+		MockHttpServletResponse response = new MockHttpServletResponse();
 		GroovyObject controller = (GroovyObject)attrs.getApplicationContext().getBean("TestController");
 		SimpleGrailsControllerHelper helper = new SimpleGrailsControllerHelper(attrs.getGrailsApplication(),attrs.getApplicationContext(),attrs.getServletContext());
 		new ControllerDynamicMethods(controller,helper,request,null);
 		
 		request.setAttribute(GrailsApplicationAttributes.CONTROLLER,controller );
-		GroovyObject tagLib1 = attrs.getTagLibraryForTag(request,"firstTag");
+		GroovyObject tagLib1 = attrs.getTagLibraryForTag(request,response,"firstTag");
 		assertNotNull(tagLib1);
 		assertNotNull(request.getAttribute(GrailsApplicationAttributes.TAG_CACHE));
 		Map tagCache = (Map)request.getAttribute(GrailsApplicationAttributes.TAG_CACHE);
