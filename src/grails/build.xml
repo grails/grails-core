@@ -21,6 +21,7 @@ Targets:
 "generate-controller" - Generates a controller from a domain class
 "generate-views"      - Generates the views from a domain class
 "generate-all"        - Generates the all artifacts from a domain class
+"install-dojo"        - Installs the Dojo toolkit into the current project
 "test-app"            - Run current app's unit tests
 "run-app"             - Run the application locally and wait
 "create-webtest"      - Create the functional test layout
@@ -606,6 +607,24 @@ Targets:
                 verbose="true" usetimestamp="true"/>
         <unzip  dest="${grails.home}/downloads/webtest" src="${grails.home}/downloads/webtest.zip" overwrite="false" />
 
+    </target>
+    
+    <target name="install-dojo" description="Installs the dojo framework">
+		<mkdir  dir="${grails.home}/downloads/dojo" />
+		<echo>Downloading Dojo 0.3...</echo>
+		<get dest="${grails.home}/downloads/dojo-0.3.1-ajax.zip" src="http://download.dojotoolkit.org/release-0.3.1/dojo-0.3.1-ajax.zip"
+			 verbose="true" usetimestamp="true" />
+			 
+		<unzip  dest="${grails.home}/downloads" src="${grails.home}/downloads/dojo-0.3.1-ajax.zip" overwrite="false" />
+		
+		<mkdir dir="web-app/js/dojo" />
+		<mkdir dir="web-app/js/dojo/src" />
+		
+		<copy file="${grails.home}/downloads/dojo-0.3.1-ajax/dojo.js" tofile="web-app/js/dojo/dojo.js" />
+		<copy file="${grails.home}/downloads/dojo-0.3.1-ajax/iframe_history.html" tofile="web-app/js/dojo/iframe_history.html" />
+		<copy todir="web-app/js/dojo/src">
+		  <fileset dir="${grails.home}/downloads/dojo-0.3.1-ajax/src" includes="**/**"/>
+		</copy>
     </target>
 
     <target name="create-webtest" description="Create a functional testing layout" depends="init-webtest" >
