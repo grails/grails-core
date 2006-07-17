@@ -1,6 +1,7 @@
 <project name="grails-cruisecontrol-starter" default="cruise"> 
 
-	<property name="cvs.repository" value=":pserver:anonymous@cvs.grails.codehaus.org:/cvs/grails"/>
+
+	<property name="svn.tag" value="https://svn.codehaus.org/grails/tags/builds"/>
 
 	<target name="cruise" depends="update, copy-reporting-app, delegate, tagLastBuild"/>
 	
@@ -12,7 +13,9 @@
 	
 	<target name="update">
 		<echo message="Getting the detected modifications...."/>
-		<exec executable="svn"><arg line="update --non-interactive"/></exec>
+		<exec executable="svn">
+		    <arg line="update --non-interactive"/>
+		</exec>
 	
 		<chmod dir="../bin" includes="*.sh" perm="755"/>
 	</target>
@@ -26,8 +29,18 @@
 	</target>
 
 	<target name="tagLastBuild">
-
-
+        <exec executable="svn" failonerror="true">
+            <arg line="--username dierk --non-interactive"/>
+            <arg line="copy -m '' . ${svn.tag}/${label}"/>
+        </exec>
+        <exec executable="svn" failonerror="true">
+            <arg line="--username dierk --non-interactive"/>
+            <arg line="rm -m '' ${svn.tag}/LAST_BUILD"/>
+        </exec>
+        <exec executable="svn" failonerror="true">
+            <arg line="--username dierk --non-interactive"/>
+            <arg line="copy -m '' ${svn.tag}/${label} ${svn.tag}/LAST_BUILD"/>
+        </exec>
 	</target>
 	
 	<target name="copy-reporting-app">
