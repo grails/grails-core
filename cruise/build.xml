@@ -14,7 +14,8 @@
 	<target name="update">
 		<echo message="Getting the detected modifications...."/>
 		<exec executable="svn">
-		    <arg line="update --non-interactive"/>
+            <arg line="--username dierk --non-interactive"/>
+		    <arg line="update"/>
 		</exec>
 	
 		<chmod dir="../bin" includes="*.sh" perm="755"/>
