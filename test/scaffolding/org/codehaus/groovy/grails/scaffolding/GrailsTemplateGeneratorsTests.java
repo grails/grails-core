@@ -19,6 +19,8 @@ import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyShell;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.commons.DefaultGrailsDomainClass;
+import org.springframework.beans.BeanWrapper;
+import org.springframework.beans.BeanWrapperImpl;
 
 import java.io.File;
 
@@ -40,20 +42,31 @@ public class GrailsTemplateGeneratorsTests extends TestCase {
         Class dc = gcl.parseClass("class Test { \n Long id;\n  Long version;  }");
         GrailsDomainClass domainClass = new DefaultGrailsDomainClass(dc);
 
+        File generatedFile = new File("test/grails-app/controllers/TestController.groovy");
+        if(generatedFile.exists()) {
+        	generatedFile.delete();
+        }
+        
         generator.generateController(domainClass,"test");
 
-        File generatedFile = new File("test/grails-app/controllers/TestController.groovy");
+        
         assertTrue(generatedFile.exists());
 
         String text = (String)new GroovyShell().evaluate("new File('test/grails-app/controllers/TestController.groovy').text");
 
-        assertTrue(text.indexOf("class TestController") > -1);
-        assertTrue(text.indexOf("def list") > -1);
-        assertTrue(text.indexOf("def update") > -1);
-        assertTrue(text.indexOf("def create") > -1);
-        assertTrue(text.indexOf("def show") > -1);
-        assertTrue(text.indexOf("def edit") > -1);
-        assertTrue(text.indexOf("def delete") > -1);
+        Class controllerClass = gcl.parseClass(text);
+        BeanWrapper bean = new BeanWrapperImpl(controllerClass.newInstance());
+        
+        assertEquals("TestController", controllerClass.getName());
+        
+        assertTrue(bean.isReadableProperty("list"));
+        assertTrue(bean.isReadableProperty("update"));
+        assertTrue(bean.isReadableProperty("create"));
+        assertTrue(bean.isReadableProperty("list"));
+        assertTrue(bean.isReadableProperty("show"));
+        assertTrue(bean.isReadableProperty("edit"));
+        assertTrue(bean.isReadableProperty("delete"));
+        
     }
 
     public void testGenerateViews() throws Exception {
