@@ -17,12 +17,12 @@ package grails.util;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
-import org.codehaus.groovy.grails.commons.spring.SpringConfig;
+import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.mock.web.MockServletContext;
 import org.springframework.util.Assert;
-import org.springmodules.beans.factory.drivers.xml.XmlApplicationContextDriver;
 
 /**
  * 
@@ -44,10 +44,10 @@ public class GrailsUtil {
 		LOG.info("Loading Grails environment");
 		ApplicationContext parent = new ClassPathXmlApplicationContext("applicationContext.xml");
 		DefaultGrailsApplication application = (DefaultGrailsApplication)parent.getBean("grailsApplication", DefaultGrailsApplication.class);
-		SpringConfig config = new SpringConfig(application);
-		ConfigurableApplicationContext appCtx = (ConfigurableApplicationContext) 
-			new XmlApplicationContextDriver().getApplicationContext(
-				config.getBeanReferences(), parent);
+		
+		GrailsRuntimeConfigurator config = new GrailsRuntimeConfigurator(application,parent);
+		
+		ConfigurableApplicationContext appCtx = (ConfigurableApplicationContext)config.configure(new MockServletContext());
 		
 		Assert.notNull(appCtx);
 		return appCtx;

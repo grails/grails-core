@@ -14,19 +14,20 @@
  */
 package grails.util;
 
+import groovy.lang.GroovyClassLoader;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
-import org.codehaus.groovy.grails.commons.spring.SpringConfig;
+import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator;
 import org.codehaus.groovy.grails.scaffolding.GrailsTemplateGenerator;
 import org.springframework.binding.support.Assert;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
-import org.springmodules.beans.factory.drivers.xml.XmlApplicationContextDriver;
-import groovy.lang.GroovyClassLoader;
+import org.springframework.mock.web.MockServletContext;
 
 /**
  * Utility class for generating Grails artifacts likes views, controllers etc.
@@ -57,10 +58,8 @@ public class GenerateUtils {
 
         // bootstrap application to try hibernate domain classes
         if(domainClass == null) {
-            SpringConfig config = new SpringConfig(application);
-            ConfigurableApplicationContext appCtx = (ConfigurableApplicationContext)
-                new XmlApplicationContextDriver().getApplicationContext(
-                    config.getBeanReferences(), parent);
+        	GrailsRuntimeConfigurator config = new GrailsRuntimeConfigurator(application,parent);
+            ConfigurableApplicationContext appCtx = (ConfigurableApplicationContext)config.configure(new MockServletContext());
             Assert.notNull(appCtx);
         }
 
