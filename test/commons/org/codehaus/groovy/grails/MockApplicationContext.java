@@ -1,6 +1,7 @@
 package org.codehaus.groovy.grails;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
@@ -36,7 +37,7 @@ public class MockApplicationContext implements ApplicationContext {
 	}
 
 	public void publishEvent(ApplicationEvent event) {
-		throw new UnsupportedOperationException("Method not supported by implementation");
+		// do nothing
 	}
 
 	public boolean containsBeanDefinition(String beanName) {	
@@ -65,7 +66,7 @@ public class MockApplicationContext implements ApplicationContext {
 	}
 
 	public Map getBeansOfType(Class type) throws BeansException {
-		throw new UnsupportedOperationException("Method not supported by implementation");
+		return Collections.EMPTY_MAP;
 	}
 
 	public Map getBeansOfType(Class type, boolean includePrototypes,
@@ -107,7 +108,7 @@ public class MockApplicationContext implements ApplicationContext {
 	}
 
 	public BeanFactory getParentBeanFactory() {
-		throw new UnsupportedOperationException("Method not supported by implementation");
+		return null;
 	}
 
 	public String getMessage(String code, Object[] args, String defaultMessage,

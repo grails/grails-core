@@ -83,6 +83,8 @@ import org.springmodules.db.hsqldb.ServerBean;
  * 
  * @author Steven Devijver
  * @since Jul 2, 2005
+ * 
+ * @deprecated Use org.codeaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator instead
  */
 public class SpringConfig {
 

@@ -16,7 +16,6 @@ package org.codehaus.groovy.grails.commons;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.commons.spring.SpringConfig;
 
 import groovy.lang.Closure;
 
@@ -29,7 +28,7 @@ public class DefaultGrailsTaskClass extends AbstractInjectableGrailsClass
 	
 	public DefaultGrailsTaskClass(Class clazz) {
 		super(clazz, JOB);
-		Log LOG = LogFactory.getLog(SpringConfig.class);
+		Log LOG = LogFactory.getLog(DefaultGrailsTaskClass.class);
 		LOG.debug("instantiating: " + this.getClazz());
 	}
 

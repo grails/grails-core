@@ -16,33 +16,49 @@
 package org.codehaus.groovy.grails.web.servlet.filter;
 
 import groovy.lang.GroovyClassLoader;
+
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+import java.net.URLConnection;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Properties;
+
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.control.CompilationFailedException;
-import org.codehaus.groovy.grails.commons.*;
+import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.commons.GrailsClassUtils;
+import org.codehaus.groovy.grails.commons.GrailsConfigUtils;
+import org.codehaus.groovy.grails.commons.GrailsControllerClass;
+import org.codehaus.groovy.grails.commons.GrailsDomainClass;
+import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
+import org.codehaus.groovy.grails.commons.GrailsPageFlowClass;
+import org.codehaus.groovy.grails.commons.GrailsResourceLoader;
+import org.codehaus.groovy.grails.commons.GrailsServiceClass;
+import org.codehaus.groovy.grails.commons.GrailsTagLibClass;
 import org.codehaus.groovy.grails.commons.spring.GrailsResourceHolder;
-import org.codehaus.groovy.grails.commons.spring.SpringConfig;
+import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator;
+import org.codehaus.groovy.grails.scaffolding.GrailsTemplateGenerator;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsUrlHandlerMapping;
 import org.codehaus.groovy.grails.web.servlet.mvc.SimpleGrailsController;
-import org.codehaus.groovy.grails.scaffolding.GrailsTemplateGenerator;
 import org.springframework.aop.target.HotSwappableTargetSource;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.Resource;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.servlet.HandlerInterceptor;
-import org.springmodules.beans.factory.drivers.xml.XmlApplicationContextDriver;
-
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.io.File;
-import java.net.URL;
-import java.net.URLConnection;
-import java.util.*;
 
 /**
  * A servlet filter that copies resources from the source on content change and manages reloading if necessary
@@ -363,13 +379,8 @@ public class GrailsReloadServletFilter extends OncePerRequestFilter {
         if(this.application == null)
             this.application = (GrailsApplication) parent.getBean(GrailsApplication.APPLICATION_ID, GrailsApplication.class);
 
-        SpringConfig springConfig = new SpringConfig(application);
-        // return a context that obeys grails' settings
-
-        context = new XmlApplicationContextDriver().getApplicationContext(
-                    springConfig.getBeanReferences(),
-                    parent
-                );
+        GrailsRuntimeConfigurator config = new GrailsRuntimeConfigurator(application,parent);
+        context = config.configure(super.getServletContext());
 
        getServletContext().setAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT, context );
        getServletContext().setAttribute(GrailsApplication.APPLICATION_ID, context.getBean(GrailsApplication.APPLICATION_ID) );

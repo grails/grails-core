@@ -18,21 +18,16 @@ package org.codehaus.groovy.grails.web.servlet;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsBootstrapClass;
 import org.codehaus.groovy.grails.commons.GrailsConfigUtils;
-import org.codehaus.groovy.grails.commons.spring.SpringConfig;
+import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator;
 import org.hibernate.FlushMode;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.springframework.beans.BeansException;
-import org.springframework.context.ApplicationContext;
 import org.springframework.orm.hibernate3.SessionFactoryUtils;
 import org.springframework.orm.hibernate3.SessionHolder;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
-import org.springframework.util.StringUtils;
-import org.springframework.web.context.ConfigurableWebApplicationContext;
 import org.springframework.web.context.WebApplicationContext;
-import org.springframework.web.context.support.XmlWebApplicationContext;
 import org.springframework.web.servlet.DispatcherServlet;
-import org.springmodules.beans.factory.drivers.xml.XmlWebApplicationContextDriver;
 
 /**
  * <p>Servlet that handles incoming requests for Grails.
@@ -53,37 +48,20 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
     protected WebApplicationContext createWebApplicationContext(WebApplicationContext parent) throws BeansException {
         // use config file locations if available
         getServletContext().setAttribute(GrailsApplicationAttributes.PARENT_APPLICATION_CONTEXT,parent);
-        ApplicationContext grailsContext = (ApplicationContext)getServletContext().getAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT);
-        GrailsApplication application;
-        WebApplicationContext webContext;
+/*        String[] locations = null;
+        if (null != getContextConfigLocation()) {
+            locations = StringUtils.tokenizeToStringArray(
+                    getContextConfigLocation(),
+                    ConfigurableWebApplicationContext.CONFIG_LOCATION_DELIMITERS);
+        }*/
+        // construct the SpringConfig for the container managed application
+        GrailsApplication application = (GrailsApplication) parent.getBean(GrailsApplication.APPLICATION_ID, GrailsApplication.class);
+        GrailsRuntimeConfigurator configurator = new GrailsRuntimeConfigurator(application,parent);
+        
+        // return a context that obeys grails' settings
+        WebApplicationContext webContext = configurator.configure(super.getServletContext()); 
 
-        if(grailsContext != null) {
-            XmlWebApplicationContext xmlContext = new XmlWebApplicationContext();
-            xmlContext.setParent(grailsContext);
-            webContext = xmlContext;
-            application = (GrailsApplication) webContext.getBean(GrailsApplication.APPLICATION_ID, GrailsApplication.class);
-
-        }
-        else {
-            String[] locations = null;
-            if (null != getContextConfigLocation()) {
-                locations = StringUtils.tokenizeToStringArray(
-                        getContextConfigLocation(),
-                        ConfigurableWebApplicationContext.CONFIG_LOCATION_DELIMITERS);
-            }
-            // construct the SpringConfig for the container managed application
-            application = (GrailsApplication) parent.getBean(GrailsApplication.APPLICATION_ID, GrailsApplication.class);
-            SpringConfig springConfig = new SpringConfig(application);
-            // return a context that obeys grails' settings
-            webContext = new XmlWebApplicationContextDriver().getWebApplicationContext(
-                    springConfig.getBeanReferences(),
-                    parent,
-                    getServletContext(),
-                    getNamespace(),
-                    locations);
-            getServletContext().setAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT,webContext );
-        }
-
+        getServletContext().setAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT,webContext );
         getServletContext().setAttribute(GrailsApplication.APPLICATION_ID,application);
         // configure scaffolders
         GrailsConfigUtils.configureScaffolders(application, webContext);
