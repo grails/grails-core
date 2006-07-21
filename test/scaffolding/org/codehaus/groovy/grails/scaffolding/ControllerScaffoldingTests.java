@@ -15,7 +15,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.metaclass.PropertyAccessProxyMetaClass;
-import org.codehaus.groovy.grails.commons.spring.SpringConfig;
+import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.DefaultGrailsDomainConfiguration;
 import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsControllerHelper;
@@ -32,7 +32,6 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.mock.web.MockServletContext;
 import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 import org.springframework.web.servlet.ModelAndView;
-import org.springmodules.beans.factory.drivers.xml.XmlApplicationContextDriver;
 
 public class ControllerScaffoldingTests extends
 AbstractDependencyInjectionSpringContextTests {
@@ -99,10 +98,9 @@ AbstractDependencyInjectionSpringContextTests {
 		
 		
 		
-		SpringConfig springConfig = new SpringConfig(grailsApplication);
-		this.appCtx = (ConfigurableApplicationContext) 
-		new XmlApplicationContextDriver().getApplicationContext(
-				springConfig.getBeanReferences(), this.localContext);
+		GrailsRuntimeConfigurator rConfig = new GrailsRuntimeConfigurator(grailsApplication,this.localContext);
+		this.appCtx = (ConfigurableApplicationContext)rConfig.configure(new MockServletContext()); 
+		
 		
 		assertNotNull(appCtx);
 		

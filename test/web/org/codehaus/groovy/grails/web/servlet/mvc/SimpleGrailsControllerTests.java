@@ -24,7 +24,7 @@ import junit.framework.TestCase;
 
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.spring.SpringConfig;
+import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -36,7 +36,6 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.mock.web.MockServletContext;
 import org.springframework.web.servlet.ModelAndView;
-import org.springmodules.beans.factory.drivers.xml.XmlApplicationContextDriver;
 
 /**
  * 
@@ -103,13 +102,13 @@ public class SimpleGrailsControllerTests extends TestCase {
 		
 		/*BeanDefinition applicationEventMulticaster = new RootBeanDefinition(SimpleApplicationEventMulticaster.class);
 		context.registerBeanDefinition( "applicationEventMulticaster ", applicationEventMulticaster);*/
-		SpringConfig springConfig = new SpringConfig(grailsApplication);
-		this.appCtx = (ConfigurableApplicationContext) 
-		new XmlApplicationContextDriver().getApplicationContext(
-				springConfig.getBeanReferences(), this.localContext);
+		GrailsRuntimeConfigurator rConfig = new GrailsRuntimeConfigurator(grailsApplication, localContext);
+		
+		MockServletContext servletContext = new MockServletContext();
+		this.appCtx = (ConfigurableApplicationContext)rConfig.configure(servletContext);
 		
 		this.controller = (SimpleGrailsController)appCtx.getBean("simpleGrailsController");
-		MockServletContext servletContext = new MockServletContext();
+		
 		servletContext.setAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT,appCtx);
 		controller.setServletContext(servletContext);
 		assertNotNull(appCtx);		
