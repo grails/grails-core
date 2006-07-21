@@ -31,6 +31,8 @@ import org.codehaus.groovy.grails.web.servlet.FlashScope;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsControllerHelper;
 import org.springframework.validation.Errors;
 import org.springframework.web.servlet.ModelAndView;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
@@ -61,6 +63,7 @@ public class ControllerDynamicMethods extends
     public static final String CONTROLLER_NAME_PROPERTY = "controllerName";    
     public static final String GET_VIEW_URI = "getViewUri";
     public static final String GET_TEMPLATE_URI = "getTemplateUri";
+    public static final String LOG_PROPERTY = "log";
 
 
     protected GrailsControllerClass controllerClass;
@@ -92,6 +95,8 @@ public class ControllerDynamicMethods extends
         addDynamicProperty(new GenericDynamicProperty(ACTION_NAME_PROPERTY,String.class,null,false));
         addDynamicProperty(new GenericDynamicProperty(CONTROLLER_NAME_PROPERTY,String.class,null,false));        
         addDynamicProperty(new GenericDynamicProperty(RENDER_VIEW_PROPERTY,Boolean.class, Boolean.TRUE,false));
+        addDynamicProperty(new GenericDynamicProperty(LOG_PROPERTY, Log.class,
+            LogFactory.getLog(controllerClass.getFullName()),true));
 
         // add dynamic methods
         addDynamicMethodInvocation( new RedirectDynamicMethod(helper,request,response) );

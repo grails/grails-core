@@ -70,30 +70,25 @@ public class ControllerMetaClassTests extends TestCase {
                          "}" );
 
 
+        GrailsControllerHelper helper1 = makeControllerHelper(groovyClass, gcl);
+        try {
+            helper1.handleURI("/test/list",request,response);
+            GroovyObject go = (GroovyObject)request.getAttribute(GrailsApplicationAttributes.CONTROLLER);
+            Object params = go.getProperty( "params" );
 
-         GrailsApplication application = createGrailsApplication(new Class[] { groovyClass },gcl);
-         MockServletContext mockContext =new MockServletContext();
-         mockContext.setAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT,context); 
+            assertNotNull(params);
+            assertTrue(params instanceof Map);
 
-         GrailsControllerHelper helper1 = new SimpleGrailsControllerHelper(application,context,mockContext);
-         try {
-             helper1.handleURI("/test/list",request,response);
-             GroovyObject go = (GroovyObject)request.getAttribute(GrailsApplicationAttributes.CONTROLLER);
-             Object params = go.getProperty( "params" );
-
-             assertNotNull(params);
-             assertTrue(params instanceof Map);
-
-             Map paramsMap = (Map)params;
-             assertTrue(paramsMap.containsKey("testParam"));
-             assertEquals("testValue",paramsMap.get("testParam"));
-         }
-         catch(MissingMethodException mme) {
-             fail("Missing method exception should not have been thrown!");
-         }
-         catch(MissingPropertyException mpex) {
-             fail("Missing property exception should not have been thrown!");
-         }
+            Map paramsMap = (Map)params;
+            assertTrue(paramsMap.containsKey("testParam"));
+            assertEquals("testValue",paramsMap.get("testParam"));
+        }
+        catch(MissingMethodException mme) {
+            fail("Missing method exception should not have been thrown!");
+        }
+        catch(MissingPropertyException mpex) {
+            fail("Missing property exception should not have been thrown!");
+        }
      }
 
     public void testRedirectDynamicMethod() throws Exception {
@@ -176,6 +171,43 @@ public class ControllerMetaClassTests extends TestCase {
         assertNotNull(go.getProperty("closure"));
         rdm.invoke(null, new Object[] {go.getProperty("closure")});
         assertEquals("<test attr='hello'><nested/></test>",response.getContentAsString());
+    }
+
+    public void testLogDynamicProperty() throws Exception {
+        GroovyClassLoader gcl = new GroovyClassLoader();
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        MockHttpServletResponse response = new MockHttpServletResponse();
+
+        Class groovyClass = gcl.parseClass( "class TestController {\n" +
+                        "@Property list = {\n" +
+                        "log.trace('testing logging')"+
+                        "}\n" +
+                        "}" );
+
+        GrailsControllerHelper helper1 = makeControllerHelper(groovyClass, gcl);
+        try {
+            helper1.handleURI("/test/list",request,response);
+            GroovyObject go = (GroovyObject)request.getAttribute(GrailsApplicationAttributes.CONTROLLER);
+            Object log = go.getProperty( "log" );
+
+            assertNotNull(log);
+            assertTrue(log instanceof org.apache.commons.logging.Log);
+
+        }
+        catch(MissingMethodException mme) {
+            fail("Missing method exception should not have been thrown!");
+        }
+        catch(MissingPropertyException mpex) {
+            fail("Missing property exception should not have been thrown!");
+        }
+    }
+
+    private GrailsControllerHelper makeControllerHelper(Class groovyClass, GroovyClassLoader gcl) throws Exception {
+        GrailsApplication application = createGrailsApplication(new Class[] { groovyClass },gcl);
+        MockServletContext mockContext =new MockServletContext();
+        mockContext.setAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT,context);
+
+        return new SimpleGrailsControllerHelper(application,context,mockContext);
     }
 
     /*public void testChainDynamicMethod() throws Exception {
