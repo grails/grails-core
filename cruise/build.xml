@@ -2,6 +2,7 @@
 
 
 	<property name="svn.tag" value="https://svn.codehaus.org/grails/tags/builds"/>
+	<property name="dir.checkout" value=".."/>
 
 	<target name="cruise" depends="update, copy-reporting-app, delegate, tagLastBuild"/>
 	
@@ -15,7 +16,7 @@
 		<echo message="Getting the detected modifications...."/>
 		<exec executable="svn">
             <arg line="--username dierk --non-interactive"/>
-		    <arg line="update"/>
+		    <arg line="update ${dir.checkout}"/>
 		</exec>
 	
 		<chmod dir="../bin" includes="*.sh" perm="755"/>
@@ -32,7 +33,7 @@
 	<target name="tagLastBuild">
         <exec executable="svn" failonerror="true">
             <arg line="--username dierk --non-interactive"/>
-            <arg line="copy -m '' . ${svn.tag}/${label}"/>
+            <arg line="copy -m '' ${dir.checkout} ${svn.tag}/${label}"/>
         </exec>
         <exec executable="svn" failonerror="true">
             <arg line="--username dierk --non-interactive"/>
