@@ -60,7 +60,7 @@ public class GrailsRuntimeConfiguratorTests extends TestCase {
 		
 		assertNotNull(er);
 		ModelAndView mv = er.resolveException(new MockHttpServletRequest(),new MockHttpServletResponse(),null, new Exception());
-		assertEquals("error",mv.getViewName());
+		assertEquals("/error",mv.getViewName());
 		
 		// test multipart support
 		assertTrue(ctx.getBean(GrailsRuntimeConfigurator.MULTIPART_RESOLVER_BEAN) instanceof CommonsMultipartResolver);

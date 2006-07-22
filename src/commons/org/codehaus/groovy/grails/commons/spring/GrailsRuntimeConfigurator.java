@@ -250,7 +250,7 @@ public class GrailsRuntimeConfigurator {
 		// configure exception handler which allows Grails to display the errors view
 		springConfig
 			.addSingletonBean(EXCEPTION_HANDLER_BEAN, GrailsExceptionResolver.class)
-			.addProperty("exceptionMappings","java.lang.Exception=error");
+			.addProperty("exceptionMappings","java.lang.Exception=/error");
 		
 		// configure multipart resolver used to handle file uploads in Spring MVC
 		springConfig
