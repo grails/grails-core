@@ -49,12 +49,12 @@ import org.codehaus.groovy.grails.commons.GrailsServiceClass;
 import org.codehaus.groovy.grails.commons.GrailsTagLibClass;
 import org.codehaus.groovy.grails.commons.spring.GrailsResourceHolder;
 import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator;
+import org.codehaus.groovy.grails.commons.spring.GrailsWebApplicationContext;
 import org.codehaus.groovy.grails.scaffolding.GrailsTemplateGenerator;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsUrlHandlerMapping;
 import org.codehaus.groovy.grails.web.servlet.mvc.SimpleGrailsController;
 import org.springframework.aop.target.HotSwappableTargetSource;
-import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.Resource;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -71,11 +71,13 @@ public class GrailsReloadServletFilter extends OncePerRequestFilter {
     public static final Log LOG = LogFactory.getLog(GrailsReloadServletFilter.class);
 
     private ResourceCopier copyScript;
-    private ApplicationContext context;
+    private GrailsWebApplicationContext context;
     private GrailsApplication application;
     private boolean initialised = false;
     private Map resourceMetas = Collections.synchronizedMap(new HashMap());
     private GrailsTemplateGenerator templateGenerator;
+
+	private GrailsRuntimeConfigurator config;
 
     class ResourceMeta {
         long lastModified;
@@ -85,7 +87,7 @@ public class GrailsReloadServletFilter extends OncePerRequestFilter {
     }
 
     protected void doFilterInternal(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, FilterChain filterChain) throws ServletException, IOException {
-      context = (ApplicationContext)getServletContext().getAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT);
+      context = (GrailsWebApplicationContext)getServletContext().getAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT);
 
       if(context == null) {
           filterChain.doFilter(httpServletRequest,httpServletResponse);
@@ -95,7 +97,13 @@ public class GrailsReloadServletFilter extends OncePerRequestFilter {
       if(application == null) {
           filterChain.doFilter(httpServletRequest,httpServletResponse);
           return;
+      }      
+      if(config == null) {
+    	  WebApplicationContext parent = (WebApplicationContext)getServletContext().getAttribute(GrailsApplicationAttributes.PARENT_APPLICATION_CONTEXT);
+    	  config = new GrailsRuntimeConfigurator(application,parent);  
       }
+      
+      
 
       if(copyScript == null) {
           GroovyClassLoader gcl = new GroovyClassLoader(getClass().getClassLoader());
@@ -240,23 +248,22 @@ public class GrailsReloadServletFilter extends OncePerRequestFilter {
     private void loadServiceClass(Class loadedClass, boolean isNew) {
 
         GrailsServiceClass serviceClass = application.addServiceClass(loadedClass);
-        if(serviceClass.isTransactional()) {
+        if(serviceClass.isTransactional() && !isNew) {
             LOG.warn("Cannot reload class ["+loadedClass+"] reloading of transactional service classes is not currently possible. Set class to non-transactional first.");
         }
         else {
             // reload whole context
-            reloadApplicationContext();
-            /* if(serviceClass != null) {
+            if(serviceClass != null) {
                 // if its a new taglib, reload app context
                 if(isNew) {
-                    reloadApplicationContext();
+                    config.registerService(serviceClass,context);
                 }
                 else {
                     // swap target source in app context
                     HotSwappableTargetSource targetSource = (HotSwappableTargetSource)context.getBean(serviceClass.getFullName() + "TargetSource");
                     targetSource.swap(serviceClass.newInstance());
                 }
-            }*/
+            }
         }
     }
 
@@ -265,7 +272,7 @@ public class GrailsReloadServletFilter extends OncePerRequestFilter {
         if(tagLibClass != null) {
             // if its a new taglib, reload app context
             if(isNew) {
-                reloadApplicationContext();
+            	config.registerTagLibrary(tagLibClass, context);            
             }
             else {
                 // swap target source in app context
@@ -380,7 +387,7 @@ public class GrailsReloadServletFilter extends OncePerRequestFilter {
             this.application = (GrailsApplication) parent.getBean(GrailsApplication.APPLICATION_ID, GrailsApplication.class);
 
         GrailsRuntimeConfigurator config = new GrailsRuntimeConfigurator(application,parent);
-        context = config.configure(super.getServletContext());
+        context = (GrailsWebApplicationContext)config.configure(super.getServletContext());
 
        getServletContext().setAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT, context );
        getServletContext().setAttribute(GrailsApplication.APPLICATION_ID, context.getBean(GrailsApplication.APPLICATION_ID) );
