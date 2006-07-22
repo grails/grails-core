@@ -10,6 +10,8 @@ import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsControllerClass;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
+import org.codehaus.groovy.grails.commons.GrailsServiceClass;
+import org.codehaus.groovy.grails.commons.GrailsTagLibClass;
 import org.codehaus.groovy.grails.orm.hibernate.validation.GrailsDomainClassValidator;
 import org.codehaus.groovy.grails.support.ClassEditor;
 import org.codehaus.groovy.grails.web.errors.GrailsExceptionResolver;
@@ -131,7 +133,7 @@ public class GrailsRuntimeConfiguratorTests extends TestCase {
 		assertTrue(gcc.isScaffolding());
 	}
 	
-	public void testScheduledJobs() throws Exception {
+	public void testConfigureScheduledJobs() throws Exception {
 		GroovyClassLoader gcl = new GroovyClassLoader();
 		Class c = gcl.parseClass(
 		"class MyJob {\n " +
@@ -154,4 +156,73 @@ public class GrailsRuntimeConfiguratorTests extends TestCase {
 		
 	}
 
+	public void testRegisterAdditionalBean() throws Exception {
+		GroovyClassLoader gcl = new GroovyClassLoader();
+		Class dc = gcl.parseClass("class Test { Long id; Long version; }");
+		
+		GrailsApplication app = new DefaultGrailsApplication(new Class[0], gcl );
+		MockApplicationContext parent = new MockApplicationContext();
+		parent.registerMockBean(GrailsApplication.APPLICATION_ID, app);
+		
+		GrailsRuntimeConfigurator conf = new GrailsRuntimeConfigurator(app,parent);
+		GrailsWebApplicationContext ctx = (GrailsWebApplicationContext)conf.configure(new MockServletContext());
+		assertNotNull(ctx);
+	
+		ctx.registerSingleton("Test", dc);
+		
+		GroovyObject testInstance = (GroovyObject)ctx.getBean("Test");
+		assertNotNull(testInstance);
+		
+		// now test override bean
+		gcl = new GroovyClassLoader();
+		dc = gcl.parseClass("class Test { Long id; Long version;String updatedProp = 'hello'; }");
+		ctx.registerSingleton("Test",dc);
+		
+		testInstance = (GroovyObject)ctx.getBean("Test");
+		assertNotNull(testInstance);
+		assertEquals("hello",testInstance.getProperty("updatedProp"));
+	}
+	
+	public void testRegisterTagLib() throws Exception {
+		GroovyClassLoader gcl = new GroovyClassLoader();
+		
+		GrailsApplication app = new DefaultGrailsApplication(new Class[0], gcl );
+		MockApplicationContext parent = new MockApplicationContext();
+		parent.registerMockBean(GrailsApplication.APPLICATION_ID, app);
+		
+		GrailsRuntimeConfigurator conf = new GrailsRuntimeConfigurator(app,parent);
+		GrailsWebApplicationContext ctx = (GrailsWebApplicationContext)conf.configure(new MockServletContext());
+		assertNotNull(ctx);
+		
+		Class tag = gcl.parseClass("class TestTagLib { def myTag = { attrs -> } }");
+		GrailsTagLibClass tagLibClass = app.addTagLibClass(tag);
+		conf.registerTagLibrary(tagLibClass, ctx);
+		
+		GroovyObject tagLib = (GroovyObject)ctx.getBean("TestTagLib");
+		assertEquals(tag, tagLib.getClass());
+		assertTrue(ctx.containsBean("TestTagLibTargetSource"));
+		assertTrue(ctx.containsBean("TestTagLibProxy"));
+	}
+	
+	public void testRegisterService() throws Exception {
+		GroovyClassLoader gcl = new GroovyClassLoader();
+		
+		GrailsApplication app = new DefaultGrailsApplication(new Class[0], gcl );
+		MockApplicationContext parent = new MockApplicationContext();
+		parent.registerMockBean(GrailsApplication.APPLICATION_ID, app);
+		
+		GrailsRuntimeConfigurator conf = new GrailsRuntimeConfigurator(app,parent);
+		GrailsWebApplicationContext ctx = (GrailsWebApplicationContext)conf.configure(new MockServletContext());
+		assertNotNull(ctx);
+		
+		Class service = gcl.parseClass("class TestService { boolean transactional = true;def serviceMethod() { 'hello' } }");
+		GrailsServiceClass serviceClass = app.addServiceClass(service);
+		conf.registerService(serviceClass,ctx);
+		
+		assertTrue(ctx.containsBean("TestServiceClass"));
+		assertTrue(ctx.containsBean("TestServiceInstance"));
+		GroovyObject serviceInstance = (GroovyObject)ctx.getBean("testService");		
+		
+		assertEquals("hello",serviceInstance.invokeMethod("serviceMethod",null));
+	}
 }

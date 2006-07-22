@@ -27,7 +27,6 @@ import java.util.Properties;
 import javax.servlet.ServletContext;
 
 import org.apache.commons.dbcp.BasicDataSource;
-import org.apache.commons.lang.WordUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
@@ -115,6 +114,102 @@ public class GrailsRuntimeConfigurator {
 		this.parent = parent;
 	}
 
+	/**
+	 * Registers a new service with the specified application context
+	 * 
+	 * @param grailsServiceClass The service class to register
+	 * @param context The app context to register with
+	 */
+	public void registerService(GrailsServiceClass grailsServiceClass, GrailsWebApplicationContext context) {
+		RuntimeSpringConfiguration springConfig = new DefaultRuntimeSpringConfiguration();
+		
+		BeanConfiguration serviceClassBean = springConfig
+												.createSingletonBean(MethodInvokingFactoryBean.class)
+												.addProperty("targetObject", new RuntimeBeanReference(GrailsApplication.APPLICATION_ID,true))
+												.addProperty("targetMethod", "getGrailsServiceClass")
+												.addProperty("arguments", grailsServiceClass.getFullName());
+		context.registerBeanDefinition(grailsServiceClass.getFullName() + "Class",serviceClassBean.getBeanDefinition());
+		
+		
+		BeanConfiguration serviceInstance = springConfig
+												.createSingletonBean(grailsServiceClass.getFullName() + "Instance")
+												.setFactoryBean( grailsServiceClass.getFullName() + "Class")
+												.setFactoryMethod("newInstance");
+				
+		if (grailsServiceClass.byName()) {
+			serviceInstance.setAutowire("byName");
+		} else if (grailsServiceClass.byType()) {
+			serviceInstance.setAutowire("byType");
+		}
+		context.registerBeanDefinition(grailsServiceClass.getFullName() + "Instance",serviceInstance.getBeanDefinition());
+		
+	    // configure the service instance as a hotswappable target source
+	
+	    // if its transactional configure transactional proxy
+	    if (grailsServiceClass.isTransactional()) {
+			Properties transactionAttributes = new Properties();
+			transactionAttributes.put("*", "PROPAGATION_REQUIRED");
+			
+			BeanConfiguration transactionalProxyBean = springConfig
+								.createSingletonBean(TransactionProxyFactoryBean.class)
+								.addProperty("target", new RuntimeBeanReference(grailsServiceClass.getFullName() + "Instance"))
+								.addProperty("proxyTargetClass", Boolean.TRUE)
+								.addProperty("transactionAttributes", transactionAttributes)
+								.addProperty(TRANSACTION_MANAGER_BEAN, new RuntimeBeanReference(TRANSACTION_MANAGER_BEAN));
+			context.registerBeanDefinition(grailsServiceClass.getPropertyName(),transactionalProxyBean.getBeanDefinition());
+			
+		} else {
+	        // otherwise configure a standard proxy
+			BeanConfiguration instanceRef = springConfig
+												.createSingletonBean(BeanReferenceFactoryBean.class)
+												.addProperty("targetBeanName",grailsServiceClass.getFullName() + "Instance" );
+			
+			context.registerBeanDefinition(grailsServiceClass.getName() + "Service",instanceRef.getBeanDefinition());
+		}		
+	}
+	
+	/**
+	 * Registers a tag library with the specified grails application context
+	 * 
+	 * @param tagLibClass That tag library class
+	 * @param context The application context
+	 */
+	public void registerTagLibrary(GrailsTagLibClass tagLibClass, GrailsWebApplicationContext context) {
+    	RuntimeSpringConfiguration springConfig = new DefaultRuntimeSpringConfiguration();
+    	BeanConfiguration tagLibClassBean = springConfig.createSingletonBean(MethodInvokingFactoryBean.class);
+    	tagLibClassBean
+        	.addProperty("targetObject", new RuntimeBeanReference(GrailsApplication.APPLICATION_ID,true))
+        	.addProperty("targetMethod", "getGrailsTagLibClass")
+        	.addProperty("arguments", tagLibClass.getFullName());
+    	context.registerBeanDefinition(tagLibClass.getFullName() + "Class", tagLibClassBean.getBeanDefinition());
+    	
+        // configure taglib class as hot swappable target source
+        Collection args = new ManagedList();
+        args.add(new RuntimeBeanReference(tagLibClass.getFullName() + "Class"));
+        
+        BeanConfiguration tagLibTargetSourceBean = springConfig
+											    	.createSingletonBean(	HotSwappableTargetSource.class, 
+											    							args);
+
+        context.registerBeanDefinition(tagLibClass.getFullName() + "TargetSource",tagLibTargetSourceBean.getBeanDefinition());
+        
+	    // setup AOP proxy that uses hot swappable target source            
+	    BeanConfiguration tagLibProxyBean = springConfig
+										    	.createSingletonBean(ProxyFactoryBean.class)
+										    	.addProperty("targetSource", new RuntimeBeanReference(tagLibClass.getFullName() + "TargetSource"))
+										    	.addProperty("proxyInterfaces", "org.codehaus.groovy.grails.commons.GrailsTagLibClass");
+	    context.registerBeanDefinition(tagLibClass.getFullName() + "Proxy",tagLibProxyBean.getBeanDefinition());
+
+	    // create prototype bean that refers to the AOP proxied taglib class uses it as a factory
+	    BeanConfiguration tagLibBean = springConfig
+									    	.createPrototypeBean(tagLibClass.getFullName())
+									    	.setFactoryBean(tagLibClass.getFullName() + "Proxy")
+									    	.setFactoryMethod("newInstance")
+									    	.setAutowire("byName");
+	    
+	    context.registerBeanDefinition(tagLibClass.getFullName(),tagLibBean.getBeanDefinition());
+		
+	}
 	/**
 	 * Configures the Grails application context at runtime
 	 * 
@@ -483,7 +578,7 @@ public class GrailsRuntimeConfigurator {
 				transactionAttributes.put("*", "PROPAGATION_REQUIRED");
 				
 				springConfig
-					.addSingletonBean(WordUtils.uncapitalize(grailsServiceClass.getName()) + "Service",TransactionProxyFactoryBean.class)
+					.addSingletonBean(grailsServiceClass.getPropertyName(),TransactionProxyFactoryBean.class)
 					.addProperty("target", new RuntimeBeanReference(grailsServiceClass.getFullName() + "Instance"))
 					.addProperty("proxyTargetClass", Boolean.TRUE)
 					.addProperty("transactionAttributes", transactionAttributes)
@@ -665,4 +760,6 @@ public class GrailsRuntimeConfigurator {
 		springConfig
 			.addSingletonBean("localeResolver",CookieLocaleResolver.class);
 	}
+
+
 }

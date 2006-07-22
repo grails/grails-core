@@ -107,4 +107,12 @@ public class DefaultRuntimeSpringConfiguration implements
 		this.context.setServletContext(context);
 	}
 
+	public BeanConfiguration createPrototypeBean(String name) {
+		return new DefaultBeanConfiguration(name,true);
+	}
+
+	public BeanConfiguration createSingletonBean(String name) {
+		return new DefaultBeanConfiguration(name);
+	}
+
 }

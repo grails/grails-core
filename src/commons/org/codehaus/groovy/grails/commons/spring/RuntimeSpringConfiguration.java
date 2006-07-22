@@ -111,4 +111,26 @@ public interface RuntimeSpringConfiguration {
 	 */
 	public void setServletContext(ServletContext context);
 	
+	/**
+	 * Creates a new prototype bean configuration. Differs from addPrototypeBean in that 
+	 * it doesn't add the bean to the list of bean references to be created via the getApplicationContext()
+	 * method, hence can be used for creating nested beans
+	 * 
+	 * @param name The bean name
+	 * @return A BeanConfiguration instance
+	 * 
+	 */
+	public BeanConfiguration createPrototypeBean(String name);
+	
+	/**
+	 * Creates a new singleton bean configuration. Differs from addSingletonBean in that 
+	 * it doesn't add the bean to the list of bean references to be created via the getApplicationContext()
+	 * method, hence can be used for creating nested beans
+	 * 
+	 * @param name The bean name
+	 * @return A BeanConfiguration instance
+	 * 
+	 */
+	public BeanConfiguration createSingletonBean(String string);
+	
 }
