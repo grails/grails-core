@@ -7,6 +7,7 @@ import groovy.lang.GroovyObject;
 
 import org.codehaus.groovy.grails.MockApplicationContext;
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
+import org.codehaus.groovy.grails.commons.DefaultGrailsDomainClass;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsControllerClass;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
@@ -224,5 +225,44 @@ public class GrailsRuntimeConfiguratorTests extends TestCase {
 		GroovyObject serviceInstance = (GroovyObject)ctx.getBean("testService");		
 		
 		assertEquals("hello",serviceInstance.invokeMethod("serviceMethod",null));
+	}
+	
+	public void testRegisterDomainClass() throws Exception {
+		GroovyClassLoader gcl = new GroovyClassLoader();
+		
+		GrailsApplication app = new DefaultGrailsApplication(new Class[0], gcl );
+		MockApplicationContext parent = new MockApplicationContext();
+		parent.registerMockBean(GrailsApplication.APPLICATION_ID, app);
+		
+		GrailsRuntimeConfigurator conf = new GrailsRuntimeConfigurator(app,parent);
+		GrailsWebApplicationContext ctx = (GrailsWebApplicationContext)conf.configure(new MockServletContext());
+		assertNotNull(ctx);
+		
+		Class dc = gcl.parseClass("class Test { Long id; Long version; }");
+		GrailsDomainClass domainClass = new DefaultGrailsDomainClass(dc);
+		conf.registerDomainClass(domainClass, ctx);
+		
+		assertTrue(ctx.containsBean("TestDomainClass"));
+		assertTrue(ctx.containsBean("TestTargetSource"));
+		assertTrue(ctx.containsBean("TestProxy"));
+		assertTrue(ctx.containsBean("TestPersistentClass"));
+	}	
+	
+	public void testRefreshSessionFactory() throws Exception {
+		GroovyClassLoader gcl = new GroovyClassLoader();
+		
+		GrailsApplication app = new DefaultGrailsApplication(new Class[0], gcl );
+		MockApplicationContext parent = new MockApplicationContext();
+		parent.registerMockBean(GrailsApplication.APPLICATION_ID, app);
+		
+		GrailsRuntimeConfigurator conf = new GrailsRuntimeConfigurator(app,parent);
+		GrailsWebApplicationContext ctx = (GrailsWebApplicationContext)conf.configure(new MockServletContext());
+		assertNotNull(ctx);
+		
+		Class dc = gcl.parseClass("class Test { Long id; Long version; }");
+		GrailsDomainClass domainClass = new DefaultGrailsDomainClass(dc);
+		conf.registerDomainClass(domainClass, ctx);
+		
+		conf.refreshSessionFactory(app,ctx);
 	}
 }

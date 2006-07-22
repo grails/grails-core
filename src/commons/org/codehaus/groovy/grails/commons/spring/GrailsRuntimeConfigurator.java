@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import javax.servlet.ServletContext;
+import javax.sql.DataSource;
 
 import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.commons.logging.Log;
@@ -37,6 +38,7 @@ import org.codehaus.groovy.grails.commons.GrailsServiceClass;
 import org.codehaus.groovy.grails.commons.GrailsTagLibClass;
 import org.codehaus.groovy.grails.commons.GrailsTaskClass;
 import org.codehaus.groovy.grails.commons.GrailsTaskClassProperty;
+import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException;
 import org.codehaus.groovy.grails.orm.hibernate.ConfigurableLocalSessionFactoryBean;
 import org.codehaus.groovy.grails.orm.hibernate.support.HibernateDialectDetectorFactoryBean;
 import org.codehaus.groovy.grails.orm.hibernate.validation.GrailsDomainClassValidator;
@@ -52,6 +54,7 @@ import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsUrlHandlerMapping;
 import org.codehaus.groovy.grails.web.servlet.mvc.SimpleGrailsController;
 import org.codehaus.groovy.grails.web.servlet.view.GrailsViewResolver;
+import org.hibernate.HibernateException;
 import org.springframework.aop.framework.ProxyFactoryBean;
 import org.springframework.aop.target.HotSwappableTargetSource;
 import org.springframework.beans.factory.config.BeanReferenceFactoryBean;
@@ -62,6 +65,7 @@ import org.springframework.beans.factory.support.ManagedList;
 import org.springframework.beans.factory.support.ManagedMap;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.orm.hibernate3.HibernateAccessor;
 import org.springframework.orm.hibernate3.HibernateTransactionManager;
@@ -210,6 +214,72 @@ public class GrailsRuntimeConfigurator {
 	    context.registerBeanDefinition(tagLibClass.getFullName(),tagLibBean.getBeanDefinition());
 		
 	}
+	
+	/**
+	 * Registers a new domain class with the application context
+	 * 
+	 * @param grailsDomainClass The domain class
+	 * @param context The application context
+	 */
+	public void registerDomainClass(GrailsDomainClass grailsDomainClass, GrailsWebApplicationContext context) {
+		
+		RuntimeSpringConfiguration springConfig = new DefaultRuntimeSpringConfiguration();
+		
+		BeanConfiguration domainClassBean = springConfig
+			.createSingletonBean(MethodInvokingFactoryBean.class)
+			.addProperty("targetObject", new RuntimeBeanReference(GrailsApplication.APPLICATION_ID, true))
+			.addProperty("targetMethod","getGrailsDomainClass")
+			.addProperty("arguments", grailsDomainClass.getFullName());
+		
+		context.registerBeanDefinition(grailsDomainClass.getFullName() + "DomainClass", domainClassBean.getBeanDefinition());
+
+	
+        // configure domain class as hot swappable target source
+        Collection args = new ManagedList();
+        args.add(new RuntimeBeanReference(grailsDomainClass.getFullName() + "DomainClass"));
+        BeanConfiguration targetSourceBean = springConfig
+        										.createSingletonBean(HotSwappableTargetSource.class, args);
+        
+        context.registerBeanDefinition(grailsDomainClass.getFullName() + "TargetSource",targetSourceBean.getBeanDefinition());
+        
+
+        // setup AOP proxy that uses hot swappable target source
+        BeanConfiguration proxyBean = springConfig
+        								.createSingletonBean(ProxyFactoryBean.class)
+        								.addProperty("targetSource", new RuntimeBeanReference(grailsDomainClass.getFullName() + "TargetSource"))
+        								.addProperty("proxyInterfaces", "org.codehaus.groovy.grails.commons.GrailsDomainClass");
+        
+        context.registerBeanDefinition(grailsDomainClass.getFullName() + "Proxy", proxyBean.getBeanDefinition());
+               	
+		// create persistent class bean references
+		BeanConfiguration persistentClassBean  = springConfig
+													.createSingletonBean(MethodInvokingFactoryBean.class)
+													.addProperty("targetObject", new RuntimeBeanReference( grailsDomainClass.getFullName() + "Proxy") )
+													.addProperty("targetMethod", "getClazz");
+	
+		context.registerBeanDefinition(grailsDomainClass.getFullName() + "PersistentClass",persistentClassBean.getBeanDefinition());
+			
+		// configure validator			
+		BeanConfiguration validatorBean = springConfig
+											.createSingletonBean(GrailsDomainClassValidator.class)
+											.addProperty( "domainClass" ,new RuntimeBeanReference(grailsDomainClass.getFullName() + "Proxy") )
+											.addProperty(SESSION_FACTORY_BEAN , new RuntimeBeanReference(SESSION_FACTORY_BEAN))
+											.addProperty(MESSAGE_SOURCE_BEAN , new RuntimeBeanReference(MESSAGE_SOURCE_BEAN));
+		
+		context.registerBeanDefinition(grailsDomainClass.getFullName() + "Validator",validatorBean.getBeanDefinition());
+	}
+	
+	/**
+	 * Updates an existing domain class within the application context
+	 * 
+	 * @param domainClass The domain class to update
+	 * @param context The context
+	 */
+	public void updateDomainClass(GrailsDomainClass domainClass, GrailsWebApplicationContext context) {		
+		HotSwappableTargetSource ts = (HotSwappableTargetSource)context.getBean(domainClass.getFullName() + "TargetSource");
+		ts.swap(domainClass);
+	}	
+	
 	/**
 	 * Configures the Grails application context at runtime
 	 * 
@@ -605,10 +675,24 @@ public class GrailsRuntimeConfigurator {
 				.addProperty("arguments", grailsDomainClass.getFullName());
 
 			
+            // configure domain class as hot swappable target source
+            Collection args = new ManagedList();
+            args.add(new RuntimeBeanReference(grailsDomainClass.getFullName() + "DomainClass"));
+            springConfig
+            	.addSingletonBean(grailsDomainClass.getFullName() + "TargetSource",HotSwappableTargetSource.class, args);
+            
+
+            // setup AOP proxy that uses hot swappable target source
+            springConfig
+            	.addSingletonBean(grailsDomainClass.getFullName() + "Proxy",ProxyFactoryBean.class)
+            	.addProperty("targetSource", new RuntimeBeanReference(grailsDomainClass.getFullName() + "TargetSource"))
+            	.addProperty("proxyInterfaces", "org.codehaus.groovy.grails.commons.GrailsDomainClass");
+            
+            
 			// create persistent class bean references
 			springConfig
 				.addSingletonBean(grailsDomainClass.getFullName() + "PersistentClass", MethodInvokingFactoryBean.class)
-				.addProperty("targetObject", new RuntimeBeanReference( grailsDomainClass.getFullName() + "DomainClass") )
+				.addProperty("targetObject", new RuntimeBeanReference( grailsDomainClass.getFullName() + "Proxy") )
 				.addProperty("targetMethod", "getClazz");
 
 			/*Collection constructorArguments = new ArrayList();
@@ -623,7 +707,7 @@ public class GrailsRuntimeConfigurator {
 			// configure validator			
 			springConfig
 				.addSingletonBean(grailsDomainClass.getFullName() + "Validator", GrailsDomainClassValidator.class)
-				.addProperty( "domainClass" ,new RuntimeBeanReference(grailsDomainClass.getFullName() + "DomainClass") )
+				.addProperty( "domainClass" ,new RuntimeBeanReference(grailsDomainClass.getFullName() + "Proxy") )
 				.addProperty(SESSION_FACTORY_BEAN , new RuntimeBeanReference(SESSION_FACTORY_BEAN))
 				.addProperty(MESSAGE_SOURCE_BEAN , new RuntimeBeanReference(MESSAGE_SOURCE_BEAN));			
 		}
@@ -633,7 +717,7 @@ public class GrailsRuntimeConfigurator {
 		
 		GrailsDataSource ds = application.getGrailsDataSource();	
 		BeanConfiguration localSessionFactoryBean = springConfig
-													.addSingletonBean(SESSION_FACTORY_BEAN,ConfigurableLocalSessionFactoryBean.class);
+														.createSingletonBean(ConfigurableLocalSessionFactoryBean.class);
 		
 		if(ds != null) {
 			BeanConfiguration dataSource;
@@ -740,6 +824,18 @@ public class GrailsRuntimeConfigurator {
 			.addProperty("classLoader", new RuntimeBeanReference(CLASS_LOADER_BEAN));
 		
 
+		Collection args = new ManagedList();
+		args.add(localSessionFactoryBean.getBeanDefinition());
+		
+		springConfig
+			.addSingletonBean(SESSION_FACTORY_BEAN+"TargetSource", HotSwappableTargetSource.class,args);
+		
+		springConfig
+			.addSingletonBean(SESSION_FACTORY_BEAN, ProxyFactoryBean.class)
+        	.addProperty("targetSource", new RuntimeBeanReference(SESSION_FACTORY_BEAN+"TargetSource"))
+        	.addProperty("proxyInterfaces", "org.hibernate.SessionFactory");
+			
+		
 		springConfig
 			.addSingletonBean(TRANSACTION_MANAGER_BEAN,HibernateTransactionManager.class)
 			.addProperty(SESSION_FACTORY_BEAN, new RuntimeBeanReference(SESSION_FACTORY_BEAN));
@@ -761,5 +857,36 @@ public class GrailsRuntimeConfigurator {
 			.addSingletonBean("localeResolver",CookieLocaleResolver.class);
 	}
 
+	public void refreshSessionFactory(GrailsApplication app, GrailsWebApplicationContext context) {
 
+		HotSwappableTargetSource ts = (HotSwappableTargetSource)context.getBean(SESSION_FACTORY_BEAN+"TargetSource");
+		ConfigurableLocalSessionFactoryBean sessionFactoryBean = new ConfigurableLocalSessionFactoryBean();
+		
+		sessionFactoryBean.setGrailsApplication(app);
+		sessionFactoryBean.setClassLoader(app.getClassLoader());
+		
+		GrailsDataSource ds = app.getGrailsDataSource();
+		if(ds != null && ds.getConfigurationClass() != null) {
+			sessionFactoryBean.setConfigClass(ds.getConfigurationClass());
+		}
+		sessionFactoryBean.setDataSource((DataSource)context.getBean(DATA_SOURCE_BEAN));
+		URL hibernateConfig = application.getClassLoader().getResource("hibernate.cfg.xml");
+		if(hibernateConfig != null) {
+			sessionFactoryBean
+				.setConfigLocation(new ClassPathResource("hibernate.cfg.xml"));
+		}	
+		Properties hibProps = (Properties)context.getBean(HIBERNATE_PROPERTIES_BEAN);
+		sessionFactoryBean.setHibernateProperties(hibProps);
+		try {
+			sessionFactoryBean.afterPropertiesSet();
+		} catch (HibernateException e) {
+			throw new GrailsConfigurationException("Hibernate exception refreshing session factory: " + e.getMessage(),e);
+		} catch (IllegalArgumentException e) {
+			throw new GrailsConfigurationException("Illegal argument refreshing session factory: " + e.getMessage(),e);
+		} catch (IOException e) {
+			throw new GrailsConfigurationException("I/O exception refreshing session factory: " + e.getMessage(),e);
+		}
+		
+		ts.swap(sessionFactoryBean.getObject());
+	}
 }

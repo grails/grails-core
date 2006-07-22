@@ -191,4 +191,11 @@ public interface ScaffoldDomain {
 	 * @return A new instance of the domain class
 	 */
 	Object newInstance();
+
+	/**
+	 * Sets the persistent class used by the scaffold domain
+	 * 
+	 * @param clazz The persistent class
+	 */
+	void setPersistentClass(Class clazz);
 }

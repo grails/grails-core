@@ -39,7 +39,6 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
-import org.codehaus.groovy.grails.commons.GrailsConfigUtils;
 import org.codehaus.groovy.grails.commons.GrailsControllerClass;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
@@ -51,6 +50,7 @@ import org.codehaus.groovy.grails.commons.spring.GrailsResourceHolder;
 import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator;
 import org.codehaus.groovy.grails.commons.spring.GrailsWebApplicationContext;
 import org.codehaus.groovy.grails.scaffolding.GrailsTemplateGenerator;
+import org.codehaus.groovy.grails.scaffolding.ScaffoldDomain;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsUrlHandlerMapping;
 import org.codehaus.groovy.grails.web.servlet.mvc.SimpleGrailsController;
@@ -288,6 +288,7 @@ public class GrailsReloadServletFilter extends OncePerRequestFilter {
         loadedDomainClasses.add( domainClass );
 
         // go through all domain classes an establish if they are related to this one.
+        // and don't already have a reference within the class itself
         GrailsDomainClass[] domainClasses = application.getGrailsDomainClasses();
         for (int i = 0; i < domainClasses.length; i++) {
             GrailsDomainClass grailsDomainClass = domainClasses[i];
@@ -313,12 +314,22 @@ public class GrailsReloadServletFilter extends OncePerRequestFilter {
             }
         }
 
-        reloadApplicationContext();
+        if(isNew) {
+        	config.registerDomainClass(domainClass,context);
+        	config.refreshSessionFactory(application,context);
+        }
+        else {
+        	config.updateDomainClass(domainClass,context);
+        	config.refreshSessionFactory(application,context);
+        }
+        
         for (Iterator i = loadedDomainClasses.iterator(); i.hasNext();) {
             GrailsDomainClass grailsDomainClass = (GrailsDomainClass) i.next();
             GrailsControllerClass controllerClass = application.getScaffoldingController(grailsDomainClass);
             if(controllerClass != null && controllerClass.isScaffolding()) {
                 // generate new views
+            	ScaffoldDomain scaffoldDomain = (ScaffoldDomain)context.getBean(grailsDomainClass.getFullName()+"ScaffoldDomain");
+            	scaffoldDomain.setPersistentClass(grailsDomainClass.getClazz());
                 LOG.info("Re-generating views for scaffold controller ["+controllerClass.getFullName()+"]");
                 templateGenerator.generateViews(domainClass,getServletContext().getRealPath("/WEB-INF"));
                 // overwrite with user defined views
@@ -380,7 +391,7 @@ public class GrailsReloadServletFilter extends OncePerRequestFilter {
         }
     }
 
-    private void reloadApplicationContext() {
+/*    private void reloadApplicationContext() {
         WebApplicationContext parent = (WebApplicationContext)getServletContext().getAttribute(GrailsApplicationAttributes.PARENT_APPLICATION_CONTEXT);
         // construct the SpringConfig for the container managed application
         if(this.application == null)
@@ -394,5 +405,5 @@ public class GrailsReloadServletFilter extends OncePerRequestFilter {
 
         // re-configure scaffolders
         GrailsConfigUtils.configureScaffolders(application,context);
-    }
+    }*/
 }

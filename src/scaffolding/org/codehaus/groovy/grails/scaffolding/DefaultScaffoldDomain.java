@@ -294,7 +294,7 @@ public class DefaultScaffoldDomain implements ScaffoldDomain {
 
 
 
-	protected void setPersistentClass(Class persistentClass) {
+	public void setPersistentClass(Class persistentClass) {
 		if(persistentClass == null)
 			throw new IllegalArgumentException("Argument 'persistentClass' cannot be null");
 		
