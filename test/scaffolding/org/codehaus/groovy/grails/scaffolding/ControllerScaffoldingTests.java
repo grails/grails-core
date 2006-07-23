@@ -5,7 +5,6 @@ import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyObject;
 import groovy.lang.MissingMethodException;
 import groovy.lang.MissingPropertyException;
-import groovy.lang.ProxyMetaClass;
 
 import java.util.Properties;
 
@@ -14,7 +13,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.metaclass.PropertyAccessProxyMetaClass;
+import org.codehaus.groovy.grails.commons.metaclass.ProxyMetaClass;
 import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.DefaultGrailsDomainConfiguration;
 import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods;
@@ -296,7 +295,7 @@ AbstractDependencyInjectionSpringContextTests {
 
 	private GroovyObject configureDynamicGO(Class groovyClass,GrailsApplication application, HttpServletRequest request, HttpServletResponse response)
 	throws Exception {
-	ProxyMetaClass pmc = PropertyAccessProxyMetaClass.getInstance(groovyClass);
+	ProxyMetaClass pmc = ProxyMetaClass.getInstance(groovyClass);
 	// proof of concept to try out proxy meta class
 	
 	BeanDefinition bd = new RootBeanDefinition(groovyClass,false);
