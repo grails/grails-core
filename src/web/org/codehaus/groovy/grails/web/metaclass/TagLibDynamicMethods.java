@@ -17,7 +17,6 @@ package org.codehaus.groovy.grails.web.metaclass;
 
 import groovy.lang.GroovyObject;
 import groovy.lang.MissingMethodException;
-import groovy.lang.ProxyMetaClass;
 
 import java.beans.IntrospectionException;
 import java.io.Writer;
@@ -30,6 +29,7 @@ import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.metaclass.AbstractDynamicMethodInvocation;
 import org.codehaus.groovy.grails.commons.metaclass.AbstractDynamicMethodsInterceptor;
 import org.codehaus.groovy.grails.commons.metaclass.GenericDynamicProperty;
+import org.codehaus.groovy.grails.commons.metaclass.ProxyMetaClass;
 import org.codehaus.groovy.grails.web.servlet.FlashScope;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.GrailsHttpServletRequest;

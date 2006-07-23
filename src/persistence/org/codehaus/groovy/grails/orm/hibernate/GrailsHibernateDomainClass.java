@@ -14,10 +14,8 @@
  */
 package org.codehaus.groovy.grails.orm.hibernate;
 
-import groovy.lang.Interceptor;
 import groovy.lang.MetaClass;
 import groovy.lang.MetaClassRegistry;
-import groovy.lang.ProxyMetaClass;
 
 import java.beans.IntrospectionException;
 import java.util.Collections;
@@ -32,7 +30,8 @@ import org.codehaus.groovy.grails.commons.ExternalGrailsDomainClass;
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
 import org.codehaus.groovy.grails.commons.metaclass.AbstractDynamicMethodsInterceptor;
 import org.codehaus.groovy.grails.commons.metaclass.DynamicMethods;
-import org.codehaus.groovy.grails.commons.metaclass.PropertyAccessProxyMetaClass;
+import org.codehaus.groovy.grails.commons.metaclass.Interceptor;
+import org.codehaus.groovy.grails.commons.metaclass.ProxyMetaClass;
 import org.codehaus.groovy.grails.orm.hibernate.validation.GrailsDomainClassValidator;
 import org.codehaus.groovy.grails.validation.metaclass.ConstraintsEvaluatingDynamicProperty;
 import org.codehaus.groovy.runtime.InvokerHelper;
@@ -137,7 +136,7 @@ public class GrailsHibernateDomainClass extends AbstractGrailsClass implements E
 		        MetaClass meta = metaRegistry.getMetaClass(instance.getClass());
 		        
 				try {
-					ProxyMetaClass pmc = new PropertyAccessProxyMetaClass(metaRegistry, instance.getClass(), meta);
+					ProxyMetaClass pmc = new ProxyMetaClass(metaRegistry, instance.getClass(), meta);
 					pmc.setInterceptor((Interceptor)interceptor);
 					
 					this.constraints = (Map)pmc.getProperty(instance,GrailsDomainClassProperty.CONSTRAINTS);													        
