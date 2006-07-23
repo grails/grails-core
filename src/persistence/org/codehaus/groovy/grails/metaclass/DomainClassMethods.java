@@ -41,6 +41,9 @@ public class DomainClassMethods extends AbstractDynamicMethods {
 	public DomainClassMethods(GrailsApplication application, Class theClass, SessionFactory sessionFactory, ClassLoader classLoader)
 			throws IntrospectionException {
 		super(theClass);
+		// constructors
+		addDynamicConstructor(new DataBindingDynamicConstructor());
+		
 		// dynamic methods
         addDynamicMethodInvocation(new IdentDynamicMethod(application));
         addDynamicMethodInvocation(new SavePersistentMethod(sessionFactory, classLoader,application));

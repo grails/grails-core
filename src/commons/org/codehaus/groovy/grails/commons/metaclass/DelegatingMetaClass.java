@@ -87,6 +87,34 @@ public class DelegatingMetaClass extends MetaClassImpl {
 			return adaptee.getProperty(object,property);
 		}	
 	}
+
+	/* (non-Javadoc)
+	 * @see groovy.lang.MetaClassImpl#invokeConstructor(java.lang.Object[])
+	 */
+	public Object invokeConstructor(Object[] arg0) {
+		InvocationCallback callback = new InvocationCallback();
+		Object instance = this.dynamicMethods.invokeConstructor(arg0,callback);
+		if(callback.isInvoked()) {
+			return instance;
+		}
+		else {
+			return adaptee.invokeConstructor(arg0);
+		}
+	}
+
+	/* (non-Javadoc)
+	 * @see groovy.lang.MetaClassImpl#invokeConstructorAt(java.lang.Class, java.lang.Object[])
+	 */
+	public Object invokeConstructorAt(Class arg0, Object[] arg1) {
+		InvocationCallback callback = new InvocationCallback();
+		Object instance = this.dynamicMethods.invokeConstructor(arg1,callback);
+		if(callback.isInvoked()) {
+			return instance;
+		}
+		else {
+			return adaptee.invokeConstructor(arg1);
+		}
+	}
 	
 	
 }
