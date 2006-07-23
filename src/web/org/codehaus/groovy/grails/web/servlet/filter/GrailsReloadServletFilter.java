@@ -315,16 +315,16 @@ public class GrailsReloadServletFilter extends OncePerRequestFilter {
         }
 
         if(isNew) {
-        	config.registerDomainClass(domainClass,context);
-        	config.refreshSessionFactory(application,context);
+        	config.registerDomainClass(domainClass,context);        	
         }
         else {
         	config.updateDomainClass(domainClass,context);
-        	config.refreshSessionFactory(application,context);
         }
         
         for (Iterator i = loadedDomainClasses.iterator(); i.hasNext();) {
             GrailsDomainClass grailsDomainClass = (GrailsDomainClass) i.next();
+            config.updateDomainClass(grailsDomainClass,context);
+            
             GrailsControllerClass controllerClass = application.getScaffoldingController(grailsDomainClass);
             if(controllerClass != null && controllerClass.isScaffolding()) {
                 // generate new views
@@ -337,6 +337,7 @@ public class GrailsReloadServletFilter extends OncePerRequestFilter {
             }
 
         }
+        config.refreshSessionFactory(application,context);
     }
 
     private void loadControllerClass(Class loadedClass, boolean isNew) {

@@ -210,7 +210,7 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
 
 			// if the related class is the same as this class
 			// its a circular one-to-many
-			if(relatedClassType.equals(getClazz())){
+			if(relatedClassType.getName().equals(getFullName())){
 				property.setOneToMany(true);
 				property.setBidirectional(true);
 			}
