@@ -1,10 +1,18 @@
 package org.codehaus.groovy.grails.web.metaclass;
 
-import groovy.lang.*;
+
+import groovy.lang.GroovyClassLoader;
+import groovy.lang.GroovyObject;
+import groovy.lang.MissingMethodException;
+import groovy.lang.MissingPropertyException;
+
+import java.util.Map;
+
 import junit.framework.TestCase;
-import org.codehaus.groovy.grails.commons.GrailsApplication;
+
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
-import org.codehaus.groovy.grails.commons.metaclass.PropertyAccessProxyMetaClass;
+import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.commons.metaclass.ProxyMetaClass;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsControllerHelper;
 import org.codehaus.groovy.grails.web.servlet.mvc.SimpleGrailsControllerHelper;
@@ -16,45 +24,12 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.mock.web.MockServletContext;
 
-import java.util.Map;
-
 public class ControllerMetaClassTests extends TestCase {
 
 
     private GenericApplicationContext context;
 
 
-    public void testMetaClassProxy()
-        throws Exception {
-
-        GroovyClassLoader gcl = new GroovyClassLoader();
-
-        Class groovyClass = gcl.parseClass( "class TestClass {\n" +
-                        "def testMethod() {\n" +
-                        "}\n" +
-                        "}" );
-
-        ProxyMetaClass pmc = ProxyMetaClass.getInstance(groovyClass);
-        // proof of concept to try out proxy meta class
-        pmc.setInterceptor( new TracingInterceptor() {
-            public boolean doInvoke() {
-                return false;
-            }
-        });
-
-        GroovyObject go = (GroovyObject)groovyClass.newInstance();
-
-        go.setMetaClass( pmc );
-        try {
-            // invoke real method
-            go.invokeMethod("testMethod", new Object[]{});
-            // invoke fake method
-            go.invokeMethod("fakeMethod", new Object[]{});
-        }
-        catch(MissingMethodException mme) {
-            fail("Missing method exception should not have been thrown!");
-        }
-    }
 
     public void testParamsDynamicProperty() throws Exception {
 
@@ -65,7 +40,7 @@ public class ControllerMetaClassTests extends TestCase {
          request.addParameter("testParam", "testValue");
 
          Class groovyClass = gcl.parseClass( "class TestController {\n" +
-                         "@Property list = {\n" +
+                         "def list = {\n" +
                          "}\n" +
                          "}" );
 
@@ -101,15 +76,15 @@ public class ControllerMetaClassTests extends TestCase {
         request.addParameter("testParam", "testValue");
 
         Class groovyClass = gcl.parseClass( "class TestController {\n" +
-                        "@Property next = {\n" +
+                        "def next = {\n" +
                             "return ['success':this.params['testParam2']]" +
                         "}\n" +
-                        "@Property list = {\n" +
+                        "def list = {\n" +
                             "redirect(action:next,params:['testParam2':'testValue2'])\n" +
                         "}\n" +
                         "}" );
         Class secondController = gcl.parseClass( "class SecondController {\n" +
-                "@Property list = {\n" +
+                "def list = {\n" +
                     "return redirect(action:'test/list',params:['testParam2':'testValue2'])\n" +
                 "}\n" +
                 "}" );
@@ -160,7 +135,7 @@ public class ControllerMetaClassTests extends TestCase {
 
         RenderDynamicMethod rdm = new RenderDynamicMethod(helper1,request,response);
         GroovyObject go = (GroovyObject)gcl.parseClass("class ClosureClass {\n" +
-                                    "@Property closure = {\n" +
+                                    "def closure = {\n" +
                                         "test(attr:'hello') {\n" +
                                             "nested()" +
                                         "}" +
@@ -292,7 +267,7 @@ public class ControllerMetaClassTests extends TestCase {
 
         for (int i = 0; i < groovyClasses.length; i++) {
             Class groovyClass = groovyClasses[i];
-            ProxyMetaClass pmc = PropertyAccessProxyMetaClass.getInstance(groovyClass);
+            ProxyMetaClass pmc = ProxyMetaClass.getInstance(groovyClass);
             BeanDefinition bd = new RootBeanDefinition(groovyClass,false);
             context.registerBeanDefinition( groovyClass.getName(), bd );
         }

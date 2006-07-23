@@ -15,7 +15,6 @@
  */
 package org.codehaus.groovy.grails.commons.metaclass;
 
-import groovy.lang.Interceptor;
 /**
  * Implements an the Interceptor interface to add support for using ProxyMetaClass to define 
  * dynamic methods
@@ -24,70 +23,44 @@ import groovy.lang.Interceptor;
  * @since Oct 24, 2005
  */
 public abstract class AbstractDynamicMethodsInterceptor extends AbstractDynamicMethods
-		implements Interceptor,PropertyAccessInterceptor {
+		implements Interceptor,PropertyAccessInterceptor,ConstructorInterceptor {
 
-	protected boolean doInvoke = true;
-	protected boolean doGet = true;
-	protected boolean doSet = true;
-	private Object returnValue;
-	
+	/* (non-Javadoc)
+	 * @see org.codehaus.groovy.grails.commons.metaclass.ConstructorInterceptor#afterConstructor(java.lang.Object[], java.lang.Object)
+	 */
+	public Object afterConstructor(Object[] args, Object instantiatedInstance) {
+		return instantiatedInstance;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.codehaus.groovy.grails.commons.metaclass.ConstructorInterceptor#beforeConstructor(java.lang.Object[], org.codehaus.groovy.grails.commons.metaclass.InvocationCallback)
+	 */
+	public Object beforeConstructor(Object[] args, InvocationCallback callback) {
+		Object result = invokeConstructor(args,callback);
+		return callback.isInvoked() ? result : null;
+	}
 
 	public Object beforeInvoke(Object target, String methodName,
-			Object[] arguments) {
-		InvocationCallback callback = new InvocationCallback();
-		this.returnValue = invokeMethod(target, methodName, arguments, callback);
+			Object[] arguments, InvocationCallback callback) {
+		Object returnValue = invokeMethod(target, methodName, arguments, callback);
 		// if the method was invoked as dynamic 
 		// don't invoke true target
-		if (callback.isInvoked()) {
-			doInvoke = false;
-			return returnValue;
-		} else {
-			doInvoke = true;
-			return null;
-		}
+		return callback.isInvoked() ? returnValue : null;
 	}
 
 	public Object afterInvoke(Object object, String methodName,
 			Object[] arguments, Object result) {
-		return doInvoke?result: this.returnValue;
+		return result;
 	}
 
-	public boolean doInvoke() {
-		return doInvoke;
-	}
-
-	public Object beforeGet(Object object, String property) {
-		InvocationCallback callback = new InvocationCallback();
+	public Object beforeGet(Object object, String property, InvocationCallback callback) {
 		Object returnValue = getProperty(object,property,callback);
 		// if the method was invoked as dynamic 
 		// don't invoke true target
-		if (callback.isInvoked()) {
-			doGet = false;
-			return returnValue;
-		} else {
-			doGet = true;
-			return null;
-		}
+		return callback.isInvoked() ? returnValue : null;
 	}
 
-	public void beforeSet(Object object, String property, Object newValue) {
-		InvocationCallback callback = new InvocationCallback();
+	public void beforeSet(Object object, String property, Object newValue, InvocationCallback callback) {
 		setProperty(object,property,newValue,callback);
-		// if the method was invoked as dynamic 
-		// don't invoke true target
-		if (callback.isInvoked()) {
-			doSet = false;
-		} else {
-			doSet = true;
-		}
 	}
-
-	public boolean doGet() {
-		return doGet;
-	}
-
-	public boolean doSet() {
-		return doSet;
-	}
-
 }

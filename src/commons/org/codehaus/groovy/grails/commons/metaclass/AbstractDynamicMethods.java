@@ -34,6 +34,7 @@ public abstract class AbstractDynamicMethods implements DynamicMethods {
 
 	private Collection dynamicMethodInvocations = null;
 	private Collection staticMethodInvocations = null;
+	private Collection dynamicConstructors = null;
 	private Map dynamicProperties = null;
 	private Class clazz = null;
 	
@@ -64,8 +65,16 @@ public abstract class AbstractDynamicMethods implements DynamicMethods {
 			this.dynamicMethodInvocations = new ArrayList();
 			this.staticMethodInvocations = new ArrayList();
 			this.dynamicProperties = new HashMap();
+			this.dynamicConstructors = new ArrayList();
 	}	
 	
+	/* (non-Javadoc)
+	 * @see org.codehaus.groovy.grails.commons.metaclass.DynamicMethods#addDynamicConstructor(org.codehaus.groovy.grails.commons.metaclass.DynamicConstructor)
+	 */
+	public void addDynamicConstructor(DynamicConstructor constructor) {
+		this.dynamicConstructors.add(constructor);
+	}
+
 	/**
 	 * A non-registering constructor that simple creates an instance
 	 *
@@ -73,7 +82,8 @@ public abstract class AbstractDynamicMethods implements DynamicMethods {
 	public AbstractDynamicMethods() {
 		this.dynamicMethodInvocations = new ArrayList();
 		this.staticMethodInvocations = new ArrayList();
-		this.dynamicProperties = new HashMap();		
+		this.dynamicProperties = new HashMap();
+		this.dynamicConstructors = new ArrayList();
 	}
 
 	/* (non-Javadoc)
@@ -139,6 +149,29 @@ public abstract class AbstractDynamicMethods implements DynamicMethods {
 		return null;
 	}
 	
+	
+	
+	/* (non-Javadoc)
+	 * @see org.codehaus.groovy.grails.commons.metaclass.DynamicMethods#invokeConstructor(java.lang.Object[], org.codehaus.groovy.grails.commons.metaclass.InvocationCallback)
+	 */
+	public Object invokeConstructor(Object[] arguments, InvocationCallback callBack) {
+		if(LOG.isTraceEnabled()) {
+			LOG.trace("[DynamicMethods] Attempting invocation of dynamic constructor with arguments ["+ArrayUtils.toString( arguments )+"]");			
+		}
+		
+		for (Iterator i = this.dynamicConstructors.iterator(); i.hasNext();) {
+			DynamicConstructor constructor = (DynamicConstructor) i.next();
+			if(constructor.isArgumentsMatch(arguments)) {
+				if(LOG.isTraceEnabled()) {
+					LOG.trace("[DynamicMethods] Dynamic constructor found, marked and invoking...");			
+				}				
+				callBack.markInvoked();
+				return constructor.invoke(this.clazz,arguments);
+			}
+		}
+		return null;
+	}
+
 	/* (non-Javadoc)
 	 * @see org.codehaus.groovy.grails.metaclass.DynamicMethods#invokeStaticMethod(java.lang.Object, java.lang.String, java.lang.Object[], org.codehaus.groovy.grails.metaclass.InvocationCallback)
 	 */

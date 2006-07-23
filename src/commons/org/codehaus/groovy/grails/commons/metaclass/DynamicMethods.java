@@ -19,9 +19,18 @@ package org.codehaus.groovy.grails.commons.metaclass;
  * invocations
  * 
  * @author Graeme Rocher
- * @since Oct 27, 2005
+ * @since 0.1
+ * 
+ * Created: Oct 27, 2005
  */
 public interface DynamicMethods {
+	
+	/**
+	 * Adds a dynamic constructor
+	 * 
+	 * @param constructor The constructor to add
+	 */
+	public void addDynamicConstructor(DynamicConstructor constructor);
 
 	/**
 	 * Adds a new dynamic method invocation
@@ -57,16 +66,67 @@ public interface DynamicMethods {
 	 */
 	public DynamicMethodInvocation getDynamicMethod(String method_signature);
 	
+	/**
+	 * Attempts to get a dynamic property. If successful the InvocationCallback
+	 * instance is marked as invoked
+	 *  
+	 * @param object The instance
+	 * @param propertyName The property name to get
+	 * @param callback The callback object
+	 * 
+	 * @return The property value if it exists
+	 */
 	public abstract Object getProperty(Object object, String propertyName,
 			InvocationCallback callback);
 
+
+	/**
+	 * Attempts to set a dynamic property. If successful the InvocationCallback
+	 * instance is marked as invoked
+	 *  
+	 * @param object The instance
+	 * @param propertyName The property name to set
+	 * @param callback The callback object
+	 */
 	public abstract void setProperty(Object object, String propertyName,
 			Object newValue, InvocationCallback callback);
 
+	/**
+	 * Attempts to invoke a dynamic method with the specified name and arguments
+	 * If successful the callback object is marked as invoked.
+	 * 
+	 * @param object The instance to invoke on
+	 * @param methodName The name of the method
+	 * @param arguments The arguments of the method
+	 * @param callback The callback object
+	 * 
+	 * @return The method return value
+	 */
 	public abstract Object invokeMethod(Object object, String methodName,
 			Object[] arguments, InvocationCallback callback);
 
+	/**
+	 * Attempts to invoke a dynamic static method with the specified name and arguments
+	 * If successful the callback object is marked as invoked.
+	 * 
+	 * @param object The instance to invoke on
+	 * @param methodName The name of the method
+	 * @param arguments The arguments of the method
+	 * @param callback The callback object
+	 * 
+	 * @return The method return value
+	 */	
 	public abstract Object invokeStaticMethod(Object object, String methodName,
 			Object[] arguments, InvocationCallback callBack);
 
+	/**
+	 * Attempts to invoke a dynamic constructor. If successful the callback object
+	 * is marked as invoked.
+	 * 
+	 * @param arguments The arguments
+	 * @param callBack The callback object
+	 * 
+	 * @return The constructed instance
+	 */
+	public Object invokeConstructor(Object[] arguments, InvocationCallback callBack);
 }

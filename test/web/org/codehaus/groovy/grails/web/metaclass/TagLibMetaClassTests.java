@@ -25,16 +25,16 @@ public class TagLibMetaClassTests extends TestCase {
 	public void testInvokeOneTagLibFromOther() throws Exception {
 		GroovyClassLoader gcl = new GroovyClassLoader();
         gcl.parseClass( "class TestController {\n" +
-									                "@Property list = {\n" +
+									                "def list = {\n" +
 									                "}\n" +
 									                "}\n" +
 						"class FirstTagLib {\n" +
-						       "@Property firstTag = { attrs ->\n" +
+						       "def firstTag = { attrs ->\n" +
 						               "attrs.remove('test')" +
 						        "}\n" +
 						"}\n" +
 				"class SecondTagLib {\n" +
-                	"@Property secondTag = { attrs ->\n" +
+                	"def secondTag = { attrs ->\n" +
                 			"firstTag(attrs)\n" +                	
                 	"}\n" +
                 "}" );        

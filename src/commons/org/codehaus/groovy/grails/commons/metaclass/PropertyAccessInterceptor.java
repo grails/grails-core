@@ -15,8 +15,6 @@
  */
 package org.codehaus.groovy.grails.commons.metaclass;
 
-import groovy.lang.Interceptor;
-
 /**
  * <p>An interface that adds the ability to intercept
  * property getters/setters
@@ -32,17 +30,21 @@ public interface PropertyAccessInterceptor extends Interceptor  {
 	 * 
 	 * @param object The target object
 	 * @param property The property to get
-	 * @return
+	 * @param callback The callback object
+	 * 
+	 * @return A value supplied by the interceptor
 	 */
-	public Object beforeGet(Object object, String property);
-	
-	public void beforeSet(Object object, String property, Object newValue);
-	
-	public boolean doSet();
+	public Object beforeGet(Object object, String property, InvocationCallback callback);
 	
 	/**
-	 * @return True if the real property getter should be called
+	 * Intercepts a setXXX call
+	 * 
+	 * @param object The target object
+	 * @param property The property to set
+	 * @param newValue The new value
+	 * @param callback The callback object
+	 * 
 	 */
-	public boolean doGet();
-
+	public void beforeSet(Object object, String property, Object newValue, InvocationCallback callback);
+	
 }

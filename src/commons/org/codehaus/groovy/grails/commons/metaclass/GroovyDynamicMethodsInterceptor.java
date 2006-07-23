@@ -15,7 +15,6 @@
 package org.codehaus.groovy.grails.commons.metaclass;
 
 import groovy.lang.GroovyObject;
-import groovy.lang.ProxyMetaClass;
 
 import java.beans.IntrospectionException;
 
@@ -32,7 +31,7 @@ public class GroovyDynamicMethodsInterceptor extends
 	private ProxyMetaClass pmc;
 	
 	public GroovyDynamicMethodsInterceptor(GroovyObject go) throws IntrospectionException {
-		this.pmc = PropertyAccessProxyMetaClass.getInstance(go.getClass());
+		this.pmc = ProxyMetaClass.getInstance(go.getClass());
 		pmc.setInterceptor( this );
 		go.setMetaClass(pmc);				
 	}
