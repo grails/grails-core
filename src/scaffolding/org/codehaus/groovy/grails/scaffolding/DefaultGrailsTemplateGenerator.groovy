@@ -52,7 +52,7 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator  {
                 buf << renderNumberEditor(domainClass,property)
             else if(property.type == String.class)
                 buf << renderStringEditor(domainClass,property)
-            else if(property.type == Date.class)
+            else if(property.type == Date.class || property.type == java.sql.Date.class || property.type == java.sql.Time.class)
                 buf << renderDateEditor(domainClass,property)
             else if(property.type == Calendar.class)
                 buf << renderDateEditor(domainClass,property)  
