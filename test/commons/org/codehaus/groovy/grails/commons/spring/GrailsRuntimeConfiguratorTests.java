@@ -250,18 +250,22 @@ public class GrailsRuntimeConfiguratorTests extends TestCase {
 	
 	public void testRefreshSessionFactory() throws Exception {
 		GroovyClassLoader gcl = new GroovyClassLoader();
+		Class dc = gcl.parseClass("class Test { Long id; Long version; }");
 		
-		GrailsApplication app = new DefaultGrailsApplication(new Class[0], gcl );
+		GrailsApplication app = new DefaultGrailsApplication(new Class[]{dc}, gcl );
 		MockApplicationContext parent = new MockApplicationContext();
 		parent.registerMockBean(GrailsApplication.APPLICATION_ID, app);
 		
 		GrailsRuntimeConfigurator conf = new GrailsRuntimeConfigurator(app,parent);
+		conf.setLoadExternalPersistenceConfig(false);
 		GrailsWebApplicationContext ctx = (GrailsWebApplicationContext)conf.configure(new MockServletContext());
 		assertNotNull(ctx);
 		
-		Class dc = gcl.parseClass("class Test { Long id; Long version; }");
+		gcl = new GroovyClassLoader();
+		dc = gcl.parseClass("class Test { Long id; Long version; }");
+		
 		GrailsDomainClass domainClass = new DefaultGrailsDomainClass(dc);
-		conf.registerDomainClass(domainClass, ctx);
+		conf.updateDomainClass(domainClass, ctx);
 		
 		conf.refreshSessionFactory(app,ctx);
 	}

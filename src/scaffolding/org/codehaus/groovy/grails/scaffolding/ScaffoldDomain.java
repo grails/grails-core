@@ -198,4 +198,11 @@ public interface ScaffoldDomain {
 	 * @param clazz The persistent class
 	 */
 	void setPersistentClass(Class clazz);
+	
+	/**
+	 * Sets the session factory used by the persistent implementation
+	 * 
+	 * @param sessionFactory The session factory to use
+	 */
+	void setSessionFactory(Object sessionFactory);
 }

@@ -351,6 +351,13 @@ public class DefaultScaffoldDomain implements ScaffoldDomain {
 	}
 
 
+	public void setSessionFactory(Object sessionFactory) {
+		if(sessionFactory instanceof SessionFactory) {
+			setSessionFactory((SessionFactory)sessionFactory);
+		}
+	}
+
+
 
 
 
