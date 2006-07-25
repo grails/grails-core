@@ -487,8 +487,14 @@ Targets:
         </copy>
         <antcall target="package:java5"></antcall>
         <copy todir="tmp/war/WEB-INF/grails-app">
-            <fileset dir="grails-app" includes="**"/>
+            <fileset dir="grails-app" includes="**">
+            	<include name="**" />
+         	    <exclude name="*/messages.properties"/>            	
+            </fileset>
         </copy>
+    	<native2ascii 	src="grails-app/i18n/" 
+	    				dest="tmp/war/WEB-INF/grails-app/i18n/" 
+    					includes="messages.properties" encoding="UTF-8"/>    	
         <copy todir="tmp/war/WEB-INF/spring">
             <fileset dir="spring" includes="**"/>
         </copy>
