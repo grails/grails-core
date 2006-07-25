@@ -14,16 +14,15 @@
  */ 
 package org.codehaus.groovy.grails.commons;
 
-import org.apache.commons.lang.ClassUtils;
-import org.apache.commons.lang.builder.ToStringBuilder;
-import org.springframework.beans.BeanWrapper;
-import org.springframework.beans.BeanWrapperImpl;
-
 import java.beans.PropertyDescriptor;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+
+import org.apache.commons.lang.ClassUtils;
+import org.apache.commons.lang.builder.ToStringBuilder;
+import org.springframework.beans.BeanUtils;
 
 /**
  * @author Graeme Rocher
@@ -66,8 +65,8 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
         if(!domainClass.isRoot()) {
         	Class superClass = domainClass.getClazz().getSuperclass();
         	
-        	BeanWrapper superBean = new BeanWrapperImpl(superClass);
-        	if(superBean.isReadableProperty(this.name)) {
+        	PropertyDescriptor pd = BeanUtils.getPropertyDescriptor(superClass, this.name);
+        	if (pd != null && pd.getReadMethod() != null) {
         		this.inherited = true;
         	}
         }        

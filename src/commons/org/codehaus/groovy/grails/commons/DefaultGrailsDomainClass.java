@@ -29,6 +29,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.lang.reflect.Modifier;
 
 import org.apache.commons.lang.ClassUtils;
 import org.apache.commons.logging.Log;
@@ -66,7 +67,9 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
 		super(clazz, "");
 		PropertyDescriptor[] propertyDescriptors = getReference().getPropertyDescriptors();
 		
-		if(!clazz.getSuperclass().equals( GroovyObject.class ) && !clazz.getSuperclass().equals(Object.class)) {
+		if(!clazz.getSuperclass().equals( GroovyObject.class ) && 
+		   !clazz.getSuperclass().equals(Object.class) &&
+		   !Modifier.isAbstract(clazz.getSuperclass().getModifiers())) {
 			this.root = false;
 		}
 		this.propertyMap = new HashMap();
