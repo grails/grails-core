@@ -86,6 +86,7 @@ public class GenerateUtils {
         else {
             LOG.info("Grails was unable to generate templates for unsupported type ["+type+"]");
         }
+        System.exit(0);
     }
 
     private static GrailsDomainClass getDomainCallFromApplication(GrailsApplication application, String domainClassName) {
