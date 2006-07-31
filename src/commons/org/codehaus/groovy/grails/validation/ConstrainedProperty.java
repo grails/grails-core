@@ -469,8 +469,11 @@ public class ConstrainedProperty   {
         protected void processValidate(Object target, Object propertyValue, Errors errors) {
             if(email) {
                 EmailValidator emailValidator = EmailValidator.getInstance();
-                if(!emailValidator.isValid(propertyValue.toString())  ) {
-                    Object[] args = new Object[] { constraintPropertyName, constraintOwningClass, propertyValue };
+                Object[] args = new Object[] { constraintPropertyName, constraintOwningClass, propertyValue };
+                if(propertyValue == null) {
+                   super.rejectValue(errors,EMAIL_CONSTRAINT + INVALID_SUFFIX,args,getDefaultMessage(DEFAULT_INVALID_EMAIL_MESSAGE_CODE, args));
+                }
+                else if(!emailValidator.isValid(propertyValue.toString())  ) {
                     super.rejectValue(errors,EMAIL_CONSTRAINT + INVALID_SUFFIX,args,getDefaultMessage(DEFAULT_INVALID_EMAIL_MESSAGE_CODE, args));
                 }
             }
