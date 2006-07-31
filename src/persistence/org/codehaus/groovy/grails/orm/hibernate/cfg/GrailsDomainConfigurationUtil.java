@@ -57,7 +57,10 @@ public class GrailsDomainConfigurationUtil {
         		Class superClass = domainClasses[i].getClazz().getSuperclass();
         		while(!superClass.equals(Object.class)&&!superClass.equals(GroovyObject.class)) {
             		GrailsDomainClass gdc = (GrailsDomainClass)domainMap.get(superClass.getName());
-            		gdc.getSubClasses().add(domainClasses[i]);
+                    if (gdc == null || gdc.getSubClasses()==null)
+                        break;
+                    
+                    gdc.getSubClasses().add(domainClasses[i]);
             		superClass = superClass.getSuperclass();
         		}
         	}        	
