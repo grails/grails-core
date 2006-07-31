@@ -134,7 +134,20 @@ Targets:
     </target>
 
     <target name="generate-views" depends="package,input-domain-class" description="Generates the views from a domain class">
-        <antcall target="generate-views:impl" />
+        <path id="test.classpath">
+			<!--<pathelement location="${grails.home}/src/web-app/WEB-INF"/>-->
+            <pathelement location="${basedir}/tmp/war/WEB-INF"/>
+            <pathelement location="${basedir}/tmp/war/WEB-INF/classes"/>
+            <fileset dir="${grails.home}/lib"/>
+			<fileset dir="${grails.home}/dist"/>
+			<fileset dir="lib"/>
+		</path>
+		<java classpathref="test.classpath" classname="grails.util.GenerateUtils" fork="true" failonerror="true">
+             <arg value="all" />
+             <arg value="${domain.class.name}" />
+<!--			<jvmarg value="-Xdebug"/>
+			<jvmarg value="-Xrunjdwp:transport=dt_socket,address=50010,suspend=y,server=y"/> -->
+		</java>
     </target>
 
     <target name="generate-views:impl">
@@ -152,8 +165,17 @@ Targets:
     </target>
 
     <target name="generate-all" depends="package,input-domain-class" description="Generates the all artifacts from a domain class">
-        <antcall target="generate-controller:impl" />
-        <antcall target="generate-views:impl" />
+		<path id="test.classpath">
+            <pathelement location="${basedir}/tmp/war/WEB-INF"/>
+            <pathelement location="${basedir}/tmp/war/WEB-INF/classes"/>
+            <fileset dir="${grails.home}/lib"/>
+			<fileset dir="${grails.home}/dist"/>
+			<fileset dir="lib"/>
+		</path>
+		<java classpathref="test.classpath" classname="grails.util.GenerateUtils" fork="true" failonerror="true">
+             <arg value="all" />
+             <arg value="${domain.class.name}" />
+		</java>
     </target>
 
 
