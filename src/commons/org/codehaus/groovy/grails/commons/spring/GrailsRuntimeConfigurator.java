@@ -775,14 +775,7 @@ public class GrailsRuntimeConfigurator {
 			}
 		}
 		
-		// setup dialect detector bean
-		springConfig
-			.addSingletonBean(DIALECT_DETECTOR_BEAN, HibernateDialectDetectorFactoryBean.class)
-			.addProperty(DATA_SOURCE_BEAN, new RuntimeBeanReference(DATA_SOURCE_BEAN))
-			.addProperty("vendorNameDialectMappings",vendorNameDialectMappings);
-		
-		
-		
+
 		ManagedMap hibernatePropertiesMap = new ManagedMap();
 		// enable sql logging yes/no
 		if(ds != null && ds.isLoggingSql()) {
@@ -794,7 +787,12 @@ public class GrailsRuntimeConfigurator {
 			hibernatePropertiesMap.put("hibernate.dialect", ds.getDialect().getName());
 		}
 		else {
-			hibernatePropertiesMap.put("hibernate.dialect", new RuntimeBeanReference(DIALECT_DETECTOR_BEAN));
+            // setup dialect detector bean
+            springConfig
+                .addSingletonBean(DIALECT_DETECTOR_BEAN, HibernateDialectDetectorFactoryBean.class)
+                .addProperty(DATA_SOURCE_BEAN, new RuntimeBeanReference(DATA_SOURCE_BEAN))
+                .addProperty("vendorNameDialectMappings",vendorNameDialectMappings);
+            hibernatePropertiesMap.put("hibernate.dialect", new RuntimeBeanReference(DIALECT_DETECTOR_BEAN));
 		}
 		if(ds == null ) {
 			hibernatePropertiesMap.put("hibernate.hbm2ddl.auto", "create-drop");
