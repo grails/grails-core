@@ -207,7 +207,7 @@ public final class GrailsDomainBinder {
 				prop.setInsertable( true );
 				prop.setCollectionRole( collection.getRole() );
 				prop.setValue( collection.getKey() );
-				prop.setOptional( property.isOptional() );
+				prop.setOptional( true );
 				referenced.addProperty( prop );
 		}		
 	}		
