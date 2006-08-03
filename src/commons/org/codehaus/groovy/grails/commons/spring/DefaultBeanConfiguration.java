@@ -147,4 +147,8 @@ public class DefaultBeanConfiguration implements BeanConfiguration {
 		return this;
 	}
 
+    public void setName(String beanName) {
+        this.name = beanName;
+    }
+
 }

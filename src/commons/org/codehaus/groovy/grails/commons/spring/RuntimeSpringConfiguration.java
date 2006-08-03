@@ -59,7 +59,7 @@ public interface RuntimeSpringConfiguration {
 	
 	/**
 	 * Adds an empty singleton bean configuration
-	 * @param The name of the singleton bean
+	 * @param name The name of the singleton bean
 	 * 
 	 * @return A BeanConfiguration instance
 	 */
@@ -102,7 +102,7 @@ public interface RuntimeSpringConfiguration {
 	 * @param constructorArguments The constructor arguments
 	 * @return A BeanConfiguration instance
 	 */	
-	public BeanConfiguration createSingletonBean(Class class1, Collection constructorArguments);
+	public BeanConfiguration createSingletonBean(Class clazz, Collection constructorArguments);
 	
 	/**
 	 * Sets the servlet context
@@ -131,6 +131,13 @@ public interface RuntimeSpringConfiguration {
 	 * @return A BeanConfiguration instance
 	 * 
 	 */
-	public BeanConfiguration createSingletonBean(String string);
-	
+	public BeanConfiguration createSingletonBean(String name);
+
+    /**
+     * Adds a bean configuration to the list of beans to be created
+     *
+     * @param beanName The name of the bean in the context
+     * @param beanConfiguration The BeanConfiguration instance
+     */
+    void addBeanConfiguration(String beanName, BeanConfiguration beanConfiguration);
 }

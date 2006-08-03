@@ -82,8 +82,7 @@ public class DefaultRuntimeSpringConfiguration implements
 	}
 
 	public BeanConfiguration createSingletonBean(Class clazz) {
-		BeanConfiguration bc = new DefaultBeanConfiguration(clazz);
-		return bc;
+        return new DefaultBeanConfiguration(clazz);
 	}
 
 	public BeanConfiguration addSingletonBean(String name, Class clazz, Collection args) {
@@ -99,8 +98,7 @@ public class DefaultRuntimeSpringConfiguration implements
 	}
 
 	public BeanConfiguration createSingletonBean(Class clazz, Collection constructorArguments) {
-		BeanConfiguration bc = new DefaultBeanConfiguration(clazz, constructorArguments);
-		return bc;
+        return new DefaultBeanConfiguration(clazz, constructorArguments);
 	}
 
 	public void setServletContext(ServletContext context) {
@@ -114,5 +112,10 @@ public class DefaultRuntimeSpringConfiguration implements
 	public BeanConfiguration createSingletonBean(String name) {
 		return new DefaultBeanConfiguration(name);
 	}
+
+    public void addBeanConfiguration(String beanName, BeanConfiguration beanConfiguration) {
+        beanConfiguration.setName(beanName);
+        beanConfigs.add(beanConfiguration);
+    }
 
 }

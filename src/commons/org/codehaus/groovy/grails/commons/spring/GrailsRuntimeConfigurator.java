@@ -143,11 +143,15 @@ public class GrailsRuntimeConfigurator {
 												.setFactoryMethod("newInstance");
 				
 		if (grailsServiceClass.byName()) {
-			serviceInstance.setAutowire("byName");
+			serviceInstance.setAutowire(BeanConfiguration.AUTOWIRE_BY_NAME);
 		} else if (grailsServiceClass.byType()) {
-			serviceInstance.setAutowire("byType");
+			serviceInstance.setAutowire(BeanConfiguration.AUTOWIRE_BY_TYPE);
 		}
-		context.registerBeanDefinition(grailsServiceClass.getFullName() + "Instance",serviceInstance.getBeanDefinition());
+        else {
+            serviceInstance.setAutowire(BeanConfiguration.AUTOWIRE_BY_TYPE);
+        }
+
+        context.registerBeanDefinition(grailsServiceClass.getFullName() + "Instance",serviceInstance.getBeanDefinition());
 		
 	    // configure the service instance as a hotswappable target source
 	
@@ -633,7 +637,7 @@ public class GrailsRuntimeConfigurator {
 			
 			
 			BeanConfiguration serviceInstance = springConfig
-													.addSingletonBean(grailsServiceClass.getFullName() + "Instance")
+                                                    .createSingletonBean(grailsServiceClass.getFullName() + "Instance" )
 													.setFactoryBean( grailsServiceClass.getFullName() + "Class")
 													.setFactoryMethod("newInstance");
 			
@@ -651,16 +655,15 @@ public class GrailsRuntimeConfigurator {
 				
 				springConfig
 					.addSingletonBean(grailsServiceClass.getPropertyName(),TransactionProxyFactoryBean.class)
-					.addProperty("target", new RuntimeBeanReference(grailsServiceClass.getFullName() + "Instance"))
+					.addProperty("target", serviceInstance.getBeanDefinition())
 					.addProperty("proxyTargetClass", Boolean.TRUE)
 					.addProperty("transactionAttributes", transactionAttributes)
 					.addProperty(TRANSACTION_MANAGER_BEAN, new RuntimeBeanReference(TRANSACTION_MANAGER_BEAN));
 				
 			} else {
                 // otherwise configure a standard proxy
-				springConfig
-					.addSingletonBean(grailsServiceClass.getName() + "Service", BeanReferenceFactoryBean.class)
-					.addProperty("targetBeanName",grailsServiceClass.getFullName() + "Instance" );
+                springConfig
+                        .addBeanConfiguration(grailsServiceClass.getName() + "Service", serviceInstance);
 			}
 		}
 	}

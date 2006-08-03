@@ -1,18 +1,10 @@
 package org.codehaus.groovy.grails.commons.spring;
 
-import java.util.Properties;
-
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyObject;
-
+import junit.framework.TestCase;
 import org.codehaus.groovy.grails.MockApplicationContext;
-import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
-import org.codehaus.groovy.grails.commons.DefaultGrailsDomainClass;
-import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.GrailsControllerClass;
-import org.codehaus.groovy.grails.commons.GrailsDomainClass;
-import org.codehaus.groovy.grails.commons.GrailsServiceClass;
-import org.codehaus.groovy.grails.commons.GrailsTagLibClass;
+import org.codehaus.groovy.grails.commons.*;
 import org.codehaus.groovy.grails.orm.hibernate.validation.GrailsDomainClassValidator;
 import org.codehaus.groovy.grails.support.ClassEditor;
 import org.codehaus.groovy.grails.web.errors.GrailsExceptionResolver;
@@ -28,7 +20,8 @@ import org.springframework.orm.hibernate3.support.OpenSessionInViewInterceptor;
 import org.springframework.web.multipart.commons.CommonsMultipartResolver;
 import org.springframework.web.servlet.HandlerExecutionChain;
 import org.springframework.web.servlet.ModelAndView;
-import junit.framework.TestCase;
+
+import java.util.Properties;
 
 public class GrailsRuntimeConfiguratorTests extends TestCase {
 
@@ -88,7 +81,7 @@ public class GrailsRuntimeConfiguratorTests extends TestCase {
 		assertTrue(validator.supports(dc));
 		
 		// test service config
-		GroovyObject serviceInstance = (GroovyObject)ctx.getBean("TestServiceInstance");
+		GroovyObject serviceInstance = (GroovyObject)ctx.getBean("testService");
 		assertEquals("hello",serviceInstance.invokeMethod("serviceMethod", null));
 		
 		// test controller config		
@@ -269,4 +262,39 @@ public class GrailsRuntimeConfiguratorTests extends TestCase {
 		
 		conf.refreshSessionFactory(app,ctx);
 	}
+
+    public void testCustomDialectConfiguration() throws Exception {
+		GroovyClassLoader gcl = new GroovyClassLoader();
+		Class ds = gcl.parseClass("class TestDataSource { def dialect = org.hibernate.dialect.Oracle9Dialect.class;String driverClassName = 'org.hsqldb.jdbcDriver';String url = 'jdbc:hsqldb:mem:testDB';String username ='sa'; String password =''; }");
+
+		GrailsApplication app = new DefaultGrailsApplication(new Class[]{ds}, gcl );
+		MockApplicationContext parent = new MockApplicationContext();
+		parent.registerMockBean(GrailsApplication.APPLICATION_ID, app);
+
+		GrailsRuntimeConfigurator conf = new GrailsRuntimeConfigurator(app,parent);
+		conf.setLoadExternalPersistenceConfig(false);
+		GrailsWebApplicationContext ctx = (GrailsWebApplicationContext)conf.configure(new MockServletContext());
+		assertNotNull(ctx);
+
+    }
+
+    public void testAutowireServiceClasses() throws Exception {
+		GroovyClassLoader gcl = new GroovyClassLoader();
+		Class s1 =  gcl.parseClass("class TestService { def serviceMethod() { 'hello' } }");
+        Thread.sleep(1000);
+        Class s2 =  gcl.parseClass("class AnotherService { TestService testService; def anotherMethod() { testService.serviceMethod() } }");
+
+        GrailsApplication app = new DefaultGrailsApplication(new Class[]{s1,s2}, gcl );
+		MockApplicationContext parent = new MockApplicationContext();
+		parent.registerMockBean(GrailsApplication.APPLICATION_ID, app);
+
+		GrailsRuntimeConfigurator conf = new GrailsRuntimeConfigurator(app,parent);
+		conf.setLoadExternalPersistenceConfig(false);
+		GrailsWebApplicationContext ctx = (GrailsWebApplicationContext)conf.configure(new MockServletContext());
+		assertNotNull(ctx);
+
+        GroovyObject anotherService = (GroovyObject)ctx.getBean("anotherService");
+
+        assertEquals("hello",anotherService.invokeMethod("anotherMethod", null));
+    }
 }

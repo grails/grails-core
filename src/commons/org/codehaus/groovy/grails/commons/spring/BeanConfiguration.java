@@ -29,12 +29,14 @@ import org.springframework.beans.factory.support.AbstractBeanDefinition;
  */
 
 public interface BeanConfiguration {
+    String AUTOWIRE_BY_TYPE = "byType";
+    String AUTOWIRE_BY_NAME = "byName";
 
-	/**
-	 * 
-	 * @return The name of the bean
-	 */
-	String getName();
+    /**
+     *
+     * @return The name of the bean
+     */
+    String getName();
 	
 	/**
 	 * 
@@ -94,6 +96,11 @@ public interface BeanConfiguration {
 	 * @return This BeanConfiguration
 	 */
 	BeanConfiguration setAutowire(String type);
-	
-	
+
+
+    /**
+     * Sets the name of the bean in the app ctx
+     * @param beanName The bean name
+     */
+    void setName(String beanName);
 }
