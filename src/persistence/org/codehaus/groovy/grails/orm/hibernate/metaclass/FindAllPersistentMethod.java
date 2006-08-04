@@ -16,6 +16,7 @@
 package org.codehaus.groovy.grails.orm.hibernate.metaclass;
 
 import groovy.lang.MissingMethodException;
+import groovy.lang.GString;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -48,7 +49,7 @@ public class FindAllPersistentMethod extends AbstractStaticPersistentMethod {
 		if(arguments.length == 0)
 			return getHibernateTemplate().loadAll(clazz);
 		
-		final Object arg = arguments[0];
+		final Object arg = arguments[0] instanceof GString ? arguments[0].toString() :arguments[0];
 		
 		// if the arg is an instance of the class find by example
 		if(arg instanceof String) {
@@ -73,7 +74,11 @@ public class FindAllPersistentMethod extends AbstractStaticPersistentMethod {
 					max = retrieveMaxValue(arguments);
 					if(queryArgs != null) {					
 						for (int i = 0; i < queryArgs.length; i++) {
-							q.setParameter(i, queryArgs[i]);
+                            if(queryArgs[0] instanceof GString) {
+                                q.setParameter(i,queryArgs[i].toString());
+                            }   else {
+                                q.setParameter(i, queryArgs[i]);
+                            }
 						}
 					}
 					if(max > -1) {

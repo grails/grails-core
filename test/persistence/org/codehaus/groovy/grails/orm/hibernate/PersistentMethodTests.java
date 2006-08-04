@@ -1,8 +1,6 @@
 package org.codehaus.groovy.grails.orm.hibernate;
 
-import groovy.lang.GroovyClassLoader;
-import groovy.lang.GroovyObject;
-import groovy.lang.MissingMethodException;
+import groovy.lang.*;
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
@@ -152,13 +150,37 @@ public class PersistentMethodTests extends AbstractDependencyInjectionSpringCont
         List params = new ArrayList();
         params.add("fre%");
         Object returnValue = obj.getMetaClass().invokeStaticMethod(obj, "find", new Object[] { "from PersistentMethodTests where firstName like ?", params });
-        assertNotNull(returnValue);    
+        assertNotNull(returnValue);
+
+        // test with a GString argument
+        Binding b = new Binding();
+        b.setVariable("test","fre%");
+        GString gs = (GString)new GroovyShell(b).evaluate("\"$test\"");
+        params.clear();;
+
+        params.add(gs);
+        returnValue = obj.getMetaClass().invokeStaticMethod(obj, "find", new Object[] { "from PersistentMethodTests where firstName like ?", params });
+        assertNotNull(returnValue);
+
         
         returnValue = obj.getMetaClass().invokeStaticMethod(obj, "findAll", new Object[] { "from PersistentMethodTests where firstName like ?", params });
         assertNotNull(returnValue);
         assertTrue(returnValue instanceof List);
         List returnList = (List)returnValue;
         assertEquals(1, returnList.size());
+
+
+        // test with a GString query
+        b.setVariable("className","PersistentMethodTests");
+        gs = (GString)new GroovyShell(b).evaluate("\"from ${className} where firstName like ?\"");
+
+        returnValue = obj.getMetaClass().invokeStaticMethod(obj, "find", new Object[] { gs, params });
+        assertNotNull(returnValue);
+
+
+        returnValue = obj.getMetaClass().invokeStaticMethod(obj, "findAll", new Object[] { gs, params });
+        assertNotNull(returnValue);
+
     }
     
     public void testFindByPersistentMethods() {
