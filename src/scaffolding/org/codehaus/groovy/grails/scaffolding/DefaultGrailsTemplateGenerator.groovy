@@ -30,9 +30,10 @@ import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU;
  */
 class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator  {
 
-    Log LOG = LogFactory.getLog(DefaultGrailsTemplateGenerator.class);
-    @Property String basedir
-    @Property boolean overwrite = false
+    static final Log LOG = LogFactory.getLog(DefaultGrailsTemplateGenerator.class);
+
+    String basedir
+    boolean overwrite = false
     def engine = new groovy.text.SimpleTemplateEngine()
 
     // a closure that uses the type to render the appropriate editor
@@ -198,17 +199,14 @@ class ${className}Controller {
             return "<input type='text' name='${property.name}' value='\${${domainClass.propertyName}?.${property.name}}' />"
         }
         else {
-			if(cp.maxLength > 250 && cp.maxLength != Integer.MAX_VALUE && !cp.password && !cp.inList) {
+			if("textarea" == cp.widget || ((cp.maxLength > 250 || cp.length?.to > 250) && cp.maxLength != Integer.MAX_VALUE && !cp.password && !cp.inList)) {
                 return "<textarea rows='1' cols='1' name='${property.name}'>\${${domainClass.propertyName}?.${property.name}}</textarea>"
             }
             else {
                 if(cp.inList) {
-                   def sb = new StringBuffer('<select ')
-                   sb << "name='${property.name}'>">
-                   cp.inList.each {
-                        sb << "<option value='${it}'>${it}</option>"
-                   }
-                   sb << '</select>'
+                   def sb = new StringBuffer('<g:select ')
+                   sb << "name='${property.name}' from='\${${domainClass.propertyName}.constraints.${property.name}.inList}' value='\${${domainClass.propertyName}.${property.name}}'>"
+                   sb << '</g:select>'
                    return sb.toString()
                 }
                 else {
