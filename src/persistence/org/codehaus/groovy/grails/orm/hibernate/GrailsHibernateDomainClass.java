@@ -76,10 +76,13 @@ public class GrailsHibernateDomainClass extends AbstractGrailsClass implements E
         BeanWrapper bean = getReference();
         // configure identity property
         String ident = metaData.getIdentifierPropertyName();
-        Class identType = bean.getPropertyType(ident);
-        this.identifier = new GrailsHibernateDomainClassProperty(this,ident);
-        this.identifier.setIdentity(true);
-        this.identifier.setType(identType);
+
+        if(ident != null) {
+            Class identType = bean.getPropertyType(ident);
+            this.identifier = new GrailsHibernateDomainClassProperty(this,ident);
+            this.identifier.setIdentity(true);
+            this.identifier.setType(identType);
+        }
 
         propertyMap.put(ident,identifier);
 
