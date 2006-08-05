@@ -113,7 +113,11 @@ public class ClassHeirarchyMappingTests extends TestCase {
 		// test polymorphic query
 		List cars = (List)car.getMetaClass().invokeStaticMethod(car, "findAll", new Object[]{"from Car as c where c.type='luxury'"});
 		assertEquals(2,cars.size());
-		
-	}
+
+		// Check that queries on specific sub-classes work correctly.
+		cars = (List)fiat.getMetaClass().invokeStaticMethod(fiat, "findAll", new Object[0]);
+		assertEquals(1, cars.size());        
+
+    }
 }
 

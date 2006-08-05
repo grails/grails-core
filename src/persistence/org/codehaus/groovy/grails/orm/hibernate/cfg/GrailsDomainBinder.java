@@ -375,8 +375,8 @@ public final class GrailsDomainBinder {
 		// set the descriminator value as the name of the class. This is the 
 		// value used by Hibernate to decide what the type of the class is
 		// to perform polymorphic queries
-		subClass.setDiscriminatorValue(domainClass.getFullName());
-		
+		subClass.setDiscriminatorValue(sub.getFullName());
+		                                                  
 		root.addSubclass( subClass );
 		mappings.addClass( subClass );
 	}
