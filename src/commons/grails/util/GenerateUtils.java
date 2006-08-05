@@ -79,7 +79,7 @@ public class GenerateUtils {
             LOG.info("Generating views for domain class ["+domainClass.getName()+"]");
             generator.generateViews(domainClass,".");
         }
-        else if(CONTROLLER.equals(type)|| ALL.equals(type)) {
+        if(CONTROLLER.equals(type)|| ALL.equals(type)) {
            LOG.info("Generating controller for domain class ["+domainClass.getName()+"]");
            generator.generateController(domainClass,".");
         }
