@@ -292,6 +292,10 @@ class ${className}Controller {
             return "<g:datePicker name='${property.name}' value='\${${domainClass.propertyName}?.${property.name}}'></g:datePicker>"
         }
         else {
+          if(!cp.editable) {
+            return "\${${domainClass.propertyName}?.${property.name}?.toString()}"
+          }
+          else {
             def buf = new StringBuffer('<g:datePicker ')
             if(cp.widget) buf << "widget='${cp.widget}' ";
 
@@ -301,6 +305,7 @@ class ${className}Controller {
             }
             buf << "name='${property.name}' value='\${${domainClass.propertyName}?.${property.name}}'></g:datePicker>"
             return buf.toString()
+          }
         }
     }
 
