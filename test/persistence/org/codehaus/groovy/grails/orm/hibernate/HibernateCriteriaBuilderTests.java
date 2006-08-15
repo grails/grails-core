@@ -18,6 +18,9 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 import org.springframework.orm.hibernate3.SessionHolder;
 
 import java.util.Properties;
+import java.util.List;
+import java.util.Set;
+import java.util.HashSet;
 
 public class HibernateCriteriaBuilderTests extends
         AbstractDependencyInjectionSpringContextTests {
@@ -43,16 +46,20 @@ public class HibernateCriteriaBuilderTests extends
     protected void onSetUp() throws Exception {
         Class groovyClass = cl.parseClass("public class CriteriaBuilderTestClass {\n" +
                 "\n" +
-                "\t@Property List optionals = [ \"age\" ];\n" +
+                "\tList optionals = [ \"age\",'parent' ];\n" +
                 "\t\n" +
-                "\t@Property Long id; \n" +
-                "\t@Property Long version; \n" +
+                "\tLong id; \n" +
+                "\tLong version; \n" +
+                "\tdef relatesToMany = [children:CriteriaBuilderTestClass]; \n" +
                 "\t\n" +
-                "\t@Property String firstName; \n" +
-                "\t@Property String lastName; \n" +
-                "\t@Property Integer age;\n" +
-                "\t\n" +
-                "\t@Property constraints = {\n" +
+                "\tString firstName; \n" +
+                "\tString lastName; \n" +
+                "\tInteger age;\n" +
+                "\tSet children;\n" +
+                "\tCriteriaBuilderTestClass parent;\n" +
+
+                 "\t\n" +
+                "\tdef constraints = {\n" +
                 "\t\tfirstName(length:4..15)\n" +
                 "\t}\n" +
                 "}");
@@ -96,9 +103,9 @@ public class HibernateCriteriaBuilderTests extends
                          "import grails.orm.*;\n" +
                          "import org.hibernate.*;\n" +
                          "class "+testClassName+" {\n" +
-                             "@Property SessionFactory sf;\n" +
-                             "@Property Class tc;\n" +
-                             "@Property Closure test = {\n" +
+                             "SessionFactory sf;\n" +
+                             "Class tc;\n" +
+                             "Closure test = {\n" +
                                  "def hcb = new HibernateCriteriaBuilder(tc,sf);\n" +
                                  "return hcb" + groovy +";\n" +
                              "}\n" +
@@ -112,6 +119,78 @@ public class HibernateCriteriaBuilderTests extends
         Closure closure = (Closure)go.getProperty("test");
         return (Proxy)closure.call();
 
+
+    }
+
+    public void testAssociations() throws Exception {
+        GrailsDomainClass domainClass = this.grailsApplication.getGrailsDomainClass("CriteriaBuilderTestClass");
+
+        assertNotNull(domainClass);
+
+        GroovyObject obj = (GroovyObject)domainClass.newInstance();
+        //obj.setProperty( "id", new Long(1) );
+        obj.setProperty( "firstName", "homer" );
+        obj.setProperty( "lastName", "simpson" );
+        obj.setProperty( "age", new Integer(45));
+
+        obj.invokeMethod("save", null);
+
+        GroovyObject obj2 = (GroovyObject)domainClass.newInstance();
+        //obj2.setProperty( "id", new Long(2) );
+        obj2.setProperty( "firstName", "bart" );
+        obj2.setProperty( "lastName", "simpson" );
+        obj2.setProperty( "age", new Integer(11));
+        obj2.setProperty( "parent", obj) ;
+        obj2.invokeMethod("save", null);
+
+        Proxy p = null;
+        p = parse(	".list { " +
+                    "children { " +
+                        "eq('firstName','bart');" +
+                    "}" +
+                "}", "Test1");
+        List results = (List)p.getAdaptee();
+        assertEquals(1 , results.size());
+
+    }
+
+    public void testJunctions() throws Exception {
+        GrailsDomainClass domainClass = this.grailsApplication.getGrailsDomainClass("CriteriaBuilderTestClass");
+
+        assertNotNull(domainClass);
+
+        GroovyObject obj = (GroovyObject)domainClass.newInstance();
+        //obj.setProperty( "id", new Long(1) );
+        obj.setProperty( "firstName", "fred" );
+        obj.setProperty( "lastName", "flintstone" );
+        obj.setProperty( "age", new Integer(45));
+
+        obj.invokeMethod("save", null);
+
+        GroovyObject obj2 = (GroovyObject)domainClass.newInstance();
+        //obj2.setProperty( "id", new Long(2) );
+        obj2.setProperty( "firstName", "wilma" );
+        obj2.setProperty( "lastName", "flintstone" );
+        obj2.setProperty( "age", new Integer(42));
+        obj2.invokeMethod("save", null);
+
+        GroovyObject obj3 = (GroovyObject)domainClass.newInstance();
+        //obj3.setProperty( "id", new Long(3) );
+        obj3.setProperty( "firstName", "dino" );
+        obj3.setProperty( "lastName", "dinosaur" );
+        obj3.setProperty( "age", new Integer(12));
+        obj3.invokeMethod("save", null);
+
+        Proxy p = null;
+        p = parse(	"{ " +
+                    "or { " +
+                        "eq('firstName','fred');" +
+                        "eq('lastName', 'flintstone');" +
+                        "eq('age', 12)" +
+                    "}" +
+                "}", "Test1");
+        List results = (List)p.getAdaptee();
+        assertEquals(3, results.size());
 
     }
 
@@ -172,24 +251,6 @@ public class HibernateCriteriaBuilderTests extends
         System.out.println("Criteria output = ");
         System.out.println(ArrayUtils.toString(p.invokeMethod("toArray",null)));
 
-        // now test out illegal arguments
-        try {
-            // and expression with only one argument
-            p = parse(	"{\n" +
-                    "and {\n" +
-                        "eq(\"firstName\",\"Fred\");\n" +
-                        "and {\n" +
-                            "eq(\"age\", 42)\n" +
-                         "}\n" +
-                    "}\n" +
-                "}", "Test4");
-
-            fail("Should have thrown illegal argument exception");
-        }
-        catch(InvokerInvocationException iie) {
-            // success!
-            assertEquals( IllegalArgumentException.class, iie.getCause().getClass() );
-        }
 
         try {
             // rubbish argument
