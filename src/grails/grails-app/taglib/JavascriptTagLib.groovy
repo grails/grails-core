@@ -56,7 +56,7 @@ class JavascriptTagLib  {
 	 *
 	 * <g:javascript src="myscript.js" /> // actually imports '/app/js/myscript.js'
 	 **/
-	@Property javascript = { attrs, body ->
+	def javascript = { attrs, body ->
 		if(!request[INCLUDED_JS]) request[INCLUDED_JS] = []
 		if(!request[INCLUDED_LIBRARIES]) request[INCLUDED_LIBRARIES] = []
 		
@@ -102,7 +102,7 @@ class JavascriptTagLib  {
     /**
      *  Creates a remote function call using the prototype library
      */
-    @Property remoteFunction = { attrs  ->    
+    def remoteFunction = { attrs  ->    
 		// before remote function
 		def after = ''
 		if(attrs["before"])
@@ -121,7 +121,7 @@ class JavascriptTagLib  {
     /**
      * A link to a remote uri that used the prototype library to invoke the link via ajax
      */
-    @Property remoteLink = { attrs, body ->
+    def remoteLink = { attrs, body ->
        out << "<a href=\"#\" onclick=\""
         // create remote function
         remoteFunction(attrs)
@@ -138,10 +138,21 @@ class JavascriptTagLib  {
         out << "</a>"
     }
 
+	/**
+	 * A field that sends its value to a remote link
+	 */
+	def remoteField = { attrs, body ->
+		def paramName = attrs.paramName ? attrs.remove('paramName') : 'value'
+		out << "<input type='text' name='${attrs.remove('name')}' value='${attrs.remove('value')}' onkeyup=\""
+		attrs.params = "'${paramName}='+this.value"
+		remoteFunction(attrs)
+		out << "\"  />"
+	}
+
     /**
      * A form which used prototype to serialize its parameters and submit via an asynchronous ajax call
      */
-    @Property formRemote = { attrs, body ->
+    def formRemote = { attrs, body ->
         if(!attrs.name) {
             throwTagError("Tag [formRemote] is missing required attribute [name]")
         }        
@@ -170,7 +181,7 @@ class JavascriptTagLib  {
     /**
      *  Creates a form submit button that submits the current form to a remote ajax call
      */
-    @Property submitToRemote = { attrs, body ->
+    def submitToRemote = { attrs, body ->
     	// get javascript provider
 		def p = getProvider()    
 		// prepare form settings
@@ -210,7 +221,7 @@ class JavascriptTagLib  {
 	 *
 	 * <g:escapeJavascript>This is some "text" to be escaped</g:escapeJavascript>
 	 */
-	@Property escapeJavascript = { attrs,body ->
+	def escapeJavascript = { attrs,body ->
 		def js = ''
 		if(body instanceof Closure) {
 			def tmp = out
@@ -296,6 +307,7 @@ class PrototypeProvider implements JavascriptProvider {
 		}
 		out << "'"						
 		
+		def pms = attrs.remove('params')
 		if(attrs.url) {
 			taglib.createLink(attrs.url)
 		}
@@ -304,7 +316,7 @@ class PrototypeProvider implements JavascriptProvider {
 		}		
 		
 		out << "',"
-		
+		attrs.params = pms
 		// process options
 		out << getAjaxOptions(attrs)
 		// close
