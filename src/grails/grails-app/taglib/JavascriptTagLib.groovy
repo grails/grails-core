@@ -316,7 +316,8 @@ class PrototypeProvider implements JavascriptProvider {
 		}		
 		
 		out << "',"
-		attrs.params = pms
+		if(pms)
+		    attrs.params = pms
 		// process options
 		out << getAjaxOptions(attrs)
 		// close
