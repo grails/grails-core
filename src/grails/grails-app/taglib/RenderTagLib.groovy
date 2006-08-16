@@ -233,10 +233,28 @@ class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants 
 	            t.make( [ 'it' : attrs.bean ] ).writeTo(out)
 	        }
         }
-        else {
-        	t.make().writeTo(out)
-        }
     }
+
+	/**
+	 * Used to include templates
+	 */
+	def include = { attrs ->
+		if(attrs.template) {
+	        def engine = grailsAttributes.getPagesTemplateEngine()
+	        def uri = grailsAttributes.getTemplateUri(attrs.template,request)
+
+	        def url = servletContext.getResource(uri)
+	        if(!url)
+	            throwTagError("No template found for name [${attrs.template}] in tag [include]")
+
+	        def t = engine.createTemplate(  uri,
+	                                        servletContext,
+	                                        request,
+	                                        response)
+			
+			t.make().writeTo(out)
+		}
+	}
 
     /**
      * Attempts to render input for a property value based by attempting to choose a rendering component
