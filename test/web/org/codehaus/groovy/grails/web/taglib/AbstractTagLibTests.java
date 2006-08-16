@@ -23,103 +23,106 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.mock.web.MockServletContext;
 import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
+import org.springframework.web.servlet.DispatcherServlet;
+import org.springframework.web.servlet.i18n.AcceptHeaderLocaleResolver;
 
 /**
  * An abstract class that should be extended in order to test a particular tag library.
  * Loads the named tag library and makes it available as a property configuring
  * necessary dependencies
- * 
+ *
  * @author Graeme
  *
  */
 public abstract class AbstractTagLibTests extends
-		AbstractDependencyInjectionSpringContextTests  {
+        AbstractDependencyInjectionSpringContextTests  {
 
-	protected GrailsApplication grailsApplication;
-	
-	protected String[] getConfigLocations() {
-		return new String[] { "org/codehaus/groovy/grails/web/taglib/grails-taglib-tests.xml" };
-	}
+    protected GrailsApplication grailsApplication;
 
-	
-	/* (non-Javadoc)
-	 * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#onSetUp()
-	 */
-	protected final void onSetUp() throws Exception {		
-		super.onSetUp();
-	}
+    protected String[] getConfigLocations() {
+        return new String[] { "org/codehaus/groovy/grails/web/taglib/grails-taglib-tests.xml" };
+    }
 
 
-	/**
-	 * Retrieves a tag library instance for the specified name and mock out
-	 * 
-	 * @param name The name of tag library
-	 * @param out The PrintWriter mocking the response writer
-	 * 
-	 * @return The tag library instance
-	 * @throws IntrospectionException 
-	 * @throws CompilationFailedException 
-	 */
-	protected Closure getTag(String name, PrintWriter out) 
-		throws IntrospectionException, CompilationFailedException {
-		
-		
-		assertNotNull(applicationContext);
-		assertNotNull(grailsApplication);
-		
-		GrailsControllerClass controllerClass = grailsApplication.getController("TestController");
-		if(controllerClass == null) {
-			Class groovyClass = grailsApplication.getClassLoader().parseClass("class TestController {\n" +
-					"@Property list = {}\n" +
-					"}");
-			controllerClass = grailsApplication.addControllerClass(groovyClass);
-		}
-		
-		GrailsTagLibClass tagClass = grailsApplication.getTagLibClassForTag(name);
-		if(tagClass == null) return null;
-		
-		// we just use the tag to create a mock controller as we just 
-		// need a GroovyObject any GroovyObject will do
-		GroovyObject mockController = (GroovyObject)controllerClass.newInstance();
-		// the tag
-		GroovyObject tagLibrary = (GroovyObject)tagClass.newInstance();
-		
-		MockServletContext servletContext = new MockServletContext();
-		MockApplicationContext appContext = new MockApplicationContext();
-		appContext.registerMockBean("grailsApplication", grailsApplication);
-		
-		servletContext.setAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT,appContext);
-		
-		GrailsControllerHelper helper = new SimpleGrailsControllerHelper(grailsApplication,appContext,servletContext);
-		HttpServletRequest request = new MockHttpServletRequest(servletContext);
-		request.setAttribute(GrailsApplicationAttributes.CONTROLLER, mockController);
-		
-		HttpServletResponse response = new MockHttpServletResponse();
-		new ControllerDynamicMethods(mockController,helper,request,response);
-		new TagLibDynamicMethods(tagLibrary,mockController);
-		
-		
-		for(int i = 0; i<grailsApplication.getGrailsTabLibClasses().length;i++) {
-			GroovyObject instance = (GroovyObject)grailsApplication.getGrailsTabLibClasses()[i].newInstance();
-			new TagLibDynamicMethods(instance,mockController);
-			instance.setProperty(TagLibDynamicMethods.OUT_PROPERTY,out);
-			appContext.registerMockBean(grailsApplication.getGrailsTabLibClasses()[i].getFullName(), instance);
-		}
-		
-		tagLibrary.setProperty(TagLibDynamicMethods.OUT_PROPERTY,out);
-		return (Closure)tagLibrary.getProperty(name);
-		
-	}
+    /* (non-Javadoc)
+     * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#onSetUp()
+     */
+    protected final void onSetUp() throws Exception {
+        super.onSetUp();
+    }
 
 
-	/**
-	 * @param grailsApplication The grailsApplication to set.
-	 */
-	public void setGrailsApplication(GrailsApplication grailsApplication) {
-		this.grailsApplication = grailsApplication;
-	}
+    /**
+     * Retrieves a tag library instance for the specified name and mock out
+     *
+     * @param name The name of tag library
+     * @param out The PrintWriter mocking the response writer
+     *
+     * @return The tag library instance
+     * @throws IntrospectionException
+     * @throws CompilationFailedException
+     */
+    protected Closure getTag(String name, PrintWriter out)
+        throws IntrospectionException, CompilationFailedException {
+
+
+        assertNotNull(applicationContext);
+        assertNotNull(grailsApplication);
+
+        GrailsControllerClass controllerClass = grailsApplication.getController("TestController");
+        if(controllerClass == null) {
+            Class groovyClass = grailsApplication.getClassLoader().parseClass("class TestController {\n" +
+                    "@Property list = {}\n" +
+                    "}");
+            controllerClass = grailsApplication.addControllerClass(groovyClass);
+        }
+
+        GrailsTagLibClass tagClass = grailsApplication.getTagLibClassForTag(name);
+        if(tagClass == null) return null;
+
+        // we just use the tag to create a mock controller as we just
+        // need a GroovyObject any GroovyObject will do
+        GroovyObject mockController = (GroovyObject)controllerClass.newInstance();
+        // the tag
+        GroovyObject tagLibrary = (GroovyObject)tagClass.newInstance();
+
+        MockServletContext servletContext = new MockServletContext();
+        MockApplicationContext appContext = new MockApplicationContext();
+        appContext.registerMockBean("grailsApplication", grailsApplication);
+
+        servletContext.setAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT,appContext);
+
+        GrailsControllerHelper helper = new SimpleGrailsControllerHelper(grailsApplication,appContext,servletContext);
+        HttpServletRequest request = new MockHttpServletRequest(servletContext);
+        request.setAttribute(GrailsApplicationAttributes.CONTROLLER, mockController);
+        request.setAttribute(DispatcherServlet.LOCALE_RESOLVER_ATTRIBUTE, new AcceptHeaderLocaleResolver());
+
+        HttpServletResponse response = new MockHttpServletResponse();
+        new ControllerDynamicMethods(mockController,helper,request,response);
+        new TagLibDynamicMethods(tagLibrary,mockController);
+
+
+        for(int i = 0; i<grailsApplication.getGrailsTabLibClasses().length;i++) {
+            GroovyObject instance = (GroovyObject)grailsApplication.getGrailsTabLibClasses()[i].newInstance();
+            new TagLibDynamicMethods(instance,mockController);
+            instance.setProperty(TagLibDynamicMethods.OUT_PROPERTY,out);
+            appContext.registerMockBean(grailsApplication.getGrailsTabLibClasses()[i].getFullName(), instance);
+        }
+
+        tagLibrary.setProperty(TagLibDynamicMethods.OUT_PROPERTY,out);
+        return (Closure)tagLibrary.getProperty(name);
+
+    }
+
+
+    /**
+     * @param grailsApplication The grailsApplication to set.
+     */
+    public void setGrailsApplication(GrailsApplication grailsApplication) {
+        this.grailsApplication = grailsApplication;
+    }
 
 
 
-	
+
 }

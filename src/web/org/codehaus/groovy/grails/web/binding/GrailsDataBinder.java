@@ -1,11 +1,11 @@
 /* Copyright 2004-2005 the original author or authors.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -105,7 +105,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
     public void bind(ServletRequest request) {
         MutablePropertyValues mpvs = new ServletRequestParameterPropertyValues(request);
         if(request instanceof HttpServletRequestWrapper) {
-        	request = ((HttpServletRequestWrapper)request).getRequest();
+            request = ((HttpServletRequestWrapper)request).getRequest();
         }
         checkMultipartFiles(request, mpvs);
 
@@ -116,7 +116,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
 
     /**
      * Method that auto-creates the a type if it is null and is possible to auto-create
-     * 
+     *
      * @param mpvs A MutablePropertyValues instance
      */
     private void autoCreateIfPossible(MutablePropertyValues mpvs) {
@@ -127,38 +127,38 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
             String propertyName = pv.getName();
             BeanWrapper bean = super.getBeanWrapper();
             if(propertyName.indexOf('.') > -1) {
-            	propertyName = propertyName.split("\\.")[0];
+                propertyName = propertyName.split("\\.")[0];
             }
             Class type = bean.getPropertyType(propertyName);
             LOG.debug("Checking if auto-create is possible for property ["+propertyName+"] and type ["+type+"]");
             if(type != null) {
                 if(GroovyObject.class.isAssignableFrom(type)) {
-                	if(bean.getPropertyValue(propertyName) == null) {
-                		if(bean.isWritableProperty(propertyName)) {
-                			try {
-                				MetaClass mc = InvokerHelper
-				                					.getInstance()
-				                					.getMetaRegistry()
-				                					.getMetaClass(type);
-                				if(mc!=null) {
-                    				Object created = mc.invokeStaticMethod(type.getName(),CreateDynamicMethod.METHOD_NAME, new Object[0]);
-                    				bean.setPropertyValue(propertyName,created);
-                				}
-                			}
-                			catch(MissingMethodException mme) {
-                				LOG.warn("Unable to auto-create type, 'create' method not found");
-                			}            			
-                			catch(GroovyRuntimeException gre) {
-                				LOG.warn("Unable to auto-create type, Groovy Runtime error: " + gre.getMessage(),gre) ;
-                			}                   			
-                		}
-                	}
-                }            	
+                    if(bean.getPropertyValue(propertyName) == null) {
+                        if(bean.isWritableProperty(propertyName)) {
+                            try {
+                                MetaClass mc = InvokerHelper
+                                                    .getInstance()
+                                                    .getMetaRegistry()
+                                                    .getMetaClass(type);
+                                if(mc!=null) {
+                                    Object created = mc.invokeStaticMethod(type.getName(),CreateDynamicMethod.METHOD_NAME, new Object[0]);
+                                    bean.setPropertyValue(propertyName,created);
+                                }
+                            }
+                            catch(MissingMethodException mme) {
+                                LOG.warn("Unable to auto-create type, 'create' method not found");
+                            }
+                            catch(GroovyRuntimeException gre) {
+                                LOG.warn("Unable to auto-create type, Groovy Runtime error: " + gre.getMessage(),gre) ;
+                            }
+                        }
+                    }
+                }
             }
         }
-	}
+    }
 
-	private void checkStructuredDateDefinitions(ServletRequest request, MutablePropertyValues mpvs) {
+    private void checkStructuredDateDefinitions(ServletRequest request, MutablePropertyValues mpvs) {
 
         PropertyValue[] pvs = mpvs.getPropertyValues();
         for (int i = 0; i < pvs.length; i++) {
@@ -171,17 +171,22 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
                 // this is used as an alternative to specifying the date format
                 if(type == Date.class || type == Calendar.class) {
                     try {
+                           // The request will always include the year value
                         int year = Integer.parseInt(request.getParameter(propertyName + "_year"));
-                        int month = Integer.parseInt(request.getParameter(propertyName + "_month"));
-                        int day = Integer.parseInt(request.getParameter(propertyName + "_day"));
-                        int hour = Integer.parseInt(request.getParameter(propertyName + "_hour"));
-                        int minute = Integer.parseInt(request.getParameter(propertyName + "_minute"));
+
+                        // The request may not include the other date values, so be prepared to use the
+                        // default values.  Default values --> month = January; day = 1st day of the month;
+                        // hour = 00; minute = 00.
+                        int month = Integer.parseInt(getParameterValue(request, propertyName + "_month","1"));
+                        int day = Integer.parseInt(getParameterValue(request, propertyName + "_day","1"));
+                        int hour = Integer.parseInt(getParameterValue(request, propertyName + "_hour","0"));
+                        int minute = Integer.parseInt(getParameterValue(request, propertyName + "_minute","0"));
 
                         Calendar c = new GregorianCalendar(year,month - 1,day,hour,minute);
                         if(type == Date.class)
-                        	mpvs.setPropertyValueAt(new PropertyValue(propertyName,c.getTime()),i);
-                        else 
-                        	mpvs.setPropertyValueAt(new PropertyValue(propertyName,c),i);
+                            mpvs.setPropertyValueAt(new PropertyValue(propertyName,c.getTime()),i);
+                        else
+                            mpvs.setPropertyValueAt(new PropertyValue(propertyName,c),i);
                     }
                     catch(NumberFormatException nfe) {
                          LOG.warn("Unable to parse structured date from request for date ["+propertyName+"]",nfe);
@@ -192,5 +197,19 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
                 // ignore
             }
         }
+    }
+
+    /**
+     * Returns the value of the specified parameter from the specified request, or the specified default
+     * value (if the parameter is not in the request).
+     *
+     * @param request the request from which to extract the parameter
+     * @param propertyName the key used to fetch the parameter from the request
+     * @param defaultPropertyValue the value to return if the parameter is not in the request
+     * @return the requested value
+     */
+    private String getParameterValue(ServletRequest request, String propertyName, String defaultPropertyValue) {
+        String parameterValue = request.getParameter(propertyName);
+        return parameterValue != null ? parameterValue : defaultPropertyValue;
     }
 }
