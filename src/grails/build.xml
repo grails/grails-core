@@ -16,6 +16,7 @@ Targets:
 "create-controller"   - Create a new controller
 "create-service"      - Create a new service
 "create-domain-class" - Create a new domain class
+"create-taglib"		  - Create a new tag library class
 "create-test-suite"   - Create a new test suite
 "create-job"         - Create a quartz scheduled job
 "generate-controller" - Generates a controller from a domain class
@@ -249,6 +250,22 @@ Targets:
         <property name="test.suite.name" value="${service.class.name}" />
         <antcall target="internal-create-test-suite" inheritRefs="true" inheritAll="true"/>
     </target>
+
+	<target name="create-taglib" depends="init-props" description="Create a new tag library">
+		<input addproperty="taglib.name" message="Enter tag library name:" />
+		<groovy>
+			def taglibName = properties."taglib.name"
+			properties."taglib.class.name" = project.references['normCaps'](taglibName, 'TagLib')
+		</groovy>
+		
+		<copy file="${grails.home}/src/grails/templates/artifacts/TagLib.groovy"
+				tofile="grails-app/taglib/${taglib.class.name}TagLib.groovy"></copy>
+
+		<replace	file="grails-app/taglib/${taglib.class.name}TagLib.groovy"
+					token="@taglib.name@"
+					value="${taglib.class.name}"></replace>
+		<echo>Created taglib: grails-app/taglib/${taglib.class.name}TagLib.groovy</echo>
+	</target>
 
 	<target name="create-domain-class" depends="init-props" description="Create a new domain class">
 
