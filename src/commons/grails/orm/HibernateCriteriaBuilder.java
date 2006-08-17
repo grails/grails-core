@@ -19,6 +19,7 @@ import grails.util.ExtendProxy;
 import groovy.lang.MissingMethodException;
 import groovy.lang.MissingPropertyException;
 import groovy.lang.Closure;
+import groovy.lang.GString;
 import groovy.util.BuilderSupport;
 import groovy.util.Proxy;
 
@@ -158,11 +159,30 @@ public class HibernateCriteriaBuilder extends BuilderSupport {
         }
     }
 
+    /**
+     * Calculates the property name including any alias paths
+     *
+     * @param propertyName The property name
+     * @return The calculated property name
+     */
     private String calculatePropertyName(String propertyName) {
         if(this.aliasStack.size()>0) {
             return this.aliasStack.get(this.aliasStack.size()-1).toString()+'.'+propertyName;
         }
         return propertyName;
+    }
+
+    /**
+     * Calculates the property value, converting GStrings if necessary
+     *
+     * @param propertyValue The property value
+     * @return The calculated property value
+     */
+    private Object calculatePropertyValue(Object propertyValue) {
+        if(propertyValue instanceof GString) {
+            return propertyValue.toString();
+        }
+        return propertyValue;
     }
 
     /**
@@ -417,6 +437,7 @@ public class HibernateCriteriaBuilder extends BuilderSupport {
             throwRuntimeException( new IllegalArgumentException("Call to [gt] with propertyName ["+propertyName+"] and value ["+propertyValue+"] not allowed here."));
         }
         propertyName = calculatePropertyName(propertyName);
+        propertyValue = calculatePropertyValue(propertyValue);
 
         Criterion c = Restrictions.gt( propertyName, propertyValue );
 
@@ -427,6 +448,9 @@ public class HibernateCriteriaBuilder extends BuilderSupport {
         }
         return c;
     }
+
+
+
     /**
      * Creates a "greater than or equal to" Criterion based on the specified property name and value
      * @param propertyName The property name
@@ -438,6 +462,7 @@ public class HibernateCriteriaBuilder extends BuilderSupport {
             throwRuntimeException( new IllegalArgumentException("Call to [ge] with propertyName ["+propertyName+"] and value ["+propertyValue+"] not allowed here."));
         }
         propertyName = calculatePropertyName(propertyName);
+        propertyValue = calculatePropertyValue(propertyValue);
         Criterion c = Restrictions.ge( propertyName, propertyValue );
 
         if(isInsideLogicalExpression()) {
@@ -458,6 +483,7 @@ public class HibernateCriteriaBuilder extends BuilderSupport {
             throwRuntimeException( new IllegalArgumentException("Call to [lt] with propertyName ["+propertyName+"] and value ["+propertyValue+"] not allowed here."));
         }
         propertyName = calculatePropertyName(propertyName);
+        propertyValue = calculatePropertyValue(propertyValue);
         Criterion c = Restrictions.lt( propertyName, propertyValue );
 
         if(isInsideLogicalExpression()) {
@@ -478,6 +504,7 @@ public class HibernateCriteriaBuilder extends BuilderSupport {
             throwRuntimeException( new IllegalArgumentException("Call to [le] with propertyName ["+propertyName+"] and value ["+propertyValue+"] not allowed here."));
         }
         propertyName = calculatePropertyName(propertyName);
+        propertyValue = calculatePropertyValue(propertyValue);
         Criterion c = Restrictions.le( propertyName, propertyValue );
 
         if(isInsideLogicalExpression()) {
@@ -499,6 +526,7 @@ public class HibernateCriteriaBuilder extends BuilderSupport {
             throwRuntimeException( new IllegalArgumentException("Call to [eq] with propertyName ["+propertyName+"] and value ["+propertyValue+"] not allowed here."));
         }
         propertyName = calculatePropertyName(propertyName);
+        propertyValue = calculatePropertyValue(propertyValue);
         Criterion c = Restrictions.eq( propertyName, propertyValue );
 
         if(isInsideLogicalExpression()) {
@@ -511,16 +539,17 @@ public class HibernateCriteriaBuilder extends BuilderSupport {
     /**
      * Creates a Criterion with from the specified property name and "like" expression
      * @param propertyName The property name
-     * @param value The like value
+     * @param propertyValue The like value
      *
      * @return A Criterion instance
      */
-    public Object like(String propertyName, Object value) {
+    public Object like(String propertyName, Object propertyValue) {
         if(!validateSimpleExpression()) {
-            throwRuntimeException( new IllegalArgumentException("Call to [like] with propertyName ["+propertyName+"] and value ["+value+"] not allowed here."));
+            throwRuntimeException( new IllegalArgumentException("Call to [like] with propertyName ["+propertyName+"] and value ["+propertyValue+"] not allowed here."));
         }
         propertyName = calculatePropertyName(propertyName);
-        Criterion c = Restrictions.like( propertyName, value );
+        propertyValue = calculatePropertyValue(propertyValue);
+        Criterion c = Restrictions.like( propertyName, propertyValue );
 
         if(isInsideLogicalExpression()) {
             this.logicalExpressionArgs.add(c);
@@ -532,16 +561,17 @@ public class HibernateCriteriaBuilder extends BuilderSupport {
     /**
      * Creates a Criterion with from the specified property name and "ilike" (a case sensitive version of "like") expression
      * @param propertyName The property name
-     * @param value The ilike value
+     * @param propertyValue The ilike value
      *
      * @return A Criterion instance
      */
-    public Object ilike(String propertyName, Object value) {
+    public Object ilike(String propertyName, Object propertyValue) {
         if(!validateSimpleExpression()) {
-            throwRuntimeException( new IllegalArgumentException("Call to [ilike] with propertyName ["+propertyName+"] and value ["+value+"] not allowed here."));
+            throwRuntimeException( new IllegalArgumentException("Call to [ilike] with propertyName ["+propertyName+"] and value ["+propertyValue+"] not allowed here."));
         }
         propertyName = calculatePropertyName(propertyName);
-        Criterion c = Restrictions.ilike( propertyName, value );
+        propertyValue = calculatePropertyValue(propertyValue);
+        Criterion c = Restrictions.ilike( propertyName, propertyValue );
 
         if(isInsideLogicalExpression()) {
             this.logicalExpressionArgs.add(c);
@@ -666,6 +696,7 @@ public class HibernateCriteriaBuilder extends BuilderSupport {
             throwRuntimeException( new IllegalArgumentException("Call to [ne] with propertyName ["+propertyName+"] and value ["+propertyValue+"] not allowed here."));
         }
         propertyName = calculatePropertyName(propertyName);
+        propertyValue = calculatePropertyValue(propertyValue);
         Criterion c = Restrictions.ne( propertyName, propertyValue );
         if(isInsideLogicalExpression()) {
             this.logicalExpressionArgs.add(c);

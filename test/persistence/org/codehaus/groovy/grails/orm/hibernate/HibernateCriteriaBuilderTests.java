@@ -122,6 +122,26 @@ public class HibernateCriteriaBuilderTests extends
 
 
     }
+    public void testWithGString() throws Exception {
+        GrailsDomainClass domainClass = this.grailsApplication.getGrailsDomainClass("CriteriaBuilderTestClass");
+
+        assertNotNull(domainClass);
+
+        GroovyObject obj = (GroovyObject)domainClass.newInstance();
+        //obj.setProperty( "id", new Long(1) );
+        obj.setProperty( "firstName", "bart" );
+        obj.setProperty( "lastName", "simpson" );
+        obj.setProperty( "age", new Integer(11));
+
+        obj.invokeMethod("save", null);
+
+        Proxy p = null;
+        p = parse(	".list { " +
+                        "like('firstName',\"${'ba'}%\");" +
+                "}", "Test1");
+        List results = (List)p.getAdaptee();
+        assertEquals(1 , results.size());
+    }
 
     public void testAssociations() throws Exception {
         GrailsDomainClass domainClass = this.grailsApplication.getGrailsDomainClass("CriteriaBuilderTestClass");
