@@ -75,6 +75,7 @@ public class HibernateCriteriaBuilderTests extends
         props.put("hibernate.connection.driver_class","org.hsqldb.jdbcDriver");
         props.put("hibernate.dialect","org.hibernate.dialect.HSQLDialect");
         props.put("hibernate.hbm2ddl.auto","create-drop");
+        props.put("hibernate.show_sql","true");
 
         //props.put("hibernate.hbm2ddl.auto","update");
         config.setProperties(props);
@@ -143,6 +144,14 @@ public class HibernateCriteriaBuilderTests extends
         obj2.setProperty( "parent", obj) ;
         obj2.invokeMethod("save", null);
 
+        GroovyObject obj3 = (GroovyObject)domainClass.newInstance();
+        //obj2.setProperty( "id", new Long(2) );
+        obj3.setProperty( "firstName", "list" );
+        obj3.setProperty( "lastName", "simpson" );
+        obj3.setProperty( "age", new Integer(9));
+        obj3.setProperty( "parent", obj) ;
+        obj3.invokeMethod("save", null);
+
         Proxy p = null;
         p = parse(	".list { " +
                     "children { " +
@@ -152,6 +161,60 @@ public class HibernateCriteriaBuilderTests extends
         List results = (List)p.getAdaptee();
         assertEquals(1 , results.size());
 
+
+    }
+
+    public void testNestedAssociation() throws Exception {
+        GrailsDomainClass domainClass = this.grailsApplication.getGrailsDomainClass("CriteriaBuilderTestClass");
+
+        assertNotNull(domainClass);
+
+        GroovyObject obj = (GroovyObject)domainClass.newInstance();
+        //obj.setProperty( "id", new Long(1) );
+        obj.setProperty( "firstName", "homer" );
+        obj.setProperty( "lastName", "simpson" );
+        obj.setProperty( "age", new Integer(45));
+
+        obj.invokeMethod("save", null);
+
+        GroovyObject obj2 = (GroovyObject)domainClass.newInstance();
+        //obj2.setProperty( "id", new Long(2) );
+        obj2.setProperty( "firstName", "bart" );
+        obj2.setProperty( "lastName", "simpson" );
+        obj2.setProperty( "age", new Integer(11));
+        obj2.setProperty( "parent", obj) ;
+        obj2.invokeMethod("save", null);
+
+        GroovyObject obj3 = (GroovyObject)domainClass.newInstance();
+        //obj2.setProperty( "id", new Long(2) );
+        obj3.setProperty( "firstName", "lisa" );
+        obj3.setProperty( "lastName", "simpson" );
+        obj3.setProperty( "age", new Integer(9));
+        obj3.setProperty( "parent", obj) ;
+        obj3.invokeMethod("save", null);
+
+        // now within or block
+        Proxy p = parse(	".list { " +
+                    "and {" +
+                        "eq('lastName','simpson');" +
+                        "children { " +
+                            "eq('firstName','bart');" +
+                        "}" +
+                    "}" +
+                "}", "Test1");
+        List results = (List)p.getAdaptee();
+        assertEquals(1 , results.size());
+
+        Proxy p2 = parse(	".list { " +
+                    "or {" +
+                        "eq('firstName','lisa');" +
+                        "children { " +
+                            "eq('firstName','bart');" +
+                        "}" +
+                    "}" +
+                "}", "Test1");
+        results = (List)p2.getAdaptee();
+        assertEquals(2 , results.size());
     }
 
     public void testJunctions() throws Exception {
