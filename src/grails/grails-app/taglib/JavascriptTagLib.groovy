@@ -143,7 +143,8 @@ class JavascriptTagLib  {
 	 */
 	def remoteField = { attrs, body ->
 		def paramName = attrs.paramName ? attrs.remove('paramName') : 'value'
-		out << "<input type='text' name='${attrs.remove('name')}' value='${attrs.remove('value')}' onkeyup=\""
+		def value = attrs.value ? attrs.remove('value') : ''
+		out << "<input type='text' name='${attrs.remove('name')}' value='${value}' onkeyup=\""
 		attrs.params = "'${paramName}='+this.value"
 		remoteFunction(attrs)
 		out << "\"  />"
