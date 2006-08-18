@@ -233,6 +233,9 @@ class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants 
 	            t.make( [ 'it' : attrs.bean ] ).writeTo(out)
 	        }
         }
+		else if(attrs.template && attrs.size() == 1) {
+			t.make().writeTo(out)			
+		}
     }
 
 	/**
