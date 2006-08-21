@@ -5,10 +5,7 @@ import groovy.lang.GroovyObject;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.codehaus.groovy.grails.web.servlet.GrailsHttpServletRequest;
 
@@ -117,5 +114,16 @@ public class JavaScriptTagLibTests extends AbstractTagLibTests {
 		System.out.println(sw.toString());
 		
 		assertEquals("YAHOO.util.Connect.asyncRequest('GET','/test/action',{ success: function(o) { YAHOO.util.Dom.get('updateMe').innerHTML = o.responseText; }, failure: function(o) {}},null);",sw.toString());
-	}		
+	}
+
+
+    public void testEscapeJavascript() throws Exception {
+		StringWriter sw = new StringWriter();
+		PrintWriter pw = new PrintWriter(sw);
+
+		Closure tag = getTag("escapeJavascript",pw);
+
+        tag.call(new Object[]{ "This is some \"text\" to be 'escaped'", Collections.EMPTY_MAP });
+        assertEquals("This is some \\\"text\\\" to be \\'escaped\\'",sw.toString());
+    }
 }
