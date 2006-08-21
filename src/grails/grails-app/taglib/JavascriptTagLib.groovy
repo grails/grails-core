@@ -122,7 +122,9 @@ class JavascriptTagLib  {
      * A link to a remote uri that used the prototype library to invoke the link via ajax
      */
     def remoteLink = { attrs, body ->
-       out << "<a href=\"#\" onclick=\""
+       out << "<a href=\""
+	   createLink(attrs.clone())
+	   out << "\" onclick=\""
         // create remote function
         remoteFunction(attrs)
         out << 'return false;" '
@@ -145,7 +147,17 @@ class JavascriptTagLib  {
 		def paramName = attrs.paramName ? attrs.remove('paramName') : 'value'
 		def value = attrs.value ? attrs.remove('value') : ''
 		out << "<input type='text' name='${attrs.remove('name')}' value='${value}' onkeyup=\""
-		attrs.params = "'${paramName}='+this.value"
+		if(attrs.params) {
+			if(attrs instanceof Map) {
+				attrs.params.put(paramName, 'this.value')
+			}
+			else {
+				attrs.params += "'${paramName}='+this.value"	
+			}
+		}
+		else {
+    		attrs.params = "'${paramName}='+this.value"			
+		}
 		remoteFunction(attrs)
 		out << "\"  />"
 	}
@@ -242,7 +254,8 @@ class JavascriptTagLib  {
 			js = attrs	
 		}
 		out << 	js.replaceAll(/\r\n|\n|\r/, '\\\\n')
-					.replaceAll("[\"']",{ (it[0] == '"'? '\\"' : "\\'") } )
+					.replaceAll('"','\\\\"')
+					  .replaceAll("'","\\\\'")
 	}
 
 	/**
@@ -385,6 +398,9 @@ class PrototypeProvider implements JavascriptProvider {
 class YahooProvider implements JavascriptProvider {
 	def doRemoteFunction(taglib,attrs, out)	{
 		def method = (attrs.method ? attrs.method : 'GET' )
+		if(attrs.onLoading) {
+			out << "${attrs.onLoading};"
+		}
 		out << "YAHOO.util.Connect.asyncRequest('${method}','"
 				
 		if(attrs.url) {
@@ -405,6 +421,9 @@ class YahooProvider implements JavascriptProvider {
 		out << '{ '
 			if(attrs.update) {
 			  out <<'success: function(o) { '
+			    if(attrs.onLoaded) {
+					out << "${attrs.onLoaded}";
+				}
 				if(attrs.update instanceof Map) {
 					if(attrs.update.success) {
 						out << "YAHOO.util.Dom.get('${attrs.update.success}').innerHTML = o.responseText;"									
@@ -414,8 +433,11 @@ class YahooProvider implements JavascriptProvider {
 					out <<  "YAHOO.util.Dom.get('${attrs.update}').innerHTML = o.responseText;"
 				}
 				if(attrs.onSuccess) {
-					out << ";${attrs.onSuccess}(o);"
-				}			  
+					out << ";${attrs.onSuccess};"
+				}	
+				if(attrs.onComplete) {
+					out << ";${attrs.onComplete};"
+				}		  
 				out << ' }'
 				out << 	', failure: function(o) {'									
 				if(attrs.update instanceof Map) {
@@ -424,8 +446,11 @@ class YahooProvider implements JavascriptProvider {
 					}
 				}
 				if(attrs.onFailure) {
-					out << "${attrs.onFailure}(o);"
-				}										
+					out << "${attrs.onFailure};"
+				}	
+				if(attrs.onComplete) {
+					out << ";${attrs.onComplete};"
+				}													
 				out << '}'				
 			}			
 			out << '}'		
@@ -438,17 +463,26 @@ class YahooProvider implements JavascriptProvider {
  */
 class DojoProvider implements JavascriptProvider {
 	 def doRemoteFunction(taglib,attrs, out) {
+		if(attrs.onLoading) {
+			out << "${attrs.onLoading};"
+		}		
 		 out << 'dojo.io.bind({url:\''
 		 taglib.createLink(attrs)
 		 out << '\',load:function(type,data,evt) {'
+	    if(attrs.onLoaded) {
+			out << "${attrs.onLoaded}";
+		}		
 		 if(attrs.update) {			
 			out << 'dojo.html.textContent( dojo.byId(\''
 			out << (attrs.update instanceof Map ? attrs.update.success : attrs.update)
 			out << '\'),data);'		
 		 }
 		if(attrs.onSuccess) {
-			out << ";${attrs.onSuccess}(type,data,evt);"
+			out << ";${attrs.onSuccess};"
 		}
+		if(attrs.onComplete) {
+			out << ";${attrs.onComplete};"
+		}		
 		out << '}'
 		out << ',error:function(type,error) { '
 		if(attrs.update instanceof Map) {
@@ -457,8 +491,11 @@ class DojoProvider implements JavascriptProvider {
 			}
 		}
 		if(attrs.onFailure) {
-			out << ";${attrs.onFailure}(type,error.message);"
-		}			
+			out << ";${attrs.onFailure};"
+		}	
+		if(attrs.onComplete) {
+			out << ";${attrs.onComplete};"
+		}				
 	     out << '}'
 	     attrs.params?.each {k,v ->
 	     	out << ",$k:$v"
