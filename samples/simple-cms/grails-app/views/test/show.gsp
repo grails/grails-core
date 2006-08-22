@@ -7,7 +7,7 @@
 		  		var questionClasses = [
 					<g:def var="i" expr="${0}" />
 					<g:each var="q" in="${questions}">
-						<g:set var="i" expr="${i+1}" />
+						<g:set var="i" value="${i+1}" />
 						"question${q.id}"<g:if test="${i!=questions.size()}">,</g:if>
 					</g:each>
 				]

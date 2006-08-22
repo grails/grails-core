@@ -48,9 +48,9 @@
 						</td>
 						<td valign='top' style='text-align:left;' width='80%' class='${hasErrors(bean:question,field:'title','errors')}'>
 							<ol id="answers">
-								<g:def var="i" expr="${0}" />
+								<g:def var="i" value="${0}" />
 								<g:each var="a" in="${question?.answers?}">
-									<g:set var="i" expr="${i+1}" />
+									<g:set var="i" value="${i+1}" />
 									<li>
 										<input class="answer" type="text" name="answer" value="${a}"></input>
 										<input type="hidden" name="answerId" value="${a.id}"></input>
