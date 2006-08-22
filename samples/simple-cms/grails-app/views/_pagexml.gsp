@@ -8,7 +8,7 @@
 		<title>${page?.title}</title>
 		<g:if  test="${page?.type == Page.LINK}">
 			<g:if test="${page?.content ==~ /\d+/}">
-				<g:def var="linked" expr="${Page.get(page?.content)}" />
+				<g:def var="linked" value="${Page.get(page?.content)}" />
 				<content><![CDATA[Link to Page: <b>${linked.title}</b>, on Site:<b>${linked.site.name}</b>]]></content>			
 			</g:if>
 			<g:else>

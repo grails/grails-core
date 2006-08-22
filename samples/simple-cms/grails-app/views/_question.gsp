@@ -1,4 +1,4 @@
-<g:def var="q" expr="${it}" />
+<g:def var="q" value="${it}" />
 <div class="question">
 	<div id="question${q.id}" class="text">${q}</div>
 	<div class="answers">

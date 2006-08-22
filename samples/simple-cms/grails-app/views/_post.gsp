@@ -1,4 +1,4 @@
-<g:def var="p" expr="${it}" />
+<g:def var="p" value="${it}" />
 <div class="post">
 	<div><span class="title">${p.title}</span> - Created ${p.datePosted}</div>
 	<div class="msg">${p.message}</div>
