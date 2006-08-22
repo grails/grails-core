@@ -151,7 +151,7 @@ public class GrailsRuntimeConfigurator {
             serviceInstance.setAutowire(BeanConfiguration.AUTOWIRE_BY_TYPE);
         }
 
-        context.registerBeanDefinition(grailsServiceClass.getFullName() + "Instance",serviceInstance.getBeanDefinition());
+        //context.registerBeanDefinition(grailsServiceClass.getFullName() + "Instance",serviceInstance.getBeanDefinition());
 		
 	    // configure the service instance as a hotswappable target source
 	
@@ -162,19 +162,14 @@ public class GrailsRuntimeConfigurator {
 			
 			BeanConfiguration transactionalProxyBean = springConfig
 								.createSingletonBean(TransactionProxyFactoryBean.class)
-								.addProperty("target", new RuntimeBeanReference(grailsServiceClass.getFullName() + "Instance"))
+								.addProperty("target", serviceInstance.getBeanDefinition())
 								.addProperty("proxyTargetClass", Boolean.TRUE)
 								.addProperty("transactionAttributes", transactionAttributes)
 								.addProperty(TRANSACTION_MANAGER_BEAN, new RuntimeBeanReference(TRANSACTION_MANAGER_BEAN));
 			context.registerBeanDefinition(grailsServiceClass.getPropertyName(),transactionalProxyBean.getBeanDefinition());
 			
 		} else {
-	        // otherwise configure a standard proxy
-			BeanConfiguration instanceRef = springConfig
-												.createSingletonBean(BeanReferenceFactoryBean.class)
-												.addProperty("targetBeanName",grailsServiceClass.getFullName() + "Instance" );
-			
-			context.registerBeanDefinition(grailsServiceClass.getName() + "Service",instanceRef.getBeanDefinition());
+			context.registerBeanDefinition(grailsServiceClass.getPropertyName(),serviceInstance.getBeanDefinition());
 		}		
 	}
 	
@@ -662,8 +657,9 @@ public class GrailsRuntimeConfigurator {
 				
 			} else {
                 // otherwise configure a standard proxy
+
                 springConfig
-                        .addBeanConfiguration(grailsServiceClass.getName() + "Service", serviceInstance);
+                        .addBeanConfiguration(grailsServiceClass.getPropertyName(), serviceInstance);
 			}
 		}
 	}
