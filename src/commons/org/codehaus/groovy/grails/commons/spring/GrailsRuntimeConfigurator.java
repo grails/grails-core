@@ -16,38 +16,15 @@
 
 package org.codehaus.groovy.grails.commons.spring;
 
-import java.io.IOException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Properties;
-
-import javax.servlet.ServletContext;
-
 import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.GrailsControllerClass;
-import org.codehaus.groovy.grails.commons.GrailsDataSource;
-import org.codehaus.groovy.grails.commons.GrailsDomainClass;
-import org.codehaus.groovy.grails.commons.GrailsServiceClass;
-import org.codehaus.groovy.grails.commons.GrailsTagLibClass;
-import org.codehaus.groovy.grails.commons.GrailsTaskClass;
-import org.codehaus.groovy.grails.commons.GrailsTaskClassProperty;
+import org.codehaus.groovy.grails.commons.*;
 import org.codehaus.groovy.grails.orm.hibernate.ConfigurableLocalSessionFactoryBean;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsDomainConfigurationUtil;
 import org.codehaus.groovy.grails.orm.hibernate.support.HibernateDialectDetectorFactoryBean;
 import org.codehaus.groovy.grails.orm.hibernate.validation.GrailsDomainClassValidator;
-import org.codehaus.groovy.grails.scaffolding.DefaultGrailsResponseHandlerFactory;
-import org.codehaus.groovy.grails.scaffolding.DefaultGrailsScaffoldViewResolver;
-import org.codehaus.groovy.grails.scaffolding.DefaultGrailsScaffolder;
-import org.codehaus.groovy.grails.scaffolding.DefaultScaffoldRequestHandler;
-import org.codehaus.groovy.grails.scaffolding.GrailsScaffoldDomain;
-import org.codehaus.groovy.grails.scaffolding.ScaffoldDomain;
-import org.codehaus.groovy.grails.scaffolding.ViewDelegatingScaffoldResponseHandler;
+import org.codehaus.groovy.grails.scaffolding.*;
 import org.codehaus.groovy.grails.support.ClassEditor;
 import org.codehaus.groovy.grails.web.errors.GrailsExceptionResolver;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
@@ -57,7 +34,6 @@ import org.codehaus.groovy.grails.web.servlet.view.GrailsViewResolver;
 import org.hibernate.SessionFactory;
 import org.springframework.aop.framework.ProxyFactoryBean;
 import org.springframework.aop.target.HotSwappableTargetSource;
-import org.springframework.beans.factory.config.BeanReferenceFactoryBean;
 import org.springframework.beans.factory.config.CustomEditorConfigurer;
 import org.springframework.beans.factory.config.MethodInvokingFactoryBean;
 import org.springframework.beans.factory.config.RuntimeBeanReference;
@@ -83,10 +59,15 @@ import org.springframework.web.servlet.i18n.CookieLocaleResolver;
 import org.springframework.web.servlet.i18n.LocaleChangeInterceptor;
 import org.springmodules.beans.factory.config.MapToPropertiesFactoryBean;
 
+import javax.servlet.ServletContext;
+import java.io.IOException;
+import java.net.URL;
+import java.util.*;
+
 /**
  * A class that handles the runtime configuration of the Grails ApplicationContext
  * 
- * @author Graeme
+ * @author Graeme Rocher
  * @since 0.3
  */
 public class GrailsRuntimeConfigurator {
@@ -108,17 +89,19 @@ public class GrailsRuntimeConfigurator {
 	private GrailsApplication application;
 	private ApplicationContext parent;
 	private boolean loadExternalPersistenceConfig = true;
+    private boolean parentDataSource = false;
 
-	public GrailsRuntimeConfigurator(GrailsApplication application) {
-		super();
-		this.application = application;
-	}
+    public GrailsRuntimeConfigurator(GrailsApplication application) {
+        super();
+        this.application = application;
+    }
 	
 	public GrailsRuntimeConfigurator(GrailsApplication application, ApplicationContext parent) {
 		super();
 		this.application = application;
 		this.parent = parent;
-	}
+        this.parentDataSource = parent.containsBean(DATA_SOURCE_BEAN);
+    }
 
 	/**
 	 * Registers a new service with the specified application context
@@ -715,12 +698,13 @@ public class GrailsRuntimeConfigurator {
 	}
 
 	private void populateDataSourceReferences(RuntimeSpringConfiguration springConfig) {
-		
-		GrailsDataSource ds = application.getGrailsDataSource();	
-		BeanConfiguration localSessionFactoryBean = springConfig
-														.addSingletonBean(SESSION_FACTORY_BEAN,ConfigurableLocalSessionFactoryBean.class);
-		
-		if(ds != null) {
+
+        BeanConfiguration localSessionFactoryBean = springConfig
+                                                        .addSingletonBean(SESSION_FACTORY_BEAN,ConfigurableLocalSessionFactoryBean.class);
+
+        GrailsDataSource ds = application.getGrailsDataSource();
+
+		if(ds != null && !parent.containsBean(DATA_SOURCE_BEAN)) {
 			BeanConfiguration dataSource;
 			if(ds.isPooled()) {
 				dataSource = springConfig
@@ -743,7 +727,7 @@ public class GrailsRuntimeConfigurator {
                 	.addProperty("configClass", ds.getConfigurationClass());
             }			
 		}
-		else {
+		else if(!parent.containsBean(DATA_SOURCE_BEAN)){
 			// if no data source exists create in-memory HSQLDB instance
 			springConfig
 				.addSingletonBean(DATA_SOURCE_BEAN, BasicDataSource.class)
@@ -789,7 +773,7 @@ public class GrailsRuntimeConfigurator {
             // setup dialect detector bean
             springConfig
                 .addSingletonBean(DIALECT_DETECTOR_BEAN, HibernateDialectDetectorFactoryBean.class)
-                .addProperty(DATA_SOURCE_BEAN, new RuntimeBeanReference(DATA_SOURCE_BEAN))
+                .addProperty(DATA_SOURCE_BEAN, new RuntimeBeanReference(DATA_SOURCE_BEAN,parentDataSource ))
                 .addProperty("vendorNameDialectMappings",vendorNameDialectMappings);
             hibernatePropertiesMap.put("hibernate.dialect", new RuntimeBeanReference(DIALECT_DETECTOR_BEAN));
 		}
@@ -803,7 +787,7 @@ public class GrailsRuntimeConfigurator {
 		}
 		
 		localSessionFactoryBean
-			.addProperty(DATA_SOURCE_BEAN,new RuntimeBeanReference(DATA_SOURCE_BEAN));
+			.addProperty(DATA_SOURCE_BEAN,new RuntimeBeanReference(DATA_SOURCE_BEAN,parentDataSource));
 		
 		if(loadExternalPersistenceConfig) {
 			URL hibernateConfig = application.getClassLoader().getResource("hibernate.cfg.xml");
@@ -853,7 +837,7 @@ public class GrailsRuntimeConfigurator {
 												.createSingletonBean(ConfigurableLocalSessionFactoryBean.class)
 												.addProperty("grailsApplication",new RuntimeBeanReference(GrailsApplication.APPLICATION_ID,true))
 												.addProperty("classLoader", new RuntimeBeanReference(CLASS_LOADER_BEAN))
-												.addProperty("dataSource", new RuntimeBeanReference(DATA_SOURCE_BEAN))
+												.addProperty("dataSource", new RuntimeBeanReference(DATA_SOURCE_BEAN,parentDataSource))
 												.addProperty("hibernateProperties", new RuntimeBeanReference(HIBERNATE_PROPERTIES_BEAN));
 		
 		GrailsDataSource ds = app.getGrailsDataSource();
