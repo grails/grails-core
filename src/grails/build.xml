@@ -295,7 +295,7 @@ Targets:
 
          <groovy>
 			def jobName = properties."job.class.name"
-			properties."job.class.name" = project.references['caps'](jobName)
+			properties."job.class.name" = project.references['normCaps'](jobName, 'Job')
 		</groovy>
 
 		<mkdir dir="grails-app/jobs" />
