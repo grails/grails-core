@@ -300,13 +300,13 @@ Targets:
 
 		<mkdir dir="grails-app/jobs" />
         <copy 	file="${grails.home}/src/grails/templates/artifacts/Job.groovy"
-            tofile="grails-app/jobs/${job.class.name}.groovy"
+            tofile="grails-app/jobs/${job.class.name}Job.groovy"
             overwrite="false"/>
 
-        <replace 	file="grails-app/jobs/${job.class.name}.groovy"
+        <replace 	file="grails-app/jobs/${job.class.name}Job.groovy"
             token="@job.class.name@"
             value="${job.class.name}" />
-        <echo>Schedules job created: grails-app/jobs/${job.class.name}.groovy</echo>
+        <echo>Schedules job created: grails-app/jobs/${job.class.name}Job.groovy</echo>
     </target>	
 
     <target name="create-test-suite" depends="init-props" description="Create a new test suite">
