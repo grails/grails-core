@@ -54,5 +54,6 @@ public class RunTests {
 			}
 		}
 		TestRunner.run(s);
+		System.exit(0);
 	}
 }
