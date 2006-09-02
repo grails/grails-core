@@ -40,6 +40,13 @@ class FormTagLib {
 		field(attrs)
 	}
 	/**
+	 * Creates a submit button
+	 */
+	def submitButton = { attrs ->
+		attrs.type = "submit"
+		field(attrs)
+	}
+	/**
 	 * A general tag for creating fields
 	 */
 	def field = { attrs ->
