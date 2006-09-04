@@ -277,6 +277,55 @@ public class HibernateCriteriaBuilderTests extends
 
     }
 
+    public void testDistinct() throws Exception {
+        GrailsDomainClass domainClass = this.grailsApplication.getGrailsDomainClass("CriteriaBuilderTestClass");
+
+        assertNotNull(domainClass);
+
+        GroovyObject obj = (GroovyObject)domainClass.newInstance();
+        //obj.setProperty( "id", new Long(1) );
+        obj.setProperty( "firstName", "fred" );
+        obj.setProperty( "lastName", "flintstone" );
+        obj.setProperty( "age", new Integer(45));
+
+        obj.invokeMethod("save", null);
+
+        GroovyObject obj2 = (GroovyObject)domainClass.newInstance();
+        //obj2.setProperty( "id", new Long(2) );
+        obj2.setProperty( "firstName", "wilma" );
+        obj2.setProperty( "lastName", "flintstone" );
+        obj2.setProperty( "age", new Integer(42));
+        obj2.invokeMethod("save", null);
+
+        GroovyObject obj3 = (GroovyObject)domainClass.newInstance();
+        //obj3.setProperty( "id", new Long(3) );
+        obj3.setProperty( "firstName", "dino" );
+        obj3.setProperty( "lastName", "dinosaur" );
+        obj3.setProperty( "age", new Integer(12));
+        obj3.invokeMethod("save", null);
+
+        Proxy p = null;
+        p = parse(	"{ " +
+                    "projections { " +
+                        "distinct('lastName');" +
+                    "}" +
+                "}", "Test1");
+        List results = (List)p.getAdaptee();
+        assertEquals(2, results.size());
+        assertTrue(results.contains("flintstone"));
+        assertTrue(results.contains("dinosaur"));
+
+        p = parse(	"{ " +
+                    "projections { " +
+                        "distinct( ['lastName','age'] );" +
+                    "}" +
+                "}", "Test1");
+        results = (List)p.getAdaptee();
+        assertEquals(3, results.size());
+        System.out.println(results);
+
+    }
+
     public void testHibernateCriteriaBuilder()
         throws Exception {
         GrailsDomainClass domainClass = this.grailsApplication.getGrailsDomainClass("CriteriaBuilderTestClass");

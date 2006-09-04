@@ -29,6 +29,8 @@ import org.hibernate.Criteria;
 import org.hibernate.FetchMode;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.transform.ResultTransformer;
+import org.hibernate.transform.AliasToEntityMapResultTransformer;
 import org.hibernate.criterion.*;
 import org.springframework.orm.hibernate3.SessionHolder;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
@@ -125,6 +127,7 @@ public class HibernateCriteriaBuilder extends BuilderSupport {
     private BeanWrapper targetBean;
     private List aliasStack = new ArrayList();
     private static final String ALIAS = "_alias";
+    private ResultTransformer resultTransformer;
 
 
     public HibernateCriteriaBuilder(Class targetClass, SessionFactory sessionFactory) {
@@ -145,6 +148,37 @@ public class HibernateCriteriaBuilder extends BuilderSupport {
         this.uniqueResult = uniqueResult;
     }
 
+    /**
+     * A projection that selects a distince property name
+     * @param propertyName The property name
+     */
+    public void distinct(String propertyName) {
+        if(this.projectionList == null) {
+            throwRuntimeException( new IllegalArgumentException("call to [distinct] must be within a [projections] node"));
+        }
+        else {
+            this.projectionList.add(Projections.distinct(Projections.property(propertyName)));
+        }
+    }
+
+    /**
+     * A distinct projection that takes a list
+     *
+     * @param propertyNames The list of distince property names
+     */
+    public void distinct(Collection propertyNames) {
+        if(this.projectionList == null) {
+            throwRuntimeException( new IllegalArgumentException("call to [distinct] must be within a [projections] node"));
+        }
+        else {
+            ProjectionList list = Projections.projectionList();
+            for (Iterator i = propertyNames.iterator(); i.hasNext();) {
+                Object o = i.next();
+                list.add(Projections.property(o.toString()));
+            }
+            this.projectionList.add(Projections.distinct(list));
+        }
+    }
     /**
      * Adds a projection that allows the criteria to return the property average value
      *
@@ -601,6 +635,21 @@ public class HibernateCriteriaBuilder extends BuilderSupport {
         }
         return c;
     }
+
+	/**
+	 * Delegates to in as in is a Groovy keyword
+	 **/
+	public Object inList(String propertyName, Collection values) {
+		return in(propertyName, values);
+	}
+	
+	/**
+	 * Delegates to in as in is a Groovy keyword
+	 **/
+	public Object inList(String propertyName, Object[] values) {
+		return in(propertyName, values);
+	}
+		
     /**
      * Applys a "in" contrain on the specified property
      * @param propertyName The property name
@@ -706,6 +755,9 @@ public class HibernateCriteriaBuilder extends BuilderSupport {
         return c;
     }
 
+	public Object notEqual(String propertyName, Object propertyValue) {
+		return ne(propertyName, propertyValue);
+	}
     /**
      * Creates a "between" Criterion based on the property name and specified lo and hi values
      * @param propertyName The property name
@@ -816,6 +868,9 @@ public class HibernateCriteriaBuilder extends BuilderSupport {
 
     protected void nodeCompleted(Object parent, Object node) {
         if(node instanceof Proxy) {
+            if(resultTransformer != null) {
+                this.criteria.setResultTransformer(resultTransformer);
+            }
             if(!uniqueResult) {
                 if(scroll) {
                     resultProxy.setAdaptee(
