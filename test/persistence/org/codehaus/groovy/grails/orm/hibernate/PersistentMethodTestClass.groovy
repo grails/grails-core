@@ -2,16 +2,17 @@ package org.codehaus.groovy.grails.orm.hibernate;
 
 public class PersistentMethodTestClass {
 
-	@Property List optionals = [ "age" ];
+	 List optionals = [ "age" ];
 	
-	@Property Long id; 
-	@Property Long version; 
+	 Long id;
+	 Long version;
 	
-	@Property String firstName; 
-	@Property String lastName; 
-	@Property Integer age;
-	
-	@Property constraints = {
+	 String firstName;
+	 String lastName;
+	 Integer age;
+	 boolean active = true
+
+	def constraints = {
 		firstName(length:4..15)
 	}
 }

@@ -36,16 +36,17 @@ public class PersistentMethodTests extends AbstractDependencyInjectionSpringCont
     protected void onSetUp() throws Exception {
             Class groovyClass = cl.parseClass("public class PersistentMethodTests {\n" +
                 "\n" +
-                "\t@Property List optionals = [ \"age\" ];\n" +
+                "\t List optionals = [ \"age\" ];\n" +
                 "\t\n" +
-                "\t@Property Long id; \n" +
-                "\t@Property Long version; \n" +
+                "\t Long id; \n" +
+                "\t Long version; \n" +
                 "\t\n" +
-                "\t@Property String firstName; \n" +
-                "\t@Property String lastName; \n" +
-                "\t@Property Integer age;\n" +
+                "\t String firstName; \n" +
+                "\t String lastName; \n" +
+                "\t Integer age;\n" +
+                  "boolean active = true" +
                 "\t\n" +
-                "\t@Property constraints = {\n" +
+                "\tdef constraints = {\n" +
                 "\t\tfirstName(length:4..15)\n" +
                 "\t}\n" +
                 "}");
@@ -253,6 +254,10 @@ public class PersistentMethodTests extends AbstractDependencyInjectionSpringCont
         returnList = (List)obj.getMetaClass().invokeStaticMethod(obj, "findAllByAgeBetween", new Object[] { new Integer(10), new Integer(43) });
         assertEquals(2, returnList.size());
 
+        // test primitives
+        returnList = (List)obj.getMetaClass().invokeStaticMethod(obj, "findAllByActive", new Object[] { Boolean.TRUE });
+        assertEquals(3, returnList.size());
+
         Map queryMap = new HashMap();
         queryMap.put("firstName", "wilma");
         queryMap.put("lastName", "flintstone");
@@ -364,6 +369,8 @@ public class PersistentMethodTests extends AbstractDependencyInjectionSpringCont
         catch(GrailsQueryException gqe) {
             //expected
         }
+
+        // test primitive boolean
     }
 
     public void testListPersistentMethods() {

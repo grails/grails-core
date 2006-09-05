@@ -28,6 +28,7 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
+import org.codehaus.groovy.grails.support.ClassUtils;
 import org.hibernate.SessionFactory;
 import org.hibernate.criterion.Criterion;
 import org.hibernate.criterion.Expression;
@@ -111,7 +112,7 @@ public abstract class AbstractClausedStaticPersistentMethod extends
 				if(prop.getType() == String.class && (args[i] instanceof GString)) {
 					args[i] = args[i].toString();
 				}
-				else if(!prop.getType().isAssignableFrom( args[i].getClass() ))
+				else if(!prop.getType().isAssignableFrom( args[i].getClass() ) && !(ClassUtils.isMatchBetweenPrimativeAndWrapperTypes(prop.getType(), args[i].getClass())))
 					throw new IllegalArgumentException("Argument " + args[0] + " does not match property '"+propertyName+"' of type " + prop.getType());				
 			}
 
