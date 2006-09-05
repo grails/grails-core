@@ -420,24 +420,36 @@ Targets:
     <target name="dev" unless="env.set">
         <property name="dev.run" value="true" />
         <groovy>
-            System.setProperty("grails.env","development")
-			ant.properties."grails-env" = System.getProperty("grails.env")
-        </groovy>
+            if(!ant.getProject().getProperty("grails.env")) {
+				System.setProperty("grails.env","development")
+			}
+			else {
+				System.setProperty("grails.env",ant.getProject().getProperty("grails.env"))
+			}
+		</groovy>
         <property name="env.set" value="true" />
     </target>
 
     <target name="prod" unless="env.set">
         <groovy>
-            System.setProperty("grails.env","production")
-			ant.properties."grails-env" = System.getProperty("grails.env")
+            if(!ant.getProject().getProperty("grails.env")) {
+				System.setProperty("grails.env","production")
+			}
+			else {
+				System.setProperty("grails.env",ant.getProject().getProperty("grails.env"))
+			}
         </groovy>
         <property name="env.set" value="true" />
     </target>
 
     <target name="test" unless="env.set">
         <groovy>
-            System.setProperty("grails.env","test")
-			ant.properties."grails-env" = System.getProperty("grails.env")
+            if(!ant.getProject().getProperty("grails.env")) {
+				System.setProperty("grails.env","test")
+			}
+			else {
+				System.setProperty("grails.env",ant.getProject().getProperty("grails.env"))
+			}
         </groovy>
         <property name="env.set" value="true" />
     </target>
@@ -605,7 +617,10 @@ Targets:
 				   ds = dataSources.find { it.name.startsWith(name) }
 				   
 				}
-				if(!ds) ds = dataSources.find { it.name.startsWith("Production")}
+				if(!ds) {
+					ant.echo("No data source found for environment $grailsEnv. Falling back to 'production'.")
+					ds = dataSources.find { it.name.startsWith("Production")}
+				} 
 				if(ds) {
 				    dataSources.remove(ds)
 				    ant.move(file:ds,tofile:"tmp/war/WEB-INF/grails-app/conf/ApplicationDataSource.groovy")
