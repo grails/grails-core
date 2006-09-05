@@ -193,11 +193,6 @@ Targets:
 			properties."project.class.name" = project.references['lower'](projName)
 		</groovy>
 
-			<copy 	file="${grails.home}/src/grails/templates/artifacts/DataSource.groovy"
-				    tofile="${project.name}/grails-app/conf/ApplicationDataSource.groovy"/>
-			<copy 	file="${grails.home}/src/grails/templates/artifacts/BootStrap.groovy"
-					tofile="${project.name}/grails-app/conf/ApplicationBootStrap.groovy"/>
-					
 		<copy todir="${project.name}">
 			<fileset dir="${grails.home}/src/grails/templates/ide-support/eclipse" includes="*.*" excludes=".launch" />
 		</copy>
@@ -352,7 +347,7 @@ Targets:
 		<groovyc srcdir="src/groovy" destdir="web-app/WEB-INF/classes" classpathref="classpath" />
 	</target>
 
-	<target name="test" depends="build">
+	<target name="tests" depends="build">
 		<delete dir="tmp/reports"/>
 		<mkdir dir="tmp/reports"/>
 		<path id="test_classpath">
@@ -422,8 +417,26 @@ Targets:
 		</java>
 	</target>		
 
-    <target name="dev">
+    <target name="dev" unless="env.set">
         <property name="dev.run" value="true" />
+        <groovy>
+            System.setProperty("grails.env","development")
+        </groovy>
+        <property name="env.set" value="true" />
+    </target>
+
+    <target name="prod" unless="env.set">
+        <groovy>
+            System.setProperty("grails.env","production")
+        </groovy>
+        <property name="env.set" value="true" />
+    </target>
+
+    <target name="test" unless="env.set">
+        <groovy>
+            System.setProperty("grails.env","test")
+        </groovy>
+        <property name="env.set" value="true" />
     </target>
 
     <target name="package" depends="build">

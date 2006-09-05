@@ -49,7 +49,7 @@ public class DefaultGrailsApplication implements GrailsApplication {
     private GrailsControllerClass[] controllerClasses = null;
     private GrailsPageFlowClass[] pageFlows = null;
     private GrailsDomainClass[] domainClasses = null;
-    private GrailsDataSource dataSource = null;
+    private GrailsDataSource[] dataSources = null;
     private GrailsServiceClass[] services = null;
     private GrailsBootstrapClass[] bootstrapClasses = null;
     private GrailsTagLibClass[] taglibClasses = null;
@@ -61,6 +61,7 @@ public class DefaultGrailsApplication implements GrailsApplication {
     private Map serviceMap = null;
     private Map taglibMap = null;
     private Map taskMap = null;
+    private Map dataSourceMap = null;
 
     private Class[] allClasses = null;
 
@@ -162,6 +163,7 @@ public class DefaultGrailsApplication implements GrailsApplication {
         Map bootstrapMap = new HashMap();
         this.taglibMap = new HashMap();
         this.taskMap = new HashMap();
+        this.dataSourceMap = new HashMap();
         for (int i = 0; i < classes.length; i++) {
             if (Modifier.isAbstract(classes[i].getModifiers()) ||
             		GrailsClassUtils.isDomainClass(classes[i])) {
@@ -179,13 +181,7 @@ public class DefaultGrailsApplication implements GrailsApplication {
                 }
             } else if (GrailsClassUtils.isDataSource(classes[i])) {
                 GrailsDataSource tmpDataSource = new DefaultGrailsDataSource(classes[i]);
-                if (tmpDataSource.getAvailable()) {
-                    if (dataSource == null) {
-                        dataSource = tmpDataSource;
-                    } else {
-                        throw new MoreThanOneActiveDataSourceException("More than one active data source is configured!");
-                    }
-                }
+                this.dataSourceMap.put(GrailsClassUtils.getPropertyNameRepresentation(tmpDataSource.getName()),tmpDataSource);
             } else if (GrailsClassUtils.isService(classes[i])) {
                 GrailsServiceClass grailsServiceClass = new DefaultGrailsServiceClass(classes[i]);
                 serviceMap.put(grailsServiceClass.getFullName(), grailsServiceClass);
@@ -414,7 +410,25 @@ public class DefaultGrailsApplication implements GrailsApplication {
 
 
     public GrailsDataSource getGrailsDataSource() {
-        return this.dataSource;
+        String environment = System.getProperty(GrailsApplication.ENVIRONMENT);
+        if(log.isDebugEnabled()) {
+            log.debug("[GrailsApplication] Retrieving data source for environment: " + environment);
+        }
+        if(StringUtils.isBlank(environment)) {
+            GrailsDataSource devDataSource = (GrailsDataSource)this.dataSourceMap.get(GrailsApplication.ENV_DEVELOPMENT);
+            if(devDataSource == null)
+                devDataSource = (GrailsDataSource)this.dataSourceMap.get(GrailsApplication.ENV_APPLICATION);
+            if(devDataSource == null)
+                throw new GrailsConfigurationException("Default 'development' data source cannot be found. Please specify alternative via -Dgrails.env=myenvironment");
+            return devDataSource;
+        }
+        else {
+            GrailsDataSource dataSource = (GrailsDataSource)this.dataSourceMap.get(environment);
+            if(dataSource == null)
+                throw new GrailsConfigurationException("No data source found for environment ["+environment+"]. Please specify alternative via -Dgrails.env=myenvironment");
+            return dataSource;
+
+        }
     }
 
     public GrailsServiceClass[] getGrailsServiceClasses() {

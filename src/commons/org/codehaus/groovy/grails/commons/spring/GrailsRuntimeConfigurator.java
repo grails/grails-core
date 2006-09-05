@@ -72,6 +72,7 @@ import java.util.*;
  */
 public class GrailsRuntimeConfigurator {
 
+	public static final String QUARTZ_SCHEDULER_BEAN = "quartzScheduler";
 	public static final String OPEN_SESSION_IN_VIEW_INTERCEPTOR_BEAN = "openSessionInViewInterceptor";
 	public static final String TRANSACTION_MANAGER_BEAN = "transactionManager";
 	public static final String HIBERNATE_PROPERTIES_BEAN = "hibernateProperties";
@@ -399,7 +400,7 @@ public class GrailsRuntimeConfigurator {
 		
 
 		springConfig
-			.addSingletonBean("grailsSchedulerBean",SchedulerFactoryBean.class)
+			.addSingletonBean(QUARTZ_SCHEDULER_BEAN,SchedulerFactoryBean.class)
 			.addProperty("triggers", schedulerReferences);		
 	}
 
@@ -705,7 +706,8 @@ public class GrailsRuntimeConfigurator {
         GrailsDataSource ds = application.getGrailsDataSource();
 
 		if(ds != null && !parent.containsBean(DATA_SOURCE_BEAN)) {
-			BeanConfiguration dataSource;
+            LOG.info("[SpringConfig] Configuring for environment: " + ds.getName());
+            BeanConfiguration dataSource;
 			if(ds.isPooled()) {
 				dataSource = springConfig
 								.addSingletonBean(DATA_SOURCE_BEAN, BasicDataSource.class)
@@ -728,7 +730,8 @@ public class GrailsRuntimeConfigurator {
             }			
 		}
 		else if(!parent.containsBean(DATA_SOURCE_BEAN)){
-			// if no data source exists create in-memory HSQLDB instance
+            LOG.info("[SpringConfig] No data source found, using in-memory HSQLDB");
+            // if no data source exists create in-memory HSQLDB instance
 			springConfig
 				.addSingletonBean(DATA_SOURCE_BEAN, BasicDataSource.class)
 				.setDestroyMethod("close")

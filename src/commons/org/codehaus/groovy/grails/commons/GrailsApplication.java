@@ -21,14 +21,31 @@ import groovy.lang.GroovyClassLoader;
  *  <p>Exposes all classes for a Grails application.
  * 
  * @author Steven Devijver
- * @since Jul 2, 2005
+ * @author Graeme Rocher
+ *
+ * @since 0.1
+ *
+ * Created: Jul 2, 2005
  */
 public interface GrailsApplication {
     /**
      * The id of the grails application within a bean context
      */
     String APPLICATION_ID = "grailsApplication";
-    
+    /**
+     * Constant used to resolve the environment via System.getProperty(ENVIRONMENT)
+     */
+    String ENVIRONMENT = "grails.env";
+    /**
+     * Constant for the development environment
+     */
+    String ENV_DEVELOPMENT = "development";
+    /**
+     * Constant for the application data source, primarly for backward compatability for those applications
+     * that use ApplicationDataSource.groovy
+     */
+    String ENV_APPLICATION = "application";
+
     /**
      * <p>Returns all controllers in an application
      *
