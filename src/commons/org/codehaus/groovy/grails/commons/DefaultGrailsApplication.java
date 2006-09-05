@@ -418,8 +418,9 @@ public class DefaultGrailsApplication implements GrailsApplication {
             GrailsDataSource devDataSource = (GrailsDataSource)this.dataSourceMap.get(GrailsApplication.ENV_DEVELOPMENT);
             if(devDataSource == null)
                 devDataSource = (GrailsDataSource)this.dataSourceMap.get(GrailsApplication.ENV_APPLICATION);
-            if(devDataSource == null)
-                throw new GrailsConfigurationException("Default 'development' data source cannot be found. Please specify alternative via -Dgrails.env=myenvironment");
+            if(this.dataSourceMap.size() == 1 && devDataSource == null) {
+                devDataSource = (GrailsDataSource)this.dataSourceMap.get(this.dataSourceMap.keySet().iterator().next());
+            }
             return devDataSource;
         }
         else {
