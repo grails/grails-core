@@ -421,6 +421,7 @@ Targets:
         <property name="dev.run" value="true" />
         <groovy>
             System.setProperty("grails.env","development")
+			ant.properties."grails-env" = System.getProperty("grails.env")
         </groovy>
         <property name="env.set" value="true" />
     </target>
@@ -428,6 +429,7 @@ Targets:
     <target name="prod" unless="env.set">
         <groovy>
             System.setProperty("grails.env","production")
+			ant.properties."grails-env" = System.getProperty("grails.env")
         </groovy>
         <property name="env.set" value="true" />
     </target>
@@ -435,6 +437,7 @@ Targets:
     <target name="test" unless="env.set">
         <groovy>
             System.setProperty("grails.env","test")
+			ant.properties."grails-env" = System.getProperty("grails.env")
         </groovy>
         <property name="env.set" value="true" />
     </target>
@@ -579,9 +582,43 @@ Targets:
         </copy>
     </target>
 
-    <target name="war" depends="clean,package">
+    <target name="war" depends="package,prod">
 		<basename property="project.dir" file="."/>
+		<groovy>
+			def dataSources = new File("tmp/war/WEB-INF/grails-app/conf")
+			                    .listFiles()
+			                    .findAll { it.name.endsWith("DataSource.groovy") &amp;&amp;
+			                               it.name!="ApplicationDataSource.groovy"}
+			if(dataSources.size() == 1) {
+				ant.move(file:"${dataSources[0]}",
+						 tofile:"tmp/war/WEB-INF/grails-app/conf/ApplicationDataSource.groovy")
+			}
+			else {
+				// attempt to find production
+				def ds = null
+				def grailsEnv = System.getProperty('grails.env')
+     			ant.echo("Packaging for environment '$grailsEnv'")				
+				if(grailsEnv) {
+				   def name = grailsEnv[0].toUpperCase(Locale.ENGLISH)+
+				              grailsEnv[1..grailsEnv.size()-1]
+
+				   ds = dataSources.find { it.name.startsWith(name) }
+				   
+				}
+				if(!ds) ds = dataSources.find { it.name.startsWith("Production")}
+				if(ds) {
+				    dataSources.remove(ds)
+				    ant.move(file:ds,tofile:"tmp/war/WEB-INF/grails-app/conf/ApplicationDataSource.groovy")
+				    dataSources.each {
+						ant.delete(file:it)
+					}
+				}
+			}
+		</groovy>
 		<jar destfile="${project.dir}.war" basedir="tmp/war" />
+		<delete>
+			<fileset dir="tmp/war/WEB-INF/grails-app/conf" includes="*.groovy" />
+		</delete>
 	</target>
 
     <target name="run-app:impl">
