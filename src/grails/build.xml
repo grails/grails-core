@@ -594,7 +594,7 @@ Targets:
         </copy>
     </target>
 
-    <target name="war" depends="package,prod">
+    <target name="war" depends="clean,package,prod">
 		<basename property="project.dir" file="."/>
 		<groovy>
 			def dataSources = new File("tmp/war/WEB-INF/grails-app/conf")
