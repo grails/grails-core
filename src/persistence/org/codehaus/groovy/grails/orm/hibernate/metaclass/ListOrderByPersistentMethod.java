@@ -5,6 +5,7 @@ package org.codehaus.groovy.grails.orm.hibernate.metaclass;
 
 import java.sql.SQLException;
 import java.util.Map;
+import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -45,7 +46,7 @@ public class ListOrderByPersistentMethod extends AbstractStaticPersistentMethod 
 		match.find();
 		
 		String nameInSignature = match.group(2);
-		final String propertyName = nameInSignature.substring(0,1).toLowerCase() +
+		final String propertyName = nameInSignature.substring(0,1).toLowerCase(Locale.ENGLISH) +
 										nameInSignature.substring(1);
 				
 		return super.getHibernateTemplate().executeFind( new HibernateCallback() {
