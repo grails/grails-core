@@ -42,6 +42,9 @@ public class DefaultGrailsApplicationTests extends TestCase {
         catch(GrailsConfigurationException e) {
             // expected
         }
+        finally {
+           System.setProperty(GrailsApplication.ENVIRONMENT,null);
+        }
 
     }
 }
