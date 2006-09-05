@@ -43,7 +43,7 @@ public class DefaultGrailsApplicationTests extends TestCase {
             // expected
         }
         finally {
-           System.setProperty(GrailsApplication.ENVIRONMENT,null);
+           System.setProperty(GrailsApplication.ENVIRONMENT,"");
         }
 
     }
