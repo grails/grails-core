@@ -362,7 +362,7 @@ public class GrailsClassUtils {
      * @return The property name representation
      */
     public static String getPropertyNameRepresentation(String name) {
-        String propertyName = name.substring(0,1).toLowerCase() + name.substring(1);
+        String propertyName = name.substring(0,1).toLowerCase(Locale.ENGLISH) + name.substring(1);
         if(propertyName.indexOf(' ') > -1) {
             propertyName = propertyName.replaceAll("\\s", "");
         }

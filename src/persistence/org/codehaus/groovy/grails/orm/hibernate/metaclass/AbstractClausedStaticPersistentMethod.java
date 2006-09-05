@@ -19,6 +19,7 @@ import groovy.lang.MissingMethodException;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -297,7 +298,7 @@ public abstract class AbstractClausedStaticPersistentMethod extends
 				int i = propName.lastIndexOf(NOT);
 				propName = propName.substring(0, i);
 			}
-			return propName.substring(0,1).toLowerCase()
+			return propName.substring(0,1).toLowerCase(Locale.ENGLISH)
 				+ propName.substring(1);			
 		}
 	}

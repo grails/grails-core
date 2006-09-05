@@ -15,10 +15,7 @@
 package org.codehaus.groovy.grails.commons;
 
 import java.beans.PropertyDescriptor;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import org.apache.commons.lang.ClassUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -247,7 +244,7 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
 	 */
 	public String getTypePropertyName() {	
 		String shortTypeName = ClassUtils.getShortClassName( this.type );
-		return shortTypeName.substring(0,1).toLowerCase() + shortTypeName.substring(1);
+		return shortTypeName.substring(0,1).toLowerCase(Locale.ENGLISH) + shortTypeName.substring(1);
 	}
 
 	/* (non-Javadoc)
