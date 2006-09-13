@@ -425,6 +425,9 @@ public class DefaultGrailsApplication implements GrailsApplication {
         }
         else {
             GrailsDataSource dataSource = (GrailsDataSource)this.dataSourceMap.get(environment);
+			if(dataSource == null && GrailsApplication.ENV_DEVELOPMENT.equalsIgnoreCase(environment)) {
+				dataSource = (GrailsDataSource)this.dataSourceMap.get(GrailsApplication.ENV_APPLICATION);
+			}
             if(dataSource == null)
                 throw new GrailsConfigurationException("No data source found for environment ["+environment+"]. Please specify alternative via -Dgrails.env=myenvironment");
             return dataSource;
