@@ -55,10 +55,10 @@ public class DomainClassMethods extends AbstractDynamicMethods {
             public Object invoke(Object target, Object[] arguments) {
                 Errors errors = (Errors)getDynamicProperty(ERRORS_PROPERTY).get(target);
                 if(errors == null || !errors.hasErrors()) {
-                    return new Boolean(false);
+                    return Boolean.FALSE;
                 }
                 else {
-                    return new Boolean(true);
+                    return Boolean.TRUE;
                 }
             }
         });
@@ -77,6 +77,7 @@ public class DomainClassMethods extends AbstractDynamicMethods {
         addStaticMethodInvocation(new CountPersistentMethod(sessionFactory, classLoader));
         addStaticMethodInvocation(new CreateCriteriaPersistentMethod(sessionFactory, classLoader));
         addStaticMethodInvocation(new ExecuteQueryPersistentMethod(sessionFactory, classLoader));
+        addStaticMethodInvocation(new ExecuteUpdatePersistentMethod(sessionFactory, classLoader));
         addStaticMethodInvocation(new CreateDynamicMethod());
 
 		// add dynamic properties

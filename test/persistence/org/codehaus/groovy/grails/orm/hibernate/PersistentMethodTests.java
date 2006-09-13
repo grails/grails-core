@@ -435,6 +435,48 @@ public class PersistentMethodTests extends AbstractDependencyInjectionSpringCont
     }
 
 
+    public void testDMLOperation() throws Exception {
+        GrailsDomainClass domainClass = this.grailsApplication.getGrailsDomainClass("PersistentMethodTests");
 
+        GroovyObject obj = (GroovyObject)domainClass.newInstance();
+        obj.setProperty( "id", new Long(1) );
+        obj.setProperty( "firstName", "fred" );
+        obj.setProperty( "lastName", "flintstone" );
+
+        obj.invokeMethod("save", null);
+
+        GroovyObject obj2 = (GroovyObject)domainClass.newInstance();
+        obj2.setProperty( "id", new Long(2) );
+        obj2.setProperty( "firstName", "wilma" );
+        obj2.setProperty( "lastName", "flintstone" );
+
+        obj2.invokeMethod("save", null);
+
+        GroovyObject obj3 = (GroovyObject)domainClass.newInstance();
+        obj3.setProperty( "id", new Long(3) );
+        obj3.setProperty( "firstName", "dino" );
+        obj3.setProperty( "lastName", "dinosaur" );
+
+        obj3.invokeMethod("save", null);
+
+        Object returnValue = obj.getMetaClass().invokeStaticMethod(obj,"list", null);
+        assertNotNull(returnValue);
+        assertTrue(returnValue instanceof List);
+
+        List returnList = (List)returnValue;
+        assertEquals(3, returnList.size());
+
+        obj.getMetaClass().invokeStaticMethod(obj,"executeUpdate", new Object[]{"delete PersistentMethodTests"});
+
+        returnValue = obj.getMetaClass().invokeStaticMethod(obj,"list", null);
+        assertNotNull(returnValue);
+        assertTrue(returnValue instanceof List);
+
+        returnList = (List)returnValue;
+        assertEquals(0, returnList.size());
+
+
+
+    }
 
 }

@@ -38,7 +38,7 @@ public class GrailsClassUtils {
 
     /**
      * Returns true of the specified Groovy class is a bootstrap
-     * @param clazz
+     * @param clazz The class to check
      * @return True if the class is a bootstrap class
      */
     public static boolean isBootstrapClass( Class clazz ) {
@@ -59,7 +59,7 @@ public class GrailsClassUtils {
     }
     /**
      * Returns true of the specified Groovy class is a controller
-     * @param clazz
+     * @param clazz The class to check
      * @return True if the class is a controller
      */
     public static boolean isControllerClass( Class clazz ) {
@@ -73,7 +73,7 @@ public class GrailsClassUtils {
     /**
      * <p>Returns true if the specified class is a page flow class type</p>
      *
-     * @param clazz
+     * @param clazz the class to check
      * @return  True if the class is a page flow class
      */
     public static boolean isPageFlowClass( Class clazz ) {
@@ -87,7 +87,7 @@ public class GrailsClassUtils {
     /**
      * <p>Returns true if the specified class is a data source.
      *
-     * @param clazz
+     * @param clazz The class to check
      * @return True if the class is a data source
      */
     public static boolean isDataSource(Class clazz) {
@@ -97,7 +97,7 @@ public class GrailsClassUtils {
     /**
      * <p>Returns true if the specified class is a service.
      *
-     * @param clazz
+     * @param clazz The class to check
      * @return True if the class is a service class
      */
     public static boolean isService(Class clazz) {
@@ -132,7 +132,9 @@ public class GrailsClassUtils {
                 result = true;
                 break;
             } catch (SecurityException e) {
+                // ignore
             } catch (NoSuchFieldException e) {
+                // ignore
             }
             testClass = testClass.getSuperclass();
         }
@@ -168,10 +170,7 @@ public class GrailsClassUtils {
         try {
 
             Class propType = getProperyType( clazz, propertyName );
-            if(propType != null && propType.equals( type ))
-                return true;
-            else
-                return false;
+            return propType != null && propType.equals(type);
         }
         catch(Exception e) {
             return false;
@@ -332,7 +331,7 @@ public class GrailsClassUtils {
     /**
      * Returns the class name without the package prefix
      *
-     * @param targetClass
+     * @param targetClass The class to get a short name for
      * @return The short name of the class
      */
     public static String getShortName(Class targetClass) {
@@ -422,6 +421,16 @@ public class GrailsClassUtils {
     }
 
 
+    /**
+     * Convenience method for converting a collection to an Object[]
+     * @param c The collection
+     * @return  An object array
+     */
+    public static Object[] collectionToObjectArray(Collection c) {
+        if(c == null) return new Object[0];
+
+        return c.toArray(new Object[c.size()]);
+    }
 
 
 }
