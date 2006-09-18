@@ -100,6 +100,8 @@ public class GrailsHibernateDomainClass extends AbstractGrailsClass implements E
                     // get the associated type from the session factory
                     // and set it on the property
                     AssociationType assType = (AssociationType)hibernateType;
+					if (assType instanceof org.hibernate.type.AnyType) continue;
+					
                     String associatedEntity = assType.getAssociatedEntityName((SessionFactoryImplementor)sessionFactory);
                     ClassMetadata associatedMetaData = sessionFactory.getClassMetadata(associatedEntity);
                     prop.setRelatedClassType(associatedMetaData.getMappedClass(EntityMode.POJO));
