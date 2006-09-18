@@ -367,7 +367,7 @@ Targets:
 		</junit>
 	</target>
 
-	<target name="test-app" depends="package" description="Run current app's unit tests">
+	<target name="test-app" depends="dev,package" description="Run current app's unit tests">
 		<mkdir dir="${basedir}/tmp/war/WEB-INF/grails-app/tests" />
 		<copy todir="${basedir}/tmp/war/WEB-INF/grails-app/tests">
 			<fileset dir="${basedir}/grails-tests/" includes="**" />
@@ -382,7 +382,9 @@ Targets:
 			<fileset dir="${grails.home}/dist"/>
 			<fileset dir="lib"/>
 		</path>
+		<echo>Running tests for environment: ${grails.env}</echo>
 		<java classpathref="test.classpath" classname="grails.util.RunTests" fork="true" failonerror="true">
+			<jvmarg value="-Dgrails.env=${grails.env}"/>
 <!--			<jvmarg value="-Xdebug"/>
 			<jvmarg value="-Xrunjdwp:transport=dt_socket,address=50010,suspend=y,server=y"/> -->
 		</java>
@@ -417,39 +419,38 @@ Targets:
 		</java>
 	</target>		
 
-    <target name="dev" unless="env.set">
+	<target name="env-props" unless="env.props.set">
+		<groovy>
+			project.addReference('setEnv') { key, value ->
+	            if(!ant.project.getProperty(key)) {
+				    ant.project.setProperty(key,value)	
+					System.setProperty(key,value)
+				}
+				else {
+					System.setProperty(key,ant.project.getProperty(value))
+				}			
+			}
+		</groovy>	
+		<property name="env.props.set" value="true" />	
+	</target>
+    <target name="dev" depends="env-props" unless="env.set">
         <property name="dev.run" value="true" />
         <groovy>
-            if(!ant.getProject().getProperty("grails.env")) {
-				System.setProperty("grails.env","development")
-			}
-			else {
-				System.setProperty("grails.env",ant.getProject().getProperty("grails.env"))
-			}
+			ant.project.references['setEnv']("grails.env", "development")
 		</groovy>
         <property name="env.set" value="true" />
     </target>
 
-    <target name="prod" unless="env.set">
+    <target name="prod" depends="env-props" unless="env.set">
         <groovy>
-            if(!ant.getProject().getProperty("grails.env")) {
-				System.setProperty("grails.env","production")
-			}
-			else {
-				System.setProperty("grails.env",ant.getProject().getProperty("grails.env"))
-			}
+			ant.project.references['setEnv']("grails.env", "production")
         </groovy>
         <property name="env.set" value="true" />
     </target>
 
-    <target name="test" unless="env.set">
+    <target name="test" depends="env-props" unless="env.set">
         <groovy>
-            if(!ant.getProject().getProperty("grails.env")) {
-				System.setProperty("grails.env","test")
-			}
-			else {
-				System.setProperty("grails.env",ant.getProject().getProperty("grails.env"))
-			}
+			ant.project.references['setEnv']("grails.env", "test")
         </groovy>
         <property name="env.set" value="true" />
     </target>
