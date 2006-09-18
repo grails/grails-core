@@ -26,10 +26,11 @@ import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsControllerHelper;
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
 import org.springframework.validation.Errors;
-
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.beans.PropertyDescriptor;
+import java.beans.PropertyDescriptor;Å
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map;
@@ -158,9 +159,16 @@ public class RedirectDynamicMethod extends AbstractDynamicControllerMethod {
                     actualUriBuf.append('?');
                     for (Iterator i = params.keySet().iterator(); i.hasNext();) {
                         Object name = i.next();
-                        actualUriBuf.append(name)
-                                 .append('=')
-                                 .append(params.get(name));
+                        Object value = params.get(name);
+                        if (value==null)
+                            value = "";
+                        try {
+                            actualUriBuf.append(URLEncoder.encode(name.toString(),request.getCharacterEncoding()))
+                                     .append('=')
+                                     .append(URLEncoder.encode(value.toString(),request.getCharacterEncoding()));
+                        } catch (UnsupportedEncodingException ex) {
+                            throw new ControllerExecutionException("Error redirecting request for url ["+name+":"+value +"]: " + ex.getMessage(),ex);
+                        }
                         if(i.hasNext())
                             actualUriBuf.append('&');
                     }
