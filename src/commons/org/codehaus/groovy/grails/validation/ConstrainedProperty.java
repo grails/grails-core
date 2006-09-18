@@ -18,6 +18,7 @@ package org.codehaus.groovy.grails.validation;
 import groovy.lang.IntRange;
 import groovy.lang.MissingPropertyException;
 import groovy.lang.Range;
+import groovy.lang.Closure;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.logging.Log;
@@ -77,6 +78,7 @@ public class ConstrainedProperty   {
     private static final String DEFAULT_INVALID_EMAIL_MESSAGE_CODE = "default.invalid.email.message";
     private static final String DEFAULT_INVALID_CREDIT_CARD_MESSAGE_CODE = "default.invalid.creditCard.message";
     private static final String DEFAULT_INVALID_URL_MESSAGE_CODE = "default.invalid.url.message";
+    private static final String DEFAULT_INVALID_VALIDATOR_MESSAGE_CODE = "default.invalid.validator.message";
     private static final String DEFAULT_DOESNT_MATCH_MESSAGE_CODE = "default.doesnt.match.message";
     private static final String DEFAULT_BLANK_MESSAGE_CODE = "default.blank.message";
 
@@ -118,6 +120,7 @@ public class ConstrainedProperty   {
     public static final String MIN_LENGTH_CONSTRAINT = "minLength";
     public static final String NOT_EQUAL_CONSTRAINT = "notEqual";
     public static final String NULLABLE_CONSTRAINT = "nullable";
+    public static final String VALIDATOR_CONSTRAINT = "validator";
 
     protected static final String INVALID_SUFFIX = ".invalid";
     protected static final String EXCEEDED_SUFFIX = ".exceeded";
@@ -167,6 +170,7 @@ public class ConstrainedProperty   {
         constraints.put( MIN_LENGTH_CONSTRAINT, MinSizeConstraint.class );
         constraints.put( NULLABLE_CONSTRAINT, NullableConstraint.class );
         constraints.put( NOT_EQUAL_CONSTRAINT, NotEqualConstraint.class );
+        constraints.put( VALIDATOR_CONSTRAINT, ValidatorConstraint.class );
     }
 
 
@@ -414,7 +418,7 @@ public class ConstrainedProperty   {
 
         public void setParameter(Object constraintParameter) {
             if(!(constraintParameter instanceof Boolean))
-                throw new IllegalArgumentException("Parameter for constraint ["+EMAIL_CONSTRAINT+"] of property ["+constraintPropertyName+"] of class ["+constraintOwningClass+"] must be a boolean value");
+                throw new IllegalArgumentException("Parameter for constraint ["+CREDIT_CARD_CONSTRAINT+"] of property ["+constraintPropertyName+"] of class ["+constraintOwningClass+"] must be a boolean value");
 
             this.creditCard = ((Boolean)constraintParameter).booleanValue();
             super.setParameter(constraintParameter);
@@ -431,6 +435,7 @@ public class ConstrainedProperty   {
             return String.class.isAssignableFrom(type);
         }
     }
+
     /**
      *
      * A Constraint that validates an email address
@@ -526,6 +531,7 @@ public class ConstrainedProperty   {
         }
 
     }
+
     /**
      *
      * A Constraint that validates a range
@@ -691,6 +697,7 @@ public class ConstrainedProperty   {
             }
         }
     }
+
     /**
      * A constraint that validates the property is contained within the supplied list
      */
@@ -1029,6 +1036,139 @@ public class ConstrainedProperty   {
                     super.rejectValue(errors,MIN_LENGTH_CONSTRAINT + NOTMET_SUFFIX,args,getDefaultMessage(DEFAULT_INVALID_MIN_LENGTH_MESSAGE_CODE, args));
                 }
             }
+        }
+    }
+
+    /**
+     * <p>A constraint class that validates using a user-supplied closure.</p>
+     * <p>The Closure will receive one or two parameters containing the new value of the property and the object
+     * on which the validation is being performed. The value is always the first parameterm and the object is the second.
+     * These parameters must be type compatible with the value of the property and constrained class.</p>
+     *
+     * <p>
+     * The Closure can return any of:
+     * </p>
+     * <ul>
+     * <li>NULL to indicate success
+     * <li>true to indicate success
+     * <li>false to indicate a failure, with the default failure message
+     * <li>a string to indicate a failure with the specific error code which will be appended to the
+     * prefix for the constrained class and property i.e. classname.propertyname.stringfromclosurehere
+     * <li>a list containing an error code and any other arguments for the error message. The error code will
+     * be appended to the standard classname.propertyname prefix and the arguments made available to the
+     * error message as parameters numbered 3 onwards.
+     * </ul>
+     */
+    static class ValidatorConstraint extends AbstractConstraint {
+        private Closure validator;
+        private int numValidatorParams;
+
+        protected void processValidate(Object target, Object propertyValue, Errors errors) {
+            if(validator != null) {
+                
+                Object[] params = numValidatorParams == 2
+                        ? new Object[] { propertyValue, target }
+                        : new Object[] { propertyValue };
+
+                final Object result = validator.call(params);
+
+                boolean bad = false;
+                String errmsg = null;
+                Object[] args = null;
+
+                if (result != null)
+                {
+                    if (result instanceof Boolean)
+                    {
+                        bad = !((Boolean)result).booleanValue();
+                    }
+                    else if (result instanceof String)
+                    {
+                        bad = true;
+                        errmsg = (String)result;
+                    }
+                    else if ((result instanceof Collection) || result.getClass().isArray())
+                    {
+                        bad = true;
+                        Object[] values = (result instanceof Collection) ? ((Collection)result).toArray() : (Object[])result;
+                        if(!(values[0] instanceof String))
+                        {
+                            throw new IllegalArgumentException("Return value from validation closure ["
+                                +VALIDATOR_CONSTRAINT+"] of property ["+constraintPropertyName+"] of class ["
+                                +constraintOwningClass+"] is returning a list but the first element must be a string " +
+                                "containing the error message code");
+                        }
+                        errmsg = (String)values[0];
+                        args = new Object[values.length - 1 + 3];
+                        int i = 0;
+                        args[i++] = constraintPropertyName;
+                        args[i++] = constraintOwningClass;
+                        args[i++] = propertyValue;
+                        System.arraycopy( args, i, values, 1, values.length-1 );
+                    }
+                }
+                if( bad ) {
+                    if (args == null)
+                    {
+                        args = new Object[] { constraintPropertyName, constraintOwningClass, propertyValue };
+                    }
+                    super.rejectValue(errors, errmsg == null ? VALIDATOR_CONSTRAINT + INVALID_SUFFIX : errmsg,
+                        args,getDefaultMessage(DEFAULT_INVALID_VALIDATOR_MESSAGE_CODE, args));
+                }
+            }
+        }
+
+        public void setParameter(Object constraintParameter) {
+            if(!(constraintParameter instanceof Closure))
+                throw new IllegalArgumentException("Parameter for constraint ["+VALIDATOR_CONSTRAINT+"] of property ["+constraintPropertyName+"] of class ["+constraintOwningClass+"] must be a Closure");
+
+            this.validator = (Closure)constraintParameter;
+
+            Class[] params = this.validator.getParameterTypes();
+            // Groovy should always force one parameter, but let's check anyway...
+            if (params.length == 0)
+            {
+                throw new IllegalArgumentException("Parameter for constraint ["+VALIDATOR_CONSTRAINT+"] of property ["+constraintPropertyName+"] of class ["+constraintOwningClass+"] must be a Closure taking at least 1 parameter (value, [object])");
+            } else if (params.length > 2)
+            {
+                throw new IllegalArgumentException("Parameter for constraint ["+VALIDATOR_CONSTRAINT+"] of property ["+constraintPropertyName+"] of class ["+constraintOwningClass+"] must be a Closure taking no more than 2 parameters (value, [object])");
+            }
+
+            numValidatorParams = params.length;
+
+            BeanWrapper wr = new BeanWrapperImpl(constraintOwningClass);
+            Class propType = wr.getPropertyType(constraintPropertyName);
+
+            if (!GrailsClassUtils.isGroovyAssignableFrom(params[0], propType))
+            {
+                throw new IllegalArgumentException("Parameter for constraint ["+VALIDATOR_CONSTRAINT+"] of " +
+                    "property ["+constraintPropertyName+"] of class ["+constraintOwningClass+"] must be a Closure " +
+                    "taking with the first parameter (value) compatible with the type of the " +
+                    "property ["+propType+"], but the parameter is of type ["+params[0]+"]");
+            }
+            if (params.length > 1)
+            {
+                if (!GrailsClassUtils.isGroovyAssignableFrom(params[1], constraintOwningClass))
+                {
+                    throw new IllegalArgumentException("Parameter for constraint ["+VALIDATOR_CONSTRAINT+"] of " +
+                        "property ["+constraintPropertyName+"] of class ["+constraintOwningClass+"] must be a Closure " +
+                        "taking with the second parameter (object) compatible with the type of the object being " +
+                        "constrained ["+constraintOwningClass+"], but the parameter is of type ["+params[1]+"]");
+                }
+            }
+
+            super.setParameter(constraintParameter);
+        }
+
+        public String getName() {
+            return CREDIT_CARD_CONSTRAINT;
+        }
+
+        public boolean supports(Class type) {
+            if(type == null)
+                return false;
+
+            return true;
         }
     }
 

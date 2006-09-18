@@ -149,7 +149,7 @@ public abstract class AbstractGrailsClass implements GrailsClass {
 		BeanWrapper ref = getReference();
 		if (ref.isReadableProperty(name)) {
 			Object value = ref.getPropertyValue(name);
-			if(value != null && (type.isAssignableFrom(value.getClass()) || org.codehaus.groovy.grails.support.ClassUtils.isMatchBetweenPrimativeAndWrapperTypes(type, value.getClass()))) {
+			if(value != null && (type.isAssignableFrom(value.getClass()) || GrailsClassUtils.isMatchBetweenPrimativeAndWrapperTypes(type, value.getClass()))) {
 				return value;
 			}
 		}
@@ -157,7 +157,7 @@ public abstract class AbstractGrailsClass implements GrailsClass {
             Field field = ref.getWrappedClass().getField(name);
             if (Modifier.isStatic(field.getModifiers()) && Modifier.isPublic(field.getModifiers())) {
                 Object value = field.get(ref.getWrappedInstance());
-                if (value != null && (type.equals(value.getClass()) || org.codehaus.groovy.grails.support.ClassUtils.isMatchBetweenPrimativeAndWrapperTypes(type, value.getClass()))) {
+                if (value != null && (type.equals(value.getClass()) || GrailsClassUtils.isMatchBetweenPrimativeAndWrapperTypes(type, value.getClass()))) {
                     return value;
                 } else {
                     return null;

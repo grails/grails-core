@@ -50,7 +50,8 @@ public class ConstrainedPropertyBuilder extends BuilderSupport {
 
 	protected Object createNode(Object name, Map attributes) {
 		// we do this so that missing property exception is throw if it doesn't exist
-		try {
+
+        try {
 			String property = (String)name;
 			ConstrainedProperty cp;
 			if(constrainedProperties.containsKey(property)) {

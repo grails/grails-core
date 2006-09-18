@@ -36,6 +36,31 @@ public class GrailsClassUtils {
 
     private static Map beanWrapperInstances = new HashMap();
 
+        public static final Map PRIMITIVE_TYPE_COMPATIBLE_CLASSES = new HashMap();
+
+    /**
+     * Just add two entries to the class compatibility map
+     * @param left
+     * @param right
+     */
+    private static final void registerPrimitiveClassPair(Class left, Class right)
+    {
+        PRIMITIVE_TYPE_COMPATIBLE_CLASSES.put( left, right);
+        PRIMITIVE_TYPE_COMPATIBLE_CLASSES.put( right, left);
+    }
+
+    static
+    {
+        registerPrimitiveClassPair( Boolean.class, boolean.class);
+        registerPrimitiveClassPair( Integer.class, int.class);
+        registerPrimitiveClassPair( Short.class, short.class);
+        registerPrimitiveClassPair( Byte.class, byte.class);
+        registerPrimitiveClassPair( Character.class, char.class);
+        registerPrimitiveClassPair( Long.class, long.class);
+        registerPrimitiveClassPair( Float.class, float.class);
+        registerPrimitiveClassPair( Double.class, double.class);
+    }
+
     /**
      * Returns true of the specified Groovy class is a bootstrap
      * @param clazz The class to check
@@ -119,12 +144,12 @@ public class GrailsClassUtils {
     	if(clazz == null)return false;
         if(Closure.class.isAssignableFrom(clazz)) {
             return false;
-        }  
+        }
         Class testClass = clazz;
         boolean result = false;
         while(testClass!=null&&!testClass.equals(GroovyObject.class)&&!testClass.equals(Object.class)) {
             try {
-                // make sure the identify and version field exist        	
+                // make sure the identify and version field exist
             	testClass.getDeclaredField( GrailsDomainClassProperty.IDENTITY );
             	testClass.getDeclaredField( GrailsDomainClassProperty.VERSION );
 
@@ -140,7 +165,7 @@ public class GrailsClassUtils {
         }
         return result;
     }
-    
+
 	public static boolean isTaskClass(Class clazz) {
         try {
 			clazz.getDeclaredMethod( GrailsTaskClassProperty.EXECUTE , new Class[]{});
@@ -150,11 +175,11 @@ public class GrailsClassUtils {
 			return false;
 		}
 		return isTaskClass(clazz.getName());
-	}    
-	
+	}
+
 	public static boolean isTaskClass(String className) {
 		return className.endsWith(DefaultGrailsTaskClass.JOB);
-	}    	
+	}
 
     /**
      *
@@ -410,7 +435,7 @@ public class GrailsClassUtils {
         }
 
         StringBuffer buf = new StringBuffer();
-        
+
         for (Iterator j = words.iterator(); j.hasNext();) {
             String word = (String) j.next();
             buf.append(word);
@@ -433,4 +458,74 @@ public class GrailsClassUtils {
     }
 
 
+    /**
+     * Detect if left and right types are matching types. In particular,
+     * test if one is a primitive type and the other is the corresponding
+     * Java wrapper type. Primitive and wrapper classes may be passed to
+     * either arguments.
+     *
+     * @param leftType
+     * @param rightType
+     * @return true if one of the classes is a native type and the other the object representation
+     * of the same native type
+     */
+    public static boolean isMatchBetweenPrimativeAndWrapperTypes(Class leftType, Class rightType) {
+        if (leftType == null) {
+            throw new NullPointerException("Left type is null!");
+        } else if (rightType == null) {
+            throw new NullPointerException("Right type is null!");
+        } else {
+            Class r = (Class)PRIMITIVE_TYPE_COMPATIBLE_CLASSES.get(leftType);
+            return r == rightType;
+        }
+    }
+
+    /**
+     * <p>Tests whether or not the left hand type is compatible with the right hand type in Groovy
+     * terms, i.e. can the left type be assigned a value of the right hand type in Groovy.</p>
+     * <p>This handles Java primitive type equivalence and uses isAssignableFrom for all other types,
+     * with a bit of magic for native types and polymorphism i.e. Number assigned an int.
+     * If either parameter is null an exception is thrown</p>
+     *
+     * @param leftType The type of the left hand part of a notional assignment
+     * @param rightType The type of the right hand part of a notional assignment
+     * @return True if values of the right hand type can be assigned in Groovy to variables of the left hand type.
+     */
+    public static boolean isGroovyAssignableFrom(
+            Class leftType, Class rightType)
+    {
+        if (leftType == null) {
+            throw new NullPointerException("Left type is null!");
+        } else if (rightType == null) {
+            throw new NullPointerException("Right type is null!");
+        } else if (leftType == Object.class) {
+            return true;
+        } else if (leftType == rightType) {
+            return true;
+        } else {
+            // check for primitive type equivalence
+            Class r = (Class)PRIMITIVE_TYPE_COMPATIBLE_CLASSES.get(leftType);
+            boolean result = r == rightType;
+
+            if (!result)
+            {
+                // If no primitive <-> wrapper match, it may still be assignable
+                // from polymorphic primitives i.e. Number -> int (AKA Integer)
+                if (rightType.isPrimitive())
+                {
+                    // see if incompatible
+                    r = (Class)PRIMITIVE_TYPE_COMPATIBLE_CLASSES.get(rightType);
+                    if (r != null)
+                    {
+                        result = leftType.isAssignableFrom(r);
+                    }
+                } else
+                {
+                    // Otherwise it may just be assignable using normal Java polymorphism
+                    result = leftType.isAssignableFrom(rightType);
+                }
+            }
+            return result;
+        }
+    }
 }

@@ -1,8 +1,6 @@
 package org.codehaus.groovy.grails.validation;
 
-import groovy.lang.GroovyClassLoader;
-import groovy.lang.GroovyObject;
-import groovy.lang.IntRange;
+import groovy.lang.*;
 import junit.framework.TestCase;
 import org.codehaus.groovy.grails.commons.DefaultGrailsDomainClass;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
@@ -17,6 +15,17 @@ public class ConstrainedPropertyTests extends TestCase {
     private Date testDate = new Date();
     private String testEmail = "rubbish_email";
     private String testURL = "rubbish_url";
+    private int testValidatorValue = 0;
+
+    public int getTestValidatorValue()
+    {
+        return testValidatorValue;
+    }
+
+    public void setTestValidatorValue(int testValidatorValue)
+    {
+        this.testValidatorValue = testValidatorValue;
+    }
 
     /**
      * @return Returns the testDate.
@@ -79,6 +88,7 @@ public class ConstrainedPropertyTests extends TestCase {
         assertTrue(cp.supportsContraint( ConstrainedProperty.NULLABLE_CONSTRAINT ));
         assertTrue(cp.supportsContraint( ConstrainedProperty.RANGE_CONSTRAINT ));
         assertTrue(cp.supportsContraint( ConstrainedProperty.URL_CONSTRAINT ));
+        assertTrue(cp.supportsContraint( ConstrainedProperty.VALIDATOR_CONSTRAINT ));
 
 
         cp = new ConstrainedProperty(ConstrainedPropertyTests.class,"testProperty", Collection.class);
@@ -89,6 +99,7 @@ public class ConstrainedPropertyTests extends TestCase {
         assertTrue(cp.supportsContraint( ConstrainedProperty.IN_LIST_CONSTRAINT ));
         assertTrue(cp.supportsContraint( ConstrainedProperty.NOT_EQUAL_CONSTRAINT ));
         assertTrue(cp.supportsContraint( ConstrainedProperty.NULLABLE_CONSTRAINT ));
+        assertTrue(cp.supportsContraint( ConstrainedProperty.VALIDATOR_CONSTRAINT ));
 
         assertFalse(cp.supportsContraint( ConstrainedProperty.BLANK_CONSTRAINT ));
         assertFalse(cp.supportsContraint( ConstrainedProperty.EMAIL_CONSTRAINT ));
@@ -109,6 +120,7 @@ public class ConstrainedPropertyTests extends TestCase {
         assertTrue(cp.supportsContraint( ConstrainedProperty.MAX_CONSTRAINT ));
         assertTrue(cp.supportsContraint( ConstrainedProperty.MIN_CONSTRAINT ));
         assertTrue(cp.supportsContraint( ConstrainedProperty.RANGE_CONSTRAINT ));
+        assertTrue(cp.supportsContraint( ConstrainedProperty.VALIDATOR_CONSTRAINT ));
 
         assertFalse(cp.supportsContraint( ConstrainedProperty.BLANK_CONSTRAINT ));
         assertFalse(cp.supportsContraint( ConstrainedProperty.EMAIL_CONSTRAINT ));
@@ -122,6 +134,7 @@ public class ConstrainedPropertyTests extends TestCase {
         assertTrue(cp.supportsContraint( ConstrainedProperty.IN_LIST_CONSTRAINT ));
         assertTrue(cp.supportsContraint( ConstrainedProperty.NOT_EQUAL_CONSTRAINT ));
         assertTrue(cp.supportsContraint( ConstrainedProperty.NULLABLE_CONSTRAINT ));
+        assertTrue(cp.supportsContraint( ConstrainedProperty.VALIDATOR_CONSTRAINT ));
 
         assertFalse(cp.supportsContraint( ConstrainedProperty.BLANK_CONSTRAINT ));
         assertFalse(cp.supportsContraint( ConstrainedProperty.EMAIL_CONSTRAINT ));
@@ -134,6 +147,7 @@ public class ConstrainedPropertyTests extends TestCase {
         assertTrue(cp.supportsContraint( ConstrainedProperty.IN_LIST_CONSTRAINT ));
         assertTrue(cp.supportsContraint( ConstrainedProperty.NOT_EQUAL_CONSTRAINT ));
         assertTrue(cp.supportsContraint( ConstrainedProperty.NULLABLE_CONSTRAINT ));
+        assertTrue(cp.supportsContraint( ConstrainedProperty.VALIDATOR_CONSTRAINT ));
 
         assertFalse(cp.supportsContraint( ConstrainedProperty.MAX_CONSTRAINT ));
         assertFalse(cp.supportsContraint( ConstrainedProperty.MIN_CONSTRAINT ));
@@ -370,6 +384,170 @@ public class ConstrainedPropertyTests extends TestCase {
         assertNotNull(error);
     }
 
+    public void testValidatorConstraint() throws Exception
+    {
+        ConstrainedProperty cp = new ConstrainedProperty(ConstrainedPropertyTests.class,"testValidatorValue", Integer.class);
+
+        GroovyClassLoader cl = new GroovyClassLoader();
+        // A trivial validator that allows only even numbers
+        Class clazz = cl.parseClass("validate = { return (it & 1) == 0 ? true : 'evennumbervalidator.noteven' }");
+        Script script = (Script)clazz.newInstance();
+        script.run();
+        Closure valClosure = (Closure)script.getBinding().getVariable("validate");
+
+        cp.applyConstraint( ConstrainedProperty.VALIDATOR_CONSTRAINT, valClosure);
+
+        Errors errors = new BindException(this,"testObject");
+
+        validateConstraints( cp, new Integer(5), errors);
+        assertTrue(errors.hasErrors());
+        FieldError error = errors.getFieldError("testValidatorValue");
+        assertNotNull(error);
+        assertTrue(error.getCode().equals("constrainedPropertyTests.testValidatorValue.evennumbervalidator.noteven"));
+
+        errors = new BindException(this,"testObject");
+
+        validateConstraints( cp, new Integer( 4), errors);
+
+        assertFalse(errors.hasErrors());
+    }
+
+    public void testValidatorConstraintTwoUntypedParameters() throws Exception
+    {
+        ConstrainedProperty cp = new ConstrainedProperty(ConstrainedPropertyTests.class,"testValidatorValue", int.class);
+
+        GroovyClassLoader cl = new GroovyClassLoader();
+
+        Class clazz = cl.parseClass("import org.codehaus.groovy.grails.validation.ConstrainedPropertyTests;\n" +
+                "validate = { val, obj -> \n" +
+                "assert (val == 5);\n" +
+                "assert (obj instanceof ConstrainedPropertyTests)\n" +
+                "}");
+        doValidatorTestAssertNoErrors(clazz, cp, new Integer(5));
+    }
+
+    public void testValidatorConstraintTwoTypedParameters() throws Exception
+    {
+        ConstrainedProperty cp = new ConstrainedProperty(ConstrainedPropertyTests.class,"testValidatorValue", int.class);
+
+        GroovyClassLoader cl = new GroovyClassLoader();
+
+        Class clazz = cl.parseClass("import org.codehaus.groovy.grails.validation.ConstrainedPropertyTests;\n" +
+                "validate = { Object val, Object obj -> \n" +
+                "assert (val == 5);\n" +
+                "assert (obj instanceof ConstrainedPropertyTests)\n" +
+                "}");
+        doValidatorTestAssertNoErrors(clazz, cp, new Integer(5));
+
+        clazz = cl.parseClass("import org.codehaus.groovy.grails.validation.ConstrainedPropertyTests;\n" +
+                "import junit.framework.TestCase;\n" +
+                "validate = { int val, TestCase obj -> \n" +
+                "assert (val == 5);\n" +
+                "assert (obj instanceof ConstrainedPropertyTests)\n" +
+                "}");
+        doValidatorTestAssertNoErrors(clazz, cp, new Integer(5));
+
+        clazz = cl.parseClass("import org.codehaus.groovy.grails.validation.ConstrainedPropertyTests;\n" +
+                "import junit.framework.TestCase;\n" +
+                "validate = { Number val, TestCase obj -> \n" +
+                "assert (val == 5);\n" +
+                "assert (obj instanceof ConstrainedPropertyTests)\n" +
+                "}");
+        doValidatorTestAssertNoErrors(clazz, cp, new Integer(5));
+
+        clazz = cl.parseClass("import org.codehaus.groovy.grails.validation.ConstrainedPropertyTests;\n" +
+                "validate = { Integer val, ConstrainedPropertyTests obj -> \n" +
+                "assert (val == 5);\n" +
+                "assert (obj instanceof ConstrainedPropertyTests)\n" +
+                "}");
+        doValidatorTestAssertNoErrors(clazz, cp, new Integer(5));
+    }
+
+    public void testValidatorConstraintOneUntypedParameter() throws Exception
+    {
+        ConstrainedProperty cp = new ConstrainedProperty(ConstrainedPropertyTests.class,"testValidatorValue", int.class);
+
+        GroovyClassLoader cl = new GroovyClassLoader();
+
+        Class clazz = cl.parseClass("import org.codehaus.groovy.grails.validation.ConstrainedPropertyTests;\n" +
+                "validate = { val -> \n" +
+                "assert (val == 5);\n" +
+                "}");
+        doValidatorTestAssertNoErrors(clazz, cp, new Integer(5));
+    }
+
+    public void testValidatorConstraintOneTypedParameter() throws Exception
+    {
+        ConstrainedProperty cp = new ConstrainedProperty(ConstrainedPropertyTests.class,"testValidatorValue", int.class);
+
+        GroovyClassLoader cl = new GroovyClassLoader();
+
+        Class clazz = cl.parseClass("import org.codehaus.groovy.grails.validation.ConstrainedPropertyTests;\n" +
+                "validate = { Object val -> \n" +
+                "assert (val == 5);\n" +
+                "}");
+        doValidatorTestAssertNoErrors(clazz, cp, new Integer(5));
+
+        clazz = cl.parseClass("import org.codehaus.groovy.grails.validation.ConstrainedPropertyTests;\n" +
+                "validate = { Integer val -> \n" +
+                "assert (val == 5);\n" +
+                "}");
+        doValidatorTestAssertNoErrors(clazz, cp, new Integer(5));
+    }
+
+    private void doValidatorTestAssertNoErrors(Class clazz, ConstrainedProperty cp, Object value)
+            throws InstantiationException, IllegalAccessException
+    {
+        Script script = (Script)clazz.newInstance();
+        script.run();
+        Closure valClosure = (Closure)script.getBinding().getVariable("validate");
+
+        cp.applyConstraint( ConstrainedProperty.VALIDATOR_CONSTRAINT, valClosure);
+
+        Errors errors = new BindException(this,"testObject");
+
+        validateConstraints( cp, value, errors);
+        assertFalse(errors.hasErrors());
+    }
+
+    public void testValidatorConstraintListReturnType() throws Exception
+    {
+        ConstrainedProperty cp = new ConstrainedProperty(ConstrainedPropertyTests.class,"testValidatorValue", int.class);
+
+        GroovyClassLoader cl = new GroovyClassLoader();
+        // A trivial validator that allows only even numbers
+        Class clazz = cl.parseClass("validate = { return (it & 1) == 0 ? true : [ 'evennumbervalidator.noteven', 2, 4, 6] }");
+        Script script = (Script)clazz.newInstance();
+        script.run();
+        Closure valClosure = (Closure)script.getBinding().getVariable("validate");
+
+        cp.applyConstraint( ConstrainedProperty.VALIDATOR_CONSTRAINT, valClosure);
+
+        Errors errors = new BindException(this,"testObject");
+
+        validateConstraints( cp, new Integer(5), errors);
+        assertTrue(errors.hasErrors());
+        FieldError error = errors.getFieldError("testValidatorValue");
+        assertNotNull(error);
+        assertTrue(error.getCode().equals("constrainedPropertyTests.testValidatorValue.evennumbervalidator.noteven"));
+        System.out.println( error.getArguments().length );
+        assertTrue(error.getArguments().length == 6);
+
+        errors = new BindException(this,"testObject");
+
+        validateConstraints( cp, new Integer( 4), errors);
+
+        assertFalse(errors.hasErrors());
+    }
+
+    private void validateConstraints(ConstrainedProperty cp, Object value, Errors errors)
+    {
+        Constraint c = null;
+        for (Iterator i = cp.getAppliedConstraints().iterator(); i.hasNext();) {
+            c = (Constraint) i.next();
+            c.validate(this, value, errors);
+        }
+    }
 
     public void testConstraintBuilder() throws Exception {
         GroovyClassLoader gcl = new GroovyClassLoader();

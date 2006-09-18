@@ -26,58 +26,136 @@ import java.util.ArrayList;
  */
 public class GrailsClassUtilsTests extends TestCase {
 
-        public void testGetNaturalName() throws Exception {
-            assertEquals("First Name", GrailsClassUtils.getNaturalName("firstName"));
-            assertEquals("URL", GrailsClassUtils.getNaturalName("URL"));
-            assertEquals("Local URL", GrailsClassUtils.getNaturalName("localURL"));
-            assertEquals("URL local", GrailsClassUtils.getNaturalName("URLlocal"));
-        }
-        
-        public void testIsDomainClass() throws Exception {
-    		GroovyClassLoader gcl = new GroovyClassLoader();
-    		
-    		Class c = gcl.parseClass("class Test { Long id;Long version;}\n" );
-    		
-        	assertTrue(GrailsClassUtils.isDomainClass(c));
-        }
-        
-        public void testIsController() throws Exception {
-    		GroovyClassLoader gcl = new GroovyClassLoader();
-    		
-    		Class c = gcl.parseClass("class TestController { }\n" );
-    		
-        	assertTrue(GrailsClassUtils.isControllerClass(c));
-        }
-        
-        public void testIsTagLib() throws Exception {
-    		GroovyClassLoader gcl = new GroovyClassLoader();
-    		
-    		Class c = gcl.parseClass("class TestTagLib { }\n" );
-    		
-        	assertTrue(GrailsClassUtils.isTagLibClass(c));
-        }                
-        
-        public void testIsBootStrap() throws Exception {
-    		GroovyClassLoader gcl = new GroovyClassLoader();
-    		
-    		Class c = gcl.parseClass("class TestBootStrap { }\n" );
-    		
-        	assertTrue(GrailsClassUtils.isBootstrapClass(c));
-        }
+    public void testGetNaturalName() throws Exception
+    {
+        assertEquals("First Name", GrailsClassUtils.getNaturalName("firstName"));
+        assertEquals("URL", GrailsClassUtils.getNaturalName("URL"));
+        assertEquals("Local URL", GrailsClassUtils.getNaturalName("localURL"));
+        assertEquals("URL local", GrailsClassUtils.getNaturalName("URLlocal"));
+    }
 
-        public void testConvertCollectionToArray() throws Exception {
-            Collection c = new ArrayList();
-            c.add("one");
-            c.add("two");
+    public void testIsDomainClass() throws Exception
+    {
+        GroovyClassLoader gcl = new GroovyClassLoader();
 
-            Object[] a = GrailsClassUtils.collectionToObjectArray(c);
-            assertNotNull(a);
-            assertEquals(2,a.length);
-            assertEquals("one",a[0]);
-            assertEquals("two",a[1]);
+        Class c = gcl.parseClass("class Test { Long id;Long version;}\n");
 
-            a = GrailsClassUtils.collectionToObjectArray(null);
-            assertNotNull(a);
-            assertEquals(0,a.length);
-        }
+        assertTrue(GrailsClassUtils.isDomainClass(c));
+    }
+
+    public void testIsController() throws Exception
+    {
+        GroovyClassLoader gcl = new GroovyClassLoader();
+
+        Class c = gcl.parseClass("class TestController { }\n");
+
+        assertTrue(GrailsClassUtils.isControllerClass(c));
+    }
+
+    public void testIsTagLib() throws Exception
+    {
+        GroovyClassLoader gcl = new GroovyClassLoader();
+
+        Class c = gcl.parseClass("class TestTagLib { }\n");
+
+        assertTrue(GrailsClassUtils.isTagLibClass(c));
+    }
+
+    public void testIsBootStrap() throws Exception
+    {
+        GroovyClassLoader gcl = new GroovyClassLoader();
+
+        Class c = gcl.parseClass("class TestBootStrap { }\n");
+
+        assertTrue(GrailsClassUtils.isBootstrapClass(c));
+    }
+
+    public void testBooleanMatchesboolean()
+    {
+        assertTrue(GrailsClassUtils.isMatchBetweenPrimativeAndWrapperTypes(Boolean.class, boolean.class));
+    }
+
+    public void testbooleanMatchesBoolean()
+    {
+        assertTrue(GrailsClassUtils.isMatchBetweenPrimativeAndWrapperTypes(boolean.class, Boolean.class));
+    }
+
+    public void testIntegerMatchesint()
+    {
+        assertTrue(GrailsClassUtils.isMatchBetweenPrimativeAndWrapperTypes(Integer.class, int.class));
+    }
+
+    public void testintMatchesInteger()
+    {
+        assertTrue(GrailsClassUtils.isMatchBetweenPrimativeAndWrapperTypes(int.class, Integer.class));
+    }
+
+    public void testShortMatchesshort()
+    {
+        assertTrue(GrailsClassUtils.isMatchBetweenPrimativeAndWrapperTypes(Short.class, short.class));
+    }
+
+    public void testshortMatchesShort()
+    {
+        assertTrue(GrailsClassUtils.isMatchBetweenPrimativeAndWrapperTypes(short.class, Short.class));
+    }
+
+    public void testByteMatchesbyte()
+    {
+        assertTrue(GrailsClassUtils.isMatchBetweenPrimativeAndWrapperTypes(Byte.class, byte.class));
+    }
+
+    public void testbyteMatchesByte()
+    {
+        assertTrue(GrailsClassUtils.isMatchBetweenPrimativeAndWrapperTypes(byte.class, Byte.class));
+    }
+
+    public void testCharacterMatcheschar()
+    {
+        assertTrue(GrailsClassUtils.isMatchBetweenPrimativeAndWrapperTypes(Character.class, char.class));
+    }
+
+    public void testcharMatchesCharacter()
+    {
+        assertTrue(GrailsClassUtils.isMatchBetweenPrimativeAndWrapperTypes(char.class, Character.class));
+    }
+
+    public void testLongMatcheslong()
+    {
+        assertTrue(GrailsClassUtils.isMatchBetweenPrimativeAndWrapperTypes(Long.class, long.class));
+    }
+
+    public void testlongMatchesLong()
+    {
+        assertTrue(GrailsClassUtils.isMatchBetweenPrimativeAndWrapperTypes(long.class, Long.class));
+    }
+
+    public void testFloatMatchesfloat()
+    {
+        assertTrue(GrailsClassUtils.isMatchBetweenPrimativeAndWrapperTypes(Float.class, float.class));
+    }
+
+    public void testfloatMatchesFloat()
+    {
+        assertTrue(GrailsClassUtils.isMatchBetweenPrimativeAndWrapperTypes(float.class, Float.class));
+    }
+
+    public void testDoubleMatchesdouble()
+    {
+        assertTrue(GrailsClassUtils.isMatchBetweenPrimativeAndWrapperTypes(Double.class, double.class));
+    }
+
+    public void testdoubleMatchesDouble()
+    {
+        assertTrue(GrailsClassUtils.isMatchBetweenPrimativeAndWrapperTypes(double.class, Double.class));
+    }
+
+    public void testAssignableFromOrPrimitiveCompatible()
+    {
+        assertTrue(GrailsClassUtils.isGroovyAssignableFrom(double.class, Double.class));
+        assertTrue(GrailsClassUtils.isGroovyAssignableFrom(Integer.class, int.class));
+        assertTrue(GrailsClassUtils.isGroovyAssignableFrom(TestCase.class, GrailsClassUtilsTests.class));
+        assertTrue(GrailsClassUtils.isGroovyAssignableFrom(Number.class, int.class));
+    }
+
 }
