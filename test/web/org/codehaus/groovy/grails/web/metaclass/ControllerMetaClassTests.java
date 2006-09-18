@@ -111,7 +111,7 @@ public class ControllerMetaClassTests extends TestCase {
         try {
             request = new MockHttpServletRequest();
             response = new MockHttpServletResponse();
-
+            request.setCharacterEncoding("utf-8");
 
             helper2.handleURI("/second/list",request,response);
         }
