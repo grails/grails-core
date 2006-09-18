@@ -38,22 +38,26 @@ public class RunTests {
 	private static Log log = LogFactory.getLog(RunTests.class);
 	
 	public static void main(String[] args) {
-		ConfigurableApplicationContext appCtx = (ConfigurableApplicationContext)GrailsUtil.bootstrapGrailsFromClassPath();
-		GrailsApplication application = (GrailsApplication)appCtx.getBean(GrailsApplication.APPLICATION_ID);
-		
-		Class[] allClasses = application.getAllClasses();
-        log.debug("Going through ["+allClasses.length+"] classes");
-        TestSuite s = new TestSuite();
-		for (int i = 0; i < allClasses.length; i++) {
-			Class clazz = allClasses[i];
-			if (TestCase.class.isAssignableFrom(clazz) && !Modifier.isAbstract(clazz.getModifiers())) {
-				log.debug("Adding test [" + clazz.getName() + "]");
-				s.addTest(new GrailsTestSuite(appCtx.getBeanFactory(), clazz));
-			} else {
-				log.debug("[" + clazz.getName() + "] is not a test case.");
+		try {
+			ConfigurableApplicationContext appCtx = (ConfigurableApplicationContext)GrailsUtil.bootstrapGrailsFromClassPath();
+			GrailsApplication application = (GrailsApplication)appCtx.getBean(GrailsApplication.APPLICATION_ID);
+
+			Class[] allClasses = application.getAllClasses();
+	        log.debug("Going through ["+allClasses.length+"] classes");
+	        TestSuite s = new TestSuite();
+			for (int i = 0; i < allClasses.length; i++) {
+				Class clazz = allClasses[i];
+				if (TestCase.class.isAssignableFrom(clazz) && !Modifier.isAbstract(clazz.getModifiers())) {
+					log.debug("Adding test [" + clazz.getName() + "]");
+					s.addTest(new GrailsTestSuite(appCtx.getBeanFactory(), clazz));
+				} else {
+					log.debug("[" + clazz.getName() + "] is not a test case.");
+				}
 			}
+			TestRunner.run(s);			
 		}
-		TestRunner.run(s);
-		System.exit(0);
+		finally {
+			System.exit(0);	
+		}		
 	}
 }
