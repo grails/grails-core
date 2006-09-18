@@ -23,6 +23,8 @@ import groovy.lang.MissingPropertyException;
 import groovy.lang.Script;
 
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.io.Writer;
 import java.util.HashMap;
 import java.util.Map;
@@ -79,7 +81,7 @@ public abstract class GroovyPage extends Script {
         for (int ix = 0; ix < ixz; ix++)
         {
             char c = text.charAt(ix);
-            if (c == '&');
+            if (c == '&')
             {
                 String sub = text.substring(ix + 1).toLowerCase();
                 if (sub.startsWith("lt;"))
@@ -238,9 +240,9 @@ public abstract class GroovyPage extends Script {
           }
             Map attrs = null;
             Object body = null;
-            // retrieve tag lib and writer from binding
-            Binding binding = getBinding();
-            final Writer out = (Writer)binding.getVariable(GroovyPage.OUT);
+            // retrieve tag lib and create wrapper writer
+            StringWriter capturedOut = new StringWriter();
+            final Writer out = new PrintWriter(capturedOut);
             GroovyObject tagLib = getTagLib(methodName);
 
             // get attributes and body closure
@@ -285,7 +287,7 @@ public abstract class GroovyPage extends Script {
                             bodyResponse = body1;
                         }
 
-                        if(bodyResponse instanceof String) {
+                        if(bodyResponse != null) {
                             try {
                                 out.write(bodyResponse.toString());
                             } catch (IOException e) {
@@ -309,12 +311,12 @@ public abstract class GroovyPage extends Script {
                             if(actualBody != null) {
                                 actualBody.call();
                             }
-                            return null;
-                        }
-                        if(tag.getParameterTypes().length == 2) {
+                        }else if(tag.getParameterTypes().length == 2) {
                             tag.call( new Object[] { attrs, actualBody });
-                            return null;
+                        }else {
+                            throw new GrailsTagException("Tag ["+methodName+"] does not specify expected number of params in tag library ["+tagLib.getClass().getName()+"]");
                         }
+                        return capturedOut.toString();
                     }else {
                        throw new GrailsTagException("Tag ["+methodName+"] does not exist in tag library ["+tagLib.getClass().getName()+"]");
                     }
