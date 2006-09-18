@@ -20,6 +20,7 @@ import groovy.lang.GString;
 
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 import org.codehaus.groovy.grails.orm.hibernate.exceptions.GrailsQueryException;
@@ -62,8 +63,9 @@ public class FindAllPersistentMethod extends AbstractStaticPersistentMethod {
 				public Object doInHibernate(Session session) throws HibernateException, SQLException {										
 					Query q = session.createQuery(query);
 					Object[] queryArgs = null;
-					int max = -1;
-					if(arguments.length > 1) {
+					int max;
+                    int offset;
+                    if(arguments.length > 1) {
 						if(arguments[1] instanceof List) {
 							queryArgs = ((List)arguments[1]).toArray();
 						}
@@ -72,7 +74,8 @@ public class FindAllPersistentMethod extends AbstractStaticPersistentMethod {
 						}
 					}					
 					max = retrieveMaxValue(arguments);
-					if(queryArgs != null) {					
+                    offset = retrieveOffsetValue(arguments);
+                    if(queryArgs != null) {
 						for (int i = 0; i < queryArgs.length; i++) {
                             if(queryArgs[0] instanceof GString) {
                                 q.setParameter(i,queryArgs[i].toString());
@@ -81,30 +84,56 @@ public class FindAllPersistentMethod extends AbstractStaticPersistentMethod {
                             }
 						}
 					}
-					if(max > -1) {
+					if(max > 0) {
 						q.setMaxResults(max);
 					}
-					return q.list();
+                    if(offset > 0) {
+                        q.setFirstResult(offset);
+                    }
+                    return q.list();
 
 				}
 
 				private int retrieveMaxValue(Object[] arguments) {
-					int max = -1;
+					int result = -1;
 					if(arguments.length > 1) {
-						if(arguments[1] instanceof Integer) {
-							max = ((Integer)arguments[1]).intValue();
-						}
-						if(arguments.length > 2) {
-							if(arguments[2] instanceof Integer) {
-								max = ((Integer)arguments[2]).intValue();
-							}							
+                        result = retrieveInt(ARGUMENT_MAX, arguments[1]);
+
+                        if(arguments.length > 2 && result == -1) {
+                            result = retrieveInt(ARGUMENT_MAX, arguments[2]);
 						}
 					}
 					
-					return max;
+					return result;
 				}
-				
-			});						
+
+				private int retrieveOffsetValue(Object[] arguments) {
+					int result = -1;
+					if(arguments.length > 1) {
+                        result = retrieveInt(ARGUMENT_OFFSET, arguments[1]);
+
+                        if(arguments.length > 2 && result == -1) {
+                            result = retrieveInt(ARGUMENT_OFFSET, arguments[2]);
+						}
+					}
+
+					return result;
+				}
+
+                private int retrieveInt(String name, Object arg) {
+                    if(arg instanceof Integer) {
+                        return ((Integer)arg).intValue();
+                    }
+                    else if(arg instanceof Map) {
+                        Object value = ((Map)arg).get(name);
+                        if(value instanceof Integer) {
+                            return ((Integer)value).intValue();
+                        }
+                    }
+                    return -1;
+                }
+
+            });
 		}
 		if(clazz.isAssignableFrom( arg.getClass() )) {			
 			return super.getHibernateTemplate().executeFind( new HibernateCallback() {

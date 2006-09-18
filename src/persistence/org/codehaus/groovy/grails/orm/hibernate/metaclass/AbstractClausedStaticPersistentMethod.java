@@ -43,7 +43,7 @@ public abstract class AbstractClausedStaticPersistentMethod extends
 
 	private static final Log LOG = LogFactory.getLog(AbstractClausedStaticPersistentMethod.class);
 	/**
-	 * 
+	 *
 	 * @author Graeme Rocher
 	 *
 	 */
@@ -59,8 +59,8 @@ public abstract class AbstractClausedStaticPersistentMethod extends
 		private static final String NOT = "Not";
 		private static final String EQUAL = "Equal";
 		private static final String NOT_EQUAL = "NotEqual";
-		
-		
+
+
 		protected String propertyName;
 		protected Object[] arguments;
 		protected int argumentsRequired;
@@ -68,7 +68,7 @@ public abstract class AbstractClausedStaticPersistentMethod extends
 		protected String type;
 		protected Class targetClass;
 		private GrailsApplication application;
-		
+
 		GrailsMethodExpression(GrailsApplication application,Class targetClass,String propertyName, String type,int argumentsRequired,boolean negation) {
 			this.application = application;
 			this.targetClass = targetClass;
@@ -77,14 +77,14 @@ public abstract class AbstractClausedStaticPersistentMethod extends
 			this.argumentsRequired = argumentsRequired;
 			this.negation = negation;
 		}
-		
+
 		public String toString() {
 			StringBuffer buf = new StringBuffer("[GrailsMethodExpression] ");
 			buf.append(propertyName)
 				.append(" ")
 				.append(type)
 				.append(" ");
-			
+
 			for (int i = 0; i < arguments.length; i++) {
 				buf.append(arguments[i]);
 				if(i != arguments.length)
@@ -97,33 +97,33 @@ public abstract class AbstractClausedStaticPersistentMethod extends
 			throws IllegalArgumentException {
 			if(args.length != argumentsRequired)
 				throw new IllegalArgumentException("Method expression '"+this.type+"' requires " + argumentsRequired + " arguments");
-			
+
 			GrailsDomainClass dc = application.getGrailsDomainClass(targetClass.getName());
 			GrailsDomainClassProperty prop = dc.getPropertyByName(propertyName);
-			
+
 			if(prop == null)
 				throw new IllegalArgumentException("Property "+propertyName+" doesn't exist for method expression '"+this.type+"'");
-			
+
 			for (int i = 0; i < args.length; i++) {
 				if(args[i] == null)
 					throw new IllegalArgumentException("Argument " + args[0] + " cannot be null");
-				
+
 				// convert GStrings to strings
 				if(prop.getType() == String.class && (args[i] instanceof GString)) {
 					args[i] = args[i].toString();
 				}
 				else if(!prop.getType().isAssignableFrom( args[i].getClass() ) && !(ClassUtils.isMatchBetweenPrimativeAndWrapperTypes(prop.getType(), args[i].getClass())))
-					throw new IllegalArgumentException("Argument " + args[0] + " does not match property '"+propertyName+"' of type " + prop.getType());				
+					throw new IllegalArgumentException("Argument " + args[0] + " does not match property '"+propertyName+"' of type " + prop.getType());
 			}
 
 			this.arguments = args;
 		}
-		
+
 		abstract Criterion createCriterion();
 		protected Criterion getCriterion() {
 			if(arguments == null)
 				throw new IllegalStateException("Parameters array must be set before retrieving Criterion");
-			
+
 			if(negation) {
 				return Expression.not( createCriterion() );
 			}
@@ -131,27 +131,27 @@ public abstract class AbstractClausedStaticPersistentMethod extends
 				return createCriterion();
 			}
 		}
-		
+
 		protected static GrailsMethodExpression create(final GrailsApplication application,Class clazz, String queryParameter) {
 			if(queryParameter.endsWith( LESS_THAN_OR_EQUAL )) {
 				return new GrailsMethodExpression(
 						application,
 						clazz,
 						calcPropertyName(queryParameter, LESS_THAN_OR_EQUAL),
-						LESS_THAN_OR_EQUAL, 
+						LESS_THAN_OR_EQUAL,
 						1,
 						isNegation(queryParameter, LESS_THAN_OR_EQUAL) ) {
 					Criterion createCriterion() {
 						return Expression.le( this.propertyName, arguments[0] );
 					}
 				};
-			}			
+			}
 			else if(queryParameter.endsWith( LESS_THAN )) {
 				return new GrailsMethodExpression(
-						application, 
+						application,
 						clazz,
 						calcPropertyName(queryParameter, LESS_THAN),
-						LESS_THAN, 
+						LESS_THAN,
 						1, // argument count
 						isNegation(queryParameter, LESS_THAN) ) {
 					Criterion createCriterion() {
@@ -161,24 +161,24 @@ public abstract class AbstractClausedStaticPersistentMethod extends
 			}
 			else if(queryParameter.endsWith( GREATER_THAN_OR_EQUAL )) {
 				return new GrailsMethodExpression(
-						application, 
+						application,
 						clazz,
 						calcPropertyName(queryParameter, GREATER_THAN_OR_EQUAL),
-						GREATER_THAN_OR_EQUAL, 
+						GREATER_THAN_OR_EQUAL,
 						1,
 						isNegation(queryParameter, GREATER_THAN_OR_EQUAL) ) {
 					Criterion createCriterion() {
 						return Expression.ge( this.propertyName, arguments[0] );
 					}
 				};
-			}			
+			}
 			else if(queryParameter.endsWith( GREATER_THAN )) {
 				return new GrailsMethodExpression(
-						application, 
+						application,
 						clazz,
 						calcPropertyName(queryParameter, GREATER_THAN),
 						GREATER_THAN,
-						1, 
+						1,
 						isNegation(queryParameter, GREATER_THAN) ) {
 					Criterion createCriterion() {
 						return Expression.gt( this.propertyName, arguments[0] );
@@ -192,35 +192,35 @@ public abstract class AbstractClausedStaticPersistentMethod extends
 						clazz,
 						calcPropertyName(queryParameter, LIKE),
 						LIKE,
-						1, 
+						1,
 						isNegation(queryParameter, LIKE) ) {
 					Criterion createCriterion() {
 						return Expression.like( this.propertyName, arguments[0] );
 					}
 
 				};
-			}			
+			}
 			else if(queryParameter.endsWith( IS_NOT_NULL )) {
 				return new GrailsMethodExpression(
 						application,
 						clazz,
 						calcPropertyName(queryParameter, IS_NOT_NULL),
 						IS_NOT_NULL,
-						0, 
+						0,
 						isNegation(queryParameter, IS_NOT_NULL) ) {
 					Criterion createCriterion() {
 							return Expression.isNotNull( this.propertyName );
 					}
-					
+
 				};
 			}
 			else if(queryParameter.endsWith( IS_NULL )) {
 				return new GrailsMethodExpression(
-						application, 
+						application,
 						clazz,
 						calcPropertyName(queryParameter, IS_NULL),
 						IS_NULL,
-						0, 
+						0,
 						isNegation(queryParameter, IS_NULL) ) {
 					Criterion createCriterion() {
 						return Expression.isNull( this.propertyName );
@@ -229,12 +229,12 @@ public abstract class AbstractClausedStaticPersistentMethod extends
 				};
 			}
 			else if(queryParameter.endsWith( BETWEEN )) {
-					
-				return new GrailsMethodExpression( 
+
+				return new GrailsMethodExpression(
 						application,
 						clazz,
 						calcPropertyName(queryParameter, BETWEEN),
-						BETWEEN, 
+						BETWEEN,
 						2,
 						isNegation(queryParameter, BETWEEN) ) {
 					Criterion createCriterion() {
@@ -245,31 +245,31 @@ public abstract class AbstractClausedStaticPersistentMethod extends
 			}
 			else if(queryParameter.endsWith( NOT_EQUAL )) {
 				return new GrailsMethodExpression(
-						application, 
+						application,
 						clazz,
 						calcPropertyName(queryParameter, NOT_EQUAL),
-						NOT_EQUAL, 
+						NOT_EQUAL,
 						1,
 						isNegation(queryParameter, NOT_EQUAL) ) {
 					Criterion createCriterion() {
 						return Expression.ne( this.propertyName,this.arguments[0]);
 					}
-					
-				};				
+
+				};
 			}
 			else {
-				
+
 				return new GrailsMethodExpression(
-						application, 
+						application,
 						clazz,
 						calcPropertyName(queryParameter, null),
-						EQUAL, 
+						EQUAL,
 						1,
 						isNegation(queryParameter, EQUAL) ) {
 					Criterion createCriterion() {
 						return Expression.eq( this.propertyName,this.arguments[0]);
 					}
-				};			
+				};
 			}
 		}
 		private static boolean isNegation(String queryParameter, String clause) {
@@ -281,11 +281,8 @@ public abstract class AbstractClausedStaticPersistentMethod extends
 			else {
 				propName = queryParameter;
 			}
-			if(propName.endsWith(NOT)) {
-				return true;
-			}
-			return false;
-		}
+            return propName.endsWith(NOT);
+        }
 		private static String calcPropertyName(String queryParameter, String clause) {
 			String propName;
 			if(clause != null && !clause.equals( EQUAL )) {
@@ -300,15 +297,15 @@ public abstract class AbstractClausedStaticPersistentMethod extends
 				propName = propName.substring(0, i);
 			}
 			return propName.substring(0,1).toLowerCase(Locale.ENGLISH)
-				+ propName.substring(1);			
+				+ propName.substring(1);
 		}
 	}
-	
+
 	private String[] operators;
 	private Pattern[] operatorPatterns;
 	protected String operatorInUse;
 	protected GrailsApplication application;
-	
+
 	public AbstractClausedStaticPersistentMethod(GrailsApplication application, SessionFactory sessionFactory, ClassLoader classLoader, Pattern pattern, String[] operators) {
 		super(sessionFactory, classLoader, pattern);
 		this.application = application;
@@ -328,8 +325,8 @@ public abstract class AbstractClausedStaticPersistentMethod extends
 		Matcher match = super.getPattern().matcher( methodName );
 		// find match
 		match.find();
-		
-		String[] queryParameters = null;
+
+		String[] queryParameters;
 		int totalRequiredArguments = 0;
 		// get the sequence clauses
 		String querySequence = match.group(2);
@@ -340,11 +337,11 @@ public abstract class AbstractClausedStaticPersistentMethod extends
 			if(currentMatcher.find()) {
 				containsOperator = true;
 				operatorInUse = this.operators[i];
-				
+
 				queryParameters = new String[2];
 				queryParameters[0] = currentMatcher.group(1);
 				queryParameters[1] = currentMatcher.group(3) + currentMatcher.group(4);
-				
+
 				// loop through query parameters and create expressions
 				// calculating the numBer of arguments required for the expression
 				int argumentCursor = 0;
@@ -355,7 +352,7 @@ public abstract class AbstractClausedStaticPersistentMethod extends
 					Object[] currentArguments = new Object[currentExpression.argumentsRequired];
 					if((argumentCursor + currentExpression.argumentsRequired) > arguments.length)
 						throw new MissingMethodException(methodName,clazz,arguments);
-					
+
 					for (int k = 0; k < currentExpression.argumentsRequired; k++,argumentCursor++) {
 						currentArguments[k] = arguments[argumentCursor];
 					}
@@ -369,22 +366,20 @@ public abstract class AbstractClausedStaticPersistentMethod extends
 					expressions.add(currentExpression);
 				}
 				break;
-			}			
+			}
 		}
-		
+
 		// otherwise there is only one expression
 		if(!containsOperator) {
 			GrailsMethodExpression solo = GrailsMethodExpression.create(this.application, clazz,querySequence );
-			
+
 			if(solo.argumentsRequired > arguments.length)
 				throw new MissingMethodException(methodName,clazz,arguments);
-			
-			totalRequiredArguments += solo.argumentsRequired;			
+
+			totalRequiredArguments += solo.argumentsRequired;
 			Object[] soloArgs = new Object[solo.argumentsRequired];
-			
-			for (int i = 0; i < solo.argumentsRequired; i++) {
-				soloArgs[i] = arguments[i];
-			}
+
+            System.arraycopy(arguments, 0, soloArgs, 0, solo.argumentsRequired);
 			try {
 				solo.setArguments(soloArgs);
 			}
