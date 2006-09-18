@@ -35,6 +35,7 @@ public class ControllerMetaClassTests extends TestCase {
 
          GroovyClassLoader gcl = new GroovyClassLoader();
          MockHttpServletRequest request = new MockHttpServletRequest();
+         request.setCharacterEncoding("utf-8");
          MockHttpServletResponse response = new MockHttpServletResponse();
 
          request.addParameter("testParam", "testValue");
@@ -70,6 +71,7 @@ public class ControllerMetaClassTests extends TestCase {
 
         GroovyClassLoader gcl = new GroovyClassLoader();
         MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setCharacterEncoding("utf-8");
         MockHttpServletResponse response = new MockHttpServletResponse();
 
 
