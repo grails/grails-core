@@ -1,7 +1,7 @@
 class @job.class.name@Job {
 	def timeout = 1000
 
-	def execute = {	
+	def execute() {	
 	    // execute task
 	}
 }
