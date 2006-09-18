@@ -72,6 +72,7 @@ Targets:
         <mkdir dir="${path}web-app/css"/>
         <mkdir dir="${path}web-app/images"/>
         <mkdir dir="${path}web-app/WEB-INF/classes"/>
+        <mkdir dir="${path}web-app/META-INF"/>  
         <!--<mkdir dir="${path}
 "/>-->
         <!--<mkdir dir="${path}html"/>-->
