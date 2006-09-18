@@ -549,7 +549,7 @@ Targets:
                 <include name="jakarta-oro-2.0.8.jar"/>
                 <include name="quartz-1.5.2.jar"/>            	            	
             </fileset>
-            <fileset dir="${grails.home}/dist"/>
+            <fileset dir="${grails.home}/dist" includes="grails-*.jar" />
             <fileset dir="lib"/>
         </copy>
         <antcall target="package:java5"></antcall>
