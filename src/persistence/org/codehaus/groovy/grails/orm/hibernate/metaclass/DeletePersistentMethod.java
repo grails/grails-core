@@ -18,6 +18,8 @@ package org.codehaus.groovy.grails.orm.hibernate.metaclass;
 import org.hibernate.SessionFactory;
 import org.springframework.orm.hibernate3.HibernateTemplate;
 
+import java.util.regex.Pattern;
+
 /**
  * 
  * 
@@ -29,9 +31,10 @@ import org.springframework.orm.hibernate3.HibernateTemplate;
 public class DeletePersistentMethod extends AbstractDynamicPersistentMethod {
 
     public static final String METHOD_SIGNATURE = "delete";
+    public static final Pattern METHOD_PATTERN = Pattern.compile('^'+METHOD_SIGNATURE+'$');
 
     public DeletePersistentMethod(SessionFactory sessionFactory, ClassLoader classLoader) {
-        super(METHOD_SIGNATURE,sessionFactory, classLoader);
+        super(METHOD_PATTERN,sessionFactory, classLoader);
     }
 
     protected Object doInvokeInternal(Object target, Object[] arguments) {

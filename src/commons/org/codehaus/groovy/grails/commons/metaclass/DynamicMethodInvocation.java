@@ -20,6 +20,8 @@ package org.codehaus.groovy.grails.commons.metaclass;
  * can add a persistence functionality to Grails like save and delete.
  * 
  * @author Steven Devijver
+ * @author Graeme Rocher
+ *
  * @since Aug 7, 2005
  */
 public interface DynamicMethodInvocation {
@@ -31,19 +33,13 @@ public interface DynamicMethodInvocation {
 	 * @return result of criteria match test
 	 */
 	public boolean isMethodMatch(String methodName);
-	/**
-	 * <p>Returns the method name for this method implementation.
-	 * 
-	 * @return method name
-	 */
-	public String getMethodName();
 	
 	/**
 	 * <p>Invokes the actual method. The target object and arguments are supplied.
 	 * 
 	 * @param target the target on which the method is invoked.
-	 * @param argumetns the arguments passed in the method call
-	 * @param the return value of the dynamic method invocation.
+	 * @param arguments the arguments passed in the method call
+	 * @return the return value of the dynamic method invocation.
 	 */
 	public Object invoke(Object target, Object[] arguments);
 }

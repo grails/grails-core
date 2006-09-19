@@ -15,33 +15,37 @@
  */ 
 package org.codehaus.groovy.grails.commons.metaclass;
 
+import java.util.regex.Pattern;
+
 /**
  * 
  * 
  * @author Steven Devijver
+ * @author Graeme Rocher
+ *
  * @since Aug 7, 2005
  */
 public abstract class AbstractDynamicMethodInvocation implements
-		DynamicMethodInvocation {
+        DynamicMethodInvocation {
+    
+    private Pattern pattern;
 
-	private String methodName = null;
-	
-	public AbstractDynamicMethodInvocation(String methodName) {		
-		super();
-		this.methodName = methodName;
-	}
+    public AbstractDynamicMethodInvocation(Pattern pattern) {
+        super();
+        this.pattern = pattern;
+    }
 
-	public void setMethodName(String methodName) {
-		this.methodName = methodName;
-	}
-	
-	public String getMethodName() {
-		return this.methodName;
-	}
-	
-	public boolean isMethodMatch(String methodName) {
-		return getMethodName().equals(methodName);
-	}
-	
-	public abstract Object invoke(Object target, Object[] arguments);
+    public void setPattern(Pattern pattern) {
+        this.pattern = pattern;
+    }
+
+    protected Pattern getPattern() {
+        return pattern;
+    }
+
+    public boolean isMethodMatch(String methodName) {
+        return this.pattern.matcher(methodName.subSequence(0, methodName.length())).matches();
+    }
+
+    public abstract Object invoke(Object target, Object[] arguments);
 }

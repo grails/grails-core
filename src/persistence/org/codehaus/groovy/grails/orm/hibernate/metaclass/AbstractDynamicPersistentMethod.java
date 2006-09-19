@@ -20,6 +20,8 @@ import org.hibernate.SessionFactory;
 import org.springframework.orm.hibernate3.HibernateTemplate;
 import org.springframework.util.Assert;
 
+import java.util.regex.Pattern;
+
 /**
  * 
  * 
@@ -27,30 +29,30 @@ import org.springframework.util.Assert;
  * @since Aug 7, 2005
  */
 public abstract class AbstractDynamicPersistentMethod extends
-		AbstractDynamicMethodInvocation {
+        AbstractDynamicMethodInvocation {
 
-	private SessionFactory sessionFactory = null;
-	private ClassLoader classLoader = null;
-	
-	public AbstractDynamicPersistentMethod(String methodName, SessionFactory sessionFactory, ClassLoader classLoader) {
-		super(methodName);
-		this.sessionFactory = sessionFactory;
-		this.classLoader = classLoader;
-	}
+    private SessionFactory sessionFactory = null;
+    private ClassLoader classLoader = null;
 
-	protected HibernateTemplate getHibernateTemplate() {
-		Assert.notNull(sessionFactory, "Session factory is required!");
-		return new HibernateTemplate(this.sessionFactory);
-	}
-	
-	public Object invoke(Object target, Object[] arguments) {
-		ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
-		Thread.currentThread().setContextClassLoader(this.classLoader);
-		Object returnValue = doInvokeInternal(target, arguments);
-		Thread.currentThread().setContextClassLoader(originalClassLoader);
-		return returnValue;
-	}
-	
-	protected abstract Object doInvokeInternal(Object target, Object[] arguments);
+    public AbstractDynamicPersistentMethod(Pattern pattern, SessionFactory sessionFactory, ClassLoader classLoader) {
+        super(pattern);
+        this.sessionFactory = sessionFactory;
+        this.classLoader = classLoader;
+    }
+
+    protected HibernateTemplate getHibernateTemplate() {
+        Assert.notNull(sessionFactory, "Session factory is required!");
+        return new HibernateTemplate(this.sessionFactory);
+    }
+
+    public Object invoke(Object target, Object[] arguments) {
+        ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
+        Thread.currentThread().setContextClassLoader(this.classLoader);
+        Object returnValue = doInvokeInternal(target, arguments);
+        Thread.currentThread().setContextClassLoader(originalClassLoader);
+        return returnValue;
+    }
+
+    protected abstract Object doInvokeInternal(Object target, Object[] arguments);
 
 }

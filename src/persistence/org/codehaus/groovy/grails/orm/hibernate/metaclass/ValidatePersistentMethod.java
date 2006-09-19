@@ -26,6 +26,9 @@ import org.hibernate.SessionFactory;
 import org.springframework.validation.BindException;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
+
+import java.util.regex.Pattern;
+
 /**
  * A method that validates an instance of a domain class against its constraints 
  * 
@@ -34,57 +37,58 @@ import org.springframework.validation.Validator;
  */
 public class ValidatePersistentMethod extends AbstractDynamicPersistentMethod {
 
-	private static final String METHOD_NAME = "validate";
-	private GrailsApplication application;
-	
+    public static final String METHOD_SIGNATURE = "validate";
+    public static final Pattern METHOD_PATTERN = Pattern.compile('^'+METHOD_SIGNATURE+'$');
+    private GrailsApplication application;
 
 
 
-	public ValidatePersistentMethod(SessionFactory sessionFactory, ClassLoader classLoader, GrailsApplication application) {
-		super(METHOD_NAME, sessionFactory, classLoader);
-		if(application == null)
-			throw new IllegalArgumentException("Constructor argument 'application' cannot be null");
-		this.application = application;
-	}
 
-	protected Object doInvokeInternal(Object target, Object[] arguments) {
-		Errors errors = new BindException(target, target.getClass().getName());
-		GrailsDomainClass domainClass = application.getGrailsDomainClass( target.getClass().getName() );
-		Validator validator = null;
-		
-		if(domainClass != null)
-			validator = application.getGrailsDomainClass( target.getClass().getName() ).getValidator();
-		
-		Boolean valid = Boolean.TRUE;		
-		if(validator != null) {
-			// should evict?
-			boolean evict = false;
-			if(arguments.length > 0) {
-				if(arguments[0] instanceof Boolean) {
-					evict = ((Boolean)arguments[0]).booleanValue();
-				}
-			}
+    public ValidatePersistentMethod(SessionFactory sessionFactory, ClassLoader classLoader, GrailsApplication application) {
+        super(METHOD_PATTERN, sessionFactory, classLoader);
+        if(application == null)
+            throw new IllegalArgumentException("Constructor argument 'application' cannot be null");
+        this.application = application;
+    }
+
+    protected Object doInvokeInternal(Object target, Object[] arguments) {
+        Errors errors = new BindException(target, target.getClass().getName());
+        GrailsDomainClass domainClass = application.getGrailsDomainClass( target.getClass().getName() );
+        Validator validator = null;
+
+        if(domainClass != null)
+            validator = application.getGrailsDomainClass( target.getClass().getName() ).getValidator();
+
+        Boolean valid = Boolean.TRUE;
+        if(validator != null) {
+            // should evict?
+            boolean evict = false;
+            if(arguments.length > 0) {
+                if(arguments[0] instanceof Boolean) {
+                    evict = ((Boolean)arguments[0]).booleanValue();
+                }
+            }
             if(validator instanceof GrailsDomainClassValidator) {
                  ((GrailsDomainClassValidator)validator).setHibernateTemplate(getHibernateTemplate());
             }
             validator.validate(target,errors);
-			
-			if(errors.hasErrors()) {
-				valid = Boolean.valueOf(false);
-				if(evict) {
-					// if an boolean argument 'true' is passed to the method
-					// and validation fails then the object will be evicted
-					// from the session, ensuring it is not saved later when
-					// flush is called
-					if(getHibernateTemplate().contains(target)) {
-						getHibernateTemplate().evict(target);
-					}
-				}
-				DelegatingMetaClass metaClass = (DelegatingMetaClass)InvokerHelper.getInstance().getMetaRegistry().getMetaClass(target.getClass());
-				metaClass.setProperty(target,DomainClassMethods.ERRORS_PROPERTY,errors);
-			}
-		}
-		return valid;
-	}
+
+            if(errors.hasErrors()) {
+                valid = Boolean.valueOf(false);
+                if(evict) {
+                    // if an boolean argument 'true' is passed to the method
+                    // and validation fails then the object will be evicted
+                    // from the session, ensuring it is not saved later when
+                    // flush is called
+                    if(getHibernateTemplate().contains(target)) {
+                        getHibernateTemplate().evict(target);
+                    }
+                }
+                DelegatingMetaClass metaClass = (DelegatingMetaClass)InvokerHelper.getInstance().getMetaRegistry().getMetaClass(target.getClass());
+                metaClass.setProperty(target,DomainClassMethods.ERRORS_PROPERTY,errors);
+            }
+        }
+        return valid;
+    }
 
 }

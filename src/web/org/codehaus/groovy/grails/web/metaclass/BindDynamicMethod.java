@@ -22,6 +22,7 @@ import org.springframework.beans.PropertyValues;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 /**
  * A dynamic method present in controllers allowing data binding from a map to a target instance. Example:
@@ -36,9 +37,10 @@ import java.util.Map;
  */
 public class BindDynamicMethod extends AbstractDynamicControllerMethod {
     public static final String METHOD_SIGNATURE = "bindData";
+    public static final Pattern METHOD_PATTERN = Pattern.compile('^'+METHOD_SIGNATURE+'$');
 
     public BindDynamicMethod(HttpServletRequest request, HttpServletResponse response) {
-        super(METHOD_SIGNATURE, request, response);
+        super(METHOD_PATTERN, request, response);
     }
 
 
@@ -55,7 +57,7 @@ public class BindDynamicMethod extends AbstractDynamicControllerMethod {
         if(bindParams instanceof GrailsParameterMap) {
             GrailsParameterMap parameterMap = (GrailsParameterMap)bindParams;
             HttpServletRequest request = parameterMap.getRequest();
-            dataBinder = GrailsDataBinder.createBinder(targetObject, targetObject.getClass().getName(),request); 
+            dataBinder = GrailsDataBinder.createBinder(targetObject, targetObject.getClass().getName(),request);
             dataBinder.bind(request);
         }
         else if(bindParams instanceof HttpServletRequest) {

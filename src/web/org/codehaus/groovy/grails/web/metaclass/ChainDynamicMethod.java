@@ -34,6 +34,7 @@ import java.beans.PropertyDescriptor;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 /**
  * Implements the "chain" Controller method for action chaining
@@ -46,6 +47,8 @@ public class ChainDynamicMethod extends AbstractDynamicControllerMethod {
     private static final Log LOG = LogFactory.getLog(ChainDynamicMethod.class);
 
     public static final String METHOD_SIGNATURE = "chain";
+    public static final Pattern METHOD_PATTERN = Pattern.compile('^'+METHOD_SIGNATURE+'$');
+
     public static final String ARGUMENT_CONTROLLER = "controller";
     public static final String ARGUMENT_ACTION = "action";
     public static final String ARGUMENT_ID = "id";
@@ -58,7 +61,7 @@ public class ChainDynamicMethod extends AbstractDynamicControllerMethod {
     private GrailsControllerHelper helper;
 
     public ChainDynamicMethod(GrailsControllerHelper helper, HttpServletRequest request, HttpServletResponse response) {
-        super(METHOD_SIGNATURE, request, response);
+        super(METHOD_PATTERN, request, response);
         if(helper == null)
             throw new IllegalStateException("Constructor argument 'helper' cannot be null");
 

@@ -31,6 +31,7 @@ import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
 
 import java.io.Serializable;
+import java.util.regex.Pattern;
 
 /**
  * 
@@ -43,10 +44,12 @@ import java.io.Serializable;
 public class SavePersistentMethod extends AbstractDynamicPersistentMethod {
 
     public static final String METHOD_SIGNATURE = "save";
+    public static final Pattern METHOD_PATTERN = Pattern.compile('^'+METHOD_SIGNATURE+'$');
+
     private GrailsApplication application;
 
     public SavePersistentMethod(SessionFactory sessionFactory, ClassLoader classLoader, GrailsApplication application) {
-        super(METHOD_SIGNATURE,sessionFactory, classLoader);
+        super(METHOD_PATTERN,sessionFactory, classLoader);
 
         if(application == null)
             throw new IllegalArgumentException("Constructor argument 'application' cannot be null");
@@ -55,7 +58,7 @@ public class SavePersistentMethod extends AbstractDynamicPersistentMethod {
 
     protected Object doInvokeInternal(Object target, Object[] arguments) {
 
-    	HibernateTemplate t = getHibernateTemplate();
+        HibernateTemplate t = getHibernateTemplate();
         Errors errors = new BindException(target, target.getClass().getName());
         GrailsDomainClass domainClass = application.getGrailsDomainClass( target.getClass().getName() );
         Validator validator = null;
@@ -77,19 +80,19 @@ public class SavePersistentMethod extends AbstractDynamicPersistentMethod {
                 validator.validate(target,errors);
 
                 if(errors.hasErrors()) {
-                	// if the target is within the session evict it
-                	// this is so that if validation fails hibernate doesn't save
-                	// the object automatically when the session is flushed
-                	if(t.contains(target)) {
-                		t.evict(target);
-                	}
+                    // if the target is within the session evict it
+                    // this is so that if validation fails hibernate doesn't save
+                    // the object automatically when the session is flushed
+                    if(t.contains(target)) {
+                        t.evict(target);
+                    }
                     DelegatingMetaClass metaClass = (DelegatingMetaClass)InvokerHelper.getInstance().getMetaRegistry().getMetaClass(target.getClass());
                     metaClass.setProperty(target,DomainClassMethods.ERRORS_PROPERTY,errors);
                     return null;
                 }
             }
         }
-        
+
         // this piece of code will retrieve a persistent instant
         // of a domain class property is only the id is set thus
         // relieving this burden off the developer
@@ -107,7 +110,7 @@ public class SavePersistentMethod extends AbstractDynamicPersistentMethod {
 
                             Serializable id = (Serializable)propBean.getPropertyValue(otherSide.getIdentifier().getName());
                             if(id != null) {
-                                bean.setPropertyValue(prop.getName(),t.get(prop.getType(),id));    
+                                bean.setPropertyValue(prop.getName(),t.get(prop.getType(),id));
                             }
                         }
                     }

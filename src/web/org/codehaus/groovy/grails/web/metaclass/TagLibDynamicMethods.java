@@ -20,6 +20,7 @@ import groovy.lang.MissingMethodException;
 
 import java.beans.IntrospectionException;
 import java.io.Writer;
+import java.util.regex.Pattern;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
@@ -46,6 +47,7 @@ public class TagLibDynamicMethods extends AbstractDynamicMethodsInterceptor {
 	
     public static final String OUT_PROPERTY = "out";
     private static final String THROW_TAG_ERROR_METHOD = "throwTagError";
+    public static final Pattern THROW_TAG_ERROR_METHOD_METHOD_PATTERN = Pattern.compile('^'+THROW_TAG_ERROR_METHOD+'$');
 
     public TagLibDynamicMethods(GroovyObject taglib, GroovyObject controller) throws IntrospectionException {    	
         
@@ -68,7 +70,7 @@ public class TagLibDynamicMethods extends AbstractDynamicMethodsInterceptor {
         addDynamicProperty(controllerDynamicMethods.getDynamicProperty(ControllerDynamicMethods.FLASH_SCOPE_PROPERTY) );
         addDynamicProperty(controllerDynamicMethods.getDynamicProperty(ControllerDynamicMethods.GRAILS_APPLICATION));        
 
-        addDynamicMethodInvocation(new AbstractDynamicMethodInvocation(THROW_TAG_ERROR_METHOD) {
+        addDynamicMethodInvocation(new AbstractDynamicMethodInvocation(THROW_TAG_ERROR_METHOD_METHOD_PATTERN) {
             public Object invoke(Object target, Object[] arguments) {
                 if(arguments.length == 0)
                     throw new MissingMethodException(THROW_TAG_ERROR_METHOD,target.getClass(),arguments);
@@ -94,7 +96,7 @@ public class TagLibDynamicMethods extends AbstractDynamicMethodsInterceptor {
         addDynamicProperty(new GenericDynamicProperty(ControllerDynamicMethods.GRAILS_ATTRIBUTES, GrailsApplicationAttributes.class,attrs,true));
         addDynamicProperty(new GenericDynamicProperty(ControllerDynamicMethods.GRAILS_APPLICATION, GrailsApplication.class,attrs.getGrailsApplication(),true));        
  		
-        addDynamicMethodInvocation(new AbstractDynamicMethodInvocation(THROW_TAG_ERROR_METHOD) {
+        addDynamicMethodInvocation(new AbstractDynamicMethodInvocation(THROW_TAG_ERROR_METHOD_METHOD_PATTERN) {
             public Object invoke(Object target, Object[] arguments) {
                 if(arguments.length == 0)
                     throw new MissingMethodException(THROW_TAG_ERROR_METHOD,target.getClass(),arguments);

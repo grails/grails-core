@@ -34,6 +34,7 @@ import java.beans.PropertyDescriptor;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 /**
  * Implements the "redirect" Controller method for action redirection
@@ -43,7 +44,9 @@ import java.util.Map;
  */
 public class RedirectDynamicMethod extends AbstractDynamicControllerMethod {
 
+
     public static final String METHOD_SIGNATURE = "redirect";
+    public static final Pattern METHOD_PATTERN = Pattern.compile('^'+METHOD_SIGNATURE+'$');
     public static final String ARGUMENT_URI = "uri";
     public static final String ARGUMENT_URL = "url";
     public static final String ARGUMENT_CONTROLLER = "controller";
@@ -56,7 +59,7 @@ public class RedirectDynamicMethod extends AbstractDynamicControllerMethod {
     private static final Log LOG = LogFactory.getLog(RedirectDynamicMethod.class);
 
     public RedirectDynamicMethod(GrailsControllerHelper helper, HttpServletRequest request, HttpServletResponse response) {
-        super(METHOD_SIGNATURE, request, response);
+        super(METHOD_PATTERN, request, response);
         if(helper == null)
             throw new IllegalStateException("Constructor argument 'helper' cannot be null");
 
@@ -82,7 +85,7 @@ public class RedirectDynamicMethod extends AbstractDynamicControllerMethod {
                  uri = argMap.get(ARGUMENT_URI);
             }
             else if(argMap.containsKey(ARGUMENT_URL)) {
-            	url = argMap.get(ARGUMENT_URL).toString();
+                url = argMap.get(ARGUMENT_URL).toString();
             }
             else {
                 actionRef = argMap.get(ARGUMENT_ACTION);
@@ -112,7 +115,7 @@ public class RedirectDynamicMethod extends AbstractDynamicControllerMethod {
             actualUri = attrs.getApplicationUri(request) + uri.toString();
         }
         else if(url != null) {
-        	actualUri = url;
+            actualUri = url;
         }
         else {
             String actionName = null;

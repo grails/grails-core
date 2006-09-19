@@ -26,6 +26,7 @@ import org.hibernate.SessionFactory;
 import org.springframework.validation.Errors;
 
 import java.beans.IntrospectionException;
+import java.util.regex.Pattern;
 
 /**
  *
@@ -35,23 +36,25 @@ import java.beans.IntrospectionException;
  */
 public class DomainClassMethods extends AbstractDynamicMethods {
 
-	public static final String HAS_ERRORS_PROPERTY = "hasErrors";
-	public static final String ERRORS_PROPERTY = "errors";
+    public static final String HAS_ERRORS_METHOD = "hasErrors";
+    public static final Pattern HAS_ERRORS_METHOD_PATTERN = Pattern.compile('^'+HAS_ERRORS_METHOD+'$');
 
-	public DomainClassMethods(GrailsApplication application, Class theClass, SessionFactory sessionFactory, ClassLoader classLoader)
-			throws IntrospectionException {
-		super(theClass);
-		// constructors
-		addDynamicConstructor(new DataBindingDynamicConstructor());
-		
-		// dynamic methods
+    public static final String ERRORS_PROPERTY = "errors";
+
+    public DomainClassMethods(GrailsApplication application, Class theClass, SessionFactory sessionFactory, ClassLoader classLoader)
+            throws IntrospectionException {
+        super(theClass);
+        // constructors
+        addDynamicConstructor(new DataBindingDynamicConstructor());
+
+        // dynamic methods
         addDynamicMethodInvocation(new IdentDynamicMethod(application));
         addDynamicMethodInvocation(new SavePersistentMethod(sessionFactory, classLoader,application));
         addDynamicMethodInvocation(new DiscardPersistentMethod(sessionFactory, classLoader));
-		addDynamicMethodInvocation(new DeletePersistentMethod(sessionFactory, classLoader));
-		addDynamicMethodInvocation(new RefreshPersistentMethod(sessionFactory, classLoader));
-		addDynamicMethodInvocation(new ValidatePersistentMethod(sessionFactory, classLoader, application ));
-        addDynamicMethodInvocation(new AbstractDynamicMethodInvocation(HAS_ERRORS_PROPERTY) {
+        addDynamicMethodInvocation(new DeletePersistentMethod(sessionFactory, classLoader));
+        addDynamicMethodInvocation(new RefreshPersistentMethod(sessionFactory, classLoader));
+        addDynamicMethodInvocation(new ValidatePersistentMethod(sessionFactory, classLoader, application ));
+        addDynamicMethodInvocation(new AbstractDynamicMethodInvocation(HAS_ERRORS_METHOD_PATTERN) {
             public Object invoke(Object target, Object[] arguments) {
                 Errors errors = (Errors)getDynamicProperty(ERRORS_PROPERTY).get(target);
                 if(errors == null || !errors.hasErrors()) {
@@ -64,15 +67,15 @@ public class DomainClassMethods extends AbstractDynamicMethods {
         });
 
         // static methods
-		addStaticMethodInvocation(new FindAllPersistentMethod(sessionFactory, classLoader));
-		addStaticMethodInvocation(new FindAllByPersistentMethod(application,sessionFactory, classLoader));
-		addStaticMethodInvocation(new FindByPersistentMethod(application,sessionFactory, classLoader));
-		addStaticMethodInvocation(new CountByPersistentMethod(application,sessionFactory, classLoader));
-		addStaticMethodInvocation(new FindPersistentMethod(sessionFactory, classLoader));
-		addStaticMethodInvocation(new ListOrderByPersistentMethod(sessionFactory, classLoader));
-		addStaticMethodInvocation(new ListPersistentMethod(sessionFactory, classLoader));
-		addStaticMethodInvocation(new FindWherePersistentMethod(sessionFactory, classLoader));
-		addStaticMethodInvocation(new GetPersistentMethod(application,sessionFactory, classLoader));
+        addStaticMethodInvocation(new FindAllPersistentMethod(sessionFactory, classLoader));
+        addStaticMethodInvocation(new FindAllByPersistentMethod(application,sessionFactory, classLoader));
+        addStaticMethodInvocation(new FindByPersistentMethod(application,sessionFactory, classLoader));
+        addStaticMethodInvocation(new CountByPersistentMethod(application,sessionFactory, classLoader));
+        addStaticMethodInvocation(new FindPersistentMethod(sessionFactory, classLoader));
+        addStaticMethodInvocation(new ListOrderByPersistentMethod(sessionFactory, classLoader));
+        addStaticMethodInvocation(new ListPersistentMethod(sessionFactory, classLoader));
+        addStaticMethodInvocation(new FindWherePersistentMethod(sessionFactory, classLoader));
+        addStaticMethodInvocation(new GetPersistentMethod(application,sessionFactory, classLoader));
         addStaticMethodInvocation(new ExistsPersistentMethod(application,sessionFactory, classLoader));
         addStaticMethodInvocation(new CountPersistentMethod(sessionFactory, classLoader));
         addStaticMethodInvocation(new CreateCriteriaPersistentMethod(sessionFactory, classLoader));
@@ -80,11 +83,11 @@ public class DomainClassMethods extends AbstractDynamicMethods {
         addStaticMethodInvocation(new ExecuteUpdatePersistentMethod(sessionFactory, classLoader));
         addStaticMethodInvocation(new CreateDynamicMethod());
 
-		// add dynamic properties
-		addDynamicProperty( new SetPropertiesDynamicProperty() );
-		addDynamicProperty( new ConstraintsDynamicProperty(application) );
-		addDynamicProperty( new WeakGenericDynamicProperty(ERRORS_PROPERTY, Errors.class,null,false) );
+        // add dynamic properties
+        addDynamicProperty( new SetPropertiesDynamicProperty() );
+        addDynamicProperty( new ConstraintsDynamicProperty(application) );
+        addDynamicProperty( new WeakGenericDynamicProperty(ERRORS_PROPERTY, Errors.class,null,false) );
 
-	}
+    }
 
 }

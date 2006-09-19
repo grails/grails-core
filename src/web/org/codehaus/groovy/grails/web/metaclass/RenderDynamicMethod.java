@@ -35,10 +35,12 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.Writer;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 /**
  * Allows rendering of text, views, and templates to the response
@@ -48,6 +50,8 @@ import java.util.Map;
  */
 public class RenderDynamicMethod extends AbstractDynamicControllerMethod {
     public static final String METHOD_SIGNATURE = "render";
+    public static final Pattern METHOD_PATTERN = Pattern.compile('^'+METHOD_SIGNATURE+'$');
+
     public static final String ARGUMENT_TEXT = "text";
     public static final String ARGUMENT_CONTENT_TYPE = "contentType";
     public static final String ARGUMENT_ENCODING = "encoding";
@@ -64,15 +68,16 @@ public class RenderDynamicMethod extends AbstractDynamicControllerMethod {
 
     private GrailsControllerHelper helper;
     protected GrailsHttpServletResponse response;
+    private static final String ARGUMENT_TO = "to";
 
 
     public RenderDynamicMethod(GrailsControllerHelper helper, HttpServletRequest request, HttpServletResponse response) {
-        super(METHOD_SIGNATURE, request, response);
+        super(METHOD_PATTERN, request, response);
         this.helper = helper;
         if(response instanceof GrailsHttpServletResponse)
-        	this.response = (GrailsHttpServletResponse)response;
+            this.response = (GrailsHttpServletResponse)response;
         else
-        	this.response = new GrailsHttpServletResponse(response);
+            this.response = new GrailsHttpServletResponse(response);
     }
 
     public Object invoke(Object target, Object[] arguments) {
@@ -101,9 +106,12 @@ public class RenderDynamicMethod extends AbstractDynamicControllerMethod {
         }
         else if(arguments[0] instanceof Map) {
             Map argMap = (Map)arguments[0];
-           PrintWriter out;
+           Writer out;
            try {
-               if(argMap.containsKey(ARGUMENT_CONTENT_TYPE) && argMap.containsKey(ARGUMENT_ENCODING)) {
+               if(argMap.containsKey(ARGUMENT_TO)) {
+                   out = (Writer)argMap.get(ARGUMENT_TO);
+               }
+               else if(argMap.containsKey(ARGUMENT_CONTENT_TYPE) && argMap.containsKey(ARGUMENT_ENCODING)) {
                    out = response.getWriter(argMap.get(ARGUMENT_CONTENT_TYPE).toString(),
                                             argMap.get(ARGUMENT_ENCODING).toString());
                }
@@ -130,14 +138,14 @@ public class RenderDynamicMethod extends AbstractDynamicControllerMethod {
                     orb.invokeMethod("ajax", new Object[]{ arguments[arguments.length - 1] });
                 }
                 else if(BUILDER_TYPE_JSON.equals(argMap.get(ARGUMENT_BUILDER))){
-                	JSonBuilder jsonBuilder;
-                	try{
-                		jsonBuilder = new JSonBuilder(response);
-                		renderView = false;
-                	}catch(IOException e){
-                        throw new ControllerExecutionException("I/O error executing render method for arguments ["+argMap+"]: " + e.getMessage(),e);                		
-                	}
-                	jsonBuilder.invokeMethod("json", new Object[]{ arguments[arguments.length - 1] });
+                    JSonBuilder jsonBuilder;
+                    try{
+                        jsonBuilder = new JSonBuilder(response);
+                        renderView = false;
+                    }catch(IOException e){
+                        throw new ControllerExecutionException("I/O error executing render method for arguments ["+argMap+"]: " + e.getMessage(),e);
+                    }
+                    jsonBuilder.invokeMethod("json", new Object[]{ arguments[arguments.length - 1] });
                 }
                 else {
                     StreamingMarkupBuilder b = new StreamingMarkupBuilder();
@@ -151,13 +159,21 @@ public class RenderDynamicMethod extends AbstractDynamicControllerMethod {
                 }
             }
             else if(arguments[arguments.length - 1] instanceof String) {
-               out.write((String)arguments[arguments.length - 1]);
-               renderView = false;
+                try {
+                    out.write((String)arguments[arguments.length - 1]);
+                } catch (IOException e) {
+                    throw new ControllerExecutionException("I/O error executing render method for arguments ["+arguments[arguments.length - 1]+"]: " + e.getMessage(),e);
+                }
+                renderView = false;
             }
             else if(argMap.containsKey(ARGUMENT_TEXT)) {
                String text = argMap.get(ARGUMENT_TEXT).toString();
-               out.write(text);
-               renderView = false;
+                try {
+                    out.write(text);
+                } catch (IOException e) {
+                    throw new ControllerExecutionException("I/O error executing render method for arguments ["+argMap+"]: " + e.getMessage(),e);
+                }
+                renderView = false;
             }
             else if(argMap.containsKey(ARGUMENT_VIEW)) {
                String viewName = argMap.get(ARGUMENT_VIEW).toString();
@@ -195,17 +211,17 @@ public class RenderDynamicMethod extends AbstractDynamicControllerMethod {
                 GroovyPagesTemplateEngine engine = attrs.getPagesTemplateEngine();
                 try {
                     Template t = engine.createTemplate(templateUri,attrs.getServletContext(),request,response);
-					
-					if(t == null) {
-						throw new ControllerExecutionException("Unable to load template for uri ["+templateUri+"]. Template not found.");	
-					}
+
+                    if(t == null) {
+                        throw new ControllerExecutionException("Unable to load template for uri ["+templateUri+"]. Template not found.");
+                    }
                     Map binding = new HashMap();
 
                     if(argMap.containsKey(ARGUMENT_BEAN)) {
-                    	if(StringUtils.isBlank(var))
-                    		binding.put(DEFAULT_ARGUMENT, argMap.get(ARGUMENT_BEAN));
-                    	else
-                    		binding.put(var, argMap.get(ARGUMENT_BEAN));
+                        if(StringUtils.isBlank(var))
+                            binding.put(DEFAULT_ARGUMENT, argMap.get(ARGUMENT_BEAN));
+                        else
+                            binding.put(var, argMap.get(ARGUMENT_BEAN));
                         Writable w = t.make(binding);
                         w.writeTo(out);
                     }
@@ -215,20 +231,20 @@ public class RenderDynamicMethod extends AbstractDynamicControllerMethod {
                              Collection c = (Collection) colObject;
                             for (Iterator i = c.iterator(); i.hasNext();) {
                                 Object o = i.next();
-                            	if(StringUtils.isBlank(var))
-                            		binding.put(DEFAULT_ARGUMENT, o);
-                            	else                                
-                            		binding.put(var, o);
+                                if(StringUtils.isBlank(var))
+                                    binding.put(DEFAULT_ARGUMENT, o);
+                                else
+                                    binding.put(var, o);
                                 Writable w = t.make(binding);
                                 w.writeTo(out);
                             }
                         }
                         else {
-                        	if(StringUtils.isBlank(var))
-                        		binding.put(DEFAULT_ARGUMENT, argMap.get(ARGUMENT_BEAN));
-                        	else                        	
+                            if(StringUtils.isBlank(var))
+                                binding.put(DEFAULT_ARGUMENT, argMap.get(ARGUMENT_BEAN));
+                            else
                                 binding.put(var, colObject);
-                        	
+
                             Writable w = t.make(binding);
                             w.writeTo(out);
                         }

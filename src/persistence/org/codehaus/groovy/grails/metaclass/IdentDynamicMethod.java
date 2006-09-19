@@ -21,6 +21,8 @@ import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
 
+import java.util.regex.Pattern;
+
 /**
  * A dynamic method that evaluates the id of a domain class whatever the property name may be. Called via
  * domainInstance.ident()
@@ -31,10 +33,11 @@ import org.springframework.beans.BeanWrapperImpl;
 
 public class IdentDynamicMethod extends AbstractDynamicMethodInvocation {
     public static final String METHOD_SIGNATURE = "ident";
+    public static final Pattern METHOD_PATTERN = Pattern.compile('^'+METHOD_SIGNATURE+'$');
     private GrailsApplication application;
 
     public IdentDynamicMethod(GrailsApplication application) {
-        super(METHOD_SIGNATURE);
+        super(METHOD_PATTERN);
         this.application = application;
     }
 

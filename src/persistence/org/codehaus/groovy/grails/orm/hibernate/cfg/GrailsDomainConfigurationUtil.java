@@ -19,7 +19,9 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
+import org.codehaus.groovy.grails.commons.metaclass.DynamicMethods;
 import org.codehaus.groovy.grails.metaclass.DomainClassMethods;
+import org.codehaus.groovy.grails.metaclass.AddRelatedDynamicMethod;
 import org.codehaus.groovy.grails.orm.hibernate.GrailsHibernateDomainClass;
 import org.hibernate.EntityMode;
 import org.hibernate.SessionFactory;
@@ -119,13 +121,20 @@ public class GrailsDomainConfigurationUtil {
             // if its not a grails domain class and one written in java then add it
             // to grails
             if(application != null && persistentClass != null) {
-                if(application.getGrailsDomainClass(persistentClass.getName()) == null) {
-                    application.addDomainClass(new GrailsHibernateDomainClass(persistentClass, sf,cmd));
+                GrailsDomainClass dc = application.getGrailsDomainClass(persistentClass.getName());
+                if( dc == null) {
+                    dc = application.addDomainClass(new GrailsHibernateDomainClass(persistentClass, sf,cmd));
 	            }
 	            LOG.info("[GrailsDomainConfiguration] Registering dynamic methods on class ["+persistentClass+"]");
 	            try {
-	                new DomainClassMethods(application,persistentClass,sf,application.getClassLoader());
-	            } catch (IntrospectionException e) {
+	                DynamicMethods dm = new DomainClassMethods(application,persistentClass,sf,application.getClassLoader());
+                    for (int j = 0; j < dc.getPersistantProperties().length; j++) {
+                          GrailsDomainClassProperty p = dc.getPersistantProperties()[j];
+                          if(p.isOneToMany() || p.isManyToMany()) {
+                              dm.addDynamicMethodInvocation(new AddRelatedDynamicMethod(p));
+                          }
+                    }
+                } catch (IntrospectionException e) {
 	                LOG.warn("[GrailsDomainConfiguration] Introspection exception registering dynamic methods for ["+persistentClass+"]:" + e.getMessage(), e);
 	            }            	
             }

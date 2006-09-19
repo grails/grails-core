@@ -15,6 +15,9 @@
 package org.codehaus.groovy.grails.orm.hibernate.metaclass;
 
 import org.hibernate.SessionFactory;
+
+import java.util.regex.Pattern;
+
 /**
  * The "refresh" persistent instance method. This method refreshes the current
  * instances state.
@@ -27,15 +30,16 @@ import org.hibernate.SessionFactory;
  */
 public class RefreshPersistentMethod extends AbstractDynamicPersistentMethod {
 
-	private static final String METHOD_SIGNATURE = "refresh";
+    private static final String METHOD_SIGNATURE = "refresh";
+    public static final Pattern METHOD_PATTERN = Pattern.compile('^'+METHOD_SIGNATURE+'$');
 
-	public RefreshPersistentMethod(SessionFactory sessionFactory, ClassLoader classLoader) {
-		super(METHOD_SIGNATURE,sessionFactory, classLoader);
-	}
+    public RefreshPersistentMethod(SessionFactory sessionFactory, ClassLoader classLoader) {
+        super(METHOD_PATTERN,sessionFactory, classLoader);
+    }
 
-	protected Object doInvokeInternal(Object target, Object[] arguments) {
-		super.getHibernateTemplate().refresh(target);
-		return null;
-	}
+    protected Object doInvokeInternal(Object target, Object[] arguments) {
+        super.getHibernateTemplate().refresh(target);
+        return null;
+    }
 
 }

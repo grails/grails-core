@@ -19,6 +19,7 @@ import org.codehaus.groovy.grails.commons.metaclass.AbstractDynamicMethodInvocat
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.regex.Pattern;
 
 /**
  * An abstract class for dynamic controller methods to implement
@@ -32,8 +33,8 @@ public abstract class AbstractDynamicControllerMethod extends
     protected HttpServletRequest request;
     protected HttpServletResponse response;
 
-    public AbstractDynamicControllerMethod(String methodName,HttpServletRequest request, HttpServletResponse response) {
-        super(methodName);
+    public AbstractDynamicControllerMethod(Pattern pattern,HttpServletRequest request, HttpServletResponse response) {
+        super(pattern);
         this.request = request;
         this.response = response;
     }
