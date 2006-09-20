@@ -125,7 +125,7 @@ public class ConstrainedProperty   {
     protected static final String INVALID_SUFFIX = ".invalid";
     protected static final String EXCEEDED_SUFFIX = ".exceeded";
     protected static final String NOTMET_SUFFIX = ".notmet";
-    protected static final String NOT_PREFIX = ".not.";
+    protected static final String NOT_PREFIX = "not.";
     protected static final String TOOBIG_SUFFIX = ".toobig";
     protected static final String TOOLONG_SUFFIX = ".toolong";
     protected static final String TOOSMALL_SUFFIX = ".toosmall";
