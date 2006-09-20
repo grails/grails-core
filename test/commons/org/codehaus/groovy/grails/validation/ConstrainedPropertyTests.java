@@ -275,7 +275,9 @@ public class ConstrainedPropertyTests extends TestCase {
         error = errors.getFieldError("testURL");
         System.out.println(error);
         assertNotNull(error);
-
+		// Validate that the error includes the correct error code
+		assertTrue(Arrays.asList(error.getCodes()).contains("constrainedPropertyTests.testURL.not.inList"));
+		
         this.testURL = "two";
         errors = new BindException(this,"testObject");
         c.validate(this, this.testURL,errors);
