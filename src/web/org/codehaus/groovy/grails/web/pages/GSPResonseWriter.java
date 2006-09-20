@@ -87,7 +87,11 @@ public class GSPResonseWriter extends PrintWriter {
 	 */
 	public void close() {
 		if (!response.isCommitted()) {
-			response.setContentLength(out0.size());
+			try {
+				response.setContentLength(out0.toString().getBytes(response.getCharacterEncoding()).length);
+			} catch (UnsupportedEncodingException e) {
+				LOG.error("Encoding error setting content length: " + e.getMessage(),e  );				
+			}
 		}
 		flush();
 		super.close();
