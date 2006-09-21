@@ -16,6 +16,7 @@
 package grails.util;
 
 import java.io.File;
+import java.io.IOException;
 
 import org.apache.commons.lang.StringUtils;
 import org.mortbay.http.SocketListener;
@@ -31,6 +32,9 @@ import org.mortbay.jetty.Server;
  * @since 09-May-2006
  */
 public class GrailsMain {
+
+	
+	private static final String TMP_WAR_LOCATION = "tmp"+File.separator+"war";
 
 	/**
 	 * The main routine that loads a jetty instance and launches the Grails
@@ -53,23 +57,32 @@ public class GrailsMain {
 		
 		try {
 			String basedir = System.getProperty("base.dir");
-			if(StringUtils.isBlank(basedir)) {
-				File current = new File(".");				
-				server.addWebApplication('/'+current.getParentFile().getName(),
-										 "tmp/war");
-			}
-			else {
-				File base = new File(basedir);
-				
-				server.addWebApplication('/'+base.getName(), 
-										basedir+"/tmp/war");				
-			}
-			server.start();
+			startServer(server, basedir);
 		}
 		catch(Exception e) {
 			System.out.println(e.getMessage());
 			e.printStackTrace();
 		}
+	}
+
+	private static void startServer(Server server, String basedir) throws IOException, Exception {
+		String name;
+		String location;
+		if(StringUtils.isBlank(basedir)) {
+			File current = new File(".");
+			name =  '/'+current.getParentFile().getName();
+			location= GrailsMain.TMP_WAR_LOCATION;
+		}
+		else {
+			File base = new File(basedir);
+			name = '/'+base.getName();
+			location = basedir + File.separator + TMP_WAR_LOCATION;
+		}
+		server.addWebApplication(name,
+				                 location);	
+		System.out.println("Starting Grails Jetty server for location: " + location);
+		server.start();
+		System.out.println("Grails Jetty Server Started...");
 	}
 
 }
