@@ -11,10 +11,6 @@
 		<param-value>/WEB-INF/log4j.properties</param-value>
 	</context-param>
 	
-	<welcome-file-list>
-	     <welcome-file>index.gsp</welcome-file>
-	</welcome-file-list>
-	
 	<filter>
 	   	<filter-name>sitemesh</filter-name>
 	    <filter-class>org.codehaus.groovy.grails.web.sitemesh.GrailsPageFilter</filter-class>
@@ -120,7 +116,10 @@
 		</servlet-mapping>
 	<% } %>		
 
-	
+	<welcome-file-list>
+	     <welcome-file>index.gsp</welcome-file>
+	</welcome-file-list>
+		
 	<taglib>
 		<taglib-uri>http://java.sun.com/jstl/core</taglib-uri>
 		<taglib-location>/WEB-INF/tld/c.tld</taglib-location>
