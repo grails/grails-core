@@ -7,11 +7,7 @@
 	<context-param>
 		<param-name>log4jConfigLocation</param-name>
 		<param-value>/WEB-INF/log4j.properties</param-value>
-	</context-param>
-	
-	<welcome-file-list>
-	     <welcome-file>index.gsp</welcome-file>
-	</welcome-file-list>	
+	</context-param>	
 
 	<filter>
 	   	<filter-name>sitemesh</filter-name>
@@ -117,7 +113,11 @@
 			<servlet-name>grails</servlet-name>
 			<url-pattern>/${f}/*</url-pattern>
 		</servlet-mapping>
-	<% } %>		
+	<% } %>	
+		
+	<welcome-file-list>
+	     <welcome-file>index.gsp</welcome-file>
+	</welcome-file-list>		
 
     <jsp-config>
         <taglib>
