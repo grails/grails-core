@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.orm.hibernate.exceptions.GrailsQueryException;
 import org.hibernate.Criteria;
 import org.hibernate.HibernateException;
@@ -54,8 +55,9 @@ public class FindAllPersistentMethod extends AbstractStaticPersistentMethod {
 		
 		// if the arg is an instance of the class find by example
 		if(arg instanceof String) {
-			final String query = (String)arg;
-			if(!query.matches( "from "+clazz.getName()+".*" )) {
+			final String query = ((String)arg).trim();
+			final String shortName = GrailsClassUtils.getShortName(clazz);
+			if(!query.matches( "from ["+clazz.getName()+"|"+shortName+"].*" )) {
 				throw new GrailsQueryException("Invalid query ["+query+"] for domain class ["+clazz+"]");
 			}			
 			return super.getHibernateTemplate().executeFind( new HibernateCallback() {
