@@ -13,6 +13,8 @@
         </classpath>
 	    <classpath refid="classpath"/>
     </taskdef>
+    <taskdef name="groovyc" classname="org.codehaus.groovy.ant.Groovyc" />
+
 
     <property name="coverage.build" value="cruise/coverage/build/instrumented-classes"/>
     <property name="coverage.report" value="cruise/coverage/report"/>
@@ -54,6 +56,10 @@
 			<classpath refid="classpath"/>
 			<classpath location="${grails.build}"/>
 		</javac>
+		<groovyc srcdir="test/groovy" destdir="${grails.test.build}">    	
+			<classpath refid="classpath"/>
+			<classpath location="${grails.build}"/>			
+		</groovyc>
 	</target>
 
 	<target name="run-test" depends="build-test" >
