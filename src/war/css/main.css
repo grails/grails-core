@@ -1,3 +1,8 @@
+.spinner {
+	position: absolute;
+	right:0px;
+	padding:5px;
+}
 a:active,a:link,a:visited,a:hover {
     color:#0D5798;    
 }
