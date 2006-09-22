@@ -14,6 +14,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.MessageSourceResolvable;
 import org.springframework.context.NoSuchMessageException;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 
 public class MockApplicationContext implements ApplicationContext {
@@ -131,7 +132,7 @@ public class MockApplicationContext implements ApplicationContext {
 	}
 
 	public Resource getResource(String location) {
-		throw new UnsupportedOperationException("Method not supported by implementation");
+		return new ClassPathResource(location);
 	}
 
 }
