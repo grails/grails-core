@@ -14,6 +14,7 @@
  */
 package org.codehaus.groovy.grails.web.taglib;
 
+import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.grails.web.pages.GroovyPage;
 
 import java.util.Map;
@@ -35,7 +36,10 @@ public abstract class GroovySyntaxTag implements GrailsTag {
 
     public void init(Map tagContext) {
         this.tagContext = tagContext;
-        this.out = (PrintWriter)tagContext.get(GroovyPage.OUT);
+        Object outObj = tagContext.get(GroovyPage.OUT);
+        if(outObj instanceof PrintWriter) {
+        	this.out = (PrintWriter)tagContext.get(GroovyPage.OUT);
+        }
     }
 
     public void setWriter(Writer w) {
@@ -56,7 +60,7 @@ public abstract class GroovySyntaxTag implements GrailsTag {
 
     public void setAttribute(String name, Object value) {
         if(value instanceof String ) {
-            String stringValue = (String)value;
+            String stringValue = ((String)value).trim();
             if(stringValue.startsWith("${") && stringValue.endsWith("}")) {
                 stringValue = stringValue.substring(2,stringValue.length() -1);
             }
@@ -71,4 +75,20 @@ public abstract class GroovySyntaxTag implements GrailsTag {
     public abstract boolean isBufferWhiteSpace();
 
     public abstract boolean hasPrecedingContent();
+
+	protected String calculateExpression(String expr) {
+		if(StringUtils.isBlank(expr )) {
+			throw new IllegalArgumentException("Argument [expr] cannot be null or blank");
+		}
+		expr = expr.trim();
+        if(expr.startsWith("\"") && expr.endsWith("\"")) {
+            expr = expr.substring(1,expr.length()-1);
+        }		
+        expr = expr.trim();
+        if(expr.startsWith("${") && expr.endsWith("}")) {
+        	expr = expr.substring(2,expr.length()-1);
+        }
+        expr = expr.trim();
+		return expr;
+	}
 }

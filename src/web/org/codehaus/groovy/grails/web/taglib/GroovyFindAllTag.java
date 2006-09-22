@@ -51,9 +51,7 @@ public class GroovyFindAllTag extends GroovySyntaxTag {
 
         out.print(in);
         out.print(".findAll {");
-        if(expr.startsWith("\"") && expr.endsWith("\"")) {
-            expr = expr.substring(1,expr.length()-1);
-        }
+        expr = calculateExpression(expr);
         out.print(expr);
         out.println("}.each {");
     }

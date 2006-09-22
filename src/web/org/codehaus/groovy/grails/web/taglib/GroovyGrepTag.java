@@ -52,10 +52,8 @@ public class GroovyGrepTag extends GroovySyntaxTag{
             throw new GrailsTagException("Tag ["+TAG_NAME+"] missing required attribute ["+ATTRIBUTE_FILTER +"]");
 
         out.print(in);
-        out.print(".grep (");
-        if(filter.startsWith("\"") && filter.endsWith("\"")) {
-            filter = filter.substring(1,filter.length()-1);
-        }
+        out.print(".grep(");
+        filter = calculateExpression(filter);
         out.print(filter);
         out.println(").each {");
     }

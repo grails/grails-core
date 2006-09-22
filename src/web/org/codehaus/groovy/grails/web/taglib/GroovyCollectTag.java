@@ -48,12 +48,12 @@ public class GroovyCollectTag extends GroovySyntaxTag {
             throw new GrailsTagException("Tag ["+TAG_NAME+"] missing required attribute ["+ATTRIBUTE_IN+"]");
         if(StringUtils.isBlank(expr))
             throw new GrailsTagException("Tag ["+TAG_NAME+"] missing required attribute ["+ATTRIBUTE_EXPR+"]");
+        
+        in = in.trim();
+        expr = calculateExpression(expr);        
 
         out.print(in);
         out.print(".collect {");
-        if(expr.startsWith("\"") && expr.endsWith("\"")) {
-            expr = expr.substring(1,expr.length()-1);
-        }
         out.print(expr);
         out.println("}.each {");
     }
