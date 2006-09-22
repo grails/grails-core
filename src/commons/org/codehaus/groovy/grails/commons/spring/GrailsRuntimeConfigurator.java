@@ -34,11 +34,13 @@ import org.codehaus.groovy.grails.web.servlet.view.GrailsViewResolver;
 import org.hibernate.SessionFactory;
 import org.springframework.aop.framework.ProxyFactoryBean;
 import org.springframework.aop.target.HotSwappableTargetSource;
+import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.CustomEditorConfigurer;
 import org.springframework.beans.factory.config.MethodInvokingFactoryBean;
 import org.springframework.beans.factory.config.RuntimeBeanReference;
 import org.springframework.beans.factory.support.ManagedList;
 import org.springframework.beans.factory.support.ManagedMap;
+import org.springframework.beans.factory.xml.XmlBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.core.io.ClassPathResource;
@@ -72,6 +74,7 @@ import java.util.*;
  */
 public class GrailsRuntimeConfigurator {
 
+	private static final String APPLICATION_CONTEXT_AFTER_CONF_SET = "/WEB-INF/applicationContext-afterConfSet.xml";
 	public static final String QUARTZ_SCHEDULER_BEAN = "quartzScheduler";
 	public static final String OPEN_SESSION_IN_VIEW_INTERCEPTOR_BEAN = "openSessionInViewInterceptor";
 	public static final String TRANSACTION_MANAGER_BEAN = "transactionManager";
@@ -337,9 +340,25 @@ public class GrailsRuntimeConfigurator {
 		LOG.info("[SpringConfig] Configuring Grails scheduled jobs");
 		populateJobReferences(springConfig);
 		
-		return springConfig.getApplicationContext();		
+		LOG.info("[SpringConfig] conf the applicationContext-afterConfSet");
+		populateAfterConfSet(springConfig);
+	
+		return springConfig.getApplicationContext();	
 	}
+	private void populateAfterConfSet(RuntimeSpringConfiguration springConfig) {
+	     try {
+	           XmlBeanFactory xmlBf = new XmlBeanFactory(
+	                                                      parent.getResource(GrailsRuntimeConfigurator.APPLICATION_CONTEXT_AFTER_CONF_SET));
+	           String[] beanNames = xmlBf.getBeanDefinitionNames();
+	           for (int k = 0; k < beanNames.length; k++) {
+	              BeanDefinition bd = xmlBf.getBeanDefinition(beanNames[k]);
 
+		          springConfig.addBeanDefinition(beanNames[k], bd);
+		     }
+		} catch (Exception ex) {
+			LOG.warn("[SpringConfig] Unable to perform post initialization config. " + APPLICATION_CONTEXT_AFTER_CONF_SET + " not found.", ex);
+		}
+	}
 	private void populateJobReferences(RuntimeSpringConfiguration springConfig) {
 		GrailsTaskClass[] grailsTaskClasses = application.getGrailsTasksClasses();
 		

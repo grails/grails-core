@@ -19,6 +19,7 @@ import java.util.Collection;
 
 import javax.servlet.ServletContext;
 
+import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.web.context.WebApplicationContext;
 /**
  * A programmable runtime Spring configuration that allows a spring ApplicationContext
@@ -140,4 +141,11 @@ public interface RuntimeSpringConfiguration {
      * @param beanConfiguration The BeanConfiguration instance
      */
     void addBeanConfiguration(String beanName, BeanConfiguration beanConfiguration);
+    /**
+     * Adds a Spring BeanDefinition. Differs from BeanConfiguration which is a factory class
+     * for creating BeanDefinition instances
+     * @param name The name of the bean
+     * @param bd The BeanDefinition instance
+     */
+	public void addBeanDefinition(String name, BeanDefinition bd);
 }

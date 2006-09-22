@@ -320,4 +320,20 @@ public class GrailsRuntimeConfiguratorTests extends TestCase {
         assertEquals("hello",anotherService.invokeMethod("anotherMethod", null));
     }
 
+    public void testAfterConfSet() throws Exception {
+        GroovyClassLoader gcl = new GroovyClassLoader();
+
+        GrailsApplication app = new DefaultGrailsApplication(new Class[0], gcl );
+        MockApplicationContext parent = new MockApplicationContext();
+        parent.registerMockBean(GrailsApplication.APPLICATION_ID, app);
+
+        GrailsRuntimeConfigurator conf = new GrailsRuntimeConfigurator(app,parent);
+        conf.setLoadExternalPersistenceConfig(false);
+        GrailsWebApplicationContext ctx = (GrailsWebApplicationContext)conf.configure(new MockServletContext());
+        assertNotNull(ctx);
+        
+        GrailsMockDependantObject gdo = (GrailsMockDependantObject)ctx.getBean("grailsDependent");
+        assertNotNull(gdo.getSessionFactory());
+    	
+    }
 }

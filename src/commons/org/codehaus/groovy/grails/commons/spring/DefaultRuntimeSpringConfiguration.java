@@ -17,11 +17,14 @@ package org.codehaus.groovy.grails.commons.spring;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.ServletContext;
 
+import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.context.WebApplicationContext;
 /**
@@ -40,6 +43,7 @@ public class DefaultRuntimeSpringConfiguration implements
 
 	private GrailsWebApplicationContext context;
 	private List beanConfigs = new ArrayList();
+	private Map beanDefinitions = new HashMap();
 
 	public DefaultRuntimeSpringConfiguration() {
 		super();
@@ -70,7 +74,12 @@ public class DefaultRuntimeSpringConfiguration implements
 			context.registerBeanDefinition(bc.getName(),
 												bc.getBeanDefinition()	);
 		}
-		
+		for (Iterator i = beanDefinitions.keySet().iterator(); i.hasNext();) {
+			Object key = i.next();
+			BeanDefinition bd = (BeanDefinition)beanDefinitions.get(key) ;
+			context.registerBeanDefinition(key.toString(), bd);
+			
+		}
 		context.refresh();
 		return context;
 	}
@@ -117,5 +126,9 @@ public class DefaultRuntimeSpringConfiguration implements
         beanConfiguration.setName(beanName);
         beanConfigs.add(beanConfiguration);
     }
+
+	public void addBeanDefinition(String name, BeanDefinition bd) {
+		beanDefinitions.put(name,bd);
+	}
 
 }
