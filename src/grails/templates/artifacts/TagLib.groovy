@@ -1,0 +1,3 @@
+class @taglib.name@TagLib {
+
+}
