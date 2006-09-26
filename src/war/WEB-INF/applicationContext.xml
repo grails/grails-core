@@ -2,12 +2,12 @@
 <!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
 
 <beans>
-	<import resource="spring/resources.xml"/>
 	<bean id="grailsApplication" class="org.codehaus.groovy.grails.commons.GrailsApplicationFactoryBean">
 		<description>Grails application factory bean</description>
 		<property name="groovyFiles">
 			<value>**/*.groovy</value>
 		</property>
+		<property name="injectionOperation" ref="injectionOperation" />
 	</bean>
 
     <bean id="grailsResourceHolder" singleton="false" class="org.codehaus.groovy.grails.commons.spring.GrailsResourceHolder">
@@ -15,6 +15,12 @@
               <value>**/*.groovy</value>
         </property>
     </bean>
+    
+	<bean id="domainInjector" class="org.codehaus.groovy.grails.injection.DefaultGrailsDomainClassInjector">	
+	</bean>
+	
+	<bean id="injectionOperation" class="org.codehaus.groovy.grails.injection.GrailsInjectionOperation">	
+	</bean>    
 
    <bean id="characterEncodingFilter"
       class="org.springframework.web.filter.CharacterEncodingFilter">
