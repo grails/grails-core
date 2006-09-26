@@ -35,11 +35,12 @@ import org.springframework.core.io.Resource;
  */
 public class GrailsResourceUtils {
 	
-    public static Pattern DOMAIN_PATH_PATTERN = Pattern.compile(".+/grails-app/domain/(.+)\\.groovy");
+    public static Pattern DOMAIN_PATH_PATTERN = Pattern.compile(".+\\\\grails-app\\\\domain\\\\(.+)\\.groovy");
 	public static Pattern GRAILS_RESOURCE_PATTERN = Pattern.compile(".+\\\\grails-app\\\\\\w+\\\\(.+)\\.groovy");
     static{
         if(File.separator.equals("/")){
-            GrailsResourceUtils.GRAILS_RESOURCE_PATTERN =
+			DOMAIN_PATH_PATTERN = Pattern.compile(".+/grails-app/domain/(.+)\\.groovy");   
+            GRAILS_RESOURCE_PATTERN =    
                 Pattern.compile(".+/grails-app/\\w+/(.+)\\.groovy");
         }
     }    
