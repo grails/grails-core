@@ -60,6 +60,12 @@ public interface GrailsDomainClass extends GrailsClass {
 	public GrailsDomainClassProperty getVersion();
 	
 	/**
+	 * Returns this classes association map
+	 * @return The association map
+	 */
+	public Map getAssociationMap();
+	
+	/**
 	 * Returns the property for the given name
 	 * 
 	 * @param name The property for the name

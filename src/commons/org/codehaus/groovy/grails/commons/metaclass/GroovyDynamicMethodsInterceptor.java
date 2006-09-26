@@ -31,8 +31,10 @@ public class GroovyDynamicMethodsInterceptor extends
 	private ProxyMetaClass pmc;
 	
 	public GroovyDynamicMethodsInterceptor(GroovyObject go) throws IntrospectionException {
+		super(go.getClass(),false);
 		this.pmc = ProxyMetaClass.getInstance(go.getClass());
 		pmc.setInterceptor( this );
-		go.setMetaClass(pmc);				
+		go.setMetaClass(pmc);		
+		
 	}
 }

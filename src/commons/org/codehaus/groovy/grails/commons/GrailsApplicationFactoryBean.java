@@ -15,6 +15,7 @@
  */ 
 package org.codehaus.groovy.grails.commons;
 
+import org.codehaus.groovy.grails.injection.GrailsInjectionOperation;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.core.io.Resource;
@@ -28,8 +29,18 @@ import org.springframework.core.io.Resource;
 public class GrailsApplicationFactoryBean implements FactoryBean, InitializingBean {
 	
 	private Resource[] groovyFiles = null;
+	private GrailsInjectionOperation injectionOperation = null;
 	private GrailsApplication grailsApplication = null;
 	
+	
+	public GrailsInjectionOperation getInjectionOperation() {
+		return injectionOperation;
+	}
+
+	public void setInjectionOperation(GrailsInjectionOperation injectionOperation) {
+		this.injectionOperation = injectionOperation;
+	}
+
 	public GrailsApplicationFactoryBean() {
 		super();		
 	}
@@ -42,7 +53,12 @@ public class GrailsApplicationFactoryBean implements FactoryBean, InitializingBe
 		if (this.groovyFiles == null || groovyFiles.length == 0) {
 			throw new IllegalStateException("Groovy files are not defined!");
 		}
-		this.grailsApplication = new DefaultGrailsApplication(this.groovyFiles);
+		if(injectionOperation != null) {
+			this.grailsApplication = new DefaultGrailsApplication(this.groovyFiles,injectionOperation);
+		}
+		else {
+			this.grailsApplication = new DefaultGrailsApplication(this.groovyFiles);
+		}
 	}
 	
 	public Object getObject() throws Exception {

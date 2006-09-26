@@ -38,6 +38,7 @@ import org.codehaus.groovy.grails.commons.metaclass.DynamicMethods;
 import org.codehaus.groovy.grails.commons.metaclass.GroovyDynamicMethodsInterceptor;
 import org.codehaus.groovy.grails.exceptions.GrailsDomainException;
 import org.codehaus.groovy.grails.exceptions.InvalidPropertyException;
+import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsDomainConfigurationUtil;
 import org.codehaus.groovy.grails.validation.metaclass.ConstraintsEvaluatingDynamicProperty;
 import org.springframework.validation.Validator;
 
@@ -73,10 +74,7 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
 			this.root = false;
 		}
 		this.propertyMap = new HashMap();
-		this.relationshipMap = (Map)getPropertyValue( GrailsDomainClassProperty.RELATES_TO_MANY, Map.class );
-		if(this.relationshipMap == null) {
-			this.relationshipMap = new HashMap();
-		}
+		this.relationshipMap = getAssociationMap();
 		// process the constraints
 		evaluateConstraints();
 		
@@ -102,15 +100,7 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
 			
 			PropertyDescriptor descriptor = propertyDescriptors[i];
 				// ignore certain properties
-				if(!descriptor.getName().equals( GrailsDomainClassProperty.META_CLASS ) &&
-				   !descriptor.getName().equals( GrailsDomainClassProperty.CLASS ) &&
-				   !descriptor.getName().equals( GrailsDomainClassProperty.TRANSIENT) &&
-				   !descriptor.getName().equals( GrailsDomainClassProperty.RELATES_TO_MANY) &&
-				   !descriptor.getName().equals( GrailsDomainClassProperty.EVANESCENT) &&
-				   !descriptor.getName().equals( GrailsDomainClassProperty.OPTIONAL) &&
-				   !descriptor.getName().equals( GrailsDomainClassProperty.CONSTRAINTS )&&
-				   !descriptor.getName().equals( GrailsDomainClassProperty.MAPPED_BY ) &&
-                   !descriptor.getName().equals( GrailsDomainClassProperty.BELONGS_TO ) )  {
+				if(isNotConfigurational(descriptor) )  {
 					
 					
 					GrailsDomainClassProperty property = new DefaultGrailsDomainClassProperty(this, descriptor);
@@ -149,6 +139,29 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
 			}
 		}
 		this.persistantProperties = (GrailsDomainClassProperty[])tempList.toArray( new GrailsDomainClassProperty[tempList.size()]);		
+	}
+
+	public Map getAssociationMap() {
+		this.relationshipMap = (Map)getPropertyValue( GrailsDomainClassProperty.RELATES_TO_MANY, Map.class );
+		if(this.relationshipMap == null) {
+			relationshipMap = (Map)getPropertyValue( GrailsDomainClassProperty.HAS_MANY, Map.class );
+			if(relationshipMap == null)
+				this.relationshipMap = Collections.EMPTY_MAP;
+		}
+		return this.relationshipMap;
+	}
+
+	private boolean isNotConfigurational(PropertyDescriptor descriptor) {
+		return !descriptor.getName().equals( GrailsDomainClassProperty.META_CLASS ) &&
+		   !descriptor.getName().equals( GrailsDomainClassProperty.CLASS ) &&
+		   !descriptor.getName().equals( GrailsDomainClassProperty.TRANSIENT) &&
+		   !descriptor.getName().equals( GrailsDomainClassProperty.RELATES_TO_MANY) &&
+		   !descriptor.getName().equals( GrailsDomainClassProperty.HAS_MANY) &&
+		   !descriptor.getName().equals( GrailsDomainClassProperty.EVANESCENT) &&
+		   !descriptor.getName().equals( GrailsDomainClassProperty.OPTIONAL) &&
+		   !descriptor.getName().equals( GrailsDomainClassProperty.CONSTRAINTS )&&
+		   !descriptor.getName().equals( GrailsDomainClassProperty.MAPPED_BY ) &&
+		   !descriptor.getName().equals( GrailsDomainClassProperty.BELONGS_TO );
 	}
 	
 	/**
@@ -224,7 +237,7 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
 				
 				// check the relationship defined in the referenced type
 				// if it is also a Set/domain class etc.
-				Map relatedClassRelationships = (Map)GrailsClassUtils.getPropertyValue( relatedClassType, GrailsDomainClassProperty.RELATES_TO_MANY, Map.class );
+				Map relatedClassRelationships = GrailsDomainConfigurationUtil.getAssociationMap(relatedClassType);
 				Class relatedClassPropertyType = null;
 				
 				// if the related type has a relationships map it may be a many-to-many
@@ -308,7 +321,7 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
 	private void establishDomainClassRelationship(DefaultGrailsDomainClassProperty property) {
 		Class propType = property.getType();
 		// establish relationship to type
-		Map relatedClassRelationships = (Map)GrailsClassUtils.getPropertyValue( propType, GrailsDomainClassProperty.RELATES_TO_MANY, Map.class );
+		Map relatedClassRelationships = GrailsDomainConfigurationUtil.getAssociationMap(propType);
 		Class relatedClassPropertyType = null;
 		
 		// if there is a relationships map use that to find out 

@@ -54,7 +54,13 @@ public class GrailsInjectionOperation extends CompilationUnit.PrimaryClassNodeOp
 		// should always have an application context
 		if(applicationContext != null && resourceLoader != null) {
 			try {
-				URL url = resourceLoader.loadGroovySource(source.getName());
+				URL url;
+				if(GrailsResourceUtils.isGrailsPath(source.getName())) {
+					url = resourceLoader.loadGroovySource(GrailsResourceUtils.getClassName(source.getName()));
+				}
+				else {
+					url = resourceLoader.loadGroovySource(source.getName());
+				}
 				// if the source is a domain class get the domain class injectors
 				// and perform injection. Injection allows us to add properties,methods
 				// etc. at 'compile' time

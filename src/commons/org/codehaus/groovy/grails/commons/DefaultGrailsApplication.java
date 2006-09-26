@@ -16,6 +16,16 @@
 package org.codehaus.groovy.grails.commons;
 
 import groovy.lang.GroovyClassLoader;
+
+import java.io.IOException;
+import java.lang.reflect.Modifier;
+import java.security.CodeSource;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -25,15 +35,9 @@ import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.Phases;
 import org.codehaus.groovy.grails.commons.spring.GrailsResourceHolder;
 import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException;
-import org.codehaus.groovy.grails.exceptions.MoreThanOneActiveDataSourceException;
 import org.codehaus.groovy.grails.injection.GrailsInjectionOperation;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsDomainConfigurationUtil;
 import org.springframework.core.io.Resource;
-
-import java.io.IOException;
-import java.lang.reflect.Modifier;
-import java.security.CodeSource;
-import java.util.*;
 
 /**
  * Default implementation of the GrailsApplication interface that manages application loading,
@@ -49,7 +53,7 @@ public class DefaultGrailsApplication implements GrailsApplication {
     private GrailsControllerClass[] controllerClasses = null;
     private GrailsPageFlowClass[] pageFlows = null;
     private GrailsDomainClass[] domainClasses = null;
-    private GrailsDataSource[] dataSources = null;
+    //private GrailsDataSource[] dataSources = null;
     private GrailsServiceClass[] services = null;
     private GrailsBootstrapClass[] bootstrapClasses = null;
     private GrailsTagLibClass[] taglibClasses = null;

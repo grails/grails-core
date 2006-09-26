@@ -15,6 +15,8 @@
  */
 package org.codehaus.groovy.grails.commons.metaclass;
 
+import java.beans.IntrospectionException;
+
 /**
  * Implements an the Interceptor interface to add support for using ProxyMetaClass to define 
  * dynamic methods
@@ -24,6 +26,18 @@ package org.codehaus.groovy.grails.commons.metaclass;
  */
 public abstract class AbstractDynamicMethodsInterceptor extends AbstractDynamicMethods
 		implements Interceptor,PropertyAccessInterceptor,ConstructorInterceptor {
+
+	public AbstractDynamicMethodsInterceptor() {
+		super();
+	}
+
+	public AbstractDynamicMethodsInterceptor(Class theClass, boolean inRegistry) throws IntrospectionException {
+		super(theClass, inRegistry);
+	}
+
+	public AbstractDynamicMethodsInterceptor(Class theClass) throws IntrospectionException {
+		super(theClass);
+	}
 
 	/* (non-Javadoc)
 	 * @see org.codehaus.groovy.grails.commons.metaclass.ConstructorInterceptor#afterConstructor(java.lang.Object[], java.lang.Object)

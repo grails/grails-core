@@ -252,4 +252,9 @@ public class GrailsHibernateDomainClass extends AbstractGrailsClass implements E
 	public boolean isRoot() {
 		return getClazz().getSuperclass().equals(Object.class);
 	}
+
+
+	public Map getAssociationMap() {
+		return Collections.EMPTY_MAP;
+	}
 }

@@ -17,6 +17,7 @@ package org.codehaus.groovy.grails.orm.hibernate.cfg;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
 import org.codehaus.groovy.grails.commons.metaclass.DynamicMethods;
@@ -31,6 +32,7 @@ import groovy.lang.GroovyObject;
 
 import java.beans.IntrospectionException;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -140,4 +142,32 @@ public class GrailsDomainConfigurationUtil {
             }
         }
     }
+    
+    /**
+     * Returns the ORM frameworks mapping file name for the specified class name
+     * 
+     * @param className
+     * @return The mapping file name
+     */
+	public static String getMappingFileName(String className) {
+		String fileName = className.replaceAll("\\.", "/");
+		return fileName+=".hbm.xml";
+	}
+	/**
+	 * Returns the association map for the specified domain class
+	 * @param domainClass the domain class
+	 * @return The association map
+	 */
+	public static Map getAssociationMap(Class domainClass) {
+		Map associationMap =  (Map)GrailsClassUtils.getPropertyValue( domainClass, GrailsDomainClassProperty.RELATES_TO_MANY, Map.class );
+		if(associationMap == null) {
+			associationMap = (Map)GrailsClassUtils.getPropertyValue(domainClass, GrailsDomainClassProperty.HAS_MANY, Map.class);
+			if(associationMap == null) {
+				associationMap = Collections.EMPTY_MAP;
+			}
+		}
+		return associationMap;
+	}
+	
+	
 }

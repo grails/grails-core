@@ -33,6 +33,7 @@ public interface GrailsDomainClassProperty {
 	String CLASS = "class";
 	String MAPPED_BY = "mappedBy";
     String BELONGS_TO = "belongsTo";
+	String HAS_MANY = "hasMany";
 
     /**
 	 * Returns the name of the property

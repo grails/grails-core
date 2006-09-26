@@ -15,8 +15,14 @@
  */ 
 package org.codehaus.groovy.grails.commons;
 
+import java.io.File;
+import java.io.IOException;
 import java.net.URL;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException;
+import org.springframework.core.io.Resource;
 /**
  * Utility methods for working with Grails resources and URLs that represent artifacts
  * within a Grails application
@@ -30,6 +36,13 @@ import java.util.regex.Pattern;
 public class GrailsResourceUtils {
 	
     public static Pattern DOMAIN_PATH_PATTERN = Pattern.compile(".+/grails-app/domain/(.+)\\.groovy");
+	public static Pattern GRAILS_RESOURCE_PATTERN = Pattern.compile(".+\\\\grails-app\\\\\\w+\\\\(.+)\\.groovy");
+    static{
+        if(File.separator.equals("/")){
+            GrailsResourceUtils.GRAILS_RESOURCE_PATTERN =
+                Pattern.compile(".+/grails-app/\\w+/(.+)\\.groovy");
+        }
+    }    
 
 	/**
 	 * Checks whether the file referenced by the given url is a domain class
@@ -45,4 +58,45 @@ public class GrailsResourceUtils {
 		return false;
 	}
 
+	/**
+	 * Gets the class name of the specified Grails resource
+	 * 
+	 * @param resource The Spring Resource
+	 * @return The class name or null if the resource is not a Grails class
+	 */
+	public static String getClassName(Resource resource) {
+        try {
+        	return getClassName(resource.getFile().getAbsolutePath());
+        } catch (IOException e) {
+            throw new GrailsConfigurationException("I/O error reading class name from resource ["+resource+"]: " + e.getMessage(),e );
+        }        	
+	}
+
+	/**
+	 * Returns the class name for a Grails resource
+	 * 
+	 * @param path The path to check
+	 * @return The class name or null if it doesn't exist
+	 */
+	public static String getClassName(String path) {
+		Matcher m = GrailsResourceUtils.GRAILS_RESOURCE_PATTERN.matcher(path);
+        if(m.find()) {
+            return m.group(1);
+        }
+        return null;
+	}	
+
+	/**
+	 * Checks whether the specified path is a Grails path
+	 * 
+	 * @param path The path to check
+	 * @return True if it is a Grails path
+	 */
+	public static boolean isGrailsPath(String path) {
+		Matcher m = GrailsResourceUtils.GRAILS_RESOURCE_PATTERN.matcher(path);
+        if(m.find()) {
+            return true;
+        }
+        return false;		
+	}
 }

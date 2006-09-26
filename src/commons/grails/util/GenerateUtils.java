@@ -54,7 +54,7 @@ public class GenerateUtils {
         ApplicationContext parent = new ClassPathXmlApplicationContext("applicationContext.xml");
         GrailsApplication application = (DefaultGrailsApplication)parent.getBean("grailsApplication", DefaultGrailsApplication.class);
 
-        GrailsDomainClass domainClass = getDomainCallFromApplication(application,domainClassName);
+        GrailsDomainClass domainClass = findInApplication(application,domainClassName);
 
         // bootstrap application to try hibernate domain classes
         if(domainClass == null) {
@@ -64,32 +64,43 @@ public class GenerateUtils {
         }
 
         // retry
-        domainClass = getDomainCallFromApplication(application,domainClassName);
+        domainClass = findInApplication(application,domainClassName);
         if(domainClass == null) {
             LOG.debug("Unable to generate ["+type+"] domain class not found for name ["+domainClassName+"]");
-            return;
+            System.exit(0);
         }
 
-        GroovyClassLoader gcl = new GroovyClassLoader(Thread.currentThread().getContextClassLoader());
-
-        GrailsTemplateGenerator generator = (GrailsTemplateGenerator)gcl.parseClass(gcl.getResourceAsStream("org/codehaus/groovy/grails/scaffolding/DefaultGrailsTemplateGenerator.groovy"))
-                                                                            .newInstance();
-
-        if(VIEWS.equals(type) || ALL.equals(type)) {
-            LOG.info("Generating views for domain class ["+domainClass.getName()+"]");
-            generator.generateViews(domainClass,".");
+        try {
+	        GroovyClassLoader gcl = new GroovyClassLoader(Thread.currentThread().getContextClassLoader());
+	
+	        GrailsTemplateGenerator generator = (GrailsTemplateGenerator)gcl.parseClass(gcl.getResourceAsStream("org/codehaus/groovy/grails/scaffolding/DefaultGrailsTemplateGenerator.groovy"))
+	                                                                            .newInstance();
+	
+	        if(VIEWS.equals(type) || ALL.equals(type)) {
+	            LOG.info("Generating views for domain class ["+domainClass.getName()+"]");
+	            generator.generateViews(domainClass,".");
+	        }
+	        if(CONTROLLER.equals(type)|| ALL.equals(type)) {
+	           LOG.info("Generating controller for domain class ["+domainClass.getName()+"]");
+	           generator.generateController(domainClass,".");
+	        }
+	        else {
+	            LOG.info("Grails was unable to generate templates for unsupported type ["+type+"]");
+	        }
         }
-        if(CONTROLLER.equals(type)|| ALL.equals(type)) {
-           LOG.info("Generating controller for domain class ["+domainClass.getName()+"]");
-           generator.generateController(domainClass,".");
+        finally {
+        	System.exit(0);
         }
-        else {
-            LOG.info("Grails was unable to generate templates for unsupported type ["+type+"]");
-        }
-        System.exit(0);
     }
 
-    private static GrailsDomainClass getDomainCallFromApplication(GrailsApplication application, String domainClassName) {
+    /**
+     * Finds the specified domain class from the application
+     * 
+     * @param application The application
+     * @param domainClassName The domain class name
+     * @return A GrailsDomainClass
+     */
+    private static GrailsDomainClass findInApplication(GrailsApplication application, String domainClassName) {
         GrailsDomainClass domainClass = application.getGrailsDomainClass(domainClassName);
         if(domainClass == null) {
             domainClass = application.getGrailsDomainClass(domainClassName.substring(0,1).toUpperCase() + domainClassName.substring(1));

@@ -15,14 +15,9 @@
  */
 package org.codehaus.groovy.grails.metaclass;
 
-import java.util.Iterator;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
-
-import ognl.NoSuchPropertyException;
-import ognl.Ognl;
-import ognl.OgnlException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -30,6 +25,9 @@ import org.codehaus.groovy.grails.commons.metaclass.DynamicConstructor;
 import org.codehaus.groovy.grails.exceptions.GrailsDomainException;
 import org.codehaus.groovy.grails.web.binding.GrailsDataBinder;
 import org.codehaus.groovy.grails.web.metaclass.GrailsParameterMap;
+import org.springframework.beans.MutablePropertyValues;
+import org.springframework.beans.PropertyValues;
+import org.springframework.validation.DataBinder;
 import org.springframework.web.bind.ServletRequestDataBinder;
 /**
  * A dynamic property that uses a Map of OGNL expressions to sets properties on the target object
@@ -46,6 +44,7 @@ public class DataBindingDynamicConstructor implements DynamicConstructor {
 	public boolean isArgumentsMatch(Object[] args) {
 		if(args.length != 1 ) return false;
 		if(args[0] == null) return false;
+		if(HttpServletRequest.class.isAssignableFrom(args[0].getClass())) return true;
 		if(Map.class.isAssignableFrom(args[0].getClass())) return true;
 		return false;
 	}
@@ -77,28 +76,10 @@ public class DataBindingDynamicConstructor implements DynamicConstructor {
 		}
 		else if(map instanceof Map) {
 			
-			Map propertyMap = (Map)map;
-
-			for (Iterator i = propertyMap.keySet().iterator(); i.hasNext();) {
-				String propertyName = (String) i.next();
-				Object propertyValue = propertyMap.get(propertyName);				
-				// if null skip
-				if(propertyValue == null)
-					continue;
-				
-				if(LOG.isDebugEnabled())
-					LOG.debug("Attempting to set property '"+propertyName+"' to value '"+propertyValue+"' on instance '"+instance+"'");
-				
-				try {
-					Ognl.setValue(propertyName,instance,propertyValue);
-				} catch (NoSuchPropertyException nspe) {
-					if(LOG.isDebugEnabled())
-						LOG.debug("Unable to set property '"+propertyName+"' to value '"+propertyValue+"' for object '"+instance+"' property doesn't exist." + nspe.getMessage());					
-				}catch (OgnlException e) {
-					if(LOG.isDebugEnabled())
-						LOG.debug("OGNL error attempt to set '"+propertyName+"' to value '"+propertyValue+"' for object '"+instance+"':" + e.getMessage(),e);
-				} 
-			}			
+			DataBinder dataBinder = new DataBinder(instance);
+			
+			PropertyValues pv = new MutablePropertyValues((Map)map);
+			dataBinder.bind(pv);
 		}
 		return instance;
 	}
