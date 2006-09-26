@@ -21,7 +21,7 @@ class GroovyGrepTagTests extends GroovyTestCase {
 		
 		tag.doStartTag();
 		
-		assert "test.grep(~/regex/).each {\n" == sw.toString()
+		assert sw.toString().startsWith("test.grep(~/regex/).each {")
 		
 	}
 
