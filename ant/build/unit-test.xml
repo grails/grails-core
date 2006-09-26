@@ -13,7 +13,9 @@
         </classpath>
 	    <classpath refid="classpath"/>
     </taskdef>
-    <taskdef name="groovyc" classname="org.codehaus.groovy.ant.Groovyc" />
+    <taskdef name="groovyc" classname="org.codehaus.groovy.ant.Groovyc">
+    	 <classpath refid="classpath"/>
+    </taskdef>
 
 
     <property name="coverage.build" value="cruise/coverage/build/instrumented-classes"/>
