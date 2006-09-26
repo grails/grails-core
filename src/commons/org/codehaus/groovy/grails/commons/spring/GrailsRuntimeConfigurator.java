@@ -44,6 +44,7 @@ import org.springframework.beans.factory.xml.XmlBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.orm.hibernate3.HibernateAccessor;
 import org.springframework.orm.hibernate3.HibernateTransactionManager;
@@ -74,7 +75,7 @@ import java.util.*;
  */
 public class GrailsRuntimeConfigurator {
 
-	private static final String APPLICATION_CONTEXT_AFTER_CONF_SET = "/WEB-INF/applicationContext-afterConfSet.xml";
+	public static final String SPRING_RESOURCES_XML = "/WEB-INF/spring/resources.xml";
 	public static final String QUARTZ_SCHEDULER_BEAN = "quartzScheduler";
 	public static final String OPEN_SESSION_IN_VIEW_INTERCEPTOR_BEAN = "openSessionInViewInterceptor";
 	public static final String TRANSACTION_MANAGER_BEAN = "transactionManager";
@@ -347,16 +348,20 @@ public class GrailsRuntimeConfigurator {
 	}
 	private void populateAfterConfSet(RuntimeSpringConfiguration springConfig) {
 	     try {
-	           XmlBeanFactory xmlBf = new XmlBeanFactory(
-	                                                      parent.getResource(GrailsRuntimeConfigurator.APPLICATION_CONTEXT_AFTER_CONF_SET));
-	           String[] beanNames = xmlBf.getBeanDefinitionNames();
-	           for (int k = 0; k < beanNames.length; k++) {
-	              BeanDefinition bd = xmlBf.getBeanDefinition(beanNames[k]);
-
-		          springConfig.addBeanDefinition(beanNames[k], bd);
-		     }
+	    	 Resource springResources = parent.getResource(GrailsRuntimeConfigurator.SPRING_RESOURCES_XML);
+	    	 if(springResources.exists()) {
+	    		LOG.debug("[SpringConfig] Configuring additional beans from " + GrailsRuntimeConfigurator.SPRING_RESOURCES_XML);
+	    		XmlBeanFactory xmlBf = new XmlBeanFactory(springResources);
+				String[] beanNames = xmlBf.getBeanDefinitionNames();
+				for (int k = 0; k < beanNames.length; k++) {
+					BeanDefinition bd = xmlBf.getBeanDefinition(beanNames[k]);
+					
+					springConfig.addBeanDefinition(beanNames[k], bd);
+				}
+	    		 
+	    	 }
 		} catch (Exception ex) {
-			LOG.warn("[SpringConfig] Unable to perform post initialization config. " + APPLICATION_CONTEXT_AFTER_CONF_SET + " not found.", ex);
+			LOG.warn("[SpringConfig] Unable to perform post initialization config. " + SPRING_RESOURCES_XML + " not found.", ex);
 		}
 	}
 	private void populateJobReferences(RuntimeSpringConfiguration springConfig) {
