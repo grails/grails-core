@@ -54,7 +54,7 @@ public class GrailsResourceUtils {
 	public static boolean isDomainClass(URL url) {
 		if(url == null)return false;
 		
-		if(DOMAIN_PATH_PATTERN.matcher(url.getPath()).find()) return true;
+		if(DOMAIN_PATH_PATTERN.matcher(url.getFile()).find()) return true;
 				
 		return false;
 	}
