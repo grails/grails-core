@@ -111,7 +111,7 @@ public class FindPersistentMethod extends AbstractStaticPersistentMethod {
 			});						
 		}
 		if(clazz.isAssignableFrom( arg.getClass() )) {			
-			return super.getHibernateTemplate().executeFind( new HibernateCallback() {
+			return super.getHibernateTemplate().execute( new HibernateCallback() {
 
 				public Object doInHibernate(Session session) throws HibernateException, SQLException {
 					
