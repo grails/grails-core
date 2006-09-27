@@ -41,6 +41,7 @@ import org.codehaus.groovy.grails.exceptions.InvalidPropertyException;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsDomainConfigurationUtil;
 import org.codehaus.groovy.grails.validation.metaclass.ConstraintsEvaluatingDynamicProperty;
 import org.springframework.validation.Validator;
+import org.springframework.beans.BeanWrapper;
 
 /**
  * @author Graeme Rocher
@@ -48,39 +49,39 @@ import org.springframework.validation.Validator;
  */
 public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements GrailsDomainClass {
 
-	private static final Log LOG  = LogFactory.getLog(DefaultGrailsDomainClass.class);
+    private static final Log LOG  = LogFactory.getLog(DefaultGrailsDomainClass.class);
 
-	
-	private GrailsDomainClassProperty identifier;
-	private GrailsDomainClassProperty version;
-	private GrailsDomainClassProperty[] properties;
-	private GrailsDomainClassProperty[] persistantProperties;
-	private Map propertyMap;
-	private Map relationshipMap;
-	private Map constraints = new HashMap();
-	private Validator validator;
-	private String mappedBy = GrailsDomainClass.GORM;
+
+    private GrailsDomainClassProperty identifier;
+    private GrailsDomainClassProperty version;
+    private GrailsDomainClassProperty[] properties;
+    private GrailsDomainClassProperty[] persistantProperties;
+    private Map propertyMap;
+    private Map relationshipMap;
+    private Map constraints = new HashMap();
+    private Validator validator;
+    private String mappedBy = GrailsDomainClass.GORM;
     private List owners = new ArrayList();
     private boolean root = true;
     private Set subClasses = new HashSet();
-	
-	public DefaultGrailsDomainClass(Class clazz) {
-		super(clazz, "");
-		PropertyDescriptor[] propertyDescriptors = getReference().getPropertyDescriptors();
-		
-		if(!clazz.getSuperclass().equals( GroovyObject.class ) && 
-		   !clazz.getSuperclass().equals(Object.class) &&
-		   !Modifier.isAbstract(clazz.getSuperclass().getModifiers())) {
-			this.root = false;
-		}
-		this.propertyMap = new HashMap();
-		this.relationshipMap = getAssociationMap();
-		// process the constraints
-		evaluateConstraints();
-		
-		// get mapped by setting
-		if(getPropertyValue(GrailsDomainClassProperty.MAPPED_BY, String.class) != null)
-			this.mappedBy = (String)getPropertyValue(GrailsDomainClassProperty.MAPPED_BY, String.class);
+
+    public DefaultGrailsDomainClass(Class clazz) {
+        super(clazz, "");
+        PropertyDescriptor[] propertyDescriptors = getReference().getPropertyDescriptors();
+
+        if(!clazz.getSuperclass().equals( GroovyObject.class ) &&
+           !clazz.getSuperclass().equals(Object.class) &&
+           !Modifier.isAbstract(clazz.getSuperclass().getModifiers())) {
+            this.root = false;
+        }
+        this.propertyMap = new HashMap();
+        this.relationshipMap = getAssociationMap();
+        // process the constraints
+        evaluateConstraints();
+
+        // get mapped by setting
+        if(getPropertyValue(GrailsDomainClassProperty.MAPPED_BY, String.class) != null)
+            this.mappedBy = (String)getPropertyValue(GrailsDomainClassProperty.MAPPED_BY, String.class);
 
         Class belongsTo = (Class)getPropertyValue(GrailsDomainClassProperty.BELONGS_TO, Class.class);
         if(belongsTo == null) {
@@ -95,290 +96,300 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
         }
 
         // First go through the properties of the class and create domain properties
-		// populating into a map
-		for(int i = 0; i < propertyDescriptors.length; i++) {
-			
-			PropertyDescriptor descriptor = propertyDescriptors[i];
-				// ignore certain properties
-				if(isNotConfigurational(descriptor) )  {
-					
-					
-					GrailsDomainClassProperty property = new DefaultGrailsDomainClassProperty(this, descriptor);
-					this.propertyMap.put(property.getName(), property);
-					
-					if(property.isIdentity()) {
-						this.identifier = property;				
-					}
-					else if(property.getName().equals( GrailsDomainClassProperty.VERSION )) {
-						this.version = property;
-					}
-			}
-			
-		}
-		// if no identifier property throw exception
-		if(this.identifier == null) {
-			throw new GrailsDomainException("Identity property not found, but required in domain class ["+getFullName()+"]" );
-		}
-		// if no version property throw exception
-		if(this.version == null) {
-			throw new GrailsDomainException("Version property not found, but required in domain class ["+getFullName()+"]" );
-		}		
-		// set properties from map values
-		this.properties = (GrailsDomainClassProperty[])this.propertyMap.values().toArray( new GrailsDomainClassProperty[this.propertyMap.size()] );
-		
-		// establish relationships
-		establishRelationships();
+        // populating into a map
+        for(int i = 0; i < propertyDescriptors.length; i++) {
 
-		
-		// set persistant properties
-		Collection tempList = new ArrayList();
-		for(Iterator i = this.propertyMap.values().iterator();i.hasNext();) {
-			GrailsDomainClassProperty currentProp = (GrailsDomainClassProperty)i.next();
-			if(currentProp.isPersistent() && !currentProp.isIdentity() && !currentProp.getName().equals( GrailsDomainClassProperty.VERSION )) {
-				tempList.add(currentProp);
-			}
-		}
-		this.persistantProperties = (GrailsDomainClassProperty[])tempList.toArray( new GrailsDomainClassProperty[tempList.size()]);		
-	}
+            PropertyDescriptor descriptor = propertyDescriptors[i];
+                // ignore certain properties
+                if(isNotConfigurational(descriptor) )  {
 
-	public Map getAssociationMap() {
-		this.relationshipMap = (Map)getPropertyValue( GrailsDomainClassProperty.RELATES_TO_MANY, Map.class );
-		if(this.relationshipMap == null) {
-			relationshipMap = (Map)getPropertyValue( GrailsDomainClassProperty.HAS_MANY, Map.class );
-			if(relationshipMap == null)
-				this.relationshipMap = Collections.EMPTY_MAP;
-		}
-		return this.relationshipMap;
-	}
 
-	private boolean isNotConfigurational(PropertyDescriptor descriptor) {
-		return !descriptor.getName().equals( GrailsDomainClassProperty.META_CLASS ) &&
-		   !descriptor.getName().equals( GrailsDomainClassProperty.CLASS ) &&
-		   !descriptor.getName().equals( GrailsDomainClassProperty.TRANSIENT) &&
-		   !descriptor.getName().equals( GrailsDomainClassProperty.RELATES_TO_MANY) &&
-		   !descriptor.getName().equals( GrailsDomainClassProperty.HAS_MANY) &&
-		   !descriptor.getName().equals( GrailsDomainClassProperty.EVANESCENT) &&
-		   !descriptor.getName().equals( GrailsDomainClassProperty.OPTIONAL) &&
-		   !descriptor.getName().equals( GrailsDomainClassProperty.CONSTRAINTS )&&
-		   !descriptor.getName().equals( GrailsDomainClassProperty.MAPPED_BY ) &&
-		   !descriptor.getName().equals( GrailsDomainClassProperty.BELONGS_TO );
-	}
-	
-	/**
-	 * Evaluates the constraints closure to build the list of constraints
-	 *
-	 */
-	private void evaluateConstraints() {
-		Closure constraintsClosure = (Closure)getPropertyValue( GrailsDomainClassProperty.CONSTRAINTS, Closure.class );
-		if(constraintsClosure != null) {
-			GroovyObject instance = (GroovyObject)getReference().getWrappedInstance();
-			try {
-				DynamicMethods interceptor = new GroovyDynamicMethodsInterceptor(instance);
-				interceptor.addDynamicProperty( new ConstraintsEvaluatingDynamicProperty() );
-				
-				this.constraints = (Map)instance.getProperty(GrailsDomainClassProperty.CONSTRAINTS);				
-				
-			} catch (IntrospectionException e) {
-				LOG.error("Introspection error reading domain class ["+getFullName()+"] constraints: " + e.getMessage(), e);
-			}
-		}		
-	}
+                    GrailsDomainClassProperty property = new DefaultGrailsDomainClassProperty(this, descriptor);
+                    this.propertyMap.put(property.getName(), property);
 
-	/**
-	 * Calculates the relationship type based other types referenced
-	 *
-	 */
-	private void establishRelationships() {
-		for(Iterator i = this.propertyMap.values().iterator();i.hasNext();  ) {
-			DefaultGrailsDomainClassProperty currentProp = (DefaultGrailsDomainClassProperty)i.next();
-			Class currentPropType = currentProp.getType();
-			// establish if the property is a one-to-many
-			// if it is a Set and there are relationships defined
-			// and it is defined as persistent
-			if(	Set.class.isAssignableFrom(currentPropType) && 
-				currentProp.isPersistent() ) {
-				
-				establishRelationshipForSet( currentProp);
-			}
-			// otherwise if the type is a domain class establish relationship
-			else if(GrailsClassUtils.isDomainClass(currentPropType) && 
-					currentProp.isPersistent()) {
-				
-				establishDomainClassRelationship( currentProp );
-			}			
-		}
+                    if(property.isIdentity()) {
+                        this.identifier = property;
+                    }
+                    else if(property.getName().equals( GrailsDomainClassProperty.VERSION )) {
+                        this.version = property;
+                    }
+            }
 
-	}
-	
-	/**
-	 * Establishes a relationship for a java.util.Set
-	 *
-	 * @param property
-	 */
-	private void establishRelationshipForSet(DefaultGrailsDomainClassProperty property) {
-		// is it a relationship
-		Class relatedClassType = getRelatedClassType( property.getName() );
-		
-		
-		if(relatedClassType != null) {
-			// set the referenced type in the property
-			property.setReferencedPropertyType(relatedClassType);
+        }
+        // if no identifier property throw exception
+        if(this.identifier == null) {
+            throw new GrailsDomainException("Identity property not found, but required in domain class ["+getFullName()+"]" );
+        }
+        // if no version property throw exception
+        if(this.version == null) {
+            throw new GrailsDomainException("Version property not found, but required in domain class ["+getFullName()+"]" );
+        }
+        // set properties from map values
+        this.properties = (GrailsDomainClassProperty[])this.propertyMap.values().toArray( new GrailsDomainClassProperty[this.propertyMap.size()] );
 
-			// if the related class is the same as this class
-			// its a circular one-to-many
-			if(relatedClassType.getName().equals(getFullName())){
-				property.setOneToMany(true);
-				property.setBidirectional(true);
-			}
-			// if the related type is a domain class
-			// then figure out what kind of relationship it is			
-			else if(GrailsClassUtils.isDomainClass( relatedClassType )) {
-				
-				
-				// check the relationship defined in the referenced type
-				// if it is also a Set/domain class etc.
-				Map relatedClassRelationships = GrailsDomainConfigurationUtil.getAssociationMap(relatedClassType);
-				Class relatedClassPropertyType = null;
-				
-				// if the related type has a relationships map it may be a many-to-many
-				// figure out if there is a many-to-many relationship defined
-				if(	relatedClassRelationships != null && 
-					!relatedClassRelationships.isEmpty() ) {
-					
-					String relatedClassPropertyName = null;
-					// retrieve the relationship property
-					for(Iterator i = relatedClassRelationships.keySet().iterator();i.hasNext();) {
-						String currentKey = (String)i.next();
-						Class currentClass = (Class) relatedClassRelationships.get( currentKey );
-						if(currentClass.getName().equals(  getClazz().getName() )) {
-							relatedClassPropertyName = currentKey;
-							break;
-						}
-					}
-															
-					// if there is one defined get the type
-					if(relatedClassPropertyName != null) {
-						relatedClassPropertyType = GrailsClassUtils.getProperyType( relatedClassType, relatedClassPropertyName);								
-					}
-				}
-				// otherwise figure out if there is a one-to-many relationship by retrieving any properties that are of the related type
-				// if there is more than one property then (for the moment) ignore the relationship
-				if(relatedClassPropertyType == null) {
-					PropertyDescriptor[] descriptors = GrailsClassUtils.getPropertiesOfType(relatedClassType, getClazz());
-					if(descriptors.length == 1) {
-						relatedClassPropertyType = descriptors[0].getPropertyType();
-					}					
-				}	
-				
-				establishRelationshipForSetToType(property,relatedClassPropertyType);
-			}
-			// otherwise set it to not persistent as you can't persist
-			// relationships to non-domain classes
-			else {
-				property.setPersistant(false);
-			}								
-		}
-		else {
-			// no relationship defined for set. 
-			// set not persistent
-			property.setPersistant(false);
-		}
-		
-	}
+        // establish relationships
+        establishRelationships();
 
-	/**
-	 * Establishes whether the relationship is a bi-directional or uni-directional one-to-many
-	 * and applies the appropriate settings to the specified property
-	 * 
-	 * @param property The property to apply settings to
-	 * @param relatedClassPropertyType The related type
-	 */	
-	private void establishRelationshipForSetToType(DefaultGrailsDomainClassProperty property, Class relatedClassPropertyType) {
-		
-		if(relatedClassPropertyType == null) {
-			// uni-directional one-to-many
-			property.setOneToMany(true);			
-			property.setBidirectional(false);
-		}		
-		else if( Set.class.isAssignableFrom(relatedClassPropertyType) ){
-			// many-to-many
-			property.setManyToMany(true);
-			property.setBidirectional(true);
-		}
-		else if( GrailsClassUtils.isDomainClass( relatedClassPropertyType ) ) {
-			// bi-directional one-to-many
-			property.setOneToMany( true );
-			property.setBidirectional( true );
-		}
-	}
 
-	
-	/**
-	 * Establish relationship with related domain class
-	 * 
-	 * @param property
-	 */
-	private void establishDomainClassRelationship(DefaultGrailsDomainClassProperty property) {
-		Class propType = property.getType();
-		// establish relationship to type
-		Map relatedClassRelationships = GrailsDomainConfigurationUtil.getAssociationMap(propType);
-		Class relatedClassPropertyType = null;
-		
-		// if there is a relationships map use that to find out 
-		// whether it is mapped to a Set
-		if(	relatedClassRelationships != null &&	
-			!relatedClassRelationships.isEmpty() ) {
+        // set persistant properties
+        Collection tempList = new ArrayList();
+        for(Iterator i = this.propertyMap.values().iterator();i.hasNext();) {
+            GrailsDomainClassProperty currentProp = (GrailsDomainClassProperty)i.next();
+            if(currentProp.isPersistent() && !currentProp.isIdentity() && !currentProp.getName().equals( GrailsDomainClassProperty.VERSION )) {
+                tempList.add(currentProp);
+            }
+        }
+        this.persistantProperties = (GrailsDomainClassProperty[])tempList.toArray( new GrailsDomainClassProperty[tempList.size()]);
+    }
 
-									
-			String relatedClassPropertyName = null;
-			// retrieve the property name
-			for(Iterator i = relatedClassRelationships.keySet().iterator();i.hasNext();) {
-				String currentKey = (String)i.next();
-				Class currentClass = (Class)relatedClassRelationships.get( currentKey );
-				if(property.getDomainClass().getClazz().getName().equals(  currentClass.getName()  )) {
-					relatedClassPropertyName = currentKey;
-					break;
-				}					
-			}
-			// get the type of the property												
-			relatedClassPropertyType = GrailsClassUtils.getProperyType( propType, relatedClassPropertyName );									
-		}
-		// otherwise retrieve all the properties of the type from the associated class
-		if(relatedClassPropertyType == null) {
-			PropertyDescriptor[] descriptors = GrailsClassUtils.getPropertiesOfType(propType, getClazz());
-			
-			// if there is only one then the association is established
-			if(descriptors.length == 1) {
-				relatedClassPropertyType = descriptors[0].getPropertyType();
-			}
-		}
-		
-		
-		//	establish relationship based on this type
-		establishDomainClassRelationshipToType( property, relatedClassPropertyType );		
-	}
+    public Map getAssociationMap() {
+        this.relationshipMap = (Map)getPropertyValue( GrailsDomainClassProperty.RELATES_TO_MANY, Map.class );
+        if(this.relationshipMap == null) {
+            relationshipMap = (Map)getPropertyValue( GrailsDomainClassProperty.HAS_MANY, Map.class );
+            if(relationshipMap == null)
+                this.relationshipMap = Collections.EMPTY_MAP;
+        }
+        return this.relationshipMap;
+    }
 
-	/**
-	 * @param property
-	 * @param relatedClassPropertyType
-	 */
-	private void establishDomainClassRelationshipToType(DefaultGrailsDomainClassProperty property, Class relatedClassPropertyType) {
-		// uni-directional one-to-one
-		if(relatedClassPropertyType == null) {
-			property.setOneToOne(true);
-			property.setBidirectional(false);
-		}
-		// bi-directional many-to-one
-		else if(Set.class.isAssignableFrom(relatedClassPropertyType)) {
-			property.setManyToOne(true);
-			property.setBidirectional(true);
-		}
-		// bi-directional one-to-one
-		else if( GrailsClassUtils.isDomainClass( relatedClassPropertyType ) ) {
-			property.setOneToOne(true);
-			property.setBidirectional(true);
-		}
-	}
+    private boolean isNotConfigurational(PropertyDescriptor descriptor) {
+        return !descriptor.getName().equals( GrailsDomainClassProperty.META_CLASS ) &&
+           !descriptor.getName().equals( GrailsDomainClassProperty.CLASS ) &&
+           !descriptor.getName().equals( GrailsDomainClassProperty.TRANSIENT) &&
+           !descriptor.getName().equals( GrailsDomainClassProperty.RELATES_TO_MANY) &&
+           !descriptor.getName().equals( GrailsDomainClassProperty.HAS_MANY) &&
+           !descriptor.getName().equals( GrailsDomainClassProperty.EVANESCENT) &&
+           !descriptor.getName().equals( GrailsDomainClassProperty.OPTIONAL) &&
+           !descriptor.getName().equals( GrailsDomainClassProperty.CONSTRAINTS )&&
+           !descriptor.getName().equals( GrailsDomainClassProperty.MAPPED_BY ) &&
+           !descriptor.getName().equals( GrailsDomainClassProperty.BELONGS_TO );
+    }
+
+    /**
+     * Evaluates the constraints closure to build the list of constraints
+     *
+     */
+    private void evaluateConstraints() {
+        Closure constraintsClosure = (Closure)getPropertyValue( GrailsDomainClassProperty.CONSTRAINTS, Closure.class );
+        if(constraintsClosure != null) {
+            BeanWrapper reference = getReference();
+
+            final PropertyDescriptor propDesc = reference.getPropertyDescriptor(GrailsDomainClassProperty.CONSTRAINTS);
+
+            if ((propDesc.getReadMethod().getModifiers() & Modifier.STATIC) == 0)
+            {
+                LOG.warn("Domain class ["+getFullName()+"] has non-static constraints. Constraints should be " +
+                    "declared static, non-static constraints are deprecated and will be removed in the future");
+            }
+
+            GroovyObject instance = (GroovyObject)reference.getWrappedInstance();
+            try {
+                DynamicMethods interceptor = new GroovyDynamicMethodsInterceptor(instance);
+                interceptor.addDynamicProperty( new ConstraintsEvaluatingDynamicProperty() );
+
+                this.constraints = (Map)instance.getProperty(GrailsDomainClassProperty.CONSTRAINTS);
+
+            } catch (IntrospectionException e) {
+                LOG.error("Introspection error reading domain class ["+getFullName()+"] constraints: " + e.getMessage(), e);
+            }
+        }
+    }
+
+    /**
+     * Calculates the relationship type based other types referenced
+     *
+     */
+    private void establishRelationships() {
+        for(Iterator i = this.propertyMap.values().iterator();i.hasNext();  ) {
+            DefaultGrailsDomainClassProperty currentProp = (DefaultGrailsDomainClassProperty)i.next();
+            Class currentPropType = currentProp.getType();
+            // establish if the property is a one-to-many
+            // if it is a Set and there are relationships defined
+            // and it is defined as persistent
+            if(	Set.class.isAssignableFrom(currentPropType) &&
+                currentProp.isPersistent() ) {
+
+                establishRelationshipForSet( currentProp);
+            }
+            // otherwise if the type is a domain class establish relationship
+            else if(GrailsClassUtils.isDomainClass(currentPropType) &&
+                    currentProp.isPersistent()) {
+
+                establishDomainClassRelationship( currentProp );
+            }
+        }
+
+    }
+
+    /**
+     * Establishes a relationship for a java.util.Set
+     *
+     * @param property
+     */
+    private void establishRelationshipForSet(DefaultGrailsDomainClassProperty property) {
+        // is it a relationship
+        Class relatedClassType = getRelatedClassType( property.getName() );
+
+
+        if(relatedClassType != null) {
+            // set the referenced type in the property
+            property.setReferencedPropertyType(relatedClassType);
+
+            // if the related class is the same as this class
+            // its a circular one-to-many
+            if(relatedClassType.getName().equals(getFullName())){
+                property.setOneToMany(true);
+                property.setBidirectional(true);
+            }
+            // if the related type is a domain class
+            // then figure out what kind of relationship it is
+            else if(GrailsClassUtils.isDomainClass( relatedClassType )) {
+
+
+                // check the relationship defined in the referenced type
+                // if it is also a Set/domain class etc.
+                Map relatedClassRelationships = GrailsDomainConfigurationUtil.getAssociationMap(relatedClassType);
+                Class relatedClassPropertyType = null;
+
+                // if the related type has a relationships map it may be a many-to-many
+                // figure out if there is a many-to-many relationship defined
+                if(	relatedClassRelationships != null &&
+                    !relatedClassRelationships.isEmpty() ) {
+
+                    String relatedClassPropertyName = null;
+                    // retrieve the relationship property
+                    for(Iterator i = relatedClassRelationships.keySet().iterator();i.hasNext();) {
+                        String currentKey = (String)i.next();
+                        Class currentClass = (Class) relatedClassRelationships.get( currentKey );
+                        if(currentClass.getName().equals(  getClazz().getName() )) {
+                            relatedClassPropertyName = currentKey;
+                            break;
+                        }
+                    }
+
+                    // if there is one defined get the type
+                    if(relatedClassPropertyName != null) {
+                        relatedClassPropertyType = GrailsClassUtils.getProperyType( relatedClassType, relatedClassPropertyName);
+                    }
+                }
+                // otherwise figure out if there is a one-to-many relationship by retrieving any properties that are of the related type
+                // if there is more than one property then (for the moment) ignore the relationship
+                if(relatedClassPropertyType == null) {
+                    PropertyDescriptor[] descriptors = GrailsClassUtils.getPropertiesOfType(relatedClassType, getClazz());
+                    if(descriptors.length == 1) {
+                        relatedClassPropertyType = descriptors[0].getPropertyType();
+                    }
+                }
+
+                establishRelationshipForSetToType(property,relatedClassPropertyType);
+            }
+            // otherwise set it to not persistent as you can't persist
+            // relationships to non-domain classes
+            else {
+                property.setPersistant(false);
+            }
+        }
+        else {
+            // no relationship defined for set.
+            // set not persistent
+            property.setPersistant(false);
+        }
+
+    }
+
+    /**
+     * Establishes whether the relationship is a bi-directional or uni-directional one-to-many
+     * and applies the appropriate settings to the specified property
+     *
+     * @param property The property to apply settings to
+     * @param relatedClassPropertyType The related type
+     */
+    private void establishRelationshipForSetToType(DefaultGrailsDomainClassProperty property, Class relatedClassPropertyType) {
+
+        if(relatedClassPropertyType == null) {
+            // uni-directional one-to-many
+            property.setOneToMany(true);
+            property.setBidirectional(false);
+        }
+        else if( Set.class.isAssignableFrom(relatedClassPropertyType) ){
+            // many-to-many
+            property.setManyToMany(true);
+            property.setBidirectional(true);
+        }
+        else if( GrailsClassUtils.isDomainClass( relatedClassPropertyType ) ) {
+            // bi-directional one-to-many
+            property.setOneToMany( true );
+            property.setBidirectional( true );
+        }
+    }
+
+
+    /**
+     * Establish relationship with related domain class
+     *
+     * @param property
+     */
+    private void establishDomainClassRelationship(DefaultGrailsDomainClassProperty property) {
+        Class propType = property.getType();
+        // establish relationship to type
+        Map relatedClassRelationships = GrailsDomainConfigurationUtil.getAssociationMap(propType);
+        Class relatedClassPropertyType = null;
+
+        // if there is a relationships map use that to find out
+        // whether it is mapped to a Set
+        if(	relatedClassRelationships != null &&
+            !relatedClassRelationships.isEmpty() ) {
+
+
+            String relatedClassPropertyName = null;
+            // retrieve the property name
+            for(Iterator i = relatedClassRelationships.keySet().iterator();i.hasNext();) {
+                String currentKey = (String)i.next();
+                Class currentClass = (Class)relatedClassRelationships.get( currentKey );
+                if(property.getDomainClass().getClazz().getName().equals(  currentClass.getName()  )) {
+                    relatedClassPropertyName = currentKey;
+                    break;
+                }
+            }
+            // get the type of the property
+            relatedClassPropertyType = GrailsClassUtils.getProperyType( propType, relatedClassPropertyName );
+        }
+        // otherwise retrieve all the properties of the type from the associated class
+        if(relatedClassPropertyType == null) {
+            PropertyDescriptor[] descriptors = GrailsClassUtils.getPropertiesOfType(propType, getClazz());
+
+            // if there is only one then the association is established
+            if(descriptors.length == 1) {
+                relatedClassPropertyType = descriptors[0].getPropertyType();
+            }
+        }
+
+
+        //	establish relationship based on this type
+        establishDomainClassRelationshipToType( property, relatedClassPropertyType );
+    }
+
+    /**
+     * @param property
+     * @param relatedClassPropertyType
+     */
+    private void establishDomainClassRelationshipToType(DefaultGrailsDomainClassProperty property, Class relatedClassPropertyType) {
+        // uni-directional one-to-one
+        if(relatedClassPropertyType == null) {
+            property.setOneToOne(true);
+            property.setBidirectional(false);
+        }
+        // bi-directional many-to-one
+        else if(Set.class.isAssignableFrom(relatedClassPropertyType)) {
+            property.setManyToOne(true);
+            property.setBidirectional(true);
+        }
+        // bi-directional one-to-one
+        else if( GrailsClassUtils.isDomainClass( relatedClassPropertyType ) ) {
+            property.setOneToOne(true);
+            property.setBidirectional(true);
+        }
+    }
 
 
     public boolean isOwningClass(Class domainClass) {
@@ -392,124 +403,124 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
         return this.properties;
     }
 
-	/* (non-Javadoc)
-	 * @see org.codehaus.groovy.grails.domain.GrailsDomainClass#getIdentifier()
-	 */
-	public GrailsDomainClassProperty getIdentifier() {
-		return this.identifier;
-	}
+    /* (non-Javadoc)
+      * @see org.codehaus.groovy.grails.domain.GrailsDomainClass#getIdentifier()
+      */
+    public GrailsDomainClassProperty getIdentifier() {
+        return this.identifier;
+    }
 
-	/* (non-Javadoc)
-	 * @see org.codehaus.groovy.grails.domain.GrailsDomainClass#getVersion()
-	 */
-	public GrailsDomainClassProperty getVersion() {
-		return this.version;
-	}
-	/* (non-Javadoc)
-	 * @see org.codehaus.groovy.grails.domain.GrailsDomainClass#getPersistantProperties()
-	 */
-	public GrailsDomainClassProperty[] getPersistantProperties() {
-		return this.persistantProperties;
-	}
-	/* (non-Javadoc)
-	 * @see org.codehaus.groovy.grails.domain.GrailsDomainClass#getPropertyByName(java.lang.String)
-	 */
-	public GrailsDomainClassProperty getPropertyByName(String name) {
-		if(this.propertyMap.containsKey(name)) {
-			return (GrailsDomainClassProperty)this.propertyMap.get(name);
-		}
-		else {
-			throw new InvalidPropertyException("No property found for name ["+name+"]");
-		}
-	}
-	/* (non-Javadoc)
-	 * @see org.codehaus.groovy.grails.domain.GrailsDomainClass#getFieldName(java.lang.String)
-	 */
-	public String getFieldName(String propertyName) {
-		return getPropertyByName(propertyName).getFieldName();
-	}
-	
-	/* (non-Javadoc)
-	 * @see org.codehaus.groovy.grails.commons.AbstractGrailsClass#getName()
-	 */
-	public String getName() {
-		return ClassUtils.getShortClassName(super.getName());
-	}
-	/* (non-Javadoc)
-	 * @see org.codehaus.groovy.grails.domain.GrailsDomainClass#getTableName()
-	 */
-	public String getTableName() {
-		return ClassUtils.getShortClassName(getName()).toUpperCase();
-	}
-	/* (non-Javadoc)
-	 * @see org.codehaus.groovy.grails.domain.GrailsDomainClass#isOneToMany(java.lang.String)
-	 */
-	public boolean isOneToMany(String propertyName) {
-		return getPropertyByName(propertyName).isOneToMany();
-	}
-	/* (non-Javadoc)
-	 * @see org.codehaus.groovy.grails.domain.GrailsDomainClass#isManyToOne(java.lang.String)
-	 */
-	public boolean isManyToOne(String propertyName) {
-		return getPropertyByName(propertyName).isManyToOne();
-	}
-	
-	protected Object getPropertyValue(String name, Class type) {
-		return super.getPropertyValue(name,type);
-	}
-	/* (non-Javadoc)
-	 * @see org.codehaus.groovy.grails.commons.GrailsDomainClass#getRelationshipType(java.lang.String)
-	 */
-	public Class getRelatedClassType(String propertyName) {		
-		return (Class)this.relationshipMap.get(propertyName);
-	}
+    /* (non-Javadoc)
+      * @see org.codehaus.groovy.grails.domain.GrailsDomainClass#getVersion()
+      */
+    public GrailsDomainClassProperty getVersion() {
+        return this.version;
+    }
+    /* (non-Javadoc)
+      * @see org.codehaus.groovy.grails.domain.GrailsDomainClass#getPersistantProperties()
+      */
+    public GrailsDomainClassProperty[] getPersistantProperties() {
+        return this.persistantProperties;
+    }
+    /* (non-Javadoc)
+      * @see org.codehaus.groovy.grails.domain.GrailsDomainClass#getPropertyByName(java.lang.String)
+      */
+    public GrailsDomainClassProperty getPropertyByName(String name) {
+        if(this.propertyMap.containsKey(name)) {
+            return (GrailsDomainClassProperty)this.propertyMap.get(name);
+        }
+        else {
+            throw new InvalidPropertyException("No property found for name ["+name+"]");
+        }
+    }
+    /* (non-Javadoc)
+      * @see org.codehaus.groovy.grails.domain.GrailsDomainClass#getFieldName(java.lang.String)
+      */
+    public String getFieldName(String propertyName) {
+        return getPropertyByName(propertyName).getFieldName();
+    }
 
-	/* (non-Javadoc)
-	 * @see org.codehaus.groovy.grails.commons.GrailsDomainClass#getPropertyName()
-	 */
-	public String getPropertyName() {
+    /* (non-Javadoc)
+      * @see org.codehaus.groovy.grails.commons.AbstractGrailsClass#getName()
+      */
+    public String getName() {
+        return ClassUtils.getShortClassName(super.getName());
+    }
+    /* (non-Javadoc)
+      * @see org.codehaus.groovy.grails.domain.GrailsDomainClass#getTableName()
+      */
+    public String getTableName() {
+        return ClassUtils.getShortClassName(getName()).toUpperCase();
+    }
+    /* (non-Javadoc)
+      * @see org.codehaus.groovy.grails.domain.GrailsDomainClass#isOneToMany(java.lang.String)
+      */
+    public boolean isOneToMany(String propertyName) {
+        return getPropertyByName(propertyName).isOneToMany();
+    }
+    /* (non-Javadoc)
+      * @see org.codehaus.groovy.grails.domain.GrailsDomainClass#isManyToOne(java.lang.String)
+      */
+    public boolean isManyToOne(String propertyName) {
+        return getPropertyByName(propertyName).isManyToOne();
+    }
+
+    protected Object getPropertyValue(String name, Class type) {
+        return super.getPropertyValue(name,type);
+    }
+    /* (non-Javadoc)
+      * @see org.codehaus.groovy.grails.commons.GrailsDomainClass#getRelationshipType(java.lang.String)
+      */
+    public Class getRelatedClassType(String propertyName) {
+        return (Class)this.relationshipMap.get(propertyName);
+    }
+
+    /* (non-Javadoc)
+      * @see org.codehaus.groovy.grails.commons.GrailsDomainClass#getPropertyName()
+      */
+    public String getPropertyName() {
         return GrailsClassUtils.getPropertyNameRepresentation(getClazz());
-	}
+    }
 
-	/* (non-Javadoc)
-	 * @see org.codehaus.groovy.grails.commons.GrailsDomainClass#isBidirectional()
-	 */
-	public boolean isBidirectional(String propertyName) {
-		return getPropertyByName(propertyName).isBidirectional();
-	}
+    /* (non-Javadoc)
+      * @see org.codehaus.groovy.grails.commons.GrailsDomainClass#isBidirectional()
+      */
+    public boolean isBidirectional(String propertyName) {
+        return getPropertyByName(propertyName).isBidirectional();
+    }
 
-	/* (non-Javadoc)
-	 * @see org.codehaus.groovy.grails.commons.GrailsDomainClass#getConstraints()
-	 */
-	public Map getConstrainedProperties() {
-		return Collections.unmodifiableMap(this.constraints);
-	}
-	/* (non-Javadoc)
-	 * @see org.codehaus.groovy.grails.commons.GrailsDomainClass#getValidator()
-	 */
-	public Validator getValidator() {
-		return this.validator;
-	}
+    /* (non-Javadoc)
+      * @see org.codehaus.groovy.grails.commons.GrailsDomainClass#getConstraints()
+      */
+    public Map getConstrainedProperties() {
+        return Collections.unmodifiableMap(this.constraints);
+    }
+    /* (non-Javadoc)
+      * @see org.codehaus.groovy.grails.commons.GrailsDomainClass#getValidator()
+      */
+    public Validator getValidator() {
+        return this.validator;
+    }
 
-	/* (non-Javadoc)
-	 * @see org.codehaus.groovy.grails.commons.GrailsDomainClass#setValidator(Validator validator)
-	 */
-	public void setValidator(Validator validator) {
-		this.validator = validator;
-	}
+    /* (non-Javadoc)
+      * @see org.codehaus.groovy.grails.commons.GrailsDomainClass#setValidator(Validator validator)
+      */
+    public void setValidator(Validator validator) {
+        this.validator = validator;
+    }
 
-	/* (non-Javadoc)
-	 * @see org.codehaus.groovy.grails.commons.GrailsDomainClass#getMappedBy()
-	 */	
-	public String getMappedBy() {
-		return this.mappedBy;
-	}
+    /* (non-Javadoc)
+      * @see org.codehaus.groovy.grails.commons.GrailsDomainClass#getMappedBy()
+      */
+    public String getMappedBy() {
+        return this.mappedBy;
+    }
 
-	public boolean isRoot() {
-		return this.root;
-	}
+    public boolean isRoot() {
+        return this.root;
+    }
 
-	public Set getSubClasses() {
-		return this.subClasses;
-	}	
+    public Set getSubClasses() {
+        return this.subClasses;
+    }
 }

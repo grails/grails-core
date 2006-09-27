@@ -10,7 +10,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.codehaus.groovy.control.CompilationFailedException;
-import org.codehaus.groovy.grails.MockApplicationContext;
+import org.codehaus.groovy.grails.support.MockApplicationContext;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsControllerClass;
 import org.codehaus.groovy.grails.commons.GrailsTagLibClass;

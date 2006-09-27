@@ -3,7 +3,7 @@ package org.codehaus.groovy.grails.commons.spring;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyObject;
 import junit.framework.TestCase;
-import org.codehaus.groovy.grails.MockApplicationContext;
+import org.codehaus.groovy.grails.support.MockApplicationContext;
 import org.codehaus.groovy.grails.commons.*;
 import org.codehaus.groovy.grails.orm.hibernate.validation.GrailsDomainClassValidator;
 import org.codehaus.groovy.grails.support.ClassEditor;

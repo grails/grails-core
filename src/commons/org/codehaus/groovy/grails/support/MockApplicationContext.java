@@ -1,4 +1,4 @@
-package org.codehaus.groovy.grails;
+package org.codehaus.groovy.grails.support;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -76,14 +76,14 @@ public class MockApplicationContext implements ApplicationContext {
 	}
 
 	public Object getBean(String name) throws BeansException {
-		if(!beans.containsKey(name))throw new NoSuchBeanDefinitionException("No bean found for name " + name);
+		if(!beans.containsKey(name))throw new NoSuchBeanDefinitionException(name);
 		return beans.get(name);
 	}
 
 	public Object getBean(String name, Class requiredType)
 			throws BeansException {
-		if(!beans.containsKey(name))throw new NoSuchBeanDefinitionException("No bean found for name " + name);
-		if(beans.get(name).getClass() != requiredType)throw new NoSuchBeanDefinitionException("No bean found for name " + name);
+		if(!beans.containsKey(name))throw new NoSuchBeanDefinitionException( name);
+		if(beans.get(name).getClass() != requiredType)throw new NoSuchBeanDefinitionException(name);
 		
 		return beans.get(name);
 	}
@@ -98,7 +98,7 @@ public class MockApplicationContext implements ApplicationContext {
 	}
 
 	public Class getType(String name) throws NoSuchBeanDefinitionException {
-		if(!beans.containsKey(name))throw new NoSuchBeanDefinitionException("No bean found for name " + name);
+		if(!beans.containsKey(name))throw new NoSuchBeanDefinitionException(name);
 		
 		return beans.get(name).getClass();
 	}
