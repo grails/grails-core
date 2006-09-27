@@ -308,7 +308,7 @@ public class ConstrainedProperty   {
         }
 
         protected void processValidate(Object target, Object propertyValue, Errors errors) {
-            if(!this.constraintParameter.equals( propertyValue )) {
+            if(this.constraintParameter.equals( propertyValue )) {
                 Object[] args = new Object[] { constraintPropertyName, constraintOwningClass, propertyValue, constraintParameter  };
                 super.rejectValue( errors, NOT_EQUAL_CONSTRAINT,args, getDefaultMessage(DEFAULT_NOT_EQUAL_MESSAGE_CODE, args));
             }
