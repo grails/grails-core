@@ -15,6 +15,7 @@
  */ 
 package org.codehaus.groovy.grails.orm.hibernate.metaclass;
 
+import java.util.Iterator;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -23,6 +24,7 @@ import ognl.Ognl;
 
 import org.codehaus.groovy.grails.commons.metaclass.AbstractStaticMethodInvocation;
 import org.hibernate.Criteria;
+import org.hibernate.FetchMode;
 import org.hibernate.SessionFactory;
 import org.hibernate.criterion.Order;
 import org.springframework.orm.hibernate3.HibernateTemplate;
@@ -48,6 +50,7 @@ public abstract class AbstractStaticPersistentMethod extends
 	protected static final String ARGUMENT_SORT = "sort";
 	protected static final String ORDER_DESC = "desc";
 	protected static final String ORDER_ASC = "asc";
+	protected static final String ARGUMENT_FETCH = "fetch";
 		
 	public AbstractStaticPersistentMethod(SessionFactory sessionFactory, ClassLoader classLoader, Pattern pattern) {
 		super();
@@ -82,6 +85,14 @@ public abstract class AbstractStaticPersistentMethod extends
 			offsetParam = (Integer)converter.convertValue(context,argMap.get(ARGUMENT_OFFSET),Integer.class);
 		}
 		String orderParam = (String)argMap.get(ARGUMENT_ORDER);
+		Object fetchObj = argMap.get(ARGUMENT_FETCH);
+		if(fetchObj instanceof Map) {
+			Map fetch = (Map)fetchObj;
+			for (Iterator i = fetch.keySet().iterator(); i.hasNext();) {
+				String associationName = (String) i.next();
+				c.setFetchMode(associationName, getFetchMode(fetch.get(i)));
+			}
+		}
 		
 		final String sort = (String)argMap.get(ARGUMENT_SORT);
 		final String order = ORDER_DESC.equalsIgnoreCase(orderParam) ? ORDER_DESC : ORDER_ASC;
@@ -99,5 +110,23 @@ public abstract class AbstractStaticPersistentMethod extends
 				c.addOrder( Order.asc(sort) );
 			}
 		}		
+	}
+
+	/**
+	 * Will retrieve the fetch mode for the specified instance other wise return the 
+	 * default FetchMode
+	 * 
+	 * @param object The object, converted to a string
+	 * @return The FetchMode
+	 */
+	protected FetchMode getFetchMode(Object object) {
+		String name = object != null ? object.toString() : "default";
+		if(name.equals(FetchMode.JOIN.toString()) || name.equals("eager")) {
+			return FetchMode.JOIN;
+		}
+		else if(name.equals(FetchMode.SELECT.toString()) || name.equals("lazy")) {
+			return FetchMode.SELECT;
+		}
+		return FetchMode.DEFAULT;
 	}	
 }
