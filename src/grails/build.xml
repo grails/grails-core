@@ -84,7 +84,7 @@ Targets:
         <copy todir="${path}web-app">
             <fileset dir="${grails.home}/src/war">
 				 <include name="**/**"/>
-                <exclude name="WEB-INF"/>
+                <exclude name="WEB-INF/**"/>
             </fileset>
         </copy>
 		
@@ -99,6 +99,7 @@ Targets:
         <copy file="${grails.home}/src/war/WEB-INF/web${servlet.version}.template.xml" tofile="${path}web-app/WEB-INF/web.template.xml"/>
         <copy file="${grails.home}/src/war/WEB-INF/sitemesh.xml" tofile="${path}web-app/WEB-INF/sitemesh.xml"/>
 
+        <antcall target="init:updatejstl"/>
         <copy todir="${path}web-app/WEB-INF/tld">
             <fileset dir="${grails.home}/src/war/WEB-INF/tld/${servlet.version}"/>
             <fileset dir="${grails.home}/src/war/WEB-INF/tld" includes="spring.tld"/>
@@ -110,6 +111,19 @@ Targets:
             </fileset>
         </copy>
         <touch file="${path}grails-app/i18n/messages.properties"></touch>
+    </target>
+
+    <target name="init:checkjstl">
+        <condition property="is.servlet.2.3">
+              <equals arg1="${servlet.version}" arg2="2.3"/>
+        </condition>
+    </target>
+	
+    <target name="init:copyjstl" depends="init:checkjstl" unless="is.servlet.2.5">
+    </target>
+
+    <target name="init:updatejstl" depends="init:checkjstl" unless="is.servlet.2.3">
+    	<replace file="${path}web-app/index.jsp" token="http://java.sun.com/jstl/core" value="http://java.sun.com/jsp/jstl/core"/>
     </target>
 
     <target name="input-domain-class">
