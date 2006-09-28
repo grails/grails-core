@@ -16,6 +16,7 @@ package org.codehaus.groovy.grails.web.taglib;
 
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.grails.web.pages.GroovyPage;
+import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
 
 import java.util.Map;
 import java.util.HashMap;
@@ -30,7 +31,10 @@ import java.io.PrintWriter;
  * @since 11-Jan-2006
  */
 public abstract class GroovySyntaxTag implements GrailsTag {
-    protected Map tagContext;
+    protected static final String ATTRIBUTE_IN = "in";
+	protected static final String ATTRIBUTE_VAR = "var";
+	protected static final String ATTRIBUTES_STATUS = "status";
+	protected Map tagContext;
     protected PrintWriter out;
     protected Map attributes = new HashMap();
 
@@ -90,5 +94,30 @@ public abstract class GroovySyntaxTag implements GrailsTag {
         }
         expr = expr.trim();
 		return expr;
+	}
+
+	/**
+	 * @param in
+	 */
+	protected void doEachMethod(String in) {
+		String var = (String) attributes.get(ATTRIBUTE_VAR);
+	    String status = (String)attributes.get(ATTRIBUTES_STATUS);
+	
+	
+	    String methodName = StringUtils.isBlank(status) ? "each" : "eachWithIndex";
+	    var = StringUtils.isBlank(var) ? "it" : var;
+	    
+	    if(var.equals(status))
+	    	throw new GrailsTagException("Attribute ["+ATTRIBUTE_VAR+"] cannot have the same value as attribute ["+ATTRIBUTES_STATUS+"]");
+	    out.print(in);  // object
+	    out.print('.'); // dot de-reference
+	    out.print(methodName); // method name                      
+		out.print(" { "); // start closure
+		out.print(var); // var name, normally it
+		if(!StringUtils.isBlank(status)) { // if eachWithIndex add status
+			out.print(",");
+			out.print(status);
+		}
+		out.println(" ->"); // start closure body
 	}
 }

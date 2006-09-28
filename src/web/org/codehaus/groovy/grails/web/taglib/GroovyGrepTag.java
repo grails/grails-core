@@ -32,7 +32,6 @@ import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
  */
 public class GroovyGrepTag extends GroovySyntaxTag{
    public static final String TAG_NAME = "grep";
-    private static final String ATTRIBUTE_IN = "in";
     private static final String ATTRIBUTE_FILTER = "filter";
 
     public boolean isBufferWhiteSpace() {
@@ -55,7 +54,8 @@ public class GroovyGrepTag extends GroovySyntaxTag{
         out.print(".grep(");
         filter = calculateExpression(filter);
         out.print(filter);
-        out.println(").each {");
+        out.print(")");
+        doEachMethod("");
     }
 
     public void doEndTag() {

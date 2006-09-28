@@ -26,8 +26,6 @@ import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
 public class GroovySetTag extends GroovySyntaxTag {
     public static final String TAG_NAME = "set";
     private static final String ATTRIBUTE_VALUE = "value";
-    private static final String ATTRIBUTE_VAR = "var";
-
     public void doStartTag() {
         String expr = (String) attributes.get(ATTRIBUTE_VALUE);
         String var = (String) attributes.get(ATTRIBUTE_VAR);

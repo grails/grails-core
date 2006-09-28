@@ -24,5 +24,18 @@ class GroovyGrepTagTests extends GroovyTestCase {
 		assert sw.toString().startsWith("test.grep(~/regex/).each {")
 		
 	}
+		
+	void testWithStatus() {
+		def sw = new StringWriter()
+		
+		def tag = new GroovyGrepTag()
+		tag.init(out: new PrintWriter(sw))
+		
+		tag.setAttributes('"in"': 'test', '"filter"':'\${~/regex/}','"status"':"i")
+		
+		tag.doStartTag();
+		
+		assert sw.toString() == "test.grep(~/regex/).eachWithIndex { it,i ->"+System.getProperty("line.separator")		
+	}
 
 }

@@ -30,7 +30,6 @@ import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
  */
 public class GroovyCollectTag extends GroovySyntaxTag {
    public static final String TAG_NAME = "collect";
-    private static final String ATTRIBUTE_IN = "in";
     private static final String ATTRIBUTE_EXPR = "expr";
 
     public boolean isBufferWhiteSpace() {
@@ -55,7 +54,8 @@ public class GroovyCollectTag extends GroovySyntaxTag {
         out.print(in);
         out.print(".collect {");
         out.print(expr);
-        out.println("}.each {");
+        out.print("}");
+        doEachMethod("");
     }
 
     public void doEndTag() {

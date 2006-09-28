@@ -30,7 +30,6 @@ import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
  */
 public class GroovyFindAllTag extends GroovySyntaxTag {
     public static final String TAG_NAME = "findAll";
-    private static final String ATTRIBUTE_IN = "in";
     private static final String ATTRIBUTE_EXPR = "expr";
 
     public boolean isBufferWhiteSpace() {
@@ -53,7 +52,8 @@ public class GroovyFindAllTag extends GroovySyntaxTag {
         out.print(".findAll {");
         expr = calculateExpression(expr);
         out.print(expr);
-        out.println("}.each {");
+        out.print("}");
+        doEachMethod("");
     }
 
     public void doEndTag() {

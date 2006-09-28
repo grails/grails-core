@@ -23,29 +23,16 @@ import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
  */
 public class GroovyEachTag extends GroovySyntaxTag {
     public static final String TAG_NAME = "each";
-    private static final String ATTRIBUTE_IN = "in";
-    private static final String ATTRIBUTE_VAR = "var";
-
+    
     public void doStartTag() {
         String in = (String) attributes.get(ATTRIBUTE_IN);
-        String var = (String) attributes.get(ATTRIBUTE_VAR);
-
         if(StringUtils.isBlank(in))
             throw new GrailsTagException("Tag ["+TAG_NAME+"] missing required attribute ["+ATTRIBUTE_IN+"]");
-
-        out.print(in);
-        if(StringUtils.isBlank(var)) {
-            out.println(".each {");
-        }
-        else {
-            out.print(".each { ");
-            out.print(var.substring(1,var.length() -1));
-            out.println(" ->");
-        }
-
+        
+        doEachMethod(in);
     }
 
-    public void doEndTag() {
+	public void doEndTag() {
         out.println("}");
     }
 
