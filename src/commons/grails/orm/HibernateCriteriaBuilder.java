@@ -16,27 +16,37 @@
 package grails.orm;
 
 import grails.util.ExtendProxy;
-import groovy.lang.MissingMethodException;
-import groovy.lang.MissingPropertyException;
 import groovy.lang.Closure;
 import groovy.lang.GString;
+import groovy.lang.MissingMethodException;
+import groovy.lang.MissingPropertyException;
 import groovy.util.BuilderSupport;
 import groovy.util.Proxy;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 import org.hibernate.Criteria;
 import org.hibernate.FetchMode;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.criterion.CriteriaSpecification;
+import org.hibernate.criterion.Criterion;
+import org.hibernate.criterion.Junction;
+import org.hibernate.criterion.Order;
+import org.hibernate.criterion.ProjectionList;
+import org.hibernate.criterion.Projections;
+import org.hibernate.criterion.Restrictions;
 import org.hibernate.transform.ResultTransformer;
-import org.hibernate.transform.AliasToEntityMapResultTransformer;
-import org.hibernate.criterion.*;
-import org.springframework.orm.hibernate3.SessionHolder;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
-import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeanWrapper;
+import org.springframework.beans.BeanWrapperImpl;
+import org.springframework.orm.hibernate3.SessionHolder;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 /**
  * <p>Wraps the Hibernate Criteria API in a builder. The builder can be retrieved through the "createCriteria()" dynamic static 
@@ -148,6 +158,19 @@ public class HibernateCriteriaBuilder extends BuilderSupport {
         this.uniqueResult = uniqueResult;
     }
 
+    /**
+     * A projection that selects a property name
+     * @param propertyName The name of the property
+     */
+    public void property(String propertyName) {
+        if(this.projectionList == null) {
+            throwRuntimeException( new IllegalArgumentException("call to [property] must be within a [projections] node"));
+        }
+        else {
+            this.projectionList.add(Projections.property(propertyName));
+        }    	
+    }
+    
     /**
      * A projection that selects a distince property name
      * @param propertyName The property name
