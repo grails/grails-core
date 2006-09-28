@@ -1,8 +1,8 @@
 package org.codehaus.groovy.grails.web.servlet.filter;
 class GrailsResourceCopier implements ResourceCopier {
 
-    @Property String basedir = "."
-    @Property String destdir = "./tmp/war"
+    String basedir = "."
+    String destdir = "./tmp/war"
 
 
 	public void cleanControllers() {
