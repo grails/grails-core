@@ -24,8 +24,14 @@ import junit.textui.TestRunner;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator;
 import org.codehaus.groovy.grails.support.GrailsTestSuite;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.orm.hibernate3.SessionFactoryUtils;
+import org.springframework.orm.hibernate3.SessionHolder;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 /**
  * 
@@ -54,7 +60,16 @@ public class RunTests {
 					log.debug("[" + clazz.getName() + "] is not a test case.");
 				}
 			}
-			TestRunner.run(s);			
+			SessionFactory sessionFactory = (SessionFactory)appCtx.getBean(GrailsRuntimeConfigurator.SESSION_FACTORY_BEAN);
+			try {
+				Session session = SessionFactoryUtils.getSession(sessionFactory, true);
+		        TransactionSynchronizationManager.bindResource(sessionFactory, new SessionHolder(session)); 				
+				TestRunner.run(s);
+			}
+			finally {
+		        SessionHolder sessionHolder = (SessionHolder) TransactionSynchronizationManager.unbindResource(sessionFactory);
+		        SessionFactoryUtils.releaseSession(sessionHolder.getSession(), sessionFactory);				
+			}
 		}
 		finally {
 			System.exit(0);	
