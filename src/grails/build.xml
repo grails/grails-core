@@ -231,7 +231,8 @@ Targets:
 			<fileset dir="${grails.home}/src/grails/templates/ide-support/eclipse" includes="*.*" excludes=".launch" />
 		</copy>
     	<copy file="${grails.home}/src/grails/templates/ide-support/eclipse/.launch" tofile="${project.name}/${project.name}.launch" />
-    	
+    	                                                       
+		<replace dir="${project.name}" includes="*.*" token="@grails.version@" value="${grails.version}"/>
 		<replace dir="${project.name}" includes="*.*" token="@grails.project.name@" value="${project.name}"/>
 	</target>
 
