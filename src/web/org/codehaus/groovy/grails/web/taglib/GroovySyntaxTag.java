@@ -106,7 +106,9 @@ public abstract class GroovySyntaxTag implements GrailsTag {
 	
 	    String methodName = StringUtils.isBlank(status) ? "each" : "eachWithIndex";
 	    var = StringUtils.isBlank(var) ? "it" : var;
-	    
+	    if(var.startsWith("\"") && var.endsWith("\"") && var.length() > 1) {
+	    	var = var.substring(1,var.length()-1);
+	    }
 	    if(var.equals(status))
 	    	throw new GrailsTagException("Attribute ["+ATTRIBUTE_VAR+"] cannot have the same value as attribute ["+ATTRIBUTES_STATUS+"]");
 	    out.print(in);  // object
