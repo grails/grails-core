@@ -5,7 +5,7 @@
 		<jar destfile="${grails.dist}/${grails.dist.jar}" basedir="${grails.build}"/>
 	</target>
 
-    <target name="package" depends="resolve,clean,test,jar,javadoc" description="Create the release archives for Grails.">
+    <target name="package" depends="clean,test,jar,javadoc" description="Create the release archives for Grails.">
     	<delete>
 		  <fileset dir="${grails.dist}">
 		  		<include name="*.zip"/>
