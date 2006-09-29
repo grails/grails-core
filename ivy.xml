@@ -1,0 +1,35 @@
+<ivy-module version="1.0">
+    <info organisation="codehaus" module="grails"/>
+    <dependencies>
+        <dependency org="apache" name="commons-lang" rev="2.0"/>
+        <!--<dependency org="apache" name="ant" rev="1.6.2"/>-->
+        <dependency org="apache" name="commons-cli" rev="1.0"/>
+        <dependency org="apache" name="commons-collections" rev="3.0"/>
+        <dependency org="apache" name="commons-dbcp" rev="1.2.1"/>
+        <dependency org="apache" name="commons-el" rev="1.0"/> 
+        <dependency org="apache" name="commons-fileupload" rev="1.1.1"/>
+        <dependency org="apache" name="commons-cli" rev="1.0"/>
+        <dependency org="apache" name="commons-logging" rev="1.1"/>
+        <dependency org="apache" name="commons-pool" rev="1.2"/>
+        <dependency org="apache" name="commons-validator" rev="1.3.0"/>
+        <dependency org="dom4j" name="dom4j" rev="1.6.1"/>
+        <dependency org="junit" name="junit" rev="3.8"/>		
+        <dependency org="log4j" name="log4j" rev="1.2.8"/>	  
+        <!--<dependency org="ognl" name="ognl" rev="2.6.9"/>
+        <dependency org="org.mortbay.jetty" name="org.mortbay.jetty" rev="5.1.5"/> -->
+		<dependency org="opensymphony" name="quartz" rev="1.5.2"/>			
+		<dependency org="opensymphony" name="sitemesh" rev="2.2.1"/>					
+		<dependency org="servletapi" name="servletapi" rev="2.4"/>			
+		<dependency org="jspapi" name="jsp-api" rev="2.0"/>	 		
+		<dependency org="jakarta" name="oro" rev="2.0.8"/> 		            
+		<dependency org="org.springframework" name="spring" rev="1.2.8"/> 		            		
+		<dependency org="cglib" name="cglib-nodep" rev="2.1_3"/> 		            				
+		<dependency org="hsqldb" name="hsqldb" rev="1.8.0.5"/>		
+		<dependency org="ehcache" name="ehcache" rev="1.1"/>				
+		<!--<dependency org="asm" name="asm" rev="1.3.4"/>  
+		<dependency org="asm" name="asm-util" rev="1.3.4"/>-->		 					
+		<dependency org="antlr" name="antlr" rev="2.7.6rc1"/>
+		<dependency org="jaxen" name="jaxen" rev="1.1-beta-9"/>				 							
+		<dependency org="bsf" name="bsf" rev="2.3.0"/>				 									
+    </dependencies>
+</ivy-module>
