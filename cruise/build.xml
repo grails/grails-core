@@ -23,13 +23,13 @@
 	</target>
 	<target name="delegate">
 		<echo message="*** Starting the Grails specific build parts ***"/>
-		<exec dir=".." executable="ant">
+		<!--exec dir=".." executable="ant">
 			  <arg line="-Dbuildnumber=${label} -Dgrails.javadoc=dist/doc/api -lib lib cruise"/>
-		</exec>
-		<!--ant dir=".." antfile="build.xml" target="cruise">
+		</exec-->
+		<ant dir=".." antfile="build.xml" target="cruise">
 			<property name="buildnumber" value="${label}"/>
 			<property name="grails.javadoc" value="dist/doc/api"/>
-		</ant-->
+		</ant>
 		<echo message="*** Grails build successfully ended          ***"/>
 	</target>
 
