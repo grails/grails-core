@@ -43,6 +43,11 @@ public class ProxyMetaClass extends MetaClassImpl {
     protected MetaClass adaptee = null;
     protected Interceptor interceptor = null;
 
+    public MetaClass getAdaptee()
+    {
+        return adaptee;
+    }
+
     /**
      * convenience factory method for the most usual case.
      */
@@ -57,7 +62,10 @@ public class ProxyMetaClass extends MetaClassImpl {
     public ProxyMetaClass(MetaClassRegistry registry, Class theClass, MetaClass adaptee) throws IntrospectionException {
         super(registry, theClass);
         this.adaptee = adaptee;
-        if (null == adaptee) throw new IllegalArgumentException("adaptee must not be null");
+        if (null == adaptee)
+        {
+            throw new IllegalArgumentException("adaptee must not be null");
+        }
     }
 
     /**

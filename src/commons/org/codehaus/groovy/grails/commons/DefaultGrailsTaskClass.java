@@ -33,42 +33,42 @@ public class DefaultGrailsTaskClass extends AbstractInjectableGrailsClass
 	}
 
 	public void execute() {
-		((Closure)getPropertyValue(EXECUTE, Closure.class)).call();
+		((Closure)getPropertyOrStaticPropertyOrFieldValue(EXECUTE, Closure.class)).call();
 	}
 
 	public String getTimeout() {
-		String timeOut = (String)getPropertyValue(TIMEOUT, String.class); 
+		String timeOut = (String)getPropertyOrStaticPropertyOrFieldValue(TIMEOUT, String.class);
 		if( timeOut == null || "".equals(timeOut) ) return DEFAULT_TIMEOUT;
 		return timeOut;
 	}
 
 	public String getStartDelay() {
-		String startDelay = (String)getPropertyValue(START_DELAY, String.class); 
+		String startDelay = (String)getPropertyOrStaticPropertyOrFieldValue(START_DELAY, String.class);
 		if( startDelay == null || "".equals(startDelay) ) return DEFAULT_START_DELAY;
 		return startDelay;	
 	}
 
 	public String getCronExpression() {
-		String cronExpression = (String)getPropertyValue(CRON_EXPRESSION, String.class); 
+		String cronExpression = (String)getPropertyOrStaticPropertyOrFieldValue(CRON_EXPRESSION, String.class);
 		if( cronExpression == null || "".equals(cronExpression) ) return DEFAULT_CRON_EXPRESSION;
 		return cronExpression;	
 	}
 
 	public String getGroup() {
-		String group = (String)getPropertyValue(GROUP, String.class); 
+		String group = (String)getPropertyOrStaticPropertyOrFieldValue(GROUP, String.class);
 		if( group == null || "".equals(group) ) return DEFAULT_GROUP;
 		return group;	
 	}
 
 	public String getType() {
-		String type = (String)getPropertyValue(TYPE, String.class); 
+		String type = (String)getPropertyOrStaticPropertyOrFieldValue(TYPE, String.class);
 		if( type == null || "".equals(type) ) return DEFAULT_TYPE;
 		return type;	
 	}
 
 	// not certain about this... feels messy
 	public boolean isCronExpressionConfigured() {
-		String cronExpression = (String)getPropertyValue(CRON_EXPRESSION, String.class);
+		String cronExpression = (String)getPropertyOrStaticPropertyOrFieldValue(CRON_EXPRESSION, String.class);
 		if( cronExpression == null ) return false;
 		return true;
 	}

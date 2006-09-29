@@ -54,44 +54,44 @@ public class DefaultGrailsDataSource extends AbstractInjectableGrailsClass
     public DefaultGrailsDataSource(Class clazz) {
         super(clazz, DATA_SOURCE);
 
-        configClass = (Class)getPropertyValue(CONFIG_CLASS,Class.class);
+        configClass = (Class)getPropertyOrStaticPropertyOrFieldValue(CONFIG_CLASS,Class.class);
 
-        if (getPropertyValue(POOLING, boolean.class) != null) {
-            this.pooled = getPropertyValue(POOLING, boolean.class).equals(Boolean.TRUE) ? true : false;
+        if (getPropertyOrStaticPropertyOrFieldValue(POOLING, boolean.class) != null) {
+            this.pooled = getPropertyOrStaticPropertyOrFieldValue(POOLING, boolean.class).equals(Boolean.TRUE) ? true : false;
         }
-        if (getPropertyValue(LOG_SQL, boolean.class) != null) {
-            this.sqlLogging = getPropertyValue(LOG_SQL, boolean.class).equals(Boolean.TRUE) ? true : false;
+        if (getPropertyOrStaticPropertyOrFieldValue(LOG_SQL, boolean.class) != null) {
+            this.sqlLogging = getPropertyOrStaticPropertyOrFieldValue(LOG_SQL, boolean.class).equals(Boolean.TRUE) ? true : false;
         }        
-        if(getPropertyValue(DIALECT,Class.class) != null) {
-        	this.dialect =  (Class)getPropertyValue(DIALECT, Class.class); 
+        if(getPropertyOrStaticPropertyOrFieldValue(DIALECT,Class.class) != null) {
+        	this.dialect =  (Class)getPropertyOrStaticPropertyOrFieldValue(DIALECT, Class.class);
         }
         
-        if (getPropertyValue(DB_CREATE, String.class) != null) {
-            String _dbCreate = (String)getPropertyValue(DB_CREATE, String.class);
+        if (getPropertyOrStaticPropertyOrFieldValue(DB_CREATE, String.class) != null) {
+            String _dbCreate = (String)getPropertyOrStaticPropertyOrFieldValue(DB_CREATE, String.class);
             if(_dbCreate.equals( "create-drop" ) || _dbCreate.equals("create") || _dbCreate.equals("update"))
                 this.dbCreate = _dbCreate;
         }
 
-        if (getPropertyValue(DRIVER_CLASS_NAME, String.class) != null) {
-            this.driverClassName = (String)getPropertyValue(DRIVER_CLASS_NAME, String.class);
+        if (getPropertyOrStaticPropertyOrFieldValue(DRIVER_CLASS_NAME, String.class) != null) {
+            this.driverClassName = (String)getPropertyOrStaticPropertyOrFieldValue(DRIVER_CLASS_NAME, String.class);
         } else {
             throw new DataSourceRequiredPropertyMissingException("Required property [" + DRIVER_CLASS_NAME + "] is missing on [" + getFullName() + "]!");
         }
 
-        if (getPropertyValue(URL, String.class) != null) {
-            this.url = (String)getPropertyValue(URL, String.class);
+        if (getPropertyOrStaticPropertyOrFieldValue(URL, String.class) != null) {
+            this.url = (String)getPropertyOrStaticPropertyOrFieldValue(URL, String.class);
         } else {
             throw new DataSourceRequiredPropertyMissingException("Required property [" + URL + "] is missing on [" + getFullName() + "]!");
         }
 
-        if (getPropertyValue(USERNAME, String.class) != null) {
-            this.username = (String)getPropertyValue(USERNAME, String.class);
+        if (getPropertyOrStaticPropertyOrFieldValue(USERNAME, String.class) != null) {
+            this.username = (String)getPropertyOrStaticPropertyOrFieldValue(USERNAME, String.class);
         } else {
             throw new DataSourceRequiredPropertyMissingException("Required property [" + USERNAME + "] is missing on [" + getFullName() + "]!");
         }
 
-        if (getPropertyValue(PASSWORD, String.class) != null) {
-            this.password = (String)getPropertyValue(PASSWORD, String.class);
+        if (getPropertyOrStaticPropertyOrFieldValue(PASSWORD, String.class) != null) {
+            this.password = (String)getPropertyOrStaticPropertyOrFieldValue(PASSWORD, String.class);
         } else {
             throw new DataSourceRequiredPropertyMissingException("Required property [" + PASSWORD + "] is missing on [" + getFullName() + "]!");
         }

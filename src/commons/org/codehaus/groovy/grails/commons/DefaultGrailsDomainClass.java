@@ -80,12 +80,12 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
         evaluateConstraints();
 
         // get mapped by setting
-        if(getPropertyValue(GrailsDomainClassProperty.MAPPED_BY, String.class) != null)
-            this.mappedBy = (String)getPropertyValue(GrailsDomainClassProperty.MAPPED_BY, String.class);
+        if(getPropertyOrStaticPropertyOrFieldValue(GrailsDomainClassProperty.MAPPED_BY, String.class) != null)
+            this.mappedBy = (String)getPropertyOrStaticPropertyOrFieldValue(GrailsDomainClassProperty.MAPPED_BY, String.class);
 
-        Class belongsTo = (Class)getPropertyValue(GrailsDomainClassProperty.BELONGS_TO, Class.class);
+        Class belongsTo = (Class)getPropertyOrStaticPropertyOrFieldValue(GrailsDomainClassProperty.BELONGS_TO, Class.class);
         if(belongsTo == null) {
-            List ownersProp = (List)getPropertyValue(GrailsDomainClassProperty.BELONGS_TO, List.class);
+            List ownersProp = (List)getPropertyOrStaticPropertyOrFieldValue(GrailsDomainClassProperty.BELONGS_TO, List.class);
             if(ownersProp != null) {
                 this.owners = ownersProp;
             }
@@ -143,9 +143,9 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
     }
 
     public Map getAssociationMap() {
-        this.relationshipMap = (Map)getPropertyValue( GrailsDomainClassProperty.RELATES_TO_MANY, Map.class );
+        this.relationshipMap = (Map)getPropertyOrStaticPropertyOrFieldValue( GrailsDomainClassProperty.RELATES_TO_MANY, Map.class );
         if(this.relationshipMap == null) {
-            relationshipMap = (Map)getPropertyValue( GrailsDomainClassProperty.HAS_MANY, Map.class );
+            relationshipMap = (Map)getPropertyOrStaticPropertyOrFieldValue( GrailsDomainClassProperty.HAS_MANY, Map.class );
             if(relationshipMap == null)
                 this.relationshipMap = Collections.EMPTY_MAP;
         }
@@ -170,13 +170,12 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
      *
      */
     private void evaluateConstraints() {
-        Closure constraintsClosure = (Closure)getPropertyValue( GrailsDomainClassProperty.CONSTRAINTS, Closure.class );
+        Closure constraintsClosure = (Closure)getPropertyOrStaticPropertyOrFieldValue(
+                GrailsDomainClassProperty.CONSTRAINTS, Closure.class );
         if(constraintsClosure != null) {
             BeanWrapper reference = getReference();
 
-            final PropertyDescriptor propDesc = reference.getPropertyDescriptor(GrailsDomainClassProperty.CONSTRAINTS);
-
-            if ((propDesc.getReadMethod().getModifiers() & Modifier.STATIC) == 0)
+            if (!GrailsClassUtils.isStaticProperty(getClazz(), GrailsDomainClassProperty.CONSTRAINTS))
             {
                 LOG.warn("Domain class ["+getFullName()+"] has non-static constraints. Constraints should be " +
                     "declared static, non-static constraints are deprecated and will be removed in the future");
@@ -465,8 +464,8 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
         return getPropertyByName(propertyName).isManyToOne();
     }
 
-    protected Object getPropertyValue(String name, Class type) {
-        return super.getPropertyValue(name,type);
+    protected Object getPropertyOrStaticPropertyOrFieldValue(String name, Class type) {
+        return super.getPropertyOrStaticPropertyOrFieldValue(name,type);
     }
     /* (non-Javadoc)
       * @see org.codehaus.groovy.grails.commons.GrailsDomainClass#getRelationshipType(java.lang.String)

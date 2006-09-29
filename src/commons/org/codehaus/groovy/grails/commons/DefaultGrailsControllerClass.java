@@ -61,11 +61,11 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass
     public DefaultGrailsControllerClass(Class clazz) {
         super(clazz, CONTROLLER);
         this.uri = SLASH + (StringUtils.isNotBlank(getPackageName()) ? getPackageName().replace('.', '/')  + SLASH : "" ) + WordUtils.uncapitalize(getName());
-        String defaultActionName = (String)getPropertyValue(DEFAULT_CLOSURE_PROPERTY, String.class);
+        String defaultActionName = (String)getPropertyOrStaticPropertyOrFieldValue(DEFAULT_CLOSURE_PROPERTY, String.class);
         if(defaultActionName == null) {
             defaultActionName = INDEX_ACTION;
         }
-        this.scaffoldedClass = (Class)getPropertyValue(SCAFFOLDING_PROPERTY, Class.class);
+        this.scaffoldedClass = (Class)getPropertyOrStaticPropertyOrFieldValue(SCAFFOLDING_PROPERTY, Class.class);
         if(this.scaffoldedClass != null) {
             this.scaffolding = true;
         }
@@ -92,7 +92,7 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass
             
             for(int i = 0; i < DefaultGrailsScaffolder.ACTION_NAMES.length;i++) {
                 closureNames.add(DefaultGrailsScaffolder.ACTION_NAMES[i]);
-                String viewName = (String)getPropertyValue(DefaultGrailsScaffolder.ACTION_NAMES[i] + VIEW, String.class);
+                String viewName = (String)getPropertyOrStaticPropertyOrFieldValue(DefaultGrailsScaffolder.ACTION_NAMES[i] + VIEW, String.class);
                 // if no explicity view name is specified just use action name
                 if(viewName == null) {
                     viewName =DefaultGrailsScaffolder.ACTION_NAMES[i];
@@ -111,11 +111,11 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass
         PropertyDescriptor[] propertyDescriptors = getReference().getPropertyDescriptors();
         for (int i = 0; i < propertyDescriptors.length; i++) {
             PropertyDescriptor propertyDescriptor = propertyDescriptors[i];
-            Closure closure = (Closure)getPropertyValue(propertyDescriptor.getName(), Closure.class);
+            Closure closure = (Closure)getPropertyOrStaticPropertyOrFieldValue(propertyDescriptor.getName(), Closure.class);
             if (closure != null) {
                 closureNames.add(propertyDescriptor.getName());
                 String closureName = propertyDescriptor.getName();
-                String viewName = (String)getPropertyValue(propertyDescriptor.getName() + VIEW, String.class);
+                String viewName = (String)getPropertyOrStaticPropertyOrFieldValue(propertyDescriptor.getName() + VIEW, String.class);
                 // if no explicity view name is specified just use property name
                 if(viewName == null) {
                     viewName = propertyDescriptor.getName();

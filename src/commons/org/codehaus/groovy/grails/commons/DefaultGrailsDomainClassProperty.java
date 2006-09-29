@@ -71,11 +71,11 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
         List optionalProps;
         List transientProps;
 
-        optionalProps = (List)domainClass.getPropertyValue( OPTIONAL, List.class );
-        transientProps= (List)domainClass.getPropertyValue( TRANSIENT, List.class );
+        optionalProps = (List)domainClass.getPropertyOrStaticPropertyOrFieldValue( OPTIONAL, List.class );
+        transientProps= (List)domainClass.getPropertyOrStaticPropertyOrFieldValue( TRANSIENT, List.class );
 
         // Undocumented feature alert! Steve insisted on this :-)
-        List evanescent = (List)domainClass.getPropertyValue( EVANESCENT, List.class );
+        List evanescent = (List)domainClass.getPropertyOrStaticPropertyOrFieldValue( EVANESCENT, List.class );
         if(evanescent != null) {
             if(transientProps == null)
                 transientProps = new ArrayList();

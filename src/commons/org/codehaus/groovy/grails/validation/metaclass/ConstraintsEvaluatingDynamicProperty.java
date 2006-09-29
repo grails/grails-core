@@ -14,23 +14,23 @@
  */ 
 package org.codehaus.groovy.grails.validation.metaclass;
 
-import java.io.InputStream;
-import java.util.Collections;
-
 import groovy.lang.Closure;
 import groovy.lang.GroovyClassLoader;
+import groovy.lang.GroovyObject;
 import groovy.lang.MissingPropertyException;
 import groovy.lang.Script;
-
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.grails.commons.metaclass.AbstractDynamicProperty;
+import org.codehaus.groovy.grails.commons.metaclass.ProxyMetaClass;
+import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.validation.ConstrainedPropertyBuilder;
-import org.springframework.beans.BeanWrapper;
-import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.beans.BeansException;
+
+import java.io.InputStream;
+import java.util.Collections;
+
 /**
  * This is a dynamic property that instead of returning the closure sets a new proxy meta class for the scope 
  * of the call and invokes the closure itself which builds up a list of ConstrainedProperty instances
@@ -39,69 +39,81 @@ import org.springframework.beans.BeansException;
  * @since 07-Nov-2005
  */
 public class ConstraintsEvaluatingDynamicProperty extends AbstractDynamicProperty {
-	
-	private static final String CONSTRAINTS_GROOVY = "Constraints.groovy";
 
-	private static final Log LOG = LogFactory.getLog(ConstraintsDynamicProperty.class);
-	
-	public static final String PROPERTY_NAME = "constraints";
-	
-	public ConstraintsEvaluatingDynamicProperty() {
-		super(PROPERTY_NAME);
-	}
+    private static final String CONSTRAINTS_GROOVY = "Constraints.groovy";
 
-	public Object get(Object object)  {
-		BeanWrapper bean = new BeanWrapperImpl(object);
-		try {
-			Closure c = (Closure)bean.getPropertyValue(PROPERTY_NAME);
-			ConstrainedPropertyBuilder delegate = new ConstrainedPropertyBuilder(object);
-			c.setDelegate(delegate);
-			c.call();
-			return delegate.getConstrainedProperties();			
-		}
-		// thrown if property doesn't exist
-		catch(BeansException be) {
-			String className = object.getClass().getName();
-			String constraintsScript = className.replaceAll("\\.","/") + CONSTRAINTS_GROOVY;
-			InputStream stream = getClass().getClassLoader().getResourceAsStream(constraintsScript);
-			
-			if(stream!=null) {
-				GroovyClassLoader gcl = new GroovyClassLoader();
-				try {
-					Class scriptClass = gcl.parseClass(stream);
-					Script script = (Script)scriptClass.newInstance();
-					script.run();
-					Closure c = (Closure)script.getBinding().getVariable(PROPERTY_NAME);
-					ConstrainedPropertyBuilder delegate = new ConstrainedPropertyBuilder(object);
-					c.setDelegate(delegate);
-					c.call();
-					return delegate.getConstrainedProperties();					
-					
-				}
-				catch (MissingPropertyException mpe) {
-					LOG.warn("Unable to evaluate constraints from ["+constraintsScript+"], constraints closure not found!",mpe);
-					return Collections.EMPTY_MAP;
-				}
-				catch (CompilationFailedException e) {
-					LOG.error("Compilation error evaluating constraints for class ["+object.getClass()+"]: " + e.getMessage(),e );
-					return Collections.EMPTY_MAP;
-				} catch (InstantiationException e) {
-					LOG.error("Instantiation error evaluating constraints for class ["+object.getClass()+"]: " + e.getMessage(),e );
-					return Collections.EMPTY_MAP;
-				} catch (IllegalAccessException e) {
-					LOG.error("Illegal access error evaluating constraints for class ["+object.getClass()+"]: " + e.getMessage(),e );
-					return Collections.EMPTY_MAP;
-				}	
-			}
-			else {
-				return Collections.EMPTY_MAP;				
-			}
-			
-		}
-	}
+    private static final Log LOG = LogFactory.getLog(ConstraintsDynamicProperty.class);
 
-	public void set(Object object, Object newValue) {
-		throw new UnsupportedOperationException("Cannot set read-only property ["+PROPERTY_NAME+"]");
-	}
+    public static final String PROPERTY_NAME = "constraints";
+
+    public ConstraintsEvaluatingDynamicProperty() {
+        super(PROPERTY_NAME);
+    }
+
+    public Object get(Object object)  {
+        // Suppress recursion problems if a GroovyObject
+        if (object instanceof GroovyObject)
+        {
+            GroovyObject go = (GroovyObject)object;
+
+            if (go.getMetaClass() instanceof ProxyMetaClass)
+            {
+                go.setMetaClass(((ProxyMetaClass)go.getMetaClass()).getAdaptee());
+            }
+        }
+
+        try
+        {
+            Closure c = (Closure)GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(object, PROPERTY_NAME);
+            ConstrainedPropertyBuilder delegate = new ConstrainedPropertyBuilder(object);
+            c.setDelegate(delegate);
+            c.call();
+            return delegate.getConstrainedProperties();
+        }
+        catch (BeansException be)
+        {
+            // Fallback to xxxxConstraints.groovy script for Java domain classes
+            String className = object.getClass().getName();
+            String constraintsScript = className.replaceAll("\\.","/") + CONSTRAINTS_GROOVY;
+            InputStream stream = getClass().getClassLoader().getResourceAsStream(constraintsScript);
+
+            if(stream!=null) {
+                GroovyClassLoader gcl = new GroovyClassLoader();
+                try {
+                    Class scriptClass = gcl.parseClass(stream);
+                    Script script = (Script)scriptClass.newInstance();
+                    script.run();
+                    Closure c = (Closure)script.getBinding().getVariable(PROPERTY_NAME);
+                    ConstrainedPropertyBuilder delegate = new ConstrainedPropertyBuilder(object);
+                    c.setDelegate(delegate);
+                    c.call();
+                    return delegate.getConstrainedProperties();
+
+                }
+                catch (MissingPropertyException mpe) {
+                    LOG.warn("Unable to evaluate constraints from ["+constraintsScript+"], constraints closure not found!",mpe);
+                    return Collections.EMPTY_MAP;
+                }
+                catch (CompilationFailedException e) {
+                    LOG.error("Compilation error evaluating constraints for class ["+object.getClass()+"]: " + e.getMessage(),e );
+                    return Collections.EMPTY_MAP;
+                } catch (InstantiationException e) {
+                    LOG.error("Instantiation error evaluating constraints for class ["+object.getClass()+"]: " + e.getMessage(),e );
+                    return Collections.EMPTY_MAP;
+                } catch (IllegalAccessException e) {
+                    LOG.error("Illegal access error evaluating constraints for class ["+object.getClass()+"]: " + e.getMessage(),e );
+                    return Collections.EMPTY_MAP;
+                }
+            }
+            else {
+                return Collections.EMPTY_MAP;
+            }
+
+        }
+    }
+
+    public void set(Object object, Object newValue) {
+        throw new UnsupportedOperationException("Cannot set read-only property ["+PROPERTY_NAME+"]");
+    }
 
 }

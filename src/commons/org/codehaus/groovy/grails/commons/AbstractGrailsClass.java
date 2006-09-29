@@ -25,6 +25,9 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 
+import groovy.lang.GroovyObject;
+import groovy.lang.MetaClass;
+
 /**
  * 
  * 
@@ -33,11 +36,11 @@ import java.lang.reflect.Modifier;
  */
 public abstract class AbstractGrailsClass implements GrailsClass {
 
-	private Class clazz = null;
-	private String fullName = null;
-	private String name = null;
-	private String packageName = null;
-	private BeanWrapper reference = null;
+    private Class clazz = null;
+    private String fullName = null;
+    private String name = null;
+    private String packageName = null;
+    private BeanWrapper reference = null;
     private String naturalName;
     private String shortName;
 
@@ -77,41 +80,41 @@ public abstract class AbstractGrailsClass implements GrailsClass {
     }
 
     private void setClazz(Class clazz) {
-		if (clazz == null) {
-			throw new IllegalArgumentException("Clazz parameter should not be null");
-		}
-		this.clazz = clazz;
-	}
-	
-	public Class getClazz() {
-		return this.clazz;
-	}
-	
-	public Object newInstance() {
-		try {
-			return getClazz().newInstance();
-		} catch (Exception e) {
-			Throwable targetException = null;
-			if (e instanceof InvocationTargetException) {
-				targetException = ((InvocationTargetException)e).getTargetException();
-			} else {
-				targetException = e;
-			}
-			throw new NewInstanceCreationException("Could not create a new instance of class [" + getClazz().getName() + "]!", targetException);
-		}
-	}
+        if (clazz == null) {
+            throw new IllegalArgumentException("Clazz parameter should not be null");
+        }
+        this.clazz = clazz;
+    }
 
-	public String getName() {
-		return this.name;
-	}
+    public Class getClazz() {
+        return this.clazz;
+    }
+
+    public Object newInstance() {
+        try {
+            return getClazz().newInstance();
+        } catch (Exception e) {
+            Throwable targetException = null;
+            if (e instanceof InvocationTargetException) {
+                targetException = ((InvocationTargetException)e).getTargetException();
+            } else {
+                targetException = e;
+            }
+            throw new NewInstanceCreationException("Could not create a new instance of class [" + getClazz().getName() + "]!", targetException);
+        }
+    }
+
+    public String getName() {
+        return this.name;
+    }
 
     public String getNaturalName() {
         return this.naturalName;
     }
 
     public String getFullName() {
-		return this.fullName;
-	}
+        return this.fullName;
+    }
 
     public String getPropertyName() {
         return GrailsClassUtils.getPropertyNameRepresentation(getShortName());
@@ -122,53 +125,87 @@ public abstract class AbstractGrailsClass implements GrailsClass {
     }
 
     public String getPackageName() {
-		return this.packageName;
-	}
-	
-	private static String getShortClassname(Class clazz) {
-		return ClassUtils.getShortClassName(clazz);
-	}
-	
-	/**
-	 * <p>The reference instance is used to get configured property values.
-	 * 
-	 * @return BeanWrapper instance that holds reference
-	 */
-	protected BeanWrapper getReference() {
-		return this.reference;
-	}
-	
-	/**
-	 * <p>Looks for a property of the reference instance with a given name and type. If found
-	 * its value is returned, otherwise look for a public static field with given name and type,
-	 * otherwise return null.
-	 * 
-	 * @return property value or null if no property or static field was found
-	 */
-	protected Object getPropertyValue(String name, Class type) {
-		BeanWrapper ref = getReference();
-		if (ref.isReadableProperty(name)) {
-			Object value = ref.getPropertyValue(name);
-			if(value != null && (type.isAssignableFrom(value.getClass()) || GrailsClassUtils.isMatchBetweenPrimativeAndWrapperTypes(type, value.getClass()))) {
-				return value;
-			}
-		}
-        try {
-            Field field = ref.getWrappedClass().getField(name);
-            if (Modifier.isStatic(field.getModifiers()) && Modifier.isPublic(field.getModifiers())) {
-                Object value = field.get(ref.getWrappedInstance());
-                if (value != null && (type.equals(value.getClass()) || GrailsClassUtils.isMatchBetweenPrimativeAndWrapperTypes(type, value.getClass()))) {
-                    return value;
-                } else {
-                    return null;
-                }
+        return this.packageName;
+    }
+
+    private static String getShortClassname(Class clazz) {
+        return ClassUtils.getShortClassName(clazz);
+    }
+
+    /**
+     * <p>The reference instance is used to get configured property values.
+     *
+     * @return BeanWrapper instance that holds reference
+     */
+    protected BeanWrapper getReference() {
+        return this.reference;
+    }
+
+    /**
+     * <p>Looks for a property of the reference instance with a given name and type.</p>
+     * <p>If found its value is returned. We follow the Java bean conventions with augmentation for groovy support
+     * and static fields/properties. We will therefore match, in this order:
+     * </p>
+     * <ol>
+     * <li>Standard public bean property (with getter or just public field, using normal introspection)
+     * <li>Public static property with getter method
+     * <li>Public static field
+     * </ol>
+     *
+     *
+     * @return property value or null if no property or static field was found
+     */
+    protected Object getPropertyOrStaticPropertyOrFieldValue(String name, Class type) {
+        BeanWrapper ref = getReference();
+        Object value = null;
+        if (ref.isReadableProperty(name)) {
+            value = ref.getPropertyValue(name);
+        }
+        else if (GrailsClassUtils.isPublicField(ref.getWrappedInstance(), name))
+        {
+            value = GrailsClassUtils.getFieldValue(ref.getWrappedInstance(), name);
+        }
+        else
+        {
+            value = GrailsClassUtils.getStaticPropertyValue(clazz, name);
+        }
+        if ((value != null) && GrailsClassUtils.isGroovyAssignableFrom( type, value.getClass())) {
+            return value;
+        }
+        return null;
+    }
+
+    /**
+     * Get the value of the named property, with support for static properties in both Java and Groovy classes
+     * (which as of Groovy JSR 1.0 RC 01 only have getters in the metaClass)
+     * @param name
+     * @param type
+     * @return The property value or null
+     */
+    protected Object getPropertyValue(String name, Class type) {
+
+        // Handle standard java beans normal or static properties
+        BeanWrapper ref = getReference();
+        Object value = null;
+        if (ref.isReadableProperty(name)) {
+            value = ref.getPropertyValue(name);
+        }
+        else{
+            // Groovy workaround
+            Object inst = ref.getWrappedInstance();
+            if (inst instanceof GroovyObject)
+            {
+                value = ((GroovyObject)inst).getProperty(name);
             }
-        } catch (NoSuchFieldException e) {
-            // ignore
-        } catch (IllegalAccessException e) {
-            // ignore
         }
 
-		return null;
-	}
+        if(value != null && (type.isAssignableFrom(value.getClass())
+            || GrailsClassUtils.isMatchBetweenPrimativeAndWrapperTypes(type, value.getClass()))) {
+            return value;
+        }
+        else
+        {
+            return null;
+        }
+    }
 }

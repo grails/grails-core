@@ -17,13 +17,20 @@ package org.codehaus.groovy.grails.commons;
 
 import groovy.lang.Closure;
 import groovy.lang.GroovyObject;
+import groovy.lang.MetaClass;
 
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.InvalidPropertyException;
 
 import java.beans.PropertyDescriptor;
 import java.util.*;
+import java.lang.reflect.Modifier;
+import java.lang.reflect.Method;
+import java.lang.reflect.Field;
 
 /**
  * @author Graeme Rocher
@@ -34,9 +41,7 @@ import java.util.*;
  */
 public class GrailsClassUtils {
 
-    private static Map beanWrapperInstances = new HashMap();
-
-        public static final Map PRIMITIVE_TYPE_COMPATIBLE_CLASSES = new HashMap();
+    public static final Map PRIMITIVE_TYPE_COMPATIBLE_CLASSES = new HashMap();
 
     /**
      * Just add two entries to the class compatibility map
@@ -141,7 +146,7 @@ public class GrailsClassUtils {
      */
     public static boolean isDomainClass( Class clazz ) {
         // its not a closure
-    	if(clazz == null)return false;
+        if(clazz == null)return false;
         if(Closure.class.isAssignableFrom(clazz)) {
             return false;
         }
@@ -150,8 +155,8 @@ public class GrailsClassUtils {
         while(testClass!=null&&!testClass.equals(GroovyObject.class)&&!testClass.equals(Object.class)) {
             try {
                 // make sure the identify and version field exist
-            	testClass.getDeclaredField( GrailsDomainClassProperty.IDENTITY );
-            	testClass.getDeclaredField( GrailsDomainClassProperty.VERSION );
+                testClass.getDeclaredField( GrailsDomainClassProperty.IDENTITY );
+                testClass.getDeclaredField( GrailsDomainClassProperty.VERSION );
 
                 // passes all conditions return true
                 result = true;
@@ -166,20 +171,20 @@ public class GrailsClassUtils {
         return result;
     }
 
-	public static boolean isTaskClass(Class clazz) {
+    public static boolean isTaskClass(Class clazz) {
         try {
-			clazz.getDeclaredMethod( GrailsTaskClassProperty.EXECUTE , new Class[]{});
-		} catch (SecurityException e) {
-			return false;
-		} catch (NoSuchMethodException e) {
-			return false;
-		}
-		return isTaskClass(clazz.getName());
-	}
+            clazz.getDeclaredMethod( GrailsTaskClassProperty.EXECUTE , new Class[]{});
+        } catch (SecurityException e) {
+            return false;
+        } catch (NoSuchMethodException e) {
+            return false;
+        }
+        return isTaskClass(clazz.getName());
+    }
 
-	public static boolean isTaskClass(String className) {
-		return className.endsWith(DefaultGrailsTaskClass.JOB);
-	}
+    public static boolean isTaskClass(String className) {
+        return className.endsWith(DefaultGrailsTaskClass.JOB);
+    }
 
     /**
      *
@@ -212,17 +217,13 @@ public class GrailsClassUtils {
      *
      * @return The value of the property or null if none exists
      */
-    public static Object getPropertyValue(Class clazz, String propertyName, Class propertyType) {
+    public static Object getPropertyValueOfNewInstance(Class clazz, String propertyName, Class propertyType) {
         // validate
         if(clazz == null || StringUtils.isBlank(propertyName))
             return null;
 
         try {
-            BeanWrapper wrapper = (BeanWrapper)beanWrapperInstances.get( clazz.getName() );
-            if(wrapper == null) {
-                wrapper = new BeanWrapperImpl(clazz.newInstance());
-                beanWrapperInstances.put( clazz.getName(), wrapper );
-            }
+            BeanWrapper wrapper = new BeanWrapperImpl(clazz.newInstance());
             Object pValue = wrapper.getPropertyValue( propertyName );
             if(pValue == null)
                 return null;
@@ -275,11 +276,7 @@ public class GrailsClassUtils {
             return null;
 
         try {
-            BeanWrapper wrapper = (BeanWrapper)beanWrapperInstances.get( clazz.getName() );
-            if(wrapper == null) {
-                wrapper = new BeanWrapperImpl(clazz.newInstance());
-                beanWrapperInstances.put( clazz.getName(), wrapper );
-            }
+            BeanWrapper wrapper = new BeanWrapperImpl(clazz.newInstance());
             return wrapper.getPropertyType(propertyName);
 
         } catch (Exception e) {
@@ -302,11 +299,7 @@ public class GrailsClassUtils {
 
         Set properties = new HashSet();
         try {
-            BeanWrapper wrapper = (BeanWrapper)beanWrapperInstances.get( clazz.getName() );
-            if(wrapper == null) {
-                wrapper = new BeanWrapperImpl(clazz.newInstance());
-                beanWrapperInstances.put( clazz.getName(), wrapper );
-            }
+            BeanWrapper wrapper = new BeanWrapperImpl(clazz.newInstance());
             PropertyDescriptor[] descriptors = wrapper.getPropertyDescriptors();
 
             for (int i = 0; i < descriptors.length; i++) {
@@ -335,11 +328,7 @@ public class GrailsClassUtils {
             return null;
 
         try {
-            BeanWrapper wrapper = (BeanWrapper)beanWrapperInstances.get( clazz.getName() );
-            if(wrapper == null) {
-                wrapper = new BeanWrapperImpl(clazz.newInstance());
-                beanWrapperInstances.put( clazz.getName(), wrapper );
-            }
+            BeanWrapper wrapper = new BeanWrapperImpl(clazz.newInstance());
             PropertyDescriptor pd = wrapper.getPropertyDescriptor(propertyName);
             if(pd.getPropertyType().equals( propertyType )) {
                 return pd;
@@ -526,6 +515,189 @@ public class GrailsClassUtils {
                 }
             }
             return result;
+        }
+    }
+
+    /**
+     * <p>Work out if the specified property is readable and static. Java introspection does not
+     * recognize this concept of static properties but Groovy does. We also consider public static fields
+     * as static properties with no getters/setters</p>
+     *
+     * @param clazz The class to check for static property
+     * @param propertyName The property name
+     * @return true if the property with name propertyName has a static getter method
+     */
+    public static boolean isStaticProperty( Class clazz, String propertyName)
+    {
+        Method getter = BeanUtils.findDeclaredMethod(clazz, getGetterName(propertyName), null);
+        if (getter != null)
+        {
+            return isPublicStatic(getter);
+        }
+        else
+        {
+            try
+            {
+                Field f = clazz.getDeclaredField(propertyName);
+                if (f != null)
+                {
+                    return isPublicStatic(f);
+                }
+            }
+            catch (NoSuchFieldException e)
+            {
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Determine whether the method is declared public static
+     * @param m
+     * @return True if the method is declared public static
+     */
+    public static boolean isPublicStatic( Method m)
+    {
+        final int modifiers = m.getModifiers();
+        return Modifier.isPublic(modifiers) && Modifier.isStatic(modifiers);
+    }
+
+    /**
+     * Determine whether the field is declared public static
+     * @param f
+     * @return True if the field is declared public static
+     */
+    public static boolean isPublicStatic( Field f)
+    {
+        final int modifiers = f.getModifiers();
+        return Modifier.isPublic(modifiers) && Modifier.isStatic(modifiers);
+    }
+
+    /**
+     * Calculate the name for a getter method to retrieve the specified property
+     * @param propertyName
+     * @return The name for the getter method for this property, if it were to exist, i.e. getConstraints
+     */
+    public static String getGetterName(String propertyName)
+    {
+        return "get" + Character.toUpperCase(propertyName.charAt(0))
+            + propertyName.substring(1);
+    }
+
+    /**
+     * <p>Get a static property value, which has a public static getter or is just a public static field.</p>
+     *
+     * @param clazz The class to check for static property
+     * @param name The property name
+     * @return The value if there is one, or null if unset OR there is no such property
+     */
+    public static Object getStaticPropertyValue(Class clazz, String name)
+    {
+        Method getter = BeanUtils.findDeclaredMethod(clazz, getGetterName(name), null);
+        try
+        {
+            if (getter != null)
+            {
+                return getter.invoke(null, null);
+            }
+            else
+            {
+                Field f = clazz.getDeclaredField(name);
+                if (f != null)
+                {
+                    return f.get(null);
+                }
+            }
+        }
+        catch (Exception e)
+        {
+        }
+        return null;
+    }
+
+    /**
+     * <p>Looks for a property of the reference instance with a given name.</p>
+     * <p>If found its value is returned. We follow the Java bean conventions with augmentation for groovy support
+     * and static fields/properties. We will therefore match, in this order:
+     * </p>
+     * <ol>
+     * <li>Standard public bean property (with getter or just public field, using normal introspection)
+     * <li>Public static property with getter method
+     * <li>Public static field
+     * </ol>
+     *
+     * @return property value
+     * @throws BeansException if no such property found
+     */
+    public static Object getPropertyOrStaticPropertyOrFieldValue(Object obj, String name) throws BeansException
+    {
+        BeanWrapper ref = new BeanWrapperImpl(obj);
+        if (ref.isReadableProperty(name)) {
+            return ref.getPropertyValue(name);
+        }
+        else
+        {
+            // Look for public fields
+            if (isPublicField(obj, name))
+            {
+                return getFieldValue(obj, name);
+            }
+
+            // Look for statics
+            Class clazz = obj.getClass();
+            if (isStaticProperty(clazz, name))
+            {
+                return getStaticPropertyValue(clazz, name);
+            }
+            else
+            {
+                throw new InvalidPropertyException(clazz, name, "No property or static property or static field");
+            }
+        }
+    }
+
+    /**
+     * Get the value of a declared field on an object
+     *
+     * @param obj
+     * @param name
+     * @return The object value or null if there is no such field or access problems
+     */
+    public static Object getFieldValue(Object obj, String name)
+    {
+        Class clazz = obj.getClass();
+        Field f = null;
+        try
+        {
+            f = clazz.getDeclaredField(name);
+            return f.get(obj);
+        }
+        catch (Exception e)
+        {
+            return null;
+        }
+    }
+
+    /**
+     * Work out if the specified object has a public field with the name supplied.
+     *
+     * @param obj
+     * @param name
+     * @return True if a public field with the name exists
+     */
+    public static boolean isPublicField(Object obj, String name)
+    {
+        Class clazz = obj.getClass();
+        Field f = null;
+        try
+        {
+            f = clazz.getDeclaredField(name);
+            return Modifier.isPublic(f.getModifiers());
+        }
+        catch (NoSuchFieldException e)
+        {
+            return false;
         }
     }
 }

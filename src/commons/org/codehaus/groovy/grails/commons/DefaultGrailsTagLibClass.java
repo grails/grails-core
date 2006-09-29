@@ -41,13 +41,13 @@ public class DefaultGrailsTagLibClass extends AbstractInjectableGrailsClass impl
      */
     public DefaultGrailsTagLibClass(Class clazz) {
         super(clazz, TAG_LIB);
-        Class supportedControllerClass = (Class)getPropertyValue(SUPPORTS_CONTROLLER, Class.class);
+        Class supportedControllerClass = (Class)getPropertyOrStaticPropertyOrFieldValue(SUPPORTS_CONTROLLER, Class.class);
         if(supportedControllerClass != null) {
             supportedControllers = new ArrayList();
             supportedControllers.add(supportedControllerClass);
         }
         else {
-            List tmp = (List)getPropertyValue(SUPPORTS_CONTROLLER, List.class);
+            List tmp = (List)getPropertyOrStaticPropertyOrFieldValue(SUPPORTS_CONTROLLER, List.class);
             if(tmp != null) {
                 supportedControllers = tmp;
             }
@@ -56,7 +56,7 @@ public class DefaultGrailsTagLibClass extends AbstractInjectableGrailsClass impl
         PropertyDescriptor[] props = getReference().getPropertyDescriptors();
         for (int i = 0; i < props.length; i++) {
             PropertyDescriptor prop = props[i];
-            Closure tag = (Closure)getPropertyValue(prop.getName(),Closure.class);
+            Closure tag = (Closure)getPropertyOrStaticPropertyOrFieldValue(prop.getName(),Closure.class);
             if(tag != null) {
                 tags.add(prop.getName());
             }

@@ -130,7 +130,7 @@ public class GrailsHibernateDomainClass extends AbstractGrailsClass implements E
 	 *
 	 */
 	private void evaluateConstraints() {
-		Map existing = (Map)getPropertyValue( GrailsDomainClassProperty.CONSTRAINTS, Map.class );
+		Map existing = (Map)getPropertyOrStaticPropertyOrFieldValue( GrailsDomainClassProperty.CONSTRAINTS, Map.class );
 		if(existing == null) {
 			Object instance = getReference().getWrappedInstance();
 			try {

@@ -17,8 +17,11 @@ package org.codehaus.groovy.grails.commons;
 import groovy.lang.GroovyClassLoader;
 import junit.framework.TestCase;
 
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpServletRequest;
 import java.util.Collection;
 import java.util.ArrayList;
+import java.math.BigInteger;
 
 /**
  * @author Graeme Rocher
@@ -156,6 +159,65 @@ public class GrailsClassUtilsTests extends TestCase {
         assertTrue(GrailsClassUtils.isGroovyAssignableFrom(Integer.class, int.class));
         assertTrue(GrailsClassUtils.isGroovyAssignableFrom(TestCase.class, GrailsClassUtilsTests.class));
         assertTrue(GrailsClassUtils.isGroovyAssignableFrom(Number.class, int.class));
+        //assertTrue(GrailsClassUtils.isGroovyAssignableFrom(double.class, BigInteger.class));
     }
 
+    public void testGetterNames()
+    {
+        assertEquals(GrailsClassUtils.getGetterName("constraints"), "getConstraints");
+        assertEquals(GrailsClassUtils.getGetterName("URL"), "getURL");
+        assertEquals(GrailsClassUtils.getGetterName("Url"), "getUrl");
+    }
+
+    public void testGetStaticProperty()
+    {
+        assertEquals(HttpServletRequest.BASIC_AUTH,
+            GrailsClassUtils.getStaticPropertyValue(HttpServletRequest.class,
+                    "BASIC_AUTH"));
+
+        assertEquals("hello",
+            GrailsClassUtils.getStaticPropertyValue(TestBean.class,
+                    "welcomeMessage"));
+    }
+
+    public void testIsPublicStatic() throws Exception
+    {
+        assertTrue(GrailsClassUtils.isPublicStatic(
+                HttpServletRequest.class.getDeclaredField("BASIC_AUTH")));
+
+        assertFalse(GrailsClassUtils.isPublicStatic(
+                String.class.getDeclaredField("serialVersionUID")));
+
+        assertFalse(GrailsClassUtils.isPublicStatic(
+                TestBean.class.getDeclaredField("welcomeMessage")));
+
+    }
+
+    public void testGetPropertyOrStatic()
+    {
+        TestBean bean = new TestBean();
+        assertEquals("hello",
+            GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue( bean,
+                    "welcomeMessage"));
+        assertEquals("marc",
+            GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue( bean,
+                    "userName"));
+        assertEquals("indian",
+            GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue( bean,
+                    "favouriteFood"));
+        assertEquals("Cardiacs",
+            GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue( bean,
+                    "favouriteArtist"));
+    }
+
+    public void testGetFieldValue()
+    {
+        TestBean bean = new TestBean();
+
+        assertTrue(GrailsClassUtils.isPublicField(bean, "favouriteArtist"));
+
+        assertEquals("Cardiacs",
+            GrailsClassUtils.getFieldValue(bean, "favouriteArtist"));
+
+    }
 }

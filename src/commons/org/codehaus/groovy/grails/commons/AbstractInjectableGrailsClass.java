@@ -36,11 +36,11 @@ public abstract class AbstractInjectableGrailsClass extends AbstractGrailsClass
 	public AbstractInjectableGrailsClass(Class clazz, String trailingName) {
 		super(clazz, trailingName);
 
-		Object byNameValue = getPropertyValue(BY_NAME_PROPERTY, Boolean.class);
+		Object byNameValue = getPropertyOrStaticPropertyOrFieldValue(BY_NAME_PROPERTY, Boolean.class);
 		this.byName = byNameValue != null && byNameValue.equals(Boolean.TRUE);
 		this.byType = !byName;
 		
-		Object availableValue = getPropertyValue(AVAILABLE_PROPERTY, Boolean.class);
+		Object availableValue = getPropertyOrStaticPropertyOrFieldValue(AVAILABLE_PROPERTY, Boolean.class);
 		this.available = availableValue == null || availableValue.equals(Boolean.TRUE);
 	}
 

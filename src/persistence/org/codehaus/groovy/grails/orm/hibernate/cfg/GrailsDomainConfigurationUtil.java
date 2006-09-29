@@ -159,9 +159,9 @@ public class GrailsDomainConfigurationUtil {
 	 * @return The association map
 	 */
 	public static Map getAssociationMap(Class domainClass) {
-		Map associationMap =  (Map)GrailsClassUtils.getPropertyValue( domainClass, GrailsDomainClassProperty.RELATES_TO_MANY, Map.class );
+		Map associationMap =  (Map)GrailsClassUtils.getPropertyValueOfNewInstance( domainClass, GrailsDomainClassProperty.RELATES_TO_MANY, Map.class );
 		if(associationMap == null) {
-			associationMap = (Map)GrailsClassUtils.getPropertyValue(domainClass, GrailsDomainClassProperty.HAS_MANY, Map.class);
+			associationMap = (Map)GrailsClassUtils.getPropertyValueOfNewInstance(domainClass, GrailsDomainClassProperty.HAS_MANY, Map.class);
 			if(associationMap == null) {
 				associationMap = Collections.EMPTY_MAP;
 			}
