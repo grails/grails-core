@@ -50,8 +50,8 @@ Targets:
             }
         </groovy>
     </target>
-
-    <target name="init" depends="init-props" description="Initialise the current app">
+               
+	<target name="init-structure" depends="init-props">
         <mkdir dir="${path}src"/>
         <mkdir dir="${path}src/java"/>
         <mkdir dir="${path}src/groovy"/>
@@ -79,8 +79,27 @@ Targets:
         <mkdir dir="${path}lib"/>
         <mkdir dir="${path}spring"/>
         <mkdir dir="${path}hibernate"/>
-        <mkdir dir="${grails.home}/dist"/>
-
+        <mkdir dir="${grails.home}/dist"/>		
+	</target>         
+	
+	<target name="upgrade" depends="init-structure" description="Upgrades a Grails project from the information in GRAILS_HOME">
+        <copy todir="${path}web-app/WEB-INF">
+            <fileset dir="${grails.home}/src/war/WEB-INF">
+                <include name="applicationContext.xml"/>
+            </fileset>
+        </copy>	
+        <copy todir="${path}grails-app/taglib">
+            <fileset dir="${grails.home}/src/grails/grails-app/taglib" />
+        </copy>	 
+        <copy todir="${path}grails-app" overwrite="false">
+            <fileset dir="${grails.home}/src/grails/grails-app" />
+        </copy>    
+        <copy file="${grails.home}/src/war/WEB-INF/web${servlet.version}.template.xml" tofile="${path}web-app/WEB-INF/web.template.xml"/>
+        <copy file="${grails.home}/src/war/WEB-INF/sitemesh.xml" tofile="${path}web-app/WEB-INF/sitemesh.xml"/>  
+        <copy file="${grails.home}/src/war/WEB-INF/web${servlet.version}.template.xml" tofile="${path}web-app/WEB-INF/web.template.xml"/>                                                                
+	</target>
+	
+    <target name="init" depends="init-structure" description="Initialise the current app">
         <copy todir="${path}web-app">
             <fileset dir="${grails.home}/src/war">
 				 <include name="**/**"/>
@@ -530,40 +549,41 @@ Targets:
         <mkdir dir="tmp/war/js"/>
         <copy todir="tmp/war/WEB-INF/lib">
             <fileset dir="${grails.home}/lib">
-                <include name="antlr-2.7.6rc1.jar"/>
-                <include name="asm.jar"/>
-                <include name="asm-attrs.jar"/>
-                <include name="cglib-2.1.3.jar"/>
-                <include name="dom4j-1.6.1.jar"/>
-                <include name="ehcache-1.1.jar"/>
+
                 <include name="ejb-3.0-edr2.jar"/>
                 <include name="hibernate3.jar"/>
                 <include name="jdbc2_0-stdext.jar"/>
                 <include name="jta.jar"/>
-                <include name="junit.jar"/>
-                <include name="asm-2.0.jar"/>
-                <include name="asm-util-2.0.jar"/>
-                <include name="commons-logging.jar"/>
-                <include name="sitemesh-2.2.1.jar"/>
-                <include name="spring-webflow.jar"/>
-                <include name="spring-binding.jar"/>
-                <include name="spring.jar"/>
                 <include name="groovy-all-1.0-RC-01-SNAPSHOT.jar"/>
                 <include name="springmodules-sandbox.jar"/>
+                <include name="spring-webflow.jar"/>
+                <include name="spring-binding.jar"/>
+
                 <include name="standard-${servlet.version}.jar"/>
                 <include name="jstl-${servlet.version}.jar"/>
-                <include name="commons-lang-2.0.jar"/>
-                <include name="log4j-1.2.8.jar"/>
-                <include name="ognl-2.7.jar"/>
-                <include name="hsqldb.jar"/>
-                <include name="commons-collections-3.0.jar"/>
-                <include name="commons-pool-1.2.jar"/>
-                <include name="commons-dbcp-1.2.1.jar"/>
-                <include name="commons-cli-1.0.jar"/>
-                <include name="commons-validator.jar"/>
-                <include name="commons-fileupload.jar"/>
-                <include name="jakarta-oro-2.0.8.jar"/>
-                <include name="quartz-1.5.2.jar"/>            	            	
+                          
+                <include name="antlr-*.jar"/>
+                <include name="asm-*.jar"/>
+                <include name="asm-util-*.jar"/> 
+                <include name="cglib-*.jar"/>
+                <include name="dom4j-*.jar"/> 
+                <include name="ehcache-*.jar"/> 
+                <include name="junit-*.jar"/> 
+                <include name="commons-logging-*.jar"/>
+                <include name="sitemesh-*.jar"/>
+                <include name="spring-*.jar"/>
+                <include name="commons-lang-*.jar"/>
+                <include name="log4j-*.jar"/>
+                <include name="ognl-*.jar"/>
+                <include name="hsqldb-*.jar"/>
+                <include name="commons-collections-*.jar"/>
+                <include name="commons-pool-*.jar"/>
+                <include name="commons-dbcp-*.jar"/>
+                <include name="commons-cli-*.jar"/>
+                <include name="commons-validator-*.jar"/>
+                <include name="commons-fileupload-*.jar"/>
+                <include name="*oro-*.jar"/>
+                <include name="quartz-*.jar"/>            	            	
             </fileset>
             <fileset dir="${grails.home}/dist" includes="grails-*.jar" />
             <fileset dir="lib"/>
