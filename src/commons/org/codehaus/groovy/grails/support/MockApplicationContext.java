@@ -134,5 +134,8 @@ public class MockApplicationContext implements ApplicationContext {
 	public Resource getResource(String location) {
 		return new ClassPathResource(location);
 	}
+	public boolean containsLocalBean(String arg0) {
+		throw new UnsupportedOperationException("Method not supported by implementation");
+	}
 
 }
