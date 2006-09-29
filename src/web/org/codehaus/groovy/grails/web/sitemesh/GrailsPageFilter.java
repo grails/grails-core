@@ -17,6 +17,7 @@ package org.codehaus.groovy.grails.web.sitemesh;
 
 import java.io.IOException;
 
+import javax.servlet.FilterConfig;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
@@ -41,7 +42,15 @@ import com.opensymphony.module.sitemesh.filter.PageFilter;
 public class GrailsPageFilter extends PageFilter {
 
 	private static final Log LOG = LogFactory.getLog( GrailsPageFilter.class );
+	private FilterConfig filterConfig;
 	
+	
+	public void init(FilterConfig filterConfig) {
+		super.init(filterConfig);
+		this.filterConfig = filterConfig;
+	}
+
+
 	/* (non-Javadoc)
 	 * @see com.opensymphony.module.sitemesh.filter.PageFilter#applyDecorator(com.opensymphony.module.sitemesh.Page, com.opensymphony.module.sitemesh.Decorator, javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
 	 */
