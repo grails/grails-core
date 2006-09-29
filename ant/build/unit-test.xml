@@ -59,7 +59,8 @@
 			<classpath location="${grails.build}"/>
 		</javac>
 		<groovyc srcdir="test/groovy" destdir="${grails.test.build}">    	
-			<classpath refid="classpath"/>
+			<classpath refid="classpath"/>  
+			<classpath location="${grails.test.build}" />
 			<classpath location="${grails.build}"/>			
 		</groovyc>
 	</target>
