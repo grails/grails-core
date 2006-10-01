@@ -44,7 +44,8 @@ public class RunTests {
 	private static Log log = LogFactory.getLog(RunTests.class);
 	
 	public static void main(String[] args) {
-		try {
+		try {     
+			log.info("Bootstrapping Grails from classpath");
 			ConfigurableApplicationContext appCtx = (ConfigurableApplicationContext)GrailsUtil.bootstrapGrailsFromClassPath();
 			GrailsApplication application = (GrailsApplication)appCtx.getBean(GrailsApplication.APPLICATION_ID);
 
@@ -70,6 +71,9 @@ public class RunTests {
 		        SessionHolder sessionHolder = (SessionHolder) TransactionSynchronizationManager.unbindResource(sessionFactory);
 		        SessionFactoryUtils.releaseSession(sessionHolder.getSession(), sessionFactory);				
 			}
+		} 
+		catch(Exception e) {
+			log.error("Error executing tests: " + e.getMessage(), e);
 		}
 		finally {
 			System.exit(0);	
