@@ -20,6 +20,7 @@ import groovy.lang.MetaClassRegistry;
 import java.beans.IntrospectionException;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -62,6 +63,7 @@ public class GrailsHibernateDomainClass extends AbstractGrailsClass implements E
     private GrailsDomainClassProperty[] properties;
     private Map propertyMap = new HashMap();
     private Validator validator;
+    private Set subClasses = new HashSet();
 	private Map constraints = Collections.EMPTY_MAP;
 
     /**
@@ -245,7 +247,7 @@ public class GrailsHibernateDomainClass extends AbstractGrailsClass implements E
 
 
 	public Set getSubClasses() {
-		throw new UnsupportedOperationException("Method 'getSubClasses' is not supported by implementation");
+		return this.subClasses;
 	}
 
 
