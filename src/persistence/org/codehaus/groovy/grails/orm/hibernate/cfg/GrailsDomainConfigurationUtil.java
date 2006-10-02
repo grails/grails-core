@@ -33,6 +33,7 @@ import groovy.lang.GroovyObject;
 import java.beans.IntrospectionException;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -122,10 +123,21 @@ public class GrailsDomainConfigurationUtil {
 
             // if its not a grails domain class and one written in java then add it
             // to grails
+            Map hibernateDomainClassMap = new HashMap();
+            
             if(application != null && persistentClass != null) {
                 GrailsDomainClass dc = application.getGrailsDomainClass(persistentClass.getName());
                 if( dc == null) {
-                    dc = application.addDomainClass(new GrailsHibernateDomainClass(persistentClass, sf,cmd));
+                	// a patch to add inheritance to this system
+                	GrailsHibernateDomainClass ghdc = new
+                		GrailsHibernateDomainClass(persistentClass, sf,cmd);
+                
+                	hibernateDomainClassMap.put(persistentClass
+                									.getClass()
+                									.getName(),
+                								ghdc);
+                	
+                	dc = application.addDomainClass(ghdc);
 	            }
 	            LOG.info("[GrailsDomainConfiguration] Registering dynamic methods on class ["+persistentClass+"]");
 	            try {
@@ -140,6 +152,26 @@ public class GrailsDomainConfigurationUtil {
 	                LOG.warn("[GrailsDomainConfiguration] Introspection exception registering dynamic methods for ["+persistentClass+"]:" + e.getMessage(), e);
 	            }            	
             }
+            // now get through all domainclasses, and add all subclasses to root class
+            for (Iterator it = hibernateDomainClassMap.values().iterator(); it.hasNext(); ) {
+            	GrailsDomainClass baseClass = (GrailsDomainClass) it.next();
+            	if (! baseClass.isRoot()) {
+            		Class superClass = baseClass
+            								.getClazz().getSuperclass();
+            
+            		
+            	while(!superClass.equals(Object.class)&&!superClass.equals(GroovyObject.class)) {
+                   GrailsDomainClass gdc = (GrailsDomainClass)hibernateDomainClassMap.get(superClass.getName());
+                   
+                   if (gdc == null || gdc.getSubClasses()==null) {
+                	   LOG.error("did not find superclass names when mapping inheritance....");
+                       break;
+                   }
+                   gdc.getSubClasses().add(baseClass);
+                   superClass = superClass.getSuperclass();
+            	}
+            }
+          }            
         }
     }
     
