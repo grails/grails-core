@@ -117,6 +117,10 @@
     <% } %>
 
     <welcome-file-list>
+         <!--
+         The order of the welcome pages is important.  JBoss deployment will
+         break if index.gsp is first in the list.
+         -->
          <welcome-file>index.jsp</welcome-file>
          <welcome-file>index.gsp</welcome-file>
     </welcome-file-list>
