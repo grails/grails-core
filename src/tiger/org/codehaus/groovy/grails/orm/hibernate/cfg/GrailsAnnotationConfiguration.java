@@ -83,6 +83,13 @@ public class GrailsAnnotationConfiguration  extends AnnotationConfiguration impl
       * @see org.hibernate.cfg.Configuration#buildSessionFactory()
       */
     public SessionFactory buildSessionFactory() throws HibernateException {
+        // set the class loader to load Groovy classes
+        if(this.grailsApplication != null) {
+        	if(LOG.isDebugEnabled()) {
+        		LOG.debug("[GrailsAnnotationConfiguration] Setting context class loader to Grails GroovyClassLoader");
+        	}
+        	Thread.currentThread().setContextClassLoader( this.grailsApplication.getClassLoader() );        	
+        }             
 
         SessionFactory sessionFactory =  super.buildSessionFactory();
         if(configureDynamicMethods) {
@@ -107,13 +114,15 @@ public class GrailsAnnotationConfiguration  extends AnnotationConfiguration impl
         if (configLocked) {
             return;
         }
-        // set the class loader to load Groovy classes
-        if(this.grailsApplication != null)
-            Thread.currentThread().setContextClassLoader( this.grailsApplication.getClassLoader() );
+        if(LOG.isInfoEnabled()) {
+        	LOG.info("[GrailsAnnotationConfiguration] [" + this.domainClasses.size() + "] Grails domain classes to bind to persistence runtime");
+		}
         // do Grails class configuration
         for(Iterator i = this.domainClasses.iterator();i.hasNext();) {
             GrailsDomainClass domainClass = (GrailsDomainClass)i.next();
-
+            if(LOG.isInfoEnabled()) {
+	        	LOG.info("[GrailsAnnotationConfiguration] Binding persistent class [" + domainClass.getFullName() + "]");
+			}
             GrailsDomainBinder.bindClass(domainClass, super.createMappings());
         }
 
