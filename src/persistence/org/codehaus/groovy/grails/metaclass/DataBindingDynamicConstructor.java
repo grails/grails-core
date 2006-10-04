@@ -77,11 +77,27 @@ public class DataBindingDynamicConstructor implements DynamicConstructor {
 		else if(map instanceof Map) {
 			
 			DataBinder dataBinder = new DataBinder(instance);
-			
-			PropertyValues pv = new MutablePropertyValues((Map)map);
+			Map m = convertPotentialGStrings((Map)map);
+			PropertyValues pv = new MutablePropertyValues(m);
 			dataBinder.bind(pv);
 		}
 		return instance;
+	}    
+	
+	private Map convertPotentialGStrings(Map args) {  
+		Map newArgs = new java.util.HashMap();
+		for(java.util.Iterator i = args.keySet().iterator(); i.hasNext();) {
+			Object key = i.next();  
+			Object value = args.get(key);
+			if(key instanceof groovy.lang.GString) {
+				key = ((groovy.lang.GString)key).toString();
+			}
+			if(value instanceof groovy.lang.GString) {
+				value = ((groovy.lang.GString)value).toString();				
+			}   
+			newArgs.put(key,value);
+		}
+		return newArgs;
 	}
 
 }
