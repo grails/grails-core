@@ -114,14 +114,14 @@ public class GrailsAnnotationConfiguration  extends AnnotationConfiguration impl
         if (configLocked) {
             return;
         }
-        if(LOG.isInfoEnabled()) {
-        	LOG.info("[GrailsAnnotationConfiguration] [" + this.domainClasses.size() + "] Grails domain classes to bind to persistence runtime");
+        if(LOG.isDebugEnabled()) {
+        	LOG.debug("[GrailsAnnotationConfiguration] [" + this.domainClasses.size() + "] Grails domain classes to bind to persistence runtime");
 		}
         // do Grails class configuration
         for(Iterator i = this.domainClasses.iterator();i.hasNext();) {
             GrailsDomainClass domainClass = (GrailsDomainClass)i.next();
-            if(LOG.isInfoEnabled()) {
-	        	LOG.info("[GrailsAnnotationConfiguration] Binding persistent class [" + domainClass.getFullName() + "]");
+            if(LOG.isDebugEnabled()) {
+	        	LOG.debug("[GrailsAnnotationConfiguration] Binding persistent class [" + domainClass.getFullName() + "]");
 			}
             GrailsDomainBinder.bindClass(domainClass, super.createMappings());
         }
