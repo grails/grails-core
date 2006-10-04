@@ -492,8 +492,8 @@ public final class GrailsDomainBinder {
 					table = null;
 			}*/
 			
-			if(LOG.isTraceEnabled()) 
-				LOG.trace("[GrailsDomainBinder] Binding persistent property [" + currentGrailsProp.getName() + "]");
+			if(LOG.isDebugEnabled()) 
+				LOG.debug("[GrailsDomainBinder] Binding persistent property [" + currentGrailsProp.getName() + "]");
 			
 			Value value = null;
 			
@@ -511,16 +511,25 @@ public final class GrailsDomainBinder {
 			}
 			// work out what type of relationship it is and bind value
 			else if ( currentGrailsProp.isManyToOne() ) {
+				if(LOG.isDebugEnabled()) 
+					LOG.debug("[GrailsDomainBinder] Binding property [" + currentGrailsProp.getName() + "] as ManyToOne");
+				
 				value = new ManyToOne( table );
 				bindManyToOne( currentGrailsProp, (ManyToOne) value, mappings );
 			}
-			else if ( currentGrailsProp.isOneToOne()) {				
+			else if ( currentGrailsProp.isOneToOne()) {		
+				if(LOG.isDebugEnabled()) 
+					LOG.debug("[GrailsDomainBinder] Binding property [" + currentGrailsProp.getName() + "] as OneToOne");
+				
 				//value = new OneToOne( table, persistentClass );
 				//bindOneToOne( currentGrailsProp, (OneToOne)value, mappings );
 				value = new ManyToOne( table );
 				bindManyToOne( currentGrailsProp, (ManyToOne) value, mappings );
 			}	
 			else {
+				if(LOG.isDebugEnabled()) 
+					LOG.debug("[GrailsDomainBinder] Binding property [" + currentGrailsProp.getName() + "] as SimpleValue");
+				
 				value = new SimpleValue( table );
 				bindSimpleValue( persistantProperties[i], (SimpleValue) value, mappings );
 			}

@@ -23,10 +23,11 @@ import java.security.CodeSource;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 
-import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -38,6 +39,7 @@ import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException;
 import org.codehaus.groovy.grails.injection.GrailsInjectionOperation;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsDomainConfigurationUtil;
 import org.springframework.core.io.Resource;
+import org.springframework.util.Assert;
 
 /**
  * Default implementation of the GrailsApplication interface that manages application loading,
@@ -114,6 +116,7 @@ public class DefaultGrailsApplication implements GrailsApplication {
         this.cl.setShouldRecompile(Boolean.TRUE);
         this.cl.setResourceLoader(resourceLoader);
            Collection loadedResources = new ArrayList();
+           Set loadedClasses = new HashSet();
 
             for (int i = 0; resources != null && i < resources.length; i++) {
                 log.debug("Loading groovy file :[" + resources[i].getFile().getAbsolutePath() + "]");
@@ -121,20 +124,32 @@ public class DefaultGrailsApplication implements GrailsApplication {
                     try {
                         String className = resourceHolder.getClassName(resources[i]);
                         if(!StringUtils.isBlank(className)) {
-                            cl.loadClass(className,true,false);
+                            Class c = cl.loadClass(className,true,false);
+                            Assert.notNull(c,"Groovy Bug! GCL loadClass method returned a null class!");
+                            loadedClasses.add(c);
                             loadedResources = resourceLoader.getLoadedResources();
                         }
                     } catch (ClassNotFoundException e) {
                         throw new org.codehaus.groovy.grails.exceptions.CompilationFailedException("Compilation error parsing file ["+resources[i].getFilename()+"]: " + e.getMessage(), e);
                     }
                 }
+                else {
+                	Class c;
+					try {
+						c = cl.loadClass(resourceHolder.getClassName(resources[i]));
+					} catch (ClassNotFoundException e) {
+						throw new GrailsConfigurationException("Groovy Bug! Resource ["+resources[i]+"] loaded, but not returned by GCL.");
+					}
+                	
+                	loadedClasses.add(c);
+                }
             }
 
         // get all the classes that were loaded
         if(log.isDebugEnabled())
-            log.debug( "loaded classes: ["+ArrayUtils.toString(this.cl.getLoadedClasses())+"]" );
+            log.debug( "loaded classes: ["+loadedClasses+"]" );
 
-        Class[] classes = this.cl.getLoadedClasses();
+        Class[] classes = (Class[])loadedClasses.toArray(new Class[loadedClasses.size()]);
         this.allClasses = classes;
         configureLoadedClasses(classes);
     }

@@ -28,7 +28,8 @@ import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
 import org.springframework.orm.hibernate3.HibernateTemplate;
 import org.springframework.beans.BeanWrapper;
-import org.springframework.beans.BeanWrapperImpl;
+import org.springframework.beans.BeanWrapperImpl;        
+import groovy.lang.GroovyObject;
 
 import java.io.Serializable;
 import java.util.regex.Pattern;
@@ -85,9 +86,14 @@ public class SavePersistentMethod extends AbstractDynamicPersistentMethod {
                     // the object automatically when the session is flushed
                     if(t.contains(target)) {
                         t.evict(target);
-                    }
-                    DelegatingMetaClass metaClass = (DelegatingMetaClass)InvokerHelper.getInstance().getMetaRegistry().getMetaClass(target.getClass());
-                    metaClass.setProperty(target,DomainClassMethods.ERRORS_PROPERTY,errors);
+                    }        
+					if(target instanceof GroovyObject) {
+						((GroovyObject)target).setProperty(DomainClassMethods.ERRORS_PROPERTY,errors);
+					}   
+					else {
+	                    DelegatingMetaClass metaClass = (DelegatingMetaClass)InvokerHelper.getInstance().getMetaRegistry().getMetaClass(target.getClass());
+	                    metaClass.setProperty(target,DomainClassMethods.ERRORS_PROPERTY,errors);						
+					}
                     return null;
                 }
             }

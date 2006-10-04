@@ -14,20 +14,6 @@
  */
 package org.codehaus.groovy.grails.orm.hibernate.cfg;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.GrailsClassUtils;
-import org.codehaus.groovy.grails.commons.GrailsDomainClass;
-import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
-import org.codehaus.groovy.grails.commons.metaclass.DynamicMethods;
-import org.codehaus.groovy.grails.metaclass.DomainClassMethods;
-import org.codehaus.groovy.grails.metaclass.AddRelatedDynamicMethod;
-import org.codehaus.groovy.grails.orm.hibernate.GrailsHibernateDomainClass;
-import org.hibernate.EntityMode;
-import org.hibernate.SessionFactory;
-import org.hibernate.metadata.ClassMetadata;
-
 import groovy.lang.GroovyObject;
 
 import java.beans.IntrospectionException;
@@ -36,6 +22,21 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.commons.GrailsClassUtils;
+import org.codehaus.groovy.grails.commons.GrailsDomainClass;
+import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
+import org.codehaus.groovy.grails.commons.metaclass.DynamicMethods;
+import org.codehaus.groovy.grails.metaclass.AddRelatedDynamicMethod;
+import org.codehaus.groovy.grails.metaclass.DomainClassMethods;
+import org.codehaus.groovy.grails.orm.hibernate.GrailsHibernateDomainClass;
+import org.hibernate.EntityMode;
+import org.hibernate.SessionFactory;
+import org.hibernate.metadata.ClassMetadata;
+import org.hibernate.type.TypeFactory;
 
 /**
  * Utility methods used in configuring the Grails Hibernate integration
@@ -199,6 +200,15 @@ public class GrailsDomainConfigurationUtil {
 			}
 		}
 		return associationMap;
+	}
+	/**
+	 * Establish whether its a basic type
+	 * 
+	 * @param prop The domain class property
+	 * @return True if it is basic
+	 */
+	public static boolean isBasicType(GrailsDomainClassProperty prop) {
+		return TypeFactory.basic(prop.getType().getName()) != null;
 	}
 	
 	

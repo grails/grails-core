@@ -216,6 +216,9 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
 
                 establishDomainClassRelationship( currentProp );
             }
+            else if(!GrailsDomainConfigurationUtil.isBasicType(currentProp)) {
+            	establishDomainClassRelationship( currentProp );
+            }
         }
 
     }
