@@ -37,7 +37,7 @@ class JavascriptTagLib  {
 									]
 										
 	static {
-		LIBRARY_MAPPINGS.scriptaculous = LIBRARY_MAPPINGS.prototype + ['prototype/scriptaculous','prototype/builder','prototype/controls','prototype/effects','prototype/slider','prototype/draganddrop']		
+		LIBRARY_MAPPINGS.scriptaculous = LIBRARY_MAPPINGS.prototype + ['prototype/scriptaculous','prototype/builder','prototype/controls','prototype/effects','prototype/slider','prototype/dragdrop']		
 		LIBRARY_MAPPINGS.rico = LIBRARY_MAPPINGS.prototype + ['prototype/rico']				
 	}									
 	/**
@@ -197,7 +197,8 @@ class JavascriptTagLib  {
     def submitToRemote = { attrs, body ->
     	// get javascript provider
 		def p = getProvider()    
-		// prepare form settings
+		// prepare form settings 
+		attrs.forSubmitTag = ".form"
 		prepareAjaxForm(p,attrs)    
         def params = [  onclick:TagLibUtil.outToString(remoteFunction,attrs) + 'return false',
 					    type: 'button',
@@ -212,7 +213,8 @@ class JavascriptTagLib  {
 	
 	 private prepareAjaxForm(provider,attrs) {
 		if(provider instanceof PrototypeProvider) {
-		    attrs.params = "Form.serialize(this)"
+			if(!attrs.forSubmitTag) attrs.forSubmitTag = ""
+		    attrs.params = "Form.serialize(this${attrs.forSubmitTag})"
 		}
 		else if(provider instanceof YahooProvider) {
 			if(attrs.before) {
