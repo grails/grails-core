@@ -16,8 +16,9 @@ public class GrailsResourceUtilsTest extends TestCase {
 	}
 
 	public void testIsDomainClass() throws Exception {
-		URL testUrl = new URL(GrailsResourceUtilsTest.TEST_URL);
-		
+
+        URL testUrl = new URL(GrailsResourceUtilsTest.TEST_URL);
+
 		assertTrue(GrailsResourceUtils.isDomainClass(testUrl));
 	}
 

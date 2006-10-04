@@ -34,30 +34,38 @@ import org.springframework.core.io.Resource;
  * Created: 20th June 2006
  */
 public class GrailsResourceUtils {
-	
-    public static Pattern DOMAIN_PATH_PATTERN = Pattern.compile(".+\\\\grails-app\\\\domain\\\\(.+)\\.groovy");
-	public static Pattern GRAILS_RESOURCE_PATTERN = Pattern.compile(".+\\\\grails-app\\\\\\w+\\\\(.+)\\.groovy");
-    static{
-        if(File.separator.equals("/")){
-			DOMAIN_PATH_PATTERN = Pattern.compile(".+/grails-app/domain/(.+)\\.groovy");   
-            GRAILS_RESOURCE_PATTERN =    
-                Pattern.compile(".+/grails-app/\\w+/(.+)\\.groovy");
-        }
-    }    
 
-	/**
+    private static final String FS = File.separator;
+
+    /*
+    Domain path is always matched against the normalized File representation of an URL and
+    can therefore work with slashes as separators.
+    */
+    public static Pattern DOMAIN_PATH_PATTERN = Pattern.compile(".+/grails-app/domain/(.+)\\.groovy");
+
+    /*
+    Resources are resolved against the platform specific path and must therefore obey the
+    specific File.separator.
+    */
+    public static Pattern GRAILS_RESOURCE_PATTERN;
+    static {
+        String fs = File.separator;
+        if (fs.equals("\\")) fs = "\\\\"; // backslashes need escaping in regexes
+        GRAILS_RESOURCE_PATTERN = Pattern.compile(".+"+fs +"grails-app"+fs +"\\w+"+fs +"(.+)\\.groovy");
+    }
+
+
+    /**
 	 * Checks whether the file referenced by the given url is a domain class
 	 * 
 	 * @param url The URL instance
 	 * @return True if it is a domain class
 	 */
 	public static boolean isDomainClass(URL url) {
-		if(url == null)return false;
-		
-		if(DOMAIN_PATH_PATTERN.matcher(url.getFile()).find()) return true;
-				
-		return false;
-	}
+		if (url == null) return false;
+
+        return DOMAIN_PATH_PATTERN.matcher(url.getFile()).find();
+    }
 
 	/**
 	 * Gets the class name of the specified Grails resource
@@ -95,9 +103,6 @@ public class GrailsResourceUtils {
 	 */
 	public static boolean isGrailsPath(String path) {
 		Matcher m = GrailsResourceUtils.GRAILS_RESOURCE_PATTERN.matcher(path);
-        if(m.find()) {
-            return true;
-        }
-        return false;		
-	}
+        return m.find();
+    }
 }
