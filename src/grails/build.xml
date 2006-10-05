@@ -583,6 +583,7 @@ Targets:
                 <include name="commons-cli-*.jar"/>
                 <include name="commons-validator-*.jar"/>
                 <include name="commons-fileupload-*.jar"/>
+                <include name="commons-io-*.jar"/> 
                 <include name="*oro-*.jar"/>
                 <include name="quartz-*.jar"/>            	            	
             </fileset>
