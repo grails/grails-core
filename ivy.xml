@@ -1,9 +1,10 @@
 <ivy-module version="1.0">
     <info organisation="codehaus" module="grails"/>
     <dependencies>
-        <dependency org="apache" name="commons-lang" rev="2.0"/>
+        <dependency org="apache" name="commons-lang" rev="2.1"/>
         <!--<dependency org="apache" name="ant" rev="1.6.2"/>-->
         <dependency org="apache" name="commons-cli" rev="1.0"/>
+		<dependency org="apache" name="commons-io" rev="1.2"/>
         <dependency org="apache" name="commons-collections" rev="3.0"/>
         <dependency org="apache" name="commons-dbcp" rev="1.2.1"/>
         <dependency org="apache" name="commons-el" rev="1.0"/> 
