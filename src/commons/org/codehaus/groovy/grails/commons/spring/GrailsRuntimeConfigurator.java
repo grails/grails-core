@@ -19,6 +19,7 @@ package org.codehaus.groovy.grails.commons.spring;
 import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.grails.beans.factory.UrlMappingFactoryBean;
 import org.codehaus.groovy.grails.commons.*;
 import org.codehaus.groovy.grails.orm.hibernate.ConfigurableLocalSessionFactoryBean;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsDomainConfigurationUtil;
@@ -75,6 +76,7 @@ import java.util.*;
  */
 public class GrailsRuntimeConfigurator {
 
+	public static final String GRAILS_URL_MAPPINGS = "grailsUrlMappings";
 	public static final String SPRING_RESOURCES_XML = "/WEB-INF/spring/resources.xml";
 	public static final String QUARTZ_SCHEDULER_BEAN = "quartzScheduler";
 	public static final String OPEN_SESSION_IN_VIEW_INTERCEPTOR_BEAN = "openSessionInViewInterceptor";
@@ -315,44 +317,45 @@ public class GrailsRuntimeConfigurator {
 		springConfig
 			.addSingletonBean(MULTIPART_RESOLVER_BEAN,CommonsMultipartResolver.class);
         
-		LOG.info("[SpringConfig] Configuring i18n support");
+		LOG.debug("[RuntimeConfiguration] Configuring i18n support");
 		populateI18nSupport(springConfig);
 		
-		LOG.info("[SpringConfig] Configuring Grails data source");
+		LOG.debug("[RuntimeConfiguration] Configuring Grails data source");
 		populateDataSourceReferences(springConfig);	
 		
 		// configure domain classes
-		LOG.info("[SpringConfig] Configuring Grails domain");
+		LOG.debug("[RuntimeConfiguration] Configuring Grails domain");
 		populateDomainClassReferences(springConfig);		
 		
 		// configure services
-		LOG.info("[SpringConfig] Configuring Grails services");
+		LOG.debug("[RuntimeConfiguration] Configuring Grails services");
 		populateServiceClassReferences(springConfig);
 		
 		// configure grails controllers
-		LOG.info("[SpringConfig] Configuring Grails controllers");
+		LOG.debug("[RuntimeConfiguration] Configuring Grails controllers");
 		populateControllerReferences(springConfig);
 		
 		// configure scaffolding
-		LOG.info("[SpringConfig] Configuring Grails scaffolding");
+		LOG.debug("[RuntimeConfiguration] Configuring Grails scaffolding");
 		populateScaffoldingReferences(springConfig);		
 	
 		// configure tasks
-		LOG.info("[SpringConfig] Configuring Grails scheduled jobs");
+		LOG.debug("[RuntimeConfiguration] Configuring Grails scheduled jobs");
 		populateJobReferences(springConfig);
 		
-		LOG.info("[SpringConfig] conf the applicationContext-afterConfSet");
-		populateAfterConfSet(springConfig);
+		LOG.debug("[RuntimeConfiguration] Proccessing additional external configurations");
+		doPostResourceConfiguration(springConfig);
 	
 		return springConfig.getApplicationContext();	
 	}
-	private void populateAfterConfSet(RuntimeSpringConfiguration springConfig) {
+	private void doPostResourceConfiguration(RuntimeSpringConfiguration springConfig) {
 	     try {
 	    	 Resource springResources = parent.getResource(GrailsRuntimeConfigurator.SPRING_RESOURCES_XML);
 	    	 if(springResources.exists()) {
-	    		LOG.debug("[SpringConfig] Configuring additional beans from " + GrailsRuntimeConfigurator.SPRING_RESOURCES_XML);
+	    		LOG.debug("[RuntimeConfiguration] Configuring additional beans from " +springResources.getURL());
 	    		XmlBeanFactory xmlBf = new XmlBeanFactory(springResources);
 				String[] beanNames = xmlBf.getBeanDefinitionNames();
+				LOG.debug("[RuntimeConfiguration] Found ["+beanNames.length+"] beans to configure");				
 				for (int k = 0; k < beanNames.length; k++) {
 					BeanDefinition bd = xmlBf.getBeanDefinition(beanNames[k]);
 					
@@ -360,8 +363,11 @@ public class GrailsRuntimeConfigurator {
 				}
 	    		 
 	    	 }
+	    	 else if(LOG.isDebugEnabled()) {
+	    		 LOG.debug("[RuntimeConfiguration] " + GrailsRuntimeConfigurator.SPRING_RESOURCES_XML + " not found. Skipping configuration.");
+	    	 }
 		} catch (Exception ex) {
-			LOG.warn("[SpringConfig] Unable to perform post initialization config. " + SPRING_RESOURCES_XML + " not found.", ex);
+			LOG.warn("[RuntimeConfiguration] Unable to perform post initialization config: " + SPRING_RESOURCES_XML , ex);
 		}
 	}
 	private void populateJobReferences(RuntimeSpringConfiguration springConfig) {
@@ -443,7 +449,7 @@ public class GrailsRuntimeConfigurator {
             }
 
             if(scaffoldedClass == null) {
-                LOG.info("[Spring] Scaffolding disabled for controller ["+simpleControllers[i].getFullName()+"], no equivalent domain class named ["+simpleControllers[i].getName()+"]");
+                LOG.debug("[RuntimeConfiguration] Scaffolding disabled for controller ["+simpleControllers[i].getFullName()+"], no equivalent domain class named ["+simpleControllers[i].getName()+"]");
             }
             else {
                 BeanConfiguration scaffolder = 
@@ -500,6 +506,10 @@ public class GrailsRuntimeConfigurator {
 	private void populateControllerReferences(RuntimeSpringConfiguration springConfig) {
 
         Properties urlMappings = new Properties();
+        springConfig
+        	.addSingletonBean(GrailsRuntimeConfigurator.GRAILS_URL_MAPPINGS, UrlMappingFactoryBean.class)
+        	.addProperty("mappings", urlMappings);
+        	
         
 		// Create the Grails Spring MVC controller bean that delegates to Grails controllers
 		springConfig
@@ -588,7 +598,7 @@ public class GrailsRuntimeConfigurator {
 		}		
 		if (simpleUrlHandlerMapping != null) {
 			simpleUrlHandlerMapping
-				.addProperty("mappings", urlMappings);
+				.addProperty("mappings", new RuntimeBeanReference(GRAILS_URL_MAPPINGS));
 		}
         GrailsTagLibClass[] tagLibs = application.getGrailsTabLibClasses();
         for (int i = 0; i < tagLibs.length; i++) {
@@ -730,7 +740,7 @@ public class GrailsRuntimeConfigurator {
         GrailsDataSource ds = application.getGrailsDataSource();
 
 		if(ds != null && !parent.containsBean(DATA_SOURCE_BEAN)) {
-            LOG.info("[SpringConfig] Configuring for environment: " + ds.getName());
+            LOG.info("[RuntimeConfiguration] Configuring for environment: " + ds.getName());
             BeanConfiguration dataSource;
 			if(ds.isPooled()) {
 				dataSource = springConfig
@@ -748,13 +758,13 @@ public class GrailsRuntimeConfigurator {
 				.addProperty("password",ds.getPassword());
 			
             if(ds.getConfigurationClass() != null) {
-                LOG.info("[SpringConfig] Using custom Hibernate configuration class ["+ds.getConfigurationClass()+"]");
+                LOG.info("[RuntimeConfiguration] Using custom Hibernate configuration class ["+ds.getConfigurationClass()+"]");
                 localSessionFactoryBean
                 	.addProperty("configClass", ds.getConfigurationClass());
             }			
 		}
 		else if(!parent.containsBean(DATA_SOURCE_BEAN)){
-            LOG.info("[SpringConfig] No data source found, using in-memory HSQLDB");
+            LOG.info("[RuntimeConfiguration] No data source found, using in-memory HSQLDB");
             // if no data source exists create in-memory HSQLDB instance
 			springConfig
 				.addSingletonBean(DATA_SOURCE_BEAN, BasicDataSource.class)
@@ -781,7 +791,7 @@ public class GrailsRuntimeConfigurator {
 					vendorNameDialectMappings.put(e.getValue(), "org.hibernate.dialect." + e.getKey());
 				}
 			} catch (IOException e) {
-				LOG.info("[SpringConfig] Error loading hibernate-dialects.properties file: " + e.getMessage());
+				LOG.info("[RuntimeConfiguration] Error loading hibernate-dialects.properties file: " + e.getMessage());
 			}
 		}
 		
@@ -849,7 +859,7 @@ public class GrailsRuntimeConfigurator {
 		
 		// create locale change interceptor
 		springConfig
-			.addSingletonBean("localChangeInterceptor",LocaleChangeInterceptor.class)
+			.addSingletonBean("localeChangeInterceptor",LocaleChangeInterceptor.class)
 			.addProperty("paramName","lang");
 		
 		// set-up cookie based locale resolver
