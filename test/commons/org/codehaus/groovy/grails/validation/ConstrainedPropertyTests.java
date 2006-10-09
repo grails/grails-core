@@ -555,11 +555,11 @@ public class ConstrainedPropertyTests extends TestCase {
         GroovyClassLoader gcl = new GroovyClassLoader();
 
         Class groovyClass = gcl.parseClass( "class TestClass {\n" +
-                        "@Property Long id\n" +
-                        "@Property Long version\n" +
-                        "@Property String login\n" +
-                        "@Property String email\n" +
-                        "@Property constraints = {\n" +
+                        "Long id\n" +
+                        "Long version\n" +
+                        "String login\n" +
+                        "String email\n" +
+                        "static constraints = {\n" +
                             "login(length:5..15,nullable:false,blank:false)\n" +
                             "email(email:true)\n" +
                         "}\n" +
@@ -573,7 +573,7 @@ public class ConstrainedPropertyTests extends TestCase {
         assertTrue(loginConstraint.getAppliedConstraints().size() == 3);
 
         ConstrainedProperty emailConstraint = (ConstrainedProperty)constrainedProperties.get("email");
-        assertTrue(emailConstraint.getAppliedConstraints().size() == 1);
+        assertEquals(2,emailConstraint.getAppliedConstraints().size());
 
         GroovyObject go = (GroovyObject)groovyClass.newInstance();
         go.setProperty("email", "rubbish_email");
