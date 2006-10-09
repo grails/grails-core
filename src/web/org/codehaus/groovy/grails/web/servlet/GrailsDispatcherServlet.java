@@ -19,14 +19,10 @@ import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsBootstrapClass;
 import org.codehaus.groovy.grails.commons.GrailsConfigUtils;
 import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator;
-import org.hibernate.FlushMode;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
+import org.codehaus.groovy.grails.commons.spring.GrailsWebApplicationContext;
 import org.springframework.beans.BeansException;
-import org.springframework.orm.hibernate3.SessionFactoryUtils;
-import org.springframework.orm.hibernate3.SessionHolder;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.context.support.WebApplicationContextUtils;
 import org.springframework.web.servlet.DispatcherServlet;
 
 /**
@@ -36,6 +32,8 @@ import org.springframework.web.servlet.DispatcherServlet;
  * in the parent application context.
  *
  * @author Steven Devijver
+ * @author Graeme Rocher
+ * 
  * @since Jul 2, 2005
  */
 public class GrailsDispatcherServlet extends DispatcherServlet {
@@ -46,74 +44,34 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
     }
 
     protected WebApplicationContext createWebApplicationContext(WebApplicationContext parent) throws BeansException {
-        // use config file locations if available
-        getServletContext().setAttribute(GrailsApplicationAttributes.PARENT_APPLICATION_CONTEXT,parent);
-/*        String[] locations = null;
-        if (null != getContextConfigLocation()) {
-            locations = StringUtils.tokenizeToStringArray(
-                    getContextConfigLocation(),
-                    ConfigurableWebApplicationContext.CONFIG_LOCATION_DELIMITERS);
-        }*/
+    	WebApplicationContext wac = WebApplicationContextUtils.getWebApplicationContext(getServletContext());
+    	WebApplicationContext webContext;
         // construct the SpringConfig for the container managed application
         GrailsApplication application = (GrailsApplication) parent.getBean(GrailsApplication.APPLICATION_ID, GrailsApplication.class);
-        GrailsRuntimeConfigurator configurator = new GrailsRuntimeConfigurator(application,parent);
-        
-        // return a context that obeys grails' settings
-        WebApplicationContext webContext = configurator.configure(super.getServletContext()); 
-
+    	
+    	if(wac instanceof GrailsWebApplicationContext) {
+    		webContext = wac;
+    	}
+    	else {
+            GrailsRuntimeConfigurator configurator = new GrailsRuntimeConfigurator(application,parent);
+            
+            // return a context that obeys grails' settings
+            webContext = configurator.configure(super.getServletContext());     		
+    	}
+        // use config file locations if available
+        getServletContext().setAttribute(GrailsApplicationAttributes.PARENT_APPLICATION_CONTEXT,parent);
         getServletContext().setAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT,webContext );
         getServletContext().setAttribute(GrailsApplication.APPLICATION_ID,application);
+        
         // configure scaffolders
         GrailsConfigUtils.configureScaffolders(application, webContext);
 
-        SessionFactory sessionFactory = (SessionFactory)webContext.getBean("sessionFactory");
-
-        if(sessionFactory != null) {
-            Session session = null;
-            boolean participate = false;
-            // single session mode
-            if (TransactionSynchronizationManager.hasResource(sessionFactory)) {
-                // Do not modify the Session: just set the participate flag.
-                participate = true;
-            }
-            else {
-                logger.debug("Opening single Hibernate session in GrailsDispatcherServlet");
-                session = SessionFactoryUtils.getSession(sessionFactory,true);
-                session.setFlushMode(FlushMode.AUTO);
-                TransactionSynchronizationManager.bindResource(sessionFactory, new SessionHolder(session));
-            }
-            // init the Grails application
-            try {
-                GrailsBootstrapClass[] bootstraps =  application.getGrailsBootstrapClasses();
-                for (int i = 0; i < bootstraps.length; i++) {
-                    bootstraps[i].callInit(  getServletContext() );
-                }
-                if(!participate) {
-                    if(!FlushMode.NEVER.equals(session.getFlushMode())) {
-                        session.flush();
-                    }                	
-                }
-            }
-            finally {
-                if (!participate) {
-                    // single session mode
-                    TransactionSynchronizationManager.unbindResource(sessionFactory);
-                    logger.debug("Closing single Hibernate session in GrailsDispatcherServlet");
-                    try {
-                        SessionFactoryUtils.releaseSession(session, sessionFactory);
-                    }
-                    catch (RuntimeException ex) {
-                        logger.error("Unexpected exception on closing Hibernate Session", ex);
-                    }
-                }
-            }
-            
-        }
+        GrailsConfigUtils.executeGrailsBootstraps(application, webContext, getServletContext());
 
         return webContext;
     }
 
-    public void destroy() {
+	public void destroy() {
         WebApplicationContext webContext = getWebApplicationContext();
         GrailsApplication application = (GrailsApplication) webContext.getBean(GrailsApplication.APPLICATION_ID, GrailsApplication.class);
 
