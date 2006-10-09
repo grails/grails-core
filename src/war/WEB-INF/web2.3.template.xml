@@ -6,10 +6,22 @@
 
 <web-app>
 
-    <context-param>
-        <param-name>log4jConfigLocation</param-name>
-        <param-value>/WEB-INF/log4j.properties</param-value>
-    </context-param>
+
+	<context-param>
+		<param-name>log4jConfigLocation</param-name>
+		<param-value>/WEB-INF/log4j.properties</param-value>
+	</context-param>
+	
+	<context-param>
+	  <param-name>contextConfigLocation</param-name>
+	  <param-value>/WEB-INF/applicationContext.xml</param-value>
+	</context-param>  	
+	
+	<filter>
+	   	<filter-name>sitemesh</filter-name>
+	    <filter-class>org.codehaus.groovy.grails.web.sitemesh.GrailsPageFilter</filter-class>
+	</filter>
+
 
     <filter>
            <filter-name>sitemesh</filter-name>
@@ -30,25 +42,15 @@
       </filter>
 
     <% if(dev) { %>
-    <filter>
-        <filter-name>reloadFilter</filter-name>
-        <filter-class>org.codehaus.groovy.grails.web.servlet.filter.GrailsReloadServletFilter</filter-class>
-    </filter>
+	    <filter>
+	        <filter-name>reloadFilter</filter-name>
+	        <filter-class>org.codehaus.groovy.grails.web.servlet.filter.GrailsReloadServletFilter</filter-class>
+	    </filter>
 
-        <!-- only apply reload filter for controller uris -->
-        <% for ( c in controllers ) { %>
-            <filter-mapping>
-                <filter-name>reloadFilter</filter-name>
-                <url-pattern>/${c}/*</url-pattern>
-            </filter-mapping>
-        <% } %>
-
-        <% for ( f in flows ) { %>
-            <filter-mapping>
-                <filter-name>reloadFilter</filter-name>
-                <url-pattern>/${f}/*</url-pattern>
-            </filter-mapping>
-        <% } %>
+        <filter-mapping>
+            <filter-name>reloadFilter</filter-name>
+            <url-pattern>/*</url-pattern>
+        </filter-mapping>
     <% } %>
 
     <filter-mapping>
@@ -67,19 +69,21 @@
         <load-on-startup>1</load-on-startup>
     </servlet>
 
-    <!-- Context loader servlet for those older servlet engines. -->
-    <servlet>
-        <servlet-name>context</servlet-name>
-        <servlet-class>org.springframework.web.context.ContextLoaderServlet</servlet-class>
-        <load-on-startup>2</load-on-startup>
-    </servlet>
+	<!-- Context loader servlet for those older servlet engines. -->
+	<servlet>
+		<servlet-name>context</servlet-name>
+		<servlet-class>org.springframework.web.context.ContextLoaderServlet</servlet-class>
+		<load-on-startup>1</load-on-startup>
+	</servlet>
 
-    <!-- Grails dispatcher servlet -->
-    <servlet>
-        <servlet-name>grails</servlet-name>
-        <servlet-class>org.codehaus.groovy.grails.web.servlet.GrailsDispatcherServlet</servlet-class>
-        <load-on-startup>3</load-on-startup>
-    </servlet>
+
+	<!-- Grails dispatcher servlet -->
+	<servlet>
+		<servlet-name>grails</servlet-name>
+		<servlet-class>org.codehaus.groovy.grails.web.servlet.GrailsDispatcherServlet</servlet-class>
+		<load-on-startup>2</load-on-startup>
+	</servlet>
+
 
     <!-- The Groovy Server Pages servlet -->
       <servlet>
