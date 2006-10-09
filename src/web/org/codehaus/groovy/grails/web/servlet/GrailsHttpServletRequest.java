@@ -16,9 +16,11 @@
 package org.codehaus.groovy.grails.web.servlet;
 
 import groovy.lang.GroovyObject;
+import groovy.lang.MetaClass;
 import groovy.lang.MissingMethodException;
 
 import org.codehaus.groovy.grails.web.metaclass.GetParamsDynamicProperty;
+import org.codehaus.groovy.runtime.InvokerHelper;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.web.multipart.MultipartFile;
@@ -39,7 +41,7 @@ import java.util.*;
  * @see javax.servlet.http.HttpServletRequest
  * @see java.util.Map
  */
-public class GrailsHttpServletRequest extends HttpServletRequestWrapper implements Map, MultipartHttpServletRequest {
+public class GrailsHttpServletRequest extends HttpServletRequestWrapper implements Map, GroovyObject, MultipartHttpServletRequest {
 
     Map controllerParams = Collections.EMPTY_MAP;
     BeanWrapper requestBean;
@@ -179,6 +181,29 @@ public class GrailsHttpServletRequest extends HttpServletRequestWrapper implemen
 		else {
 			throw new MissingMethodException("getFileNames", GrailsHttpServletRequest.class,new Object[0]);
 		}
+	}
+
+	public MetaClass getMetaClass() {
+		return InvokerHelper
+					.getInstance()
+					.getMetaRegistry()
+					.getMetaClass(getClass());
+	}
+
+	public Object getProperty(String property) {
+		return get(property);
+	}
+
+	public Object invokeMethod(String name, Object args) {
+		return InvokerHelper.invokeMethod(getRequest(), name, args);
+	}
+
+	public void setMetaClass(MetaClass metaClass) {
+		throw new UnsupportedOperationException("Method setMetaClass not supported on type " + GrailsHttpServletRequest.class);
+	}
+
+	public void setProperty(String property, Object newValue) {
+		put(property,newValue);
 	}
 
 }
