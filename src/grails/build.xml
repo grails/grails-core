@@ -2,7 +2,7 @@
 
 	<property name="server.port" value="8080"/>
 
-    <property name="servlet.version" value="2.3"/>
+    <property name="servlet.version" value="2.4"/>
 	<property name="path" value="" />
 
     <taskdef name="groovyc" classname="org.codehaus.groovy.ant.Groovyc" />
@@ -428,7 +428,8 @@ Targets:
 	
 	<target name="shell" depends="package" description="Opens the Grails shell">
 		<path id="shell.classpath">
-			<!--<pathelement location="${grails.home}/src/web-app/WEB-INF"/>-->
+			<!--<pathelement location="${grails.home}/src/web-app/WEB-INF"/>-->   
+            <pathelement location="${basedir}/tmp/war"/>						
             <pathelement location="${basedir}/tmp/war/WEB-INF"/>
             <pathelement location="${basedir}/tmp/war/WEB-INF/classes"/>
             <fileset dir="${grails.home}/lib"/>
@@ -443,6 +444,7 @@ Targets:
 	<target name="console" depends="package" description="Opens the Grails console">
 		<path id="console.classpath">
 			<!--<pathelement location="${grails.home}/src/web-app/WEB-INF"/>-->
+            <pathelement location="${basedir}/tmp/war"/>			
             <pathelement location="${basedir}/tmp/war/WEB-INF"/>
             <pathelement location="${basedir}/tmp/war/WEB-INF/classes"/>
             <fileset dir="${grails.home}/lib"/>
