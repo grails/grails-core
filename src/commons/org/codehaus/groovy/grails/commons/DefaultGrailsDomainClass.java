@@ -76,8 +76,6 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
         }
         this.propertyMap = new HashMap();
         this.relationshipMap = getAssociationMap();
-        // process the constraints
-        evaluateConstraints();
 
         // get mapped by setting
         if(getPropertyOrStaticPropertyOrFieldValue(GrailsDomainClassProperty.MAPPED_BY, String.class) != null)
@@ -140,6 +138,8 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
             }
         }
         this.persistantProperties = (GrailsDomainClassProperty[])tempList.toArray( new GrailsDomainClassProperty[tempList.size()]);
+        // process the constraints
+        evaluateConstraints();
     }
 
     public Map getAssociationMap() {
@@ -184,10 +184,9 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
             GroovyObject instance = (GroovyObject)reference.getWrappedInstance();
             try {
                 DynamicMethods interceptor = new GroovyDynamicMethodsInterceptor(instance);
-                interceptor.addDynamicProperty( new ConstraintsEvaluatingDynamicProperty() );
+                interceptor.addDynamicProperty( new ConstraintsEvaluatingDynamicProperty(this.persistantProperties) );
 
                 this.constraints = (Map)instance.getProperty(GrailsDomainClassProperty.CONSTRAINTS);
-
             } catch (IntrospectionException e) {
                 LOG.error("Introspection error reading domain class ["+getFullName()+"] constraints: " + e.getMessage(), e);
             }

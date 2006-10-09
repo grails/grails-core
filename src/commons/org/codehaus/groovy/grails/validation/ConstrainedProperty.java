@@ -938,7 +938,8 @@ public class ConstrainedProperty   {
         protected void processValidate(Object target, Object propertyValue, Errors errors) {
             Object[] args = new Object[] { constraintPropertyName, constraintOwningClass, propertyValue, new Integer(maxSize) };
             if(propertyValue == null) {
-                super.rejectValue(errors,MAX_LENGTH_CONSTRAINT + EXCEEDED_SUFFIX,args,getDefaultMessage(DEFAULT_INVALID_MAX_LENGTH_MESSAGE_CODE, args));
+                // if null then nothing to validate
+            	return;
             }
             else if(propertyValue.getClass().isArray()) {
                 int length = Array.getLength( propertyValue );
@@ -1012,7 +1013,8 @@ public class ConstrainedProperty   {
         protected void processValidate(Object target, Object propertyValue, Errors errors) {
             Object[] args = new Object[] { constraintPropertyName, constraintOwningClass, propertyValue, new Integer(minSize) };
             if(propertyValue == null) {
-                super.rejectValue(errors,MIN_LENGTH_CONSTRAINT + NOTMET_SUFFIX,args,getDefaultMessage(DEFAULT_INVALID_MIN_LENGTH_MESSAGE_CODE, args));
+                // if null nothing to validate
+            	return;
             }
             else if(propertyValue.getClass().isArray()) {
                 int length = Array.getLength( propertyValue );

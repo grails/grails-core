@@ -25,11 +25,15 @@ import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.grails.commons.metaclass.AbstractDynamicProperty;
 import org.codehaus.groovy.grails.commons.metaclass.ProxyMetaClass;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
+import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
+import org.codehaus.groovy.grails.orm.hibernate.validation.ConstrainedPersistentProperty;
+import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 import org.codehaus.groovy.grails.validation.ConstrainedPropertyBuilder;
 import org.springframework.beans.BeansException;
 
 import java.io.InputStream;
 import java.util.Collections;
+import java.util.Map;
 
 /**
  * This is a dynamic property that instead of returning the closure sets a new proxy meta class for the scope 
@@ -46,9 +50,16 @@ public class ConstraintsEvaluatingDynamicProperty extends AbstractDynamicPropert
 
     public static final String PROPERTY_NAME = "constraints";
 
+	private GrailsDomainClassProperty[] persistentProperties;
+
+    public ConstraintsEvaluatingDynamicProperty(GrailsDomainClassProperty[] properties) {
+        super(PROPERTY_NAME);
+        this.persistentProperties = properties;
+    }
+    
     public ConstraintsEvaluatingDynamicProperty() {
         super(PROPERTY_NAME);
-    }
+    }    
 
     public Object get(Object object)  {
         // Suppress recursion problems if a GroovyObject
@@ -68,7 +79,24 @@ public class ConstraintsEvaluatingDynamicProperty extends AbstractDynamicPropert
             ConstrainedPropertyBuilder delegate = new ConstrainedPropertyBuilder(object);
             c.setDelegate(delegate);
             c.call();
-            return delegate.getConstrainedProperties();
+            Map constrainedProperties = delegate.getConstrainedProperties();
+            if(this.persistentProperties != null) {
+            	for (int i = 0; i < this.persistentProperties.length; i++) {
+					GrailsDomainClassProperty p = this.persistentProperties[i];
+					if(!p.isOptional()) {
+						ConstrainedProperty cp = (ConstrainedProperty)constrainedProperties.get(p.getName());
+						if(cp == null) {
+							cp = new ConstrainedPersistentProperty(p.getDomainClass().getClazz(),
+																   p.getName(),
+																   p.getType());
+							cp.setOrder(constrainedProperties.size()+1);
+							constrainedProperties.put(p.getName(), cp);
+						}
+						cp.applyConstraint(ConstrainedProperty.NULLABLE_CONSTRAINT, Boolean.FALSE);
+					}
+				}
+            }
+            return constrainedProperties;
         }
         catch (BeansException be)
         {
