@@ -39,6 +39,7 @@ import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 
+import java.net.URI;
 import java.text.DateFormat;
 import java.util.*;
 
@@ -99,6 +100,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
         binder.registerCustomEditor( Currency.class, new CurrencyEditor());
         binder.registerCustomEditor( Locale.class, new LocaleEditor());
         binder.registerCustomEditor( TimeZone.class, new TimeZoneEditor());
+        binder.registerCustomEditor( URI.class, new UriEditor());
         return binder;
     }
 
