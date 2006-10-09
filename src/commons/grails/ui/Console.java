@@ -42,15 +42,11 @@ public class Console extends groovy.ui.Console {
 	public static void main(String[] args) {		
 		ApplicationContext ctx = GrailsUtil.bootstrapGrailsFromClassPath();
 		GrailsApplication app = (GrailsApplication)ctx.getBean(GrailsApplication.APPLICATION_ID);
-
-		Class[] loadedClasses = app.getAllClasses();		
+		
 		Binding b = new Binding();
-		
-		for (int i = 0; i < loadedClasses.length; i++) {
-			b.setVariable(loadedClasses[i].getName(), loadedClasses[i]);
-		}
-		
-		Console c = new Console(app.getClassLoader(), new Binding());
+		b.setVariable(GrailsApplication.APPLICATION_ID, app);
+		b.setVariable("ctx", ctx);
+		Console c = new Console(app.getClassLoader(), b);
 		c.run();
 	}
 }

@@ -40,13 +40,10 @@ public class InteractiveShell {
 		ApplicationContext ctx = GrailsUtil.bootstrapGrailsFromClassPath();
 		GrailsApplication app = (GrailsApplication)ctx.getBean(GrailsApplication.APPLICATION_ID);
 
-		Class[] loadedClasses = app.getAllClasses();		
+		
 		Binding b = new Binding();
-		
-		for (int i = 0; i < loadedClasses.length; i++) {
-			b.setVariable(loadedClasses[i].getName(), loadedClasses[i]);
-		}
-		
+		b.setVariable(GrailsApplication.APPLICATION_ID, app);
+		b.setVariable("ctx", ctx);
 		final groovy.ui.InteractiveShell shell = new groovy.ui.InteractiveShell(app.getClassLoader(),b, System.in,System.out,System.err);
 		shell.run(args);
 	}
