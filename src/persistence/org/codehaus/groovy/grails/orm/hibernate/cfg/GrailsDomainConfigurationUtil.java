@@ -140,7 +140,7 @@ public class GrailsDomainConfigurationUtil {
                 	
                 	dc = application.addDomainClass(ghdc);
 	            }
-	            LOG.info("[GrailsDomainConfiguration] Registering dynamic methods on class ["+persistentClass+"]");
+	            LOG.debug("[GrailsDomainConfiguration] Registering dynamic methods on class ["+persistentClass+"]");
 	            try {
 	                DynamicMethods dm = new DomainClassMethods(application,persistentClass,sf,application.getClassLoader());
                     for (int j = 0; j < dc.getPersistantProperties().length; j++) {
