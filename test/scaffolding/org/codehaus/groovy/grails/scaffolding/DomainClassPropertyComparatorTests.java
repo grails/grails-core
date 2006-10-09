@@ -33,13 +33,13 @@ public class DomainClassPropertyComparatorTests extends TestCase {
         GroovyClassLoader gcl = new GroovyClassLoader(Thread.currentThread().getContextClassLoader());
 
         Class dc = gcl.parseClass("class Test { " +
-                                        "\n@Property Long id;" +
-                                        "\n@Property Long version;" +
-                                        "\n@Property String name;" +
-                                        "\n@Property Date age" +
-                                        "\n@Property String zip" +
-                                        "\n@Property String dob" +
-                                        "\n@Property constraints = {" +
+                                        "\n Long id;" +
+                                        "\n Long version;" +
+                                        "\nString name;" +
+                                        "\nDate age" +
+                                        "\nString zip" +
+                                        "\nString dob" +
+                                        "\ndef constraints = {" +
                                         "\n  name(length:5..15)" +
                                         "\n  age()" +
                                         "}  }");
@@ -49,12 +49,14 @@ public class DomainClassPropertyComparatorTests extends TestCase {
 
         GrailsDomainClassProperty[] props =domainClass.getProperties();
         Arrays.sort(props,comp);
-        System.out.println(ArrayUtils.toString(props));
+        for (int i = 0; i < props.length; i++) {
+			System.out.println(props[i].getName());
+		}
         assertEquals("id",props[0].getName());
         assertEquals("name",props[1].getName());
         assertEquals("age",props[2].getName());
-        assertEquals("dob",props[3].getName());
-        assertEquals("version",props[4].getName());
-        assertEquals("zip",props[5].getName());
+        assertEquals("dob",props[3].getName());       
+        assertEquals("zip",props[4].getName());
+        assertEquals("version",props[5].getName());
     }
 }
