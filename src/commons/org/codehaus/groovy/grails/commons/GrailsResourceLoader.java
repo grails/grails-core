@@ -46,6 +46,7 @@ public class GrailsResourceLoader implements GroovyResourceLoader {
     }
 
     public URL loadGroovySource(String resource) throws MalformedURLException {
+    	if(resource == null) return null;
         String groovyFile = resource.replace('.', '/') + ".groovy";
         Resource foundResource = null;
         for (int i = 0; resources != null && i < resources.length; i++) {

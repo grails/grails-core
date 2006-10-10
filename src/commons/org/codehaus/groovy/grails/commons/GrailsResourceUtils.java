@@ -16,6 +16,7 @@
 package org.codehaus.groovy.grails.commons;
 
 //import java.io.File;
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.regex.Matcher;
@@ -47,14 +48,21 @@ public class GrailsResourceUtils {
     Resources are resolved against the platform specific path and must therefore obey the
     specific File.separator.
     */ 
-    public static Pattern GRAILS_RESOURCE_PATTERN;
+    public static Pattern GRAILS_RESOURCE_PATTERN_FIRST_MATCH;
+    public static Pattern GRAILS_RESOURCE_PATTERN_SECOND_MATCH;
     static {
-        /*String fs = File.separator;
+        String fs = File.separator;
         if (fs.equals("\\")) fs = "\\\\"; // backslashes need escaping in regexes
-        */
-    	String fs = "/";
-        GRAILS_RESOURCE_PATTERN = Pattern.compile(".+"+fs +"grails-app"+fs +"\\w+"+fs +"(.+)\\.groovy");
+            
+        GRAILS_RESOURCE_PATTERN_FIRST_MATCH = Pattern.compile(createGrailsResourcePattern(fs));
+        fs = "/";
+        GRAILS_RESOURCE_PATTERN_SECOND_MATCH = Pattern.compile(createGrailsResourcePattern(fs));
     }
+
+
+	private static String createGrailsResourcePattern(String separator) {
+		return ".+"+separator +"grails-app"+separator +"\\w+"+separator +"(.+)\\.groovy";
+	}
 
 
     /**
@@ -90,9 +98,15 @@ public class GrailsResourceUtils {
 	 * @return The class name or null if it doesn't exist
 	 */
 	public static String getClassName(String path) {
-		Matcher m = GrailsResourceUtils.GRAILS_RESOURCE_PATTERN.matcher(path);
+		Matcher m = GrailsResourceUtils.GRAILS_RESOURCE_PATTERN_FIRST_MATCH.matcher(path);
         if(m.find()) {
             return m.group(1);
+        }
+        else {
+        	m = GRAILS_RESOURCE_PATTERN_SECOND_MATCH.matcher(path);
+        	if(m.find()) {
+        		return m.group(1);
+        	}
         }
         return null;
 	}	
@@ -104,7 +118,11 @@ public class GrailsResourceUtils {
 	 * @return True if it is a Grails path
 	 */
 	public static boolean isGrailsPath(String path) {
-		Matcher m = GrailsResourceUtils.GRAILS_RESOURCE_PATTERN.matcher(path);
-        return m.find();
+		Matcher m = GrailsResourceUtils.GRAILS_RESOURCE_PATTERN_FIRST_MATCH.matcher(path);
+        boolean matched = m.find();
+        if(!matched) {
+        	matched = GRAILS_RESOURCE_PATTERN_SECOND_MATCH.matcher(path).find();
+        }
+        return matched;
     }
 }
