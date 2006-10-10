@@ -15,7 +15,7 @@
  */ 
 package org.codehaus.groovy.grails.commons;
 
-import java.io.File;
+//import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.regex.Matcher;
@@ -35,7 +35,7 @@ import org.springframework.core.io.Resource;
  */
 public class GrailsResourceUtils {
 
-    private static final String FS = File.separator;
+    //private static final String FS = File.separator;
 
     /*
     Domain path is always matched against the normalized File representation of an URL and
@@ -46,11 +46,13 @@ public class GrailsResourceUtils {
     /*
     Resources are resolved against the platform specific path and must therefore obey the
     specific File.separator.
-    */
+    */ 
     public static Pattern GRAILS_RESOURCE_PATTERN;
     static {
-        String fs = File.separator;
+        /*String fs = File.separator;
         if (fs.equals("\\")) fs = "\\\\"; // backslashes need escaping in regexes
+        */
+    	String fs = "/";
         GRAILS_RESOURCE_PATTERN = Pattern.compile(".+"+fs +"grails-app"+fs +"\\w+"+fs +"(.+)\\.groovy");
     }
 
