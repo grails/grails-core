@@ -50,6 +50,7 @@ public class DomainClassMethods extends AbstractDynamicMethods {
         // dynamic methods
         addDynamicMethodInvocation(new IdentDynamicMethod(application));
         addDynamicMethodInvocation(new SavePersistentMethod(sessionFactory, classLoader,application));
+        addDynamicMethodInvocation(new MergePersistentMethod(sessionFactory, classLoader,application));
         addDynamicMethodInvocation(new DiscardPersistentMethod(sessionFactory, classLoader));
         addDynamicMethodInvocation(new DeletePersistentMethod(sessionFactory, classLoader));
         addDynamicMethodInvocation(new RefreshPersistentMethod(sessionFactory, classLoader));

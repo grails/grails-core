@@ -18,30 +18,33 @@ package org.codehaus.groovy.grails.orm.hibernate.metaclass;
 import java.util.regex.Pattern;
 
 import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.hibernate.LockMode;
 import org.hibernate.SessionFactory;
 
 /**
- * This method follows the semantics of saveOrUpdate of scheduling the object
- * for persistence when a flush occurs.
+ * The merge() method follows the semantics of merge which attempts to "merge" an object
+ * with a long lived session
  * 
- * @author Steven Devijver
  * @author Graeme Rocher
- * 
- * @since Aug 7, 2005
+ * @since 0.3
+ *
  */
-public class SavePersistentMethod extends AbstractSavePersistentMethod {
+public class MergePersistentMethod extends AbstractSavePersistentMethod {
 
-    public static final String METHOD_SIGNATURE = "save";
+    public static final String METHOD_SIGNATURE = "merge";
     public static final Pattern METHOD_PATTERN = Pattern.compile('^'+METHOD_SIGNATURE+'$');
 
-
-
-    public SavePersistentMethod(SessionFactory sessionFactory, ClassLoader classLoader, GrailsApplication application) {
-        super(METHOD_PATTERN,sessionFactory, classLoader, application);
-    }
-
-	protected void performSave(Object target) {
-		getHibernateTemplate().saveOrUpdate(target);
+   
+	public MergePersistentMethod(SessionFactory sessionFactory, ClassLoader classLoader, GrailsApplication application) {
+		super(METHOD_PATTERN, sessionFactory, classLoader, application);
 	}
-       
+
+	/* (non-Javadoc)
+	 * @see org.codehaus.groovy.grails.orm.hibernate.metaclass.AbstractSavePersistentMethod#performSave(java.lang.Object)
+	 */
+	protected void performSave(Object target) {
+		getHibernateTemplate().merge(target);
+		getHibernateTemplate().lock(target, LockMode.NONE);
+	}
+
 }
