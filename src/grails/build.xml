@@ -82,7 +82,7 @@ Targets:
         <mkdir dir="${grails.home}/dist"/>		
 	</target>         
 	
-	<target name="upgrade" depends="init-structure" description="Upgrades a Grails project from the information in GRAILS_HOME">
+	<target name="upgrade" depends="init-structure,clean" description="Upgrades a Grails project from the information in GRAILS_HOME">
         <copy todir="${path}web-app/WEB-INF">
             <fileset dir="${grails.home}/src/war/WEB-INF">
                 <include name="applicationContext.xml"/>
