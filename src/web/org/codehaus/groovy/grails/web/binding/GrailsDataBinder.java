@@ -113,6 +113,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
 
         checkStructuredDateDefinitions(request,mpvs);
         autoCreateIfPossible(mpvs);
+        bindAssociations(mpvs);
         super.doBind(mpvs);
     }
 
@@ -159,6 +160,45 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
             }
         }
     }
+
+    /**
+     * Interrogates the specified properties looking for properites that represent associations to other 
+     * classes (e.g., 'author.id').  If such a property is found, this method attempts to load the specified 
+     * instance of the association (by ID) and set it on the target object.  
+     * 
+     * @param mpvs the <code>MutablePropertyValues</code> object holding the parameters from the request
+     */
+    private void bindAssociations(MutablePropertyValues mpvs) {
+        PropertyValue[] pvs = mpvs.getPropertyValues();
+        for (int i = 0; i < pvs.length; i++) {
+            PropertyValue pv = pvs[i];
+
+            String propertyName = pv.getName();
+            int index = propertyName.indexOf(".id");
+            if (index > -1) {
+                BeanWrapper bean = super.getBeanWrapper();
+                propertyName = propertyName.substring(0, index);
+                if (bean.isReadableProperty(propertyName) && bean.isWritableProperty(propertyName)) {
+                    Class type = bean.getPropertyDescriptor(propertyName).getPropertyType();
+
+                    // In order to load the association instance using InvokerHelper below, we need to 
+                    // temporarily change this thread's ClassLoader to use the Grails ClassLoader.
+                    // (Otherwise, we'll get a ClassNotFoundException.)
+                    ClassLoader currentClassLoader = getClass().getClassLoader();
+                    ClassLoader grailsClassLoader = getTarget().getClass().getClassLoader();
+                    try {
+                        Thread.currentThread().setContextClassLoader(grailsClassLoader);
+                        Object persisted = InvokerHelper.invokeStaticMethod(type.getName(), "get", pv.getValue());
+                        if (persisted != null) {
+                            bean.setPropertyValue(propertyName, persisted);
+                        }
+                    } finally {
+                        Thread.currentThread().setContextClassLoader(currentClassLoader);
+                    }
+                }
+            }
+        }
+    }    
 
     private void checkStructuredDateDefinitions(ServletRequest request, MutablePropertyValues mpvs) {
 
