@@ -152,7 +152,7 @@ public class GroovyPagesServlet extends HttpServlet /*implements GroovyObject*/ 
         catch(Exception e) {
         	LOG.debug("Error processing GSP: " + e.getMessage(), e);
             request.setAttribute("exception",new GrailsWrappedRuntimeException(context,e));
-            RequestDispatcher rd = request.getRequestDispatcher("/WEB-INF/grails-app/views/error.jsp");
+            RequestDispatcher rd = request.getRequestDispatcher("/WEB-INF/grails-app/views/error.gsp");
             if(response.isCommitted()) {
                 rd.include(request,response);
             }
