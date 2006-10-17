@@ -15,29 +15,28 @@
  */
 package org.codehaus.groovy.grails.metaclass;
 
-import org.codehaus.groovy.grails.commons.metaclass.AbstractDynamicMethodInvocation;
-import org.codehaus.groovy.grails.commons.GrailsClassUtils;
-import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
-import org.springframework.beans.BeanWrapper;
-import org.springframework.beans.BeanWrapperImpl;
-
-import java.util.regex.Pattern;
-import java.util.*;
-
 import groovy.lang.MissingMethodException;
 
+import java.util.regex.Pattern;
+
+import org.codehaus.groovy.grails.commons.GrailsClassUtils;
+import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
+
 /**
- * To change this template use File | Settings | File Templates.
+ * Implements the relationships management method add*. For example an Author with many Books
+ * would have addBook etc.
  *
  * @author Graeme Rocher
  *         <p/>
  *         Date: Sep 19, 2006
  *         Time: 8:18:56 AM
+ *  @since 0.3
+ *         
  */
-public class AddRelatedDynamicMethod extends AbstractDynamicMethodInvocation {
+public class AddRelatedDynamicMethod extends AbstractAddRelatedDynamicMethod {
 
     private String methodName;
-    private GrailsDomainClassProperty property;
+	private GrailsDomainClassProperty property;
 
     /**
      * Creates a method to manage relationships on a domain class like Author.addBook(book)
@@ -52,42 +51,24 @@ public class AddRelatedDynamicMethod extends AbstractDynamicMethodInvocation {
     }
 
     public Object invoke(Object target, Object[] arguments) {
-        if(arguments.length == 0) {
+        if(arguments.length == 0 ) {
            throw new MissingMethodException(methodName,target.getClass(),arguments);
+        }
+        if(arguments[0] == null) {
+        	throw new IllegalArgumentException("Argument to ["+methodName+"] cannot be null");
         }
         if(!arguments[0].getClass().equals(property.getReferencedPropertyType())) {
            throw new MissingMethodException(methodName,target.getClass(),arguments);
         }
 
-        BeanWrapper bean = new BeanWrapperImpl(target);
-
-        Collection elements = (Collection)bean.getPropertyValue(property.getName());
-        if(elements == null) {
-            Class colType = bean.getPropertyType(property.getName());
-
-            if(colType.equals(List.class)) {
-                elements = new ArrayList();
-            }
-            else if(colType.equals(SortedSet.class)) {
-                elements = new TreeSet();
-            }
-            else {
-                elements = new HashSet();
-            }
-        }
-
         Object toAdd = arguments[0];
-        if(property.isBidirectional()) {
-            GrailsDomainClassProperty otherSide = property.getOtherSide();
-            if(otherSide != null) {
-                BeanWrapper other = new BeanWrapperImpl(toAdd);
-                other.setPropertyValue(otherSide.getName(),target);
-            }
-        }
-        elements.add(toAdd);
-        bean.setPropertyValue(property.getName(),elements);
-
+        
+        addObjectToTarget(target, toAdd, property.getName());
 
         return target;
     }
+
+	protected GrailsDomainClassProperty getDomainClassProperty(String collectionName) {
+		return this.property;
+	}
 }

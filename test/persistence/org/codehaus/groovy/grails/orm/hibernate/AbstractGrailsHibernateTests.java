@@ -19,9 +19,13 @@ import junit.framework.TestCase;
 import groovy.lang.GroovyClassLoader;
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.DefaultGrailsDomainConfiguration;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsDomainConfigurationUtil;
+import org.codehaus.groovy.grails.support.MockApplicationContext;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
+import org.springframework.web.context.WebApplicationContext;
+import org.springframework.mock.web.MockServletContext;
 import org.springframework.orm.hibernate3.SessionHolder;
 import org.springframework.orm.hibernate3.SessionFactoryUtils;
 import org.hibernate.SessionFactory;
@@ -46,11 +50,11 @@ public abstract class AbstractGrailsHibernateTests extends TestCase {
     /**
      * A GroovyClassLoader instance
      */
-    protected GroovyClassLoader gcl = new GroovyClassLoader();
+    public GroovyClassLoader gcl = new GroovyClassLoader();
     /**
      * The GrailsApplication instance created during setup
      */
-    protected GrailsApplication ga;
+    public GrailsApplication ga;
     /**
      * A Hibernate SessionFactory created during setup
      */
@@ -59,6 +63,7 @@ public abstract class AbstractGrailsHibernateTests extends TestCase {
      * A Hibernate session that is bound to the current thread so that the Spring TransactionManager works correctly
      */
     protected Session session;
+	private WebApplicationContext applicationContext;
 
     protected final void setUp() throws Exception {
         super.setUp();
@@ -68,21 +73,29 @@ public abstract class AbstractGrailsHibernateTests extends TestCase {
         ga = new DefaultGrailsApplication(gcl.getLoadedClasses(),gcl);
 
 
-        DefaultGrailsDomainConfiguration config = new DefaultGrailsDomainConfiguration();
-        config.setGrailsApplication(this.ga);
-        Properties props = new Properties();
-        props.put("hibernate.connection.username","sa");
-        props.put("hibernate.connection.password","");
-        props.put("hibernate.connection.url","jdbc:hsqldb:mem:grailsDB");
-        props.put("hibernate.connection.driver_class","org.hsqldb.jdbcDriver");
-        props.put("hibernate.dialect","org.hibernate.dialect.HSQLDialect");
-        props.put("hibernate.hbm2ddl.auto","create-drop");
-
-        //props.put("hibernate.hbm2ddl.auto","update");
-        config.setProperties(props);
-        //originalClassLoader = Thread.currentThread().getContextClassLoader();
-        Thread.currentThread().setContextClassLoader(this.gcl);
-        this.sessionFactory = config.buildSessionFactory();
+//        DefaultGrailsDomainConfiguration config = new DefaultGrailsDomainConfiguration();
+//        config.setGrailsApplication(this.ga);
+//        Properties props = new Properties();
+//        props.put("hibernate.connection.username","sa");
+//        props.put("hibernate.connection.password","");
+//        props.put("hibernate.connection.url","jdbc:hsqldb:mem:grailsDB");
+//        props.put("hibernate.connection.driver_class","org.hsqldb.jdbcDriver");
+//        props.put("hibernate.dialect","org.hibernate.dialect.HSQLDialect");
+//        props.put("hibernate.hbm2ddl.auto","create-drop");
+//        props.put("hibernate.log_sql","true");
+//
+//        //props.put("hibernate.hbm2ddl.auto","update");
+//        config.setProperties(props);
+//
+//        //originalClassLoader = Thread.currentThread().getContextClassLoader();
+//        Thread.currentThread().setContextClassLoader(this.gcl);
+//        this.sessionFactory = config.buildSessionFactory();
+        MockApplicationContext mc = new MockApplicationContext();
+        mc.registerMockBean(GrailsApplication.APPLICATION_ID, ga);
+       
+        GrailsRuntimeConfigurator grc = new GrailsRuntimeConfigurator(ga, mc);
+        this.applicationContext = grc.configureDomainOnly();
+        this.sessionFactory = (SessionFactory)this.applicationContext.getBean(GrailsRuntimeConfigurator.SESSION_FACTORY_BEAN);
         GrailsDomainConfigurationUtil.configureDynamicMethods(sessionFactory,ga);
 
         if(!TransactionSynchronizationManager.hasResource(this.sessionFactory)) {

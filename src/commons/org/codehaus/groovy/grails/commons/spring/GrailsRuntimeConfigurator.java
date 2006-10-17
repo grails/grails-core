@@ -291,31 +291,7 @@ public class GrailsRuntimeConfigurator {
 		
         Assert.notNull(application);
         
-        // put reference to Grails class loader instance on spring ctx
-        springConfig
-        	.addSingletonBean(CLASS_LOADER_BEAN, MethodInvokingFactoryBean.class)
-        	.addProperty("targetObject", new RuntimeBeanReference(GrailsApplication.APPLICATION_ID, true))
-        	.addProperty("targetMethod", "getClassLoader");
-        
-        // add class editor, this allows automatic type conversion from Strings to java.lang.Class instances
-        springConfig
-        	.addSingletonBean(CLASS_EDITOR_BEAN, ClassEditor.class)
-        	.addProperty(CLASS_LOADER_BEAN, new RuntimeBeanReference(CLASS_LOADER_BEAN));
-        
-        BeanConfiguration propertyEditors = springConfig
-        										.addSingletonBean(CUSTOM_EDITORS_BEAN, CustomEditorConfigurer.class);
-		Map customEditors = new ManagedMap();
-		customEditors.put(java.lang.Class.class, new RuntimeBeanReference(CLASS_EDITOR_BEAN));		
-		propertyEditors.addProperty(CUSTOM_EDITORS_BEAN, customEditors);
-		
-		// configure exception handler which allows Grails to display the errors view
-		springConfig
-			.addSingletonBean(EXCEPTION_HANDLER_BEAN, GrailsExceptionResolver.class)
-			.addProperty("exceptionMappings","java.lang.Exception=/error");
-		
-		// configure multipart resolver used to handle file uploads in Spring MVC
-		springConfig
-			.addSingletonBean(MULTIPART_RESOLVER_BEAN,CommonsMultipartResolver.class);
+        populateGlobalBeans(springConfig);
         
 		LOG.debug("[RuntimeConfiguration] Configuring i18n support");
 		populateI18nSupport(springConfig);
@@ -348,6 +324,48 @@ public class GrailsRuntimeConfigurator {
 	
 		return springConfig.getApplicationContext();	
 	}
+	public WebApplicationContext configureDomainOnly() {
+		RuntimeSpringConfiguration springConfig = parent != null ? new DefaultRuntimeSpringConfiguration(parent) : new DefaultRuntimeSpringConfiguration();
+		
+        populateGlobalBeans(springConfig);
+        
+		LOG.debug("[RuntimeConfiguration] Configuring i18n support");
+		populateI18nSupport(springConfig);
+		
+		LOG.debug("[RuntimeConfiguration] Configuring Grails data source");
+		populateDataSourceReferences(springConfig);	
+		
+		// configure domain classes
+		LOG.debug("[RuntimeConfiguration] Configuring Grails domain");
+		populateDomainClassReferences(springConfig);	
+		
+		return springConfig.getApplicationContext();
+
+	}
+	/**
+	 * @param springConfig
+	 */
+	private void populateGlobalBeans(RuntimeSpringConfiguration springConfig) {
+		// put reference to Grails class loader instance on spring ctx
+        springConfig
+        	.addSingletonBean(CLASS_LOADER_BEAN, MethodInvokingFactoryBean.class)
+        	.addProperty("targetObject", new RuntimeBeanReference(GrailsApplication.APPLICATION_ID, true))
+        	.addProperty("targetMethod", "getClassLoader");
+        
+        // add class editor, this allows automatic type conversion from Strings to java.lang.Class instances
+        springConfig
+        	.addSingletonBean(CLASS_EDITOR_BEAN, ClassEditor.class)
+        	.addProperty(CLASS_LOADER_BEAN, new RuntimeBeanReference(CLASS_LOADER_BEAN));
+        
+        BeanConfiguration propertyEditors = springConfig
+        										.addSingletonBean(CUSTOM_EDITORS_BEAN, CustomEditorConfigurer.class);
+		Map customEditors = new ManagedMap();
+		customEditors.put(java.lang.Class.class, new RuntimeBeanReference(CLASS_EDITOR_BEAN));		
+		propertyEditors.addProperty(CUSTOM_EDITORS_BEAN, customEditors);
+	}
+	
+
+	
 	private void doPostResourceConfiguration(RuntimeSpringConfiguration springConfig) {
 	     try {
 	    	 Resource springResources = parent.getResource(GrailsRuntimeConfigurator.SPRING_RESOURCES_XML);
@@ -504,6 +522,14 @@ public class GrailsRuntimeConfigurator {
 	}
 
 	private void populateControllerReferences(RuntimeSpringConfiguration springConfig) {
+		// configure exception handler which allows Grails to display the errors view
+		springConfig
+			.addSingletonBean(EXCEPTION_HANDLER_BEAN, GrailsExceptionResolver.class)
+			.addProperty("exceptionMappings","java.lang.Exception=/error");
+		
+		// configure multipart resolver used to handle file uploads in Spring MVC
+		springConfig
+			.addSingletonBean(MULTIPART_RESOLVER_BEAN,CommonsMultipartResolver.class);
 
         Properties urlMappings = new Properties();
         springConfig
@@ -919,4 +945,6 @@ public class GrailsRuntimeConfigurator {
 	public void setLoadExternalPersistenceConfig(boolean b) {
 		this.loadExternalPersistenceConfig = b;
 	}
+
+
 }

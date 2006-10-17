@@ -15,17 +15,18 @@
  */
 package org.codehaus.groovy.grails.metaclass;
 
-import junit.framework.TestCase;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyObject;
 import groovy.lang.MissingMethodException;
-import org.codehaus.groovy.grails.commons.GrailsDomainClass;
-import org.codehaus.groovy.grails.commons.DefaultGrailsDomainClass;
-import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
 
 import java.util.Set;
 import java.util.SortedSet;
+
+import junit.framework.TestCase;
+
+import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
+import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 
 /**
  * Tests the relationship management method
@@ -59,7 +60,7 @@ public class AddRelatedDynamicMethodTests extends TestCase {
         GrailsApplication ga = new DefaultGrailsApplication(new Class[]{book.getClass(),author.getClass()},gcl);
         GrailsDomainClass authorDC = ga.getGrailsDomainClass("Author");
 
-        AddRelatedDynamicMethod ardm = new AddRelatedDynamicMethod(authorDC.getPropertyByName("books"));
+        AbstractAddRelatedDynamicMethod ardm = new AddRelatedDynamicMethod(authorDC.getPropertyByName("books"));
 
         try {
             ardm.invoke(author,new Object[0]);
@@ -107,7 +108,7 @@ public class AddRelatedDynamicMethodTests extends TestCase {
          GrailsApplication ga = new DefaultGrailsApplication(new Class[]{book.getClass(),author.getClass()},gcl);
          GrailsDomainClass authorDC = ga.getGrailsDomainClass("Author");
 
-         AddRelatedDynamicMethod ardm = new AddRelatedDynamicMethod(authorDC.getPropertyByName("books"));
+         AbstractAddRelatedDynamicMethod ardm = new AddRelatedDynamicMethod(authorDC.getPropertyByName("books"));
 
          try {
              ardm.invoke(author,new Object[0]);
