@@ -15,9 +15,15 @@
  */
 package org.codehaus.groovy.grails.web.metaclass;
 
+import groovy.lang.GroovyObject;
+import groovy.lang.MetaClass;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+
+import org.codehaus.groovy.runtime.InvokerHelper;
+
 import java.util.*;
 /**
  * A dynamic property that adds a "session" map to a controller for accessing the Http Session
@@ -49,7 +55,7 @@ public class GetSessionDynamicProperty extends AbstractDynamicControllerProperty
 	 * @author Graeme Rocher
 	 * @since Oct 24, 2005
 	 */
-	private class HttpSessionMap implements Map {
+	private class HttpSessionMap implements Map, GroovyObject {
 				
 		HttpSession session = null;
 		
@@ -170,6 +176,26 @@ public class GetSessionDynamicProperty extends AbstractDynamicControllerProperty
 
 		public Set entrySet() {
 			throw new UnsupportedOperationException("Method 'entrySet()' is not support by session Map." );
+		}
+
+		public MetaClass getMetaClass() {
+			return InvokerHelper.getInstance().getMetaClass(this);
+		}
+
+		public Object getProperty(String property) {
+			return get(property);
+		}
+
+		public Object invokeMethod(String name, Object args) {
+			return InvokerHelper.invokeMethod(session, name, args);
+		}
+
+		public void setMetaClass(MetaClass metaClass) {
+			throw new UnsupportedOperationException("Method 'setMetaClass' is not support by session Map." );
+		}
+
+		public void setProperty(String property, Object newValue) {
+			put(property,newValue);
 		}		
 	}
 }
