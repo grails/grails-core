@@ -751,7 +751,7 @@ public final class GrailsDomainBinder {
             }
             else if(grailsProperty.isManyToMany()) {
             	if(grailsProperty.isOwningSide()) {
-            		prop.setCascade("all");
+            		prop.setCascade("save-update");
             	}
             }
             else if(grailsProperty.isManyToOne() || grailsProperty.isOneToOne()) {
