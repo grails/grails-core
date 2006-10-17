@@ -94,7 +94,7 @@ public abstract class AbstractSavePersistentMethod extends
                 return ((Boolean)arguments[0]).booleanValue();
             }
             else {
-            	return true;
+            	return false;
             }
         }
         return false;
