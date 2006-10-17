@@ -30,6 +30,7 @@ import org.codehaus.groovy.grails.orm.hibernate.validation.ConstrainedPersistent
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 import org.codehaus.groovy.grails.validation.ConstrainedPropertyBuilder;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.InvalidPropertyException;
 
 import java.io.InputStream;
 import java.util.Collections;
@@ -76,6 +77,8 @@ public class ConstraintsEvaluatingDynamicProperty extends AbstractDynamicPropert
         try
         {
             Closure c = (Closure)GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(object, PROPERTY_NAME);
+            if(c == null)
+            	throw new InvalidPropertyException(object.getClass(),PROPERTY_NAME, "[constraints] property not found");
             ConstrainedPropertyBuilder delegate = new ConstrainedPropertyBuilder(object);
             c.setDelegate(delegate);
             c.call();

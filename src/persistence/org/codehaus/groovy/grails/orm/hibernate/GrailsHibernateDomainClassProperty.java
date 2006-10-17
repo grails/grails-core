@@ -176,4 +176,12 @@ public class GrailsHibernateDomainClassProperty implements GrailsDomainClassProp
 	public boolean isInherited() {
 		throw new UnsupportedOperationException("Method 'isInherited' is not supported by implementation");
 	}
+
+	public int getFetchMode() {
+		throw new UnsupportedOperationException("Method 'getFetchMode' is not supported by implementation");
+	}
+
+	public boolean isOwningSide() {
+		throw new UnsupportedOperationException("Method 'isOwningSide' is not supported by implementation");
+	}
 }

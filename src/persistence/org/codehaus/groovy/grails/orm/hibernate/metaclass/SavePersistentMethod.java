@@ -40,8 +40,10 @@ public class SavePersistentMethod extends AbstractSavePersistentMethod {
         super(METHOD_PATTERN,sessionFactory, classLoader, application);
     }
 
-	protected void performSave(Object target) {
+	protected void performSave(Object target, boolean flush) {
 		getHibernateTemplate().saveOrUpdate(target);
+		if(flush)
+			getHibernateTemplate().flush();
 	}
        
 }

@@ -31,6 +31,7 @@ import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
 import org.codehaus.groovy.grails.commons.metaclass.DynamicMethods;
 import org.codehaus.groovy.grails.metaclass.AddRelatedDynamicMethod;
+import org.codehaus.groovy.grails.metaclass.AddToRelatedDynamicMethod;
 import org.codehaus.groovy.grails.metaclass.DomainClassMethods;
 import org.codehaus.groovy.grails.orm.hibernate.GrailsHibernateDomainClass;
 import org.hibernate.EntityMode;
@@ -143,10 +144,12 @@ public class GrailsDomainConfigurationUtil {
 	            LOG.debug("[GrailsDomainConfiguration] Registering dynamic methods on class ["+persistentClass+"]");
 	            try {
 	                DynamicMethods dm = new DomainClassMethods(application,persistentClass,sf,application.getClassLoader());
+	                dm.addDynamicMethodInvocation(new AddToRelatedDynamicMethod(dc));
                     for (int j = 0; j < dc.getPersistantProperties().length; j++) {
                           GrailsDomainClassProperty p = dc.getPersistantProperties()[j];
                           if(p.isOneToMany() || p.isManyToMany()) {
                               dm.addDynamicMethodInvocation(new AddRelatedDynamicMethod(p));
+                              
                           }
                     }
                 } catch (IntrospectionException e) {

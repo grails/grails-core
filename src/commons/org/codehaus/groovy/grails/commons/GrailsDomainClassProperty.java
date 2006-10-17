@@ -34,6 +34,14 @@ public interface GrailsDomainClassProperty {
 	String MAPPED_BY = "mappedBy";
     String BELONGS_TO = "belongsTo";
 	String HAS_MANY = "hasMany";
+	String FETCH_MODE = "fetchMode";
+	int FETCH_EAGER = 1;
+	int FETCH_LAZY = 0;
+	
+	/**
+	 * Returns the configured fetch mode for the property
+	 */
+	public int getFetchMode();
 
     /**
 	 * Returns the name of the property
@@ -158,4 +166,11 @@ public interface GrailsDomainClassProperty {
      * @return True if its inherited
      */
     boolean isInherited();
+
+    /**
+     * Whether this side of the association is the "owning" side
+     * 
+     * @return True if it is the owning side
+     */
+	public boolean isOwningSide();
 }

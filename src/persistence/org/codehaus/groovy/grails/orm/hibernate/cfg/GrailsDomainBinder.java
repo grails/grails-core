@@ -74,11 +74,45 @@ public final class GrailsDomainBinder {
 		
 		private static CollectionType SET = new CollectionType(Set.class) {
 
-			public Collection create(GrailsDomainClassProperty property, PersistentClass owner, Mappings mappings) throws MappingException {
+			public Collection create(GrailsDomainClassProperty property, PersistentClass owner, Mappings mappings) throws MappingException {				
 				org.hibernate.mapping.Set coll = new org.hibernate.mapping.Set(owner);
-				coll.setCollectionTable(owner.getTable());
+				if(property.isManyToMany()) {
+					String tableName = calculateTableForMany(property);
+					Table t =  mappings.addTable(
+							mappings.getSchemaName(),
+							mappings.getCatalogName(),
+							tableName,
+							null,
+							false
+						);
+					coll.setCollectionTable(t);
+					if(!property.isOwningSide()) {
+						coll.setInverse(true);
+					}
+				}
+				else {
+					coll.setCollectionTable(owner.getTable());
+				}
+				
 				bindCollection( property, coll, owner, mappings );
 				return coll;
+			}
+
+			/**
+			 * This method will calculate the mapping table for a many-to-many. One side of 
+			 * the relationship has to "own" the relationship so that there is not a situation
+			 * where you have two mapping tables for left_right and right_left
+			 */
+			private String calculateTableForMany(GrailsDomainClassProperty property) {
+				String left = namingStrategy.classToTableName(property.getDomainClass().getShortName());
+				String right = namingStrategy.classToTableName(property.getReferencedDomainClass().getShortName());
+				
+				if(property.isOwningSide()) {
+					return left+'_'+right;
+				}
+				else {
+					return right+'_'+left;
+				}
 			}
 
 			
@@ -139,7 +173,8 @@ public final class GrailsDomainBinder {
 			}
 			
 			oneToMany.setAssociatedClass( associatedClass );
-			collection.setCollectionTable( associatedClass.getTable() );
+			if(!property.isManyToMany())
+				collection.setCollectionTable( associatedClass.getTable() );
 			collection.setLazy(true);
 			
 			// is it sorted?
@@ -179,8 +214,13 @@ public final class GrailsDomainBinder {
 					Column column = (Column)mappedByColumns.next();
 					linkValueUsingAColumnCopy(otherSide,column,key);
 				}
-			}			
-		}
+			}
+			else if(property.isManyToMany()) {
+				if(!property.isOwningSide())
+					collection.setInverse(true);
+				bindSimpleValue( property,key,mappings );
+			}
+		}		
 		else {
 			bindSimpleValue( property,key,mappings );
 		}				
@@ -190,12 +230,12 @@ public final class GrailsDomainBinder {
 		key.setUpdateable(false);
 		
 		// if we have a many-to-many
-		if(property.isManyToMany()) {
-			ManyToOne element = new ManyToOne( collection.getCollectionTable() );
-			collection.setElement(element);
-			bindManyToOne(property,element, mappings);
-		}
-		else if ( property.isOneToMany() && !property.isBidirectional() ) {
+//		if(property.isManyToMany()) {
+//			ManyToOne element = new ManyToOne( collection.getCollectionTable() );
+//			collection.setElement(element);
+//			bindManyToOne(property,element, mappings);
+//		} else
+		if ( property.isOneToMany() && !property.isBidirectional() ) {
 			// for non-inverse one-to-many, with a not-null fk, add a backref!
 			OneToMany oneToMany = (OneToMany) collection.getElement();
 				String entityName = oneToMany.getReferencedEntityName();
@@ -237,13 +277,16 @@ public final class GrailsDomainBinder {
 		// set role
 		collection.setRole( StringHelper.qualify( property.getDomainClass().getFullName() , property.getName() ) );
 		
-		// TODO: add code to configure optimistic locking
-		
-		// TODO: configure fetch strategy
-		collection.setFetchMode( FetchMode.DEFAULT );
+		// configure eager fetching
+		if(property.getFetchMode() == GrailsDomainClassProperty.FETCH_EAGER) {
+			collection.setFetchMode(FetchMode.JOIN);
+		}
+		else {
+			collection.setFetchMode( FetchMode.DEFAULT );
+		}		
 		
 		// if its a one-to-many mapping
-		if(property.isOneToMany()) {
+		if(property.isOneToMany() || property.isManyToMany()) {
 			
 			OneToMany oneToMany = new OneToMany( collection.getOwner() );
 			collection.setElement( oneToMany );
@@ -480,12 +523,7 @@ public final class GrailsDomainBinder {
 			// if its inherited skip
 			if(currentGrailsProp.isInherited())
 				continue;
-			
-			// TODO: Implement support for many to many relationships
-			if(currentGrailsProp.isManyToMany()) {
-				throw new MappingException("Many-to-many relationships are currently not supported by Grails, but one found: " + currentGrailsProp.getName());
-			}
-			
+						
 /*			if(currentGrailsProp.isManyToOne() && currentGrailsProp.isBidirectional() ) {
 				GrailsDomainClassProperty otherSide = currentGrailsProp.getOtherSide();
 				if(otherSide.isOneToMany())
@@ -711,6 +749,11 @@ public final class GrailsDomainBinder {
             if(grailsProperty.isOneToMany()) {
                 prop.setCascade("all");
             }
+            else if(grailsProperty.isManyToMany()) {
+            	if(grailsProperty.isOwningSide()) {
+            		prop.setCascade("all");
+            	}
+            }
             else if(grailsProperty.isManyToOne() || grailsProperty.isOneToOne()) {
                 GrailsDomainClass domainClass = grailsProperty.getDomainClass();
                 if(domainClass.isOwningClass(grailsProperty.getType())) {
@@ -752,7 +795,7 @@ w	 * Binds a simple value to the Hibernate metamodel. A simple value is
 			column.setNullable(false);
 		
 		column.setValue(simpleValue);
-		bindColumn(grailsProp, column);
+		bindColumn(grailsProp, column, table);
 								
 		if(table != null) table.addColumn(column);
 		
@@ -784,8 +827,9 @@ w	 * Binds a simple value to the Hibernate metamodel. A simple value is
 	 * Binds a Column instance to the Hibernate meta model
 	 * @param grailsProp The Grails domain class property
 	 * @param column The column to bind
+	 * @param table The table name
 	 */
-	private static void bindColumn(GrailsDomainClassProperty grailsProp, Column column) {						
+	private static void bindColumn(GrailsDomainClassProperty grailsProp, Column column, Table table) {						
 		if(grailsProp.isAssociation()) {
 			column.setName( namingStrategy.propertyToColumnName(grailsProp.getName()) + FOREIGN_KEY_SUFFIX );
 			column.setNullable(true);
@@ -795,7 +839,7 @@ w	 * Binds a simple value to the Hibernate metamodel. A simple value is
 			column.setName(namingStrategy.propertyToColumnName(grailsProp.getName()));
 		}
  
-		LOG.info("[GrailsDomainBinder] bound property [" + grailsProp.getName() + "] to column name ["+column.getName()+"]");		
+		LOG.info("[GrailsDomainBinder] bound property [" + grailsProp.getName() + "] to column name ["+column.getName()+"] in table ["+table.getName()+"]");		
 	}
 
 

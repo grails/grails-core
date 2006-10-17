@@ -17,20 +17,28 @@ package org.codehaus.groovy.grails.commons;
 
 import groovy.lang.Closure;
 import groovy.lang.GroovyObject;
-import groovy.lang.MetaClass;
-
-import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.BeanWrapper;
-import org.springframework.beans.BeanWrapperImpl;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.BeansException;
-import org.springframework.beans.InvalidPropertyException;
 
 import java.beans.PropertyDescriptor;
-import java.util.*;
-import java.lang.reflect.Modifier;
-import java.lang.reflect.Method;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
+
+import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.BeanWrapper;
+import org.springframework.beans.BeanWrapperImpl;
+import org.springframework.beans.BeansException;
 
 /**
  * @author Graeme Rocher
@@ -627,8 +635,7 @@ public class GrailsClassUtils {
      * <li>Public static field
      * </ol>
      *
-     * @return property value
-     * @throws BeansException if no such property found
+     * @return property value or null if no property found
      */
     public static Object getPropertyOrStaticPropertyOrFieldValue(Object obj, String name) throws BeansException
     {
@@ -652,7 +659,7 @@ public class GrailsClassUtils {
             }
             else
             {
-                throw new InvalidPropertyException(clazz, name, "No property or static property or static field");
+               return null;
             }
         }
     }
@@ -700,4 +707,44 @@ public class GrailsClassUtils {
             return false;
         }
     }
+
+    /**
+     * Checks whether the specified property is inherited from a super class
+     * 
+     * @param clz The class to check
+     * @param propertyName The property name
+     * @return True if the property is inherited
+     */
+    public static boolean isPropertyInherited(Class clz, String propertyName) {
+		if(clz == null) return false;
+		if(StringUtils.isBlank(propertyName))
+			throw new IllegalArgumentException("Argument [propertyName] cannot be null or blank");
+		
+		Class superClass = clz.getSuperclass();
+		
+		PropertyDescriptor pd = BeanUtils.getPropertyDescriptor(superClass, propertyName);
+		if (pd != null && pd.getReadMethod() != null) {
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * Creates a concrete collection for the suppied interface
+	 * @param interfaceType The interface
+	 * @return ArrayList for List, TreeSet for SortedSet, HashSet for Set etc.
+	 */
+	public static Collection createConcreteCollection(Class interfaceType) {
+		Collection elements;
+		if(interfaceType.equals(List.class)) {
+		    elements = new ArrayList();
+		}
+		else if(interfaceType.equals(SortedSet.class)) {
+		    elements = new TreeSet();
+		}
+		else {
+		    elements = new HashSet();
+		}
+		return elements;
+	}
 }

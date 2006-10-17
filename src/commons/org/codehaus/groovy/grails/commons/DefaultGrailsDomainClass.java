@@ -41,6 +41,7 @@ import org.codehaus.groovy.grails.exceptions.InvalidPropertyException;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsDomainConfigurationUtil;
 import org.codehaus.groovy.grails.validation.metaclass.ConstraintsEvaluatingDynamicProperty;
 import org.springframework.validation.Validator;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeanWrapper;
 
 /**
@@ -81,7 +82,51 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
         if(getPropertyOrStaticPropertyOrFieldValue(GrailsDomainClassProperty.MAPPED_BY, String.class) != null)
             this.mappedBy = (String)getPropertyOrStaticPropertyOrFieldValue(GrailsDomainClassProperty.MAPPED_BY, String.class);
 
-        Class belongsTo = (Class)getPropertyOrStaticPropertyOrFieldValue(GrailsDomainClassProperty.BELONGS_TO, Class.class);
+        // establish the owners of relationships
+        establishRelationshipOwners();
+
+        // First go through the properties of the class and create domain properties
+        // populating into a map
+        populateDomainClassProperties(propertyDescriptors);
+        
+        // if no identifier property throw exception
+        if(this.identifier == null) {
+            throw new GrailsDomainException("Identity property not found, but required in domain class ["+getFullName()+"]" );
+        }
+        // if no version property throw exception
+        if(this.version == null) {
+            throw new GrailsDomainException("Version property not found, but required in domain class ["+getFullName()+"]" );
+        }
+        // set properties from map values
+        this.properties = (GrailsDomainClassProperty[])this.propertyMap.values().toArray( new GrailsDomainClassProperty[this.propertyMap.size()] );
+
+        // establish relationships
+        establishRelationships();
+        // set persistant properties
+        establishPersistentProperties();
+        // process the constraints
+        evaluateConstraints();
+    }
+
+	/**
+	 * calculates the persistent properties from the evaluated properties
+	 */
+	private void establishPersistentProperties() {
+		Collection tempList = new ArrayList();
+        for(Iterator i = this.propertyMap.values().iterator();i.hasNext();) {
+            GrailsDomainClassProperty currentProp = (GrailsDomainClassProperty)i.next();
+            if(currentProp.isPersistent() && !currentProp.isIdentity() && !currentProp.getName().equals( GrailsDomainClassProperty.VERSION )) {
+                tempList.add(currentProp);
+            }
+        }
+        this.persistantProperties = (GrailsDomainClassProperty[])tempList.toArray( new GrailsDomainClassProperty[tempList.size()]);
+	}
+
+	/**
+	 * Evaluates the belongsTo property to find out who owns who
+	 */
+	private void establishRelationshipOwners() {
+		Class belongsTo = (Class)getPropertyOrStaticPropertyOrFieldValue(GrailsDomainClassProperty.BELONGS_TO, Class.class);
         if(belongsTo == null) {
             List ownersProp = (List)getPropertyOrStaticPropertyOrFieldValue(GrailsDomainClassProperty.BELONGS_TO, List.class);
             if(ownersProp != null) {
@@ -92,10 +137,15 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
             this.owners = new ArrayList();
             this.owners.add(belongsTo);
         }
+	}
 
-        // First go through the properties of the class and create domain properties
-        // populating into a map
-        for(int i = 0; i < propertyDescriptors.length; i++) {
+	/**
+	 * Populates the domain class properties map
+	 * 
+	 * @param propertyDescriptors The property descriptors
+	 */
+	private void populateDomainClassProperties(PropertyDescriptor[] propertyDescriptors) {
+		for(int i = 0; i < propertyDescriptors.length; i++) {
 
             PropertyDescriptor descriptor = propertyDescriptors[i];
                 // ignore certain properties
@@ -114,34 +164,11 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
             }
 
         }
-        // if no identifier property throw exception
-        if(this.identifier == null) {
-            throw new GrailsDomainException("Identity property not found, but required in domain class ["+getFullName()+"]" );
-        }
-        // if no version property throw exception
-        if(this.version == null) {
-            throw new GrailsDomainException("Version property not found, but required in domain class ["+getFullName()+"]" );
-        }
-        // set properties from map values
-        this.properties = (GrailsDomainClassProperty[])this.propertyMap.values().toArray( new GrailsDomainClassProperty[this.propertyMap.size()] );
+	}
 
-        // establish relationships
-        establishRelationships();
-
-
-        // set persistant properties
-        Collection tempList = new ArrayList();
-        for(Iterator i = this.propertyMap.values().iterator();i.hasNext();) {
-            GrailsDomainClassProperty currentProp = (GrailsDomainClassProperty)i.next();
-            if(currentProp.isPersistent() && !currentProp.isIdentity() && !currentProp.getName().equals( GrailsDomainClassProperty.VERSION )) {
-                tempList.add(currentProp);
-            }
-        }
-        this.persistantProperties = (GrailsDomainClassProperty[])tempList.toArray( new GrailsDomainClassProperty[tempList.size()]);
-        // process the constraints
-        evaluateConstraints();
-    }
-
+	/**
+	 * Retrieves the association map
+	 */
     public Map getAssociationMap() {
         this.relationshipMap = (Map)getPropertyOrStaticPropertyOrFieldValue( GrailsDomainClassProperty.RELATES_TO_MANY, Map.class );
         if(this.relationshipMap == null) {
@@ -152,6 +179,12 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
         return this.relationshipMap;
     }
 
+    /**
+     * Checks whether is property is configurational
+     * 
+     * @param descriptor The descriptor
+     * @return True if it is configurational
+     */
     private boolean isNotConfigurational(PropertyDescriptor descriptor) {
         return !descriptor.getName().equals( GrailsDomainClassProperty.META_CLASS ) &&
            !descriptor.getName().equals( GrailsDomainClassProperty.CLASS ) &&
@@ -283,6 +316,10 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
                 }
 
                 establishRelationshipForSetToType(property,relatedClassPropertyType);
+                // if its a many-to-many figure out the owning side of the relationship               
+                if(property.isManyToMany()) {
+                	establishOwnerOfManyToMany(property, relatedClassType);
+                }
             }
             // otherwise set it to not persistent as you can't persist
             // relationships to non-domain classes
@@ -299,6 +336,34 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
     }
 
     /**
+     * Inspects a related classes' ownership settings against this properties class' ownership
+     * settings to find out who owns a many-to-many relationship
+     * 
+     * @param property The property
+     * @param relatedClassType The related type
+     */
+    private void establishOwnerOfManyToMany(DefaultGrailsDomainClassProperty property, Class relatedClassType) {
+    	Object related = BeanUtils.instantiateClass(relatedClassType);
+    	Object relatedBelongsTo = GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(related, GrailsDomainClassProperty.BELONGS_TO);
+    	boolean owningSide = false;
+    	boolean relatedOwner = this.owners.contains(relatedClassType);
+    	final Class propertyClass = property.getDomainClass().getClazz();
+    	if(relatedBelongsTo instanceof Collection) {    		
+			owningSide = ((Collection)relatedBelongsTo).contains(propertyClass);
+    	}
+    	else if (relatedBelongsTo != null) {
+    		owningSide = relatedBelongsTo.equals(propertyClass);
+    	}
+    	property.setOwningSide(owningSide);
+    	if(relatedOwner && property.isOwningSide()) {
+    		throw new GrailsDomainException("Domain classes ["+propertyClass+"] and ["+relatedClassType+"] cannot own each other in a many-to-many relationship. Both contain belongsTo definitions that reference each other.");
+    	}
+    	else if(!relatedOwner && !property.isOwningSide()) {
+    		throw new GrailsDomainException("No owner defined between domain classes ["+propertyClass+"] and ["+relatedClassType+"] in a many-to-many relationship. Example: def belongsTo = "+relatedClassType.getName());    		
+    	}
+	}
+
+	/**
      * Establishes whether the relationship is a bi-directional or uni-directional one-to-many
      * and applies the appropriate settings to the specified property
      *
@@ -312,9 +377,9 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
             property.setOneToMany(true);
             property.setBidirectional(false);
         }
-        else if( Set.class.isAssignableFrom(relatedClassPropertyType) ){
+        else if( Collection.class.isAssignableFrom(relatedClassPropertyType) ){
             // many-to-many
-            property.setManyToMany(true);
+            property.setManyToMany(true);            
             property.setBidirectional(true);
         }
         else if( GrailsClassUtils.isDomainClass( relatedClassPropertyType ) ) {

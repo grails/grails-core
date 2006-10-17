@@ -59,7 +59,6 @@ public abstract class AbstractSavePersistentMethod extends
 	 * @see org.codehaus.groovy.grails.orm.hibernate.metaclass.AbstractDynamicPersistentMethod#doInvokeInternal(java.lang.Object, java.lang.Object[])
 	 */
 	protected Object doInvokeInternal(Object target, Object[] arguments) {
-        HibernateTemplate t = getHibernateTemplate();        
         GrailsDomainClass domainClass = application.getGrailsDomainClass( target.getClass().getName() );
         
         if(shouldValidate(arguments, domainClass)) {
@@ -84,9 +83,21 @@ public abstract class AbstractSavePersistentMethod extends
             autoRetrieveAssocations(domainClass, target);
         }
 
-        performSave(target);
+        performSave(target, shouldFlush(arguments));
 
         return target;
+	}
+
+	private boolean shouldFlush(Object[] arguments) {
+        if(arguments.length > 0) {
+            if(arguments[0] instanceof Boolean) {
+                return ((Boolean)arguments[0]).booleanValue();
+            }
+            else {
+            	return true;
+            }
+        }
+        return false;
 	}
 
 	/**
@@ -156,6 +167,6 @@ public abstract class AbstractSavePersistentMethod extends
 		return false;
 	}
 
-	abstract protected void performSave(Object target);
+	abstract protected void performSave(Object target, boolean b);
 
 }

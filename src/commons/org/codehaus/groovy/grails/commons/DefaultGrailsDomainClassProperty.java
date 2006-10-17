@@ -19,7 +19,6 @@ import java.util.*;
 
 import org.apache.commons.lang.ClassUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
-import org.springframework.beans.BeanUtils;
 
 /**
  * @author Graeme Rocher
@@ -28,7 +27,7 @@ import org.springframework.beans.BeanUtils;
 public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProperty {
 
 	
-	private GrailsDomainClass domainClass;
+	private DefaultGrailsDomainClass domainClass;
     private boolean persistant;
 	private boolean optional;
 	private boolean identity;
@@ -46,6 +45,8 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
 	private GrailsDomainClassProperty otherSide;
     private String naturalName;
 	private boolean inherited;
+	private int fetchMode = FETCH_LAZY;
+	private boolean owningSide;
 
 
     public DefaultGrailsDomainClassProperty(DefaultGrailsDomainClass domainClass, PropertyDescriptor descriptor)  {
@@ -60,30 +61,42 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
         this.identity = descriptor.getName().equals( IDENTITY );
         // figure out if this property is inherited
         if(!domainClass.isRoot()) {
-        	Class superClass = domainClass.getClazz().getSuperclass();
-        	
-        	PropertyDescriptor pd = BeanUtils.getPropertyDescriptor(superClass, this.name);
-        	if (pd != null && pd.getReadMethod() != null) {
-        		this.inherited = true;
-        	}
+        	this.inherited = GrailsClassUtils.isPropertyInherited(domainClass.getClazz(), this.name);
         }        
         // get the not required descritor from the owner bean
-        List optionalProps;
-        List transientProps;
+        List optionalProps  = (List)domainClass.getPropertyOrStaticPropertyOrFieldValue( OPTIONAL, List.class );
+        List transientProps = getTransients(domainClass);
 
-        optionalProps = (List)domainClass.getPropertyOrStaticPropertyOrFieldValue( OPTIONAL, List.class );
-        transientProps= (List)domainClass.getPropertyOrStaticPropertyOrFieldValue( TRANSIENT, List.class );
-
-        // Undocumented feature alert! Steve insisted on this :-)
-        List evanescent = (List)domainClass.getPropertyOrStaticPropertyOrFieldValue( EVANESCENT, List.class );
-        if(evanescent != null) {
-            if(transientProps == null)
-                transientProps = new ArrayList();
-
-            transientProps.addAll(evanescent);
-        }
         // establish of property is required
-        if(optionalProps != null) {
+        checkIfOptional(optionalProps);
+        // establish if property is persistant
+        checkIfTransient(transientProps);
+
+        establishFetchMode();                
+
+    }
+
+    /**
+     * Evaluates the fetchmode 
+     *
+     */
+	private void establishFetchMode() {
+		Map fetchMap = (Map)domainClass.getPropertyOrStaticPropertyOrFieldValue(FETCH_MODE, Map.class);
+		if(fetchMap != null && fetchMap.containsKey(this.name)) {
+			if("eager".equals(fetchMap.get(this.name))) {
+				this.fetchMode = FETCH_EAGER;				
+			}
+		}
+	}
+
+
+	/**
+	 * Checks whether this property is optional
+	 * 
+	 * @param optionalProps The optional property list
+	 */
+	private void checkIfOptional(List optionalProps) {
+		if(optionalProps != null) {
             for(Iterator i = optionalProps.iterator();i.hasNext();) {
 
                 // make sure its a string otherwise ignore. Note: Maybe put a warning here?
@@ -99,8 +112,16 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
                 }
             }
         }
-        // establish if property is persistant
-        if(transientProps != null) {
+	}
+
+
+	/**
+	 * Checks whether this property is transient
+	 * 
+	 * @param transientProps The transient properties
+	 */
+	private void checkIfTransient(List transientProps) {
+		if(transientProps != null) {
             for(Iterator i = transientProps.iterator();i.hasNext();) {
 
                 // make sure its a string otherwise ignore. Note: Again maybe a warning?
@@ -116,9 +137,30 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
                 }
             }
         }
+	}
 
-    }
-	
+
+	/**
+	 * Retrieves the transient properties
+	 * 
+	 * @param domainClass The owning domain class
+	 * @return A list of transient properties
+	 */
+	private List getTransients(DefaultGrailsDomainClass domainClass) {
+		List transientProps;
+		transientProps= (List)domainClass.getPropertyOrStaticPropertyOrFieldValue( TRANSIENT, List.class );
+
+        // Undocumented feature alert! Steve insisted on this :-)
+        List evanescent = (List)domainClass.getPropertyOrStaticPropertyOrFieldValue( EVANESCENT, List.class );
+        if(evanescent != null) {
+            if(transientProps == null)
+                transientProps = new ArrayList();
+
+            transientProps.addAll(evanescent);
+        }
+		return transientProps;
+	}
+
 
 	/* (non-Javadoc)
 	 * @see org.codehaus.groovy.grails.domain.GrailsDomainClassProperty#getName()
@@ -353,4 +395,15 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
 	}
 
 
+	public int getFetchMode() {
+		return this.fetchMode ;
+	}
+
+	public boolean isOwningSide() {
+		return this.owningSide;
+	}
+
+	public void setOwningSide(boolean b) {
+		this.owningSide = b;
+	}
 }
