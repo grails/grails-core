@@ -110,13 +110,14 @@ Targets:
         <copy todir="${path}web-app/WEB-INF">
             <fileset dir="${grails.home}/src/war/WEB-INF">
                 <include name="applicationContext.xml"/>
+                <include name="log4j.properties"/>
+                <include name="sitemesh.xml"/>
             </fileset>
         </copy>
         <copy todir="${path}grails-app">
             <fileset dir="${grails.home}/src/grails/grails-app" />
         </copy>
         <copy file="${grails.home}/src/war/WEB-INF/web${servlet.version}.template.xml" tofile="${path}web-app/WEB-INF/web.template.xml"/>
-        <copy file="${grails.home}/src/war/WEB-INF/sitemesh.xml" tofile="${path}web-app/WEB-INF/sitemesh.xml"/>
 
         <antcall target="init:updatejstl"/>
         <copy todir="${path}web-app/WEB-INF/tld">
