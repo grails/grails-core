@@ -403,7 +403,7 @@ Targets:
 		</junit>
 	</target>
 
-	<target name="test-app" depends="dev,package" description="Run current app's unit tests">
+	<target name="test-app" depends="test,package" description="Run current app's unit tests">
 		<mkdir dir="${basedir}/tmp/war/WEB-INF/grails-app/tests" />
 		<copy todir="${basedir}/tmp/war/WEB-INF/grails-app/tests">
 			<fileset dir="${basedir}/grails-tests/" includes="**" />
