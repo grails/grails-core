@@ -185,6 +185,7 @@ public class ConstrainedPropertyTests extends TestCase {
     public void testApplyConstraint() {
 
         // test validate email
+        // ---------------------------------------------------------------------
         ConstrainedProperty cp = new ConstrainedProperty(ConstrainedPropertyTests.class,"testEmail", String.class);
 
         cp.applyConstraint( ConstrainedProperty.EMAIL_CONSTRAINT, new Boolean(true) );
@@ -206,6 +207,7 @@ public class ConstrainedPropertyTests extends TestCase {
         assertFalse(errors.hasErrors());
 
         // test validate url
+        // ---------------------------------------------------------------------
         cp = new ConstrainedProperty(ConstrainedPropertyTests.class,"testURL", String.class);
         cp.applyConstraint( ConstrainedProperty.URL_CONSTRAINT, new Boolean(true) );
 
@@ -216,17 +218,29 @@ public class ConstrainedPropertyTests extends TestCase {
             c = (Constraint) i.next();
             c.validate(this, this.testURL, errors);
         }
+
+        // validate that an invalid URL value yields an error
         assertTrue(errors.hasErrors());
         error = errors.getFieldError("testURL");
         assertNotNull(error);
         assertEquals(this.testURL,error.getRejectedValue());
 
+        // validate that a valid URL value does *not* yield an error
         this.testURL = "http://www.google.com";
         errors = new BindException(this,"testObject");
         c.validate(this, this.testURL,errors);
         assertFalse(errors.hasErrors());
 
+        // validate that a null URL value yields an error
+        this.testURL = null;
+        errors = new BindException(this,"testObject");
+        c.validate(this, this.testURL,errors);
+        assertTrue(errors.hasErrors());
+        error = errors.getFieldError("testURL");
+        assertNotNull(error);
+        
         // test blank constraint
+        // ---------------------------------------------------------------------
         cp.applyConstraint( ConstrainedProperty.URL_CONSTRAINT, null );
         cp.applyConstraint( ConstrainedProperty.BLANK_CONSTRAINT, new Boolean(false) );
 
@@ -243,6 +257,7 @@ public class ConstrainedPropertyTests extends TestCase {
         assertNotNull(error);
 
         // test nullable constraint
+        // ---------------------------------------------------------------------
         cp.applyConstraint( ConstrainedProperty.BLANK_CONSTRAINT, new Boolean(true) );
         cp.applyConstraint( ConstrainedProperty.NULLABLE_CONSTRAINT, new Boolean(false) );
 
@@ -258,6 +273,7 @@ public class ConstrainedPropertyTests extends TestCase {
         assertNotNull(error);
 
         // test inList constraint
+        // ---------------------------------------------------------------------
         cp.applyConstraint( ConstrainedProperty.NULLABLE_CONSTRAINT, new Boolean(true) );
         List list = new ArrayList();
         list.add("one");
@@ -284,6 +300,7 @@ public class ConstrainedPropertyTests extends TestCase {
         assertFalse(errors.hasErrors());
 
         // test length constraint
+        // ---------------------------------------------------------------------
         cp = new ConstrainedProperty(ConstrainedPropertyTests.class,"testURL", String.class);
         cp.applyConstraint( ConstrainedProperty.LENGTH_CONSTRAINT, new IntRange(5,15) );
 
@@ -384,6 +401,39 @@ public class ConstrainedPropertyTests extends TestCase {
         error = errors.getFieldError("testDate");
         System.out.println(error);
         assertNotNull(error);
+        
+        // test validate matches (regex)
+        // ---------------------------------------------------------------------
+        cp = new ConstrainedProperty(ConstrainedPropertyTests.class,"testURL", String.class);
+        cp.applyConstraint( ConstrainedProperty.MATCHES_CONSTRAINT, "[a-zA-Z]" );
+
+        assertTrue(cp.getAppliedConstraints().size() == 1);
+        errors = new BindException(this,"testObject");
+
+        for (Iterator i = cp.getAppliedConstraints().iterator(); i.hasNext();) {
+            c = (Constraint) i.next();
+            c.validate(this, this.testURL, errors);
+        }
+
+        // validate that a value *not* matching the regex yields an error
+        this.testURL = "$";
+        assertTrue(errors.hasErrors());
+        error = errors.getFieldError("testURL");
+        assertNotNull(error);
+
+        // validate that a value matching the regex does *not* yield an error
+        this.testURL = "j";
+        errors = new BindException(this,"testObject");
+        c.validate(this, this.testURL,errors);
+        assertFalse(errors.hasErrors());
+
+        // validate that a null value yields an error
+        this.testURL = null;
+        errors = new BindException(this,"testObject");
+        c.validate(this, this.testURL,errors);
+        assertTrue(errors.hasErrors());
+        error = errors.getFieldError("testURL");
+        assertNotNull(error);        
     }
 
     public void testValidatorConstraint() throws Exception

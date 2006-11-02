@@ -523,7 +523,7 @@ public class ConstrainedProperty   {
             if(url) {
                 UrlValidator urlValidator = new UrlValidator(UrlValidator.ALLOW_ALL_SCHEMES + UrlValidator.ALLOW_2_SLASHES);
 
-                if(!urlValidator.isValid(propertyValue.toString())) {
+                if((propertyValue == null) || !urlValidator.isValid(propertyValue.toString())) {
                     Object[] args = new Object[] { constraintPropertyName, constraintOwningClass, propertyValue };
                     super.rejectValue(errors,URL_CONSTRAINT + INVALID_SUFFIX,args,getDefaultMessage(DEFAULT_INVALID_URL_MESSAGE_CODE, args));
                 }
@@ -783,7 +783,7 @@ public class ConstrainedProperty   {
         }
 
         protected void processValidate(Object target, Object propertyValue, Errors errors) {
-            if(!propertyValue.toString().matches( regex )) {
+            if((propertyValue == null) || !propertyValue.toString().matches( regex )) {
                 Object[] args = new Object[] { constraintPropertyName, constraintOwningClass, propertyValue, regex  };
                 super.rejectValue(errors,MATCHES_CONSTRAINT + INVALID_SUFFIX,args,getDefaultMessage(DEFAULT_DOESNT_MATCH_MESSAGE_CODE, args));
             }
