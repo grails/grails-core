@@ -41,6 +41,7 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass
     private static final String VIEW = "View";
     private static final String DEFAULT_CLOSURE_PROPERTY = "defaultAction";
 	private static final String SCAFFOLDING_PROPERTY = "scaffold";
+	private static final String ALLOWED_HTTP_METHODS_PROPERTY = "allowedMethods";
 
 	private static final String EXCEPT = "except";
 	private static final String ONLY = "only";
@@ -236,6 +237,27 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass
 			return true;
 		}
 		return false;
+	}
+
+	public boolean isHttpMethodAllowedForAction(GroovyObject controller, String httpMethod, String actionName) {
+		boolean isAllowed = true;
+		try {
+			Object methodRestrictionsProperty = controller.getProperty(ALLOWED_HTTP_METHODS_PROPERTY);
+			if(methodRestrictionsProperty instanceof Map) {
+				Map map = (Map)methodRestrictionsProperty;
+				if(map.containsKey(actionName)) {
+					Object value = map.get(actionName);
+					if(value instanceof List) {
+						List listOfMethods = (List) value;
+						isAllowed = listOfMethods.contains(httpMethod);
+					} else if(value instanceof String) {
+						isAllowed = value.equals(httpMethod);
+					}
+				}
+			}
+		} catch (MissingPropertyException mpe) {
+		}
+		return isAllowed;
 	}
 
 	public boolean isInterceptedAfter(GroovyObject controller, String action) {

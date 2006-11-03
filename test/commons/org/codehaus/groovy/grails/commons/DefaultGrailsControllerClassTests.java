@@ -121,4 +121,31 @@ public class DefaultGrailsControllerClassTests extends TestCase {
 		assertFalse(grailsClass.isInterceptedAfter(controller,"list"));
 		assertTrue(grailsClass.isInterceptedAfter(controller,"save"));
 	}
+	
+	public void testAllowedMethods() throws Exception {
+		GroovyClassLoader cl = new GroovyClassLoader();
+		Class clazz = cl.parseClass("class TestController { \n" +
+				"def allowedMethods = [actionTwo:'POST', actionThree:['POST', 'PUT']]\n" +
+				"def actionOne = { return 'test' }\n " +										
+				"def actionTwo = { return 'test' }\n " +										
+				"def actionThree = { return 'test' }\n " +										
+		"} ");
+		GrailsControllerClass grailsClass = new DefaultGrailsControllerClass(clazz);
+		GroovyObject controller = (GroovyObject)grailsClass.newInstance();
+		
+		assertTrue("actionOne should have accepted a GET", grailsClass.isHttpMethodAllowedForAction(controller, "GET", "actionOne"));
+		assertTrue("actionOne should have accepted a PUT", grailsClass.isHttpMethodAllowedForAction(controller, "PUT", "actionOne"));
+		assertTrue("actionOne should have accepted a DELETE", grailsClass.isHttpMethodAllowedForAction(controller, "DELETE", "actionOne"));
+		assertTrue("actionOne should have accepted a POST", grailsClass.isHttpMethodAllowedForAction(controller, "POST", "actionOne"));
+		
+		assertFalse("actionTwo should not have accepted a GET", grailsClass.isHttpMethodAllowedForAction(controller, "GET", "actionTwo"));
+		assertFalse("actionTwo should not have accepted a PUT", grailsClass.isHttpMethodAllowedForAction(controller, "PUT", "actionTwo"));
+		assertFalse("actionTwo should not have accepted a DELETE", grailsClass.isHttpMethodAllowedForAction(controller, "DELETE", "actionTwo"));
+		assertTrue("actionTwo should have accepted a POST", grailsClass.isHttpMethodAllowedForAction(controller, "POST", "actionTwo"));
+		
+		assertFalse("actionThree should not have accepted a GET", grailsClass.isHttpMethodAllowedForAction(controller, "GET", "actionThree"));
+		assertTrue("actionThree should have accepted a PUT", grailsClass.isHttpMethodAllowedForAction(controller, "PUT", "actionThree"));
+		assertFalse("actionThree should not have accepted a DELETE", grailsClass.isHttpMethodAllowedForAction(controller, "DELETE", "actionThree"));
+		assertTrue("actionThree should have accepted a POST", grailsClass.isHttpMethodAllowedForAction(controller, "POST", "actionThree"));
+	}
 }

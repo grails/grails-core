@@ -20,6 +20,8 @@ import groovy.lang.GroovyClassLoader;
 import java.util.Iterator;
 import java.util.Properties;
 
+import javax.servlet.http.HttpServletResponse;
+
 import junit.framework.TestCase;
 
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
@@ -80,6 +82,13 @@ public class SimpleGrailsControllerTests extends TestCase {
 			     "}\n" +
 			"}");		
 		
+		Class c4 = cl.parseClass("class RestrictedController {\n"+
+				"def allowedMethods=[action1:'POST', action3:['PUT', 'DELETE']]\n" +
+				"def action1 = {}\n" +
+				"def action2 = {}\n" +
+				"def action3 = {}\n" +
+		"}");
+		
 //		this.grailsApplication = new DefaultGrailsApplication(new Class[]{c1,c2,c3},cl);
 //		this.controller = new SimpleGrailsController();
 //		this.controller.setGrailsApplication(grailsApplication);
@@ -90,7 +99,7 @@ public class SimpleGrailsControllerTests extends TestCase {
 		this.localContext = new GenericApplicationContext();
 		
 		ConstructorArgumentValues args = new ConstructorArgumentValues();
-		args.addGenericArgumentValue(new Class[]{c1,c2,c3});
+		args.addGenericArgumentValue(new Class[]{c1,c2,c3,c4});
 		args.addGenericArgumentValue(cl);
 		MutablePropertyValues propValues = new MutablePropertyValues();
 		
@@ -115,9 +124,12 @@ public class SimpleGrailsControllerTests extends TestCase {
 		super.setUp();
 	}
 
-
 	private ModelAndView execute(String uri, Properties parameters) throws Exception {
-		MockHttpServletRequest request = new MockHttpServletRequest("GET", uri);
+		return execute(uri, parameters, "GET", new MockHttpServletResponse());
+	}
+	
+	private ModelAndView execute(String uri, Properties parameters, String requestMethod, HttpServletResponse response) throws Exception {
+		MockHttpServletRequest request = new MockHttpServletRequest(requestMethod, uri);
 		request.setContextPath("/simple");
 		
 		if (parameters != null) {
@@ -127,14 +139,34 @@ public class SimpleGrailsControllerTests extends TestCase {
 				request.addParameter(paramName, paramValue);
 			}
 		}
-		MockHttpServletResponse response = new MockHttpServletResponse();
 		return controller.handleRequest(request, response);
 	}
-	
 	
 	public void testSimpleControllerSuccess() throws Exception {
 		ModelAndView modelAndView = execute("/test/test", null);
 		assertNotNull(modelAndView);
 	}
+	
+	public void testAllowedMethods() throws Exception {
+		assertResponseStatusCode("/restricted/action1", "GET", HttpServletResponse.SC_FORBIDDEN);
+		assertResponseStatusCode("/restricted/action1", "PUT", HttpServletResponse.SC_FORBIDDEN);
+		assertResponseStatusCode("/restricted/action1", "POST", HttpServletResponse.SC_OK);
+		assertResponseStatusCode("/restricted/action1", "DELETE", HttpServletResponse.SC_FORBIDDEN);
+
+		assertResponseStatusCode("/restricted/action2", "GET", HttpServletResponse.SC_OK);
+		assertResponseStatusCode("/restricted/action2", "PUT", HttpServletResponse.SC_OK);
+		assertResponseStatusCode("/restricted/action2", "POST", HttpServletResponse.SC_OK);
+		assertResponseStatusCode("/restricted/action2", "DELETE", HttpServletResponse.SC_OK);
 		
+		assertResponseStatusCode("/restricted/action3", "GET", HttpServletResponse.SC_FORBIDDEN);
+		assertResponseStatusCode("/restricted/action3", "PUT", HttpServletResponse.SC_OK);
+		assertResponseStatusCode("/restricted/action3", "POST", HttpServletResponse.SC_FORBIDDEN);
+		assertResponseStatusCode("/restricted/action3", "DELETE", HttpServletResponse.SC_OK);
+	}
+	
+	private void assertResponseStatusCode(String uri, String httpMethod, int expectedStatusCode) throws Exception {
+		MockHttpServletResponse response = new MockHttpServletResponse();
+		execute(uri, null, httpMethod, response);
+		assertEquals(expectedStatusCode, response.getStatus());
+	}
 }

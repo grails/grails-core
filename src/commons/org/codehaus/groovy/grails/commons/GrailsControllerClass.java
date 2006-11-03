@@ -42,6 +42,17 @@ public interface GrailsControllerClass extends InjectableGrailsClass {
     public String AFTER_INTERCEPTOR = "afterInterceptor";   
     
     /**
+     * Checks to see if an action is accessible via a particular
+     * http method
+     * 
+     * @param controller The instance of the controller
+     * @param httpMethod The http request method
+     * @param actionName The action to check
+     * @return true if the action is accessible via the specified http method
+     */
+    boolean isHttpMethodAllowedForAction(GroovyObject controller, String httpMethod, String actionName);
+    
+    /**
      * Checks whether the specified action is intercepted for the
      * specified controller instance
      * 

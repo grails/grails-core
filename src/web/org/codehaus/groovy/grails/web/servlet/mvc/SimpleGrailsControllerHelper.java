@@ -220,6 +220,15 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
         // Step 3: load controller from application context.
         GroovyObject controller = getControllerInstance(controllerClass);
 
+        if(!controllerClass.isHttpMethodAllowedForAction(controller, request.getMethod(), actionName)) {
+        	try {
+				response.sendError(HttpServletResponse.SC_FORBIDDEN);
+				return null;
+			} catch (IOException e) {
+				throw new ControllerExecutionException("I/O error sending 403 error",e);
+			}
+        }
+        
         request.setAttribute( GrailsApplicationAttributes.CONTROLLER, controller );
 
         // Step 3a: Configure a proxy interceptor for controller dynamic methods for this request
