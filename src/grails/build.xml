@@ -857,7 +857,7 @@ Targets:
     </target>
 
     <target name="run-webtest"  description="Run the functional tests for a running app"
-            depends="dev, package, run-app:impl, webtest-impl, stop-server"/>
+            depends="test, package, run-app:impl, webtest-impl, stop-server"/>
 
     <target name="stop-server" >
         <groovy>
