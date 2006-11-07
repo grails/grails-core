@@ -73,4 +73,9 @@ public class DefaultGrailsTaskClass extends AbstractInjectableGrailsClass
 		return true;
 	}
 
+	public boolean isConcurrent() {
+		String concurrent = (String)getPropertyValue(CONCURRENT, String.class);
+		if ( concurrent == null || "".equals(concurrent) ) return DEFAULT_CONCURRENT.equals("true");
+		return concurrent.equals("true");
+	}	
 }

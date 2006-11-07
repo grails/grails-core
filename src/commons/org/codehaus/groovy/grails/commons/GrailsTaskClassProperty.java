@@ -19,7 +19,11 @@ package org.codehaus.groovy.grails.commons;
  * 
  * @see GrailsTaskClass
  * @author Micha?? K??ujszo
- * @since 20-Apr-2006
+ * @author Graeme Rocher
+ * 
+ * @since 0.2
+ * 
+ * Created: 20-Apr-2006
  */
 public interface GrailsTaskClassProperty {
 
@@ -34,5 +38,7 @@ public interface GrailsTaskClassProperty {
 	public static final String TYPE = "type";
 	
 	public static final String GROUP = "group";		
+	
+	public static final String CONCURRENT = "concurrent";
 	
 }

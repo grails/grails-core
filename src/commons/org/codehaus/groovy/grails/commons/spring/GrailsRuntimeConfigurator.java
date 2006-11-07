@@ -417,6 +417,7 @@ public class GrailsRuntimeConfigurator {
 					.addSingletonBean( grailsTaskClass.getFullName()+"JobDetail",MethodInvokingJobDetailFactoryBean.class )
 					.addProperty("targetObject", new RuntimeBeanReference(grailsTaskClass.getFullName()) )
 					.addProperty("targetMethod", GrailsTaskClassProperty.EXECUTE)
+					.addProperty("concurrent", grailsTaskClass.isConcurrent()?"true":"false")
 					.addProperty("group", grailsTaskClass.getGroup());			
 			
 			

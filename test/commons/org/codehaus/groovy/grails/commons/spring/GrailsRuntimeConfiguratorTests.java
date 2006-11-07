@@ -136,6 +136,7 @@ public class GrailsRuntimeConfiguratorTests extends TestCase {
         " def timeout = 1000\n" +
         " def name = 'MyJob'\n" +
         " def group = 'MyGroup'\n" +
+        " def concurrent = true\n" +
         " def execute(){\n" +
         "    print 'Job run!'\n" +
         "  }\n" +

@@ -18,7 +18,10 @@ package org.codehaus.groovy.grails.commons;
  * <p>Represents a task class in Grails, provides default task configuration</p> 
  * 
  * @author Micha?? K??ujszo
- * @since 20-Apr-2006
+ * @author Graeme Rocher
+ * 
+ * @since 0.2
+ * 20-Apr-2006
  */
 public interface GrailsTaskClass extends InjectableGrailsClass {
 	
@@ -57,6 +60,13 @@ public interface GrailsTaskClass extends InjectableGrailsClass {
 	 * @return should scheduler configure task using cron expression or timeout and startDelay properties.
 	 */
 	public boolean isCronExpressionConfigured();
+	
+	/**
+	 * Return whether jobs can be executed concurrently or not
+	 * 
+	 * @return True if they can be executed concurrently
+	 */
+	public boolean isConcurrent();
 
 	public static final String JOB = "Job";
 	
@@ -65,7 +75,5 @@ public interface GrailsTaskClass extends InjectableGrailsClass {
 	public static final String DEFAULT_GROUP = "GRAILS_JOBS";
 	public static final String DEFAULT_CRON_EXPRESSION = "0 0 6 * * ?";
 	public static final String DEFAULT_TYPE = "memory";	/* memory | jdbc | jdbctx */
-	
-	
-
+	public static final String DEFAULT_CONCURRENT = "true";
 }
