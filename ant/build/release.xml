@@ -88,15 +88,15 @@
         <delete file="${archive}.zip" failonerror="true"/>
         <zip basedir="${archive.dir}" destfile="${grails.dist}/${archive}.zip" />
         <delete file="${archive}.tar.gz" failonerror="true"/>
-        <tar destfile="dist/${archive}.tar.gz" compression="gzip" longfile="gnu">
-		  <tarfileset dir="${archive.dir}" mode="755" username="grails" group="grails">
+        <tar basedir="${archive.dir}" destfile="dist/${archive}.tar.gz" compression="gzip" longfile="gnu" />
+	   <!--   <tarfileset dir="${archive.dir}" mode="755" username="grails" group="grails">
 		    <include name="${archive.dir}/bin/grails"/>
 		  </tarfileset>	 
 		  <tarfileset dir="${archive.dir}" username="grails" group="grails">
 		    <include name="${archive.dir}/**"/>
 		    <exclude name="${archive.dir}/bin/grails"/>     
 		  </tarfileset>		
-		</tar>
+		</tar>-->
     </target>
 
     <target name="create-release-package">
