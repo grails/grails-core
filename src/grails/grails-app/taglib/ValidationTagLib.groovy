@@ -170,10 +170,12 @@ class ValidationTagLib {
           }
           if(attrs['code']) {
                 def code = attrs['code']
+                def args = attrs['args'] 
                 def defaultMessage = ( attrs['default'] ? attrs['default'] : code )
 
                 def message = messageSource.getMessage( code,
                                                         null,
+                                                        args == null ? null : args.toArray(),
                                                         defaultMessage,
                                                         locale )
                 if(message) {
