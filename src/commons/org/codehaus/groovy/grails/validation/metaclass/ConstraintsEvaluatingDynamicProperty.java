@@ -95,7 +95,8 @@ public class ConstraintsEvaluatingDynamicProperty extends AbstractDynamicPropert
 							cp.setOrder(constrainedProperties.size()+1);
 							constrainedProperties.put(p.getName(), cp);
 						}
-						cp.applyConstraint(ConstrainedProperty.NULLABLE_CONSTRAINT, Boolean.FALSE);
+						if(!p.isAssociation())
+							cp.applyConstraint(ConstrainedProperty.NULLABLE_CONSTRAINT, Boolean.FALSE);
 					}
 				}
             }
