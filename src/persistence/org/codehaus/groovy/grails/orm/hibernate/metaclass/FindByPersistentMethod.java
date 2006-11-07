@@ -17,6 +17,7 @@ package org.codehaus.groovy.grails.orm.hibernate.metaclass;
 import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 import org.codehaus.groovy.grails.commons.GrailsApplication;
@@ -50,11 +51,19 @@ public class FindByPersistentMethod extends AbstractClausedStaticPersistentMetho
  		super(application,sessionFactory, classLoader, Pattern.compile( METHOD_PATTERN ),OPERATORS);
 	}
 
-	protected Object doInvokeInternalWithExpressions(final Class clazz, String methodName, Object[] arguments, final List expressions) {
+	protected Object doInvokeInternalWithExpressions(final Class clazz, String methodName, final Object[] arguments, final List expressions) {
 		return super.getHibernateTemplate().execute( new HibernateCallback() {
 
 			public Object doInHibernate(Session session) throws HibernateException, SQLException {
+
+				
 				Criteria crit = session.createCriteria(clazz);
+				if(arguments.length > 0) {
+					if(arguments[0] instanceof Map) {
+						Map argMap = (Map)arguments[0];
+						populateArgumentsForCriteria(crit,argMap);										
+					}
+				}				
 				for (Iterator i = expressions.iterator(); i.hasNext();) {
 					GrailsMethodExpression current = (GrailsMethodExpression) i.next();
 					crit.add( current.getCriterion() );

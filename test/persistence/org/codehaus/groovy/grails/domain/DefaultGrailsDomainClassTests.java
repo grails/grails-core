@@ -68,13 +68,13 @@ public class DefaultGrailsDomainClassTests extends TestCase {
 		throws Exception {
 	
 		Class clazz = cl.parseClass("class UserTest { " +
-                "@Property int id; " +
-                "@Property int version; " +
-                "@Property List transients = [ \"age\" ]; " +
-                "@Property List optionals  = [ \"lastName\" ]; " +
-                "@Property String firstName; " +
-                "@Property String lastName; " +
-                "@Property java.util.Date age; " +
+                " int id; " +
+                " int version; " +
+                " List transients = [ \"age\" ]; " +
+                " List optionals  = [ \"lastName\" ]; " +
+                " String firstName; " +
+                " String lastName; " +
+                " java.util.Date age; " +
                 "}");
 
 		GrailsDomainClass domainClass = new DefaultGrailsDomainClass(clazz);
@@ -141,11 +141,11 @@ public class DefaultGrailsDomainClassTests extends TestCase {
 	public void testCircularOneToManyRelationship() throws Exception {
 		GroovyClassLoader gcl = new GroovyClassLoader();
 		Class a = gcl.parseClass("class A { \n" +
-									"@Property Long id\n" +
-									"@Property Long version\n" +
-									"@Property relatesToMany = [ children : A]\n" +
-									"@Property A parent\n" +
-									"@Property Set children\n" +
+									" Long id\n" +
+									" Long version\n" +
+									" def relatesToMany = [ children : A]\n" +
+									" A parent\n" +
+									" Set children\n" +
 									"}");
 		GrailsDomainClass dc = new DefaultGrailsDomainClass(a);
 		GrailsDomainClass[] dcs = new GrailsDomainClass[1];

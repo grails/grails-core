@@ -184,4 +184,8 @@ public class GrailsHibernateDomainClassProperty implements GrailsDomainClassProp
 	public boolean isOwningSide() {
 		throw new UnsupportedOperationException("Method 'isOwningSide' is not supported by implementation");
 	}
+
+	public boolean isCircular() {
+		throw new UnsupportedOperationException("Method 'isCircular' is not supported by implementation");
+	}
 }

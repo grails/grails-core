@@ -406,4 +406,12 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
 	public void setOwningSide(boolean b) {
 		this.owningSide = b;
 	}
+
+	public boolean isCircular() {
+		if(this.otherSide != null) {
+			if(this.otherSide.getDomainClass().equals(this.domainClass))
+				return true;
+		}
+		return false;
+	}
 }

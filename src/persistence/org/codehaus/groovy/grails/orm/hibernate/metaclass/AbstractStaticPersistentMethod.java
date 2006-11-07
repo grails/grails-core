@@ -31,9 +31,11 @@ import org.springframework.orm.hibernate3.HibernateTemplate;
 import org.springframework.util.Assert;
 
 /**
- * 
+ * Abstract base class for static persistent methods
  * 
  * @author Steven Devijver
+ * @author Graeme Rocher
+ * 
  * @since Aug 8, 2005
  */
 public abstract class AbstractStaticPersistentMethod extends

@@ -43,7 +43,9 @@ import java.util.Set;
  * Based on the HbmBinder code in Hibernate core and influenced by AnnotationsBinder.
  * 
  * @author Graeme Rocher
- * @since 06-Jul-2005
+ * @since 0.1
+ * 
+ * Created: 06-Jul-2005
  */
 public final class GrailsDomainBinder {
 	
@@ -76,45 +78,10 @@ public final class GrailsDomainBinder {
 
 			public Collection create(GrailsDomainClassProperty property, PersistentClass owner, Mappings mappings) throws MappingException {				
 				org.hibernate.mapping.Set coll = new org.hibernate.mapping.Set(owner);
-				if(property.isManyToMany()) {
-					String tableName = calculateTableForMany(property);
-					Table t =  mappings.addTable(
-							mappings.getSchemaName(),
-							mappings.getCatalogName(),
-							tableName,
-							null,
-							false
-						);
-					coll.setCollectionTable(t);
-					if(!property.isOwningSide()) {
-						coll.setInverse(true);
-					}
-				}
-				else {
-					coll.setCollectionTable(owner.getTable());
-				}
-				
+				coll.setCollectionTable(owner.getTable());
 				bindCollection( property, coll, owner, mappings );
 				return coll;
 			}
-
-			/**
-			 * This method will calculate the mapping table for a many-to-many. One side of 
-			 * the relationship has to "own" the relationship so that there is not a situation
-			 * where you have two mapping tables for left_right and right_left
-			 */
-			private String calculateTableForMany(GrailsDomainClassProperty property) {
-				String left = namingStrategy.classToTableName(property.getDomainClass().getShortName());
-				String right = namingStrategy.classToTableName(property.getReferencedDomainClass().getShortName());
-				
-				if(property.isOwningSide()) {
-					return left+'_'+right;
-				}
-				else {
-					return right+'_'+left;
-				}
-			}
-
 			
 		};
 		
@@ -160,8 +127,14 @@ public final class GrailsDomainBinder {
 	private static void bindCollectionSecondPass(GrailsDomainClassProperty property, Mappings mappings, Map persistentClasses, Collection collection, Map inheritedMetas) {
 
 		PersistentClass associatedClass = null;
+		
+		LOG.info( "Mapping collection: "
+				+ collection.getRole()
+				+ " -> "
+				+ collection.getCollectionTable().getName() );
+		
 		// Configure one-to-many
-		if(collection.isOneToMany()) {
+		if(collection.isOneToMany() ) {
 			OneToMany oneToMany = (OneToMany)collection.getElement();
 			String associatedClassName = oneToMany.getReferencedEntityName();
 			
@@ -175,23 +148,88 @@ public final class GrailsDomainBinder {
 			oneToMany.setAssociatedClass( associatedClass );
 			if(!property.isManyToMany())
 				collection.setCollectionTable( associatedClass.getTable() );
+			
 			collection.setLazy(true);
 			
-			// is it sorted?
-			if(SortedSet.class.isAssignableFrom(property.getType())) {
+			if(isSorted(property)) {
 				collection.setSorted(true);
-			}
-			
-			LOG.info( "Mapping collection: "
-					+ collection.getRole()
-					+ " -> "
-					+ collection.getCollectionTable().getName() );
-			
+			}	
 		}
 		
 		// setup the primary key references
-		KeyValue keyValue;
+		DependantValue key = createPrimaryKeyValue(property, collection,persistentClasses);
 		
+		// link a bidirectional relationship		
+		if(property.isBidirectional()) {
+			GrailsDomainClassProperty otherSide = property.getOtherSide();
+			if(otherSide.isManyToOne()) {
+				linkBidirectionalOneToMany(collection, associatedClass, key, otherSide);
+			}
+			else if(property.isManyToMany() /*&& property.isOwningSide()*/) {
+				bindDependentKeyValue(property,key,mappings);
+			}
+		}	
+		else {
+			bindDependentKeyValue(property,key,mappings);
+		}				
+		collection.setKey( key );
+
+		
+		// if we have a many-to-many
+		if(property.isManyToMany() ) {
+			GrailsDomainClassProperty otherSide = property.getOtherSide();
+			
+			if(property.isBidirectional()) {
+				if(LOG.isDebugEnabled())
+					LOG.debug("[GrailsDomainBinder] Mapping other side "+otherSide.getDomainClass().getName()+"."+otherSide.getName()+" -> "+collection.getCollectionTable().getName()+" as ManyToOne");
+				ManyToOne element = new ManyToOne( collection.getCollectionTable() );
+				bindManyToMany(otherSide, element, mappings);
+				collection.setElement(element);	
+			}
+			else {
+				// TODO support unidirectional many-to-many
+			}
+			
+		} else if ( isUnidirectionalOneToMany(property) ) {
+			// for non-inverse one-to-many, with a not-null fk, add a backref!
+			bindUnidirectionalOneToMany(property, mappings, collection);
+		}		
+	}
+
+	/**
+	 * Checks whether a property is a unidirectional non-circular one-to-many
+	 * @param property The property to check
+	 * @return True if it is unidirectional and a one-to-many
+	 */
+	private static boolean isUnidirectionalOneToMany(GrailsDomainClassProperty property) {
+		return property.isOneToMany() && !property.isBidirectional();
+	}
+
+	/**
+	 * Binds the primary key value column
+	 * 
+	 * @param property The property
+	 * @param key The key
+	 * @param mappings The mappings
+	 */ 
+	private static void bindDependentKeyValue(GrailsDomainClassProperty property, DependantValue key, Mappings mappings) {
+		if(LOG.isDebugEnabled())
+			LOG.debug("[GrailsDomainBinder] binding  ["+property.getName()+"] with dependant key");
+		
+		bindSimpleValue(property, key, mappings);		
+	}
+
+	/**
+	 * Creates the DependentValue object that forms a primary key reference for the collection
+	 * 
+	 * @param property The grails property
+	 * @param collection The collection object
+	 * @param persistentClasses 
+	 * @return The DependantValue (key)
+	 */
+	private static DependantValue createPrimaryKeyValue(GrailsDomainClassProperty property, Collection collection, Map persistentClasses) {
+		KeyValue keyValue;
+		DependantValue key;
 		String propertyRef = collection.getReferencedPropertyName();
 		// this is to support mapping by a property
 		if(propertyRef == null) {
@@ -201,57 +239,85 @@ public final class GrailsDomainBinder {
 			keyValue = (KeyValue)collection.getOwner().getProperty( propertyRef ).getValue();
 		}
 		
-		DependantValue key = new DependantValue(collection.getCollectionTable(), keyValue);		
+		if(LOG.isDebugEnabled())
+			LOG.debug( "[GrailsDomainBinder] creating dependant key value  to table ["+keyValue.getTable().getName()+"]");
+		
+     	key = new DependantValue(collection.getCollectionTable(), keyValue);
+		
+				
 		key.setTypeName(null);
-		
-//		
-		if(property.isBidirectional()) {
-			GrailsDomainClassProperty otherSide = property.getOtherSide();
-			if(otherSide.isManyToOne()) {
-				collection.setInverse(true);
-				Iterator mappedByColumns = associatedClass.getProperty( otherSide.getName() ).getValue().getColumnIterator();
-				while(mappedByColumns.hasNext()) {
-					Column column = (Column)mappedByColumns.next();
-					linkValueUsingAColumnCopy(otherSide,column,key);
-				}
-			}
-			else if(property.isManyToMany()) {
-				if(!property.isOwningSide())
-					collection.setInverse(true);
-				bindSimpleValue( property,key,mappings );
-			}
-		}		
-		else {
-			bindSimpleValue( property,key,mappings );
-		}				
-		collection.setKey( key );
-		// make required and non-updateable
-		key.setNullable(false);
-		key.setUpdateable(false);
-		
-		// if we have a many-to-many
-//		if(property.isManyToMany()) {
-//			ManyToOne element = new ManyToOne( collection.getCollectionTable() );
-//			collection.setElement(element);
-//			bindManyToOne(property,element, mappings);
-//		} else
-		if ( property.isOneToMany() && !property.isBidirectional() ) {
-			// for non-inverse one-to-many, with a not-null fk, add a backref!
-			OneToMany oneToMany = (OneToMany) collection.getElement();
-				String entityName = oneToMany.getReferencedEntityName();
-				PersistentClass referenced = mappings.getClass( entityName );
-				Backref prop = new Backref();
-                prop.setEntityName(property.getDomainClass().getFullName());
-                prop.setName('_' + property.getDomainClass().getShortName() + '_' + property.getName() + "Backref" );
-				prop.setUpdateable( true );
-				prop.setInsertable( true );
-				prop.setCollectionRole( collection.getRole() );
-				prop.setValue( collection.getKey() );
-				prop.setOptional( true );
-				referenced.addProperty( prop );
-		}		
+		// make nullable and non-updateable
+		key.setNullable(true);
+		key.setUpdateable(false);		
+		return key;
+	}
+
+	/**
+	 * Binds a unidirectional one-to-many creating a psuedo back reference property in the process.
+	 * 
+	 * @param property
+	 * @param mappings
+	 * @param collection
+	 */
+	private static void bindUnidirectionalOneToMany(GrailsDomainClassProperty property, Mappings mappings, Collection collection) {
+		OneToMany oneToMany = (OneToMany) collection.getElement();
+			String entityName = oneToMany.getReferencedEntityName();
+			PersistentClass referenced = mappings.getClass( entityName );
+			Backref prop = new Backref();
+		    prop.setEntityName(property.getDomainClass().getFullName());
+		    prop.setName('_' + property.getDomainClass().getShortName() + '_' + property.getName() + "Backref" );
+			prop.setUpdateable( false );
+			prop.setInsertable( true );
+			prop.setCollectionRole( collection.getRole() );
+			prop.setValue( collection.getKey() );
+			prop.setOptional( true );
+			
+			referenced.addProperty( prop );
+	}
+
+
+	/**
+	 * Links a bidirectional one-to-many, configuring the inverse side and using a column copy to perform the link
+	 * 
+	 * @param collection The collection one-to-many 
+	 * @param associatedClass The associated class
+	 * @param key The key
+	 * @param otherSide The other side of the relationship
+	 */
+	private static void linkBidirectionalOneToMany(Collection collection, PersistentClass associatedClass, DependantValue key, GrailsDomainClassProperty otherSide) {
+		collection.setInverse(true);
+		Iterator mappedByColumns = associatedClass.getProperty( otherSide.getName() ).getValue().getColumnIterator();
+		while(mappedByColumns.hasNext()) {
+			Column column = (Column)mappedByColumns.next();
+			linkValueUsingAColumnCopy(otherSide,column,key);
+		}
+	}
+
+	/**
+	 * Establish whether a collection property is sorted
+	 * @param property The property
+	 * @return True if sorted
+	 */
+	private static boolean isSorted(GrailsDomainClassProperty property) {
+		return SortedSet.class.isAssignableFrom(property.getType());
 	}		
 	
+	/**
+	 * Binds a many-to-many relationship. A many-to-many consists of 
+	 * - a key (a DependentValue)
+	 * - an element
+	 * 
+	 * The element is a ManyToOne from the association table to the target entity
+	 * 
+	 * @param property The grails property
+	 * @param element The ManyToOne element
+	 * @param mappings The mappings
+	 */
+	private static void bindManyToMany(GrailsDomainClassProperty property, ManyToOne element, Mappings mappings) {
+		bindManyToOne(property,element, mappings);
+		element.setReferencedEntityName(property.getDomainClass().getFullName());
+	}
+
 	private static void linkValueUsingAColumnCopy(GrailsDomainClassProperty prop, Column column, DependantValue key) {
 		Column mappingColumn = new Column();
 		mappingColumn.setName(column.getName());
@@ -286,33 +352,48 @@ public final class GrailsDomainBinder {
 		}		
 		
 		// if its a one-to-many mapping
-		if(property.isOneToMany() || property.isManyToMany()) {
-			
+		if(property.isOneToMany()) {			
 			OneToMany oneToMany = new OneToMany( collection.getOwner() );
-			collection.setElement( oneToMany );
-/*			if(property.isBidirectional()) {
-				collection.setReferencedPropertyName( property.getOtherSide().getName() );
-			}*/
-			
+			collection.setElement( oneToMany );			
 			bindOneToMany( property, oneToMany, mappings );			
 		}
 		else {
-			String referencedClassName = property.getReferencedDomainClass().getFullName();
+			String tableName = calculateTableForMany(property);
+			Table t =  mappings.addTable(
+					mappings.getSchemaName(),
+					mappings.getCatalogName(),
+					tableName,
+					null,
+					false
+				);
+			collection.setCollectionTable(t);
 			
-			Table table = mappings.addTable(
-								mappings.getSchemaName(),
-								mappings.getCatalogName(),
-								namingStrategy.classToTableName(referencedClassName),
-								null,
-								false
-							);
-			collection.setCollectionTable(table);
+			if(!property.isOwningSide()) {
+				collection.setInverse(true);
+			}
 		}
 		
 		// setup second pass
 		mappings.addSecondPass( new GrailsCollectionSecondPass(property, mappings, collection) );
 		
 	}
+	
+	/**
+	 * This method will calculate the mapping table for a many-to-many. One side of 
+	 * the relationship has to "own" the relationship so that there is not a situation
+	 * where you have two mapping tables for left_right and right_left
+	 */
+	private static String calculateTableForMany(GrailsDomainClassProperty property) {
+		String left = namingStrategy.classToTableName(property.getDomainClass().getShortName());
+		String right = namingStrategy.classToTableName(property.getReferencedDomainClass().getShortName());
+		
+		if(property.isOwningSide()) {
+			return left+'_'+right;
+		}
+		else {
+			return right+'_'+left;
+		}
+	}	
 	/**
 	 * Binds a Grails domain class to the Hibernate runtime meta model
 	 * @param domainClass The domain class to bind
@@ -523,13 +604,10 @@ public final class GrailsDomainBinder {
 			// if its inherited skip
 			if(currentGrailsProp.isInherited())
 				continue;
+			/*if(currentGrailsProp.isManyToMany() && !currentGrailsProp.isOwningSide())
+				continue;*/
+
 						
-/*			if(currentGrailsProp.isManyToOne() && currentGrailsProp.isBidirectional() ) {
-				GrailsDomainClassProperty otherSide = currentGrailsProp.getOtherSide();
-				if(otherSide.isOneToMany())
-					table = null;
-			}*/
-			
 			if(LOG.isDebugEnabled()) 
 				LOG.debug("[GrailsDomainBinder] Binding persistent property [" + currentGrailsProp.getName() + "]");
 			
@@ -657,13 +735,22 @@ public final class GrailsDomainBinder {
 	 */
 	private static void bindManyToOne(GrailsDomainClassProperty property, ManyToOne manyToOne, Mappings mappings) {
 		
+		bindManyToOneValues(property, manyToOne);
+		// bind column
+		bindSimpleValue(property,manyToOne,mappings);
+		
+	}
+
+	/**
+	 * @param property
+	 * @param manyToOne
+	 */
+	private static void bindManyToOneValues(GrailsDomainClassProperty property, ManyToOne manyToOne) {
 		// TODO configure fetching
 		manyToOne.setFetchMode(FetchMode.DEFAULT);
 		// TODO configure lazy loading
 		manyToOne.setLazy(true);
 		
-		// bind column
-		bindSimpleValue(property,manyToOne,mappings);
 
 		// set referenced entity
 		manyToOne.setReferencedEntityName( property.getReferencedPropertyType().getName() );

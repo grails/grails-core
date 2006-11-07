@@ -173,4 +173,11 @@ public interface GrailsDomainClassProperty {
      * @return True if it is the owning side
      */
 	public boolean isOwningSide();
+
+	/**
+	 * Whether the relationship is cirucular
+	 * 
+	 * @return True if it is
+	 */
+	public boolean isCircular();
 }

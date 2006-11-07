@@ -5,56 +5,67 @@ import org.codehaus.groovy.grails.commons.*
 class ManyToManyTests extends AbstractGrailsHibernateTests {
 
 	void testManyToManyDomain() {
-		def testDomain = ga.getGrailsDomainClass("Test")
-		def otherDomain = ga.getGrailsDomainClass("Other")
+		def authorDomain = ga.getGrailsDomainClass("Author")
+		def bookDomain = ga.getGrailsDomainClass("Book")
 
 		
-		def others = testDomain?.getPropertyByName("others")
-		def tests = otherDomain?.getPropertyByName("tests")
+		def books = authorDomain?.getPropertyByName("books")
+		def authors = bookDomain?.getPropertyByName("authors")
 				
-		assert others?.isManyToMany()
-		assert tests?.isManyToMany()
-		assert !others?.isOneToMany()
-		assert !tests?.isOneToMany()				
+		assert books?.isManyToMany()
+		assert authors?.isManyToMany()
+		assert !books?.isOneToMany()
+		assert !authors?.isOneToMany()				
 	}
 	void testManyToManyMapping() {
-		def testClass = ga.getGrailsDomainClass("Test")
-		def otherClass = ga.getGrailsDomainClass("Other")
-		def t = testClass.newInstance()
+		def authorClass = ga.getGrailsDomainClass("Author")
+		def bookClass = ga.getGrailsDomainClass("Book")
+		def a = authorClass.newInstance()
 		
-		t.addOther(otherClass.newInstance())
-		t.save(true)
+		a.addBook(bookClass.newInstance())
+		a.save(true)
 		
-		t = null
+		a = null
 		
-		assertEquals 1, otherClass.clazz.list().size()
+		assertEquals 1, bookClass.clazz.list().size()
 		
-		def o = otherClass.clazz.get(1)
-		assert o
-		assert o.tests
+		def b = bookClass.clazz.get(1)
+		assert b
+		assert b.authors
 		
-		t = testClass.clazz.get(1)
-		assert t
-		assert t.others
+		a = authorClass.clazz.get(1)
+		assert a
+		assert a.books
 		
-		assertEquals o, t.others.find { it.id == 1}
-
+		assertEquals b, a.books.find { it.id == 1}
+		this.session.flush()
+		
+		this.session.evict(a)
+		this.session.evict(b)
+		
+		a = authorClass.clazz.get(1)
+		assert a
+		assert a.books
+		
+		b = bookClass.clazz.get(1)
+		assert b
+		assert b.authors
 	}
 
 	void onSetUp() {
 		this.gcl.parseClass('''
-class Test {
+class Book {
 	Long id
 	Long version
-	Set others
-	def hasMany = [others:Other]
+	Set authors
+	def belongsTo = Author 
+	def hasMany = [authors:Author]
 }
-class Other {
+class Author {
 	Long id
 	Long version
-	Set tests
-	def belongsTo = Test
-	def hasMany = [tests:Test]
+	Set books	
+	def hasMany = [books:Book]
 }
 class ApplicationDataSource {
 	   boolean pooling = true
