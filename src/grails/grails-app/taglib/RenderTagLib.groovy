@@ -145,7 +145,7 @@ class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants 
 		if(!max) max = (attrs.max ? attrs.max.toInteger() : 10)
 		if(!offset) offset = (attrs.offset ? attrs.offset.toInteger() : 0)
 		
-		def linkParams = [offset:offset-10,max:max]
+		def linkParams = [offset:offset-max,max:max]
 		def linkTagAttrs = ['class':'prevLink',action:action]
 		if(attrs.controller) {
 			linkTagAttrs.controller = attrs.controller	
@@ -176,7 +176,7 @@ class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants 
 				}			
 			}			
 		}
-		linkParams.offset = offset+10
+		linkParams.offset = offset+max
 		if(combined < total) {	
 			linkTagAttrs.'class'='nextLink'			
 			link(linkTagAttrs,{out<< (attrs.'next'? attrs.'next' : 'Next' )})			
