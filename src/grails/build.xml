@@ -48,6 +48,22 @@ Targets:
                 if (x.endsWith(y)) x = x[0..(x.size() - y.size()-1)]
                 return x
             }
+        	
+        	project.addReference('grailsLibs') {
+        	   def result = ''
+        	   (new File("${properties.'grails.home'}/lib")).eachFileMatch(~/.*\.jar/) { file ->
+        	      result += "${file.name}\n"
+        	   }
+        	   result
+        	}
+
+        	project.addReference('grailsJar') {
+        	   result = ''
+        	   (new File("${properties.'grails.home'}/dist")).eachFileMatch(~/^grails-.*\.jar/) { file ->
+        	      result =  file.name
+        	   }
+        	   result
+        	}
         </groovy>
     </target>
                
@@ -96,7 +112,35 @@ Targets:
         </copy>    
         <copy file="${grails.home}/src/war/WEB-INF/web${servlet.version}.template.xml" tofile="${path}web-app/WEB-INF/web.template.xml"/>
         <copy file="${grails.home}/src/war/WEB-INF/sitemesh.xml" tofile="${path}web-app/WEB-INF/sitemesh.xml"/>  
-        <copy file="${grails.home}/src/war/WEB-INF/web${servlet.version}.template.xml" tofile="${path}web-app/WEB-INF/web.template.xml"/>                                                                
+        <copy file="${grails.home}/src/war/WEB-INF/web${servlet.version}.template.xml" tofile="${path}web-app/WEB-INF/web.template.xml"/>
+		
+		<!-- correct the .classpath -->
+		<groovy><![CDATA[
+			// copy .classpath first
+			def File path = new File(properties.'path' ? properties.'path' : './')
+			if (new File (path, ".classpath").exists()) {
+				new File (path, ".classpath.bak").withWriter () { w ->
+					new File(path, ".classpath").eachLine { w.writeLine(it) }
+				}
+				
+				new File (path, ".classpath").delete()
+				
+				new File (path, ".classpath").withWriter () { w ->
+					new File (path, ".classpath.bak").eachLine {
+						if (!((it =~ /.*path=\"GRAILS_HOME\/lib\/.*\.jar\"/) ||
+							(it =~ /.*path=\"GRAILS_HOME\/dist\/grails-.*\.jar\"/) ||
+							(it =~ /<\/classpath>/))) { w.writeLine(it) }
+					}
+			   
+					project.references['grailsLibs']().tokenize("\n").each { lib -> 
+						w.writeLine("	<classpathentry kind=\"var\" path=\"GRAILS_HOME/lib/${lib}\" />")
+			    		}
+					w.writeLine ("	<classpathentry kind=\"var\" path=\"GRAILS_HOME/dist/${project.references['grailsJar']()}\" />")
+					w.writeLine ("</classpath>")
+				}
+			}			
+		]]></groovy>
+		
 	</target>
 	
     <target name="init" depends="init-structure" description="Initialise the current app">
@@ -216,23 +260,31 @@ Targets:
 
 
     <target name="create-app" depends="init-props" description="Create a new grails app">
-
 		<input addproperty="project.name" message="Enter application name:" />
-
 		<antcall target="init">
 			<param name="path" value="${project.name}/"/>
 		</antcall>
 
-		<groovy>
+		<groovy><![CDATA[
 			def projName = properties."project.name"
 			properties."project.class.name" = project.references['lower'](projName)
-		</groovy>
+			
+			def grailsLibsToken = ""
+			project.references['grailsLibs']().tokenize("\n").each { lib -> 
+				grailsLibsToken += "	<classpathentry kind=\"var\" path=\"GRAILS_HOME/lib/${lib}\" />\n"
+			}
+
+			properties."grails.libs" = grailsLibsToken
+			properties."grails.jar"  = project.references['grailsJar']()
+		]]></groovy>
 
 		<copy todir="${project.name}">
 			<fileset dir="${grails.home}/src/grails/templates/ide-support/eclipse" includes="*.*" excludes=".launch" />
 		</copy>
     	<copy file="${grails.home}/src/grails/templates/ide-support/eclipse/.launch" tofile="${project.name}/${project.name}.launch" />
-    	                                                       
+    	
+        <replace dir="${project.name}" includes="*.*" token="@grails.libs@" value="${grails.libs}"/>
+        <replace dir="${project.name}" includes="*.*" token="@grails.jar@"  value="${grails.jar}"/>
 		<replace dir="${project.name}" includes="*.*" token="@grails.version@" value="${grails.version}"/>
 		<replace dir="${project.name}" includes="*.*" token="@grails.project.name@" value="${project.name}"/>
 	</target>
