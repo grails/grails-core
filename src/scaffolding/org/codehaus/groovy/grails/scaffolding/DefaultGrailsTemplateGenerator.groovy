@@ -114,6 +114,7 @@ class ${className}Controller {
     def index = { redirect(action:list,params:params) }
 
     def list = {
+        if(!params.max)params.max = 10
         [ ${propertyName}List: ${className}.list( params ) ]
     }
 
@@ -374,6 +375,9 @@ class ${className}Controller {
                     </tr>
                </g:each>
            </table>
+		   <div class="paginateButtons">
+				<g:paginate total="\\${$className.count()}" />
+			</div>
         </div>
     </body>
 </html>
