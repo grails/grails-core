@@ -376,7 +376,7 @@ class ${className}Controller {
                </g:each>
            </table>
 		   <div class="paginateButtons">
-				<g:paginate total="\\${$className.count()}" />
+				<g:paginate total="\\${${className}.count()}" />
 			</div>
         </div>
     </body>
