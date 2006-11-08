@@ -16,9 +16,9 @@ Targets:
 "create-controller"   - Create a new controller
 "create-service"      - Create a new service
 "create-domain-class" - Create a new domain class
-"create-taglib"		  - Create a new tag library class
+"create-taglib"       - Create a new tag library class
 "create-test-suite"   - Create a new test suite
-"create-job"         - Create a quartz scheduled job
+"create-job"          - Create a quartz scheduled job
 "generate-controller" - Generates a controller from a domain class
 "generate-views"      - Generates the views from a domain class
 "generate-all"        - Generates the all artifacts from a domain class
@@ -26,8 +26,9 @@ Targets:
 "test-app"            - Run current app's unit tests
 "run-app"             - Run the application locally and wait
 "create-webtest"      - Create the functional test layout
+"generate-webtest"    - Generates a WebTest from a domain class
 "run-webtest"         - Run the functional tests for a running app
-"war"        		  - Creates a deployable Web Application Archive (WAR)
+"war"                 - Creates a deployable Web Application Archive (WAR)
 "shell"               - Opens the Grails interactive command line shell
 "console"             - Opens the Grails interactive swing console
         </echo>
@@ -850,7 +851,7 @@ Targets:
 
     <target name="create-webtest" description="Create a functional testing layout" depends="init-webtest" >
         <copy todir=".">
-            <fileset dir="${grails.home}/src/grails/templates/" includes="webtest/"/>
+            <fileset dir="${grails.home}/src/grails/templates/" includes="webtest/**/*"/>
         </copy>
     </target>
 
@@ -859,18 +860,19 @@ Targets:
 
         <groovy>
             def domainName = properties."domain.class.name"
-            properties."webtest.name" = project.references['caps'](domainName)
+            properties."webtest.name.caps"  = project.references['caps'](domainName)
+            properties."webtest.name.lower" = project.references['lower'](domainName)
         </groovy>
 
         <copy file="${grails.home}/src/grails/templates/artifacts/WebTest.groovy"
-            tofile="webtest/tests/${webtest.name}Test.groovy" />
-        <replace file="webtest/tests/${webtest.name}Test.groovy"
+            tofile="webtest/tests/${webtest.name.caps}Test.groovy" />
+        <replace file="webtest/tests/${webtest.name.caps}Test.groovy"
             token="@webtest.name.caps@"
-            value="${webtest.name}" />
-        <replace file="webtest/tests/${webtest.name}Test.groovy"
+            value="${webtest.name.caps}" />
+        <replace file="webtest/tests/${webtest.name.caps}Test.groovy"
             token="@webtest.name.lower@"
-            value="${domain.class.name}" />
-        <echo>Webtest created: webtest/tests/${webtest.name}Test.groovy</echo>
+            value="${webtest.name.lower}" />
+        <echo>Webtest created: webtest/tests/${webtest.name.caps}Test.groovy</echo>
 
     </target>
 
