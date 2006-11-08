@@ -73,7 +73,7 @@ class ApplicationTagLib {
      *
      *  <a href="${createLink(action:'list')}">List</a>
      */
-    def createLink = { attrs ->
+    def createLink = { attrs ->     
         out << grailsAttributes.getApplicationUri(request)
         // prefer a URL attribute
         if(attrs['url']) {
@@ -115,14 +115,16 @@ class ApplicationTagLib {
 		out << "<${attrs.name}"
 		if(attrs.attrs) {
 			attrs.attrs.each{ k,v ->
-				if(v instanceof Closure) {
-					out << " $k=\""
-				    v()
-					out << '"'
-				}
-				else {
-					out << " $k=\"$v\""
-				}					
+				if(v) {
+					if(v instanceof Closure) {
+						out << " $k=\""
+					    v()
+						out << '"'
+					}
+					else {
+						out << " $k=\"$v\""
+					}					
+				} 				
 			}
 		}
 		out << '>'

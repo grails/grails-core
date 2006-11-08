@@ -117,17 +117,38 @@ class JavascriptTagLib  {
 		if(after)
 		   out <<  after			           		   
     }
-
+                                      
+    /**
+     * Normal map implementation does a shallow clone. This implements a deep clone for maps
+     * using recursion
+     */
+    private deepClone(Map map) {
+	    def cloned = [:]
+	    map?.each { k,v ->
+		    if(v instanceof Map) {
+			   cloned[k] = deepClone(v)
+   	        }
+            else {
+		     cloned[k] = v  		    
+		    }
+		}                
+		return cloned
+    }
     /**
      * A link to a remote uri that used the prototype library to invoke the link via ajax
      */
     def remoteLink = { attrs, body ->
-       out << "<a href=\""
-	   createLink(attrs.clone())
+       out << "<a href=\""    
+	   println "attributes now $attrs"     
+
+       def cloned = deepClone(attrs)
+	   createLink(cloned)               
+
 	   out << "\" onclick=\""
         // create remote function
-        remoteFunction(attrs)
-        out << 'return false;" '
+        remoteFunction(attrs)   
+		attrs.remove('url')
+        out << "return false;\" "
         // process remaining attributes
         attrs.each { k,v ->
             out << k << "=\"" << v << "\" "
@@ -145,7 +166,9 @@ class JavascriptTagLib  {
 	 */
 	def remoteField = { attrs, body ->
 		def paramName = attrs.paramName ? attrs.remove('paramName') : 'value'
-		def value = attrs.value ? attrs.remove('value') : ''
+		def value = attrs.remove('value') 
+		if(!value) value = ''
+		
 		out << "<input type='text' name='${attrs.remove('name')}' value='${value}' onkeyup=\""
 		if(attrs.params) {
 			if(attrs instanceof Map) {
@@ -159,7 +182,13 @@ class JavascriptTagLib  {
     		attrs.params = "'${paramName}='+this.value"			
 		}
 		remoteFunction(attrs)
-		out << "\"  />"
+		attrs.remove('params')
+		out << "\""   
+		attrs.remove('url')
+		attrs.each { k,v->
+			out << " $k=\"$v\""
+		}
+		out <<" />"
 	}
 
     /**
@@ -175,7 +204,7 @@ class JavascriptTagLib  {
         
         // get javascript provider
  		def p = getProvider()				
-		def url = attrs.url.clone()
+		def url = deepClone(attrs.url)
  		
 		// prepare form settings
 		prepareAjaxForm(p,attrs)
@@ -203,7 +232,9 @@ class JavascriptTagLib  {
         def params = [  onclick:TagLibUtil.outToString(remoteFunction,attrs) + 'return false',
 					    type: 'button',
 					    name: attrs.remove('name'),
-					    value: attrs.remove('value'),
+					    value: attrs.remove('value'), 
+					    id: attrs.remove('id'),
+					    'class':attrs.remove('class')
 		             ]
 		             
 		withTag(name:'input', attrs:params) {
@@ -214,7 +245,7 @@ class JavascriptTagLib  {
 	 private prepareAjaxForm(provider,attrs) {
 		if(provider instanceof PrototypeProvider) {
 			if(!attrs.forSubmitTag) attrs.forSubmitTag = ""
-		    attrs.params = "Form.serialize(this${attrs.forSubmitTag})"
+		    attrs.params = "Form.serialize(this${attrs.remove('forSubmitTag')})"
 		}
 		else if(provider instanceof YahooProvider) {
 			if(attrs.before) {
@@ -323,13 +354,14 @@ class PrototypeProvider implements JavascriptProvider {
 		}
 		out << "'"						
 		
-		def pms = attrs.remove('params')
+		def pms = attrs.remove('params')   
 		if(attrs.url) {
-			taglib.createLink(attrs.url)
-		}
+			taglib.createLink(attrs.url)			
+		}                              
 		else {
-			taglib.createLink(attrs)
-		}		
+			taglib.createLink(attrs)			
+		}
+
 		
 		out << "',"
 		if(pms)
@@ -355,14 +387,14 @@ class PrototypeProvider implements JavascriptProvider {
             }
 
             // necessary defaults
-            if(options['asynchronous'])
-                ajaxOptions << "asynchronous:${options.remove('asynchronous')}"
+            if(options.options?.asynchronous)
+                ajaxOptions << "asynchronous:${options.options.remove('asynchronous')}"
             else
                 ajaxOptions << "asynchronous:true"
 
 
-            if(options['evalScripts'])
-                ajaxOptions << "evalScripts:${options.remove('evalScripts')}"
+            if(options.options?.evalScripts)
+                ajaxOptions << "evalScripts:${options.options?.remove('evalScripts')}"
             else
                 ajaxOptions << "evalScripts:true"
 
@@ -370,7 +402,7 @@ class PrototypeProvider implements JavascriptProvider {
                 ajaxOptions << "parameters:${options.remove('params')}"
             }
             // remaining options
-            options.each { k, v ->
+            options.options?.each { k, v ->
             	if(k!='url') {
 	                 switch(v) {
 	                    case 'true': ajaxOptions << "${k}:${v}"; break;
@@ -380,11 +412,6 @@ class PrototypeProvider implements JavascriptProvider {
 	                 }            	
             	}
             }
-        }
-        // set defaults
-        else {
-             ajaxOptions << "asynchronous:true"
-             ajaxOptions << "evalScripts:true"
         }
 
         return "{${ajaxOptions.join(',')}}"
