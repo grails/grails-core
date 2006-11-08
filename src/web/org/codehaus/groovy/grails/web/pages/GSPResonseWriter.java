@@ -41,6 +41,7 @@ public class GSPResonseWriter extends PrintWriter {
 	private Writer out1;
 	private int max;
 	private boolean trouble = false;
+	private int totalLength;
 
 	/**
 	 * Private constructor.  Use getInstance() instead.
@@ -88,7 +89,7 @@ public class GSPResonseWriter extends PrintWriter {
 	public void close() {
 		if (!response.isCommitted()) {
 			try {
-				response.setContentLength(out0.toString().getBytes(response.getCharacterEncoding()).length);
+				response.setContentLength( totalLength += getContentLength(out0.toString()) );
 			} catch (UnsupportedEncodingException e) {
 				LOG.error("Encoding error setting content length: " + e.getMessage(),e  );				
 			}
@@ -113,14 +114,31 @@ public class GSPResonseWriter extends PrintWriter {
 				return;
 			}
 		}
-		try {
-			out1.write(out0.toCharArray());
+		try {			
+			String contents = out0.toString();
+			out1.write(contents.toCharArray());
+			try {
+				totalLength += getContentLength(contents);
+			} catch (UnsupportedEncodingException e) {
+				LOG.error("Encoding error getting content length: " + e.getMessage(),e  );				
+			}
 			out0.reset();
 		} catch (IOException e) {
 			LOG.debug("I/O excepton flushing output in GSP response writer: " + e.getMessage(),e  );
 			trouble = true;
 		}
 	} // flush()
+
+	/**
+	 * Retrieves the content length for the contents using the response character encoding
+	 * 
+	 * @param contents The contents
+	 * @return The content length
+	 * @throws UnsupportedEncodingException
+	 */
+	private int getContentLength(String contents) throws UnsupportedEncodingException {
+		return contents.getBytes(response.getCharacterEncoding()).length;
+	}
 
 	/**
 	 * Static factory method to create the writer.
