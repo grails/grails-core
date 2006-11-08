@@ -1,15 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="src" path="src/commons"/>
-	<classpathentry kind="src" path="tiger"/>
-	<classpathentry kind="src" path="src/web"/>
-	<classpathentry kind="src" path="src/persistence"/>
-	<classpathentry kind="src" path="src/scaffolding"/>
-	<classpathentry kind="src" output="target/test-classes" path="test/commons"/>
-	<classpathentry kind="src" output="target/test-classes" path="test/web"/>
-	<classpathentry kind="src" output="target/test-classes" path="test/persistence"/>
-	<classpathentry kind="src" output="target/test-classes" path="test/scaffolding"/>
-	<classpathentry kind="src" path="test/groovy"/>
+	<classpathentry kind="src" path="src/java"/>
+	<classpathentry kind="src" path="src/groovy"/>	
+	<classpathentry kind="src" path="grails-app/conf"/>
+	<classpathentry kind="src" path="grails-app/controllers"/>
+	<classpathentry kind="src" path="grails-app/domain"/>
+	<classpathentry kind="src" path="grails-app/services"/>
+	<classpathentry kind="src" path="grails-app/taglib"/>
+	<classpathentry kind="src" path="grails-test"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="var" path="GRAILS_HOME/ant/lib/ant.jar"/>
     @grails.libs@
