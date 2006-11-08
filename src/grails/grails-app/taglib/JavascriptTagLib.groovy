@@ -375,6 +375,17 @@ class PrototypeProvider implements JavascriptProvider {
     def getAjaxOptions(options) {
         def ajaxOptions = []
 
+       // necessary defaults
+       if(options.options?.asynchronous)
+           ajaxOptions << "asynchronous:${options.options.remove('asynchronous')}"
+       else
+           ajaxOptions << "asynchronous:true"
+           
+       if(options.options?.evalScripts)
+           ajaxOptions << "evalScripts:${options.options?.remove('evalScripts')}"
+       else
+           ajaxOptions << "evalScripts:true" 
+           
         if(options) {
             // process callbacks
             def callbacks = options.findAll { k,v ->
@@ -384,18 +395,6 @@ class PrototypeProvider implements JavascriptProvider {
                 ajaxOptions << "${k}:function(e){${v}}"
                 options.remove(k)
             }
-
-            // necessary defaults
-            if(options.options?.asynchronous)
-                ajaxOptions << "asynchronous:${options.options.remove('asynchronous')}"
-            else
-                ajaxOptions << "asynchronous:true"
-
-
-            if(options.options?.evalScripts)
-                ajaxOptions << "evalScripts:${options.options?.remove('evalScripts')}"
-            else
-                ajaxOptions << "evalScripts:true"
 
             if(options.params) {
                 ajaxOptions << "parameters:${options.remove('params')}"
