@@ -180,7 +180,8 @@ public class DefaultScaffoldRequestHandler implements ScaffoldRequestHandler {
         model.put(	this.domain.getSingularName(), domainObject);
         model.put( PARAM_ID, id );
         // execute update
-        this.domain.update(domainObject,callback);
+        if(this.domain.update(domainObject,callback))
+        	callback.setInvoked(true);
 
         return model;
     }
