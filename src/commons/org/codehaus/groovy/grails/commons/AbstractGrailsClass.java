@@ -27,12 +27,18 @@ import java.lang.reflect.Modifier;
 
 import groovy.lang.GroovyObject;
 import groovy.lang.MetaClass;
+import groovy.lang.MissingPropertyException;
 
 /**
- * 
+ * Abstract base class for Grails types that provides common functionality for
+ * evaluating conventions within classes
  * 
  * @author Steven Devijver
- * @since Jul 2, 2005
+ * @author Graeme Rocher
+ * 
+ * @since 0.1
+ * 
+ *  Created: Jul 2, 2005
  */
 public abstract class AbstractGrailsClass implements GrailsClass {
 
@@ -195,7 +201,12 @@ public abstract class AbstractGrailsClass implements GrailsClass {
             Object inst = ref.getWrappedInstance();
             if (inst instanceof GroovyObject)
             {
-                value = ((GroovyObject)inst).getProperty(name);
+            	
+                try {
+					value = ((GroovyObject)inst).getProperty(name);
+				} catch (MissingPropertyException e) {
+					// ignore
+				}
             }
         }
 
