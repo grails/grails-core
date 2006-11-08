@@ -201,7 +201,7 @@ Targets:
     <target name="input-domain-class">
         <input addproperty="domain.class.name" message="Enter domain class name:" />
     </target>
-    <target name="generate-controller" depends="package,input-domain-class" description="Generates a controller from a domain class">
+    <target name="generate-controller" depends="dev,package,input-domain-class" description="Generates a controller from a domain class">
             <antcall target="generate-controller:impl" />
     </target>
     <target name="generate-controller:impl" description="Generates a controller from a domain class">
@@ -221,7 +221,7 @@ Targets:
 		</java>
     </target>
 
-    <target name="generate-views" depends="package,input-domain-class" description="Generates the views from a domain class">
+    <target name="generate-views" depends="dev,package,input-domain-class" description="Generates the views from a domain class">
         <path id="test.classpath">
 			<!--<pathelement location="${grails.home}/src/web-app/WEB-INF"/>-->
             <pathelement location="${basedir}/tmp/war/WEB-INF"/>
@@ -252,7 +252,7 @@ Targets:
 		</java>
     </target>
 
-    <target name="generate-all" depends="package,input-domain-class" description="Generates the all artifacts from a domain class">
+    <target name="generate-all" depends="dev,package,input-domain-class" description="Generates the all artifacts from a domain class">
 		<path id="test.classpath">
             <pathelement location="${basedir}/tmp/war/WEB-INF"/>
             <pathelement location="${basedir}/tmp/war/WEB-INF/classes"/>
@@ -487,7 +487,7 @@ Targets:
 		<delete dir="${basedir}/tmp/war/WEB-INF/grails-app/tests"></delete>
 	</target>
 	
-	<target name="shell" depends="package" description="Opens the Grails shell">
+	<target name="shell" depends="dev,package" description="Opens the Grails shell">
 		<path id="shell.classpath">
 			<!--<pathelement location="${grails.home}/src/web-app/WEB-INF"/>-->   
             <pathelement location="${basedir}/tmp/war"/>						
@@ -502,7 +502,7 @@ Targets:
 		</java>
 	</target>	
 	
-	<target name="console" depends="package" description="Opens the Grails console">
+	<target name="console" depends="dev,package" description="Opens the Grails console">
 		<path id="console.classpath">
 			<!--<pathelement location="${grails.home}/src/web-app/WEB-INF"/>-->
             <pathelement location="${basedir}/tmp/war"/>			
@@ -675,10 +675,21 @@ Targets:
             	<exclude name="*CVS*" />
             </fileset>
         </copy>                                  
-		<echo>Using ${grails.env} log config</echo>
-        <copy file="web-app/WEB-INF/log4j.${grails.env}.properties" 
-	          tofile="tmp/war/WEB-INF/log4j.properties" overwrite="true" />
+		<echo>Using ${grails.env} log config</echo> 
+		<available file="web-app/WEB-INF/log4j.${grails.env}.properties"
+			       property="log4j.env.available" />     
+		<antcall target="log4j:env" />
+		<antcall target="log4j:default" />		
     </target>
+    <target name="log4j:env" if="log4j.env.available">
+        <copy file="web-app/WEB-INF/log4j.${grails.env}.properties" 
+	          tofile="tmp/war/WEB-INF/log4j.properties" overwrite="true" />	
+	</target>    
+    <target name="log4j:default" unless="log4j.env.available">
+        <copy file="${grails.home}/src/war/WEB-INF/log4j.properties" 
+	          tofile="tmp/war/WEB-INF/log4j.properties" overwrite="true" />	
+	</target>
+		
     <target name="package:checkj5">
         <condition property="is.java.5">
               <equals arg1="${ant.java.version}" arg2="1.5"/>
