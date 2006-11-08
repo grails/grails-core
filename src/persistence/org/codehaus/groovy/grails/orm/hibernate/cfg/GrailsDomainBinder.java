@@ -542,6 +542,7 @@ public final class GrailsDomainBinder {
 	private static void bindDiscriminatorProperty(Table table, RootClass entity, Mappings mappings) {
 		SimpleValue d = new SimpleValue( table );
 		entity.setDiscriminator( d );
+		entity.setDiscriminatorValue(entity.getClassName());
 		bindSimpleValue(
 				"string",
 				d,
