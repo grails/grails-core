@@ -128,10 +128,11 @@ public final class GrailsDomainBinder {
 
 		PersistentClass associatedClass = null;
 		
-		LOG.info( "Mapping collection: "
-				+ collection.getRole()
-				+ " -> "
-				+ collection.getCollectionTable().getName() );
+		if(LOG.isDebugEnabled())
+			LOG.debug( "Mapping collection: "
+					+ collection.getRole()
+					+ " -> "
+					+ collection.getCollectionTable().getName() );
 		
 		// Configure one-to-many
 		if(collection.isOneToMany() ) {
@@ -520,10 +521,11 @@ public final class GrailsDomainBinder {
 					.setEntityPersisterClass( SingleTableEntityPersister.class );
 		}
 
-		LOG.info(
-				"Mapping subclass: " + subClass.getEntityName() +
-				" -> " + subClass.getTable().getName()
-			);
+		if(LOG.isDebugEnabled())
+			LOG.debug(
+					"Mapping subclass: " + subClass.getEntityName() +
+					" -> " + subClass.getTable().getName()
+				);
 
 		// properties
 		createClassProperties( sub, subClass, mappings);
@@ -574,8 +576,9 @@ public final class GrailsDomainBinder {
 				false
 		);
 		root.setTable(table);
-		
-		LOG.info( "[GrailsDomainBinder] Mapping Grails domain class: " + domainClass.getFullName() + " -> " + root.getTable().getName() );
+
+		if(LOG.isDebugEnabled())
+			LOG.debug( "[GrailsDomainBinder] Mapping Grails domain class: " + domainClass.getFullName() + " -> " + root.getTable().getName() );
 		
 		bindSimpleId( domainClass.getIdentifier(), root, mappings );
 		bindVersion( domainClass.getVersion(), root, mappings );
@@ -926,7 +929,8 @@ w	 * Binds a simple value to the Hibernate metamodel. A simple value is
 			column.setName(namingStrategy.propertyToColumnName(grailsProp.getName()));
 		}
  
-		LOG.info("[GrailsDomainBinder] bound property [" + grailsProp.getName() + "] to column name ["+column.getName()+"] in table ["+table.getName()+"]");		
+		if(LOG.isDebugEnabled())
+			LOG.debug("[GrailsDomainBinder] bound property [" + grailsProp.getName() + "] to column name ["+column.getName()+"] in table ["+table.getName()+"]");		
 	}
 
 
