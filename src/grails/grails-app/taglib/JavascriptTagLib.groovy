@@ -139,7 +139,6 @@ class JavascriptTagLib  {
      */
     def remoteLink = { attrs, body ->
        out << "<a href=\""    
-	   println "attributes now $attrs"     
 
        def cloned = deepClone(attrs)
 	   createLink(cloned)               
@@ -496,7 +495,8 @@ class DojoProvider implements JavascriptProvider {
 			out << "${attrs.onLoading};"
 		}		
 		 out << 'dojo.io.bind({url:\''
-		 taglib.createLink(attrs)
+		 taglib.createLink(attrs) 
+		attrs.remove('params')
 		 out << '\',load:function(type,data,evt) {'
 	    if(attrs.onLoaded) {
 			out << "${attrs.onLoaded}";
