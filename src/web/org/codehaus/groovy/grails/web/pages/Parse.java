@@ -312,7 +312,9 @@ public class Parse implements Tokens {
 
         String tagName;
         Map attrs = new HashMap();
-        if(text.indexOf(' ') > -1) {
+        text = text.replaceAll("[\r\n]", " ");  // this line added TODO query this
+        
+        if(text.indexOf(' ') > -1) { // ignores carriage returns and new lines
                int i = text.indexOf(' ');
                tagName = text.substring(0,i);
                String attrTokens = text.substring(i,text.length());
