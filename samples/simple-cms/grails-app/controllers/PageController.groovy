@@ -178,7 +178,7 @@ class PageController extends BaseController {
 					def last = existing.revisions.last()
 					// if there is an existing page that has been deleted
 					// restore it	
-					if(last.state = Revision.DELETED) {
+					if(last.state == Revision.DELETED) {
 						existing.properties = params
 						last.state = Revision.ADDED
 						last.updatedBy = session.user
@@ -582,7 +582,7 @@ class PageController extends BaseController {
 			def last = existing.revisions.last()
 			// if there is an existing page that has been deleted
 			// restore it	
-			if(last.state = Revision.DELETED) {
+			if(last.state == Revision.DELETED) {
 				existing.properties = params
 				last.state = Revision.ADDED
 				existing.title = title
