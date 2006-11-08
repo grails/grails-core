@@ -157,7 +157,15 @@ Targets:
                 <include name="log4j.properties"/>
                 <include name="sitemesh.xml"/>
             </fileset>
-        </copy>
+        </copy>    
+
+		<copy file="${grails.home}/src/war/WEB-INF/log4j.properties" 
+			  tofile="${path}web-app/WEB-INF/log4j.development.properties" />
+		<copy file="${grails.home}/src/war/WEB-INF/log4j.properties" 
+			  tofile="${path}web-app/WEB-INF/log4j.test.properties" />
+		<copy file="${grails.home}/src/war/WEB-INF/log4j.properties" 
+			  tofile="${path}web-app/WEB-INF/log4j.production.properties" />
+			
         <copy todir="${path}grails-app">
             <fileset dir="${grails.home}/src/grails/grails-app" />
         </copy>
@@ -551,6 +559,7 @@ Targets:
             <fileset dir="web-app">
                 <include name="**/**"/>
                 <exclude name="WEB-INF/*.template.xml"/>
+                <exclude name="WEB-INF/log4j.*.properties"/>
             </fileset>
         </copy>
         <delete dir="tmp/war/WEB-INF/grails-app/tests" failonerror="false" />
@@ -665,12 +674,10 @@ Targets:
             	<exclude name="**/*.java" />
             	<exclude name="*CVS*" />
             </fileset>
-        </copy>
-        <copy todir="tmp/war/WEB-INF">
-            <fileset dir="${grails.home}/src/war/WEB-INF">
-                <include name="log4j.properties"/>
-            </fileset>
-        </copy>
+        </copy>                                  
+		<echo>Using ${grails.env} log config</echo>
+        <copy file="web-app/WEB-INF/log4j.${grails.env}.properties" 
+	          tofile="tmp/war/WEB-INF/log4j.properties" overwrite="true" />
     </target>
     <target name="package:checkj5">
         <condition property="is.java.5">
@@ -687,7 +694,7 @@ Targets:
         </copy>
     </target>
 
-    <target name="war" depends="clean,package,prod">
+    <target name="war" depends="clean,prod,package">
 		<basename property="project.dir" file="."/>
 		<groovy>
 			def dataSources = new File("tmp/war/WEB-INF/grails-app/conf")
