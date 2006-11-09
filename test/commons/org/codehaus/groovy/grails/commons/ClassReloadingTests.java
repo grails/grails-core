@@ -29,7 +29,7 @@ public class ClassReloadingTests extends TestCase {
 		try {
 			fw.write(  "package org.codehaus.groovy.grails.commons;\n" +
 						"class TestReload { \n" +
-							"@Property hello = \"hello\"\n" +
+							"String hello = \"hello\"\n" +
 						"}");		
 			fw.close();
 			
@@ -47,7 +47,7 @@ public class ClassReloadingTests extends TestCase {
 			fw = new FileWriter(file);
 			fw.write(  "package org.codehaus.groovy.grails.commons;\n" +
 					"class TestReload { \n" +
-						"@Property hello = \"goodbye\"\n" +
+						"String hello = \"goodbye\"\n" +
 					"}");
             fw.close();
             
