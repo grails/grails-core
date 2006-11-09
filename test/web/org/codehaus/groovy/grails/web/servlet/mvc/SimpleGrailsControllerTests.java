@@ -64,18 +64,18 @@ public class SimpleGrailsControllerTests extends TestCase {
 		GroovyClassLoader cl = new GroovyClassLoader();
 		
 		Class c1 = cl.parseClass("class TestController {\n"+
-							"@Property Closure test = {\n"+
+							" Closure test = {\n"+
 								"return [ \"test\" : \"123\" ]\n"+
 						     "}\n" +
 						"}");	
 		
 		Class c2 = cl.parseClass("class SimpleController {\n"+
-				"@Property Closure test = {\n"+
+				" Closure test = {\n"+
 			     "}\n" +
 			"}");
 		
 		Class c3 = cl.parseClass("class NoViewController {\n"+
-				"@Property Closure test = {\n"+
+				" Closure test = {\n"+
 			      "request, response ->\n" +
 			      "new grails.util.OpenRicoBuilder(response).ajax { element(id:\"test\") { } };\n" +
 			      "return null;\n" +				

@@ -1,5 +1,5 @@
 class SimpleController {
-	@Property Closure test = {
+	 Closure test = {
 		return null;
 	}
 }

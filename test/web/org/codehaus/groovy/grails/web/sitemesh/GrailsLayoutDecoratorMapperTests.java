@@ -47,8 +47,8 @@ public class GrailsLayoutDecoratorMapperTests extends TestCase {
 		
 		// create mock controller
 		GroovyObject controller = (GroovyObject)gcl.parseClass("class TestController {\n" +
-				"@Property controllerName = 'test'\n" +
-				"@Property actionUri = '/test/testAction'\n" +
+				"def controllerName = 'test'\n" +
+				"def actionUri = '/test/testAction'\n" +
 		"}").newInstance();
 		
 		request.setAttribute(GrailsApplicationAttributes.CONTROLLER, controller);		GrailsLayoutDecoratorMapper m = new GrailsLayoutDecoratorMapper();
@@ -72,8 +72,8 @@ public class GrailsLayoutDecoratorMapperTests extends TestCase {
 		
 		// create mock controller
 		GroovyObject controller = (GroovyObject)gcl.parseClass("class Test2Controller {\n" +
-				"@Property controllerName = 'test2'\n" +
-				"@Property actionUri = '/test2/testAction'\n" +
+				"def controllerName = 'test2'\n" +
+				"def actionUri = '/test2/testAction'\n" +
 		"}").newInstance();
 		
 		request.setAttribute(GrailsApplicationAttributes.CONTROLLER, controller);		GrailsLayoutDecoratorMapper m = new GrailsLayoutDecoratorMapper();

@@ -3,18 +3,18 @@ package org.codehaus.groovy.grails.web.servlet.mvc
 import org.springframework.web.servlet.ModelAndView;
 
 class ReturnModelAndViewController {
-	@Property Closure withView = {
+	 Closure withView = {
 		return new ModelAndView("someView");
 	}
 	
-	@Property Closure withoutView = {
+	 Closure withoutView = {
 		return new ModelAndView();
 	}
 	
-	@Property String viewConfiguredView = "someOtherView";
-	@Property Closure viewConfigured = {
+	 String viewConfiguredView = "someOtherView";
+	 Closure viewConfigured = {
 		return new ModelAndView();
 	}
 	
-	@Property String defaultClosure = "withView";
+	 String defaultClosure = "withView";
 }

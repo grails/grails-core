@@ -72,7 +72,7 @@ public abstract class AbstractTagLibTests extends
         GrailsControllerClass controllerClass = grailsApplication.getController("TestController");
         if(controllerClass == null) {
             Class groovyClass = grailsApplication.getClassLoader().parseClass("class TestController {\n" +
-                    "@Property list = {}\n" +
+                    "def list = {}\n" +
                     "}");
             controllerClass = grailsApplication.addControllerClass(groovyClass);
         }

@@ -1,6 +1,6 @@
 
 class TestController {
-	@Property Closure test = {
+	 Closure test = {
 		return [ "test" : "123" ]
 	}
 }

@@ -1,14 +1,14 @@
 class ParameterController {
-	@Property String twoParametersView = "someView"
-	@Property Map twoParametersTypedViews = [ "rss" : "someRssView" ]
-	@Property Closure twoParameters = {
+	 String twoParametersView = "someView"
+	 Map twoParametersTypedViews = [ "rss" : "someRssView" ]
+	 Closure twoParameters = {
 		request, response -> return [ "request" : request, "response" : response ]
 	}
-	@Property String defaultClosure = "twoParameters"
+	 String defaultClosure = "twoParameters"
 	
-	@Property String oneParameterView = "someOtherView"
-	@Property Map oneParameterTypedViews = [ "rss" : "someOtherRssView" ]
-	@Property Closure oneParameter = {
+	 String oneParameterView = "someOtherView"
+	 Map oneParameterTypedViews = [ "rss" : "someOtherRssView" ]
+	 Closure oneParameter = {
 		request -> return [ "request" : request ]
 	}
 }
