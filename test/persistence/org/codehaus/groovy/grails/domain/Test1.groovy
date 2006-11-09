@@ -1,11 +1,11 @@
 package org.codehaus.groovy.grails.domain;
 
 class Test1 { 
-	@Property Long id; 
-	@Property Long version; 
-	//@Property List transient = [ "age" ]; 
-	//@Property List optional  = [ "lastName" ]; 
-	@Property String firstName; 
-	//@Property String lastName; 
-	//@Property java.util.Date age;
+	 Long id; 
+	 Long version; 
+	// List transient = [ "age" ]; 
+	// List optional  = [ "lastName" ]; 
+	 String firstName; 
+	// String lastName; 
+	// java.util.Date age;
 }

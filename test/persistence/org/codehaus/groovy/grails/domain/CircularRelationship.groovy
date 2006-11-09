@@ -1,10 +1,10 @@
 package org.codehaus.groovy.grails.domain
 class CircularRelationship {
-	@Property Long id
-	@Property Long version
+	 Long id
+	 Long version
 	
-	@Property relatesToMany = [children:CircularRelationship]
+	 def relatesToMany = [children:CircularRelationship]
 	
-	@Property CircularRelationship parent
-	@Property Set children	
+	 CircularRelationship parent
+	 Set children	
 }

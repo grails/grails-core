@@ -2,8 +2,8 @@ package org.codehaus.groovy.grails.domain;
 
 class OneToOneTest {
 	
-   @Property Long id;
-   @Property Long version;
+    Long id;
+    Long version;
    
-   @Property RelationshipsTest other
+    RelationshipsTest other
 }
