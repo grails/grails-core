@@ -21,9 +21,9 @@
  * @since 10-May-2006
  */
 class QuestionController extends BaseController {
-    @Property index = { redirect(action:list,params:params) }
+    def index = { redirect(action:list,params:params) }
 
-    @Property edit = {
+    def edit = {
         def question = Question.get( params['id'] )
 
         if(!question) {
@@ -35,7 +35,7 @@ class QuestionController extends BaseController {
         }
     }
 
-    @Property update = {
+    def update = {
 		if(!params.'quest.id') {
 			flash.message = "Questionnaire not found."
 			redirect(controller:'page')			
@@ -88,7 +88,7 @@ class QuestionController extends BaseController {
 		}
     }
 
-    @Property create = {
+    def create = {
 		if(!params.'quest.id') {
 			flash.message = "Questionnaire not found."
 			redirect(controller:'page')			
@@ -100,7 +100,7 @@ class QuestionController extends BaseController {
 		}
     }
 
-    @Property save = {
+    def save = {
 		if(!params.'quest.id') {
 			flash.message = "Questionaire not found"
 			redirect(controller:'test',action:'list')
