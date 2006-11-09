@@ -22,15 +22,15 @@
  */
 class ForumController extends BaseController {
 
-	@Property index = { 
+	def index = { 
 		redirect(action:list)
 	}
 	
-	@Property list = {
+	def list = {
 		[forums: Page.findAllByType(Page.FORUM) ]	
 	}
 	
-	@Property show = {
+	def show = {
 		def forum = Page.get(params.id)
 		def max = (params.max ? params.max.toInteger() : 10)
 		def offset = (params.offset ? params.offset.toInteger() : 0)
