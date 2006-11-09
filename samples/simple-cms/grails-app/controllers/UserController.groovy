@@ -23,10 +23,10 @@
  */
 class UserController extends BaseController {
 	
-	@Property Page page
-	@Property Map levels
+	def Page page
+	def Map levels
 	
-	@Property afterInterceptor = { model ->
+	def afterInterceptor = { model ->
 		// check for a link
 		if(session.user) {
 			def link = null
@@ -48,18 +48,18 @@ class UserController extends BaseController {
 		}		
 	}
 	
-    @Property index = {
+    def index = {
         redirect(controller:'page')
     }
 
-	@Property register = {
+	def register = {
 		def regUri = getViewUri("register_${session.site.domain}")
 		if(servletContext.getResource(regUri)) {
 			render(view:"register_${session.site.domain}")
 		}		
 	}
 	
-	@Property contact = {
+	def contact = {
 		if(!params.id) {
 			redirect(controller:'page')	
 		}
@@ -68,7 +68,7 @@ class UserController extends BaseController {
 		}
 	}
 	
-	@Property editProfile = {
+	def editProfile = {
 		if(!params.id) {
 			redirect(controller:'page')	
 		}
@@ -82,7 +82,7 @@ class UserController extends BaseController {
 		}
 	}
 	
-    @Property updateProfile = {
+    def updateProfile = {
 		if(!params.id) {
 			redirect(controller:'page')	
 		}
@@ -104,7 +104,7 @@ class UserController extends BaseController {
 		}
     }	
 	
-	@Property send = {
+	def send = {
 		if(!params.id) {
 			redirect(controller:'page')	
 		}
@@ -134,9 +134,9 @@ class UserController extends BaseController {
 		}
 	}
 	
-	@Property remind = { }
+	def remind = { }
 	
-	@Property password = {
+	def password = {
 		if(!params.email) {
 			flash.message = "You need to specify the email with which you registered"
 			redirect(action:remind)
@@ -164,7 +164,7 @@ class UserController extends BaseController {
 		}
 	}
 	
-	@Property handleRegistration = {
+	def handleRegistration = {
 		def u = new User()
 		u.properties = params
 			
@@ -224,7 +224,7 @@ class UserController extends BaseController {
 		}
 	}
 	
-    @Property login = { 
+    def login = { 
 		if(flash.admin) {
 			flash.admin = true
 			if(session.user) {
@@ -236,7 +236,7 @@ class UserController extends BaseController {
 		}		
 	}
 
-    @Property handleLogin = {
+    def handleLogin = {
 		if(flash.admin)flash.admin=true
         if(params.login && params.pwd) {
             def u = User.findByLogin(params.login)
@@ -281,7 +281,7 @@ class UserController extends BaseController {
         }
     }
 
-	@Property profile = {
+	def profile = {
 		if(!params.id) {
 			return [ user: session.user ]	
 		}
@@ -291,16 +291,16 @@ class UserController extends BaseController {
 		}
 	}
 	
-    @Property list = {
+    def list = {
         if(!params['max']) params['max'] = 10
         [ userList: User.list( params ) ]
     }
 
-    @Property show = {
+    def show = {
         return [ user : User.get( params['id'] ) ]
     }
 
-/*     @Property delete = {
+/*     def delete = {
         def user = User.get( params['id'] )
         if(user) {
             user.delete()
@@ -313,7 +313,7 @@ class UserController extends BaseController {
         }
     } */
 
-    @Property edit = {
+    def edit = {
         def user = User.get( params['id'] )
 
         if(!user) {
@@ -325,7 +325,7 @@ class UserController extends BaseController {
         }
     }
 
-    @Property update = {
+    def update = {
         def user = User.get( params['id'] )
         if(user) {
              user.properties = params
@@ -342,13 +342,13 @@ class UserController extends BaseController {
         }
     }
 
-    @Property create = {
+    def create = {
         def user = new User()
         user.properties = params
         return ['user':user]
     }
 
-    @Property save = {
+    def save = {
         def user = new User()
         user.properties = params
         if(user.save()) {
