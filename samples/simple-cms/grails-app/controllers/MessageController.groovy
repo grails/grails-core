@@ -21,12 +21,12 @@
  * @author Graeme Rocher
  */
 class MessageController extends BaseController {
-    @Property index = { redirect(action:list,params:params) }
-	@Property Map levels
-	@Property Page page
-	@Property Page forum
+    def index = { redirect(action:list,params:params) }
+	def Map levels
+	def Page page
+	def Page forum
 	
-	@Property afterInterceptor = { model ->
+	def afterInterceptor = { model ->
 		def forum = null
 		if(params.'forum.id' || flash.'forum.id') {
 			flash.'forum.id' = flash.'forum.id'
@@ -53,7 +53,7 @@ class MessageController extends BaseController {
 	}
 	
 
-    @Property delete = {
+    def delete = {
         def message = Message.get( params['id'] )
         if(message) {
 			def topic = message.topic
@@ -68,7 +68,7 @@ class MessageController extends BaseController {
         }
     }
 
-    @Property edit = {
+    def edit = {
         def message = Message.get( params['id'] )
 
         if(!message) {
@@ -80,7 +80,7 @@ class MessageController extends BaseController {
         }
     }
 
-    @Property update = {
+    def update = {
         def message = Message.get( params['id'] )
         if(message) {
              message.properties = params
@@ -93,7 +93,7 @@ class MessageController extends BaseController {
         }
     }
 
-    @Property create = {
+    def create = {
 		if(!flash.'topic.id' || !flash.'forum.id') {
 			redirect(controller:'page')			
 		}
@@ -117,7 +117,7 @@ class MessageController extends BaseController {
 		}			
     }
 
-    @Property save = {
+    def save = {
         def message = new Message()
         message.properties = params
 		message.by = session.user
