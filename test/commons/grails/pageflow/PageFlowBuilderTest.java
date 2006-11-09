@@ -47,7 +47,7 @@ public class PageFlowBuilderTest extends TestCase {
 				"import grails.pageflow.*;\n" +
 				"\n" +
 				"class TestClass {\n" +
-				"  @Property Flow flow = new PageFlowBuilder().flow {\n" +
+				"  Flow flow = new PageFlowBuilder().flow {\n" +
 				"    onSubmit(action:[formObjectClass:Object.class,formObjectName:\"object\"]) {\n" +
 				"      success(\"myFirstState\")\n" +
 				"    }\n" +
