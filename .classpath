@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src/commons"/>
-	<classpathentry kind="src" path="tiger"/>
+	<classpathentry kind="src" path="src/tiger"/>
 	<classpathentry kind="src" path="src/web"/>
 	<classpathentry kind="src" path="src/persistence"/>
 	<classpathentry kind="src" path="src/scaffolding"/>
@@ -51,7 +51,6 @@
 	<classpathentry kind="var" path="GRAILS_HOME/lib/commons-lang-2.1.jar"/>
 	<classpathentry kind="var" path="GRAILS_HOME/lib/oro-2.0.8.jar"/>
 	<classpathentry kind="var" path="GRAILS_HOME/lib/hsqldb-1.8.0.5.jar"/>
-	<classpathentry exported="true" kind="lib" path="/Developer/eclipse/plugins/org.junit_3.8.1/junit.jar"/>
 	<classpathentry kind="var" path="GRAILS_HOME/lib/commons-fileupload-1.1.1.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>
