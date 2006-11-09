@@ -21,18 +21,18 @@
  * @since 10-May-2006
  */
 class RoleController {
-    @Property index = { redirect(action:list,params:params) }
+    def index = { redirect(action:list,params:params) }
 
-    @Property list = {
+    def list = {
         if(!params['max']) params['max'] = 10
         [ roleList: Role.list( params ) ]
     }
 
-    @Property show = {
+    def show = {
         [ role : Role.get( params['id'] ) ]
     }
 
-    @Property delete = {
+    def delete = {
         def role = Role.get( params['id'] )
         if(role) {
             role.delete()
@@ -45,7 +45,7 @@ class RoleController {
         }
     }
 
-    @Property edit = {
+    def edit = {
         def role = Role.get( params['id'] )
 
         if(!role) {
@@ -57,7 +57,7 @@ class RoleController {
         }
     }
 
-    @Property update = {
+    def update = {
         def role = Role.get( params['id'] )
         if(role) {
              role.properties = params
@@ -74,13 +74,13 @@ class RoleController {
         }
     }
 
-    @Property create = {
+    def create = {
         def role = new Role()
         role.properties = params
         return ['role':role]
     }
 
-    @Property save = {
+    def save = {
         def role = new Role()
         role.properties = params
         if(role.save()) {
