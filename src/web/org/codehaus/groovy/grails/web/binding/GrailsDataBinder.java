@@ -106,14 +106,14 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
 
     public void bind(ServletRequest request) {
         MutablePropertyValues mpvs = new ServletRequestParameterPropertyValues(request);
+
+        checkStructuredDateDefinitions(request,mpvs);
+        autoCreateIfPossible(mpvs);
+        bindAssociations(mpvs); 
         if(request instanceof HttpServletRequestWrapper) {
             request = ((HttpServletRequestWrapper)request).getRequest();
         }
         checkMultipartFiles(request, mpvs);
-
-        checkStructuredDateDefinitions(request,mpvs);
-        autoCreateIfPossible(mpvs);
-        bindAssociations(mpvs);
         super.doBind(mpvs);
     }
 
