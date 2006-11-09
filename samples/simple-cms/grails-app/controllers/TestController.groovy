@@ -23,15 +23,15 @@
  */
 class TestController extends BaseController {
 
-	@Property index = { 
+	def index = { 
 		redirect(action:list)
 	}
 	
-	@Property list = {
+	def list = {
 		[tests: Page.findAllByType(Page.QUESTIONNAIRE) ]	
 	}
 	
-	@Property show = {
+	def show = {
 		def quest = Page.get(params.id)
 		
 		if(!quest) {
@@ -48,7 +48,7 @@ class TestController extends BaseController {
 		}
 	}
 	
-	@Property submit = {
+	def submit = {
 		if(!params.id) {
 			flash.message = "Questionnaire ${params.id} not found"
 			redirect(controller:'page')	
