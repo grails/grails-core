@@ -8,7 +8,7 @@
     <taskdef name="groovyc" classname="org.codehaus.groovy.ant.Groovyc" />
     <taskdef name="groovy"  classname="org.codehaus.groovy.ant.Groovy" />
 
-    <target name="help">
+    <target name="help" depends="init-props">
 		<echo>Usage: grails [target]
 
 Targets:
@@ -66,9 +66,18 @@ Targets:
         	   result
         	}
         </groovy>
+
+        <property file="${grails.home}/build.properties"/>
+
+        <echo>
+            Welcome to Grails ${grails.version} - http://grails.org/
+            Licensed under Apache Standard License 2.0
+
+            Grails home is set to: ${grails.home}
+        </echo>
     </target>
-               
-	<target name="init-structure" depends="init-props">
+
+    <target name="init-structure" depends="init-props">
         <mkdir dir="${path}src"/>
         <mkdir dir="${path}src/java"/>
         <mkdir dir="${path}src/groovy"/>
@@ -89,32 +98,32 @@ Targets:
         <mkdir dir="${path}web-app/css"/>
         <mkdir dir="${path}web-app/images"/>
         <mkdir dir="${path}web-app/WEB-INF/classes"/>
-        <mkdir dir="${path}web-app/META-INF"/>  
+        <mkdir dir="${path}web-app/META-INF"/>
         <!--<mkdir dir="${path}
 "/>-->
         <!--<mkdir dir="${path}html"/>-->
         <mkdir dir="${path}lib"/>
         <mkdir dir="${path}spring"/>
         <mkdir dir="${path}hibernate"/>
-        <mkdir dir="${grails.home}/dist"/>		
-	</target>         
-	
+        <mkdir dir="${grails.home}/dist"/>
+	</target>
+
 	<target name="upgrade" depends="init-structure,clean" description="Upgrades a Grails project from the information in GRAILS_HOME">
         <copy todir="${path}web-app/WEB-INF">
             <fileset dir="${grails.home}/src/war/WEB-INF">
                 <include name="applicationContext.xml"/>
             </fileset>
-        </copy>	
+        </copy>
         <copy todir="${path}grails-app/taglib">
             <fileset dir="${grails.home}/src/grails/grails-app/taglib" />
-        </copy>	 
+        </copy>
         <copy todir="${path}grails-app" overwrite="false">
             <fileset dir="${grails.home}/src/grails/grails-app" />
-        </copy>    
+        </copy>
         <copy file="${grails.home}/src/war/WEB-INF/web${servlet.version}.template.xml" tofile="${path}web-app/WEB-INF/web.template.xml"/>
-        <copy file="${grails.home}/src/war/WEB-INF/sitemesh.xml" tofile="${path}web-app/WEB-INF/sitemesh.xml"/>  
+        <copy file="${grails.home}/src/war/WEB-INF/sitemesh.xml" tofile="${path}web-app/WEB-INF/sitemesh.xml"/>
         <copy file="${grails.home}/src/war/WEB-INF/web${servlet.version}.template.xml" tofile="${path}web-app/WEB-INF/web.template.xml"/>
-		
+
 		<!-- correct the .classpath -->
 		<groovy><![CDATA[
 			// copy .classpath first
@@ -123,27 +132,27 @@ Targets:
 				new File (path, ".classpath.bak").withWriter () { w ->
 					new File(path, ".classpath").eachLine { w.writeLine(it) }
 				}
-				
+
 				new File (path, ".classpath").delete()
-				
+
 				new File (path, ".classpath").withWriter () { w ->
 					new File (path, ".classpath.bak").eachLine {
 						if (!((it =~ /.*path=\"GRAILS_HOME\/lib\/.*\.jar\"/) ||
 							(it =~ /.*path=\"GRAILS_HOME\/dist\/grails-.*\.jar\"/) ||
 							(it =~ /<\/classpath>/))) { w.writeLine(it) }
 					}
-			   
-					project.references['grailsLibs']().tokenize("\n").each { lib -> 
+
+					project.references['grailsLibs']().tokenize("\n").each { lib ->
 						w.writeLine("	<classpathentry kind=\"var\" path=\"GRAILS_HOME/lib/${lib}\" />")
 			    		}
 					w.writeLine ("	<classpathentry kind=\"var\" path=\"GRAILS_HOME/dist/${project.references['grailsJar']()}\" />")
 					w.writeLine ("</classpath>")
 				}
-			}			
+			}
 		]]></groovy>
-		
+
 	</target>
-	
+
     <target name="init" depends="init-structure" description="Initialise the current app">
         <copy todir="${path}web-app">
             <fileset dir="${grails.home}/src/war">
@@ -151,22 +160,22 @@ Targets:
                 <exclude name="WEB-INF/**"/>
             </fileset>
         </copy>
-		
+
         <copy todir="${path}web-app/WEB-INF">
             <fileset dir="${grails.home}/src/war/WEB-INF">
                 <include name="applicationContext.xml"/>
                 <include name="log4j.properties"/>
                 <include name="sitemesh.xml"/>
             </fileset>
-        </copy>    
+        </copy>
 
-		<copy file="${grails.home}/src/war/WEB-INF/log4j.properties" 
+		<copy file="${grails.home}/src/war/WEB-INF/log4j.properties"
 			  tofile="${path}web-app/WEB-INF/log4j.development.properties" />
-		<copy file="${grails.home}/src/war/WEB-INF/log4j.properties" 
+		<copy file="${grails.home}/src/war/WEB-INF/log4j.properties"
 			  tofile="${path}web-app/WEB-INF/log4j.test.properties" />
-		<copy file="${grails.home}/src/war/WEB-INF/log4j.properties" 
+		<copy file="${grails.home}/src/war/WEB-INF/log4j.properties"
 			  tofile="${path}web-app/WEB-INF/log4j.production.properties" />
-			
+
         <copy todir="${path}grails-app">
             <fileset dir="${grails.home}/src/grails/grails-app" />
         </copy>
@@ -191,7 +200,7 @@ Targets:
               <equals arg1="${servlet.version}" arg2="2.3"/>
         </condition>
     </target>
-	
+
     <target name="init:copyjstl" depends="init:checkjstl" unless="is.servlet.2.5">
     </target>
 
@@ -277,9 +286,9 @@ Targets:
 		<groovy><![CDATA[
 			def projName = properties."project.name"
 			properties."project.class.name" = project.references['lower'](projName)
-			
+
 			def grailsLibsToken = ""
-			project.references['grailsLibs']().tokenize("\n").each { lib -> 
+			project.references['grailsLibs']().tokenize("\n").each { lib ->
 				grailsLibsToken += "	<classpathentry kind=\"var\" path=\"GRAILS_HOME/lib/${lib}\" />\n"
 			}
 
@@ -291,7 +300,7 @@ Targets:
 			<fileset dir="${grails.home}/src/grails/templates/ide-support/eclipse" includes="*.*" excludes=".launch" />
 		</copy>
     	<copy file="${grails.home}/src/grails/templates/ide-support/eclipse/.launch" tofile="${project.name}/${project.name}.launch" />
-    	
+
         <replace dir="${project.name}" includes="*.*" token="@grails.libs@" value="${grails.libs}"/>
         <replace dir="${project.name}" includes="*.*" token="@grails.jar@"  value="${grails.jar}"/>
 		<replace dir="${project.name}" includes="*.*" token="@grails.version@" value="${grails.version}"/>
