@@ -88,20 +88,25 @@
         <delete file="${archive}.zip" failonerror="true"/>
         <zip basedir="${archive.dir}" destfile="${grails.dist}/${archive}.zip" />
         <delete file="${archive}.tar.gz" failonerror="true"/>
-        <tar basedir="${archive.dir}" destfile="dist/${archive}.tar.gz" compression="gzip" longfile="gnu" />
-	   <!--   <tarfileset dir="${archive.dir}" mode="755" username="grails" group="grails">
-		    <include name="${archive.dir}/bin/grails"/>
-		  </tarfileset>	 
-		  <tarfileset dir="${archive.dir}" username="grails" group="grails">
-		    <include name="${archive.dir}/**"/>
-		    <exclude name="${archive.dir}/bin/grails"/>     
-		  </tarfileset>		
-		</tar>-->
+        <tar destfile="dist/${archive}.tar.gz" compression="gzip" longfile="gnu">
+            <!-- Here we need to base on archive.dir so the tar has the grails-VERSION/ prefix dir
+                but need to include/exclude files relative to this prefix dir or they don't
+                get found, obviously -->
+            <tarfileset dir="${archive.dir}">
+                <exclude name="${grails.release.base.dir.name}/bin/grails"/>
+                <exclude name="${grails.release.base.dir.name}/ant/bin/ant"/>
+            </tarfileset>
+            <tarfileset dir="${archive.dir}" mode="755">
+                <include name="${grails.release.base.dir.name}/bin/grails"/>
+                <include name="${grails.release.base.dir.name}/ant/bin/ant"/>
+            </tarfileset>
+		</tar>
     </target>
 
     <target name="create-release-package">
         <property name="grails.release" value="${release.name}"/>
-        <property name="grails.release.dir" location="tmp/grails-${grails.version}"/>
+        <property name="grails.release.base.dir.name" value="grails-${grails.version}"/>
+        <property name="grails.release.dir" location="tmp/${grails.release.base.dir.name}"/>
         <antcall target="create-tmp-release-dir">
             <param name="dir.location" value="${grails.release.dir}"/>
         </antcall>
@@ -112,6 +117,7 @@
         <antcall target="create-archives">
             <param name="archive" value="${grails.release}"/>
             <param name="archive.dir" value="tmp"/>
+            <param name="archive.release.dir" value="tmp"/>
         </antcall>
         <delete dir="${grails.release.dir}" failonerror="true"/>
     </target>
