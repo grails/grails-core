@@ -23,6 +23,7 @@ import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
 
 import java.io.File;
+import java.util.Map;
 
 /**
  * @author Graeme Rocher
@@ -66,7 +67,18 @@ public class GrailsTemplateGeneratorsTests extends TestCase {
         assertTrue(bean.isReadableProperty("show"));
         assertTrue(bean.isReadableProperty("edit"));
         assertTrue(bean.isReadableProperty("delete"));
+        assertTrue(bean.isReadableProperty("allowedMethods"));
         
+        Object propertyValue = bean.getPropertyValue("allowedMethods");
+        assertTrue("allowedMethods property was the wrong type", propertyValue instanceof Map);
+        Map map = (Map) propertyValue;
+        assertTrue("allowedMethods did not contain the delete action", map.containsKey("delete"));
+        assertTrue("allowedMethods did not contain the save action", map.containsKey("save"));
+        assertTrue("allowedMethods did not contain the update action", map.containsKey("update"));
+        
+        assertEquals("allowedMethods had incorrect value for delete action", "POST", map.get("delete"));
+        assertEquals("allowedMethods had incorrect value for save action", "POST", map.get("save"));
+        assertEquals("allowedMethods had incorrect value for update action", "POST", map.get("update"));
     }
 
     public void testGenerateViews() throws Exception {
