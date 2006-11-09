@@ -29,7 +29,8 @@ class FormTagLib {
 	 * Creates a new text field
 	 */
 	def textField = { attrs ->
-		attrs.type = "text"
+		attrs.type = "text"  
+		attrs.tagName = "textField" 
 		field(attrs)
 	}
 	/**
@@ -37,6 +38,7 @@ class FormTagLib {
 	 */
 	def hiddenField = { attrs ->
 		attrs.type = "hidden"
+		attrs.tagName = "hiddenField"
 		field(attrs)
 	}
 	/**
@@ -44,12 +46,33 @@ class FormTagLib {
 	 */
 	def submitButton = { attrs ->
 		attrs.type = "submit"
+		attrs.tagName = "submitButton"
 		field(attrs)
 	}
 	/**
 	 * A general tag for creating fields
 	 */
-	def field = { attrs ->
+	def field = { attrs ->  
+        if(!attrs.name && !attrs.field) {
+            throwTagError("Tag [$tagName] is missing required attribute [name] or [field]")
+        }		
+		attrs.remove('tagName')
+		
+		if(attrs.field) 
+			attrs.name = attrs.remove('field') 	
+
+	  	attrs.id = (!attrs.id ? attrs.name : attrs.id)
+
+		def val = attrs.remove('bean')
+		if(val) {                               
+			if(attrs.name.indexOf('.'))
+	    		attrs.name.split('\\.').each { val = val?."$it" }
+	        else {
+		    	val = val[name]
+			}
+			attrs.value = val		
+		}		
+		attrs.value = (attrs.value ? attrs.value : "")
 		out << "<input type='${attrs.remove('type')}' "
         attrs.each { k,v ->
             out << k << "=\"" << v << "\" "
