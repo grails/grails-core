@@ -22,11 +22,11 @@
  * @since 10-May-2006
  */
 class PageController extends BaseController {
-    @Property index = { 
+    def index = { 
 		redirect(action:show,id:session.site.homePage.id) 
 	}
 
-	@Property terms = {
+	def terms = {
 		def url = getTemplateUri("pages/${session.site.domain}_terms")
 		println "retrieving terms for url $url"
 		if(servletContext.getResource(url)) {
@@ -38,7 +38,7 @@ class PageController extends BaseController {
 		}
 	}
 	
-	@Property preview = {
+	def preview = {
 		if(!params.id) {
 			render "Page id not specified"	
 		}
@@ -51,7 +51,7 @@ class PageController extends BaseController {
 		}
 	}
 	
-    @Property show = {
+    def show = {
 	    if(params.id) {
             def p = Page.get(params.id)
 			def criteria = ApplicationConfig.PAGE_DISPLAY_CRITERIA
@@ -111,7 +111,7 @@ class PageController extends BaseController {
 	    }
     }
 
-    /* @Property edit = {
+    /* def edit = {
         def page = Page.get( params['id'] )
 
         if(!page) {
@@ -123,7 +123,7 @@ class PageController extends BaseController {
         }
     } */
 
-	@Property addLink = {
+	def addLink = {
 		if(params.'parent.id' && params.'site.id') {
 			def parent = Page.get(params.'parent.id')
 			def site = Site.get(params.'site.id')
@@ -143,7 +143,7 @@ class PageController extends BaseController {
 		}
 	}
 	
-	@Property saveLink = {
+	def saveLink = {
 		if(params.'parent.id' && params.'link.id' && params.linkText) {
 			def parent = Page.get(params.'parent.id')
 			def linkId = params.'link.id'
@@ -226,7 +226,7 @@ class PageController extends BaseController {
 	}
 	
 	
-	@Property publish = {
+	def publish = {
 		if(!params.id) {
 			renderError "Page id not specified"
 			return			
@@ -327,13 +327,13 @@ class PageController extends BaseController {
 		render(template:"/pagexml",model:[page:p,alert:"Page published."])
 	}
 	
-    @Property create = {
+    def create = {
         def page = new Page()
         page.properties = params
         return ['page':page]
     }
 	
-	@Property delete = {
+	def delete = {
 		if(!params.id) {
 			renderError "Page id not specified"
 			return
@@ -393,7 +393,7 @@ class PageController extends BaseController {
 		}
 	}
 
-	@Property approve = {
+	def approve = {
 		if(!params.id) {
 			renderError "Page id not specified"
 			return
@@ -445,7 +445,7 @@ class PageController extends BaseController {
 		}
 	}
 	
-	@Property reject = {
+	def reject = {
 		if(!params.id) {
 			renderError "Page id not specified"
 			return
@@ -473,7 +473,7 @@ class PageController extends BaseController {
 		}		
 	}
 	
-	@Property comments = {
+	def comments = {
 		if(params.id) {
 			def p = Page.get(params.id)
 			
@@ -488,7 +488,7 @@ class PageController extends BaseController {
 		}
 	}
 	
-	@Property moveUp = {
+	def moveUp = {
 		if(!params.id) {
 			renderError("Page id not specified")
 			return
@@ -528,7 +528,7 @@ class PageController extends BaseController {
 		}	
 	}
 	
-	@Property moveDown = {
+	def moveDown = {
 		if(!params.id) {
 			renderError("Page id not specified")
 			return
@@ -564,7 +564,7 @@ class PageController extends BaseController {
 		}		
 	}
 	
-	@Property add = {										 		
+	def add = {										 		
 		// retrieve parent and add as child
 		if(!params.'parent.id' ) {
 			renderError("Page parent id is required")
@@ -630,7 +630,7 @@ class PageController extends BaseController {
 		}	
 	}
 	
-	@Property rollback = {
+	def rollback = {
 		if(params.id) {
 			def p = Page.get(params.id)			
 			if(p.revisions) {
@@ -667,7 +667,7 @@ class PageController extends BaseController {
 		}
 	}
 	
-    @Property save = {
+    def save = {
        def page = Page.get(params.page)
 		if(page) {
 			// update the content
