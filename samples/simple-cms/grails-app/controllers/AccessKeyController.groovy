@@ -21,18 +21,18 @@
  * @author Graeme Rocher
  */
 class AccessKeyController {
-    @Property index = { redirect(action:list,params:params) }
+    def index = { redirect(action:list,params:params) }
 
-    @Property list = {
+    def list = {
         if(!params.max) params.max = 10
         [ accessKeyList: AccessKey.list( params ) ]
     }
 
-    @Property show = {
+    def show = {
         [ accessKey : AccessKey.get( params['id'] ) ]
     }
 
-    @Property delete = {
+    def delete = {
         def accessKey = AccessKey.get( params['id'] )
         if(accessKey) {
             accessKey.delete()
@@ -45,7 +45,7 @@ class AccessKeyController {
         }
     }
 
-    @Property edit = {
+    def edit = {
         def accessKey = AccessKey.get( params['id'] )
 
         if(!accessKey) {
@@ -57,7 +57,7 @@ class AccessKeyController {
         }
     }
 
-    @Property update = {
+    def update = {
         def accessKey = AccessKey.get( params['id'] )
         if(accessKey) {
              accessKey.properties = params
@@ -74,13 +74,13 @@ class AccessKeyController {
         }
     }
 
-    @Property create = {
+    def create = {
         def accessKey = new AccessKey()
         accessKey.properties = params
         return ['accessKey':accessKey]
     }
 
-    @Property save = {
+    def save = {
         def accessKey = new AccessKey()
         accessKey.properties = params
 		if(AccessKey.findByCode(accessKey.code)) {
