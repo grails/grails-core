@@ -35,7 +35,7 @@ public class GrailsApplicationAttributesTests extends TestCase {
 		GrailsApplicationAttributes attrs = new DefaultGrailsApplicationAttributes(new MockServletContext());
 		GroovyClassLoader gcl = new GroovyClassLoader();
         Class controllerClass = gcl.parseClass( "class TestController {\n" +
-                "@Property "+ControllerDynamicMethods.CONTROLLER_URI_PROPERTY+" = '/test'\n" +
+                "def "+ControllerDynamicMethods.CONTROLLER_URI_PROPERTY+" = '/test'\n" +
                 "}" );	
         
         MockHttpServletRequest request = new MockHttpServletRequest();
@@ -49,15 +49,15 @@ public class GrailsApplicationAttributesTests extends TestCase {
 	public void testGetTagLibForTag() throws Exception {
 		GroovyClassLoader gcl = new GroovyClassLoader();
         gcl.parseClass( "class TestController {\n" +
-									                "@Property list = {\n" +
+									                "def list = {\n" +
 									                "}\n" +
 									                "}\n" +
 			             "class FirstTagLib {\n" +
-						              "@Property firstTag = {\n" +
+						              "def firstTag = {\n" +
 						              "}\n" +
 						 "}\n" +
 						 "class SecondTagLib {\n" +
-						 	"@Property secondTag = {\n" +
+						 	"def secondTag = {\n" +
 						 "}\n" +
                 "}" );        
         

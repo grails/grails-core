@@ -156,7 +156,7 @@ public class ControllerMetaClassTests extends TestCase {
         MockHttpServletResponse response = new MockHttpServletResponse();
 
         Class groovyClass = gcl.parseClass( "class TestController {\n" +
-                        "@Property list = {\n" +
+                        "def list = {\n" +
                         "log.trace('testing logging')"+
                         "}\n" +
                         "}" );
