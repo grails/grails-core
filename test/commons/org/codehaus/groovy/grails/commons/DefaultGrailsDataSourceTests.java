@@ -15,11 +15,11 @@ public class DefaultGrailsDataSourceTests extends TestCase {
         GroovyClassLoader gcl = new GroovyClassLoader();
 
         Class dsClass = gcl.parseClass("class TestDataSource {" +
-                "@Property String driverClassName = 'test.driverClass'\n" +
-                "@Property String url = 'jdbc://testurl'\n" +
-                "@Property String username ='sa'\n" +
-                "@Property String password = 'pass'\n" +
-                "@Property configClass = org.codehaus.groovy.grails.orm.hibernate.cfg.DefaultGrailsDomainConfiguration.class" +
+                " String driverClassName = 'test.driverClass'\n" +
+                " String url = 'jdbc://testurl'\n" +
+                " String username ='sa'\n" +
+                " String password = 'pass'\n" +
+                " def configClass = org.codehaus.groovy.grails.orm.hibernate.cfg.DefaultGrailsDomainConfiguration.class" +
                 "}");
 
         GrailsDataSource ds = new DefaultGrailsDataSource(dsClass);
@@ -30,11 +30,11 @@ public class DefaultGrailsDataSourceTests extends TestCase {
     public void testCustomDialect() throws Exception {
         GroovyClassLoader gcl = new GroovyClassLoader();
         Class dsClass = gcl.parseClass("class TestDataSource {" +
-                "@Property String driverClassName = 'test.driverClass'\n" +
-                "@Property String url = 'jdbc://testurl'\n" +
-                "@Property String username ='sa'\n" +
-                "@Property String password = 'pass'\n" +
-                "@Property dialect = org.hibernate.dialect.MySQLDialect.class" +
+                " String driverClassName = 'test.driverClass'\n" +
+                " String url = 'jdbc://testurl'\n" +
+                " String username ='sa'\n" +
+                " String password = 'pass'\n" +
+                " def dialect = org.hibernate.dialect.MySQLDialect.class" +
                 "}");
 
         GrailsDataSource ds = new DefaultGrailsDataSource(dsClass);
@@ -45,11 +45,11 @@ public class DefaultGrailsDataSourceTests extends TestCase {
     public void testLoggingEnabled() throws Exception {
         GroovyClassLoader gcl = new GroovyClassLoader();
         Class dsClass = gcl.parseClass("class TestDataSource {" +
-                "@Property String driverClassName = 'test.driverClass'\n" +
-                "@Property String url = 'jdbc://testurl'\n" +
-                "@Property String username ='sa'\n" +
-                "@Property String password = 'pass'\n" +
-                "@Property logSql = true" +
+                " String driverClassName = 'test.driverClass'\n" +
+                " String url = 'jdbc://testurl'\n" +
+                " String username ='sa'\n" +
+                " String password = 'pass'\n" +
+                "def logSql = true" +
                 "}");
 
         GrailsDataSource ds = new DefaultGrailsDataSource(dsClass);
