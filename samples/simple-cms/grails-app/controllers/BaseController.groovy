@@ -21,7 +21,7 @@
  * @author Graeme Rocher
  */
 abstract class BaseController {
-	@Property beforeInterceptor = this.&auth
+	def beforeInterceptor = this.&auth
 	
 	static def EXCLUDES = ['remind','password','admin','login','handleLogin','register','handleRegistration','terms']
 	static def GENERAL_ALLOWED = 	[
