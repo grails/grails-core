@@ -26,7 +26,7 @@ public class ConstraintsEvaluatingPropertyTests extends TestCase {
         GroovyClassLoader gcl = new GroovyClassLoader();
         Class groovyClass = gcl.parseClass("package org.codehaus.groovy.grails.validation\n" +
                 "class Test {\n" +
-                "@Property String name\n" +
+                " String name\n" +
                 "}");
 
         ConstraintsEvaluatingDynamicProperty cp = new ConstraintsEvaluatingDynamicProperty();
