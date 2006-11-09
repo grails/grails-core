@@ -1,17 +1,17 @@
 
 import com.recipes.Ingredient            
 class IngredientController {
-    @Property index = { redirect(action:list,params:params) }
+    def index = { redirect(action:list,params:params) }
 
-    @Property list = {
+    def list = {
         [ ingredientList: Ingredient.list( params ) ]
     }
 
-    @Property show = {
+    def show = {
         [ ingredient : Ingredient.get( params.id ) ]
     }
 
-    @Property delete = {
+    def delete = {
         def ingredient = Ingredient.get( params.id )
         if(ingredient) {
             ingredient.delete()
@@ -24,7 +24,7 @@ class IngredientController {
         }
     }
 
-    @Property edit = {
+    def edit = {
         def ingredient = Ingredient.get( params.id )
 
         if(!ingredient) {
@@ -36,7 +36,7 @@ class IngredientController {
         }
     }
 
-    @Property update = {
+    def update = {
         def ingredient = Ingredient.get( params.id )
         if(ingredient) {
              ingredient.properties = params
@@ -53,7 +53,7 @@ class IngredientController {
         }
     }
 
-    @Property create = {
+    def create = {
         def ingredient = new Ingredient()
         ingredient.properties = params
         return ['ingredient':ingredient]
