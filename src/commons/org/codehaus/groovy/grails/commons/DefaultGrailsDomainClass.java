@@ -65,6 +65,7 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
     private List owners = new ArrayList();
     private boolean root = true;
     private Set subClasses = new HashSet();
+    private String tableName = null;
 
     public DefaultGrailsDomainClass(Class clazz) {
         super(clazz, "");
@@ -77,6 +78,7 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
         }
         this.propertyMap = new HashMap();
         this.relationshipMap = getAssociationMap();
+        this.tableName = (String)getPropertyOrStaticPropertyOrFieldValue(GrailsDomainClassProperty.WITH_TABLE, String.class);
 
         // get mapped by setting
         if(getPropertyOrStaticPropertyOrFieldValue(GrailsDomainClassProperty.MAPPED_BY, String.class) != null)
@@ -523,7 +525,7 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
       * @see org.codehaus.groovy.grails.domain.GrailsDomainClass#getTableName()
       */
     public String getTableName() {
-        return ClassUtils.getShortClassName(getName()).toUpperCase();
+        return this.tableName;
     }
     /* (non-Javadoc)
       * @see org.codehaus.groovy.grails.domain.GrailsDomainClass#isOneToMany(java.lang.String)

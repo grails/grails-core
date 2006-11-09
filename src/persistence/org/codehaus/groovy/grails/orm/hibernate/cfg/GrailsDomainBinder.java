@@ -385,8 +385,8 @@ public final class GrailsDomainBinder {
 	 * where you have two mapping tables for left_right and right_left
 	 */
 	private static String calculateTableForMany(GrailsDomainClassProperty property) {
-		String left = namingStrategy.classToTableName(property.getDomainClass().getShortName());
-		String right = namingStrategy.classToTableName(property.getReferencedDomainClass().getShortName());
+		String left = getTableName(property.getDomainClass());
+		String right = getTableName(property.getReferencedDomainClass());
 		
 		if(property.isOwningSide()) {
 			return left+'_'+right;
@@ -394,6 +394,19 @@ public final class GrailsDomainBinder {
 		else {
 			return right+'_'+left;
 		}
+	}
+
+	/**
+	 * Evaluates the table name for the given property
+	 * 
+	 * @param domainClass The domain class to evaluate
+	 * @return The table name
+	 */
+	private static String getTableName(GrailsDomainClass domainClass) {
+		if(domainClass.getTableName() == null)
+			return namingStrategy.classToTableName(domainClass.getShortName());
+		else
+			return domainClass.getTableName();
 	}	
 	/**
 	 * Binds a Grails domain class to the Hibernate runtime meta model
@@ -572,7 +585,7 @@ public final class GrailsDomainBinder {
 		Table table = mappings.addTable(
 				schema,
 				catalog,
-				namingStrategy.classToTableName(domainClass.getFullName()),
+				getTableName(domainClass),
 				null,
 				false
 		);
@@ -882,8 +895,6 @@ w	 * Binds a simple value to the Hibernate metamodel. A simple value is
 		simpleValue.setTypeName(grailsProp.getType().getName());
 		Table table = simpleValue.getTable();
 		Column column = new Column();
-		if(grailsProp.isManyToOne())
-			column.setNullable(false);
 		
 		column.setValue(simpleValue);
 		bindColumn(grailsProp, column, table);
@@ -925,10 +936,17 @@ w	 * Binds a simple value to the Hibernate metamodel. A simple value is
 			column.setName( namingStrategy.propertyToColumnName(grailsProp.getName()) + FOREIGN_KEY_SUFFIX );
 			column.setNullable(true);
 			
-		} else {
+		} 
+		else {
 			column.setNullable(grailsProp.isOptional());
 			column.setName(namingStrategy.propertyToColumnName(grailsProp.getName()));
 		}
+		
+		if(!grailsProp.getDomainClass().isRoot()) {
+			if(LOG.isDebugEnabled())
+				LOG.debug("[GrailsDomainBinder] Sub class property [" + grailsProp.getName() + "] for column name ["+column.getName()+"] in table ["+table.getName()+"] set to nullable");			
+			column.setNullable(true);
+		}		
  
 		if(LOG.isDebugEnabled())
 			LOG.debug("[GrailsDomainBinder] bound property [" + grailsProp.getName() + "] to column name ["+column.getName()+"] in table ["+table.getName()+"]");		

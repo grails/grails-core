@@ -35,6 +35,7 @@ public interface GrailsDomainClassProperty {
     String BELONGS_TO = "belongsTo";
 	String HAS_MANY = "hasMany";
 	String FETCH_MODE = "fetchMode";
+	String WITH_TABLE = "withTable";
 	int FETCH_EAGER = 1;
 	int FETCH_LAZY = 0;
 	
