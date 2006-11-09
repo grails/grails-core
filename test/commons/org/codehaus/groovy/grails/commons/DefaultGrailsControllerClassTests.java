@@ -45,7 +45,7 @@ public class DefaultGrailsControllerClassTests extends TestCase {
 	
 	public void testDefaultGrailsControllerViewNames() throws Exception {
 		GroovyClassLoader cl = new GroovyClassLoader();
-		Class clazz = cl.parseClass("class TestController { @Property action = { return null }; } ");
+		Class clazz = cl.parseClass("class TestController { def action = { return null }; } ");
 		GrailsControllerClass grailsClass = new DefaultGrailsControllerClass(clazz);
 
         assertEquals("Test", grailsClass.getName());
@@ -62,7 +62,7 @@ public class DefaultGrailsControllerClassTests extends TestCase {
 	public void testScaffoldedController() throws Exception {
 		
 		GroovyClassLoader cl = new GroovyClassLoader();
-		Class clazz = cl.parseClass("class TestController { @Property scaffold = Test.class } \nclass Test { @Property Long id\n@Property Long version\n}");
+		Class clazz = cl.parseClass("class TestController { def scaffold = Test.class } \nclass Test {  Long id\n Long version\n}");
 		GrailsControllerClass grailsClass = new DefaultGrailsControllerClass(clazz);
 
         assertEquals("Test", grailsClass.getName());
@@ -92,9 +92,9 @@ public class DefaultGrailsControllerClassTests extends TestCase {
 	public void testInterceptors() throws Exception {
 		GroovyClassLoader cl = new GroovyClassLoader();
 		Class clazz = cl.parseClass("class TestController { \n" +
-										"@Property beforeInterceptor = [action:this.&before,only:'list']\n" +
+										"def beforeInterceptor = [action:this.&before,only:'list']\n" +
 										"def before() { return 'success' }\n" +
-										"@Property list = { return 'test' }\n " +										
+										"def list = { return 'test' }\n " +										
 									"} ");
 		GrailsControllerClass grailsClass = new DefaultGrailsControllerClass(clazz);
 		GroovyObject controller = (GroovyObject)grailsClass.newInstance();
@@ -109,10 +109,10 @@ public class DefaultGrailsControllerClassTests extends TestCase {
 		assertNull(grailsClass.getAfterInterceptor(controller));
 		
 		clazz = cl.parseClass("class AfterController { \n" +
-				"@Property afterInterceptor = [action:this.&before,except:'list']\n" +
+				"def afterInterceptor = [action:this.&before,except:'list']\n" +
 				"def after() { return 'success' }\n" +
-				"@Property list = { return 'test' }\n " +
-				"@Property save = { return 'test' }\n " +
+				"def list = { return 'test' }\n " +
+				"def save = { return 'test' }\n " +
 			"} ");	
 		
 		grailsClass = new DefaultGrailsControllerClass(clazz);
