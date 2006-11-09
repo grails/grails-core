@@ -21,16 +21,16 @@
  * @since 10-May-2006
  */
 class SiteController extends BaseController {
-    @Property index = {
+    def index = {
         redirect(action:list)
 	}
 	
-	@Property admin = { 
+	def admin = { 
 		flash.admin = true 
 		redirect(controller:'user',action:'login')
 	}
 	
-    @Property loadSubPages = {
+    def loadSubPages = {
     	def pages
     	if(params.id) {
     		def parent = Page.get(params.id)
@@ -46,7 +46,7 @@ class SiteController extends BaseController {
     	render(template:'subPageJSON',model:[pages: pages.sort{ it.position }  ])
     }
 
-	@Property displayPage = {
+	def displayPage = {
 		if(params.id) {
 			def p = Page.get(params.id)
 			if(p) { 
@@ -55,17 +55,17 @@ class SiteController extends BaseController {
 		}
 	}
 	
-    @Property list = {
+    def list = {
         if(!params.max) params.max = 10
         [ siteList: Site.list( params ) ]
     }
 
-    @Property show = {
+    def show = {
     	def s = Site.get( params.id )
         [ site : s ]
     }
 
-    @Property delete = {
+    def delete = {
         def site = Site.get( params['id'] )
         if(site) {
             site.delete()
@@ -78,7 +78,7 @@ class SiteController extends BaseController {
         }
     }
 
-    @Property edit = {
+    def edit = {
         def site = Site.get( params['id'] )
 
         if(!site) {
@@ -90,7 +90,7 @@ class SiteController extends BaseController {
         }
     }
 
-    @Property update = {
+    def update = {
         def site = Site.get( params['id'] )
         if(site) {
              site.properties = params
@@ -107,13 +107,13 @@ class SiteController extends BaseController {
         }
     }
 
-    @Property create = {
+    def create = {
         def site = new Site()
         site.properties = params
         return ['site':site]
     }
 
-    @Property save = {
+    def save = {
         def site = new Site()
         site.properties = params
         
