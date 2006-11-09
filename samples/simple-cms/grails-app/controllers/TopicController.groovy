@@ -26,7 +26,7 @@ class TopicController extends BaseController {
 	@Property Page page
 	@Property Page forum
 	
-	@Property afterInterceptor = { model ->
+	def afterInterceptor = { model ->
 		def forum = null
 		if(params.'forum.id' || flash.'forum.id') {
 			def forumId = (params.'forum.id'?params.'forum.id':flash.'forum.id')
@@ -53,10 +53,10 @@ class TopicController extends BaseController {
 		}		
 	}
 	
-    @Property index = { redirect(controller:'page') }
+    def index = { redirect(controller:'page') }
 
 
-    @Property show = {
+    def show = {
 		def topic = Topic.get( params.id )
 		if(!topic) {
 			flash.message = "Topic not found for id ${params.id}"
@@ -77,14 +77,14 @@ class TopicController extends BaseController {
 		}        
     }
 
-	@Property addPost = {
+	def addPost = {
 		def topic = Topic.get(params.id)
 		flash.'forum.id' = topic?.forum?.id
 		flash.'topic.id' = topic?.id
 		redirect(controller:'message',action:'create')	
 	}
 	
-    @Property delete = {
+    def delete = {
         def topic = Topic.get( params['id'] )
 		def forum = topic.forum
         if(topic) {
@@ -98,7 +98,7 @@ class TopicController extends BaseController {
         }
     }
 
-    @Property edit = {
+    def edit = {
         def topic = Topic.get( params.id )
 
         if(!topic) {
@@ -110,7 +110,7 @@ class TopicController extends BaseController {
         }
     }
 
-    @Property update = {
+    def update = {
         def topic = Topic.get( params['id'] )
         if(topic) {
              topic.properties = params
@@ -127,13 +127,13 @@ class TopicController extends BaseController {
         }
     }
 
-    @Property create = {
+    def create = {
         def topic = new Topic()
         topic.properties = params
         return ['topic':topic]
     }
 
-    @Property save = {
+    def save = {
         def topic = new Topic()
         topic.properties = params
 		topic.createdBy = session.user
