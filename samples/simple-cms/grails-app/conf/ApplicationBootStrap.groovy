@@ -1,7 +1,7 @@
 class ApplicationBootStrap {
 
 
-     @Property Closure init = { servletContext ->
+     def Closure init = { servletContext ->
 	 
         // create default site
 		def defaultSite = Site.findByName(Site.DEFAULT)
@@ -51,6 +51,6 @@ class ApplicationBootStrap {
 			homePage.save()													
 		}
      }
-     @Property Closure destroy = {
+     def Closure destroy = {
      }
 } 
