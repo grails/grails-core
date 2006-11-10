@@ -11,7 +11,6 @@ class GroovyEachParseTests extends ParseTests {
 """);	
 		def expected = '"blah".each { t ->'
 
-		println output
 		assert output.indexOf(expected)
 	}
 

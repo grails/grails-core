@@ -5,6 +5,8 @@ import groovy.lang.GroovyObject;
 
 import java.beans.IntrospectionException;
 import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.Locale;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -19,6 +21,8 @@ import org.codehaus.groovy.grails.web.metaclass.TagLibDynamicMethods;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsControllerHelper;
 import org.codehaus.groovy.grails.web.servlet.mvc.SimpleGrailsControllerHelper;
+import org.springframework.context.MessageSource;
+import org.springframework.context.support.StaticMessageSource;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.mock.web.MockServletContext;
@@ -37,9 +41,19 @@ import org.springframework.web.servlet.i18n.AcceptHeaderLocaleResolver;
 public abstract class AbstractTagLibTests extends
         AbstractDependencyInjectionSpringContextTests  {
 
-    protected GrailsApplication grailsApplication;
+    
+	protected GrailsApplication grailsApplication;
+	protected MessageSource messageSource;
+	private StringWriter writer;
 
-    protected String[] getConfigLocations() {
+	
+    public AbstractTagLibTests() {
+		super();
+        this.setDependencyCheck(false);
+	}
+
+
+	protected String[] getConfigLocations() {
         return new String[] { "org/codehaus/groovy/grails/web/taglib/grails-taglib-tests.xml" };
     }
 
@@ -51,6 +65,17 @@ public abstract class AbstractTagLibTests extends
         super.onSetUp();
     }
 
+    protected Closure getTag(String name, StringWriter sw) 
+    	throws CompilationFailedException, IntrospectionException {
+    	this.writer = sw;
+    	return getTag(name, new PrintWriter(sw));
+    }
+    
+    protected void clearBuffer() {
+    	if(this.writer != null) {
+    		this.writer.getBuffer().delete(0, this.writer.getBuffer().length());
+    	}
+    }
 
     /**
      * Retrieves a tag library instance for the specified name and mock out
@@ -89,6 +114,9 @@ public abstract class AbstractTagLibTests extends
         MockServletContext servletContext = new MockServletContext();
         MockApplicationContext appContext = new MockApplicationContext();
         appContext.registerMockBean("grailsApplication", grailsApplication);
+        this.messageSource = new StaticMessageSource();
+        
+        appContext.registerMockBean("messageSource", this.messageSource);
 
         servletContext.setAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT,appContext);
 
@@ -96,6 +124,7 @@ public abstract class AbstractTagLibTests extends
         HttpServletRequest request = new MockHttpServletRequest(servletContext);
         request.setAttribute(GrailsApplicationAttributes.CONTROLLER, mockController);
         request.setAttribute(DispatcherServlet.LOCALE_RESOLVER_ATTRIBUTE, new AcceptHeaderLocaleResolver());
+        
 
         HttpServletResponse response = new MockHttpServletResponse();
         new ControllerDynamicMethods(mockController,helper,request,response);
