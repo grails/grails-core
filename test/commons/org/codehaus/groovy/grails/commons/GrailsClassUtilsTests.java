@@ -220,4 +220,13 @@ public class GrailsClassUtilsTests extends TestCase {
             GrailsClassUtils.getFieldValue(bean, "favouriteArtist"));
 
     }
+    
+    public void testGetScriptName() {
+    	assertEquals("grails-class-utils-tests", GrailsClassUtils.getScriptName(getClass()));
+    }
+    
+    public void testGetNameFromScript() {
+    	assertEquals("GrailsClassUtilsTests", GrailsClassUtils.getNameFromScript("grails-class-utils-tests"));
+    	assertEquals("Grails", GrailsClassUtils.getNameFromScript("grails"));
+    }
 }

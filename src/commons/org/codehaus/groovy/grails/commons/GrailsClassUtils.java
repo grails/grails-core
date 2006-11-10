@@ -230,23 +230,9 @@ public class GrailsClassUtils {
         if(clazz == null || StringUtils.isBlank(propertyName))
             return null;
 
-        try {
-            BeanWrapper wrapper = new BeanWrapperImpl(clazz.newInstance());
-            Object pValue = wrapper.getPropertyValue( propertyName );
-            if(pValue == null)
-                return null;
-
-            if(propertyType.isAssignableFrom(pValue.getClass())) {
-                return pValue;
-            }
-            else {
-                return null;
-            }
-
-        } catch (Exception e) {
-            // if there are any errors in instantiating just return null
-            return null;
-        }
+        Object instance = BeanUtils.instantiateClass(clazz);
+        
+        return getPropertyOrStaticPropertyOrFieldValue(instance, propertyName);
     }
 
 
@@ -358,11 +344,20 @@ public class GrailsClassUtils {
      */
     public static String getShortName(Class targetClass) {
         String className = targetClass.getName();
+        return getShortName(className);
+    }
+    /**
+     * Returns the class name without the package prefix
+     *
+     * @param className The class name to get a short name for
+     * @return The short name of the class
+     */    
+    public static String getShortName(String className) {
         int i = className.lastIndexOf(".");
         if(i > -1) {
             className = className.substring( i + 1, className.length() );
         }
-        return className;
+        return className;    	
     }
 
     /**
@@ -388,6 +383,64 @@ public class GrailsClassUtils {
             propertyName = propertyName.replaceAll("\\s", "");
         }
         return propertyName;
+    }
+    /**
+     * Shorter version of getPropertyNameRepresentation
+     * @param name The name to convert
+     * @return The property name version
+     */
+    public static String getPropertyName(String name) {
+    	return getPropertyNameRepresentation(name);
+    }
+    
+    /**
+     * Shorter version of getPropertyNameRepresentation
+     * @param clazz The clazz to convert
+     * @return The property name version
+     */
+    public static String getPropertyName(Class clazz) {
+    	return getPropertyNameRepresentation(clazz);
+    }    
+    
+    /**
+     * Retrieves the script name representation of the supplied class. For example
+     * MyFunkyGrailsScript would be my-funky-grails-script
+     * 
+     * @param clazz The class to convert
+     * @return The script name representation
+     */
+    public static String getScriptName(Class clazz) {
+    	return getScriptName(clazz.getName());
+    }
+    
+    public static String getScriptName(String name) {
+    	String naturalName = getNaturalName(getShortName(name));
+    	return naturalName.replaceAll("\\s", "-").toLowerCase();    	
+    }
+    
+    /**
+     * Calculates the class name from a script name in the form
+     * my-funk-grails-script
+     * 
+     * @param scriptName The script name
+     * @return A class name
+     */
+    public static String getNameFromScript(String scriptName) {
+    	if(scriptName.indexOf('-') > -1) {
+    		StringBuffer buf = new StringBuffer();
+    		String[] tokens = scriptName.split("-");
+    		for (int i = 0; i < tokens.length; i++) {
+				String token = tokens[i];
+				buf.append(token.substring(0,1).toUpperCase())
+				   .append(token.substring(1));				
+			}
+    		return buf.toString();
+    	}
+    	else {
+    		return scriptName.substring(0,1).toUpperCase() + scriptName.substring(1);
+    	}
+    	
+    	
     }
 
     /**
