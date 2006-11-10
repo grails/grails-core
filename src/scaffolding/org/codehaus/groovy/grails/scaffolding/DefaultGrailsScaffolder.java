@@ -291,10 +291,10 @@ public class DefaultGrailsScaffolder implements GrailsScaffolder {
 			if(callback.isInvoked()) {
 				Closure showAction = (Closure)controller.getProperty(SHOW_ACTION);
 				Map arguments = new HashMap();
-				arguments.put( ChainDynamicMethod.ARGUMENT_ACTION, showAction );				
-				arguments.put( ChainDynamicMethod.ARGUMENT_MODEL, model );
-				arguments.put( ChainDynamicMethod.ARGUMENT_PARAMS, model );
-				return controller.invokeMethod(ChainDynamicMethod.METHOD_SIGNATURE,new Object[]{ arguments });				
+				arguments.put( RedirectDynamicMethod.ARGUMENT_ACTION, showAction );				
+				arguments.put( RedirectDynamicMethod.ARGUMENT_ID, model.get( RedirectDynamicMethod.ARGUMENT_ID ) );
+
+				return controller.invokeMethod(RedirectDynamicMethod.METHOD_SIGNATURE,new Object[]{ arguments });				
 			}
 			else {
 				Map arguments = new HashMap();
