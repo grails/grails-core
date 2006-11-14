@@ -188,7 +188,10 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
                     ClassLoader grailsClassLoader = getTarget().getClass().getClassLoader();
                     try {
                         Thread.currentThread().setContextClassLoader(grailsClassLoader);
-                        Object persisted = InvokerHelper.invokeStaticMethod(type.getName(), "get", pv.getValue());
+						Object persisted = null;
+                        	
+                       	persisted = InvokerHelper.invokeStaticMethod(type, "get", pv.getValue());
+                        
                         if (persisted != null) {
                             bean.setPropertyValue(propertyName, persisted);
                         }
