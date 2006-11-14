@@ -21,8 +21,6 @@ public class HibernateMappedClassTests extends
 		hmc.setMyProp("somevalue");
 		InvokerHelper.invokeMethod(hmc, "save", new Object[0]);
 		String className = hmc.getClass().getName();
-		hmc = null;
-
 		hmc = (HibernateMappedClass)InvokerHelper.invokeStaticMethod(hmc.getClass(), "get", new Object[] { new Integer(1) });
 	
 		assertEquals("somevalue", hmc.getMyProp());
