@@ -48,7 +48,9 @@ public class TagLibMetaClass extends ProxyMetaClass {
 	public static TagLibMetaClass getTagLibInstance(Class theClass) throws IntrospectionException {
         MetaClassRegistry metaRegistry = InvokerHelper.getInstance().getMetaRegistry();
         MetaClass meta = metaRegistry.getMetaClass(theClass);
-        return new TagLibMetaClass(metaRegistry, theClass, meta);
+        TagLibMetaClass m = new TagLibMetaClass(metaRegistry, theClass, meta);
+        m.initialise();
+        return m;
     }
 	
 	

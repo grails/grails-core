@@ -209,7 +209,7 @@ class FormTagLib {
                 def h = '' + i
                 if(i < 10) h = '0' + h
                 out << "<option value='${h}' "
-                if(hour == h) out << "selected='selected'"
+                if(hour == h.toInteger()) out << "selected='selected'"
                 out << '>' << h << '</option>'
                 out.println()
             }
@@ -228,7 +228,7 @@ class FormTagLib {
                 def m = '' + i
                 if(i < 10) m = '0' + m
                 out << "<option value='${m}' "
-                if(minute == m) out << "selected='selected'"
+                if(minute == m.toInteger()) out << "selected='selected'"
                 out << '>' << m << '</option>'
                 out.println()
             }

@@ -54,7 +54,9 @@ public class ProxyMetaClass extends MetaClassImpl {
     public static ProxyMetaClass getInstance(Class theClass) throws IntrospectionException {
         MetaClassRegistry metaRegistry = InvokerHelper.getInstance().getMetaRegistry();
         MetaClass meta = metaRegistry.getMetaClass(theClass);
-        return new ProxyMetaClass(metaRegistry, theClass, meta);
+        ProxyMetaClass pmc =  new ProxyMetaClass(metaRegistry, theClass, meta);
+        pmc.initialise();
+        return pmc;
     }
     /**
      * @param adaptee   the MetaClass to decorate with interceptability
