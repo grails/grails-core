@@ -56,7 +56,7 @@ public class ExtendProxy extends Proxy {
      * when iterator()was called so this keeps that behavior for non-collections.
      * @return either an Iterator (if adaptee is a collection) or this.
      *
-     */
+     
     public Object iterator() {
         if(getAdaptee() instanceof Collection) {
            return ((Collection)getAdaptee()).iterator();
@@ -64,6 +64,6 @@ public class ExtendProxy extends Proxy {
         else {
             return getAdaptee();
         }
-    }
+    }*/  
 
 }
