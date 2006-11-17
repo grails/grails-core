@@ -27,6 +27,10 @@
             <param name="dir.location" value="ant"/>
             <param name="dir.destination" value="${release.dir}/ant"/>
         </antcall>
+            <antcall target="copy-dir">
+                <param name="dir.location" value="scripts"/>
+                <param name="dir.destination" value="${release.dir}/scripts"/>
+            </antcall>    	
         <antcall target="copy-dir">
             <param name="dir.location" value="samples"/>
             <param name="dir.destination" value="${release.dir}/samples"/>

@@ -20,7 +20,10 @@
 		</javac>
         <groovyc destdir="${grails.build}" >
 			<src path="${grails.src.commons}"/>
-			<classpath refid="classpath"/>
+		    <classpath>
+		      <pathelement path="${grails.build}"/>
+		    </classpath>  
+			<classpath refid="classpath"/>    
 		</groovyc>
 		<copy todir="${grails.build}">
 			<fileset dir="${grails.src.commons}" excludes="**/*.java" />
