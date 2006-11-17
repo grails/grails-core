@@ -98,11 +98,15 @@
                 get found, obviously -->
             <tarfileset dir="${archive.dir}">
                 <exclude name="${grails.release.base.dir.name}/bin/grails"/>
+                <exclude name="${grails.release.base.dir.name}/bin/grails-0.4"/>            	
+                <exclude name="${grails.release.base.dir.name}/bin/startGrails"/>            	            	
                 <exclude name="${grails.release.base.dir.name}/ant/bin/ant"/>
             </tarfileset>
             <tarfileset dir="${archive.dir}" mode="755">
                 <include name="${grails.release.base.dir.name}/bin/grails"/>
                 <include name="${grails.release.base.dir.name}/ant/bin/ant"/>
+                <include name="${grails.release.base.dir.name}/bin/grails-0.4"/>            	
+                <include name="${grails.release.base.dir.name}/bin/startGrails"/>            	            	            	
             </tarfileset>
 		</tar>
     </target>
