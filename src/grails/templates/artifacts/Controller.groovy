@@ -1,4 +1,4 @@
-class @controller.name@Controller {
+class @artifact.name@Controller {
 
 	def index = { }
 }

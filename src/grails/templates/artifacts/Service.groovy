@@ -1,4 +1,4 @@
-class @service.name@Service {
+class @artifact.name@Service {
 	
 	boolean transactional = true
 	

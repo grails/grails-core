@@ -1,4 +1,4 @@
-class @job.class.name@Job {
+class @artifact.name@Job {
 	def timeout = 1000
 
 	def execute() {	

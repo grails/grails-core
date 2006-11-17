@@ -1,3 +1,3 @@
-class @taglib.name@TagLib {
+class @artifact.name@TagLib {
 
 }

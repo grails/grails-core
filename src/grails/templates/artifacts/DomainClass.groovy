@@ -1,2 +1,2 @@
-class @domain.class.name@ { 
+class @artifact.name@ { 
 }	
