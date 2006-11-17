@@ -383,7 +383,21 @@ public class GrailsClassUtils {
             propertyName = propertyName.replaceAll("\\s", "");
         }
         return propertyName;
-    }
+    }  
+       
+    /**
+     * Returns the class name representation of the given name
+     *
+     * @param name The name to convert
+     * @return The property name representation
+     */
+	public static String getClassNameRepresentation(String name) {
+        String className = name.substring(0,1).toUpperCase(Locale.ENGLISH) + name.substring(1);
+        if(className.indexOf(' ') > -1) {
+            className = className.replaceAll("\\s", "");
+        }
+        return className;		
+	}
     /**
      * Shorter version of getPropertyNameRepresentation
      * @param name The name to convert
@@ -413,7 +427,10 @@ public class GrailsClassUtils {
     	return getScriptName(clazz.getName());
     }
     
-    public static String getScriptName(String name) {
+    public static String getScriptName(String name) {  
+		if(name.endsWith(".groovy")) {
+			name = name.substring(0, name.length()-7);
+		}
     	String naturalName = getNaturalName(getShortName(name));
     	return naturalName.replaceAll("\\s", "-").toLowerCase();    	
     }

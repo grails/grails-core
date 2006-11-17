@@ -2,7 +2,7 @@ package org.codehaus.groovy.grails.web.servlet.filter;
 class GrailsResourceCopier implements ResourceCopier {
 
     String basedir = "."
-    String destdir = "./tmp/war"
+    String destdir = "./web-app"
 
 
 	public void cleanControllers() {
@@ -22,11 +22,6 @@ class GrailsResourceCopier implements ResourceCopier {
         if(new File("${basedir}/grails-app").exists()) {
             ant.copy(todir:"${destdir}/WEB-INF/grails-app",failonerror:false) {
                 fileset(dir:"${basedir}/grails-app",includes:"**")
-            }
-        }
-        if(new File("${basedir}/web-app").exists()) {
-            ant.copy(todir:"${destdir}",failonerror:false) {
-                fileset(dir:"${basedir}/web-app",includes:"**",excludes:"${basedir}/web-app/WEB-INF")
             }
         }
     }

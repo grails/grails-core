@@ -15,6 +15,9 @@
  */ 
 package org.codehaus.groovy.grails.commons;
 
+import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.injection.GrailsInjectionOperation;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
@@ -28,6 +31,7 @@ import org.springframework.core.io.Resource;
  */
 public class GrailsApplicationFactoryBean implements FactoryBean, InitializingBean {
 	
+	private static Log LOG = LogFactory.getLog(GrailsApplicationFactoryBean.class);
 	private Resource[] groovyFiles = null;
 	private GrailsInjectionOperation injectionOperation = null;
 	private GrailsApplication grailsApplication = null;
@@ -53,6 +57,9 @@ public class GrailsApplicationFactoryBean implements FactoryBean, InitializingBe
 		if (this.groovyFiles == null || groovyFiles.length == 0) {
 			throw new IllegalStateException("Groovy files are not defined!");
 		}
+		if(LOG.isDebugEnabled()) {
+			LOG.debug("Loaded Groovy resources: " + ArrayUtils.toString(groovyFiles));
+		}		
 		if(injectionOperation != null) {
 			this.grailsApplication = new DefaultGrailsApplication(this.groovyFiles,injectionOperation);
 		}

@@ -146,9 +146,9 @@ public class GrailsReloadServletFilter extends OncePerRequestFilter {
              LOG.error("Error loading resource copier. Save/reload disabled: " + e.getMessage(), e);
           }
         }
-        if(copyScript != null) {
+        /*if(copyScript != null) {
             copyScript.copyGrailsApp();
-        }
+        } */
 
         GrailsResourceHolder resourceHolder = (GrailsResourceHolder)context.getBean(GrailsResourceHolder.APPLICATION_CONTEXT_ID);
         Resource[] resources = resourceHolder.getResources();
