@@ -17,11 +17,11 @@ package org.codehaus.groovy.grails.commons;
 
 import groovy.lang.Closure;
 import groovy.lang.GroovyObject;
-import groovy.lang.MissingPropertyException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.WordUtils;
 import org.codehaus.groovy.grails.scaffolding.DefaultGrailsScaffolder;
+import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 
 import java.beans.PropertyDescriptor;
 import java.util.*;
@@ -199,12 +199,9 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass
         this.scaffolding = scaffolding;
     }
 
-	public boolean isInterceptedBefore(GroovyObject controller, String action) {		
-		try {
-			return isIntercepted(controller.getProperty(BEFORE_INTERCEPTOR),action);
-		} catch (MissingPropertyException mpe) {
-			return false;
-		}
+	public boolean isInterceptedBefore(GroovyObject controller, String action) {
+		final Map controllerProperties = DefaultGroovyMethods.getProperties(controller);
+		return isIntercepted(controllerProperties.get(BEFORE_INTERCEPTOR),action);
 	}
 
 	private boolean isIntercepted(Object bip, String action) {
@@ -241,47 +238,36 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass
 
 	public boolean isHttpMethodAllowedForAction(GroovyObject controller, String httpMethod, String actionName) {
 		boolean isAllowed = true;
-		try {
-			Object methodRestrictionsProperty = controller.getProperty(ALLOWED_HTTP_METHODS_PROPERTY);
-			if(methodRestrictionsProperty instanceof Map) {
-				Map map = (Map)methodRestrictionsProperty;
-				if(map.containsKey(actionName)) {
-					Object value = map.get(actionName);
-					if(value instanceof List) {
-						List listOfMethods = (List) value;
-						isAllowed = listOfMethods.contains(httpMethod);
-					} else if(value instanceof String) {
-						isAllowed = value.equals(httpMethod);
-					}
+		final Map controllerProperties = DefaultGroovyMethods.getProperties(controller);
+		Object methodRestrictionsProperty = controllerProperties.get(ALLOWED_HTTP_METHODS_PROPERTY);
+		if(methodRestrictionsProperty instanceof Map) {
+			Map map = (Map)methodRestrictionsProperty;
+			if(map.containsKey(actionName)) {
+				Object value = map.get(actionName);
+				if(value instanceof List) {
+					List listOfMethods = (List) value;
+					isAllowed = listOfMethods.contains(httpMethod);
+				} else if(value instanceof String) {
+					isAllowed = value.equals(httpMethod);
 				}
 			}
-		} catch (MissingPropertyException mpe) {
 		}
 		return isAllowed;
 	}
 
 	public boolean isInterceptedAfter(GroovyObject controller, String action) {
-		try {
-			return isIntercepted(controller.getProperty(AFTER_INTERCEPTOR),action);
-		} catch (MissingPropertyException mpe) {
-			return false;
-		}
+		final Map controllerProperties = DefaultGroovyMethods.getProperties(controller);
+		return isIntercepted(controllerProperties.get(AFTER_INTERCEPTOR),action);
 	}
 
 	public Closure getBeforeInterceptor(GroovyObject controller) {
-		try {
-			return getInterceptor(controller.getProperty(BEFORE_INTERCEPTOR));
-		} catch (MissingPropertyException mpe) {
-			return null;
-		}
+		final Map controllerProperties = DefaultGroovyMethods.getProperties(controller);
+		return getInterceptor(controllerProperties.get(BEFORE_INTERCEPTOR));
 	}
 
 	public Closure getAfterInterceptor(GroovyObject controller) {
-		try {
-			return getInterceptor(controller.getProperty(AFTER_INTERCEPTOR));
-		} catch (MissingPropertyException mpe) {
-			return null;
-		}
+		final Map controllerProperties = DefaultGroovyMethods.getProperties(controller);
+		return getInterceptor(controllerProperties.get(AFTER_INTERCEPTOR));
 	}
 
 	private Closure getInterceptor(Object ip) {
