@@ -15,7 +15,7 @@
  */
 
 /**
- * Gant script that runs the Grails unit tests
+ * Gant script that loads the Grails interactive shell
  * 
  * @author Graeme Rocher
  *
@@ -31,27 +31,16 @@ grailsHome = Ant.antProject.properties."env.GRAILS_HOME"
 includeTargets << new File ( "${grailsHome}/scripts/Init.groovy" )
 includeTargets << new File ( "${grailsHome}/scripts/Package.groovy" )
 
-task ('default': "Run a Grails applications unit tests") {      
-	depends( classpath )
-	grailsEnv = "test"
-	packageApp()
-	testApp()
+task ('default': "Generates a CRUD controller for a specified domain class") {
+	depends( packageApp )
+	typeName = "Domain Class"
+	promptForName()
+	generateAll()
 }            
 
-task(testApp:"The test app implementation task") {               
-	testDir = "${basedir}/grails-app/tests"
-	Ant.sequential {
-		mkdir(dir:testDir)
-		move(todir:testDir) {
-			fileset(dir:"${basedir}/grails-tests", includes:"**")
-		}
-		java(classpathref:"grails.classpath",classname:"grails.util.RunTests", failonerror:true, fork:true) {
-			jvmarg(value:"-Dgrails.env=${grailsEnv}")
-		}                                                      
-		move(todir:"${basedir}/grails-tests") {
-			fileset(dir:testDir, includes:"**")
-		}
-
-		
-	}
+task(generateAll:"The implementation task") { 
+	Ant.java(classname:"grails.util.GenerateUtils", failonerror:true) 	 {
+		arg(value:"controller")       
+		arg(value:args)
+	}   	
 }
