@@ -16,13 +16,13 @@ package org.codehaus.groovy.grails.web.taglib.jsp;
 
 import groovy.lang.Closure;
 import groovy.lang.GroovyObject;
-import groovy.lang.MissingPropertyException;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsTagLibClass;
 import org.codehaus.groovy.grails.web.metaclass.TagLibDynamicMethods;
 import org.codehaus.groovy.grails.web.servlet.DefaultGrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
+import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.context.ApplicationContext;
@@ -170,9 +170,10 @@ public class JspInvokeGrailsTagLibTag extends BodyTagSupport implements DynamicA
             out = new PrintWriter(sw);
             tagLib.setProperty( TagLibDynamicMethods.OUT_PROPERTY, out );
             Object tagLibProp;
-            try {
-                tagLibProp = tagLib.getProperty(getTagName());
-            } catch (MissingPropertyException mpe) {
+            final Map tagLibProperties = DefaultGroovyMethods.getProperties(tagLib);
+            if(tagLibProperties.containsKey(getTagName())) {
+                tagLibProp = tagLibProperties.get(getTagName());
+            } else {
                 throw new GrailsTagException("Tag ["+getTagName()+"] does not exist in tag library ["+tagLib.getClass().getName()+"]");
             }
             if(tagLibProp instanceof Closure) {

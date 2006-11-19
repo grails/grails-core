@@ -15,19 +15,17 @@
  */ 
 package org.codehaus.groovy.grails.commons;
 
+import groovy.lang.GroovyObject;
+
+import java.lang.reflect.InvocationTargetException;
+import java.util.Map;
+
 import org.apache.commons.lang.ClassUtils;
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.grails.exceptions.NewInstanceCreationException;
+import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
-
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Modifier;
-
-import groovy.lang.GroovyObject;
-import groovy.lang.MetaClass;
-import groovy.lang.MissingPropertyException;
 
 /**
  * Abstract base class for Grails types that provides common functionality for
@@ -201,12 +199,10 @@ public abstract class AbstractGrailsClass implements GrailsClass {
             Object inst = ref.getWrappedInstance();
             if (inst instanceof GroovyObject)
             {
-            	
-                try {
-					value = ((GroovyObject)inst).getProperty(name);
-				} catch (MissingPropertyException e) {
-					// ignore
-				}
+            	final Map properties = DefaultGroovyMethods.getProperties(inst);
+            	if(properties.containsKey(name)) {
+            		value = properties.get(name);
+            	}
             }
         }
 
