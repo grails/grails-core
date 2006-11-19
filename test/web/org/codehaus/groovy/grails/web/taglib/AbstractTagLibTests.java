@@ -6,7 +6,6 @@ import groovy.lang.GroovyObject;
 import java.beans.IntrospectionException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.Locale;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;

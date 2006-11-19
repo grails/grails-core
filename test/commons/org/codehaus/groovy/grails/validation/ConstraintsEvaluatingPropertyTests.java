@@ -9,13 +9,7 @@ import junit.framework.TestCase;
 
 import org.codehaus.groovy.grails.validation.metaclass.ConstraintsEvaluatingDynamicProperty;
 import org.codehaus.groovy.grails.orm.hibernate.validation.ConstrainedPersistentProperty;
-import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
 import org.codehaus.groovy.grails.commons.DefaultGrailsDomainClass;
-import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator;
-import org.codehaus.groovy.grails.support.MockApplicationContext;
-import org.springframework.context.ApplicationContext;
-import org.springframework.mock.web.MockServletContext;
 
 public class ConstraintsEvaluatingPropertyTests extends TestCase {
 

@@ -17,11 +17,7 @@ package org.codehaus.groovy.grails.commons;
 import groovy.lang.GroovyClassLoader;
 import junit.framework.TestCase;
 
-import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletRequest;
-import java.util.Collection;
-import java.util.ArrayList;
-import java.math.BigInteger;
 
 /**
  * @author Graeme Rocher

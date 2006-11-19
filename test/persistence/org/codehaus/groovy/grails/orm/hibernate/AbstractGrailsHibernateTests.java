@@ -20,18 +20,15 @@ import groovy.lang.GroovyClassLoader;
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator;
-import org.codehaus.groovy.grails.orm.hibernate.cfg.DefaultGrailsDomainConfiguration;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsDomainConfigurationUtil;
 import org.codehaus.groovy.grails.support.MockApplicationContext;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.web.context.WebApplicationContext;
-import org.springframework.mock.web.MockServletContext;
 import org.springframework.orm.hibernate3.SessionHolder;
 import org.springframework.orm.hibernate3.SessionFactoryUtils;
 import org.hibernate.SessionFactory;
 import org.hibernate.classic.Session;
 
-import java.util.Properties;
 
 /**
  * An abstract test harness that should be extended when testing Grails domain classes against Hibernate

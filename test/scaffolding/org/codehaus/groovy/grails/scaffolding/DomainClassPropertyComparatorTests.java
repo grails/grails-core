@@ -19,7 +19,6 @@ import junit.framework.TestCase;
 import org.codehaus.groovy.grails.commons.DefaultGrailsDomainClass;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
-import org.apache.commons.lang.ArrayUtils;
 
 import java.util.Arrays;
 

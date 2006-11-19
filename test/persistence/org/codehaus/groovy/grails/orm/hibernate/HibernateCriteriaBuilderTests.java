@@ -19,8 +19,6 @@ import org.springframework.orm.hibernate3.SessionHolder;
 
 import java.util.Properties;
 import java.util.List;
-import java.util.Set;
-import java.util.HashSet;
 
 public class HibernateCriteriaBuilderTests extends
         AbstractDependencyInjectionSpringContextTests {

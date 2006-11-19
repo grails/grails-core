@@ -9,7 +9,6 @@ import org.codehaus.groovy.grails.orm.hibernate.cfg.DefaultGrailsDomainConfigura
 import org.codehaus.groovy.grails.orm.hibernate.exceptions.GrailsQueryException;
 import org.codehaus.groovy.grails.orm.hibernate.metaclass.FindByPersistentMethod;
 import org.codehaus.groovy.grails.orm.hibernate.validation.GrailsDomainClassValidator;
-import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.springframework.orm.hibernate3.SessionHolder;
 import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
