@@ -15,12 +15,12 @@
  */ 
 package grails.util;
 
-import org.codehaus.groovy.runtime.InvokerHelper;
-
-import groovy.lang.MissingPropertyException;
 import groovy.util.Proxy;
 
-import java.util.Collection;
+import java.util.Map;
+
+import org.codehaus.groovy.runtime.DefaultGroovyMethods;
+import org.codehaus.groovy.runtime.InvokerHelper;
 
 /**
  * Extends the Groovy Proxy implementation and adds proxying of property getters/setters
@@ -33,19 +33,18 @@ import java.util.Collection;
 public class ExtendProxy extends Proxy {
 
     public Object getProperty(String property) {
-        try {
-            return super.getProperty(property);
+    	Object propertyValue = DefaultGroovyMethods.getProperties(this).get(property);
+    	if(propertyValue == null) {
+    		propertyValue= InvokerHelper.getMetaClass(getAdaptee()).getProperty(getAdaptee(),property);
         }
-        catch(MissingPropertyException mpe) {
-            return InvokerHelper.getMetaClass(getAdaptee()).getProperty(getAdaptee(),property);
-        }
+        return propertyValue;
     }
 
     public void setProperty(String property, Object newValue) {
-        try {
+    	final Map properties = DefaultGroovyMethods.getProperties(this);
+    	if(properties.containsKey(property)) {
             super.setProperty(property,newValue);
-        }
-        catch(MissingPropertyException mpe) {
+        } else {
             InvokerHelper.getMetaClass(getAdaptee()).setProperty(getAdaptee(),property,newValue);
         }
     }
