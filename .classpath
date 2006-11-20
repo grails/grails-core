@@ -12,7 +12,6 @@
 	<classpathentry kind="src" path="test/groovy"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="var" path="GRAILS_HOME/lib/commons-cli-1.0.jar"/>
-	<classpathentry kind="var" path="GRAILS_HOME/lib/commons-collections-3.0.jar"/>
 	<classpathentry kind="var" path="GRAILS_HOME/lib/commons-dbcp-1.2.1.jar"/>
 	<classpathentry kind="var" path="GRAILS_HOME/lib/commons-pool-1.2.jar"/>
 	<classpathentry kind="var" path="GRAILS_HOME/lib/dom4j-1.6.1.jar"/>
@@ -41,16 +40,22 @@
 	<classpathentry kind="var" path="GRAILS_HOME/lib/xercesImpl-2.5.0.jar"/>
 	<classpathentry kind="var" path="GRAILS_HOME/lib/bsf-2.3.0.jar"/>
 	<classpathentry kind="var" path="GRAILS_HOME/lib/spring-1.2.8.jar"/>
-	<classpathentry kind="var" path="GRAILS_HOME/lib/junit-3.8.jar"/>
 	<classpathentry kind="var" path="GRAILS_HOME/lib/commons-logging-1.1.jar"/>
 	<classpathentry kind="var" path="GRAILS_HOME/lib/servletapi-2.4.jar"/>
 	<classpathentry kind="var" path="GRAILS_HOME/lib/jsp-api-2.0.jar"/>
 	<classpathentry kind="var" path="GRAILS_HOME/lib/commons-validator-1.3.0.jar"/>
 	<classpathentry kind="var" path="GRAILS_HOME/lib/cglib-nodep-2.1_3.jar"/>
-	<classpathentry kind="var" path="GRAILS_HOME/lib/jaxen-1.1-beta-9.jar"/>
 	<classpathentry kind="var" path="GRAILS_HOME/lib/commons-lang-2.1.jar"/>
 	<classpathentry kind="var" path="GRAILS_HOME/lib/oro-2.0.8.jar"/>
 	<classpathentry kind="var" path="GRAILS_HOME/lib/hsqldb-1.8.0.5.jar"/>
 	<classpathentry kind="var" path="GRAILS_HOME/lib/commons-fileupload-1.1.1.jar"/>
+	<classpathentry kind="var" path="GRAILS_HOME/lib/gant-0.2.1-SNAPSHOT.jar"/>
+	<classpathentry kind="var" path="GRAILS_HOME/lib/commons-collections-3.2.jar"/>
+	<classpathentry kind="var" path="GRAILS_HOME/lib/jaxen-1.1-beta-11.jar"/>
+	<classpathentry kind="var" path="GRAILS_HOME/lib/junit-3.8.1.jar"/>
+	<classpathentry kind="var" path="GRAILS_HOME/lib/ant-nodeps.jar"/>
+	<classpathentry kind="var" path="GRAILS_HOME/lib/jasper-runtime.jar"/>
+	<classpathentry kind="var" path="GRAILS_HOME/lib/jasper-compiler.jar"/>
+	<classpathentry exported="true" kind="lib" path="/Developer/eclipse/plugins/org.junit_3.8.1/junit.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>
