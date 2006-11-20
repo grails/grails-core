@@ -18,6 +18,7 @@ package grails.util;
 import java.lang.reflect.Modifier;
 
 import junit.framework.TestCase;
+import junit.framework.TestResult;
 import junit.framework.TestSuite;
 import junit.textui.TestRunner;
 
@@ -37,7 +38,11 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
  * 
  * 
  * @author Steven Devijver
- * @since Aug 8, 2005
+ * @author Graeme Rocher
+ * 
+ * @since 0.1
+ * 
+ * Created: Aug 8, 2005
  */
 public class RunTests {
 
@@ -65,7 +70,11 @@ public class RunTests {
 			try {
 				Session session = SessionFactoryUtils.getSession(sessionFactory, true);
 		        TransactionSynchronizationManager.bindResource(sessionFactory, new SessionHolder(session)); 				
-				TestRunner.run(s);
+				TestResult r = TestRunner.run(s);
+				
+				if(r.errorCount() > 0 || r.failureCount() > 0) {
+					System.err.println("Tests failed!");
+				}				
 			}
 			finally {
 		        SessionHolder sessionHolder = (SessionHolder) TransactionSynchronizationManager.unbindResource(sessionFactory);

@@ -48,20 +48,25 @@ public class GrailsResourceUtils {
     Resources are resolved against the platform specific path and must therefore obey the
     specific File.separator.
     */ 
-    public static Pattern GRAILS_RESOURCE_PATTERN_FIRST_MATCH;
-    public static Pattern GRAILS_RESOURCE_PATTERN_SECOND_MATCH;
+    public static final Pattern GRAILS_RESOURCE_PATTERN_FIRST_MATCH;
+    public static final Pattern GRAILS_RESOURCE_PATTERN_SECOND_MATCH;
+    public static final Pattern GRAILS_RESOURCE_PATTERN_THIRD_MATCH;
+    public static final Pattern GRAILS_RESOURCE_PATTERN_FOURTH_MATCH;
     static {
         String fs = File.separator;
         if (fs.equals("\\")) fs = "\\\\"; // backslashes need escaping in regexes
             
-        GRAILS_RESOURCE_PATTERN_FIRST_MATCH = Pattern.compile(createGrailsResourcePattern(fs));
+        GRAILS_RESOURCE_PATTERN_FIRST_MATCH = Pattern.compile(createGrailsResourcePattern(fs, "grails-app"+fs +"\\w+"));
+        GRAILS_RESOURCE_PATTERN_THIRD_MATCH = Pattern.compile(createGrailsResourcePattern(fs, "grails-tests"));
         fs = "/";
-        GRAILS_RESOURCE_PATTERN_SECOND_MATCH = Pattern.compile(createGrailsResourcePattern(fs));
+        GRAILS_RESOURCE_PATTERN_SECOND_MATCH = Pattern.compile(createGrailsResourcePattern(fs, "grails-app"+fs +"\\w+"));
+        GRAILS_RESOURCE_PATTERN_FOURTH_MATCH = Pattern.compile(createGrailsResourcePattern(fs, "grails-tests"));
     }
 
+    public static final Pattern[] patterns = new Pattern[]{ GRAILS_RESOURCE_PATTERN_FIRST_MATCH, GRAILS_RESOURCE_PATTERN_SECOND_MATCH, GRAILS_RESOURCE_PATTERN_THIRD_MATCH, GRAILS_RESOURCE_PATTERN_FOURTH_MATCH};
 
-	private static String createGrailsResourcePattern(String separator) {
-		return ".+"+separator +"grails-app"+separator +"\\w+"+separator +"(.+)\\.groovy";
+	private static String createGrailsResourcePattern(String separator, String base) {
+		return ".+"+separator +base+separator +"(.+)\\.groovy";
 	}
 
 
@@ -98,16 +103,12 @@ public class GrailsResourceUtils {
 	 * @return The class name or null if it doesn't exist
 	 */
 	public static String getClassName(String path) {
-		Matcher m = GrailsResourceUtils.GRAILS_RESOURCE_PATTERN_FIRST_MATCH.matcher(path);
-        if(m.find()) {
-            return m.group(1);
-        }
-        else {
-        	m = GRAILS_RESOURCE_PATTERN_SECOND_MATCH.matcher(path);
-        	if(m.find()) {
-        		return m.group(1);
-        	}
-        }
+		for (int i = 0; i < patterns.length; i++) {
+			Matcher m = patterns[i].matcher(path);
+	        if(m.find()) {
+	            return m.group(1);
+	        }			
+		}
         return null;
 	}	
 
@@ -118,11 +119,12 @@ public class GrailsResourceUtils {
 	 * @return True if it is a Grails path
 	 */
 	public static boolean isGrailsPath(String path) {
-		Matcher m = GrailsResourceUtils.GRAILS_RESOURCE_PATTERN_FIRST_MATCH.matcher(path);
-        boolean matched = m.find();
-        if(!matched) {
-        	matched = GRAILS_RESOURCE_PATTERN_SECOND_MATCH.matcher(path).find();
-        }
-        return matched;
+		for (int i = 0; i < patterns.length; i++) {
+			Matcher m = patterns[i].matcher(path);
+	        if(m.find()) {
+	            return true;
+	        }			
+		}
+		return false;
     }
 }

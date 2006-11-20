@@ -42,16 +42,7 @@ task(testApp:"The test app implementation task") {
 	testDir = "${basedir}/grails-app/tests"
 	Ant.sequential {
 		mkdir(dir:testDir)
-		move(todir:testDir) {
-			fileset(dir:"${basedir}/grails-tests", includes:"**")
-		}
-		java(classpathref:"grails.classpath",classname:"grails.util.RunTests", failonerror:true, fork:true) {
-			jvmarg(value:"-Dgrails.env=${grailsEnv}")
-		}                                                      
-		move(todir:"${basedir}/grails-tests") {
-			fileset(dir:testDir, includes:"**")
-		}
-
-		
+		java(classpathref:"grails.classpath",classname:"grails.util.RunTests",
+			     errorproperty:"grails.test.failure") 							
 	}
 }

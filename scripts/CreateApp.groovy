@@ -24,7 +24,7 @@
 
 appName = ""
 
-Ant.property(environment:"env")                             
+Ant.property(environment:"env")   
 grailsHome = Ant.antProject.properties."env.GRAILS_HOME"    
 
 includeTargets << new File ( "${grailsHome}/scripts/Clean.groovy" )
@@ -37,7 +37,8 @@ task ( "default" : "Creates a Grails project, including the necessary directory 
 		fileset(dir:"${grailsHome}/src/grails/templates/ide-support/eclipse",
 				includes:"*.*",
 				excludes:".launch")
-	}                             
+	}   
+	Ant.copy(todir:"${basedir}", file:"${grailsHome}/src/grails/build.xml") 
 	Ant.copy(file:"${grailsHome}/src/grails/templates/ide-support/eclipse/.launch", 
 			tofile:"${basedir}/${appName}.launch")
 			
