@@ -17,7 +17,7 @@
 package org.codehaus.groovy.grails.cli;
         
 import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU  
-import org.codehaus.groovy.gant.infrastructure.Gant
+import gant.Gant
 /**
  * Class that handles Grails command line interface for running scripts
  * 
