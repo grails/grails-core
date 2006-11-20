@@ -28,7 +28,8 @@ import org.mortbay.http.*
 
 
 Ant.property(environment:"env")                             
-grailsHome = Ant.antProject.properties."env.GRAILS_HOME"  
+grailsHome = Ant.antProject.properties."env.GRAILS_HOME" 
+grailsServer = null
 
 includeTargets << new File ( "${grailsHome}/scripts/Init.groovy" ) 
 includeTargets << new File ( "${grailsHome}/scripts/Package.groovy" )  
@@ -74,5 +75,11 @@ task( watchContext : "Watches the Jetty web.xml for changes and reloads of neces
 	}	
 }
 task( stopServer : "Stops the Grails Jetty server") {
-	grailsServer.stop()
+	if(grailsServer) {
+		grailsServer.stop()		
+	}	
+	else {
+		 def svr = HttpServer.httpServers.iterator().next()
+		 svr.stop()
+	}
 }
