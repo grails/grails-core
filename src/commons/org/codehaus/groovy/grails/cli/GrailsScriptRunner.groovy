@@ -142,18 +142,4 @@ Grails home is set to: ${grailsHome}
 		}
 	}   
 	
-	private static processArguments(args) {  
-		def lastMatch = null
-		"-Dgrails.env=blah -Dservlet.version=1.4 help".eachMatch(/-D(.+?)=(.+?)\s/) {
-			System.setProperty(it[1], it[2])
-			lastMatch=it[0]
-		}                 
-		if(lastMatch != null) {
-			println lastMatch
-			def i = args.indexOf(lastMatch)    
-			println "index = $i"
-			args = args.substring( i, args.size())
-		}                                                         
-		return args
-	}
 }

@@ -103,4 +103,19 @@ public interface BeanConfiguration {
      * @param beanName The bean name
      */
     void setName(String beanName);
+
+    /**
+     * Returns true if the bean config has the name property set
+     * @param name The name of the property
+     * @return True if it does have a property with the given name
+     */
+	boolean hasProperty(String name);
+
+	/**
+	 * Returns the value of the given property or throws a MissingPropertyException
+	 * 
+	 * @param name The name of the property
+	 * @return The value of the property
+	 */
+	Object getPropertyValue(String name);
 }

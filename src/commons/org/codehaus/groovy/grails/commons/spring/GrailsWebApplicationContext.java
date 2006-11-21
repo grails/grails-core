@@ -15,6 +15,7 @@
  */ 
 package org.codehaus.groovy.grails.commons.spring;
 
+import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 
 import org.springframework.beans.BeansException;
@@ -46,6 +47,7 @@ public class GrailsWebApplicationContext extends StaticApplicationContext
 	private ServletContext servletContext;
 	private String namespace;
 	private ThemeSource themeSource;
+	private ServletConfig servletConfig;
 
 	public GrailsWebApplicationContext() throws BeansException {
 		super();
@@ -116,5 +118,9 @@ public class GrailsWebApplicationContext extends StaticApplicationContext
 
 	public Theme getTheme(String themeName) {
 		return this.themeSource.getTheme(themeName);
+	}
+
+	public void setServletConfig(ServletConfig servletConfig) {
+		this.servletConfig = servletConfig;
 	}
 }

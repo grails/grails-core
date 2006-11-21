@@ -39,7 +39,6 @@
 	<classpathentry kind="var" path="GRAILS_HOME/lib/antlr-2.7.6rc1.jar"/>
 	<classpathentry kind="var" path="GRAILS_HOME/lib/xercesImpl-2.5.0.jar"/>
 	<classpathentry kind="var" path="GRAILS_HOME/lib/bsf-2.3.0.jar"/>
-	<classpathentry kind="var" path="GRAILS_HOME/lib/spring-1.2.8.jar"/>
 	<classpathentry kind="var" path="GRAILS_HOME/lib/commons-logging-1.1.jar"/>
 	<classpathentry kind="var" path="GRAILS_HOME/lib/servletapi-2.4.jar"/>
 	<classpathentry kind="var" path="GRAILS_HOME/lib/jsp-api-2.0.jar"/>
@@ -49,7 +48,6 @@
 	<classpathentry kind="var" path="GRAILS_HOME/lib/oro-2.0.8.jar"/>
 	<classpathentry kind="var" path="GRAILS_HOME/lib/hsqldb-1.8.0.5.jar"/>
 	<classpathentry kind="var" path="GRAILS_HOME/lib/commons-fileupload-1.1.1.jar"/>
-	<classpathentry kind="var" path="GRAILS_HOME/lib/gant-0.2.1-SNAPSHOT.jar"/>
 	<classpathentry kind="var" path="GRAILS_HOME/lib/commons-collections-3.2.jar"/>
 	<classpathentry kind="var" path="GRAILS_HOME/lib/jaxen-1.1-beta-11.jar"/>
 	<classpathentry kind="var" path="GRAILS_HOME/lib/junit-3.8.1.jar"/>
@@ -57,5 +55,7 @@
 	<classpathentry kind="var" path="GRAILS_HOME/lib/jasper-runtime.jar"/>
 	<classpathentry kind="var" path="GRAILS_HOME/lib/jasper-compiler.jar"/>
 	<classpathentry exported="true" kind="lib" path="/Developer/eclipse/plugins/org.junit_3.8.1/junit.jar"/>
+	<classpathentry kind="var" path="GRAILS_HOME/lib/gant-0.2.2-SNAPSHOT.jar"/>
+	<classpathentry kind="var" path="GRAILS_HOME/lib/spring-2.0.jar" sourcepath="/SPRING2_HOME/src"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

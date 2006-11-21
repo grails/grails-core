@@ -48,6 +48,7 @@ public class DefaultRuntimeSpringConfiguration implements
 	private GrailsWebApplicationContext context;
 	private List beanConfigs = new ArrayList();
 	private Map beanDefinitions = new HashMap();
+	private List beanNames = new ArrayList();
 
 	public DefaultRuntimeSpringConfiguration() {
 		super();
@@ -62,12 +63,14 @@ public class DefaultRuntimeSpringConfiguration implements
 	public BeanConfiguration addSingletonBean(String name, Class clazz) {
 		BeanConfiguration bc = new DefaultBeanConfiguration(name,clazz);
 		beanConfigs.add(bc);
+		beanNames.add(name);
 		return bc;
 	}
 
 	public BeanConfiguration addPrototypeBean(String name, Class clazz) {
 		BeanConfiguration bc = new DefaultBeanConfiguration(name,clazz,true);
 		beanConfigs.add(bc);
+		beanNames.add(name);
 		return bc;
 	}
 
@@ -113,6 +116,7 @@ public class DefaultRuntimeSpringConfiguration implements
 	public BeanConfiguration addSingletonBean(String name) {
 		BeanConfiguration bc = new DefaultBeanConfiguration(name);
 		beanConfigs.add(bc);
+		beanNames.add(name);
 		return bc;
 	}
 
@@ -123,12 +127,14 @@ public class DefaultRuntimeSpringConfiguration implements
 	public BeanConfiguration addSingletonBean(String name, Class clazz, Collection args) {
 		BeanConfiguration bc = new DefaultBeanConfiguration(name,clazz,args);
 		beanConfigs.add(bc);
+		beanNames.add(name);
 		return bc;
 	}
 
 	public BeanConfiguration addPrototypeBean(String name) {
 		BeanConfiguration bc = new DefaultBeanConfiguration(name,true);
 		beanConfigs.add(bc);
+		beanNames.add(name);
 		return bc;
 	}
 
@@ -151,10 +157,16 @@ public class DefaultRuntimeSpringConfiguration implements
     public void addBeanConfiguration(String beanName, BeanConfiguration beanConfiguration) {
         beanConfiguration.setName(beanName);
         beanConfigs.add(beanConfiguration);
+        beanNames.add(beanName);
     }
 
 	public void addBeanDefinition(String name, BeanDefinition bd) {
 		beanDefinitions.put(name,bd);
+		beanNames.add(name);
+	}
+
+	public boolean containsBean(String name) {
+		return beanNames .contains(name);
 	}
 
 }

@@ -14,34 +14,41 @@
  */
 package org.codehaus.groovy.grails.web.binding;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.commons.metaclass.CreateDynamicMethod;
-import org.codehaus.groovy.runtime.InvokerHelper;
-import org.springframework.beans.BeanWrapper;
-import org.springframework.beans.InvalidPropertyException;
-import org.springframework.beans.MutablePropertyValues;
-import org.springframework.beans.PropertyValue;
-import org.springframework.beans.propertyeditors.CustomDateEditor;
-import org.springframework.beans.propertyeditors.LocaleEditor;
-import org.springframework.web.bind.ServletRequestDataBinder;
-import org.springframework.web.bind.ServletRequestParameterPropertyValues;
-import org.springframework.web.multipart.support.ByteArrayMultipartFileEditor;
-import org.springframework.web.multipart.support.StringMultipartFileEditor;
-import org.springframework.web.servlet.support.RequestContextUtils;
-
 import groovy.lang.GroovyObject;
 import groovy.lang.GroovyRuntimeException;
 import groovy.lang.MetaClass;
 import groovy.lang.MissingMethodException;
 
+import java.net.URI;
+import java.text.DateFormat;
+import java.util.Calendar;
+import java.util.Currency;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.Locale;
+import java.util.TimeZone;
+
 import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 
-import java.net.URI;
-import java.text.DateFormat;
-import java.util.*;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.grails.commons.metaclass.CreateDynamicMethod;
+import org.codehaus.groovy.runtime.InvokerHelper;
+import org.springframework.beans.ConfigurablePropertyAccessor;
+import org.springframework.beans.InvalidPropertyException;
+import org.springframework.beans.MutablePropertyValues;
+import org.springframework.beans.PropertyValue;
+import org.springframework.beans.propertyeditors.CustomDateEditor;
+import org.springframework.beans.propertyeditors.LocaleEditor;
+import org.springframework.validation.BeanPropertyBindingResult;
+import org.springframework.web.bind.ServletRequestDataBinder;
+import org.springframework.web.bind.ServletRequestParameterPropertyValues;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
+import org.springframework.web.multipart.support.ByteArrayMultipartFileEditor;
+import org.springframework.web.multipart.support.StringMultipartFileEditor;
+import org.springframework.web.servlet.support.RequestContextUtils;
 
 /**
  * A data binder that handles binding dates that are specified with a "struct"-like syntax in request parameters.
@@ -62,6 +69,7 @@ import java.util.*;
  */
 public class GrailsDataBinder extends ServletRequestDataBinder {
     private static final Log LOG = LogFactory.getLog(GrailsDataBinder.class);
+	private static ConfigurablePropertyAccessor bean;
     /**
      * Create a new GrailsDataBinder instance.
      *
@@ -70,6 +78,8 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
      */
     public GrailsDataBinder(Object target, String objectName) {
         super(target, objectName);
+        
+        bean = ((BeanPropertyBindingResult)super.getBindingResult()).getPropertyAccessor();        
     }
 
     /**
@@ -101,7 +111,9 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
         binder.registerCustomEditor( Locale.class, new LocaleEditor());
         binder.registerCustomEditor( TimeZone.class, new TimeZoneEditor());
         binder.registerCustomEditor( URI.class, new UriEditor());
-        return binder;
+        
+        
+		return binder;
     }
 
     public void bind(ServletRequest request) {
@@ -113,7 +125,12 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
         if(request instanceof HttpServletRequestWrapper) {
             request = ((HttpServletRequestWrapper)request).getRequest();
         }
-        checkMultipartFiles(request, mpvs);
+        
+		if (request instanceof MultipartHttpServletRequest) {
+			MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
+			bindMultipartFiles(multipartRequest.getFileMap(), mpvs);
+		}
+
         super.doBind(mpvs);
     }
 
@@ -128,7 +145,8 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
             PropertyValue pv = pvs[i];
 
             String propertyName = pv.getName();
-            BeanWrapper bean = super.getBeanWrapper();
+            //super.
+            
             if(propertyName.indexOf('.') > -1) {
                 propertyName = propertyName.split("\\.")[0];
             }
@@ -176,10 +194,9 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
             String propertyName = pv.getName();
             int index = propertyName.indexOf(".id");
             if (index > -1) {
-                BeanWrapper bean = super.getBeanWrapper();
                 propertyName = propertyName.substring(0, index);
                 if (bean.isReadableProperty(propertyName) && bean.isWritableProperty(propertyName)) {
-                    Class type = bean.getPropertyDescriptor(propertyName).getPropertyType();
+                    Class type = bean.getPropertyType(propertyName);
 
                     // In order to load the association instance using InvokerHelper below, we need to 
                     // temporarily change this thread's ClassLoader to use the Grails ClassLoader.
@@ -211,7 +228,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
 
             try {
                 String propertyName = pv.getName();
-                Class type = super.getBeanWrapper().getPropertyType(propertyName);
+                Class type = bean.getPropertyType(propertyName);
                 // if its a date check that it hasn't got structured parameters in the request
                 // this is used as an alternative to specifying the date format
                 if(type == Date.class || type == Calendar.class) {

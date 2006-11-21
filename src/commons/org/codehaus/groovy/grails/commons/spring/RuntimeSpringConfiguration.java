@@ -148,4 +148,12 @@ public interface RuntimeSpringConfiguration {
      * @param bd The BeanDefinition instance
      */
 	public void addBeanDefinition(String name, BeanDefinition bd);
+	
+	/**
+	 * Returns whether the runtime spring config contains the specified bean
+	 * 
+	 * @param name The bean name
+	 * @return True if it does
+	 */
+	public boolean containsBean(String name);
 }

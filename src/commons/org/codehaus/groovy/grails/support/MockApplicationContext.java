@@ -10,6 +10,8 @@ import java.util.Map;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
+import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.MessageSourceResolvable;
@@ -136,6 +138,12 @@ public class MockApplicationContext implements ApplicationContext {
 	}
 	public boolean containsLocalBean(String arg0) {
 		throw new UnsupportedOperationException("Method not supported by implementation");
+	}
+	public AutowireCapableBeanFactory getAutowireCapableBeanFactory() throws IllegalStateException {
+		return new DefaultListableBeanFactory();
+	}
+	public ClassLoader getClassLoader() {
+		return getClass().getClassLoader();
 	}
 
 }

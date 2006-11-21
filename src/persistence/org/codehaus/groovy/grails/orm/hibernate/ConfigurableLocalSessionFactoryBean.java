@@ -82,8 +82,7 @@ public class ConfigurableLocalSessionFactoryBean extends
 		this.classLoader = classLoader;
 	}
 	
-	public void afterPropertiesSet() throws IllegalArgumentException,
-			HibernateException, IOException {
+	public void afterPropertiesSet() throws Exception {
 		ClassLoader originalClassLoader = null;
 		if (this.classLoader != null) {
 			originalClassLoader = Thread.currentThread().getContextClassLoader();

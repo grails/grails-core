@@ -41,6 +41,6 @@ public class GrailsUrlHandlerMapping extends SimpleUrlHandlerMapping {
 		if (logger.isDebugEnabled()) {
 			logger.debug("Looking up handler for [" + appPath + "]");
 		}
-		return lookupHandler(appPath);
+		return  lookupHandler(appPath, request);
 	}
 }

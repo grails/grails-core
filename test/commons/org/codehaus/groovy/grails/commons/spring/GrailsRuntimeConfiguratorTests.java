@@ -32,10 +32,10 @@ public class GrailsRuntimeConfiguratorTests extends TestCase {
     public void testConfigure() throws Exception {
         GroovyClassLoader gcl = new GroovyClassLoader();
         Class dc = gcl.parseClass("class Test { Long id; Long version; }");
-        Thread.sleep(1000);
+        
         Class sc = gcl.parseClass("class TestService { boolean transactional = true;\n" +
                                         "def serviceMethod() {'hello'} }");
-        Thread.sleep(1000);
+        
         Class c = gcl.parseClass("class TestController { def list = {} }");
 
         GrailsApplication app = new DefaultGrailsApplication(new Class[]{dc,sc,c}, gcl );
@@ -97,9 +97,7 @@ public class GrailsRuntimeConfiguratorTests extends TestCase {
         assertNotNull(h.getHandler());
         assertEquals(SimpleGrailsController.class,h.getHandler().getClass());
         assertEquals(1,h.getInterceptors().length);
-
-        assertEquals(OpenSessionInViewInterceptor.class, h.getInterceptors()[0].getClass());
-
+        
         ts = (HotSwappableTargetSource)ctx.getBean("TestControllerTargetSource");
         GrailsControllerClass gcc = (GrailsControllerClass)ts.getTarget();
         assertEquals(c,gcc.getClazz());
@@ -111,7 +109,7 @@ public class GrailsRuntimeConfiguratorTests extends TestCase {
     public void testConfigureScaffolding() throws Exception {
         GroovyClassLoader gcl = new GroovyClassLoader();
         Class dc = gcl.parseClass("class Test { Long id; Long version; }");
-        Thread.sleep(1000);
+        
         Class c = gcl.parseClass("class TestController { def scaffold = Test }");
 
         GrailsApplication app = new DefaultGrailsApplication(new Class[]{dc,c}, gcl );
@@ -282,7 +280,7 @@ public class GrailsRuntimeConfiguratorTests extends TestCase {
     public void testAutowireServiceClasses() throws Exception {
         GroovyClassLoader gcl = new GroovyClassLoader();
         Class s1 =  gcl.parseClass("class TestService { def serviceMethod() { 'hello' } }");
-        Thread.sleep(1000);
+        
         Class s2 =  gcl.parseClass("class AnotherService { TestService testService; def anotherMethod() { testService.serviceMethod() } }");
 
         GrailsApplication app = new DefaultGrailsApplication(new Class[]{s1,s2}, gcl );
@@ -315,7 +313,9 @@ public class GrailsRuntimeConfiguratorTests extends TestCase {
 
         Map beans =  ctx.getBeansOfType(s2);
         assertEquals(1, beans.size());
-        System.out.println(beans);
+        beans = ctx.getBeansOfType(s1);
+        assertEquals(1, beans.size());
+
         GroovyObject anotherService = (GroovyObject)ctx.getBean("anotherService");
 
         assertEquals("hello",anotherService.invokeMethod("anotherMethod", null));

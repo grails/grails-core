@@ -63,6 +63,8 @@ import org.springframework.web.servlet.i18n.CookieLocaleResolver;
 import org.springframework.web.servlet.i18n.LocaleChangeInterceptor;
 import org.springmodules.beans.factory.config.MapToPropertiesFactoryBean;
 
+import grails.spring.BeanBuilder;
+
 import javax.servlet.ServletContext;
 import java.io.IOException;
 import java.net.URL;
@@ -78,6 +80,7 @@ public class GrailsRuntimeConfigurator {
 
 	public static final String GRAILS_URL_MAPPINGS = "grailsUrlMappings";
 	public static final String SPRING_RESOURCES_XML = "/WEB-INF/spring/resources.xml";
+	public static final String SPRING_RESOURCES_GROOVY = "/WEB-INF/spring/resources.groovy";
 	public static final String QUARTZ_SCHEDULER_BEAN = "quartzScheduler";
 	public static final String OPEN_SESSION_IN_VIEW_INTERCEPTOR_BEAN = "openSessionInViewInterceptor";
 	public static final String TRANSACTION_MANAGER_BEAN = "transactionManager";
@@ -92,7 +95,8 @@ public class GrailsRuntimeConfigurator {
 	public static final String CLASS_EDITOR_BEAN = "classEditor";
 	public static final String CLASS_LOADER_BEAN = "classLoader";
 	
-	private static final Log LOG = LogFactory.getLog(GrailsRuntimeConfigurator.class);	
+	private static final Log LOG = LogFactory.getLog(GrailsRuntimeConfigurator.class);
+	
 	private GrailsApplication application;
 	private ApplicationContext parent;
 	private boolean loadExternalPersistenceConfig = true;
@@ -369,6 +373,7 @@ public class GrailsRuntimeConfigurator {
 	private void doPostResourceConfiguration(RuntimeSpringConfiguration springConfig) {
 	     try {
 	    	 Resource springResources = parent.getResource(GrailsRuntimeConfigurator.SPRING_RESOURCES_XML);
+	    	 Resource groovySpringResources = parent.getResource(GrailsRuntimeConfigurator.SPRING_RESOURCES_GROOVY);
 	    	 if(springResources.exists()) {
 	    		LOG.debug("[RuntimeConfiguration] Configuring additional beans from " +springResources.getURL());
 	    		XmlBeanFactory xmlBf = new XmlBeanFactory(springResources);
@@ -383,6 +388,12 @@ public class GrailsRuntimeConfigurator {
 	    	 }
 	    	 else if(LOG.isDebugEnabled()) {
 	    		 LOG.debug("[RuntimeConfiguration] " + GrailsRuntimeConfigurator.SPRING_RESOURCES_XML + " not found. Skipping configuration.");
+	    	 }
+	    	 
+	    	 if(groovySpringResources.exists()) {
+	    		 BeanBuilder bb = new BeanBuilder();
+	    		 bb.setSpringConfig(springConfig);
+	    		 bb.loadBeans(groovySpringResources);
 	    	 }
 		} catch (Exception ex) {
 			LOG.warn("[RuntimeConfiguration] Unable to perform post initialization config: " + SPRING_RESOURCES_XML , ex);
@@ -702,7 +713,7 @@ public class GrailsRuntimeConfigurator {
 				
 			} else {
                 // otherwise configure a standard proxy
-
+				serviceInstance.setAutowire("byName");
                 springConfig
                         .addBeanConfiguration(grailsServiceClass.getPropertyName(), serviceInstance);
 			}
@@ -930,7 +941,7 @@ public class GrailsRuntimeConfigurator {
 			((OpenSessionInViewInterceptor)context.getBean(OPEN_SESSION_IN_VIEW_INTERCEPTOR_BEAN)).setSessionFactory(sf);
 		}
 		// update validators
-		String[] validatorBeanNames = context.getBeanDefinitionNames(Validator.class);
+		String[] validatorBeanNames = context.getBeanNamesForType(Validator.class);
 		for (int i = 0; i < validatorBeanNames.length; i++) {
 			GrailsDomainClassValidator validator = (GrailsDomainClassValidator) context.getBean(validatorBeanNames[i]);
 			validator.setSessionFactory(sf);
