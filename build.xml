@@ -1,11 +1,15 @@
 <project name="grails-build" default="package">
                                 	
 	<property file="build.properties"/>
-
+	<property environment="env" />
+	
     <path id="classpath">
         <fileset dir="${grails.lib}">
             <include name="*.jar"/>
         </fileset>
+	    <fileset dir="${env.JAVA_HOME}/lib">
+	        <include name="tools.jar"/>
+	    </fileset>	
         <pathelement location="${grails.src.war}/WEB-INF"/>
     </path>
 
