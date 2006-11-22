@@ -29,6 +29,7 @@ import org.codehaus.groovy.grails.web.servlet.GrailsHttpServletRequest;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.FlashScope;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsControllerHelper;
+import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.springframework.validation.Errors;
 import org.springframework.web.servlet.ModelAndView;
 import org.apache.commons.logging.Log;
@@ -38,6 +39,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.beans.IntrospectionException;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 /**
@@ -159,10 +161,8 @@ public class ControllerDynamicMethods extends
             }
             String[] scaffoldActions = this.scaffolder.getSupportedActionNames();
             for (int i = 0; i < scaffoldActions.length; i++) {
-                try {
-                    controller.getProperty(scaffoldActions[i]);
-                }
-                catch(MissingPropertyException mpe) {
+            	Map properties = DefaultGroovyMethods.getProperties(controller);
+            	if(!properties.containsKey(scaffoldActions[i])) {
                     addDynamicProperty(new GenericDynamicProperty(	scaffoldActions[i],
                                                                     Closure.class,
                                                                     scaffolder.getAction(controller,scaffoldActions[i]),
