@@ -14,8 +14,32 @@
  */
 package org.codehaus.groovy.grails.web.pages;
 
-import groovy.lang.*;
+import groovy.lang.Binding;
+import groovy.lang.GroovyClassLoader;
+import groovy.lang.GroovyObject;
+import groovy.lang.Script;
+import groovy.lang.Writable;
 import groovy.text.Template;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.Writer;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.control.CompilationFailedException;
@@ -27,16 +51,6 @@ import org.codehaus.groovy.grails.web.metaclass.GrailsParameterMap;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.springframework.context.ApplicationContext;
-
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.*;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLConnection;
-import java.util.*;
 
 /**
  * A GroovyPagesTemplateEngine based on (but not extending) the existing TemplateEngine implementations
@@ -465,10 +479,7 @@ public class GroovyPagesTemplateEngine {
             // Go through request attributes and add them to the binding as the model
             for (Enumeration attributeEnum =  request.getAttributeNames(); attributeEnum.hasMoreElements();) {
                 String key = (String) attributeEnum.nextElement();
-                try {
-                    binding.getVariable(key);
-                }
-                catch(MissingPropertyException mpe) {
+                if(!binding.getVariables().containsKey(key)) {
                     binding.setVariable( key, request.getAttribute(key) );
                 }
             }

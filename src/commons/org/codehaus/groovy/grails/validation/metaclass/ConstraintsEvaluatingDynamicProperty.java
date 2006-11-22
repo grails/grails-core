@@ -14,27 +14,28 @@
  */ 
 package org.codehaus.groovy.grails.validation.metaclass;
 
+import groovy.lang.Binding;
 import groovy.lang.Closure;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyObject;
-import groovy.lang.MissingPropertyException;
 import groovy.lang.Script;
+
+import java.io.InputStream;
+import java.util.Collections;
+import java.util.Map;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.control.CompilationFailedException;
-import org.codehaus.groovy.grails.commons.metaclass.AbstractDynamicProperty;
-import org.codehaus.groovy.grails.commons.metaclass.ProxyMetaClass;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
+import org.codehaus.groovy.grails.commons.metaclass.AbstractDynamicProperty;
+import org.codehaus.groovy.grails.commons.metaclass.ProxyMetaClass;
 import org.codehaus.groovy.grails.orm.hibernate.validation.ConstrainedPersistentProperty;
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 import org.codehaus.groovy.grails.validation.ConstrainedPropertyBuilder;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.InvalidPropertyException;
-
-import java.io.InputStream;
-import java.util.Collections;
-import java.util.Map;
 
 /**
  * This is a dynamic property that instead of returning the closure sets a new proxy meta class for the scope 
@@ -115,16 +116,17 @@ public class ConstraintsEvaluatingDynamicProperty extends AbstractDynamicPropert
                     Class scriptClass = gcl.parseClass(stream);
                     Script script = (Script)scriptClass.newInstance();
                     script.run();
-                    Closure c = (Closure)script.getBinding().getVariable(PROPERTY_NAME);
-                    ConstrainedPropertyBuilder delegate = new ConstrainedPropertyBuilder(object);
-                    c.setDelegate(delegate);
-                    c.call();
-                    return delegate.getConstrainedProperties();
-
-                }
-                catch (MissingPropertyException mpe) {
-                    LOG.warn("Unable to evaluate constraints from ["+constraintsScript+"], constraints closure not found!",mpe);
-                    return Collections.EMPTY_MAP;
+                    Binding binding = script.getBinding();
+                    if(binding.getVariables().containsKey(PROPERTY_NAME)) {
+                    	Closure c = (Closure)binding.getVariable(PROPERTY_NAME);
+                    	ConstrainedPropertyBuilder delegate = new ConstrainedPropertyBuilder(object);
+                    	c.setDelegate(delegate);
+                    	c.call();
+                    	return delegate.getConstrainedProperties();
+                    } else {
+                    	LOG.warn("Unable to evaluate constraints from ["+constraintsScript+"], constraints closure not found!");
+                    	return Collections.EMPTY_MAP;
+                    }
                 }
                 catch (CompilationFailedException e) {
                     LOG.error("Compilation error evaluating constraints for class ["+object.getClass()+"]: " + e.getMessage(),e );

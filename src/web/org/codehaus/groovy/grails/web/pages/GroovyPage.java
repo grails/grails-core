@@ -40,6 +40,7 @@ import org.codehaus.groovy.grails.web.metaclass.TagLibDynamicMethods;
 import org.codehaus.groovy.grails.web.servlet.DefaultGrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
+import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 
 /**
  * NOTE: Based on work done by on the GSP standalone project (https://gsp.dev.java.net/)
@@ -178,9 +179,10 @@ public abstract class GroovyPage extends Script {
         if(tagLib != null) {
             tagLib.setProperty(  TagLibDynamicMethods.OUT_PROPERTY, out );
             Object tagLibProp;
-            try {
-                tagLibProp = tagLib.getProperty(tagName);
-            } catch (MissingPropertyException mpe) {
+            Map properties = DefaultGroovyMethods.getProperties(tagLib);
+			if(properties.containsKey(tagName)) {
+                tagLibProp = properties.get(tagName);
+            } else {
                 throw new GrailsTagException("Tag ["+tagName+"] does not exist in tag library ["+tagLib.getClass().getName()+"]");
             }
             if(tagLibProp instanceof Closure) {
@@ -302,8 +304,9 @@ public abstract class GroovyPage extends Script {
             if(tagLib != null) {
                 tagLib.setProperty(  TagLibDynamicMethods.OUT_PROPERTY, out );
                 Object tagLibProp;
-                try {
-                    tagLibProp = tagLib.getProperty(methodName);
+                Map properties = DefaultGroovyMethods.getProperties(tagLib);
+                if(properties.containsKey(methodName)) {
+                    tagLibProp = properties.get(methodName);
                     if(tagLibProp instanceof Closure) {
                         Closure tag = (Closure)tagLibProp;
                         if(tag.getParameterTypes().length == 1) {
@@ -320,7 +323,7 @@ public abstract class GroovyPage extends Script {
                     }else {
                        throw new GrailsTagException("Tag ["+methodName+"] does not exist in tag library ["+tagLib.getClass().getName()+"]");
                     }
-                } catch (MissingPropertyException mpe) {
+                } else {
                     if(args instanceof Object[])
                         throw new MissingMethodException(methodName,GroovyPage.class, (Object[])args);
                     else
