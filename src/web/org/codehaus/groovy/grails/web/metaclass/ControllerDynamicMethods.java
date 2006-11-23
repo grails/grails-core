@@ -23,6 +23,7 @@ import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.metaclass.AbstractDynamicMethodInvocation;
 import org.codehaus.groovy.grails.commons.metaclass.GenericDynamicProperty;
 import org.codehaus.groovy.grails.commons.metaclass.GroovyDynamicMethodsInterceptor;
+import org.codehaus.groovy.grails.commons.metaclass.FunctionCallback;
 import org.codehaus.groovy.grails.scaffolding.GrailsScaffolder;
 import org.codehaus.groovy.grails.web.servlet.GrailsHttpServletRequest;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
@@ -79,8 +80,6 @@ public class ControllerDynamicMethods extends
     private boolean scaffolding;
     private GrailsApplicationAttributes grailsAttributes;
 
-
-
     public ControllerDynamicMethods( GroovyObject controller,GrailsControllerHelper helper,final HttpServletRequest request, HttpServletResponse response) throws IntrospectionException {
         super(controller);
 
@@ -103,8 +102,13 @@ public class ControllerDynamicMethods extends
         addDynamicProperty(new GenericDynamicProperty(ACTION_NAME_PROPERTY,String.class,null,false));
         addDynamicProperty(new GenericDynamicProperty(CONTROLLER_NAME_PROPERTY,String.class,null,false));
         addDynamicProperty(new GenericDynamicProperty(RENDER_VIEW_PROPERTY,Boolean.class, Boolean.TRUE,false));
-        addDynamicProperty(new GenericDynamicProperty(LOG_PROPERTY, Log.class,
-            LogFactory.getLog(controllerClass.getFullName()),true));
+
+        // @todo Check that LOG4J is not creating a new log for every request!
+        addDynamicProperty(new GenericDynamicProperty(LOG_PROPERTY, Log.class, new FunctionCallback() {
+            public Object execute(Object object) {
+                return LogFactory.getLog(controllerClass.getFullName());
+            }
+        }, true));
 
         // add dynamic methods
         addDynamicMethodInvocation( new RedirectDynamicMethod(helper,request,response) );
