@@ -15,10 +15,12 @@
 package org.codehaus.groovy.grails.orm.hibernate.metaclass;
 
 import groovy.lang.MissingMethodException;
+
+import org.hibernate.Criteria;
 import org.hibernate.HibernateException;
-import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.criterion.Projections;
 import org.springframework.orm.hibernate3.HibernateCallback;
 import org.springframework.orm.hibernate3.HibernateTemplate;
 
@@ -43,18 +45,15 @@ public class CountPersistentMethod  extends AbstractStaticPersistentMethod {
 
     protected Object doInvokeInternal(final Class clazz, String methodName, Object[] arguments) {
         HibernateTemplate t = getHibernateTemplate();
-        final StringBuffer b = new StringBuffer("select count(persistentClass) from ");
-        b.append(clazz.getName());
-        b.append(" as persistentClass");
         if(arguments.length == 0) {
               return t.execute(new HibernateCallback() {
                   public Object doInHibernate(Session session) throws HibernateException {
-                      Query q = session.createQuery(b.toString());
-                      return q.uniqueResult();
+                	  Criteria c = session.createCriteria(clazz);
+                	  c.setProjection(Projections.rowCount());
+                	  return c.uniqueResult();
                   }
               });
         }
-        // TODO add support for counting with a query
         throw new MissingMethodException(METHOD_SIGNATURE, clazz,arguments);
     }
 }
