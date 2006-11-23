@@ -22,8 +22,24 @@
  * @since 0.4
  */
 
-import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
-import groovy.text.SimpleTemplateEngine
+import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU;
+import org.codehaus.groovy.grails.support.GrailsTestSuite;
+import grails.util.GrailsUtil as GU;
+import org.codehaus.groovy.grails.commons.GrailsApplication;
+import java.lang.reflect.Modifier;
+import junit.framework.TestCase;
+import junit.framework.TestResult;
+import junit.framework.TestSuite;
+import junit.textui.TestRunner;        
+import org.springframework.orm.hibernate3.SessionFactoryUtils;
+import org.springframework.orm.hibernate3.SessionHolder;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;  
+import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator as GRC;
+
+
+
 
 Ant.property(environment:"env")                             
 grailsHome = Ant.antProject.properties."env.GRAILS_HOME"    
@@ -42,7 +58,40 @@ task(testApp:"The test app implementation task") {
 	testDir = "${basedir}/grails-app/tests"
 	Ant.sequential {
 		mkdir(dir:testDir)
-		java(classpathref:"grails.classpath",classname:"grails.util.RunTests",
-			     errorproperty:"grails.test.failure") 							
+		copy(todir:testDir) {
+			fileset(dir:"${basedir}/grails-tests")			
+		}
+	}    
+	try {
+		def ctx = GU.bootstrapGrailsFromClassPath()
+		def app = ctx.getBean(GrailsApplication.APPLICATION_ID)
+		
+		def suite = new TestSuite()
+		app.allClasses.each { c ->			
+			if(TestCase.isAssignableFrom(c) && !Modifier.isAbstract(c.modifiers)) {
+				suite.addTest(new GrailsTestSuite(ctx.beanFactory, c))
+			}
+		}     			
+		SessionFactory sf = ctx.getBean(GRC.SESSION_FACTORY_BEAN)
+		try {
+			Session session = SessionFactoryUtils.getSession(sf, true)      
+
+	        TransactionSynchronizationManager.bindResource(sf, new SessionHolder(session))
+			def result = TestRunner.run(suite)
+			
+		}   
+		finally {
+		    def sessionHolder = TransactionSynchronizationManager.unbindResource(sf)
+		   	SessionFactoryUtils.releaseSession(sessionHolder.session, sf)
+		} 							
+		
+	}   
+	catch(Exception e) {
+		println "Error executing tests ${e.message}"
+		e.printStackTrace(System.out)
 	}
+	finally {
+		Ant.delete(dir:testDir)				
+		System.exit(0)
+	}	
 }
