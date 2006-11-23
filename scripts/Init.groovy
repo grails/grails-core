@@ -130,7 +130,7 @@ task ('createArtifact': "Creates a specific Grails artifact") {
 	propertyName = GCU.getPropertyNameRepresentation(args)
 	artifactFile = "${basedir}/${artifactPath}/${className}${typeName}.groovy"
 	 
-	if("Controller" == typeName) {
+	if("Controller" == artifactName) {
 	    Ant.mkdir(dir:"${basedir}/grails-app/views/${propertyName}")
 	}
 	
