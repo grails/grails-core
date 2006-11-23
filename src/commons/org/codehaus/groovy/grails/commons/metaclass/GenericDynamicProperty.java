@@ -21,6 +21,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.sun.corba.se.internal.POA.GenericPOAClientSC;
+
 /**
  * A generic dyanmic property for any type
  * 
@@ -33,7 +35,9 @@ public class GenericDynamicProperty extends AbstractDynamicProperty {
 	private boolean readyOnly;
 	private Map propertyToInstanceMap = Collections.synchronizedMap(new HashMap());
 	private Object initialValue;
-	/**
+    private FunctionCallback initialValueGenerator;
+
+    /**
 	 * 
 	 * @param propertyName The name of the property
 	 * @param type The type of the property
@@ -45,7 +49,7 @@ public class GenericDynamicProperty extends AbstractDynamicProperty {
 		if(type == null)
 			throw new IllegalArgumentException("Constructor argument 'type' cannot be null");
 		this.readyOnly = readOnly;
-		this.type = type;;
+		this.type = type;
 		this.initialValue = initialValue;
 	}
 	/**
@@ -63,13 +67,34 @@ public class GenericDynamicProperty extends AbstractDynamicProperty {
 	}
 	
 
-	public Object get(Object object) {			
+	/**
+     * <p>Variant that allows supply of a lazy-initialization function for the initial value.</p>
+     * <p>This function is called only on the first access to the property for a given object, unless
+     * the function returns null in which case it will be called again if another request is made.</p>
+	 * 
+	 * @param propertyName The name of the property
+	 * @param type The type of the property
+	 * @param readOnly True for read-only property
+	 */
+	public GenericDynamicProperty(String propertyName, Class type, FunctionCallback initialValueGenerator,
+            boolean readOnly) {
+		this(propertyName, type, readOnly);
+        this.initialValueGenerator = initialValueGenerator;
+    }
+
+
+	public Object get(Object object) {
 		String propertyKey = System.identityHashCode(object) + getPropertyName();
 		if(propertyToInstanceMap.containsKey(propertyKey)) {
 			return propertyToInstanceMap.get(propertyKey);
 		}
-		else if(this.initialValue != null) {
-			propertyToInstanceMap.put(propertyKey, this.initialValue);
+        else if (this.initialValueGenerator != null) {
+            final Object value = this.initialValueGenerator.execute(object);
+            propertyToInstanceMap.put(propertyKey, value);
+            return value;
+        }
+        else if (this.initialValue != null) {
+            propertyToInstanceMap.put(propertyKey, this.initialValue);
 			return this.initialValue;
 		}
 		return null;
