@@ -99,7 +99,7 @@ public class JavaScriptTagLibTests extends AbstractTagLibTests {
 		
 		tag.call(new Object[]{attrs});
 		System.out.println(sw.toString());
-		assertEquals("YAHOO.util.Connect.asyncRequest('GET','/test/action',{ },null);",sw.toString());
+		assertEquals("YAHOO.util.Connect.asyncRequest('GET','/test/action',{ success: function(o) {  }, failure: function(o) {}},null);",sw.toString());
 		
 		attrs.put("action","action");
 		attrs.put("controller","test");
