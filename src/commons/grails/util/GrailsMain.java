@@ -34,7 +34,7 @@ import org.mortbay.jetty.Server;
 public class GrailsMain {
 
 	
-	private static final String TMP_WAR_LOCATION = "tmp"+File.separator+"war";
+	private static final String TMP_WAR_LOCATION = "web-app";
 
 	/**
 	 * The main routine that loads a jetty instance and launches the Grails
