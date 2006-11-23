@@ -1,8 +1,0 @@
-class ApplicationDataSource {
-   @Property boolean pooled = true
-   @Property String dbCreate = "update" // one of 'create', 'create-drop','update'
-   @Property String url = "jdbc:mysql://localhost/gcms"
-   @Property String driverClassName = "com.mysql.jdbc.Driver"
-   @Property String username = "root"
-   @Property String password = "admin"
-}
