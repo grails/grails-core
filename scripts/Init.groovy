@@ -129,7 +129,11 @@ task ('createArtifact': "Creates a specific Grails artifact") {
 	className = GCU.getClassNameRepresentation(args)
 	propertyName = GCU.getPropertyNameRepresentation(args)
 	artifactFile = "${basedir}/${artifactPath}/${className}${typeName}.groovy"
-	         
+	 
+	if("Controller" == typeName) {
+	    Ant.mkdir(dir:"${basedir}/grails-app/views/${propertyName}")
+	}
+	
 	if(new File(artifactFile).exists()) {
 		Ant.input(addProperty:"${args}.${typeName}.overwrite", message:"${typeName} ${className}${typeName}.groovy already exists. Overwrite? [y/n]")
 		if(Ant.antProject.properties."${args}.${typeName}.overwrite" == "n")
