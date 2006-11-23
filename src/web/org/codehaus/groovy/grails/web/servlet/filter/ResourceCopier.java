@@ -32,6 +32,12 @@ public interface ResourceCopier {
      * @param shouldOverwrite Whether the views should be overwritten
      */
     void copyViews(boolean shouldOverwrite);
+    
+    /**
+     * Copies only the views. Older views will be replaced by a newer version
+     *
+     */
+    void copyViews();    
 
     /**
      * The basedir to copy from (defaults to ".")

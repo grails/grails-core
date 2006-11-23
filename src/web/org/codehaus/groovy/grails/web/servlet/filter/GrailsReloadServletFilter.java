@@ -57,8 +57,10 @@ import org.codehaus.groovy.grails.web.servlet.mvc.SimpleGrailsController;
 import org.springframework.aop.target.HotSwappableTargetSource;
 import org.springframework.core.io.Resource;
 import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.context.request.WebRequestInterceptor;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.servlet.HandlerInterceptor;
+import org.springframework.web.servlet.handler.WebRequestHandlerInterceptorAdapter;
 
 /**
  * A servlet filter that copies resources from the source on content change and manages reloading if necessary
@@ -70,9 +72,9 @@ public class GrailsReloadServletFilter extends OncePerRequestFilter {
 
     public static final Log LOG = LogFactory.getLog(GrailsReloadServletFilter.class);
 
-    private ResourceCopier copyScript;
-    private GrailsWebApplicationContext context;
-    private GrailsApplication application;
+    ResourceCopier copyScript;
+    GrailsWebApplicationContext context;
+    GrailsApplication application;
     private boolean initialised = false;
     private Map resourceMetas = Collections.synchronizedMap(new HashMap());
     private GrailsTemplateGenerator templateGenerator;
@@ -146,9 +148,9 @@ public class GrailsReloadServletFilter extends OncePerRequestFilter {
              LOG.error("Error loading resource copier. Save/reload disabled: " + e.getMessage(), e);
           }
         }
-        /*if(copyScript != null) {
-            copyScript.copyGrailsApp();
-        } */
+        if(copyScript != null) {
+            copyScript.copyViews();
+        } 
 
         GrailsResourceHolder resourceHolder = (GrailsResourceHolder)context.getBean(GrailsResourceHolder.APPLICATION_CONTEXT_ID);
         Resource[] resources = resourceHolder.getResources();
@@ -340,16 +342,18 @@ public class GrailsReloadServletFilter extends OncePerRequestFilter {
         config.refreshSessionFactory(application,context);
     }
 
-    private void loadControllerClass(Class loadedClass, boolean isNew) {
+    void loadControllerClass(Class loadedClass, boolean isNew) {
         GrailsControllerClass controllerClass = application.addControllerClass(loadedClass);
         if(controllerClass != null) {
              // if its a new controller re-generate web.xml, reload app context
             if(isNew) {
-                // clean controllers
-                copyScript.cleanControllers();
-                // re-generate web.xml
-                LOG.info("New controller added, re-generating web.xml");
-                copyScript.generateWebXml();
+            	if(copyScript != null) {            		
+                    // clean controllers
+                    copyScript.cleanControllers();
+                    // re-generate web.xml
+                    LOG.info("New controller added, re-generating web.xml");
+                    copyScript.generateWebXml();
+            	}
             }
             else {
                 // regenerate controller urlMap
@@ -372,10 +376,18 @@ public class GrailsReloadServletFilter extends OncePerRequestFilter {
                 urlMappings.setApplicationContext(context);
                 urlMappings.setMappings(mappings);
                 String[] interceptorNames = context.getBeanNamesForType(HandlerInterceptor.class);
-                HandlerInterceptor[] interceptors = new HandlerInterceptor[interceptorNames.length];
+                String[] webRequestInterceptors = context.getBeanNamesForType( WebRequestInterceptor.class);
+                
+                HandlerInterceptor[] interceptors = new HandlerInterceptor[interceptorNames.length+webRequestInterceptors.length];
+                int j = 0;
                 for (int i = 0; i < interceptorNames.length; i++) {
                     String interceptorName = interceptorNames[i];
                     interceptors[i] = (HandlerInterceptor)context.getBean(interceptorName);
+                    j = i+1;
+                }
+                for(int i = 0; i < webRequestInterceptors.length; i++) {
+                	j = i+j;
+                	interceptors[j] = new WebRequestHandlerInterceptorAdapter( (WebRequestInterceptor) context.getBean(webRequestInterceptors[i]));
                 }
                 LOG.info("Re-adding " + interceptors.length + " interceptors to mapping");
                 urlMappings.setInterceptors(interceptors);

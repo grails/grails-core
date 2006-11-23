@@ -27,7 +27,7 @@ class GrailsResourceCopier implements ResourceCopier {
     }
 
     public void copyViews(boolean shouldOverwrite) {
-	    def ant = new AntBuilder()    
+	    def ant = new AntBuilder()
         if(new File("${basedir}/grails-app/views").exists()) {
             ant.copy(todir:"${destdir}/WEB-INF/grails-app/views",failonerror:false,overwrite:shouldOverwrite) {
                 fileset(dir:"${basedir}/grails-app/views",includes:"**")
@@ -35,6 +35,15 @@ class GrailsResourceCopier implements ResourceCopier {
         }
     }
 
+    public void copyViews() {
+	    def ant = new AntBuilder()
+        if(new File("${basedir}/grails-app/views").exists()) {
+            ant.copy(todir:"${destdir}/WEB-INF/grails-app/views",failonerror:false) {
+                fileset(dir:"${basedir}/grails-app/views",includes:"**")
+            }
+        }
+    }
+ 
     public void generateWebXml() {
         def controllersHome = new File("${basedir}/grails-app/controllers")
         if(controllersHome.exists()) {
