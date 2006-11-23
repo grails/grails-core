@@ -84,8 +84,5 @@ public class RunTests {
 		catch(Exception e) {
 			log.error("Error executing tests: " + e.getMessage(), e);
 		}
-		finally {
-			System.exit(0);	
-		}		
 	}
 }
