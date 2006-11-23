@@ -19,16 +19,23 @@ import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import groovy.lang.MissingMethodException;
+
 import java.beans.IntrospectionException;
 import java.util.*;
 
 
 
 /**
- * InvokerHelper.getInstance().getMetaRegistry().setMetaClass(Foo.class,myFooMetaClass)
+ * This class provides the base implementation responsible for performing dynamic method invocation such as the dynamic
+ * finders in GORM
  * 
  * @author Steven Devijver
- * @since Aug 7, 2005
+ * @author Graeme Rocher
+ * 
+ * @since 0.1
+ * 
+ * Created: Aug 7, 2005
  */
 public abstract class AbstractDynamicMethods implements DynamicMethods {
 
@@ -60,7 +67,7 @@ public abstract class AbstractDynamicMethods implements DynamicMethods {
 	public AbstractDynamicMethods(Class theClass, boolean inRegistry)
 	throws IntrospectionException {
 			super();
-			new DelegatingMetaClass(theClass, this, inRegistry);
+			new DelegatingMetaClass(theClass, this, inRegistry).initialise();
 			this.clazz = theClass;
 			this.dynamicMethodInvocations = new ArrayList();
 			this.staticMethodInvocations = new ArrayList();
@@ -134,16 +141,29 @@ public abstract class AbstractDynamicMethods implements DynamicMethods {
 	public Object invokeMethod(Object object, String methodName,
 		Object[] arguments, InvocationCallback callback) {
 		if(LOG.isTraceEnabled()) {
-			LOG.trace("[DynamicMethods] Attempting invocation of dynamic method ["+methodName+"] on target ["+object+"] with arguments ["+ArrayUtils.toString( arguments )+"]");			
+			LOG.debug("[DynamicMethods] Attempting invocation of dynamic method ["+methodName+"] on target ["+object+"] with arguments ["+ArrayUtils.toString( arguments )+"]");			
 		}		
 		for (Iterator iter = this.dynamicMethodInvocations.iterator(); iter.hasNext();) {
 			DynamicMethodInvocation methodInvocation = (DynamicMethodInvocation)iter.next();
 			if (methodInvocation.isMethodMatch(methodName)) {
-				if(LOG.isTraceEnabled()) {
-					LOG.trace("[DynamicMethods] Dynamic method matched, marking and invoking");			
+				if(LOG.isDebugEnabled()) {
+					LOG.debug("[DynamicMethods] Dynamic method ["+methodName+"] matched, attempting to invoke.");			
 				}				
-				callback.markInvoked();
-				return methodInvocation.invoke(object, arguments);
+				
+				try {
+					Object result = methodInvocation.invoke(object, arguments);
+					if(LOG.isDebugEnabled()) {
+						LOG.debug("[DynamicMethods] Instance method ["+methodName+"] invoked successfully with result ["+result+"]. Marking as invoked");			
+					}	
+					
+					callback.markInvoked();
+					return result;
+				} catch (MissingMethodException e) {
+					if(LOG.isDebugEnabled()) {					
+						LOG.debug("[DynamicMethods] Instance method ["+methodName+"] threw MissingMethodException. Returning null and falling back to standard MetaClass",e);			
+					}
+					return null;
+				}
 			}
 		}
 		return null;
@@ -155,15 +175,15 @@ public abstract class AbstractDynamicMethods implements DynamicMethods {
 	 * @see org.codehaus.groovy.grails.commons.metaclass.DynamicMethods#invokeConstructor(java.lang.Object[], org.codehaus.groovy.grails.commons.metaclass.InvocationCallback)
 	 */
 	public Object invokeConstructor(Object[] arguments, InvocationCallback callBack) {
-		if(LOG.isTraceEnabled()) {
-			LOG.trace("[DynamicMethods] Attempting invocation of dynamic constructor with arguments ["+ArrayUtils.toString( arguments )+"]");			
+		if(LOG.isDebugEnabled()) {
+			LOG.debug("[DynamicMethods] Attempting invocation of dynamic constructor with arguments ["+ArrayUtils.toString( arguments )+"]");			
 		}
 		
 		for (Iterator i = this.dynamicConstructors.iterator(); i.hasNext();) {
 			DynamicConstructor constructor = (DynamicConstructor) i.next();
 			if(constructor.isArgumentsMatch(arguments)) {
-				if(LOG.isTraceEnabled()) {
-					LOG.trace("[DynamicMethods] Dynamic constructor found, marked and invoking...");			
+				if(LOG.isDebugEnabled()) {
+					LOG.debug("[DynamicMethods] Dynamic constructor found, marked and invoking...");			
 				}				
 				callBack.markInvoked();
 				return constructor.invoke(this.clazz,arguments);
@@ -177,18 +197,31 @@ public abstract class AbstractDynamicMethods implements DynamicMethods {
 	 */
 	public Object invokeStaticMethod(Object object, String methodName,
 			Object[] arguments, InvocationCallback callBack) {
-		if(LOG.isTraceEnabled()) {
-			LOG.trace("[DynamicMethods] Attempting invocation of dynamic static method ["+methodName+"] on target ["+object+"] with arguments ["+ArrayUtils.toString( arguments )+"]");
-			//LOG.trace("[DynamicMethods] Registered dynamic static methods: ["+this.staticMethodInvocations+"]");
+		if(LOG.isDebugEnabled()) {
+			LOG.debug("[DynamicMethods] Attempting invocation of dynamic static method ["+methodName+"] on target ["+object+"] with arguments ["+ArrayUtils.toString( arguments )+"]");
+			//LOG.debug("[DynamicMethods] Registered dynamic static methods: ["+this.staticMethodInvocations+"]");
 		}
 		for (Iterator iter = this.staticMethodInvocations.iterator(); iter.hasNext();) {
 			StaticMethodInvocation methodInvocation = (StaticMethodInvocation)iter.next();
 			if (methodInvocation.isMethodMatch(methodName)) {
-				if(LOG.isTraceEnabled()) {
-					LOG.trace("[DynamicMethods] Static method matched, marking and invoking");			
+				if(LOG.isDebugEnabled()) {
+					LOG.debug("[DynamicMethods] Static method matched, attempting to invoke");			
 				}				
-				callBack.markInvoked();
-				return methodInvocation.invoke(this.clazz, methodName, arguments);
+				
+				try {
+					Object result =  methodInvocation.invoke(this.clazz, methodName, arguments);
+					
+					if(LOG.isDebugEnabled()) {
+						LOG.debug("[DynamicMethods] Static method ["+methodName+"] invoked successfully with result ["+result+"]. Marking as invoked");			
+					}						
+					callBack.markInvoked();
+					return result;
+				} catch (MissingMethodException e) {
+					if(LOG.isDebugEnabled()) {					
+						LOG.debug("[DynamicMethods] Static method ["+methodName+"] threw MissingMethodException. Returning null and falling back to standard MetaClass",e);			
+					}						
+					return null;
+				}
 			}
 		}
 		return null;

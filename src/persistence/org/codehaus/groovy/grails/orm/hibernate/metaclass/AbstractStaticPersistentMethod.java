@@ -67,11 +67,14 @@ public abstract class AbstractStaticPersistentMethod extends
 	}
 	
 	public Object invoke(Class clazz, String methodName, Object[] arguments) {
-		ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
-		Thread.currentThread().setContextClassLoader(this.classLoader);
-		Object returnValue = doInvokeInternal(clazz, methodName, arguments);
-		Thread.currentThread().setContextClassLoader(originalClassLoader);
-		return returnValue;
+		ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();    
+		try {
+			Thread.currentThread().setContextClassLoader(this.classLoader);
+			return doInvokeInternal(clazz, methodName, arguments);			
+		}   
+		finally {
+			Thread.currentThread().setContextClassLoader(originalClassLoader);      			
+		}
 	}
 
 	protected abstract Object doInvokeInternal(Class clazz, String methodName, Object[] arguments);
