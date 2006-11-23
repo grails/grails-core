@@ -423,7 +423,8 @@ class PrototypeProvider implements JavascriptProvider {
  * @author Graeme Rocher
  **/
 class YahooProvider implements JavascriptProvider {
-	def doRemoteFunction(taglib,attrs, out)	{
+	def doRemoteFunction(taglib,attrs, out)	{  
+
 		def method = (attrs.method ? attrs.method : 'GET' )
 		if(attrs.onLoading) {
 			out << "${attrs.onLoading};"
@@ -436,7 +437,7 @@ class YahooProvider implements JavascriptProvider {
 		else {
 			taglib.createLink(attrs)
 		}		
-		
+		attrs.remove('url')
 		out << "',"
 		buildYahooCallback(attrs,out)
 		out << ',null);'
@@ -444,26 +445,26 @@ class YahooProvider implements JavascriptProvider {
 	
 
 	// helper method to create yahoo callback object
-	def buildYahooCallback(attrs,out) {
+	def buildYahooCallback(attrs,out) {     
+
 		out << '{ '
-			if(attrs.update) {
 			  out <<'success: function(o) { '
 			    if(attrs.onLoaded) {
-					out << "${attrs.onLoaded}";
+					out << "${attrs.onLoaded}(o);";
 				}
 				if(attrs.update instanceof Map) {
 					if(attrs.update.success) {
 						out << "YAHOO.util.Dom.get('${attrs.update.success}').innerHTML = o.responseText;"									
 					}								
 				}
-				else {
+				else if(attrs.update) {
 					out <<  "YAHOO.util.Dom.get('${attrs.update}').innerHTML = o.responseText;"
 				}
 				if(attrs.onSuccess) {
-					out << ";${attrs.onSuccess};"
+					out << "${attrs.onSuccess}(o);"
 				}	
 				if(attrs.onComplete) {
-					out << ";${attrs.onComplete};"
+					out << "${attrs.onComplete}(o);"
 				}		  
 				out << ' }'
 				out << 	', failure: function(o) {'									
@@ -473,13 +474,12 @@ class YahooProvider implements JavascriptProvider {
 					}
 				}
 				if(attrs.onFailure) {
-					out << "${attrs.onFailure};"
+					out << "${attrs.onFailure}(o);"
 				}	
 				if(attrs.onComplete) {
-					out << ";${attrs.onComplete};"
+					out << "${attrs.onComplete}(o);"
 				}													
-				out << '}'				
-			}			
+				out << '}'							   		
 			out << '}'		
 	}	
 }
