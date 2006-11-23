@@ -265,6 +265,9 @@ public class RenderDynamicMethod extends AbstractDynamicControllerMethod {
                     }
                     renderView = false;
                 }
+                catch(GroovyRuntimeException gre) {
+                	throw new ControllerExecutionException("Error rendering template ["+templateName+"]: " + gre.getMessage(),gre);
+                }
                 catch(IOException ioex) {
                     throw new ControllerExecutionException("I/O error executing render method for arguments ["+argMap+"]: " + ioex.getMessage(),ioex);
                 } catch (ServletException e) {
