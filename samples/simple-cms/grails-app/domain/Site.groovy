@@ -27,18 +27,15 @@ class Site {
     // name of the default site
     static final DEFAULT = ApplicationConfig.DEFAULT_SITE
 
-	@Property Long id
-	@Property Long version
+	static optionals = ['homePage']
 
-	@Property optionals = ['homePage']
-
-	@Property Page homePage
-	@Property String name
-	@Property String domain
+	 Page homePage
+	 String name
+	 String domain
 	
     String toString() { "${name}" }
 
-	@Property constraints = {
+    static constraints = {
 		name(blank:false,length:1..50)
 		domain(blank:false,length:1..50)
 	}

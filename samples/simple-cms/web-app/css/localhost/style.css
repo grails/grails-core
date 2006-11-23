@@ -1,5 +1,5 @@
 body{
-	background:#a7c226 url(img/bodybg.gif) repeat-x;
+	background-color:white;
 	color:#000000;
 	font-family:Tahoma, Arial, Helvetica, sans-serif;
 	margin:0;
@@ -11,7 +11,7 @@ body{
 	position: absolute;
 	top: 0;
 	left: 0;
-	background:url(img/logo.gif) top left no-repeat;
+	background:url(img/grails_logo.jpg) top left no-repeat;
 	color:#ffffff;
 	height:88px;
 	margin:0;
@@ -28,13 +28,14 @@ body{
 	left: 0;
 	margin: 0 auto;
 	text-align: left;
-	width: 783px;
+	width: 783px; 
+	
 
 }
 
 #nav {
 	position: absolute;
-	top: 58px;
+	top: 88px;
 	left 0;
 	height: 0;
 }
@@ -122,7 +123,7 @@ body{
 #subnav {
 	position: absolute;
 	left: 0;
-	top: 87px;
+	top: 107px;
 	z-index: 999;
 	padding-left: 110px;
 	padding-top: 10px;
@@ -132,7 +133,7 @@ body{
 	background-repeat:no-repeat;
 	background-position: top left;
 	width: 700px;
-	height: 75px;
+	height:55px;
 }
 
 #body {
@@ -164,13 +165,13 @@ body{
 	letter-spacing:0px;
 	padding:4px 11px 8px 3px;
 	text-decoration:none;
-	color: white;
+	color: grey;
 	font-size: 14px;
 	white-space: nowrap;
 }
 
 #nav a:hover {
-	color: #303030;
+	color: black	;
 }
 
 #nav #current {
@@ -179,7 +180,7 @@ body{
 
 #nav #current a {
 	background:url(img/tabs.gif) no-repeat 100% -41px;
-	color:#303030;
+	color:black;
 }
 
 
@@ -268,8 +269,8 @@ p {
 }
 
 #content h1 {
-	color:#4e214e;
-	font-size:100%;
+	color:black;
+	font-size:120%;
 	font-weight:bold;
 	margin-top: 20px;
 	padding:0;

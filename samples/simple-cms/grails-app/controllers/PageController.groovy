@@ -21,7 +21,7 @@
  * @author Graeme Rocher
  * @since 10-May-2006
  */
-class PageController extends BaseController {
+class PageController {
     def index = { 
 		redirect(action:show,id:session.site.homePage.id) 
 	}
@@ -205,7 +205,7 @@ class PageController extends BaseController {
 										content:link,
 										createdBy:session.user)
 										
-					p.addRevision(new Revision( 	content: params.editor,
+					p.addNewRevision(new Revision( 	content: params.editor,
 													updatedBy: session.user,
 													state: Revision.ADDED ))
 					parent.addPage(p)
@@ -293,12 +293,12 @@ class PageController extends BaseController {
 		}		
 
 		// the first level of items below the home page
-		def firstLevel =  Page.findAllByParent(p.site.homePage,[sort:'position'] )
+		def firstLevel =  Page.findAllByParent(p.site.homePage,[sort:'pos'] )
 							.findAll(ApplicationConfig.PAGE_DISPLAY_CRITERIA)
 			
 	    // a closure to be placed in the binding to retrieve child pages
 		def getChildPages = { parent ->
-			return Page.findAllByParent(parent,[sort:'position'] )
+			return Page.findAllByParent(parent,[sort:'pos'] )
 										.findAll(ApplicationConfig.PAGE_DISPLAY_CRITERIA)			
 		}
 		
@@ -437,7 +437,7 @@ class PageController extends BaseController {
 				if(params.comment) {
 					r.addComment(session.user, params.comment)	
 				}
-				page.addRevision( r )	
+				page.addNewRevision( r )	
 				page.save()
 				render(template:"/pagexml",model:[page:page,alert:'Page approved'])
 			}
@@ -496,12 +496,11 @@ class PageController extends BaseController {
 		
 		def p = Page.get(params.id)
 		if(p) {
-			def newPos = p.position - 1
-			println "updated position to ${newPos}"
-			def prevPages = Page
-				.findAllByPositionLessThanOrEqualAndParent(newPos,p.parent,[sort:'position'])
+			def newPos = p.pos - 1
 
-			println "Previous pages $prevPages"				
+			def prevPages = Page
+				.findAllByPosLessThanOrEqualAndParent(newPos,p.parent,[sort:'pos'])
+   	
 			def existing = null
 			
 			if(prevPages) {
@@ -511,15 +510,14 @@ class PageController extends BaseController {
 				existing = prevPages[prevPages.size()-2]
 			
 			
-			println "Existing page is $existing with position ${existing.position}" 
 			if(existing) {
-				while(existing.position <= newPos) {
-					existing.position = existing.position + 1
-					println "Updating existing position to ${existing.position}"	
+				while(existing.pos <= newPos) {
+					existing.pos = existing.pos + 1
+					println "Updating existing pos to ${existing.pos}"	
 				}
 				existing.save()					
 			}
-			p.position = newPos
+			p.pos = newPos
 			p.save()
 			render(template:"/pagexml",model:[page:p])			
 		}
@@ -536,10 +534,10 @@ class PageController extends BaseController {
 		
 		def p = Page.get(params.id)
 		if(p) {
-			def newPos = p.position + 1
-			println "updated position to ${newPos}"
+			def newPos = p.pos + 1
+			println "updated pos to ${newPos}"
 			def followingPages = Page
-				.findAllByPositionGreaterThanOrEqualAndParent(newPos,p.parent,[sort:'position'])
+				.findAllByPosGreaterThanOrEqualAndParent(newPos,p.parent,[sort:'pos'])
 
 			println "Following pages $followingPages"				
 			def existing = followingPages[0]
@@ -547,15 +545,15 @@ class PageController extends BaseController {
 				existing = followingPages[1]
 			
 			
-			println "Existing page is $existing with position ${existing.position}" 
+			println "Existing page is $existing with pos ${existing.pos}" 
 			if(existing) {
-				while(existing.position >= newPos) {
-					existing.position = existing.position - 1
-					println "Updating existing position to ${existing.position}"	
+				while(existing.pos >= newPos) {
+					existing.pos = existing.pos - 1
+					println "Updating existing pos to ${existing.pos}"	
 				}
 				existing.save()					
 			}
-			p.position = newPos
+			p.pos = newPos
 			p.save()
 			render(template:"/pagexml",model:[page:p])			
 		}
@@ -609,10 +607,13 @@ class PageController extends BaseController {
 			// create first revision
 			def rev = new Revision( page:page, content: page.content,updatedBy:session.user )
 			
-			if(params.comment) {
-				rev.addComment(session.user,params.comment)
+			if(params.comment) {   
+				if(params.comment.getClass().isArray())
+					rev.addComment(session.user,params.comment[0])
+				 else
+					rev.addComment(session.user, params.comment)
 			}
-			page.addRevision( rev )
+			page.addNewRevision( rev )
 			
 			if(parent) {
 				parent.addPage(page)
@@ -670,8 +671,12 @@ class PageController extends BaseController {
     def save = {
        def page = Page.get(params.page)
 		if(page) {
-			// update the content
-			page.content = params.editor
+			// update the content      
+			if(params.editor?.class.isArray())
+				page.content = params.editor[0]
+			else
+				page.content = params.editor 
+				
 			if(!page.revisions) {
 				def revision = new Revision( 	content: params.editor,
 												updatedBy: session.user,
@@ -679,7 +684,7 @@ class PageController extends BaseController {
 				if(params.comment) {
 					revision.addComment(session.user,params.comment)	
 				}
-				page.addRevision(revision)				
+				page.addNewRevision(revision)				
 			}
 			else {
 				def rev = page
@@ -688,7 +693,7 @@ class PageController extends BaseController {
 				if(rev.state == Revision.PUBLISHED) {
 					rev = new Revision( updatedBy:session.user,
 									   					state: Revision.EDITED )
-					page.addRevision( rev )
+					page.addNewRevision( rev )
 				}
 				else {
 					rev.content = params.editor

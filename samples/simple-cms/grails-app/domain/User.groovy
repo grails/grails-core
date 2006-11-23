@@ -21,28 +21,24 @@
  * @since 10-May-2006
  */
 class User {
-    @Property belongsTo = [Role,AccessKey]
+     static belongsTo = [Role,AccessKey]
+	 static optionals = ['location','accessKey']
 
-	@Property Long id
-	@Property Long version
-	
-	@Property optionals = ['location','accessKey']
-
-	@Property String title
-	@Property String firstName
-	@Property String lastName
-	@Property String email
-	@Property String company
-	@Property String login
-	@Property String pwd
-	@Property Role role
-	@Property String location
-	@Property AccessKey accessKey
-	@Property Boolean active = true
+	 String title
+	 String firstName
+	 String lastName
+	 String email
+	 String company
+	 String login
+	 String pwd
+	 Role role
+	 String location
+	 AccessKey accessKey
+	 Boolean active = true
 	
     String toString() { "$firstName $lastName" }
 
-    @Property constraints = {
+     static constraints = {
         title(length:1..10)
         firstName(blank:false)
         lastName(blank:false)

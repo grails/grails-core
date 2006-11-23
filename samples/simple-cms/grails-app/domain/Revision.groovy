@@ -31,19 +31,16 @@ class Revision implements Comparable {
 	static final DELETE_REQUESTED = "Delete Requested"
 	static final ADDED = "Added"
 	
-	@Property belongsTo = [Page,User]
-	@Property relatesToMany = [ comments : Comment ]
+	 static belongsTo = [Page,User]
+	 static hasMany = [ comments : Comment ]
 	
-	@Property Long id
-	@Property Long version
-    
-    @Property String content
-    @Property Integer number = 1
-    @Property Page page
-    @Property User updatedBy
-	@Property Date lastUpdated = new Date()
-	@Property String state = ADDED
-	@Property SortedSet comments
+     String content
+     Integer number = 1
+     Page page
+     User updatedBy
+	 Date lastUpdated = new Date()
+	 String state = ADDED
+	 SortedSet comments
 	
 	def addComment(user,msg) {
 		if(!comments)comments = new TreeSet()
@@ -52,12 +49,10 @@ class Revision implements Comparable {
 		return this
 	}
 	
-	@Property constraints = {
+	static constraints = {
 		state(inList:[PUBLISHED,REJECTED,EDITED,APPROVED,ADDED,DELETED,DELETE_REQUESTED])		
 	}
-    
-    String toString() { "${this.class.name} :  $id" }    
-   
+       
     int compareTo(other) {
     	if(number < other.number) {
     		return -1

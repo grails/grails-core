@@ -26,19 +26,17 @@ class Role {
     static final CONTENT_APPROVER = 'Content Approver'
     static final GENERAL_USER = 'General User'
 
-	@Property Long id
-	@Property Long version
-	@Property belongsTo = Site
-	@Property optionals = ['site']
+	 static belongsTo = Site
+	 static optionals = ['site']
 
-	@Property String title
-    @Property String name
-    @Property Site site
+	 String title
+     String name
+     Site site
 	
 
     String toString() { title }
 
-    @Property constraints = {
+    static constraints = {
 		title(blank:false)
         name(inList:[SYSTEM_ADMINISTRATOR,CONTENT_EDITOR,CONTENT_APPROVER,GENERAL_USER])		
     }

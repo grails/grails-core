@@ -21,15 +21,12 @@
  * @since 10-May-2006
  */
 class Comment implements Comparable {
-	@Property Long id
-	@Property Long version
+	 static belongsTo = [User,Revision]
 	
-	@Property belongsTo = [User,Revision]
-	
-	@Property User leftBy
-	@Property String message
-	@Property Date leftOn = new Date()
-	@Property Revision revision
+	 User leftBy
+	 String message
+	 Date leftOn = new Date()
+	 Revision revision
 	
 	int compareTo(other) {
 		if(leftOn < other.leftOn) return -1

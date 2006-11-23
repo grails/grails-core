@@ -27,33 +27,30 @@ class Page implements Comparable {
 	static final QUESTIONNAIRE = 'questionnaire'
 	static final LINK = 'link'	
 	
-	@Property belongsTo = [Site,Page,Revision]
-	@Property relatesToMany = [ children:Page,
+	 static belongsTo = [Site,Page,Revision]
+	 static hasMany = [ children:Page,
 								revisions:Revision]
 	
-	@Property Long id
-	@Property Long version
-	
-	@Property String type = STANDARD
-	@Property Site site
-	@Property Page parent
-	@Property User createdBy
-	@Property String title
-	@Property String content = ''
-	@Property SortedSet children
-	@Property SortedSet revisions
-	@Property Integer position = 1
-	@Property Boolean enabled = true
+	 String type = STANDARD
+	 Site site
+	 Page parent
+	 User createdBy
+	 String title
+	 String content = ''
+	 SortedSet children
+	 SortedSet revisions
+	 Integer pos = 1
+	 Boolean enabled = true
 	
 	def addPage(page) {
 		if(!children)children = new TreeSet()		
 		page.parent = this
-		page.position = children.size() + 1
+		page.pos = children.size() + 1
 		children.add(page)
 		return this
 	}
 	
-	def addRevision(rev) {
+	def addNewRevision(rev) {
 		if(!revisions)revisions = new TreeSet()
 		rev.page = this
 		rev.content= this.content
@@ -67,35 +64,10 @@ class Page implements Comparable {
 		return this
 	}
 
-	boolean equals(other) {
-		if(this == other) return true
-		if(!(other instanceof Page)) return false
-		if(!parent && (title == other.title)) return true		
-		if(title == other.title && parent.id == other.parent?.id) return true		
-		return false
-	}
-	
-	int hashCode() {
-		int result = 23 + position
-		if(title) {
-			result *= 37
-			result += title.hashCode()
-		}
-		if(parent?.id) {
-			result *= 37
-			result += (parent.id ^ (parent.id >>> 32))
-		}
-		if(site?.id) {
-			result += 37
-			result += (site.id ^ (site.id >>> 32))
-		}
-		return result
-	}
-	
 	int compareTo(other) {
-		if(position < other.position)
+		if(pos < other.pos)
 			return -1
-		else if(position == other.position)
+		else if(pos == other.pos)
 			return 0
 		else
 			return 1
@@ -103,7 +75,7 @@ class Page implements Comparable {
 	
     String toString() { title }
 
-	@Property constraints = {
+	 static constraints = {
 		title(blank:false,length:1..150)
 		site(nullable:false)
 		type(inList:[STANDARD,FORUM,QUESTIONNAIRE,LINK])

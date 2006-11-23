@@ -22,19 +22,16 @@
  * @since 10-May-2006
  */
 class AccessKey { 
-	@Property Long id
-	@Property Long version
-	
-	@Property belongsTo = [User,Site]
+	 static belongsTo = [User,Site]
 
-	@Property Role role
-	@Property Date created = new Date()
-	@Property Date startDate
-	@Property Date endDate
-	@Property Date expiryDate
-	@Property Integer usages = 1
-	@Property String code
-	@Property Site site
+	 Role role
+	 Date created = new Date()
+	 Date startDate
+	 Date endDate
+	 Date expiryDate
+	 Integer usages = 1
+	 String code
+	 Site site
 	
 	AccessKey() {
 		def r = new Random()
@@ -46,9 +43,8 @@ class AccessKey {
 
 		code = sb.toString()
 	}
-    String toString() { "${this.class.name} :  $id" }
 
-	@Property constraints = {
+	static constraints = {
 		startDate(nullable:false)
 		endDate(nullable:false)
 		expiryDate(nullable:false)

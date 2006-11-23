@@ -31,7 +31,7 @@ class ApplicationTagLib {
      *
      * eg. <link type="text/css" href="${createLinkTo(dir:'css',file:'main.css')}" />
      */
-    @Property createLinkTo = { attrs ->
+    def createLinkTo = { attrs ->
          out << grailsAttributes.getApplicationUri(request)
          if(attrs['dir']) {
             out << "/${attrs['dir']}"
@@ -47,7 +47,7 @@ class ApplicationTagLib {
      *  <g:link action="myaction">link 1</gr:link>
      *  <g:link controller="myctrl" action="myaction">link 2</gr:link>
      */
-    @Property link = { attrs, body ->
+    def link = { attrs, body ->
         out << "<a href=\""
         // create the link
         createLink(attrs)
@@ -73,7 +73,7 @@ class ApplicationTagLib {
      *
      *  <a href="${createLink(action:'list')}">List</a>
      */
-    @Property createLink = { attrs ->
+    def createLink = { attrs ->     
         out << grailsAttributes.getApplicationUri(request)
         // prefer a URL attribute
         if(attrs['url']) {
@@ -111,18 +111,20 @@ class ApplicationTagLib {
 	 *
 	 * }
 	 */
-	@Property withTag = { attrs, body ->
+	def withTag = { attrs, body ->
 		out << "<${attrs.name}"
 		if(attrs.attrs) {
 			attrs.attrs.each{ k,v ->
-				if(v instanceof Closure) {
-					out << " $k=\""
-				    v()
-					out << '"'
-				}
-				else {
-					out << " $k=\"$v\""
-				}					
+				if(v) {
+					if(v instanceof Closure) {
+						out << " $k=\""
+					    v()
+						out << '"'
+					}
+					else {
+						out << " $k=\"$v\""
+					}					
+				} 				
 			}
 		}
 		out << '>'

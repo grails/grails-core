@@ -21,33 +21,16 @@
  * @since 10-May-2006
  */
 class Answer { 
-	@Property Long id
-	@Property Long version
-
-	@Property belongsTo = Question
+	 static belongsTo = Question
 	
-	@Property boolean correct
-	@Property String text
-	@Property Question question	
+	 boolean correct
+	 String text
+	 Question question	
 	
-	@Property constraints = {
+	 static constraints = {
 		text(blank:false)
 		question(nullable:false)
 	}	
 	
     String toString() { "$text" }
-	
-	boolean equals(other) {
-		if(other?.is(this))return true
-		if(!(other instanceof Answer)) return false
-		
-		if(!id || !other?.id || id!=other?.id) return false
-		
-		return true
-	}
-	
-	int hashCode() {
-		int hashCode = 0
-		hashCode = 29 * (hashCode + ( !id ? 0 : id ^ (id >>> 32) ) )
-	}
 }	

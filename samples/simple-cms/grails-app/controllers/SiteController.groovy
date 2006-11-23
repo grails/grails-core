@@ -24,7 +24,10 @@ class SiteController extends BaseController {
     def index = {
         redirect(action:list)
 	}
-	
+	         
+	def testMe = {
+		render "text"
+	}
 	def admin = { 
 		flash.admin = true 
 		redirect(controller:'user',action:'login')
@@ -43,14 +46,14 @@ class SiteController extends BaseController {
 						return it.revisions?.last().state != Revision.DELETED					
 				}
     	}
-    	render(template:'subPageJSON',model:[pages: pages.sort{ it.position }  ])
+    	render(template:'subPageJSON',model:[pages: pages.sort{ it.pos }  ])
     }
 
 	def displayPage = {
 		if(params.id) {
 			def p = Page.get(params.id)
 			if(p) { 
-				render(template:'/pagexml',model:[page:p])
+ 				render(template:'/pagexml',model:[page:p])
 			}
 		}
 	}

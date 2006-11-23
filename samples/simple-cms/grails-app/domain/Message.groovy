@@ -21,21 +21,15 @@
  * @since 10-May-2006
  */
 class Message { 
-	@Property belongsTo = [Topic,Page,User]
+	 static belongsTo = [Topic,Page,User]
 	
-	@Property Long id
-	@Property Long version
-
-
-	@Property Topic topic
-	@Property String title
-	@Property String message
-	@Property User by
-	@Property Date datePosted = new Date()
+	 Topic topic
+	 String title
+	 String message
+	 User by
+	 Date datePosted = new Date()
 	
-    String toString() { "${this.class.name} :  $id" }
-
-	@Property constraints = {
+	 static constraints = {
 		title(length:1..50)
 		message(blank:false)
 		topic(nullable:false)

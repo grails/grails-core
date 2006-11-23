@@ -54,7 +54,8 @@ td .errors {
 .post .msg {
  padding:10px;
  border: 1px solid #003366;
- background-color:#E4EEB3;
+ background-color:white;
+ margin:20px;
 
 }
 th {

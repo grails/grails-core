@@ -21,22 +21,19 @@
  * @since 10-May-2006
  */
 class Topic implements Comparable { 
-	@Property belongsTo = [Page,User]
+	 static belongsTo = [Page,User]
 	
-	@Property Long id
-	@Property Long version
-
-	@Property Page forum
-	@Property String title
-	@Property String description
-	@Property Date dateAdded = new Date()
-	@Property User createdBy
+	 Page forum
+	 String title
+	 String description
+	 Date dateAdded = new Date()
+	 User createdBy
 	
 	int compareTo(other) {
 		return dateAdded.compareTo(other.dateAdded)			
 	}
 	
-	@Property constraints = {
+	static constraints = {
 		title(blank:false)
 		description(blank:false)
 		createdBy(nullable:false)

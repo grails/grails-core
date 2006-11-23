@@ -21,19 +21,15 @@
  * @since 10-May-2006
  */
 class Question { 
-	@Property Long id
-	@Property Long version
-	
-	@Property belongsTo = Page
-	@Property relatesToMany = [answers:Answer]
+	 static belongsTo = Page
+	 static hasMany = [answers:Answer]
 
-	@Property Page questionnaire
-	@Property String text
-	@Property Integer score = 1
-	@Property Integer number
-	@Property Set answers
+	 Page questionnaire
+	 String text
+	 Integer score = 1
+	 Integer number
 	
-    String toString() { "$text" }	
+     String toString() { "$text" }	
 	
 	def addAnswer(ans,isCorrect) {
 		if(!answers)answers = new HashSet()
@@ -43,7 +39,7 @@ class Question {
 		return this
 	}
 	
-	@Property constraints = {
+	static constraints = {
 		text(blank:false)
 		score(range:1..100)		
 		number(minSize:1)

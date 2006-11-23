@@ -25,7 +25,7 @@ class CMSTagLib {
 	/**
 	 * Only invokes the body if the user within the session is a system administrator
 	 */
-	@Property isSysAdmin = { attrs, body ->
+	def isSysAdmin = { attrs, body ->
 		if(session.user) {
 			def u = session.user
 			if(u.role.isSysAdmin()) {
@@ -37,7 +37,7 @@ class CMSTagLib {
 	/**
 	 * Only invokes the body if the user within the session is a content editor
 	 */
-	@Property isContentEditor = { attrs, body ->
+	def isContentEditor = { attrs, body ->
 		if(session.user) {
 			def u = session.user
 			if(u.role.isContentEditor()) {
@@ -49,7 +49,7 @@ class CMSTagLib {
 	/**
 	 * Only invokes the body if the user within the session is a content approver
 	 */
-	@Property isContentApprover = { attrs, body ->
+	def isContentApprover = { attrs, body ->
 		if(session.user) {
 			def u = session.user
 			if(u.role.isContentApprover()) {
@@ -62,7 +62,7 @@ class CMSTagLib {
 	 * Creates a re-usable dialog with a close button in the top right and
 	 * appropriate CSS styles. Could extend to make the dialog movable
 	 */
-	@Property dialog = { attrs,body ->
+	def dialog = { attrs,body ->
 		
 		def mkp = new groovy.xml.MarkupBuilder(out)
 		
@@ -83,11 +83,11 @@ class CMSTagLib {
 	 * The below are specific buttons that are only rendered if the write
 	 * permissions and page state are available on the session and model
 	 */
-	 @Property approveButton = { attrs ->
+	 def approveButton = { attrs ->
 		 createWorkFlowButton('Approve',attrs)
 	 }
 	 
-	 @Property rejectButton = { attrs ->
+	 def rejectButton = { attrs ->
 		 createWorkFlowButton('Reject',attrs)
 	 }	 
 	 
@@ -110,7 +110,7 @@ class CMSTagLib {
 						last.state == Revision.ADDED) {
 						def mkp = new groovy.xml.MarkupBuilder(out)
 						
-						mkp.input(	type:'submit',
+						mkp.input(	type:"submit",
 									name:"${name}Button",
 									id:"${name}Button",
 									value:"${name}",
@@ -124,7 +124,7 @@ class CMSTagLib {
 	 /**
 	  * A button that undoes the last change
 	  */
-	 @Property rollbackButton = { attrs ->
+	 def rollbackButton = { attrs ->
 		 def page = attrs.page
 		 if(page) {			
 			if(page.revisions) {
@@ -143,7 +143,7 @@ class CMSTagLib {
 		 }		 
 	 }
 	 
-	 @Property publishButton = { attrs ->
+	 def publishButton = { attrs ->
 		def page = attrs.page
 		if(page) {
 			if(page.revisions) {

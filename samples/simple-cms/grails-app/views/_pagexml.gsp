@@ -20,7 +20,7 @@
 		</g:else>
 		<details><![CDATA[
 			<div class="pageControls">
-				<g:form id="pageControls" name="pageControls" url="[controller:'page']">
+				<g:form id="pageControls" name="pageControls" url="[controller:'page']" onsubmit="return false;">
 					<input type="hidden" id="pageId" name="id" value="${page?.id}"></input>
 					<g:approveButton page="${page}"
 									url="[controller:'page',action:'approve']"></g:approveButton>

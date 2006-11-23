@@ -135,11 +135,7 @@
 				}				
 			}
 		 	function handleClick(e) {
-		 		var rightClick = false;
-				if (e.which) rightClick = (e.which == 3);
-				else if (e.button) rightClick = (e.button == 2);
-				
-				
+		 		var rightClick = true;
 				var node = siteTree.getNodeByProperty('label',this.innerHTML);
 				var labelId = node.data.id;
 				$('addParentId').value = labelId;
@@ -150,14 +146,14 @@
 					var xy = YAHOO.util.Dom.getXY(this);
 					var cm = document.getElementById('contextMenu');
 									
-					cm.style.display = '';
+					cm.style.display = '';                    
+					
+					
 					YAHOO.util.Dom.setX('contextMenu',xy[0] + (this.offsetWidth/2))
 					YAHOO.util.Dom.setY('contextMenu',xy[1] + this.offsetHeight)						
 					contextShowClick = false;
 				}
-				else {
-					displayPage(labelId);				
-				}
+         		displayPage(labelId);				
 				return false;				
 			}
 			function displayPage(id) {
@@ -174,8 +170,11 @@
 				alert('previewing!');
 			}
 			function handleDisplayPage(o) {
+
 				var pageXml = o.responseXML;
-				if(pageXml!=null) {
+				if(pageXml!=null) {                 
+					
+					
 					$('page').value = pageXml.getElementsByTagName('page')[0].getAttribute('id');
 					$('pageTitle').innerHTML = pageXml.getElementsByTagName("title")[0].firstChild.nodeValue;
 					$('dialog').innerHTML = pageXml.getElementsByTagName("details")[0].firstChild.nodeValue;
@@ -183,7 +182,7 @@
 					if($('UndoButton')!=null) {
 						$('UndoButton').onclick = function() {
 							if(confirm('Are you sure you want to rollback the current changes?')) {
-								var remoteSubmit = <g:remoteFunction onSuccess="handleUndo" url="[controller:'page',action:'rollback']" />
+								var remoteSubmit = function(){<g:remoteFunction onSuccess="handleUndo" url="[controller:'page',action:'rollback']" />}
 								YAHOO.util.Connect.setForm('pageControls');
 								remoteSubmit();							
 							}						
@@ -192,7 +191,7 @@
 					}
 					if($('ApproveButton')!=null) {
 						$('ApproveButton').onclick = function() {
-								var remoteSubmit = <g:remoteFunction onSuccess="handleUndo" url="[controller:'page',action:'approve']" />
+								var remoteSubmit = function() {<g:remoteFunction onSuccess="handleUndo" url="[controller:'page',action:'approve']" />}
 								YAHOO.util.Connect.setForm('pageControls');
 																
 								remoteSubmit();						
@@ -201,7 +200,7 @@
 					}		
 					if($('PublishButton')!=null) {
 						$('PublishButton').onclick = function() {
-								var remoteSubmit = <g:remoteFunction onSuccess="handleUndo" url="[controller:'page',action:'publish']" />
+								var remoteSubmit = function() {<g:remoteFunction onSuccess="handleUndo" url="[controller:'page',action:'publish']" />}
 								YAHOO.util.Connect.setForm('pageControls');
 								remoteSubmit();						
 							return false;
@@ -209,7 +208,7 @@
 					}						
 					if($('RejectButton') !=null) {
 						$('RejectButton').onclick = function() {
-								var remoteSubmit = <g:remoteFunction onSuccess="handleUndo" url="[controller:'page',action:'reject']" />
+								var remoteSubmit = function(){<g:remoteFunction onSuccess="handleUndo" url="[controller:'page',action:'reject']" />}
 								YAHOO.util.Connect.setForm('pageControls');
 								remoteSubmit();						
 							return false;

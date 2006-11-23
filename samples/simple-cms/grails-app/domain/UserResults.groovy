@@ -22,31 +22,11 @@
  * @since 10-May-2006
  */
 class UserResults { 
-	@Property Long id
-	@Property Long version
+	 static belongsTo = [User,Answer,Question,Page]
 	
-	@Property belongsTo = [User,Answer,Question,Page]
-	
-	@Property User user
-	@Property Page questionnaire
-	@Property Question question
-	@Property Answer answer
-	@Property Date created = new Date()
-	
-
-    String toString() { "${this.class.name} :  $id" }
-	
-	boolean equals(other) {
-		if(other?.is(this))return true
-		if(!(other instanceof UserResults)) return false
-		
-		if(!id || !other?.id || id!=other?.id) return false
-		
-		return true
-	}
-	
-	int hashCode() {
-		int hashCode = 0
-		hashCode = 29 * (hashCode + ( !id ? 0 : id ^ (id >>> 32) ) )
-	}
+	 User user
+	 Page questionnaire
+	 Question question
+	 Answer answer
+	 Date created = new Date()
 }	

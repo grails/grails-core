@@ -6,51 +6,62 @@
 	<classpathentry kind="src" path="grails-app/taglib"/>
 	<classpathentry kind="src" path="grails-app/domain"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="var" path="GRAILS_HOME/lib/antlr-2.7.6rc1.jar"/>
-	<classpathentry kind="var" path="GRAILS_HOME/lib/asm.jar"/>
-	<classpathentry kind="var" path="GRAILS_HOME/lib/asm-attrs.jar"/>
-	<classpathentry kind="var" path="GRAILS_HOME/lib/bsf.jar"/>
-	<classpathentry kind="var" path="GRAILS_HOME/lib/cglib-2.1.3.jar"/>
-	<classpathentry kind="var" path="GRAILS_HOME/lib/commons-cli-1.0.jar"/>
-	<classpathentry kind="var" path="GRAILS_HOME/lib/commons-collections-3.0.jar"/>
-	<classpathentry kind="var" path="GRAILS_HOME/lib/commons-dbcp-1.2.1.jar"/>
-	<classpathentry kind="var" path="GRAILS_HOME/lib/commons-el.jar"/>
-	<classpathentry kind="var" path="GRAILS_HOME/lib/commons-fileupload.jar"/>
-	<classpathentry kind="var" path="GRAILS_HOME/lib/commons-lang-2.0.jar"/>
-	<classpathentry kind="var" path="GRAILS_HOME/lib/commons-logging.jar"/>
-	<classpathentry kind="var" path="GRAILS_HOME/lib/commons-pool-1.2.jar"/>
-	<classpathentry kind="var" path="GRAILS_HOME/lib/commons-validator.jar"/>
-	<classpathentry kind="var" path="GRAILS_HOME/lib/dom4j-1.6.1.jar"/>
-	<classpathentry kind="var" path="GRAILS_HOME/lib/ehcache-1.1.jar"/>
-	<classpathentry kind="var" path="GRAILS_HOME/lib/ejb3-persistence.jar"/>
-	<classpathentry kind="var" path="GRAILS_HOME/lib/groovy-all-1.0-RC-01-SNAPSHOT.jar"/>
-	<classpathentry kind="var" path="GRAILS_HOME/lib/hibernate3.jar"/>
-	<classpathentry kind="var" path="GRAILS_HOME/lib/hibernate-annotations.jar"/>
-	<classpathentry kind="var" path="GRAILS_HOME/lib/hsqldb.jar"/>
-	<classpathentry kind="var" path="GRAILS_HOME/lib/jakarta-oro-2.0.8.jar"/>
-	<classpathentry kind="var" path="GRAILS_HOME/lib/jasper-compiler.jar"/>
-	<classpathentry kind="var" path="GRAILS_HOME/lib/jasper-runtime.jar"/>
-	<classpathentry kind="var" path="GRAILS_HOME/lib/javax.servlet.jar"/>
-	<classpathentry kind="var" path="GRAILS_HOME/lib/jdbc2_0-stdext.jar"/>
-	<classpathentry kind="var" path="GRAILS_HOME/lib/jstl-2.3.jar"/>
-	<classpathentry kind="var" path="GRAILS_HOME/lib/jstl-2.4.jar"/>
-	<classpathentry kind="var" path="GRAILS_HOME/lib/jta.jar"/>
-	<classpathentry kind="var" path="GRAILS_HOME/lib/junit.jar"/>
-	<classpathentry kind="var" path="GRAILS_HOME/lib/log4j-1.2.8.jar"/>
-	<classpathentry kind="var" path="GRAILS_HOME/lib/ognl-2.7.jar"/>
-	<classpathentry kind="var" path="GRAILS_HOME/lib/org.mortbay.jetty.jar"/>
-	<classpathentry kind="var" path="GRAILS_HOME/lib/quartz-1.5.2.jar"/>
-	<classpathentry kind="var" path="GRAILS_HOME/lib/servlet-api.jar"/>
-	<classpathentry kind="var" path="GRAILS_HOME/lib/sitemesh-2.2.1.jar"/>
-	<classpathentry kind="var" path="GRAILS_HOME/lib/spring.jar"/>
-	<classpathentry kind="var" path="GRAILS_HOME/lib/spring-binding.jar"/>
-	<classpathentry kind="var" path="GRAILS_HOME/lib/spring-mock.jar"/>
-	<classpathentry kind="var" path="GRAILS_HOME/lib/springmodules-sandbox.jar"/>
-	<classpathentry kind="var" path="GRAILS_HOME/lib/spring-webflow.jar"/>
-	<classpathentry kind="var" path="GRAILS_HOME/lib/standard-2.3.jar"/>
-	<classpathentry kind="var" path="GRAILS_HOME/lib/standard-2.4.jar"/>
-	<classpathentry kind="var" path="GRAILS_HOME/lib/xercesImpl.jar"/>
 	<classpathentry kind="var" path="GRAILS_HOME/lib/xml-apis.jar"/>
-	<classpathentry kind="var" path="GRAILS_HOME/dist/grails-0.2-SNAPSHOT.jar"/>
+	<classpathentry kind="var" path="GRAILS_HOME/lib/xercesImpl-2.5.0.jar"/>
+	<classpathentry kind="var" path="GRAILS_HOME/lib/standard-2.4.jar"/>
+	<classpathentry kind="var" path="GRAILS_HOME/lib/standard-2.3.jar"/>
+	<classpathentry kind="var" path="GRAILS_HOME/lib/spring-webflow.jar"/>
+	<classpathentry kind="var" path="GRAILS_HOME/lib/springmodules-sandbox.jar"/>
+	<classpathentry kind="var" path="GRAILS_HOME/lib/spring-mock.jar" sourcepath="/SPRING2_HOME/mock"/>
+	<classpathentry kind="var" path="GRAILS_HOME/lib/spring-binding.jar"/>
+	<classpathentry kind="var" path="GRAILS_HOME/lib/spring-2.0.jar" sourcepath="/SPRING2_HOME/src"/>
+	<classpathentry kind="var" path="GRAILS_HOME/lib/sitemesh-2.2.1.jar"/>
+	<classpathentry kind="var" path="GRAILS_HOME/lib/servletapi-2.4.jar"/>
+	<classpathentry kind="var" path="GRAILS_HOME/lib/quartz-1.5.2.jar"/>
+	<classpathentry kind="var" path="GRAILS_HOME/lib/oro-2.0.8.jar"/>
+	<classpathentry kind="var" path="GRAILS_HOME/lib/org.mortbay.jetty.jar"/>
+	<classpathentry kind="var" path="GRAILS_HOME/lib/ognl-2.7.jar"/>
+	<classpathentry kind="var" path="GRAILS_HOME/lib/log4j-1.2.8.jar"/>
+	<classpathentry kind="var" path="GRAILS_HOME/lib/junit-3.8.1.jar"/>
+	<classpathentry kind="var" path="GRAILS_HOME/lib/jta.jar"/>
+	<classpathentry kind="var" path="GRAILS_HOME/lib/jstl-2.4.jar"/>
+	<classpathentry kind="var" path="GRAILS_HOME/lib/jstl-2.3.jar"/>
+	<classpathentry kind="var" path="GRAILS_HOME/lib/jsp-api-2.0.jar"/>
+	<classpathentry kind="var" path="GRAILS_HOME/lib/jdbc2_0-stdext.jar"/>
+	<classpathentry kind="var" path="GRAILS_HOME/lib/jaxen-1.1-beta-11.jar"/>
+	<classpathentry kind="var" path="GRAILS_HOME/lib/jasper-runtime.jar"/>
+	<classpathentry kind="var" path="GRAILS_HOME/lib/jasper-compiler.jar"/>
+	<classpathentry kind="var" path="GRAILS_HOME/lib/hsqldb-1.8.0.5.jar"/>
+	<classpathentry kind="var" path="GRAILS_HOME/lib/hibernate-annotations.jar"/>
+	<classpathentry kind="var" path="GRAILS_HOME/lib/hibernate3.jar" sourcepath="/HIBERNATE_HOME/src"/>
+	<classpathentry kind="var" path="GRAILS_HOME/lib/groovy-starter.jar"/>
+	<classpathentry kind="var" path="GRAILS_HOME/lib/groovy-all-1.0-RC-01-SNAPSHOT.jar" sourcepath="/GROOVY_HOME/src/main"/>
+	<classpathentry kind="var" path="GRAILS_HOME/lib/gant-0.2.2-SNAPSHOT.jar"/>
+	<classpathentry kind="var" path="GRAILS_HOME/lib/ejb3-persistence.jar"/>
+	<classpathentry kind="var" path="GRAILS_HOME/lib/ehcache-1.1.jar"/>
+	<classpathentry kind="var" path="GRAILS_HOME/lib/dom4j-1.6.1.jar"/>
+	<classpathentry kind="var" path="GRAILS_HOME/lib/commons-validator-1.3.0.jar"/>
+	<classpathentry kind="var" path="GRAILS_HOME/lib/commons-pool-1.2.jar"/>
+	<classpathentry kind="var" path="GRAILS_HOME/lib/commons-logging-1.1.jar"/>
+	<classpathentry kind="var" path="GRAILS_HOME/lib/commons-lang-2.1.jar"/>
+	<classpathentry kind="var" path="GRAILS_HOME/lib/commons-io-1.2.jar"/>
+	<classpathentry kind="var" path="GRAILS_HOME/lib/commons-fileupload-1.1.1.jar"/>
+	<classpathentry kind="var" path="GRAILS_HOME/lib/commons-el-1.0.jar"/>
+	<classpathentry kind="var" path="GRAILS_HOME/lib/commons-dbcp-1.2.1.jar"/>
+	<classpathentry kind="var" path="GRAILS_HOME/lib/commons-collections-3.2.jar"/>
+	<classpathentry kind="var" path="GRAILS_HOME/lib/commons-cli-1.0.jar"/>
+	<classpathentry kind="var" path="GRAILS_HOME/lib/cglib-nodep-2.1_3.jar"/>
+	<classpathentry kind="var" path="GRAILS_HOME/lib/bsf-2.3.0.jar"/>
+	<classpathentry kind="var" path="GRAILS_HOME/lib/ant-nodeps.jar"/>
+	<classpathentry kind="var" path="GRAILS_HOME/lib/antlr-2.7.6rc1.jar"/>
+	<classpathentry kind="var" path="GRAILS_HOME/lib/ant.jar"/>
+	<classpathentry kind="var" path="GRAILS_HOME/dist/grails-0.4-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="lib/smtp.jar"/>
+	<classpathentry kind="lib" path="lib/mysql-connector-java-3.1.10-bin.jar"/>
+	<classpathentry kind="lib" path="lib/mail.jar"/>
+	<classpathentry kind="lib" path="lib/FCKeditor-2.3.jar"/>
+	<classpathentry kind="lib" path="lib/commons-email-1.0.jar"/>
+	<classpathentry kind="lib" path="lib/activation.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/grails"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

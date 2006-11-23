@@ -28,7 +28,7 @@ class UITagLib {
     /**
      * A tree widget based on the Yahoo UI library
      **/
-	@Property tree = { attrs, body ->
+	def tree = { attrs, body ->
 		if(!request[JavascriptTagLib.INCLUDED_LIBRARIES] || !request[JavascriptTagLib.INCLUDED_LIBRARIES].contains('yahoo')) {
 			out << '<script type="text/javascript">alert("Grails Message: The tree widget requires the \'yahoo\' and \'treeview\' libraries to be included with the <g:javascript library=\'yahooTree\' /> tag");</script>'		
 		}
@@ -151,7 +151,7 @@ class UITagLib {
 	 *
 	 * <g:richTextEditor name="editor" height="400" />
 	 */
-	@Property richTextEditor = { attrs ->
+	def richTextEditor = { attrs ->
 		withTag(name:'script',attributes:[type:'text/javascript']) {
 			if(attrs.onComplete) {
 				out.println "function FCKeditor_OnComplete( editorInstance ) {"
