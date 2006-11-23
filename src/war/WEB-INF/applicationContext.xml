@@ -5,14 +5,14 @@
 	<bean id="grailsApplication" class="org.codehaus.groovy.grails.commons.GrailsApplicationFactoryBean">
 		<description>Grails application factory bean</description>
 		<property name="groovyFiles">
-			<value>classpath:**/*.groovy</value>
+			<value>classpath:**/grails-app/**/*.groovy</value>
 		</property>
 		<property name="injectionOperation" ref="injectionOperation" />
 	</bean>
 
     <bean id="grailsResourceHolder" singleton="false" class="org.codehaus.groovy.grails.commons.spring.GrailsResourceHolder">
         <property name="resources">
-              <value>classpath:**/*.groovy</value>
+              <value>classpath:**/grails-app/**/*.groovy</value>
         </property>
     </bean>
     
