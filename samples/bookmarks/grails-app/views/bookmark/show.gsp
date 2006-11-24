@@ -1,0 +1,1 @@
+<g:render template="bookmark" model="[bookmark:bookmark]" />

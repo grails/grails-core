@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
+
+<beans>
+	<bean id="grailsApplication" class="org.codehaus.groovy.grails.commons.GrailsApplicationFactoryBean">
+		<description>Grails application factory bean</description>
+		<property name="groovyFiles">
+			<value>classpath:**/grails-app/**/*.groovy</value>
+		</property>
+		<property name="injectionOperation" ref="injectionOperation" />
+	</bean>
+
+    <bean id="grailsResourceHolder" singleton="false" class="org.codehaus.groovy.grails.commons.spring.GrailsResourceHolder">
+        <property name="resources">
+              <value>classpath:**/grails-app/**/*.groovy</value>
+        </property>
+    </bean>
+    
+	<bean id="domainInjector" class="org.codehaus.groovy.grails.injection.DefaultGrailsDomainClassInjector">	
+	</bean>
+	
+	<bean id="injectionOperation" class="org.codehaus.groovy.grails.injection.GrailsInjectionOperation">	
+	</bean>    
+
+   <bean id="characterEncodingFilter"
+      class="org.springframework.web.filter.CharacterEncodingFilter">
+        <property name="encoding">
+          <value>utf-8</value>
+        </property>
+   </bean>    	
+</beans>

@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<!DOCTYPE web-app PUBLIC
+	"-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN"
+	"http://java.sun.com/dtd/web-app_2_3.dtd">
+
+<web-app>
+
+	<context-param>
+		<param-name>log4jConfigLocation</param-name>
+		<param-value>/WEB-INF/log4j.properties</param-value>
+	</context-param>
+	
+	<context-param>
+	  <param-name>contextConfigLocation</param-name>
+	  <param-value>/WEB-INF/applicationContext.xml
+	   classpath:org/codehaus/xfire/spring/xfire.xml</param-value>
+	</context-param>	     
+
+	<filter>
+	   	<filter-name>sitemesh</filter-name>
+	    <filter-class>org.codehaus.groovy.grails.web.sitemesh.GrailsPageFilter</filter-class>
+	</filter>
+
+     <filter>
+        <filter-name>charEncodingFilter</filter-name>
+        <filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
+        <init-param>
+          <param-name>targetBeanName</param-name>
+          <param-value>characterEncodingFilter</param-value>
+        </init-param>
+        <init-param>
+          <param-name>targetFilterLifecycle</param-name>
+          <param-value>true</param-value>
+        </init-param>
+      </filter>   
+
+	<filter>
+	    <filter-name>Acegi Filter Chain Proxy</filter-name>
+	    <filter-class>
+		  org.acegisecurity.util.FilterToBeanProxy
+	    </filter-class>
+	    <init-param>
+		  <param-name>targetClass</param-name>
+		  <param-value>
+			org.acegisecurity.util.FilterChainProxy
+		  </param-value>
+	    </init-param>
+	</filter>
+
+    
+    <filter>
+        <filter-name>reloadFilter</filter-name>
+        <filter-class>org.codehaus.groovy.grails.web.servlet.filter.GrailsReloadServletFilter</filter-class>
+    </filter>
+
+        <!-- only apply reload filter for controller uris -->
+        
+            <filter-mapping>
+                <filter-name>reloadFilter</filter-name>
+                <url-pattern>/bookmark/*</url-pattern>
+            </filter-mapping>
+        
+            <filter-mapping>
+                <filter-name>reloadFilter</filter-name>
+                <url-pattern>/secure/*</url-pattern>
+            </filter-mapping>
+        
+            <filter-mapping>
+                <filter-name>reloadFilter</filter-name>
+                <url-pattern>/subscription/*</url-pattern>
+            </filter-mapping>
+        
+            <filter-mapping>
+                <filter-name>reloadFilter</filter-name>
+                <url-pattern>/tag/*</url-pattern>
+            </filter-mapping>
+        
+            <filter-mapping>
+                <filter-name>reloadFilter</filter-name>
+                <url-pattern>/user/*</url-pattern>
+            </filter-mapping>
+        
+
+        
+        
+
+	<filter-mapping>
+	  <filter-name>Acegi Filter Chain Proxy</filter-name>
+	  <url-pattern>/*</url-pattern>
+	</filter-mapping>
+
+    <filter-mapping>
+        <filter-name>charEncodingFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+    
+    <filter-mapping>
+    	<filter-name>sitemesh</filter-name>
+	    <url-pattern>/*</url-pattern>
+	</filter-mapping>
+     
+	
+	<listener>
+	  <listener-class>org.springframework.web.util.Log4jConfigListener</listener-class>
+	</listener>	
+	<listener>
+	  <listener-class>org.codehaus.groovy.grails.web.context.GrailsContextLoaderListener</listener-class>
+	</listener>	
+
+	<!-- Grails dispatcher servlet -->
+	<servlet>
+		<servlet-name>grails</servlet-name>
+		<servlet-class>org.codehaus.groovy.grails.web.servlet.GrailsDispatcherServlet</servlet-class>
+		<load-on-startup>3</load-on-startup>
+	</servlet>
+
+    <!-- The Groovy Server Pages servlet -->
+      <servlet>
+        <servlet-name>gsp</servlet-name>
+        <servlet-class>org.codehaus.groovy.grails.web.pages.GroovyPagesServlet</servlet-class>
+        
+        <init-param>
+            <param-name>showSource</param-name>
+            <param-value>1</param-value>
+            <description>
+              Allows developers to view the intermediade source code, when they pass
+                a spillGroovy argument in the URL.
+           </description>
+        </init-param>
+        
+     </servlet>
+
+    <servlet-mapping>
+        <servlet-name>gsp</servlet-name>
+        <url-pattern>*.gsp</url-pattern>
+    </servlet-mapping>
+    <!-- Map all requests to the Grails dispatcher servlet -->
+		
+		<servlet-mapping>
+			<servlet-name>grails</servlet-name>
+			<url-pattern>/bookmark/*</url-pattern>
+		</servlet-mapping>
+		
+		<servlet-mapping>
+			<servlet-name>grails</servlet-name>
+			<url-pattern>/secure/*</url-pattern>
+		</servlet-mapping>
+		
+		<servlet-mapping>
+			<servlet-name>grails</servlet-name>
+			<url-pattern>/subscription/*</url-pattern>
+		</servlet-mapping>
+		
+		<servlet-mapping>
+			<servlet-name>grails</servlet-name>
+			<url-pattern>/tag/*</url-pattern>
+		</servlet-mapping>
+		
+		<servlet-mapping>
+			<servlet-name>grails</servlet-name>
+			<url-pattern>/user/*</url-pattern>
+		</servlet-mapping>
+			
+	
+			
+
+	<servlet-mapping>
+		<servlet-name>grails</servlet-name>
+		<url-pattern>/services/*</url-pattern>
+	</servlet-mapping>
+	
+	<taglib>
+		<taglib-uri>http://java.sun.com/jstl/core</taglib-uri>
+		<taglib-location>/WEB-INF/tld/c.tld</taglib-location>
+	</taglib>
+	
+	<taglib>
+		<taglib-uri>http://java.sun.com/jstl/fmt</taglib-uri>
+		<taglib-location>/WEB-INF/tld/fmt.tld</taglib-location>
+	</taglib>
+	
+	<taglib>
+		<taglib-uri>http://www.springframework.org/tags</taglib-uri>
+		<taglib-location>/WEB-INF/tld/spring.tld</taglib-location>
+	</taglib>
+	
+	<taglib>
+		<taglib-uri>http://grails.codehaus.org/tags</taglib-uri>
+		<taglib-location>/WEB-INF/tld/grails.tld</taglib-location>
+	</taglib>		
+</web-app>
