@@ -19,8 +19,21 @@ import org.springframework.web.servlet.i18n.LocaleChangeInterceptor;
 
 import java.util.Map;
 
+/**
+ * NOTE: This test covers the old plug-in system. The system has been heavily re-worked. Please see
+ * PluginSystemTests in src/groovy
+ * 
+ * @author graemerocher
+ *
+ */
 public class PluginTests extends TestCase {
-    GenericApplicationContext appCtx;
+	
+	public void testTempPluginTests() {
+		// does nothing. All of the below is commented out because it relates to
+		// the original plugin proposal which has now been removed. However there
+		// may still be a place for a test with this name
+	}
+ /*   GenericApplicationContext appCtx;
 
     protected void setUp() throws Exception {
         if (appCtx != null) {
@@ -93,7 +106,7 @@ public class PluginTests extends TestCase {
     }
 
     public static class MyAwarePlugin implements GrailsPlugin {
-        public void doWithGenericApplicationContext(GenericApplicationContext applicationContext, GrailsApplication application) {
+        public void doWithApplicationContext(GenericApplicationContext applicationContext, GrailsApplication application) {
             RootBeanDefinition bd = new RootBeanDefinition(MyGrailsApplicationAware.class);
 
             applicationContext.registerBeanDefinition(MyGrailsApplicationAware.class.getName(), bd);
@@ -117,7 +130,7 @@ public class PluginTests extends TestCase {
     }
 
     public static class MyClassEditorPlugin implements GrailsPlugin {
-        public void doWithGenericApplicationContext(GenericApplicationContext applicationContext, GrailsApplication application) {
+        public void doWithApplicationContext(GenericApplicationContext applicationContext, GrailsApplication application) {
             RootBeanDefinition bd = new RootBeanDefinition(TestBean.class);
             MutablePropertyValues mpv = new MutablePropertyValues();
             mpv.addPropertyValue("myClass", "org.springframework.context.support.GenericApplicationContext");
@@ -125,5 +138,5 @@ public class PluginTests extends TestCase {
 
             applicationContext.registerBeanDefinition("myTestBean1", bd);
         }
-    }
+    }*/
 }
