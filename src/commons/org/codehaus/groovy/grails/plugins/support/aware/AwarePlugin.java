@@ -1,8 +1,9 @@
 package org.codehaus.groovy.grails.plugins.support.aware;
 
-import org.codehaus.groovy.grails.plugins.GrailsPlugin;
-import org.codehaus.groovy.grails.plugins.support.OrderedAdapter;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration;
+import org.codehaus.groovy.grails.plugins.AbstractGrailsPlugin;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.GenericApplicationContext;
 
 /**
@@ -11,20 +12,37 @@ import org.springframework.context.support.GenericApplicationContext;
  * @author Steven Devijver
  * @since 0.2
  */
-public class AwarePlugin extends OrderedAdapter implements GrailsPlugin {
+public class AwarePlugin extends AbstractGrailsPlugin {
 
-    public void doWithGenericApplicationContext(GenericApplicationContext applicationContext, GrailsApplication application) {
+    public AwarePlugin(Class pluginClass, GrailsApplication application) {
+		super(pluginClass, application);
+	}
+
+	public void doWithApplicationContext(ApplicationContext applicationContext) {
         registerGrailsApplicationAwareBeanPostProcessor(applicationContext, application);
         registerClassLoaderAwareBeanPostProcessor(applicationContext, application.getClassLoader());
     }
 
-    protected void registerGrailsApplicationAwareBeanPostProcessor(GenericApplicationContext applicationContext, GrailsApplication grailsApplication) {
-        applicationContext.getBeanFactory().addBeanPostProcessor(new GrailsApplicationAwareBeanPostProcessor(grailsApplication));
-        applicationContext.getBeanFactory().ignoreDependencyInterface(GrailsApplicationAware.class);
+    protected void registerGrailsApplicationAwareBeanPostProcessor(ApplicationContext applicationContext, GrailsApplication grailsApplication) {
+    	if(applicationContext instanceof GenericApplicationContext) {
+    		GenericApplicationContext ctx = (GenericApplicationContext)applicationContext;
+            ctx.getBeanFactory().addBeanPostProcessor(new GrailsApplicationAwareBeanPostProcessor(grailsApplication));
+            ctx.getBeanFactory().ignoreDependencyInterface(GrailsApplicationAware.class);
+	
+    	}
     }
 
-    protected void registerClassLoaderAwareBeanPostProcessor(GenericApplicationContext applicationContext, ClassLoader classLoader) {
-        applicationContext.getBeanFactory().addBeanPostProcessor(new ClassLoaderAwareBeanPostProcessor(classLoader));
-        applicationContext.getBeanFactory().ignoreDependencyInterface(ClassLoaderAware.class);
+    protected void registerClassLoaderAwareBeanPostProcessor(ApplicationContext applicationContext, ClassLoader classLoader) {
+    	if(applicationContext instanceof GenericApplicationContext) {
+    		GenericApplicationContext ctx = (GenericApplicationContext)applicationContext;    	
+    		ctx.getBeanFactory().addBeanPostProcessor(new ClassLoaderAwareBeanPostProcessor(classLoader));
+    		ctx.getBeanFactory().ignoreDependencyInterface(ClassLoaderAware.class);
+    	}
     }
+
+
+	public void doWithRuntimeConfiguration(RuntimeSpringConfiguration springConfig) {
+		// nothing
+		
+	}
 }

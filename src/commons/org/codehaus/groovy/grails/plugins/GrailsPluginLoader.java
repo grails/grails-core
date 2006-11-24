@@ -32,7 +32,7 @@ public class GrailsPluginLoader {
      * <p>This methods loads all resources using the <code>resourcePath</code> arguments into a Spring
      * {@link ApplicationContext}. Next all beans that implement in this {@link ApplicationContext} instance
      * that implement the {@link GrailsPlugin} interface are retrieved and the
-     * {@link GrailsPlugin#doWithGenericApplicationContext(org.springframework.context.support.GenericApplicationContext,org.codehaus.groovy.grails.commons.GrailsApplication)}
+     * {@link GrailsPlugin#doWithApplicationContext(org.springframework.context.support.GenericApplicationContext,org.codehaus.groovy.grails.commons.GrailsApplication)}
      * method is called once per bean.</b>
      *
      * <p>{@link GrailsPlugin} instances may implement the {@link org.springframework.core.Ordered}
@@ -60,7 +60,7 @@ public class GrailsPluginLoader {
 
         for (int i = 0; i < plugins.size(); i++) {
             GrailsPlugin plugin = (GrailsPlugin) plugins.get(i);
-            plugin.doWithGenericApplicationContext(applicationContext, grailsApplication);
+            plugin.doWithApplicationContext(applicationContext);
         }
     }
 

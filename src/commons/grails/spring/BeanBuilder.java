@@ -76,8 +76,10 @@ import groovy.lang.MissingMethodException;
  */
 public class BeanBuilder extends GroovyObjectSupport {
 	private static final String CREATE_APPCTX = "createApplicationContext";
+	private static final Object APPLICATION = "application";
 	private RuntimeSpringConfiguration springConfig = new DefaultRuntimeSpringConfiguration();
 	private BeanConfiguration currentBeanConfig;
+	private Object application;
 
 	
 	public BeanBuilder() {
@@ -310,12 +312,15 @@ public class BeanBuilder extends GroovyObjectSupport {
 	}
 
 	public Object getProperty(String name) {
+		if(name.equals(APPLICATION) && application != null) {
+			return this.application;
+		}
+		else {
 			return new RuntimeBeanReference(name, false);
+		}			
 	}
 
-
-
-	
-	
-	
+	public void setApplication(Object application) {
+		this.application = application;
+	}	
 }
