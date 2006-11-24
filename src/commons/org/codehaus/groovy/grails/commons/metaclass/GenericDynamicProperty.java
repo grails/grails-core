@@ -21,8 +21,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.sun.corba.se.internal.POA.GenericPOAClientSC;
-
 /**
  * A generic dyanmic property for any type
  * 
