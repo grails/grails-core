@@ -19,13 +19,11 @@ import groovy.lang.GroovyClassLoader;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Stack;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.logging.Log;
@@ -84,7 +82,7 @@ public class DefaultGrailsPluginManager implements GrailsPluginManager {
 	public DefaultGrailsPluginManager(String resourcePath, GrailsApplication application) throws IOException {
 		super();
 		if(application == null)
-			throw new IllegalArgumentException("Argument [applicaiton] cannot be null!");
+			throw new IllegalArgumentException("Argument [application] cannot be null!");
 		
 		this.pluginResources = new PathMatchingResourcePatternResolver().getResources(resourcePath);
 		this.application = application;	
@@ -93,7 +91,7 @@ public class DefaultGrailsPluginManager implements GrailsPluginManager {
 	public DefaultGrailsPluginManager(Class[] plugins, GrailsApplication application) {
 		this.pluginClasses = plugins;
 		if(application == null)
-			throw new IllegalArgumentException("Argument [applicaiton] cannot be null!");
+			throw new IllegalArgumentException("Argument [application] cannot be null!");
 		this.application = application;
 	}
 	
