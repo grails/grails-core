@@ -248,7 +248,7 @@ startGrails() {
           --main $CLASS \
           --conf "$GROOVY_CONF" \
           --classpath "$CP" \
-          "${ARGUMENTS[@]}"
+          "${ARGUMENTS}"
   	fi
   fi
 }
