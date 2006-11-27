@@ -43,7 +43,8 @@ task ('default': "Creates a ZIP containing source artifacts for reporting bugs")
     depends( init)
     
 	def fileName = new File(basedir).name
-	def zipName = "${basedir}/${fileName}-bug-report.zip"
+	def date = new java.text.SimpleDateFormat("ddMMyyyy").format(new Date())
+	def zipName = "${basedir}/${fileName}-bug-report-${date}.zip"
 
 	Ant.zip(destfile:zipName, basedir:"${basedir}/grails-app")
 
