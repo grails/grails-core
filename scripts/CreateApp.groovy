@@ -22,7 +22,7 @@
  * @since 0.4
  */
 
-appName = ""
+grailsAppName = ""
 
 Ant.property(environment:"env")   
 grailsHome = Ant.antProject.properties."env.GRAILS_HOME"    
@@ -31,7 +31,11 @@ includeTargets << new File ( "${grailsHome}/scripts/Clean.groovy" )
 includeTargets << new File ( "${grailsHome}/scripts/Init.groovy" )
 
 task ( "default" : "Creates a Grails project, including the necessary directory structure and commons files") {
-	depends( appName, createStructure, init )   
+   createApp()                                                      
+}     
+
+task( createApp: "The implementation task")  {
+   depends( appName, createStructure, init )   
 	
 	Ant.copy(todir:"${basedir}") {
 		fileset(dir:"${grailsHome}/src/grails/templates/ide-support/eclipse",
@@ -40,7 +44,7 @@ task ( "default" : "Creates a Grails project, including the necessary directory 
 	}   
 	Ant.copy(todir:"${basedir}", file:"${grailsHome}/src/grails/build.xml") 
 	Ant.copy(file:"${grailsHome}/src/grails/templates/ide-support/eclipse/.launch", 
-			tofile:"${basedir}/${appName}.launch")
+			tofile:"${basedir}/${grailsAppName}.launch")
 			
 	Ant.replace(dir:"${basedir}",includes:"*.*", 
 				token:"@grails.libs@", value:"${getGrailsLibs()}" )
@@ -49,21 +53,23 @@ task ( "default" : "Creates a Grails project, including the necessary directory 
     Ant.replace(dir:"${basedir}", includes:"*.*", 
     			token:"@grails.version@", value:"${grailsVersion}" )
 	Ant.replace(dir:"${basedir}", includes:"*.*", 
-				token:"@grails.project.name@", value:"${appName}" )
+				token:"@grails.project.name@", value:"${grailsAppName}" )
 	
-	println "Created Grails Application at $basedir"     
+	println "Created Grails Application at $basedir"	
 }
     
 task ( appName : "Evaluates the application name") {
 	if(!args) {
 		Ant.input(message:"Application name not specified. Please enter:", 
 				  addProperty:"grails.app.name")
-		appName = Ant.antProject.properties."grails.app.name"
+		grailsAppName = Ant.antProject.properties."grails.app.name"
 	}     
 	else {
-		appName = args.trim()
+		grailsAppName = args.trim()
+		if(grailsAppName.indexOf('\n') > -1)
+			grailsAppName = grailsAppName.replaceAll(/\n/, " ")
 	}  
-	basedir = "${basedir}/${appName}"
+	basedir = "${basedir}/${grailsAppName}"
 }                                    
     
 
