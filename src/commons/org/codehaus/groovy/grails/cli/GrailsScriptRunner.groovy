@@ -48,7 +48,28 @@ Licensed under Apache Standard License 2.0
 Grails home is set to: ${grailsHome}		
 		"""		  
 		if(args.length) {         
-            def baseDir = new File("")  
+            def baseDir = new File("")
+            if(!new File(baseDir, "grails-app").exists()) {
+            	
+            	// be careful with this next step...
+            	// baseDir.parentFile will return null since baseDir is new File("")
+            	// baseDir.absoluteFile needs to happen before retrieving the parentFile
+        		def parentDir = baseDir.absoluteFile.parentFile
+        		
+        		// keep moving up one directory until we find 
+        		// one that contains the grails-app dir or get 
+        		// to the top of the filesystem...
+        		while(parentDir != null && !new File(parentDir, "grails-app").exists()) {
+        			parentDir = parentDir.parentFile
+        		}
+            	
+        		if(parentDir != null) {
+        			// if we found the project root, use it
+        			baseDir = parentDir
+        		}
+            }
+            println "Base Directory: ${baseDir.absolutePath}"
+		
 			def scriptName
 			def allArgs = args[0].trim() 
 			
