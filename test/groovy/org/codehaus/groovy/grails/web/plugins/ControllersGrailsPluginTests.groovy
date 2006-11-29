@@ -15,11 +15,8 @@ class TestController {
 	}
 	
 	void testControllersPlugin() {
-		def pluginFile = getClass().classLoader.getResource("org/codehaus/groovy/grails/web/plugins/ControllersGrailsPlugin.groovy")
-		
-		assert pluginFile != null
-		
-		def pluginClass = gcl.parseClass(pluginFile.openStream())
+				
+		def pluginClass = gcl.loadClass("org.codehaus.groovy.grails.web.plugins.ControllersGrailsPlugin")
 		
 		def plugin = new DefaultGrailsPlugin(pluginClass, ga)
 		
