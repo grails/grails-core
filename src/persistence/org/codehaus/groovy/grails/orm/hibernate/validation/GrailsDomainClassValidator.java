@@ -82,7 +82,9 @@ public class GrailsDomainClassValidator implements Validator {
         BeanWrapper bean = new BeanWrapperImpl(obj);
 
         for (Iterator i = constrainedProperties.iterator(); i.hasNext();) {
+
             ConstrainedPersistentProperty c = (ConstrainedPersistentProperty)i.next();
+
             c.setHibernateTemplate(this.template);
             c.setMessageSource(this.messageSource);
             c.validate(obj, bean.getPropertyValue( c.getPropertyName() ),errors);

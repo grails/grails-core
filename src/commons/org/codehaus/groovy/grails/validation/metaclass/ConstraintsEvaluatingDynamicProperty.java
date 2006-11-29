@@ -14,16 +14,7 @@
  */ 
 package org.codehaus.groovy.grails.validation.metaclass;
 
-import groovy.lang.Binding;
-import groovy.lang.Closure;
-import groovy.lang.GroovyClassLoader;
-import groovy.lang.GroovyObject;
-import groovy.lang.Script;
-
-import java.io.InputStream;
-import java.util.Collections;
-import java.util.Map;
-
+import groovy.lang.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.control.CompilationFailedException;
@@ -34,8 +25,11 @@ import org.codehaus.groovy.grails.commons.metaclass.ProxyMetaClass;
 import org.codehaus.groovy.grails.orm.hibernate.validation.ConstrainedPersistentProperty;
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 import org.codehaus.groovy.grails.validation.ConstrainedPropertyBuilder;
-import org.springframework.beans.BeansException;
-import org.springframework.beans.InvalidPropertyException;
+
+import java.io.InputStream;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.Map;
 
 /**
  * This is a dynamic property that instead of returning the closure sets a new proxy meta class for the scope 
@@ -64,6 +58,7 @@ public class ConstraintsEvaluatingDynamicProperty extends AbstractDynamicPropert
     }    
 
     public Object get(Object object)  {
+
         // Suppress recursion problems if a GroovyObject
         if (object instanceof GroovyObject)
         {
@@ -75,74 +70,96 @@ public class ConstraintsEvaluatingDynamicProperty extends AbstractDynamicPropert
             }
         }
 
-        try
+        // Compile list of ancestors to query for constraints
+        LinkedList classChain = new LinkedList();
+        Class clazz = object.getClass();
+        while (clazz != Object.class)
         {
-            Closure c = (Closure)GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(object, PROPERTY_NAME);
-            if(c == null)
-            	throw new InvalidPropertyException(object.getClass(),PROPERTY_NAME, "[constraints] property not found");
-            ConstrainedPropertyBuilder delegate = new ConstrainedPropertyBuilder(object);
-            c.setDelegate(delegate);
-            c.call();
-            Map constrainedProperties = delegate.getConstrainedProperties();
-            if(this.persistentProperties != null) {
-            	for (int i = 0; i < this.persistentProperties.length; i++) {
-					GrailsDomainClassProperty p = this.persistentProperties[i];
-					if(!p.isOptional()) {
-						ConstrainedProperty cp = (ConstrainedProperty)constrainedProperties.get(p.getName());
-						if(cp == null) {
-							cp = new ConstrainedPersistentProperty(p.getDomainClass().getClazz(),
-																   p.getName(),
-																   p.getType());
-							cp.setOrder(constrainedProperties.size()+1);
-							constrainedProperties.put(p.getName(), cp);
-						}
-						if(!p.isAssociation())
-							cp.applyConstraint(ConstrainedProperty.NULLABLE_CONSTRAINT, Boolean.FALSE);
-					}
-				}
-            }
-            return constrainedProperties;
+            classChain.addFirst( clazz);
+            clazz = clazz.getSuperclass();
         }
-        catch (BeansException be)
-        {
-            // Fallback to xxxxConstraints.groovy script for Java domain classes
-            String className = object.getClass().getName();
-            String constraintsScript = className.replaceAll("\\.","/") + CONSTRAINTS_GROOVY;
-            InputStream stream = getClass().getClassLoader().getResourceAsStream(constraintsScript);
 
-            if(stream!=null) {
-                GroovyClassLoader gcl = new GroovyClassLoader();
-                try {
-                    Class scriptClass = gcl.parseClass(stream);
-                    Script script = (Script)scriptClass.newInstance();
-                    script.run();
-                    Binding binding = script.getBinding();
-                    if(binding.getVariables().containsKey(PROPERTY_NAME)) {
-                    	Closure c = (Closure)binding.getVariable(PROPERTY_NAME);
-                    	ConstrainedPropertyBuilder delegate = new ConstrainedPropertyBuilder(object);
-                    	c.setDelegate(delegate);
-                    	c.call();
-                    	return delegate.getConstrainedProperties();
-                    } else {
-                    	LOG.warn("Unable to evaluate constraints from ["+constraintsScript+"], constraints closure not found!");
-                    	return Collections.EMPTY_MAP;
+        ConstrainedPropertyBuilder delegate = new ConstrainedPropertyBuilder(object);
+
+        // Evaluate all the constraints closures in the inheritance chain
+        for (Iterator it = classChain.iterator(); it.hasNext();)
+        {
+            clazz = (Class)it.next();
+            Closure c = (Closure)GrailsClassUtils.getStaticPropertyValue(clazz, PROPERTY_NAME);
+            if (c == null)
+            {
+                LOG.warn("[constraints] property not found on class ["+clazz+"], constraints closure not found, trying script");
+                c = getConstraintsFromScript(object);
+            }
+
+            if (c != null)
+            {
+                c.setDelegate(delegate);
+                c.call();
+            }
+        }
+
+
+        Map constrainedProperties = delegate.getConstrainedProperties();
+        if(this.persistentProperties != null) {
+            for (int i = 0; i < this.persistentProperties.length; i++) {
+                GrailsDomainClassProperty p = this.persistentProperties[i];
+                if(!p.isOptional()) {
+                    ConstrainedProperty cp = (ConstrainedProperty)constrainedProperties.get(p.getName());
+                    if(cp == null) {
+
+                        cp = new ConstrainedPersistentProperty(p.getDomainClass().getClazz(),
+                                                               p.getName(),
+                                                               p.getType());
+                        cp.setOrder(constrainedProperties.size()+1);
+                        constrainedProperties.put(p.getName(), cp);
+                    }
+
+                    // Make sure all fields are required by default, unless specified otherwise by the constraints
+                    if(!p.isAssociation() && !cp.hasAppliedConstraint(ConstrainedProperty.NULLABLE_CONSTRAINT))
+                    {
+                        cp.applyConstraint(ConstrainedProperty.NULLABLE_CONSTRAINT, Boolean.FALSE);
                     }
                 }
-                catch (CompilationFailedException e) {
-                    LOG.error("Compilation error evaluating constraints for class ["+object.getClass()+"]: " + e.getMessage(),e );
-                    return Collections.EMPTY_MAP;
-                } catch (InstantiationException e) {
-                    LOG.error("Instantiation error evaluating constraints for class ["+object.getClass()+"]: " + e.getMessage(),e );
-                    return Collections.EMPTY_MAP;
-                } catch (IllegalAccessException e) {
-                    LOG.error("Illegal access error evaluating constraints for class ["+object.getClass()+"]: " + e.getMessage(),e );
-                    return Collections.EMPTY_MAP;
+            }
+        }
+
+        return constrainedProperties;
+    }
+
+    private Closure getConstraintsFromScript(Object object) {
+        // Fallback to xxxxConstraints.groovy script for Java domain classes
+        String className = object.getClass().getName();
+        String constraintsScript = className.replaceAll("\\.","/") + CONSTRAINTS_GROOVY;
+        InputStream stream = getClass().getClassLoader().getResourceAsStream(constraintsScript);
+
+        if(stream!=null) {
+            GroovyClassLoader gcl = new GroovyClassLoader();
+            try {
+                Class scriptClass = gcl.parseClass(stream);
+                Script script = (Script)scriptClass.newInstance();
+                script.run();
+                Binding binding = script.getBinding();
+                if(binding.getVariables().containsKey(PROPERTY_NAME)) {
+                    return (Closure)binding.getVariable(PROPERTY_NAME);
+                } else {
+                    LOG.warn("Unable to evaluate constraints from ["+constraintsScript+"], constraints closure not found!");
+                    return null;
                 }
             }
-            else {
-                return Collections.EMPTY_MAP;
+            catch (CompilationFailedException e) {
+                LOG.error("Compilation error evaluating constraints for class ["+object.getClass()+"]: " + e.getMessage(),e );
+                return null;
+            } catch (InstantiationException e) {
+                LOG.error("Instantiation error evaluating constraints for class ["+object.getClass()+"]: " + e.getMessage(),e );
+                return null;
+            } catch (IllegalAccessException e) {
+                LOG.error("Illegal access error evaluating constraints for class ["+object.getClass()+"]: " + e.getMessage(),e );
+                return null;
             }
-
+        }
+        else {
+            return null;
         }
     }
 

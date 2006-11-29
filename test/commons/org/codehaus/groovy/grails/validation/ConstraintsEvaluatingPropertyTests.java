@@ -1,15 +1,13 @@
 package org.codehaus.groovy.grails.validation;
 
 import groovy.lang.GroovyClassLoader;
-
-import java.util.Map;
-import java.util.Collection;
-
 import junit.framework.TestCase;
-
-import org.codehaus.groovy.grails.validation.metaclass.ConstraintsEvaluatingDynamicProperty;
-import org.codehaus.groovy.grails.orm.hibernate.validation.ConstrainedPersistentProperty;
 import org.codehaus.groovy.grails.commons.DefaultGrailsDomainClass;
+import org.codehaus.groovy.grails.orm.hibernate.validation.ConstrainedPersistentProperty;
+import org.codehaus.groovy.grails.validation.metaclass.ConstraintsEvaluatingDynamicProperty;
+
+import java.util.Collection;
+import java.util.Map;
 
 public class ConstraintsEvaluatingPropertyTests extends TestCase {
 
@@ -41,43 +39,53 @@ public class ConstraintsEvaluatingPropertyTests extends TestCase {
                 "   Long id\n"+  // WE NEED this even though GORM 2 doesn't, as we're not a "domain" class within grails-app
                 "   Long version\n"+ // WE NEED this even though GORM 2 doesn't, as we're not a "domain" class within grails-app
                 "   String name\n" +
-                "   static def constraints = {\n" +
+                "   static constraints = {\n" +
                 "      name( nullable: false, validator : { 'called' } )\n" +
                 "   }" +
                 "}";
-        ensureConstraintsPresent(classSource, 2); // Must have nullable and validator
+        ensureConstraintsPresent(new String[] { classSource }, 0, 2); // Must have nullable and validator
     }
 
-    private void ensureConstraintsPresent(String classSource, int constraintCount)
+    /**
+     * Test that static constraints work
+     */
+    public void testInheritedConstraints() throws Exception {
+        String classSource = "package org.codehaus.groovy.grails.validation\n" +
+                "class Test {\n" +
+                "   Long id\n"+  // WE NEED this even though GORM 2 doesn't, as we're not a "domain" class within grails-app
+                "   Long version\n"+ // WE NEED this even though GORM 2 doesn't, as we're not a "domain" class within grails-app
+                "   String name\n" +
+                "   static constraints = {\n" +
+                "      name( nullable: false, validator : { 'called' } )\n" +
+                "   }" +
+                "}";
+        String descendentSource = "package org.codehaus.groovy.grails.validation\n" +
+                "class TestB extends Test {\n" +
+                "   static constraints = {\n" +
+                "      name( length:5..20)\n" +
+                "   }" +
+                "}";
+        ensureConstraintsPresent(new String[] { classSource, descendentSource}, 1, 3); // Must have nullable and validator
+    }
+
+    private void ensureConstraintsPresent(String[] classSource, int classIndexToTest, int constraintCount)
             throws Exception
     {
         // We need to do a real test here to make sure
         GroovyClassLoader gcl = new GroovyClassLoader();
-        Class dc = gcl.parseClass(classSource);
+        Class[] classes = new Class[classSource.length];
+        for (int i = 0; i < classSource.length; i++) {
+            classes[i] = gcl.parseClass(classSource[i]);
+        }
 
-        DefaultGrailsDomainClass domainClass = new DefaultGrailsDomainClass(dc);
+        DefaultGrailsDomainClass domainClass = new DefaultGrailsDomainClass(classes[classIndexToTest]);
 
         Map constraints = domainClass.getConstrainedProperties();
 
         ConstrainedPersistentProperty p = (ConstrainedPersistentProperty)constraints.get("name");
         Collection cons = p.getAppliedConstraints();
                        
-        assertTrue( "Incorrect number of constraints extracted, found " + cons.size() + ": "+constraints, cons.size() == constraintCount);
+        assertEquals( "Incorrect number of constraints extracted: " +constraints, constraintCount, cons.size());
     }
 
-    /**
-     * Test that non-static constraints work
-     */
-    public void testNonStaticConstraints() throws Exception {
-        String classSource = "package org.codehaus.groovy.grails.validation\n" +
-                "class Test {\n" +
-                "   Long id\n"+  // WE NEED this even though GORM 2 doesn't, as we're not a "domain" class within grails-app
-                "   Long version\n"+ // WE NEED this even though GORM 2 doesn't, as we're not a "domain" class within grails-app
-                "   String name\n" +
-                "   def constraints = {\n" +
-                "      name( nullable: false, validator : { 'called' } )\n" +
-                "   }" +
-                "}";
-        ensureConstraintsPresent(classSource, 2); // Must have nullable and validator
-    }
 }

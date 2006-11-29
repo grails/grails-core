@@ -38,7 +38,7 @@ public class DomainClassPropertyComparatorTests extends TestCase {
                                         "\nDate age" +
                                         "\nString zip" +
                                         "\nString dob" +
-                                        "\ndef constraints = {" +
+                                        "\nstatic constraints = {" +
                                         "\n  name(length:5..15)" +
                                         "\n  age()" +
                                         "}  }");

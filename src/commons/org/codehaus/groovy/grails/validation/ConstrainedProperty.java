@@ -15,10 +15,10 @@
 package org.codehaus.groovy.grails.validation;
 
 
+import groovy.lang.Closure;
 import groovy.lang.IntRange;
 import groovy.lang.MissingPropertyException;
 import groovy.lang.Range;
-import groovy.lang.Closure;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.logging.Log;
@@ -1188,6 +1188,13 @@ public class ConstrainedProperty   {
      */
     public Collection getAppliedConstraints() {
         return appliedConstraints.values();
+    }
+
+    /**
+     * @return Returns true if the specified constraint name is being applied to this property
+     */
+    public boolean hasAppliedConstraint(String constraintName) {
+        return appliedConstraints.containsKey(constraintName);
     }
 
     /**

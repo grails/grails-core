@@ -15,6 +15,7 @@ import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.validation.Errors;
 
+import java.beans.IntrospectionException;
 import java.util.*;
 
 public class PersistentMethodTests extends AbstractDependencyInjectionSpringContextTests {
@@ -33,23 +34,34 @@ public class PersistentMethodTests extends AbstractDependencyInjectionSpringCont
     }
 
     protected void onSetUp() throws Exception {
-            Class groovyClass = cl.parseClass("public class PersistentMethodTests {\n" +
-                "\n" +
-                "\t List optionals = [ \"age\" ];\n" +
-                "\t\n" +
-                "\t Long id; \n" +
-                "\t Long version; \n" +
-                "\t\n" +
-                "\t String firstName; \n" +
-                "\t String lastName; \n" +
-                "\t Integer age;\n" +
-                  "boolean active = true" +
-                "\t\n" +
-                "\tdef constraints = {\n" +
-                "\t\tfirstName(length:4..15)\n" +
-                "\t}\n" +
-                "}");
-        grailsApplication = new DefaultGrailsApplication(new Class[]{groovyClass},cl);
+        Class groovyClass = cl.parseClass("public class PersistentMethodTests {\n" +
+            "\n" +
+            "\t List optionals = [ \"age\" ];\n" +
+            "\t\n" +
+            "\t Long id; \n" +
+            "\t Long version; \n" +
+            "\t\n" +
+            "\t String firstName; \n" +
+            "\t String lastName; \n" +
+            "\t Integer age;\n" +
+              "boolean active = true" +
+            "\t\n" +
+            "\tstatic constraints = {\n" +
+            "\t\tfirstName(length:4..15)\n" +
+            "\t\tlastName(nullable:false)\n" +
+            "\t}\n" +
+            "}");
+
+        Class descendentClass = cl.parseClass(
+            "public class PersistentMethodTestsDescendent extends PersistentMethodTests {\n" +
+            "   String gender\n" +
+            "   static constraints = {\n" +
+            "       gender(blank:false)\n" +
+            "   }\n" +
+            "}"
+        );
+
+        grailsApplication = new DefaultGrailsApplication(new Class[]{groovyClass, descendentClass},cl);
 
 
         DefaultGrailsDomainConfiguration config = new DefaultGrailsDomainConfiguration();
@@ -75,13 +87,18 @@ public class PersistentMethodTests extends AbstractDependencyInjectionSpringCont
             TransactionSynchronizationManager.bindResource(this.sessionFactory, new SessionHolder(hibSession));
         }
 
+        initDomainClass( groovyClass, "PersistentMethodTests");
+        initDomainClass( descendentClass, "PersistentMethodTestsDescendent");
+
+        super.onSetUp();
+    }
+
+    protected void initDomainClass(Class groovyClass, String classname) throws IntrospectionException {
         new DomainClassMethods(grailsApplication,groovyClass,sessionFactory,cl);
         GrailsDomainClassValidator validator = new GrailsDomainClassValidator();
-        GrailsDomainClass domainClass =this.grailsApplication.getGrailsDomainClass("PersistentMethodTests");
-        validator.setDomainClass(this.grailsApplication.getGrailsDomainClass("PersistentMethodTests"));
+        GrailsDomainClass domainClass =this.grailsApplication.getGrailsDomainClass(classname);
+        validator.setDomainClass(this.grailsApplication.getGrailsDomainClass(classname));
         domainClass.setValidator(validator);
-        
-        super.onSetUp();
     }
 
     protected String[] getConfigLocations() {
@@ -132,9 +149,38 @@ public class PersistentMethodTests extends AbstractDependencyInjectionSpringCont
         Errors errors = (Errors)obj.getProperty("errors");
         assertNotNull(errors);
         assertTrue(errors.hasErrors());
-
     }
     
+    public void testValidatePersistentMethodOnDerivedClass() {
+        GrailsDomainClass domainClass = this.grailsApplication.getGrailsDomainClass("PersistentMethodTestsDescendent");
+
+        GroovyObject obj = (GroovyObject)domainClass.newInstance();
+        obj.setProperty( "id", new Long(1) );
+        obj.setProperty( "gender", "female" );
+
+        obj.invokeMethod("validate", null);
+
+        Errors errors = (Errors)obj.getProperty("errors");
+        assertNotNull(errors);
+        assertTrue(errors.hasErrors());
+
+        // Check that nullable constraints on superclass are throwing errors
+        obj = (GroovyObject)domainClass.newInstance();
+        obj.setProperty( "id", new Long(1) );
+        obj.setProperty( "gender", "female" );
+        obj.setProperty( "firstName", "Marc" );
+
+        obj.invokeMethod("validate", null);
+
+        errors = (Errors)obj.getProperty("errors");
+
+        System.out.println("errors = " + errors);
+        
+        assertNotNull(errors);
+        assertTrue(errors.hasErrors());
+        assertEquals(1, errors.getFieldErrorCount("lastName"));
+    }
+
     public void testFindPersistentMethods() {
         GrailsDomainClass domainClass = this.grailsApplication.getGrailsDomainClass("PersistentMethodTests");
 
