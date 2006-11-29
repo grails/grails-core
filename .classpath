@@ -10,6 +10,7 @@
 	<classpathentry kind="src" output="target/test-classes" path="test/persistence"/>
 	<classpathentry kind="src" output="target/test-classes" path="test/scaffolding"/>
 	<classpathentry kind="src" path="test/groovy"/>
+	<classpathentry kind="src" path="src/groovy"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="var" path="GRAILS_HOME/lib/commons-cli-1.0.jar"/>
 	<classpathentry kind="var" path="GRAILS_HOME/lib/commons-dbcp-1.2.1.jar"/>
@@ -30,7 +31,7 @@
 	<classpathentry kind="var" path="GRAILS_HOME/lib/quartz-1.5.2.jar"/>
 	<classpathentry kind="var" path="GRAILS_HOME/lib/sitemesh-2.2.1.jar"/>
 	<classpathentry kind="var" path="GRAILS_HOME/lib/spring-binding.jar"/>
-	<classpathentry kind="var" path="GRAILS_HOME/lib/spring-mock.jar"/>
+	<classpathentry kind="var" path="GRAILS_HOME/lib/spring-mock.jar" sourcepath="/SPRING2_HOME/mock"/>
 	<classpathentry kind="var" path="GRAILS_HOME/lib/springmodules-sandbox.jar"/>
 	<classpathentry kind="var" path="GRAILS_HOME/lib/spring-webflow.jar"/>
 	<classpathentry kind="var" path="GRAILS_HOME/lib/standard-2.3.jar"/>
