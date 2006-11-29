@@ -58,8 +58,34 @@ public class FormTagLibTests extends AbstractTagLibTests {
         assertEquals("input",inputElement.getName());
 
         assertEquals("testField",inputElement.attributeValue("name"));
+        assertEquals("testField",inputElement.attributeValue("id"));
         assertEquals("text",inputElement.attributeValue("type"));
         assertEquals("1",inputElement.attributeValue("value"));
+    }
+
+    public void testTextAreaTag() throws Exception {
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
+
+        Closure tag = getTag("textArea",pw);
+
+        assertNotNull(tag);
+
+        Map attrs = new HashMap();
+        attrs.put("name","testField");
+        attrs.put("value", "1");
+
+        tag.call(new Object[]{attrs});
+
+        Document document = DocumentHelper.parseText(sw.toString());
+        assertNotNull(document);
+
+        Element inputElement = document.getRootElement();
+        assertEquals("textarea",inputElement.getName());
+
+        assertEquals("testField",inputElement.attributeValue("name"));
+        assertEquals("testField",inputElement.attributeValue("id"));
+        assertEquals("1",inputElement.getTextTrim());
     }
     public void testHiddenFieldTag() throws Exception {
         StringWriter sw = new StringWriter();

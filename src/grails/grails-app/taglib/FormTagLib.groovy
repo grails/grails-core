@@ -53,32 +53,61 @@ class FormTagLib {
 	 * A general tag for creating fields
 	 */
 	def field = { attrs ->  
+        resolveAttributes( attrs)
+
+		out << "<input type='${attrs.remove('type')}' "
+        outputAttributes(attrs)
+		out << "/>"
+	}
+
+	/**
+	 * A general tag for creating textareas
+	 */
+	def textArea = { attrs ->
+	    resolveAttributes(attrs)
+
+        // Pull out the value to use as content not attrib
+        def value = attrs.remove( 'value')
+
+		out << "<textarea "
+        outputAttributes(attrs)
+		out << ">" << value << "</textarea>"
+	}
+
+    /**
+     * Check required attributes, set the id to name if no id supplied, extract bean values etc.
+     */
+    void resolveAttributes(attrs)
+    {
         if(!attrs.name && !attrs.field) {
             throwTagError("Tag [$tagName] is missing required attribute [name] or [field]")
-        }		
-		attrs.remove('tagName')
-		
-		if(attrs.field) 
-			attrs.name = attrs.remove('field') 	
+        }
+        attrs.remove('tagName')
 
-	  	attrs.id = (!attrs.id ? attrs.name : attrs.id)
+        attrs.id = (!attrs.id ? attrs.name : attrs.id)
 
-		def val = attrs.remove('bean')
-		if(val) {                               
-			if(attrs.name.indexOf('.'))
-	    		attrs.name.split('\\.').each { val = val?."$it" }
-	        else {
-		    	val = val[name]
-			}
-			attrs.value = val		
-		}		
-		attrs.value = (attrs.value ? attrs.value : "")
-		out << "<input type='${attrs.remove('type')}' "
+        def val = attrs.remove('bean')
+        if(val) {
+            if(attrs.name.indexOf('.'))
+                attrs.name.split('\\.').each { val = val?."$it" }
+            else {
+                val = val[name]
+            }
+            attrs.value = val
+        }
+        attrs.value = (attrs.value ? attrs.value : "")
+    }
+
+    /**
+     * Dump out attributes in HTML compliant fashion
+     */
+    void outputAttributes(attrs)
+    {
         attrs.each { k,v ->
             out << k << "=\"" << v << "\" "
-        }		
-		out << "/>"		
-	}
+        }
+    }
+
     /**
      *  General linking to controllers, actions etc. Examples:
      *
@@ -96,10 +125,8 @@ class FormTagLib {
             out << 'method="post" '
         }
         // process remaining attributes
-        attrs.each { k,v ->
+        outputAttributes(attrs)
 
-            out << k << "=\"" << v << "\" "
-        }
         out << ">"
         // output the body
         body()
@@ -122,9 +149,8 @@ class FormTagLib {
              out << "value='${value}'"
         }
         // process remaining attributes
-        attrs.each { k,v ->
-            out << k << "=\"" << v << "\" "
-        }
+        outputAttributes(attrs)
+
         // close tag
         out.println '/>'
 
@@ -309,9 +335,8 @@ class FormTagLib {
 
         out << "<select name='${attrs.remove('name')}' "
         // process remaining attributes
-        attrs.each { k,v ->
-            out << k << "=\"" << v << "\" "
-        }
+        outputAttributes(attrs)
+
         out << '>'
         out.println()
         // create options from list
@@ -386,9 +411,8 @@ class FormTagLib {
           }
           out << "value='true' "
         // process remaining attributes
-        attrs.each { k,v ->
-            out << k << "=\"" << v << "\" "
-        }
+        outputAttributes(attrs)
+
         // close the tag, with no body
         out << ' />'
 
@@ -408,9 +432,8 @@ class FormTagLib {
           }
           out << "value=\"$value\" "
         // process remaining attributes
-        attrs.each { k,v ->
-            out << k << "=\"" << v << "\" "
-        }
+        outputAttributes(attrs)
+
         // close the tag, with no body
         out << ' ></input>'
      }
