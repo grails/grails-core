@@ -20,6 +20,8 @@ import junit.framework.TestCase;
 
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.support.MockApplicationContext;
+import org.springframework.mock.web.MockServletContext;
 /**
  * Abstract simple test harness for testing Grails Applications that just loads
  * the parsed classes into the GrailsApplication instance
@@ -36,6 +38,7 @@ public abstract class AbstractGrailsMockTests extends TestCase {
      * The GrailsApplication instance created during setup
      */
     public GrailsApplication ga;
+    public MockApplicationContext ctx;
 
     protected final void setUp() throws Exception {
         super.setUp();
@@ -43,6 +46,8 @@ public abstract class AbstractGrailsMockTests extends TestCase {
         onSetUp();
 
         ga = new DefaultGrailsApplication(gcl.getLoadedClasses(),gcl);
+        ctx = new MockApplicationContext();
+        ctx.registerMockBean(GrailsApplication.APPLICATION_ID, ga);
     }
     
 
@@ -50,4 +55,7 @@ public abstract class AbstractGrailsMockTests extends TestCase {
 		
 	}
 
+	protected MockServletContext createMockServletContext() {
+		return new MockServletContext();
+	}
 }

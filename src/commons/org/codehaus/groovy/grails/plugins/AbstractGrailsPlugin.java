@@ -15,6 +15,8 @@
  */ 
 package org.codehaus.groovy.grails.plugins;
 
+import groovy.util.slurpersupport.GPathResult;
+
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
@@ -30,6 +32,8 @@ import org.springframework.context.ApplicationContext;
  *
  */
 public abstract class AbstractGrailsPlugin implements GrailsPlugin {
+
+
 
 	protected GrailsApplication application;
 	protected BigDecimal version = new BigDecimal("0.1");
@@ -63,7 +67,15 @@ public abstract class AbstractGrailsPlugin implements GrailsPlugin {
 	
 
 	public abstract void doWithRuntimeConfiguration(RuntimeSpringConfiguration springConfig);
+	
+	
+	public void checkForChanges() {
+		// do nothing		
+	}
 
+	public void doWithWebDescriptor(GPathResult webXml) {
+		// do nothing		
+	}
 	public String[] getDependencyNames() {
 		return this.dependencyNames;
 	}

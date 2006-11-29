@@ -817,4 +817,22 @@ public class GrailsClassUtils {
 		}
 		return elements;
 	}
+
+	/**
+	 * Retrieves the logical class name of a Grails artifact given the Grails class
+	 * and a specified trailing name
+	 * 
+	 * @param clazz The class
+	 * @param trailingName The trailing name such as "Controller" or "TagLib"
+	 * @return The logical class name
+	 */
+	public static String getLogicalName(Class clazz, String trailingName) {
+		if(!StringUtils.isBlank(trailingName)) {
+			String shortName = getShortName(clazz);		
+			if(shortName.indexOf( trailingName ) > - 1) {
+			    return shortName.substring(0, shortName.length() - trailingName.length());
+			}			
+		}
+		return clazz.getName();
+	}
 }

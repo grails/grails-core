@@ -11,7 +11,7 @@ import org.springframework.web.servlet.i18n.CookieLocaleResolver;
 
 public class GrailsPluginManagerTests extends AbstractGrailsMockTests {
 
-	private static final String RESOURCE_PATH = "classpath*:org/codehaus/groovy/grails/plugins/*GrailsPlugin.groovy";
+	private static final String RESOURCE_PATH = "classpath:org/codehaus/groovy/grails/plugins/ClassEditorGrailsPlugin.groovy";
 
 	public void testDefaultGrailsPluginManager() throws Exception {
 		DefaultGrailsPluginManager manager = new DefaultGrailsPluginManager(RESOURCE_PATH,ga);
@@ -58,6 +58,7 @@ public class GrailsPluginManagerTests extends AbstractGrailsMockTests {
 		manager.loadPlugins()
 		
 		def springConfig = new org.codehaus.groovy.grails.commons.spring.DefaultRuntimeSpringConfiguration()
+		springConfig.servletContext = createMockServletContext()
 		manager.doRuntimeConfiguration(springConfig)
 		
 		def ctx = springConfig.getApplicationContext()
@@ -71,6 +72,8 @@ public class GrailsPluginManagerTests extends AbstractGrailsMockTests {
 		manager.loadPlugins()
 		
 		def springConfig = new org.codehaus.groovy.grails.commons.spring.DefaultRuntimeSpringConfiguration()
+		springConfig.servletContext = createMockServletContext()
+		
 		manager.doRuntimeConfiguration(springConfig)
 		
 		def ctx = springConfig.getApplicationContext()

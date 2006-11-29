@@ -21,10 +21,14 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.beans.factory.UrlMappingFactoryBean;
 import org.codehaus.groovy.grails.commons.*;
+import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException;
 import org.codehaus.groovy.grails.orm.hibernate.ConfigurableLocalSessionFactoryBean;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsDomainConfigurationUtil;
 import org.codehaus.groovy.grails.orm.hibernate.support.HibernateDialectDetectorFactoryBean;
 import org.codehaus.groovy.grails.orm.hibernate.validation.GrailsDomainClassValidator;
+import org.codehaus.groovy.grails.plugins.DefaultGrailsPluginManager;
+import org.codehaus.groovy.grails.plugins.GrailsPlugin;
+import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.codehaus.groovy.grails.scaffolding.*;
 import org.codehaus.groovy.grails.support.ClassEditor;
 import org.codehaus.groovy.grails.web.errors.GrailsExceptionResolver;
@@ -101,10 +105,17 @@ public class GrailsRuntimeConfigurator {
 	private ApplicationContext parent;
 	private boolean loadExternalPersistenceConfig = true;
     private boolean parentDataSource = false;
+	private GrailsPluginManager pluginManager;
 
     public GrailsRuntimeConfigurator(GrailsApplication application) {
         super();
         this.application = application;
+        try {
+			this.pluginManager = new DefaultGrailsPluginManager("**/plugins/*/**GrailsPlugin.groovy", application);
+			this.pluginManager.loadPlugins();
+		} catch (IOException e) {
+			LOG.warn("I/O error loading plugin manager!:"+e.getMessage(), e);
+		}        
     }
 	
 	public GrailsRuntimeConfigurator(GrailsApplication application, ApplicationContext parent) {
@@ -112,6 +123,12 @@ public class GrailsRuntimeConfigurator {
 		this.application = application;
 		this.parent = parent;
         this.parentDataSource = parent.containsBean(DATA_SOURCE_BEAN);
+        try {
+			this.pluginManager = new DefaultGrailsPluginManager("**/plugins/*/**GrailsPlugin.groovy", application);
+			this.pluginManager.loadPlugins();
+		} catch (IOException e) {
+			LOG.warn("I/O error loading plugin manager!:"+e.getMessage(), e);
+		}
     }
 
 	/**
@@ -534,145 +551,10 @@ public class GrailsRuntimeConfigurator {
 	}
 
 	private void populateControllerReferences(RuntimeSpringConfiguration springConfig) {
-		// configure exception handler which allows Grails to display the errors view
-		springConfig
-			.addSingletonBean(EXCEPTION_HANDLER_BEAN, GrailsExceptionResolver.class)
-			.addProperty("exceptionMappings","java.lang.Exception=/error");
-		
-		// configure multipart resolver used to handle file uploads in Spring MVC
-		springConfig
-			.addSingletonBean(MULTIPART_RESOLVER_BEAN,CommonsMultipartResolver.class);
-
-        Properties urlMappings = new Properties();
-        springConfig
-        	.addSingletonBean(GrailsRuntimeConfigurator.GRAILS_URL_MAPPINGS, UrlMappingFactoryBean.class)
-        	.addProperty("mappings", urlMappings);
-        	
-        
-		// Create the Grails Spring MVC controller bean that delegates to Grails controllers
-		springConfig
-			.addSingletonBean(SimpleGrailsController.APPLICATION_CONTEXT_ID,SimpleGrailsController.class)
-			.setAutowire("byType");
-		
-		// Configure the view resolver which resolves JSP or GSP views
-        springConfig
-        	.addSingletonBean("jspViewResolver",GrailsViewResolver.class)
-        	.addProperty("viewClass",org.springframework.web.servlet.view.JstlView.class)
-        	.addProperty("prefix",GrailsApplicationAttributes.PATH_TO_VIEWS)
-        	.addProperty("suffix",".jsp");
-	
-		BeanConfiguration simpleUrlHandlerMapping = null;
-		if (application.getControllers().length > 0 || application.getPageFlows().length > 0) {
-			simpleUrlHandlerMapping = 
-				springConfig.addSingletonBean("grailsUrlHandlerMapping",GrailsUrlHandlerMapping.class);
-
-            springConfig
-		    	.addSingletonBean(GrailsUrlHandlerMapping.APPLICATION_CONTEXT_ID,ProxyFactoryBean.class)
-		    	.addProperty("targetSource", new RuntimeBeanReference(GrailsUrlHandlerMapping.APPLICATION_CONTEXT_TARGET_SOURCE))
-		    	.addProperty("proxyInterfaces", "org.springframework.web.servlet.HandlerMapping");
-
-            
-            Collection args = new ManagedList();
-            args.add(new RuntimeBeanReference("grailsUrlHandlerMapping"));
-            springConfig
-            	.addSingletonBean(	GrailsUrlHandlerMapping.APPLICATION_CONTEXT_TARGET_SOURCE,
-            						HotSwappableTargetSource.class,
-            						args);
-            
-            // configure handler interceptors
-            
-            // this configures the open session in view interceptor (OSIVI)
-            springConfig
-            	.addSingletonBean(OPEN_SESSION_IN_VIEW_INTERCEPTOR_BEAN,OpenSessionInViewInterceptor.class)
-            	.addProperty("flushMode",new Integer(HibernateAccessor.FLUSH_AUTO))
-            	.addProperty(SESSION_FACTORY_BEAN, new RuntimeBeanReference(SESSION_FACTORY_BEAN));
-
-
-
-            Collection interceptors = new ManagedList();
-            interceptors.add(new RuntimeBeanReference(OPEN_SESSION_IN_VIEW_INTERCEPTOR_BEAN));
-            simpleUrlHandlerMapping.addProperty("interceptors", interceptors);                        
-        }        
-		
-		GrailsControllerClass[] simpleControllers = application.getControllers();
-		for (int i = 0; i < simpleControllers.length; i++) {
-			GrailsControllerClass simpleController = simpleControllers[i];
-			if (!simpleController.getAvailable()) {
-				continue;
-			}
-            // setup controller class by retrieving it from the  grails application
-            springConfig
-            	.addSingletonBean(simpleController.getFullName() + "Class",MethodInvokingFactoryBean.class)
-            	.addProperty("targetObject", new RuntimeBeanReference("grailsApplication",true))
-            	.addProperty("targetMethod", "getController")
-            	.addProperty("arguments", simpleController.getFullName());
-			
-            // configure controller class as hot swappable target source
-            Collection args = new ManagedList();
-            args.add(new RuntimeBeanReference(simpleController.getFullName() + "Class"));
-            springConfig
-            	.addSingletonBean(simpleController.getFullName() + "TargetSource",HotSwappableTargetSource.class, args);
-            
-
-            // setup AOP proxy that uses hot swappable target source
-            springConfig
-            	.addSingletonBean(simpleController.getFullName() + "Proxy",ProxyFactoryBean.class)
-            	.addProperty("targetSource", new RuntimeBeanReference(simpleController.getFullName() + "TargetSource"))
-            	.addProperty("proxyInterfaces", "org.codehaus.groovy.grails.commons.GrailsControllerClass");
-            
-
-            // create prototype bean that uses the controller AOP proxy controller class bean as a factory
-            springConfig
-            	.addPrototypeBean(simpleController.getFullName())
-            	.setFactoryBean(simpleController.getFullName() + "Proxy")
-            	.setFactoryMethod("newInstance")
-            	.setAutowire("byName");
-
-     
-			for (int x = 0; x < simpleController.getURIs().length; x++) {
-				if(!urlMappings.containsKey(simpleController.getURIs()[x]))
-					urlMappings.put(simpleController.getURIs()[x], SimpleGrailsController.APPLICATION_CONTEXT_ID);
-			}		
-		}		
-		if (simpleUrlHandlerMapping != null) {
-			simpleUrlHandlerMapping
-				.addProperty("mappings", new RuntimeBeanReference(GRAILS_URL_MAPPINGS));
+		GrailsPlugin plugin = this.pluginManager.getGrailsPlugin("controllers");
+		if(plugin != null) {
+			plugin.doWithRuntimeConfiguration(springConfig);
 		}
-        GrailsTagLibClass[] tagLibs = application.getGrailsTabLibClasses();
-        for (int i = 0; i < tagLibs.length; i++) {
-            GrailsTagLibClass grailsTagLib = tagLibs[i];
-            // setup taglib class by retrieving it from the grails application bean
-
-            springConfig
-            	.addSingletonBean(grailsTagLib.getFullName() + "Class",MethodInvokingFactoryBean.class)
-            	.addProperty("targetObject", new RuntimeBeanReference(GrailsApplication.APPLICATION_ID,true))
-            	.addProperty("targetMethod", "getGrailsTagLibClass")
-            	.addProperty("arguments", grailsTagLib.getFullName());
-
-            // configure taglib class as hot swappable target source
-            Collection args = new ManagedList();
-            args.add(new RuntimeBeanReference(grailsTagLib.getFullName() + "Class"));
-
-            springConfig
-            	.addSingletonBean(	grailsTagLib.getFullName() + "TargetSource",
-            						HotSwappableTargetSource.class, 
-            						args);
-
-            // setup AOP proxy that uses hot swappable target source            
-            springConfig
-            	.addSingletonBean(grailsTagLib.getFullName() + "Proxy",ProxyFactoryBean.class)
-            	.addProperty("targetSource", new RuntimeBeanReference(grailsTagLib.getFullName() + "TargetSource"))
-            	.addProperty("proxyInterfaces", "org.codehaus.groovy.grails.commons.GrailsTagLibClass");
-            
-
-            // create prototype bean that refers to the AOP proxied taglib class uses it as a factory
-            springConfig
-            	.addPrototypeBean(grailsTagLib.getFullName())
-            	.setFactoryBean(grailsTagLib.getFullName() + "Proxy")
-            	.setFactoryMethod("newInstance")
-            	.setAutowire("byName");
-        }		
-		
 	}
 
 	private void populateServiceClassReferences(RuntimeSpringConfiguration springConfig) {
@@ -956,6 +838,10 @@ public class GrailsRuntimeConfigurator {
 
 	public void setLoadExternalPersistenceConfig(boolean b) {
 		this.loadExternalPersistenceConfig = b;
+	}
+
+	public void setPluginManager(GrailsPluginManager manager) {
+		this.pluginManager = manager;
 	}
 
 

@@ -32,7 +32,9 @@ import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration;
 import org.codehaus.groovy.grails.plugins.exceptions.PluginException;
+import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 
@@ -70,7 +72,7 @@ import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
  * @since 0.4
  *
  */
-public class DefaultGrailsPluginManager implements GrailsPluginManager {
+public class DefaultGrailsPluginManager implements GrailsPluginManager, ApplicationContextAware {
 
 	private static final Log LOG = LogFactory.getLog(DefaultGrailsPluginManager.class);
 	private Resource[] pluginResources = new Resource[0];
@@ -78,6 +80,7 @@ public class DefaultGrailsPluginManager implements GrailsPluginManager {
 	private Map plugins = new HashMap();
 	private Class[] pluginClasses = new Class[0];
 	private List delayedLoadPlugins = new LinkedList();
+	private ApplicationContext applicationContext;
 
 	public DefaultGrailsPluginManager(String resourcePath, GrailsApplication application) throws IOException {
 		super();
@@ -85,13 +88,16 @@ public class DefaultGrailsPluginManager implements GrailsPluginManager {
 			throw new IllegalArgumentException("Argument [application] cannot be null!");
 		
 		this.pluginResources = new PathMatchingResourcePatternResolver().getResources(resourcePath);
+		//this.corePlugins = new PathMatchingResourcePatternResolver().getResources("classpath:org/codehaus/groovy/grails/**/plugins/**GrailsPlugin.groovy");
 		this.application = application;	
 	}
 	
-	public DefaultGrailsPluginManager(Class[] plugins, GrailsApplication application) {
+	public DefaultGrailsPluginManager(Class[] plugins, GrailsApplication application) throws IOException {
 		this.pluginClasses = plugins;
 		if(application == null)
+
 			throw new IllegalArgumentException("Argument [application] cannot be null!");
+		//this.corePlugins = new PathMatchingResourcePatternResolver().getResources("classpath:org/codehaus/groovy/grails/**/plugins/**GrailsPlugin.groovy");
 		this.application = application;
 	}
 	
@@ -101,7 +107,8 @@ public class DefaultGrailsPluginManager implements GrailsPluginManager {
 	public void loadPlugins() 
 					throws PluginException {
 		GroovyClassLoader gcl = application.getClassLoader();
-		
+		// load core plugins first
+		loadCorePlugins();
 		for (int i = 0; i < pluginResources.length; i++) {
 			Resource r = pluginResources[i];
 			
@@ -119,6 +126,31 @@ public class DefaultGrailsPluginManager implements GrailsPluginManager {
 		if(!delayedLoadPlugins.isEmpty()) {
 			loadDelayedPlugins();
 		}
+		initializePlugins();
+	}
+
+	private void initializePlugins() {
+		for (Iterator i = plugins.values().iterator(); i.hasNext();) {
+			Object plugin = i.next();
+			if(plugin instanceof ApplicationContextAware) {
+				((ApplicationContextAware)plugin).setApplicationContext(applicationContext);
+			}			
+		}
+	}
+
+	private void loadCorePlugins() {
+		try {
+			Class controllersPluginClass = application.getClassLoader().loadClass("org.codehaus.groovy.grails.web.plugins.ControllersGrailsPlugin");
+			GrailsPlugin controllersPlugin = new DefaultGrailsPlugin(controllersPluginClass, application);
+			if(controllersPlugin instanceof ApplicationContextAware) {
+				((ApplicationContextAware)controllersPlugin).setApplicationContext(applicationContext);
+			}
+			plugins.put(controllersPlugin.getName(), controllersPlugin);
+		} catch (ClassNotFoundException e) {
+			LOG.warn("[GrailsPluginManager] Core plugin [controllers] not found, resuming load without..");
+			if(LOG.isDebugEnabled())
+				LOG.debug(e.getMessage(),e);
+		}		
 	}
 
 	/**
@@ -256,6 +288,10 @@ public class DefaultGrailsPluginManager implements GrailsPluginManager {
 				return plugin;
 		}
 		return null;
+	}
+
+	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+		this.applicationContext = applicationContext;		
 	}
 	
 }

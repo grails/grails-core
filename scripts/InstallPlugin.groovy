@@ -30,7 +30,7 @@ at $DEFAULT_PLUGIN_DIST.
 For example: 
 'grails install-plugin acegi 0.1' 
 or 
-'grails install-plugin $DEFAULT_PLUGIN_DIST/acegi-0.1.zip"""
+'grails install-plugin $DEFAULT_PLUGIN_DIST/grails-acegi-0.1.zip"""
 
 appName = ""
 

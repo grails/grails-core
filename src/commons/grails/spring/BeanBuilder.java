@@ -15,8 +15,16 @@
  */ 
 package grails.spring;
 
+import groovy.lang.Binding;
+import groovy.lang.Closure;
+import groovy.lang.GString;
+import groovy.lang.GroovyObjectSupport;
+import groovy.lang.GroovyShell;
+import groovy.lang.MissingMethodException;
+
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -28,15 +36,9 @@ import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration;
 import org.springframework.beans.factory.config.RuntimeBeanReference;
 import org.springframework.beans.factory.support.ManagedList;
 import org.springframework.beans.factory.support.ManagedMap;
+import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
-
-import groovy.lang.Binding;
-import groovy.lang.Closure;
-import groovy.lang.GString;
-import groovy.lang.GroovyObjectSupport;
-import groovy.lang.GroovyShell;
-import groovy.lang.MissingMethodException;
 
 /**
  * <p>Runtime bean configuration wrapper. Like a Groovy builder, but more of a DSL for
@@ -77,15 +79,21 @@ import groovy.lang.MissingMethodException;
 public class BeanBuilder extends GroovyObjectSupport {
 	private static final String CREATE_APPCTX = "createApplicationContext";
 	private static final Object APPLICATION = "application";
+	private static final String REF = "ref";
 	private RuntimeSpringConfiguration springConfig = new DefaultRuntimeSpringConfiguration();
 	private BeanConfiguration currentBeanConfig;
 	private Object application;
+	private Map deferredProperties = new HashMap();
 
 	
 	public BeanBuilder() {
 		super();
 	}
 	
+	public BeanBuilder(ApplicationContext parent) {
+		super();
+		this.springConfig = new DefaultRuntimeSpringConfiguration(parent);
+	}	
 	
 
 	public RuntimeSpringConfiguration getSpringConfig() {
@@ -124,7 +132,45 @@ public class BeanBuilder extends GroovyObjectSupport {
 	public BeanBuilder(Resource[] resources) throws IOException {
 		loadBeans(resources);
 	}	
+	
+	public BeanBuilder(ApplicationContext parent, String resourcePattern) throws IOException {
+		this.springConfig = new DefaultRuntimeSpringConfiguration(parent);
+		loadBeans(resourcePattern);
+	}
 
+
+	public BeanBuilder(ApplicationContext parent, Resource resource) throws IOException {
+		this.springConfig = new DefaultRuntimeSpringConfiguration(parent);
+		loadBeans(resource);
+	}
+	
+	public BeanBuilder(ApplicationContext parent, Resource[] resources) throws IOException {
+		this.springConfig = new DefaultRuntimeSpringConfiguration(parent);
+		loadBeans(resources);
+	}	
+
+	/**
+	 * This class is used to defer the adding of a property to a bean definition until later
+	 * This is for a case where you assign a property to a list that may not contain bean references at
+	 * that point of asignment, but may later hence it would need to be managed
+	 * 
+	 * @author Graeme Rocher
+	 */
+	private class DeferredProperty {
+		private BeanConfiguration config;
+		private String name;
+		private Object value;
+
+		DeferredProperty(BeanConfiguration config, String name, Object value) {
+			this.config = config;
+			this.name = name;
+			this.value = value;
+		}
+
+		public void setInBeanConfig() {
+			this.config.addProperty(name, value);
+		}
+	}
 	/**
 	 * Takes a resource pattern as (@see org.springframework.core.io.support.PathMatchingResourcePatternResolver)
 	 * This allows you load multiple bean resources in this single builder
@@ -174,6 +220,7 @@ public class BeanBuilder extends GroovyObjectSupport {
 
 	public Object invokeMethod(String name, Object arg) {
 		if(CREATE_APPCTX.equals(name)) {
+			finalizeDeferredProperties();
 			return springConfig.getApplicationContext();
 		}
 		
@@ -181,17 +228,52 @@ public class BeanBuilder extends GroovyObjectSupport {
 		if(args.length == 0) 
 			throw new MissingMethodException(name, getClass(),args);
 		
+		if(REF.equals(name)) {
+			String refName;
+			if(args[0] == null)
+				throw new IllegalArgumentException("Argument to ref() is not a valid bean or was not found");
+			
+			if(args[0] instanceof RuntimeBeanReference) {
+				refName = ((RuntimeBeanReference)args[0]).getBeanName();
+			}
+			else {
+				refName = args[0].toString();	
+			}
+			
+			boolean parentRef = false;
+			if(args.length > 1) {
+				if(args[1] instanceof Boolean) {
+					parentRef = ((Boolean)args[1]).booleanValue();
+				}
+			}
+			return new RuntimeBeanReference(refName, parentRef);
+		}
 		
 		if(args[0] instanceof Closure) {
 			invokeBeanDefiningClosure(args[0]);
 		}
-		else if(args[0] instanceof Class) {
+		else if(args[0] instanceof Class || args[0] instanceof RuntimeBeanReference || args[0] instanceof Map) {
 			return invokeBeanDefiningMethod(name, args);			
 		}
 		else {
 			return super.invokeMethod(name,arg);
 		}
 		return this;
+	}
+
+	private void finalizeDeferredProperties() {
+		for (Iterator i = deferredProperties.values().iterator(); i.hasNext();) {
+			DeferredProperty dp = (DeferredProperty) i.next();
+			
+			if(dp.value instanceof List) {
+				dp.value = manageListIfNecessary(dp.value);
+			}
+			else if(dp.value instanceof Map) {
+				dp.value = manageMapIfNecessary(dp.value);
+			}
+			dp.setInBeanConfig();
+		}
+		deferredProperties.clear();
 	}
 
 	/**
@@ -203,26 +285,44 @@ public class BeanBuilder extends GroovyObjectSupport {
 	 * @return The bean configuration instance
 	 */
 	private BeanConfiguration invokeBeanDefiningMethod(String name, Object[] args) {
-		if(!(args[0] instanceof Class))
-			throw new IllegalArgumentException("Argument types to bean defining methods must be a java.lang.Class and a closure for call ["+name+"] and args ["+ArrayUtils.toString(args)+"]");
 
-		Class beanClass = args[0] instanceof Class ? (Class)args[0] : args[0].getClass();
-				
-		if(args.length > 1) {
+		if(args[0] instanceof Class) {
+			Class beanClass = args[0] instanceof Class ? (Class)args[0] : args[0].getClass();
 			
-			if(args.length-1 != 1) {
-				Object[] constructorArgs = ArrayUtils.subarray(args, 1, args.length-1);				
-				currentBeanConfig = springConfig.addSingletonBean(name, beanClass, Arrays.asList(constructorArgs));
-			}
-			else {
-				currentBeanConfig = springConfig.addSingletonBean(name, beanClass);
-			}
-			if(args[args.length-1] instanceof Closure) {
-				Closure callable = (Closure)args[args.length-1];
-				callable.setDelegate(this);
-				callable.call();				
-			}
+			if(args.length >= 1) {
+				if(args[args.length-1] instanceof Closure) {
+					if(args.length-1 != 1) {
+						Object[] constructorArgs = ArrayUtils.subarray(args, 1, args.length-1);				
+						currentBeanConfig = springConfig.addSingletonBean(name, beanClass, Arrays.asList(constructorArgs));
+					}
+					else {
+						currentBeanConfig = springConfig.addSingletonBean(name, beanClass);
+					}				
+				}
+				else  {
+					Object[] constructorArgs = ArrayUtils.subarray(args, 1, args.length);
+					currentBeanConfig = springConfig.addSingletonBean(name, beanClass, Arrays.asList(constructorArgs));
+				}
+	
+			}			
 		}
+		else if(args[0] instanceof RuntimeBeanReference) {
+			currentBeanConfig = springConfig.addSingletonBean(name);
+			currentBeanConfig.setFactoryBean(((RuntimeBeanReference)args[0]).getBeanName());
+		}
+		else if(args[0] instanceof Map) {
+			currentBeanConfig = springConfig.addSingletonBean(name);
+			Map.Entry factoryBeanEntry = (Map.Entry)((Map)args[0]).entrySet().iterator().next();
+			currentBeanConfig.setFactoryBean(factoryBeanEntry.getKey().toString());
+			currentBeanConfig.setFactoryMethod(factoryBeanEntry.getValue().toString());
+		}
+		if(args[args.length-1] instanceof Closure) {
+			Closure callable = (Closure)args[args.length-1];
+			callable.setDelegate(this);			
+			callable.call(new Object[]{currentBeanConfig});
+							
+		}
+
 		return currentBeanConfig;
 	}
 
@@ -235,16 +335,19 @@ public class BeanBuilder extends GroovyObjectSupport {
 		Closure callable = (Closure)arg;
 		callable.setDelegate(this);
 		callable.call();
+		finalizeDeferredProperties();
 	}
 
 	public void setProperty(String name, Object value) {
 		if(currentBeanConfig != null) {
 			if(value instanceof GString)value = value.toString();
 			if(value instanceof List) {
-				value = manageListIfNecessary(value);
+				deferredProperties.put(currentBeanConfig.getName()+name,new DeferredProperty(currentBeanConfig, name, value));
+				return;
 			}
 			else if(value instanceof Map) {
-				value = manageMapIfNecessary(value);
+				deferredProperties.put(currentBeanConfig.getName()+name,new DeferredProperty(currentBeanConfig, name, value));
+				return;
 			}
 			else if(value instanceof Closure) {
 				BeanConfiguration current = currentBeanConfig;
@@ -316,7 +419,27 @@ public class BeanBuilder extends GroovyObjectSupport {
 			return this.application;
 		}
 		else {
-			return new RuntimeBeanReference(name, false);
+			if(springConfig.containsBean(name)) {
+				return new RuntimeBeanReference(name, false);
+			}
+			// this is to deal with the case where the property setter is the last
+			// statement in a closure (hence the return value)
+			else if(currentBeanConfig != null) {
+				if(currentBeanConfig.hasProperty(name))
+					return currentBeanConfig.getPropertyValue(name);
+				else {
+					DeferredProperty dp = (DeferredProperty)deferredProperties.get(currentBeanConfig.getName()+name);
+					if(dp!=null) {
+						return dp.value;
+					}
+					else {
+						return super.getProperty(name);
+					}
+				}
+			}
+			else {
+				return super.getProperty(name);
+			}			
 		}			
 	}
 

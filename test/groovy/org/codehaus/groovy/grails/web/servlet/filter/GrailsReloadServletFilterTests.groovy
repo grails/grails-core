@@ -37,6 +37,10 @@ class ReloadableController {
 		"hello!"
 	}
 }
+class Test {
+  Long version
+  Long id
+}
 '''
 		)
 	}

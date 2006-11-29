@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 package grails.spring;
+
+import org.codehaus.groovy.grails.commons.*
 /**
  * @author Graeme Rocher
  * @since 0.4
@@ -44,9 +46,42 @@ class BeanBuilderTests extends GroovyTestCase {
 		
 	}
 	
+	void testBeanWithParentRef() {
+		def bb = new BeanBuilder()
+		bb.beans {
+			homer(Bean1) {
+				person = "homer"
+				age = 45
+				props = [overweight:true, height:"1.8m"]
+				children = ["bart", "lisa"]				         
+			}
+		}
+		bb = new BeanBuilder(bb.createApplicationContext())
+		bb.beans {
+			bart(Bean2) {
+				person = "bart"
+				parent = ref("homer", true)
+			}
+		}
+		
+		def ctx = bb.createApplicationContext()
+		
+		assert ctx.containsBean("bart")
+		def bart = ctx.getBean("bart")
+		assertEquals "homer",bart.parent?.person
+	}
+	
 	void testWithAnonymousInnerBean() {
 		def bb = new BeanBuilder()
 		bb.beans {
+			bart(Bean1) {
+				person = "bart"
+				age = 11
+			}
+			lisa(Bean1) {
+				person = "lisa"
+				age = 9				
+			}			
 			marge(Bean2) {
 				person = "marge"
 				bean1 =  { Bean1 b ->
@@ -55,14 +90,6 @@ class BeanBuilderTests extends GroovyTestCase {
 						    props = [overweight:true, height:"1.8m"]
 						    children = ["bart", "lisa"] }
 				children = [bart, lisa]
-			}
-			bart(Bean1) {
-				person = "bart"
-				age = 11
-			}
-			lisa(Bean1) {
-				person = "lisa"
-				age = 9				
 			}
 		}
 		
@@ -82,11 +109,6 @@ class BeanBuilderTests extends GroovyTestCase {
 				props = [overweight:true, height:"1.8m"]
 				children = ["bart", "lisa"]				         
 			}
-			marge(Bean2) {
-				person = "marge"
-				bean1 = homer
-				children = [bart, lisa]
-			}
 			bart(Bean1) {
 				person = "bart"
 				age = 11
@@ -94,6 +116,11 @@ class BeanBuilderTests extends GroovyTestCase {
 			lisa(Bean1) {
 				person = "lisa"
 				age = 9				
+			}
+			marge(Bean2) {
+				person = "marge"
+				bean1 = homer
+				children = [bart, lisa]
 			}
 		}
 		def ctx  = bb.createApplicationContext()
@@ -150,6 +177,62 @@ class BeanBuilderTests extends GroovyTestCase {
 
 	}
 	
+	void testBeanWithFactoryMethodUsingClosureArgs() {
+		def bb = new BeanBuilder()
+		bb.beans {
+			homer(Bean1) {
+				person = "homer"
+				age = 45
+			}
+			marge(Bean4) { bean ->
+			    bean.factoryMethod = "getInstance"
+				person = "marge"				
+			}
+		}	
+		def ctx  = bb.createApplicationContext()
+		
+		def marge = ctx.getBean("marge")
+		
+		assert "marge", marge.person		
+	}
+	
+	void testBeanWithFactoryBean() {
+		def bb = new BeanBuilder()
+		bb.beans {
+			myFactory(Bean1Factory)
+			
+			homer(myFactory) { bean ->
+				bean.factoryMethod = "newInstance"
+				person = "homer"
+				age = 45
+			}
+		}
+		
+		def ctx  = bb.createApplicationContext()
+		
+		def homer = ctx.getBean("homer")
+		
+		assertEquals "homer", homer.person
+	}
+	
+	void testBeanWithFactoryBeanAndMethod() {
+		def bb = new BeanBuilder()
+		bb.beans {
+			myFactory(Bean1Factory)
+			
+			homer(myFactory:"newInstance") { bean ->
+				person = "homer"
+				age = 45
+			}
+		}
+		
+		def ctx  = bb.createApplicationContext()
+		
+		def homer = ctx.getBean("homer")
+		
+		assertEquals "homer", homer.person
+	}	
+	
 	void testLoadExternalBeans() {
 		def pr = new org.springframework.core.io.support.PathMatchingResourcePatternResolver()
 		def r = pr.getResource("grails/spring/resources1.groovy")
@@ -177,7 +260,8 @@ class Bean2 {
 	String person
 	Bean1 bean1
 	Properties props
-	List children	
+	List children
+	Bean1 parent
 }
 // bean with constructor args
 class Bean3 {
@@ -196,4 +280,10 @@ class Bean4 {
 		return new Bean4()
 	}
 	String person
+}
+// a factory bean
+class Bean1Factory {
+	Bean1 newInstance() {
+		return new Bean1()
+	}
 }

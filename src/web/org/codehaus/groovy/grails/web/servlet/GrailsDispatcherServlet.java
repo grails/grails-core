@@ -20,6 +20,7 @@ import org.codehaus.groovy.grails.commons.GrailsBootstrapClass;
 import org.codehaus.groovy.grails.commons.GrailsConfigUtils;
 import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator;
 import org.codehaus.groovy.grails.commons.spring.GrailsWebApplicationContext;
+import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.springframework.beans.BeansException;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
@@ -54,7 +55,9 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
     	}
     	else {
             GrailsRuntimeConfigurator configurator = new GrailsRuntimeConfigurator(application,parent);
-            
+            if(parent.containsBean(GrailsPluginManager.BEAN_NAME)) {
+            	configurator.setPluginManager((GrailsPluginManager)parent.getBean(GrailsPluginManager.BEAN_NAME));
+            }
             // return a context that obeys grails' settings
             webContext = configurator.configure(super.getServletContext());     		
     	}

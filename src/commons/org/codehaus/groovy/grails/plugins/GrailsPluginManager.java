@@ -57,6 +57,8 @@ import org.springframework.context.ApplicationContext;
  */
 public interface GrailsPluginManager {
 
+	String BEAN_NAME = "grailsPluginManager";
+
 	/**
 	 * Performs the initial load of plug-ins throwing an exception if any dependencies
 	 * don't resolve 

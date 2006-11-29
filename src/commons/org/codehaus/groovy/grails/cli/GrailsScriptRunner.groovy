@@ -89,10 +89,10 @@ Grails home is set to: ${grailsHome}
 				calculateEnvironment(tokens[0])  
 				scriptName = GCU.getNameFromScript(isEnvironmentArgs(tokens[0]) ? tokens[1] : tokens[0])
 				if(isEnvironmentArgs(tokens[0]) && tokens.size() > 2) {
-					System.setProperty("grails.cli.args", tokens[2..-1].join(";"))
+					System.setProperty("grails.cli.args", tokens[2..-1].join("\n"))
 				}
 				else if(!isEnvironmentArgs(tokens[0]) && tokens.size() -1) {
-				   System.setProperty("grails.cli.args", tokens[1..-1].join(";")) 
+				   System.setProperty("grails.cli.args", tokens[1..-1].join("\n")) 
 				}
 				
 			}   
@@ -106,14 +106,20 @@ Grails home is set to: ${grailsHome}
 
 			System.setProperty("base.dir", baseDir.absolutePath)
 			
-			if(scriptFile.exists()) {
-				println "Running script ${scriptFile.absolutePath}"
-				Gant.main(["-f", scriptFile.absolutePath] as String[])				
-			}     
-			else {  
-				scriptFile = new File("${grailsHome}/scripts/${scriptName}.groovy") 
-				println "Running script ${scriptFile.absolutePath}"
-				Gant.main(["-f", scriptFile.absolutePath] as String[])								
+			try {
+				if(scriptFile.exists()) {
+					println "Running script ${scriptFile.absolutePath}"
+					Gant.main(["-f", scriptFile.absolutePath] as String[])				
+				}     
+				else {  
+					scriptFile = new File("${grailsHome}/scripts/${scriptName}.groovy") 
+					println "Running script ${scriptFile.absolutePath}"
+					Gant.main(["-f", scriptFile.absolutePath] as String[])								
+				}				
+			}
+			catch(Throwable t) {
+				println "Error executing script ${scriptFile}: ${t.message}"
+				t.printStackTrace(System.out)
 			}
 
 		}
@@ -144,8 +150,7 @@ Grails home is set to: ${grailsHome}
 			break
 		}        		
 	}
-	private static calculateEnvironment(env) { 
-		println "calcing environment"
+	private static calculateEnvironment(env) { 	
 		switch(env) {
 			case "dev":
 				System.setProperty("grails.env", "development")

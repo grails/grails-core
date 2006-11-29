@@ -24,6 +24,7 @@
 
 import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
 import groovy.text.SimpleTemplateEngine
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver
 
 Ant.property(environment:"env")                             
 grailsHome = Ant.antProject.properties."env.GRAILS_HOME"    
@@ -32,7 +33,8 @@ includeTargets << new File ( "${grailsHome}/scripts/Init.groovy" )
 includeTargets << new File ( "${grailsHome}/scripts/Compile.groovy" )  
 
 task ('default': "Packages a Grails application. Note: To create WAR use 'grails war'") {
-     packageApp()
+	 //packagePlugins()	 
+     packageApp()     
 }                     
       
 task( packageApp : "Implementation of package task") {

@@ -1,4 +1,21 @@
+/*
+ * Copyright 2004-2005 the original author or authors.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */ 
 package org.codehaus.groovy.grails.plugins;
+
+import groovy.util.slurpersupport.GPathResult;
 
 import java.math.BigDecimal;
 
@@ -25,7 +42,9 @@ import org.springframework.context.ApplicationContext;
  */
 public interface GrailsPlugin {
 
-    String TRAILING_NAME = "GrailsPlugin";
+    String ON_CHANGE = "onChange";
+	String DO_WITH_WEB_DESCRIPTOR = "doWithWebDescriptor";
+	String TRAILING_NAME = "GrailsPlugin";
 	String VERSION = "version";
 	String DO_WITH_SPRING = "doWithSpring";
 	String DO_WITH_APPLICATION_CONTEXT = "doWithApplicationContext";
@@ -48,6 +67,14 @@ public interface GrailsPlugin {
      */
     void doWithRuntimeConfiguration(RuntimeSpringConfiguration springConfig);
 
+    /**
+     * Handles processing of web.xml. The method is passed a GPathResult which is parsed by
+     * groovy.util.XmlSlurper. A plug-in can then manipulate the in-memory XML however it chooses
+     * Once all plug-ins have been processed the web.xml is then written to disk based on its in-memory form
+     * 
+     * @param webXml The GPathResult representing web.xml
+     */
+    void doWithWebDescriptor(GPathResult webXml);
     
     /**
      * 
@@ -77,4 +104,12 @@ public interface GrailsPlugin {
 	 * @return The version
 	 */
 	BigDecimal getDependentVersion(String name);
+	
+	
+	/**
+	 * When called this method checks for any changes to the plug-ins watched resources
+	 * and reloads appropriately
+	 *
+	 */
+	void checkForChanges();
 }

@@ -21,7 +21,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 
 import org.apache.commons.lang.ClassUtils;
-import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.grails.exceptions.NewInstanceCreationException;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.springframework.beans.BeanWrapper;
@@ -65,21 +64,11 @@ public abstract class AbstractGrailsClass implements GrailsClass {
         this.fullName = clazz.getName();
         this.packageName = ClassUtils.getPackageName(clazz);
         this.naturalName = GrailsClassUtils.getNaturalName(clazz.getName());
-        if (StringUtils.isBlank(trailingName)) {
-            this.name = fullName;
-            this.shortName = getShortClassname(clazz);
-        } else {
-            this.shortName = getShortClassname(clazz);
-            if(shortName.indexOf( trailingName ) > - 1) {
-                this.name = shortName.substring(0, shortName.length() - trailingName.length());
-            }
-            else {
-                this.name = fullName;
-            }
-        }
+        this.shortName = getShortClassname(clazz);        
+        this.name = GrailsClassUtils.getLogicalName(clazz, trailingName);
     }
 
-    public String getShortName() {
+	public String getShortName() {
         return this.shortName;
     }
 
