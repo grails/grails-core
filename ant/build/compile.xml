@@ -25,6 +25,13 @@
 		    </classpath>  
 			<classpath refid="classpath"/>    
 		</groovyc>
+            <groovyc destdir="${grails.build}" >
+    			<src path="${grails.src.groovy}"/>
+    		    <classpath>
+    		      <pathelement path="${grails.build}"/>
+    		    </classpath>  
+    			<classpath refid="classpath"/>    
+    		</groovyc>		
 		<copy todir="${grails.build}">
 			<fileset dir="${grails.src.commons}" excludes="**/*.java" />
 			<fileset dir="${grails.src.web}" excludes="**/*.java" />
