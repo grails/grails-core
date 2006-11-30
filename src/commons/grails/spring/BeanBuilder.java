@@ -30,6 +30,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.spring.BeanConfiguration;
 import org.codehaus.groovy.grails.commons.spring.DefaultRuntimeSpringConfiguration;
 import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration;
@@ -77,6 +79,7 @@ import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
  *
  */
 public class BeanBuilder extends GroovyObjectSupport {
+	private static final Log LOG = LogFactory.getLog(BeanBuilder.class);
 	private static final String CREATE_APPCTX = "createApplicationContext";
 	private static final Object APPLICATION = "application";
 	private static final String REF = "ref";
@@ -84,6 +87,7 @@ public class BeanBuilder extends GroovyObjectSupport {
 	private BeanConfiguration currentBeanConfig;
 	private Object application;
 	private Map deferredProperties = new HashMap();
+	private ApplicationContext parentCtx;
 
 	
 	public BeanBuilder() {
@@ -92,9 +96,18 @@ public class BeanBuilder extends GroovyObjectSupport {
 	
 	public BeanBuilder(ApplicationContext parent) {
 		super();
+		this.parentCtx = parent;
 		this.springConfig = new DefaultRuntimeSpringConfiguration(parent);
 	}	
 	
+
+	public Log getLog() {
+		return LOG;
+	}
+	
+	public ApplicationContext getParentCtx() {
+		return parentCtx;
+	}
 
 	public RuntimeSpringConfiguration getSpringConfig() {
 		return springConfig;
