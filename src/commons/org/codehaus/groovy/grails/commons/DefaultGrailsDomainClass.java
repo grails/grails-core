@@ -17,32 +17,24 @@ package org.codehaus.groovy.grails.commons;
 
 import groovy.lang.Closure;
 import groovy.lang.GroovyObject;
-
-import java.beans.IntrospectionException;
-import java.beans.PropertyDescriptor;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.lang.reflect.Modifier;
-
 import org.apache.commons.lang.ClassUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.metaclass.DynamicMethods;
 import org.codehaus.groovy.grails.commons.metaclass.GroovyDynamicMethodsInterceptor;
+import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException;
 import org.codehaus.groovy.grails.exceptions.GrailsDomainException;
 import org.codehaus.groovy.grails.exceptions.InvalidPropertyException;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsDomainConfigurationUtil;
 import org.codehaus.groovy.grails.validation.metaclass.ConstraintsEvaluatingDynamicProperty;
-import org.springframework.validation.Validator;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeanWrapper;
+import org.springframework.validation.Validator;
+
+import java.beans.IntrospectionException;
+import java.beans.PropertyDescriptor;
+import java.lang.reflect.Modifier;
+import java.util.*;
 
 /**
  * @author Graeme Rocher
@@ -212,8 +204,9 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
 
             if (!GrailsClassUtils.isStaticProperty(getClazz(), GrailsDomainClassProperty.CONSTRAINTS))
             {
-                LOG.warn("Domain class ["+getFullName()+"] has non-static constraints. Constraints should be " +
-                    "declared static, non-static constraints are deprecated and will be removed in the future");
+                throw new GrailsConfigurationException(
+                    "Domain class ["+getFullName()+"] has non-static constraints. Constraints must be " +
+                    "declared static.");
             }
 
             GroovyObject instance = (GroovyObject)reference.getWrappedInstance();

@@ -6,19 +6,19 @@ import groovy.lang.GroovyObject;
 import groovy.lang.MissingMethodException;
 import groovy.util.Proxy;
 import org.apache.commons.lang.ArrayUtils;
+import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
-import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.DefaultGrailsDomainConfiguration;
 import org.codehaus.groovy.runtime.InvokerInvocationException;
-import org.hibernate.SessionFactory;
 import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.springframework.orm.hibernate3.SessionHolder;
 import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
-import org.springframework.orm.hibernate3.SessionHolder;
 
-import java.util.Properties;
 import java.util.List;
+import java.util.Properties;
 
 public class HibernateCriteriaBuilderTests extends
         AbstractDependencyInjectionSpringContextTests {
@@ -57,7 +57,7 @@ public class HibernateCriteriaBuilderTests extends
                 "\tCriteriaBuilderTestClass parent;\n" +
 
                  "\t\n" +
-                "\tdef constraints = {\n" +
+                "\tstatic constraints = {\n" +
                 "\t\tfirstName(length:4..15)\n" +
                 "\t}\n" +
                 "}");

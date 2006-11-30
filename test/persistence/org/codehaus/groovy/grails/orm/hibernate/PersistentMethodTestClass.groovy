@@ -12,7 +12,7 @@ public class PersistentMethodTestClass {
 	 Integer age;
 	 boolean active = true
 
-	def constraints = {
-		firstName(length:4..15)
-	}
+	 static constraints = {
+	    firstName(length:4..15)
+     }
 }
