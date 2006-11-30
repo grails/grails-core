@@ -11,8 +11,12 @@ class GrailsPluginUtils {
 		def grailsHome = ant.antProject.properties."env.GRAILS_HOME"
 		ant.property(file:"${grailsHome}/build.properties")	
 		def grailsVersion =  ant.antProject.properties.'grails.version'
+		if(!grailsVersion)return 0.1
 		if(grailsVersion.endsWith("-SNAPSHOT"))
 			grailsVersion = grailsVersion[0..-10].toBigDecimal()
+		else {
+			grailsVersion.toBigDecimal()
+		}
 		return grailsVersion
 	}
 
