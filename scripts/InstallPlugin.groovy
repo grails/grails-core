@@ -44,7 +44,9 @@ task ( "default" : "Installs a plug-in for the given URL or name and version") {
 }     
                 
 task(installPlugin:"Implementation task") {   
-	if(args) {                   
+	def pluginsBase = "${basedir}/plugins"
+	if(args) {      
+		def pluginFile = new File(args.trim())            
 		if(args.trim().startsWith("http://")) {
 			def url = new URL(args.trim())			
 			Ant.mkdir(dir:"${basedir}/plugins")   
@@ -57,7 +59,15 @@ task(installPlugin:"Implementation task") {
 		    def dirName =  file[0..-5]
 			Ant.mkdir(dir:dirName)
 			Ant.unzip(dest:dirName, src:file)
-		}   
+		}  
+		else if(pluginFile.exists()) {
+			Ant.mkdir(dir:pluginsBase)  
+			Ant.copy(file:"${pluginFile}", todir:pluginsBase)
+			pluginFile = new File("${pluginsBase}/${pluginFile.name}") 
+			def dirName = pluginFile.name[7..-5]
+			Ant.mkdir(dir:"${pluginsBase}/$dirName")
+			Ant.unzip(dest:"${pluginsBase}/$dirName", src:pluginFile)
+		} 
 		else if(args.indexOf("\n") > -1) {
 			def tokens = args.split("\n") 
 			def name = tokens[0].trim()
@@ -68,8 +78,8 @@ task(installPlugin:"Implementation task") {
 				src:"${DEFAULT_PLUGIN_DIST}/grails-${name}-${version}.zip",
 				verbose:true,
 				usetimestamp:true) 
-			Ant.mkdir(dir:"${basedir}/plugins/${name}-${version}")				
-			Ant.unzip(dest:"${basedir}/plugin/${name}-${version}",
+			Ant.mkdir(dir:"${basedir}/plugins/${name[7..-1]}-${version}")				
+			Ant.unzip(dest:"${basedir}/plugin/${name[7..-1]}-${version}",
 					   src:"${basedir}/plugin/grails-${name}-${version}.zip")   		
 			
 		}                             
