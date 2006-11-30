@@ -85,7 +85,7 @@ Grails home is set to: ${grailsHome}
 			}
 			
 			if(allArgs.indexOf(' ') > -1) {                                                                  				
-				def tokens = args[0].split(" ")    
+				def tokens = args[0].trim().split(" ")    
 				calculateEnvironment(tokens[0])  
 				scriptName = GCU.getNameFromScript(isEnvironmentArgs(tokens[0]) ? tokens[1] : tokens[0])
 				if(isEnvironmentArgs(tokens[0]) && tokens.size() > 2) {
