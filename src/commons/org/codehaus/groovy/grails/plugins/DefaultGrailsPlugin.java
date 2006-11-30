@@ -71,6 +71,7 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
 	private ApplicationContext applicationContext;
 	private PathMatchingResourcePatternResolver resolver;
 	private String resourcesReference;
+	private ApplicationContext parentCtx;
 	
 	public DefaultGrailsPlugin(Class pluginClass, GrailsApplication application) {
 		super(pluginClass, application);
@@ -78,6 +79,7 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
 		this.plugin = (GroovyObject)this.pluginGrailsClass.newInstance();
 		this.pluginBean = new BeanWrapperImpl(this.plugin);
 		this.dependencies = Collections.EMPTY_MAP;
+		this.parentCtx = application.getParentContext();
 		if(this.pluginBean.isReadableProperty(DEPENDS_ON)) {
 			this.dependencies = (Map)GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(this.plugin, DEPENDS_ON);
 			this.dependencyNames = (String[])this.dependencies.keySet().toArray(new String[this.dependencies.size()]);
@@ -114,6 +116,14 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
 
 		}
 	}
+	
+	
+
+	public ApplicationContext getParentCtx() {
+		return parentCtx;
+	}
+
+
 
 	private void initializeModifiedTimes() throws IOException {
 		modifiedTimes = new long[watchedResources.length];
@@ -139,7 +149,7 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
 		
 		if(this.pluginBean.isReadableProperty(DO_WITH_SPRING)) {
 			Closure c = (Closure)this.plugin.getProperty(DO_WITH_SPRING);
-			BeanBuilder bb = new BeanBuilder();
+			BeanBuilder bb = new BeanBuilder(getParentCtx());
 			bb.setSpringConfig(springConfig);
 			bb.setApplication(application);
 			c.setDelegate(bb);
