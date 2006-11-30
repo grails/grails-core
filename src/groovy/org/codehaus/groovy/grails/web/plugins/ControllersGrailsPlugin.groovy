@@ -30,7 +30,10 @@ import org.springframework.web.servlet.i18n.LocaleChangeInterceptor;
 import org.codehaus.groovy.grails.commons.spring.*
 import org.springframework.beans.factory.config.RuntimeBeanReference;
 import org.springframework.beans.factory.config.MethodInvokingFactoryBean;
-
+import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
+import org.springframework.web.context.request.WebRequestInterceptor;
+import org.springframework.web.servlet.HandlerInterceptor;
+import org.springframework.web.servlet.handler.WebRequestHandlerInterceptorAdapter;
 // TODO move to hibernate plugin
 import org.springframework.orm.hibernate3.support.OpenSessionInViewInterceptor;
 import org.springframework.orm.hibernate3.HibernateAccessor;
@@ -151,6 +154,48 @@ class ControllersGrailsPlugin {
 	}
 	
 	def onChange = { event ->
-			 
+		if(GCU.isControllerClass(event.source)) {
+			log.debug("Controller ${event.source} changed. Reloading...")
+			def context = event.ctx
+			boolean isNew = application.getController(event.source?.name) ? false : true
+			def controllerClass = application.addControllerClass(event.source)
+			
+			def mappings = new Properties()
+			application.controllers.each { c ->
+				c.URIs.each { uri ->
+				  mappings[uri] = SimpleGrailsController.APPLICATION_CONTEXT_ID
+				}
+			}
+			
+			def urlMappingsTargetSource = context.getBean(GrailsUrlHandlerMapping.APPLICATION_CONTEXT_TARGET_SOURCE)
+			def urlMappings = new GrailsUrlHandlerMapping(applicationContext:context)
+			urlMappings.mappings = mappings
+			
+            def interceptorNames = context.getBeanNamesForType(HandlerInterceptor.class)
+            def webRequestInterceptors = context.getBeanNamesForType( WebRequestInterceptor.class)			
+		
+            HandlerInterceptor[] interceptors = new HandlerInterceptor[interceptorNames.size()+webRequestInterceptors.size()]
+                
+			def j = 0                                                                       
+			for(i in 0..<interceptorNames.size()) {
+				interceptors[i] = context.getBean(interceptorNames[i])
+				j = i+1
+			}
+			for(i in 0..<webRequestInterceptors.size()) {
+				j = i+j
+				interceptors[j] = new WebRequestHandlerInterceptorAdapter(context.getBean(webRequestInterceptors[i]))
+			}
+         
+			log.info("Re-adding ${interceptors.length} interceptors to mapping")
+			
+			urlMappings.interceptors = interceptors
+			urlMappings.initApplicationContext()
+			
+			urlMappingsTargetSource.swap(urlMappings)
+			
+			def controllerTargetSource = context.getBean("${controllerClass.fullName}TargetSource")
+			controllerTargetSource.swap(controllerClass)
+			
+		}
 	}
 }

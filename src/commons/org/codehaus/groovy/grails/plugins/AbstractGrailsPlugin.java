@@ -15,6 +15,7 @@
  */ 
 package org.codehaus.groovy.grails.plugins;
 
+import groovy.lang.GroovyObjectSupport;
 import groovy.util.slurpersupport.GPathResult;
 
 import java.math.BigDecimal;
@@ -31,7 +32,7 @@ import org.springframework.context.ApplicationContext;
  * @author Graeme Rocher
  *
  */
-public abstract class AbstractGrailsPlugin implements GrailsPlugin {
+public abstract class AbstractGrailsPlugin extends GroovyObjectSupport implements GrailsPlugin {
 
 
 

@@ -1,4 +1,5 @@
 import org.codehaus.groovy.grails.commons.test.*
+import org.codehaus.groovy.grails.commons.*
 import org.codehaus.groovy.grails.commons.spring.*
 import org.codehaus.groovy.grails.plugins.*
 
@@ -31,9 +32,5 @@ class TestController {
 		assert appCtx.containsBean("TestControllerProxy")
 		assert appCtx.containsBean("TestControllerClass")
 		assert appCtx.containsBean("TestController")
-	}
-	
-	void testReloadChanges() {
-		
 	}
 }

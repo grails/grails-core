@@ -15,12 +15,16 @@
  */
 package org.codehaus.groovy.grails.commons.test;
 
+import java.io.IOException;
+
 import groovy.lang.GroovyClassLoader;
 import junit.framework.TestCase;
 
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.support.MockApplicationContext;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.mock.web.MockServletContext;
 /**
  * Abstract simple test harness for testing Grails Applications that just loads
@@ -57,5 +61,13 @@ public abstract class AbstractGrailsMockTests extends TestCase {
 
 	protected MockServletContext createMockServletContext() {
 		return new MockServletContext();
+	}
+	
+	protected MockApplicationContext createMockApplicationContext() {
+		return new MockApplicationContext();
+	}
+	
+	protected Resource[] getResources(String pattern) throws IOException {
+		return new PathMatchingResourcePatternResolver().getResources(pattern);		
 	}
 }

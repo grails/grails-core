@@ -34,7 +34,7 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
-import org.codehaus.groovy.grails.commons.spring.GrailsResourceHolder;
+import org.codehaus.groovy.grails.commons.GrailsResourceUtils;
 import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration;
 import org.codehaus.groovy.grails.plugins.exceptions.PluginException;
 import org.springframework.beans.BeanWrapper;
@@ -71,8 +71,6 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
 	private ApplicationContext applicationContext;
 	private PathMatchingResourcePatternResolver resolver;
 	private String resourcesReference;
-	private GrailsResourceHolder resourceHolder;
-
 	
 	public DefaultGrailsPlugin(Class pluginClass, GrailsApplication application) {
 		super(pluginClass, application);
@@ -199,11 +197,12 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
                         c.setDoInput(false);
                         c.setDoOutput(false);
                         long lastModified = c.getLastModified();
-						
+						System.out.println("Checking modified for url " + url);
 						if(modifiedTimes[i] < lastModified) {
 							if(LOG.isDebugEnabled())
 								LOG.debug("[GrailsPlugin] plugin resource ["+r+"] changed, firing event if possible..");
 							
+							System.out.println("file changed firing event!");
 							fireModifiedEvent(r, this);
 							modifiedTimes[i] = lastModified;
 						}
@@ -251,31 +250,37 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
 			put(PLUGIN_CHANGE_EVENT_APPLICATION, application);
 			put(PLUGIN_CHANGE_EVENT_CTX, applicationContext);
 		}};
+		onChangeListener.setDelegate(this);
 		onChangeListener.call(new Object[]{event});
 	}
 
 	private Class attemptClassReload(final Resource resource) {
-		if(resourceHolder != null && resource.getFilename().endsWith(".groovy")) {
-			String className = resourceHolder.getClassName(resource);
-			if(className != null) {
-				try {
-					return application.getClassLoader().loadClass(className,true,false);
-				} catch (CompilationFailedException e) {
-					LOG.error("Compilation error reloading plugin resource ["+resource+"]:" + e.getMessage(),e);
-				} catch (ClassNotFoundException e) {
-					LOG.error("Class not found error reloading plugin resource ["+resource+"]:" + e.getMessage(),e);
-				}
+		String className = GrailsResourceUtils.getClassName(resource);
+		if(className != null) {
+			try {
+				return application.getClassLoader().loadClass(className,true,false);
+			} catch (CompilationFailedException e) {
+				LOG.error("Compilation error reloading plugin resource ["+resource+"]:" + e.getMessage(),e);
+			} catch (ClassNotFoundException e) {
+				LOG.error("Class not found error reloading plugin resource ["+resource+"]:" + e.getMessage(),e);
 			}
 		}
+		
 		return null;
 	}
 
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
 		this.applicationContext = applicationContext;
-		if(applicationContext != null)
-			resourceHolder = (GrailsResourceHolder)applicationContext.getBean(GrailsResourceHolder.APPLICATION_CONTEXT_ID);		
 	}
 	
 	
+	
+	public void setWatchedResources(Resource[] watchedResources) throws IOException {
+		this.watchedResources = watchedResources;
+		initializeModifiedTimes();
+	}
 
+	public Log getLog() {
+		return LOG;
+	}
 }
