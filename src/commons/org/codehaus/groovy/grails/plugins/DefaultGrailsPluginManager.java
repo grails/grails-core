@@ -144,8 +144,8 @@ public class DefaultGrailsPluginManager implements GrailsPluginManager, Applicat
 			GrailsPlugin controllersPlugin = new DefaultGrailsPlugin(controllersPluginClass, application);
 			if(controllersPlugin instanceof ApplicationContextAware) {
 				((ApplicationContextAware)controllersPlugin).setApplicationContext(applicationContext);
-			}
-			plugins.put(controllersPlugin.getName(), controllersPlugin);
+			}			
+			attemptPluginLoad(controllersPlugin);
 		} catch (ClassNotFoundException e) {
 			LOG.warn("[GrailsPluginManager] Core plugin [controllers] not found, resuming load without..");
 			if(LOG.isDebugEnabled())

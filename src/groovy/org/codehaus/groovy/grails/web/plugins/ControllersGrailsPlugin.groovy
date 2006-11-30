@@ -15,6 +15,7 @@
  */ 
 package org.codehaus.groovy.grails.web.plugins;
 
+import org.codehaus.groovy.grails.plugins.support.*
 import org.codehaus.groovy.grails.web.errors.GrailsExceptionResolver;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsUrlHandlerMapping;
@@ -49,7 +50,8 @@ class ControllersGrailsPlugin {
 
 	def watchedResources = "**/grails-app/controllers/*Controller.groovy"
 	
-	def version = 1.0
+	def version = GrailsPluginUtils.getGrailsVersion()
+	
 	
 	def doWithSpring = {
 		exceptionHandler(GrailsExceptionResolver) {

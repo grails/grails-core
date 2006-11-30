@@ -38,6 +38,8 @@ import org.codehaus.groovy.grails.commons.spring.GrailsResourceHolder;
 import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException;
 import org.codehaus.groovy.grails.injection.GrailsInjectionOperation;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsDomainConfigurationUtil;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.Resource;
 import org.springframework.util.Assert;
 
@@ -74,6 +76,7 @@ public class DefaultGrailsApplication implements GrailsApplication {
 
     private static Log log = LogFactory.getLog(DefaultGrailsApplication.class);
     private Map tag2libMap;
+	private ApplicationContext parentContext;
 
 
     public DefaultGrailsApplication(final Class[] classes, GroovyClassLoader classLoader) {
@@ -505,5 +508,13 @@ public class DefaultGrailsApplication implements GrailsApplication {
         else {
             throw new GrailsConfigurationException("Cannot load task class ["+loadedClass+"]. It is not a task!");
         }
+	}
+
+	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+		this.parentContext = applicationContext;
+	}
+	
+	public ApplicationContext getParentContext() {
+		return this.parentContext;
 	}
 }

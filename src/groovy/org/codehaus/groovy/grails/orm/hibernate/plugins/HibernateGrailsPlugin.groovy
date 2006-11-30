@@ -1,0 +1,97 @@
+/*
+ * Copyright 2004-2005 the original author or authors.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */ 
+package org.codehaus.groovy.grails.orm.hibernate.plugins;
+
+import org.codehaus.groovy.grails.plugins.support.*
+import org.codehaus.groovy.grails.orm.hibernate.ConfigurableLocalSessionFactoryBean;
+import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsDomainConfigurationUtil;
+import org.codehaus.groovy.grails.orm.hibernate.support.HibernateDialectDetectorFactoryBean;
+import org.codehaus.groovy.grails.orm.hibernate.validation.GrailsDomainClassValidator;
+import org.springframework.orm.hibernate3.HibernateTransactionManager;
+import org.springmodules.beans.factory.config.MapToPropertiesFactoryBean;
+
+/**
+ * A plug-in that handles the configuration of Hibernate within Grails 
+ * 
+ * @author Graeme Rocher
+ * @since 0.4
+ */
+class HibernateGrailsPlugin {
+
+	def version = GrailsPluginUtils.getGrailsVersion()
+	def dependsOn = [dataSource:version,
+	                 core: version]
+	
+	def watchedResources = "**/grails-app/domain/*.groovy"
+		
+	def doWithSpring = {
+			def vendorToDialect = new Properties()
+			def hibernateDialects = application.classLoader.getResource("hibernate-dialects.properties")
+			if(hibernateDialects) {
+				def p = new Properties()
+				p.load(hibernateDialects.openStream())
+				p.each { entry ->
+					vendorNameDialectMappings[entry.value] = "org.hibernate.dialect.${e.key}".toString() 
+				}
+			}
+			def ds = application.grailsDataSource
+			def hibProps = [:]
+			if(ds && ds.loggingSql) {
+				hibProps."hibernate.show_sql" = "true"
+				hibProps."hibernate.format_sql" = "true"
+			}
+			if(ds && ds.dialect) {
+				hibProps."hibernate.dialect" = ds.dialect.name
+			}
+			else {
+				dialectDetector(HibernateDialectDetectorFactoryBean) {
+					dataSource = dataSource					
+					vendorNameDialectMappings = vendorToDialect
+				}
+				hibProps."hibernate.dialect" = dialectDetector
+			}
+			if(!ds) {
+				hibProps."hibernate.hbm2ddl.auto" = "create-drop"
+			}
+			else if(ds.dbCreate) {
+				hibProps."hibernate.hbm2ddl.auto" = ds.dbCreate
+			}
+			
+			sessionFactory(ConfigurableLocalSessionFactoryBean) {
+				dataSource = dataSource
+				if(application.classLoader.getResource("hibernate.cfg.xml")) {
+					configLocation = "classpath:hibernate.cfg.xml"
+				}
+				hibernateProperties = { MapToPropertiesFactoryBean b ->
+					map = hibProps
+				}
+				grailsApplication = ref("grailsApplication", true)
+				classLoader = classLoader
+			}
+			transactionManager(HibernateTransactionManager) {
+				sessionFactory = sessionFactory
+			}
+	}
+	
+	def doWithApplicationContext = {
+			
+	}
+	
+	def onChange = {
+			
+	}
+
+}

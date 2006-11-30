@@ -15,6 +15,9 @@
  */ 
 package org.codehaus.groovy.grails.commons;
 
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+
 import groovy.lang.GroovyClassLoader;
 
 /**
@@ -27,7 +30,7 @@ import groovy.lang.GroovyClassLoader;
  *
  * Created: Jul 2, 2005
  */
-public interface GrailsApplication {
+public interface GrailsApplication extends ApplicationContextAware {
     /**
      * The id of the grails application within a bean context
      */
@@ -238,4 +241,9 @@ public interface GrailsApplication {
 	 */
 	public Class[] getAllClasses();
 
+	/**
+	 * 
+	 * @return The parent application context
+	 */
+	ApplicationContext getParentContext();
 }
