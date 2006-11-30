@@ -80,6 +80,7 @@ public class GrailsClassUtils {
      * @return True if the class is a bootstrap class
      */
     public static boolean isBootstrapClass( Class clazz ) {
+    	if(clazz == null) return false;
         return clazz.getName().endsWith(DefaultGrailsBootstrapClass.BOOT_STRAP)  && !Closure.class.isAssignableFrom(clazz);
     }
 
@@ -89,6 +90,7 @@ public class GrailsClassUtils {
      * @return True if the class is a taglib
      */
     public static boolean isTagLibClass( Class clazz ) {
+    	if(clazz == null) return false;
         return isTagLibClass(clazz.getName())  && !Closure.class.isAssignableFrom(clazz);
     }
 
@@ -101,6 +103,7 @@ public class GrailsClassUtils {
      * @return True if the class is a controller
      */
     public static boolean isControllerClass( Class clazz ) {
+    	if(clazz == null) return false;
         return isControllerClass(clazz.getName())  && !Closure.class.isAssignableFrom(clazz);
     }
 
@@ -115,6 +118,7 @@ public class GrailsClassUtils {
      * @return  True if the class is a page flow class
      */
     public static boolean isPageFlowClass( Class clazz ) {
+    	if(clazz == null) return false;
         return isPageFlowClass(clazz.getName())  && !Closure.class.isAssignableFrom(clazz);
     }
 
@@ -129,6 +133,7 @@ public class GrailsClassUtils {
      * @return True if the class is a data source
      */
     public static boolean isDataSource(Class clazz) {
+    	if(clazz == null) return false;
         return clazz.getName().endsWith(DefaultGrailsDataSource.DATA_SOURCE) && !Closure.class.isAssignableFrom(clazz);
     }
 
@@ -139,6 +144,7 @@ public class GrailsClassUtils {
      * @return True if the class is a service class
      */
     public static boolean isService(Class clazz) {
+    	if(clazz == null) return false;
         return isService(clazz.getName()) && !Closure.class.isAssignableFrom(clazz);
     }
     public static boolean isService(String className) {
@@ -180,6 +186,7 @@ public class GrailsClassUtils {
     }
 
     public static boolean isTaskClass(Class clazz) {
+    	if(clazz == null) return false;
         try {
             clazz.getDeclaredMethod( GrailsTaskClassProperty.EXECUTE , new Class[]{});
         } catch (SecurityException e) {
