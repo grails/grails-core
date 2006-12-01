@@ -98,7 +98,7 @@ Grails home is set to: ${grailsHome}
 			}   
 			else {   
 				setDefaultEnvironment(allArgs)
-				scriptName = GCU.getNameFromScript(args[0])
+				scriptName = GCU.getNameFromScript(args[0].trim())
 			}                                
 			println "Environment set to ${System.getProperty('grails.env')}"
 
