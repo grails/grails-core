@@ -23,19 +23,15 @@
  */
 
 import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU;
-import org.codehaus.groovy.grails.support.GrailsTestSuite;
 import grails.util.GrailsUtil as GU;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.support.*
 import java.lang.reflect.Modifier;
 import junit.framework.TestCase;
 import junit.framework.TestResult;
 import junit.framework.TestSuite;
 import junit.textui.TestRunner;        
-import org.springframework.orm.hibernate3.SessionFactoryUtils;
-import org.springframework.orm.hibernate3.SessionHolder;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;  
 import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator as GRC;
 
 
@@ -71,18 +67,19 @@ task(testApp:"The test app implementation task") {
 			if(TestCase.isAssignableFrom(c) && !Modifier.isAbstract(c.modifiers)) {
 				suite.addTest(new GrailsTestSuite(ctx.beanFactory, c))
 			}
-		}     			
-		SessionFactory sf = ctx.getBean(GRC.SESSION_FACTORY_BEAN)
+		}    
+		def beanNames = ctx.getBeanNamesForType(PersistenceContextInterceptor)
+		def interceptor = null
+		if(beanNames)interceptor = ctx.getBean(beanNames[0])
+							
+		
 		try {
-			Session session = SessionFactoryUtils.getSession(sf, true)      
-
-	        TransactionSynchronizationManager.bindResource(sf, new SessionHolder(session))
+			interceptor?.init()      
 			def result = TestRunner.run(suite)
 			
 		}   
 		finally {
-		    def sessionHolder = TransactionSynchronizationManager.unbindResource(sf)
-		   	SessionFactoryUtils.releaseSession(sessionHolder.session, sf)
+			interceptor?.destroy()
 		} 							
 		
 	}   
