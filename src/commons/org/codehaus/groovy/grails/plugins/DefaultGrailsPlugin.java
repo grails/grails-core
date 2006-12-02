@@ -30,6 +30,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.control.CompilationFailedException;
@@ -111,10 +112,14 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
 				}
 				else if(referencedResources instanceof List) {
 					List resourceList = (List)referencedResources;
-					watchedResources = new Resource[resourceList.size()];
+
 					for (int i = 0; i < resourceList.size(); i++) {
 						String res = resourceList.get(i).toString();
-						watchedResources[i] = resolver.getResource(res);
+						Resource[] tmp = resolver.getResources(res);
+						if(LOG.isDebugEnabled()) {
+							LOG.debug("Watching resource set ["+(i+1)+"]: " + ArrayUtils.toString(tmp));
+						}
+						watchedResources = (Resource[])ArrayUtils.addAll(this.watchedResources, tmp);
 					}
 				}
 								

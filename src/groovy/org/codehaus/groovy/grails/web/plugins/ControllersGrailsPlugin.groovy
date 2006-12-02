@@ -45,7 +45,8 @@ import org.springframework.web.servlet.handler.WebRequestHandlerInterceptorAdapt
  */
 class ControllersGrailsPlugin {
 
-	def watchedResources = "**/grails-app/controllers/*Controller.groovy"
+	def watchedResources = ["**/grails-app/controllers/*Controller.groovy",
+	                        "**/grails-app/taglib/*TagLib.groovy"]
 	
 	def version = GrailsPluginUtils.getGrailsVersion()
 	def dependsOn = [i18n:version]
@@ -194,6 +195,19 @@ class ControllersGrailsPlugin {
 			def controllerTargetSource = context.getBean("${controllerClass.fullName}TargetSource")
 			controllerTargetSource.swap(controllerClass)
 			
+		}
+		else if(GCU.isTagLibClass(event.source)) {
+			boolean isNew = application.getGrailsTagLibClass(event.source?.name) ? false : true
+			def taglibClass = application.addTagLibClass(event.source)
+			if(taglibClass) {
+				if(isNew) {
+					GrailsRuntimeConfigurator.registerTagLibrary(taglibClass, source.ctx)
+				}
+				else {
+					def targetSource = event.ctx?.getBean("${taglibClass.fullName}TargetSource")
+					targetSource?.swap(taglibClass)
+				}
+			}
 		}
 	}
 }

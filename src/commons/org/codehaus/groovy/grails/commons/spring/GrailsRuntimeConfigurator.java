@@ -168,7 +168,7 @@ public class GrailsRuntimeConfigurator {
 	 * @param tagLibClass That tag library class
 	 * @param context The application context
 	 */
-	public void registerTagLibrary(GrailsTagLibClass tagLibClass, GrailsWebApplicationContext context) {
+	public static void registerTagLibrary(GrailsTagLibClass tagLibClass, GrailsWebApplicationContext context) {
     	RuntimeSpringConfiguration springConfig = new DefaultRuntimeSpringConfiguration();
     	BeanConfiguration tagLibClassBean = springConfig.createSingletonBean(MethodInvokingFactoryBean.class);
     	tagLibClassBean
