@@ -118,4 +118,12 @@ public interface BeanConfiguration {
 	 * @return The value of the property
 	 */
 	Object getPropertyValue(String name);
+
+	/**
+	 * Sets a property value on the bean configuration
+	 * 
+	 * @param property The name of the property
+	 * @param newValue The value
+	 */
+	void setPropertyValue(String property, Object newValue);
 }

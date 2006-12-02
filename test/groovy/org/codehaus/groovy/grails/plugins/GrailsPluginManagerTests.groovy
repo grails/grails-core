@@ -34,6 +34,13 @@ public class GrailsPluginManagerTests extends AbstractGrailsMockTests {
 		assertNull(plugin);
 	}
 	
+	public void testWithLoadLastPlugin() throws Exception {
+		def manager = new DefaultGrailsPluginManager([MyGrailsPlugin,AnotherGrailsPlugin,ShouldLoadLastGrailsPlugin] as Class[], ga)
+		
+		manager.loadPlugins()
+		
+	}
+	
 	public void testDependencyResolutionFailure() throws Exception {
 		def manager = new DefaultGrailsPluginManager([MyGrailsPlugin] as Class[], ga)
 		
@@ -57,7 +64,10 @@ public class GrailsPluginManagerTests extends AbstractGrailsMockTests {
 		
 		manager.loadPlugins()
 		
-		def springConfig = new org.codehaus.groovy.grails.commons.spring.DefaultRuntimeSpringConfiguration()
+		def parent = createMockApplicationContext()
+		parent.registerMockBean("grailsApplication", ga)
+		
+		def springConfig = new org.codehaus.groovy.grails.commons.spring.DefaultRuntimeSpringConfiguration(parent)
 		springConfig.servletContext = createMockServletContext()
 		manager.doRuntimeConfiguration(springConfig)
 		
@@ -71,7 +81,9 @@ public class GrailsPluginManagerTests extends AbstractGrailsMockTests {
 		
 		manager.loadPlugins()
 		
-		def springConfig = new org.codehaus.groovy.grails.commons.spring.DefaultRuntimeSpringConfiguration()
+		def parent = createMockApplicationContext()
+		parent.registerMockBean("grailsApplication", ga)
+		def springConfig = new org.codehaus.groovy.grails.commons.spring.DefaultRuntimeSpringConfiguration(parent)
 		springConfig.servletContext = createMockServletContext()
 		
 		manager.doRuntimeConfiguration(springConfig)
@@ -103,4 +115,8 @@ class AnotherGrailsPlugin {
 class SomeOtherGrailsPlugin {
 	def version = 1.4
 	def dependsOn = [my:1.1, another:1.2]
+}
+class ShouldLoadLastGrailsPlugin {
+	def loadAfter = ["my", "someOther"]
+	def version = 1.5	             
 }

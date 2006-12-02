@@ -88,6 +88,9 @@ public class DefaultBeanConfiguration extends GroovyObjectSupport implements Bea
 			else if(BY_TYPE.equals(newValue)) {
 				bd.setAutowireMode(AutowireCapableBeanFactory.AUTOWIRE_BY_TYPE);
 			}
+			else if(Boolean.TRUE.equals(newValue)) {
+				bd.setAutowireMode(AutowireCapableBeanFactory.AUTOWIRE_BY_NAME);
+			}
 			else if(BY_CONSTRUCTOR.equals(newValue)) {
 				bd.setAutowireMode(AutowireCapableBeanFactory.AUTOWIRE_CONSTRUCTOR);
 			}
@@ -248,11 +251,18 @@ public class DefaultBeanConfiguration extends GroovyObjectSupport implements Bea
     }
 
 	public Object getPropertyValue(String name) {
-		return getBeanDefinition().getPropertyValues().getPropertyValue(name);
+		return getBeanDefinition()
+					.getPropertyValues()
+					.getPropertyValue(name)
+					.getValue();
 	}
 
 	public boolean hasProperty(String name) {
 		return getBeanDefinition().getPropertyValues().contains(name);
+	}
+
+	public void setPropertyValue(String property, Object newValue) {
+		getBeanDefinition().getPropertyValues().addPropertyValue(property, newValue);
 	}
 
 }

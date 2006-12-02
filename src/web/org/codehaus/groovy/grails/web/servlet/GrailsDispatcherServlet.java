@@ -18,9 +18,7 @@ package org.codehaus.groovy.grails.web.servlet;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsBootstrapClass;
 import org.codehaus.groovy.grails.commons.GrailsConfigUtils;
-import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator;
 import org.codehaus.groovy.grails.commons.spring.GrailsWebApplicationContext;
-import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.springframework.beans.BeansException;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
@@ -54,21 +52,10 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
     		webContext = wac;
     	}
     	else {
-            GrailsRuntimeConfigurator configurator = new GrailsRuntimeConfigurator(application,parent);
-            if(parent.containsBean(GrailsPluginManager.BEAN_NAME)) {
-            	configurator.setPluginManager((GrailsPluginManager)parent.getBean(GrailsPluginManager.BEAN_NAME));
-            }
-            // return a context that obeys grails' settings
-            webContext = configurator.configure(super.getServletContext());     		
+            webContext = GrailsConfigUtils.configureWebApplicationContext(getServletContext(), parent);     		
     	}
-        // use config file locations if available
-        getServletContext().setAttribute(GrailsApplicationAttributes.PARENT_APPLICATION_CONTEXT,parent);
-        getServletContext().setAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT,webContext );
-        getServletContext().setAttribute(GrailsApplication.APPLICATION_ID,application);
-        
-        // configure scaffolders
+                // configure scaffolders
         GrailsConfigUtils.configureScaffolders(application, webContext);
-
         GrailsConfigUtils.executeGrailsBootstraps(application, webContext, getServletContext());
 
         return webContext;

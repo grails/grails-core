@@ -1,9 +1,12 @@
 package org.codehaus.groovy.grails.support;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -60,7 +63,14 @@ public class MockApplicationContext implements ApplicationContext {
 	}
 
 	public String[] getBeanNamesForType(Class type) {
-		throw new UnsupportedOperationException("Method not supported by implementation");
+		List beanNames = new ArrayList();
+		for (Iterator i = beans.keySet().iterator(); i.hasNext();) {
+			String beanName = (String)i.next();
+			if(type.isAssignableFrom( beans.get(beanName).getClass() )) {
+				beanNames.add(beanName);
+			}			
+		}
+		return (String[])beanNames.toArray(new String[beanNames.size()]);
 	}
 
 	public String[] getBeanNamesForType(Class type, boolean includePrototypes,

@@ -20,6 +20,7 @@ import java.math.BigDecimal;
 import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration;
 import org.codehaus.groovy.grails.plugins.exceptions.PluginException;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 
 /**
  * <p>A class that handles the loading and management of plug-ins in the Grails system.
@@ -55,7 +56,7 @@ import org.springframework.context.ApplicationContext;
  * @since 0.4
  *
  */
-public interface GrailsPluginManager {
+public interface GrailsPluginManager extends ApplicationContextAware {
 
 	String BEAN_NAME = "grailsPluginManager";
 
@@ -90,6 +91,13 @@ public interface GrailsPluginManager {
 	 * @return The GrailsPlugin instance or null if it doesn't exist	
 	 */
 	public abstract GrailsPlugin getGrailsPlugin(String name);
+	
+	/**
+	 * 
+	 * @param name The name of the plugin
+	 * @return True if the the manager has a loaded plugin with the given name
+	 */
+	public boolean hasGrailsPlugin(String name);
 
 	/**
 	 * Retrieves a plug-in for its name and version
@@ -99,5 +107,19 @@ public interface GrailsPluginManager {
 	 * @return The GrailsPlugin instance or null if it doesn't exist
 	 */
 	public abstract GrailsPlugin getGrailsPlugin(String name, BigDecimal version);
+
+	/**
+	 * Executes the runtime configuration for a specific plugin AND all its dependencies
+	 * 
+	 * @param pluginName The name of he plugin
+	 * @param springConfig The runtime spring config instance
+	 */
+	public abstract void doRuntimeConfiguration(String string, RuntimeSpringConfiguration springConfig);
+
+	/**
+	 * Checks all the plugins to see whether they have any changes
+	 *
+	 */
+	public abstract void checkForChanges();
 
 }

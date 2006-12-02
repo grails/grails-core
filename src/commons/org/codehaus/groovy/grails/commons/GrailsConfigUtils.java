@@ -19,8 +19,10 @@ import javax.servlet.ServletContext;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator;
+import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.codehaus.groovy.grails.scaffolding.GrailsScaffolder;
 import org.codehaus.groovy.grails.scaffolding.ScaffoldDomain;
+import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.hibernate.FlushMode;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -116,5 +118,31 @@ public class GrailsConfigUtils {
 	        }
 	        
 	    }
+	}
+
+	public static WebApplicationContext configureWebApplicationContext(ServletContext servletContext, WebApplicationContext parent) {
+		GrailsApplication application = (GrailsApplication)parent.getBean(GrailsApplication.APPLICATION_ID);
+	
+		if(LOG.isDebugEnabled()) {
+			LOG.debug("[GrailsContextLoader] Configurating Grails Application");
+		}
+		
+	    GrailsRuntimeConfigurator configurator = new GrailsRuntimeConfigurator(application,parent);
+        if(parent.containsBean(GrailsPluginManager.BEAN_NAME)) {
+        	GrailsPluginManager pluginManager = (GrailsPluginManager)parent.getBean(GrailsPluginManager.BEAN_NAME);
+        	configurator.setPluginManager(pluginManager);
+        }
+        servletContext.setAttribute(GrailsApplicationAttributes.PLUGIN_MANAGER, configurator.getPluginManager());
+        // use config file locations if available
+        servletContext.setAttribute(GrailsApplicationAttributes.PARENT_APPLICATION_CONTEXT,parent);        
+        servletContext.setAttribute(GrailsApplication.APPLICATION_ID,application);
+        
+	    
+	    // return a context that obeys grails' settings
+	    WebApplicationContext webContext = configurator.configure( servletContext );
+	    configurator.getPluginManager().setApplicationContext(webContext);
+	    servletContext.setAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT,webContext );
+	    LOG.info("[GrailsContextLoader] Grails application loaded.");
+		return webContext;
 	}
 }

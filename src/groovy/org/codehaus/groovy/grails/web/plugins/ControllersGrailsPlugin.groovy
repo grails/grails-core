@@ -35,9 +35,6 @@ import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
 import org.springframework.web.context.request.WebRequestInterceptor;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.handler.WebRequestHandlerInterceptorAdapter;
-// TODO move to hibernate plugin
-import org.springframework.orm.hibernate3.support.OpenSessionInViewInterceptor;
-import org.springframework.orm.hibernate3.HibernateAccessor;
 
 
 /**
@@ -51,7 +48,7 @@ class ControllersGrailsPlugin {
 	def watchedResources = "**/grails-app/controllers/*Controller.groovy"
 	
 	def version = GrailsPluginUtils.getGrailsVersion()
-	
+	def dependsOn = [i18n:version]
 	
 	def doWithSpring = {
 		exceptionHandler(GrailsExceptionResolver) {
@@ -62,8 +59,10 @@ class ControllersGrailsPlugin {
 		grailsUrlMappings(UrlMappingFactoryBean) {
 			mappings = urlMappings
 		}
-		def simpleController = simpleGrailsController(SimpleGrailsController.class)
-		simpleController.autowire = "byType"
+		simpleGrailsController(SimpleGrailsController.class) {
+			grailsApplication = ref("grailsApplication", true)			
+		}
+		
 	    
 		jspViewResolver(GrailsViewResolver) {
 			viewClass = org.springframework.web.servlet.view.JstlView.class
@@ -82,20 +81,13 @@ class ControllersGrailsPlugin {
 				targetSource = handlerMappingTargetSource
 				proxyInterfaces = [org.springframework.web.servlet.HandlerMapping]
 			}
-						
-			// TODO move to hibernate plugin
-			if(application.grailsDomainClasses.size() > 0) {
-				openSessionInViewInterceptor(OpenSessionInViewInterceptor) {
-					flushMode = HibernateAccessor.FLUSH_AUTO
-					sessionFactory = sessionFactory
-				}	
-				handlerInterceptors << openSessionInViewInterceptor
-			}
+					
 		}
 		
 		// Go through all the controllers and configure them in spring with AOP proxies for auto-updates and
 		// mappings in the urlMappings bean
 		application.controllers.each { controller ->
+			log.debug "Configuring controller $controller.fullName"
 			if(controller.available) {
 				configureAOPProxyBean.delegate = delegate
 				configureAOPProxyBean(controller, "getController", org.codehaus.groovy.grails.commons.GrailsControllerClass.class)				
@@ -159,6 +151,10 @@ class ControllersGrailsPlugin {
 		if(GCU.isControllerClass(event.source)) {
 			log.debug("Controller ${event.source} changed. Reloading...")
 			def context = event.ctx
+			if(!context) {
+				log.debug("Application context not found. Can't reload")
+				return
+			}
 			boolean isNew = application.getController(event.source?.name) ? false : true
 			def controllerClass = application.addControllerClass(event.source)
 			

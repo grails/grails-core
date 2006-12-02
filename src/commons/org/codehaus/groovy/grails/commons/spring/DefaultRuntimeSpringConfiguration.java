@@ -46,7 +46,7 @@ public class DefaultRuntimeSpringConfiguration implements
 
 	private static final Log LOG = LogFactory.getLog(DefaultRuntimeSpringConfiguration.class);
 	private GrailsWebApplicationContext context;
-	private List beanConfigs = new ArrayList();
+	private Map beanConfigs = new HashMap();
 	private Map beanDefinitions = new HashMap();
 	private List beanNames = new ArrayList();
 
@@ -62,20 +62,20 @@ public class DefaultRuntimeSpringConfiguration implements
 
 	public BeanConfiguration addSingletonBean(String name, Class clazz) {
 		BeanConfiguration bc = new DefaultBeanConfiguration(name,clazz);
-		beanConfigs.add(bc);
+		beanConfigs.put(name,bc);
 		beanNames.add(name);
 		return bc;
 	}
 
 	public BeanConfiguration addPrototypeBean(String name, Class clazz) {
 		BeanConfiguration bc = new DefaultBeanConfiguration(name,clazz,true);
-		beanConfigs.add(bc);
+		beanConfigs.put(name,bc);
 		beanNames.add(name);
 		return bc;
 	}
 
 	public WebApplicationContext getApplicationContext() {
-		for (Iterator i = beanConfigs.iterator(); i.hasNext();) {
+		for (Iterator i = beanConfigs.values().iterator(); i.hasNext();) {
 			BeanConfiguration bc = (BeanConfiguration) i.next();
 			if(LOG.isDebugEnabled()) {
 				LOG.debug("[RuntimeConfiguration] Registering bean [" + bc.getName() + "]");
@@ -109,13 +109,13 @@ public class DefaultRuntimeSpringConfiguration implements
 			context.registerBeanDefinition(key.toString(), bd);
 			
 		}
-		context.refresh();
+		context.refresh();		
 		return context;
 	}
 
 	public BeanConfiguration addSingletonBean(String name) {
 		BeanConfiguration bc = new DefaultBeanConfiguration(name);
-		beanConfigs.add(bc);
+		beanConfigs.put(name,bc);
 		beanNames.add(name);
 		return bc;
 	}
@@ -126,14 +126,14 @@ public class DefaultRuntimeSpringConfiguration implements
 
 	public BeanConfiguration addSingletonBean(String name, Class clazz, Collection args) {
 		BeanConfiguration bc = new DefaultBeanConfiguration(name,clazz,args);
-		beanConfigs.add(bc);
+		beanConfigs.put(name,bc);
 		beanNames.add(name);
 		return bc;
 	}
 
 	public BeanConfiguration addPrototypeBean(String name) {
 		BeanConfiguration bc = new DefaultBeanConfiguration(name,true);
-		beanConfigs.add(bc);
+		beanConfigs.put(name,bc);
 		beanNames.add(name);
 		return bc;
 	}
@@ -156,7 +156,7 @@ public class DefaultRuntimeSpringConfiguration implements
 
     public void addBeanConfiguration(String beanName, BeanConfiguration beanConfiguration) {
         beanConfiguration.setName(beanName);
-        beanConfigs.add(beanConfiguration);
+        beanConfigs.put(beanName,beanConfiguration);
         beanNames.add(beanName);
     }
 
@@ -167,6 +167,10 @@ public class DefaultRuntimeSpringConfiguration implements
 
 	public boolean containsBean(String name) {
 		return beanNames .contains(name);
+	}
+
+	public BeanConfiguration getBeanConfig(String name) {
+		return (BeanConfiguration)beanConfigs.get(name);
 	}
 
 }

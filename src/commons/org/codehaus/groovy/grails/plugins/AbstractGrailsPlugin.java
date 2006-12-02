@@ -25,6 +25,7 @@ import java.util.Map;
 import org.codehaus.groovy.grails.commons.AbstractGrailsClass;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration;
+import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 /**
  * Abstract implementation that provides some default behaviours
@@ -36,11 +37,14 @@ public abstract class AbstractGrailsPlugin extends GroovyObjectSupport implement
 
 
 
+
+
 	protected GrailsApplication application;
 	protected BigDecimal version = new BigDecimal("0.1");
 	protected Map dependencies = new HashMap();
 	protected String[] dependencyNames = new String[0];
 	protected Class pluginClass;
+	protected ApplicationContext applicationContext;
 
 	/**
 	 * Wrapper Grails class for plugins
@@ -91,6 +95,17 @@ public abstract class AbstractGrailsPlugin extends GroovyObjectSupport implement
 
 	public BigDecimal getVersion() {
 		return this.version;
+	}
+
+	public GrailsPluginManager getManager() {
+		return null;
+	}
+
+	public String[] getLoadAfterNames() {
+		return new String[0];
+	}
+	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+		this.applicationContext = applicationContext;
 	}
 	
 }

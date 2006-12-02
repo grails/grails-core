@@ -20,7 +20,6 @@ import groovy.lang.GroovyClassLoader;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -43,19 +42,17 @@ import org.codehaus.groovy.grails.commons.GrailsControllerClass;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
 import org.codehaus.groovy.grails.commons.GrailsPageFlowClass;
-import org.codehaus.groovy.grails.commons.GrailsResourceLoader;
 import org.codehaus.groovy.grails.commons.GrailsServiceClass;
 import org.codehaus.groovy.grails.commons.GrailsTagLibClass;
-import org.codehaus.groovy.grails.commons.spring.GrailsResourceHolder;
 import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator;
 import org.codehaus.groovy.grails.commons.spring.GrailsWebApplicationContext;
+import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.codehaus.groovy.grails.scaffolding.GrailsTemplateGenerator;
 import org.codehaus.groovy.grails.scaffolding.ScaffoldDomain;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsUrlHandlerMapping;
 import org.codehaus.groovy.grails.web.servlet.mvc.SimpleGrailsController;
 import org.springframework.aop.target.HotSwappableTargetSource;
-import org.springframework.core.io.Resource;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.request.WebRequestInterceptor;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -80,6 +77,8 @@ public class GrailsReloadServletFilter extends OncePerRequestFilter {
     private GrailsTemplateGenerator templateGenerator;
 
 	private GrailsRuntimeConfigurator config;
+
+	private GrailsPluginManager manager;
 
     class ResourceMeta {
         long lastModified;
@@ -152,99 +151,20 @@ public class GrailsReloadServletFilter extends OncePerRequestFilter {
             copyScript.copyViews();
         } 
 
-        GrailsResourceHolder resourceHolder = (GrailsResourceHolder)context.getBean(GrailsResourceHolder.APPLICATION_CONTEXT_ID);
-        Resource[] resources = resourceHolder.getResources();
-
-        if(!initialised) {
-            for (int i = 0; i < resources.length; i++) {
-                Resource resource = resources[i];
-                String className = resourceHolder.getClassName(resources[i]);
-                URL url = resource.getURL();
-                URLConnection c = url.openConnection();
-                c.setDoInput(false);
-                c.setDoOutput(false);
-                long lastModified = c.getLastModified();
-
-                ResourceMeta rm = new ResourceMeta();
-                rm.className = className;
-                rm.lastModified = lastModified;
-                rm.url = url;
-                resourceMetas.put(className, rm);
-            }
-
-            initialised = true;
+        
+        if(manager == null) {
+        	manager = (GrailsPluginManager)getServletContext().getAttribute(GrailsApplicationAttributes.PLUGIN_MANAGER);
         }
-        else {
-
-            for (int i = 0; i < resources.length; i++) {
-                Resource resource = resources[i];
-                String className = resourceHolder.getClassName(resources[i]);
-
-                Class loadedClass = null;
-                boolean isNew = false;
-                // if its not in the resource metas its new.. so load it
-                try {
-                    if(!resourceMetas.containsKey(className)) {
-                        // add to resource metas
-                        URL url = resource.getURL();
-                        URLConnection c = url.openConnection();
-                        c.setDoInput(false);
-                        c.setDoOutput(false);
-                        long lastModified = c.getLastModified();
-
-                        ResourceMeta rm = new ResourceMeta();
-                        rm.className = className;
-                        rm.lastModified = lastModified;
-                        rm.url = url;
-                        resourceMetas.put(className, rm);
-                        // load class
-                        GroovyClassLoader gcl = application.getClassLoader();
-                        ((GrailsResourceLoader)gcl.getResourceLoader()).setResources(resources);
-                        loadedClass = gcl.loadClass(className,true,false);
-                        // set as new
-                        isNew = true;
-                    }
-                    // otherwise check the last modified date
-                    else {
-                        ResourceMeta rm = (ResourceMeta)resourceMetas.get(className);
-                        URL url = resource.getURL();
-                        URLConnection c = url.openConnection();
-                        // if its been modified reload it
-                        if(rm.lastModified < c.getLastModified()) {
-                            loadedClass = application
-                                        .getClassLoader()
-                                        .loadClass(className,true,false);
-                            rm.lastModified = c.getLastModified();
-                        }
-                    }
-                    // if the loaded class is not null then we have a change
-                    if(loadedClass != null) {
-                          loadGrailsClass(loadedClass,isNew);
-                    }
-                }
-                catch(ClassNotFoundException cnfex) {
-                     LOG.error("Unabled to reload class ["+className+"], class not found: " + cnfex.getMessage(),cnfex);
-                }
-            }
+        if(manager != null) {
+        	if(LOG.isDebugEnabled())
+        		LOG.debug("Checking Plugin manager for changes..");
+        	manager.checkForChanges();
+        }
+        else if(LOG.isDebugEnabled()) {
+        	LOG.debug("Plugin manager not found, skipping change check");
         }
 
         filterChain.doFilter(httpServletRequest,httpServletResponse);
-    }
-
-    private void loadGrailsClass(Class loadedClass, boolean isNew) throws ClassNotFoundException {
-        // so establish the type and take the appropriate action
-        if(GrailsClassUtils.isControllerClass(loadedClass)) {
-            loadControllerClass(loadedClass,isNew);
-        }
-        else if(GrailsClassUtils.isDomainClass(loadedClass)) {
-            loadDomainClass(loadedClass,isNew);
-        }
-        else if(GrailsClassUtils.isService(loadedClass)) {
-            loadServiceClass(loadedClass,isNew);
-        }
-        else if(GrailsClassUtils.isTagLibClass(loadedClass)) {
-            loadTagLibClass(loadedClass, isNew);
-        }
     }
 
     private void loadServiceClass(Class loadedClass, boolean isNew) {

@@ -16,6 +16,7 @@
 package org.codehaus.groovy.grails.plugins;
 
 import grails.spring.BeanBuilder;
+import groovy.lang.Binding;
 import groovy.lang.Closure;
 import groovy.lang.GroovyObject;
 import groovy.util.slurpersupport.GPathResult;
@@ -37,11 +38,10 @@ import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.commons.GrailsResourceUtils;
 import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration;
 import org.codehaus.groovy.grails.plugins.exceptions.PluginException;
+import org.codehaus.groovy.grails.support.ParentApplicationContextAware;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
-import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 
@@ -52,14 +52,17 @@ import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
  * @author Graeme Rocher
  *
  */
-public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsPlugin, ApplicationContextAware {
+public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsPlugin, ParentApplicationContextAware {
 
 	private static final String PLUGIN_CHANGE_EVENT_CTX = "ctx";
 	private static final String PLUGIN_CHANGE_EVENT_APPLICATION = "application";
 	private static final String PLUGIN_CHANGE_EVENT_PLUGIN = "plugin";
-	private static final String PLUGIN_CHANGE_EVENT_SOURCE = "source";	
+	private static final String PLUGIN_CHANGE_EVENT_SOURCE = "source";
+	private static final String PLUGIN_LOAD_AFTER_NAMES = "loadAfter";
+	
 	private static final Log LOG = LogFactory.getLog(DefaultGrailsPlugin.class);
 	private static final String WATCHED_RESOURCES = "watchedResources";
+	
 	
 	private GrailsPluginClass pluginGrailsClass;
 	private GroovyObject plugin;
@@ -68,10 +71,10 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
 
 	private Resource[] watchedResources = new Resource[0];
 	private long[] modifiedTimes = new long[0];
-	private ApplicationContext applicationContext;
 	private PathMatchingResourcePatternResolver resolver;
 	private String resourcesReference;
 	private ApplicationContext parentCtx;
+	private String[] loadAfterNames = new String[0];
 	
 	public DefaultGrailsPlugin(Class pluginClass, GrailsApplication application) {
 		super(pluginClass, application);
@@ -83,6 +86,12 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
 		if(this.pluginBean.isReadableProperty(DEPENDS_ON)) {
 			this.dependencies = (Map)GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(this.plugin, DEPENDS_ON);
 			this.dependencyNames = (String[])this.dependencies.keySet().toArray(new String[this.dependencies.size()]);
+		}
+		if(this.pluginBean.isReadableProperty(PLUGIN_LOAD_AFTER_NAMES)) {
+			List loadAfterNamesList = (List)GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(this.plugin, PLUGIN_LOAD_AFTER_NAMES);
+			if(loadAfterNamesList != null) {
+				this.loadAfterNames = (String[])loadAfterNamesList.toArray(new String[loadAfterNamesList.size()]);
+			}
 		}
 		if(this.pluginBean.isReadableProperty(VERSION)) {
 			BigDecimal bd = (BigDecimal)this.plugin.getProperty("version");
@@ -119,6 +128,12 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
 	
 	
 
+	public String[] getLoadAfterNames() {
+		return this.loadAfterNames;
+	}
+
+
+
 	public ApplicationContext getParentCtx() {
 		return parentCtx;
 	}
@@ -151,7 +166,10 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
 			Closure c = (Closure)this.plugin.getProperty(DO_WITH_SPRING);
 			BeanBuilder bb = new BeanBuilder(getParentCtx());
 			bb.setSpringConfig(springConfig);
-			bb.setApplication(application);
+			Binding b = new Binding();
+			b.setVariable("application", application);
+			b.setVariable("manager", getManager());
+			bb.setBinding(b);
 			c.setDelegate(bb);
 			bb.invokeMethod("beans", new Object[]{c});
 		}
@@ -200,6 +218,9 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
 
 				checkForNewResources(this);
 				
+				if(LOG.isDebugEnabled()) {
+					LOG.debug("Plugin ["+getName()+"] checking ["+watchedResources.length+"] resources for changes..");
+				}
 				for (int i = 0; i < watchedResources.length; i++) {
 					final Resource r = watchedResources[i];								
                         URL url = watchedResources[i].getURL();
@@ -279,11 +300,6 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
 		return null;
 	}
 
-	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-		this.applicationContext = applicationContext;
-	}
-	
-	
 	
 	public void setWatchedResources(Resource[] watchedResources) throws IOException {
 		this.watchedResources = watchedResources;
@@ -292,5 +308,20 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
 
 	public Log getLog() {
 		return LOG;
+	}
+
+	public GrailsPluginManager getManager() {
+		if(this.parentCtx != null) {
+			String[] beanNames = parentCtx.getBeanNamesForType(GrailsPluginManager.class);
+			if(beanNames.length > 0)
+				return (GrailsPluginManager)parentCtx.getBean(beanNames[0]);
+		}
+		return super.getManager();
+	}
+
+
+
+	public void setParentApplicationContext(ApplicationContext parent) {
+		this.parentCtx = parent;
 	}
 }

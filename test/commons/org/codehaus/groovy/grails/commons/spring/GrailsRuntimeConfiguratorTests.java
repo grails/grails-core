@@ -2,11 +2,24 @@ package org.codehaus.groovy.grails.commons.spring;
 
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyObject;
+
+import java.util.Map;
+import java.util.Properties;
+
 import junit.framework.TestCase;
-import org.codehaus.groovy.grails.support.MockApplicationContext;
-import org.codehaus.groovy.grails.commons.*;
+
+import org.apache.commons.lang.ArrayUtils;
+import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
+import org.codehaus.groovy.grails.commons.DefaultGrailsDomainClass;
+import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.commons.GrailsControllerClass;
+import org.codehaus.groovy.grails.commons.GrailsDomainClass;
+import org.codehaus.groovy.grails.commons.GrailsServiceClass;
+import org.codehaus.groovy.grails.commons.GrailsTagLibClass;
 import org.codehaus.groovy.grails.orm.hibernate.validation.GrailsDomainClassValidator;
+import org.codehaus.groovy.grails.plugins.DefaultGrailsPluginManager;
 import org.codehaus.groovy.grails.support.ClassEditor;
+import org.codehaus.groovy.grails.support.MockApplicationContext;
 import org.codehaus.groovy.grails.web.errors.GrailsExceptionResolver;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsUrlHandlerMapping;
 import org.codehaus.groovy.grails.web.servlet.mvc.SimpleGrailsController;
@@ -19,9 +32,6 @@ import org.springframework.mock.web.MockServletContext;
 import org.springframework.web.multipart.commons.CommonsMultipartResolver;
 import org.springframework.web.servlet.HandlerExecutionChain;
 import org.springframework.web.servlet.ModelAndView;
-
-import java.util.Properties;
-import java.util.Map;
 
 public class GrailsRuntimeConfiguratorTests extends TestCase {
 
@@ -40,10 +50,13 @@ public class GrailsRuntimeConfiguratorTests extends TestCase {
         GrailsApplication app = new DefaultGrailsApplication(new Class[]{dc,sc,c}, gcl );
         MockApplicationContext parent = new MockApplicationContext();
         parent.registerMockBean(GrailsApplication.APPLICATION_ID, app);
-
+        
         GrailsRuntimeConfigurator conf = new GrailsRuntimeConfigurator(app,parent);
+        DefaultGrailsPluginManager manager = new DefaultGrailsPluginManager(new Class[0], app);
+        manager.setParentApplicationContext(parent);
+        parent.registerMockBean("manager",manager);
+        conf.setPluginManager(manager);
         ApplicationContext ctx = conf.configure(new MockServletContext());
-
         // test class editor setup
         assertNotNull(ctx);
         assertTrue(ctx.getBean(GrailsRuntimeConfigurator.CLASS_LOADER_BEAN) instanceof GroovyClassLoader );
@@ -310,13 +323,11 @@ public class GrailsRuntimeConfiguratorTests extends TestCase {
         GrailsWebApplicationContext ctx = (GrailsWebApplicationContext)conf.configure(new MockServletContext());
         assertNotNull(ctx);
 
-        Map beans =  ctx.getBeansOfType(s2);
-        assertEquals(1, beans.size());
-        beans = ctx.getBeansOfType(s1);
-        assertEquals(1, beans.size());
+        assertEquals( s1, ctx.getBean("testService").getClass());
+        assertEquals( s2, ctx.getBean("anotherService").getClass());
 
         GroovyObject anotherService = (GroovyObject)ctx.getBean("anotherService");
-
+        assertNotNull(anotherService.getProperty("testService"));
         assertEquals("hello",anotherService.invokeMethod("anotherMethod", null));
     }
 

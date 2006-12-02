@@ -100,6 +100,35 @@ class BeanBuilderTests extends GroovyTestCase {
 		assertEquals "homer", marge.bean1.person
 	}
 	
+	void testWithUntypedAnonymousInnerBean() {
+		def bb = new BeanBuilder()
+		bb.beans {
+			homer(Bean1Factory) 
+			bart(Bean1) {
+				person = "bart"
+				age = 11
+			}
+			lisa(Bean1) {
+				person = "lisa"
+				age = 9				
+			}			
+			marge(Bean2) {
+				person = "marge"
+				bean1 =  { bean -> 
+							bean.factoryBean = "homer"
+							bean.factoryMethod = "newInstance"
+							person = "homer" }
+				children = [bart, lisa]
+			}
+		}
+		
+		def ctx  = bb.createApplicationContext()
+		
+		def marge = ctx.getBean("marge")
+		
+		assertEquals "homer", marge.bean1.person		
+	}
+	
 	void testBeanReferences() {
 		def bb = new BeanBuilder()
 		bb.beans {

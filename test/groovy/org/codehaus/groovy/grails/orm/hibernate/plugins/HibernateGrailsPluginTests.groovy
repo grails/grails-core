@@ -19,22 +19,25 @@ class Test {
 	
 	void testHibernatePlugin() {
 		
-		def corePluginClass = gcl.loadClass("org.codehaus.groovy.grails.plugins.CoreGrailsPlugin")
-		def corePlugin = new DefaultGrailsPlugin(corePluginClass,ga)
-		def dataSourcePluginClass = gcl.loadClass("org.codehaus.groovy.grails.datasource.plugins.DataSourceGrailsPlugin")
-		def dataSourcePlugin = new DefaultGrailsPlugin(dataSourcePluginClass, ga)
-
+		def mockManager = new MockGrailsPluginManager()
+		ctx.registerMockBean("manager", mockManager )
+		
+		def dependantPluginClasses = []
+		dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.CoreGrailsPlugin")			
+		dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.datasource.plugins.DataSourceGrailsPlugin")
+		dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.web.plugins.ControllersGrailsPlugin")
+		dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.i18n.plugins.I18nGrailsPlugin")
+		dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.DomainClassGrailsPlugin")
+		
+		def dependentPlugins = dependantPluginClasses.collect { new DefaultGrailsPlugin(it, ga)}
 		def springConfig = new DefaultRuntimeSpringConfiguration(ctx)
-		springConfig.servletContext = createMockServletContext()
+		springConfig.servletContext = createMockServletContext()		
 		
-		corePlugin.doWithRuntimeConfiguration(springConfig)
-		dataSourcePlugin.doWithRuntimeConfiguration(springConfig)
-		
-		
-		
-		
-		def pluginClass = gcl.loadClass("org.codehaus.groovy.grails.orm.hibernate.plugins.HibernateGrailsPlugin")
-		
+		dependentPlugins*.doWithRuntimeConfiguration(springConfig)
+		dependentPlugins.each{ mockManager.registerMockPlugin(it) }
+
+	
+		def pluginClass = gcl.loadClass("org.codehaus.groovy.grails.orm.hibernate.plugins.HibernateGrailsPlugin")		
 		def plugin = new DefaultGrailsPlugin(pluginClass, ga)
 		
 		
@@ -43,6 +46,8 @@ class Test {
 		def appCtx = springConfig.getApplicationContext()
 		assert appCtx.containsBean("dataSource")
 		assert appCtx.containsBean("sessionFactory")
+		assert appCtx.containsBean("openSessionInViewInterceptor")
+		assert appCtx.containsBean("TestValidator")
 		
 		def testClass = ga.getGrailsDomainClass("Test").clazz
 		

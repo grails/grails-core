@@ -156,4 +156,10 @@ public interface RuntimeSpringConfiguration {
 	 * @return True if it does
 	 */
 	public boolean containsBean(String name);
+	/**
+	 * Returns the BeanConfiguration for the specified name
+	 * @param name The name of the bean configuration
+	 * @return The BeanConfiguration
+	 */
+	public BeanConfiguration getBeanConfig(String name);
 }

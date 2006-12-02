@@ -33,6 +33,7 @@ public interface GrailsApplicationAttributes {
     String PARENT_APPLICATION_CONTEXT = "org.codehaus.groovy.grails.PARENT_APPLICATION_CONTEXT";
 	String GSP_TO_RENDER = "org.codehaus.groovy.grails.GSP_TO_RENDER";
 	String REQUEST_SCOPE_ID = "org.codehaus.groovy.grails.GRAILS_APPLICATION_ATTRIBUTES";
+	String PLUGIN_MANAGER = "org.codehaus.groovy.grails.GRAILS_PLUGIN_MANAGER";
 
     /**
      * @return The application context for servlet

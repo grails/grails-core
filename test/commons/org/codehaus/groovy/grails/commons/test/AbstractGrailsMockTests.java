@@ -41,7 +41,7 @@ public abstract class AbstractGrailsMockTests extends TestCase {
     /**
      * The GrailsApplication instance created during setup
      */
-    public GrailsApplication ga;
+    public DefaultGrailsApplication ga;
     public MockApplicationContext ctx;
 
     protected final void setUp() throws Exception {
@@ -51,6 +51,7 @@ public abstract class AbstractGrailsMockTests extends TestCase {
 
         ga = new DefaultGrailsApplication(gcl.getLoadedClasses(),gcl);
         ctx = new MockApplicationContext();
+        ga.setApplicationContext(ctx);
         ctx.registerMockBean(GrailsApplication.APPLICATION_ID, ga);
     }
     

@@ -23,6 +23,7 @@ import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 
 /**
  * <p>Plugin interface that adds Spring {@link org.springframework.beans.factory.config.BeanDefinition}s
@@ -40,7 +41,7 @@ import org.springframework.context.ApplicationContext;
  * @since 0.2
  * @see BeanDefinitionRegistry
  */
-public interface GrailsPlugin {
+public interface GrailsPlugin extends ApplicationContextAware {
 
     String ON_CHANGE = "onChange";
 	String DO_WITH_WEB_DESCRIPTOR = "doWithWebDescriptor";
@@ -95,6 +96,15 @@ public interface GrailsPlugin {
 	 * @return The names of the plugins this plugin is dependant on
 	 */
 	String[] getDependencyNames();
+	
+	/**
+	 * Retrieves the names of plugins that this plugin should be loaded after. This differs
+	 * from dependencies in that if that plugin doesn't exist this plugin will still be loaded.
+	 * It is a way of enforcing plugins are loaded before, but not necessarily needed
+	 *  
+	 * @return The names of the plugins that this plugin should be loaded after
+	 */
+	String[] getLoadAfterNames();
 
 
 	/**
@@ -112,4 +122,10 @@ public interface GrailsPlugin {
 	 *
 	 */
 	void checkForChanges();
+	
+	/**
+	 * Retrieves the plugin manager if known, otherwise returns null
+	 * @return The PluginManager or null
+	 */
+	GrailsPluginManager getManager();
 }

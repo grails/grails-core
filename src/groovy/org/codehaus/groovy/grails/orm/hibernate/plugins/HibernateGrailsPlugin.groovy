@@ -22,6 +22,9 @@ import org.codehaus.groovy.grails.orm.hibernate.support.HibernateDialectDetector
 import org.codehaus.groovy.grails.orm.hibernate.validation.GrailsDomainClassValidator;
 import org.springframework.orm.hibernate3.HibernateTransactionManager;
 import org.springmodules.beans.factory.config.MapToPropertiesFactoryBean;
+import org.springframework.orm.hibernate3.support.OpenSessionInViewInterceptor;
+import org.springframework.orm.hibernate3.HibernateAccessor;
+
 
 /**
  * A plug-in that handles the configuration of Hibernate within Grails 
@@ -33,7 +36,11 @@ class HibernateGrailsPlugin {
 
 	def version = GrailsPluginUtils.getGrailsVersion()
 	def dependsOn = [dataSource:version,
+	                 domainClass:version,
+	                 i18n:version,
 	                 core: version]
+	                 
+	def loadAfter = ['controllers']	                 
 	
 	def watchedResources = "**/grails-app/domain/*.groovy"
 		
@@ -70,19 +77,36 @@ class HibernateGrailsPlugin {
 				hibProps."hibernate.hbm2ddl.auto" = ds.dbCreate
 			}
 			
+			hibernateProperties(MapToPropertiesFactoryBean) {
+				map = hibProps
+			}
 			sessionFactory(ConfigurableLocalSessionFactoryBean) {
 				dataSource = dataSource
 				if(application.classLoader.getResource("hibernate.cfg.xml")) {
 					configLocation = "classpath:hibernate.cfg.xml"
 				}
-				hibernateProperties = { MapToPropertiesFactoryBean b ->
-					map = hibProps
-				}
+				hibernateProperties = hibernateProperties
 				grailsApplication = ref("grailsApplication", true)
 				classLoader = classLoader
 			}
 			transactionManager(HibernateTransactionManager) {
 				sessionFactory = sessionFactory
+			}
+			
+			if(manager?.hasGrailsPlugin("controllers")) {
+				openSessionInViewInterceptor(OpenSessionInViewInterceptor) {
+					flushMode = HibernateAccessor.FLUSH_AUTO
+					sessionFactory = sessionFactory
+				}	
+				grailsUrlHandlerMapping.interceptors << openSessionInViewInterceptor
+			}	
+			
+			application.grailsDomainClasses.each { dc ->
+				"${dc.fullName}Validator"(GrailsDomainClassValidator) {
+					domainClass = ref("${dc.fullName}Proxy")
+					messageSource = messageSource
+					sessionFactory = sessionFactory
+				}			
 			}
 	}
 	
