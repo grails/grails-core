@@ -54,10 +54,11 @@ task(testApp:"The test app implementation task") {
 	testDir = "${basedir}/grails-app/tests"
 	Ant.sequential {
 		mkdir(dir:testDir)
-		copy(todir:testDir) {
+		move(todir:testDir) {
 			fileset(dir:"${basedir}/grails-tests")			
 		}
-	}    
+	}  
+	def result = null
 	try {
 		def ctx = GU.bootstrapGrailsFromClassPath()
 		def app = ctx.getBean(GrailsApplication.APPLICATION_ID)
@@ -75,7 +76,7 @@ task(testApp:"The test app implementation task") {
 		
 		try {
 			interceptor?.init()      
-			def result = TestRunner.run(suite)
+			result = TestRunner.run(suite)
 			
 		}   
 		finally {
@@ -88,7 +89,14 @@ task(testApp:"The test app implementation task") {
 		e.printStackTrace(System.out)
 	}
 	finally {
-		Ant.delete(dir:testDir)				
-		System.exit(0)
+		Ant.move(todir:"${basedir}/grails-tests") {
+			fileset(dir:testDir)			
+		}		
+		Ant.delete(dir:testDir)
+		if(result) {
+			if(result.errorCount() > 0 || result.failureCount() > 0) {
+				Ant.fail("Tests failed!!!")
+			}			
+		}
 	}	
 }
