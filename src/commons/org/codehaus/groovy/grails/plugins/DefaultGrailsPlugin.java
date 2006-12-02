@@ -138,7 +138,11 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
 		return parentCtx;
 	}
 
-
+	public BeanBuilder beans(Closure closure) {
+		BeanBuilder bb = new BeanBuilder(this.parentCtx);
+		bb.invokeMethod("beans", new Object[]{closure});
+		return bb;
+	}
 
 	private void initializeModifiedTimes() throws IOException {
 		modifiedTimes = new long[watchedResources.length];

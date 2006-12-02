@@ -39,6 +39,7 @@ import org.codehaus.groovy.grails.commons.spring.BeanConfiguration;
 import org.codehaus.groovy.grails.commons.spring.DefaultRuntimeSpringConfiguration;
 import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration;
 import org.codehaus.groovy.runtime.InvokerHelper;
+import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.RuntimeBeanReference;
 import org.springframework.beans.factory.support.ManagedList;
 import org.springframework.beans.factory.support.ManagedMap;
@@ -108,14 +109,32 @@ public class BeanBuilder extends GroovyObjectSupport {
 		return LOG;
 	}
 	
+	/**
+	 * Retrieves the parent ApplicationContext
+	 * @return The parent ApplicationContext
+	 */
 	public ApplicationContext getParentCtx() {
 		return parentCtx;
 	}
 
+	/**
+	 * Retrieves the RuntimeSpringConfiguration instance used the the BeanBuilder
+	 * @return The RuntimeSpringConfiguration instance
+	 */
 	public RuntimeSpringConfiguration getSpringConfig() {
 		return springConfig;
 	}
 
+	/**
+	 * Retrieves a BeanDefinition for the given name
+	 * @param name The bean definition
+	 * @return The BeanDefinition instance
+	 */
+	public BeanDefinition getBeanDefinition(String name) {
+		if(!getSpringConfig().containsBean(name))
+			return null;
+		return getSpringConfig().getBeanConfig(name).getBeanDefinition();
+	}
 	/**
 	 * Sets the runtime Spring configuration instance to use. This is not necessary to set
 	 * and is configured to default value if not, but is useful for integrating with other
@@ -314,7 +333,10 @@ public class BeanBuilder extends GroovyObjectSupport {
 	}
 
 
-
+	/**
+	 * This method overrides method invocation to create beans for each method name that
+	 * takes a class argument
+	 */
 	public Object invokeMethod(String name, Object arg) {
 		if(CREATE_APPCTX.equals(name)) {
 			finalizeDeferredProperties();
@@ -446,6 +468,10 @@ public class BeanBuilder extends GroovyObjectSupport {
 		finalizeDeferredProperties();
 	}
 
+	/**
+	 * This method overrides property setting in the scope of the BeanBuilder to set
+	 * properties on the current BeanConfiguration
+	 */
 	public void setProperty(String name, Object value) {
 		if(currentBeanConfig != null) {
 			if(value instanceof GString)value = value.toString();
@@ -525,6 +551,13 @@ public class BeanBuilder extends GroovyObjectSupport {
 		return value;
 	}
 
+	/**
+	 * This method overrides property retrieval in the scope of the BeanBuilder to either:
+	 * 
+	 * a) Retrieve a variable from the bean builder's binding if it exits
+	 * b) Retrieve a RuntimeBeanReference for a specific bean if it exists
+	 * c) Otherwise just delegate to super.getProperty which will resolve properties from the BeanBuilder itself
+	 */
 	public Object getProperty(String name) {
 		if(binding.containsKey(name)) {
 			return binding.get(name);
@@ -559,6 +592,10 @@ public class BeanBuilder extends GroovyObjectSupport {
 		}			
 	}
 
+	/**
+	 * Sets the binding (the variables available in the scope of the BeanBuilder)
+	 * @param b The Binding instance
+	 */
 	public void setBinding(Binding b) {
 		this.binding = b.getVariables();
 	}

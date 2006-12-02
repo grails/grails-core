@@ -31,7 +31,9 @@ class ServicesGrailsPlugin {
 	
 	def version = GrailsPluginUtils.getGrailsVersion()
 	def dependsOn = [hibernate:version]
-	
+	                 
+    def watchedResources = "**/grails-app/services/*Service.groovy"
+	                 
 	def doWithSpring = {
 		application.grailsServiceClasses.each { serviceClass ->
 			"${serviceClass.fullName}ServiceClass"(MethodInvokingFactoryBean) {
@@ -57,6 +59,26 @@ class ServicesGrailsPlugin {
 			else {
 				"${serviceClass.propertyName}"(serviceClass.getClazz()) { bean ->
 					bean.autowire =  true
+				}
+			}
+		}
+	}
+	
+	def onChange = { event ->
+		if(event.source) {
+			def serviceClass = application.addServiceClass(event.source)
+			if(serviceClass.transactional) {
+				log.warning "Transactional services classes cannot be reloaded. Skipping $serviceClass"
+			}
+			else {
+				def serviceName = "${serviceClass.propertyName}"
+				def beans = beans {
+					"$serviceName"(serviceClass.getClazz()) { bean ->
+						bean.autowire =  true
+					}					
+				}
+				if(event.ctx) {
+					event.ctx.registerBeanDefinition(serviceName, beans.getBeanDefinition(serviceName))
 				}
 			}
 		}
