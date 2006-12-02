@@ -18,7 +18,7 @@ package org.codehaus.groovy.grails.orm.hibernate.plugins;
 import org.codehaus.groovy.grails.plugins.support.*
 import org.codehaus.groovy.grails.orm.hibernate.ConfigurableLocalSessionFactoryBean;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsDomainConfigurationUtil;
-import org.codehaus.groovy.grails.orm.hibernate.support.HibernateDialectDetectorFactoryBean;
+import org.codehaus.groovy.grails.orm.hibernate.support.*
 import org.codehaus.groovy.grails.orm.hibernate.validation.GrailsDomainClassValidator;
 import org.springframework.orm.hibernate3.HibernateTransactionManager;
 import org.springmodules.beans.factory.config.MapToPropertiesFactoryBean;
@@ -90,6 +90,9 @@ class HibernateGrailsPlugin {
 				classLoader = classLoader
 			}
 			transactionManager(HibernateTransactionManager) {
+				sessionFactory = sessionFactory
+			}
+			persistenceInterceptor(HibernatePersistenceContextInterceptor) {
 				sessionFactory = sessionFactory
 			}
 			

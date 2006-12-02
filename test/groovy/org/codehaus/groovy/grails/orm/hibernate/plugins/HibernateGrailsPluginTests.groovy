@@ -48,7 +48,7 @@ class Test {
 		assert appCtx.containsBean("sessionFactory")
 		assert appCtx.containsBean("openSessionInViewInterceptor")
 		assert appCtx.containsBean("TestValidator")
-		
+		assert appCtx.containsBean("persistenceInterceptor")
 		def testClass = ga.getGrailsDomainClass("Test").clazz
 		
 		def testObj = testClass.newInstance()

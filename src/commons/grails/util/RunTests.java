@@ -25,14 +25,9 @@ import junit.textui.TestRunner;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator;
 import org.codehaus.groovy.grails.support.GrailsTestSuite;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
+import org.codehaus.groovy.grails.support.PersistenceContextInterceptor;
 import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.orm.hibernate3.SessionFactoryUtils;
-import org.springframework.orm.hibernate3.SessionHolder;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 /**
  * 
@@ -66,10 +61,16 @@ public class RunTests {
 					log.debug("[" + clazz.getName() + "] is not a test case.");
 				}
 			}
-			SessionFactory sessionFactory = (SessionFactory)appCtx.getBean(GrailsRuntimeConfigurator.SESSION_FACTORY_BEAN);
+			String[] beanNames = appCtx.getBeanNamesForType(PersistenceContextInterceptor.class);
+			PersistenceContextInterceptor interceptor = null;
+			if(beanNames.length > 0) {
+				interceptor = (PersistenceContextInterceptor)appCtx.getBean(beanNames[0]);
+			}
+			
 			try {
-				Session session = SessionFactoryUtils.getSession(sessionFactory, true);
-		        TransactionSynchronizationManager.bindResource(sessionFactory, new SessionHolder(session)); 				
+				if(interceptor!=null) {
+					interceptor.init();
+				}
 				TestResult r = TestRunner.run(s);
 				
 				if(r.errorCount() > 0 || r.failureCount() > 0) {
@@ -77,8 +78,8 @@ public class RunTests {
 				}				
 			}
 			finally {
-		        SessionHolder sessionHolder = (SessionHolder) TransactionSynchronizationManager.unbindResource(sessionFactory);
-		        SessionFactoryUtils.releaseSession(sessionHolder.getSession(), sessionFactory);				
+				if(interceptor !=null)
+					interceptor.destroy();
 			}
 		} 
 		catch(Exception e) {
