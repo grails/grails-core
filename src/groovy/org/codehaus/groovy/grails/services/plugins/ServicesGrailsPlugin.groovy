@@ -33,6 +33,7 @@ class ServicesGrailsPlugin {
 	def dependsOn = [hibernate:version]
 	                 
     def watchedResources = "**/grails-app/services/*Service.groovy"
+    def influences = ['controllers']
 	                 
 	def doWithSpring = {
 		application.grailsServiceClasses.each { serviceClass ->

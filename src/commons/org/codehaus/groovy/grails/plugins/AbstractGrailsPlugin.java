@@ -39,12 +39,20 @@ public abstract class AbstractGrailsPlugin extends GroovyObjectSupport implement
 
 
 
+	/* (non-Javadoc)
+	 * @see org.codehaus.groovy.grails.plugins.GrailsPlugin#refresh()
+	 */
+	public void refresh() {
+		// do nothing		
+	}
+	
 	protected GrailsApplication application;
 	protected BigDecimal version = new BigDecimal("0.1");
 	protected Map dependencies = new HashMap();
 	protected String[] dependencyNames = new String[0];
 	protected Class pluginClass;
 	protected ApplicationContext applicationContext;
+	protected GrailsPluginManager manager;
 
 	/**
 	 * Wrapper Grails class for plugins
@@ -98,7 +106,7 @@ public abstract class AbstractGrailsPlugin extends GroovyObjectSupport implement
 	}
 
 	public GrailsPluginManager getManager() {
-		return null;
+		return this.manager;
 	}
 
 	public String[] getLoadAfterNames() {
@@ -107,5 +115,12 @@ public abstract class AbstractGrailsPlugin extends GroovyObjectSupport implement
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
 		this.applicationContext = applicationContext;
 	}
+	/* (non-Javadoc)
+	 * @see org.codehaus.groovy.grails.plugins.GrailsPlugin#setManager(org.codehaus.groovy.grails.plugins.GrailsPluginManager)
+	 */
+	public void setManager(GrailsPluginManager manager) {
+		this.manager = manager;
+	}
+	
 	
 }

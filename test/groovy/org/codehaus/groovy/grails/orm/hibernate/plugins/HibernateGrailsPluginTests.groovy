@@ -34,12 +34,12 @@ class Test {
 		springConfig.servletContext = createMockServletContext()		
 		
 		dependentPlugins*.doWithRuntimeConfiguration(springConfig)
-		dependentPlugins.each{ mockManager.registerMockPlugin(it) }
+		dependentPlugins.each{ mockManager.registerMockPlugin(it); it.manager = mockManager }
 
 	
 		def pluginClass = gcl.loadClass("org.codehaus.groovy.grails.orm.hibernate.plugins.HibernateGrailsPlugin")		
 		def plugin = new DefaultGrailsPlugin(pluginClass, ga)
-		
+		plugin.manager = mockManager
 		
 		plugin.doWithRuntimeConfiguration(springConfig)
 		

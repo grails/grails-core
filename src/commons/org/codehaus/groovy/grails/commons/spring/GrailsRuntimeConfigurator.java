@@ -298,8 +298,17 @@ public class GrailsRuntimeConfigurator {
 		LOG.debug("[RuntimeConfiguration] Proccessing additional external configurations");
 		doPostResourceConfiguration(springConfig);
 	
-		return springConfig.getApplicationContext();	
+		WebApplicationContext ctx = springConfig.getApplicationContext();
+		
+		performPostProcessing(ctx);
+		
+		return ctx;
 	}
+	
+	private void performPostProcessing(WebApplicationContext ctx) {
+		this.pluginManager.doPostProcessing(ctx);
+	}
+
 	public WebApplicationContext configureDomainOnly() {
 		RuntimeSpringConfiguration springConfig = parent != null ? new DefaultRuntimeSpringConfiguration(parent) : new DefaultRuntimeSpringConfiguration();
 		springConfig.setServletContext(new MockServletContext());
@@ -308,8 +317,10 @@ public class GrailsRuntimeConfigurator {
 		if(pluginManager.hasGrailsPlugin("hibernate"))
 			pluginManager.doRuntimeConfiguration("hibernate", springConfig);
 		
-		return springConfig.getApplicationContext();
+		WebApplicationContext ctx = springConfig.getApplicationContext();
 
+		performPostProcessing(ctx);		
+		return ctx;		
 	}
 	private void doPostResourceConfiguration(RuntimeSpringConfiguration springConfig) {
 	     try {

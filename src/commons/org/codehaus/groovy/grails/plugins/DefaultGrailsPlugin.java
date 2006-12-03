@@ -62,9 +62,6 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
 	private static final String PLUGIN_LOAD_AFTER_NAMES = "loadAfter";
 	
 	private static final Log LOG = LogFactory.getLog(DefaultGrailsPlugin.class);
-	private static final String WATCHED_RESOURCES = "watchedResources";
-	
-	
 	private GrailsPluginClass pluginGrailsClass;
 	private GroovyObject plugin;
 	protected BeanWrapper pluginBean;
@@ -76,6 +73,7 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
 	private String resourcesReference;
 	private ApplicationContext parentCtx;
 	private String[] loadAfterNames = new String[0];
+	private String[] influencedPluginNames = new String[0];
 	
 	public DefaultGrailsPlugin(Class pluginClass, GrailsApplication application) {
 		super(pluginClass, application);
@@ -100,6 +98,12 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
 		}
 		else {
 			throw new PluginException("Plugin ["+getName()+"] must specify a version!");
+		}
+		if(this.pluginBean.isReadableProperty(INFLUENCES)) {
+			List influencedList = (List)this.pluginBean.getPropertyValue(INFLUENCES);
+			if(influencedList != null) {
+				this.influencedPluginNames = (String[])influencedList.toArray(new String[influencedList.size()]);
+			}
 		}
 		if(this.pluginBean.isReadableProperty(ON_CHANGE)) {
 			this.onChangeListener = (Closure)GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(this.plugin, ON_CHANGE);
@@ -223,34 +227,87 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
 	 */
 	public void checkForChanges() {
 		if(onChangeListener!=null) {
-			try {
-
-				checkForNewResources(this);
+				try {
+					checkForNewResources(this);
+				} catch (IOException e) {
+					LOG.error("Plugin "+this+"  was unable to check for new plugin resources: " + e.getMessage(),e);
+				}
 				
 				if(LOG.isDebugEnabled()) {
-					LOG.debug("Plugin ["+getName()+"] checking ["+watchedResources.length+"] resources for changes..");
+					LOG.debug("Plugin "+this+" checking ["+watchedResources.length+"] resources for changes..");
 				}
 				for (int i = 0; i < watchedResources.length; i++) {
-					final Resource r = watchedResources[i];								
-                        URL url = watchedResources[i].getURL();
-                        URLConnection c = url.openConnection();
-                        c.setDoInput(false);
-                        c.setDoOutput(false);
-                        long lastModified = c.getLastModified();
-						System.out.println("Checking modified for url " + url);
-						if(modifiedTimes[i] < lastModified) {
-							if(LOG.isDebugEnabled())
-								LOG.debug("[GrailsPlugin] plugin resource ["+r+"] changed, firing event if possible..");
-							
-							System.out.println("file changed firing event!");
-							fireModifiedEvent(r, this);
-							modifiedTimes[i] = lastModified;
-						}
+					final Resource r = watchedResources[i];	
+					long modifiedFlag = checkModified(r, modifiedTimes[i]) ;
+					if( modifiedFlag > -1) {
+						if(LOG.isDebugEnabled())
+							LOG.debug("[GrailsPlugin] plugin resource ["+r+"] changed, firing event if possible..");
+						
+						fireModifiedEvent(r, this);
+						refreshInfluencedPlugins();
+						modifiedTimes[i] = modifiedFlag;
+					}
 				}
-			} catch (IOException e) {
-				LOG.warn("Unable to read last modified date of plugin resource" +e.getMessage(),e);
-			}			
+		
 		}
+	}
+	
+	/**
+	 * This method will retrieve all the influenced plugins from the manager and
+	 * call refresh() on each one
+	 */
+	private void refreshInfluencedPlugins() {
+		GrailsPluginManager manager = getManager();
+		if(LOG.isDebugEnabled())
+			LOG.debug("Plugin "+this+" starting refresh of influenced plugins " + ArrayUtils.toString(influencedPluginNames));
+		if(manager != null) {
+			for (int i = 0; i < influencedPluginNames.length; i++) {
+				String name = influencedPluginNames[i];
+				GrailsPlugin plugin = manager.getGrailsPlugin(name);
+				
+				if(plugin!=null) {
+					if(LOG.isDebugEnabled())
+						LOG.debug(this+" plugin is refreshing influenced plugin " + plugin +" following change to resource");
+					
+					plugin.refresh();
+				}
+			}
+		}
+		else if(LOG.isDebugEnabled()) {
+			LOG.debug("Plugin "+this+" cannot refresh influenced plugins, manager is not found");
+		}
+	}
+
+
+
+	/**
+	 * This method will take a Resource and check it against the previous modified time passed 
+	 * in the arguments. If the resource was modified it will return the new modified time, otherwise
+	 * it will return -1
+	 * 
+	 * @param r The Resource instance
+	 * @param previousModifiedTime The last time the Resource was modified
+	 * @return The new modified time or -1
+	 */
+	private long checkModified(Resource r, long previousModifiedTime) {
+		try {		
+	        URL url = r.getURL();
+	        
+	        if(LOG.isDebugEnabled())
+	        	LOG.debug("Checking modified for url " + url);
+	        
+	        URLConnection c = url.openConnection();
+	        c.setDoInput(false);
+	        c.setDoOutput(false);
+	        long lastModified = c.getLastModified();
+	        
+        	if( previousModifiedTime < lastModified ) {
+        		return lastModified;
+        	}        	
+		} catch (IOException e) {
+			LOG.warn("Unable to read last modified date of plugin resource" +e.getMessage(),e);
+		}	                
+        return -1;
 	}
 
 	private void checkForNewResources(final GrailsPlugin plugin) throws IOException {
@@ -280,32 +337,40 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
 	private void fireModifiedEvent(final Resource resource, final GrailsPlugin plugin) {
 		Class loadedClass = null;
 		loadedClass = attemptClassReload(resource);
-		final Class resourceClass = loadedClass;
-		Map event = new HashMap() {{
-			if(resourceClass == null)
-				put(PLUGIN_CHANGE_EVENT_SOURCE, resource);
-			else
-				put(PLUGIN_CHANGE_EVENT_SOURCE, resourceClass);
-			put(PLUGIN_CHANGE_EVENT_PLUGIN, plugin);
-			put(PLUGIN_CHANGE_EVENT_APPLICATION, application);
-			put(PLUGIN_CHANGE_EVENT_CTX, applicationContext);
-		}};
-		onChangeListener.setDelegate(this);
-		onChangeListener.call(new Object[]{event});
+		if(loadedClass != null) {
+			final Class resourceClass = loadedClass;
+			Map event = new HashMap() {{
+				if(resourceClass == null)
+					put(PLUGIN_CHANGE_EVENT_SOURCE, resource);
+				else
+					put(PLUGIN_CHANGE_EVENT_SOURCE, resourceClass);
+				put(PLUGIN_CHANGE_EVENT_PLUGIN, plugin);
+				put(PLUGIN_CHANGE_EVENT_APPLICATION, application);
+				put(PLUGIN_CHANGE_EVENT_CTX, applicationContext);
+			}};
+			onChangeListener.setDelegate(this);
+			onChangeListener.call(new Object[]{event});			
+		}
 	}
 
 	private Class attemptClassReload(final Resource resource) {
 		String className = GrailsResourceUtils.getClassName(resource);
 		if(className != null) {
-			try {
-				return application.getClassLoader().loadClass(className,true,false);
-			} catch (CompilationFailedException e) {
-				LOG.error("Compilation error reloading plugin resource ["+resource+"]:" + e.getMessage(),e);
-			} catch (ClassNotFoundException e) {
-				LOG.error("Class not found error reloading plugin resource ["+resource+"]:" + e.getMessage(),e);
-			}
+			return attemptClassReload(className);
+		}		
+		return null;
+	}
+
+
+
+	private Class attemptClassReload(String className) {
+		try {
+			return application.getClassLoader().loadClass(className,true,false);
+		} catch (CompilationFailedException e) {
+			LOG.error("Compilation error reloading plugin resource ["+className+"]:" + e.getMessage(),e);
+		} catch (ClassNotFoundException e) {
+			LOG.error("Class not found error reloading plugin resource ["+className+"]:" + e.getMessage(),e);
 		}
-		
 		return null;
 	}
 
@@ -319,18 +384,26 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
 		return LOG;
 	}
 
-	public GrailsPluginManager getManager() {
-		if(this.parentCtx != null) {
-			String[] beanNames = parentCtx.getBeanNamesForType(GrailsPluginManager.class);
-			if(beanNames.length > 0)
-				return (GrailsPluginManager)parentCtx.getBean(beanNames[0]);
-		}
-		return super.getManager();
-	}
-
-
-
 	public void setParentApplicationContext(ApplicationContext parent) {
 		this.parentCtx = parent;
 	}
+
+
+
+	/* (non-Javadoc)
+	 * @see org.codehaus.groovy.grails.plugins.AbstractGrailsPlugin#refresh()
+	 */
+	public void refresh() {
+		for (int i = 0; i < watchedResources.length; i++) {
+			Resource r = watchedResources[i];
+			try {
+				r.getFile().setLastModified(System.currentTimeMillis());
+			} catch (IOException e) {
+				// ignore
+			}
+			fireModifiedEvent(r, this);
+		}
+	}
+	
+	
 }

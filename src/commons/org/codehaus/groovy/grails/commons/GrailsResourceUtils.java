@@ -127,4 +127,13 @@ public class GrailsResourceUtils {
 		}
 		return false;
     }
+
+
+	public static boolean isGrailsResource(Resource r) {
+		try {
+			return isGrailsPath(r.getURL().getFile());
+		} catch (IOException e) {
+			return false;
+		}
+	}
 }

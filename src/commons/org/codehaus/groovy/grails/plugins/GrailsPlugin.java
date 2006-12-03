@@ -43,12 +43,46 @@ import org.springframework.context.ApplicationContextAware;
  */
 public interface GrailsPlugin extends ApplicationContextAware {
 
-    String ON_CHANGE = "onChange";
+	/**
+	 * Defines the name of the property that specifies resources which this plugin monitors for changes
+	 * in the format a Ant-style path
+	 */
+    String WATCHED_RESOURCES = "watchedResources";
+    /**
+     * Defines the name of the property that defines a list of plugin names that this plugin influences.
+     * A influenced plugin will be refreshed (@see refresh()) when a watched resource changes
+     */
+	String INFLUENCES = "influences";
+	/**
+	 * Defines the name of the property that defines the closure that will be invoked
+	 * when a watched resource changes
+	 */
+	String ON_CHANGE = "onChange";
+	/**
+	 * Defines the name of the property that defines the closure that will be invoked
+	 * when the web.xml is being generated
+	 */
 	String DO_WITH_WEB_DESCRIPTOR = "doWithWebDescriptor";
+	/**
+	 * Defines the convention that appears within plugin class names
+	 */
 	String TRAILING_NAME = "GrailsPlugin";
+	/**
+	 * Defines the name of the property that specifies the plugin version
+	 */
 	String VERSION = "version";
+	/**
+	 * Defines the name of the property that defines the closure that will be invoked during runtime spring configuration
+	 */
 	String DO_WITH_SPRING = "doWithSpring";
+	/**
+	 * Defines the name of the property that defines a closure that will be invoked after intialisation
+	 * and when the application context has been built
+	 */
 	String DO_WITH_APPLICATION_CONTEXT = "doWithApplicationContext";
+	/**
+	 * Defines the name of the property that specifies which plugins this plugin depends on
+	 */
 	String DEPENDS_ON = "dependsOn";
 
 
@@ -124,8 +158,21 @@ public interface GrailsPlugin extends ApplicationContextAware {
 	void checkForChanges();
 	
 	/**
+	 * Refreshes this Grails plugin reloading any watched resources as necessary
+	 *
+	 */
+	void refresh();
+	
+	/**
 	 * Retrieves the plugin manager if known, otherwise returns null
 	 * @return The PluginManager or null
 	 */
 	GrailsPluginManager getManager();
+	
+	/**
+	 * Sets the plugin manager for this plugin
+	 * 
+	 * @param manager A GrailsPluginManager instance 
+	 */
+	void setManager(GrailsPluginManager manager);
 }

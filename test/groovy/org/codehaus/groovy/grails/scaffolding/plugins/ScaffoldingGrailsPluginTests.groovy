@@ -38,14 +38,14 @@ class TestController {
 		springConfig.servletContext = createMockServletContext()
 		
 		dependentPlugins.each{
-			mockManager.registerMockPlugin(it) 
+			mockManager.registerMockPlugin(it) ; it.manager = mockManager 
 		}
 		dependentPlugins*.doWithRuntimeConfiguration(springConfig)
 
 	
 		def pluginClass = gcl.loadClass("org.codehaus.groovy.grails.scaffolding.plugins.ScaffoldingGrailsPlugin")		
 		def plugin = new DefaultGrailsPlugin(pluginClass, ga)
-		
+		plugin.manager = mockManager
 		
 		plugin.doWithRuntimeConfiguration(springConfig)
 		

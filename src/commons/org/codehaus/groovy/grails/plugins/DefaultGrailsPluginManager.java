@@ -304,7 +304,8 @@ public class DefaultGrailsPluginManager implements GrailsPluginManager {
 		if(plugin instanceof ParentApplicationContextAware) {
 			((ParentApplicationContextAware)plugin).setParentApplicationContext(parentCtx);
 		}
-		pluginList .add(plugin);
+		plugin.setManager(this);
+		pluginList.add(plugin);
 		plugins.put(plugin.getName(), plugin);
 	}
 
