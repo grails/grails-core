@@ -26,7 +26,7 @@ public class ConstraintsEvaluatingPropertyTests extends TestCase {
         Map constraints = (Map)cp.get(groovyClass.newInstance());
 
         assertNotNull(constraints);
-        assertTrue(constraints.isEmpty());
+        assertFalse(constraints.isEmpty());
     }
 
 
