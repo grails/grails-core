@@ -18,6 +18,7 @@ package org.codehaus.groovy.grails.plugins;
 import groovy.lang.GroovyClassLoader;
 
 import java.io.IOException;
+import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -85,13 +86,15 @@ public class DefaultGrailsPluginManager implements GrailsPluginManager {
 	private ApplicationContext applicationContext;
 	private List pluginList = new ArrayList();
 	private ApplicationContext parentCtx;
+	private PathMatchingResourcePatternResolver resolver;
 
 	public DefaultGrailsPluginManager(String resourcePath, GrailsApplication application) throws IOException {
 		super();
 		if(application == null)
 			throw new IllegalArgumentException("Argument [application] cannot be null!");
 		
-		this.pluginResources = new PathMatchingResourcePatternResolver().getResources(resourcePath);
+		resolver = new PathMatchingResourcePatternResolver();
+		this.pluginResources = resolver.getResources(resourcePath);
 		//this.corePlugins = new PathMatchingResourcePatternResolver().getResources("classpath:org/codehaus/groovy/grails/**/plugins/**GrailsPlugin.groovy");
 		this.application = application;	
 	}
@@ -99,8 +102,8 @@ public class DefaultGrailsPluginManager implements GrailsPluginManager {
 	public DefaultGrailsPluginManager(Class[] plugins, GrailsApplication application) throws IOException {
 		this.pluginClasses = plugins;
 		if(application == null)
-
 			throw new IllegalArgumentException("Argument [application] cannot be null!");
+		resolver = new PathMatchingResourcePatternResolver();
 		//this.corePlugins = new PathMatchingResourcePatternResolver().getResources("classpath:org/codehaus/groovy/grails/**/plugins/**GrailsPlugin.groovy");
 		this.application = application;
 	}
@@ -141,26 +144,40 @@ public class DefaultGrailsPluginManager implements GrailsPluginManager {
 		}
 	}
 
+	/**
+	 * This method will search the classpath for .class files inside the org.codehaus.groovy.grails package
+	 * which are the core plugins. The ones found will be loaded automatically
+	 *
+	 */
 	private void loadCorePlugins() {
-		loadCorePlugin("org.codehaus.groovy.grails.plugins.CoreGrailsPlugin");
-		loadCorePlugin("org.codehaus.groovy.grails.i18n.plugins.I18nGrailsPlugin");
-		loadCorePlugin("org.codehaus.groovy.grails.web.plugins.ControllersGrailsPlugin");
-		loadCorePlugin("org.codehaus.groovy.grails.datasource.plugins.DataSourceGrailsPlugin");
-		loadCorePlugin("org.codehaus.groovy.grails.plugins.DomainClassGrailsPlugin");
-		loadCorePlugin("org.codehaus.groovy.grails.orm.hibernate.plugins.HibernateGrailsPlugin");
-		loadCorePlugin("org.codehaus.groovy.grails.services.plugins.ServicesGrailsPlugin");
-		loadCorePlugin("org.codehaus.groovy.grails.jobs.plugins.QuartzGrailsPlugin");
-		loadCorePlugin("org.codehaus.groovy.grails.scaffolding.plugins.ScaffoldingGrailsPlugin");
+		try {
+			Resource[] resources = resolver.getResources("classpath*:org/codehaus/groovy/grails/**/plugins/*GrailsPlugin.class");
+			for (int i = 0; i < resources.length; i++) {
+				Resource resource = resources[i];
+				String url = resource.getURL().toString();
+				int packageIndex = url.indexOf("org/codehaus/groovy/grails");
+				url = url.substring(packageIndex, url.length());
+				url = url.substring(0,url.length()-6);
+				String className = url.replace('/', '.');
+				
+				loadCorePlugin(className);
+			}
+			
+		} catch (IOException e) {
+			throw new PluginException("I/O exception configuring core plug-ins: " + e.getMessage(), e);
+		}
 	}
 
 	private void loadCorePlugin(String pluginClassName) {
 		try {
 			Class pluginClass = application.getClassLoader().loadClass(pluginClassName);
-			GrailsPlugin plugin = new DefaultGrailsPlugin(pluginClass, application);
-			if(plugin instanceof ApplicationContextAware) {
-				((ApplicationContextAware)plugin).setApplicationContext(applicationContext);
-			}			
-			attemptPluginLoad(plugin);
+			if(!Modifier.isAbstract(pluginClass.getModifiers()) && pluginClass != DefaultGrailsPlugin.class) {
+				GrailsPlugin plugin = new DefaultGrailsPlugin(pluginClass, application);
+				if(plugin instanceof ApplicationContextAware) {
+					((ApplicationContextAware)plugin).setApplicationContext(applicationContext);
+				}			
+				attemptPluginLoad(plugin);				
+			}
 		} catch (ClassNotFoundException e) {
 			LOG.warn("[GrailsPluginManager] Core plugin ["+pluginClassName+"] not found, resuming load without..");
 			if(LOG.isDebugEnabled())
