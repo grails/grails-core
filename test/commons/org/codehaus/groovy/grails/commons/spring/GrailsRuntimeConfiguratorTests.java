@@ -108,7 +108,7 @@ public class GrailsRuntimeConfiguratorTests extends TestCase {
         assertNotNull(h);
         assertNotNull(h.getHandler());
         assertEquals(SimpleGrailsController.class,h.getHandler().getClass());
-        assertEquals(1,h.getInterceptors().length);
+        assertEquals(2,h.getInterceptors().length);
         
         ts = (HotSwappableTargetSource)ctx.getBean("TestControllerTargetSource");
         GrailsControllerClass gcc = (GrailsControllerClass)ts.getTarget();
