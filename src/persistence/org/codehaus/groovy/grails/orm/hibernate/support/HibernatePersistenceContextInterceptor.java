@@ -15,7 +15,10 @@
  */ 
 package org.codehaus.groovy.grails.orm.hibernate.support;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.support.PersistenceContextInterceptor;
+import org.hibernate.FlushMode;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.springframework.orm.hibernate3.SessionFactoryUtils;
@@ -31,22 +34,42 @@ public class HibernatePersistenceContextInterceptor implements
 		PersistenceContextInterceptor {
 	
 	
+	private static final Log LOG = LogFactory.getLog(HibernatePersistenceContextInterceptor.class);
 	private SessionFactory sessionFactory;
+	private boolean participate;
 
 	/* (non-Javadoc)
 	 * @see org.codehaus.groovy.grails.support.PersistenceContextInterceptor#destroy()
 	 */
 	public void destroy() {
-        SessionHolder sessionHolder = (SessionHolder) TransactionSynchronizationManager.unbindResource(sessionFactory);
-        SessionFactoryUtils.releaseSession(sessionHolder.getSession(), sessionFactory);
+		
+        if (!participate) {
+            // single session mode
+            SessionHolder holder = (SessionHolder)TransactionSynchronizationManager.unbindResource(sessionFactory);
+            LOG.debug("Closing single Hibernate session in GrailsDispatcherServlet");
+            try {
+                SessionFactoryUtils.releaseSession(holder.getSession(), sessionFactory);
+            }
+            catch (RuntimeException ex) {
+            	LOG.error("Unexpected exception on closing Hibernate Session", ex);
+            }
+        }       
 	}
 
 	/* (non-Javadoc)
 	 * @see org.codehaus.groovy.grails.support.PersistenceContextInterceptor#init()
 	 */
 	public void init() {
-		Session session = SessionFactoryUtils.getSession(sessionFactory, true);
-        TransactionSynchronizationManager.bindResource(sessionFactory, new SessionHolder(session)); 				
+        if (TransactionSynchronizationManager.hasResource(sessionFactory)) {
+            // Do not modify the Session: just set the participate flag.
+            participate = true;
+        }
+        else {
+        	LOG.debug("Opening single Hibernate session in HibernatePersistenceContextInterceptor");
+            Session session = SessionFactoryUtils.getSession(sessionFactory,true);
+            session.setFlushMode(FlushMode.AUTO);
+            TransactionSynchronizationManager.bindResource(sessionFactory, new SessionHolder(session));
+        } 				
 	}
 
 	/**

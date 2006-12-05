@@ -22,15 +22,10 @@ import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.codehaus.groovy.grails.scaffolding.GrailsScaffolder;
 import org.codehaus.groovy.grails.scaffolding.ScaffoldDomain;
+import org.codehaus.groovy.grails.support.PersistenceContextInterceptor;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
-import org.hibernate.FlushMode;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
-import org.springframework.orm.hibernate3.SessionFactoryUtils;
-import org.springframework.orm.hibernate3.SessionHolder;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.web.context.WebApplicationContext;
 
 /**
@@ -75,46 +70,24 @@ public class GrailsConfigUtils {
 	 * @param servletContext The ServletContext instance
 	 */
 	public static void executeGrailsBootstraps(GrailsApplication application, WebApplicationContext webContext, ServletContext servletContext) {
-		SessionFactory sessionFactory = (SessionFactory)webContext.getBean(GrailsRuntimeConfigurator.SESSION_FACTORY_BEAN);
+		
+		PersistenceContextInterceptor interceptor = null;
+		String[] beanNames = webContext.getBeanNamesForType(PersistenceContextInterceptor.class);
+		if(beanNames.length > 0) {
+			interceptor = (PersistenceContextInterceptor)webContext.getBean(beanNames[0]);
+		}
 	
-	    if(sessionFactory != null) {
-	        Session session = null;
-	        boolean participate = false;
-	        // single session mode
-	        if (TransactionSynchronizationManager.hasResource(sessionFactory)) {
-	            // Do not modify the Session: just set the participate flag.
-	            participate = true;
-	        }
-	        else {
-	        	LOG.debug("Opening single Hibernate session in GrailsDispatcherServlet");
-	            session = SessionFactoryUtils.getSession(sessionFactory,true);
-	            session.setFlushMode(FlushMode.AUTO);
-	            TransactionSynchronizationManager.bindResource(sessionFactory, new SessionHolder(session));
-	        }
-	        // init the Grails application
+	    if(interceptor != null) {
+	    	interceptor.init();
+	    	// init the Grails application
 	        try {
 	            GrailsBootstrapClass[] bootstraps =  application.getGrailsBootstrapClasses();
 	            for (int i = 0; i < bootstraps.length; i++) {
 	                bootstraps[i].callInit(  servletContext );
 	            }
-	            if(!participate) {
-	                if(!FlushMode.NEVER.equals(session.getFlushMode())) {
-	                    session.flush();
-	                }                	
-	            }
 	        }
 	        finally {
-	            if (!participate) {
-	                // single session mode
-	                TransactionSynchronizationManager.unbindResource(sessionFactory);
-	                LOG.debug("Closing single Hibernate session in GrailsDispatcherServlet");
-	                try {
-	                    SessionFactoryUtils.releaseSession(session, sessionFactory);
-	                }
-	                catch (RuntimeException ex) {
-	                	LOG.error("Unexpected exception on closing Hibernate Session", ex);
-	                }
-	            }
+	        	interceptor.destroy();
 	        }
 	        
 	    }

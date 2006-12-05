@@ -124,6 +124,13 @@ public class DefaultGrailsPluginManager implements GrailsPluginManager {
 		this.application = application;
 	}
 	
+	public DefaultGrailsPluginManager(Resource[] pluginFiles, GrailsApplication application2) {
+		if(application == null)
+			throw new IllegalArgumentException("Argument [application] cannot be null!");
+		resolver = new PathMatchingResourcePatternResolver();
+		this.pluginResources = pluginFiles;
+	}
+
 	/**
 	 * @return the initialised
 	 */
@@ -140,6 +147,8 @@ public class DefaultGrailsPluginManager implements GrailsPluginManager {
 			GroovyClassLoader gcl = application.getClassLoader();
 			// load core plugins first
 			loadCorePlugins();
+			
+			LOG.info("Attempting to load ["+pluginResources.length+"] user defined plugins");
 			for (int i = 0; i < pluginResources.length; i++) {
 				Resource r = pluginResources[i];
 				
@@ -178,38 +187,69 @@ public class DefaultGrailsPluginManager implements GrailsPluginManager {
 	private void loadCorePlugins() {
 		try {
 			Resource[] resources = resolver.getResources("classpath*:org/codehaus/groovy/grails/**/plugins/*GrailsPlugin.class");
-			for (int i = 0; i < resources.length; i++) {
-				Resource resource = resources[i];
-				String url = resource.getURL().toString();
-				int packageIndex = url.indexOf("org/codehaus/groovy/grails");
-				url = url.substring(packageIndex, url.length());
-				url = url.substring(0,url.length()-6);
-				String className = url.replace('/', '.');
-				
-				loadCorePlugin(className);
+			if(resources.length > 0) {
+				loadCorePluginsFromResources(resources);							
 			}
-			
+			else {
+				loadCorePluginsStatically();
+			}
 		} catch (IOException e) {
 			throw new PluginException("I/O exception configuring core plug-ins: " + e.getMessage(), e);
 		}
 	}
 
-	private void loadCorePlugin(String pluginClassName) {
+	private void loadCorePluginsStatically() {
+		LOG.warn("WARNING: Grails was unable to load core plugins dynamically. This is normally a problem with the container. Attempting static load..");
+		
+		// This is a horrible hard coded hack, but there seems to be no way to resolve .class files dynamically
+		// on OC4J. If anyones knows how to fix this shout 
+		loadCorePlugin("org.codehaus.groovy.grails.plugins.CoreGrailsPlugin");
+		loadCorePlugin("org.codehaus.groovy.grails.i18n.plugins.I18nGrailsPlugin");
+		loadCorePlugin("org.codehaus.groovy.grails.datasource.plugins.DataSourceGrailsPlugin");
+		loadCorePlugin("org.codehaus.groovy.grails.plugins.DomainClassGrailsPlugin");
+		loadCorePlugin("org.codehaus.groovy.grails.web.plugins.ControllersGrailsPlugin");
+		loadCorePlugin("org.codehaus.groovy.grails.orm.hibernate.plugins.HibernateGrailsPlugin");
+		loadCorePlugin("org.codehaus.groovy.grails.services.plugins.ServicesGrailsPlugin");
+		loadCorePlugin("org.codehaus.groovy.grails.jobs.plugins.QuartzGrailsPlugin");
+		loadCorePlugin("org.codehaus.groovy.grails.scaffolding.plugins.ScaffoldingGrailsPlugin");
+	}
+
+	private void loadCorePluginsFromResources(Resource[] resources) throws IOException {
+		LOG.info("Attempting to load ["+resources.length+"] core plugins");
+		for (int i = 0; i < resources.length; i++) {
+			Resource resource = resources[i];
+			String url = resource.getURL().toString();
+			int packageIndex = url.indexOf("org/codehaus/groovy/grails");
+			url = url.substring(packageIndex, url.length());
+			url = url.substring(0,url.length()-6);
+			String className = url.replace('/', '.');
+			
+			loadCorePlugin(className);
+		}
+	}
+
+
+	private Class attemptCorePluginClassLoad(String pluginClassName) {
 		try {
-			Class pluginClass = application.getClassLoader().loadClass(pluginClassName);
-			if(!Modifier.isAbstract(pluginClass.getModifiers()) && pluginClass != DefaultGrailsPlugin.class) {
-				GrailsPlugin plugin = new DefaultGrailsPlugin(pluginClass, application);
-				if(plugin instanceof ApplicationContextAware) {
-					((ApplicationContextAware)plugin).setApplicationContext(applicationContext);
-				}			
-				attemptPluginLoad(plugin);				
-			}
+			return application.getClassLoader().loadClass(pluginClassName);
 		} catch (ClassNotFoundException e) {
 			LOG.warn("[GrailsPluginManager] Core plugin ["+pluginClassName+"] not found, resuming load without..");
 			if(LOG.isDebugEnabled())
 				LOG.debug(e.getMessage(),e);
 		}		
+		return null;
+	}
+
+	private void loadCorePlugin(String pluginClassName) {
+		Class pluginClass = attemptCorePluginClassLoad(pluginClassName);
 		
+		if(pluginClass != null && !Modifier.isAbstract(pluginClass.getModifiers()) && pluginClass != DefaultGrailsPlugin.class) {
+			GrailsPlugin plugin = new DefaultGrailsPlugin(pluginClass, application);
+			if(plugin instanceof ApplicationContextAware) {
+				((ApplicationContextAware)plugin).setApplicationContext(applicationContext);
+			}			
+			attemptPluginLoad(plugin);				
+		}		
 	}
 
 	/**
@@ -241,8 +281,10 @@ public class DefaultGrailsPluginManager implements GrailsPluginManager {
 				}
 				if(foundInDelayed)
 					delayedLoadPlugins.add(plugin);
-				else 
-					throw new PluginException("Plugin ["+plugin.getName()+"] cannot be loaded because its dependencies ["+ArrayUtils.toString(plugin.getDependencyNames())+"] cannot be resolved");
+				else {
+					LOG.warn("WARNING: Plugin ["+plugin.getName()+"] cannot be loaded because its dependencies ["+ArrayUtils.toString(plugin.getDependencyNames())+"] cannot be resolved");
+				}
+					
 			}
 		}
 	}
