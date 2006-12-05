@@ -52,7 +52,14 @@ task(distributePlugin:"Implementation task") {
     	pluginClass = gcl.parseClass(pluginFile)   
         def plugin = pluginClass.newInstance()    
 		def pluginName = GCU.getLogicalName(pluginClass, "GrailsPlugin")
-        Ant.zip(basedir:"${basedir}", destfile:"${basedir}/grails-${pluginName}-${plugin.version}.zip")
+		pluginName = GCU.getScriptName(pluginName)
+
+        Ant.zip(destfile:"grails-${pluginName}-${plugin.version}.zip") {
+    		fileset(dir:"${basedir}") {
+    			include(name:"**")
+    			exclude(name:"web-app/WEB-INF/**")
+    		}
+    	}
    }
    catch(Throwable t) {
      println "Throwable: ${t.message}"

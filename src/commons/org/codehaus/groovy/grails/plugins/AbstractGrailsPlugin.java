@@ -35,10 +35,6 @@ import org.springframework.context.ApplicationContext;
  */
 public abstract class AbstractGrailsPlugin extends GroovyObjectSupport implements GrailsPlugin {
 
-
-
-
-
 	/* (non-Javadoc)
 	 * @see org.codehaus.groovy.grails.plugins.GrailsPlugin#refresh()
 	 */
@@ -120,6 +116,12 @@ public abstract class AbstractGrailsPlugin extends GroovyObjectSupport implement
 	 */
 	public void setManager(GrailsPluginManager manager) {
 		this.manager = manager;
+	}
+	/* (non-Javadoc)
+	 * @see org.codehaus.groovy.grails.plugins.GrailsPlugin#setApplication(org.codehaus.groovy.grails.commons.GrailsApplication)
+	 */
+	public void setApplication(GrailsApplication application) {
+		this.application = application;
 	}
 	
 	

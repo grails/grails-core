@@ -14,14 +14,7 @@
         <property name="resources">
               <value>classpath:**/grails-app/**/*.groovy</value>
         </property>
-    </bean>
-    
-    <bean id="grailsPluginManager" class="org.codehaus.groovy.grails.plugins.DefaultGrailsPluginManager">
-    	<constructor-arg>
-    		<value>classpath:**/plugins/*GrailsPlugin.groovy</value>
-    	</constructor-arg>
-		<constructor-arg><ref bean="grailsApplication"/></constructor-arg>    	
-    </bean>
+    </bean>    
     
 	<bean id="domainInjector" class="org.codehaus.groovy.grails.injection.DefaultGrailsDomainClassInjector">	
 	</bean>

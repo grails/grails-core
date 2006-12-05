@@ -32,7 +32,7 @@ import org.springframework.core.io.Resource;
 public class GrailsApplicationFactoryBean implements FactoryBean, InitializingBean {
 	
 	private static Log LOG = LogFactory.getLog(GrailsApplicationFactoryBean.class);
-	private Resource[] groovyFiles = null;
+	private Resource[] groovyFiles = new Resource[0];
 	private GrailsInjectionOperation injectionOperation = null;
 	private GrailsApplication grailsApplication = null;
 	
@@ -54,8 +54,8 @@ public class GrailsApplicationFactoryBean implements FactoryBean, InitializingBe
 	}
 	
 	public void afterPropertiesSet() throws Exception {
-		if (this.groovyFiles == null || groovyFiles.length == 0) {
-			throw new IllegalStateException("Groovy files are not defined!");
+		if (groovyFiles.length == 0) {
+			LOG.warn("Warning: No Groovy files found in application");
 		}
 		if(LOG.isDebugEnabled()) {
 			LOG.debug("Loaded Groovy resources: " + ArrayUtils.toString(groovyFiles));

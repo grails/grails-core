@@ -163,7 +163,7 @@ Grails home is set to: ${grailsHome}
 			break	
 			default:        
 			    System.setProperty("grails.env.default", "true")
-				System.setProperty("grails.env", "development")			
+				System.setProperty("grails.env", "production")			
 			break					
 		}
 	}   

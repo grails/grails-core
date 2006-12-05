@@ -15,9 +15,18 @@
  */ 
 package org.codehaus.groovy.grails.plugins;
 
+import groovy.lang.Binding;
 import groovy.lang.GroovyClassLoader;
-
+import groovy.lang.GroovyShell;
+import groovy.lang.Writable;
+import groovy.util.XmlSlurper;
+import groovy.util.slurpersupport.GPathResult;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.Writer;
 import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -26,6 +35,8 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+
+import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.logging.Log;
@@ -40,6 +51,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+import org.xml.sax.SAXException;
 
 /**
  * <p>A class that handles the loading and management of plug-ins in the Grails system.
@@ -87,6 +99,7 @@ public class DefaultGrailsPluginManager implements GrailsPluginManager {
 	private List pluginList = new ArrayList();
 	private ApplicationContext parentCtx;
 	private PathMatchingResourcePatternResolver resolver;
+	boolean initialised = false;
 
 	public DefaultGrailsPluginManager(String resourcePath, GrailsApplication application) throws IOException {
 		super();
@@ -94,45 +107,58 @@ public class DefaultGrailsPluginManager implements GrailsPluginManager {
 			throw new IllegalArgumentException("Argument [application] cannot be null!");
 		
 		resolver = new PathMatchingResourcePatternResolver();
-		this.pluginResources = resolver.getResources(resourcePath);
+		try {
+			this.pluginResources = resolver.getResources(resourcePath);
+		}		
+		catch(IOException ioe) {
+			LOG.debug("Unable to load plugins for resource path " + resourcePath, ioe);
+		}
 		//this.corePlugins = new PathMatchingResourcePatternResolver().getResources("classpath:org/codehaus/groovy/grails/**/plugins/**GrailsPlugin.groovy");
 		this.application = application;	
 	}
 	
 	public DefaultGrailsPluginManager(Class[] plugins, GrailsApplication application) throws IOException {
 		this.pluginClasses = plugins;
-		if(application == null)
-			throw new IllegalArgumentException("Argument [application] cannot be null!");
 		resolver = new PathMatchingResourcePatternResolver();
 		//this.corePlugins = new PathMatchingResourcePatternResolver().getResources("classpath:org/codehaus/groovy/grails/**/plugins/**GrailsPlugin.groovy");
 		this.application = application;
 	}
 	
+	/**
+	 * @return the initialised
+	 */
+	public boolean isInitialised() {
+		return initialised;
+	}
+
 	/* (non-Javadoc)
 	 * @see org.codehaus.groovy.grails.plugins.GrailsPluginManager#loadPlugins()
 	 */
 	public void loadPlugins() 
 					throws PluginException {
-		GroovyClassLoader gcl = application.getClassLoader();
-		// load core plugins first
-		loadCorePlugins();
-		for (int i = 0; i < pluginResources.length; i++) {
-			Resource r = pluginResources[i];
+		if(!this.initialised) {
+			GroovyClassLoader gcl = application.getClassLoader();
+			// load core plugins first
+			loadCorePlugins();
+			for (int i = 0; i < pluginResources.length; i++) {
+				Resource r = pluginResources[i];
+				
+				Class pluginClass = loadPluginClass(gcl, r);
+				GrailsPlugin plugin = new DefaultGrailsPlugin(pluginClass, application);			
+				attemptPluginLoad(plugin);
+			}
+			for (int i = 0; i < pluginClasses.length; i++) {
+				Class pluginClass = pluginClasses[i];
+				GrailsPlugin plugin = new DefaultGrailsPlugin(pluginClass, application);
+				attemptPluginLoad(plugin);			
+			}
 			
-			Class pluginClass = loadPluginClass(gcl, r);
-			GrailsPlugin plugin = new DefaultGrailsPlugin(pluginClass, application);			
-			attemptPluginLoad(plugin);
+			if(!delayedLoadPlugins.isEmpty()) {
+				loadDelayedPlugins();
+			}
+			initializePlugins();
+			initialised = true;			
 		}
-		for (int i = 0; i < pluginClasses.length; i++) {
-			Class pluginClass = pluginClasses[i];
-			GrailsPlugin plugin = new DefaultGrailsPlugin(pluginClass, application);
-			attemptPluginLoad(plugin);			
-		}
-		
-		if(!delayedLoadPlugins.isEmpty()) {
-			loadDelayedPlugins();
-		}
-		initializePlugins();
 	}
 
 	private void initializePlugins() {
@@ -197,8 +223,7 @@ public class DefaultGrailsPluginManager implements GrailsPluginManager {
 				if(hasValidPluginsToLoadBefore(plugin)) {
 					continue;
 				}
-				else {
-					LOG.info("Grails plug-in ["+plugin.getName()+"] with version ["+plugin.getVersion()+"] loaded successfully");
+				else {					
 					registerPlugin(plugin);
 				}
 			}
@@ -305,10 +330,8 @@ public class DefaultGrailsPluginManager implements GrailsPluginManager {
 	 * 
 	 * @param plugin The plugin
 	 */
-	private void attemptPluginLoad(GrailsPlugin plugin) {
-		
+	private void attemptPluginLoad(GrailsPlugin plugin) {		
 		if(areDependenciesResolved(plugin) && areNoneToLoadBefore(plugin)) {
-			LOG.info("Grails plug-in ["+plugin.getName()+"] with version ["+plugin.getVersion()+"] loaded successfully");
 			registerPlugin(plugin);			
 		}
 		else {
@@ -318,6 +341,7 @@ public class DefaultGrailsPluginManager implements GrailsPluginManager {
 	
 
 	private void registerPlugin(GrailsPlugin plugin) {
+		LOG.info("Grails plug-in ["+plugin.getName()+"] with version ["+plugin.getVersion()+"] loaded successfully");
 		if(plugin instanceof ParentApplicationContextAware) {
 			((ParentApplicationContextAware)plugin).setParentApplicationContext(parentCtx);
 		}
@@ -334,13 +358,20 @@ public class DefaultGrailsPluginManager implements GrailsPluginManager {
 	 * @see org.codehaus.groovy.grails.plugins.GrailsPluginManager#doRuntimeConfiguration(org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration)
 	 */
 	public void doRuntimeConfiguration(RuntimeSpringConfiguration springConfig) {
+		checkInitialised();
 		for (Iterator i = pluginList.iterator(); i.hasNext();) {
 			GrailsPlugin plugin = (GrailsPlugin) i.next();
 			plugin.doWithRuntimeConfiguration(springConfig);
 		}
 	}
+
+	private void checkInitialised() {
+		if(!initialised) 
+			throw new IllegalStateException("Must call loadPlugins() before invoking configurational methods on GrailsPluginManager");
+	}
 	
 	public void doRuntimeConfiguration(String pluginName, RuntimeSpringConfiguration springConfig) {
+		checkInitialised();
 		GrailsPlugin plugin = getGrailsPlugin(pluginName);
 		if(plugin == null) throw new PluginException("Plugin ["+pluginName+"] not found");
 		
@@ -365,6 +396,7 @@ public class DefaultGrailsPluginManager implements GrailsPluginManager {
 	 * @see org.codehaus.groovy.grails.plugins.GrailsPluginManager#doPostProcessing(org.springframework.context.ApplicationContext)
 	 */
 	public void doPostProcessing(ApplicationContext applicationContext) {
+		checkInitialised();
 		for (Iterator i = pluginList.iterator(); i.hasNext();) {
 			GrailsPlugin plugin = (GrailsPlugin) i.next();
 			plugin.doWithApplicationContext(applicationContext);
@@ -408,6 +440,59 @@ public class DefaultGrailsPluginManager implements GrailsPluginManager {
 		for (Iterator i = pluginList.iterator(); i.hasNext();) {
 			GrailsPlugin plugin = (GrailsPlugin) i.next();
 			plugin.checkForChanges();
+		}
+	}
+
+	public void doWebDescriptor(Resource descriptor, Writer target) {
+		try {
+			doWebDescriptor( descriptor.getInputStream(), target);
+		} catch (IOException e) {
+			throw new PluginException("Unable to read web.xml ["+descriptor+"]: " + e.getMessage(),e);
+		}
+	}
+
+	private void doWebDescriptor(InputStream inputStream, Writer target) {
+		checkInitialised();
+		try {
+			XmlSlurper slurper = new XmlSlurper();
+			
+			GPathResult result = slurper.parse(inputStream);
+
+			for (Iterator i = pluginList.iterator(); i.hasNext();) {
+				GrailsPlugin plugin = (GrailsPlugin) i.next();
+				plugin.doWithWebDescriptor(result);
+			}
+			Binding b = new Binding();
+			b.setVariable("node", result);
+			// this code takes the XML parsed by XmlSlurper and writes it out using StreamingMarkupBuilder
+			// don't ask me how it works, refer to John Wilson ;-)
+			Writable w = (Writable)new GroovyShell(b)
+										.evaluate("new groovy.xml.StreamingMarkupBuilder().bind { mkp.declareNamespace(\"\":  \"http://java.sun.com/xml/ns/j2ee\"); mkp.yield node}");
+			w.writeTo(target);
+			
+		} catch (ParserConfigurationException e) {
+			throw new PluginException("Unable to configure web.xml due to parser configuration problem: " + e.getMessage(),e);
+		} catch (SAXException e) {
+			throw new PluginException("XML parsing error configuring web.xml: " + e.getMessage(),e);
+		} catch (IOException e) {
+			throw new PluginException("Unable to read web.xml" + e.getMessage(),e);
+		}
+	}
+
+	public void doWebDescriptor(File descriptor, Writer target) {
+		try {
+			doWebDescriptor(new FileInputStream(descriptor), target);
+		} catch (FileNotFoundException e) {
+			throw new PluginException("Unable to read web.xml ["+descriptor+"]: " + e.getMessage(),e);
+		}
+	}
+
+	public void setApplication(GrailsApplication application) {
+		if(application == null) throw new IllegalArgumentException("Argument [application] cannot be null");
+		this.application = application;
+		for (Iterator i = pluginList.iterator(); i.hasNext();) {
+			GrailsPlugin plugin = (GrailsPlugin) i.next();
+			plugin.setApplication(application);
 		}
 	}
 	

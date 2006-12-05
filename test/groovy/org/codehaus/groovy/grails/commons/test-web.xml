@@ -7,17 +7,12 @@
 	<context-param>
 		<param-name>log4jConfigLocation</param-name>
 		<param-value>/WEB-INF/log4j.properties</param-value>
-	</context-param>  
-	
-	<context-param>
-	  <param-name>contextConfigLocation</param-name>
-	  <param-value>/WEB-INF/applicationContext.xml</param-value>
 	</context-param>
 
-    <filter>
-           <filter-name>sitemesh</filter-name>
-        <filter-class>org.codehaus.groovy.grails.web.sitemesh.GrailsPageFilter</filter-class>
-    </filter>
+	<filter>
+	   	<filter-name>sitemesh</filter-name>
+	    <filter-class>org.codehaus.groovy.grails.web.sitemesh.GrailsPageFilter</filter-class>
+	</filter>
 
      <filter>
         <filter-name>charEncodingFilter</filter-name>
@@ -38,23 +33,29 @@
     </filter-mapping>
 
     <filter-mapping>
-        <filter-name>sitemesh</filter-name>
-        <url-pattern>/*</url-pattern>
-    </filter-mapping>
+    	<filter-name>sitemesh</filter-name>
+	    <url-pattern>/*</url-pattern>
+	</filter-mapping>
 
-	<listener>
-	  <listener-class>org.springframework.web.util.Log4jConfigListener</listener-class>
-	</listener>	
-	
-	<listener>
-	  <listener-class>org.codehaus.groovy.grails.web.context.GrailsContextLoaderListener</listener-class>
-	</listener>	  
+    <servlet>
+		<servlet-name>log4j</servlet-name>
+		<servlet-class>org.springframework.web.util.Log4jConfigServlet</servlet-class>
+		<load-on-startup>1</load-on-startup>
+	</servlet>
+
+
+    <!-- Context loader servlet for those older servlet engines. -->
+    <servlet>
+        <servlet-name>context</servlet-name>
+        <servlet-class>org.springframework.web.context.ContextLoaderServlet</servlet-class>
+        <load-on-startup>2</load-on-startup>
+    </servlet>
 
     <!-- Grails dispatcher servlet -->
     <servlet>
         <servlet-name>grails</servlet-name>
         <servlet-class>org.codehaus.groovy.grails.web.servlet.GrailsDispatcherServlet</servlet-class>
-        <load-on-startup>1</load-on-startup>
+        <load-on-startup>3</load-on-startup>
     </servlet>
 
     <!-- The Groovy Server Pages servlet -->
@@ -66,16 +67,8 @@
     <servlet-mapping>
         <servlet-name>gsp</servlet-name>
         <url-pattern>*.gsp</url-pattern>
-    </servlet-mapping>
-
-    <welcome-file-list>
-         <!--
-         The order of the welcome pages is important.  JBoss deployment will
-         break if index.gsp is first in the list.
-         -->
-         <welcome-file>index.jsp</welcome-file>
-         <welcome-file>index.gsp</welcome-file>
-    </welcome-file-list>
+    </servlet-mapping>    
+	
 
     <jsp-config>
         <taglib>
@@ -86,14 +79,14 @@
             <taglib-uri>http://java.sun.com/jsp/jstl/fmt</taglib-uri>
             <taglib-location>/WEB-INF/tld/fmt.tld</taglib-location>
         </taglib>
-        <taglib>
-            <taglib-uri>http://www.springframework.org/tags</taglib-uri>
-            <taglib-location>/WEB-INF/tld/spring.tld</taglib-location>
-        </taglib>
-        <taglib>
-            <taglib-uri>http://grails.codehaus.org/tags</taglib-uri>
-            <taglib-location>/WEB-INF/tld/grails.tld</taglib-location>
-        </taglib>
+		<taglib>
+			<taglib-uri>http://www.springframework.org/tags</taglib-uri>
+			<taglib-location>/WEB-INF/tld/spring.tld</taglib-location>
+		</taglib>
+		<taglib>
+			<taglib-uri>http://grails.codehaus.org/tags</taglib-uri>
+			<taglib-location>/WEB-INF/tld/grails.tld</taglib-location>
+		</taglib>						
     </jsp-config>
 
 </web-app>

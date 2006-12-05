@@ -36,11 +36,8 @@ public class DefaultGrailsApplicationTests extends TestCase {
         System.setProperty(GrailsApplication.ENVIRONMENT,"rubbish");
 
         try {
-            ga.getGrailsDataSource();
-            fail("Should have thrown exception to indicate a non-existent data source");
-        }
-        catch(GrailsConfigurationException e) {
-            // expected
+            GrailsDataSource ds = ga.getGrailsDataSource();
+            assertNull(ds);
         }
         finally {
            System.setProperty(GrailsApplication.ENVIRONMENT,"");

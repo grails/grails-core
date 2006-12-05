@@ -15,14 +15,18 @@
  */ 
 package org.codehaus.groovy.grails.plugins;
 
+import java.io.File;
+import java.io.Writer;
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration;
 import org.codehaus.groovy.grails.plugins.exceptions.PluginException;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
+import org.springframework.core.io.Resource;
 
 /**
  * @author Graeme Rocher
@@ -72,6 +76,22 @@ public class MockGrailsPluginManager implements GrailsPluginManager {
 
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
 		// do nothing
+	}
+
+	public void doWebDescriptor(Resource descriptor, Writer target) {
+		// do nothing
+	}
+
+	public void doWebDescriptor(File descriptor, Writer target) {
+		// do nothing
+	}
+
+	public boolean isInitialised() {
+		return true;
+	}
+
+	public void setApplication(GrailsApplication application) {
+
 	}
 
 }

@@ -175,4 +175,7 @@ public interface GrailsPlugin extends ApplicationContextAware {
 	 * @param manager A GrailsPluginManager instance 
 	 */
 	void setManager(GrailsPluginManager manager);
+
+
+	void setApplication(GrailsApplication application);
 }

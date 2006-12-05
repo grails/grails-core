@@ -25,15 +25,18 @@
 import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
 import groovy.text.SimpleTemplateEngine
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver
+import org.codehaus.groovy.grails.plugins.*
+import org.codehaus.groovy.grails.commons.*
 
 Ant.property(environment:"env")                             
 grailsHome = Ant.antProject.properties."env.GRAILS_HOME"    
 
 includeTargets << new File ( "${grailsHome}/scripts/Init.groovy" )  
 includeTargets << new File ( "${grailsHome}/scripts/Compile.groovy" )  
+includeTargets << new File ( "${grailsHome}/scripts/PackagePlugins.groovy" )      
 
-task ('default': "Packages a Grails application. Note: To create WAR use 'grails war'") {
-	 //packagePlugins()	 
+task ('default': "Packages a Grails application. Note: To create WAR use 'grails war'") {	 
+	 packagePlugins()	 
      packageApp()     
 }                     
       
@@ -139,32 +142,19 @@ task( copyDependencies : "Copies the necessary dependencies (jar files) into the
 }
 
 task( generateWebXml : "Generates the web.xml file") {
-    def controllers = []
-    def flows = []
-    new File("${basedir}/grails-app/controllers").eachFileRecurse {
-        def match = it.name =~ /(\w+)(Controller.groovy$)/
-        if(match) {
-            def controllerName = match[0][1]
-            controllerName = GCU.getPropertyName(controllerName)
-            controllers << controllerName
-        }
-        match = it.name =~ /(\w+)(PageFlow.groovy$)/
-        if(match) {
-            def flowName = match[0][1]
-            flowName = GCU.getPropertyName(flowName)
-            flows << flowName
-        }
+    new File( "${basedir}/web-app/WEB-INF/web.xml" ).withWriter { w ->
+    	pluginManager = new DefaultGrailsPluginManager("${basedir}/plugins/*GrailsPlugin.groovy", new DefaultGrailsApplication(new Class[0], getClass().getClassLoader()))
+    	PluginManagerHolder.setPluginManager(pluginManager)
+
+    	def webXml = resolver.getResource("classpath:web-app/WEB-INF/web.template.xml")
+		try {
+    		pluginManager.loadPlugins()  			
+	    	pluginManager.doWebDescriptor(webXml, w)			
+		}   
+		catch(Exception e) {
+			println e.message
+			e.printStackTrace(System.out)
+		}
     }
-	     
-    def binding = [ controllers : controllers,
-                    flows : flows,
-                    basedir : basedir,
-                    destdir : "${basedir}/web-app/WEB-INF",
-                    dev : (grailsEnv == "development" ? true : false) ]
-
-    def engine = new SimpleTemplateEngine()
-    def template = engine.createTemplate( new File( "${basedir}/web-app/WEB-INF/web.template.xml" ).text ).make(binding)
-
-    new File( "${basedir}/web-app/WEB-INF/web.xml" ).write( template.toString() )	
 }  
 

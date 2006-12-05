@@ -15,12 +15,16 @@
  */ 
 package org.codehaus.groovy.grails.plugins;
 
+import java.io.File;
+import java.io.Writer;
 import java.math.BigDecimal;
 
+import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration;
 import org.codehaus.groovy.grails.plugins.exceptions.PluginException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.core.io.Resource;
 
 /**
  * <p>A class that handles the loading and management of plug-ins in the Grails system.
@@ -85,6 +89,22 @@ public interface GrailsPluginManager extends ApplicationContextAware {
 	public abstract void doPostProcessing(ApplicationContext applicationContext);
 
 	/**
+	 * Takes the specified web descriptor reference and configures it with all the plugins outputting
+	 * the result to the target Writer instance
+	 * 
+	 * @param descriptor The Resource of the descriptor
+	 * @param target The Writer to write the result to
+	 */
+	public abstract void doWebDescriptor(Resource descriptor, Writer target);
+	
+	/**
+	 * @see doWebDescriptor(Resource, Writer target)
+	 * 
+	 * @param descriptor The File of the descriptor
+	 * @param target The target to write the changes to
+	 */
+	public abstract void doWebDescriptor(File descriptor, Writer target);
+	/**
 	 * Retrieves a name Grails plugin instance
 	 * 
 	 * @param name The name of the plugin
@@ -121,5 +141,16 @@ public interface GrailsPluginManager extends ApplicationContextAware {
 	 *
 	 */
 	public abstract void checkForChanges();
+
+	/**
+	 * Sets the GrailsApplication used be this plugin manager
+	 * @param application The GrailsApplication instance
+	 */
+	public abstract void setApplication(GrailsApplication application);
+
+	/**
+	 * @return the initialised
+	 */
+	public boolean isInitialised();
 
 }

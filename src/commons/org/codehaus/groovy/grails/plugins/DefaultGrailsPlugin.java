@@ -82,6 +82,8 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
 		this.pluginBean = new BeanWrapperImpl(this.plugin);
 		this.dependencies = Collections.EMPTY_MAP;
 		this.parentCtx = application.getParentContext();
+		this.resolver = new PathMatchingResourcePatternResolver();
+		
 		if(this.pluginBean.isReadableProperty(DEPENDS_ON)) {
 			this.dependencies = (Map)GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(this.plugin, DEPENDS_ON);
 			this.dependencyNames = (String[])this.dependencies.keySet().toArray(new String[this.dependencies.size()]);
@@ -108,7 +110,6 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
 		if(this.pluginBean.isReadableProperty(ON_CHANGE)) {
 			this.onChangeListener = (Closure)GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(this.plugin, ON_CHANGE);
 			Object referencedResources = GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(this.plugin, WATCHED_RESOURCES);
-			this.resolver = new PathMatchingResourcePatternResolver();
 			try {
 				if(referencedResources instanceof String) {
 					 this.resourcesReference = referencedResources.toString();
@@ -139,6 +140,14 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
 
 	public String[] getLoadAfterNames() {
 		return this.loadAfterNames;
+	}
+
+
+	/**
+	 * @return the resolver
+	 */
+	public PathMatchingResourcePatternResolver getResolver() {
+		return resolver;
 	}
 
 
@@ -182,6 +191,7 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
 			Binding b = new Binding();
 			b.setVariable("application", application);
 			b.setVariable("manager", getManager());
+			b.setVariable("plugin", this);
 			bb.setBinding(b);
 			c.setDelegate(bb);
 			bb.invokeMethod("beans", new Object[]{c});
@@ -200,6 +210,13 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
 		return this.dependencyNames;
 	}
 
+	/**
+	 * @return the watchedResources
+	 */
+	public Resource[] getWatchedResources() {
+		return watchedResources;
+	}
+
 	public BigDecimal getDependentVersion(String name) {
 		BigDecimal dependentVersion = (BigDecimal)this.dependencies.get(name);
 		if(dependentVersion == null)
@@ -216,7 +233,7 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
 		if(this.pluginBean.isReadableProperty(DO_WITH_WEB_DESCRIPTOR)) {
 			Closure c = (Closure)this.plugin.getProperty(DO_WITH_WEB_DESCRIPTOR);
 			c.setDelegate(this);			
-     		c.call(new Object[]{webXml});
+     		c.call(webXml);
 		}
 		
 	}
@@ -380,8 +397,14 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
 		initializeModifiedTimes();
 	}
 
+	/*
+	 * These two properties help the closures to resolve a log and plugin variable during executing
+	 */
 	public Log getLog() {
 		return LOG;
+	}	
+	public GrailsPlugin getPlugin() {
+		return this;
 	}
 
 	public void setParentApplicationContext(ApplicationContext parent) {

@@ -39,6 +39,7 @@ import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsDomainConfigurationUti
 import org.codehaus.groovy.grails.orm.hibernate.validation.GrailsDomainClassValidator;
 import org.codehaus.groovy.grails.plugins.DefaultGrailsPluginManager;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
+import org.codehaus.groovy.grails.plugins.PluginManagerHolder;
 import org.codehaus.groovy.grails.scaffolding.ScaffoldDomain;
 import org.hibernate.SessionFactory;
 import org.springframework.aop.framework.ProxyFactoryBean;
@@ -103,7 +104,16 @@ public class GrailsRuntimeConfigurator {
 		if(parent != null)
 			this.parentDataSource = parent.containsBean(DATA_SOURCE_BEAN);
         try {
-			this.pluginManager = new DefaultGrailsPluginManager("**/plugins/*/**GrailsPlugin.groovy", application);
+			this.pluginManager = PluginManagerHolder.getPluginManager();
+			if(this.pluginManager  == null) {
+				this.pluginManager = new DefaultGrailsPluginManager("**/plugins/*/**GrailsPlugin.groovy", application);
+			}
+			else {
+				LOG.debug("Retrieved thread-bound PluginManager instance");
+				this.pluginManager.setApplication(application);
+			}
+				
+				
 		} catch (IOException e) {
 			LOG.warn("I/O error loading plugin manager!:"+e.getMessage(), e);
 		}
@@ -288,7 +298,8 @@ public class GrailsRuntimeConfigurator {
 		if(context != null)
 			springConfig.setServletContext(context);
 		
-		this.pluginManager.loadPlugins();
+		if(!this.pluginManager.isInitialised())
+			this.pluginManager.loadPlugins();
 
         Assert.notNull(application);
         
@@ -312,7 +323,10 @@ public class GrailsRuntimeConfigurator {
 	public WebApplicationContext configureDomainOnly() {
 		RuntimeSpringConfiguration springConfig = parent != null ? new DefaultRuntimeSpringConfiguration(parent) : new DefaultRuntimeSpringConfiguration();
 		springConfig.setServletContext(new MockServletContext());
-		this.pluginManager.loadPlugins();
+
+		if(!this.pluginManager.isInitialised())
+			this.pluginManager.loadPlugins();
+
 		
 		if(pluginManager.hasGrailsPlugin("hibernate"))
 			pluginManager.doRuntimeConfiguration("hibernate", springConfig);

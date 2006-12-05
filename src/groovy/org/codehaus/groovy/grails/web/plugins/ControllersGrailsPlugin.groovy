@@ -126,24 +126,65 @@ class ControllersGrailsPlugin {
 	}
 	
 	def doWithWebDescriptor = { webXml ->
-		def controllers = []
+		def controllers = [] as HashSet
 		def webflows = []
 		def basedir = System.getProperty("base.dir")
+		def grailsEnv = System.getProperty("grails.env")
 		
-	    watchedResources.each {
+		// first for all the watched resources for this controller that are controllers
+		// create a servlet-mapping element that maps to the Grails dispatch servlet
+	    plugin.watchedResources.each {
 	        def match = it.filename =~ /(\w+)(Controller.groovy$)/
 	        if(match) {
 	            def controllerName = match[0][1]
-	            controllerName = GCU.getPropertyName(controllerName)
+	            controllerName = GCU.getPropertyName(controllerName)	            
 	            controllers << controllerName
 	        }
 		}
+		def mappingElement = webXml.'servlet-mapping'		
+		controllers.each { c ->
+			mappingElement + {
+				'servlet-mapping' {
+					'servlet-name'("grails")
+					'url-pattern'("/${c}/*")
+				}
+			}
+		}
 		
-		def mappingElement = webXml.find { it.name() == 'servlet-mapping' }		
-		controllers.each {
-			def el = mappingElement.appendSibling('servlet-mapping')
-			el.'servlet-name'.value = "grails"
-			el.'url-pattern'.value = "/${it}/*"
+		if(grailsEnv == "development") {
+			// if we're in development environment first add a the reload filter
+			// to the web.xml by finding the last filter and appending it after
+			def lastFilter = webXml.filter
+
+			def reloadFilter = 'reloadFilter'			                               
+			lastFilter[lastFilter.size()-1] + {
+				filter {
+					'filter-name'(reloadFilter)
+					'filter-class'('org.codehaus.groovy.grails.web.servlet.filter.GrailsReloadServletFilter')
+				}
+			}
+			// now map each controller request to the filter
+			def lastFilterMapping = webXml.'filter-mapping'
+			                                                
+			controllers.each { c ->
+				lastFilterMapping[lastFilterMapping.size()-1] + {
+					'filter-name'(reloadFilter)
+					'url-pattern'("/${c}/*")
+				}			
+			}
+			// now find the GSP servlet and allow viewing generated source in
+			// development mode
+			def gspServlet = webXml.servlet.find { it.'servlet-name'?.text() == 'gsp' }
+			gspServlet.'servlet-class' + {
+				'init-param' {
+					'param-name'('showSource')
+					'param-value'(1)
+					description """
+              Allows developers to view the intermediade source code, when they pass
+                a spillGroovy argument in the URL.					
+					"""
+				}
+			}
 		}
 
 	}
@@ -157,6 +198,7 @@ class ControllersGrailsPlugin {
 				return
 			}
 			boolean isNew = application.getController(event.source?.name) ? false : true
+										
 			def controllerClass = application.addControllerClass(event.source)
 			
 			def mappings = new Properties()
@@ -185,7 +227,7 @@ class ControllersGrailsPlugin {
 				interceptors[j] = new WebRequestHandlerInterceptorAdapter(context.getBean(webRequestInterceptors[i]))
 			}
          
-			log.info("Re-adding ${interceptors.length} interceptors to mapping")
+			log.debug("Re-adding ${interceptors.length} interceptors to mapping")
 			
 			urlMappings.interceptors = interceptors
 			urlMappings.initApplicationContext()
@@ -194,6 +236,15 @@ class ControllersGrailsPlugin {
 			
 			def controllerTargetSource = context.getBean("${controllerClass.fullName}TargetSource")
 			controllerTargetSource.swap(controllerClass)
+			
+			if(isNew) {
+				log.info "Re-generating web.xml file..."
+				def webTemplateXml = resolver.getResource("/WEB-INF/web.template.xml")
+				def webXml = resolver.getResource("/WEB-INF/web.xml")?.getFile()
+				webXml?.withWriter { w ->
+					manager.doWebDescriptor(webTemplateXml, w)
+				}				
+			}
 			
 		}
 		else if(GCU.isTagLibClass(event.source)) {

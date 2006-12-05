@@ -36,50 +36,44 @@ task ( "default" : "Performs packaging of Grails plugins for when they are distr
                 
 task( packagePlugins : "Packages any Grails plugins that are installed for this project") {
 	depends( classpath )
-   	def resourceResolver = new PathMatchingResourcePatternResolver()
-   	def plugins = resourceResolver.getResources("classpath:**/plugins/**/*GrailsPlugin.groovy")
+	try {
+	   	def plugins = resolver.getResources("classpath:**/plugins/**/*GrailsPlugin.groovy")
 
-    def webXmlDocument = new XmlSlurper().parse("${basedir}/web-app/WEB-INF/web.template.xml")   	
-
-   	plugins.each { p ->
-   		def pluginBase = p.parentFile
-   		Ant.sequential {
-   			copy(todir:"${basedir}/web-app/WEB-INF/lib") {
-   				fileset(dir:"${pluginBase}/lib", includes:"**")
-   			}   			                     
-   			copy(todir:"${basedir}/web-app/WEB-INF/grails-app/views") {
-   				fileset(dir:"${pluginBase}/grails-app/views", includes:"**")
-   			}     
-  			copy(todir:"${basedir}/web-app") {
-   				fileset(dir:"${pluginBase}/web-app", includes:"**", overwrite:false)
-   			}  		                     
-			path(id:"classpath") {
-				fileset(dir:"${basedir}/lib")
-				fileset(dir:"${grailsHome}/lib")
-				fileset(dir:"${grailsHome}/dist")        
-				fileset(dir:"${basedir}/web-app/WEB-INF/classes")  
-				fileset(dir:"${pluginBase}/lib")
-			}                                                  
-			javac(srcdir:"${pluginBase}/src/java",destdir:"${basedir}/web-app/WEB-INF/classes",
-					classpathref:"classpath",debug:"on",deprecation:"on", optimize:"off")
-
-			groovyc(srcdir:"${pluginBase}/src/groovy",destdir:"${basedir}/web-app/WEB-INF/classes",
-					classpathref:"classpath")			
-   		}             
-		try {
-			def plugin = GCL.parseClass(p).newInstance()
-			plugin.doWithWebDescriptor(webXmlDocument)			
-		}                                             
-		catch(MissingMethodException mme) {
-			// ignore
-		}   
-		catch(Throwable t) {
-			println "Error compiling plugin ${p}: ${t.message}"
-		}
-   	}  
-
-	new File("${basedir}/web-app/WEB-INF/web.xml").withWriter { w ->
-		webXmlDocument.write(w)
+	   	plugins?.each { p ->
+	   		def pluginBase = p.parentFile
+	   		Ant.sequential {
+	   			copy(todir:"${basedir}/web-app/WEB-INF/lib", failonerror:false) {
+	   				fileset(dir:"${pluginBase}/lib", includes:"**")
+	   			}   			                     
+	   			copy(todir:"${basedir}/web-app/WEB-INF/grails-app/views", failonerror:false) {
+	   				fileset(dir:"${pluginBase}/grails-app/views", includes:"**")
+	   			}                  
+	            if(new File("${pluginBase}/web-app").exists()) {
+					Ant.mkdir(dir:"${basedir}/web-app/${pluginBase.name}")
+		  			copy(todir:"${basedir}/web-app/${pluginBase.name}") {
+		   				fileset(dir:"${pluginBase}/web-app", includes:"**", overwrite:false)
+		   			}  		                     	
+				}
+				path(id:"classpath") {
+					fileset(dir:"${basedir}/lib")
+					fileset(dir:"${grailsHome}/lib")
+					fileset(dir:"${grailsHome}/dist")        
+					fileset(dir:"${basedir}/web-app/WEB-INF/classes")  
+					fileset(dir:"${pluginBase}/lib")
+				}       
+				if(new File("${pluginBase}/src/java").exists()) {                                        
+					javac(srcdir:"${pluginBase}/src/java",destdir:"${basedir}/web-app/WEB-INF/classes",
+							classpathref:"classpath",debug:"on",deprecation:"on", optimize:"off")
+				}
+				if(new File("${pluginBase}/src/groovy").exists()) { 
+					groovyc(srcdir:"${pluginBase}/src/groovy",destdir:"${basedir}/web-app/WEB-INF/classes",
+							classpathref:"classpath")			
+				}
+	   		}             
+	   	}  		
+	}
+	catch(Exception e) {
+		e.printStackTrace(System.out)
 	}
 }
 

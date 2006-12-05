@@ -22,6 +22,7 @@
  * @since 0.4
  */    
 import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver
 
 Ant.property(environment:"env")       
 
@@ -36,6 +37,7 @@ serverPort = System.getProperty('server.port') ? System.getProperty('server.port
 basedir = System.getProperty("base.dir")    
 baseFile = new File(basedir)
 baseName = baseFile.name
+resolver = new PathMatchingResourcePatternResolver()
 
 args = System.getProperty("grails.cli.args")     
 
@@ -68,23 +70,36 @@ task ( createStructure: "Creates the application directory structure") {
 	}
 }  
 
-task( init: "main init task") {
-	depends( createStructure )
+task ( copyBasics: "Copies the basic resources required for a Grails app to function") {
 	Ant.sequential {
-		copy(todir:"${basedir}/web-app") {
-			fileset(dir:"${grailsHome}/src/war") {
-				include(name:"**/**")
-				exclude(name:"WEB-INF/**")
-			} 
-		}
 		copy(todir:"${basedir}/web-app/WEB-INF") {
 			fileset(dir:"${grailsHome}/src/war/WEB-INF") {
 				include(name:"applicationContext.xml")
 				exclude(name:"log4j.properties")
 				include(name:"sitemesh.xml")								
 			}			
-		}
-		
+		}	
+		copy(file:"${grailsHome}/src/war/WEB-INF/log4j.properties",
+				 tofile:"${basedir}/web-app/WEB-INF/log4j.properties")
+		copy(file:"${grailsHome}/src/war/WEB-INF/web${servletVersion}.template.xml", 
+				 tofile:"${basedir}/web-app/WEB-INF/web.template.xml") 
+				 
+		copy(todir:"${basedir}/web-app/WEB-INF/tld") {
+			fileset(dir:"${grailsHome}/src/war/WEB-INF/tld/${servletVersion}")	
+			fileset(dir:"${grailsHome}/src/war/WEB-INF/tld", includes:"spring.tld")
+			fileset(dir:"${grailsHome}/src/war/WEB-INF/tld", includes:"grails.tld")			
+		}			 			
+	}
+}
+task( init: "main init task") {
+	depends( createStructure, copyBasics )
+	Ant.sequential {
+		copy(todir:"${basedir}/web-app") {
+			fileset(dir:"${grailsHome}/src/war") {
+				include(name:"**/**")
+				exclude(name:"WEB-INF/**")
+			} 
+		}		
 		copy(file:"${grailsHome}/src/war/WEB-INF/log4j.properties",
 			 tofile:"${basedir}/grails-app/conf/log4j.development.properties")
 		copy(file:"${grailsHome}/src/war/WEB-INF/log4j.properties",
@@ -95,19 +110,12 @@ task( init: "main init task") {
 		copy(todir:"${basedir}/grails-app") {
 			fileset(dir:"${grailsHome}/src/grails/grails-app")
 		}		 
-		copy(file:"${grailsHome}/src/war/WEB-INF/web${servletVersion}.template.xml", 
-			 tofile:"${basedir}/web-app/WEB-INF/web.template.xml") 
 			
 		if(servletVersion != "2.3") {
 			replace(file:"${basedir}/web-app/index.jsp", token:"http://java.sun.com/jstl/core",
 					value:"http://java.sun.com/jsp/jstl/core")
 		}  
-		
-		copy(todir:"${basedir}/web-app/WEB-INF/tld") {
-			fileset(dir:"${grailsHome}/src/war/WEB-INF/tld/${servletVersion}")	
-			fileset(dir:"${grailsHome}/src/war/WEB-INF/tld", includes:"spring.tld")
-			fileset(dir:"${grailsHome}/src/war/WEB-INF/tld", includes:"grails.tld")			
-		}	 
+			 
 		copy(todir:"${basedir}/spring") {
 			fileset(dir:"${grailsHome}/src/war/WEB-INF/spring") {
 				include(name:"*.xml")
