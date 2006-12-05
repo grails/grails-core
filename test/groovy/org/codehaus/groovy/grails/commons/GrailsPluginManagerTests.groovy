@@ -45,7 +45,7 @@ public class GrailsPluginManagerTests extends AbstractGrailsMockTests {
 		
 		try {
 			manager.loadPlugins()
-			fail("Should have failed with a dependency resolution error")
+			assert !manager.hasGrailsPlugin("my")
 		}		
 		catch(PluginException pe) {
 			// expected
