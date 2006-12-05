@@ -37,6 +37,7 @@
 			<fileset dir="${grails.src.web}" excludes="**/*.java" />
 			<fileset dir="${grails.src.persistence}" excludes="**/*.java"/>
 			<fileset dir="${grails.src.scaffolding}" excludes="**/*.java"/>
+			<fileset dir="${grails.test.src.groovy}" excludes="**/*.groovy"/>
 		</copy>
         <antcall target="build:java5" />
     </target>
