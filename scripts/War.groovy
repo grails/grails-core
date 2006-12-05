@@ -25,27 +25,53 @@
 Ant.property(environment:"env")                             
 grailsHome = Ant.antProject.properties."env.GRAILS_HOME"    
 
-includeTargets << new File ( "${grailsHome}/scripts/Init.groovy" )
-includeTargets << new File ( "${grailsHome}/scripts/Clean.groovy" )
+includeTargets << new File ( "${grailsHome}/scripts/Clean.groovy" ) 
 includeTargets << new File ( "${grailsHome}/scripts/Package.groovy" )
 
 task ('default': "Creates a WAR archive") {
-	depends( clean, packageApp )
-	
-	Ant.copy(todir:"${basedir}/web-app/WEB-INF/grails-app", overwrite:true) {
-		fileset(dir:"${basedir}/grails-app", includes:"**") 
-	}       
-	def appCtxFile = "${basedir}/web-app/WEB-INF/applicationContext.xml"
-	Ant.copy(file:appCtxFile, tofile:"${basedir}/.appctxbck",overwrite:true)
-	Ant.replace(file:appCtxFile, 
-			token:"classpath:", value:"" ) 
-			   
-	def fileName = new File(basedir).name
-	def warName = "${basedir}/${fileName}.war"
-	Ant.jar(destfile:warName, basedir:"${basedir}/web-app")		
-	Ant.move(file:"${basedir}/.appctxbck", tofile:appCtxFile, overwrite:true)
+	war()
+} 
+
+task (war: "The implementation task") {
+	depends( clean, packagePlugins, packageApp )
+	 
+	try {
+		Ant.copy(todir:"${basedir}/web-app/WEB-INF/grails-app", overwrite:true) {
+			fileset(dir:"${basedir}/grails-app", includes:"**") 
+		}       
+		appCtxFile = "${basedir}/web-app/WEB-INF/applicationContext.xml"
+		Ant.copy(file:appCtxFile, tofile:"${basedir}/.appctxbck",overwrite:true)
+		Ant.replace(file:appCtxFile, 
+				token:"classpath:", value:"" ) 
+
+		def fileName = new File(basedir).name
+		warName = "${basedir}/${fileName}.war"
+
+		warPlugins()		
+		Ant.jar(destfile:warName, basedir:"${basedir}/web-app")		
+		
+	}   
+	finally {
+		cleanUpAfterWar()
+	}
+	println "Created WAR at ${warName}"	
+}                                                                    
+   
+task(cleanUpAfterWar:"Cleans up after performing a WAR") {
+ 	Ant.move(file:"${basedir}/.appctxbck", tofile:appCtxFile, overwrite:true)
 	Ant.delete(dir:"${basedir}/web-app/WEB-INF/grails-app")
-	
-	println "Created WAR at ${warName}"
+	Ant.delete(dir:"${basedir}/web-app/WEB-INF/plugins")   
+}
+task(warPlugins:"Includes the plugins in the WAR") {  
+	Ant.sequential {
+		mkdir(dir:"${basedir}/web-app/WEB-INF/plugins")
+		copy(todir:"${basedir}/web-app/WEB-INF/plugins", failonerror:false) {
+			fileset(dir:"${basedir}/plugins")  {
+				include(name:"**/grails-app/**")
+				exclude(name:"**/grails-app/views")
+				exclude(name:"**/grails-app/i18n")				
+			}
+		}
+	}
 }
 

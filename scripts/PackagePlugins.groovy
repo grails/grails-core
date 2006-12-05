@@ -40,7 +40,7 @@ task( packagePlugins : "Packages any Grails plugins that are installed for this 
 	   	def plugins = resolver.getResources("classpath:**/plugins/**/*GrailsPlugin.groovy")
 
 	   	plugins?.each { p ->
-	   		def pluginBase = p.parentFile
+	   		def pluginBase = p.file.parentFile
 	   		Ant.sequential {
 	   			copy(todir:"${basedir}/web-app/WEB-INF/lib", failonerror:false) {
 	   				fileset(dir:"${pluginBase}/lib", includes:"**")
