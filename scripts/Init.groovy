@@ -56,6 +56,7 @@ task ( createStructure: "Creates the application directory structure") {
 	    mkdir(dir:"${basedir}/grails-app/i18n")
 	    mkdir(dir:"${basedir}/grails-app/conf")
 	    mkdir(dir:"${basedir}/grails-tests")
+	    mkdir(dir:"${basedir}/scripts") 
 	    mkdir(dir:"${basedir}/web-app")
 	    mkdir(dir:"${basedir}/web-app")
 	    mkdir(dir:"${basedir}/web-app")
