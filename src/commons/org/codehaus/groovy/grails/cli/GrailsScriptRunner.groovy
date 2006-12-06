@@ -32,6 +32,7 @@ class GrailsScriptRunner {
 	static final RESOLVER  = new PathMatchingResourcePatternResolver()
 	    
 	static grailsHome
+	static baseDir
 	
 	static main(args) {
                               
@@ -51,10 +52,10 @@ Welcome to Grails ${grailsVersion} - http://grails.org/
 Licensed under Apache Standard License 2.0
 Grails home is set to: ${grailsHome}		
 		"""		  
-		if(args.length) {         
+		if(args.length && args[0].trim()) {         
                
 
-			def baseDir = establishBaseDir()
+			baseDir = establishBaseDir()
             println "Base Directory: ${baseDir.absolutePath}"
 		
 			def scriptName
@@ -117,10 +118,14 @@ Grails home is set to: ${grailsHome}
 		def scriptFile = new File("${grailsHome}/scripts/${scriptName}.groovy") 
 		if(scriptFile.exists()) {
 			potentialScripts << scriptFile
+		}                                                          
+		try {
+			def pluginScripts = RESOLVER.getResources("file:${baseDir}/plugins/**/scripts/${scriptName}.groovy")
+			potentialScripts += pluginScripts.collect { it.file }			
 		}
-		def pluginScripts = RESOLVER.getResources("plugins/**/scripts/${scriptName}.groovy")
-		potentialScripts += pluginScripts.collect { it.file }
-		
+		catch(Exception e) {
+			// ignore as we don't care if they aren't there
+		} 
 		if(potentialScripts.size()>0) {
             if(potentialScripts.size() == 1) {
 				println "Running script ${scriptFile.absolutePath}"
