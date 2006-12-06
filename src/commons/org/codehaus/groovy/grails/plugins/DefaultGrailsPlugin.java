@@ -110,10 +110,15 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
 		if(this.pluginBean.isReadableProperty(ON_CHANGE)) {
 			this.onChangeListener = (Closure)GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(this.plugin, ON_CHANGE);
 			Object referencedResources = GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(this.plugin, WATCHED_RESOURCES);
+			
 			try {
 				if(referencedResources instanceof String) {
+					if(LOG.isDebugEnabled()) {
+						LOG.debug("Configuring plugin "+this+" to watch resources with pattern: " + referencedResources);
+					}
+					
 					 this.resourcesReference = referencedResources.toString();
-					 watchedResources  = resolver.getResources(resourcesReference);
+					 watchedResources  = resolver.getResources(resourcesReference);				 
 				}
 				else if(referencedResources instanceof List) {
 					List resourceList = (List)referencedResources;
@@ -127,7 +132,9 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
 						watchedResources = (Resource[])ArrayUtils.addAll(this.watchedResources, tmp);
 					}
 				}
-								
+				if(LOG.isDebugEnabled()) {
+					LOG.debug("Plugin "+this+" found ["+watchedResources.length+"] to watch");
+				}								
 				initializeModifiedTimes();
 			} catch (IOException e) {
 				LOG.warn("I/O exception loading plug-in resource watch list: " + e.getMessage(), e);
