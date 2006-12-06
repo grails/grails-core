@@ -43,9 +43,6 @@ task ('default': "Packages a Grails application. Note: To create WAR use 'grails
 task( packageApp : "Implementation of package task") {
 	depends( createStructure, generateWebXml, compile )
 	copyDependencies()   
-	Ant.delete(failonerror:false) {
-		fileset(dir:"${basedir}/web-app/WEB-INF/grails-app/conf", includes:"*.groovy")
-	}
 	Ant.mkdir(dir:"${basedir}/web-app/WEB-INF/grails-app/views")
 	Ant.mkdir(dir:"${basedir}/web-app/WEB-INF/grails-app/i18n")
 		

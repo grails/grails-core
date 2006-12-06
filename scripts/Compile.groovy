@@ -29,13 +29,16 @@ Ant.property(environment:"env")
 grailsHome = Ant.antProject.properties."env.GRAILS_HOME"    
 
 includeTargets << new File ( "${grailsHome}/scripts/Init.groovy" )     
-
-Ant.path ( id : 'groovyJarSet' ) { 
-	fileset ( dir : "${grailsHome}/lib" , includes : "*.jar" ) 
-}
+       
+if(!Ant.antProject.properties."groovyJarSet") {
+	Ant.path ( id : 'groovyJarSet' ) { 
+		fileset ( dir : "${grailsHome}/lib" , includes : "*.jar" ) 
+	}	
+}    
 Ant.taskdef ( 	name : 'groovyc' , 
 				classname : 'org.codehaus.groovy.ant.Groovyc' , 
 				classpathref : 'groovyJarSet' )
+
 
 
 task ('default': "Performs compilation on any source files (Java or Groovy) in the 'src' tree") {

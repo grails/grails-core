@@ -27,6 +27,7 @@ import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
 Ant.property(environment:"env")                             
 grailsHome = Ant.antProject.properties."env.GRAILS_HOME"   
 
+includeTargets << new File ( "${grailsHome}/scripts/Init.groovy" )
     
 class HelpEvaluatingCategory {     
 	static defaultTask = ""
@@ -63,20 +64,13 @@ def shouldGenerateHelp =  { List scripts ->
 
 task ( 'default' : "Prints out the help for each script") {
 	def scripts = []   
-	def fileCriteria = { file -> 
-		if(file.name.endsWith(".groovy") && file.name != "Help.groovy") {
-			scripts << file
-		}
-	}
-	new File("${grailsHome}/scripts").eachFile(fileCriteria)  
-    def projectScripts = new File("scripts")
-	if(projectScripts.exists()) {
-	 	projectScripts.eachFile(fileCriteria)
-	}
+	resolver.getResources("file:${grailsHome}/scripts/**.groovy").each { scripts << it.file }
+	resolver.getResources("file:${basedir}/scripts/*.groovy").each { scripts << it.file }
+	resolver.getResources("file:${basedir}/plugins/*/scripts/*.groovy").each { scripts << it.file }
         
 	def helpText = ""
 	if(shouldGenerateHelp(scripts)) { 
-		println "Generating Help, please wait. This happens when scripts change or the first time you use Grails."
+		println "Generating Help, please wait. This happens when scripts change or the first time you use Grails."		
 		  
 		def gcl = new GroovyClassLoader()    		
 		def sw = new StringWriter()      		
@@ -91,7 +85,7 @@ task ( 'default' : "Prints out the help for each script") {
 
 					def scriptName = GCU.getScriptName(file.name)
 
-					pw.println "grails ${scriptName} -- ${defaultTask}"					
+					pw.println "grails ${scriptName} -- ${getDefaultTask()}"					
 				}                                                      
 				catch(Throwable t) {
 					println "Error creating help for ${file}: ${t.message}"

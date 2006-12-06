@@ -16,7 +16,8 @@
 
 package org.codehaus.groovy.grails.cli;
         
-import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU  
+import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver  
 import gant.Gant
 /**
  * Class that handles Grails command line interface for running scripts
@@ -27,12 +28,15 @@ import gant.Gant
  */
 
 class GrailsScriptRunner {  
-	static final ANT = new AntBuilder()
+	static final ANT = new AntBuilder() 
+	static final RESOLVER  = new PathMatchingResourcePatternResolver()
+	    
+	static grailsHome
 	
 	static main(args) {
                               
 		ANT.property(environment:"env")
-		def grailsHome = ANT.antProject.properties.'env.GRAILS_HOME'
+		grailsHome = ANT.antProject.properties.'env.GRAILS_HOME'
 		
 		if(!grailsHome) {
 			println "Environment variable GRAILS_HOME not set. Please set it to the location of your Grails installation and try again."
@@ -48,41 +52,15 @@ Licensed under Apache Standard License 2.0
 Grails home is set to: ${grailsHome}		
 		"""		  
 		if(args.length) {         
-            def baseDir = new File("")
-            if(!new File(baseDir, "grails-app").exists()) {
-            	
-            	// be careful with this next step...
-            	// baseDir.parentFile will return null since baseDir is new File("")
-            	// baseDir.absoluteFile needs to happen before retrieving the parentFile
-        		def parentDir = baseDir.absoluteFile.parentFile
-        		
-        		// keep moving up one directory until we find 
-        		// one that contains the grails-app dir or get 
-        		// to the top of the filesystem...
-        		while(parentDir != null && !new File(parentDir, "grails-app").exists()) {
-        			parentDir = parentDir.parentFile
-        		}
-            	
-        		if(parentDir != null) {
-        			// if we found the project root, use it
-        			baseDir = parentDir
-        		}
-            }
+               
+
+			def baseDir = establishBaseDir()
             println "Base Directory: ${baseDir.absolutePath}"
 		
 			def scriptName
 			def allArgs = args[0].trim() 
-			
-			def lastMatch = null
-			allArgs.eachMatch( /-D(.+?)=(.+?)\s+?/ ) { match ->
-			   System.setProperty(match[1].trim(),match[2].trim())
-			   lastMatch = match[0]
-			}
-			
-			if(lastMatch) {
-			   def i = allArgs.lastIndexOf(lastMatch)+lastMatch.size()
-			   allArgs = allArgs[i..-1]
-			}
+			      
+			allArgs = processSystemArguments(allArgs)
 			
 			if(allArgs.indexOf(' ') > -1) {                                                                  				
 				def tokens = args[0].trim().split(" ")    
@@ -102,20 +80,19 @@ Grails home is set to: ${grailsHome}
 			}                                
 			println "Environment set to ${System.getProperty('grails.env')}"
 
-			def scriptFile = new File("scripts/${scriptName}.groovy")
+			def scriptFile = new File("${baseDir.absolutePath}/scripts/${scriptName}.groovy")
 
 			System.setProperty("base.dir", baseDir.absolutePath)
 			
-			try {
+			try {      
+				
 				if(scriptFile.exists()) {
 					println "Running script ${scriptFile.absolutePath}"
 					Gant.main(["-f", scriptFile.absolutePath] as String[])				
 				}     
-				else {  
-					scriptFile = new File("${grailsHome}/scripts/${scriptName}.groovy") 
-					println "Running script ${scriptFile.absolutePath}"
-					Gant.main(["-f", scriptFile.absolutePath] as String[])								
-				}				
+				else {   
+					callPluginOrGrailsScript(scriptName)
+   				}				
 			}
 			catch(Throwable t) {
 				println "Error executing script ${scriptFile}: ${t.message}"
@@ -132,8 +109,76 @@ Grails home is set to: ${grailsHome}
 	static ENV_ARGS = ["dev", "prod", "test"] 
 	private static isEnvironmentArgs(env) {
 		ENV_ARGS.contains(env)
-	}        
-	         
+	}     
+	 
+	private static callPluginOrGrailsScript(scriptName) {
+
+	   def potentialScripts = []
+		def scriptFile = new File("${grailsHome}/scripts/${scriptName}.groovy") 
+		if(scriptFile.exists()) {
+			potentialScripts << scriptFile
+		}
+		def pluginScripts = RESOLVER.getResources("plugins/**/scripts/${scriptName}.groovy")
+		potentialScripts += pluginScripts.collect { it.file }
+		
+		if(potentialScripts.size()>0) {
+            if(potentialScripts.size() == 1) {
+				println "Running script ${scriptFile.absolutePath}"
+				Gant.main(["-f", potentialScripts[0].absolutePath] as String[])																		
+			}                                      
+			else {
+				println "Multiple options please select:"
+				potentialScripts.eachWithIndex { f, i ->
+					println "[${i+1}] $f "
+				}                     
+				ANT.input(message: "Enter #:", addproperty:"grails.script.number")
+				def number = ANT.antProject.properties."grails.script.number".toInteger()
+				println "Running script ${potentialScripts[number-1].absolutePath}"				
+				Gant.main(["-f", potentialScripts[number-1].absolutePath] as String[])																						
+			}
+		}
+		else {
+			println "Script $scriptName not found."
+		}    		
+	}
+	
+	private static processSystemArguments(allArgs) {
+		def lastMatch = null
+		allArgs.eachMatch( /-D(.+?)=(.+?)\s+?/ ) { match ->
+		   System.setProperty(match[1].trim(),match[2].trim())
+		   lastMatch = match[0]
+		}
+		
+		if(lastMatch) {
+		   def i = allArgs.lastIndexOf(lastMatch)+lastMatch.size()
+		   allArgs = allArgs[i..-1]
+		}
+		return allArgs
+	}   
+	   
+	private static establishBaseDir() {
+        def baseDir = new File("")
+        if(!new File(baseDir, "grails-app").exists()) {
+        	
+        	// be careful with this next step...
+        	// baseDir.parentFile will return null since baseDir is new File("")
+        	// baseDir.absoluteFile needs to happen before retrieving the parentFile
+    		def parentDir = baseDir.absoluteFile.parentFile
+    		
+    		// keep moving up one directory until we find 
+    		// one that contains the grails-app dir or get 
+    		// to the top of the filesystem...
+    		while(parentDir != null && !new File(parentDir, "grails-app").exists()) {
+    			parentDir = parentDir.parentFile
+    		}
+        	
+    		if(parentDir != null) {
+    			// if we found the project root, use it
+    			baseDir = parentDir
+    		}
+        }
+		return baseDir
+	}      
 	private static setDefaultEnvironment(args) {
 		switch(args.toLowerCase()) {
 			case "war":
