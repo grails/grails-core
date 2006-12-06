@@ -24,7 +24,7 @@
 		<dependency org="servletapi" name="servletapi" rev="2.4"/>			
 		<dependency org="jspapi" name="jsp-api" rev="2.0"/>	 		
 		<dependency org="jakarta" name="oro" rev="2.0.8"/> 		            
-		<dependency org="org.springframework" name="spring" rev="1.2.8"/> 		            		
+		<dependency org="org.springframework" name="spring" rev="2.0"/> 		            		
 		<dependency org="cglib" name="cglib-nodep" rev="2.1_3"/> 		            				
 		<dependency org="hsqldb" name="hsqldb" rev="1.8.0.5"/>		
 		<dependency org="ehcache" name="ehcache" rev="1.1"/>				
