@@ -168,8 +168,10 @@ class ControllersGrailsPlugin {
 			                                                
 			controllers.each { c ->
 				lastFilterMapping[lastFilterMapping.size()-1] + {
-					'filter-name'(reloadFilter)
-					'url-pattern'("/${c}/*")
+					'filter-mapping' {						
+						'filter-name'(reloadFilter)
+						'url-pattern'("/${c}/*")						
+					}
 				}			
 			}
 			// now find the GSP servlet and allow viewing generated source in
