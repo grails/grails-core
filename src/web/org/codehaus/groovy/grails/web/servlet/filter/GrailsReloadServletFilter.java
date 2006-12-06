@@ -46,7 +46,7 @@ import org.codehaus.groovy.grails.commons.GrailsServiceClass;
 import org.codehaus.groovy.grails.commons.GrailsTagLibClass;
 import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator;
 import org.codehaus.groovy.grails.commons.spring.GrailsWebApplicationContext;
-import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
+import org.codehaus.groovy.grails.plugins.*;
 import org.codehaus.groovy.grails.scaffolding.GrailsTemplateGenerator;
 import org.codehaus.groovy.grails.scaffolding.ScaffoldDomain;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
@@ -90,6 +90,9 @@ public class GrailsReloadServletFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, FilterChain filterChain) throws ServletException, IOException {
       context = (GrailsWebApplicationContext)getServletContext().getAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT);
 
+      if(LOG.isDebugEnabled()) {
+	      LOG.debug("Executing Grails reload filter...");
+      }
       if(context == null) {
           filterChain.doFilter(httpServletRequest,httpServletResponse);
           return;
@@ -147,13 +150,16 @@ public class GrailsReloadServletFilter extends OncePerRequestFilter {
              LOG.error("Error loading resource copier. Save/reload disabled: " + e.getMessage(), e);
           }
         }
+	if(LOG.isDebugEnabled()) {
+	      LOG.debug("Running copy script...");
+	}	
         if(copyScript != null) {
             copyScript.copyViews();
         } 
 
         
         if(manager == null) {
-        	manager = (GrailsPluginManager)getServletContext().getAttribute(GrailsApplicationAttributes.PLUGIN_MANAGER);
+        	manager = PluginManagerHolder.getPluginManager();
         }
         if(manager != null) {
         	if(LOG.isDebugEnabled())
