@@ -88,7 +88,7 @@ public interface GrailsPlugin extends ApplicationContextAware {
 
 	/**
      * <p>This method is called to allow the plugin to add {@link org.springframework.beans.factory.config.BeanDefinition}s
-     * to the {@link BeanDefinitionRegistry}.</p>
+     * to the {@link org.springframework.beans.factory.config.BeanDefinitionRegistry}.</p>
      *
      * @param applicationContext
      */
