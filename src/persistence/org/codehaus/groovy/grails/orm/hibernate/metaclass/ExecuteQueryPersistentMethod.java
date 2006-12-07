@@ -22,13 +22,13 @@ import java.util.regex.Pattern;
 import org.hibernate.SessionFactory;
 
 /**
- * Allows the executing of abituary HQL queries {@link http://www.hibernate.org/hib_docs/reference/en/html/queryhql.html}
- * 
+ * Allows the executing of abituary HQL queries 
  * 
  * eg. Account.executeQuery( "select distinct a.number from Account a where a.branch = ?", 'London' );
  * 
  * @author Graeme Rocher
  * @since 30-Apr-2006
+ * @see <a href="http://www.hibernate.org/hib_docs/reference/en/html/queryhql.html">http://www.hibernate.org/hib_docs/reference/en/html/queryhql.html</a>
  */
 public class ExecuteQueryPersistentMethod extends
 		AbstractStaticPersistentMethod {
