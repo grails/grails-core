@@ -230,7 +230,7 @@ public interface GrailsApplication extends ApplicationContextAware {
 
     /**
      * Adds a new task class to the grails application
-     * @param domainClass The task class to add
+     * @param loadedClass The task class to add
      * @return The GrailsDomainClass instance or null if the class is abstract and was not added
      */
 	public GrailsTaskClass addTaskClass(Class loadedClass);
