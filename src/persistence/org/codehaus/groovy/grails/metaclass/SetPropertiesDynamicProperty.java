@@ -19,7 +19,7 @@ import groovy.lang.MissingPropertyException;
 import ognl.NoSuchPropertyException;
 import ognl.Ognl;
 import ognl.OgnlException;
-import org.apache.commons.collections.BeanMap;
+import org.apache.commons.beanutils.BeanMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.metaclass.AbstractDynamicProperty;
@@ -49,7 +49,7 @@ public class SetPropertiesDynamicProperty extends AbstractDynamicProperty {
 	}
 
 	/**
-	 * @return A org.apache.commons.collections.BeanMap instance
+	 * @return A org.apache.commons.beanutils.BeanMap instance
 	 */
 	public Object get(Object object) {				
 		return new BeanMap(object);

@@ -5,6 +5,7 @@
         <!--<dependency org="apache" name="ant" rev="1.6.2"/>-->        
 		<dependency org="apache" name="commons-io" rev="1.2"/>
         <dependency org="apache" name="commons-cli" rev="1.0"/>
+        <dependency org="apache" name="commons-beanutils" rev="1.7.0"/>
         <dependency org="apache" name="commons-collections" rev="3.2"/>
         <dependency org="apache" name="commons-dbcp" rev="1.2.1"/>
         <dependency org="apache" name="commons-el" rev="1.0"/> 

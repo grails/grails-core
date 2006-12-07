@@ -58,5 +58,6 @@
 	<classpathentry kind="var" path="GRAILS_HOME/lib/gant-0.2.2-SNAPSHOT.jar"/>
 	<classpathentry kind="var" path="GRAILS_HOME/lib/spring-2.0.jar" sourcepath="/SPRING2_HOME/src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/3.8.1"/>
+	<classpathentry kind="lib" path="lib/commons-beanutils-1.7.0.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

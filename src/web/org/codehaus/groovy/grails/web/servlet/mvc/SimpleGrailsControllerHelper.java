@@ -20,7 +20,7 @@ import groovy.lang.GroovyObject;
 import groovy.lang.MissingPropertyException;
 import groovy.lang.ProxyMetaClass;
 import groovy.util.Proxy;
-import org.apache.commons.collections.BeanMap;
+import org.apache.commons.beanutils.BeanMap;
 import org.apache.commons.collections.map.CompositeMap;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.WordUtils;

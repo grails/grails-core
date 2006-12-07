@@ -20,7 +20,7 @@ import grails.util.OpenRicoBuilder;
 import groovy.lang.*;
 import groovy.text.Template;
 import groovy.xml.StreamingMarkupBuilder;
-import org.apache.commons.collections.BeanMap;
+import org.apache.commons.beanutils.BeanMap;
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.grails.commons.GrailsControllerClass;
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;

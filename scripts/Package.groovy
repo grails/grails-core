@@ -101,6 +101,7 @@ DEPENDENCIES = [
 "ognl-*.jar",
 "hsqldb-*.jar",
 "commons-collections-*.jar",
+"commons-beanutils-*.jar",
 "commons-pool-*.jar",
 "commons-dbcp-*.jar",
 "commons-cli-*.jar",
