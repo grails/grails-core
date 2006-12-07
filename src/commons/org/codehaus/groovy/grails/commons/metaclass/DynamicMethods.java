@@ -112,7 +112,7 @@ public interface DynamicMethods {
 	 * @param object The instance to invoke on
 	 * @param methodName The name of the method
 	 * @param arguments The arguments of the method
-	 * @param callback The callback object
+	 * @param callBack The callback object
 	 * 
 	 * @return The method return value
 	 */	
