@@ -46,7 +46,7 @@ public interface ResourceCopier {
     void setBasedir(String basedir);
 
     /**
-     * * The destdir to copy destdir (defaults to "./tmp/war")
+     * The destdir to copy destdir (defaults to "&#46;/tmp/war")
      * @param destdir
      */
     void setDestdir(String destdir);
