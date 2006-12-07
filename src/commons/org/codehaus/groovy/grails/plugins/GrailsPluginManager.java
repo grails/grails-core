@@ -134,7 +134,7 @@ public interface GrailsPluginManager extends ApplicationContextAware {
 	 * @param pluginName The name of he plugin
 	 * @param springConfig The runtime spring config instance
 	 */
-	public abstract void doRuntimeConfiguration(String string, RuntimeSpringConfiguration springConfig);
+	public abstract void doRuntimeConfiguration(String pluginName, RuntimeSpringConfiguration springConfig);
 
 	/**
 	 * Checks all the plugins to see whether they have any changes
