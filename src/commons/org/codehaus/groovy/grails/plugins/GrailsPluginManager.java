@@ -98,7 +98,7 @@ public interface GrailsPluginManager extends ApplicationContextAware {
 	public abstract void doWebDescriptor(Resource descriptor, Writer target);
 	
 	/**
-	 * @see doWebDescriptor(Resource, Writer target)
+	 * @see #doWebDescriptor(Resource, Writer)
 	 * 
 	 * @param descriptor The File of the descriptor
 	 * @param target The target to write the changes to
