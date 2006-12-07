@@ -6,7 +6,7 @@ import org.springframework.core.Ordered;
  * <p>Convenience adapter implementation of the Spring {@link Ordered} interface.</p>
  *
  * @author Steven Devijver
- * @see 0.2
+ * @since 0.2
  */
 public abstract class OrderedAdapter implements Ordered {
     private int order = Integer.MAX_VALUE;
