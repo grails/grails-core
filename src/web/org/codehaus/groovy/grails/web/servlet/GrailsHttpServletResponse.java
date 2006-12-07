@@ -26,17 +26,33 @@ import java.util.Locale;
  * <p>Wrapper class for HttpServletResponse that allows setting the content type while getting the writer.
  * 
  * @author Steven Devijver
- * @since Jul 5, 2005
+ * @author Graeme Rocher
+ * 
+ * @since 0.1
+ * 
+ * Created - Jul 5, 2005
  */
 public class GrailsHttpServletResponse implements HttpServletResponse {
 
 	private HttpServletResponse delegate = null;
 	private boolean contentTypeSet;
+	private boolean redirected;
 	
 	public GrailsHttpServletResponse(HttpServletResponse delegate) {
 		super();
 		this.delegate = delegate;
 	}
+
+	
+	/**
+	 * Returns whether the request has been redirected
+	 * 
+	 * @return the redirected True if it has been
+	 */
+	public boolean isRedirected() {
+		return redirected;
+	}
+
 
 	public void addCookie(Cookie cookie) {
 		this.delegate.addCookie(cookie);
@@ -73,6 +89,7 @@ public class GrailsHttpServletResponse implements HttpServletResponse {
 	}
 
 	public void sendRedirect(String url) throws IOException {
+		this.redirected = true;
 		this.delegate.sendRedirect(url);
 	}
 

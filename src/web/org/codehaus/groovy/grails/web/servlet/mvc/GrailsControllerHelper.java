@@ -20,6 +20,7 @@ import groovy.lang.GroovyObject;
 import org.codehaus.groovy.grails.commons.GrailsControllerClass;
 import org.codehaus.groovy.grails.scaffolding.GrailsScaffolder;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
+import org.codehaus.groovy.grails.web.servlet.GrailsHttpServletResponse;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
@@ -74,7 +75,7 @@ public interface GrailsControllerHelper {
 	 * @return A ModelAndView instance
 	 */
 	public abstract ModelAndView handleURI(String uri,
-			HttpServletRequest request, HttpServletResponse response);
+			HttpServletRequest request, GrailsHttpServletResponse response);
 
 	/**
 	 * Handles a Controller action
@@ -122,7 +123,7 @@ public interface GrailsControllerHelper {
 	 * @return A ModelAndView instance
 	 */
 	public abstract ModelAndView handleURI(String uri,
-			HttpServletRequest request, HttpServletResponse response, Map params);
+			HttpServletRequest request, GrailsHttpServletResponse response, Map params);
 
 
     /**

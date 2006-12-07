@@ -37,6 +37,7 @@ import org.codehaus.groovy.grails.web.metaclass.GetParamsDynamicProperty;
 import org.codehaus.groovy.grails.web.servlet.DefaultGrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.FlashScope;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
+import org.codehaus.groovy.grails.web.servlet.GrailsHttpServletResponse;
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.NoClosurePropertyForURIException;
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.NoViewNameDefinedException;
@@ -122,7 +123,7 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
     /* (non-Javadoc)
       * @see org.codehaus.groovy.grails.web.servlet.mvc.GrailsControllerHelper#handleURI(java.lang.String, javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
       */
-    public ModelAndView handleURI(String uri, HttpServletRequest request, HttpServletResponse response) {
+    public ModelAndView handleURI(String uri, HttpServletRequest request, GrailsHttpServletResponse response) {
         return handleURI(uri,request,response,Collections.EMPTY_MAP);
     }
 
@@ -148,7 +149,7 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
     /* (non-Javadoc)
       * @see org.codehaus.groovy.grails.web.servlet.mvc.GrailsControllerHelper#handleURI(java.lang.String, javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, java.util.Map)
       */
-    public ModelAndView handleURI(String uri, HttpServletRequest request, HttpServletResponse response, Map params) {
+    public ModelAndView handleURI(String uri, HttpServletRequest request, GrailsHttpServletResponse response, Map params) {
         if(uri == null)
             throw new IllegalArgumentException("Controller URI [" + uri + "] cannot be null!");
 
@@ -311,8 +312,12 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
 
 
             // Step 8: determine return value type and handle accordingly
-            ModelAndView mv = handleActionResponse(controller,returnValue,actionName,viewName);
+            initChainModel(controller);
+            if(response.isRedirected()) {
+            		return null;
+            }
             
+            ModelAndView mv = handleActionResponse(controller,returnValue,actionName,viewName);
             // Step 9: Check if there is after interceptor
             if(controllerClass.isInterceptedAfter(controller,actionName)) {
             	Closure afterInterceptor = controllerClass.getAfterInterceptor(controller);
@@ -388,13 +393,6 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
         // reset the metaclass
         ModelAndView explicityModelAndView = (ModelAndView)controller.getProperty(ControllerDynamicMethods.MODEL_AND_VIEW_PROPERTY);
         Boolean renderView = (Boolean)controller.getProperty(ControllerDynamicMethods.RENDER_VIEW_PROPERTY);
-        FlashScope fs = this.grailsAttributes.getFlashScope((HttpServletRequest)controller.getProperty(ControllerDynamicMethods.REQUEST_PROPERTY));
-        if(fs.containsKey(ChainDynamicMethod.PROPERTY_CHAIN_MODEL)) {
-            this.chainModel = (Map)fs.get(ChainDynamicMethod.PROPERTY_CHAIN_MODEL);
-            if(this.chainModel == null)
-                this.chainModel = Collections.EMPTY_MAP;
-        }
-
 
         if(renderView == null) renderView = Boolean.TRUE;
 
@@ -458,5 +456,14 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
             return new ModelAndView(viewName, model);
         }
     }
+
+	private void initChainModel(GroovyObject controller) {
+		FlashScope fs = this.grailsAttributes.getFlashScope((HttpServletRequest)controller.getProperty(ControllerDynamicMethods.REQUEST_PROPERTY));
+        if(fs.containsKey(ChainDynamicMethod.PROPERTY_CHAIN_MODEL)) {
+            this.chainModel = (Map)fs.get(ChainDynamicMethod.PROPERTY_CHAIN_MODEL);
+            if(this.chainModel == null)
+                this.chainModel = Collections.EMPTY_MAP;
+        }
+	}
 
 }

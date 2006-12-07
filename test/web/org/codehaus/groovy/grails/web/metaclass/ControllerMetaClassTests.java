@@ -14,6 +14,7 @@ import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.metaclass.ProxyMetaClass;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
+import org.codehaus.groovy.grails.web.servlet.GrailsHttpServletResponse;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsControllerHelper;
 import org.codehaus.groovy.grails.web.servlet.mvc.SimpleGrailsControllerHelper;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -36,8 +37,8 @@ public class ControllerMetaClassTests extends TestCase {
          GroovyClassLoader gcl = new GroovyClassLoader();
          MockHttpServletRequest request = new MockHttpServletRequest();
          request.setCharacterEncoding("utf-8");
-         MockHttpServletResponse response = new MockHttpServletResponse();
-
+        GrailsHttpServletResponse response = new GrailsHttpServletResponse(new MockHttpServletResponse());
+         
          request.addParameter("testParam", "testValue");
 
          Class groovyClass = gcl.parseClass( "class TestController {\n" +
@@ -72,7 +73,7 @@ public class ControllerMetaClassTests extends TestCase {
         GroovyClassLoader gcl = new GroovyClassLoader();
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.setCharacterEncoding("utf-8");
-        MockHttpServletResponse response = new MockHttpServletResponse();
+        GrailsHttpServletResponse response = new GrailsHttpServletResponse(new MockHttpServletResponse());
 
 
         request.addParameter("testParam", "testValue");
@@ -110,7 +111,7 @@ public class ControllerMetaClassTests extends TestCase {
         // now redirection to another controller
         try {
             request = new MockHttpServletRequest();
-            response = new MockHttpServletResponse();
+            response = new GrailsHttpServletResponse(new MockHttpServletResponse());
             request.setCharacterEncoding("utf-8");
 
             helper2.handleURI("/second/list",request,response);
@@ -153,7 +154,7 @@ public class ControllerMetaClassTests extends TestCase {
     public void testLogDynamicProperty() throws Exception {
         GroovyClassLoader gcl = new GroovyClassLoader();
         MockHttpServletRequest request = new MockHttpServletRequest();
-        MockHttpServletResponse response = new MockHttpServletResponse();
+        GrailsHttpServletResponse response = new GrailsHttpServletResponse(new MockHttpServletResponse());
 
         Class groovyClass = gcl.parseClass( "class TestController {\n" +
                         "def list = {\n" +
