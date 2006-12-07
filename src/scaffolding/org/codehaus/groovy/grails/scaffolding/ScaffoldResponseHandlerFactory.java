@@ -25,7 +25,7 @@ public interface ScaffoldResponseHandlerFactory {
 	/**
 	 * Retrieves a scaffold response handler for the specified uri
 	 * 
-	 * @param id
+	 * @param uri
 	 * @return
 	 */
 	ScaffoldResponseHandler getScaffoldResponseHandler(String uri);
