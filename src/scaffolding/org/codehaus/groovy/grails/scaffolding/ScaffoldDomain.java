@@ -66,7 +66,7 @@ public interface ScaffoldDomain {
 	 * 
 	 * @param max The maximum number to return (Set to -1 for no maximum)
 	 * @param offset The offset position (Set to -1 for no offset)
-	 * @param order either "ASC" for ascending or "DESC" for descending
+	 * @param sort The property name to sort by 
 	 * 
 	 * @return All persistent instances up to the maximum, offset by the specified value
 	 */
@@ -142,7 +142,7 @@ public interface ScaffoldDomain {
 	/**
 	 * Updates an existing instance
 	 * 
-	 * @param id
+	 * @param callback 
 	 * @param domainObject
 	 * @return The updated instance
 	 */
