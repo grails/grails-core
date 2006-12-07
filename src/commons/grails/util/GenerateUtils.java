@@ -37,7 +37,7 @@ import org.springframework.mock.web.MockServletContext;
  */
 public class GenerateUtils {
 
-    private static Log LOG = LogFactory.getLog(RunTests.class);
+    private static Log LOG = LogFactory.getLog(GenerateUtils.class);
     private static final String VIEWS = "view";
     private static final String CONTROLLER = "controller";
 	private static final String ALL = "all";
