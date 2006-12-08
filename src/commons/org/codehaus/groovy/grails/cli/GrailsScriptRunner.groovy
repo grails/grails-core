@@ -80,7 +80,6 @@ Grails home is set to: ${grailsHome}
 				scriptName = GCU.getNameFromScript(args[0].trim())
 			}                                
 			println "Environment set to ${System.getProperty('grails.env')}"
-
 			def scriptFile = new File("${baseDir.absolutePath}/scripts/${scriptName}.groovy")
 
 			System.setProperty("base.dir", baseDir.absolutePath)
@@ -113,18 +112,18 @@ Grails home is set to: ${grailsHome}
 	}     
 	 
 	private static callPluginOrGrailsScript(scriptName) {
-
 	   def potentialScripts = []
 		def scriptFile = new File("${grailsHome}/scripts/${scriptName}.groovy") 
 		if(scriptFile.exists()) {
 			potentialScripts << scriptFile
 		}                                                          
 		try {
-			def pluginScripts = RESOLVER.getResources("file:${baseDir}/plugins/**/scripts/${scriptName}.groovy")
+			def pluginScripts = RESOLVER.getResources("file:${baseDir.absolutePath}/plugins/**/scripts/${scriptName}.groovy")
+			println "Plugin scripts  $pluginScripts"
 			potentialScripts += pluginScripts.collect { it.file }			
 		}
 		catch(Exception e) {
-			// ignore as we don't care if they aren't there
+			println "No plugin scripts found"
 		} 
 		if(potentialScripts.size()>0) {
             if(potentialScripts.size() == 1) {
