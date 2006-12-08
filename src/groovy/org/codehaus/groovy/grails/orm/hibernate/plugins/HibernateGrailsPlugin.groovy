@@ -113,7 +113,7 @@ class HibernateGrailsPlugin {
 			}
 	}
 	
-	def doWithApplicationContext = {
+	def doWithApplicationContext = { ctx ->
 			
 	}
 	

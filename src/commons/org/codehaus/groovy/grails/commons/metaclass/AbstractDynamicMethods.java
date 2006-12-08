@@ -39,11 +39,11 @@ import java.util.*;
  */
 public abstract class AbstractDynamicMethods implements DynamicMethods {
 
-	private Collection dynamicMethodInvocations = null;
-	private Collection staticMethodInvocations = null;
-	private Collection dynamicConstructors = null;
-	private Map dynamicProperties = null;
-	private Class clazz = null;
+	protected Collection dynamicMethodInvocations = null;
+	protected Collection staticMethodInvocations = null;
+	protected Collection dynamicConstructors = null;
+	protected Map dynamicProperties = null;
+	protected Class clazz = null;
 	
 	private static final Log LOG = LogFactory.getLog(AbstractDynamicMethods.class);
 	

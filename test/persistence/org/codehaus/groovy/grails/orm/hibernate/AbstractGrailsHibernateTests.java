@@ -93,7 +93,7 @@ public abstract class AbstractGrailsHibernateTests extends TestCase {
         GrailsRuntimeConfigurator grc = new GrailsRuntimeConfigurator(ga, mc);
         this.applicationContext = grc.configureDomainOnly();
         this.sessionFactory = (SessionFactory)this.applicationContext.getBean(GrailsRuntimeConfigurator.SESSION_FACTORY_BEAN);
-        GrailsDomainConfigurationUtil.configureDynamicMethods(sessionFactory,ga);
+        GrailsDomainConfigurationUtil.configureDynamicMethods(applicationContext,ga);
 
         if(!TransactionSynchronizationManager.hasResource(this.sessionFactory)) {
             this.session = this.sessionFactory.openSession();

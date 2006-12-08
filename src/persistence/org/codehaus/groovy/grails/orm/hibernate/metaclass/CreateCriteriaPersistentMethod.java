@@ -32,7 +32,7 @@ public class CreateCriteriaPersistentMethod extends
 		AbstractStaticPersistentMethod {
 
 	private static final String METHOD_PATTERN = "^createCriteria$";
-	private static final String METHOD_SIGNATURE = "get";
+	private static final String METHOD_SIGNATURE = "createCriteria";
 	
 	public CreateCriteriaPersistentMethod(SessionFactory sessionFactory, ClassLoader classLoader) {
 		super(sessionFactory, classLoader, Pattern.compile(METHOD_PATTERN));

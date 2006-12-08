@@ -390,7 +390,7 @@ public class GrailsRuntimeConfigurator {
 		
 		SessionFactory sf = (SessionFactory)context.getBean(SESSION_FACTORY_BEAN);
 		context.registerBeanDefinition(SESSION_FACTORY_BEAN,sessionFactoryBean.getBeanDefinition());
-		GrailsDomainConfigurationUtil.configureDynamicMethods(sf,app);
+		GrailsDomainConfigurationUtil.configureDynamicMethods(context,app);
 		
 		// update transaction manager reference
 		if(context.containsBean(TRANSACTION_MANAGER_BEAN)) {

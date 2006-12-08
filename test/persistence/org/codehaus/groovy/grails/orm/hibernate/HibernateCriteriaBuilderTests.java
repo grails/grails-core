@@ -10,6 +10,7 @@ import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.DefaultGrailsDomainConfiguration;
+import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsDomainConfigurationUtil;
 import org.codehaus.groovy.runtime.InvokerInvocationException;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -80,6 +81,7 @@ public class HibernateCriteriaBuilderTests extends
         //originalClassLoader = Thread.currentThread().getContextClassLoader();
         Thread.currentThread().setContextClassLoader(this.cl);
         this.sessionFactory = config.buildSessionFactory();
+        GrailsDomainConfigurationUtil.configureDynamicMethods(sessionFactory, grailsApplication);
 
 
 
@@ -91,7 +93,7 @@ public class HibernateCriteriaBuilderTests extends
 
 
         super.onSetUp();
-    }
+    }		
 
     private Proxy parse(String groovy,String testClassName) throws Exception {
 

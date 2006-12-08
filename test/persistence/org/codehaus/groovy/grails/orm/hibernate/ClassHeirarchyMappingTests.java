@@ -22,6 +22,7 @@ import java.util.Properties;
 
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.DefaultGrailsDomainConfiguration;
+import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsDomainConfigurationUtil;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.springframework.beans.BeanUtils;
@@ -74,7 +75,7 @@ public class ClassHeirarchyMappingTests extends TestCase {
         Thread.currentThread().setContextClassLoader(gcl);
         this.sessionFactory = config.buildSessionFactory();
 
-
+        GrailsDomainConfigurationUtil.configureDynamicMethods(sessionFactory, grailsApplication);
 
         if(!TransactionSynchronizationManager.hasResource(this.sessionFactory)) {
             this.hibSession = this.sessionFactory.openSession();

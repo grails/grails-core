@@ -18,13 +18,9 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-//import org.apache.commons.logging.Log;
-//import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
-import org.hibernate.HibernateException;
 import org.hibernate.MappingException;
-import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
 
 /**
@@ -44,8 +40,6 @@ public class DefaultGrailsDomainConfiguration extends Configuration implements G
     private GrailsApplication grailsApplication;
     private Set domainClasses;
     private boolean configLocked;
-    private boolean configureDynamicMethods = true;
-
     /**
      *
      */
@@ -77,29 +71,6 @@ public class DefaultGrailsDomainConfiguration extends Configuration implements G
         }
     }
 
-
-
-
-    /* (non-Javadoc)
-      * @see org.hibernate.cfg.Configuration#buildSessionFactory()
-      */
-    public SessionFactory buildSessionFactory() throws HibernateException {
-
-        SessionFactory sessionFactory =  super.buildSessionFactory();
-        if(configureDynamicMethods) {
-            configureDynamicMethods(sessionFactory);
-        }
-        return sessionFactory;
-    }
-
-    public void configureDynamicMethods(SessionFactory sf) {
-        GrailsDomainConfigurationUtil.configureDynamicMethods(sf,this.grailsApplication);
-    }
-
-    public void setConfigureDynamicMethods(boolean shouldConfigure) {
-        this.configureDynamicMethods = shouldConfigure;
-    }
-
     /**
      *  Overrides the default behaviour to including binding of Grails
      *  domain classes
@@ -122,5 +93,4 @@ public class DefaultGrailsDomainConfiguration extends Configuration implements G
         super.secondPassCompile();
         this.configLocked = true;
     }
-
 }

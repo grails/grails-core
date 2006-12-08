@@ -18,10 +18,14 @@ package org.codehaus.groovy.grails.orm.hibernate;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.DefaultGrailsDomainConfiguration;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsDomainConfiguration;
+import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsDomainConfigurationUtil;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
 import org.springframework.orm.hibernate3.LocalSessionFactoryBean;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 
 
 /**
@@ -31,12 +35,13 @@ import org.springframework.beans.BeanUtils;
  * @since 07-Jul-2005
  */
 public class ConfigurableLocalSessionFactoryBean extends
-		LocalSessionFactoryBean {
+		LocalSessionFactoryBean implements ApplicationContextAware {
 
 	
 	private ClassLoader classLoader = null;
 	private GrailsApplication grailsApplication;
     private Class configClass = DefaultGrailsDomainConfiguration.class;
+	private ApplicationContext applicationContext;
 
     public void setConfigClass(Class configClass) {
         this.configClass = configClass;
@@ -69,9 +74,6 @@ public class ConfigurableLocalSessionFactoryBean extends
 	protected Configuration newConfiguration() {
 		GrailsDomainConfiguration config = (GrailsDomainConfiguration)BeanUtils.instantiateClass(configClass);
 		config.setGrailsApplication(grailsApplication);
-        // we set this to false as Spring might wrap the session factory in a transactional proxy
-        // if configured as such
-        config.setConfigureDynamicMethods(false);
         return (Configuration)config;
 	}
 
@@ -88,17 +90,17 @@ public class ConfigurableLocalSessionFactoryBean extends
 		}
         super.afterPropertiesSet();
 
-        SessionFactory sf = (SessionFactory)getObject();
-        if(sf != null) {
-            Configuration c = getConfiguration();
-            if(c instanceof GrailsDomainConfiguration) {
-                GrailsDomainConfiguration gc = (GrailsDomainConfiguration)c;
-                gc.configureDynamicMethods(sf);
-            }
+        if(this.applicationContext!= null) {
+        	GrailsDomainConfigurationUtil.configureDynamicMethods(applicationContext,this.grailsApplication);
         }
+                
         if (originalClassLoader != null) {
 			Thread.currentThread().setContextClassLoader(originalClassLoader);
 		}
+	}
+
+	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+		this.applicationContext = applicationContext;
 	}
 }
 

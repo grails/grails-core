@@ -109,7 +109,7 @@ public abstract class AbstractGrailsIntegrationTests extends TestCase {
 		
 		if(this.applicationContext.containsBean(GrailsRuntimeConfigurator.SESSION_FACTORY_BEAN)) {
 	        this.sessionFactory = (SessionFactory)this.applicationContext.getBean(GrailsRuntimeConfigurator.SESSION_FACTORY_BEAN);
-	        GrailsDomainConfigurationUtil.configureDynamicMethods(sessionFactory,ga);
+	        GrailsDomainConfigurationUtil.configureDynamicMethods(applicationContext,ga);
 
 	        if(!TransactionSynchronizationManager.hasResource(this.sessionFactory)) {
 	            this.session = this.sessionFactory.openSession();

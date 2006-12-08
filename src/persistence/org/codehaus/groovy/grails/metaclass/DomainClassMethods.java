@@ -21,11 +21,14 @@ import org.codehaus.groovy.grails.commons.metaclass.CreateDynamicMethod;
 import org.codehaus.groovy.grails.commons.metaclass.WeakGenericDynamicProperty;
 import org.codehaus.groovy.grails.commons.metaclass.AbstractDynamicMethodInvocation;
 import org.codehaus.groovy.grails.orm.hibernate.metaclass.*;
+import org.codehaus.groovy.grails.orm.support.TransactionManagerAware;
 import org.codehaus.groovy.grails.validation.metaclass.ConstraintsDynamicProperty;
 import org.hibernate.SessionFactory;
+import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.validation.Errors;
 
 import java.beans.IntrospectionException;
+import java.util.Iterator;
 import java.util.regex.Pattern;
 
 /**
@@ -34,7 +37,7 @@ import java.util.regex.Pattern;
  * @author Steven Devijver
  * @since Aug 7, 2005
  */
-public class DomainClassMethods extends AbstractDynamicMethods {
+public class DomainClassMethods extends AbstractDynamicMethods implements TransactionManagerAware {
 
     public static final String HAS_ERRORS_METHOD = "hasErrors";
     public static final Pattern HAS_ERRORS_METHOD_PATTERN = Pattern.compile('^'+HAS_ERRORS_METHOD+'$');
@@ -83,6 +86,8 @@ public class DomainClassMethods extends AbstractDynamicMethods {
         addStaticMethodInvocation(new ExecuteQueryPersistentMethod(sessionFactory, classLoader));
         addStaticMethodInvocation(new ExecuteUpdatePersistentMethod(sessionFactory, classLoader));
         addStaticMethodInvocation(new CreateDynamicMethod());
+        addStaticMethodInvocation(new WithCriteriaDynamicPersistentMethod(sessionFactory,classLoader));
+        addStaticMethodInvocation(new WithTransactionPersistentMethod(sessionFactory,classLoader));
 
         // add dynamic properties
         addDynamicProperty( new SetPropertiesDynamicProperty() );
@@ -90,5 +95,14 @@ public class DomainClassMethods extends AbstractDynamicMethods {
         addDynamicProperty( new WeakGenericDynamicProperty(ERRORS_PROPERTY, Errors.class,null,false) );
 
     }
+
+	public void setTransactionManager(PlatformTransactionManager transactionManager) {
+		for (Iterator i = staticMethodInvocations.iterator(); i.hasNext();) {
+			Object method = i.next();
+			if(method instanceof TransactionManagerAware) {
+				((TransactionManagerAware)method).setTransactionManager(transactionManager);
+			}
+		}
+	}
 
 }

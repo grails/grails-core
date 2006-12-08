@@ -15,10 +15,18 @@
  */ 
 package org.codehaus.groovy.grails.commons.spring;
 
+import groovy.lang.GroovyObject;
+import groovy.lang.MetaClass;
+
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 
+import org.codehaus.groovy.grails.orm.support.TransactionManagerPostProcessor;
+import org.codehaus.groovy.runtime.InvokerHelper;
+import org.springframework.beans.BeanWrapper;
+import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.StaticApplicationContext;
@@ -42,19 +50,28 @@ import org.springframework.web.context.support.ServletContextResourcePatternReso
  *
  */
 public class GrailsWebApplicationContext extends StaticApplicationContext
-		implements ConfigurableWebApplicationContext {
+		implements ConfigurableWebApplicationContext, GroovyObject {
 
 	private ServletContext servletContext;
 	private String namespace;
 	private ThemeSource themeSource;
 	private ServletConfig servletConfig;
+	private MetaClass metaClass;
+	private BeanWrapper ctxBean = new BeanWrapperImpl(this);
 
 	public GrailsWebApplicationContext() throws BeansException {
 		super();
+		initialise();
 	}
 
 	public GrailsWebApplicationContext(ApplicationContext parent) throws BeansException {
-		super(parent);
+		super(parent);	
+		initialise();
+	}
+
+	private void initialise() {
+		this.metaClass = InvokerHelper.getMetaClass(this);
+		addBeanFactoryPostProcessor(new TransactionManagerPostProcessor());
 	}
 
 	/**
@@ -122,5 +139,36 @@ public class GrailsWebApplicationContext extends StaticApplicationContext
 
 	public void setServletConfig(ServletConfig servletConfig) {
 		this.servletConfig = servletConfig;
+	}
+
+	public MetaClass getMetaClass() {
+		return this.metaClass;
+	}
+
+	public Object getProperty(String property) {
+		if(containsBean(property)) {
+			return getBean(property);
+		}
+		else if(ctxBean.isReadableProperty(property)) {
+			return ctxBean.getPropertyValue(property);
+		}
+		return null;
+	}
+
+	public Object invokeMethod(String name, Object args) {
+		return metaClass.invokeMethod(this, name, args);
+	}
+
+	public void setMetaClass(MetaClass metaClass) {
+		this.metaClass = metaClass;
+	}
+
+	public void setProperty(String property, Object newValue) {
+		if(newValue instanceof BeanDefinition) {
+			registerBeanDefinition(property, (BeanDefinition)newValue);
+		}
+		else {
+			metaClass.setProperty(this, property, newValue);
+		}
 	}
 }

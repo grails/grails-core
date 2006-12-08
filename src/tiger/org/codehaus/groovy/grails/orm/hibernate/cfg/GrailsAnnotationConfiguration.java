@@ -14,18 +14,18 @@
  */
 package org.codehaus.groovy.grails.orm.hibernate.cfg;
 
-import org.hibernate.cfg.AnnotationConfiguration;
-import org.hibernate.SessionFactory;
-import org.hibernate.HibernateException;
-import org.hibernate.MappingException;
-import org.codehaus.groovy.grails.commons.GrailsDomainClass;
-import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
-import java.util.Set;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Set;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.commons.GrailsDomainClass;
+import org.hibernate.HibernateException;
+import org.hibernate.MappingException;
+import org.hibernate.SessionFactory;
+import org.hibernate.cfg.AnnotationConfiguration;
 
 /**
  * Allows configuring Grails' hibernate support to work in conjuntion with Hibernate's annotation
@@ -43,7 +43,6 @@ public class GrailsAnnotationConfiguration  extends AnnotationConfiguration impl
     private GrailsApplication grailsApplication;
     private Set domainClasses;
     private boolean configLocked;
-    private boolean configureDynamicMethods = true;
 
     /**
      *
@@ -92,18 +91,7 @@ public class GrailsAnnotationConfiguration  extends AnnotationConfiguration impl
         }             
 
         SessionFactory sessionFactory =  super.buildSessionFactory();
-        if(configureDynamicMethods) {
-            configureDynamicMethods(sessionFactory);
-        }
         return sessionFactory;
-    }
-
-    public void configureDynamicMethods(SessionFactory sf) {
-        GrailsDomainConfigurationUtil.configureDynamicMethods(sf,this.grailsApplication);
-    }
-
-    public void setConfigureDynamicMethods(boolean shouldConfigure) {
-        this.configureDynamicMethods = shouldConfigure;
     }
 
     /**
@@ -129,4 +117,6 @@ public class GrailsAnnotationConfiguration  extends AnnotationConfiguration impl
         // call super
         super.secondPassCompile();
         this.configLocked = true;
-    }}
+    }
+
+}
