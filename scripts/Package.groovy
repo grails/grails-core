@@ -142,7 +142,7 @@ task( copyDependencies : "Copies the necessary dependencies (jar files) into the
 
 task( generateWebXml : "Generates the web.xml file") {
     new File( "${basedir}/web-app/WEB-INF/web.xml" ).withWriter { w ->
-    	pluginManager = new DefaultGrailsPluginManager("classpath:plugins/*GrailsPlugin.groovy", new DefaultGrailsApplication(new Class[0], getClass().getClassLoader()))
+    	pluginManager = new DefaultGrailsPluginManager("classpath:plugins/**/*GrailsPlugin.groovy", new DefaultGrailsApplication(new Class[0], getClass().getClassLoader()))
     	PluginManagerHolder.setPluginManager(pluginManager)
 
     	def webXml = resolver.getResource("classpath:web-app/WEB-INF/web.template.xml")
