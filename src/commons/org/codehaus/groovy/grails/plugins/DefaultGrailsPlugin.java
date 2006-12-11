@@ -95,8 +95,11 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
 			}
 		}
 		if(this.pluginBean.isReadableProperty(VERSION)) {
-			BigDecimal bd = (BigDecimal)this.plugin.getProperty("version");
-			this.version = bd;
+			Object vobj = this.plugin.getProperty("version");
+			if(vobj instanceof BigDecimal)
+				this.version = (BigDecimal)vobj;
+			else 
+				throw new PluginException("Plugin "+this+" must specify a version as a Groovy BigDecimal. eg: def version = 0.1");
 		}
 		else {
 			throw new PluginException("Plugin ["+getName()+"] must specify a version!");
