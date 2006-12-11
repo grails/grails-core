@@ -950,11 +950,12 @@ public class ConstrainedProperty   {
             else if(propertyValue instanceof Collection) {
                 if (((Collection) propertyValue).size() > maxSize) {
                     super.rejectValue(errors, MAX_SIZE_CONSTRAINT + EXCEEDED_SUFFIX, args, getDefaultMessage(DEFAULT_INVALID_MAX_SIZE_MESSAGE_CODE, args));
-                } else if (propertyValue instanceof Number) {
-                    int numberSize = ((Number) propertyValue).intValue();
-                    if (numberSize > maxSize) {
-                        super.rejectValue(errors, MAX_SIZE_CONSTRAINT + EXCEEDED_SUFFIX, args, getDefaultMessage(DEFAULT_INVALID_MAX_SIZE_MESSAGE_CODE, args));
-                    }
+                }
+            }
+            else if (propertyValue instanceof Number) {
+                int numberSize = ((Number) propertyValue).intValue();
+                if (numberSize > maxSize) {
+                    super.rejectValue(errors, MAX_SIZE_CONSTRAINT + EXCEEDED_SUFFIX, args, getDefaultMessage(DEFAULT_INVALID_MAX_SIZE_MESSAGE_CODE, args));
                 }
             }
             else if (propertyValue instanceof String) {
@@ -1378,12 +1379,14 @@ public class ConstrainedProperty   {
 
     /**
      * @return Returns the length.
+     * 
+     * @deprecated Use <code>getSize()</code>instead
      */
     public IntRange getLength() {
         if(!(String.class == propertyType) && !propertyType.isArray()) {
             throw new MissingPropertyException("Length constraint only applies to a String or Array property",LENGTH_CONSTRAINT,owningClass);
         }
-        SizeConstraint c = (SizeConstraint)this.appliedConstraints.get( LENGTH_CONSTRAINT );
+        SizeConstraint c = (SizeConstraint)this.appliedConstraints.get(SIZE_CONSTRAINT);
         if(c == null)
             return null;
 
@@ -1392,27 +1395,11 @@ public class ConstrainedProperty   {
 
     /**
      * @param length The length to set.
+     * 
+     * @deprecated Use <code>setSize()</code>instead
      */
     public void setLength(IntRange length) {
-        if(!(String.class == propertyType)  && !propertyType.isArray()) {
-            throw new MissingPropertyException("Length constraint can only be applied to a String or Array property",LENGTH_CONSTRAINT,owningClass);
-        }
-        Constraint c = (Constraint)this.appliedConstraints.get( LENGTH_CONSTRAINT );
-        if(length == null) {
-            this.appliedConstraints.remove( LENGTH_CONSTRAINT );
-        }
-        else {
-            if(c != null) {
-                c.setParameter(length);
-            }
-            else {
-                c = new SizeConstraint();
-                c.setOwningClass(this.owningClass);
-                c.setPropertyName(this.propertyName);
-                c.setParameter(length);
-                this.appliedConstraints.put( LENGTH_CONSTRAINT, c );
-            }
-        }
+        setSize(length);
     }
 
 
@@ -1606,78 +1593,40 @@ public class ConstrainedProperty   {
 
     /**
      * @return Returns the maxLength.
+     * 
+     * @deprecated Use <code>getMaxSize()</code>instead
      */
     public int getMaxLength() {
-        MaxSizeConstraint c = (MaxSizeConstraint)this.appliedConstraints.get( MAX_LENGTH_CONSTRAINT );
-
-        if(c == null) {
-            if(this.appliedConstraints.containsKey( LENGTH_CONSTRAINT )) {
-                SizeConstraint sc = (SizeConstraint)this.appliedConstraints.get(LENGTH_CONSTRAINT);
-                return sc.getRange().getToInt();
-            }
-            return Integer.MAX_VALUE;
-        }
-
-
-        return c.getMaxSize();
+        return getMaxSize();
     }
 
     /**
      * @param maxLength The maxLength to set.
+     * 
+     * @deprecated Use <code>setMaxSize()</code> instead.
      */
     public void setMaxLength(int maxLength) {
-        Constraint c = (MaxSizeConstraint)this.appliedConstraints.get( MAX_LENGTH_CONSTRAINT );
-        if( c != null) {
-            c.setParameter( new Integer(maxLength));
-        }
-        else {
-            c = new MaxSizeConstraint();
-            c.setOwningClass(this.owningClass);
-            c.setPropertyName(this.propertyName);
-            c.setParameter(new Integer(maxLength));
-            this.appliedConstraints.put( MAX_LENGTH_CONSTRAINT,c );
-        }
+        setMaxSize(maxLength);
     }
-
-
-
 
     /**
      * @return Returns the minLength.
+     * 
+     * @deprecated Use <code>getMinSize()</code>instead
      */
     public int getMinLength() {
-        MinSizeConstraint c = (MinSizeConstraint)this.appliedConstraints.get( MIN_LENGTH_CONSTRAINT );
-        if(c == null) {
-            if(this.appliedConstraints.containsKey( LENGTH_CONSTRAINT )) {
-                SizeConstraint sc = (SizeConstraint)this.appliedConstraints.get(LENGTH_CONSTRAINT);
-                return sc.getRange().getFromInt();
-            }
-            return 0;
-        }
-
-        return c.getMinSize();
+        return getMinSize();
     }
 
 
     /**
      * @param minLength The minLength to set.
+     * 
+     * @deprecated Use <code>setMinSize()</code> instead.
      */
     public void setMinLength(int minLength) {
-        Constraint c = (MinSizeConstraint)this.appliedConstraints.get( MIN_LENGTH_CONSTRAINT );
-        if( c != null) {
-            c.setParameter( new Integer(minLength));
-        }
-        else {
-            c = new MinSizeConstraint();
-            c.setOwningClass(this.owningClass);
-            c.setPropertyName(this.propertyName);
-            c.setParameter(new Integer(minLength));
-            this.appliedConstraints.put( MIN_LENGTH_CONSTRAINT,c );
-        }
+        setMinSize(minLength);
     }
-
-
-
 
     /**
      * @return Returns the notEqual.
@@ -1695,41 +1644,50 @@ public class ConstrainedProperty   {
      */
     public int getMaxSize() {
         MaxSizeConstraint c = (MaxSizeConstraint)this.appliedConstraints.get( MAX_SIZE_CONSTRAINT );
-        if(c == null)
-            return Integer.MAX_VALUE;
 
-        return c.getMaxSize();
+        if(c == null) {
+            if(this.appliedConstraints.containsKey( SIZE_CONSTRAINT )) {
+                SizeConstraint sc = (SizeConstraint)this.appliedConstraints.get(SIZE_CONSTRAINT);
+                return sc.getRange().getToInt();
+            }
+            return Integer.MAX_VALUE;
+        }
+
+        return c.getMaxSize();        
     }
 
     /**
-     * @param mazSize The mazSize to set.
+     * @param maxSize The maxSize to set.
      */
-    public void setMaxSize(int mazSize) {
+    public void setMaxSize(int maxSize) {
         Constraint c = (MaxSizeConstraint)this.appliedConstraints.get( MAX_SIZE_CONSTRAINT );
         if( c != null) {
-            c.setParameter( new Integer(mazSize));
+            c.setParameter( new Integer(maxSize));
         }
         else {
             c = new MaxSizeConstraint();
             c.setOwningClass(this.owningClass);
             c.setPropertyName(this.propertyName);
-            c.setParameter(new Integer(mazSize));
+            c.setParameter(new Integer(maxSize));
             this.appliedConstraints.put( MAX_SIZE_CONSTRAINT,c );
         }
     }
-
-
-
 
     /**
      * @return Returns the minSize.
      */
     public int getMinSize() {
-        MinSizeConstraint c = (MinSizeConstraint)this.appliedConstraints.get( MIN_SIZE_CONSTRAINT );
-        if(c == null)
-            return Integer.MIN_VALUE;
+        MinSizeConstraint c = (MinSizeConstraint)this.appliedConstraints.get(MIN_SIZE_CONSTRAINT);
 
-        return c.getMinSize();
+        if(c == null) {
+            if(this.appliedConstraints.containsKey(SIZE_CONSTRAINT)) {
+                SizeConstraint sc = (SizeConstraint)this.appliedConstraints.get(SIZE_CONSTRAINT);
+                return sc.getRange().getFromInt();
+            }
+            return 0;
+        }
+
+        return c.getMinSize();        
     }
 
 
@@ -1980,6 +1938,22 @@ public class ConstrainedProperty   {
     public void applyConstraint(String constraintName, Object constrainingValue) {
 
         if(constraints.containsKey(constraintName)) {
+
+            // Emit warnings for deprecated contraints, and use the replacement constraint instead (internally).
+            // TODO -- For Grails 0.5, remove the deprecated constraints and throw exceptions for any domain classes using them.
+            if (MAX_LENGTH_CONSTRAINT.equals(constraintName)) {
+                emitDeprecationWarnings(MAX_LENGTH_CONSTRAINT, MAX_SIZE_CONSTRAINT);
+                constraintName = MAX_SIZE_CONSTRAINT;
+            }
+            else if (MIN_LENGTH_CONSTRAINT.equals(constraintName)) {
+                emitDeprecationWarnings(MIN_LENGTH_CONSTRAINT, MIN_SIZE_CONSTRAINT);
+                constraintName = MIN_SIZE_CONSTRAINT;
+            }
+            else if (LENGTH_CONSTRAINT.equals(constraintName)) {
+                emitDeprecationWarnings(LENGTH_CONSTRAINT, SIZE_CONSTRAINT);
+                constraintName = SIZE_CONSTRAINT;
+            }
+            
             if(constrainingValue == null) {
                 this.appliedConstraints.remove(constraintName);
             }
@@ -2019,6 +1993,9 @@ public class ConstrainedProperty   {
                         .toString();
     }
 
-
+    private void emitDeprecationWarnings(String deprecatedConstraintName, String replacementConstraintName) {
+        LOG.warn("Domain class [" + this.owningClass + "] includes the " + deprecatedConstraintName + " constraint for the " + getPropertyName() + " property.  This constraint is deprecated and will be removed in the future.  " +
+                "Please update your code to use the " + replacementConstraintName + " constraint instead.");
+    }
 }
 

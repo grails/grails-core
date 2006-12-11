@@ -15,6 +15,7 @@ public class ConstrainedPropertyTests extends TestCase {
     private Date testDate = new Date();
     private String testEmail = "rubbish_email";
     private String testURL = "rubbish_url";
+    private Integer testInteger = Integer.valueOf(0);
     private int testValidatorValue = 0;
 
     public int getTestValidatorValue()
@@ -55,6 +56,20 @@ public class ConstrainedPropertyTests extends TestCase {
         this.testEmail = testEmail;
     }
 
+    /**
+     * @return Returns the testInteger.
+     */
+    public Integer getTestInteger() {
+        return testInteger;
+    }
+
+    /**
+     * @param testInteger The testInteger to set.
+     */
+    public void setTestInteger(Integer testInteger) {
+        this.testInteger = testInteger;
+    }
+    
     /**
      * @return Returns the testURL.
      */
@@ -401,6 +416,64 @@ public class ConstrainedPropertyTests extends TestCase {
         error = errors.getFieldError("testDate");
         System.out.println(error);
         assertNotNull(error);
+
+        // test maxSize constraint
+        // ---------------------------------------------------------------------
+        this.testInteger = Integer.valueOf(Integer.MIN_VALUE);
+        cp = new ConstrainedProperty(ConstrainedPropertyTests.class,"testInteger", String.class);
+        cp.applyConstraint( ConstrainedProperty.MAX_SIZE_CONSTRAINT, Integer.valueOf(0));
+
+        errors = new BindException(this,"testObject");
+        for (Iterator i = cp.getAppliedConstraints().iterator(); i.hasNext();) {
+            c = (Constraint) i.next();
+            c.validate(this, this.testInteger, errors);
+        }
+
+        // validate that a value *less than* the maximum value does *not* yield an error
+        assertFalse(errors.hasErrors());
+
+        // validate that a value *equal to* the maximum value does *not* yield an error
+        this.testInteger = Integer.valueOf(0);
+        errors = new BindException(this,"testObject");
+        c.validate(this, this.testInteger,errors);
+        assertFalse(errors.hasErrors());
+
+        // validate that a value *greater than* the maximum value yields an error
+        this.testInteger = Integer.valueOf(Integer.MAX_VALUE);
+        errors = new BindException(this,"testObject");
+        c.validate(this, this.testInteger,errors);
+        assertTrue(errors.hasErrors());
+        error = errors.getFieldError("testInteger");
+        assertNotNull(error);
+        
+        // test minSize constraint
+        // ---------------------------------------------------------------------
+        this.testInteger = Integer.valueOf(Integer.MAX_VALUE);
+        cp = new ConstrainedProperty(ConstrainedPropertyTests.class,"testInteger", String.class);
+        cp.applyConstraint( ConstrainedProperty.MIN_SIZE_CONSTRAINT, Integer.valueOf(0));
+
+        errors = new BindException(this,"testObject");
+        for (Iterator i = cp.getAppliedConstraints().iterator(); i.hasNext();) {
+            c = (Constraint) i.next();
+            c.validate(this, this.testInteger, errors);
+        }
+
+        // validate that a value *greater than* the minimum value does *not* yield an error
+        assertFalse(errors.hasErrors());
+
+        // validate that a value *equal to* the minimum value does *not* yield an error
+        this.testInteger = Integer.valueOf(0);
+        errors = new BindException(this,"testObject");
+        c.validate(this, this.testInteger,errors);
+        assertFalse(errors.hasErrors());
+
+        // validate that a value *less than* the minimum value yields an error
+        this.testInteger = Integer.valueOf(Integer.MIN_VALUE);
+        errors = new BindException(this,"testObject");
+        c.validate(this, this.testInteger,errors);
+        assertTrue(errors.hasErrors());
+        error = errors.getFieldError("testInteger");
+        assertNotNull(error);        
         
         // test validate matches (regex)
         // ---------------------------------------------------------------------
