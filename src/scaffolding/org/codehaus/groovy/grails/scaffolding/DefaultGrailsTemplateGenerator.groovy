@@ -339,6 +339,7 @@ class ${className}Controller {
         def listFile = new File("${destDir}/list.gsp")
         if(!listFile.exists() || overwrite) {
             def templateText = '''
+<%=packageName%>  
 <html>
     <head>
          <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
@@ -390,7 +391,9 @@ class ${className}Controller {
             '''
 
             def t = engine.createTemplate(templateText)
-            def binding = [ domainClass: domainClass, 
+            def packageName  = domainClass.packageName ? "<%@ page import=\"${domainClass.fullName}\" %>" : ""
+            def binding = [ packageName:packageName,
+                            domainClass: domainClass, 
                             className:domainClass.shortName,
                             propertyName:domainClass.propertyName,
                             comparator:org.codehaus.groovy.grails.scaffolding.DomainClassPropertyComparator.class]
@@ -406,6 +409,7 @@ class ${className}Controller {
         def showFile = new File("${destDir}/show.gsp")
         if(!showFile.exists() || overwrite) {
             def templateText = '''
+<%=packageName%>  
 <html>
     <head>
          <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
@@ -462,7 +466,9 @@ class ${className}Controller {
             '''
 
             def t = engine.createTemplate(templateText)
-            def binding = [ domainClass: domainClass, 
+            def packageName  = domainClass.packageName ? "<%@ page import=\"${domainClass.fullName}\" %>" : ""
+            def binding = [ packageName:packageName,
+                            domainClass: domainClass, 
                             className:domainClass.shortName,
                             propertyName:domainClass.propertyName, 
                             comparator:org.codehaus.groovy.grails.scaffolding.DomainClassPropertyComparator.class ]
@@ -478,6 +484,7 @@ class ${className}Controller {
         def editFile = new File("${destDir}/edit.gsp")
         if(!editFile.exists() || overwrite) {
             def templateText = '''
+<%=packageName%>  
 <html>
     <head>
          <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
@@ -532,7 +539,9 @@ class ${className}Controller {
 
             def t = engine.createTemplate(templateText)
             def multiPart = domainClass.properties.find{it.type==([] as Byte[]).class || it.type==([] as byte[]).class}
-            def binding = [ domainClass: domainClass,
+            def packageName  = domainClass.packageName ? "<%@ page import=\"${domainClass.fullName}\" %>" : ""
+                def binding = [ packageName:packageName,
+                                domainClass: domainClass, 
                             multiPart:multiPart,
                             className:domainClass.shortName,
                             propertyName:domainClass.propertyName,
@@ -550,6 +559,7 @@ class ${className}Controller {
         def createFile = new File("${destDir}/create.gsp")
         if(!createFile.exists() || overwrite) {
             def templateText = '''
+<%=packageName%>  
 <html>
     <head>
          <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
@@ -599,7 +609,9 @@ class ${className}Controller {
             def t = engine.createTemplate(templateText)
             def multiPart = domainClass.properties.find{it.type==([] as Byte[]).class || it.type==([] as byte[]).class}
             
-            def binding = [ domainClass: domainClass,
+            def packageName  = domainClass.packageName ? "<%@ page import=\"${domainClass.fullName}\" %>" : ""
+                def binding = [ packageName:packageName,
+                                domainClass: domainClass, 
                             multiPart:multiPart,
                             className:domainClass.shortName,
                             propertyName:domainClass.propertyName,
