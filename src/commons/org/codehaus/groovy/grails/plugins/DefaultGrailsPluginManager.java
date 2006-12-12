@@ -124,12 +124,12 @@ public class DefaultGrailsPluginManager implements GrailsPluginManager {
 		this.application = application;
 	}
 
-	public DefaultGrailsPluginManager(Resource[] pluginFiles, GrailsApplication application2) {
+	public DefaultGrailsPluginManager(Resource[] pluginFiles, GrailsApplication application) {
 		if(application == null)
 			throw new IllegalArgumentException("Argument [application] cannot be null!");
 		resolver = new PathMatchingResourcePatternResolver();
 		this.pluginResources = pluginFiles;
-        this.application = application2;
+        this.application = application;
     }
 
 	/**
