@@ -37,8 +37,15 @@ public class ViewDelegatingScaffoldResponseHandler implements ScaffoldResponseHa
 			throw new IllegalStateException("Property [viewResolver] is required to be set, but is null");
 		
 		
+        Object includeUri = request.getAttribute("javax.servlet.include.request_uri");
+        String uri;
+        if (includeUri != null) {
+        	uri = (String) includeUri;
+        } else {
+        	uri = request.getRequestURI();
+        }
 		return new ModelAndView(
-				scaffoldViewResolver.resolveViewForUriAndAction(request.getRequestURI(), actionName), 
+				scaffoldViewResolver.resolveViewForUriAndAction(uri, actionName),
 					model );
 	}
 

@@ -81,7 +81,7 @@ public class GroovyPagesTemplateEngine {
 
     /**
      * Set whether to show the compiled source in the response
-     * @param showSource
+     * @param showSource Sets whether to show the generated Groovy source of the GSP
      */
     public void setShowSource(boolean showSource) {
         this.showSource = showSource;
@@ -92,8 +92,8 @@ public class GroovyPagesTemplateEngine {
      * to retrieve the actual line number within the GSP page if the line number within the
      * compiled GSP is known
      *
-     * @param context
-     * @param url
+     * @param context The ServletContext instance
+     * @param url The URL of the page
      * @return An array where the index is the line number witin the compiled GSP and the value is the line number within the source
      */
     public int[] getLineNumbersForPage(ServletContext context,String url) {
@@ -129,17 +129,14 @@ public class GroovyPagesTemplateEngine {
     /**
      * Create a template for the current request
      *
-     * @param context
-     * @param request
-     * @param response
+     * @param context  The ServletContext instance
+     * @param request   The HttpServletRequest instance
+     * @param response  The HttpServletResponse instance
      * @return  The created template or null if the page was not found
      * @throws IOException
      * @throws ServletException
      */
     public Template createTemplate(ServletContext context, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-        ClassLoader parent = Thread.currentThread().getContextClassLoader();
-        if (parent == null) parent = getClass().getClassLoader();
-
         String uri = getPageId(request);
         return createTemplate(uri,context,request,response);
     }
@@ -147,10 +144,10 @@ public class GroovyPagesTemplateEngine {
     /**
      * Creates a template for the specified uri
      *
-     * @param uri
-     * @param context
-     * @param request
-     * @param response
+     * @param uri The URI of the template
+     * @param context The ServletContext instance
+     * @param request The HttpServletRequest instance
+     * @param response The HttpServletResponse instance
      * @return The created template or null if the page was not found for the specified uri
      * @throws IOException
      * @throws ServletException
@@ -169,21 +166,26 @@ public class GroovyPagesTemplateEngine {
 
     /**
      * Return the page identifier.
-     * @param request
+     * @param request The HttpServletRequest instance
      * @return The page id
      */
     protected String getPageId(HttpServletRequest request) {
         // Get the name of the Groovy script (intern the name so that we can
         // lock on it)
-        int contextLength = request.getContextPath().length();
-        return request.getRequestURI().substring(contextLength).intern();
+        Object includePath = request.getAttribute("javax.servlet.include.servlet_path");
+        if (includePath != null) {
+        	return ((String) includePath).intern();
+        } else {
+        	return request.getServletPath().intern();
+        }
     } // getPageId()
 
     /**
      * Return the page URL from the request path.
-     * @param pageId
-     * @return
+     * @param pageId  The page URI as a string
+     * @return  The java.net.URL of the page or null
      * @throws java.net.MalformedURLException
+     * @param context The ServletContext instances
      */
     protected URL getPageUrl(ServletContext context, String pageId) throws MalformedURLException {
         // Check to make sure that the file exists in the web application
@@ -222,12 +224,15 @@ public class GroovyPagesTemplateEngine {
 
     /**
      * Lookup page class or load new one if needed.
-     * @param uri
-     * @param pageUrl
-     * @param spillGroovy
-     * @return
-     * @throws IOException
+     * @param uri The URI of the page as a String
+     * @param pageUrl The URL instance of the page
+     * @param spillGroovy Whether to show the generated source
+     * @return The PageMeta instance of the page with info about the last modified date, the class and so on
+     *
+     * @throws IOException Thrown when there were problems reading the page or writing to the response
      * @throws javax.servlet.ServletException
+     * @param context The ServletContext instance
+     *
      */
     protected PageMeta getPage(String uri, ServletContext context,URL pageUrl, boolean spillGroovy)
             throws IOException, ServletException  {
@@ -252,14 +257,15 @@ public class GroovyPagesTemplateEngine {
     } // getPage()
 
    /**
-     * Load and compile new page.
-     * @param uri
-     * @param groovyScriptConn
-     * @param lastModified
-     * @param spillGroovy
-     * @return
-     * @throws IOException
+     * Creates a new PageMeta instance of the specified page URI
+     * @param uri The URI of the page as a String
+     * @param groovyScriptConn The URLConnection for the page
+     * @param lastModified The last time it was modified
+     * @param spillGroovy Whether to show the generated source
+     * @return The created PageMeta instance
+     * @throws IOException   Thrown when an error occurs reading or writing the page
      * @throws ServletException
+    * @param context The ServletContext instance
      */
     private PageMeta newPage(String uri, ServletContext context,URLConnection groovyScriptConn, long lastModified,
                              boolean spillGroovy) throws IOException, ServletException {
@@ -415,8 +421,8 @@ public class GroovyPagesTemplateEngine {
 
         /**
          * Copy all of input to output.
-         * @param in
-         * @param out
+         * @param in The input stream to send from
+         * @param out The output to write to
          * @throws IOException
          */
         public static void send(InputStream in, Writer out) throws IOException {
@@ -435,9 +441,9 @@ public class GroovyPagesTemplateEngine {
         } // send()
         /**
          * Prepare Bindings before instantiating page.
-         * @param request
-         * @param response
-         * @param out
+         * @param request The HttpServletRequest instance
+         * @param response The HttpServletResponse instance
+         * @param out The response out
          * @return the Bindings
          * @throws IOException
          */
@@ -445,7 +451,7 @@ public class GroovyPagesTemplateEngine {
                 throws IOException {
             // Set up the script context
             Binding binding = new Binding();
-            
+
             GroovyObject controller = (GroovyObject)request.getAttribute(GrailsApplicationAttributes.CONTROLLER);
             if(controller!=null) {
 	            binding.setVariable(GroovyPage.REQUEST, controller.getProperty(ControllerDynamicMethods.REQUEST_PROPERTY));

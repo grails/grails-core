@@ -84,10 +84,17 @@ public class DefaultGrailsScaffolder implements GrailsScaffolder {
 
 		public void setScaffoldResponseHandlerFactory(ScaffoldResponseHandlerFactory factory) {
 			this.scaffoldResponseFactory = factory;
-			this.scaffoldResponseHandler = this.scaffoldResponseFactory.getScaffoldResponseHandler(request.getRequestURI());
-		}					
+            Object includeUri = request.getAttribute("javax.servlet.include.request_uri");
+            String uri;
+            if (includeUri != null) {
+            	uri = (String) includeUri;
+            } else {
+            	uri = request.getRequestURI();
+            }
+			this.scaffoldResponseHandler = this.scaffoldResponseFactory.getScaffoldResponseHandler(uri);
+		}
 	}
-	
+
 	/**
 	 * A closure that handles a call to a scaffolded list action    
 	 */
