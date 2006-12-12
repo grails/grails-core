@@ -119,11 +119,10 @@ Grails home is set to: ${grailsHome}
 		}                                                          
 		try {
 			def pluginScripts = RESOLVER.getResources("file:${baseDir.absolutePath}/plugins/**/scripts/${scriptName}.groovy")
-			println "Plugin scripts  $pluginScripts"
 			potentialScripts += pluginScripts.collect { it.file }			
 		}
 		catch(Exception e) {
-			println "No plugin scripts found"
+			println "Note: No plugin scripts found"
 		} 
 		if(potentialScripts.size()>0) {
             if(potentialScripts.size() == 1) {
