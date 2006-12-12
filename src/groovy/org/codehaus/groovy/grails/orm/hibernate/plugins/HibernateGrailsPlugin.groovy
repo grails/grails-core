@@ -85,6 +85,9 @@ class HibernateGrailsPlugin {
 				if(application.classLoader.getResource("hibernate.cfg.xml")) {
 					configLocation = "classpath:hibernate.cfg.xml"
 				}
+				if(ds?.configClass) {
+					configClass = ds.configClass
+				}
 				hibernateProperties = hibernateProperties
 				grailsApplication = ref("grailsApplication", true)
 				classLoader = classLoader
