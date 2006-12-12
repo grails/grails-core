@@ -179,12 +179,12 @@ class ControllersGrailsPlugin {
 			def gspServlet = webXml.servlet.find { it.'servlet-name'?.text() == 'gsp' }
 			gspServlet.'servlet-class' + {
 				'init-param' {
+					description """
+		              Allows developers to view the intermediade source code, when they pass
+		                a spillGroovy argument in the URL.					
+							"""					
 					'param-name'('showSource')
 					'param-value'(1)
-					description """
-              Allows developers to view the intermediade source code, when they pass
-                a spillGroovy argument in the URL.					
-					"""
 				}
 			}
 		}
