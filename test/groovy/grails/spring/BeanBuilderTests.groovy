@@ -275,8 +275,43 @@ class BeanBuilderTests extends GroovyTestCase {
 		def dataSource = ctx.getBean("dataSource")
 		
 	}
+	
+	void testHolyGrailWiring() {
+
+		def bb = new grails.spring.BeanBuilder()
+
+		bb.beans {
+		 quest(HolyGrailQuest) 
+
+		 knight(KnightOfTheRoundTable, "Bedivere") {
+		   quest = ref("quest")
+		 }
+		}
+
+		def ctx = bb.createApplicationContext()
+
+		def knight = ctx.getBean("knight")
+
+		knight.embarkOnQuest()
+		
+	}
 
 }
+class HolyGrailQuest {
+	   def start() { println "lets begin" }
+}
+class KnightOfTheRoundTable {
+   String name
+   KnightOfTheRoundTable(String n) {
+      this.name = n
+   }
+   HolyGrailQuest quest
+
+   def embarkOnQuest() {
+       quest.start()
+   }
+}
+
 // simple bean
 class Bean1 {
 	String person
