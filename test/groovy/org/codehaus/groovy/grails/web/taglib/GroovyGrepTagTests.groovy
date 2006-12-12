@@ -31,11 +31,11 @@ class GroovyGrepTagTests extends GroovyTestCase {
 		def tag = new GroovyGrepTag()
 		tag.init(out: new PrintWriter(sw))
 		
-		tag.setAttributes('"in"': 'test', '"filter"':'\${~/regex/}','"status"':"i")
+		tag.setAttributes('"in"': 'test', '"filter"':'\${~/regex/}','"status"':"i",'"var"':"t")
 		
 		tag.doStartTag();
 		
-		assert sw.toString() == "test.grep(~/regex/).eachWithIndex { it,i ->"+System.getProperty("line.separator")		
+		assertEquals( "test.grep(~/regex/).eachWithIndex { t,i ->"+System.getProperty("line.separator"), sw.toString() )		
 	}
 
 }

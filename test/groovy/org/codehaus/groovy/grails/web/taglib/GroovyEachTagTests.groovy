@@ -21,7 +21,7 @@ class GroovyEachTagTests extends GroovyTestCase {
 		
 		tag.doStartTag();
 		
-		assert sw.toString() == "test.each { it ->"+System.getProperty("line.separator")
+		assertEquals( "test.each { "+System.getProperty("line.separator"), sw.toString() )
 	
 	}
 		
@@ -38,16 +38,19 @@ class GroovyEachTagTests extends GroovyTestCase {
 		
 	}
 		
-    void testEachWithStatus() {
+    void testEachWithStatusOnly() {
 		def sw = new StringWriter()
 		
 		def tag = new GroovyEachTag()
 		tag.init(out: new PrintWriter(sw))		
 		tag.setAttributes('"in"': 'test', '"status"':"i")
-		
-		tag.doStartTag();
-
-		assert sw.toString() == "test.eachWithIndex { it,i ->"+System.getProperty("line.separator")		
+		try {
+			tag.doStartTag();	
+			fail("exception should have been thrown for status with no var")
+		}
+		catch(Exception ex) {
+			// expected (can't have each with status and no var
+		}		
     	
     }
 		

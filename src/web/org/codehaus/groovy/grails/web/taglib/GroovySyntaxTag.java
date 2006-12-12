@@ -31,7 +31,10 @@ import java.io.PrintWriter;
  * @since 11-Jan-2006
  */
 public abstract class GroovySyntaxTag implements GrailsTag {
-    protected static final String ATTRIBUTE_IN = "in";
+    private static final String METHOD_EACH_WITH_INDEX = "eachWithIndex";
+	private static final String METHOD_EACH = "each";
+	private static final String ERROR_NO_VAR_WITH_STATUS = "When using <g:each> with a [status] attribute, you must also define a [var]. eg. <g:each var=\"myVar\">";
+	protected static final String ATTRIBUTE_IN = "in";
 	protected static final String ATTRIBUTE_VAR = "var";
 	protected static final String ATTRIBUTES_STATUS = "status";
 	protected Map tagContext;
@@ -102,24 +105,42 @@ public abstract class GroovySyntaxTag implements GrailsTag {
 	protected void doEachMethod(String in) {
 		String var = (String) attributes.get(ATTRIBUTE_VAR);
 	    String status = (String)attributes.get(ATTRIBUTES_STATUS);
+	    var = extractAttributeValue(var);
+	    status = extractAttributeValue(status);
 	
 	
-	    String methodName = StringUtils.isBlank(status) ? "each" : "eachWithIndex";
-	    var = StringUtils.isBlank(var) ? "it" : var;
-	    if(var.startsWith("\"") && var.endsWith("\"") && var.length() > 1) {
-	    	var = var.substring(1,var.length()-1);
-	    }
-	    if(var.equals(status))
+	    boolean hasStatus = !StringUtils.isBlank(status);	    
+	    boolean hasVar = !StringUtils.isBlank(var);
+	    
+	    if(hasStatus && !hasVar)
+	    	throw new GrailsTagException(ERROR_NO_VAR_WITH_STATUS);
+	    
+		String methodName = hasStatus ? METHOD_EACH_WITH_INDEX : METHOD_EACH;
+	    
+
+	    if(var.equals(status) && (hasVar && hasStatus))
 	    	throw new GrailsTagException("Attribute ["+ATTRIBUTE_VAR+"] cannot have the same value as attribute ["+ATTRIBUTES_STATUS+"]");
 	    out.print(in);  // object
 	    out.print('.'); // dot de-reference
 	    out.print(methodName); // method name                      
 		out.print(" { "); // start closure
-		out.print(var); // var name, normally it
-		if(!StringUtils.isBlank(status)) { // if eachWithIndex add status
+		
+		if(hasVar) 
+			out.print(var); // var name
+		if(hasStatus) { // if eachWithIndex add status
 			out.print(",");
-			out.print(status);
+			out.print(status);			
 		}
-		out.println(" ->"); // start closure body
+		if(hasVar)
+			out.print(" ->"); // start closure body
+		out.println();
+	}
+
+	private String extractAttributeValue(String attr) {
+		if(StringUtils.isBlank(attr))return "";	    
+	    if(attr.startsWith("\"") && attr.endsWith("\"") && attr.length() > 1) {
+	    	attr = attr.substring(1,attr.length()-1);
+	    }
+		return attr;
 	}
 }
