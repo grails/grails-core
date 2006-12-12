@@ -1,18 +1,18 @@
 /*
  * Copyright 2004-2005 the original author or authors.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */ 
+ */
 package org.codehaus.groovy.grails.plugins;
 
 import groovy.lang.Binding;
@@ -57,19 +57,19 @@ import org.xml.sax.SAXException;
  * <p>A class that handles the loading and management of plug-ins in the Grails system.
  * A plugin a just like a normal Grails application except that it contains a file ending
  * in *Plugin.groovy  in the root of the directory.
- * 
+ *
  * <p>A Plugin class is a Groovy class that has a version and optionally closures
  * called doWithSpring, doWithContext and doWithWebDescriptor
- * 
+ *
  * <p>The doWithSpring closure uses the BeanBuilder syntax (@see grails.spring.BeanBuilder) to
  * provide runtime configuration of Grails via Spring
- * 
- * <p>The doWithContext closure is called after the Spring ApplicationContext is built and accepts 
+ *
+ * <p>The doWithContext closure is called after the Spring ApplicationContext is built and accepts
  * a single argument (the ApplicationContext)
- * 
- * <p>The doWithWebDescriptor uses mark-up building to provide additional functionality to the web.xml 
+ *
+ * <p>The doWithWebDescriptor uses mark-up building to provide additional functionality to the web.xml
  * file
- * 
+ *
  *<p> Example:
  * <pre>
  * class ClassEditorGrailsPlugin {
@@ -79,10 +79,10 @@ import org.xml.sax.SAXException;
  *      }
  * }
  * </pre>
- * 
+ *
  * <p>A plugin can also define "dependsOn" and "evict" properties that specify what plugins the plugin
- * depends on and which ones it is incompatable with and should evict 
- * 
+ * depends on and which ones it is incompatable with and should evict
+ *
  * @author Graeme Rocher
  * @since 0.4
  *
@@ -105,31 +105,32 @@ public class DefaultGrailsPluginManager implements GrailsPluginManager {
 		super();
 		if(application == null)
 			throw new IllegalArgumentException("Argument [application] cannot be null!");
-		
+
 		resolver = new PathMatchingResourcePatternResolver();
 		try {
 			this.pluginResources = resolver.getResources(resourcePath);
-		}		
+		}
 		catch(IOException ioe) {
 			LOG.debug("Unable to load plugins for resource path " + resourcePath, ioe);
 		}
 		//this.corePlugins = new PathMatchingResourcePatternResolver().getResources("classpath:org/codehaus/groovy/grails/**/plugins/**GrailsPlugin.groovy");
-		this.application = application;	
+		this.application = application;
 	}
-	
+
 	public DefaultGrailsPluginManager(Class[] plugins, GrailsApplication application) throws IOException {
 		this.pluginClasses = plugins;
 		resolver = new PathMatchingResourcePatternResolver();
 		//this.corePlugins = new PathMatchingResourcePatternResolver().getResources("classpath:org/codehaus/groovy/grails/**/plugins/**GrailsPlugin.groovy");
 		this.application = application;
 	}
-	
+
 	public DefaultGrailsPluginManager(Resource[] pluginFiles, GrailsApplication application2) {
 		if(application == null)
 			throw new IllegalArgumentException("Argument [application] cannot be null!");
 		resolver = new PathMatchingResourcePatternResolver();
 		this.pluginResources = pluginFiles;
-	}
+        this.application = application2;
+    }
 
 	/**
 	 * @return the initialised
@@ -141,32 +142,32 @@ public class DefaultGrailsPluginManager implements GrailsPluginManager {
 	/* (non-Javadoc)
 	 * @see org.codehaus.groovy.grails.plugins.GrailsPluginManager#loadPlugins()
 	 */
-	public void loadPlugins() 
+	public void loadPlugins()
 					throws PluginException {
 		if(!this.initialised) {
 			GroovyClassLoader gcl = application.getClassLoader();
 			// load core plugins first
 			loadCorePlugins();
-			
+
 			LOG.info("Attempting to load ["+pluginResources.length+"] user defined plugins");
 			for (int i = 0; i < pluginResources.length; i++) {
 				Resource r = pluginResources[i];
-				
+
 				Class pluginClass = loadPluginClass(gcl, r);
-				GrailsPlugin plugin = new DefaultGrailsPlugin(pluginClass, application);			
+				GrailsPlugin plugin = new DefaultGrailsPlugin(pluginClass, application);
 				attemptPluginLoad(plugin);
 			}
 			for (int i = 0; i < pluginClasses.length; i++) {
 				Class pluginClass = pluginClasses[i];
 				GrailsPlugin plugin = new DefaultGrailsPlugin(pluginClass, application);
-				attemptPluginLoad(plugin);			
+				attemptPluginLoad(plugin);
 			}
-			
+
 			if(!delayedLoadPlugins.isEmpty()) {
 				loadDelayedPlugins();
 			}
 			initializePlugins();
-			initialised = true;			
+			initialised = true;
 		}
 	}
 
@@ -175,7 +176,7 @@ public class DefaultGrailsPluginManager implements GrailsPluginManager {
 			Object plugin = i.next();
 			if(plugin instanceof ApplicationContextAware) {
 				((ApplicationContextAware)plugin).setApplicationContext(applicationContext);
-			}			
+			}
 		}
 	}
 
@@ -188,7 +189,7 @@ public class DefaultGrailsPluginManager implements GrailsPluginManager {
 		try {
 			Resource[] resources = resolver.getResources("classpath*:org/codehaus/groovy/grails/**/plugins/*GrailsPlugin.class");
 			if(resources.length > 0) {
-				loadCorePluginsFromResources(resources);							
+				loadCorePluginsFromResources(resources);
 			}
 			else {
 				loadCorePluginsStatically();
@@ -200,9 +201,9 @@ public class DefaultGrailsPluginManager implements GrailsPluginManager {
 
 	private void loadCorePluginsStatically() {
 		LOG.warn("WARNING: Grails was unable to load core plugins dynamically. This is normally a problem with the container. Attempting static load..");
-		
+
 		// This is a horrible hard coded hack, but there seems to be no way to resolve .class files dynamically
-		// on OC4J. If anyones knows how to fix this shout 
+		// on OC4J. If anyones knows how to fix this shout
 		loadCorePlugin("org.codehaus.groovy.grails.plugins.CoreGrailsPlugin");
 		loadCorePlugin("org.codehaus.groovy.grails.i18n.plugins.I18nGrailsPlugin");
 		loadCorePlugin("org.codehaus.groovy.grails.datasource.plugins.DataSourceGrailsPlugin");
@@ -223,7 +224,7 @@ public class DefaultGrailsPluginManager implements GrailsPluginManager {
 			url = url.substring(packageIndex, url.length());
 			url = url.substring(0,url.length()-6);
 			String className = url.replace('/', '.');
-			
+
 			loadCorePlugin(className);
 		}
 	}
@@ -236,20 +237,18 @@ public class DefaultGrailsPluginManager implements GrailsPluginManager {
 			LOG.warn("[GrailsPluginManager] Core plugin ["+pluginClassName+"] not found, resuming load without..");
 			if(LOG.isDebugEnabled())
 				LOG.debug(e.getMessage(),e);
-		}		
+		}
 		return null;
 	}
 
 	private void loadCorePlugin(String pluginClassName) {
 		Class pluginClass = attemptCorePluginClassLoad(pluginClassName);
-		
+
 		if(pluginClass != null && !Modifier.isAbstract(pluginClass.getModifiers()) && pluginClass != DefaultGrailsPlugin.class) {
 			GrailsPlugin plugin = new DefaultGrailsPlugin(pluginClass, application);
-			if(plugin instanceof ApplicationContextAware) {
-				((ApplicationContextAware)plugin).setApplicationContext(applicationContext);
-			}			
-			attemptPluginLoad(plugin);				
-		}		
+			plugin.setApplicationContext(applicationContext);
+			attemptPluginLoad(plugin);
+		}
 	}
 
 	/**
@@ -260,10 +259,7 @@ public class DefaultGrailsPluginManager implements GrailsPluginManager {
 		while(!delayedLoadPlugins.isEmpty()) {
 			GrailsPlugin plugin = (GrailsPlugin)delayedLoadPlugins.remove(0);
 			if(areDependenciesResolved(plugin)) {
-				if(hasValidPluginsToLoadBefore(plugin)) {
-					continue;
-				}
-				else {					
+				if(!hasValidPluginsToLoadBefore(plugin)) {
 					registerPlugin(plugin);
 				}
 			}
@@ -284,7 +280,7 @@ public class DefaultGrailsPluginManager implements GrailsPluginManager {
 				else {
 					LOG.warn("WARNING: Plugin ["+plugin.getName()+"] cannot be loaded because its dependencies ["+ArrayUtils.toString(plugin.getDependencyNames())+"] cannot be resolved");
 				}
-					
+
 			}
 		}
 	}
@@ -303,17 +299,17 @@ public class DefaultGrailsPluginManager implements GrailsPluginManager {
 	}
 
 	/**
-	 * Checks whether the first plugin is dependant on the second plugin 
+	 * Checks whether the first plugin is dependant on the second plugin
 	 * @param plugin The plugin to check
 	 * @param dependancy The plugin which the first argument may be dependant on
-	 * @return True if it is 
+	 * @return True if it is
 	 */
 	private boolean  isDependantOn(GrailsPlugin plugin, GrailsPlugin dependancy) {
 		String[] dependencies = plugin.getDependencyNames();
 		for (int i = 0; i < dependencies.length; i++) {
 			String name = dependencies[i];
 			BigDecimal version = plugin.getDependentVersion(name);
-			
+
 			if(name.equals(dependancy.getName()) && version.equals(dependancy.getVersion()))
 				return true;
 		}
@@ -327,16 +323,16 @@ public class DefaultGrailsPluginManager implements GrailsPluginManager {
 				String name = dependencies[i];
 				BigDecimal version = plugin.getDependentVersion(name);
 				if(!hasGrailsPlugin(name, version)) {
-					return false;	
+					return false;
 				}
 			}
 		}
 		return true;
 	}
-	
+
 	/**
 	 * Returns true if there are no plugins left that should, if possible, be loaded before this plugin
-	 * 
+	 *
 	 * @param plugin The plugin
 	 * @return True if there are
 	 */
@@ -351,7 +347,7 @@ public class DefaultGrailsPluginManager implements GrailsPluginManager {
 		}
 		return true;
 	}
-	
+
 
 	private Class loadPluginClass(GroovyClassLoader gcl, Resource r) {
 		Class pluginClass;
@@ -366,21 +362,21 @@ public class DefaultGrailsPluginManager implements GrailsPluginManager {
 	}
 
 	/**
-	 * This method attempts to load a plugin based on its dependencies. If a plugin's 
-	 * dependencies cannot be resolved it will add it to the list of dependencies to 
+	 * This method attempts to load a plugin based on its dependencies. If a plugin's
+	 * dependencies cannot be resolved it will add it to the list of dependencies to
 	 * be resolved later
-	 * 
+	 *
 	 * @param plugin The plugin
 	 */
-	private void attemptPluginLoad(GrailsPlugin plugin) {		
+	private void attemptPluginLoad(GrailsPlugin plugin) {
 		if(areDependenciesResolved(plugin) && areNoneToLoadBefore(plugin)) {
-			registerPlugin(plugin);			
+			registerPlugin(plugin);
 		}
 		else {
 			delayedLoadPlugins.add(plugin);
-		}	
+		}
 	}
-	
+
 
 	private void registerPlugin(GrailsPlugin plugin) {
 		LOG.info("Grails plug-in ["+plugin.getName()+"] with version ["+plugin.getVersion()+"] loaded successfully");
@@ -408,15 +404,15 @@ public class DefaultGrailsPluginManager implements GrailsPluginManager {
 	}
 
 	private void checkInitialised() {
-		if(!initialised) 
+		if(!initialised)
 			throw new IllegalStateException("Must call loadPlugins() before invoking configurational methods on GrailsPluginManager");
 	}
-	
+
 	public void doRuntimeConfiguration(String pluginName, RuntimeSpringConfiguration springConfig) {
 		checkInitialised();
 		GrailsPlugin plugin = getGrailsPlugin(pluginName);
 		if(plugin == null) throw new PluginException("Plugin ["+pluginName+"] not found");
-		
+
 		String[] dependencyNames = plugin.getDependencyNames();
 		for (int i = 0; i < dependencyNames.length; i++) {
 			String dn = dependencyNames[i];
@@ -433,7 +429,7 @@ public class DefaultGrailsPluginManager implements GrailsPluginManager {
 		}
 		plugin.doWithRuntimeConfiguration(springConfig);
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see org.codehaus.groovy.grails.plugins.GrailsPluginManager#doPostProcessing(org.springframework.context.ApplicationContext)
 	 */
@@ -442,7 +438,7 @@ public class DefaultGrailsPluginManager implements GrailsPluginManager {
 		for (Iterator i = pluginList.iterator(); i.hasNext();) {
 			GrailsPlugin plugin = (GrailsPlugin) i.next();
 			plugin.doWithApplicationContext(applicationContext);
-		}		
+		}
 	}
 
 	public Resource[] getPluginResources() {
@@ -497,7 +493,7 @@ public class DefaultGrailsPluginManager implements GrailsPluginManager {
 		checkInitialised();
 		try {
 			XmlSlurper slurper = new XmlSlurper();
-			
+
 			GPathResult result = slurper.parse(inputStream);
 
 			for (Iterator i = pluginList.iterator(); i.hasNext();) {
@@ -511,7 +507,7 @@ public class DefaultGrailsPluginManager implements GrailsPluginManager {
 			Writable w = (Writable)new GroovyShell(b)
 										.evaluate("new groovy.xml.StreamingMarkupBuilder().bind { mkp.declareNamespace(\"\":  \"http://java.sun.com/xml/ns/j2ee\"); mkp.yield node}");
 			w.writeTo(target);
-			
+
 		} catch (ParserConfigurationException e) {
 			throw new PluginException("Unable to configure web.xml due to parser configuration problem: " + e.getMessage(),e);
 		} catch (SAXException e) {
@@ -537,5 +533,5 @@ public class DefaultGrailsPluginManager implements GrailsPluginManager {
 			plugin.setApplication(application);
 		}
 	}
-	
+
 }
