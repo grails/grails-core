@@ -4,6 +4,8 @@ import groovy.lang.*;
 import junit.framework.TestCase;
 import org.codehaus.groovy.grails.commons.DefaultGrailsDomainClass;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
+import org.springframework.beans.BeanWrapper;
+import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.validation.BindException;
 import org.springframework.validation.Errors;
 import org.springframework.validation.FieldError;
@@ -12,10 +14,10 @@ import java.util.*;
 
 public class ConstrainedPropertyTests extends TestCase {
 
-    private Date testDate = new Date();
-    private String testEmail = "rubbish_email";
-    private String testURL = "rubbish_url";
-    private Integer testInteger = new Integer(0);
+    private static final Date BEGINNING_OF_TIME = new Date(0);
+    private final Date NOW = new Date();
+    private final Date ONE_DAY_FROM_NOW = new Date(System.currentTimeMillis() + (24 * 60 * 60 * 1000));
+
     private int testValidatorValue = 0;
 
     public int getTestValidatorValue()
@@ -26,62 +28,6 @@ public class ConstrainedPropertyTests extends TestCase {
     public void setTestValidatorValue(int testValidatorValue)
     {
         this.testValidatorValue = testValidatorValue;
-    }
-
-    /**
-     * @return Returns the testDate.
-     */
-    public Date getTestDate() {
-        return testDate;
-    }
-
-    /**
-     * @param testDate The testDate to set.
-     */
-    public void setTestDate(Date testDate) {
-        this.testDate = testDate;
-    }
-
-    /**
-     * @return Returns the testEmail.
-     */
-    public String getTestEmail() {
-        return testEmail;
-    }
-
-    /**
-     * @param testEmail The testEmail to set.
-     */
-    public void setTestEmail(String testEmail) {
-        this.testEmail = testEmail;
-    }
-
-    /**
-     * @return Returns the testInteger.
-     */
-    public Integer getTestInteger() {
-        return testInteger;
-    }
-
-    /**
-     * @param testInteger The testInteger to set.
-     */
-    public void setTestInteger(Integer testInteger) {
-        this.testInteger = testInteger;
-    }
-    
-    /**
-     * @return Returns the testURL.
-     */
-    public String getTestURL() {
-        return testURL;
-    }
-
-    /**
-     * @param testURL The testURL to set.
-     */
-    public void setTestURL(String testURL) {
-        this.testURL = testURL;
     }
 
     /*
@@ -194,321 +140,170 @@ public class ConstrainedPropertyTests extends TestCase {
 
     }
 
-    /*
-     * Test method for 'org.codehaus.groovy.grails.validation.ConstrainedProperty.applyConstraint(String, Object)'
-     */
-    public void testApplyConstraint() {
+    public void testBlankConstraint() { 
+        // create a constraint tester for a domain class with a String property and a non-blank constraint
+        ConstraintTester constraintTester = new ConstraintTester(new TestClass(), "testURL", ConstrainedProperty.BLANK_CONSTRAINT, new Boolean(false));
 
-        // test validate email
-        // ---------------------------------------------------------------------
-        ConstrainedProperty cp = new ConstrainedProperty(ConstrainedPropertyTests.class,"testEmail", String.class);
+        // validate that an empty (i.e., blank) String yields an error
+        constraintTester.testConstraint("", true);
 
-        cp.applyConstraint( ConstrainedProperty.EMAIL_CONSTRAINT, new Boolean(true) );
-        assertTrue(cp.getAppliedConstraints().size() == 1);
-        Errors errors = new BindException(this,"testObject");
-        Constraint c = null;
-        for (Iterator i = cp.getAppliedConstraints().iterator(); i.hasNext();) {
-            c = (Constraint) i.next();
-            c.validate(this, this.testEmail, errors);
-        }
-        assertTrue(errors.hasErrors());
-        FieldError error = errors.getFieldError("testEmail");
-        assertNotNull(error);
-        assertEquals("rubbish_email",error.getRejectedValue());
+        // validate that a non-empty String does *not* yield an error
+        constraintTester.testConstraint("foo", false);
+    }         
 
-        this.testEmail = "avalidemail@hotmail.com";
-        errors = new BindException(this,"testObject");
-        c.validate(this, this.testEmail,errors);
-        assertFalse(errors.hasErrors());
+    public void testEmailConstraint() {
+        // create a constraint tester for a domain class with a String property and an e-mail constraint
+        ConstraintTester constraintTester = new ConstraintTester(new TestClass(), "testEmail", ConstrainedProperty.EMAIL_CONSTRAINT, new Boolean(true));
 
-        // test validate url
-        // ---------------------------------------------------------------------
-        cp = new ConstrainedProperty(ConstrainedPropertyTests.class,"testURL", String.class);
-        cp.applyConstraint( ConstrainedProperty.URL_CONSTRAINT, new Boolean(true) );
+        // validate that a malformed e-mail address yields an error
+        constraintTester.testConstraint("rubbish_email", true);
 
-        assertTrue(cp.getAppliedConstraints().size() == 1);
-        errors = new BindException(this,"testObject");
-
-        for (Iterator i = cp.getAppliedConstraints().iterator(); i.hasNext();) {
-            c = (Constraint) i.next();
-            c.validate(this, this.testURL, errors);
-        }
-
-        // validate that an invalid URL value yields an error
-        assertTrue(errors.hasErrors());
-        error = errors.getFieldError("testURL");
-        assertNotNull(error);
-        assertEquals(this.testURL,error.getRejectedValue());
-
-        // validate that a valid URL value does *not* yield an error
-        this.testURL = "http://www.google.com";
-        errors = new BindException(this,"testObject");
-        c.validate(this, this.testURL,errors);
-        assertFalse(errors.hasErrors());
-
-        // validate that a null URL value yields an error
-        this.testURL = null;
-        errors = new BindException(this,"testObject");
-        c.validate(this, this.testURL,errors);
-        assertTrue(errors.hasErrors());
-        error = errors.getFieldError("testURL");
-        assertNotNull(error);
-        
-        // test blank constraint
-        // ---------------------------------------------------------------------
-        cp.applyConstraint( ConstrainedProperty.URL_CONSTRAINT, null );
-        cp.applyConstraint( ConstrainedProperty.BLANK_CONSTRAINT, new Boolean(false) );
-
-        assertTrue(cp.getAppliedConstraints().size() == 1);
-        errors = new BindException(this,"testObject");
-        this.testURL = "";
-        for (Iterator i = cp.getAppliedConstraints().iterator(); i.hasNext();) {
-            c = (Constraint) i.next();
-            c.validate(this, this.testURL, errors);
-        }
-        assertTrue(errors.hasErrors());
-        error = errors.getFieldError("testURL");
-        System.out.println(error);
-        assertNotNull(error);
-
-        // test nullable constraint
-        // ---------------------------------------------------------------------
-        cp.applyConstraint( ConstrainedProperty.BLANK_CONSTRAINT, new Boolean(true) );
-        cp.applyConstraint( ConstrainedProperty.NULLABLE_CONSTRAINT, new Boolean(false) );
-
-        errors = new BindException(this,"testObject");
-        this.testURL = null;
-        for (Iterator i = cp.getAppliedConstraints().iterator(); i.hasNext();) {
-            c = (Constraint) i.next();
-            c.validate(this, this.testURL, errors);
-        }
-        assertTrue(errors.hasErrors());
-        error = errors.getFieldError("testURL");
-        System.out.println(error);
-        assertNotNull(error);
-
-        // test inList constraint
-        // ---------------------------------------------------------------------
-        cp.applyConstraint( ConstrainedProperty.NULLABLE_CONSTRAINT, new Boolean(true) );
+        // validate that a well-formed e-mail address does *not* yield an error
+        constraintTester.testConstraint("avalidemail@hotmail.com", false);
+    }       
+    
+    public void testInListConstraint() {
+        // create a constraint tester for a domain class with a String property and an inList constraint with three possible values
         List list = new ArrayList();
         list.add("one");
         list.add("two");
         list.add("three");
-        this.testURL = "something";
-        cp.applyConstraint( ConstrainedProperty.IN_LIST_CONSTRAINT, list );
+        ConstraintTester constraintTester = new ConstraintTester(new TestClass(), "testURL", ConstrainedProperty.IN_LIST_CONSTRAINT, list);
 
-        errors = new BindException(this,"testObject");
-        for (Iterator i = cp.getAppliedConstraints().iterator(); i.hasNext();) {
-            c = (Constraint) i.next();
-            c.validate(this, this.testURL, errors);
-        }
-        assertTrue(errors.hasErrors());
-        error = errors.getFieldError("testURL");
-        System.out.println(error);
-        assertNotNull(error);
-		// Validate that the error includes the correct error code
-		assertTrue(Arrays.asList(error.getCodes()).contains("constrainedPropertyTests.testURL.not.inList"));
-		
-        this.testURL = "two";
-        errors = new BindException(this,"testObject");
-        c.validate(this, this.testURL,errors);
-        assertFalse(errors.hasErrors());
+        // validate that a value *not* in the list yields an error
+        constraintTester.testConstraint("something", true);
 
-        // test length constraint
-        // ---------------------------------------------------------------------
-        cp = new ConstrainedProperty(ConstrainedPropertyTests.class,"testURL", String.class);
-        cp.applyConstraint( ConstrainedProperty.LENGTH_CONSTRAINT, new IntRange(5,15) );
+        // validate that a value in the list does *not* yield an error
+        constraintTester.testConstraint("two", false);
+    }    
 
-        errors = new BindException(this,"testObject");
-        for (Iterator i = cp.getAppliedConstraints().iterator(); i.hasNext();) {
-            c = (Constraint) i.next();
-            c.validate(this, this.testURL, errors);
-        }
+    public void testLengthConstraint() {
+        // create a constraint tester for a domain class with a String property and a length constraint with a range of 5 to 15 characters
+        ConstraintTester constraintTester = new ConstraintTester(new TestClass(), "testURL", ConstrainedProperty.LENGTH_CONSTRAINT, new IntRange(5, 15));
 
-        assertTrue(errors.hasErrors());
-        error = errors.getFieldError("testURL");
-        System.out.println(error);
-        assertNotNull(error);
+        // validate that a value *less than* the minimum length yields an error
+        constraintTester.testConstraint("tiny", true);
 
-        this.testURL = "absolutelytotallytoolong";
-        errors = new BindException(this,"testObject");
-        c.validate(this, this.testURL,errors);
-        assertTrue(errors.hasErrors());
+        // validate that a value *equal to* the minimum length does *not* yield an error
+        constraintTester.testConstraint("12345", false);
 
-        // test min constraint
-        // ---------------------------------------------------------------------
-        final Date BEGINNING_OF_TIME = new Date(0);
-        final Date NOW = new Date();
-        final Date ONE_DAY_FROM_NOW = new Date(System.currentTimeMillis() + 86400000);
-
-        this.testDate = BEGINNING_OF_TIME;
-        cp = new ConstrainedProperty(ConstrainedPropertyTests.class,"testDate", String.class);
-        cp.applyConstraint( ConstrainedProperty.MIN_CONSTRAINT, NOW);
-
-        errors = new BindException(this,"testObject");
-        for (Iterator i = cp.getAppliedConstraints().iterator(); i.hasNext();) {
-            c = (Constraint) i.next();
-            c.validate(this, this.testDate, errors);
-        }
-
-        // validate that a value *less than* the minimum value yields an error
-        assertTrue(errors.hasErrors());
-        error = errors.getFieldError("testDate");
-        System.out.println(error);
-        assertNotNull(error);
-
-        // validate that a value *equal to* the minimum value does *not* yield an error
-        this.testDate = NOW;
-        errors = new BindException(this,"testObject");
-        c.validate(this, this.testDate,errors);
-        assertFalse(errors.hasErrors());
-
+        // validate that a value *between* the minimum and maximum lengths does *not* yield an error
+        constraintTester.testConstraint("1234567890", false);
+        
+        // validate that a value *equal to* the maximum length does *not* yield an error
+        constraintTester.testConstraint("123456789012345", false);
+        
         // validate that a value *greater than* the minimum value does *not* yield an error
-        this.testDate = ONE_DAY_FROM_NOW;
-        errors = new BindException(this,"testObject");
-        c.validate(this, this.testDate,errors);
-        assertFalse(errors.hasErrors());
+        constraintTester.testConstraint("absolutelytotallytoolong", true);
 
         // validate that a null value yields an error
-        this.testDate = null;
-        errors = new BindException(this,"testObject");
-        c.validate(this, this.testDate,errors);
-        assertTrue(errors.hasErrors());
-        error = errors.getFieldError("testDate");
-        System.out.println(error);
-        assertNotNull(error);
-
-        // test max constraint
-        // ---------------------------------------------------------------------
-        this.testDate = BEGINNING_OF_TIME;
-        cp = new ConstrainedProperty(ConstrainedPropertyTests.class,"testDate", String.class);
-        cp.applyConstraint( ConstrainedProperty.MAX_CONSTRAINT, NOW);
-
-        errors = new BindException(this,"testObject");
-        for (Iterator i = cp.getAppliedConstraints().iterator(); i.hasNext();) {
-            c = (Constraint) i.next();
-            c.validate(this, this.testDate, errors);
-        }
-
-        // validate that a value *less than* the maximum value does *not* yield an error
-        assertFalse(errors.hasErrors());
-
-        // validate that a value *equal to* the maximum value does *not* yield an error
-        this.testDate = NOW;
-        errors = new BindException(this,"testObject");
-        c.validate(this, this.testDate,errors);
-        assertFalse(errors.hasErrors());
-
-        // validate that a value *greater than* the maximum value yields an error
-        this.testDate = ONE_DAY_FROM_NOW;
-        errors = new BindException(this,"testObject");
-        c.validate(this, this.testDate,errors);
-        assertTrue(errors.hasErrors());
-        error = errors.getFieldError("testDate");
-        System.out.println(error);
-        assertNotNull(error);
-
-        // validate that a null value yields an error
-        this.testDate = null;
-        errors = new BindException(this,"testObject");
-        c.validate(this, this.testDate,errors);
-        assertTrue(errors.hasErrors());
-        error = errors.getFieldError("testDate");
-        System.out.println(error);
-        assertNotNull(error);
-        
-        // test maxSize constraint
-        // ---------------------------------------------------------------------
-        this.testInteger = new Integer(Integer.MIN_VALUE);
-        cp = new ConstrainedProperty(ConstrainedPropertyTests.class,"testInteger", String.class);
-        cp.applyConstraint( ConstrainedProperty.MAX_SIZE_CONSTRAINT, new Integer(0));
-
-        errors = new BindException(this,"testObject");
-        for (Iterator i = cp.getAppliedConstraints().iterator(); i.hasNext();) {
-            c = (Constraint) i.next();
-            c.validate(this, this.testInteger, errors);
-        }
-
-        // validate that a value *less than* the maximum value does *not* yield an error
-        assertFalse(errors.hasErrors());
-
-        // validate that a value *equal to* the maximum value does *not* yield an error
-        this.testInteger = new Integer(0);
-        errors = new BindException(this,"testObject");
-        c.validate(this, this.testInteger,errors);
-        assertFalse(errors.hasErrors());
-
-        // validate that a value *greater than* the maximum value yields an error
-        this.testInteger = new Integer(Integer.MAX_VALUE);
-        errors = new BindException(this,"testObject");
-        c.validate(this, this.testInteger,errors);
-        assertTrue(errors.hasErrors());
-        error = errors.getFieldError("testInteger");
-        assertNotNull(error);
-        
-        // test minSize constraint
-        // ---------------------------------------------------------------------
-        this.testInteger = new Integer(Integer.MAX_VALUE);
-        cp = new ConstrainedProperty(ConstrainedPropertyTests.class,"testInteger", String.class);
-        cp.applyConstraint( ConstrainedProperty.MIN_SIZE_CONSTRAINT, new Integer(0));
-
-        errors = new BindException(this,"testObject");
-        for (Iterator i = cp.getAppliedConstraints().iterator(); i.hasNext();) {
-            c = (Constraint) i.next();
-            c.validate(this, this.testInteger, errors);
-        }
-
-        // validate that a value *greater than* the minimum value does *not* yield an error
-        assertFalse(errors.hasErrors());
-
-        // validate that a value *equal to* the minimum value does *not* yield an error
-        this.testInteger = new Integer(0);
-        errors = new BindException(this,"testObject");
-        c.validate(this, this.testInteger,errors);
-        assertFalse(errors.hasErrors());
-
-        // validate that a value *less than* the minimum value yields an error
-        this.testInteger = new Integer(Integer.MIN_VALUE);
-        errors = new BindException(this,"testObject");
-        c.validate(this, this.testInteger,errors);
-        assertTrue(errors.hasErrors());
-        error = errors.getFieldError("testInteger");
-        assertNotNull(error);        
-      
-        // test validate matches (regex)
-        // ---------------------------------------------------------------------
-        cp = new ConstrainedProperty(ConstrainedPropertyTests.class,"testURL", String.class);
-        cp.applyConstraint( ConstrainedProperty.MATCHES_CONSTRAINT, "[a-zA-Z]" );
-
-        assertTrue(cp.getAppliedConstraints().size() == 1);
-        errors = new BindException(this,"testObject");
-
-        for (Iterator i = cp.getAppliedConstraints().iterator(); i.hasNext();) {
-            c = (Constraint) i.next();
-            c.validate(this, this.testURL, errors);
-        }
+        constraintTester.testConstraint(null, true);
+    }    
+    
+    public void testMatchesConstraint() {
+        // create a constraint tester for a domain class with a String property and a matches (i.e., regex) constraint limiting the values to alpha-characters only
+        ConstraintTester constraintTester = new ConstraintTester(new TestClass(), "testURL", ConstrainedProperty.MATCHES_CONSTRAINT, "[a-zA-Z]");
 
         // validate that a value *not* matching the regex yields an error
-        this.testURL = "$";
-        assertTrue(errors.hasErrors());
-        error = errors.getFieldError("testURL");
-        assertNotNull(error);
+        constraintTester.testConstraint("$", true);
 
         // validate that a value matching the regex does *not* yield an error
-        this.testURL = "j";
-        errors = new BindException(this,"testObject");
-        c.validate(this, this.testURL,errors);
-        assertFalse(errors.hasErrors());
+        constraintTester.testConstraint("j", false);
+        
+        // validate that a null value yields an error
+        constraintTester.testConstraint(null, true);
+    }
+    
+    public void testMinConstraint() {
+        // create a constraint tester for a domain class with a Date property and a min constraint equal to the current date/time
+        ConstraintTester constraintTester = new ConstraintTester(new TestClass(), "testDate", ConstrainedProperty.MIN_CONSTRAINT, NOW);
+
+        // validate that a value *less than* the minimum value yields an error
+        constraintTester.testConstraint(BEGINNING_OF_TIME, true);
+
+        // validate that a value *equal to* the minimum value does *not* yield an error
+        constraintTester.testConstraint(NOW, false);
+        
+        // validate that a value *greater than* the minimum value does *not* yield an error
+        constraintTester.testConstraint(ONE_DAY_FROM_NOW, false);
 
         // validate that a null value yields an error
-        this.testURL = null;
-        errors = new BindException(this,"testObject");
-        c.validate(this, this.testURL,errors);
-        assertTrue(errors.hasErrors());
-        error = errors.getFieldError("testURL");
-        assertNotNull(error);        
+        constraintTester.testConstraint(null, true);
     }
+    
+    public void testMaxConstraint() {
+        // create a constraint tester for a domain class with a Date property and a max constraint equal to the current date/time
+        ConstraintTester constraintTester = new ConstraintTester(new TestClass(), "testDate", ConstrainedProperty.MAX_CONSTRAINT, NOW);
 
+        // validate that a value *less than* the maximum value does *not* yield an error
+        constraintTester.testConstraint(BEGINNING_OF_TIME, false);
+
+        // validate that a value *equal to* the maximum value does *not* yield an error
+        constraintTester.testConstraint(NOW, false);
+        
+        // validate that a value *greater than* the maximum value yields an error
+        constraintTester.testConstraint(ONE_DAY_FROM_NOW, true);
+
+        // validate that a null value yields an error
+        constraintTester.testConstraint(null, true);
+    }
+    
+    public void testMinSizeConstraint() {
+        // create a constraint tester for a domain class with an Integer property and a minSize constraint equal to zero
+        ConstraintTester constraintTester = new ConstraintTester(new TestClass(), "testInteger", ConstrainedProperty.MIN_SIZE_CONSTRAINT, new Integer(0));
+
+        // validate that a value *less than* the minimum value yields an error
+        constraintTester.testConstraint(new Integer(Integer.MIN_VALUE), true);
+
+        // validate that a value *equal to* the minimum value does *not* yield an error
+        constraintTester.testConstraint(new Integer(0), false);
+        
+        // validate that a value *greater than* the minimum value does *not* yield an error
+        constraintTester.testConstraint(new Integer(Integer.MAX_VALUE), false);
+    }    
+
+    public void testMaxSizeConstraint() {
+        // create a constraint tester for a domain class with an Integer property and a maxSize constraint equal to zero
+        ConstraintTester constraintTester = new ConstraintTester(new TestClass(), "testInteger", ConstrainedProperty.MAX_SIZE_CONSTRAINT, new Integer(0));
+
+        // validate that a value *less than* the maximum value does *not* yield an error
+        constraintTester.testConstraint(new Integer(Integer.MIN_VALUE), false);
+
+        // validate that a value *equal to* the maximum value does *not* yield an error
+        constraintTester.testConstraint(new Integer(0), false);
+        
+        // validate that a value *greater than* the maximum value yields an error
+        constraintTester.testConstraint(new Integer(Integer.MAX_VALUE), true);
+    } 
+
+    public void testNullableConstraint() {
+        // create a constraint tester for a domain class with a String property and a non-nulable constraint
+        ConstraintTester constraintTester = new ConstraintTester(new TestClass(), "testURL", ConstrainedProperty.NULLABLE_CONSTRAINT, new Boolean(false));
+
+        // validate that a null value yields an error
+        constraintTester.testConstraint(null, true);
+
+        // validate that a non-null value does *not* yield an error
+        constraintTester.testConstraint("two", false);
+        
+        // validate that an empty String does *not* yield an error
+        constraintTester.testConstraint("", false);
+    }       
+    
+    public void testUrlConstraint() {
+        // create a constraint tester for a domain class with a String property and a URL constraint
+        ConstraintTester constraintTester = new ConstraintTester(new TestClass(), "testURL", ConstrainedProperty.URL_CONSTRAINT, new Boolean(true));
+
+        // validate that an invalid URL value yields an error
+        constraintTester.testConstraint("rubbish_url", true);
+
+        // validate that a valid URL value does *not* yield an error
+        constraintTester.testConstraint("http://www.google.com", false);
+        
+        // validate that a null URL value yields an error
+        constraintTester.testConstraint(null, true);
+    }
+    
     public void testValidatorConstraint() throws Exception
     {
         ConstrainedProperty cp = new ConstrainedProperty(ConstrainedPropertyTests.class,"testValidatorValue", Integer.class);
@@ -709,5 +504,122 @@ public class ConstrainedPropertyTests extends TestCase {
         emailConstraint.validate(go, go.getProperty("email"), errors );
         assertFalse(errors.hasErrors());
     }
+    
+    /**
+     * Utility class used to test the various constraints.
+     */
+    private class ConstraintTester {
+        
+        private BeanWrapper constrainedBean;
+        private String constrainedPropertyName;
+        private Constraint constraint;
+        
+        /**
+         * Creates and initializes a <code>ConstraintTester</code> object.  Once initilized, you can call <code>testConstraint</code> with
+         * various test values for the constrained property to validate the constraint behavior.
+         * 
+         * @param constrainedObject the object to which the constraint will be applied
+         * @param constrainedPropertyName the name of the property (on the object) to which the constraint will be applied
+         * @param constraintName the name of the constraint to apply (specified using the constants defined in org.codehaus.groovy.grails.validation.ConstrainedProperty)
+         * @param constrainingValue the value of the constraint (e.g., a min value, a regex, etc.)
+         */
+        public ConstraintTester(Object constrainedObject, String constrainedPropertyName, String constraintName, Object constrainingValue) {
+            this.constrainedBean = new BeanWrapperImpl(constrainedObject);
+
+            this.constrainedPropertyName = constrainedPropertyName;
+            
+            ConstrainedProperty cp = new ConstrainedProperty(ConstrainedPropertyTests.class, constrainedPropertyName, this.constrainedBean.getPropertyType(constrainedPropertyName));
+            cp.applyConstraint(constraintName, constrainingValue);
+            this.constraint = (Constraint)cp.getAppliedConstraints().iterator().next();
+        }
+        
+        /**
+         * Tests the constraint using the specified property value and asserts the expected results.
+         * 
+         * @param testValue the property value to use for the test
+         * @param isErrorExpected indicates whether the property value is expected to violate the constraint
+         */
+        public void testConstraint(Object testValue, boolean isErrorExpected) {
+            // initialize the property with the test value
+            this.constrainedBean.setPropertyValue(this.constrainedPropertyName, testValue);
+            
+            // run the validation
+            Errors errors = new BindException(this.constrainedBean.getWrappedInstance(), "testObject");
+            this.constraint.validate(this.constrainedBean.getWrappedInstance(), this.constrainedBean.getPropertyValue(this.constrainedPropertyName), errors); 
+            
+            // validate that we obtained the expected results
+            assertEquals(isErrorExpected, errors.hasErrors());
+            if (isErrorExpected) {
+                FieldError error = errors.getFieldError(this.constrainedPropertyName);
+                assertNotNull(error);              
+            }
+        }        
+    }
+    
+    /**
+     * Simple bean whose instances serve as test objects for the various constraint tests.
+     */
+    private class TestClass {
+        private Date testDate;
+        private String testEmail;
+        private String testURL;
+        private Integer testInteger;
+
+        /**
+         * @return Returns the testDate.
+         */
+        public Date getTestDate() {
+            return testDate;
+        }
+
+        /**
+         * @param testDate The testDate to set.
+         */
+        public void setTestDate(Date testDate) {
+            this.testDate = testDate;
+        }
+
+        /**
+         * @return Returns the testEmail.
+         */
+        public String getTestEmail() {
+            return testEmail;
+        }
+
+        /**
+         * @param testEmail The testEmail to set.
+         */
+        public void setTestEmail(String testEmail) {
+            this.testEmail = testEmail;
+        }
+
+        /**
+         * @return Returns the testInteger.
+         */
+        public Integer getTestInteger() {
+            return testInteger;
+        }
+
+        /**
+         * @param testInteger The testInteger to set.
+         */
+        public void setTestInteger(Integer testInteger) {
+            this.testInteger = testInteger;
+        }
+        
+        /**
+         * @return Returns the testURL.
+         */
+        public String getTestURL() {
+            return testURL;
+        }
+
+        /**
+         * @param testURL The testURL to set.
+         */
+        public void setTestURL(String testURL) {
+            this.testURL = testURL;
+        }        
+    }    
 }
 
