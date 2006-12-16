@@ -22,9 +22,9 @@
  * @since 10-May-2006
  */
 class TopicController extends BaseController {
-	@Property Map levels
-	@Property Page page
-	@Property Page forum
+	Map levels
+	Page page
+	Page forum
 	
 	def afterInterceptor = { model ->
 		def forum = null
