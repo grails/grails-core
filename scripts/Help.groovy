@@ -66,7 +66,9 @@ task ( 'default' : "Prints out the help for each script") {
 	def scripts = []   
 	resolver.getResources("file:${grailsHome}/scripts/**.groovy").each { scripts << it.file }
 	resolver.getResources("file:${basedir}/scripts/*.groovy").each { scripts << it.file }
-	resolver.getResources("file:${basedir}/plugins/*/scripts/*.groovy").each { scripts << it.file }
+	if(new File("${basedir}/plugins/").exists()) {
+		resolver.getResources("file:${basedir}/plugins/*/scripts/*.groovy").each { scripts << it.file }
+	}
         
 	def helpText = ""
 	if(shouldGenerateHelp(scripts)) { 
