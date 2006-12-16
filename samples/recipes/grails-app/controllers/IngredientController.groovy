@@ -59,7 +59,7 @@ class IngredientController {
         return ['ingredient':ingredient]
     }
 
-    @Property save = {
+    def save = {
         def ingredient = new Ingredient()
         ingredient.properties = params
         if(ingredient.save()) {
