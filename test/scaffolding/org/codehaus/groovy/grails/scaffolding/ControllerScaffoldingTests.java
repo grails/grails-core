@@ -48,14 +48,14 @@ AbstractDependencyInjectionSpringContextTests {
 		
 		
 		Class tmpClass = cl.parseClass( "class ScaffoldController {\n" +
-				"@Property boolean scaffold = true" +
+				"boolean scaffold = true" +
 		"}" );
 		
 		
 		Class tmpClass2 = cl.parseClass( "class Scaffold {\n" +
-		"@Property Long id\n" +
-		"@Property Long version\n" +
-		"@Property String name\n" +
+		"Long id\n" +
+		"Long version\n" +
+		"String name\n" +
 		"}" );		
 		
 		this.controllerClass = tmpClass;
