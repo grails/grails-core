@@ -5,7 +5,7 @@
 	<bean id="grailsApplication" class="org.codehaus.groovy.grails.commons.GrailsApplicationFactoryBean">
 		<description>Grails application factory bean</description>
 		<property name="groovyFiles">
-			<value>classpath:**/grails-app/**/*.groovy</value>
+			<value>file:**/grails-app/**/*.groovy</value>
 		</property>
 		<property name="injectionOperation" ref="injectionOperation" />
 	</bean>
@@ -13,14 +13,14 @@
 	<bean id="pluginManager" class="org.codehaus.groovy.grails.plugins.GrailsPluginManagerFactoryBean">
 		<description>A bean that manages Grails plugins</description>
 		<property name="pluginFiles">
-			<value>classpath:**/plugins/*GrailsPlugin.groovy</value>
+			<value>file:**/plugins/*GrailsPlugin.groovy</value>
 		</property>
 		<property name="application" ref="grailsApplication" />
 	</bean>
 	
     <bean id="grailsResourceHolder" singleton="false" class="org.codehaus.groovy.grails.commons.spring.GrailsResourceHolder">
         <property name="resources">
-              <value>classpath:**/grails-app/**/*.groovy</value>
+              <value>file:**/grails-app/**/*.groovy</value>
         </property>
     </bean>    
     
