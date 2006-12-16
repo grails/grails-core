@@ -44,6 +44,7 @@ public class RunTests {
 	private static Log log = LogFactory.getLog(RunTests.class);
 	
 	public static void main(String[] args) {
+		int exitCode = 0;
 		try {     
 			log.info("Bootstrapping Grails from classpath");
 			ConfigurableApplicationContext appCtx = (ConfigurableApplicationContext)GrailsUtil.bootstrapGrailsFromClassPath();
@@ -72,8 +73,8 @@ public class RunTests {
 					interceptor.init();
 				}
 				TestResult r = TestRunner.run(s);
-				
-				if(r.errorCount() > 0 || r.failureCount() > 0) {
+				exitCode = r.errorCount() + r.failureCount();
+				if(exitCode > 0) {
 					System.err.println("Tests failed!");
 				}				
 			}
@@ -84,6 +85,10 @@ public class RunTests {
 		} 
 		catch(Exception e) {
 			log.error("Error executing tests: " + e.getMessage(), e);
+			exitCode = 1;
+		}
+		finally {
+			System.exit(exitCode);
 		}
 	}
 }
