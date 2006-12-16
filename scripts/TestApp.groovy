@@ -86,7 +86,8 @@ task(testApp:"The test app implementation task") {
 	}   
 	catch(Exception e) {
 		println "Error executing tests ${e.message}"
-		e.printStackTrace(System.out)
+		e.printStackTrace(System.out)   
+		Ant.fail("Tests failed with exception!!")
 	}
 	finally {
 		Ant.move(todir:"${basedir}/grails-tests") {
