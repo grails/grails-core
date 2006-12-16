@@ -80,22 +80,14 @@ Grails home is set to: ${grailsHome}
 				scriptName = GCU.getNameFromScript(allArgs.trim())
 			}                                
 			println "Environment set to ${System.getProperty('grails.env')}"
-			def scriptFile = new File("${baseDir.absolutePath}/scripts/${scriptName}.groovy")
 
 			System.setProperty("base.dir", baseDir.absolutePath)
 			
 			try {      
-				
-				if(scriptFile.exists()) {
-					println "Running script ${scriptFile.absolutePath}"
-					Gant.main(["-f", scriptFile.absolutePath] as String[])				
-				}     
-				else {   
-					callPluginOrGrailsScript(scriptName)
-   				}				
+				callPluginOrGrailsScript(scriptName)
 			}
 			catch(Throwable t) {
-				println "Error executing script ${scriptFile}: ${t.message}"
+				println "Error executing script ${scriptName}: ${t.message}"
 				t.printStackTrace(System.out)
 			}
 
@@ -112,11 +104,18 @@ Grails home is set to: ${grailsHome}
 	}     
 	 
 	private static callPluginOrGrailsScript(scriptName) {
-	   def potentialScripts = []
-		def scriptFile = new File("${grailsHome}/scripts/${scriptName}.groovy") 
-		if(scriptFile.exists()) {
-			potentialScripts << scriptFile
-		}                                                          
+		def potentialScripts = []
+
+		def userHome = ANT.antProject.properties."user.home"
+		
+		def scriptLocations = ["${baseDir.absolutePath}/scripts", "${grailsHome}/scripts", "${userHome}/.grails/scripts"]
+		scriptLocations.each {
+			def scriptFile = new File("${it}/${scriptName}.groovy")
+			if(scriptFile.exists()) {
+				potentialScripts << scriptFile
+			}
+		}
+		                       
 		try {
 			def pluginScripts = RESOLVER.getResources("file:${baseDir.absolutePath}/plugins/**/scripts/${scriptName}.groovy")
 			potentialScripts += pluginScripts.collect { it.file }			
@@ -126,7 +125,7 @@ Grails home is set to: ${grailsHome}
 		} 
 		if(potentialScripts.size()>0) {
             if(potentialScripts.size() == 1) {
-				println "Running script ${scriptFile.absolutePath}"
+				println "Running script ${potentialScripts[0].absolutePath}"
 				Gant.main(["-f", potentialScripts[0].absolutePath] as String[])																		
 			}                                      
 			else {
