@@ -206,7 +206,7 @@ class ${className}Controller {
             return "<input type='text' name='${property.name}' value='\${${domainClass.propertyName}?.${property.name}}' />"
         }
         else {
-			if("textarea" == cp.widget || ((cp.maxLength > 250 || cp.length?.to > 250) && cp.maxLength != Integer.MAX_VALUE && !cp.password && !cp.inList)) {
+			if("textarea" == cp.widget || (cp.maxSize > 250 && !cp.password && !cp.inList)) {
                 return "<textarea rows='1' cols='1' name='${property.name}'>\${${domainClass.propertyName}?.${property.name}}</textarea>"
             }
             else {
@@ -220,7 +220,7 @@ class ${className}Controller {
                     def sb = new StringBuffer('<input ')
                     cp.password ? sb << 'type="password" ' : sb << 'type="text" '
                     if(!cp.editable) sb << 'readonly="readonly" '
-                    if(cp.maxLength < Integer.MAX_VALUE ) sb << "maxlength='${cp.maxLength}' "
+                    if(cp.maxSize) sb << "maxlength='${cp.maxSize}' "
                     sb << "name='${property.name}' value='\${${domainClass.propertyName}?.${property.name}}'></input>"
                     return sb.toString()
                 }

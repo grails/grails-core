@@ -974,7 +974,6 @@ public class ConstrainedProperty   {
 
         private int minSize;
 
-
         /**
          * @return Returns the minSize.
          */
@@ -1596,7 +1595,7 @@ public class ConstrainedProperty   {
      * 
      * @deprecated Use <code>getMaxSize()</code>instead
      */
-    public int getMaxLength() {
+    public Integer getMaxLength() {
         return getMaxSize();
     }
 
@@ -1605,7 +1604,7 @@ public class ConstrainedProperty   {
      * 
      * @deprecated Use <code>setMaxSize()</code> instead.
      */
-    public void setMaxLength(int maxLength) {
+    public void setMaxLength(Integer maxLength) {
         setMaxSize(maxLength);
     }
 
@@ -1614,7 +1613,7 @@ public class ConstrainedProperty   {
      * 
      * @deprecated Use <code>getMinSize()</code>instead
      */
-    public int getMinLength() {
+    public Integer getMinLength() {
         return getMinSize();
     }
 
@@ -1624,7 +1623,7 @@ public class ConstrainedProperty   {
      * 
      * @deprecated Use <code>setMinSize()</code> instead.
      */
-    public void setMinLength(int minLength) {
+    public void setMinLength(Integer minLength) {
         setMinSize(minLength);
     }
 
@@ -1642,33 +1641,35 @@ public class ConstrainedProperty   {
     /**
      * @return Returns the maxSize.
      */
-    public int getMaxSize() {
-        MaxSizeConstraint c = (MaxSizeConstraint)this.appliedConstraints.get( MAX_SIZE_CONSTRAINT );
+    public Integer getMaxSize() {
+        Integer maxSize = null;
+        
+        MaxSizeConstraint maxSizeConstraint = (MaxSizeConstraint)this.appliedConstraints.get(MAX_SIZE_CONSTRAINT);
+        SizeConstraint sizeConstraint = (SizeConstraint)this.appliedConstraints.get(SIZE_CONSTRAINT);
 
-        if(c == null) {
-            if(this.appliedConstraints.containsKey( SIZE_CONSTRAINT )) {
-                SizeConstraint sc = (SizeConstraint)this.appliedConstraints.get(SIZE_CONSTRAINT);
-                return sc.getRange().getToInt();
-            }
-            return Integer.MAX_VALUE;
+        if ((maxSizeConstraint != null) || (sizeConstraint != null)) {
+            int maxSizeConstraintValue = maxSizeConstraint != null ? maxSizeConstraint.getMaxSize() : Integer.MAX_VALUE;
+            int sizeConstraintHighValue = sizeConstraint != null ? sizeConstraint.getRange().getToInt() : Integer.MAX_VALUE;
+            
+            maxSize = new Integer(Math.min(maxSizeConstraintValue, sizeConstraintHighValue));
         }
 
-        return c.getMaxSize();        
+        return maxSize;          
     }
 
     /**
      * @param maxSize The maxSize to set.
      */
-    public void setMaxSize(int maxSize) {
+    public void setMaxSize(Integer maxSize) {
         Constraint c = (MaxSizeConstraint)this.appliedConstraints.get( MAX_SIZE_CONSTRAINT );
         if( c != null) {
-            c.setParameter( new Integer(maxSize));
+            c.setParameter(maxSize);
         }
         else {
             c = new MaxSizeConstraint();
             c.setOwningClass(this.owningClass);
             c.setPropertyName(this.propertyName);
-            c.setParameter(new Integer(maxSize));
+            c.setParameter(maxSize);
             this.appliedConstraints.put( MAX_SIZE_CONSTRAINT,c );
         }
     }
@@ -1676,34 +1677,36 @@ public class ConstrainedProperty   {
     /**
      * @return Returns the minSize.
      */
-    public int getMinSize() {
-        MinSizeConstraint c = (MinSizeConstraint)this.appliedConstraints.get(MIN_SIZE_CONSTRAINT);
+    public Integer getMinSize() {
+        Integer minSize = null;
+        
+        MinSizeConstraint minSizeConstraint = (MinSizeConstraint)this.appliedConstraints.get(MIN_SIZE_CONSTRAINT);
+        SizeConstraint sizeConstraint = (SizeConstraint)this.appliedConstraints.get(SIZE_CONSTRAINT);
 
-        if(c == null) {
-            if(this.appliedConstraints.containsKey(SIZE_CONSTRAINT)) {
-                SizeConstraint sc = (SizeConstraint)this.appliedConstraints.get(SIZE_CONSTRAINT);
-                return sc.getRange().getFromInt();
-            }
-            return 0;
+        if ((minSizeConstraint != null) || (sizeConstraint != null)) {
+            int minSizeConstraintValue = minSizeConstraint != null ? minSizeConstraint.getMinSize() : Integer.MIN_VALUE;
+            int sizeConstraintLowValue = sizeConstraint != null ? sizeConstraint.getRange().getFromInt() : Integer.MIN_VALUE;
+            
+            minSize = new Integer(Math.max(minSizeConstraintValue, sizeConstraintLowValue));
         }
 
-        return c.getMinSize();        
+        return minSize;        
     }
 
 
     /**
      * @param minSize The minLength to set.
      */
-    public void setMinSize(int minSize) {
+    public void setMinSize(Integer minSize) {
         Constraint c = (MinSizeConstraint)this.appliedConstraints.get( MIN_SIZE_CONSTRAINT );
         if( c != null) {
-            c.setParameter( new Integer(minSize));
+            c.setParameter(minSize);
         }
         else {
             c = new MinSizeConstraint();
             c.setOwningClass(this.owningClass);
             c.setPropertyName(this.propertyName);
-            c.setParameter(new Integer(minSize));
+            c.setParameter(minSize);
             this.appliedConstraints.put( MIN_SIZE_CONSTRAINT,c );
         }
     }

@@ -140,6 +140,62 @@ public class ConstrainedPropertyTests extends TestCase {
 
     }
 
+    public void testGetMinSize() {
+        // validate that getMinSize returns null if the property has no minSize constraint and no size constraint
+        ConstrainedProperty cp = new ConstrainedProperty(this.getClass(), "testURL", String.class);
+        assertNull(cp.getMinSize());
+
+        // validate that getMinSize returns the correct value when the minSize constraint is defined for the property (but no size constraint is defined)
+        cp.applyConstraint(ConstrainedProperty.MIN_SIZE_CONSTRAINT, new Integer(5));
+        assertEquals(5, cp.getMinSize().intValue());
+
+        // validate that getMinSize returns the correct value when the size constraint is defined for the property (but no minSize constraint is defined)
+        cp = new ConstrainedProperty(this.getClass(), "testURL", String.class);
+        cp.applyConstraint(ConstrainedProperty.SIZE_CONSTRAINT, new IntRange(10, 20));
+        assertEquals(10, cp.getMinSize().intValue());
+        
+        // validate that getMinSize returns the maximum of the minSize constraint and the lower bound of the size constraint
+        //   1) validate where the lower bound of the size constraint is greater than the minSize constraint
+        cp = new ConstrainedProperty(this.getClass(), "testURL", String.class);
+        cp.applyConstraint(ConstrainedProperty.MIN_SIZE_CONSTRAINT, new Integer(6));
+        cp.applyConstraint(ConstrainedProperty.SIZE_CONSTRAINT, new IntRange(11, 21));
+        assertEquals(11, cp.getMinSize().intValue());
+
+        //   2) validate where the minSize constraint is greater than the lower bound of the size constraint
+        cp = new ConstrainedProperty(this.getClass(), "testURL", String.class);
+        cp.applyConstraint(ConstrainedProperty.MIN_SIZE_CONSTRAINT, new Integer(12));
+        cp.applyConstraint(ConstrainedProperty.SIZE_CONSTRAINT, new IntRange(9, 22));
+        assertEquals(12, cp.getMinSize().intValue());
+    }
+
+    public void testGetMaxSize() {
+        // validate that getMaxSize returns null if the property has no maxSize constraint and no size constraint
+        ConstrainedProperty cp = new ConstrainedProperty(this.getClass(), "testURL", String.class);
+        assertNull(cp.getMaxSize());
+
+        // validate that getMaxSize returns the correct value when the maxSize constraint is defined for the property (but no size constraint is defined)
+        cp.applyConstraint(ConstrainedProperty.MAX_SIZE_CONSTRAINT, new Integer(5));
+        assertEquals(5, cp.getMaxSize().intValue());
+
+        // validate that getMaxSize returns the correct value when the size constraint is defined for the property (but no maxSize constraint is defined)
+        cp = new ConstrainedProperty(this.getClass(), "testURL", String.class);
+        cp.applyConstraint(ConstrainedProperty.SIZE_CONSTRAINT, new IntRange(10, 20));
+        assertEquals(20, cp.getMaxSize().intValue());
+        
+        // validate that getMaxSize returns the minimum of the maxSize constraint and the upper bound of the size constraint
+        //   1) validate where the upper bound of the size constraint is less than the maxSize constraint
+        cp = new ConstrainedProperty(this.getClass(), "testURL", String.class);
+        cp.applyConstraint(ConstrainedProperty.MAX_SIZE_CONSTRAINT, new Integer(29));
+        cp.applyConstraint(ConstrainedProperty.SIZE_CONSTRAINT, new IntRange(11, 21));
+        assertEquals(21, cp.getMaxSize().intValue());
+
+        //   2) validate where the maxSize constraint is less than the upper bound of the size constraint
+        cp = new ConstrainedProperty(this.getClass(), "testURL", String.class);
+        cp.applyConstraint(ConstrainedProperty.MAX_SIZE_CONSTRAINT, new Integer(12));
+        cp.applyConstraint(ConstrainedProperty.SIZE_CONSTRAINT, new IntRange(9, 22));
+        assertEquals(12, cp.getMaxSize().intValue());
+    }
+    
     public void testBlankConstraint() { 
         // create a constraint tester for a domain class with a String property and a non-blank constraint
         ConstraintTester constraintTester = new ConstraintTester(new TestClass(), "testURL", ConstrainedProperty.BLANK_CONSTRAINT, new Boolean(false));
@@ -247,8 +303,44 @@ public class ConstrainedPropertyTests extends TestCase {
         // validate that a null value yields an error
         constraintTester.testConstraint(null, true);
     }
+
+    public void testMinSizeConstraintWithArrayProperty() {
+        // create a constraint tester for a domain class with an array property and a minSize constraint equal to 2
+        ConstraintTester constraintTester = new ConstraintTester(new TestClass(), "testArray", ConstrainedProperty.MIN_SIZE_CONSTRAINT, new Integer(2));
+
+        // validate that an array *less than* the minimum size yields an error
+        List list = new ArrayList();
+        list.add("one");
+        constraintTester.testConstraint(list.toArray(), true);
+
+        // validate that a Collection *equal to* the minimum size does *not* yield an error
+        list.add("two");
+        constraintTester.testConstraint(list.toArray(), false);
+        
+        // validate that a Collection *greater than* the minimum size does *not* yield an error
+        list.add("three");
+        constraintTester.testConstraint(list.toArray(), false);
+    }  
     
-    public void testMinSizeConstraint() {
+    public void testMinSizeConstraintWithCollectionProperty() { 
+        // create a constraint tester for a domain class with a Collection property and a minSize constraint equal to 2
+        ConstraintTester constraintTester = new ConstraintTester(new TestClass(), "testCollection", ConstrainedProperty.MIN_SIZE_CONSTRAINT, new Integer(2));
+
+        // validate that a Collection *less than* the minimum size yields an error
+        List list = new ArrayList();
+        list.add("one");
+        constraintTester.testConstraint(list, true);
+
+        // validate that a Collection *equal to* the minimum size does *not* yield an error
+        list.add("two");
+        constraintTester.testConstraint(list, false);
+        
+        // validate that a Collection *greater than* the minimum size does *not* yield an error
+        list.add("three");
+        constraintTester.testConstraint(list, false);
+    }  
+    
+    public void testMinSizeConstraintWithNumberProperty() {
         // create a constraint tester for a domain class with an Integer property and a minSize constraint equal to zero
         ConstraintTester constraintTester = new ConstraintTester(new TestClass(), "testInteger", ConstrainedProperty.MIN_SIZE_CONSTRAINT, new Integer(0));
 
@@ -261,8 +353,58 @@ public class ConstrainedPropertyTests extends TestCase {
         // validate that a value *greater than* the minimum value does *not* yield an error
         constraintTester.testConstraint(new Integer(Integer.MAX_VALUE), false);
     }    
+    
+    public void testMinSizeConstraintWithStringProperty() {
+        // create a constraint tester for a domain class with a String property and a minSize constraint equal to 5
+        ConstraintTester constraintTester = new ConstraintTester(new TestClass(), "testURL", ConstrainedProperty.MIN_SIZE_CONSTRAINT, new Integer(5));
 
-    public void testMaxSizeConstraint() {
+        // validate that a String *less than* the minimum size yields an error
+        constraintTester.testConstraint("tiny", true);
+
+        // validate that a String *equal to* the minimum size does *not* yield an error
+        constraintTester.testConstraint("12345", false);
+        
+        // validate that a String *greater than* the minimum size does *not* yield an error
+        constraintTester.testConstraint("1234567890", false);
+    }  
+
+    public void testMaxSizeConstraintWithArrayProperty() {
+        // create a constraint tester for a domain class with an array property and a maxSize constraint equal to 2
+        ConstraintTester constraintTester = new ConstraintTester(new TestClass(), "testArray", ConstrainedProperty.MAX_SIZE_CONSTRAINT, new Integer(2));
+
+        // validate that an array *less than* the maximum size does *not* yield an error
+        List list = new ArrayList();
+        list.add("one");
+        constraintTester.testConstraint(list.toArray(), false);
+
+        // validate that a Collection *equal to* the maximum size does *not* yield an error
+        list.add("two");
+        constraintTester.testConstraint(list.toArray(), false);
+        
+        // validate that a Collection *greater than* the maximum size yields an error
+        list.add("three");
+        constraintTester.testConstraint(list.toArray(), true);
+    }  
+    
+    public void testMaxSizeConstraintWithCollectionProperty() { 
+        // create a constraint tester for a domain class with a Collection property and a maxSize constraint equal to 2
+        ConstraintTester constraintTester = new ConstraintTester(new TestClass(), "testCollection", ConstrainedProperty.MAX_SIZE_CONSTRAINT, new Integer(2));
+
+        // validate that a Collection *less than* the maximum size does *not* yield an error
+        List list = new ArrayList();
+        list.add("one");
+        constraintTester.testConstraint(list, false);
+
+        // validate that a Collection *equal to* the maximum size does *not* yield an error
+        list.add("two");
+        constraintTester.testConstraint(list, false);
+        
+        // validate that a Collection *greater than* the maximum size yields an error
+        list.add("three");
+        constraintTester.testConstraint(list, true);
+    }  
+    
+    public void testMaxSizeConstraintWithNumberProperty() {
         // create a constraint tester for a domain class with an Integer property and a maxSize constraint equal to zero
         ConstraintTester constraintTester = new ConstraintTester(new TestClass(), "testInteger", ConstrainedProperty.MAX_SIZE_CONSTRAINT, new Integer(0));
 
@@ -276,6 +418,20 @@ public class ConstrainedPropertyTests extends TestCase {
         constraintTester.testConstraint(new Integer(Integer.MAX_VALUE), true);
     } 
 
+    public void testMaxSizeConstraintWithStringProperty() {
+        // create a constraint tester for a domain class with a String property and a maxSize constraint equal to 5
+        ConstraintTester constraintTester = new ConstraintTester(new TestClass(), "testURL", ConstrainedProperty.MAX_SIZE_CONSTRAINT, new Integer(5));
+
+        // validate that a String *less than* the minimum size does *not* yield an error
+        constraintTester.testConstraint("tiny", false);
+
+        // validate that a String *equal to* the minimum size does *not* yield an error
+        constraintTester.testConstraint("12345", false);
+        
+        // validate that a String *greater than* the minimum size yields an error
+        constraintTester.testConstraint("1234567890", true);
+    } 
+    
     public void testNullableConstraint() {
         // create a constraint tester for a domain class with a String property and a non-nulable constraint
         ConstraintTester constraintTester = new ConstraintTester(new TestClass(), "testURL", ConstrainedProperty.NULLABLE_CONSTRAINT, new Boolean(false));
@@ -528,7 +684,7 @@ public class ConstrainedPropertyTests extends TestCase {
 
             this.constrainedPropertyName = constrainedPropertyName;
             
-            ConstrainedProperty cp = new ConstrainedProperty(ConstrainedPropertyTests.class, constrainedPropertyName, this.constrainedBean.getPropertyType(constrainedPropertyName));
+            ConstrainedProperty cp = new ConstrainedProperty(constrainedObject.getClass(), constrainedPropertyName, this.constrainedBean.getPropertyType(constrainedPropertyName));
             cp.applyConstraint(constraintName, constrainingValue);
             this.constraint = (Constraint)cp.getAppliedConstraints().iterator().next();
         }
@@ -560,11 +716,42 @@ public class ConstrainedPropertyTests extends TestCase {
      * Simple bean whose instances serve as test objects for the various constraint tests.
      */
     private class TestClass {
+        private Object[] testArray;
+        private Collection testCollection;
         private Date testDate;
         private String testEmail;
         private String testURL;
         private Integer testInteger;
 
+
+        /**
+         * @return Returns the testArray.
+         */
+        public Object[] getTestArray() {
+            return testArray;
+        }
+
+        /**
+         * @param testArray The testArray to set.
+         */
+        public void setTestArray(Object[] testArray) {
+            this.testArray = testArray;
+        }     
+        
+        /**
+         * @return Returns the testCollection.
+         */
+        public Collection getTestCollection() {
+            return testCollection;
+        }
+
+        /**
+         * @param testCollection The testCollection to set.
+         */
+        public void setTestCollection(Collection testCollection) {
+            this.testCollection = testCollection;
+        }   
+        
         /**
          * @return Returns the testDate.
          */
@@ -619,7 +806,7 @@ public class ConstrainedPropertyTests extends TestCase {
          */
         public void setTestURL(String testURL) {
             this.testURL = testURL;
-        }        
+        }
     }    
 }
 
