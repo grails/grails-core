@@ -37,7 +37,16 @@ serverPort = System.getProperty('server.port') ? System.getProperty('server.port
 basedir = System.getProperty("base.dir")    
 baseFile = new File(basedir)
 baseName = baseFile.name
-resolver = new PathMatchingResourcePatternResolver()
+resolver = new PathMatchingResourcePatternResolver()    
+// a resolver that doesn't throw exceptions when resolving resources
+resolveResources = { String pattern ->
+	try {
+		return resolver.getResources(pattern)	   
+	}
+	catch(Exception e) {
+     	return []
+	}	
+}
 
 args = System.getProperty("grails.cli.args")     
 
