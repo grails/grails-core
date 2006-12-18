@@ -46,7 +46,6 @@ class HelpEvaluatingCategory {
 def shouldGenerateHelp =  { List scripts ->
 	def countFile = new File("${grailsHome}/scripts/count.tmp")	
 	if(!countFile.exists()) {  
-		println "Doesn't exist" 
 		countFile << scripts.size()
 		return true
 	}                                             
@@ -64,10 +63,11 @@ def shouldGenerateHelp =  { List scripts ->
 
 task ( 'default' : "Prints out the help for each script") {
 	def scripts = []   
-	resolver.getResources("file:${grailsHome}/scripts/**.groovy").each { scripts << it.file }
-	resolver.getResources("file:${basedir}/scripts/*.groovy").each { scripts << it.file }
-	if(new File("${basedir}/plugins/").exists()) {
-		resolver.getResources("file:${basedir}/plugins/*/scripts/*.groovy").each { scripts << it.file }
+    resolveResources("file:${grailsHome}/scripts/**.groovy").each { scripts << it.file }	
+	resolveResources("file:${basedir}/scripts/*.groovy").each { scripts << it.file }		
+	
+	if(new File("${basedir}/plugins").exists()) {	
+		resolveResources("file:${basedir}/plugins/*/scripts/*.groovy").each { scripts << it.file }  
 	}
         
 	def helpText = ""
