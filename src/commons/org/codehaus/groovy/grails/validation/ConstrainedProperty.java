@@ -889,11 +889,11 @@ public class ConstrainedProperty   {
                 if (propertyValue instanceof Float) {
                     bigDecimal = new BigDecimal(((Float) propertyValue).toString());
                     bigDecimal = getScaledValue(bigDecimal);
-                    bean.setPropertyValue(this.getPropertyName(), Float.valueOf(bigDecimal.floatValue()));
+                    bean.setPropertyValue(this.getPropertyName(), new Float(bigDecimal.floatValue()));
                 } else if (propertyValue instanceof Double) {
                     bigDecimal = new BigDecimal(((Double) propertyValue).toString());
                     bigDecimal = getScaledValue(bigDecimal);
-                    bean.setPropertyValue(this.getPropertyName(), Double.valueOf(bigDecimal.doubleValue()));
+                    bean.setPropertyValue(this.getPropertyName(), new Double(bigDecimal.doubleValue()));
                 } else if (propertyValue instanceof BigDecimal) {
                     bigDecimal = (BigDecimal) propertyValue;
                     bigDecimal = getScaledValue(bigDecimal);
