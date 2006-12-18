@@ -69,6 +69,11 @@ task ( 'default' : "Prints out the help for each script") {
 	if(new File("${basedir}/plugins").exists()) {	
 		resolveResources("file:${basedir}/plugins/*/scripts/*.groovy").each { scripts << it.file }  
 	}
+
+	def userHome = Ant.antProject.properties."user.home"
+	if(new File("${userHome}/.grails/scripts/").exists()) {
+		resolveResources("file:${userHome}/.grails/scripts/*.groovy").each { scripts << it.file }
+	}
         
 	def helpText = ""
 	if(shouldGenerateHelp(scripts)) { 
