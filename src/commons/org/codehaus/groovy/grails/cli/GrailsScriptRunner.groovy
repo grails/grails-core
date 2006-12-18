@@ -130,12 +130,15 @@ Grails home is set to: ${grailsHome}
 				Gant.main(["-f", potentialScripts[0].absolutePath] as String[])																		
 			}                                      
 			else {
-				println "Multiple options please select:"
+				println "Multiple options please select:"  
+				def validArgs = []
 				potentialScripts.eachWithIndex { f, i ->
 					println "[${i+1}] $f "
-				}                     
-				ANT.input(message: "Enter #:", addproperty:"grails.script.number")
-				def number = ANT.antProject.properties."grails.script.number".toInteger()
+					validArgs << i+1
+				}               
+				ANT.input(message: "Enter # ",validargs:validArgs.join(","), addproperty:"grails.script.number")
+                def number = ANT.antProject.properties."grails.script.number".toInteger()        
+
 				println "Running script ${potentialScripts[number-1].absolutePath}"				
 				Gant.main(["-f", potentialScripts[number-1].absolutePath] as String[])																						
 			}
