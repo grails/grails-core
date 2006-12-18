@@ -4,12 +4,15 @@ import groovy.lang.*;
 import junit.framework.TestCase;
 import org.codehaus.groovy.grails.commons.DefaultGrailsDomainClass;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
+import org.codehaus.groovy.grails.validation.exceptions.ConstraintException;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.validation.BindException;
 import org.springframework.validation.Errors;
 import org.springframework.validation.FieldError;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.*;
 
 public class ConstrainedPropertyTests extends TestCase {
@@ -30,7 +33,7 @@ public class ConstrainedPropertyTests extends TestCase {
         this.testValidatorValue = testValidatorValue;
     }
 
-    /*
+    /* 
      * Test method for 'org.codehaus.groovy.grails.validation.ConstrainedProperty.supportsContraint(String)'
      */
     public void testSupportsContraint() {
@@ -51,7 +54,9 @@ public class ConstrainedPropertyTests extends TestCase {
         assertTrue(cp.supportsContraint( ConstrainedProperty.URL_CONSTRAINT ));
         assertTrue(cp.supportsContraint( ConstrainedProperty.VALIDATOR_CONSTRAINT ));
 
+        assertFalse(cp.supportsContraint( ConstrainedProperty.SCALE_CONSTRAINT ));
 
+        
         cp = new ConstrainedProperty(ConstrainedPropertyTests.class,"testProperty", Collection.class);
 
         assertTrue(cp.supportsContraint( ConstrainedProperty.MAX_SIZE_CONSTRAINT ));
@@ -68,6 +73,7 @@ public class ConstrainedPropertyTests extends TestCase {
         assertFalse(cp.supportsContraint( ConstrainedProperty.MAX_CONSTRAINT ));
         assertFalse(cp.supportsContraint( ConstrainedProperty.MIN_CONSTRAINT ));
         assertFalse(cp.supportsContraint( ConstrainedProperty.RANGE_CONSTRAINT ));
+        assertFalse(cp.supportsContraint( ConstrainedProperty.SCALE_CONSTRAINT ));
         assertFalse(cp.supportsContraint( ConstrainedProperty.URL_CONSTRAINT ));
 
         cp = new ConstrainedProperty(ConstrainedPropertyTests.class,"testProperty", Number.class);
@@ -86,6 +92,7 @@ public class ConstrainedPropertyTests extends TestCase {
         assertFalse(cp.supportsContraint( ConstrainedProperty.BLANK_CONSTRAINT ));
         assertFalse(cp.supportsContraint( ConstrainedProperty.EMAIL_CONSTRAINT ));
         assertFalse(cp.supportsContraint( ConstrainedProperty.MATCHES_CONSTRAINT ));
+        assertFalse(cp.supportsContraint( ConstrainedProperty.SCALE_CONSTRAINT ));
         assertFalse(cp.supportsContraint( ConstrainedProperty.URL_CONSTRAINT ));
 
         cp = new ConstrainedProperty(ConstrainedPropertyTests.class,"testProperty", Date.class);
@@ -100,6 +107,7 @@ public class ConstrainedPropertyTests extends TestCase {
         assertFalse(cp.supportsContraint( ConstrainedProperty.BLANK_CONSTRAINT ));
         assertFalse(cp.supportsContraint( ConstrainedProperty.EMAIL_CONSTRAINT ));
         assertFalse(cp.supportsContraint( ConstrainedProperty.MATCHES_CONSTRAINT ));
+        assertFalse(cp.supportsContraint( ConstrainedProperty.SCALE_CONSTRAINT ));
         assertFalse(cp.supportsContraint( ConstrainedProperty.URL_CONSTRAINT ));
 
 
@@ -123,6 +131,7 @@ public class ConstrainedPropertyTests extends TestCase {
         assertFalse(cp.supportsContraint( ConstrainedProperty.MAX_SIZE_CONSTRAINT ));
         assertFalse(cp.supportsContraint( ConstrainedProperty.MIN_SIZE_CONSTRAINT ));
         assertFalse(cp.supportsContraint( ConstrainedProperty.SIZE_CONSTRAINT ));
+        assertFalse(cp.supportsContraint( ConstrainedProperty.SCALE_CONSTRAINT ));
 
         cp = new ConstrainedProperty(ConstrainedPropertyTests.class,"testProperty", Comparable.class);
 
@@ -136,8 +145,26 @@ public class ConstrainedPropertyTests extends TestCase {
         assertFalse(cp.supportsContraint( ConstrainedProperty.BLANK_CONSTRAINT ));
         assertFalse(cp.supportsContraint( ConstrainedProperty.EMAIL_CONSTRAINT ));
         assertFalse(cp.supportsContraint( ConstrainedProperty.MATCHES_CONSTRAINT ));
+        assertFalse(cp.supportsContraint( ConstrainedProperty.SCALE_CONSTRAINT ));
         assertFalse(cp.supportsContraint( ConstrainedProperty.URL_CONSTRAINT ));
 
+        cp = new ConstrainedProperty(ConstrainedPropertyTests.class,"testProperty", Float.class);
+        assertTrue(cp.supportsContraint( ConstrainedProperty.SCALE_CONSTRAINT ));
+
+        cp = new ConstrainedProperty(ConstrainedPropertyTests.class,"testProperty", Double.class);
+        assertTrue(cp.supportsContraint( ConstrainedProperty.SCALE_CONSTRAINT ));
+
+        cp = new ConstrainedProperty(ConstrainedPropertyTests.class,"testProperty", BigDecimal.class);
+        assertTrue(cp.supportsContraint( ConstrainedProperty.SCALE_CONSTRAINT ));
+
+        cp = new ConstrainedProperty(ConstrainedPropertyTests.class,"testProperty", Integer.class);
+        assertFalse(cp.supportsContraint( ConstrainedProperty.SCALE_CONSTRAINT ));
+        
+        cp = new ConstrainedProperty(ConstrainedPropertyTests.class,"testProperty", Long.class);
+        assertFalse(cp.supportsContraint( ConstrainedProperty.SCALE_CONSTRAINT ));
+
+        cp = new ConstrainedProperty(ConstrainedPropertyTests.class,"testProperty", BigInteger.class);
+        assertFalse(cp.supportsContraint( ConstrainedProperty.SCALE_CONSTRAINT ));
     }
 
     public void testGetMinSize() {
@@ -445,6 +472,98 @@ public class ConstrainedPropertyTests extends TestCase {
         // validate that an empty String does *not* yield an error
         constraintTester.testConstraint("", false);
     }       
+
+    public void testScaleConstraint() { 
+        // test a Float value that should round down
+        assertScaleConstraintForFloatValue(3, 0.1234f, 0.123f);
+
+        // test a Float value that should round up
+        assertScaleConstraintForFloatValue(3, 0.1235f, 0.124f);
+
+        // test a Float value that should not change (i.e., should require no rounding)
+        assertScaleConstraintForFloatValue(3, 0.12f, 0.120f);
+
+        // test an integral value masquerading as a Float 
+        assertScaleConstraintForFloatValue(3, 47f, 47.000f);        
+
+        // test a scale of zero applied to a Float 
+        assertScaleConstraintForFloatValue(0, 0.123f, 0f); 
+        
+        // test a Double value that should round down
+        assertScaleConstraintForDoubleValue(3, 0.1234, 0.123);
+
+        // test a Double value that should round up
+        assertScaleConstraintForDoubleValue(3, 0.1235, 0.124);
+
+        // test a Double value that should not change (i.e., should require no rounding)
+        assertScaleConstraintForDoubleValue(3, 0.12, 0.120);
+
+        // test an integral value masquerading as a Double 
+        assertScaleConstraintForDoubleValue(3, 47d, 47.000);
+
+        // test a scale of zero applied to a Double 
+        assertScaleConstraintForDoubleValue(0, 0.123, 0d); 
+        
+        // test a BigDecimal value that should round down
+        assertScaleConstraintForBigDecimalValue(3, "0.1234", "0.123");
+
+        // test a BigDecimal value that should round up
+        assertScaleConstraintForBigDecimalValue(3, "0.1235", "0.124");
+
+        // test a BigDecimal value that should not change (i.e., should require no rounding)
+        assertScaleConstraintForBigDecimalValue(3, "0.12", "0.120");
+
+        // test an integral value masquerading as a BigDecimal 
+        assertScaleConstraintForBigDecimalValue(3, "47", "47.000");      
+        
+        // test a scale of zero applied to a BigDecimal 
+        assertScaleConstraintForBigDecimalValue(0, "0.123", "0");      
+        
+        // validate that a negative scale value yields an exception
+        try {
+            ConstrainedProperty cp = new ConstrainedProperty(TestClass.class, "testFloat", Float.class);
+            cp.applyConstraint(ConstrainedProperty.SCALE_CONSTRAINT, new Integer(-1));
+            fail("Failed to throw ConstraintException when given a negative scale value.");
+        }
+        catch(ConstraintException e) {
+        }
+    }     
+
+    private void assertScaleConstraintForFloatValue(int scale, float originalValue, float expectedScaledValue) {
+        // create a constraint tester for a domain class with a Float property and a scale constraint
+        TestClass testObject = new TestClass();
+        ConstraintTester constraintTester = new ConstraintTester(testObject, "testFloat", ConstrainedProperty.SCALE_CONSTRAINT, new Integer(scale));
+
+        // apply the constraint (which should never generate errors)
+        constraintTester.testConstraint(new Float(originalValue), false);
+        
+        // validate the constraint yielded the expected value
+        assertEquals(expectedScaledValue, testObject.getTestFloat().floatValue(), 0f);
+    }
+    
+    private void assertScaleConstraintForDoubleValue(int scale, double originalValue, double expectedScaledValue) {
+        // create a constraint tester for a domain class with a Double property and a scale constraint
+        TestClass testObject = new TestClass();
+        ConstraintTester constraintTester = new ConstraintTester(testObject, "testDouble", ConstrainedProperty.SCALE_CONSTRAINT, new Integer(scale));
+
+        // apply the constraint (which should never generate errors)
+        constraintTester.testConstraint(new Double(originalValue), false);
+        
+        // validate the constraint yielded the expected value
+        assertEquals(expectedScaledValue, testObject.getTestDouble().doubleValue(), 0d);
+    }
+    
+    private void assertScaleConstraintForBigDecimalValue(int scale, String originalValue, String expectedScaledValue) {
+        // create a constraint tester for a domain class with a BigDecimal property and a scale constraint
+        TestClass testObject = new TestClass();
+        ConstraintTester constraintTester = new ConstraintTester(testObject, "testBigDecimal", ConstrainedProperty.SCALE_CONSTRAINT, new Integer(scale));
+
+        // apply the constraint (which should never generate errors)
+        constraintTester.testConstraint(new BigDecimal(originalValue), false);
+        
+        // validate the constraint yielded the expected value
+        assertEquals(new BigDecimal(expectedScaledValue), testObject.getTestBigDecimal());
+    }
     
     public void testUrlConstraint() {
         // create a constraint tester for a domain class with a String property and a URL constraint
@@ -717,93 +836,83 @@ public class ConstrainedPropertyTests extends TestCase {
      */
     private class TestClass {
         private Object[] testArray;
+        private BigDecimal testBigDecimal;
         private Collection testCollection;
         private Date testDate;
+        private Double testDouble;
         private String testEmail;
-        private String testURL;
+        private Float testFloat;
         private Integer testInteger;
+        private String testURL;
 
-
-        /**
-         * @return Returns the testArray.
-         */
         public Object[] getTestArray() {
             return testArray;
         }
 
-        /**
-         * @param testArray The testArray to set.
-         */
         public void setTestArray(Object[] testArray) {
             this.testArray = testArray;
         }     
+
+        public BigDecimal getTestBigDecimal() {
+            return testBigDecimal;
+        }
+
+        public void setTestBigDecimal(BigDecimal testBigDecimal) {
+            this.testBigDecimal = testBigDecimal;
+        }
         
-        /**
-         * @return Returns the testCollection.
-         */
         public Collection getTestCollection() {
             return testCollection;
         }
 
-        /**
-         * @param testCollection The testCollection to set.
-         */
         public void setTestCollection(Collection testCollection) {
             this.testCollection = testCollection;
         }   
         
-        /**
-         * @return Returns the testDate.
-         */
         public Date getTestDate() {
             return testDate;
         }
 
-        /**
-         * @param testDate The testDate to set.
-         */
         public void setTestDate(Date testDate) {
             this.testDate = testDate;
         }
 
-        /**
-         * @return Returns the testEmail.
-         */
+        public Double getTestDouble() {
+            return testDouble;
+        }
+
+        public void setTestDouble(Double testDouble) {
+            this.testDouble = testDouble;
+        }
+        
         public String getTestEmail() {
             return testEmail;
         }
 
-        /**
-         * @param testEmail The testEmail to set.
-         */
         public void setTestEmail(String testEmail) {
             this.testEmail = testEmail;
         }
 
-        /**
-         * @return Returns the testInteger.
-         */
+        public Float getTestFloat() {
+            return testFloat;
+        }
+
+        public void setTestFloat(Float testFloat) {
+            this.testFloat = testFloat;
+        }
+        
         public Integer getTestInteger() {
             return testInteger;
         }
 
-        /**
-         * @param testInteger The testInteger to set.
-         */
         public void setTestInteger(Integer testInteger) {
             this.testInteger = testInteger;
         }
         
-        /**
-         * @return Returns the testURL.
-         */
         public String getTestURL() {
             return testURL;
         }
 
-        /**
-         * @param testURL The testURL to set.
-         */
         public void setTestURL(String testURL) {
             this.testURL = testURL;
         }

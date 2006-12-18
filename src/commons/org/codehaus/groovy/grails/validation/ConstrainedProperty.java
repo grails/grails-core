@@ -35,6 +35,7 @@ import org.springframework.context.NoSuchMessageException;
 import org.springframework.validation.Errors;
 
 import java.lang.reflect.Array;
+import java.math.BigDecimal;
 import java.text.MessageFormat;
 import java.util.*;
 
@@ -118,6 +119,7 @@ public class ConstrainedProperty   {
     public static final String MIN_SIZE_CONSTRAINT = "minSize";
     public static final String MAX_LENGTH_CONSTRAINT = "maxLength";
     public static final String MIN_LENGTH_CONSTRAINT = "minLength";
+    public static final String SCALE_CONSTRAINT = "scale";
     public static final String NOT_EQUAL_CONSTRAINT = "notEqual";
     public static final String NULLABLE_CONSTRAINT = "nullable";
     public static final String VALIDATOR_CONSTRAINT = "validator";
@@ -168,6 +170,7 @@ public class ConstrainedProperty   {
         constraints.put( MAX_LENGTH_CONSTRAINT, MaxSizeConstraint.class );
         constraints.put( MIN_SIZE_CONSTRAINT, MinSizeConstraint.class );
         constraints.put( MIN_LENGTH_CONSTRAINT, MinSizeConstraint.class );
+        constraints.put( SCALE_CONSTRAINT, ScaleConstraint.class );
         constraints.put( NULLABLE_CONSTRAINT, NullableConstraint.class );
         constraints.put( NOT_EQUAL_CONSTRAINT, NotEqualConstraint.class );
         constraints.put( VALIDATOR_CONSTRAINT, ValidatorConstraint.class );
@@ -793,8 +796,126 @@ public class ConstrainedProperty   {
     }
 
     /**
-     * A constraint that validates size of the property, for strings and arrays this is the length, collections
-     * the size and numbers the value
+     * A constraint to manage the scale for floating point numbers (i.e., the
+     * number of digits to the right of the decimal point).
+     * 
+     * This constraint supports properties of the following types:
+     * <ul>
+     * <li>java.lang.Float</li>
+     * <li>java.lang.Double</li>
+     * <li>java.math.BigDecimal (and its subclasses)</li>
+     * </ul>
+     * 
+     * When applied, this constraint determines if the number includes more
+     * nonzero decimal places than the scale permits. If so, it rounds the number
+     * to the maximum number of decimal places allowed by the scale.
+     * 
+     * The rounding behavior described above occurs automatically when the
+     * constraint is applied. This constraint does <i>not</i> generate
+     * validation errors.
+     */
+    static class ScaleConstraint extends AbstractConstraint {
+
+        private int scale;
+
+        /*
+         * (non-Javadoc)
+         * 
+         * @see org.codehaus.groovy.grails.validation.Constraint#supports(java.lang.Class)
+         */
+        public boolean supports(Class type) {
+            boolean isSupported = false;
+
+            if (type != null) {
+                isSupported = Float.class.isAssignableFrom(type) || Double.class.isAssignableFrom(type)
+                        || BigDecimal.class.isAssignableFrom(type);
+            }
+
+            return isSupported;
+        }
+
+        /*
+         * (non-Javadoc)
+         * 
+         * @see org.codehaus.groovy.grails.validation.Constraint#getName()
+         */
+        public String getName() {
+            return SCALE_CONSTRAINT;
+        }
+
+        /**
+         * @return the scale
+         */
+        public int getScale() {
+            return this.scale;
+        }
+
+        /*
+         * (non-Javadoc)
+         * 
+         * @see org.codehaus.groovy.grails.validation.ConstrainedProperty.AbstractConstraint#setParameter(java.lang.Object)
+         */
+        public void setParameter(Object constraintParameter) {
+            if (!(constraintParameter instanceof Integer)) {
+                throw new IllegalArgumentException("Parameter for constraint [" + this.getName() + "] of property ["
+                        + this.constraintPropertyName + "] of class [" + this.constraintOwningClass
+                        + "] must be a of type [java.lang.Integer]");
+            }
+
+            int requestedScale = ((Integer) constraintParameter).intValue();
+
+            if (requestedScale < 0) {
+                throw new IllegalArgumentException("Parameter for constraint [" + this.getName() + "] of property ["
+                        + this.constraintPropertyName + "] of class [" + this.constraintOwningClass
+                        + "] must have a nonnegative value");
+            }
+
+            this.scale = requestedScale;
+            super.setParameter(constraintParameter);
+        }
+
+        /*
+         * (non-Javadoc)
+         * 
+         * @see org.codehaus.groovy.grails.validation.ConstrainedProperty.AbstractConstraint#processValidate(java.lang.Object,
+         *      java.lang.Object, org.springframework.validation.Errors)
+         */
+        protected void processValidate(Object target, Object propertyValue, Errors errors) {
+            if (propertyValue != null) {
+                BigDecimal bigDecimal = null;
+
+                BeanWrapper bean = new BeanWrapperImpl(target);
+
+                if (propertyValue instanceof Float) {
+                    bigDecimal = new BigDecimal(((Float) propertyValue).toString());
+                    bigDecimal = getScaledValue(bigDecimal);
+                    bean.setPropertyValue(this.getPropertyName(), Float.valueOf(bigDecimal.floatValue()));
+                } else if (propertyValue instanceof Double) {
+                    bigDecimal = new BigDecimal(((Double) propertyValue).toString());
+                    bigDecimal = getScaledValue(bigDecimal);
+                    bean.setPropertyValue(this.getPropertyName(), Double.valueOf(bigDecimal.doubleValue()));
+                } else if (propertyValue instanceof BigDecimal) {
+                    bigDecimal = (BigDecimal) propertyValue;
+                    bigDecimal = getScaledValue(bigDecimal);
+                    bean.setPropertyValue(this.getPropertyName(), bigDecimal);
+                } else {
+                    throw new IllegalArgumentException("Unsupported type detected in constraint [" + this.getName()
+                            + "] of property [" + constraintPropertyName + "] of class [" + constraintOwningClass + "]");
+                }
+            }
+        }
+
+        /**
+         * @return the <code>BigDecimal</code> object that results from applying the contraint's scale to the underlying number
+         */
+        private BigDecimal getScaledValue(BigDecimal originalValue) {
+            return originalValue.setScale(this.scale, BigDecimal.ROUND_HALF_UP);
+        }
+    }    
+    
+    /**
+     * A constraint that validates size of the property, for strings and arrays
+     * this is the length, collections the size and numbers the value
      */
     static class SizeConstraint extends AbstractConstraint {
 
