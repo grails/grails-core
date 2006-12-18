@@ -104,7 +104,7 @@ Grails home is set to: ${grailsHome}
 	}     
 	 
 	private static callPluginOrGrailsScript(scriptName) {
-		def potentialScripts = []
+		def potentialScripts = [] 
 
 		def userHome = ANT.antProject.properties."user.home"
 		
@@ -123,7 +123,8 @@ Grails home is set to: ${grailsHome}
 		catch(Exception e) {
 			println "Note: No plugin scripts found"
 		} 
-		if(potentialScripts.size()>0) {
+		if(potentialScripts.size()>0) {  
+			potentialScripts = potentialScripts.unique()
             if(potentialScripts.size() == 1) {
 				println "Running script ${potentialScripts[0].absolutePath}"
 				Gant.main(["-f", potentialScripts[0].absolutePath] as String[])																		
