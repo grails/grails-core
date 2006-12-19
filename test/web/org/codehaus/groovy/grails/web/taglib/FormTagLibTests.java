@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.dom4j.Attribute;
 import org.dom4j.Document;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
@@ -87,6 +88,62 @@ public class FormTagLibTests extends AbstractTagLibTests {
         assertEquals("testField",inputElement.attributeValue("id"));
         assertEquals("1",inputElement.getTextTrim());
     }
+    
+    public void testHtmlEscapingTextAreaTag() throws Exception {
+        final StringWriter sw = new StringWriter();
+        final PrintWriter pw = new PrintWriter(sw);
+
+        final Closure tag = getTag("textArea",pw);
+
+        assertNotNull(tag);
+
+        final Map attrs = new HashMap();
+        attrs.put("name","testField");
+        attrs.put("value", "<b>some text</b>");
+
+        tag.call(new Object[]{attrs});
+
+        final String result = sw.toString();
+        // need to inspect this as raw text so the DocumentHelper doesn't
+        // unescape anything...
+        assertTrue(result.indexOf("&lt;b&gt;some text&lt;/b&gt;") >= 0);
+
+        final Document document = DocumentHelper.parseText(sw.toString());
+        assertNotNull(document);
+
+        final Element inputElement = document.getRootElement();
+        final Attribute escapeHtmlAttribute = inputElement.attribute("escapeHtml");
+        assertNull("escapeHtml attribute should not exist", escapeHtmlAttribute);
+    }
+    
+    public void testNoHtmlEscapingTextAreaTag() throws Exception {
+    	final StringWriter sw = new StringWriter();
+    	final PrintWriter pw = new PrintWriter(sw);
+
+    	final Closure tag = getTag("textArea",pw);
+
+        assertNotNull(tag);
+
+        final Map attrs = new HashMap();
+        attrs.put("name","testField");
+        attrs.put("escapeHtml","false");
+        attrs.put("value", "<b>some text</b>");
+
+        tag.call(new Object[]{attrs});
+
+        final String result = sw.toString();
+        // need to inspect this as raw text so the DocumentHelper doesn't
+        // unescape anything...
+        assertTrue(result.indexOf("<b>some text</b>") >= 0);
+
+        final Document document = DocumentHelper.parseText(sw.toString());
+        assertNotNull(document);
+
+        final Element inputElement = document.getRootElement();
+        final Attribute escapeHtmlAttribute = inputElement.attribute("escapeHtml");
+        assertNull("escapeHtml attribute should not exist", escapeHtmlAttribute);
+    }
+    
     public void testHiddenFieldTag() throws Exception {
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
