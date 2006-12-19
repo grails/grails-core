@@ -15,6 +15,7 @@
 import org.springframework.validation.Errors;
 import org.springframework.context.NoSuchMessageException;
 import org.springframework.web.servlet.support.RequestContextUtils as RCU;
+import org.springframework.web.util.HtmlUtils;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU;
 
  /**
@@ -68,10 +69,12 @@ class FormTagLib {
 
         // Pull out the value to use as content not attrib
         def value = attrs.remove( 'value')
+        def escapeHtml = true
+		if(attrs.escapeHtml) escapeHtml = Boolean.valueOf(attrs.remove('escapeHtml'))
 
 		out << "<textarea "
         outputAttributes(attrs)
-		out << ">" << value << "</textarea>"
+		out << ">" << (escapeHtml ? HtmlUtils.htmlEscape(value) : value) << "</textarea>"
 	}
 
     /**
