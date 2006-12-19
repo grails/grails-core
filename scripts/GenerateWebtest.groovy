@@ -41,7 +41,7 @@ task ('default': "Generates a Canoo WebTest (functional test) from a Grails doma
 		
 	Ant.sequential {
 		mkdir(dir:"${grailsHome}/downloads")
-		get(dest:"${grailsHome/downloads/webtest.zip}",
+		get(dest:"${grailsHome}/downloads/webtest.zip",
 			src: "http://webtest.canoo.com/webtest/build.zip",
 			verbose:true,
 			usetimestamp:true)
