@@ -131,6 +131,29 @@ public class GroovyPageTests extends TestCase {
 		assertEquals(expectedOutput,sw.toString());
 	}
 	
+	
+	public void testEncodeAsHtmlMethod() throws Exception {
+		StringWriter sw = new StringWriter();
+		PrintWriter pw = new PrintWriter(sw);
+		
+		String contentType = "text/html;charset=UTF-8";
+		String pageCode = "import org.codehaus.groovy.grails.web.pages.GroovyPage\n" +
+        		"\n"+
+        		"class test_index_gsp extends GroovyPage {\n"+
+        		"public Object run() {\n"+
+        		"out.print(encodeAsHtml('<b></someTag></b>'))\n"+
+        		"out.print(encodeAsHTML('<b></someOtherTag></b>'))\n"+
+        		"}\n"+
+        		"}" ;
+		MockHttpServletRequest request = new MockHttpServletRequest();
+		MockHttpServletResponse response = new MockHttpServletResponse();
+    	response.setContentType(contentType); // must come before response.getWriter()
+		executePage(request, response, pw, pageCode);
+        
+    	String expectedOutput = "&lt;b&gt;&lt;/someTag&gt;&lt;/b&gt;&lt;b&gt;&lt;/someOtherTag&gt;&lt;/b&gt;";
+		assertEquals(expectedOutput,sw.toString());
+	}
+	
 	protected void executePage(HttpServletRequest request, HttpServletResponse response, Writer out, String pageCode) throws IOException {
 		GroovyClassLoader gcl = new GroovyClassLoader();
 		Class pageClass = gcl.parseClass( pageCode );
