@@ -29,8 +29,10 @@ Ant.property(environment:"env")
 grailsHome = Ant.antProject.properties."env.GRAILS_HOME"    
 
 includeTargets << new File ( "${grailsHome}/scripts/CreateApp.groovy" )
+includeTargets << new File ( "${grailsHome}/scripts/Package.groovy" )  
 
 task ( "default" : "Packages a Grails plugin into a zip for distribution") {
+   depends(packageApp)
    packagePlugin()                                                      
 }     
                 
@@ -51,8 +53,10 @@ task(packagePlugin:"Implementation task") {
    try {
     	pluginClass = gcl.parseClass(pluginFile)   
         def plugin = pluginClass.newInstance()    
-		def pluginName = GCU.getLogicalName(pluginClass, "GrailsPlugin")
-        Ant.zip(basedir:"${basedir}", destfile:"${basedir}/grails-${pluginName}-${plugin.version}.zip")
+		def pluginName = GCU.getLogicalName(pluginClass, "GrailsPlugin")         
+		def pluginZip = "${basedir}/grails-${pluginName}-${plugin.version}.zip"
+		Ant.delete(file:pluginZip)
+        Ant.zip(basedir:"${basedir}", destfile:pluginZip)
    }
    catch(Throwable t) {
      println "Throwable: ${t.message}"
