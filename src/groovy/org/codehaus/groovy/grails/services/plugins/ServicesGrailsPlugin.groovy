@@ -69,7 +69,7 @@ class ServicesGrailsPlugin {
 		if(event.source) {
 			def serviceClass = application.addServiceClass(event.source)
 			if(serviceClass.transactional) {
-				log.warning "Transactional services classes cannot be reloaded. Skipping $serviceClass"
+				log.warn "Transactional services classes cannot be reloaded. Skipping ${serviceClass.name}."
 			}
 			else {
 				def serviceName = "${serviceClass.propertyName}"
