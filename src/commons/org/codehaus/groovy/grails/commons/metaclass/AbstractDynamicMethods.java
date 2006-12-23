@@ -67,7 +67,7 @@ public abstract class AbstractDynamicMethods implements DynamicMethods {
 	public AbstractDynamicMethods(Class theClass, boolean inRegistry)
 	throws IntrospectionException {
 			super();
-			new DelegatingMetaClass(theClass, this, inRegistry).initialise();
+			new DynamicMethodsMetaClass(theClass, this, inRegistry).initialize();
 			this.clazz = theClass;
 			this.dynamicMethodInvocations = new ArrayList();
 			this.staticMethodInvocations = new ArrayList();
@@ -155,7 +155,7 @@ public abstract class AbstractDynamicMethods implements DynamicMethods {
 					if(LOG.isDebugEnabled()) {
 						LOG.debug("[DynamicMethods] Instance method ["+methodName+"] invoked successfully with result ["+result+"]. Marking as invoked");			
 					}	
-					
+					callback.setInvoker(methodInvocation);
 					callback.markInvoked();
 					return result;
 				} catch (MissingMethodException e) {

@@ -49,7 +49,7 @@ public class TagLibMetaClass extends ProxyMetaClass {
         MetaClassRegistry metaRegistry = InvokerHelper.getInstance().getMetaRegistry();
         MetaClass meta = metaRegistry.getMetaClass(theClass);
         TagLibMetaClass m = new TagLibMetaClass(metaRegistry, theClass, meta);
-        m.initialise();
+        m.initialize();
         return m;
     }
 	

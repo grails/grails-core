@@ -91,6 +91,7 @@ public interface GrailsApplication extends ApplicationContextAware {
      * <p>Returns all page flows in an application.
      *
      * @return page flows in an application.
+     * @deprecated Will be removed in future version
      */
     public GrailsPageFlowClass[] getPageFlows();
 
@@ -99,6 +100,8 @@ public interface GrailsApplication extends ApplicationContextAware {
      *
      * @param fullname the page flow full name
      * @return the page flow or null if no controller was found.
+     * 
+     * @deprecated Will be removed in future version
      */
     public GrailsPageFlowClass getPageFlow(String fullname);
 
@@ -106,8 +109,15 @@ public interface GrailsApplication extends ApplicationContextAware {
      * <p>Returns an array of all the Grails Domain classes</p>
      *
      * @return The domain classes in the domain
+     * 
      */
     public GrailsDomainClass[] getGrailsDomainClasses();
+    
+    /**
+     * The same as getGrailsDomainClasses which may be deprecated in future
+     * @return The GrailsDomainClass instances
+     */
+    public GrailsDomainClass[] getDomainClasses();
 
     /**
      * Check whether the specified class is a grails domain class
@@ -123,6 +133,11 @@ public interface GrailsApplication extends ApplicationContextAware {
      * @return The retrieved domain class
      */
     public GrailsDomainClass getGrailsDomainClass(String name);
+    
+    /**
+     *  The same as getGrailsDomainClass which may be deprecated in future
+     */
+    public GrailsDomainClass getDomainClass( String name );
 
     /**
      * <p>Returns the active data source for this Grails application or null if not available.
@@ -144,6 +159,12 @@ public interface GrailsApplication extends ApplicationContextAware {
      * @return service class for Grails application
      */
     public GrailsServiceClass[] getGrailsServiceClasses();
+    
+    /**
+     *  
+     * @return All the GrailsServiceClass instances
+     */
+    public GrailsServiceClass[] getServices();
 
     /**
      * <p>Returns the service with the specified full name.
@@ -152,6 +173,14 @@ public interface GrailsApplication extends ApplicationContextAware {
      * @return the service class
      */
     public GrailsServiceClass getGrailsServiceClass(String name);
+    
+    /**
+     * The same as getGrailsServiceClass which may be deprecated in future
+     * 
+     * @param name The name of the service clas
+     * @return The GrailsServiceClass instance or null
+     */
+    public GrailsServiceClass getService(String name);
 
     /**
      * <p>Returns all the bootstrap classes for the Grails application
@@ -159,6 +188,12 @@ public interface GrailsApplication extends ApplicationContextAware {
      * @return An array of BootStrap classes
      */
     public GrailsBootstrapClass[] getGrailsBootstrapClasses();
+    
+    /**
+     * The same as getGrailsBoostrapClasses() which may be deprecated in future
+     * @return The bootstrap classes in the system
+     */
+    public GrailsBootstrapClass[] getBootstraps();
 
     /**
      * <p>Returns all the tag lib classes for the Grails application
@@ -168,12 +203,26 @@ public interface GrailsApplication extends ApplicationContextAware {
     public GrailsTagLibClass[] getGrailsTabLibClasses();
 
     /**
+     * Sames as getGrailsTagLibClasses() which may be deprecated in future
+     * 
+     * @return The GrailsTagLibClass instances
+     */
+    public GrailsTagLibClass[] getTagLibs();
+    /**
      * <p>Returns a tag lib class for the specified name
      *
      * @param tagLibName The name of the taglib class
      * @return A taglib class instance or null if non exists
      */
     public GrailsTagLibClass getGrailsTagLibClass(String tagLibName);
+    
+    /**
+     * Same as getGrailsTagLibClass which may be deprected in future
+     * 
+     * @param name The name of the taglib
+     * @return The tag lib class or null
+     */
+    public GrailsTagLibClass getTagLib(String name);
 
     /**
      * <p>Retrieves the tag lib class for the specified tag

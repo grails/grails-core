@@ -15,6 +15,7 @@
  */
 package org.codehaus.groovy.grails.injection;
 
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -125,7 +126,7 @@ public class DefaultGrailsDomainClassInjector implements
 	}
 
 	private void addAssociationForKey(String key, List properties, ClassNode classNode) {
-			properties.add(new PropertyNode(key, ClassNode.ACC_PUBLIC, new ClassNode(Set.class), classNode,null, null, null));
+			properties.add(new PropertyNode(key, Modifier.PUBLIC, new ClassNode(Set.class), classNode,null, null, null));
 	}
 
 	private void injectToStringMethod(ClassNode classNode) {
@@ -136,7 +137,7 @@ public class DefaultGrailsDomainClassInjector implements
 			ge.addString(new ConstantExpression(classNode.getName()+" : "));
 			ge.addValue(new VariableExpression("id"));			
 			Statement s = new ReturnStatement(ge);			
-			MethodNode mn = new MethodNode("toString",ClassNode.ACC_PUBLIC,new ClassNode(String.class), new Parameter[0],new ClassNode[0],s);
+			MethodNode mn = new MethodNode("toString",Modifier.PUBLIC,new ClassNode(String.class), new Parameter[0],new ClassNode[0],s);
 			if(LOG.isDebugEnabled()) {
 				LOG.debug("[GrailsDomainInjector] Adding method [toString()] to class [" + classNode.getName() + "]");
 			}				
@@ -151,7 +152,7 @@ public class DefaultGrailsDomainClassInjector implements
 			if(LOG.isDebugEnabled()) {
 				LOG.debug("[GrailsDomainInjector] Adding property [" + GrailsDomainClassProperty.VERSION + "] to class [" + classNode.getName() + "]");
 			}			
-			classNode.addProperty( GrailsDomainClassProperty.VERSION, ClassNode.ACC_PUBLIC, new ClassNode(Long.class), null, null, null);
+			classNode.addProperty( GrailsDomainClassProperty.VERSION, Modifier.PUBLIC, new ClassNode(Long.class), null, null, null);
 		}
 	}
 
@@ -162,7 +163,7 @@ public class DefaultGrailsDomainClassInjector implements
 			if(LOG.isDebugEnabled()) {
 				LOG.debug("[GrailsDomainInjector] Adding property [" + GrailsDomainClassProperty.IDENTITY + "] to class [" + classNode.getName() + "]");
 			}						
-			classNode.addProperty( GrailsDomainClassProperty.IDENTITY, ClassNode.ACC_PUBLIC, new ClassNode(Long.class), null, null, null);
+			classNode.addProperty( GrailsDomainClassProperty.IDENTITY, Modifier.PUBLIC, new ClassNode(Long.class), null, null, null);
 		}
 	}
 

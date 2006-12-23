@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.codehaus.groovy.grails.commons.metaclass.AbstractDynamicMethods;
-import org.codehaus.groovy.grails.commons.metaclass.DelegatingMetaClass;
+import org.codehaus.groovy.grails.commons.metaclass.DynamicMethodsMetaClass;
 import org.codehaus.groovy.grails.commons.metaclass.DynamicMethods;
 import org.codehaus.groovy.grails.metaclass.DataBindingDynamicConstructor;
 
@@ -24,7 +24,7 @@ public class DomainClassMethodsTests extends TestCase {
 		DynamicMethods methods = new AbstractDynamicMethods(c) {
 			
 		};
-		MetaClass mc = new DelegatingMetaClass(c,methods,true);
+		MetaClass mc = new DynamicMethodsMetaClass(c,methods,true);
 		go.setMetaClass(mc);
 		methods.addDynamicConstructor(new DataBindingDynamicConstructor());
 		

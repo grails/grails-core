@@ -31,7 +31,7 @@ public abstract class PluginManagerHolder {
 	 * @param pluginManager The GrailsPluginManager to expose
 	 */
 	public static void setPluginManager(GrailsPluginManager pluginManager) {
-		PluginManagerHolder.pluginManagerHolder.set(pluginManager);
+		pluginManagerHolder.set(pluginManager);
 	}
 	
 	/**

@@ -11,7 +11,7 @@ import junit.framework.TestCase;
 
 import java.util.regex.Pattern;
 
-public class DelegatingMetaClassTests extends TestCase {
+public class DynamicMethodsMetaClassTests extends TestCase {
 
 
     private GroovyObject groovyObject;

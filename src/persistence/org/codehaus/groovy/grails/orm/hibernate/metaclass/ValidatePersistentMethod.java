@@ -18,7 +18,7 @@ package org.codehaus.groovy.grails.orm.hibernate.metaclass;
 
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
-import org.codehaus.groovy.grails.commons.metaclass.DelegatingMetaClass;
+import org.codehaus.groovy.grails.commons.metaclass.DynamicMethodsMetaClass;
 import org.codehaus.groovy.grails.metaclass.DomainClassMethods;
 import org.codehaus.groovy.grails.orm.hibernate.validation.GrailsDomainClassValidator;
 import org.codehaus.groovy.runtime.InvokerHelper;
@@ -84,7 +84,7 @@ public class ValidatePersistentMethod extends AbstractDynamicPersistentMethod {
                         getHibernateTemplate().evict(target);
                     }
                 }
-                DelegatingMetaClass metaClass = (DelegatingMetaClass)InvokerHelper.getInstance().getMetaRegistry().getMetaClass(target.getClass());
+                DynamicMethodsMetaClass metaClass = (DynamicMethodsMetaClass)InvokerHelper.getInstance().getMetaRegistry().getMetaClass(target.getClass());
                 metaClass.setProperty(target,DomainClassMethods.ERRORS_PROPERTY,errors);
             }
         }

@@ -23,7 +23,7 @@ import java.util.regex.Pattern;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
-import org.codehaus.groovy.grails.commons.metaclass.DelegatingMetaClass;
+import org.codehaus.groovy.grails.commons.metaclass.DynamicMethodsMetaClass;
 import org.codehaus.groovy.grails.metaclass.DomainClassMethods;
 import org.codehaus.groovy.grails.orm.hibernate.validation.GrailsDomainClassValidator;
 import org.codehaus.groovy.runtime.InvokerHelper;
@@ -141,7 +141,7 @@ public abstract class AbstractSavePersistentMethod extends
 			((GroovyObject)target).setProperty(DomainClassMethods.ERRORS_PROPERTY,errors);
 		}   
 		else {
-		    DelegatingMetaClass metaClass = (DelegatingMetaClass)InvokerHelper.getInstance().getMetaRegistry().getMetaClass(target.getClass());
+		    DynamicMethodsMetaClass metaClass = (DynamicMethodsMetaClass)InvokerHelper.getInstance().getMetaRegistry().getMetaClass(target.getClass());
 		    metaClass.setProperty(target,DomainClassMethods.ERRORS_PROPERTY,errors);						
 		}
 		return null;

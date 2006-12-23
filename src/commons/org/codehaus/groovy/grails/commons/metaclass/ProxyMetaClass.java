@@ -55,7 +55,7 @@ public class ProxyMetaClass extends MetaClassImpl {
         MetaClassRegistry metaRegistry = InvokerHelper.getInstance().getMetaRegistry();
         MetaClass meta = metaRegistry.getMetaClass(theClass);
         ProxyMetaClass pmc =  new ProxyMetaClass(metaRegistry, theClass, meta);
-        pmc.initialise();
+        pmc.initialize();
         return pmc;
     }
     /**

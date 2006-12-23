@@ -23,29 +23,34 @@ import java.beans.IntrospectionException;
 import org.codehaus.groovy.runtime.InvokerHelper;
 
 /**
+ * This MetaClass uses the DynamicMethods interface to allow for more powerful ways of adding new constructors,
+ * properties, static and instance methods.
  * 
+ * A DynamicMethods instance contains, for example, a implementation of DynamicMethodInvocation that can use regex
+ * to match any number of method patterns. This mechanism is used to implement the dynamic finder methods found
+ * in GORM (see http://grails.org/GORM)
  * 
  * @author Steven Devijver
  * @author Graeme Rocher
  * 
  * @since Aug 8, 2005
  */
-public class DelegatingMetaClass extends MetaClassImpl {
+public class DynamicMethodsMetaClass extends MetaClassImpl {
 
 	DynamicMethods dynamicMethods = null;
 	MetaClass adaptee = null;
 	
-	public DelegatingMetaClass(Class clazz, DynamicMethods dynamicMethods)
+	public DynamicMethodsMetaClass(Class clazz, DynamicMethods dynamicMethods)
 			throws IntrospectionException {
 		this(clazz,dynamicMethods,true);
 	}
 	
-	public DelegatingMetaClass(Class clazz, DynamicMethods dynamicMethods, boolean inRegistry)
+	public DynamicMethodsMetaClass(Class clazz, DynamicMethods dynamicMethods, boolean inRegistry)
 			throws IntrospectionException {
 		super(InvokerHelper.getInstance().getMetaRegistry(), clazz);
 		this.dynamicMethods = dynamicMethods;
+		adaptee = registry.getMetaClass(clazz);		
 		if(inRegistry) {
-			adaptee = registry.getMetaClass(clazz);
 			registry.setMetaClass(clazz, this);
 		}
 	}	

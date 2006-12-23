@@ -519,4 +519,32 @@ public class DefaultGrailsApplication implements GrailsApplication {
 	public ApplicationContext getParentContext() {
 		return this.parentContext;
 	}
+
+	public GrailsBootstrapClass[] getBootstraps() {
+		return getGrailsBootstrapClasses();
+	}
+
+	public GrailsDomainClass getDomainClass(String name) {
+		return getGrailsDomainClass(name);
+	}
+
+	public GrailsDomainClass[] getDomainClasses() {
+		return getGrailsDomainClasses();
+	}
+
+	public GrailsServiceClass getService(String name) {
+		return getGrailsServiceClass(name);
+	}
+
+	public GrailsServiceClass[] getServices() {
+		return getGrailsServiceClasses();
+	}
+
+	public GrailsTagLibClass getTagLib(String name) {
+		return getGrailsTagLibClass(name);
+	}
+
+	public GrailsTagLibClass[] getTagLibs() {
+		return getGrailsTabLibClasses();
+	}
 }

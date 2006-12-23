@@ -12,37 +12,15 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */ 
+ */
 package org.codehaus.groovy.grails.commons.metaclass;
 
 /**
+ * Simple concrete class implementation of AbstractDynamicMethods class
  * 
- * 
- * @author Steven Devijver
- * @since Aug 8, 2005
+ * @author Graeme Rocher
+ * @since 0.4
+ *
  */
-public class InvocationCallback {
-
-	private boolean invoked = false;
-	private Object invoker;
-	
-	public InvocationCallback() {
-		super();
-	}
-
-	public void markInvoked() {
-		this.invoked = true;
-	}
-	
-	public boolean isInvoked() {
-		return this.invoked;
-	}
-
-	public Object getInvoker() {	
-		return invoker;
-	}
-	
-	public void setInvoker(Object newInvoker) {
-		this.invoker = newInvoker;
-	}
+public class DefaultDynamicMethods extends AbstractDynamicMethods {
 }
