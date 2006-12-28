@@ -75,17 +75,17 @@ public class GenerateUtils {
 	
 	        GrailsTemplateGenerator generator = (GrailsTemplateGenerator)gcl.parseClass(gcl.getResourceAsStream("org/codehaus/groovy/grails/scaffolding/DefaultGrailsTemplateGenerator.groovy"))
 	                                                                            .newInstance();
-	
-	        if(VIEWS.equals(type) || ALL.equals(type)) {
-	            LOG.info("Generating views for domain class ["+domainClass.getName()+"]");
-	            generator.generateViews(domainClass,".");
-	        }
-	        if(CONTROLLER.equals(type)|| ALL.equals(type)) {
-	           LOG.info("Generating controller for domain class ["+domainClass.getName()+"]");
-	           generator.generateController(domainClass,".");
-	        }
-	        else {
+	        if(!CONTROLLER.equals(type) && !VIEWS.equals(type) && !ALL.equals(type)) {
 	            LOG.info("Grails was unable to generate templates for unsupported type ["+type+"]");
+	        } else {
+	        	if(VIEWS.equals(type) || ALL.equals(type)) {
+	        		LOG.info("Generating views for domain class ["+domainClass.getName()+"]");
+	        		generator.generateViews(domainClass,".");
+	        	}	
+	        	if(CONTROLLER.equals(type)|| ALL.equals(type)) {
+	        		LOG.info("Generating controller for domain class ["+domainClass.getName()+"]");
+	        		generator.generateController(domainClass,".");
+	        	}
 	        }
         }
         finally {
