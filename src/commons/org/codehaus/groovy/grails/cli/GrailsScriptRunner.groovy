@@ -78,7 +78,13 @@ Grails home is set to: ${grailsHome}
 			else {   
 				setDefaultEnvironment(allArgs)
 				scriptName = GCU.getNameFromScript(allArgs.trim())
-			}                                
+			}
+            
+            if(!new File(baseDir.absolutePath, "grails-app").exists() && (!['CreateApp', 'Help'].contains(scriptName))) {
+            	println "${baseDir.absolutePath} does not appear to be part of a Grails application.  Exiting."
+            	System.exit(-1)
+            }
+            
 			println "Environment set to ${System.getProperty('grails.env')}"
 
 			System.setProperty("base.dir", baseDir.absolutePath)
@@ -164,13 +170,13 @@ Grails home is set to: ${grailsHome}
 	   
 	private static establishBaseDir() {
         def baseDir = new File("")
-        if(!new File(baseDir, "grails-app").exists()) {
+        if(!new File(baseDir.absolutePath, "grails-app").exists()) {
         	
         	// be careful with this next step...
         	// baseDir.parentFile will return null since baseDir is new File("")
         	// baseDir.absoluteFile needs to happen before retrieving the parentFile
     		def parentDir = baseDir.absoluteFile.parentFile
-    		
+
     		// keep moving up one directory until we find 
     		// one that contains the grails-app dir or get 
     		// to the top of the filesystem...
@@ -181,7 +187,7 @@ Grails home is set to: ${grailsHome}
     		if(parentDir != null) {
     			// if we found the project root, use it
     			baseDir = parentDir
-    		}
+    		} 
         }
 		return baseDir
 	}      
