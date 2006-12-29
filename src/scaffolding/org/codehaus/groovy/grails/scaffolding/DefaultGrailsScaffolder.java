@@ -22,9 +22,12 @@ import org.codehaus.groovy.grails.web.metaclass.ChainDynamicMethod;
 import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods;
 import org.codehaus.groovy.grails.web.metaclass.RedirectDynamicMethod;
 import org.codehaus.groovy.grails.web.metaclass.RenderDynamicMethod;
+import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
@@ -227,6 +230,14 @@ public class DefaultGrailsScaffolder implements GrailsScaffolder {
 		 * @see groovy.lang.Closure#call(java.lang.Object[])
 		 */
 		public Object call(Object[] args) {
+			if(!"POST".equals(request.getMethod())) {
+				try {
+					response.sendError(HttpServletResponse.SC_FORBIDDEN);
+					return null;
+				} catch (IOException e) {
+					throw new ControllerExecutionException("I/O error sending 403 error",e);
+				}
+			}
 			
 			ScaffoldCallback callback = new DefaultScaffoldCallback();
 			// delete
@@ -255,6 +266,14 @@ public class DefaultGrailsScaffolder implements GrailsScaffolder {
 		 * @see groovy.lang.Closure#call(java.lang.Object[])
 		 */
 		public Object call(Object[] args) {
+			if(!"POST".equals(request.getMethod())) {
+				try {
+					response.sendError(HttpServletResponse.SC_FORBIDDEN);
+					return null;
+				} catch (IOException e) {
+					throw new ControllerExecutionException("I/O error sending 403 error",e);
+				}
+			}
 			
 			ScaffoldCallback callback = new DefaultScaffoldCallback();
 			// save
@@ -291,6 +310,14 @@ public class DefaultGrailsScaffolder implements GrailsScaffolder {
 		 * @see groovy.lang.Closure#call(java.lang.Object[])
 		 */
 		public Object call(Object[] args) {
+			if(!"POST".equals(request.getMethod())) {
+				try {
+					response.sendError(HttpServletResponse.SC_FORBIDDEN);
+					return null;
+				} catch (IOException e) {
+					throw new ControllerExecutionException("I/O error sending 403 error",e);
+				}
+			}
 			
 			ScaffoldCallback callback = new DefaultScaffoldCallback();
 			// save
