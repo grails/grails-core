@@ -80,7 +80,7 @@ Grails home is set to: ${grailsHome}
 				scriptName = GCU.getNameFromScript(allArgs.trim())
 			}
             
-            if(!new File(baseDir.absolutePath, "grails-app").exists() && (!['CreateApp', 'Help'].contains(scriptName))) {
+            if(!new File(baseDir.absolutePath, "grails-app").exists() && (!['CreateApp', 'CreatePlugin', 'Help'].contains(scriptName))) {
             	println "${baseDir.absolutePath} does not appear to be part of a Grails application.  Exiting."
             	System.exit(-1)
             }
