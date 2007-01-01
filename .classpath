@@ -18,7 +18,6 @@
 	<classpathentry kind="var" path="GRAILS_HOME/lib/dom4j-1.6.1.jar"/>
 	<classpathentry kind="var" path="GRAILS_HOME/lib/ehcache-1.1.jar"/>
 	<classpathentry kind="var" path="GRAILS_HOME/lib/ejb3-persistence.jar"/>
-	<classpathentry kind="var" path="GRAILS_HOME/lib/groovy-all-1.0-RC-01-SNAPSHOT.jar" sourcepath="/GROOVY_HOME/src/main"/>
 	<classpathentry kind="var" path="GRAILS_HOME/lib/hibernate3.jar" sourcepath="/HIBERNATE_HOME/src"/>
 	<classpathentry kind="var" path="GRAILS_HOME/lib/hibernate-annotations.jar"/>
 	<classpathentry kind="var" path="GRAILS_HOME/lib/jdbc2_0-stdext.jar"/>
@@ -59,5 +58,6 @@
 	<classpathentry kind="var" path="GRAILS_HOME/lib/spring-2.0.jar" sourcepath="/SPRING2_HOME/src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/3.8.1"/>
 	<classpathentry kind="lib" path="lib/commons-beanutils-1.7.0.jar"/>
+	<classpathentry kind="var" path="GRAILS_HOME/lib/groovy-all-1.0-RC-02-SNAPSHOT.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>
