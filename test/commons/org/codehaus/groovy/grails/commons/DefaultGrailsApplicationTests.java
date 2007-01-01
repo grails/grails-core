@@ -1,8 +1,7 @@
 package org.codehaus.groovy.grails.commons;
 
-import junit.framework.TestCase;
 import groovy.lang.GroovyClassLoader;
-import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException;
+import junit.framework.TestCase;
 
 /**
  * @author Graeme Rocher

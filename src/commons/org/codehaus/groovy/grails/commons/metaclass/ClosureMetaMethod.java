@@ -19,7 +19,6 @@ import groovy.lang.Closure;
 
 import java.lang.reflect.Modifier;
 
-import org.codehaus.groovy.runtime.MethodClosure;
 import org.codehaus.groovy.runtime.NewInstanceMetaMethod;
 
 /**

@@ -23,8 +23,6 @@ import org.codehaus.groovy.grails.commons.test.AbstractGrailsMockTests;
 import org.codehaus.groovy.grails.plugins.exceptions.PluginException;
 import org.springframework.context.ApplicationContext;
 
-import junit.framework.TestCase;
-
 /**
  * Test for the DefaultGrailsPlugin class
  * 
