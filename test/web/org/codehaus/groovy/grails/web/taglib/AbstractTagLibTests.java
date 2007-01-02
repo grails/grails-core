@@ -60,7 +60,7 @@ public abstract class AbstractTagLibTests extends
     /* (non-Javadoc)
      * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#onSetUp()
      */
-    protected final void onSetUp() throws Exception {
+    protected void onSetUp() throws Exception {
         super.onSetUp();
     }
 

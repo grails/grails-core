@@ -11,7 +11,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.dom4j.Attribute;
@@ -38,84 +37,6 @@ public class FormTagLibTests extends AbstractTagLibTests {
     private static final Collection DATE_PRECISIONS_INCLUDING_DAY = Collections.unmodifiableCollection(Arrays.asList(new String[] {"day", "hour", "minute", null}));
     private static final Collection DATE_PRECISIONS_INCLUDING_MONTH = Collections.unmodifiableCollection(Arrays.asList(new String[] {"month", "day", "hour", "minute", null}));
 
-    public void testTextFieldTag() throws Exception {
-        StringWriter sw = new StringWriter();
-        PrintWriter pw = new PrintWriter(sw);
-
-        Closure tag = getTag("textField",pw);
-
-        assertNotNull(tag);
-
-        Map attrs = new HashMap();
-        attrs.put("name","testField");
-        attrs.put("value", "1");
-
-        tag.call(new Object[]{attrs});
-
-        Document document = DocumentHelper.parseText(sw.toString());
-        assertNotNull(document);
-
-        Element inputElement = document.getRootElement();
-        assertEquals("input",inputElement.getName());
-
-        assertEquals("testField",inputElement.attributeValue("name"));
-        assertEquals("testField",inputElement.attributeValue("id"));
-        assertEquals("text",inputElement.attributeValue("type"));
-        assertEquals("1",inputElement.attributeValue("value"));
-    }
-
-    public void testTextAreaTag() throws Exception {
-        StringWriter sw = new StringWriter();
-        PrintWriter pw = new PrintWriter(sw);
-
-        Closure tag = getTag("textArea",pw);
-
-        assertNotNull(tag);
-
-        Map attrs = new HashMap();
-        attrs.put("name","testField");
-        attrs.put("value", "1");
-
-        tag.call(new Object[]{attrs});
-
-        Document document = DocumentHelper.parseText(sw.toString());
-        assertNotNull(document);
-
-        Element inputElement = document.getRootElement();
-        assertEquals("textarea",inputElement.getName());
-
-        assertEquals("testField",inputElement.attributeValue("name"));
-        assertEquals("testField",inputElement.attributeValue("id"));
-        assertEquals("1",inputElement.getTextTrim());
-    }
-    
-    public void testHtmlEscapingTextAreaTag() throws Exception {
-        final StringWriter sw = new StringWriter();
-        final PrintWriter pw = new PrintWriter(sw);
-
-        final Closure tag = getTag("textArea",pw);
-
-        assertNotNull(tag);
-
-        final Map attrs = new HashMap();
-        attrs.put("name","testField");
-        attrs.put("value", "<b>some text</b>");
-
-        tag.call(new Object[]{attrs});
-
-        final String result = sw.toString();
-        // need to inspect this as raw text so the DocumentHelper doesn't
-        // unescape anything...
-        assertTrue(result.indexOf("&lt;b&gt;some text&lt;/b&gt;") >= 0);
-
-        final Document document = DocumentHelper.parseText(sw.toString());
-        assertNotNull(document);
-
-        final Element inputElement = document.getRootElement();
-        final Attribute escapeHtmlAttribute = inputElement.attribute("escapeHtml");
-        assertNull("escapeHtml attribute should not exist", escapeHtmlAttribute);
-    }
-    
     public void testNoHtmlEscapingTextAreaTag() throws Exception {
     	final StringWriter sw = new StringWriter();
     	final PrintWriter pw = new PrintWriter(sw);
@@ -142,115 +63,6 @@ public class FormTagLibTests extends AbstractTagLibTests {
         final Element inputElement = document.getRootElement();
         final Attribute escapeHtmlAttribute = inputElement.attribute("escapeHtml");
         assertNull("escapeHtml attribute should not exist", escapeHtmlAttribute);
-    }
-    
-    public void testHiddenFieldTag() throws Exception {
-        StringWriter sw = new StringWriter();
-        PrintWriter pw = new PrintWriter(sw);
-
-        Closure tag = getTag("hiddenField",pw);
-
-        assertNotNull(tag);
-
-        Map attrs = new HashMap();
-        attrs.put("name","testField");
-        attrs.put("value", "1");
-
-        tag.call(new Object[]{attrs});
-
-        Document document = DocumentHelper.parseText(sw.toString());
-        assertNotNull(document);
-
-        Element inputElement = document.getRootElement();
-        assertEquals("input",inputElement.getName());
-
-        assertEquals("testField",inputElement.attributeValue("name"));
-        assertEquals("hidden",inputElement.attributeValue("type"));
-        assertEquals("1",inputElement.attributeValue("value"));
-    }
-
-    public void testRadioTag() throws Exception {
-        StringWriter sw = new StringWriter();
-        PrintWriter pw = new PrintWriter(sw);
-
-        Closure tag = getTag("radio",pw);
-
-        assertNotNull(tag);
-
-        Map attrs = new HashMap();
-        attrs.put("name","testRadio");
-        attrs.put("checked", "true");
-        attrs.put("value", "1");
-
-        tag.call(new Object[]{attrs});
-
-        Document document = DocumentHelper.parseText(sw.toString());
-        assertNotNull(document);
-
-        Element inputElement = document.getRootElement();
-        assertEquals("input",inputElement.getName());
-
-        assertEquals("testRadio",inputElement.attributeValue("name"));
-        assertEquals("checked",inputElement.attributeValue("checked"));
-        assertEquals("1",inputElement.attributeValue("value"));
-
-        sw.getBuffer().delete(0,sw.getBuffer().length());
-
-        attrs.remove("checked");
-        attrs.put("name","testRadio");
-        attrs.put("value","2");
-
-        tag.call(new Object[]{attrs});
-
-        document = DocumentHelper.parseText(sw.toString());
-        assertNotNull(document);
-
-        System.out.println(sw.toString());
-        inputElement = document.getRootElement();
-        assertEquals("input",inputElement.getName());
-
-        assertEquals("testRadio",inputElement.attributeValue("name"));
-        assertNull(inputElement.attributeValue("checked"));
-        assertEquals("2",inputElement.attributeValue("value"));
-    }
-
-    public void testCheckboxTag() throws Exception {
-        StringWriter sw = new StringWriter();
-        PrintWriter pw = new PrintWriter(sw);
-
-        Closure tag = getTag("checkBox",pw);
-
-        Map attrs = new HashMap();
-        attrs.put("name","testCheck");
-        attrs.put("value", "true");
-        attrs.put("extra","1");
-
-        assertNotNull(tag);
-
-        tag.call(new Object[]{attrs});
-
-        String enclosed  = "<test>" + sw.toString() + "</test>";
-
-        System.out.println(enclosed);
-        Document document = DocumentHelper.parseText(enclosed);
-        assertNotNull(document);
-
-        Element root = document.getRootElement();
-
-        List els = root.elements();
-        assertEquals(2, els.size());
-
-        Element hidden = (Element)els.get(0);
-        Element checkbox = (Element)els.get(1);
-
-        assertEquals("hidden", hidden.attributeValue("type"));
-        assertEquals("_testCheck", hidden.attributeValue("name"));
-
-        assertEquals("checkbox", checkbox.attributeValue("type"));
-        assertEquals("testCheck", checkbox.attributeValue("name"));
-        assertEquals("checked", checkbox.attributeValue("checked"));
-        assertEquals("true", checkbox.attributeValue("value"));
-        assertEquals("1", checkbox.attributeValue("extra"));
     }
 
     public void testDatePickerTagWithDefaultDateAndPrecision() throws Exception {

@@ -26,6 +26,8 @@ import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU;
  */
 
 class FormTagLib {
+	def out // to facilitate testing
+
 	/**
 	 * Creates a new text field
 	 */
@@ -107,8 +109,16 @@ class FormTagLib {
     void outputAttributes(attrs)
     {
         attrs.each { k,v ->
-            out << k << "=\"" << v << "\" "
+            out << k << "=\"" << escapeAttributeValue(v) << "\" "
         }
+    }
+
+    /**
+    * Html special characters as well as quote used to surround value need to be escaped
+    */
+    private escapeAttributeValue(value)
+    {
+    	HtmlUtils.htmlEscape(value).replaceAll('"', '&quot;')
     }
 
     /**
