@@ -390,6 +390,10 @@ public class ConstrainedProperty   {
 
         protected void processValidate(Object target, Object propertyValue, Errors errors) {
 
+            if(propertyValue == null) {
+                return; // A null is not a value we should even check
+            }
+
             if(!blank) {
                 if(propertyValue instanceof String) {
                     if(StringUtils.isBlank((String)propertyValue)) {
@@ -409,6 +413,10 @@ public class ConstrainedProperty   {
 
 
         protected void processValidate(Object target, Object propertyValue, Errors errors) {
+            if(propertyValue == null) {
+                return; // A null is not a value we should even check
+            }
+
             if(creditCard) {
                 CreditCardValidator validator = new CreditCardValidator();
 
@@ -475,6 +483,10 @@ public class ConstrainedProperty   {
         }
 
         protected void processValidate(Object target, Object propertyValue, Errors errors) {
+            if(propertyValue == null) {
+                return; // A null is not a value we should even check
+            }
+
             if(email) {
                 EmailValidator emailValidator = EmailValidator.getInstance();
                 Object[] args = new Object[] { constraintPropertyName, constraintOwningClass, propertyValue };
@@ -523,6 +535,10 @@ public class ConstrainedProperty   {
         }
 
         protected void processValidate(Object target, Object propertyValue, Errors errors) {
+            if(propertyValue == null) {
+                return; // A null is not a value we should even check
+            }
+
             if(url) {
                 UrlValidator urlValidator = new UrlValidator(UrlValidator.ALLOW_ALL_SCHEMES + UrlValidator.ALLOW_2_SLASHES);
 
@@ -577,6 +593,10 @@ public class ConstrainedProperty   {
         }
 
         protected void processValidate(Object target, Object propertyValue, Errors errors) {
+            if(propertyValue == null) {
+                return; // A null is not a value we should even check
+            }
+
             if(!this.range.contains(propertyValue)) {
                 Object[] args = new Object[] { constraintPropertyName, constraintOwningClass, propertyValue, range.getFrom(), range.getTo()  };
 
@@ -641,7 +661,11 @@ public class ConstrainedProperty   {
 
 
         protected void processValidate(Object target, Object propertyValue, Errors errors) {
-            if((propertyValue == null) || (maxValue.compareTo(propertyValue) < 0)) {
+            if(propertyValue == null) {
+                return; // A null is not a value we should even check
+            }
+
+            if(maxValue.compareTo(propertyValue) < 0) {
                 Object[] args = new Object[] { constraintPropertyName, constraintOwningClass, propertyValue, maxValue  };
                 super.rejectValue(errors,MAX_CONSTRAINT + EXCEEDED_SUFFIX,args,getDefaultMessage(DEFAULT_INVALID_MAX_MESSAGE_CODE, args));
             }
@@ -694,7 +718,11 @@ public class ConstrainedProperty   {
 
 
         protected void processValidate(Object target, Object propertyValue, Errors errors)		{
-            if((propertyValue == null) || (minValue.compareTo(propertyValue) > 0)) {
+            if(propertyValue == null) {
+                return; // A null is not a value we should even check
+            }
+
+            if(minValue.compareTo(propertyValue) > 0) {
                 Object[] args = new Object[] { constraintPropertyName, constraintOwningClass, propertyValue, minValue  };
                 super.rejectValue(errors,MIN_CONSTRAINT + NOTMET_SUFFIX,args,getDefaultMessage(DEFAULT_INVALID_MIN_MESSAGE_CODE, args));
             }
@@ -738,6 +766,10 @@ public class ConstrainedProperty   {
         }
 
         protected void processValidate(Object target, Object propertyValue, Errors errors) {
+            if(propertyValue == null) {
+                return; // A null is not a value we should even check
+            }
+
             if(!this.list.contains(propertyValue)) {
                 Object[] args = new Object[] { constraintPropertyName, constraintOwningClass, propertyValue, list  };
                 super.rejectValue(errors,NOT_PREFIX + IN_LIST_CONSTRAINT,args,getDefaultMessage(DEFAULT_NOT_INLIST_MESSAGE_CODE, args));
@@ -786,7 +818,11 @@ public class ConstrainedProperty   {
         }
 
         protected void processValidate(Object target, Object propertyValue, Errors errors) {
-            if((propertyValue == null) || !propertyValue.toString().matches( regex )) {
+            if(propertyValue == null) {
+                return; // A null is not a value we should even check
+            }
+
+            if(!propertyValue.toString().matches( regex )) {
                 Object[] args = new Object[] { constraintPropertyName, constraintOwningClass, propertyValue, regex  };
                 super.rejectValue(errors,MATCHES_CONSTRAINT + INVALID_SUFFIX,args,getDefaultMessage(DEFAULT_DOESNT_MATCH_MESSAGE_CODE, args));
             }
@@ -964,10 +1000,11 @@ public class ConstrainedProperty   {
         protected void processValidate(Object target, Object propertyValue, Errors errors) {
 
             Object[] args = new Object[] { constraintPropertyName, constraintOwningClass, propertyValue,  range.getFrom(), range.getTo()  };
+
             if(propertyValue == null) {
-                super.rejectValue(errors,SIZE_CONSTRAINT + INVALID_SUFFIX,args,MessageFormat.format( DEFAULT_INVALID_SIZE_MESSAGE, args ));
-                return;
+                return; // A null is not a value we should even check
             }
+
             if(propertyValue.getClass().isArray()) {
                 Integer length = new Integer(Array.getLength( propertyValue ));
                 if(!range.contains(length)) {
@@ -1058,10 +1095,11 @@ public class ConstrainedProperty   {
 
         protected void processValidate(Object target, Object propertyValue, Errors errors) {
             Object[] args = new Object[] { constraintPropertyName, constraintOwningClass, propertyValue, new Integer(maxSize) };
+
             if(propertyValue == null) {
-                // if null then nothing to validate
-            	return;
+                return; // A null is not a value we should even check
             }
+
             else if(propertyValue.getClass().isArray()) {
                 int length = Array.getLength( propertyValue );
                 if(length > maxSize) {
@@ -1133,9 +1171,9 @@ public class ConstrainedProperty   {
 
         protected void processValidate(Object target, Object propertyValue, Errors errors) {
             Object[] args = new Object[] { constraintPropertyName, constraintOwningClass, propertyValue, new Integer(minSize) };
+
             if(propertyValue == null) {
-                // if null nothing to validate
-            	return;
+                return; // A null is not a value we should even check
             }
             else if(propertyValue.getClass().isArray()) {
                 int length = Array.getLength( propertyValue );

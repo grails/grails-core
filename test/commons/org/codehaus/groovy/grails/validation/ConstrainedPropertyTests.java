@@ -232,7 +232,11 @@ public class ConstrainedPropertyTests extends TestCase {
 
         // validate that a non-empty String does *not* yield an error
         constraintTester.testConstraint("foo", false);
-    }         
+
+        // validate that a null String does not yield an error
+        constraintTester.testConstraint(null, false);
+
+    }
 
     public void testEmailConstraint() {
         // create a constraint tester for a domain class with a String property and an e-mail constraint
@@ -243,7 +247,10 @@ public class ConstrainedPropertyTests extends TestCase {
 
         // validate that a well-formed e-mail address does *not* yield an error
         constraintTester.testConstraint("avalidemail@hotmail.com", false);
-    }       
+
+        // validate that a null String does not yield an error
+        constraintTester.testConstraint(null, false);
+    }
     
     public void testInListConstraint() {
         // create a constraint tester for a domain class with a String property and an inList constraint with three possible values
@@ -258,7 +265,10 @@ public class ConstrainedPropertyTests extends TestCase {
 
         // validate that a value in the list does *not* yield an error
         constraintTester.testConstraint("two", false);
-    }    
+
+        // validate that a null does not yield an error
+        constraintTester.testConstraint(null, false);
+    }
 
     public void testLengthConstraint() {
         // create a constraint tester for a domain class with a String property and a length constraint with a range of 5 to 15 characters
@@ -279,9 +289,9 @@ public class ConstrainedPropertyTests extends TestCase {
         // validate that a value *greater than* the minimum value does *not* yield an error
         constraintTester.testConstraint("absolutelytotallytoolong", true);
 
-        // validate that a null value yields an error
-        constraintTester.testConstraint(null, true);
-    }    
+        // validate that a null does not yield an error
+        constraintTester.testConstraint(null, false);
+    }
     
     public void testMatchesConstraint() {
         // create a constraint tester for a domain class with a String property and a matches (i.e., regex) constraint limiting the values to alpha-characters only
@@ -293,8 +303,8 @@ public class ConstrainedPropertyTests extends TestCase {
         // validate that a value matching the regex does *not* yield an error
         constraintTester.testConstraint("j", false);
         
-        // validate that a null value yields an error
-        constraintTester.testConstraint(null, true);
+        // validate that a null does not yield an error
+        constraintTester.testConstraint(null, false);
     }
     
     public void testMinConstraint() {
@@ -310,8 +320,8 @@ public class ConstrainedPropertyTests extends TestCase {
         // validate that a value *greater than* the minimum value does *not* yield an error
         constraintTester.testConstraint(ONE_DAY_FROM_NOW, false);
 
-        // validate that a null value yields an error
-        constraintTester.testConstraint(null, true);
+        // validate that a null does not yield an error
+        constraintTester.testConstraint(null, false);
     }
     
     public void testMaxConstraint() {
@@ -327,8 +337,8 @@ public class ConstrainedPropertyTests extends TestCase {
         // validate that a value *greater than* the maximum value yields an error
         constraintTester.testConstraint(ONE_DAY_FROM_NOW, true);
 
-        // validate that a null value yields an error
-        constraintTester.testConstraint(null, true);
+        // validate that a null does not yield an error
+        constraintTester.testConstraint(null, false);
     }
 
     public void testMinSizeConstraintWithArrayProperty() {
@@ -529,6 +539,18 @@ public class ConstrainedPropertyTests extends TestCase {
         }
     }     
 
+    public void testScaleConstraintIgnoresNulls() {
+        // create a constraint tester for a domain class with a Float property and a scale constraint
+        TestClass testObject = new TestClass();
+        ConstraintTester constraintTester = new ConstraintTester(testObject, "testFloat", ConstrainedProperty.SCALE_CONSTRAINT, new Integer(3));
+
+        // apply the constraint (which should never generate errors)
+        constraintTester.testConstraint(null, false);
+        
+        // validate the constraint yielded the expected value
+        assertEquals(null, testObject.getTestFloat());
+    }
+
     private void assertScaleConstraintForFloatValue(int scale, float originalValue, float expectedScaledValue) {
         // create a constraint tester for a domain class with a Float property and a scale constraint
         TestClass testObject = new TestClass();
@@ -575,8 +597,8 @@ public class ConstrainedPropertyTests extends TestCase {
         // validate that a valid URL value does *not* yield an error
         constraintTester.testConstraint("http://www.google.com", false);
         
-        // validate that a null URL value yields an error
-        constraintTester.testConstraint(null, true);
+        // validate that a null does not yield an error
+        constraintTester.testConstraint(null, false);
     }
     
     public void testValidatorConstraint() throws Exception
