@@ -32,9 +32,9 @@ import org.springframework.beans.BeanWrapperImpl;
  * 
  *  books = Book.withCriteria {
  *    or {
- *      inList(“author.name”,
- *             [“Dierk Koenig”, “Graeme Rocher”]) 
- *      ilike(“title”, “Groovy%”)
+ *      inList("author.name",
+ *             ["Dierk Koenig", "Graeme Rocher"]) 
+ *      ilike("title", "Groovy")
  *    }
  * }
  * @author Graeme Rocher
