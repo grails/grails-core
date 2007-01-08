@@ -120,6 +120,10 @@ public class DynamicMethodsMetaClass extends MetaClassImpl {
 			return adaptee.invokeConstructor(arg1);
 		}
 	}
+
+	public void setAdaptee(MetaClass a) {
+		this.adaptee = a;
+	}
 	
 	
 }

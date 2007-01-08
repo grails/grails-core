@@ -313,6 +313,8 @@ public class GrailsRuntimeConfigurator {
 		
 		performPostProcessing(ctx);
 		
+		this.pluginManager.doDynamicMethods();
+		
 		return ctx;
 	}
 	

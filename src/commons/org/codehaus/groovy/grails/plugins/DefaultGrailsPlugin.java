@@ -437,6 +437,16 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
 			fireModifiedEvent(r, this);
 		}
 	}
+
+
+
+	public void doWithDynamicMethods(ApplicationContext applicationContext) {
+		if(this.pluginBean.isReadableProperty(DO_WITH_DYNAMIC_METHODS)) {
+			Closure c = (Closure)this.plugin.getProperty(DO_WITH_DYNAMIC_METHODS);
+			c.setDelegate(this);
+			c.call(new Object[]{applicationContext});						
+		}
+	}
 	
 	
 }

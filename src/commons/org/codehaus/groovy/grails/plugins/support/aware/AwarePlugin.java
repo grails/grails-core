@@ -45,4 +45,9 @@ public class AwarePlugin extends AbstractGrailsPlugin {
 		// nothing
 		
 	}
+
+	public void doWithDynamicMethods(ApplicationContext applicationContext) {
+		// do nothing
+	}
+	
 }

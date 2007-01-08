@@ -43,6 +43,7 @@ import org.springframework.context.ApplicationContextAware;
  */
 public interface GrailsPlugin extends ApplicationContextAware {
 
+	String DO_WITH_DYNAMIC_METHODS = "doWithDynamicMethods";
 	/**
 	 * Defines the name of the property that specifies resources which this plugin monitors for changes
 	 * in the format a Ant-style path
@@ -178,4 +179,12 @@ public interface GrailsPlugin extends ApplicationContextAware {
 
 
 	void setApplication(GrailsApplication application);
+
+
+	/**
+	 * Calls a "doWithDynamicMethods" closure that allows a plugin to register dynamic methods at runtime
+	 * @param applicationContext 
+	 *
+	 */
+	void doWithDynamicMethods(ApplicationContext applicationContext);
 }

@@ -18,6 +18,8 @@ package org.codehaus.groovy.grails.plugins;
 import groovy.lang.Binding;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyShell;
+import groovy.lang.MetaClass;
+import groovy.lang.MetaClassRegistry;
 import groovy.lang.Writable;
 import groovy.util.XmlSlurper;
 import groovy.util.slurpersupport.GPathResult;
@@ -43,9 +45,12 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.commons.metaclass.DynamicMethodsMetaClass;
+import org.codehaus.groovy.grails.commons.metaclass.ExpandoMetaClass;
 import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration;
 import org.codehaus.groovy.grails.plugins.exceptions.PluginException;
 import org.codehaus.groovy.grails.support.ParentApplicationContextAware;
+import org.codehaus.groovy.runtime.InvokerHelper;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -531,6 +536,41 @@ public class DefaultGrailsPluginManager implements GrailsPluginManager {
 		for (Iterator i = pluginList.iterator(); i.hasNext();) {
 			GrailsPlugin plugin = (GrailsPlugin) i.next();
 			plugin.setApplication(application);
+		}
+	}
+
+	public void doDynamicMethods() {
+		checkInitialised();
+		Class[] allClasses = application.getAllClasses();
+		if(allClasses != null) {
+			ExpandoMetaClass[] metaClasses = new ExpandoMetaClass[allClasses.length];
+			MetaClassRegistry registry = InvokerHelper.getInstance().getMetaRegistry();
+			
+			
+			for (int i = 0; i < allClasses.length; i++) {
+				Class c = allClasses[i];
+				MetaClass mc = registry.getMetaClass(c);
+				if(mc instanceof DynamicMethodsMetaClass) {
+					ExpandoMetaClass adaptee = new ExpandoMetaClass(c);
+					((DynamicMethodsMetaClass)mc).setAdaptee(adaptee);
+					metaClasses[i] = adaptee;
+				}
+				else {
+					metaClasses[i] = new ExpandoMetaClass(c,true);	
+				}			
+			}
+			try {
+				for (Iterator i = pluginList.iterator(); i.hasNext();) {
+					GrailsPlugin plugin = (GrailsPlugin) i.next();
+					plugin.doWithDynamicMethods(applicationContext);
+				}			
+			}
+			finally {
+				for (int i = 0; i < metaClasses.length; i++) {
+					ExpandoMetaClass mc = metaClasses[i];
+					mc.initialize();
+				}
+			}			
 		}
 	}
 

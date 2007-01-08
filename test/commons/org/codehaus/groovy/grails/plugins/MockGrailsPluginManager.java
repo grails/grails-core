@@ -94,4 +94,8 @@ public class MockGrailsPluginManager implements GrailsPluginManager {
 
 	}
 
+	public void doDynamicMethods() {
+		// do nothing
+	}
+
 }

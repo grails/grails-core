@@ -15,6 +15,8 @@
  */ 
 package org.codehaus.groovy.grails.commons;
 
+import groovy.lang.MetaClass;
+
 /**
  * <p>This interface represents any class in a Grails application.
  * 
@@ -87,4 +89,10 @@ public interface GrailsClass {
      * @return the class
      */
     public Class getClazz();
+    
+    /**
+     * 
+     * @return The MetaClass for this Grails class
+     */
+    public MetaClass getMetaClass();
 }

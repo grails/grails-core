@@ -16,6 +16,7 @@
 package org.codehaus.groovy.grails.commons;
 
 import groovy.lang.GroovyObject;
+import groovy.lang.MetaClass;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
@@ -23,6 +24,7 @@ import java.util.Map;
 import org.apache.commons.lang.ClassUtils;
 import org.codehaus.groovy.grails.exceptions.NewInstanceCreationException;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
+import org.codehaus.groovy.runtime.InvokerHelper;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
 
@@ -46,6 +48,7 @@ public abstract class AbstractGrailsClass implements GrailsClass {
     private BeanWrapper reference = null;
     private String naturalName;
     private String shortName;
+    private MetaClass metaClass;
 
 
 
@@ -204,4 +207,13 @@ public abstract class AbstractGrailsClass implements GrailsClass {
             return null;
         }
     }
+
+	/**
+	 * @return the metaClass
+	 */
+	public MetaClass getMetaClass() {
+		return InvokerHelper.getInstance().getMetaRegistry().getMetaClass(clazz);
+	}
+    
+     
 }

@@ -16,6 +16,7 @@
 package org.codehaus.groovy.grails.commons;
 
 import groovy.lang.GroovyClassLoader;
+import groovy.lang.MetaClass;
 
 import java.io.IOException;
 import java.lang.reflect.Modifier;
@@ -34,6 +35,7 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.control.CompilationUnit;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.Phases;
+import org.codehaus.groovy.grails.commons.metaclass.ExpandoMetaClass;
 import org.codehaus.groovy.grails.commons.spring.GrailsResourceHolder;
 import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException;
 import org.codehaus.groovy.grails.injection.GrailsInjectionOperation;
@@ -77,6 +79,7 @@ public class DefaultGrailsApplication implements GrailsApplication {
     private static Log log = LogFactory.getLog(DefaultGrailsApplication.class);
     private Map tag2libMap;
 	private ApplicationContext parentContext;
+	private MetaClass[] metaClasses;
 
 
     public DefaultGrailsApplication(final Class[] classes, GroovyClassLoader classLoader) {
@@ -129,6 +132,7 @@ public class DefaultGrailsApplication implements GrailsApplication {
                         if(!StringUtils.isBlank(className)) {
                             Class c = cl.loadClass(className,true,false);
                             Assert.notNull(c,"Groovy Bug! GCL loadClass method returned a null class!");
+                            
                             loadedClasses.add(c);
                             loadedResources = resourceLoader.getLoadedResources();
                         }
@@ -173,6 +177,7 @@ public class DefaultGrailsApplication implements GrailsApplication {
                 log.debug("[" + classes[i].getName() + "] is a domain class.");
                 GrailsDomainClass grailsDomainClass = new DefaultGrailsDomainClass(classes[i]);
                 this.domainMap.put(grailsDomainClass.getFullName(), grailsDomainClass);
+                
 
             } else {
                 log.debug("[" + classes[i].getName() + "] is not a domain class.");
@@ -193,7 +198,8 @@ public class DefaultGrailsApplication implements GrailsApplication {
             }
             if (GrailsClassUtils.isControllerClass(classes[i])  /* && not ends with FromController */) {
                 GrailsControllerClass grailsControllerClass = new DefaultGrailsControllerClass(classes[i]);
-                if (grailsControllerClass.getAvailable()) {
+                
+                if (grailsControllerClass.getAvailable()) {                	
                     this.controllerMap.put(grailsControllerClass.getFullName(), grailsControllerClass);
                 }
             } else if (GrailsClassUtils.isPageFlowClass(classes[i])) {
@@ -221,8 +227,10 @@ public class DefaultGrailsApplication implements GrailsApplication {
             	taskMap.put(grailsTaskClass.getFullName(), grailsTaskClass);
             	log.debug("[" + classes[i].getName() + "] is a task class.");
             }
+            
         }
 
+        
         this.controllerClasses = ((GrailsControllerClass[])controllerMap.values().toArray(new GrailsControllerClass[controllerMap.size()]));
         this.pageFlows = ((GrailsPageFlowClass[])pageFlowMap.values().toArray(new GrailsPageFlowClass[pageFlowMap.size()]));
         this.domainClasses = ((GrailsDomainClass[])this.domainMap.values().toArray(new GrailsDomainClass[domainMap.size()]));

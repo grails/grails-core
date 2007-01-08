@@ -104,6 +104,12 @@ public interface GrailsPluginManager extends ApplicationContextAware {
 	 * @param target The target to write the changes to
 	 */
 	public abstract void doWebDescriptor(File descriptor, Writer target);
+	
+	/**
+	 * This is called on all plugins so that they can add new methods/properties/constructors etc.
+	 *
+	 */
+	public abstract void doDynamicMethods();
 	/**
 	 * Retrieves a name Grails plugin instance
 	 * 
