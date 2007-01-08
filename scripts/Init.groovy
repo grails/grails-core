@@ -158,8 +158,13 @@ task ('createArtifact': "Creates a specific Grails artifact") {
 			return
 	}
 		
-	Ant.copy(file:"${grailsHome}/src/grails/templates/artifacts/${artifactName}.groovy", 
-			 tofile:artifactFile)
+	// first check for presence of template in application
+	templateFile = "${basedir}/templates/artifacts/${artifactName}.groovy"
+	if (!new File(templateFile).exists()) {
+		// template not found in application, use default template
+		templateFile = "${grailsHome}/src/grails/templates/artifacts/${artifactName}.groovy"
+	}
+	Ant.copy(file: templateFile, tofile: artifactFile)
 			
 	Ant.replace(file:artifactFile, 
 				token:"@artifact.name@", value:className )

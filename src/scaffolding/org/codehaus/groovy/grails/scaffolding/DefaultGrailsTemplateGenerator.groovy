@@ -32,7 +32,7 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator  {
 
     static final Log LOG = LogFactory.getLog(DefaultGrailsTemplateGenerator.class);
 
-    String basedir
+    String basedir = "."
     boolean overwrite = false
     def engine = new groovy.text.SimpleTemplateEngine()
 
@@ -108,86 +108,7 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator  {
             }
             destFile.parentFile.mkdirs()
 
-            def templateText = '''
-<%=packageName ? "import ${packageName}.${className}" : ''%>            
-class ${className}Controller {
-    def index = { redirect(action:list,params:params) }
-
-    // the delete, save and update actions only
-    // accept POST requests
-    def allowedMethods = [delete:'POST',
-                          save:'POST',
-                          update:'POST']
-
-    def list = {
-        if(!params.max)params.max = 10
-        [ ${propertyName}List: ${className}.list( params ) ]
-    }
-
-    def show = {
-        [ ${propertyName} : ${className}.get( params.id ) ]
-    }
-
-    def delete = {
-        def ${propertyName} = ${className}.get( params.id )
-        if(${propertyName}) {
-            ${propertyName}.delete()
-            flash.message = "${className} \\${params.id} deleted."
-            redirect(action:list)
-        }
-        else {
-            flash.message = "${className} not found with id \\${params.id}"
-            redirect(action:list)
-        }
-    }
-
-    def edit = {
-        def ${propertyName} = ${className}.get( params.id )
-
-        if(!${propertyName}) {
-                flash.message = "${className} not found with id \\${params.id}"
-                redirect(action:list)
-        }
-        else {
-            return [ ${propertyName} : ${propertyName} ]
-        }
-    }
-
-    def update = {
-        def ${propertyName} = ${className}.get( params.id )
-        if(${propertyName}) {
-             ${propertyName}.properties = params
-            if(${propertyName}.save()) {
-                redirect(action:show,id:${propertyName}.id)
-            }
-            else {
-                render(view:'edit',model:[${propertyName}:${propertyName}])
-            }
-        }
-        else {
-            flash.message = "${className} not found with id \\${params.id}"
-            redirect(action:edit,id:params.id)
-        }
-    }
-
-    def create = {
-        def ${propertyName} = new ${className}()
-        ${propertyName}.properties = params
-        return ['${propertyName}':${propertyName}]
-    }
-
-    def save = {
-        def ${propertyName} = new ${className}()
-        ${propertyName}.properties = params
-        if(${propertyName}.save()) {
-            redirect(action:show,id:${propertyName}.id)
-        }
-        else {
-            render(view:'create',model:[${propertyName}:${propertyName}])
-        }
-    }
-
-}'''
+            def templateText = getTemplateText("Controller.groovy")
 		
             def binding = [ packageName:domainClass.packageName,className: domainClass.shortName, propertyName:domainClass.propertyName ]
             def t = engine.createTemplate(templateText)
@@ -338,57 +259,7 @@ class ${className}Controller {
     private generateListView(domainClass, destDir) {
         def listFile = new File("${destDir}/list.gsp")
         if(!listFile.exists() || overwrite) {
-            def templateText = '''
-<%=packageName%>  
-<html>
-    <head>
-         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-         <meta name="layout" content="main" />
-         <title>${className} List</title>
-    </head>
-    <body>
-        <div class="nav">
-            <span class="menuButton"><a href="\\${createLinkTo(dir:'')}">Home</a></span>
-            <span class="menuButton"><g:link action="create">New ${className}</g:link></span>
-        </div>
-        <div class="body">
-           <h1>${className} List</h1>
-            <g:if test="\\${flash.message}">
-                 <div class="message">
-                       \\${flash.message}
-                 </div>
-            </g:if>
-           <table>
-               <tr>
-                   <%
-                        props = domainClass.properties.findAll { it.name != 'version' && it.type != Set.class }
-                   Collections.sort(props, comparator.constructors[0].newInstance([domainClass] as Object[]))
-                   %>
-                   <%props.eachWithIndex { p,i ->
-                   	if(i < 6) {%>                   
-                        <th>${p.naturalName}</th>
-                   <%}}%>
-                   <th></th>
-               </tr>
-               <g:each in="\\${${propertyName}List}">
-                    <tr>
-                       <%props.eachWithIndex { p,i ->
-                             if(i < 6) {%>
-                            <td>\\${it.${p.name}}</td>
-                       <%}}%>
-                       <td class="actionButtons">
-                            <span class="actionButton"><g:link action="show" id="\\${it.id}">Show</g:link></span>
-                       </td>
-                    </tr>
-               </g:each>
-           </table>
-		   <div class="paginateButtons">
-				<g:paginate total="\\${${className}.count()}" />
-			</div>
-        </div>
-    </body>
-</html>
-            '''
+            def templateText = getTemplateText("list.gsp")
 
             def t = engine.createTemplate(templateText)
             def packageName  = domainClass.packageName ? "<%@ page import=\"${domainClass.fullName}\" %>" : ""
@@ -408,62 +279,7 @@ class ${className}Controller {
     private generateShowView(domainClass,destDir) {
         def showFile = new File("${destDir}/show.gsp")
         if(!showFile.exists() || overwrite) {
-            def templateText = '''
-<%=packageName%>  
-<html>
-    <head>
-         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-          <meta name="layout" content="main" />
-         <title>Show ${className}</title>
-    </head>
-    <body>
-        <div class="nav">
-            <span class="menuButton"><a href="\\${createLinkTo(dir:'')}">Home</a></span>
-            <span class="menuButton"><g:link action="list">${className} List</g:link></span>
-            <span class="menuButton"><g:link action="create">New ${className}</g:link></span>
-        </div>
-        <div class="body">
-           <h1>Show ${className}</h1>
-           <g:if test="\\${flash.message}">
-                 <div class="message">\\${flash.message}</div>
-           </g:if>
-           <div class="dialog">
-                 <table>
-                   <%
-                        props = domainClass.properties.findAll { it.name != 'version' }
-                        Collections.sort(props, comparator.constructors[0].newInstance([domainClass] as Object[]))
-                   %>
-                   <%props.each { p ->%>
-                        <tr class="prop">
-                              <td valign="top" class="name">${p.naturalName}:</td>
-                              <% if(p.oneToMany) { %>
-                                     <td  valign="top" style="text-align:left;" class="value">
-                                        <ul>
-                                            <g:each var="${p.name[0]}" in="\\${${propertyName}.${p.name}}">
-                                                <li><g:link controller="${p.referencedDomainClass?.propertyName}" action="show" id="\\${${p.name[0]}.id}">\\${${p.name[0]}}</g:link></li>
-                                            </g:each>
-                                        </ul>
-                                     </td>
-                              <% } else if(p.manyToOne || p.oneToOne) { %>
-                                    <td valign="top" class="value"><g:link controller="${p.referencedDomainClass?.propertyName}" action="show" id="\\${${propertyName}?.${p.name}?.id}">\\${${propertyName}?.${p.name}}</g:link></td>
-                              <% } else  { %>
-                                    <td valign="top" class="value">\\${${propertyName}.${p.name}}</td>
-                              <% } %>
-                        </tr>
-                   <%}%>
-                 </table>
-           </div>
-           <div class="buttons">
-               <g:form controller="${propertyName}">
-                 <input type="hidden" name="id" value="\\${${propertyName}?.id}" />
-                 <span class="button"><g:actionSubmit value="Edit" /></span>
-                 <span class="button"><g:actionSubmit value="Delete" /></span>
-               </g:form>
-           </div>
-        </div>
-    </body>
-</html>
-            '''
+            def templateText = getTemplateText("show.gsp")
 
             def t = engine.createTemplate(templateText)
             def packageName  = domainClass.packageName ? "<%@ page import=\"${domainClass.fullName}\" %>" : ""
@@ -483,59 +299,7 @@ class ${className}Controller {
     private generateEditView(domainClass,destDir) {
         def editFile = new File("${destDir}/edit.gsp")
         if(!editFile.exists() || overwrite) {
-            def templateText = '''
-<%=packageName%>  
-<html>
-    <head>
-         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-         <meta name="layout" content="main" />
-         <title>Edit ${className}</title>
-    </head>
-    <body>
-        <div class="nav">
-            <span class="menuButton"><a href="\\${createLinkTo(dir:'')}">Home</a></span>
-            <span class="menuButton"><g:link action="list">${className} List</g:link></span>
-            <span class="menuButton"><g:link action="create">New ${className}</g:link></span>
-        </div>
-        <div class="body">
-           <h1>Edit ${className}</h1>
-           <g:if test="\\${flash.message}">
-                 <div class="message">\\${flash.message}</div>
-           </g:if>
-           <g:hasErrors bean="\\${${propertyName}}">
-                <div class="errors">
-                    <g:renderErrors bean="\\${${propertyName}}" as="list" />
-                </div>
-           </g:hasErrors>
-           <div class="prop">
-	      <span class="name">Id:</span>
-	      <span class="value">\\${${propertyName}?.id}</span>
-	      <input type="hidden" name="${propertyName}.id" value="\\${${propertyName}?.id}" />
-           </div>           
-           <g:form controller="${propertyName}" method="post" <%= multiPart ? ' enctype="multipart/form-data"' : '' %>>
-               <input type="hidden" name="id" value="\\${${propertyName}?.id}" />
-               <div class="dialog">
-                <table>
-
-                       <%
-                            props = domainClass.properties.findAll { it.name != 'version' && it.name != 'id' }
-                       Collections.sort(props, comparator.constructors[0].newInstance([domainClass] as Object[]))
-                       %>
-                       <%props.each { p ->%>
-				${renderEditor(p)}
-                       <%}%>
-                </table>
-               </div>
-
-               <div class="buttons">
-                     <span class="button"><g:actionSubmit value="Update" /></span>
-                     <span class="button"><g:actionSubmit value="Delete" /></span>
-               </div>
-            </g:form>
-        </div>
-    </body>
-</html>
-            '''
+            def templateText = getTemplateText("edit.gsp")
 
             def t = engine.createTemplate(templateText)
             def multiPart = domainClass.properties.find{it.type==([] as Byte[]).class || it.type==([] as byte[]).class}
@@ -558,53 +322,7 @@ class ${className}Controller {
     private generateCreateView(domainClass,destDir) {
         def createFile = new File("${destDir}/create.gsp")
         if(!createFile.exists() || overwrite) {
-            def templateText = '''
-<%=packageName%>  
-<html>
-    <head>
-         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-         <meta name="layout" content="main" />
-         <title>Create ${className}</title>         
-    </head>
-    <body>
-        <div class="nav">
-            <span class="menuButton"><a href="\\${createLinkTo(dir:'')}">Home</a></span>
-            <span class="menuButton"><g:link action="list">${className} List</g:link></span>
-        </div>
-        <div class="body">
-           <h1>Create ${className}</h1>
-           <g:if test="\\${flash.message}">
-                 <div class="message">\\${flash.message}</div>
-           </g:if>
-           <g:hasErrors bean="\\${${propertyName}}">
-                <div class="errors">
-                    <g:renderErrors bean="\\${${propertyName}}" as="list" />
-                </div>
-           </g:hasErrors>
-           <g:form action="save" method="post" <%= multiPart ? ' enctype="multipart/form-data"' : '' %>>
-               <div class="dialog">
-                <table>
-
-                       <%
-                            props = domainClass.properties.findAll { it.name != 'version' && it.name != 'id' }
-                       Collections.sort(props, comparator.constructors[0].newInstance([domainClass] as Object[]))
-                       %>
-                       <%props.each { p ->
-                            if(p.type != Set.class) { %>
-                                  ${renderEditor(p)}
-                       <%}}%>
-               </table>
-               </div>
-               <div class="buttons">
-                     <span class="formButton">
-                        <input type="submit" value="Create"></input>
-                     </span>
-               </div>
-            </g:form>
-        </div>
-    </body>
-</html>
-            '''
+            def templateText = getTemplateText("create.gsp")
 
             def t = engine.createTemplate(templateText)
             def multiPart = domainClass.properties.find{it.type==([] as Byte[]).class || it.type==([] as byte[]).class}
@@ -624,4 +342,18 @@ class ${className}Controller {
             LOG.info("Create view generated at ${createFile.absolutePath}")
         }
     }
+    
+    private getTemplateText(String template) {
+        // first check for presence of template in application               
+        def templateFile = "${basedir}/templates/scaffolding/${template}"
+        if (!new File(templateFile).exists()) {
+            // template not found in application, use default template
+            def ant = new AntBuilder()
+            ant.property(environment:"env")   
+            def grailsHome = ant.antProject.properties."env.GRAILS_HOME" 
+            templateFile = "${grailsHome}/src/grails/templates/scaffolding/${template}"
+        }
+        return new File(templateFile).getText()
+    }
+    
 }
