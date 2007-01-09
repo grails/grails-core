@@ -1368,17 +1368,27 @@ public class ConstrainedProperty   {
      * @return Returns the max.
      */
     public Comparable getMax() {
-        MaxConstraint c = (MaxConstraint)this.appliedConstraints.get( MAX_CONSTRAINT );
-        if(c == null) {
-            Range r = getRange();
-            if(r == null) {
-                return null;
+        Comparable maxValue = null;
+        
+        MaxConstraint maxConstraint = (MaxConstraint)this.appliedConstraints.get(MAX_CONSTRAINT);
+        RangeConstraint rangeConstraint = (RangeConstraint)this.appliedConstraints.get(RANGE_CONSTRAINT);
+
+        if ((maxConstraint != null) || (rangeConstraint != null)) {
+            Comparable maxConstraintValue = maxConstraint != null ? maxConstraint.getMaxValue() : null;
+            Comparable rangeConstraintHighValue = rangeConstraint != null ? rangeConstraint.getRange().getTo() : null;
+            
+            if ((maxConstraintValue != null) && (rangeConstraintHighValue != null)) {
+                maxValue = (maxConstraintValue.compareTo(rangeConstraintHighValue) < 0) ? maxConstraintValue : rangeConstraintHighValue;
             }
-            else {
-                return r.getTo();
+            else if ((maxConstraintValue == null) && (rangeConstraintHighValue != null)) {
+                maxValue = rangeConstraintHighValue;
+            }
+            else if ((maxConstraintValue != null) && (rangeConstraintHighValue == null)) {
+                maxValue = maxConstraintValue;
             }
         }
-        return c.getMaxValue();
+
+        return maxValue; 
     }
 
 
@@ -1416,17 +1426,27 @@ public class ConstrainedProperty   {
      * @return Returns the min.
      */
     public Comparable getMin() {
-        MinConstraint c = (MinConstraint)this.appliedConstraints.get( MIN_CONSTRAINT );
-        if(c == null) {
-            Range r = getRange();
-            if(r == null) {
-                return null;
+        Comparable minValue = null;
+        
+        MinConstraint minConstraint = (MinConstraint)this.appliedConstraints.get(MIN_CONSTRAINT);
+        RangeConstraint rangeConstraint = (RangeConstraint)this.appliedConstraints.get(RANGE_CONSTRAINT);
+
+        if ((minConstraint != null) || (rangeConstraint != null)) {
+            Comparable minConstraintValue = minConstraint != null ? minConstraint.getMinValue() : null;
+            Comparable rangeConstraintLowValue = rangeConstraint != null ? rangeConstraint.getRange().getFrom() : null;
+            
+            if ((minConstraintValue != null) && (rangeConstraintLowValue != null)) {
+                minValue = (minConstraintValue.compareTo(rangeConstraintLowValue) > 0) ? minConstraintValue : rangeConstraintLowValue;
             }
-            else {
-                return r.getFrom();
+            else if ((minConstraintValue == null) && (rangeConstraintLowValue != null)) {
+                minValue = rangeConstraintLowValue;
+            }
+            else if ((minConstraintValue != null) && (rangeConstraintLowValue == null)) {
+                minValue = minConstraintValue;
             }
         }
-        return c.getMinValue();
+
+        return minValue;             
     }
 
 
@@ -1561,6 +1581,22 @@ public class ConstrainedProperty   {
     }
 
 
+    /**
+     * @return The scale, if defined for this property; null, otherwise
+     */
+    public Integer getScale() {
+        Integer scale = null;
+
+        ScaleConstraint scaleConstraint = (ScaleConstraint)this.appliedConstraints.get(SCALE_CONSTRAINT);
+
+        if (scaleConstraint != null) {
+            scale = new Integer(scaleConstraint.getScale());
+        }
+
+        return scale;
+    }
+    
+    
     /**
      * @return Returns the size.
      */

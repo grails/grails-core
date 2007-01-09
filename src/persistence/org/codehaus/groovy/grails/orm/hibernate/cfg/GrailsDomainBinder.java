@@ -16,10 +16,12 @@ package org.codehaus.groovy.grails.orm.hibernate.cfg;
 
 
 
+import org.apache.commons.lang.math.NumberUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
+import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 import org.hibernate.FetchMode;
 import org.hibernate.MappingException;
 import org.hibernate.cfg.ImprovedNamingStrategy;
@@ -940,6 +942,19 @@ w	 * Binds a simple value to the Hibernate metamodel. A simple value is
 		else {
 			column.setNullable(grailsProp.isOptional());
 			column.setName(namingStrategy.propertyToColumnName(grailsProp.getName()));
+
+            // Use the constraints for this property to more accurately define
+            // the column's length, precision, and scale
+            ConstrainedProperty constrainedProperty = getConstrainedProperty(grailsProp);
+            if (constrainedProperty != null) {
+                if (String.class.isAssignableFrom(grailsProp.getType())) {
+                    bindStringColumnConstraints(column, constrainedProperty);
+                }
+
+                if (Number.class.isAssignableFrom(grailsProp.getType())) {
+                    bindNumericColumnConstraints(column, constrainedProperty);
+                }
+            }
 		}
 		
 		if(!grailsProp.getDomainClass().isRoot()) {
@@ -951,6 +966,106 @@ w	 * Binds a simple value to the Hibernate metamodel. A simple value is
 		if(LOG.isDebugEnabled())
 			LOG.debug("[GrailsDomainBinder] bound property [" + grailsProp.getName() + "] to column name ["+column.getName()+"] in table ["+table.getName()+"]");		
 	}
+    
+    /**
+     * Returns the constraints applied to the specified domain class property.
+     * 
+     * @param grailsProp the property whose constraints will be returned
+     * @return the <code>ConstrainedProperty</code> object representing the property's constraints
+     */
+    private static ConstrainedProperty getConstrainedProperty(GrailsDomainClassProperty grailsProp) {
+        ConstrainedProperty constrainedProperty = null;
+        Map constraints = grailsProp.getDomainClass().getConstrainedProperties();
+        for (Iterator constrainedPropertyIter = constraints.values().iterator(); constrainedPropertyIter.hasNext() && (constrainedProperty == null);) {
+            ConstrainedProperty tmpConstrainedProperty = (ConstrainedProperty)constrainedPropertyIter.next();
+            if (tmpConstrainedProperty.getPropertyName().equals(grailsProp.getName())) {
+                constrainedProperty = tmpConstrainedProperty;
+            }
+        }
+        return constrainedProperty;
+    }
 
+    /**
+     * Interrogates the specified constraints looking for any constraints that would limit the 
+     * length of the property's value.  If such constraints exist, this method adjusts the length
+     * of the column accordingly.
+     * 
+     * @param column the column that corresponds to the property
+     * @param constrainedProperty the property's constraints 
+     */
+    protected static void bindStringColumnConstraints(Column column, ConstrainedProperty constrainedProperty) {
+        Integer columnLength = constrainedProperty.getMaxSize();
+        if (columnLength != null) {
+            column.setLength(columnLength.intValue());
+        }
+    }
 
+    /**
+     * Interrogates the specified constraints looking for any constraints that would limit the 
+     * precision and/or scale of the property's value.  If such constraints exist, this method adjusts 
+     * the precision and/or scale of the column accordingly.
+     * 
+     * @param column the column that corresponds to the property
+     * @param constrainedProperty the property's constraints 
+     */
+    protected static void bindNumericColumnConstraints(Column column, ConstrainedProperty constrainedProperty) {
+        int scale = Column.DEFAULT_SCALE;
+        if (constrainedProperty.getScale() != null) {
+            scale = constrainedProperty.getScale().intValue();
+            column.setScale(scale);
+        }
+
+        Integer minSizeConstraintValue = constrainedProperty.getMinSize();
+        Integer maxSizeConstraintValue = constrainedProperty.getMaxSize();
+        Comparable minConstraintValue = constrainedProperty.getMin();
+        Comparable maxConstraintValue = constrainedProperty.getMax();
+
+        if ((minSizeConstraintValue != null) || (maxSizeConstraintValue != null) || (minConstraintValue != null) || (maxConstraintValue != null)) {
+            int minSizeConstraintValueLength = 0;
+            if (minSizeConstraintValue != null) {
+                minSizeConstraintValueLength = countDigits(minSizeConstraintValue);
+            }
+
+            int maxSizeConstraintValueLength = 0;
+            if (maxSizeConstraintValue != null) {
+                maxSizeConstraintValueLength = countDigits(maxSizeConstraintValue);
+            }
+
+            int minConstraintValueLength = 0;
+            int minConstraintValueIntegerLength = 0;
+            if ((minConstraintValue != null) && (minConstraintValue instanceof Number)) {
+                minConstraintValueLength = countDigits((Number)minConstraintValue);
+                minConstraintValueIntegerLength = countDigits(new Long(((Number)minConstraintValue).longValue()));
+            }
+
+            int maxConstraintValueLength = 0;
+            int maxConstraintValueIntegerLength = 0;
+            if ((maxConstraintValue != null) && (maxConstraintValue instanceof Number)) {
+                maxConstraintValueLength = countDigits((Number)maxConstraintValue);
+                maxConstraintValueIntegerLength = countDigits(new Long(((Number)maxConstraintValue).longValue()));
+            }
+
+            // Set the most lenient precision possible based on the many constraints.  (In other words,
+            // determine the largest number of digits that this property can hold and use that value as
+            // the precision.)
+            int maxDigits = NumberUtils.max(new int[] { minSizeConstraintValueLength, maxSizeConstraintValueLength, minConstraintValueLength, (minConstraintValueIntegerLength + scale),
+                    maxConstraintValueLength, (maxConstraintValueIntegerLength + scale) });
+            column.setPrecision(maxDigits);
+        }
+    }
+
+    /**
+     * @return a count of the digits in the specified number
+     */
+    private static int countDigits(Number number) {
+        int numDigits = 0;
+
+        if (number != null) {
+            // Remove everything that's not a digit (e.g., decimal points or signs) 
+            String digitsOnly = number.toString().replaceAll("\\D", "");
+            numDigits = digitsOnly.length();
+        }
+
+        return numDigits;
+    }
 }
