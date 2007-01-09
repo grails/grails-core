@@ -94,6 +94,38 @@ public class ExpandoMetaClass extends MetaClassImpl implements GroovyObject {
 	private static final String GROOVY_CONSTRUCTOR = "<init>";
 	
 	private MetaClass myMetaClass;
+	private boolean allowChangesAfterInit = false;
+	private boolean initialized;
+	private boolean initCalled = false;
+	
+	
+
+	/**
+	 * @param allowChangesAfterInit the allowChangesAfterInit to set
+	 */
+	public void setAllowChangesAfterInit(boolean allowChangesAfterInit) {
+		this.allowChangesAfterInit = allowChangesAfterInit;
+	}
+
+	
+	/* (non-Javadoc)
+	 * @see groovy.lang.MetaClassImpl#initialize()
+	 */
+	public synchronized void initialize() {		
+		super.initialize();
+		this.initialized = true;
+		this.initCalled = true;
+	}
+
+
+	/* (non-Javadoc)
+	 * @see groovy.lang.MetaClassImpl#isInitialized()
+	 */
+
+	protected boolean isInitialized() {
+		return this.initialized;
+	}
+
 
 	/**
 	 * Constructs a new ExpandoMetaClass instance for the given class
@@ -308,7 +340,27 @@ public class ExpandoMetaClass extends MetaClassImpl implements GroovyObject {
 			registerInstanceMethod(property, callable);
 			
 		}
+		else if(property.equals("allowChangesAfterInit")) {
+			this.allowChangesAfterInit = ((Boolean)newValue).booleanValue();
+		}
 		else {
+			registerBeanProperty(property, newValue);
+		}			
+	}
+
+
+	/**
+	 * Registers a new bean property
+	 * 
+	 * @param property The property name
+	 * @param newValue The properties initial value
+	 */
+	protected void registerBeanProperty(String property, Object newValue) {
+		try {
+			if(allowChangesAfterInit) {
+				this.initialized = false;
+			}
+		
 			Class type = newValue == null ? Object.class : newValue.getClass();
 			
 			MetaBeanProperty mbp = new ThreadManagedMetaBeanProperty(theClass,property,type,newValue);
@@ -317,9 +369,11 @@ public class ExpandoMetaClass extends MetaClassImpl implements GroovyObject {
 			addMetaMethod(mbp.getSetter());
 			
 			addMetaBeanProperty(mbp);
-			
-			
-		}			
+		}
+		finally {
+			if(initCalled)this.initialized = true;
+		}
+		
 	}
 
 	/**
@@ -329,12 +383,21 @@ public class ExpandoMetaClass extends MetaClassImpl implements GroovyObject {
 	 * @param callable The callable Closure
 	 */
 	protected void registerInstanceMethod(String methodName, Closure callable) {
-		ClosureMetaMethod metaMethod = new ClosureMetaMethod(methodName, super.theClass,callable);
-		MethodKey key = new DefaultMethodKey(super.theClass,methodName, metaMethod.getParameterTypes() );
-		
-		
-		super.addMetaMethod(metaMethod);
-		super.cacheInstanceMethod(key, metaMethod);
+		try {
+			if(allowChangesAfterInit) {
+				this.initialized = false;
+			}
+			ClosureMetaMethod metaMethod = new ClosureMetaMethod(methodName, super.theClass,callable);
+			MethodKey key = new DefaultMethodKey(super.theClass,methodName, metaMethod.getParameterTypes() );
+			
+			
+			super.addMetaMethod(metaMethod);
+			super.cacheInstanceMethod(key, metaMethod);
+			
+		}
+		finally {
+			if(initCalled)this.initialized = true;
+		}
 	}
 	
 	/**
@@ -344,11 +407,20 @@ public class ExpandoMetaClass extends MetaClassImpl implements GroovyObject {
 	 * @param callable The callable Closure
 	 */
 	protected void registerStaticMethod(String methodName, Closure callable) {
-		ClosureStaticMetaMethod metaMethod = new ClosureStaticMetaMethod(methodName, super.theClass,callable);
-		MethodKey key = new DefaultMethodKey(super.theClass,methodName, metaMethod.getParameterTypes() );
+		try {
+			if(allowChangesAfterInit) {
+				this.initialized = false;
+			}
 		
-		super.addMetaMethod(metaMethod);
-		super.cacheStaticMethod(key, metaMethod);
+			ClosureStaticMetaMethod metaMethod = new ClosureStaticMetaMethod(methodName, super.theClass,callable);
+			MethodKey key = new DefaultMethodKey(super.theClass,methodName, metaMethod.getParameterTypes() );
+			
+			super.addMetaMethod(metaMethod);
+			super.cacheStaticMethod(key, metaMethod);
+			
+		}finally {
+			if(initCalled)this.initialized = true;
+		}
 	}
 
 }
