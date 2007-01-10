@@ -48,28 +48,6 @@
 	    </init-param>
 	</filter>
 
-    <% if(dev) { %>
-    <filter>
-        <filter-name>reloadFilter</filter-name>
-        <filter-class>org.codehaus.groovy.grails.web.servlet.filter.GrailsReloadServletFilter</filter-class>
-    </filter>
-
-        <!-- only apply reload filter for controller uris -->
-        <% for ( c in controllers ) { %>
-            <filter-mapping>
-                <filter-name>reloadFilter</filter-name>
-                <url-pattern>/${c}/*</url-pattern>
-            </filter-mapping>
-        <% } %>
-
-        <% for ( f in flows ) { %>
-            <filter-mapping>
-                <filter-name>reloadFilter</filter-name>
-                <url-pattern>/${f}/*</url-pattern>
-            </filter-mapping>
-        <% } %>
-    <% } %>    
-
 	<filter-mapping>
 	  <filter-name>Acegi Filter Chain Proxy</filter-name>
 	  <url-pattern>/*</url-pattern>
@@ -104,16 +82,6 @@
       <servlet>
         <servlet-name>gsp</servlet-name>
         <servlet-class>org.codehaus.groovy.grails.web.pages.GroovyPagesServlet</servlet-class>
-        <% if(dev) { %>
-        <init-param>
-            <param-name>showSource</param-name>
-            <param-value>1</param-value>
-            <description>
-              Allows developers to view the intermediade source code, when they pass
-                a spillGroovy argument in the URL.
-           </description>
-        </init-param>
-        <% } %>
      </servlet>
 
     <servlet-mapping>
@@ -121,19 +89,6 @@
         <url-pattern>*.gsp</url-pattern>
     </servlet-mapping>
     <!-- Map all requests to the Grails dispatcher servlet -->
-	<% for ( c in controllers ) { %>	
-		<servlet-mapping>
-			<servlet-name>grails</servlet-name>
-			<url-pattern>/${c}/*</url-pattern>
-		</servlet-mapping>
-	<% } %>		
-	
-	<% for ( f in flows ) { %>
-		<servlet-mapping>
-			<servlet-name>grails</servlet-name>
-			<url-pattern>/${f}/*</url-pattern>
-		</servlet-mapping>
-	<% } %>		
 
 	<servlet-mapping>
 		<servlet-name>grails</servlet-name>
