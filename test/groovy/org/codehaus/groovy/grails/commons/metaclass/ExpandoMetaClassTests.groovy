@@ -21,6 +21,31 @@ package org.codehaus.groovy.grails.commons.metaclass;
 
 class ExpandoMetaClassTests extends GroovyTestCase {
 	
+	void testAllowAdditionOfProperties() {
+		 def metaClass = new ExpandoMetaClass(Test.class)
+		 metaClass.allowChangesAfterInit = true
+		 
+		 metaClass.getOne << {->
+			 "testme"
+		 }
+		 metaClass.initialize()
+		 try {
+			 metaClass.getTwo << {->
+				 "testagain"
+			 }			 
+		 }
+		 catch(RuntimeException e) {
+			 fail("Should have allowed addition of new method")	
+		 }
+		 
+		 def t = new Test()
+		 t.metaClass = metaClass
+		 
+		 assertEquals "testme", t.one
+		 assertEquals "testagain", t.two
+		
+	}
+	
 	void testAllowAdditionOfMethods() {
 		 def metaClass = new ExpandoMetaClass(Test.class)
 		 metaClass.allowChangesAfterInit = true
@@ -44,6 +69,8 @@ class ExpandoMetaClassTests extends GroovyTestCase {
 		 assertEquals "testme", t.myMethod()
 		 assertEquals "testagain", t.mySecondMethod()
 	}
+	
+
 	
 	void testForbiddenAdditionOfMethods() {
 		 def metaClass = new ExpandoMetaClass(Test.class)

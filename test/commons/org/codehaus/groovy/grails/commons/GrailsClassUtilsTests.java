@@ -19,6 +19,8 @@ import junit.framework.TestCase;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.springframework.beans.BeanUtils;
+
 /**
  * @author Graeme Rocher
  * @since 15-Feb-2006
@@ -160,9 +162,32 @@ public class GrailsClassUtilsTests extends TestCase {
 
     public void testGetterNames()
     {
-        assertEquals(GrailsClassUtils.getGetterName("constraints"), "getConstraints");
-        assertEquals(GrailsClassUtils.getGetterName("URL"), "getURL");
-        assertEquals(GrailsClassUtils.getGetterName("Url"), "getUrl");
+        assertEquals("getConstraints",GrailsClassUtils.getGetterName("constraints"));
+        assertEquals("getURL",GrailsClassUtils.getGetterName("URL"));
+        assertEquals("getUrl", GrailsClassUtils.getGetterName("Url"));
+    }
+    
+    public void testIsGetterOrSetter() {
+    	assertTrue(GrailsClassUtils.isSetter("setSomething", new Class[]{String.class}));
+    	assertTrue(GrailsClassUtils.isGetter("getSomething", new Class[0]));
+    	assertTrue(GrailsClassUtils.isSetter("setURL", new Class[]{String.class}));
+    	assertTrue(GrailsClassUtils.isGetter("getURL", new Class[0]));
+    	
+    	assertFalse(GrailsClassUtils.isGetter("something", new Class[]{String.class}));
+    	assertFalse(GrailsClassUtils.isGetter("get", new Class[0]));
+    	assertFalse(GrailsClassUtils.isSetter("set", new Class[]{String.class}));
+    	assertFalse(GrailsClassUtils.isGetter("somethingElse", new Class[0]));
+    	assertFalse(GrailsClassUtils.isSetter("setSomething", new Class[]{String.class, Object.class}));
+    	assertFalse(GrailsClassUtils.isGetter("getSomething", new Class[]{Object.class}));
+    	
+    	assertFalse(GrailsClassUtils.isGetter(null, new Class[]{Object.class}));
+    	assertFalse(GrailsClassUtils.isGetter("getSomething",null));
+    	assertFalse(GrailsClassUtils.isGetter(null,null));
+    }
+    
+    public void testGetPropertyForGetter() {
+    	assertEquals("something", GrailsClassUtils.getPropertyForGetter("getSomething"));
+    	assertEquals("URL", GrailsClassUtils.getPropertyForGetter("getURL"));
     }
 
     public void testGetStaticProperty()

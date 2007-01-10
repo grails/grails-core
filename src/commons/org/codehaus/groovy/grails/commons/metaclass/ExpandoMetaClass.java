@@ -27,7 +27,10 @@ import groovy.lang.MetaMethod;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.HashMap;
+import java.util.Map;
 
+import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.codehaus.groovy.runtime.DefaultMethodKey;
 import org.codehaus.groovy.runtime.InvokerHelper;
@@ -97,6 +100,7 @@ public class ExpandoMetaClass extends MetaClassImpl implements GroovyObject {
 	private boolean allowChangesAfterInit = false;
 	private boolean initialized;
 	private boolean initCalled = false;
+	private Map beanPropertyCache = new HashMap();
 	
 	
 
@@ -384,6 +388,7 @@ public class ExpandoMetaClass extends MetaClassImpl implements GroovyObject {
 	 */
 	protected void registerInstanceMethod(String methodName, Closure callable) {
 		try {
+			boolean inited = this.initialized;
 			if(allowChangesAfterInit) {
 				this.initialized = false;
 			}
@@ -393,11 +398,47 @@ public class ExpandoMetaClass extends MetaClassImpl implements GroovyObject {
 			
 			super.addMetaMethod(metaMethod);
 			super.cacheInstanceMethod(key, metaMethod);
+			if(inited && GrailsClassUtils.isGetter(methodName, metaMethod.getParameterTypes())) {
+				String propertyName = GrailsClassUtils.getPropertyForGetter(methodName);
+				registerBeanPropertyForMethod(metaMethod, propertyName, true);
+				
+			}
+			else if(inited && GrailsClassUtils.isSetter(methodName, metaMethod.getParameterTypes())) {
+				String propertyName = GrailsClassUtils.getPropertyForSetter(methodName);
+				registerBeanPropertyForMethod(metaMethod, propertyName, false);
+			}
 			
 		}
 		finally {
 			if(initCalled)this.initialized = true;
 		}
+	}
+
+
+	private void registerBeanPropertyForMethod(ClosureMetaMethod metaMethod, String propertyName, boolean getter) {
+		MetaBeanProperty beanProperty = (MetaBeanProperty)beanPropertyCache.get(propertyName);
+		if(beanProperty == null) {
+			if(getter)
+				beanProperty = new MetaBeanProperty(propertyName,Object.class,metaMethod,null);
+			else
+				beanProperty = new MetaBeanProperty(propertyName,Object.class,null,metaMethod);
+			
+			beanPropertyCache.put(propertyName, beanProperty);
+		}
+		else {
+			if(getter) {
+				MetaMethod setterMethod = beanProperty.getSetter();
+				Class type = setterMethod != null ? setterMethod.getParameterTypes()[0] : Object.class;
+				beanProperty = new MetaBeanProperty(propertyName,type,metaMethod,setterMethod);
+				beanPropertyCache.put(propertyName, beanProperty);
+			}else {
+				MetaMethod getterMethod = beanProperty.getGetter();
+				beanProperty = new MetaBeanProperty(propertyName,metaMethod.getParameterTypes()[0],getterMethod,metaMethod);
+				beanPropertyCache .put(propertyName, beanProperty);				
+			}
+		}
+		
+		addMetaBeanProperty(beanProperty);
 	}
 	
 	/**

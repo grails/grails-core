@@ -49,7 +49,8 @@ import org.springframework.beans.BeansException;
  */
 public class GrailsClassUtils {
 
-    public static final Map PRIMITIVE_TYPE_COMPATIBLE_CLASSES = new HashMap();
+    private static final String PROPERTY_SET_PREFIX = "set";
+	public static final Map PRIMITIVE_TYPE_COMPATIBLE_CLASSES = new HashMap();
 
     /**
      * Just add two entries to the class compatibility map
@@ -842,4 +843,89 @@ public class GrailsClassUtils {
 		}
 		return clazz.getName();
 	}
+
+	/**
+	 * Retrieves the name of a setter for the specified property name
+	 * @param propertyName The property name
+	 * @return The setter equivalent
+	 */
+	public static String getSetterName(String propertyName) {
+		return PROPERTY_SET_PREFIX+propertyName.substring(0,1).toUpperCase()+ propertyName.substring(1);
+	}
+
+	/**
+	 * Returns true if the name of the method specified and the number of arguments make it a javabean property
+	 * 
+	 * @param name True if its a Javabean property
+	 * @param args The arguments
+	 * @return True if it is a javabean property method
+	 */
+	public static boolean isGetter(String name, Class[] args) {
+		if(StringUtils.isBlank(name) || args == null)return false;
+		
+		if(name.startsWith("get")) {
+			if(args.length != 0)return false;
+			name = name.substring(3);
+			if(name.length() > 0 && Character.isUpperCase(name.charAt(0))) return true;			
+		}
+		return false;
+	}
+
+	/**
+	 * Returns a property name equivalent for the given getter name or null if it is not a getter
+	 * 
+	 * @param getterName The getter name
+	 * @return The property name equivalent
+	 */
+	public static String getPropertyForGetter(String getterName) {
+		if(StringUtils.isBlank(getterName))return null;
+		
+		if(getterName.startsWith("get")) {
+			String prop = getterName.substring(3);
+			return convertPropertyName(prop);
+		}
+		return null;
+	}
+
+	private static String convertPropertyName(String prop) {
+		if(Character.isUpperCase(prop.charAt(0)) && Character.isUpperCase(prop.charAt(1))) {
+			return prop;
+		}
+		else if(Character.isDigit(prop.charAt(0))) {
+			return prop;
+		}
+		else {
+			return Character.toLowerCase(prop.charAt(0)) + prop.substring(1);
+		}
+	}
+	
+	
+	/**
+	 * Returns a property name equivalent for the given setter name or null if it is not a getter
+	 * 
+	 * @param setterName The setter name
+	 * @return The property name equivalent
+	 */
+	public static String getPropertyForSetter(String setterName) {
+		if(StringUtils.isBlank(setterName))return null;
+		
+		if(setterName.startsWith("set")) {
+			String prop = setterName.substring(3);
+			return convertPropertyName(prop);
+		}
+		return null;
+	}
+
+	public static boolean isSetter(String name, Class[] args) {
+		if(StringUtils.isBlank(name) || args == null)return false;
+		
+		if(name.startsWith("set")) {
+			if(args.length != 1) return false;
+			name = name.substring(3);
+			if(name.length() > 0 && Character.isUpperCase(name.charAt(0))) return true;
+		}
+		
+		return false;
+	}	
+	
 }

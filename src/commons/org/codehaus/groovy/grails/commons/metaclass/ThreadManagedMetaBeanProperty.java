@@ -22,6 +22,7 @@ import java.lang.reflect.Modifier;
 import java.util.Map;
 
 import org.apache.commons.collections.map.ReferenceMap;
+import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 
 /**
  * This MetaBeanProperty will create a psuedo property whoes value is bound to the current
@@ -124,7 +125,7 @@ public class ThreadManagedMetaBeanProperty extends MetaBeanProperty {
 
 		public ThreadBoundGetter(String name) {
 			super(name, declaringClass, ZERO_ARGUMENT_LIST, type, Modifier.PUBLIC);
-			getterName = "get"+name.substring(0,1).toUpperCase()+ name.substring(1);
+			getterName = GrailsClassUtils.getGetterName(name);
 		}
 
 		
@@ -157,7 +158,7 @@ public class ThreadManagedMetaBeanProperty extends MetaBeanProperty {
 
 		public ThreadBoundSetter(String name) {
 			super(name, declaringClass, new Class[]{type}, type, Modifier.PUBLIC);
-			setterName = "set"+name.substring(0,1).toUpperCase()+ name.substring(1);
+			setterName = GrailsClassUtils.getSetterName(name);
 		}
 		
 		
