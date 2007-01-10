@@ -79,7 +79,9 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
     public GrailsDataBinder(Object target, String objectName) {
         super(target, objectName);
         
-        bean = ((BeanPropertyBindingResult)super.getBindingResult()).getPropertyAccessor();        
+        bean = ((BeanPropertyBindingResult)super.getBindingResult()).getPropertyAccessor();
+
+        setDisallowedFields(new String[] { "metaClass", "properties" });
     }
 
     /**
