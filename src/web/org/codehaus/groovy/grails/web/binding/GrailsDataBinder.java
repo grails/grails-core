@@ -35,6 +35,8 @@ import javax.servlet.http.HttpServletRequestWrapper;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.metaclass.CreateDynamicMethod;
+import org.codehaus.groovy.grails.commons.GrailsDomainClass;
+import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.springframework.beans.ConfigurablePropertyAccessor;
 import org.springframework.beans.InvalidPropertyException;
@@ -70,6 +72,11 @@ import org.springframework.web.servlet.support.RequestContextUtils;
 public class GrailsDataBinder extends ServletRequestDataBinder {
     private static final Log LOG = LogFactory.getLog(GrailsDataBinder.class);
 	private static ConfigurablePropertyAccessor bean;
+
+    public static final String[] GROOVY_DISALLOWED = new String[] { "metaClass", "properties" };
+    public static final String[] DOMAINCLASS_DISALLOWED = new String[] { "id", "version" };
+    public static final String[] GROOVY_DOMAINCLASS_DISALLOWED = new String[] { "metaClass", "properties", "id", "version" };
+
     /**
      * Create a new GrailsDataBinder instance.
      *
@@ -81,7 +88,17 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
         
         bean = ((BeanPropertyBindingResult)super.getBindingResult()).getPropertyAccessor();
 
-        setDisallowedFields(new String[] { "metaClass", "properties" });
+        String[] disallowed = new String[0];
+        if (GrailsClassUtils.isDomainClass(target.getClass())) {
+            if (target instanceof GroovyObject) {
+                disallowed = GROOVY_DOMAINCLASS_DISALLOWED;
+            } else {
+                disallowed = DOMAINCLASS_DISALLOWED;
+            }
+        } else if (target instanceof GroovyObject) {
+            disallowed = GROOVY_DISALLOWED;
+        }
+        setDisallowedFields(disallowed);
     }
 
     /**
