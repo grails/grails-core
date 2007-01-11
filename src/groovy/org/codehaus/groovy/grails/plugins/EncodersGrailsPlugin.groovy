@@ -27,16 +27,16 @@ class EncodersGrailsPlugin {
 	
 	def version = GrailsPluginUtils.getGrailsVersion()
 
-	def doWithDynamicMethods = { ac ->
-		def emc = new org.codehaus.groovy.grails.commons.metaclass.ExpandoMetaClass(String, true)
-		emc.setAllowChangesAfterInit(true);
-		emc.initialize();
+	def doWithDynamicMethods = { applicationContext ->
+		def metaClass = new org.codehaus.groovy.grails.commons.metaclass.ExpandoMetaClass(String, true)
+		metaClass.setAllowChangesAfterInit(true);
+		metaClass.initialize();
 		application.allClasses.each {
 			if (it.name.endsWith('Encoder')) {
 				def theEncoder = it.newInstance()
-				emc."encodeAs${it.name - 'Encoder'}" << { theEncoder.encode delegate }
+				metaClass."encodeAs${it.name - 'Encoder'}" << { theEncoder.encode delegate }
 			}
 		}
-		emc.initialize()
+		metaClass.initialize()
 	}
 }
