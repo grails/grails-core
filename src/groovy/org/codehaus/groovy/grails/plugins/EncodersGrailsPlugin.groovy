@@ -16,6 +16,7 @@
 package org.codehaus.groovy.grails.plugins
 
 import org.codehaus.groovy.grails.plugins.support.*
+import org.codehaus.groovy.grails.commons.metaclass.*
 
 /**
  * A plug-in that configures pluggable encoders 
@@ -28,7 +29,7 @@ class EncodersGrailsPlugin {
 	def version = GrailsPluginUtils.getGrailsVersion()
 
 	def doWithDynamicMethods = { applicationContext ->
-		def metaClass = new org.codehaus.groovy.grails.commons.metaclass.ExpandoMetaClass(String, true)
+		def metaClass = new ExpandoMetaClass(String, true)
 		metaClass.setAllowChangesAfterInit(true);
 		metaClass.initialize();
 		application.allClasses.each {
