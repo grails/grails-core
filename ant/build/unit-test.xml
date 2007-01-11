@@ -68,7 +68,8 @@
 	<target name="run-test" depends="build-test" >
         <delete dir="${grails.test.reports}"/>
         <mkdir dir="${grails.test.reports}"/>
-        <junit fork="true" forkmode="once">                           <!-- only fork VMs as needed -->
+        <junit fork="true" forkmode="once">                           <!-- only fork VMs as needed -->  
+			<jvmarg value="-Xmx256M"/>
 			<classpath location="${coverage.build}"/>                 <!-- must be first in cp!    -->
 			<classpath location="cruise/coverage/lib/cobertura.jar"/> <!-- only neede for coverage -->
             <classpath refid="classpath"/>
