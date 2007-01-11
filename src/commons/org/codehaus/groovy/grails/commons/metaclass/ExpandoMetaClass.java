@@ -131,6 +131,10 @@ public class ExpandoMetaClass extends MetaClassImpl implements GroovyObject {
 	/* (non-Javadoc)
 	 * @see groovy.lang.MetaClassImpl#isInitialized()
 	 */
+	protected boolean isInitialized() {
+		return this.initialized;
+	}
+
 	private void inheritExpandoMethods() {
 		List superClasses = getSuperClasses();
 		for (Iterator i = superClasses.iterator(); i.hasNext();) {
@@ -141,20 +145,15 @@ public class ExpandoMetaClass extends MetaClassImpl implements GroovyObject {
 					List methods = (List) j.next();
 					for (Iterator k = methods.iterator(); k.hasNext();) {
 						MetaMethod metaMethodFromSuper = (MetaMethod) k.next();
-						MetaMethod existing = super.retrieveMethod(metaMethodFromSuper.getName(), metaMethodFromSuper.getParameterTypes());
+						
+						MetaMethod existing = super.pickMethod(metaMethodFromSuper.getName(), metaMethodFromSuper.getParameterTypes());
 						if(existing == null)
 							addMetaMethod(metaMethodFromSuper);
 					}
 				}				
 			}
 		}
-	}
-
-
-	protected boolean isInitialized() {
-		return this.initialized;
-	}
-
+	}	
 
 	/**
 	 * Constructs a new ExpandoMetaClass instance for the given class
@@ -270,7 +269,7 @@ public class ExpandoMetaClass extends MetaClassImpl implements GroovyObject {
 		// inject Constructor like you can do properties, methods and fields. When Groovy's MetaClassImpl is
 		// refactored we can fix this
 		Class[] argClasses = MetaClassHelper.convertToTypeArray(arguments);
-		MetaMethod method = retrieveMethod(GROOVY_CONSTRUCTOR, argClasses);
+		MetaMethod method = pickMethod(GROOVY_CONSTRUCTOR, argClasses);
 		if(method!=null && method.getParameterTypes().length == arguments.length) {
 			return method.invoke(theClass, arguments);
 		}
@@ -434,7 +433,7 @@ public class ExpandoMetaClass extends MetaClassImpl implements GroovyObject {
 				this.initialized = false;
 			}
 			ClosureMetaMethod metaMethod = new ClosureMetaMethod(methodName, super.theClass,callable);
-			MethodKey key = new DefaultMethodKey(super.theClass,methodName, metaMethod.getParameterTypes() );
+			MethodKey key = new DefaultMethodKey(super.theClass,methodName, metaMethod.getParameterTypes(),false );
 			
 			
 			super.addMetaMethod(metaMethod);
@@ -512,7 +511,7 @@ public class ExpandoMetaClass extends MetaClassImpl implements GroovyObject {
 			}
 		
 			ClosureStaticMetaMethod metaMethod = new ClosureStaticMetaMethod(methodName, super.theClass,callable);
-			MethodKey key = new DefaultMethodKey(super.theClass,methodName, metaMethod.getParameterTypes() );
+			MethodKey key = new DefaultMethodKey(super.theClass,methodName, metaMethod.getParameterTypes(), false );
 			
 			super.addMetaMethod(metaMethod);
 			super.cacheStaticMethod(key, metaMethod);
