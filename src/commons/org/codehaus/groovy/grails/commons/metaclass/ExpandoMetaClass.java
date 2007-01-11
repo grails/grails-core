@@ -27,7 +27,11 @@ import groovy.lang.MetaMethod;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
@@ -95,6 +99,7 @@ public class ExpandoMetaClass extends MetaClassImpl implements GroovyObject {
 	private static final Class[] ZERO_ARGUMENTS = new Class[0];
 	private static final String CONSTRUCTOR = "ctor";
 	private static final String GROOVY_CONSTRUCTOR = "<init>";
+	private static final Map classInheritanceMapping = Collections.synchronizedMap(new HashMap());
 	
 	private MetaClass myMetaClass;
 	private boolean allowChangesAfterInit = false;
@@ -116,6 +121,7 @@ public class ExpandoMetaClass extends MetaClassImpl implements GroovyObject {
 	 * @see groovy.lang.MetaClassImpl#initialize()
 	 */
 	public synchronized void initialize() {		
+		inheritExpandoMethods();
 		super.initialize();
 		this.initialized = true;
 		this.initCalled = true;
@@ -125,6 +131,25 @@ public class ExpandoMetaClass extends MetaClassImpl implements GroovyObject {
 	/* (non-Javadoc)
 	 * @see groovy.lang.MetaClassImpl#isInitialized()
 	 */
+	private void inheritExpandoMethods() {
+		List superClasses = getSuperClasses();
+		for (Iterator i = superClasses.iterator(); i.hasNext();) {
+			Class c = (Class) i.next();
+			Map methodMap = (Map)classInheritanceMapping.get(c);
+			if(methodMap!=null) {
+				for (Iterator j = methodMap.values().iterator(); j.hasNext();) {
+					List methods = (List) j.next();
+					for (Iterator k = methods.iterator(); k.hasNext();) {
+						MetaMethod metaMethodFromSuper = (MetaMethod) k.next();
+						MetaMethod existing = super.retrieveMethod(metaMethodFromSuper.getName(), metaMethodFromSuper.getParameterTypes());
+						if(existing == null)
+							addMetaMethod(metaMethodFromSuper);
+					}
+				}				
+			}
+		}
+	}
+
 
 	protected boolean isInitialized() {
 		return this.initialized;
@@ -252,6 +277,22 @@ public class ExpandoMetaClass extends MetaClassImpl implements GroovyObject {
 		return super.invokeConstructor(arguments);
 	}
 
+	
+	/**
+	 * Retrieves a list of super classes. Taken from MetaClassImpl. Ideally this method should be protected
+	 * 
+	 * @return A list of super classes
+	 */
+   protected LinkedList getSuperClasses() {
+       LinkedList superClasses = new LinkedList();
+       for (Class c = theClass; c!= null; c = c.getSuperclass()) {
+           superClasses.addFirst(c);
+       }
+       if (theClass.isArray() && theClass!=Object[].class && !theClass.getComponentType().isPrimitive()) {
+           superClasses.addFirst(Object[].class);
+       }
+       return superClasses;
+   }	
 	/**
 	 * Handles the ability to use the left shift operator to append new constructors
 	 * 
@@ -407,11 +448,27 @@ public class ExpandoMetaClass extends MetaClassImpl implements GroovyObject {
 				String propertyName = GrailsClassUtils.getPropertyForSetter(methodName);
 				registerBeanPropertyForMethod(metaMethod, propertyName, false);
 			}
+			registerWithInheritenceManager(theClass, metaMethod);
 			
 		}
 		finally {
 			if(initCalled)this.initialized = true;
 		}
+	}
+
+
+	private static void registerWithInheritenceManager(Class theClass, ClosureMetaMethod metaMethod) {
+		Map methodMap = (Map)classInheritanceMapping .get(theClass);
+		if(methodMap == null) {
+			methodMap = new HashMap();
+			classInheritanceMapping.put(theClass, methodMap);
+		}
+		List methodList = (List)methodMap.get(metaMethod.getName());
+		if(methodList == null) {
+			methodList = new LinkedList();
+			methodMap.put(metaMethod.getName(), methodList);
+		}
+		methodList.add(metaMethod);
 	}
 
 
@@ -437,6 +494,7 @@ public class ExpandoMetaClass extends MetaClassImpl implements GroovyObject {
 				beanPropertyCache .put(propertyName, beanProperty);				
 			}
 		}
+		
 		
 		addMetaBeanProperty(beanProperty);
 	}
