@@ -37,12 +37,13 @@ public class ClosureMetaMethod extends NewInstanceMetaMethod {
 	}
 	
 	public ClosureMetaMethod(String name, Class declaringClass,Closure c) {
-		super(name, declaringClass, c.getParameterTypes(), Object.class,Modifier.PUBLIC);
+		super(name, declaringClass, c.getParameterTypes() == null ? new Class[0] : c.getParameterTypes(), Object.class,Modifier.PUBLIC);
 		paramTypes = c.getParameterTypes();
 		if(paramTypes == null) {
 			paramTypes = new Class[0];
 		}
 		this.callable = c;
+		
 		this.declaringClass = declaringClass;
 	}	
 	
