@@ -66,10 +66,11 @@ public class TagLibMetaClass extends DelegatingMetaClass {
 			if(LOG.isDebugEnabled())
 				LOG.debug("Tag ["+methodName+"] not found in existing library, found in ["+tagLibrary.getClass().getName()+"]. Invoking..");
 			
-			Closure tag = (Closure)tagLibrary.getProperty(methodName);
+			Closure original = (Closure)tagLibrary.getProperty(methodName);
+			Closure tag = (Closure)original.clone();
 			
 			tagLibrary.setProperty(TagLibDynamicMethods.OUT_PROPERTY,taglib.getProperty(TagLibDynamicMethods.OUT_PROPERTY));
-			return tagLibrary.invokeMethod(methodName,arguments);
+			return tag.call(arguments);
 		}
 	}
 
@@ -91,7 +92,9 @@ public class TagLibMetaClass extends DelegatingMetaClass {
 			
 			if(LOG.isDebugEnabled())
 				LOG.debug("Tag ["+property+"] not found in existing library, found in ["+tagLibrary.getClass().getName()+"]. Retrieving");
-			return tagLibrary.getProperty(property);				
+			Closure original = (Closure)tagLibrary.getProperty(property);
+			return original.clone();
+				
 		}			
 	}	
 	
