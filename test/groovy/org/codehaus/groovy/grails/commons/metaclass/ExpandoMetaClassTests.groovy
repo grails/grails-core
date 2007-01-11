@@ -15,6 +15,8 @@
  */
 package org.codehaus.groovy.grails.commons.metaclass;
 
+import org.springframework.beans.BeanUtils
+
 /**
  * @author Graeme Rocher
  */
@@ -186,12 +188,12 @@ class ExpandoMetaClassTests extends GroovyTestCase {
 		 metaClass.allowChangesAfterInit = true
 		 metaClass.initialize()
 		 
-		 metaClass.doSomething = { Integer i -> i }
+		 metaClass.doSomething = { Integer i -> i +1}
 		 			 
 	   	 t.metaClass = metaClass
 		
 	   	assertEquals "test", t.doSomething("test")
-	   	 assertEquals 10, t.doSomething(10)
+	   	 assertEquals 11, t.doSomething(10)
 		
 	}
 	
@@ -205,14 +207,14 @@ class ExpandoMetaClassTests extends GroovyTestCase {
 		 metaClass.allowChangesAfterInit = true
 		 
 		 
-		 metaClass.doSomething = { Integer i -> i }
+		 metaClass.doSomething = { Integer i -> i +1}
 		 
 		 metaClass.initialize()
 		 			 
 	   	 t.metaClass = metaClass
 		
 	     assertEquals "test", t.doSomething("test")
-	   	 assertEquals 10, t.doSomething(10)
+	   	 assertEquals 11, t.doSomething(10)
 		
 	}	
 	
@@ -358,7 +360,7 @@ class ExpandoMetaClassTests extends GroovyTestCase {
 	   	 def metaClass = new ExpandoMetaClass(Test.class, true)
 		 
 		 metaClass.ctor = { ->
-			 def t = Test.class.newInstance()
+			 def t = BeanUtils.instantiateClass(Test.class)
 			 t.name = 'testme'
 			 return t
 		 }
