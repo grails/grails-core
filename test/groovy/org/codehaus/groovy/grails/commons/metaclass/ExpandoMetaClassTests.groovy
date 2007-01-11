@@ -21,6 +21,21 @@ package org.codehaus.groovy.grails.commons.metaclass;
 
 class ExpandoMetaClassTests extends GroovyTestCase {
 	
+	/* TODO Broken! Wait for Groovy core to provide support
+	void testInheritInjectedMethodWithPlainChild() {
+		 def metaClass = new ExpandoMetaClass(Test.class, true)
+		 metaClass.allowChangesAfterInit = true
+		 
+		 metaClass.testMe << {->
+			 "testme"
+		 }
+		 metaClass.initialize()
+
+		 def c = new Child()		 
+		 assertEquals "testme", c.testMe()
+
+	}*/
+	
 	void testInheritedInjectedMethods() {
 		 def metaClass = new ExpandoMetaClass(Test.class)
 		 metaClass.allowChangesAfterInit = true
@@ -147,7 +162,7 @@ class ExpandoMetaClassTests extends GroovyTestCase {
 
 	}
 	
-	void testMethodOverloading() {
+	void testNewMethodOverloading() {
 	   	 def metaClass = new ExpandoMetaClass(Test.class)
 		 
 		metaClass.overloadMe << { String txt -> txt } << { Integer i -> i }
@@ -161,6 +176,45 @@ class ExpandoMetaClassTests extends GroovyTestCase {
 	   	 assertEquals 10, t.overloadMe(10)
 		
 	}
+	
+	void testOverloadExistingMethodAfterInitialize() {
+		 def t = new Test()
+		 
+		 assertEquals "test", t.doSomething("test")
+		 
+	   	 def metaClass = new ExpandoMetaClass(Test.class)
+		 metaClass.allowChangesAfterInit = true
+		 metaClass.initialize()
+		 
+		 metaClass.doSomething = { Integer i -> i }
+		 			 
+	   	 t.metaClass = metaClass
+		
+	   	assertEquals "test", t.doSomething("test")
+	   	 assertEquals 10, t.doSomething(10)
+		
+	}
+	
+	
+	void testOverloadExistingMethodBeforeInitialize() {
+		 def t = new Test()
+		 
+		 assertEquals "test", t.doSomething("test")
+		 
+	   	 def metaClass = new ExpandoMetaClass(Test.class)
+		 metaClass.allowChangesAfterInit = true
+		 
+		 
+		 metaClass.doSomething = { Integer i -> i }
+		 
+		 metaClass.initialize()
+		 			 
+	   	 t.metaClass = metaClass
+		
+	     assertEquals "test", t.doSomething("test")
+	   	 assertEquals 10, t.doSomething(10)
+		
+	}	
 	
 	void testNewPropertyMethod() {
 	   	 def metaClass = new ExpandoMetaClass(Test.class)
@@ -374,6 +428,8 @@ class Test {
 	def existing() {
 		"hello!"
 	}
+	
+	def doSomething(Object txt) { txt }
 	
 	static existingStatic() {
 		"I exist"
