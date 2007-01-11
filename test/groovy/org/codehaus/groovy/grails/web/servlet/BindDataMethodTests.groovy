@@ -15,9 +15,8 @@
  */
 package org.codehaus.groovy.grails.web.servlet;
 
-import org.springframework.mock.web.MockHttpServletRequest
-import org.springframework.mock.web.MockHttpServletResponse
 import org.codehaus.groovy.grails.web.metaclass.BindDynamicMethod
+import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
 
 /**
  * Tests for the bindData method
@@ -25,24 +24,23 @@ import org.codehaus.groovy.grails.web.metaclass.BindDynamicMethod
  * @author Marc Palmer
  *
  */
-class BindDataMethodTests extends AbstractControllerTests {
+class BindDataMethodTests extends AbstractGrailsControllerTests {
 
 	void testBindDataFromMap() {
-	    def mockController = getMockController("BindController")
+	    runTest() {
+            def mockController = ga.getController("BindController")
 
-		def mockRequest = new MockHttpServletRequest()
-		def mockResponse = new MockHttpServletResponse()
+            def method = new BindDynamicMethod()
 
-        def method = new BindDynamicMethod(mockRequest, mockResponse)
+            def target = new CommandObject()
+            def safeMeta = target.metaClass
+            def src = [ 'metaClass' : this.metaClass, 'name' : 'Marc Palmer' ]
 
-        def target = new CommandObject()
-        def safeMeta = target.metaClass
-        def src = [ 'metaClass' : this.metaClass, 'name' : 'Marc Palmer' ]
+            method.invoke( mockController, [target, src].toArray() )
 
-        method.invoke( mockController, [target, src].toArray() )
-        
-		assertEquals "Marc Palmer", target.name
-		assertEquals safeMeta, target.metaClass
+            assertEquals "Marc Palmer", target.name
+            assertEquals safeMeta, target.metaClass
+        }
 	}
 
 	void onSetUp() {
