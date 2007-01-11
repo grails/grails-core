@@ -552,11 +552,15 @@ public class DefaultGrailsPluginManager implements GrailsPluginManager {
 				MetaClass mc = registry.getMetaClass(c);
 				if(mc instanceof DynamicMethodsMetaClass) {
 					ExpandoMetaClass adaptee = new ExpandoMetaClass(c);
+					adaptee.setAllowChangesAfterInit(true);
+					adaptee.initialize();
 					((DynamicMethodsMetaClass)mc).setAdaptee(adaptee);
 					metaClasses[i] = adaptee;
 				}
 				else {
-					metaClasses[i] = new ExpandoMetaClass(c,true);	
+					metaClasses[i] = new ExpandoMetaClass(c,true);
+					metaClasses[i].setAllowChangesAfterInit(true);
+					metaClasses[i].initialize();
 				}			
 			}
 			try {
