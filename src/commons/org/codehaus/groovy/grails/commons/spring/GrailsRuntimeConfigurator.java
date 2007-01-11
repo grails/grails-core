@@ -311,6 +311,8 @@ public class GrailsRuntimeConfigurator {
 	
 		WebApplicationContext ctx = springConfig.getApplicationContext();
 		
+		this.pluginManager.setApplicationContext(ctx);
+		
 		performPostProcessing(ctx);
 		
 		this.pluginManager.doDynamicMethods();

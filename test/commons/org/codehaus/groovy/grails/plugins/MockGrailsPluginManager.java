@@ -15,17 +15,15 @@
  */ 
 package org.codehaus.groovy.grails.plugins;
 
+import groovy.lang.GroovyClassLoader;
+
 import java.io.File;
 import java.io.Writer;
 import java.math.BigDecimal;
-import java.util.HashMap;
-import java.util.Map;
 
+import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration;
 import org.codehaus.groovy.grails.plugins.exceptions.PluginException;
-import org.springframework.beans.BeansException;
-import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.Resource;
 
 /**
@@ -34,18 +32,17 @@ import org.springframework.core.io.Resource;
  *
  */
 
-public class MockGrailsPluginManager implements GrailsPluginManager {
+public class MockGrailsPluginManager extends AbstractGrailsPluginManager {
 
-	Map plugins = new HashMap();
+	public MockGrailsPluginManager(GrailsApplication application) {
+		super(application);
+		loadPlugins();
+	}
 	
-	public void doPostProcessing(ApplicationContext applicationContext) {
-		// do nothing
+	public MockGrailsPluginManager() {
+		this(new DefaultGrailsApplication(new Class[0], new GroovyClassLoader()));
 	}
-
-	public void doRuntimeConfiguration(RuntimeSpringConfiguration springConfig) {
-		// do nothing	
-	}
-
+	
 	public GrailsPlugin getGrailsPlugin(String name) {
 		return (GrailsPlugin)this.plugins.get(name);
 	}
@@ -60,22 +57,15 @@ public class MockGrailsPluginManager implements GrailsPluginManager {
 	
 	public void registerMockPlugin(GrailsPlugin plugin) {
 		this.plugins.put(plugin.getName(), plugin);
+		this.pluginList.add(plugin);
 	}
 
 	public void loadPlugins() throws PluginException {
-		// do nothing
-	}
-
-	public void doRuntimeConfiguration(String string, RuntimeSpringConfiguration springConfig) {
-		// do nothing		
+		this.initialised = true;
 	}
 
 	public void checkForChanges() {
 		// do nothing		
-	}
-
-	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-		// do nothing
 	}
 
 	public void doWebDescriptor(Resource descriptor, Writer target) {
@@ -88,14 +78,6 @@ public class MockGrailsPluginManager implements GrailsPluginManager {
 
 	public boolean isInitialised() {
 		return true;
-	}
-
-	public void setApplication(GrailsApplication application) {
-
-	}
-
-	public void doDynamicMethods() {
-		// do nothing
 	}
 
 }

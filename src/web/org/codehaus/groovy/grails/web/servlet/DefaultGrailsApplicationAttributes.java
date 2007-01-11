@@ -17,6 +17,7 @@ package org.codehaus.groovy.grails.web.servlet;
 import groovy.lang.GroovyObject;
 
 import java.beans.IntrospectionException;
+import java.io.Writer;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -29,9 +30,9 @@ import javax.servlet.http.HttpSession;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsTagLibClass;
 import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods;
-import org.codehaus.groovy.grails.web.metaclass.GrailsParameterMap;
 import org.codehaus.groovy.grails.web.metaclass.TagLibDynamicMethods;
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap;
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.validation.Errors;
@@ -159,16 +160,6 @@ public class DefaultGrailsApplicationAttributes implements GrailsApplicationAttr
 			
 			GroovyObject tagLib = (GroovyObject)getApplicationContext()
 													.getBean(tagLibClass.getFullName());
-			try {
-				if(controller == null) {
-					new TagLibDynamicMethods(tagLib,request,response);
-				}
-				else  {
-					new TagLibDynamicMethods(tagLib,controller);
-				}				
-			} catch (IntrospectionException e) {
-				throw new ControllerExecutionException("Introspection error creating tag library methods for tag ["+tagName+"]: " + e.getMessage(),e);
-			}
 			tagCache.put(tagName,tagLib);
 			return tagLib;
 		}
@@ -211,5 +202,13 @@ public class DefaultGrailsApplicationAttributes implements GrailsApplicationAttr
 			return params;
 		}
 		return null;
+	}
+
+	public Writer getOut(HttpServletRequest request) {
+		return (Writer)request.getAttribute(OUT);
+	}
+
+	public void setOut(GrailsHttpServletRequest request, Writer out2) {
+		request.setAttribute(OUT, out2);
 	}
 }

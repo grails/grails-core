@@ -24,7 +24,7 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.metaclass.DynamicConstructor;
 import org.codehaus.groovy.grails.exceptions.GrailsDomainException;
 import org.codehaus.groovy.grails.web.binding.GrailsDataBinder;
-import org.codehaus.groovy.grails.web.metaclass.GrailsParameterMap;
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap;
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.PropertyValues;
 import org.springframework.validation.DataBinder;

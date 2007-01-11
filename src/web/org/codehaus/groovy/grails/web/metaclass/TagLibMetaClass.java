@@ -15,22 +15,22 @@
  */
 package org.codehaus.groovy.grails.web.metaclass;
 
+import groovy.lang.Closure;
+import groovy.lang.DelegatingMetaClass;
 import groovy.lang.GroovyObject;
 import groovy.lang.MetaClass;
-import groovy.lang.MetaClassRegistry;
 import groovy.lang.MissingMethodException;
 import groovy.lang.MissingPropertyException;
 
-import java.beans.IntrospectionException;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.commons.metaclass.ProxyMetaClass;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
-import org.codehaus.groovy.runtime.InvokerHelper;
+import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 /**
  * <p>Special meta class for tag libraries that allows tag libraries to call
  * tags within other libraries without the need for inheritance
@@ -38,27 +38,20 @@ import org.codehaus.groovy.runtime.InvokerHelper;
  * @author Graeme Rocher
  * @since Apr 3, 20056
  */
-public class TagLibMetaClass extends ProxyMetaClass {
-	private static final Log LOG = LogFactory.getLog(TagLibMetaClass.class);
-	
-	public TagLibMetaClass(MetaClassRegistry registry, Class theClass, MetaClass adaptee) throws IntrospectionException {
-		super(registry, theClass, adaptee);
+public class TagLibMetaClass extends DelegatingMetaClass {
+	public TagLibMetaClass(MetaClass adaptee) {
+		super(adaptee);
 	}
 
-	public static TagLibMetaClass getTagLibInstance(Class theClass) throws IntrospectionException {
-        MetaClassRegistry metaRegistry = InvokerHelper.getInstance().getMetaRegistry();
-        MetaClass meta = metaRegistry.getMetaClass(theClass);
-        TagLibMetaClass m = new TagLibMetaClass(metaRegistry, theClass, meta);
-        m.initialize();
-        return m;
-    }
+	private static final Log LOG = LogFactory.getLog(TagLibMetaClass.class);
+	
 	
 	
 	/* (non-Javadoc)
 	 * @see groovy.lang.ProxyMetaClass#invokeMethod(java.lang.Object, java.lang.String, java.lang.Object[])
 	 */
 	public Object invokeMethod(Object object, String methodName, Object[] arguments) {
-		try {
+		try {			
 			return super.invokeMethod(object, methodName, arguments);
 		}
 		catch(MissingMethodException mme) {
@@ -72,6 +65,9 @@ public class TagLibMetaClass extends ProxyMetaClass {
 			
 			if(LOG.isDebugEnabled())
 				LOG.debug("Tag ["+methodName+"] not found in existing library, found in ["+tagLibrary.getClass().getName()+"]. Invoking..");
+			
+			Closure tag = (Closure)tagLibrary.getProperty(methodName);
+			
 			tagLibrary.setProperty(TagLibDynamicMethods.OUT_PROPERTY,taglib.getProperty(TagLibDynamicMethods.OUT_PROPERTY));
 			return tagLibrary.invokeMethod(methodName,arguments);
 		}
@@ -81,10 +77,11 @@ public class TagLibMetaClass extends ProxyMetaClass {
 	 * @see org.codehaus.groovy.grails.commons.metaclass.PropertyAccessProxyMetaClass#getProperty(java.lang.Object, java.lang.String)
 	 */
 	public Object getProperty(Object object, String property) {
+		
 		try {
 			return super.getProperty(object, property);
 		}
-		catch(MissingPropertyException mpe) {
+		catch(MissingPropertyException mpe){
 			GroovyObject taglib = (GroovyObject)object;
 			GrailsApplicationAttributes applicationAttributes = (GrailsApplicationAttributes)taglib.getProperty(ControllerDynamicMethods.GRAILS_ATTRIBUTES);
 			HttpServletRequest request = (HttpServletRequest)taglib.getProperty(ControllerDynamicMethods.REQUEST_PROPERTY);
@@ -94,8 +91,8 @@ public class TagLibMetaClass extends ProxyMetaClass {
 			
 			if(LOG.isDebugEnabled())
 				LOG.debug("Tag ["+property+"] not found in existing library, found in ["+tagLibrary.getClass().getName()+"]. Retrieving");
-			return tagLibrary.getProperty(property);
-		}
+			return tagLibrary.getProperty(property);				
+		}			
 	}	
 	
 	

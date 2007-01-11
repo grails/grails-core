@@ -18,35 +18,14 @@ import junit.framework.TestCase;
  */
 public class GroovySyntaxTagTests extends TestCase {
 
-	private GroovySyntaxTag tag;
+	private tag;
 
 	/* (non-Javadoc)
 	 * @see junit.framework.TestCase#setUp()
 	 */
 	protected void setUp() throws Exception {
 		super.setUp();
-		tag = new GroovySyntaxTag() {			
-			public boolean hasPrecedingContent() {
-				return false;
-			}
-
-			public boolean isBufferWhiteSpace() {
-				return false;
-			}
-
-			public void doEndTag() {
-				
-			}
-
-			public void doStartTag() {
-				
-			}
-
-			public String getName() {
-				return null;
-			}
-			
-		};		
+		tag = new MyGroovySyntaxTag();
 	}
 
 	/**
@@ -82,6 +61,27 @@ public class GroovySyntaxTagTests extends TestCase {
 	public void testCalculateExpression() {	
 		assertEquals("test", tag.calculateExpression(" test "));
 		assertEquals("test",tag.calculateExpression(" \" test\" "));
-		assertEquals("test.method()", tag.calculateExpression(" ${ test.method() } " ));
+		assertEquals("test.method()", tag.calculateExpression(' ${ test.method() } ' ));
 	}
+}
+class MyGroovySyntaxTag extends GroovySyntaxTag {
+		public boolean hasPrecedingContent() {
+			return false;
+		}
+
+		public boolean isBufferWhiteSpace() {
+			return false;
+		}
+
+		public void doEndTag() {
+			
+		}
+
+		public void doStartTag() {
+			
+		}
+
+		public String getName() {
+			return null;
+		}	
 }

@@ -18,10 +18,14 @@ package org.codehaus.groovy.grails.web.servlet.mvc;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.web.servlet.DefaultGrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
+import org.codehaus.groovy.grails.web.servlet.GrailsHttpServletRequest;
 import org.codehaus.groovy.grails.web.servlet.GrailsHttpServletResponse;
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.context.ServletContextAware;
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.Controller;
 import org.springframework.web.util.UrlPathHelper;
@@ -74,9 +78,22 @@ public class SimpleGrailsController implements Controller, ServletContextAware {
             LOG.debug("[SimpleGrailsController] Processing request for uri ["+uri+"]");
         }
 
-        ApplicationContext context = (ApplicationContext)this.servletContext.getAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT);
+        
+        RequestAttributes ra = RequestContextHolder.getRequestAttributes();
+        GrailsWebRequest webRequest;
+        if(!(ra instanceof GrailsWebRequest)) {
+            webRequest = new GrailsWebRequest(	request,
+            									response, 
+            									servletContext);
+            RequestContextHolder.setRequestAttributes(webRequest);        	
+        }
+        else {
+        	webRequest = (GrailsWebRequest)ra;
+        }
+        
+        ApplicationContext context = webRequest.getAttributes().getApplicationContext();
         this.helper = new SimpleGrailsControllerHelper(this.application,context,this.servletContext);
-        ModelAndView mv = helper.handleURI(uri,request,new GrailsHttpServletResponse(response));
+        ModelAndView mv = helper.handleURI(uri,webRequest);
 
         if(LOG.isDebugEnabled()) {
             if(mv != null) {

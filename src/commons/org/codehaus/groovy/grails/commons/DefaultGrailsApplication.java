@@ -80,6 +80,7 @@ public class DefaultGrailsApplication implements GrailsApplication {
     private Map tag2libMap;
 	private ApplicationContext parentContext;
 	private MetaClass[] metaClasses;
+	private Set loadedClasses = new HashSet();
 
 
     public DefaultGrailsApplication(final Class[] classes, GroovyClassLoader classLoader) {
@@ -122,7 +123,7 @@ public class DefaultGrailsApplication implements GrailsApplication {
         this.cl.setShouldRecompile(Boolean.TRUE);
         this.cl.setResourceLoader(resourceLoader);
            Collection loadedResources = new ArrayList();
-           Set loadedClasses = new HashSet();
+           this.loadedClasses = new HashSet();
 
             for (int i = 0; resources != null && i < resources.length; i++) {
                 log.debug("Loading groovy file :[" + resources[i].getFile().getAbsolutePath() + "]");
@@ -156,13 +157,18 @@ public class DefaultGrailsApplication implements GrailsApplication {
         if(log.isDebugEnabled())
             log.debug( "loaded classes: ["+loadedClasses+"]" );
 
-        Class[] classes = (Class[])loadedClasses.toArray(new Class[loadedClasses.size()]);
-        this.allClasses = classes;
+        Class[] classes = populateAllClasses();
+        
         configureLoadedClasses(classes);
     }
 
-    private void configureLoadedClasses(Class[] classes) {
+	private Class[] populateAllClasses() {
+		this.allClasses = (Class[])loadedClasses.toArray(new Class[loadedClasses.size()]);
+		return allClasses;
+	}
 
+    private void configureLoadedClasses(Class[] classes) {
+    	this.allClasses = classes;
         // first load the domain classes
         this.domainMap = new HashMap();
         log.debug("Going to inspect domain classes.");
@@ -247,7 +253,7 @@ public class DefaultGrailsApplication implements GrailsApplication {
         if (Modifier.isAbstract(controllerClass.getModifiers())) {
             return null;
         }
-        if (GrailsClassUtils.isControllerClass(controllerClass)) {
+        if (GrailsClassUtils.isControllerClass(controllerClass)) {        	
             GrailsControllerClass grailsControllerClass = new DefaultGrailsControllerClass(controllerClass);
             if (grailsControllerClass.getAvailable()) {
                 this.controllerMap.put(grailsControllerClass.getFullName(), grailsControllerClass);
@@ -255,6 +261,7 @@ public class DefaultGrailsApplication implements GrailsApplication {
 
             // reset controller list
             this.controllerClasses = ((GrailsControllerClass[])controllerMap.values().toArray(new GrailsControllerClass[controllerMap.size()]));
+            addToLoaded(controllerClass);
             return grailsControllerClass;
         }
         else {
@@ -262,7 +269,12 @@ public class DefaultGrailsApplication implements GrailsApplication {
         }
     }
 
-    public GrailsTagLibClass addTagLibClass(Class tagLibClass) {
+    private void addToLoaded(Class clazz) {
+    	this.loadedClasses.add(clazz);
+    	populateAllClasses();
+	}
+
+	public GrailsTagLibClass addTagLibClass(Class tagLibClass) {
         if (Modifier.isAbstract(tagLibClass.getModifiers())) {
             return null;
         }
@@ -276,7 +288,7 @@ public class DefaultGrailsApplication implements GrailsApplication {
             this.taglibClasses = ((GrailsTagLibClass[])this.taglibMap.values().toArray(new GrailsTagLibClass[taglibMap.size()]));
             // reconfigure controller mappings
             configureTagLibraries();
-
+            addToLoaded(tagLibClass);
             return grailsTagLibClass;
         }
         else {
@@ -296,6 +308,7 @@ public class DefaultGrailsApplication implements GrailsApplication {
 
             // reset services list
             this.services = ((GrailsServiceClass[])this.serviceMap.values().toArray(new GrailsServiceClass[serviceMap.size()]));
+            addToLoaded(serviceClass);
             return grailsServiceClass;
         }
         else {
@@ -317,7 +330,7 @@ public class DefaultGrailsApplication implements GrailsApplication {
             this.domainClasses = ((GrailsDomainClass[])this.domainMap.values().toArray(new GrailsDomainClass[domainMap.size()]));
             // reconfigure relationships
             configureDomainClassRelationships();
-            
+            addToLoaded(domainClass);
             return grailsDomainClass;
         }
         else {

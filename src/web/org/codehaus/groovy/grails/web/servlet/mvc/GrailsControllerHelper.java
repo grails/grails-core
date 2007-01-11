@@ -17,21 +17,23 @@ package org.codehaus.groovy.grails.web.servlet.mvc;
 
 import groovy.lang.Closure;
 import groovy.lang.GroovyObject;
-import org.codehaus.groovy.grails.commons.GrailsControllerClass;
-import org.codehaus.groovy.grails.scaffolding.GrailsScaffolder;
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
-import org.codehaus.groovy.grails.web.servlet.GrailsHttpServletResponse;
-import org.springframework.web.servlet.ModelAndView;
 
+import java.util.Map;
+
+import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.ServletContext;
-import java.util.Map;
+
+import org.codehaus.groovy.grails.commons.GrailsControllerClass;
+import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
+import org.springframework.web.servlet.ModelAndView;
 /**
  * An interface for a helper class that processes Grails controller requests and responses 
  * 
  * @author Graeme Rocher
- * @since Oct 27, 2005
+ * @since 0.2
+ * 
+ * Created: Oct 27, 2005
  */
 public interface GrailsControllerHelper {
 
@@ -62,20 +64,12 @@ public interface GrailsControllerHelper {
 			GrailsControllerClass controllerClass);
 	
 	/**
-	 * Retreives the scaffolder for the specified controller
-	 * @param controllerName The controller name
-	 * @return The scaffolder or null
-	 */
-	public abstract GrailsScaffolder getScaffolderForController(String controllerName);
-	/**
 	 * Handles a Grails URI
 	 * @param uri The URI to processs
-	 * @param request The request instance
-	 * @param response The response instance
+	 * @param webRequest The GrailsWebRequest
 	 * @return A ModelAndView instance
 	 */
-	public abstract ModelAndView handleURI(String uri,
-			HttpServletRequest request, GrailsHttpServletResponse response);
+	public abstract ModelAndView handleURI(String uri,GrailsWebRequest webRequest);
 
 	/**
 	 * Handles a Controller action
@@ -117,13 +111,12 @@ public interface GrailsControllerHelper {
 	/**
 	 * Handles a Grails URI
 	 * @param uri The URI to processs
-	 * @param request The request instance
-	 * @param response The response instance
+	 * @param webRequest the GrailsWebRequest instance
 	 * @param params A map of controller parameters
 	 * @return A ModelAndView instance
 	 */
 	public abstract ModelAndView handleURI(String uri,
-			HttpServletRequest request, GrailsHttpServletResponse response, Map params);
+			GrailsWebRequest webRequest, Map params);
 
 
     /**

@@ -21,9 +21,26 @@ import groovy.lang.MetaClass;
  * <p>This interface represents any class in a Grails application.
  * 
  * @author Steven Devijver
- * @since Jul 2, 2005
+ * @author Graeme Rocher
+ * @since 0.1
+ * 
+ * Created: Jul 2, 2005
  */
 public interface GrailsClass {
+	
+	/**
+	 * Gets the initial value of the given property on the class
+	 * @param name The name of the property
+	 * @return The initial value
+	 */
+	public Object getPropertyValue(String name);
+	
+	/**
+	 * Returns true if the class has the specified property
+	 * @param name The name of the property
+	 * @return True if it does
+	 */
+	public boolean hasProperty(String name);
 
     /**
      * <p>Creates a new instance of this class.

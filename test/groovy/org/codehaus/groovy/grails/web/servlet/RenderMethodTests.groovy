@@ -15,42 +15,47 @@
  */
 package org.codehaus.groovy.grails.web.servlet;
 
+import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
+
 /**
  * Tests for the render method
  *
  * @author Graeme Rocher
  *
  */
-class RenderMethodTests extends AbstractControllerTests {
+class RenderMethodTests extends AbstractGrailsControllerTests {
 
 	void testRenderText() {
-		def mockController = getMockController("RenderController")
-		
-		mockController.renderText.call()
-		
-		def request = mockController.request
-		assert request != null
-		def response = mockController.response
-		
-		assert response != null
-		
-		assertEquals "test render", response.contentAsString
+		runTest {
+			def mockController = ga.getController("RenderController").newInstance()
+			mockController.renderText.call()
+			
+			def request = mockController.request
+			assert request != null
+			def response = mockController.response
+			
+			assert response != null
+			
+			assertEquals "test render", response.delegate.contentAsString
+			
+		}		
 	}
 	
 	void testRenderXml() {
-		def mockController = getMockController("RenderController")
+		runTest {
+			def mockController = ga.getController("RenderController").newInstance()
 		
-		mockController.renderXML.call()
-		
-		def request = mockController.request
-		assert request != null
-		def response = mockController.response
-		
-		assert response != null
-		
-		assertEquals "<hello>world</hello>", response.contentAsString
-		assertEquals "text/xml", response.contentType
-		
+			mockController.renderXML.call()
+			
+			def request = mockController.request
+			assert request != null
+			def response = mockController.response
+			
+			assert response != null
+			
+			assertEquals "<hello>world</hello>", response.delegate.contentAsString
+			assertEquals "text/xml", response.contentType
+		}		
 	}
 	
 	void testRenderJSON() {
@@ -58,13 +63,18 @@ class RenderMethodTests extends AbstractControllerTests {
 	}
 	
 	void testRenderTemplate() {
-		def mockController = getMockController("RenderController")
 		
-		mockController.renderTemplate.call()
-		
-		def response = mockController.response
-		
-		assertEquals "hello world!", response.contentAsString
+		runTest {
+			def mockController = ga.getController("RenderController").newInstance()
+			
+			request.setAttribute( GrailsApplicationAttributes.CONTROLLER, mockController)
+			webRequest.controllerName = "render"
+			mockController.renderTemplate.call()
+			
+			def response = mockController.response
+			
+			assertEquals "hello world!", response.delegate.contentAsString
+		}
 	}
 
 	void onSetUp() {

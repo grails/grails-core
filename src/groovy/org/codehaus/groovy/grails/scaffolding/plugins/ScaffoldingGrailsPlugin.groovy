@@ -17,6 +17,7 @@ package org.codehaus.groovy.grails.scaffolding.plugins;
 
 import org.codehaus.groovy.grails.plugins.support.*
 import org.codehaus.groovy.grails.scaffolding.*;
+import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
 
 /**
  * A plug-in that handles the configuration of Hibernate within Grails 
@@ -69,4 +70,25 @@ class ScaffoldingGrailsPlugin {
 		}
 	}
 	
+	/**
+	 * Handles registration of dynamic scaffolded methods
+	 */
+	def doWithDynamicMethods = { ctx ->
+		application.controllers.each { controller ->
+			if(controller.scaffolding) {
+				if(ctx.containsBean("${controller.fullName}Scaffolder")) {
+					def scaffolder = ctx."${controller.fullName}Scaffolder"
+
+					scaffolder.supportedActionNames.each { name ->
+						if(!controller.hasProperty(name)) {
+							def getter = GCU.getGetterName(name)
+							controller.metaClass."$getter" = {->
+								scaffolder.getAction(delegate, name)
+							}
+						}
+					}
+				}
+			}
+		}
+	}
 }

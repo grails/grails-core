@@ -47,17 +47,17 @@ public abstract class AbstractGrailsMockTests extends TestCase {
     protected final void setUp() throws Exception {
         super.setUp();
 
-        onSetUp();
-
-        ga = new DefaultGrailsApplication(gcl.getLoadedClasses(),gcl);
+        System.out.println("Setting up test");
         ctx = new MockApplicationContext();
+        onSetUp();
+        ga = new DefaultGrailsApplication(gcl.getLoadedClasses(),gcl);
+        
         ga.setApplicationContext(ctx);
         ctx.registerMockBean(GrailsApplication.APPLICATION_ID, ga);
     }
     
 
 	protected void onSetUp() {
-		
 	}
 
 	protected MockServletContext createMockServletContext() {

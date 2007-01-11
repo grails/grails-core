@@ -18,32 +18,38 @@ package org.codehaus.groovy.grails.web.metaclass;
 import groovy.lang.Closure;
 import groovy.lang.GroovyObject;
 import groovy.lang.MissingMethodException;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.commons.GrailsClassUtils;
-import org.codehaus.groovy.grails.scaffolding.GrailsScaffolder;
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
-import org.codehaus.groovy.grails.web.servlet.FlashScope;
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsControllerHelper;
-import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
-import org.springframework.validation.Errors;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.beans.PropertyDescriptor;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.grails.commons.GrailsClassUtils;
+import org.codehaus.groovy.grails.commons.GrailsControllerClass;
+import org.codehaus.groovy.grails.commons.metaclass.AbstractDynamicMethodInvocation;
+import org.codehaus.groovy.grails.scaffolding.GrailsScaffolder;
+import org.codehaus.groovy.grails.web.servlet.FlashScope;
+import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
+import org.codehaus.groovy.grails.web.servlet.GrailsHttpServletRequest;
+import org.codehaus.groovy.grails.web.servlet.GrailsHttpServletResponse;
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
+import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
+import org.springframework.validation.Errors;
+import org.springframework.web.context.request.RequestContextHolder;
+
 /**
  * Implements the "chain" Controller method for action chaining
  * 
  * @author Graeme Rocher
- * @since Oct 27, 2005
+ * @since 0.2
+ * 
+ * Created: Oct 27, 2005
  */
-public class ChainDynamicMethod extends AbstractDynamicControllerMethod {
-
+public class ChainDynamicMethod extends AbstractDynamicMethodInvocation {
+	private static final String SCAFFOLDER = "Scaffolder";
     private static final Log LOG = LogFactory.getLog(ChainDynamicMethod.class);
 
     public static final String METHOD_SIGNATURE = "chain";
@@ -58,20 +64,15 @@ public class ChainDynamicMethod extends AbstractDynamicControllerMethod {
 
     static public final String PROPERTY_CHAIN_MODEL = "chainModel";
 
-    private GrailsControllerHelper helper;
-
-    public ChainDynamicMethod(GrailsControllerHelper helper, HttpServletRequest request, HttpServletResponse response) {
-        super(METHOD_PATTERN, request, response);
-        if(helper == null)
-            throw new IllegalStateException("Constructor argument 'helper' cannot be null");
-
-        this.helper = helper;
+    public ChainDynamicMethod() {
+        super(METHOD_PATTERN);
     }
 
     public Object invoke(Object target, Object[] arguments) {
         if(arguments.length == 0)
             throw new MissingMethodException(METHOD_SIGNATURE,target.getClass(),arguments);
 
+        GrailsWebRequest webRequest = (GrailsWebRequest)RequestContextHolder.currentRequestAttributes();
         Object actionRef;
         String controllerName;
         Object id;
@@ -93,8 +94,7 @@ public class ChainDynamicMethod extends AbstractDynamicControllerMethod {
             throw new MissingMethodException(METHOD_SIGNATURE,target.getClass(),arguments);
         }
         // place the chain model in flash scope
-        GrailsApplicationAttributes attrs = helper.getGrailsAttributes();
-        FlashScope fs = attrs.getFlashScope(request);
+        FlashScope fs = webRequest.getFlashScope();
         if(fs.containsKey(PROPERTY_CHAIN_MODEL)) {
             Map chainModel = (Map)fs.get(PROPERTY_CHAIN_MODEL);
             if(chainModel != null) {
@@ -125,7 +125,7 @@ public class ChainDynamicMethod extends AbstractDynamicControllerMethod {
                 actionName = prop.getName();
             }
             else {
-                GrailsScaffolder scaffolder = helper.getScaffolderForController(target.getClass().getName());
+                GrailsScaffolder scaffolder = getScaffolderForController(target.getClass().getName(), webRequest);
                 if(scaffolder != null) {
                         actionName = scaffolder.getActionName(c);
                 }
@@ -133,6 +133,8 @@ public class ChainDynamicMethod extends AbstractDynamicControllerMethod {
         }
 
         if(actionName != null) {
+        	GrailsApplicationAttributes attrs = webRequest.getAttributes();
+        	GrailsHttpServletRequest request = webRequest.getCurrentRequest();
             StringBuffer actualUri = new StringBuffer(attrs.getApplicationUri(request));
             if(controllerName != null) {
                 actualUri.append('/')
@@ -163,6 +165,7 @@ public class ChainDynamicMethod extends AbstractDynamicControllerMethod {
             }
 
             try {
+            	GrailsHttpServletResponse response = webRequest.getCurrentResponse();
                 response.sendRedirect(response.encodeRedirectURL(actualUri.toString()));
             } catch (IOException e) {
                 throw new ControllerExecutionException("Error redirecting request for url ["+actualUri+"]: " + e.getMessage(),e);
@@ -175,5 +178,13 @@ public class ChainDynamicMethod extends AbstractDynamicControllerMethod {
 
         return null;
     }
+    
+    public GrailsScaffolder getScaffolderForController(String controllerName, GrailsWebRequest webRequest) {
+    	GrailsApplicationAttributes attributes = webRequest.getAttributes();
+		GrailsControllerClass controllerClass = attributes.getGrailsApplication().getController(controllerName);    	
+        return (GrailsScaffolder)attributes
+        							.getApplicationContext()
+        							.getBean(controllerClass.getFullName() + SCAFFOLDER );
+    }        
 
 }

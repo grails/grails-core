@@ -61,9 +61,13 @@ task(testApp:"The test app implementation task") {
 	def result = null
 	try {
 		def ctx = GU.bootstrapGrailsFromClassPath()
+		
 		def app = ctx.getBean(GrailsApplication.APPLICATION_ID)
 		
 		def suite = new TestSuite()
+		
+		GU.bindMockWebRequest(ctx)
+		
 		app.allClasses.each { c ->			
 			if(TestCase.isAssignableFrom(c) && !Modifier.isAbstract(c.modifiers)) {
 				suite.addTest(new GrailsTestSuite(ctx.beanFactory, c))

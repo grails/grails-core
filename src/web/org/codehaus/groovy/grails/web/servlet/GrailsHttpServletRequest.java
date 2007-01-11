@@ -54,7 +54,11 @@ public class GrailsHttpServletRequest extends HttpServletRequestWrapper implemen
     public GrailsHttpServletRequest(HttpServletRequest request, GroovyObject controller) {
         super(request);
         requestBean = new BeanWrapperImpl(request);
-        controllerParams = (Map)controller.getProperty(GetParamsDynamicProperty.PROPERTY_NAME);
+        controllerParams = (Map)controller.getProperty(GetParamsDynamicProperty.PROPERTY_NAME);        
+    }
+    
+    public ServletRequest getDelegate() {
+    	return getRequest();
     }
 
     /* (non-Javadoc)

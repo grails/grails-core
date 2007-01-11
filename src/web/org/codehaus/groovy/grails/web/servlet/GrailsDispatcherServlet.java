@@ -15,6 +15,9 @@
  */
 package org.codehaus.groovy.grails.web.servlet;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsBootstrapClass;
 import org.codehaus.groovy.grails.commons.GrailsConfigUtils;
@@ -72,5 +75,14 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
         // call super
         super.destroy();
     }
+
+	/* (non-Javadoc)
+	 * @see org.springframework.web.servlet.DispatcherServlet#doDispatch(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
+	 */
+	protected void doDispatch(HttpServletRequest request, HttpServletResponse response) throws Exception {
+		super.doDispatch(request, response);
+	}
+	
+	
 
 }

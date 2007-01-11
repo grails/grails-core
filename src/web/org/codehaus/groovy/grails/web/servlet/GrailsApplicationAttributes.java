@@ -1,9 +1,11 @@
 package org.codehaus.groovy.grails.web.servlet;
 
+import java.io.Writer;
+
 import org.springframework.validation.Errors;
 import org.springframework.context.ApplicationContext;
-import org.codehaus.groovy.grails.web.metaclass.GrailsParameterMap;
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import groovy.lang.GroovyObject;
 
@@ -28,6 +30,8 @@ public interface GrailsApplicationAttributes {
     String PARAMS_OBJECT = "org.codehaus.groovy.grails.PARAMS_OBJECT";
     String CONTROLLER = "org.codehaus.groovy.grails.CONTROLLER";
     String ERRORS =  "org.codehaus.groovy.grails.ERRORS";
+    String MODEL_AND_VIEW = "org.codehaus.groovy.grails.MODEL_AND_VIEW";
+    String OUT = "org.codehaus.groovy.grails.RESPONSE_OUT";
     String TAG_CACHE = "org.codehaus.groovy.grails.TAG_CACHE";
     String ID_PARAM = "id";
     String PARENT_APPLICATION_CONTEXT = "org.codehaus.groovy.grails.PARENT_APPLICATION_CONTEXT";
@@ -131,6 +135,19 @@ public interface GrailsApplicationAttributes {
      * @return An instance of the tag library or null if not found
      */
 	GroovyObject getTagLibraryForTag(HttpServletRequest request, HttpServletResponse response,String tagName);
+
+	/**
+	 * Holds the current response write for the request
+	 * @return The held response writer
+	 */
+	Writer getOut(HttpServletRequest request);
+
+	/**
+	 * Sets the current write for the request
+	 * @param currentRequest The request
+	 * @param out2 The writer
+	 */
+	void setOut(GrailsHttpServletRequest currentRequest, Writer out2);
 
 
 }

@@ -27,45 +27,48 @@ import org.dom4j.xpath.DefaultXPath;
  * @author Graeme
  *
  */
-public class FormTagLibTests extends AbstractTagLibTests {
+public class FormTagLibTests extends AbstractGrailsTagTests {
 
     /** The name used for the datePicker tags created in the test cases. */
     private static final String DATE_PICKER_TAG_NAME = "testDatePicker";
 
-    private static final Collection DATE_PRECISIONS_INCLUDING_MINUTE = Collections.unmodifiableCollection(Arrays.asList(new String[] {"minute", null}));
-    private static final Collection DATE_PRECISIONS_INCLUDING_HOUR = Collections.unmodifiableCollection(Arrays.asList(new String[] {"hour", "minute", null}));
-    private static final Collection DATE_PRECISIONS_INCLUDING_DAY = Collections.unmodifiableCollection(Arrays.asList(new String[] {"day", "hour", "minute", null}));
-    private static final Collection DATE_PRECISIONS_INCLUDING_MONTH = Collections.unmodifiableCollection(Arrays.asList(new String[] {"month", "day", "hour", "minute", null}));
+    private static final Collection DATE_PRECISIONS_INCLUDING_MINUTE = Collections.unmodifiableCollection(Arrays.asList( ["minute", null] as String[] ))
+    private static final Collection DATE_PRECISIONS_INCLUDING_HOUR = Collections.unmodifiableCollection(Arrays.asList(["hour", "minute",null] as String[] ))
+    private static final Collection DATE_PRECISIONS_INCLUDING_DAY = Collections.unmodifiableCollection(Arrays.asList(["day", "hour", "minute", null] as String[] ))
+    private static final Collection DATE_PRECISIONS_INCLUDING_MONTH = Collections.unmodifiableCollection(Arrays.asList(["month", "day", "hour", "minute", null] as String[]
+                                                                                                                                                                          ))
 
     public void testNoHtmlEscapingTextAreaTag() throws Exception {
     	final StringWriter sw = new StringWriter();
     	final PrintWriter pw = new PrintWriter(sw);
 
-    	final Closure tag = getTag("textArea",pw);
-
-        assertNotNull(tag);
-
-        final Map attrs = new HashMap();
-        attrs.put("name","testField");
-        attrs.put("escapeHtml","false");
-        attrs.put("value", "<b>some text</b>");
-
-        tag.call(new Object[]{attrs});
-
-        final String result = sw.toString();
-        // need to inspect this as raw text so the DocumentHelper doesn't
-        // unescape anything...
-        assertTrue(result.indexOf("<b>some text</b>") >= 0);
-
-        final Document document = DocumentHelper.parseText(sw.toString());
-        assertNotNull(document);
-
-        final Element inputElement = document.getRootElement();
-        final Attribute escapeHtmlAttribute = inputElement.attribute("escapeHtml");
-        assertNull("escapeHtml attribute should not exist", escapeHtmlAttribute);
+    	withTag("textArea", pw) { tag ->
+	
+	        assertNotNull(tag);
+	
+	        final Map attrs = new HashMap();
+	        attrs.put("name","testField");
+	        attrs.put("escapeHtml","false");
+	        attrs.put("value", "<b>some text</b>");
+	
+	        tag.call(attrs);
+	
+	        final String result = sw.toString();
+	        // need to inspect this as raw text so the DocumentHelper doesn't
+	        // unescape anything...
+	        assertTrue(result.indexOf("<b>some text</b>") >= 0);
+	
+	        final Document document = DocumentHelper.parseText(sw.toString());
+	        assertNotNull(document);
+	
+	        final Element inputElement = document.getRootElement();
+	        final Attribute escapeHtmlAttribute = inputElement.attribute("escapeHtml");
+	        assertNull("escapeHtml attribute should not exist", escapeHtmlAttribute);
+    	
+    	}
     }
 
-    public void testDatePickerTagWithDefaultDateAndPrecision() throws Exception {
+   public void testDatePickerTagWithDefaultDateAndPrecision() throws Exception {
         testDatePickerTag(null, null);
     }
 
@@ -127,11 +130,13 @@ public class FormTagLibTests extends AbstractTagLibTests {
         final String FIELD_NAME = DATE_PICKER_TAG_NAME + "_month";
 
         String expectedMonthValue = Integer.toString(1); // January
+        
         if (DATE_PRECISIONS_INCLUDING_MONTH.contains(precision)) {
             expectedMonthValue = Integer.toString(calendar.get(Calendar.MONTH)+1);
             assertSelectFieldPresentWithSelectedValue(document, FIELD_NAME, expectedMonthValue);
         }
         else {
+        	
             assertSelectFieldNotPresentValue(document, FIELD_NAME);
         }
     }
@@ -191,25 +196,27 @@ public class FormTagLibTests extends AbstractTagLibTests {
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
 
-        Closure tag = getTag("datePicker", pw);
+        def document = withTag("datePicker", pw) { tag ->
 
-        assertNotNull(tag);
+	        assertNotNull(tag);
+	
+	        Map attrs = new HashMap();
+	        attrs.put("name", DATE_PICKER_TAG_NAME);
+	
+	        if (date != null) {
+	            attrs.put("value", date);
+	        }
+	
+	        if (precision != null) {
+	            attrs.put("precision", precision);
+	        }
+	
+	        tag.call(attrs);
+	
+	        String enclosed = "<test>" + sw.toString() + "</test>";
 
-        Map attrs = new HashMap();
-        attrs.put("name", DATE_PICKER_TAG_NAME);
-
-        if (date != null) {
-            attrs.put("value", date);
+	        return DocumentHelper.parseText(enclosed);
         }
-
-        if (precision != null) {
-            attrs.put("precision", precision);
-        }
-
-        tag.call(new Object[] { attrs });
-
-        String enclosed = "<test>" + sw.toString() + "</test>";
-
-        return DocumentHelper.parseText(enclosed);
+        return document
     }
 }

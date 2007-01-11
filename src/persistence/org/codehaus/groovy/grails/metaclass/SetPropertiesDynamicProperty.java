@@ -24,7 +24,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.metaclass.AbstractDynamicProperty;
 import org.codehaus.groovy.grails.web.binding.GrailsDataBinder;
-import org.codehaus.groovy.grails.web.metaclass.GrailsParameterMap;
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap;
 import org.springframework.web.bind.ServletRequestDataBinder;
 
 import javax.servlet.http.HttpServletRequest;

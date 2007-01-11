@@ -35,6 +35,8 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.web.errors.GrailsWrappedRuntimeException;
 import org.codehaus.groovy.grails.web.servlet.DefaultGrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
+import org.springframework.web.context.request.RequestContextHolder;
 
 /**
  * NOTE: Based on work done by on the GSP standalone project (https://gsp.dev.java.net/)
@@ -146,6 +148,8 @@ public class GroovyPagesServlet extends HttpServlet /*implements GroovyObject*/ 
         }
         Writable w = t.make();
         Writer out = GSPResonseWriter.getInstance(response, 8192);
+        GrailsWebRequest webRequest =  (GrailsWebRequest) RequestContextHolder.currentRequestAttributes();
+        webRequest.setOut(out);
         try {
             w.writeTo(out);
         }

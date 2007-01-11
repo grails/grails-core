@@ -17,22 +17,15 @@ package org.codehaus.groovy.grails.web.metaclass;
 
 import grails.util.JSonBuilder;
 import grails.util.OpenRicoBuilder;
-import groovy.lang.*;
+import groovy.lang.Closure;
+import groovy.lang.GString;
+import groovy.lang.GroovyObject;
+import groovy.lang.GroovyRuntimeException;
+import groovy.lang.MissingMethodException;
+import groovy.lang.Writable;
 import groovy.text.Template;
 import groovy.xml.StreamingMarkupBuilder;
-import org.apache.commons.beanutils.BeanMap;
-import org.apache.commons.lang.StringUtils;
-import org.codehaus.groovy.grails.commons.GrailsControllerClass;
-import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
-import org.codehaus.groovy.grails.web.servlet.GrailsHttpServletResponse;
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsControllerHelper;
-import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
-import org.springframework.web.servlet.ModelAndView;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.Collection;
@@ -41,13 +34,31 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+
+import org.apache.commons.beanutils.BeanMap;
+import org.apache.commons.lang.StringUtils;
+import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.commons.GrailsControllerClass;
+import org.codehaus.groovy.grails.commons.metaclass.AbstractDynamicMethodInvocation;
+import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
+import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
+import org.codehaus.groovy.grails.web.servlet.GrailsHttpServletResponse;
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
+import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.servlet.ModelAndView;
+
 /**
  * Allows rendering of text, views, and templates to the response
  *
  * @author Graeme Rocher
- * @since Oct 27, 2005
+ * @since 0.2
+ * 
+ * Created: Oct 27, 2005
  */
-public class RenderDynamicMethod extends AbstractDynamicControllerMethod {
+public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
     public static final String METHOD_SIGNATURE = "render";
     public static final Pattern METHOD_PATTERN = Pattern.compile('^'+METHOD_SIGNATURE+'$');
 
@@ -65,18 +76,20 @@ public class RenderDynamicMethod extends AbstractDynamicControllerMethod {
     private static final String BUILDER_TYPE_RICO = "rico";
     private static final String BUILDER_TYPE_JSON = "json";
 
-    private GrailsControllerHelper helper;
     protected GrailsHttpServletResponse response;
+	private HttpServletRequest request;
+	private GrailsApplication application;
+	private GrailsWebRequest webRequest;
     private static final String ARGUMENT_TO = "to";
 
 
-    public RenderDynamicMethod(GrailsControllerHelper helper, HttpServletRequest request, HttpServletResponse response) {
-        super(METHOD_PATTERN, request, response);
-        this.helper = helper;
-        if(response instanceof GrailsHttpServletResponse)
-            this.response = (GrailsHttpServletResponse)response;
-        else
-            this.response = new GrailsHttpServletResponse(response);
+    public RenderDynamicMethod() {
+        super(METHOD_PATTERN);
+        
+        this.webRequest = (GrailsWebRequest)RequestContextHolder.currentRequestAttributes();
+        this.application = webRequest.getAttributes().getGrailsApplication();
+        this.request = webRequest.getCurrentRequest();
+        this.response = webRequest.getCurrentResponse();
     }
 
     public Object invoke(Object target, Object[] arguments) {
@@ -184,7 +197,7 @@ public class RenderDynamicMethod extends AbstractDynamicControllerMethod {
                     viewUri = viewName;
                 }
                 else {
-                    GrailsControllerClass controllerClass = helper.getControllerClassByName(target.getClass().getName());
+                    GrailsControllerClass controllerClass = application.getController(target.getClass().getName());
                     viewUri = controllerClass.getViewByName(viewName);
                 }
 
@@ -281,8 +294,7 @@ public class RenderDynamicMethod extends AbstractDynamicControllerMethod {
         else {
             throw new MissingMethodException(METHOD_SIGNATURE,target.getClass(),arguments);
         }
-        if(controller!=null)
-            controller.setProperty(ControllerDynamicMethods.RENDER_VIEW_PROPERTY,Boolean.valueOf(renderView));
+        webRequest.setRenderView(renderView);
         return null;
     }
 }

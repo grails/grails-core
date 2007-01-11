@@ -19,6 +19,8 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap;
 /**
  * A dynamic property that adds a "params" map to a controller for accessing request and controller parameters
  * 

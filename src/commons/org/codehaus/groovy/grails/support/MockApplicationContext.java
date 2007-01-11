@@ -11,12 +11,14 @@ import java.util.Locale;
 import java.util.Map;
 
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEvent;
+import org.springframework.context.MessageSource;
 import org.springframework.context.MessageSourceResolvable;
 import org.springframework.context.NoSuchMessageException;
 import org.springframework.core.io.ClassPathResource;
@@ -95,7 +97,7 @@ public class MockApplicationContext implements ApplicationContext {
 	public Object getBean(String name, Class requiredType)
 			throws BeansException {
 		if(!beans.containsKey(name))throw new NoSuchBeanDefinitionException( name);
-		if(beans.get(name).getClass() != requiredType)throw new NoSuchBeanDefinitionException(name);
+		if(requiredType != null && beans.get(name).getClass() != requiredType)throw new NoSuchBeanDefinitionException(name);
 		
 		return beans.get(name);
 	}
@@ -126,17 +128,24 @@ public class MockApplicationContext implements ApplicationContext {
 
 	public String getMessage(String code, Object[] args, String defaultMessage,
 			Locale locale) {
-		throw new UnsupportedOperationException("Method not supported by implementation");
+		MessageSource messageSource = (MessageSource)getBean("messageSource");
+		if(messageSource == null) throw new BeanCreationException("No bean [messageSource] found in MockApplicationContext");
+		return messageSource.getMessage(code, args, defaultMessage, locale);
+		
 	}
 
 	public String getMessage(String code, Object[] args, Locale locale)
 			throws NoSuchMessageException {
-		throw new UnsupportedOperationException("Method not supported by implementation");
+		MessageSource messageSource = (MessageSource)getBean("messageSource");
+		if(messageSource == null) throw new BeanCreationException("No bean [messageSource] found in MockApplicationContext");
+		return messageSource.getMessage(code, args, locale);
 	}
 
 	public String getMessage(MessageSourceResolvable resolvable, Locale locale)
 			throws NoSuchMessageException {
-		throw new UnsupportedOperationException("Method not supported by implementation");
+		MessageSource messageSource = (MessageSource)getBean("messageSource");
+		if(messageSource == null) throw new BeanCreationException("No bean [messageSource] found in MockApplicationContext");
+		return messageSource.getMessage(resolvable, locale);
 	}
 
 	public Resource[] getResources(String locationPattern) throws IOException {

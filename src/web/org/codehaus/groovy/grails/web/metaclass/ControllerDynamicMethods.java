@@ -111,10 +111,10 @@ public class ControllerDynamicMethods extends
         }, true));
 
         // add dynamic methods
-        addDynamicMethodInvocation( new RedirectDynamicMethod(helper,request,response) );
-        addDynamicMethodInvocation( new ChainDynamicMethod(helper, request, response ) );
-        addDynamicMethodInvocation( new RenderDynamicMethod(helper,request,response));
-        addDynamicMethodInvocation( new BindDynamicMethod(request,response));
+        //addDynamicMethodInvocation( new RedirectDynamicMethod(helper,request,response) );
+        //addDynamicMethodInvocation( new ChainDynamicMethod(helper, request, response ) );
+        //addDynamicMethodInvocation( new RenderDynamicMethod(helper,request,response));
+        //addDynamicMethodInvocation( new BindDynamicMethod(request,response));
 
         // the getViewUri(name,request) method that retrieves the name of a view for current controller
         addDynamicMethodInvocation( new AbstractDynamicMethodInvocation(GET_VIEW_URI_PATTERN){
@@ -157,7 +157,7 @@ public class ControllerDynamicMethods extends
 
         // if the controller is scaffolding get the scaffolder, then loop through all the
         // support actions by the scaffolder and register dynamic properties for those that don't exist
-        if(this.scaffolding) {
+        /*if(this.scaffolding) {
             this.scaffolder = helper.getScaffolderForController(controllerClass.getFullName());
             if(this.scaffolder == null) {
                 throw new IllegalStateException("Scaffolder is null when controller scaffold property is set to 'true'");
@@ -172,7 +172,7 @@ public class ControllerDynamicMethods extends
                                                                     true));
                 }
             }
-        }
+        }*/
     }
 
 }

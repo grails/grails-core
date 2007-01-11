@@ -41,7 +41,9 @@ import org.springframework.beans.BeanWrapperImpl;
  */
 public abstract class AbstractGrailsClass implements GrailsClass {
 
-    private Class clazz = null;
+
+
+	private Class clazz = null;
     private String fullName = null;
     private String name = null;
     private String packageName = null;
@@ -207,6 +209,21 @@ public abstract class AbstractGrailsClass implements GrailsClass {
             return null;
         }
     }
+
+    /* (non-Javadoc)
+	 * @see org.codehaus.groovy.grails.commons.GrailsClass#getPropertyValue(java.lang.String)
+	 */
+	public Object getPropertyValue(String name) {
+		return getReference().getPropertyValue(name);
+	}
+	
+	
+	/* (non-Javadoc)
+	 * @see org.codehaus.groovy.grails.commons.GrailsClass#hasProperty(java.lang.String)
+	 */
+	public boolean hasProperty(String name) {
+		return getReference().isReadableProperty(name);
+	}
 
 	/**
 	 * @return the metaClass

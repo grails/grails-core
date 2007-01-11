@@ -18,33 +18,41 @@ package org.codehaus.groovy.grails.web.metaclass;
 import groovy.lang.Closure;
 import groovy.lang.GroovyObject;
 import groovy.lang.MissingMethodException;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.commons.GrailsClassUtils;
-import org.codehaus.groovy.grails.scaffolding.GrailsScaffolder;
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsControllerHelper;
-import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
-import org.springframework.validation.Errors;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+
 import java.beans.PropertyDescriptor;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.regex.Pattern;
+
+import javax.servlet.http.HttpServletRequest;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.grails.commons.GrailsClassUtils;
+import org.codehaus.groovy.grails.commons.GrailsControllerClass;
+import org.codehaus.groovy.grails.commons.metaclass.AbstractDynamicMethodInvocation;
+import org.codehaus.groovy.grails.scaffolding.GrailsScaffolder;
+import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
+import org.codehaus.groovy.grails.web.servlet.GrailsHttpServletResponse;
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
+import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
+import org.springframework.validation.Errors;
+import org.springframework.web.context.request.RequestContextHolder;
 
 /**
  * Implements the "redirect" Controller method for action redirection
  * 
  * @author Graeme Rocher
- * @since Oct 27, 2005
+ * @since 0.2
+ * 
+ * Created Oct 27, 2005
  */
-public class RedirectDynamicMethod extends AbstractDynamicControllerMethod {
+public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
 
-
+	private static final String SCAFFOLDER = "Scaffolder";
     public static final String METHOD_SIGNATURE = "redirect";
     public static final Pattern METHOD_PATTERN = Pattern.compile('^'+METHOD_SIGNATURE+'$');
     public static final String ARGUMENT_URI = "uri";
@@ -55,15 +63,10 @@ public class RedirectDynamicMethod extends AbstractDynamicControllerMethod {
     public static final String ARGUMENT_PARAMS = "params";
     public static final String ARGUMENT_ERRORS = "errors";
 
-    private GrailsControllerHelper helper;
     private static final Log LOG = LogFactory.getLog(RedirectDynamicMethod.class);
 
-    public RedirectDynamicMethod(GrailsControllerHelper helper, HttpServletRequest request, HttpServletResponse response) {
-        super(METHOD_PATTERN, request, response);
-        if(helper == null)
-            throw new IllegalStateException("Constructor argument 'helper' cannot be null");
-
-        this.helper = helper;
+    public RedirectDynamicMethod() {
+        super(METHOD_PATTERN);
     }
 
     public Object invoke(Object target, Object[] arguments) {
@@ -108,9 +111,12 @@ public class RedirectDynamicMethod extends AbstractDynamicControllerMethod {
         }
 
         String actualUri;
-
-        GrailsApplicationAttributes attrs = helper.getGrailsAttributes();
-
+        GrailsWebRequest webRequest = (GrailsWebRequest)RequestContextHolder.currentRequestAttributes();
+        
+        GrailsApplicationAttributes attrs = webRequest.getAttributes();
+        HttpServletRequest request = webRequest.getCurrentRequest();
+        GrailsHttpServletResponse response = webRequest.getCurrentResponse();
+        
         if(uri != null) {
             actualUri = attrs.getApplicationUri(request) + uri.toString();
         }
@@ -129,7 +135,7 @@ public class RedirectDynamicMethod extends AbstractDynamicControllerMethod {
                     actionName = prop.getName();
                 }
                 else {
-                    GrailsScaffolder scaffolder = helper.getScaffolderForController(target.getClass().getName());
+                    GrailsScaffolder scaffolder = getScaffolderForController(target.getClass().getName(), webRequest);
                     if(scaffolder != null) {
                             actionName = scaffolder.getActionName(c);
                     }
@@ -195,5 +201,13 @@ public class RedirectDynamicMethod extends AbstractDynamicControllerMethod {
         }
         return null;
     }
+    
+    public GrailsScaffolder getScaffolderForController(String controllerName, GrailsWebRequest webRequest) {
+    	GrailsApplicationAttributes attributes = webRequest.getAttributes();
+		GrailsControllerClass controllerClass = attributes.getGrailsApplication().getController(controllerName);    	
+        return (GrailsScaffolder)attributes
+        							.getApplicationContext()
+        							.getBean(controllerClass.getFullName() + SCAFFOLDER );
+    }    
 
 }

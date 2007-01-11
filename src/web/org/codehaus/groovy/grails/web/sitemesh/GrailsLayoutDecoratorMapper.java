@@ -78,7 +78,7 @@ public class GrailsLayoutDecoratorMapper extends AbstractDecoratorMapper impleme
 				Decorator d = getNamedDecorator(request, actionUri.substring(1));
 			    if(d!=null) {
 			    	return d;
-			    } else {
+			    } else if(!StringUtils.isBlank(controllerName)) {
 					if(LOG.isDebugEnabled())
 						LOG.debug("Action layout not found, trying controller");
 					
@@ -111,6 +111,7 @@ public class GrailsLayoutDecoratorMapper extends AbstractDecoratorMapper impleme
 	}
 
 	public Decorator getNamedDecorator(HttpServletRequest request, String name) {
+		if(StringUtils.isBlank(name))return null;
 		
 		if(decoratorMap.containsKey(name)) {
 			return (Decorator)decoratorMap.get(name);

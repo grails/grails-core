@@ -15,9 +15,14 @@
 package org.codehaus.groovy.grails.web.metaclass;
 
 import groovy.lang.MissingMethodException;
+
+import org.codehaus.groovy.grails.commons.metaclass.AbstractDynamicMethodInvocation;
 import org.codehaus.groovy.grails.web.binding.GrailsDataBinder;
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap;
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.PropertyValues;
+import org.springframework.web.context.request.RequestContextHolder;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -35,12 +40,12 @@ import java.util.regex.Pattern;
  * @author Graeme Rocher
  * @since 10-Jan-2006
  */
-public class BindDynamicMethod extends AbstractDynamicControllerMethod {
+public class BindDynamicMethod extends AbstractDynamicMethodInvocation {
     public static final String METHOD_SIGNATURE = "bindData";
     public static final Pattern METHOD_PATTERN = Pattern.compile('^'+METHOD_SIGNATURE+'$');
 
-    public BindDynamicMethod(HttpServletRequest request, HttpServletResponse response) {
-        super(METHOD_PATTERN, request, response);
+    public BindDynamicMethod() {
+        super(METHOD_PATTERN);
     }
 
 
@@ -61,7 +66,8 @@ public class BindDynamicMethod extends AbstractDynamicControllerMethod {
             dataBinder.bind(request);
         }
         else if(bindParams instanceof HttpServletRequest) {
-            dataBinder = GrailsDataBinder.createBinder(targetObject, targetObject.getClass().getName(),request);
+        	GrailsWebRequest webRequest = (GrailsWebRequest)RequestContextHolder.currentRequestAttributes();
+            dataBinder = GrailsDataBinder.createBinder(targetObject, targetObject.getClass().getName(),webRequest.getCurrentRequest());
             dataBinder.bind((HttpServletRequest)arguments[1]);
         }
         else if(bindParams instanceof Map) {
@@ -70,8 +76,9 @@ public class BindDynamicMethod extends AbstractDynamicControllerMethod {
             dataBinder.bind(pv);
         }
         else {
-            dataBinder = GrailsDataBinder.createBinder(targetObject, targetObject.getClass().getName(),request);
-            dataBinder.bind(request);
+        	GrailsWebRequest webRequest = (GrailsWebRequest)RequestContextHolder.currentRequestAttributes();        	
+            dataBinder = GrailsDataBinder.createBinder(targetObject, targetObject.getClass().getName(), webRequest.getCurrentRequest());
+            dataBinder.bind(webRequest.getCurrentRequest());
         }
         return targetObject;
     }

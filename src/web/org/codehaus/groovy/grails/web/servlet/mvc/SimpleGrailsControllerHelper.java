@@ -67,16 +67,19 @@ import java.util.regex.Pattern;
  */
 public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
 
-    private static final String SCAFFOLDER = "Scaffolder";
+	private static final String SCAFFOLDER = "Scaffolder";
+    
 
     private GrailsApplication application;
     private ApplicationContext applicationContext;
     private Map chainModel = Collections.EMPTY_MAP;
-    private ControllerDynamicMethods interceptor;
     private GrailsScaffolder scaffolder;
     private ServletContext servletContext;
     private GrailsApplicationAttributes grailsAttributes;
     private Pattern uriPattern = Pattern.compile("/(\\w+)/?(\\w*)/?(.*)/?(.*)");
+
+
+	private GrailsWebRequest webRequest;
     
     private static final Log LOG = LogFactory.getLog(SimpleGrailsControllerHelper.class);
     private static final String DISPATCH_ACTION_PARAMETER = "_action";
@@ -101,10 +104,6 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
         return this.application.getController(name);
     }
 
-    public GrailsScaffolder getScaffolderForController(String controllerName) {
-        GrailsControllerClass controllerClass = getControllerClassByName(controllerName);
-        return (GrailsScaffolder)applicationContext.getBean( controllerClass.getFullName() + SCAFFOLDER );
-    }
 
     /* (non-Javadoc)
       * @see org.codehaus.groovy.grails.web.servlet.mvc.GrailsControllerHelper#getControllerClassByURI(java.lang.String)
@@ -120,12 +119,7 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
         return (GroovyObject)this.applicationContext.getBean(controllerClass.getFullName());
     }
 
-    /* (non-Javadoc)
-      * @see org.codehaus.groovy.grails.web.servlet.mvc.GrailsControllerHelper#handleURI(java.lang.String, javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
-      */
-    public ModelAndView handleURI(String uri, HttpServletRequest request, GrailsHttpServletResponse response) {
-        return handleURI(uri,request,response,Collections.EMPTY_MAP);
-    }
+
 
 
 
@@ -146,12 +140,19 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
         }
     }
 
+    
+	public ModelAndView handleURI(String uri, GrailsWebRequest webRequest) {
+		return handleURI(uri, webRequest, Collections.EMPTY_MAP);
+	}
+	
     /* (non-Javadoc)
       * @see org.codehaus.groovy.grails.web.servlet.mvc.GrailsControllerHelper#handleURI(java.lang.String, javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, java.util.Map)
       */
-    public ModelAndView handleURI(String uri, HttpServletRequest request, GrailsHttpServletResponse response, Map params) {
+    public ModelAndView handleURI(String uri, GrailsWebRequest webRequest, Map params) {
         if(uri == null)
             throw new IllegalArgumentException("Controller URI [" + uri + "] cannot be null!");
+        
+        this.webRequest = webRequest;
 
         // step 1: process the uri
         if (uri.indexOf("?") > -1) {
@@ -190,6 +191,11 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
 
             }
         }
+        
+        HttpServletRequest request = webRequest.getCurrentRequest();
+        GrailsHttpServletResponse response = webRequest.getCurrentResponse();
+        
+        
         // if the action name is blank check its included as dispatch parameter
         if(StringUtils.isBlank(actionName) && request.getParameter(DISPATCH_ACTION_PARAMETER) != null) {
             actionName = GrailsClassUtils.getPropertyNameRepresentation(request.getParameter(DISPATCH_ACTION_PARAMETER));
@@ -232,16 +238,7 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
         
         request.setAttribute( GrailsApplicationAttributes.CONTROLLER, controller );
 
-        // Step 3a: Configure a proxy interceptor for controller dynamic methods for this request
-        if(this.interceptor == null) {
-            try {
-                interceptor = new ControllerDynamicMethods(controller,this,request,response);
-            }
-            catch(IntrospectionException ie) {
-                throw new ControllerExecutionException("Error creating dynamic controller methods for controller ["+controller.getClass()+"]: " + ie.getMessage(), ie);
-            }
-        }
-        // Step 3b: if scaffolding retrieve scaffolder
+        // Step 3: if scaffolding retrieve scaffolder
         if(controllerClass.isScaffolding())  {
             this.scaffolder = (GrailsScaffolder)applicationContext.getBean( controllerClass.getFullName() + SCAFFOLDER );
             if(this.scaffolder == null)
@@ -258,12 +255,10 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
                 throw new NoClosurePropertyForURIException("Could not find closure property for URI [" + uri + "] for controller [" + controllerClass.getFullName() + "]!");
         }
 
-        // Step 4a: Set dynamic properties on controller
-        controller.setProperty(ControllerDynamicMethods.CONTROLLER_NAME_PROPERTY, controllerName);
-        controller.setProperty(ControllerDynamicMethods.ACTION_NAME_PROPERTY, actionName);
-        controller.setProperty(ControllerDynamicMethods.CONTROLLER_URI_PROPERTY, '/' + controllerName);
-        controller.setProperty(ControllerDynamicMethods.ACTION_URI_PROPERTY, '/' + controllerName + '/' + actionName);
-
+        // Step 4a: Set the action and controller name of the web request
+        webRequest.setActionName(actionName);
+        webRequest.setControllerName(controllerName);
+        
         // populate additional params from url
         Map controllerParams = (Map)controller.getProperty(GetParamsDynamicProperty.PROPERTY_NAME);
         if(!StringUtils.isBlank(id)) {
@@ -280,8 +275,6 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
         FlashScope fs = this.grailsAttributes.getFlashScope(request);
         fs.next();
 
-        controller.setProperty(ControllerDynamicMethods.FLASH_SCOPE_PROPERTY,fs);
-        
         // Step 4b: Set grails attributes in request scope
         request.setAttribute(GrailsApplicationAttributes.REQUEST_SCOPE_ID,this.grailsAttributes);
 
@@ -349,33 +342,11 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
     }
 
     public Object handleAction(GroovyObject controller,Closure action, HttpServletRequest request, HttpServletResponse response, Map params) {
-            if(interceptor == null) {
-                ProxyMetaClass pmc = (ProxyMetaClass)controller.getMetaClass();
-                interceptor = (ControllerDynamicMethods)pmc.getInterceptor();
-            }
-            // if there are additional params add them to the params dynamic property
-            if(params != null && !params.isEmpty()) {
-                GetParamsDynamicProperty paramsProp = (GetParamsDynamicProperty)interceptor.getDynamicProperty( GetParamsDynamicProperty.PROPERTY_NAME );
-                paramsProp.addParams( params );
-            }
-            // check the chain model is not empty and add it
-            if(!this.chainModel.isEmpty()) {
-                // get the "chainModel" property
-                GenericDynamicProperty chainProperty = (GenericDynamicProperty)interceptor.getDynamicProperty(ChainDynamicMethod.PROPERTY_CHAIN_MODEL);
-                // if it doesn't exist create it
-                if(chainProperty == null) {
-                    interceptor.addDynamicProperty( new GenericDynamicProperty( ChainDynamicMethod.PROPERTY_CHAIN_MODEL,Map.class,this.chainModel,false ) );
-                }
-                else {
-                    // otherwise add to it
-                    Map chainPropertyModel = (Map)chainProperty.get(controller);
-                    chainPropertyModel.putAll( this.chainModel );
-                    this.chainModel = chainPropertyModel;
-                }
-            }
-
-
-
+        // if there are additional params add them to the params dynamic property
+        if(params != null && !params.isEmpty()) {
+            GrailsParameterMap paramsMap = (GrailsParameterMap)controller.getProperty("params"); 
+            paramsMap.putAll( params );
+        }
         // Step 7: determine argument count and execute.
         Object returnValue = action.call();
 
@@ -392,11 +363,8 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
         boolean viewNameBlank = (viewName == null || viewName.length() == 0);
         // reset the metaclass
         ModelAndView explicityModelAndView = (ModelAndView)controller.getProperty(ControllerDynamicMethods.MODEL_AND_VIEW_PROPERTY);
-        Boolean renderView = (Boolean)controller.getProperty(ControllerDynamicMethods.RENDER_VIEW_PROPERTY);
 
-        if(renderView == null) renderView = Boolean.TRUE;
-
-        if(!renderView.booleanValue()) {
+        if(!webRequest.isRenderView()) {
             return null;
         }
         else if(explicityModelAndView != null) {
@@ -465,5 +433,6 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
                 this.chainModel = Collections.EMPTY_MAP;
         }
 	}
+
 
 }

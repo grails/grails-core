@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.web.metaclass;
+package org.codehaus.groovy.grails.web.servlet.mvc;
 
 import java.util.Collection;
 import java.util.HashMap;

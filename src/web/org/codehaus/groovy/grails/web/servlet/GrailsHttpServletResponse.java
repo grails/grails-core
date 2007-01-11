@@ -43,6 +43,9 @@ public class GrailsHttpServletResponse implements HttpServletResponse {
 		this.delegate = delegate;
 	}
 
+	public HttpServletResponse getDelegate() {
+		return delegate;		
+	}
 	
 	/**
 	 * Returns whether the request has been redirected
