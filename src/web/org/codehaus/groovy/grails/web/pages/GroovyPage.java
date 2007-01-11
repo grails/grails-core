@@ -337,7 +337,8 @@ public abstract class GroovyPage extends Script {
     }
 
 	private Closure setupTagClosure(final Writer out, Object tagLibProp) {
-		return (Closure)tagLibProp;
+		Closure original = (Closure)tagLibProp;
+		return (Closure)original.clone();
 	}
 
 	private Closure createTagOutputCapturingClosure(final String methodName, final Writer out, final Object body1) {
