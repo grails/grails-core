@@ -16,6 +16,7 @@
 package org.codehaus.groovy.grails.plugins
 
 import org.codehaus.groovy.grails.plugins.support.*
+import org.codehaus.groovy.grails.commons.metaclass.*
 import org.codehaus.groovy.grails.support.ClassEditor
 import org.springframework.beans.factory.config.CustomEditorConfigurer
 import org.springframework.beans.factory.config.MethodInvokingFactoryBean
@@ -52,7 +53,14 @@ class CoreGrailsPlugin {
 		def metaClass = registry.getMetaClass(Class.class)
 		
 		metaClass.getMetaClass = {->
-			registry.getMetaClass(delegate)
+			def mc = registry.getMetaClass(delegate)
+			if(mc instanceof ExpandoMetaClass) {
+				return mc
+			}
+			else {
+				registry.removeMetaClass(delegate)
+				return registry.getMetaClass(delegate)
+			}
 		}
 	}
 }
