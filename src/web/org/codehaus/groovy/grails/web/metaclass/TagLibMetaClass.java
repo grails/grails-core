@@ -39,14 +39,26 @@ import org.codehaus.groovy.runtime.DefaultGroovyMethods;
  * @since Apr 3, 20056
  */
 public class TagLibMetaClass extends DelegatingMetaClass {
+	private MetaClass adaptee;
+
+
+
 	public TagLibMetaClass(MetaClass adaptee) {
 		super(adaptee);
+		this.adaptee = adaptee;
 	}
 
+	
 	private static final Log LOG = LogFactory.getLog(TagLibMetaClass.class);
 	
 	
-	
+	/**
+	 * @return the adaptee
+	 */
+	public MetaClass getAdaptee() {
+		return adaptee;
+	}
+
 	/* (non-Javadoc)
 	 * @see groovy.lang.ProxyMetaClass#invokeMethod(java.lang.Object, java.lang.String, java.lang.Object[])
 	 */
