@@ -40,6 +40,15 @@ public class DynamicMethodsMetaClass extends MetaClassImpl {
 	DynamicMethods dynamicMethods = null;
 	MetaClass adaptee = null;
 	
+	
+	
+	/**
+	 * @return the adaptee
+	 */
+	public MetaClass getAdaptee() {
+		return adaptee;
+	}
+
 	public DynamicMethodsMetaClass(Class clazz, DynamicMethods dynamicMethods)
 			throws IntrospectionException {
 		this(clazz,dynamicMethods,true);
