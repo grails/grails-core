@@ -2,6 +2,7 @@ package org.codehaus.groovy.grails.web.servlet.mvc
 
 import org.codehaus.groovy.grails.commons.test.*
 import org.codehaus.groovy.grails.commons.*
+import org.codehaus.groovy.grails.commons.metaclass.*
 import org.codehaus.groovy.grails.commons.spring.*
 import org.codehaus.groovy.grails.plugins.*
 import org.springframework.web.context.request.*
@@ -13,7 +14,7 @@ import org.springframework.web.servlet.*
 import org.codehaus.groovy.grails.support.MockApplicationContext;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
-
+import org.codehaus.groovy.runtime.InvokerHelper;
 
 abstract class AbstractGrailsControllerTests extends GroovyTestCase {
 		
@@ -25,6 +26,7 @@ abstract class AbstractGrailsControllerTests extends GroovyTestCase {
     def ga;
 	def mockManager
     MockApplicationContext ctx;	
+	def originalHandler
 	
 	void onSetUp() {
 		
@@ -32,6 +34,15 @@ abstract class AbstractGrailsControllerTests extends GroovyTestCase {
 	void setUp() {		
 		
         super.setUp();
+        
+        originalHandler = 	InvokerHelper.getInstance()
+								.getMetaRegistry()
+								.metaClassCreationHandle
+
+		InvokerHelper.getInstance()
+						.getMetaRegistry()
+						.metaClassCreationHandle = new ExpandoMetaClassCreationHandle();
+        
 
         ctx = new MockApplicationContext();
         onSetUp();
@@ -73,6 +84,11 @@ abstract class AbstractGrailsControllerTests extends GroovyTestCase {
 		ga = null
 		mockManager = null
 		ctx = null
+		
+		InvokerHelper.getInstance()
+		.getMetaRegistry()
+		.setMetaClassCreationHandle(originalHandler);
+		
 	}
 	
 	

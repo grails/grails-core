@@ -23,10 +23,24 @@ class SimpleGrailsControllerHelperTests extends AbstractGrailsControllerTests {
 		""")
 	}
 	
-	void testSomething() {
+	void testConstructHelper() {
 		runTest {
 			def webRequest = RequestContextHolder.currentRequestAttributes()
 			def helper = new SimpleGrailsControllerHelper(ga, ctx, servletContext)
 		}
+	}
+	
+	void testConfigureStateForUri() {
+		def helper = new SimpleGrailsControllerHelper(null, null, null)
+		helper.configureStateForUri("/controller/action/id/test/param/one/two/three/four")
+		
+		assertEquals "controller", helper.@controllerName
+		assertEquals "action", helper.@actionName
+		assertEquals "id", helper.@id
+		
+		def extraParams = helper.@extraParams
+		assertEquals "param", extraParams["test"]
+		assertEquals "two", extraParams["one"]
+		assertEquals "four", extraParams["three"]			                                
 	}
 }

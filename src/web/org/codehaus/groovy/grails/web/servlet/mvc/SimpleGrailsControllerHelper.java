@@ -76,7 +76,7 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
     private GrailsScaffolder scaffolder;
     private ServletContext servletContext;
     private GrailsApplicationAttributes grailsAttributes;
-    private Pattern uriPattern = Pattern.compile("/(\\w+)/?(\\w*)/?(.*)/?(.*)");
+    private Pattern uriPattern = Pattern.compile("/(\\w+)/?(\\w*)/?(\\w*)/?(.*)");
 
 
 	private GrailsWebRequest webRequest;
@@ -84,6 +84,18 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
     private static final Log LOG = LogFactory.getLog(SimpleGrailsControllerHelper.class);
     private static final String DISPATCH_ACTION_PARAMETER = "_action";
     private static final String ID_PARAMETER = "id";
+
+
+	private String id;
+
+
+	private String controllerName;
+
+
+	private String actionName;
+
+
+	private Map extraParams;
 
     public SimpleGrailsControllerHelper(GrailsApplication application, ApplicationContext context, ServletContext servletContext) {
         super();
@@ -154,43 +166,7 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
         
         this.webRequest = webRequest;
 
-        // step 1: process the uri
-        if (uri.indexOf("?") > -1) {
-            uri = uri.substring(0, uri.indexOf("?"));
-        }
-        if(uri.indexOf('\\') > -1) {
-            uri = uri.replaceAll("\\\\", "/");
-        }
-        if(!uri.startsWith("/"))
-            uri = '/' + uri;
-        if(uri.endsWith("/"))
-            uri = uri.substring(0,uri.length() - 1);
-
-        String id = null;
-        String controllerName = null;
-        String actionName = null;
-        Map extraParams = Collections.EMPTY_MAP;
-        Matcher m = uriPattern.matcher(uri);
-        if(m.find()) {
-            controllerName = m.group(1);
-            actionName =  m.group(2);
-            uri = '/' + controllerName + '/' + actionName;
-            id = m.group(3);
-            String extraParamsString = m.group(4);
-            if(extraParamsString != null && extraParamsString.indexOf('/') > - 1) {
-                String[] tokens = extraParamsString.split("/");
-                extraParams = new HashMap();
-                for (int i = 0; i < tokens.length; i++) {
-                    String token = tokens[i];
-                    if(i == 0 || ((i % 2) == 0)) {
-                        if((i + 1) < tokens.length) {
-                            extraParams.put(token, tokens[i + 1]);
-                        }
-                    }
-                }
-
-            }
-        }
+        uri = configureStateForUri(uri);
         
         HttpServletRequest request = webRequest.getCurrentRequest();
         GrailsHttpServletResponse response = webRequest.getCurrentResponse();
@@ -332,6 +308,47 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
         }
 
     }
+
+	private String configureStateForUri(String uri) {
+		// step 1: process the uri
+        if (uri.indexOf("?") > -1) {
+            uri = uri.substring(0, uri.indexOf("?"));
+        }
+        if(uri.indexOf('\\') > -1) {
+            uri = uri.replaceAll("\\\\", "/");
+        }
+        if(!uri.startsWith("/"))
+            uri = '/' + uri;
+        if(uri.endsWith("/"))
+            uri = uri.substring(0,uri.length() - 1);
+
+        id = null;
+		controllerName = null;
+		actionName = null;
+		extraParams = Collections.EMPTY_MAP;
+		Matcher m = uriPattern.matcher(uri);
+        if(m.find()) {
+            controllerName = m.group(1);
+            actionName =  m.group(2);
+            uri = '/' + controllerName + '/' + actionName;
+            id = m.group(3);
+            String extraParamsString = m.group(4);
+            if(extraParamsString != null && extraParamsString.indexOf('/') > - 1) {
+                String[] tokens = extraParamsString.split("/");
+                extraParams = new HashMap();
+                for (int i = 0; i < tokens.length; i++) {
+                    String token = tokens[i];
+                    if(i == 0 || ((i % 2) == 0)) {
+                        if((i + 1) < tokens.length) {
+                            extraParams.put(token, tokens[i + 1]);
+                        }
+                    }
+                }
+
+            }
+        }
+		return uri;
+	}
 
     public GrailsApplicationAttributes getGrailsAttributes() {
         return this.grailsAttributes;
