@@ -15,6 +15,7 @@
  */ 
 package org.codehaus.groovy.grails.commons;
 
+import groovy.lang.DelegatingMetaClass;
 import groovy.lang.GroovyObject;
 import groovy.lang.MetaClass;
 
@@ -22,7 +23,10 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 
 import org.apache.commons.lang.ClassUtils;
+import org.codehaus.groovy.grails.commons.metaclass.DynamicMethodsMetaClass;
+import org.codehaus.groovy.grails.commons.metaclass.ProxyMetaClass;
 import org.codehaus.groovy.grails.exceptions.NewInstanceCreationException;
+import org.codehaus.groovy.grails.web.metaclass.TagLibMetaClass;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.springframework.beans.BeanWrapper;
@@ -229,7 +233,17 @@ public abstract class AbstractGrailsClass implements GrailsClass {
 	 * @return the metaClass
 	 */
 	public MetaClass getMetaClass() {
-		return InvokerHelper.getInstance().getMetaRegistry().getMetaClass(clazz);
+		MetaClass mc = InvokerHelper.getInstance().getMetaRegistry().getMetaClass(clazz);
+		if(mc instanceof DynamicMethodsMetaClass) {
+			return ((DynamicMethodsMetaClass) mc).getAdaptee();
+		}
+		else if(mc instanceof TagLibMetaClass) {
+			return ((TagLibMetaClass)mc).getAdaptee();
+		}
+		else if(mc instanceof ProxyMetaClass) {
+			return ((ProxyMetaClass)mc).getAdaptee();
+		}
+		return mc;
 	}
     
      

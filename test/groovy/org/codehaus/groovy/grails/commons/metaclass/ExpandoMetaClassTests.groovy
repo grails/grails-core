@@ -113,9 +113,10 @@ class ExpandoMetaClassTests extends GroovyTestCase {
 		 metaClass.myMethod << {
 			 "testme"
 		 }
+		 metaClass.initialize()
 		 
 		 def t = new Test()
-		 metaClass.initialize()
+		 
 
 		 
 		 try {
@@ -329,9 +330,10 @@ class ExpandoMetaClassTests extends GroovyTestCase {
 		 metaClass.myMethod << {
 			 "testme"
 		 }
+		 metaClass.initialize()
 		 
 		 def t = new Test()
-		 metaClass.initialize()
+		 
 		 t.metaClass = metaClass
 		 
 		 assertEquals "testme", t.myMethod()
@@ -395,10 +397,11 @@ class ExpandoMetaClassTests extends GroovyTestCase {
 		 
 		 def a = new Another()
 		 metaClass.borrowMe = a.&another
+		 metaClass.initialize()
 		 
 		 def t = new Test()
 		 t.metaClass = metaClass
-		 metaClass.initialize()
+		 
 		 
 		 assertEquals "mine blah!", t.borrowMe("blah")
 		
@@ -409,10 +412,11 @@ class ExpandoMetaClassTests extends GroovyTestCase {
 		 
 		 def a = new Another()
 		 metaClass.borrowMe = a.&'another'
+		 metaClass.initialize()
 		 
 		 def t = new Test()
 		 t.metaClass = metaClass
-		 metaClass.initialize()
+		 
 		 
 		 assertEquals "mine blah!", t.borrowMe("blah")
 		

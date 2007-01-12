@@ -19,6 +19,7 @@ import org.codehaus.groovy.grails.plugins.support.*
 import org.codehaus.groovy.grails.support.ClassEditor
 import org.springframework.beans.factory.config.CustomEditorConfigurer
 import org.springframework.beans.factory.config.MethodInvokingFactoryBean
+import org.codehaus.groovy.runtime.InvokerHelper;
 
 /**
  * A plug-in that configures the core shared beans within the Grails application context 
@@ -40,6 +41,18 @@ class CoreGrailsPlugin {
 		}
 		customEditors(CustomEditorConfigurer) {
 			customEditors = [(java.lang.Class.class):classEditor]
+		}
+	}
+	
+	def doWithDynamicMethods = {
+		MetaClassRegistry registry = InvokerHelper
+										.getInstance()
+										.getMetaRegistry();
+
+		def metaClass = registry.getMetaClass(Class.class)
+		
+		metaClass.getMetaClass = {->
+			registry.getMetaClass(delegate)
 		}
 	}
 }

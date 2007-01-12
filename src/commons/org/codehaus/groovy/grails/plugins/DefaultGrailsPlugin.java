@@ -376,7 +376,8 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
 				put(PLUGIN_CHANGE_EVENT_CTX, applicationContext);
 			}};
 			onChangeListener.setDelegate(this);
-			onChangeListener.call(new Object[]{event});			
+			onChangeListener.call(new Object[]{event});	
+			doWithDynamicMethods(applicationContext);
 		}
 	}
 

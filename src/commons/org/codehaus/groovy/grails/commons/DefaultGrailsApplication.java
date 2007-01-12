@@ -17,6 +17,7 @@ package org.codehaus.groovy.grails.commons;
 
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.MetaClass;
+import groovy.lang.MetaClassRegistry;
 
 import java.io.IOException;
 import java.lang.reflect.Modifier;
@@ -36,6 +37,7 @@ import org.codehaus.groovy.control.CompilationUnit;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.Phases;
 import org.codehaus.groovy.grails.commons.metaclass.ExpandoMetaClass;
+import org.codehaus.groovy.grails.commons.metaclass.ExpandoMetaClassCreationHandle;
 import org.codehaus.groovy.grails.commons.spring.GrailsResourceHolder;
 import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException;
 import org.codehaus.groovy.grails.injection.GrailsInjectionOperation;
@@ -120,6 +122,7 @@ public class DefaultGrailsApplication implements GrailsApplication {
             	        	
             };        	
         }
+        
         this.cl.setShouldRecompile(Boolean.TRUE);
         this.cl.setResourceLoader(resourceLoader);
            Collection loadedResources = new ArrayList();

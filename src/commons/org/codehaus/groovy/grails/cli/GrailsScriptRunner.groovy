@@ -17,7 +17,9 @@
 package org.codehaus.groovy.grails.cli;
         
 import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
+import org.codehaus.groovy.grails.commons.metaclass.*
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver  
+import org.codehaus.groovy.runtime.InvokerHelper;
 import gant.Gant
 /**
  * Class that handles Grails command line interface for running scripts
@@ -35,6 +37,12 @@ class GrailsScriptRunner {
 	static baseDir
 	
 	static main(args) {
+		MetaClassRegistry registry = InvokerHelper
+										.getInstance()
+										.getMetaRegistry();
+
+		if(!(registry.getMetaClassCreationHandler() instanceof ExpandoMetaClassCreationHandle))
+			registry.setMetaClassCreationHandle(new ExpandoMetaClassCreationHandle());
                               
 		ANT.property(environment:"env")
 		grailsHome = ANT.antProject.properties.'env.GRAILS_HOME'

@@ -2,6 +2,7 @@ package org.codehaus.groovy.grails.commons.spring;
 
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyObject;
+import groovy.lang.MetaClassRegistry;
 
 import java.util.Properties;
 
@@ -14,6 +15,7 @@ import org.codehaus.groovy.grails.commons.GrailsControllerClass;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.commons.GrailsServiceClass;
 import org.codehaus.groovy.grails.commons.GrailsTagLibClass;
+import org.codehaus.groovy.grails.commons.metaclass.ExpandoMetaClassCreationHandle;
 import org.codehaus.groovy.grails.orm.hibernate.validation.GrailsDomainClassValidator;
 import org.codehaus.groovy.grails.plugins.DefaultGrailsPluginManager;
 import org.codehaus.groovy.grails.support.ClassEditor;
@@ -21,6 +23,7 @@ import org.codehaus.groovy.grails.support.MockApplicationContext;
 import org.codehaus.groovy.grails.web.errors.GrailsExceptionResolver;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsUrlHandlerMapping;
 import org.codehaus.groovy.grails.web.servlet.mvc.SimpleGrailsController;
+import org.codehaus.groovy.runtime.InvokerHelper;
 import org.springframework.aop.target.HotSwappableTargetSource;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.MessageSource;
@@ -33,7 +36,30 @@ import org.springframework.web.servlet.ModelAndView;
 
 public class GrailsRuntimeConfiguratorTests extends TestCase {
 
-    /*
+	
+    /* (non-Javadoc)
+	 * @see junit.framework.TestCase#setUp()
+	 */
+	protected void setUp() throws Exception {
+		InvokerHelper.getInstance()
+		.getMetaRegistry()
+		.setMetaClassCreationHandle(new ExpandoMetaClassCreationHandle());
+
+		super.setUp();
+	}
+
+	/* (non-Javadoc)
+	 * @see junit.framework.TestCase#tearDown()
+	 */
+	protected void tearDown() throws Exception {
+		InvokerHelper.getInstance()
+		.getMetaRegistry()
+		.setMetaClassCreationHandle(new MetaClassRegistry.MetaClassCreationHandle());
+
+		super.tearDown();
+	}
+
+	/*
       * Test method for 'org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator.configure()'
       */
     public void testConfigure() throws Exception {

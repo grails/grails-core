@@ -16,6 +16,7 @@
 package org.codehaus.groovy.grails.web.servlet.mvc;
 
 import groovy.lang.GroovyClassLoader;
+import groovy.lang.MetaClassRegistry;
 
 import java.util.Iterator;
 import java.util.Properties;
@@ -26,8 +27,10 @@ import junit.framework.TestCase;
 
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.commons.metaclass.ExpandoMetaClassCreationHandle;
 import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
+import org.codehaus.groovy.runtime.InvokerHelper;
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.ConstructorArgumentValues;
@@ -61,6 +64,9 @@ public class SimpleGrailsControllerTests extends TestCase {
 	 * @see junit.framework.TestCase#setUp()
 	 */
 	protected void setUp() throws Exception {
+		InvokerHelper.getInstance()
+					.getMetaRegistry()
+					.setMetaClassCreationHandle(new ExpandoMetaClassCreationHandle());
 		GroovyClassLoader cl = new GroovyClassLoader();
 		
 		Class c1 = cl.parseClass("class TestController {\n"+
@@ -123,6 +129,19 @@ public class SimpleGrailsControllerTests extends TestCase {
 		assertNotNull(appCtx);		
 		super.setUp();
 	}
+	
+	
+
+	/* (non-Javadoc)
+	 * @see junit.framework.TestCase#tearDown()
+	 */
+	protected void tearDown() throws Exception {
+		InvokerHelper.getInstance()
+		.getMetaRegistry()
+		.setMetaClassCreationHandle(new MetaClassRegistry.MetaClassCreationHandle());
+	}
+
+
 
 	private ModelAndView execute(String uri, Properties parameters) throws Exception {
 		return execute(uri, parameters, "GET", new MockHttpServletResponse());

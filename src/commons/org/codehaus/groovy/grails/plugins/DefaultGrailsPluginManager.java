@@ -541,41 +541,10 @@ public class DefaultGrailsPluginManager implements GrailsPluginManager {
 
 	public void doDynamicMethods() {
 		checkInitialised();
-		Class[] allClasses = application.getAllClasses();
-		if(allClasses != null) {
-			ExpandoMetaClass[] metaClasses = new ExpandoMetaClass[allClasses.length];
-			MetaClassRegistry registry = InvokerHelper.getInstance().getMetaRegistry();
-			
-			
-			for (int i = 0; i < allClasses.length; i++) {
-				Class c = allClasses[i];
-				MetaClass mc = registry.getMetaClass(c);
-				if(mc instanceof DynamicMethodsMetaClass) {
-					ExpandoMetaClass adaptee = new ExpandoMetaClass(c);
-					adaptee.setAllowChangesAfterInit(true);
-					adaptee.initialize();
-					((DynamicMethodsMetaClass)mc).setAdaptee(adaptee);
-					metaClasses[i] = adaptee;
-				}
-				else {
-					metaClasses[i] = new ExpandoMetaClass(c,true);
-					metaClasses[i].setAllowChangesAfterInit(true);
-					metaClasses[i].initialize();
-				}			
-			}
-			try {
-				for (Iterator i = pluginList.iterator(); i.hasNext();) {
-					GrailsPlugin plugin = (GrailsPlugin) i.next();
-					plugin.doWithDynamicMethods(applicationContext);
-				}			
-			}
-			finally {
-				for (int i = 0; i < metaClasses.length; i++) {
-					ExpandoMetaClass mc = metaClasses[i];
-					mc.initialize();
-				}
-			}			
-		}
+		for (Iterator i = pluginList.iterator(); i.hasNext();) {
+			GrailsPlugin plugin = (GrailsPlugin) i.next();
+			plugin.doWithDynamicMethods(applicationContext);
+		}			
 	}
 
 }
