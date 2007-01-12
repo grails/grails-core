@@ -33,7 +33,7 @@ class ValidationTagLib {
         def checkList = []
         if(model) {
             checkList = model.findAll { k,v ->
-                return ((v.errors != null) && (v.errors instanceof Errors)) {
+                return ((v.errors != null) && (v.errors instanceof Errors))
             }
         }
         if(attrs['bean']) {
@@ -85,7 +85,7 @@ class ValidationTagLib {
         def errorList = []
         if(model) {
             errorList = model.findAll { k,v ->
-                return ((v.errors != null) && (v.errors instanceof Errors)) {
+                return ((v.errors != null) && (v.errors instanceof Errors)) 
             }
         }
         if(attrs['bean']) {
