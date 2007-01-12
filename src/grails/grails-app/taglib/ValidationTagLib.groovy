@@ -33,7 +33,7 @@ class ValidationTagLib {
         def checkList = []
         if(model) {
             checkList = model.findAll { k,v ->
-                grailsApplication.isGrailsDomainClass(v.class)
+                return ((v.errors != null) && (v.errors instanceof Errors)) {
             }
         }
         if(attrs['bean']) {
@@ -45,8 +45,9 @@ class ValidationTagLib {
 					if(ra) {
                         if(ra instanceof Errors)
                             checkList << ra
-                        else if(grailsApplication.isGrailsDomainClass(ra.class))
+	                    else if ((ra.errors != null) && (ra.errors instanceof Errors)) {
                             checkList << ra
+						}
 					}
 				}
 			}
@@ -54,13 +55,15 @@ class ValidationTagLib {
 
         for(i in checkList) {
             def errors = null
-            if(grailsApplication.isGrailsDomainClass(i.class)) {
-                if(i.hasErrors())
-                    errors = i.errors
-            }
-            else if(i instanceof Errors) {
+            if(i instanceof Errors) {
                errors = i
             }
+            else {
+				if ((i.errors != null) && (i.errors instanceof Errors)) {
+	                if (i.hasErrors())
+	                    errors = i.errors
+	            }
+			}
             if(errors) {
                 if(attrs['field']) {
                     if(errors.hasFieldErrors(attrs['field'])) {
@@ -82,7 +85,7 @@ class ValidationTagLib {
         def errorList = []
         if(model) {
             errorList = model.findAll { k,v ->
-                grailsApplication.isGrailsDomainClass(v.class)
+                return ((v.errors != null) && (v.errors instanceof Errors)) {
             }
         }
         if(attrs['bean']) {
@@ -94,21 +97,24 @@ class ValidationTagLib {
                 if(ra) {
                     if(ra instanceof Errors)
                         errorList << ra
-                    else if(grailsApplication.isGrailsDomainClass(ra.class))
+                    else if ((ra.errors != null) && (ra.errors instanceof Errors)) {
                         errorList << ra
+					}
                 }
             }
         }
 
         for(i in errorList) {
             def errors = null
-            if(grailsApplication.isGrailsDomainClass(i.class)) {
-                if(i.hasErrors())
-                    errors = i.errors
-            }
-            else if(i instanceof Errors) {
+            if(i instanceof Errors) {
                errors = i
             }
+            else {
+				if ((i.errors != null) && (i.errors instanceof Errors)) {
+	                if (i.hasErrors())
+	                    errors = i.errors
+	            }
+			}
             if(errors && errors.hasErrors()) {
                 if(attrs['field']) {
                     if(errors.hasFieldErrors(attrs['field'])) {
@@ -170,7 +176,7 @@ class ValidationTagLib {
           }
           if(attrs['code']) {
                 def code = attrs['code']
-                def args = attrs['args'] 
+                def args = attrs['args']
                 def defaultMessage = ( attrs['default'] ? attrs['default'] : code )
 
                 def message = messageSource.getMessage( code,
