@@ -51,6 +51,10 @@ class CoreGrailsPlugin {
 										.getMetaRegistry();
 
 		def metaClass = registry.getMetaClass(Class.class)
+		if(!(metaClass instanceof ExpandoMetaClass)) {
+			registry.removeMetaClass(Class.class)
+			metaClass = registry.getMetaClass(Class.class)
+		}
 		
 		metaClass.getMetaClass = {->
 			def mc = registry.getMetaClass(delegate)
