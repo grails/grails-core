@@ -19,12 +19,12 @@ import groovy.lang.MissingPropertyException;
 import ognl.NoSuchPropertyException;
 import ognl.Ognl;
 import ognl.OgnlException;
-import org.apache.commons.beanutils.BeanMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.metaclass.AbstractDynamicProperty;
 import org.codehaus.groovy.grails.web.binding.GrailsDataBinder;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap;
+import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.springframework.web.bind.ServletRequestDataBinder;
 
 import javax.servlet.http.HttpServletRequest;
@@ -52,7 +52,7 @@ public class SetPropertiesDynamicProperty extends AbstractDynamicProperty {
 	 * @return A org.apache.commons.beanutils.BeanMap instance
 	 */
 	public Object get(Object object) {				
-		return new BeanMap(object);
+		return DefaultGroovyMethods.getProperties(object);
 	}
 
 	/**
