@@ -53,7 +53,7 @@ public class BindDynamicMethod extends AbstractDynamicMethodInvocation {
         if(arguments.length < 2)
             throw new MissingMethodException(METHOD_SIGNATURE, target.getClass(), arguments);
         if(arguments[0] == null)
-            throw new IllegalArgumentException("Argument [target] is required by method [bind] on class ["+target.getClass()+"]");
+            throw new IllegalArgumentException("Argument [target] is required by method [bindData] on class ["+target.getClass()+"]");
 
         Object targetObject = arguments[0];
         Object bindParams = arguments[1];
