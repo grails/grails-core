@@ -373,6 +373,11 @@ public class ConstrainedProperty   {
             return String.class.isAssignableFrom(type);
         }
 
+        public Object getParameter()
+        {
+            return Boolean.valueOf(blank);
+        }
+
         /* (non-Javadoc)
          * @see org.codehaus.groovy.grails.validation.ConstrainedProperty.AbstractConstraint#setParameter(java.lang.Object)
          */
@@ -1636,7 +1641,13 @@ public class ConstrainedProperty   {
      * @return Returns the blank.
      */
     public boolean isBlank() {
-        return this.appliedConstraints.containsKey(BLANK_CONSTRAINT);
+        Object cons = this.appliedConstraints.get(BLANK_CONSTRAINT);
+        if (cons != null) {
+            return ((Boolean)((BlankConstraint)cons).getParameter()).booleanValue();
+        } else {
+            return true; // this sucks, we should have smarter handling of default values for unspecified constraints
+        }
+
     }
 
     /**
@@ -1647,16 +1658,22 @@ public class ConstrainedProperty   {
             throw new MissingPropertyException("Blank constraint can only be applied to a String property",BLANK_CONSTRAINT,owningClass);
         }
 
-        Constraint c = (Constraint)this.appliedConstraints.get( BLANK_CONSTRAINT );
-        if(c != null) {
-            c.setParameter(Boolean.valueOf(blank) );
+        if(!blank) {
+            this.appliedConstraints.remove(BLANK_CONSTRAINT);
         }
-        else {
-            c = new BlankConstraint();
-            c.setOwningClass(this.owningClass);
-            c.setPropertyName(this.propertyName);
-            c.setParameter(Boolean.valueOf(blank));
-            this.appliedConstraints.put( BLANK_CONSTRAINT,c );
+        else
+        {
+            Constraint c = (Constraint)this.appliedConstraints.get( BLANK_CONSTRAINT );
+            if(c != null) {
+                c.setParameter(Boolean.valueOf(blank) );
+            }
+            else {
+                c = new BlankConstraint();
+                c.setOwningClass(this.owningClass);
+                c.setPropertyName(this.propertyName);
+                c.setParameter(Boolean.valueOf(blank));
+                this.appliedConstraints.put( BLANK_CONSTRAINT,c );
+            }
         }
 
     }

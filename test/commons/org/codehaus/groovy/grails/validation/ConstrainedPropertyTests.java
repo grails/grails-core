@@ -283,6 +283,8 @@ public class ConstrainedPropertyTests extends TestCase {
         // create a constraint tester for a domain class with a String property and a non-blank constraint
         ConstraintTester constraintTester = new ConstraintTester(new TestClass(), "testURL", ConstrainedProperty.BLANK_CONSTRAINT, new Boolean(false));
 
+        assertFalse(constraintTester.constrainedProperty.isBlank());
+
         // validate that an empty (i.e., blank) String yields an error
         constraintTester.testConstraint("", true);
 
@@ -866,7 +868,8 @@ public class ConstrainedPropertyTests extends TestCase {
         private BeanWrapper constrainedBean;
         private String constrainedPropertyName;
         private Constraint constraint;
-        
+        private ConstrainedProperty constrainedProperty;
+
         /**
          * Creates and initializes a <code>ConstraintTester</code> object.  Once initilized, you can call <code>testConstraint</code> with
          * various test values for the constrained property to validate the constraint behavior.
@@ -880,10 +883,10 @@ public class ConstrainedPropertyTests extends TestCase {
             this.constrainedBean = new BeanWrapperImpl(constrainedObject);
 
             this.constrainedPropertyName = constrainedPropertyName;
-            
-            ConstrainedProperty cp = new ConstrainedProperty(constrainedObject.getClass(), constrainedPropertyName, this.constrainedBean.getPropertyType(constrainedPropertyName));
-            cp.applyConstraint(constraintName, constrainingValue);
-            this.constraint = (Constraint)cp.getAppliedConstraints().iterator().next();
+
+            constrainedProperty = new ConstrainedProperty(constrainedObject.getClass(), constrainedPropertyName, this.constrainedBean.getPropertyType(constrainedPropertyName));
+            constrainedProperty.applyConstraint(constraintName, constrainingValue);
+            this.constraint = (Constraint) constrainedProperty.getAppliedConstraints().iterator().next();
         }
         
         /**
@@ -907,6 +910,7 @@ public class ConstrainedPropertyTests extends TestCase {
                 assertNotNull(error);              
             }
         }        
+
     }
     
     /**
