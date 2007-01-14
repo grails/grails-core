@@ -29,9 +29,7 @@ class EncodersGrailsPlugin {
 	def version = GrailsPluginUtils.getGrailsVersion()
 
 	def doWithDynamicMethods = { applicationContext ->
-		def metaClass = new ExpandoMetaClass(String, true)
-		metaClass.setAllowChangesAfterInit(true);
-		metaClass.initialize();
+		def metaClass = getExpandoMetaClassFor(String)
 		application.allClasses.each {
 			if (it.name.endsWith('Encoder')) {
 				def theEncoder = it.newInstance()
@@ -39,6 +37,5 @@ class EncodersGrailsPlugin {
 				metaClass."decodeAs${it.name - 'Encoder'}" << { theEncoder.decode delegate }
 			}
 		}
-		metaClass.initialize()
 	}
 }

@@ -18,8 +18,6 @@ package org.codehaus.groovy.grails.plugins;
 import groovy.lang.Binding;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyShell;
-import groovy.lang.MetaClass;
-import groovy.lang.MetaClassRegistry;
 import groovy.lang.Writable;
 import groovy.util.XmlSlurper;
 import groovy.util.slurpersupport.GPathResult;
@@ -45,12 +43,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.metaclass.DynamicMethodsMetaClass;
 import org.codehaus.groovy.grails.commons.metaclass.ExpandoMetaClass;
 import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration;
 import org.codehaus.groovy.grails.plugins.exceptions.PluginException;
 import org.codehaus.groovy.grails.support.ParentApplicationContextAware;
-import org.codehaus.groovy.runtime.InvokerHelper;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -105,6 +101,7 @@ public class DefaultGrailsPluginManager implements GrailsPluginManager {
 	private ApplicationContext parentCtx;
 	private PathMatchingResourcePatternResolver resolver;
 	boolean initialised = false;
+	private static Map expandoMetaClasses = new HashMap();
 
 	public DefaultGrailsPluginManager(String resourcePath, GrailsApplication application) throws IOException {
 		super();
@@ -546,5 +543,15 @@ public class DefaultGrailsPluginManager implements GrailsPluginManager {
 			plugin.doWithDynamicMethods(applicationContext);
 		}			
 	}
-
+	
+	public static ExpandoMetaClass getExpandoMetaClassFor(Class cls) {
+		ExpandoMetaClass expandoMetaClass = (ExpandoMetaClass) expandoMetaClasses.get(cls);
+		if(expandoMetaClass == null) {
+			expandoMetaClass = new ExpandoMetaClass(cls, true);
+			expandoMetaClass.setAllowChangesAfterInit(true);
+			expandoMetaClass.initialize();
+			expandoMetaClasses.put(cls, expandoMetaClass);
+		}
+		return expandoMetaClass;
+	}
 }

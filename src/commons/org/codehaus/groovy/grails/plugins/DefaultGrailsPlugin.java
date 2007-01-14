@@ -37,6 +37,7 @@ import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.commons.GrailsResourceUtils;
+import org.codehaus.groovy.grails.commons.metaclass.ExpandoMetaClass;
 import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration;
 import org.codehaus.groovy.grails.plugins.exceptions.PluginException;
 import org.codehaus.groovy.grails.support.ParentApplicationContextAware;
@@ -439,8 +440,6 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
 		}
 	}
 
-
-
 	public void doWithDynamicMethods(ApplicationContext applicationContext) {
 		if(this.pluginBean.isReadableProperty(DO_WITH_DYNAMIC_METHODS)) {
 			Closure c = (Closure)this.plugin.getProperty(DO_WITH_DYNAMIC_METHODS);
@@ -449,5 +448,7 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
 		}
 	}
 	
-	
+	protected ExpandoMetaClass getExpandoMetaClassFor(Class cls) {
+		return DefaultGrailsPluginManager.getExpandoMetaClassFor(cls);
+	}
 }
