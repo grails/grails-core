@@ -10,10 +10,21 @@ class EncodersGrailsPluginTests extends AbstractGrailsMockTests {
 	void onSetUp() {
 		gcl.parseClass(
 				"""
-				class FooEncoder {
-
-				   def encode = { str -> 'found encode method' }
-				   def decode = { str -> 'found decode method' }			
+				class FirstEncoder {
+				   def encode = { str -> 'found first encode method' }
+				   def decode = { str -> 'found first decode method' }			
+				}
+				""")
+		gcl.parseClass(
+				"""
+				class SecondEncoder {
+				   def encode = { str -> 'found second encode method' }
+				}
+				""")
+		gcl.parseClass(
+				"""
+				class ThirdEncoder {
+				   def decode = { str -> 'found third decode method' }			
 				}
 				""")
 	}
@@ -30,9 +41,10 @@ class EncodersGrailsPluginTests extends AbstractGrailsMockTests {
 		plugin.doWithDynamicMethods(appCtx)
 
 		def someString = 'some string'
-		def encoded = someString.encodeAsFoo()
-		assert 'found encode method' == encoded
-		def decoded = someString.decodeAsFoo()
-		assert 'found decode method' == decoded
+		
+		assert someString.encodeAsFirst() == 'found first encode method'
+		assert someString.decodeAsFirst() == 'found first decode method'
+		assert someString.encodeAsSecond() == 'found second encode method'
+		assert someString.decodeAsThird() == 'found third decode method'
 	}
 }
