@@ -11,20 +11,20 @@ class EncodersGrailsPluginTests extends AbstractGrailsMockTests {
 		gcl.parseClass(
 				"""
 				class FirstEncoder {
-				   def encode = { str -> 'found first encode method' }
-				   def decode = { str -> 'found first decode method' }			
+				   def encode = { str -> \"found first encode method for string: \${str}\" }
+				   def decode = { str -> \"found first decode method for string: \${str}\" }			
 				}
 				""")
 		gcl.parseClass(
 				"""
 				class SecondEncoder {
-				   def encode = { str -> 'found second encode method' }
+				   def encode = { str -> \"found second encode method for string: \${str}\" }
 				}
 				""")
 		gcl.parseClass(
 				"""
 				class ThirdEncoder {
-				   def decode = { str -> 'found third decode method' }			
+				   def decode = { str -> \"found third decode method for string: \${str}\" }			
 				}
 				""")
 	}
@@ -42,9 +42,9 @@ class EncodersGrailsPluginTests extends AbstractGrailsMockTests {
 
 		def someString = 'some string'
 		
-		assert someString.encodeAsFirst() == 'found first encode method'
-		assert someString.decodeAsFirst() == 'found first decode method'
-		assert someString.encodeAsSecond() == 'found second encode method'
-		assert someString.decodeAsThird() == 'found third decode method'
+		assert someString.encodeAsFirst() == 'found first encode method for string: some string'
+		assert someString.decodeAsFirst() == 'found first decode method for string: some string'
+		assert someString.encodeAsSecond() == 'found second encode method for string: some string'
+		assert someString.decodeAsThird() == 'found third decode method for string: some string'
 	}
 }
