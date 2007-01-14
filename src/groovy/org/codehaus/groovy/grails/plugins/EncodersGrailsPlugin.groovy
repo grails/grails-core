@@ -36,6 +36,7 @@ class EncodersGrailsPlugin {
 			if (it.name.endsWith('Encoder')) {
 				def theEncoder = it.newInstance()
 				metaClass."encodeAs${it.name - 'Encoder'}" << { theEncoder.encode delegate }
+				metaClass."decodeAs${it.name - 'Encoder'}" << { theEncoder.decode delegate }
 			}
 		}
 		metaClass.initialize()
