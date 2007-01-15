@@ -186,6 +186,16 @@ public class GrailsClassUtils {
         return result;
     }
 
+    public static boolean isEncoderClass(Class clazz) {
+    	if(clazz == null) return false;
+    	
+    	return isEncoderClass(clazz.getName()) && !Closure.class.isAssignableFrom(clazz);
+    }
+
+    public static boolean isEncoderClass(String className) {
+        return className.endsWith(DefaultGrailsEncoderClass.ENCODER);
+    }
+    
     public static boolean isTaskClass(Class clazz) {
     	if(clazz == null) return false;
         try {

@@ -17,7 +17,6 @@ package org.codehaus.groovy.grails.commons;
 
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.MetaClass;
-import groovy.lang.MetaClassRegistry;
 
 import java.io.IOException;
 import java.lang.reflect.Modifier;
@@ -36,8 +35,6 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.control.CompilationUnit;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.Phases;
-import org.codehaus.groovy.grails.commons.metaclass.ExpandoMetaClass;
-import org.codehaus.groovy.grails.commons.metaclass.ExpandoMetaClassCreationHandle;
 import org.codehaus.groovy.grails.commons.spring.GrailsResourceHolder;
 import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException;
 import org.codehaus.groovy.grails.injection.GrailsInjectionOperation;
@@ -61,6 +58,7 @@ public class DefaultGrailsApplication implements GrailsApplication {
     private GrailsControllerClass[] controllerClasses = null;
     private GrailsPageFlowClass[] pageFlows = null;
     private GrailsDomainClass[] domainClasses = null;
+    private GrailsEncoderClass[] encoderClasses;
     //private GrailsDataSource[] dataSources = null;
     private GrailsServiceClass[] services = null;
     private GrailsBootstrapClass[] bootstrapClasses = null;
@@ -74,6 +72,7 @@ public class DefaultGrailsApplication implements GrailsApplication {
     private Map taglibMap = null;
     private Map taskMap = null;
     private Map dataSourceMap = null;
+    private Map encoderMap = null;
 
     private Class[] allClasses = null;
 
@@ -200,6 +199,7 @@ public class DefaultGrailsApplication implements GrailsApplication {
         this.taglibMap = new HashMap();
         this.taskMap = new HashMap();
         this.dataSourceMap = new HashMap();
+        this.encoderMap = new HashMap();
         for (int i = 0; i < classes.length; i++) {
             if (Modifier.isAbstract(classes[i].getModifiers()) ||
             		GrailsClassUtils.isDomainClass(classes[i])) {
@@ -236,7 +236,11 @@ public class DefaultGrailsApplication implements GrailsApplication {
             	taskMap.put(grailsTaskClass.getFullName(), grailsTaskClass);
             	log.debug("[" + classes[i].getName() + "] is a task class.");
             }
-            
+            else if(GrailsClassUtils.isEncoderClass(classes[i])) {
+            	GrailsEncoderClass grailsEncoderClass = new DefaultGrailsEncoderClass(classes[i]);
+            	encoderMap.put(grailsEncoderClass.getFullName(), grailsEncoderClass);
+            	log.debug("[" + classes[i].getName() + "] is an encoder class.");
+            }
         }
 
         
@@ -247,6 +251,7 @@ public class DefaultGrailsApplication implements GrailsApplication {
         this.bootstrapClasses = ((GrailsBootstrapClass[])bootstrapMap.values().toArray(new GrailsBootstrapClass[bootstrapMap.size()]));
         this.taglibClasses = ((GrailsTagLibClass[])this.taglibMap.values().toArray(new GrailsTagLibClass[taglibMap.size()]));
         this.taskClasses = ((GrailsTaskClass[])this.taskMap.values().toArray(new GrailsTaskClass[taskMap.size()]));
+        this.encoderClasses = ((GrailsEncoderClass[])this.encoderMap.values().toArray(new GrailsEncoderClass[encoderMap.size()]));
 
         configureDomainClassRelationships();
         configureTagLibraries();
@@ -443,6 +448,10 @@ public class DefaultGrailsApplication implements GrailsApplication {
         return this.domainClasses;
     }
 
+    public GrailsEncoderClass[] getGrailsEncoderClasses() {
+    	return this.encoderClasses;
+    }
+    
     public boolean isGrailsDomainClass(Class domainClass) {
         if(domainClass == null)
             return false;
@@ -554,6 +563,10 @@ public class DefaultGrailsApplication implements GrailsApplication {
 
 	public GrailsDomainClass[] getDomainClasses() {
 		return getGrailsDomainClasses();
+	}
+	
+	public GrailsEncoderClass[] getEncoderClasses() {
+		return getGrailsEncoderClasses();
 	}
 
 	public GrailsServiceClass getService(String name) {

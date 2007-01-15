@@ -118,6 +118,12 @@ public interface GrailsApplication extends ApplicationContextAware {
      * @return The GrailsDomainClass instances
      */
     public GrailsDomainClass[] getDomainClasses();
+    
+    /**
+     * 
+     * @return The GrailsEncoderClass instances
+     */
+    public GrailsEncoderClass[] getEncoderClasses();
 
     /**
      * Check whether the specified class is a grails domain class

@@ -62,6 +62,30 @@ public class GrailsClassUtilsTests extends TestCase {
         assertTrue(GrailsClassUtils.isTagLibClass(c));
     }
 
+    public void testIsEncoder() throws Exception {
+    	GroovyClassLoader gcl = new GroovyClassLoader();
+
+    	Class encoderDecoderClass = gcl.parseClass("class FullEncoder {\n" +
+    			"def encode = { str -> }\n" +
+    			"def decode = { str -> }\n" +
+    			"}\n");
+    	assertTrue("class was an encoder/decoder", GrailsClassUtils.isEncoderClass(encoderDecoderClass));
+
+    	Class decoderClass = gcl.parseClass("class DecodeOnlyEncoder {\n" +
+    			"def decode = { str -> }\n" +
+    			"}\n");
+    	assertTrue("class was a decoder", GrailsClassUtils.isEncoderClass(decoderClass));
+
+    	Class encoderClass = gcl.parseClass("class FullEncoder {\n" +
+    			"def encode = { str -> }\n" +
+    			"}\n");
+    	assertTrue("class was an encoder", GrailsClassUtils.isEncoderClass(encoderClass));
+
+    	Class nonEncoderClass = gcl.parseClass("class SomeFoo {\n" +
+    			"def encode = { str -> }\n" +
+    			"}\n");
+    	assertFalse("class was not an encoder", GrailsClassUtils.isEncoderClass(nonEncoderClass));
+    }
     public void testIsBootStrap() throws Exception
     {
         GroovyClassLoader gcl = new GroovyClassLoader();

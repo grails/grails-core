@@ -30,11 +30,16 @@ class EncodersGrailsPlugin {
 
 	def doWithDynamicMethods = { applicationContext ->
 		def metaClass = getExpandoMetaClassFor(String)
-		application.allClasses.each {
-			if (it.name.endsWith('Encoder')) {
-				def theEncoder = it.newInstance()
-				metaClass."encodeAs${it.name - 'Encoder'}" << { theEncoder.encode delegate }
-				metaClass."decodeAs${it.name - 'Encoder'}" << { theEncoder.decode delegate }
+		application.encoderClasses.each {
+			def decodeMethod = it.decodeMethod
+			if(decodeMethod) {
+				log.debug("adding decodeAs${it.name - 'Encoder'}")
+				metaClass."decodeAs${it.name - 'Encoder'}" << { decodeMethod delegate }
+			}
+			def encodeMethod = it.encodeMethod
+			if(encodeMethod) {
+				log.debug("adding encodeAs${it.name - 'Encoder'}")
+				metaClass."encodeAs${it.name - 'Encoder'}" << { encodeMethod delegate }
 			}
 		}
 	}
