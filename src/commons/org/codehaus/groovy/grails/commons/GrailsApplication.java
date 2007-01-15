@@ -223,6 +223,21 @@ public interface GrailsApplication extends ApplicationContextAware {
     public GrailsTagLibClass getGrailsTagLibClass(String tagLibName);
     
     /**
+     * 
+     * @param encoderName The name of the encoder class
+     * @return An encoder class instance or null if non exists
+     */
+    public GrailsEncoderClass getGrailsEncoderClass(String encoderName);
+    
+    /**
+     * Adds a new Grails encoder class to the application. If it already exists the old one will be replaced
+     * 
+     * @param encoderClass The encoder class to add
+     * @return The newly added class
+     */
+    public GrailsEncoderClass addEncoderClass(Class encoderClass);
+    
+    /**
      * Same as getGrailsTagLibClass which may be deprected in future
      * 
      * @param name The name of the taglib

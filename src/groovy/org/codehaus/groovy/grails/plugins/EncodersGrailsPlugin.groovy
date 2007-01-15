@@ -16,7 +16,7 @@
 package org.codehaus.groovy.grails.plugins
 
 import org.codehaus.groovy.grails.plugins.support.*
-import org.codehaus.groovy.grails.commons.metaclass.*
+import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
 
 /**
  * A plug-in that configures pluggable encoders 
@@ -27,19 +27,36 @@ import org.codehaus.groovy.grails.commons.metaclass.*
 class EncodersGrailsPlugin {
 	
 	def version = GrailsPluginUtils.getGrailsVersion()
-	def dependsOn = [core:0.4]
+	def dependsOn = [core:version]
+	def watchedResources = "**/grails-app/utils/*Encoder.groovy"
+
+	def onChange = { event ->
+		if(GCU.isEncoderClass(event.source)) {
+			def encoderClass = application.addEncoderClass(event.source)
+		}
+	}
 
 	def doWithDynamicMethods = { applicationContext ->
 		application.encoderClasses.each {
-			def decodeMethod = it.decodeMethod
-			if(decodeMethod) {
-				log.debug("adding decodeAs${it.name - 'Encoder'}")
-				String.metaClass."decodeAs${it.name - 'Encoder'}" << { decodeMethod delegate }
+			def encoderName = it.fullName
+			String.metaClass."encodeAs${encoderName - 'Encoder'}" << {
+				def encoderClass = application.getGrailsEncoderClass(encoderName)
+				def encodeMethod = encoderClass.encodeMethod
+				if(encodeMethod) {
+					return encodeMethod(delegate)
+				} else {
+					throw new Exception("Could not find encode method for ${encoderName}")
+				}
 			}
-			def encodeMethod = it.encodeMethod
-			if(encodeMethod) {
-				log.debug("adding encodeAs${it.name - 'Encoder'}")
-				String.metaClass."encodeAs${it.name - 'Encoder'}" << { encodeMethod delegate }
+
+			String.metaClass."decodeAs${encoderName - 'Encoder'}" << {
+				def encoderClass = application.getGrailsEncoderClass(encoderName)
+				def decodeMethod = encoderClass.decodeMethod
+				if(decodeMethod) {
+					return decodeMethod(delegate)
+				} else {
+					throw new Exception("Could not find decode method for ${encoderName}")
+				}
 			}
 		}
 	}

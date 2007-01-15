@@ -304,6 +304,27 @@ public class DefaultGrailsApplication implements GrailsApplication {
         }
     }
 
+	public GrailsEncoderClass addEncoderClass(Class encoderClass) {
+        if (Modifier.isAbstract(encoderClass.getModifiers())) {
+            return null;
+        }
+        if (GrailsClassUtils.isEncoderClass(encoderClass)) {
+        	GrailsEncoderClass grailsEncoderClass = new DefaultGrailsEncoderClass(encoderClass);
+            if (grailsEncoderClass.getAvailable()) {
+                this.encoderMap.put(grailsEncoderClass.getFullName(), grailsEncoderClass);
+            }
+
+            // reset taglib list
+            this.encoderClasses = ((GrailsEncoderClass[])this.encoderMap.values().toArray(new GrailsEncoderClass[encoderMap.size()]));
+            // reconfigure controller mappings
+            addToLoaded(encoderClass);
+            return grailsEncoderClass;
+        }
+        else {
+            throw new GrailsConfigurationException("Cannot load encoder class ["+encoderClass+"]. It is not a encoder!");
+        }
+    }
+
     public GrailsServiceClass addServiceClass(Class serviceClass) {
         if (Modifier.isAbstract(serviceClass.getModifiers())) {
             return null;
@@ -514,6 +535,10 @@ public class DefaultGrailsApplication implements GrailsApplication {
 
     public GrailsTagLibClass getGrailsTagLibClass(String tagLibName) {
         return (GrailsTagLibClass)this.taglibMap.get(tagLibName);
+    }
+
+    public GrailsEncoderClass getGrailsEncoderClass(String encoderName) {
+        return (GrailsEncoderClass)this.encoderMap.get(encoderName);
     }
 
     public GrailsTagLibClass getTagLibClassForTag(String tagName) {
