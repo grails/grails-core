@@ -37,7 +37,6 @@ import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.commons.GrailsResourceUtils;
-import org.codehaus.groovy.grails.commons.metaclass.ExpandoMetaClass;
 import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration;
 import org.codehaus.groovy.grails.plugins.exceptions.PluginException;
 import org.codehaus.groovy.grails.support.ParentApplicationContextAware;
@@ -444,9 +443,5 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
 			c.setDelegate(this);
 			c.call(new Object[]{applicationContext});						
 		}
-	}
-	
-	protected ExpandoMetaClass getExpandoMetaClassFor(Class cls) {
-		return DefaultGrailsPluginManager.getExpandoMetaClassFor(cls);
 	}
 }

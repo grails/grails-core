@@ -4,8 +4,7 @@ import org.codehaus.groovy.grails.commons.test.*
 import org.codehaus.groovy.grails.commons.spring.*
 import org.codehaus.groovy.grails.plugins.*
 
-class EncodersGrailsPluginTests extends AbstractGrailsMockTests {
-	
+class EncodersGrailsPluginTests extends AbstractGrailsPluginTests {
 	
 	void onSetUp() {
 		gcl.parseClass(
@@ -27,19 +26,12 @@ class EncodersGrailsPluginTests extends AbstractGrailsMockTests {
 				   static def decode = { str -> \"found third decode method for string: \${str}\" }			
 				}
 				""")
+
+		pluginsToLoad << gcl.loadClass("org.codehaus.groovy.grails.plugins.CoreGrailsPlugin")					
+		pluginsToLoad << gcl.loadClass("org.codehaus.groovy.grails.plugins.EncodersGrailsPlugin")					
 	}
 	
 	void testEncodersPlugin() {
-		def pluginClass = gcl.loadClass("org.codehaus.groovy.grails.plugins.EncodersGrailsPlugin")
-		
-		def plugin = new DefaultGrailsPlugin(pluginClass, ga)
-		
-		def springConfig = new DefaultRuntimeSpringConfiguration(ctx)
-		springConfig.servletContext = createMockServletContext()
-
-		def appCtx = springConfig.getApplicationContext()
-		plugin.doWithDynamicMethods(appCtx)
-
 		def someString = 'some string'
 		
 		assert someString.encodeAsFirst() == 'found first encode method for string: some string'

@@ -27,19 +27,19 @@ import org.codehaus.groovy.grails.commons.metaclass.*
 class EncodersGrailsPlugin {
 	
 	def version = GrailsPluginUtils.getGrailsVersion()
+	def dependsOn = [core:0.4]
 
 	def doWithDynamicMethods = { applicationContext ->
-		def metaClass = getExpandoMetaClassFor(String)
 		application.encoderClasses.each {
 			def decodeMethod = it.decodeMethod
 			if(decodeMethod) {
 				log.debug("adding decodeAs${it.name - 'Encoder'}")
-				metaClass."decodeAs${it.name - 'Encoder'}" << { decodeMethod delegate }
+				String.metaClass."decodeAs${it.name - 'Encoder'}" << { decodeMethod delegate }
 			}
 			def encodeMethod = it.encodeMethod
 			if(encodeMethod) {
 				log.debug("adding encodeAs${it.name - 'Encoder'}")
-				metaClass."encodeAs${it.name - 'Encoder'}" << { encodeMethod delegate }
+				String.metaClass."encodeAs${it.name - 'Encoder'}" << { encodeMethod delegate }
 			}
 		}
 	}
