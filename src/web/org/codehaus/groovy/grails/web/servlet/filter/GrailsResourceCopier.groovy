@@ -43,6 +43,15 @@ class GrailsResourceCopier implements ResourceCopier {
             }
         }
     }
+    
+    public void copyResourceBundles() {
+	    def ant = new AntBuilder()
+        if(new File("${basedir}/grails-app/i18n").exists()) {
+            ant.copy(todir:"${destdir}/WEB-INF/grails-app/i18n",failonerror:false) {
+                fileset(dir:"${basedir}/grails-app/i18n",includes:"**")
+            }
+        }
+    }
  
     public void generateWebXml() {
         def controllersHome = new File("${basedir}/grails-app/controllers")

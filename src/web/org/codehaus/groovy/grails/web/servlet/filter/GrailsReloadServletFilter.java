@@ -155,6 +155,7 @@ public class GrailsReloadServletFilter extends OncePerRequestFilter {
 	}	
         if(copyScript != null) {
             copyScript.copyViews();
+            copyScript.copyResourceBundles();
         } 
 
         

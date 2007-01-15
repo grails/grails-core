@@ -40,6 +40,12 @@ public interface ResourceCopier {
     void copyViews();    
 
     /**
+     * Copies the resource bundles. Older resource bundles will be replaced by a newer version
+     *
+     */
+    void copyResourceBundles(); 
+    
+    /**
      * The basedir to copy from (defaults to ".")
      * @param basedir
      */
