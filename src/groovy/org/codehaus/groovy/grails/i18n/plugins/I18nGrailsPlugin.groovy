@@ -29,6 +29,7 @@ import org.springframework.context.support.ReloadableResourceBundleMessageSource
 class I18nGrailsPlugin {
 	
 	def version = GrailsPluginUtils.getGrailsVersion()
+	def watchedResources = "**/grails-app/i18n/messages.properties"
 	
 	def doWithSpring = {
 		messageSource(ReloadableResourceBundleMessageSource) {
@@ -38,5 +39,21 @@ class I18nGrailsPlugin {
 			paramName = "lang"
 		}
 		localeResolver(CookieLocaleResolver) 
+	}
+	
+	def onChange = { event ->
+		def context = event.ctx
+		if (!context) {
+			log.debug("Application context not found. Can't reload")
+			return
+		} 
+	
+		def messageSource = context.getBean("messageSource")
+		if (messageSource instanceof ReloadableResourceBundleMessageSource) {
+			messageSource.clearCache()
+		}
+		else {
+			log.debug("Bean messageSource is not an instance of org.springframework.context.support.ReloadableResourceBundleMessageSource. Can't reload")
+		}
 	}
 }
