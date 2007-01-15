@@ -188,8 +188,13 @@ public class GrailsClassUtils {
 
     public static boolean isEncoderClass(Class clazz) {
     	if(clazz == null) return false;
+    	if(!isEncoderClass(clazz.getName())) {
+    		return false;
+    	}
+    	Object encoder = getStaticPropertyValue(clazz, "encode");
+    	Object decoder = getStaticPropertyValue(clazz, "decode");
     	
-    	return isEncoderClass(clazz.getName()) && !Closure.class.isAssignableFrom(clazz);
+    	return encoder != null || decoder != null;
     }
 
     public static boolean isEncoderClass(String className) {

@@ -66,23 +66,27 @@ public class GrailsClassUtilsTests extends TestCase {
     	GroovyClassLoader gcl = new GroovyClassLoader();
 
     	Class encoderDecoderClass = gcl.parseClass("class FullEncoder {\n" +
-    			"def encode = { str -> }\n" +
-    			"def decode = { str -> }\n" +
+    			"static def encode = { str -> }\n" +
+    			"static def decode = { str -> }\n" +
     			"}\n");
     	assertTrue("class was an encoder/decoder", GrailsClassUtils.isEncoderClass(encoderDecoderClass));
 
     	Class decoderClass = gcl.parseClass("class DecodeOnlyEncoder {\n" +
-    			"def decode = { str -> }\n" +
+    			"static def decode = { str -> }\n" +
     			"}\n");
     	assertTrue("class was a decoder", GrailsClassUtils.isEncoderClass(decoderClass));
 
     	Class encoderClass = gcl.parseClass("class FullEncoder {\n" +
-    			"def encode = { str -> }\n" +
+    			"static def encode = { str -> }\n" +
     			"}\n");
     	assertTrue("class was an encoder", GrailsClassUtils.isEncoderClass(encoderClass));
 
+    	Class emptyEncoderClass = gcl.parseClass("class EmptyEncoder {\n" +
+    			"}\n");
+    	assertFalse("encoder class had no encode or decode method", GrailsClassUtils.isEncoderClass(emptyEncoderClass));
+
     	Class nonEncoderClass = gcl.parseClass("class SomeFoo {\n" +
-    			"def encode = { str -> }\n" +
+    			"static def encode = { str -> }\n" +
     			"}\n");
     	assertFalse("class was not an encoder", GrailsClassUtils.isEncoderClass(nonEncoderClass));
     }

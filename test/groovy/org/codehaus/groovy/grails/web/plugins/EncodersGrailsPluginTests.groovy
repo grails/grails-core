@@ -11,20 +11,20 @@ class EncodersGrailsPluginTests extends AbstractGrailsMockTests {
 		gcl.parseClass(
 				"""
 				class FirstEncoder {
-				   def encode = { str -> \"found first encode method for string: \${str}\" }
-				   def decode = { str -> \"found first decode method for string: \${str}\" }			
+				   static def encode = { str -> \"found first encode method for string: \${str}\" }
+				   static def decode = { str -> \"found first decode method for string: \${str}\" }			
 				}
 				""")
 		gcl.parseClass(
 				"""
 				class SecondEncoder {
-				   def encode = { str -> \"found second encode method for string: \${str}\" }
+				   static def encode = { str -> \"found second encode method for string: \${str}\" }
 				}
 				""")
 		gcl.parseClass(
 				"""
 				class ThirdEncoder {
-				   def decode = { str -> \"found third decode method for string: \${str}\" }			
+				   static def decode = { str -> \"found third decode method for string: \${str}\" }			
 				}
 				""")
 	}
