@@ -365,21 +365,19 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
 	private void fireModifiedEvent(final Resource resource, final GrailsPlugin plugin) {
 		Class loadedClass = null;
 		loadedClass = attemptClassReload(resource);
-		if(loadedClass != null) {
-			final Class resourceClass = loadedClass;
-			Map event = new HashMap() {{
-				if(resourceClass == null)
-					put(PLUGIN_CHANGE_EVENT_SOURCE, resource);
-				else
-					put(PLUGIN_CHANGE_EVENT_SOURCE, resourceClass);
-				put(PLUGIN_CHANGE_EVENT_PLUGIN, plugin);
-				put(PLUGIN_CHANGE_EVENT_APPLICATION, application);
-				put(PLUGIN_CHANGE_EVENT_CTX, applicationContext);
-			}};
-			onChangeListener.setDelegate(this);
-			onChangeListener.call(new Object[]{event});	
-			doWithDynamicMethods(applicationContext);
-		}
+		final Class resourceClass = loadedClass;
+		Map event = new HashMap() {{
+			if(resourceClass == null)
+				put(PLUGIN_CHANGE_EVENT_SOURCE, resource);
+			else
+				put(PLUGIN_CHANGE_EVENT_SOURCE, resourceClass);
+			put(PLUGIN_CHANGE_EVENT_PLUGIN, plugin);
+			put(PLUGIN_CHANGE_EVENT_APPLICATION, application);
+			put(PLUGIN_CHANGE_EVENT_CTX, applicationContext);
+		}};
+		onChangeListener.setDelegate(this);
+		onChangeListener.call(new Object[]{event});	
+		doWithDynamicMethods(applicationContext);
 	}
 
 	private Class attemptClassReload(final Resource resource) {
