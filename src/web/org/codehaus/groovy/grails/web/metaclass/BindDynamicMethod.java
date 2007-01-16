@@ -15,7 +15,6 @@
 package org.codehaus.groovy.grails.web.metaclass;
 
 import groovy.lang.MissingMethodException;
-
 import org.codehaus.groovy.grails.commons.metaclass.AbstractDynamicMethodInvocation;
 import org.codehaus.groovy.grails.web.binding.GrailsDataBinder;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap;
@@ -23,9 +22,11 @@ import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.PropertyValues;
 import org.springframework.web.context.request.RequestContextHolder;
+import org.apache.commons.collections.CollectionUtils;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -57,29 +58,51 @@ public class BindDynamicMethod extends AbstractDynamicMethodInvocation {
 
         Object targetObject = arguments[0];
         Object bindParams = arguments[1];
+        Object disallowed = null;
+        if (arguments.length > 2) {
+            disallowed = arguments[2];
+            if(!(disallowed instanceof List)) {
+                throw new IllegalArgumentException("Argument [disallowed] for method [bindData] must implement the interface [java.util.List]");
+            }
+        }
 
         GrailsDataBinder dataBinder;
         if(bindParams instanceof GrailsParameterMap) {
             GrailsParameterMap parameterMap = (GrailsParameterMap)bindParams;
             HttpServletRequest request = parameterMap.getRequest();
             dataBinder = GrailsDataBinder.createBinder(targetObject, targetObject.getClass().getName(),request);
+            updateDisallowed( dataBinder, (List)disallowed);
             dataBinder.bind(request);
         }
         else if(bindParams instanceof HttpServletRequest) {
         	GrailsWebRequest webRequest = (GrailsWebRequest)RequestContextHolder.currentRequestAttributes();
             dataBinder = GrailsDataBinder.createBinder(targetObject, targetObject.getClass().getName(),webRequest.getCurrentRequest());
+            updateDisallowed( dataBinder, (List)disallowed);
             dataBinder.bind((HttpServletRequest)arguments[1]);
         }
         else if(bindParams instanceof Map) {
             dataBinder = new GrailsDataBinder(targetObject, targetObject.getClass().getName());
             PropertyValues pv = new MutablePropertyValues((Map)bindParams);
+            updateDisallowed( dataBinder, (List)disallowed);
             dataBinder.bind(pv);
         }
         else {
         	GrailsWebRequest webRequest = (GrailsWebRequest)RequestContextHolder.currentRequestAttributes();        	
             dataBinder = GrailsDataBinder.createBinder(targetObject, targetObject.getClass().getName(), webRequest.getCurrentRequest());
+            updateDisallowed( dataBinder, (List)disallowed);
             dataBinder.bind(webRequest.getCurrentRequest());
         }
         return targetObject;
+    }
+
+    private void updateDisallowed( GrailsDataBinder binder, List disallowed) {
+        if (disallowed != null) {
+            String[] currentDisallowed = binder.getDisallowedFields();
+            List newDisallowed = new ArrayList(disallowed);
+            CollectionUtils.addAll( newDisallowed, currentDisallowed);
+            String[] value = new String[newDisallowed.size()];
+            newDisallowed.toArray(value);
+            binder.setDisallowedFields(value);
+        }
     }
 }

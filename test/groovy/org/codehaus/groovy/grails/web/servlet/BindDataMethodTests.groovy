@@ -43,6 +43,25 @@ class BindDataMethodTests extends AbstractGrailsControllerTests {
         }
 	}
 
+	void testBindDataWithDisallowed() {
+	    runTest() {
+            def mockController = ga.getController("BindController")
+
+            def method = new BindDynamicMethod()
+
+            def target = new CommandObject()
+            def safeMeta = target.metaClass
+            def src = [ 'metaClass' : this.metaClass, 'name' : 'Marc Palmer', 'email' : 'dontwantthis' ]
+            def excludes = ['email']
+
+            method.invoke( mockController, [target, src, excludes].toArray() )
+
+            assertEquals "Marc Palmer", target.name
+            assertEquals safeMeta, target.metaClass
+            assertNull target.email
+        }
+	}
+
 	void onSetUp() {
 		gcl.parseClass(
 '''
@@ -55,4 +74,5 @@ class BindController {
 
 class CommandObject {
     String name
+    String email
 }

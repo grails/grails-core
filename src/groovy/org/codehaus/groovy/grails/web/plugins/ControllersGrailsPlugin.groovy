@@ -349,6 +349,9 @@ class ControllersGrailsPlugin {
 		    metaClass.bindData = { Object target, Object args ->
 		    	new BindDynamicMethod().invoke(delegate, [target, args] as Object[])
 		    }
+		    metaClass.bindData = { Object target, Object args, List disallowed ->
+		    	new BindDynamicMethod().invoke(delegate, [target, args, disallowed] as Object[])
+		    }
 		}
 	}
 	

@@ -88,7 +88,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
         
         bean = ((BeanPropertyBindingResult)super.getBindingResult()).getPropertyAccessor();
 
-        String[] disallowed = new String[0];
+        String[] disallowed = null;
         if (GrailsClassUtils.isDomainClass(target.getClass())) {
             if (target instanceof GroovyObject) {
                 disallowed = GROOVY_DOMAINCLASS_DISALLOWED;
@@ -98,7 +98,9 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
         } else if (target instanceof GroovyObject) {
             disallowed = GROOVY_DISALLOWED;
         }
-        setDisallowedFields(disallowed);
+        if (disallowed != null) {
+            setDisallowedFields(disallowed);
+        }
     }
 
     /**
