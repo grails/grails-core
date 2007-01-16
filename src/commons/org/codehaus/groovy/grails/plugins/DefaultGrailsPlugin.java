@@ -390,15 +390,26 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
 		
 		Class loadedClass = null;
 		String className = GrailsResourceUtils.getClassName(resource);
-		Class oldClass = application.getClassForName(className);
 		
-		loadedClass = attemptClassReload(className);
-		replaceExpandoMetaClass(loadedClass, oldClass);
+		if(className != null) {
+			Class oldClass = application.getClassForName(className);
+			loadedClass = attemptClassReload(className);
+			replaceExpandoMetaClass(loadedClass, oldClass);
+		}
 		
-		handleReloadedClass(resource, plugin, loadedClass);				
+		final Class resourceClass = loadedClass;
+		Map event = new HashMap() {{
+			if(resourceClass == null)
+				put(PLUGIN_CHANGE_EVENT_SOURCE, resource);
+			else
+				put(PLUGIN_CHANGE_EVENT_SOURCE, resourceClass);
+			put(PLUGIN_CHANGE_EVENT_PLUGIN, plugin);
+			put(PLUGIN_CHANGE_EVENT_APPLICATION, application);
+			put(PLUGIN_CHANGE_EVENT_CTX, applicationContext);
+		}};
+		onChangeListener.setDelegate(this);
+		onChangeListener.call(new Object[]{event});
 	}
-
-
 
 	private void replaceExpandoMetaClass(Class loadedClass, Class oldClass) {
 		MetaClass oldMetaClass = registry.getMetaClass(oldClass);
@@ -458,21 +469,6 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
 			
 		}
 			
-	}
-
-	protected void handleReloadedClass(final Resource resource, final GrailsPlugin plugin, Class loadedClass) {
-		final Class resourceClass = loadedClass;
-		Map event = new HashMap() {{
-			if(resourceClass == null)
-				put(PLUGIN_CHANGE_EVENT_SOURCE, resource);
-			else
-				put(PLUGIN_CHANGE_EVENT_SOURCE, resourceClass);
-			put(PLUGIN_CHANGE_EVENT_PLUGIN, plugin);
-			put(PLUGIN_CHANGE_EVENT_APPLICATION, application);
-			put(PLUGIN_CHANGE_EVENT_CTX, applicationContext);
-		}};
-		onChangeListener.setDelegate(this);
-		onChangeListener.call(new Object[]{event});
 	}
 
 	private Class attemptClassReload(final Resource resource) {
