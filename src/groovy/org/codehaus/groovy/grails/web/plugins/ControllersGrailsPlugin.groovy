@@ -278,7 +278,8 @@ class ControllersGrailsPlugin {
 	   			RCH.currentRequestAttributes().out = newOut 
 	   		}
 	   		
-	   		def adaptedMetaClass = new TagLibMetaClass(metaClass)
+	   		def adaptedMetaClass = new TagLibMetaClass(taglib.metaClass)
+	   		
 	   		registry.setMetaClass(taglib.clazz, adaptedMetaClass)
 	   		ctx.getBean(taglib.fullName).metaClass = adaptedMetaClass
 	   	}
@@ -417,8 +418,16 @@ class ControllersGrailsPlugin {
 					GrailsRuntimeConfigurator.registerTagLibrary(taglibClass, source.ctx)
 				}
 				else {
-					def targetSource = event.ctx?.getBean("${taglibClass.fullName}TargetSource")
-					targetSource?.swap(taglibClass)
+					// replace tag library bean
+					def beanName = taglibClass.fullName
+					def beans = beans {
+						"$beanName"(taglibClass.getClazz()) { bean ->
+							bean.autowire =  true
+						}					
+					}
+					if(event.ctx) {
+						event.ctx.registerBeanDefinition(beanName, beans.getBeanDefinition(beanName))
+					}
 				}
 			}
 		}

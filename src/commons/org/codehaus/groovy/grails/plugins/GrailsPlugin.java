@@ -50,6 +50,11 @@ public interface GrailsPlugin extends ApplicationContextAware {
 	 */
     String WATCHED_RESOURCES = "watchedResources";
     /**
+     * Defines the name of the property that specifies a List or plugins that this plugin evicts
+     * Eviction occurs when the PluginManager loads 
+     */
+    String EVICT = "evict";
+    /**
      * Defines the name of the property that defines a list of plugin names that this plugin influences.
      * A influenced plugin will be refreshed (@see refresh()) when a watched resource changes
      */

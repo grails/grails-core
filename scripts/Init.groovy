@@ -154,7 +154,7 @@ task ('createArtifact': "Creates a specific Grails artifact") {
 	}
 	
 	if(new File(artifactFile).exists()) {
-		Ant.input(addProperty:"${args}.${typeName}.overwrite", message:"${typeName} ${className}${typeName}.groovy already exists. Overwrite? [y/n]")
+		Ant.input(addProperty:"${args}.${typeName}.overwrite", message:"${artifactName} ${className}${typeName}.groovy already exists. Overwrite? [y/n]")
 		if(Ant.antProject.properties."${args}.${typeName}.overwrite" == "n")
 			return
 	}

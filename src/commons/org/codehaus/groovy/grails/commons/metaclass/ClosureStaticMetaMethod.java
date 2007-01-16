@@ -28,7 +28,7 @@ import org.codehaus.groovy.runtime.NewStaticMetaMethod;
  * @author Graeme Rocher
  * @since 0.4
  */
-public class ClosureStaticMetaMethod extends NewStaticMetaMethod {
+public class ClosureStaticMetaMethod extends NewStaticMetaMethod implements ClosureInvokingMethod {
 
 	private Closure callable;
 	private Class[] paramTypes;
@@ -66,6 +66,10 @@ public class ClosureStaticMetaMethod extends NewStaticMetaMethod {
 	 */
 	public Class getDeclaringClass() {
 		return this.declaringClass;
+	}
+
+	public Closure getClosure() {
+		return this.callable;
 	}
 	
 	

@@ -98,7 +98,7 @@ public class ExpandoMetaClass extends MetaClassImpl implements GroovyObject {
 	private static final String META_METHODS = "metaMethods";
 	private static final String METHODS = "methods";
 	private static final String PROPERTIES = "properties";
-	private static final String STATIC = "static";
+	public static final String STATIC_QUALIFIER = "static";
 	private static final Class[] ZERO_ARGUMENTS = new Class[0];
 	private static final String CONSTRUCTOR = "ctor";
 	private static final String GROOVY_CONSTRUCTOR = "<init>";
@@ -114,6 +114,7 @@ public class ExpandoMetaClass extends MetaClassImpl implements GroovyObject {
 	private boolean hasCreationHandle = false;
 	private Set inheritedMetaMethods = new HashSet();
 	private List expandoMethods = new LinkedList();
+	private List expandoProperties = new LinkedList();
 	
 	interface Callable {
 		void call();
@@ -376,7 +377,7 @@ public class ExpandoMetaClass extends MetaClassImpl implements GroovyObject {
 	 */
 	public Object getProperty(String property) {
 		if(isValidExpandoProperty(property)) {
-			if(property.equals(STATIC)) {
+			if(property.equals(STATIC_QUALIFIER)) {
 				return new ExpandoMetaProperty(property, true);
 			}
 			else if(property.equals(CONSTRUCTOR)) {
@@ -466,10 +467,10 @@ public class ExpandoMetaClass extends MetaClassImpl implements GroovyObject {
 					MetaBeanProperty mbp = new ThreadManagedMetaBeanProperty(theClass,property,type,newValue);
 					
 					addMetaMethod(mbp.getGetter());
-					expandoMethods.add(mbp.getGetter());
 					addMetaMethod(mbp.getSetter());
 					expandoMethods.add(mbp.getSetter());
-					
+					expandoMethods.add(mbp.getGetter());
+					expandoProperties.add(mbp);
 					addMetaBeanProperty(mbp);
 				}
 				
@@ -627,10 +628,22 @@ public class ExpandoMetaClass extends MetaClassImpl implements GroovyObject {
 
 
 	/**
+	 * Returns a list of expando MetaMethod instances added to this ExpandoMetaClass
+	 * 
 	 * @return the expandoMethods
 	 */
 	public List getExpandoMethods() {
 		return expandoMethods;
+	}
+
+
+	/**
+	 * Returns a list of MetaBeanProperty instances added to this ExpandoMetaClass
+	 * 
+	 * @return the expandoProperties
+	 */
+	public List getExpandoProperties() {
+		return expandoProperties;
 	}
 	
 	

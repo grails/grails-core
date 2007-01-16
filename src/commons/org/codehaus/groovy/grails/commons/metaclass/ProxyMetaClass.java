@@ -38,7 +38,7 @@ import java.beans.IntrospectionException;
  * @author Graeme Rocher
  * 
  */
-public class ProxyMetaClass extends MetaClassImpl {
+public class ProxyMetaClass extends MetaClassImpl implements AdapterMetaClass {
 
     protected MetaClass adaptee = null;
     protected Interceptor interceptor = null;
@@ -47,8 +47,17 @@ public class ProxyMetaClass extends MetaClassImpl {
     {
         return adaptee;
     }
+    
+    
 
     /**
+	 * @param adaptee the adaptee to set
+	 */
+	public void setAdaptee(MetaClass adaptee) {
+		this.adaptee = adaptee;
+	}
+
+	/**
      * convenience factory method for the most usual case.
      */
     public static ProxyMetaClass getInstance(Class theClass) throws IntrospectionException {

@@ -316,4 +316,12 @@ public interface GrailsApplication extends ApplicationContextAware {
 	 * @return The parent application context
 	 */
 	ApplicationContext getParentContext();
+
+	/**
+	 * Retrieves a class for the given name within the GrailsApplication or returns null
+	 * 
+	 * @param className The name of the class 
+	 * @return The class or null
+	 */
+	public Class getClassForName(String className);
 }

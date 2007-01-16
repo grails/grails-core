@@ -19,6 +19,9 @@ import grails.spring.BeanBuilder;
 import groovy.lang.Binding;
 import groovy.lang.Closure;
 import groovy.lang.GroovyObject;
+import groovy.lang.MetaClass;
+import groovy.lang.MetaClassRegistry;
+import groovy.lang.MetaMethod;
 import groovy.util.slurpersupport.GPathResult;
 
 import java.io.IOException;
@@ -27,6 +30,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -37,9 +41,15 @@ import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.commons.GrailsResourceUtils;
+import org.codehaus.groovy.grails.commons.metaclass.AdapterMetaClass;
+import org.codehaus.groovy.grails.commons.metaclass.ClosureInvokingMethod;
+import org.codehaus.groovy.grails.commons.metaclass.ExpandoMetaClass;
+import org.codehaus.groovy.grails.commons.metaclass.ThreadManagedMetaBeanProperty;
 import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration;
 import org.codehaus.groovy.grails.plugins.exceptions.PluginException;
 import org.codehaus.groovy.grails.support.ParentApplicationContextAware;
+import org.codehaus.groovy.grails.web.metaclass.TagLibMetaClass;
+import org.codehaus.groovy.runtime.InvokerHelper;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.context.ApplicationContext;
@@ -51,6 +61,7 @@ import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
  * and provides the magic to invoke its various methods from Java
  * 
  * @author Graeme Rocher
+ * @since 0.4
  *
  */
 public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsPlugin, ParentApplicationContextAware {
@@ -74,9 +85,11 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
 	private ApplicationContext parentCtx;
 	private String[] loadAfterNames = new String[0];
 	private String[] influencedPluginNames = new String[0];
+	private MetaClassRegistry registry;
 	
 	public DefaultGrailsPlugin(Class pluginClass, GrailsApplication application) {
 		super(pluginClass, application);
+		this.registry = InvokerHelper.getInstance().getMetaRegistry();
 		this.pluginGrailsClass = new GrailsPluginClass(pluginClass);
 		this.plugin = (GroovyObject)this.pluginGrailsClass.newInstance();
 		this.pluginBean = new BeanWrapperImpl(this.plugin);
@@ -121,7 +134,10 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
 					}
 					
 					 this.resourcesReference = referencedResources.toString();
-					 watchedResources  = resolver.getResources(resourcesReference);				 
+					 watchedResources  = resolver.getResources(resourcesReference);
+					 if(watchedResources.length == 0) {
+						 watchedResources = resolver.getResources("classpath*:" + resourcesReference);
+					 }
 				}
 				else if(referencedResources instanceof List) {
 					List resourceList = (List)referencedResources;
@@ -132,16 +148,25 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
 						if(LOG.isDebugEnabled()) {
 							LOG.debug("Watching resource set ["+(i+1)+"]: " + ArrayUtils.toString(tmp));
 						}
-						watchedResources = (Resource[])ArrayUtils.addAll(this.watchedResources, tmp);
+						if(tmp.length == 0)
+							tmp = resolver.getResources("classpath*:" + res);
+						
+						if(tmp.length > 0){
+							watchedResources = (Resource[])ArrayUtils.addAll(this.watchedResources, tmp);
+						}					
 					}
 				}
-				if(LOG.isDebugEnabled()) {
-					LOG.debug("Plugin "+this+" found ["+watchedResources.length+"] to watch");
-				}								
-				initializeModifiedTimes();
 			} catch (IOException e) {
 				LOG.warn("I/O exception loading plug-in resource watch list: " + e.getMessage(), e);
 			}				
+			if(LOG.isDebugEnabled()) {
+				LOG.debug("Plugin "+this+" found ["+watchedResources.length+"] to watch");
+			}								
+			try {
+				initializeModifiedTimes();
+			} catch (IOException e) {
+				LOG.warn("I/O exception initializing modified times for watched resources: " + e.getMessage(), e);
+			}
 
 		}
 	}
@@ -362,8 +387,80 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
 	}
 
 	private void fireModifiedEvent(final Resource resource, final GrailsPlugin plugin) {
+		
 		Class loadedClass = null;
-		loadedClass = attemptClassReload(resource);
+		String className = GrailsResourceUtils.getClassName(resource);
+		Class oldClass = application.getClassForName(className);
+		
+		loadedClass = attemptClassReload(className);
+		replaceExpandoMetaClass(loadedClass, oldClass);
+		
+		handleReloadedClass(resource, plugin, loadedClass);				
+	}
+
+
+
+	private void replaceExpandoMetaClass(Class loadedClass, Class oldClass) {
+		MetaClass oldMetaClass = registry.getMetaClass(oldClass);
+		AdapterMetaClass adapter = null;
+		ExpandoMetaClass emc = null;
+		
+		if(oldMetaClass instanceof AdapterMetaClass) {
+			adapter = ((AdapterMetaClass)oldMetaClass);
+			emc = (ExpandoMetaClass)adapter.getAdaptee();
+		}
+		else {
+			emc = (ExpandoMetaClass)oldMetaClass;
+		}
+		
+		List metaMethods = emc.getExpandoMethods();
+		ExpandoMetaClass replacement = new ExpandoMetaClass(loadedClass);
+		replacement.setAllowChangesAfterInit(true);
+		for (Iterator i = metaMethods.iterator(); i.hasNext();) {
+			Object obj = i.next();
+			if(obj instanceof ClosureInvokingMethod) {
+				ClosureInvokingMethod cim = (ClosureInvokingMethod) obj;
+				Closure callable = cim.getClosure();
+				if(!cim.isStatic()) {
+					replacement.setProperty(cim.getName(), callable);
+				}
+				else {
+					((GroovyObject)replacement.getProperty(ExpandoMetaClass.STATIC_QUALIFIER)).setProperty(cim.getName(),callable);
+				}				
+			}				
+		}
+		List metaProperties = emc.getExpandoProperties();
+		for (Iterator i = metaProperties.iterator(); i.hasNext();) {
+			Object o = i.next();
+			if(o instanceof ThreadManagedMetaBeanProperty) {
+				ThreadManagedMetaBeanProperty mbp = (ThreadManagedMetaBeanProperty)o;
+				replacement.setProperty( mbp.getName(), mbp.getInitialValue() );
+			}
+		}
+		replacement.initialize();
+		if(adapter == null) {
+			if(LOG.isDebugEnabled()) {
+				LOG.debug("Replacing reloaded class ["+loadedClass+"] MetaClass ["+replacement+"]");
+			}
+			registry.setMetaClass(loadedClass, replacement);			
+		}
+		else {
+			if(LOG.isDebugEnabled()) {
+				LOG.debug("Replacing reloaded class ["+loadedClass+"] MetaClass ["+replacement+"] with adapter ["+adapter+"]");
+			}
+			if(adapter instanceof TagLibMetaClass) {
+				registry.setMetaClass(loadedClass, new TagLibMetaClass(replacement));
+			}
+			else {
+				adapter.setAdaptee(replacement);
+				registry.setMetaClass(loadedClass, (MetaClass)adapter);
+			}
+			
+		}
+			
+	}
+
+	protected void handleReloadedClass(final Resource resource, final GrailsPlugin plugin, Class loadedClass) {
 		final Class resourceClass = loadedClass;
 		Map event = new HashMap() {{
 			if(resourceClass == null)
@@ -375,8 +472,7 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
 			put(PLUGIN_CHANGE_EVENT_CTX, applicationContext);
 		}};
 		onChangeListener.setDelegate(this);
-		onChangeListener.call(new Object[]{event});	
-		doWithDynamicMethods(applicationContext);
+		onChangeListener.call(new Object[]{event});
 	}
 
 	private Class attemptClassReload(final Resource resource) {

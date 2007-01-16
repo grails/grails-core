@@ -45,7 +45,12 @@ public class ThreadManagedMetaBeanProperty extends MetaBeanProperty {
 	private ThreadBoundSetter setter;
 	private Object initialValue;
 	
-	private synchronized Object getInitialValue() {
+	/**
+	 * Retrieves the initial value of the ThreadBound property
+	 * 
+	 * @return The initial value
+	 */
+	public synchronized Object getInitialValue() {
 		return initialValue;
 	}
 	

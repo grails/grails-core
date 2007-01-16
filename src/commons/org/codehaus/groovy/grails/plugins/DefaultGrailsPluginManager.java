@@ -379,7 +379,10 @@ public class DefaultGrailsPluginManager implements GrailsPluginManager {
 
 
 	private void registerPlugin(GrailsPlugin plugin) {
-		LOG.info("Grails plug-in ["+plugin.getName()+"] with version ["+plugin.getVersion()+"] loaded successfully");
+		if(LOG.isInfoEnabled()) {
+			LOG.info("Grails plug-in ["+plugin.getName()+"] with version ["+plugin.getVersion()+"] loaded successfully");
+		}
+		
 		if(plugin instanceof ParentApplicationContextAware) {
 			((ParentApplicationContextAware)plugin).setParentApplicationContext(parentCtx);
 		}

@@ -35,6 +35,7 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator  {
     String basedir = "."
     boolean overwrite = false
     def engine = new groovy.text.SimpleTemplateEngine()
+    def ant = new AntBuilder()
 
     // a closure that uses the type to render the appropriate editor
     def renderEditor = { property ->
@@ -103,8 +104,9 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator  {
         if(domainClass) {
             def destFile = new File("${destdir}/grails-app/controllers/${domainClass.shortName}Controller.groovy")
             if(destFile.exists()) {
-                LOG.info("Controller ${destFile.name} already exists skipping")
-                return
+				ant.input(message: "Controller ${destFile.name} already exists. Overwrite?","y,n", addproperty:"overwrite.controller")
+                def overwrite = (ant.antProject.properties."overwrite.controller" == "y") ? true : false        
+                if(!overwrite)return
             }
             destFile.parentFile.mkdirs()
 
@@ -258,7 +260,18 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator  {
 
     private generateListView(domainClass, destDir) {
         def listFile = new File("${destDir}/list.gsp")
-        if(!listFile.exists() || overwrite) {
+        def localOverwrite = false
+        if(!overwrite) {
+            if(listFile.exists()) {
+				ant.input(message: "View ${listFile} already exists. Overwrite?","y,n", addproperty:"overwrite.listview")
+                localOverwrite = (ant.antProject.properties."overwrite.listview" == "y") ? true : false        
+                if(!localOverwrite)return
+            }    
+            else {
+            	localOverwrite = true
+            }
+        }
+        if(localOverwrite || overwrite) {
             def templateText = getTemplateText("list.gsp")
 
             def t = engine.createTemplate(templateText)
@@ -278,7 +291,19 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator  {
 
     private generateShowView(domainClass,destDir) {
         def showFile = new File("${destDir}/show.gsp")
-        if(!showFile.exists() || overwrite) {
+        def localOverwrite = false
+        if(!overwrite) {
+            if(showFile.exists()) {
+				ant.input(message: "View ${showFile} already exists. Overwrite?","y,n", addproperty:"overwrite.showview")
+                localOverwrite = (ant.antProject.properties."overwrite.showview" == "y") ? true : false        
+                if(!localOverwrite)return
+            }   
+            else {
+            	localOverwrite = true
+            }
+
+        }
+        if(localOverwrite || overwrite) {
             def templateText = getTemplateText("show.gsp")
 
             def t = engine.createTemplate(templateText)
@@ -298,7 +323,19 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator  {
 
     private generateEditView(domainClass,destDir) {
         def editFile = new File("${destDir}/edit.gsp")
-        if(!editFile.exists() || overwrite) {
+        def localOverwrite = false
+        if(!overwrite) {
+            if(editFile.exists()) {
+				ant.input(message: "View ${editFile} already exists. Overwrite?","y,n", addproperty:"overwrite.editview")
+                localOverwrite = (ant.antProject.properties."overwrite.editview" == "y") ? true : false        
+                if(!localOverwrite)return
+            } 
+            else {
+            	localOverwrite = true
+            }
+            
+        }
+        if(localOverwrite || overwrite) {
             def templateText = getTemplateText("edit.gsp")
 
             def t = engine.createTemplate(templateText)
@@ -321,7 +358,19 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator  {
 
     private generateCreateView(domainClass,destDir) {
         def createFile = new File("${destDir}/create.gsp")
-        if(!createFile.exists() || overwrite) {
+        def localOverwrite = false
+        if(!overwrite) {
+            if(createFile.exists()) {
+				ant.input(message: "View ${createFile} already exists. Overwrite?","y,n", addproperty:"overwrite.createview")
+                localOverwrite = (ant.antProject.properties."overwrite.createview" == "y") ? true : false        
+                if(!localOverwrite)return
+            }
+            else {
+            	localOverwrite = true
+            }
+            
+        }
+        if(localOverwrite || overwrite) {
             def templateText = getTemplateText("create.gsp")
 
             def t = engine.createTemplate(templateText)

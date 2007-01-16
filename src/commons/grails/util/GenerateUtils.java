@@ -88,6 +88,10 @@ public class GenerateUtils {
 	        	}
 	        }
         }
+        catch(Throwable t) {
+        	LOG.info("Error during code generation: " + t.getMessage());
+        	LOG.error(t.getMessage(), t);
+        }
         finally {
         	System.exit(0);
         }

@@ -22,15 +22,13 @@ import groovy.lang.MetaClass;
 import groovy.lang.MissingMethodException;
 import groovy.lang.MissingPropertyException;
 
-import java.util.Map;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.grails.commons.metaclass.AdapterMetaClass;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
-import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 /**
  * <p>Special meta class for tag libraries that allows tag libraries to call
  * tags within other libraries without the need for inheritance
@@ -38,7 +36,7 @@ import org.codehaus.groovy.runtime.DefaultGroovyMethods;
  * @author Graeme Rocher
  * @since Apr 3, 20056
  */
-public class TagLibMetaClass extends DelegatingMetaClass {
+public class TagLibMetaClass extends DelegatingMetaClass implements AdapterMetaClass {
 	private MetaClass adaptee;
 
 

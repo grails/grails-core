@@ -35,7 +35,7 @@ import org.codehaus.groovy.runtime.InvokerHelper;
  * 
  * @since Aug 8, 2005
  */
-public class DynamicMethodsMetaClass extends MetaClassImpl {
+public class DynamicMethodsMetaClass extends MetaClassImpl implements AdapterMetaClass {
 
 	DynamicMethods dynamicMethods = null;
 	MetaClass adaptee = null;

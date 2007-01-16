@@ -136,9 +136,6 @@ task( copyDependencies : "Copies the necessary dependencies (jar files) into the
 					}
 				}				
 			}  
-			fileset(dir:"${grailsHome}/dist") {
-				include(name:"grails-*.jar")
-			}                             
 			fileset(dir:"${basedir}/lib")
 		}   
 	}

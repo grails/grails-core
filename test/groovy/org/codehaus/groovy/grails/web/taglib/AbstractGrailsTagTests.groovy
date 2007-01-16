@@ -3,6 +3,7 @@ package org.codehaus.groovy.grails.web.taglib;
 import org.codehaus.groovy.grails.support.*
 import org.codehaus.groovy.grails.commons.test.*
 import org.codehaus.groovy.grails.commons.*
+import org.codehaus.groovy.grails.commons.metaclass.*
 import org.codehaus.groovy.grails.commons.spring.*
 import org.codehaus.groovy.grails.plugins.*
 import org.springframework.web.context.request.*
@@ -18,6 +19,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.context.MessageSource;
 import org.springframework.context.support.StaticMessageSource;
+import org.codehaus.groovy.runtime.InvokerHelper;
 
 abstract class AbstractGrailsTagTests extends
 AbstractDependencyInjectionSpringContextTests {
@@ -36,6 +38,7 @@ AbstractDependencyInjectionSpringContextTests {
 	def request
 	def response
 	def ctx
+	def originalHandler
 	
 	GrailsApplication grailsApplication;
 	MessageSource messageSource;
@@ -61,6 +64,16 @@ AbstractDependencyInjectionSpringContextTests {
 	}
 	
     protected final void onSetUp() throws Exception {
+        originalHandler = 	InvokerHelper.getInstance()
+		.getMetaRegistry()
+		.metaClassCreationHandle
+
+		InvokerHelper.getInstance()
+		.getMetaRegistry()
+		.metaClassCreationHandle = new ExpandoMetaClassCreationHandle();
+        
+        onInit()
+    	
 		def mockControllerClass = gcl.parseClass("class MockController {  def index = {} } ")
         ctx = new MockApplicationContext();
         grailsApplication.addControllerClass(mockControllerClass)
@@ -94,10 +107,21 @@ AbstractDependencyInjectionSpringContextTests {
         
     }
     
+    protected final void onTearDown() {
+		InvokerHelper.getInstance()
+		.getMetaRegistry()
+		.setMetaClassCreationHandle(originalHandler);
+    	
+		onDestroy()
+    }
 
 	protected void onInit() {
 		
 	}	
+	
+	protected void onDestroy() {
+		
+	}
 	
 	protected MockServletContext createMockServletContext() {
 		return new MockServletContext();

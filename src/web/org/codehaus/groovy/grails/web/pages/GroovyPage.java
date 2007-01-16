@@ -255,9 +255,7 @@ public abstract class GroovyPage extends Script {
     		try {
     			webRequest.setOut(out);
         		if(tagLib != null) {
-        			if(LOG.isDebugEnabled()) {
-        				LOG.debug("Invoking as tag");
-        			}
+
 
         			// get attributes and body closure
         			if (args instanceof Object[]) {
@@ -285,6 +283,9 @@ public abstract class GroovyPage extends Script {
         			
         			Object tagLibProp;
         			Map properties = DefaultGroovyMethods.getProperties(tagLib);
+        			if(LOG.isDebugEnabled()) {
+        				LOG.debug("Attempting to invoke ["+methodName+"] on tag library ["+tagLib.getClass()+"] with MetaClass ["+tagLib.getMetaClass()+"]");
+        			}        			
         			if(properties.containsKey(methodName)) {
         				tagLibProp = properties.get(methodName);
         				if(tagLibProp instanceof Closure) {
@@ -306,9 +307,9 @@ public abstract class GroovyPage extends Script {
         				}
         			} else {
         				if(args instanceof Object[])
-        					throw new MissingMethodException(methodName,GroovyPage.class, (Object[])args);
+        					throw new MissingMethodException(methodName,tagLib.getClass(), (Object[])args);
         				else
-        					throw new MissingMethodException(methodName,GroovyPage.class, new Object[]{ args });
+        					throw new MissingMethodException(methodName,tagLib.getClass(), new Object[]{ args });
         			}
 
         		} else if(methodName.startsWith("encodeAs")) {

@@ -17,6 +17,7 @@ package org.codehaus.groovy.grails.commons;
 
 import groovy.lang.Closure;
 import groovy.lang.GroovyObject;
+import groovy.lang.MetaClass;
 
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
@@ -35,6 +36,11 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 import org.apache.commons.lang.StringUtils;
+import org.codehaus.groovy.grails.commons.metaclass.AdapterMetaClass;
+import org.codehaus.groovy.grails.commons.metaclass.DynamicMethodsMetaClass;
+import org.codehaus.groovy.grails.commons.metaclass.ProxyMetaClass;
+import org.codehaus.groovy.grails.web.metaclass.TagLibMetaClass;
+import org.codehaus.groovy.runtime.InvokerHelper;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
@@ -941,6 +947,20 @@ public class GrailsClassUtils {
 		}
 		
 		return false;
+	}
+
+	public static MetaClass getExpandoMetaClass(Class clazz) {
+		MetaClass mc = InvokerHelper.getInstance().getMetaRegistry().getMetaClass(clazz);
+		if(mc instanceof DynamicMethodsMetaClass) {
+			return ((DynamicMethodsMetaClass) mc).getAdaptee();
+		}
+		else if(mc instanceof TagLibMetaClass) {
+			return ((AdapterMetaClass)mc).getAdaptee();
+		}
+		else if(mc instanceof ProxyMetaClass) {
+			return ((ProxyMetaClass)mc).getAdaptee();
+		}
+		return mc;
 	}	
 	
 }

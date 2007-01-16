@@ -26,7 +26,7 @@ import org.codehaus.groovy.runtime.NewInstanceMetaMethod;
  * @author Graeme Rocher
  * @since 0.4
  */
-public class ClosureMetaMethod extends NewInstanceMetaMethod {
+public class ClosureMetaMethod extends NewInstanceMetaMethod implements ClosureInvokingMethod {
 
 	private Closure callable;
 	private Class[] paramTypes;
@@ -70,5 +70,9 @@ public class ClosureMetaMethod extends NewInstanceMetaMethod {
 	 */
 	public Class[] getParameterTypes() {
 		return paramTypes;
+	}
+
+	public Closure getClosure() {
+		return callable;
 	}
 }

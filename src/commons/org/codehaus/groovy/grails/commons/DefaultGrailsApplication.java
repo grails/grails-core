@@ -609,4 +609,13 @@ public class DefaultGrailsApplication implements GrailsApplication {
 	public GrailsTagLibClass[] getTagLibs() {
 		return getGrailsTabLibClasses();
 	}
+
+	public Class getClassForName(String className) {
+		if(StringUtils.isBlank(className))return null;
+		for (int i = 0; i < allClasses.length; i++) {
+			Class c = allClasses[i];
+			if(c.getName().equals(className))return c;
+		}
+		return null;
+	}
 }
