@@ -1,6 +1,6 @@
 import org.springframework.web.util.HtmlUtils
 
-class HTMLEncoder {
+class HTMLCodec {
     static def encode = { str ->
         HtmlUtils.htmlEscape(str)
     }

@@ -19,43 +19,43 @@ import org.codehaus.groovy.grails.plugins.support.*
 import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
 
 /**
- * A plug-in that configures pluggable encoders 
+ * A plug-in that configures pluggable codecs 
  * 
  * @author Jeff Brown
  * @since 0.4
  */
-class EncodersGrailsPlugin {
+class CodecsGrailsPlugin {
 	
 	def version = GrailsPluginUtils.getGrailsVersion()
 	def dependsOn = [core:version]
-	def watchedResources = "**/grails-app/utils/*Encoder.groovy"
+	def watchedResources = "**/grails-app/utils/*Codec.groovy"
 
 	def onChange = { event ->
-		if(GCU.isEncoderClass(event.source)) {
-			def encoderClass = application.addEncoderClass(event.source)
+		if(GCU.isCodecClass(event.source)) {
+			application.addCodecClass(event.source)
 		}
 	}
 
 	def doWithDynamicMethods = { applicationContext ->
-		application.encoderClasses.each {
-			def encoderName = it.fullName
-			String.metaClass."encodeAs${encoderName - 'Encoder'}" << {
-				def encoderClass = application.getGrailsEncoderClass(encoderName)
-				def encodeMethod = encoderClass.encodeMethod
+		application.codecClasses.each {
+			def codecName = it.fullName
+			String.metaClass."encode${codecName - 'Codec'}" << {
+				def codecClass = application.getGrailsCodecClass(codecName)
+				def encodeMethod = codecClass.encodeMethod
 				if(encodeMethod) {
 					return encodeMethod(delegate)
 				} else {
-					throw new Exception("Could not find encode method for ${encoderName}")
+					throw new Exception("Could not find encode method for ${codecName}")
 				}
 			}
 
-			String.metaClass."decodeAs${encoderName - 'Encoder'}" << {
-				def encoderClass = application.getGrailsEncoderClass(encoderName)
-				def decodeMethod = encoderClass.decodeMethod
+			String.metaClass."decode${codecName - 'Codec'}" << {
+				def codecClass = application.getGrailsCodecClass(codecName)
+				def decodeMethod = codecClass.decodeMethod
 				if(decodeMethod) {
 					return decodeMethod(delegate)
 				} else {
-					throw new Exception("Could not find decode method for ${encoderName}")
+					throw new Exception("Could not find decode method for ${codecName}")
 				}
 			}
 		}

@@ -58,7 +58,7 @@ public class DefaultGrailsApplication implements GrailsApplication {
     private GrailsControllerClass[] controllerClasses = null;
     private GrailsPageFlowClass[] pageFlows = null;
     private GrailsDomainClass[] domainClasses = null;
-    private GrailsEncoderClass[] encoderClasses;
+    private GrailsCodecClass[] codecClasses;
     //private GrailsDataSource[] dataSources = null;
     private GrailsServiceClass[] services = null;
     private GrailsBootstrapClass[] bootstrapClasses = null;
@@ -72,7 +72,7 @@ public class DefaultGrailsApplication implements GrailsApplication {
     private Map taglibMap = null;
     private Map taskMap = null;
     private Map dataSourceMap = null;
-    private Map encoderMap = null;
+    private Map codecMap = null;
 
     private Class[] allClasses = null;
 
@@ -199,7 +199,7 @@ public class DefaultGrailsApplication implements GrailsApplication {
         this.taglibMap = new HashMap();
         this.taskMap = new HashMap();
         this.dataSourceMap = new HashMap();
-        this.encoderMap = new HashMap();
+        this.codecMap = new HashMap();
         for (int i = 0; i < classes.length; i++) {
             if (Modifier.isAbstract(classes[i].getModifiers()) ||
             		GrailsClassUtils.isDomainClass(classes[i])) {
@@ -236,10 +236,10 @@ public class DefaultGrailsApplication implements GrailsApplication {
             	taskMap.put(grailsTaskClass.getFullName(), grailsTaskClass);
             	log.debug("[" + classes[i].getName() + "] is a task class.");
             }
-            else if(GrailsClassUtils.isEncoderClass(classes[i])) {
-            	GrailsEncoderClass grailsEncoderClass = new DefaultGrailsEncoderClass(classes[i]);
-            	encoderMap.put(grailsEncoderClass.getFullName(), grailsEncoderClass);
-            	log.debug("[" + classes[i].getName() + "] is an encoder class.");
+            else if(GrailsClassUtils.isCodecClass(classes[i])) {
+            	GrailsCodecClass grailsCodecClass = new DefaultGrailsCodecClass(classes[i]);
+            	codecMap.put(grailsCodecClass.getFullName(), grailsCodecClass);
+            	log.debug("[" + classes[i].getName() + "] is a codec class.");
             }
         }
 
@@ -251,7 +251,7 @@ public class DefaultGrailsApplication implements GrailsApplication {
         this.bootstrapClasses = ((GrailsBootstrapClass[])bootstrapMap.values().toArray(new GrailsBootstrapClass[bootstrapMap.size()]));
         this.taglibClasses = ((GrailsTagLibClass[])this.taglibMap.values().toArray(new GrailsTagLibClass[taglibMap.size()]));
         this.taskClasses = ((GrailsTaskClass[])this.taskMap.values().toArray(new GrailsTaskClass[taskMap.size()]));
-        this.encoderClasses = ((GrailsEncoderClass[])this.encoderMap.values().toArray(new GrailsEncoderClass[encoderMap.size()]));
+        this.codecClasses = ((GrailsCodecClass[])this.codecMap.values().toArray(new GrailsCodecClass[codecMap.size()]));
 
         configureDomainClassRelationships();
         configureTagLibraries();
@@ -304,24 +304,24 @@ public class DefaultGrailsApplication implements GrailsApplication {
         }
     }
 
-	public GrailsEncoderClass addEncoderClass(Class encoderClass) {
-        if (Modifier.isAbstract(encoderClass.getModifiers())) {
+	public GrailsCodecClass addCodecClass(Class codecClass) {
+        if (Modifier.isAbstract(codecClass.getModifiers())) {
             return null;
         }
-        if (GrailsClassUtils.isEncoderClass(encoderClass)) {
-        	GrailsEncoderClass grailsEncoderClass = new DefaultGrailsEncoderClass(encoderClass);
-            if (grailsEncoderClass.getAvailable()) {
-                this.encoderMap.put(grailsEncoderClass.getFullName(), grailsEncoderClass);
+        if (GrailsClassUtils.isCodecClass(codecClass)) {
+        	GrailsCodecClass grailsCodecClass = new DefaultGrailsCodecClass(codecClass);
+            if (grailsCodecClass.getAvailable()) {
+                this.codecMap.put(grailsCodecClass.getFullName(), grailsCodecClass);
             }
 
             // reset taglib list
-            this.encoderClasses = ((GrailsEncoderClass[])this.encoderMap.values().toArray(new GrailsEncoderClass[encoderMap.size()]));
+            this.codecClasses = ((GrailsCodecClass[])this.codecMap.values().toArray(new GrailsCodecClass[codecMap.size()]));
             // reconfigure controller mappings
-            addToLoaded(encoderClass);
-            return grailsEncoderClass;
+            addToLoaded(codecClass);
+            return grailsCodecClass;
         }
         else {
-            throw new GrailsConfigurationException("Cannot load encoder class ["+encoderClass+"]. It is not a encoder!");
+            throw new GrailsConfigurationException("Cannot load codec class ["+codecClass+"]. It is not a codec!");
         }
     }
 
@@ -469,8 +469,8 @@ public class DefaultGrailsApplication implements GrailsApplication {
         return this.domainClasses;
     }
 
-    public GrailsEncoderClass[] getGrailsEncoderClasses() {
-    	return this.encoderClasses;
+    public GrailsCodecClass[] getGrailsCodecClasses() {
+    	return this.codecClasses;
     }
     
     public boolean isGrailsDomainClass(Class domainClass) {
@@ -537,8 +537,8 @@ public class DefaultGrailsApplication implements GrailsApplication {
         return (GrailsTagLibClass)this.taglibMap.get(tagLibName);
     }
 
-    public GrailsEncoderClass getGrailsEncoderClass(String encoderName) {
-        return (GrailsEncoderClass)this.encoderMap.get(encoderName);
+    public GrailsCodecClass getGrailsCodecClass(String codecName) {
+        return (GrailsCodecClass)this.codecMap.get(codecName);
     }
 
     public GrailsTagLibClass getTagLibClassForTag(String tagName) {
@@ -590,8 +590,8 @@ public class DefaultGrailsApplication implements GrailsApplication {
 		return getGrailsDomainClasses();
 	}
 	
-	public GrailsEncoderClass[] getEncoderClasses() {
-		return getGrailsEncoderClasses();
+	public GrailsCodecClass[] getCodecClasses() {
+		return getGrailsCodecClasses();
 	}
 
 	public GrailsServiceClass getService(String name) {

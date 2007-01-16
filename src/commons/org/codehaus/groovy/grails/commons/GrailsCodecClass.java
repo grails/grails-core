@@ -7,7 +7,7 @@ import groovy.lang.Closure;
  * @author Jeff Brown
  * @since 0.4
  */
-public interface GrailsEncoderClass extends InjectableGrailsClass {
+public interface GrailsCodecClass extends InjectableGrailsClass {
 
 	Closure getEncodeMethod();
 

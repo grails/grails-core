@@ -62,33 +62,33 @@ public class GrailsClassUtilsTests extends TestCase {
         assertTrue(GrailsClassUtils.isTagLibClass(c));
     }
 
-    public void testIsEncoder() throws Exception {
+    public void testIsCodec() throws Exception {
     	GroovyClassLoader gcl = new GroovyClassLoader();
 
-    	Class encoderDecoderClass = gcl.parseClass("class FullEncoder {\n" +
+    	Class fullCodecClass = gcl.parseClass("class FullCodec {\n" +
     			"static def encode = { str -> }\n" +
     			"static def decode = { str -> }\n" +
     			"}\n");
-    	assertTrue("class was an encoder/decoder", GrailsClassUtils.isEncoderClass(encoderDecoderClass));
+    	assertTrue("class was an encoder/decoder", GrailsClassUtils.isCodecClass(fullCodecClass));
 
-    	Class decoderClass = gcl.parseClass("class DecodeOnlyEncoder {\n" +
+    	Class decodeOnlyCodecClass = gcl.parseClass("class DecodeOnlyCodec {\n" +
     			"static def decode = { str -> }\n" +
     			"}\n");
-    	assertTrue("class was a decoder", GrailsClassUtils.isEncoderClass(decoderClass));
+    	assertTrue("class was a decoder", GrailsClassUtils.isCodecClass(decodeOnlyCodecClass));
 
-    	Class encoderClass = gcl.parseClass("class FullEncoder {\n" +
+    	Class encodeOnlyCodecClass = gcl.parseClass("class EncodeOnlyCodec {\n" +
     			"static def encode = { str -> }\n" +
     			"}\n");
-    	assertTrue("class was an encoder", GrailsClassUtils.isEncoderClass(encoderClass));
+    	assertTrue("class was an encoder", GrailsClassUtils.isCodecClass(encodeOnlyCodecClass));
 
-    	Class emptyEncoderClass = gcl.parseClass("class EmptyEncoder {\n" +
+    	Class emptyCodecClass = gcl.parseClass("class EmptyCodec {\n" +
     			"}\n");
-    	assertFalse("encoder class had no encode or decode method", GrailsClassUtils.isEncoderClass(emptyEncoderClass));
+    	assertFalse("codec class had no encode or decode method", GrailsClassUtils.isCodecClass(emptyCodecClass));
 
-    	Class nonEncoderClass = gcl.parseClass("class SomeFoo {\n" +
+    	Class nonCodecClass = gcl.parseClass("class SomeFoo {\n" +
     			"static def encode = { str -> }\n" +
     			"}\n");
-    	assertFalse("class was not an encoder", GrailsClassUtils.isEncoderClass(nonEncoderClass));
+    	assertFalse("class was not a codec", GrailsClassUtils.isCodecClass(nonCodecClass));
     }
     public void testIsBootStrap() throws Exception
     {

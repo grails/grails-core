@@ -23,13 +23,13 @@ import groovy.lang.Closure;
  * @author Jeff Brown
  * @since 0.4
  */
-public class DefaultGrailsEncoderClass extends AbstractInjectableGrailsClass 
-	implements GrailsEncoderClass {
+public class DefaultGrailsCodecClass extends AbstractInjectableGrailsClass 
+	implements GrailsCodecClass {
 	
-	public static final String ENCODER = "Encoder";
+	public static final String CODEC = "Codec";
 
-	public DefaultGrailsEncoderClass(Class clazz) {
-		super(clazz, ENCODER);
+	public DefaultGrailsCodecClass(Class clazz) {
+		super(clazz, CODEC);
 	}
 
 	public Closure getDecodeMethod() {

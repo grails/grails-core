@@ -192,19 +192,19 @@ public class GrailsClassUtils {
         return result;
     }
 
-    public static boolean isEncoderClass(Class clazz) {
+    public static boolean isCodecClass(Class clazz) {
     	if(clazz == null) return false;
-    	if(!isEncoderClass(clazz.getName())) {
+    	if(!isCodecClass(clazz.getName())) {
     		return false;
     	}
-    	Object encoder = getStaticPropertyValue(clazz, "encode");
-    	Object decoder = getStaticPropertyValue(clazz, "decode");
+    	Object encodeMethod = getStaticPropertyValue(clazz, "encode");
+    	Object decodeMethod = getStaticPropertyValue(clazz, "decode");
     	
-    	return encoder != null || decoder != null;
+    	return encodeMethod != null || decodeMethod != null;
     }
 
-    public static boolean isEncoderClass(String className) {
-        return className.endsWith(DefaultGrailsEncoderClass.ENCODER);
+    public static boolean isCodecClass(String className) {
+        return className.endsWith(DefaultGrailsCodecClass.CODEC);
     }
     
     public static boolean isTaskClass(Class clazz) {

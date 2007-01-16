@@ -121,9 +121,9 @@ public interface GrailsApplication extends ApplicationContextAware {
     
     /**
      * 
-     * @return The GrailsEncoderClass instances
+     * @return The GrailsCodecClass instances
      */
-    public GrailsEncoderClass[] getEncoderClasses();
+    public GrailsCodecClass[] getCodecClasses();
 
     /**
      * Check whether the specified class is a grails domain class
@@ -224,18 +224,18 @@ public interface GrailsApplication extends ApplicationContextAware {
     
     /**
      * 
-     * @param encoderName The name of the encoder class
-     * @return An encoder class instance or null if non exists
+     * @param codecName The name of the codec class
+     * @return A codec class instance or null if non exists
      */
-    public GrailsEncoderClass getGrailsEncoderClass(String encoderName);
+    public GrailsCodecClass getGrailsCodecClass(String codecName);
     
     /**
-     * Adds a new Grails encoder class to the application. If it already exists the old one will be replaced
+     * Adds a new Grails codec class to the application. If it already exists the old one will be replaced
      * 
-     * @param encoderClass The encoder class to add
+     * @param codecClass The codec class to add
      * @return The newly added class
      */
-    public GrailsEncoderClass addEncoderClass(Class encoderClass);
+    public GrailsCodecClass addCodecClass(Class codecClass);
     
     /**
      * Same as getGrailsTagLibClass which may be deprected in future
