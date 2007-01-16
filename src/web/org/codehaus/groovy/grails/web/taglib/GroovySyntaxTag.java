@@ -67,7 +67,7 @@ public abstract class GroovySyntaxTag implements GrailsTag {
 
     public void setAttribute(String name, Object value) {
         if(value instanceof String ) {
-            String stringValue = ((String)value).trim();
+            String stringValue = (String)value;
             if(stringValue.startsWith("${") && stringValue.endsWith("}")) {
                 stringValue = stringValue.substring(2,stringValue.length() -1);
             }
@@ -90,12 +90,12 @@ public abstract class GroovySyntaxTag implements GrailsTag {
 		expr = expr.trim();
         if(expr.startsWith("\"") && expr.endsWith("\"")) {
             expr = expr.substring(1,expr.length()-1);
-        }		
-        expr = expr.trim();
+            expr = expr.trim();
+        }
         if(expr.startsWith("${") && expr.endsWith("}")) {
         	expr = expr.substring(2,expr.length()-1);
+            expr = expr.trim();
         }
-        expr = expr.trim();
 		return expr;
 	}
 
