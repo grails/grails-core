@@ -37,6 +37,101 @@ public class FormTagLibTests extends AbstractGrailsTagTests {
     private static final Collection DATE_PRECISIONS_INCLUDING_DAY = Collections.unmodifiableCollection(Arrays.asList(["day", "hour", "minute", null] as String[] ))
     private static final Collection DATE_PRECISIONS_INCLUDING_MONTH = Collections.unmodifiableCollection(Arrays.asList(["month", "day", "hour", "minute", null] as String[]
                                                                                                                                                                           ))
+    public void testHtmlEscapingTextAreaTag() {
+    	final StringWriter sw = new StringWriter();
+    	final PrintWriter pw = new PrintWriter(sw);
+
+    	withTag("textArea", pw) { tag ->
+    	    // use sorted map to be able to predict the order in which tag attributes are generated
+	    	def attributes = new TreeMap([name: "testField", value: "<b>some text</b>"])
+    	    tag.call(attributes)
+    	    assertEquals '<textarea id="testField" name="testField" >&lt;b&gt;some text&lt;/b&gt;</textarea>', sw.toString()
+    	}
+    }
+    
+    public void testTextFieldTag() {
+    	StringWriter sw = new StringWriter();
+    	PrintWriter pw = new PrintWriter(sw);
+    	withTag("textField", pw) { tag ->
+	    	// use sorted map to be able to predict the order in which tag attributes are generated
+			def attributes = new TreeMap([name: "testField", value: "1"])
+			tag.call(attributes)
+	
+			assertEquals '<input type=\'text\' id="testField" name="testField" value="1" />', sw.toString()
+		}
+
+    	sw = new StringWriter();
+    	pw = new PrintWriter(sw);
+    	withTag("textField", pw) { tag ->
+	    	// use sorted map to be able to predict the order in which tag attributes are generated
+			def attributes = new TreeMap([name: "testField"])
+			attributes.value = /foo > " & < '/
+   			tag.call(attributes)
+			assertEquals '<input type=\'text\' id="testField" name="testField" value="foo &gt; &quot; &amp; &lt; \'" />', sw.toString()
+		}
+	}
+
+    public void testTextAreaTag() {
+    	final StringWriter sw = new StringWriter();
+    	final PrintWriter pw = new PrintWriter(sw);
+
+    	withTag("textArea", pw) { tag ->
+    		// use sorted map to be able to predict the order in which tag attributes are generated
+    		def attributes = new TreeMap([name: "testField", value: "1"])
+    		tag.call(attributes)
+    		assertEquals '<textarea id="testField" name="testField" >1</textarea>', sw.toString()
+    	}
+    }
+    
+    public void testHiddenFieldTag() {
+    	final StringWriter sw = new StringWriter();
+    	final PrintWriter pw = new PrintWriter(sw);
+
+		withTag("hiddenField", pw) { tag ->
+	    	// use sorted map to be able to predict the order in which tag attributes are generated
+    		def attributes = new TreeMap([name: "testField", value: "1"])
+    		tag.call(attributes)
+	
+    		assertEquals '<input type=\'hidden\' id="testField" name="testField" value="1" />', sw.toString()
+		}
+    }
+
+    public void testRadioTag() {
+    	StringWriter sw = new StringWriter();
+    	PrintWriter pw = new PrintWriter(sw);
+
+    	withTag("radio", pw) { tag ->
+	    	// use sorted map to be able to predict the order in which tag attributes are generated
+    		def attributes = new TreeMap([name: "testRadio", checked: "true", value: "1"])
+    		tag.call(attributes)
+
+	    	assertEquals "<input type=\"radio\" name='testRadio' checked=\"checked\" value=\"1\"  ></input>", sw.toString()
+    	}
+
+    	sw = new StringWriter();
+    	pw = new PrintWriter(sw);
+
+    	withTag("radio", pw) { tag ->
+	    	// use sorted map to be able to predict the order in which tag attributes are generated
+    		def attributes = new TreeMap([name: "testRadio", value: "2"])
+    		tag.call(attributes)
+
+    		assertEquals "<input type=\"radio\" name='testRadio' value=\"2\"  ></input>", sw.toString()
+    	}
+    }
+
+    public void testCheckboxTag() {
+    	final StringWriter sw = new StringWriter();
+    	final PrintWriter pw = new PrintWriter(sw);
+
+    	withTag("checkBox", pw) { tag ->    	
+	    	// use sorted map to be able to predict the order in which tag attributes are generated
+    		def attributes = new TreeMap([name: "testCheck", extra: "1", value: "true"])
+    		tag.call(attributes)
+	
+    		assertEquals '<input type="hidden" name="_testCheck" /><input type="checkbox" name=\'testCheck\' checked="checked" value=\'true\' extra="1"  />', sw.toString()
+    	}
+    }
 
     public void testNoHtmlEscapingTextAreaTag() throws Exception {
     	final StringWriter sw = new StringWriter();
