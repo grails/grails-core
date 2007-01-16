@@ -49,7 +49,7 @@ task (war: "The implementation task") {
 		}
 		
 		Ant.replace(file:appCtxFile, 
-				token:"classpath:", value:"" ) 
+				token:"classpath*:", value:"" ) 
 
 		def fileName = new File(basedir).name
 		warName = "${basedir}/${fileName}.war"
