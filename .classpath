@@ -58,6 +58,6 @@
 	<classpathentry kind="var" path="GRAILS_HOME/lib/spring-2.0.jar" sourcepath="/SPRING2_HOME/src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/3.8.1"/>
 	<classpathentry kind="lib" path="lib/commons-beanutils-1.7.0.jar"/>
-	<classpathentry kind="var" path="GRAILS_HOME/lib/groovy-all-1.0-RC-02-SNAPSHOT.jar"/>
+	<classpathentry kind="var" path="GRAILS_HOME/lib/groovy-all-1.0.1-SNAPSHOT.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>
