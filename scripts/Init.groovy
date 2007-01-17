@@ -83,6 +83,18 @@ task ( createStructure: "Creates the application directory structure") {
 
 task ( copyBasics: "Copies the basic resources required for a Grails app to function") {
 	Ant.sequential {
+		copy(todir:"${basedir}") {
+			fileset(dir:"${grailsHome}/src/grails/templates/ide-support/eclipse",
+					includes:"*.*",
+					excludes:".launch")
+		} 
+		replace(dir:"${basedir}",includes:"*.*", 
+				token:"@grails.libs@", value:"${getGrailsLibs()}" )
+		replace(dir:"${basedir}", includes:"*.*", 
+				token:"@grails.jar@", value:"${getGrailsJar()}" )
+		replace(dir:"${basedir}", includes:"*.*", 
+				token:"@grails.project.name@", value:"${grailsAppName}" )
+		
 		copy(todir:"${basedir}/web-app/WEB-INF") {
 			fileset(dir:"${grailsHome}/src/war/WEB-INF") {
 				include(name:"applicationContext.xml")
