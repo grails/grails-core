@@ -17,6 +17,8 @@ package org.codehaus.groovy.grails.orm.hibernate.cfg;
 import groovy.lang.GroovyObject;
 
 import java.beans.IntrospectionException;
+import java.net.URI;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -273,7 +275,11 @@ public class GrailsDomainConfigurationUtil {
 	 * @return True if it is basic
 	 */
 	public static boolean isBasicType(GrailsDomainClassProperty prop) {
-		return TypeFactory.basic(prop.getType().getName()) != null;
+		if(prop == null)return false;
+		Class propType = prop.getType();
+		return TypeFactory.basic(propType.getName()) != null || 
+										propType == URL.class || 
+										propType == URI.class;
 	}
 
 	
