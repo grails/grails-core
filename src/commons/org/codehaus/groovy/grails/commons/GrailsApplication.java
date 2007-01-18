@@ -48,6 +48,11 @@ public interface GrailsApplication extends ApplicationContextAware {
      * that use ApplicationDataSource.groovy
      */
     String ENV_APPLICATION = "application";
+    
+    /**
+     * Constant for the production environment
+     */
+	String ENV_PRODUCTION = "production";
 
     /**
      * <p>Returns all controllers in an application

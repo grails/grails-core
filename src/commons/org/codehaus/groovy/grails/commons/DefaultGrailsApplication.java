@@ -491,7 +491,7 @@ public class DefaultGrailsApplication implements GrailsApplication {
             log.debug("[GrailsApplication] Retrieving data source for environment: " + environment);
         }
         if(StringUtils.isBlank(environment)) {
-            GrailsDataSource devDataSource = (GrailsDataSource)this.dataSourceMap.get(GrailsApplication.ENV_DEVELOPMENT);
+            GrailsDataSource devDataSource = (GrailsDataSource)this.dataSourceMap.get(GrailsApplication.ENV_PRODUCTION);
             if(devDataSource == null)
                 devDataSource = (GrailsDataSource)this.dataSourceMap.get(GrailsApplication.ENV_APPLICATION);
             if(this.dataSourceMap.size() == 1 && devDataSource == null) {
