@@ -124,6 +124,10 @@ public final class GrailsDomainBinder {
 			bindCollectionSecondPass( this.property, mappings, persistentClasses, collection,inheritedMetas );			
 		}
 
+		public void doSecondPass(Map persistentClasses) throws MappingException {
+			bindCollectionSecondPass( this.property, mappings, persistentClasses, collection,Collections.EMPTY_MAP );
+		}
+
 	}
 
 	private static void bindCollectionSecondPass(GrailsDomainClassProperty property, Mappings mappings, Map persistentClasses, Collection collection, Map inheritedMetas) {

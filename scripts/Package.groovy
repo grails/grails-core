@@ -79,7 +79,7 @@ task( packageApp : "Implementation of package task") {
 }   
 
 DEPENDENCIES = [
-"ejb-3.0-edr2.jar",
+"ejb-3.0-persistence.jar",
 "ant.jar",  
 "hibernate3.jar",
 "jdbc2_0-stdext.jar",
@@ -91,8 +91,6 @@ DEPENDENCIES = [
 "standard-${servletVersion}.jar",
 "jstl-${servletVersion}.jar",          
 "antlr-*.jar",
-"asm-*.jar",
-"asm-util-*.jar", 
 "cglib-*.jar",
 "dom4j-*.jar", 
 "ehcache-*.jar", 

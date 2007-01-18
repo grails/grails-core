@@ -16,7 +16,6 @@
 	<classpathentry kind="var" path="GRAILS_HOME/lib/commons-dbcp-1.2.1.jar"/>
 	<classpathentry kind="var" path="GRAILS_HOME/lib/commons-pool-1.2.jar"/>
 	<classpathentry kind="var" path="GRAILS_HOME/lib/dom4j-1.6.1.jar"/>
-	<classpathentry kind="var" path="GRAILS_HOME/lib/ehcache-1.1.jar"/>
 	<classpathentry kind="var" path="GRAILS_HOME/lib/ejb3-persistence.jar"/>
 	<classpathentry kind="var" path="GRAILS_HOME/lib/hibernate3.jar" sourcepath="/HIBERNATE_HOME/src"/>
 	<classpathentry kind="var" path="GRAILS_HOME/lib/hibernate-annotations.jar"/>
@@ -36,8 +35,6 @@
 	<classpathentry kind="var" path="GRAILS_HOME/lib/standard-2.3.jar"/>
 	<classpathentry kind="var" path="GRAILS_HOME/lib/standard-2.4.jar"/>
 	<classpathentry kind="var" path="GRAILS_HOME/ant/lib/ant.jar"/>
-	<classpathentry kind="var" path="GRAILS_HOME/lib/antlr-2.7.6rc1.jar"/>
-	<classpathentry kind="var" path="GRAILS_HOME/lib/xercesImpl-2.5.0.jar"/>
 	<classpathentry kind="var" path="GRAILS_HOME/lib/bsf-2.3.0.jar"/>
 	<classpathentry kind="var" path="GRAILS_HOME/lib/commons-logging-1.1.jar"/>
 	<classpathentry kind="var" path="GRAILS_HOME/lib/servletapi-2.4.jar"/>
@@ -59,5 +56,8 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/3.8.1"/>
 	<classpathentry kind="lib" path="lib/commons-beanutils-1.7.0.jar"/>
 	<classpathentry kind="var" path="GRAILS_HOME/lib/groovy-all-1.0.1-SNAPSHOT.jar"/>
+	<classpathentry kind="var" path="GRAILS_HOME/lib/xerces-2.6.2.jar"/>
+	<classpathentry kind="var" path="GRAILS_HOME/lib/ehcache-1.2.3.jar"/>
+	<classpathentry kind="var" path="GRAILS_HOME/lib/antlr-2.7.6.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>
