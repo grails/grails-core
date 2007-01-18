@@ -83,4 +83,45 @@ class DefaultGrailsDomainClassTests extends GroovyTestCase {
 		assertFalse(tests.owningSide)
 	}
 	
+	
+	void testTwoManyToOneIntegrity() {
+		this.gcl.parseClass('''
+				class Airport {
+					Long id
+					Long version
+					Set routes
+
+					static hasMany = [routes:Route]
+				}
+				class Route {
+					Long id
+					Long version
+					
+					Airport airport
+					Airport destination
+				}
+				'''	)
+		def ga = new DefaultGrailsApplication(gcl.loadedClasses, gcl)
+		def airportClass = ga.getDomainClass("Airport")
+		def routeClass = ga.getDomainClass("Route")
+		
+		def routes = airportClass.getPropertyByName("routes")
+		
+		assertTrue routes.bidirectional
+		assertTrue routes.oneToMany
+		assertNotNull routes.otherSide
+		assertEquals "airport", routes.otherSide.name
+		
+		def airport = routeClass.getPropertyByName("airport")
+		
+		assertTrue airport.bidirectional
+		assertTrue airport.manyToOne
+		assertNotNull airport.otherSide
+		assertEquals "routes", airport.otherSide.name 
+		
+		def destination = routeClass.getPropertyByName("destination")
+		
+		assertFalse destination.bidirectional
+		assertTrue destination.oneToOne
+	}
 }

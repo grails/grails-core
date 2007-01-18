@@ -47,6 +47,7 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
 	private boolean inherited;
 	private int fetchMode = FETCH_LAZY;
 	private boolean owningSide;
+	private String referencePropertyName;
 
 
     public DefaultGrailsDomainClassProperty(DefaultGrailsDomainClass domainClass, PropertyDescriptor descriptor)  {
@@ -414,4 +415,14 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
 		}
 		return false;
 	}
+
+	public void setReferencePropertyName(String name) {
+		this.referencePropertyName = name;
+	}
+
+	public String getReferencedPropertyName() {
+		return this.referencePropertyName;
+	}
+	
+	
 }

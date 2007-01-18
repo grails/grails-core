@@ -241,7 +241,7 @@ public class GrailsHibernateDomainClass extends AbstractGrailsClass implements E
         this.validator = validator;
     }
 
-    public String getMappedBy() {
+    public String getMappingStrategy() {
         return HIBERNATE;
     }
 

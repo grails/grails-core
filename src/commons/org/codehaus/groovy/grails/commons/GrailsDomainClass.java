@@ -150,7 +150,7 @@ public interface GrailsDomainClass extends GrailsClass {
 	/**
 	 * @return The name of the ORM implementation used to map the domain class (default is "GORM")
 	 */
-	public String getMappedBy();
+	public String getMappingStrategy();
 	
 	/**
 	 * Whether the class is the root of a heirarchy

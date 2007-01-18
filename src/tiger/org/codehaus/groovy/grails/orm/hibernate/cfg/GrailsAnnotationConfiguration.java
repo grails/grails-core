@@ -56,7 +56,7 @@ public class GrailsAnnotationConfiguration  extends AnnotationConfiguration impl
       * @see org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsDomainConfiguration#addDomainClass(org.codehaus.groovy.grails.commons.GrailsDomainClass)
       */
     public GrailsDomainConfiguration addDomainClass( GrailsDomainClass domainClass ) {
-        if(domainClass.getMappedBy().equalsIgnoreCase( GrailsDomainClass.GORM )) {
+        if(domainClass.getMappingStrategy().equalsIgnoreCase( GrailsDomainClass.GORM )) {
             this.domainClasses.add(domainClass);
         }
 

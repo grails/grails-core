@@ -188,4 +188,9 @@ public class GrailsHibernateDomainClassProperty implements GrailsDomainClassProp
 	public boolean isCircular() {
 		throw new UnsupportedOperationException("Method 'isCircular' is not supported by implementation");
 	}
+	
+	public String getReferencedPropertyName() {
+		throw new UnsupportedOperationException("Method 'getReferencedPropertyName' is not supported by implementation");
+	}
+	
 }

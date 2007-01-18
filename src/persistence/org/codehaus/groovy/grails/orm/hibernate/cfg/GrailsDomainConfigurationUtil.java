@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
@@ -98,17 +99,23 @@ public class GrailsDomainConfigurationUtil {
                     GrailsDomainClassProperty prop = props[j];
                     GrailsDomainClass referenced = prop.getReferencedDomainClass();
                     if(referenced != null) {
-                        GrailsDomainClassProperty[] referencedProperties =  referenced.getPersistantProperties();
-                        for (int k = 0; k < referencedProperties.length; k++) {
-                        	// for bi-directional circular dependencies we don't want the other side 
-                        	// to be equal to self 
-                        	if(prop.equals(referencedProperties[k]) && prop.isBidirectional())
-                        		continue;
-                            if(domainClasses[i].getClazz().equals(referencedProperties[k].getReferencedPropertyType())) {
-                                prop.setOtherSide(referencedProperties[k]);
-                                break;
-                            }
-                        }
+                    	String refPropertyName = prop.getReferencedPropertyName();
+                    	if(!StringUtils.isBlank(refPropertyName)) {
+                    		prop.setOtherSide(referenced.getPropertyByName(refPropertyName));
+                    	}
+                    	else {
+                            GrailsDomainClassProperty[] referencedProperties =  referenced.getPersistantProperties();
+                            for (int k = 0; k < referencedProperties.length; k++) {
+                            	// for bi-directional circular dependencies we don't want the other side 
+                            	// to be equal to self 
+                            	if(prop.equals(referencedProperties[k]) && prop.isBidirectional())
+                            		continue;
+                                if(domainClasses[i].getClazz().equals(referencedProperties[k].getReferencedPropertyType())) {
+                                    prop.setOtherSide(referencedProperties[k]);
+                                    break;
+                                }
+                            }                    		
+                    	}                    
                     }
                 }
             }
@@ -246,6 +253,19 @@ public class GrailsDomainConfigurationUtil {
 		}
 		return associationMap;
 	}
+	
+	/**
+	 * Retrieves the mappedBy map for the specified class
+	 * @param domainClass The domain class
+	 * @return The mappedBy map
+	 */
+	public static Map getMappedByMap(Class domainClass) {
+		Map mappedByMap = (Map)GrailsClassUtils.getPropertyValueOfNewInstance(domainClass, GrailsDomainClassProperty.MAPPED_BY, Map.class);
+		if(mappedByMap == null) {
+			return Collections.EMPTY_MAP;
+		}
+		return mappedByMap;
+	}	
 	/**
 	 * Establish whether its a basic type
 	 * 
@@ -255,6 +275,7 @@ public class GrailsDomainConfigurationUtil {
 	public static boolean isBasicType(GrailsDomainClassProperty prop) {
 		return TypeFactory.basic(prop.getType().getName()) != null;
 	}
+
 	
 	
 }

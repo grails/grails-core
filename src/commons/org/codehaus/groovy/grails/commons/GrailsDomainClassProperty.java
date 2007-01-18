@@ -31,7 +31,8 @@ public interface GrailsDomainClassProperty {
 	String RELATES_TO_MANY = "relatesToMany";
 	String META_CLASS = "metaClass";
 	String CLASS = "class";
-	String MAPPED_BY = "mappedBy";
+	String MAPPING_STRATEGY = "mapWith";
+	String MAPPED_BY = "mappedBy";	
     String BELONGS_TO = "belongsTo";
 	String HAS_MANY = "hasMany";
 	String FETCH_MODE = "fetchMode";
@@ -181,4 +182,12 @@ public interface GrailsDomainClassProperty {
 	 * @return True if it is
 	 */
 	public boolean isCircular();
+
+	/**
+	 * Retrieves the name of property referenced by this property if it is 
+	 * an association and is known, otherwise null
+	 * 
+	 * @return The name of the prop
+	 */
+	public String getReferencedPropertyName();
 }

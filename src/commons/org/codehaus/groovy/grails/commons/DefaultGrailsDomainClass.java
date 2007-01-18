@@ -18,6 +18,7 @@ package org.codehaus.groovy.grails.commons;
 import groovy.lang.Closure;
 import groovy.lang.GroovyObject;
 import org.apache.commons.lang.ClassUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.metaclass.DynamicMethods;
@@ -51,9 +52,11 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
     private GrailsDomainClassProperty[] persistantProperties;
     private Map propertyMap;
     private Map relationshipMap;
+    
     private Map constraints = new HashMap();
+    private Map mappedBy;
     private Validator validator;
-    private String mappedBy = GrailsDomainClass.GORM;
+    private String mappingStrategy = GrailsDomainClass.GORM;
     private List owners = new ArrayList();
     private boolean root = true;
     private Set subClasses = new HashSet();
@@ -72,10 +75,14 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
         this.relationshipMap = getAssociationMap();
         this.tableName = (String)getPropertyOrStaticPropertyOrFieldValue(GrailsDomainClassProperty.WITH_TABLE, String.class);
 
-        // get mapped by setting
-        if(getPropertyOrStaticPropertyOrFieldValue(GrailsDomainClassProperty.MAPPED_BY, String.class) != null)
-            this.mappedBy = (String)getPropertyOrStaticPropertyOrFieldValue(GrailsDomainClassProperty.MAPPED_BY, String.class);
+        // get mapping strategy by setting
+        if(getPropertyOrStaticPropertyOrFieldValue(GrailsDomainClassProperty.MAPPING_STRATEGY, String.class) != null)
+            this.mappingStrategy = (String)getPropertyOrStaticPropertyOrFieldValue(GrailsDomainClassProperty.MAPPING_STRATEGY, String.class);
 
+        // get any mappedBy settings
+        this.mappedBy = (Map)getPropertyOrStaticPropertyOrFieldValue(GrailsDomainClassProperty.MAPPED_BY, Map.class);
+        if(this.mappedBy == null)this.mappedBy = Collections.EMPTY_MAP;
+        
         // establish the owners of relationships
         establishRelationshipOwners();
 
@@ -188,6 +195,7 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
            !descriptor.getName().equals( GrailsDomainClassProperty.EVANESCENT) &&
            !descriptor.getName().equals( GrailsDomainClassProperty.OPTIONAL) &&
            !descriptor.getName().equals( GrailsDomainClassProperty.CONSTRAINTS )&&
+           !descriptor.getName().equals( GrailsDomainClassProperty.MAPPING_STRATEGY ) &&
            !descriptor.getName().equals( GrailsDomainClassProperty.MAPPED_BY ) &&
            !descriptor.getName().equals( GrailsDomainClassProperty.BELONGS_TO );
     }
@@ -298,8 +306,36 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
                 // if there is more than one property then (for the moment) ignore the relationship
                 if(relatedClassPropertyType == null) {
                     PropertyDescriptor[] descriptors = GrailsClassUtils.getPropertiesOfType(relatedClassType, getClazz());
+                    
                     if(descriptors.length == 1) {
                         relatedClassPropertyType = descriptors[0].getPropertyType();
+                        property.setReferencePropertyName(descriptors[0].getName());
+                    }
+                    else if(descriptors.length > 1) {
+                    	// if there is more than one related property type then we need to check if there is a mappedBy property. If
+                    	// there isn't then try find if there is one matching the class name by convention otherwise throw helpful exception
+                    	String mappingProperty = (String)this.mappedBy.get(property.getName());
+                    	if(!StringUtils.isBlank(mappingProperty)) {
+                        	PropertyDescriptor pd = findProperty(descriptors, mappingProperty);                        	
+                        	if(pd == null)
+                        		throw new GrailsDomainException("Non-existent mapping property ["+mappingProperty+"] specified for property ["+property.getName()+"] in class ["+getClazz()+"]");
+                        	relatedClassPropertyType = pd.getPropertyType();
+                        	property.setReferencePropertyName(pd.getName());
+                    	}
+                    	else {
+                    		// try now to use the class name by convention
+                    		String classPropertyName = getPropertyName();
+                        	PropertyDescriptor pd = findProperty(descriptors, classPropertyName);                        	
+                        	if(pd == null) {
+                        		throw new GrailsDomainException("Property ["+property.getName()+"] in class ["+getClazz()+"] is a bidirectional one-to-many with two possible properties on the inverse side. "+
+										"Either name one of the properties on other side of the relationship ["+classPropertyName+"] or use the 'mappedBy' static to define the property " +
+										"that the relationship is mapped with. Example: static mappedBy = ["+property.getName()+":'myprop']");                    		
+                        		
+                        	}
+                        	relatedClassPropertyType = pd.getPropertyType();
+                        	property.setReferencePropertyName(pd.getName());
+                    	}
+                    	
                     }
                 }
 
@@ -322,6 +358,25 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
         }
 
     }
+
+    /**
+     * Finds a property type is an array of descriptors for the given property name
+     * 
+     * @param descriptors The descriptors 
+     * @param propertyName The property name
+     * @return The Class or null
+     */
+	private PropertyDescriptor findProperty(PropertyDescriptor[] descriptors, String propertyName) {
+		PropertyDescriptor d = null;
+		for (int i = 0; i < descriptors.length; i++) {
+			PropertyDescriptor descriptor = descriptors[i];
+			if(descriptor.getName().equals(propertyName)) {
+				d = descriptor;
+				break;
+			}
+		}
+		return d;
+	}
 
     /**
      * Find out if the relationship is a many-to-many
@@ -401,6 +456,8 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
         Class propType = property.getType();
         // establish relationship to type
         Map relatedClassRelationships = GrailsDomainConfigurationUtil.getAssociationMap(propType);
+        Map mappedBy = GrailsDomainConfigurationUtil.getMappedByMap(propType);
+        
         Class relatedClassPropertyType = null;
 
         // if there is a relationships map use that to find out
@@ -409,18 +466,37 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
             !relatedClassRelationships.isEmpty() ) {
 
 
-            String relatedClassPropertyName = null;
-            // retrieve the property name
-            for(Iterator i = relatedClassRelationships.keySet().iterator();i.hasNext();) {
-                String currentKey = (String)i.next();
-                Class currentClass = (Class)relatedClassRelationships.get( currentKey );
-                if(property.getDomainClass().getClazz().getName().equals(  currentClass.getName()  )) {
-                    relatedClassPropertyName = currentKey;
-                    break;
+        	String relatedClassPropertyName = findOneToManyThatMatchesType(property, relatedClassRelationships);
+            PropertyDescriptor[] descriptors = GrailsClassUtils.getPropertiesOfType(getClazz(), property.getType());
+            
+            // if there is only one property on many-to-one side of the relationship then
+            // try to establish if it is bidirectional
+            if(descriptors.length == 1) {
+                if(!StringUtils.isBlank(relatedClassPropertyName)) {
+                    property.setReferencePropertyName(relatedClassPropertyName);
+                    // get the type of the property
+                    relatedClassPropertyType = GrailsClassUtils.getProperyType( propType, relatedClassPropertyName );            	                	
                 }
             }
-            // get the type of the property
-            relatedClassPropertyType = GrailsClassUtils.getProperyType( propType, relatedClassPropertyName );
+            // if there is more than one property on the many-to-one side then we need to either
+            // find out if there is a mappedBy property or whether a convention is used to decide
+            // on the mapping property
+            else if(descriptors.length > 1) {
+            	if(mappedBy.containsValue(property.getName())) {
+            		for (Iterator i = mappedBy.keySet().iterator(); i.hasNext();) {
+						String key = (String) i.next();
+						if(property.getName().equals(mappedBy.get(key))) {
+							relatedClassPropertyType = GrailsClassUtils.getProperyType( propType, key );
+						}						
+					}
+            	}
+            	else {
+            		String classNameAsProperty = GrailsClassUtils.getPropertyName(propType);
+            		if(property.getName().equals(classNameAsProperty) && !mappedBy.containsKey(relatedClassPropertyName)) {
+            			relatedClassPropertyType = GrailsClassUtils.getProperyType( propType, relatedClassPropertyName );            			
+            		}
+            	}
+            }
         }
         // otherwise retrieve all the properties of the type from the associated class
         if(relatedClassPropertyType == null) {
@@ -436,6 +512,21 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
         //	establish relationship based on this type
         establishDomainClassRelationshipToType( property, relatedClassPropertyType );
     }
+
+	private String findOneToManyThatMatchesType(DefaultGrailsDomainClassProperty property, Map relatedClassRelationships) {
+		String relatedClassPropertyName = null;
+		for(Iterator i = relatedClassRelationships.keySet().iterator();i.hasNext();) {
+		    String currentKey = (String)i.next();
+		    Class currentClass = (Class)relatedClassRelationships.get( currentKey );
+		    
+		    if(property.getDomainClass().getClazz().getName().equals(  currentClass.getName()  )) {
+		        relatedClassPropertyName = currentKey;
+
+		        break;
+		    }
+		}
+		return relatedClassPropertyName;
+	}
 
     /**
      * @param property
@@ -580,8 +671,8 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
     /* (non-Javadoc)
       * @see org.codehaus.groovy.grails.commons.GrailsDomainClass#getMappedBy()
       */
-    public String getMappedBy() {
-        return this.mappedBy;
+    public String getMappingStrategy() {
+    	return this.mappingStrategy;
     }
 
     public boolean isRoot() {
