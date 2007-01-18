@@ -9,6 +9,7 @@ import junit.framework.TestCase;
 public class DefaultGrailsApplicationTests extends TestCase {
 
     public void testDataSourceEnvironments() throws Exception {
+        try {    	
         GroovyClassLoader gcl = new GroovyClassLoader();
         Class devDS = gcl.parseClass("class DevelopmentDataSource {" +
                                     "String url = \"jdbc:hsqldb:mem:testDB\"\n" +
@@ -26,6 +27,10 @@ public class DefaultGrailsApplicationTests extends TestCase {
 
         GrailsApplication ga = new DefaultGrailsApplication(new Class[]{devDS,prodDS}, gcl);
 
+        assertEquals(prodDS,ga.getGrailsDataSource().getClazz());
+        
+        System.setProperty(GrailsApplication.ENVIRONMENT,"development");
+        
         assertEquals(devDS,ga.getGrailsDataSource().getClazz());
 
         System.setProperty(GrailsApplication.ENVIRONMENT,"production");
@@ -34,7 +39,7 @@ public class DefaultGrailsApplicationTests extends TestCase {
 
         System.setProperty(GrailsApplication.ENVIRONMENT,"rubbish");
 
-        try {
+
             GrailsDataSource ds = ga.getGrailsDataSource();
             assertNull(ds);
         }
