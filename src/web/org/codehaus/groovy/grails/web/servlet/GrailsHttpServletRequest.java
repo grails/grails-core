@@ -43,7 +43,9 @@ import java.util.*;
  */
 public class GrailsHttpServletRequest extends HttpServletRequestWrapper implements Map, GroovyObject, MultipartHttpServletRequest {
 
-    Map controllerParams = Collections.EMPTY_MAP;
+    private static final String HTTP_METHOD_POST = "POST";
+	private static final String HTTP_METHOD_GET = "GET";
+	Map controllerParams = Collections.EMPTY_MAP;
     BeanWrapper requestBean;
 
     public GrailsHttpServletRequest(HttpServletRequest delegate) {
@@ -210,4 +212,13 @@ public class GrailsHttpServletRequest extends HttpServletRequestWrapper implemen
 		put(property,newValue);
 	}
 
+	/**
+	 * @return Returns true if the requet is using the "GET" HTTP method
+	 */
+	public boolean isGet() { return HTTP_METHOD_GET.equals(this.getMethod()); }
+	
+	/**
+	 * @return Returns true if the reuqest is using the "POST" HTTP method
+	 */
+	public boolean isPost() { return HTTP_METHOD_POST.equals(this.getMethod()); }	
 }
