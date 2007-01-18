@@ -38,5 +38,13 @@ class CodecsGrailsPluginTests extends AbstractGrailsPluginTests {
 		assert someString.decodeFirst() == 'found first decode method for string: some string'
 		assert someString.encodeSecond() == 'found second encode method for string: some string'
 		assert someString.decodeThird() == 'found third decode method for string: some string'
+			
+		shouldFail(MissingMethodException) {
+			someString.decodeSecond()
+		}
+		
+		shouldFail(MissingMethodException) {
+			someString.encodeThird()
+		}
 	}
 }

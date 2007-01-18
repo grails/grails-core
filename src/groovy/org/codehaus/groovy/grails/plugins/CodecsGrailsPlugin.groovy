@@ -38,24 +38,28 @@ class CodecsGrailsPlugin {
 
 	def doWithDynamicMethods = { applicationContext ->
 		application.codecClasses.each {
-			def codecName = it.fullName
-			String.metaClass."encode${codecName - 'Codec'}" << {
-				def codecClass = application.getGrailsCodecClass(codecName)
+			def codecName = it.name
+			def codecClassName = it.fullName
+
+			def encodeMethodName = "encode${codecName}"
+			String.metaClass."${encodeMethodName}" << {
+				def codecClass = application.getGrailsCodecClass(codecClassName)
 				def encodeMethod = codecClass.encodeMethod
 				if(encodeMethod) {
 					return encodeMethod(delegate)
 				} else {
-					throw new Exception("Could not find encode method for ${codecName}")
+					throw new MissingMethodException(encodeMethodName, String, [] as Object[])
 				}
 			}
 
-			String.metaClass."decode${codecName - 'Codec'}" << {
-				def codecClass = application.getGrailsCodecClass(codecName)
+			def decodeMethodName = "decode${codecName}" 
+			String.metaClass."${decodeMethodName}" << {
+				def codecClass = application.getGrailsCodecClass(codecClassName)
 				def decodeMethod = codecClass.decodeMethod
 				if(decodeMethod) {
 					return decodeMethod(delegate)
 				} else {
-					throw new Exception("Could not find decode method for ${codecName}")
+					throw new MissingMethodException(decodeMethodName, String, [] as Object[])
 				}
 			}
 		}
