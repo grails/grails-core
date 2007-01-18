@@ -27,7 +27,7 @@
 	<classpathentry kind="var" path="GRAILS_HOME/lib/ognl-2.7.jar"/>
 	<classpathentry kind="var" path="GRAILS_HOME/lib/org.mortbay.jetty.jar"/>
 	<classpathentry kind="var" path="GRAILS_HOME/lib/quartz-1.5.2.jar"/>
-	<classpathentry kind="var" path="GRAILS_HOME/lib/sitemesh-2.2.1.jar"/>
+	<classpathentry kind="var" path="GRAILS_HOME/lib/sitemesh-2.3.jar"/>
 	<classpathentry kind="var" path="GRAILS_HOME/lib/spring-binding.jar"/>
 	<classpathentry kind="var" path="GRAILS_HOME/lib/spring-mock.jar" sourcepath="/SPRING2_HOME/mock"/>
 	<classpathentry kind="var" path="GRAILS_HOME/lib/springmodules-sandbox.jar"/>
