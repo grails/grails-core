@@ -2,8 +2,7 @@
 <classpath>
 	<classpathentry kind="src" path="src/java"/>
 	<classpathentry kind="src" path="src/groovy"/>
-    <classpathentry kind="src" path="src"/>
-    <classpathentry kind="src" path="grails-app/conf"/>
+	<classpathentry kind="src" path="grails-app/conf"/>
 	<classpathentry kind="src" path="grails-app/controllers"/>
 	<classpathentry kind="src" path="grails-app/domain"/>
 	<classpathentry kind="src" path="grails-app/services"/>
