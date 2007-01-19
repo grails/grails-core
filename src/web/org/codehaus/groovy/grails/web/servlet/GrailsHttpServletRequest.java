@@ -220,5 +220,10 @@ public class GrailsHttpServletRequest extends HttpServletRequestWrapper implemen
 	/**
 	 * @return Returns true if the reuqest is using the "POST" HTTP method
 	 */
-	public boolean isPost() { return HTTP_METHOD_POST.equals(this.getMethod()); }	
+	public boolean isPost() { return HTTP_METHOD_POST.equals(this.getMethod()); }
+
+    public void setControllerParams(Map controllerParams) {
+        if(this.controllerParams!=null)
+            this.controllerParams = controllerParams;
+    }
 }

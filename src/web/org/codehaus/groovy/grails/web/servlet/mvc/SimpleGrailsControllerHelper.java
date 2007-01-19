@@ -34,10 +34,7 @@ import org.codehaus.groovy.grails.scaffolding.GrailsScaffolder;
 import org.codehaus.groovy.grails.web.metaclass.ChainDynamicMethod;
 import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods;
 import org.codehaus.groovy.grails.web.metaclass.GetParamsDynamicProperty;
-import org.codehaus.groovy.grails.web.servlet.DefaultGrailsApplicationAttributes;
-import org.codehaus.groovy.grails.web.servlet.FlashScope;
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
-import org.codehaus.groovy.grails.web.servlet.GrailsHttpServletResponse;
+import org.codehaus.groovy.grails.web.servlet.*;
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.NoClosurePropertyForURIException;
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.NoViewNameDefinedException;
@@ -168,7 +165,7 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
 
         uri = configureStateForUri(uri);
         
-        HttpServletRequest request = webRequest.getCurrentRequest();
+        GrailsHttpServletRequest request = webRequest.getCurrentRequest();
         GrailsHttpServletResponse response = webRequest.getCurrentResponse();
         
         
@@ -214,6 +211,7 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
         
         request.setAttribute( GrailsApplicationAttributes.CONTROLLER, controller );
 
+
         // Step 3: if scaffolding retrieve scaffolder
         if(controllerClass.isScaffolding())  {
             this.scaffolder = (GrailsScaffolder)applicationContext.getBean( controllerClass.getFullName() + SCAFFOLDER );
@@ -237,6 +235,8 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
         
         // populate additional params from url
         Map controllerParams = (Map)controller.getProperty(GetParamsDynamicProperty.PROPERTY_NAME);
+        request.setControllerParams(controllerParams);
+        
         if(!StringUtils.isBlank(id)) {
             controllerParams.put(GrailsApplicationAttributes.ID_PARAM, id);
         }
