@@ -30,7 +30,7 @@ class SimpleGrailsControllerHelperTests extends AbstractGrailsControllerTests {
 		}
 	}
 	
-	void testConfigureStateForUri() {
+	void testConfigureStateForParameterMapUri() {
 		def helper = new SimpleGrailsControllerHelper(null, null, null)
 		helper.configureStateForUri("/controller/action/id/test/param/one/two/three/four")
 		
@@ -42,5 +42,14 @@ class SimpleGrailsControllerHelperTests extends AbstractGrailsControllerTests {
 		assertEquals "param", extraParams["test"]
 		assertEquals "two", extraParams["one"]
 		assertEquals "four", extraParams["three"]			                                
+	}
+
+	void testConfigureStateForUri() {
+		def helper = new SimpleGrailsControllerHelper(null, null, null)
+		helper.configureStateForUri("/controller/action/id")
+
+		assertEquals "controller", helper.@controllerName
+		assertEquals "action", helper.@actionName
+		assertEquals "id", helper.@id	
 	}
 }
