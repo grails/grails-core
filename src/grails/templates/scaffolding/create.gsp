@@ -23,6 +23,7 @@
            <g:form action="save" method="post" <%= multiPart ? ' enctype="multipart/form-data"' : '' %>>
                <div class="dialog">
                 <table>
+                    <tbody>
 
                        <%
                             props = domainClass.properties.findAll { it.name != 'version' && it.name != 'id' }
@@ -32,6 +33,7 @@
                             if(p.type != Set.class) { %>
                                   ${renderEditor(p)}
                        <%}}%>
+                    </tbody>
                </table>
                </div>
                <div class="buttons">

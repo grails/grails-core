@@ -30,6 +30,7 @@
                <input type="hidden" name="id" value="\${${propertyName}?.id}" />
                <div class="dialog">
                 <table>
+                    <tbody>
 
                        <%
                             props = domainClass.properties.findAll { it.name != 'version' && it.name != 'id' }
@@ -38,6 +39,7 @@
                        <%props.each { p ->%>
 				${renderEditor(p)}
                        <%}%>
+                    </tbody>
                 </table>
                </div>
 

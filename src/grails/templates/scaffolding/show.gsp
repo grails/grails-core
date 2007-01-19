@@ -22,6 +22,7 @@
                         props = domainClass.properties.findAll { it.name != 'version' }
                         Collections.sort(props, comparator.constructors[0].newInstance([domainClass] as Object[]))
                    %>
+                   <tbody>
                    <%props.each { p ->%>
                         <tr class="prop">
                               <td valign="top" class="name">${p.naturalName}:</td>
@@ -40,6 +41,7 @@
                               <% } %>
                         </tr>
                    <%}%>
+                   </tbody>
                  </table>
            </div>
            <div class="buttons">

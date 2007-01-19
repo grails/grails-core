@@ -18,6 +18,7 @@
                  </div>
             </g:if>
            <table>
+             <thead>
                <tr>
                    <%
                         props = domainClass.properties.findAll { it.name != 'version' && it.type != Set.class }
@@ -29,6 +30,8 @@
                    <%}}%>
                    <th></th>
                </tr>
+             </thead>
+             <tbody>
                <g:each in="\${${propertyName}List}">
                     <tr>
                        <%props.eachWithIndex { p,i ->
@@ -40,10 +43,11 @@
                        </td>
                     </tr>
                </g:each>
+             </tbody>
            </table>
-		   <div class="paginateButtons">
-				<g:paginate total="\${${className}.count()}" />
-			</div>
+               <div class="paginateButtons">
+                   <g:paginate total="\${${className}.count()}" />
+               </div>
         </div>
     </body>
 </html>
