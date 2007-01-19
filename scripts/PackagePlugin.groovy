@@ -22,12 +22,15 @@
  * @since 0.4
  */
 import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU  
+import org.codehaus.groovy.control.*
 
 appName = ""
 
 Ant.property(environment:"env")   
 grailsHome = Ant.antProject.properties."env.GRAILS_HOME"    
-
+       
+includeTargets << new File ( "${grailsHome}/scripts/Init.groovy" )  
+includeTargets << new File ( "${grailsHome}/scripts/Compile.groovy" )
 includeTargets << new File ( "${grailsHome}/scripts/CreateApp.groovy" )
 includeTargets << new File ( "${grailsHome}/scripts/Package.groovy" )  
 
@@ -37,7 +40,8 @@ task ( "default" : "Packages a Grails plugin into a zip for distribution") {
 }     
                 
 task(packagePlugin:"Implementation task") {
-   
+   depends (compile)
+
    def pluginFile
    new File("${basedir}").eachFile {
      if(it.name.endsWith("GrailsPlugin.groovy")) {
@@ -47,7 +51,11 @@ task(packagePlugin:"Implementation task") {
 
    if(!pluginFile) Ant.fail("Plugin file not found for plugin project")
 
-   def gcl = new GroovyClassLoader()
+   def cl = Thread.currentThread().getContextClassLoader()
+   def compConfig = new CompilerConfiguration()
+   compConfig.setClasspath("${basedir}/web-app/WEB-INF/classes");
+
+   def gcl = new GroovyClassLoader(cl,compConfig,true)
 
    Class pluginClass
    try {
