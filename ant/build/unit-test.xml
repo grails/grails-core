@@ -95,7 +95,7 @@
         <fail if="grails.test.failure">The tests failed. Have a look at ${grails.test.reports}</fail>
     </target>
 
-	<target name="test-report" depends="run-test" description="Runs unit tests and generates HTML report">
+	<target name="test-report" depends="test" description="Runs unit tests and generates HTML report">
 		<mkdir dir="${grails.test.html.reports}"/>
         <junitreport todir="${grails.test.html.reports}">
 			<fileset dir="${grails.test.reports}">
