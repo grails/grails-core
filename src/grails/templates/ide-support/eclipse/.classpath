@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src/java"/>
-	<classpathentry kind="src" path="src/groovy"/>	
-	<classpathentry kind="src" path="grails-app/conf"/>
+	<classpathentry kind="src" path="src/groovy"/>
+    <classpathentry kind="src" path="src"/>
+    <classpathentry kind="src" path="grails-app/conf"/>
 	<classpathentry kind="src" path="grails-app/controllers"/>
 	<classpathentry kind="src" path="grails-app/domain"/>
 	<classpathentry kind="src" path="grails-app/services"/>
@@ -12,5 +13,5 @@
 	<classpathentry kind="var" path="GRAILS_HOME/ant/lib/ant.jar"/>
     @grails.libs@
 	<classpathentry kind="var" path="GRAILS_HOME/dist/@grails.jar@"/>
-	<classpathentry kind="output" path="target/classes"/>
+	<classpathentry kind="output" path="web-app/WEB-INF/classes"/>
 </classpath>
