@@ -290,7 +290,8 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
             // Step 9: Check if there is after interceptor
             if(controllerClass.isInterceptedAfter(controller,actionName)) {
             	Closure afterInterceptor = controllerClass.getAfterInterceptor(controller);
-            	afterInterceptor.call(new Object[]{ mv.getModel() });
+                Map model = mv.getModel() != null ? mv.getModel() : Collections.EMPTY_MAP;
+                afterInterceptor.call(new Object[]{ model });
             }
             return mv;
         }
