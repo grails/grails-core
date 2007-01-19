@@ -79,6 +79,7 @@ public class DomainClassMethods extends AbstractDynamicMethods implements Transa
         addStaticMethodInvocation(new ListOrderByPersistentMethod(sessionFactory, classLoader));
         addStaticMethodInvocation(new ListPersistentMethod(sessionFactory, classLoader));
         addStaticMethodInvocation(new FindWherePersistentMethod(sessionFactory, classLoader));
+        addStaticMethodInvocation(new FindAllWherePersistentMethod(sessionFactory, classLoader));
         addStaticMethodInvocation(new GetPersistentMethod(application,sessionFactory, classLoader));
         addStaticMethodInvocation(new ExistsPersistentMethod(application,sessionFactory, classLoader));
         addStaticMethodInvocation(new CountPersistentMethod(sessionFactory, classLoader));

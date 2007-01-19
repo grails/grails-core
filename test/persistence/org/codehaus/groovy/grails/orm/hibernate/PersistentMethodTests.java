@@ -308,6 +308,12 @@ public class PersistentMethodTests extends AbstractDependencyInjectionSpringCont
         queryMap.put("lastName", "flintstone");
         returnValue = obj.getMetaClass().invokeStaticMethod(obj, "findWhere", new Object[] { queryMap });
         assertNotNull(returnValue);
+
+        queryMap = new HashMap();
+        queryMap.put("lastName", "flintstone");
+        returnList = (List)obj.getMetaClass().invokeStaticMethod(obj, "findAllWhere", new Object[] { queryMap });
+        assertEquals(2, returnList.size());
+
         // now lets test out some junk and make sure we get errors!
         try {
             returnList = (List)obj.getMetaClass().invokeStaticMethod(obj, "findAllByLastNameLike", new Object[] { new Boolean(false) });
