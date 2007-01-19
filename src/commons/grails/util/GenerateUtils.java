@@ -66,7 +66,7 @@ public class GenerateUtils {
         // retry
         domainClass = findInApplication(application,domainClassName);
         if(domainClass == null) {
-            LOG.debug("Unable to generate ["+type+"] domain class not found for name ["+domainClassName+"]");
+            LOG.info("Unable to generate ["+type+"] domain class not found for name ["+domainClassName+"]");
             System.exit(0);
         }
 
