@@ -130,7 +130,7 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator  {
         }
         else {
 			if("textarea" == cp.widget || (cp.maxSize > 250 && !cp.password && !cp.inList)) {
-                return "<textarea rows='1' cols='1' name='${property.name}'>\${${domainClass.propertyName}?.${property.name}}</textarea>"
+                return "<textarea rows='5' cols='40' name='${property.name}'>\${${domainClass.propertyName}?.${property.name}}</textarea>"
             }
             else {
                 if(cp.inList) {
