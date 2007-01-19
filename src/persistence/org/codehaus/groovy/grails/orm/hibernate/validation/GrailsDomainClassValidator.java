@@ -17,12 +17,11 @@ package org.codehaus.groovy.grails.orm.hibernate.validation;
 import groovy.lang.GroovyObject;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.metaclass.DomainClassMethods;
+import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 import org.codehaus.groovy.runtime.InvokerHelper;
-import org.hibernate.SessionFactory;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.context.MessageSource;
-import org.springframework.orm.hibernate3.HibernateTemplate;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
 
@@ -39,9 +38,7 @@ public class GrailsDomainClassValidator implements Validator {
 
     private Collection constrainedProperties;
     private Class targetClass;
-    private HibernateTemplate template;
     private GrailsDomainClass domainClass;
-    private SessionFactory sessionFactory;
     private MessageSource messageSource;
 
     public boolean supports(Class clazz) {
@@ -60,14 +57,6 @@ public class GrailsDomainClassValidator implements Validator {
     }
 
     /**
-     * @param sessionFactory The sessionFactory to set.
-     */
-    public void setSessionFactory(SessionFactory sessionFactory) {
-        this.sessionFactory = sessionFactory;
-        this.template = new HibernateTemplate(this.sessionFactory);
-    }
-
-    /**
 	 * @param messageSource The messageSource to set.
 	 */
 	public void setMessageSource(MessageSource messageSource) {
@@ -83,9 +72,7 @@ public class GrailsDomainClassValidator implements Validator {
 
         for (Iterator i = constrainedProperties.iterator(); i.hasNext();) {
 
-            ConstrainedPersistentProperty c = (ConstrainedPersistentProperty)i.next();
-
-            c.setHibernateTemplate(this.template);
+            ConstrainedProperty c = (ConstrainedProperty)i.next();
             c.setMessageSource(this.messageSource);
             c.validate(obj, bean.getPropertyValue( c.getPropertyName() ),errors);
         }
@@ -96,10 +83,6 @@ public class GrailsDomainClassValidator implements Validator {
          else {
             InvokerHelper.setProperty(obj,DomainClassMethods.ERRORS_PROPERTY,errors);
          }
-    }
-
-    public void setHibernateTemplate(HibernateTemplate template) {
-        this.template = template;
     }
 
 }

@@ -103,7 +103,7 @@ public class ConstraintsEvaluatingPropertyTests extends TestCase {
 
         Map constraints = domainClass.getConstrainedProperties();
 
-        ConstrainedPersistentProperty p = (ConstrainedPersistentProperty)constraints.get("name");
+        ConstrainedProperty p = (ConstrainedProperty)constraints.get("name");
         Collection cons = p.getAppliedConstraints();
                        
         assertEquals( "Incorrect number of constraints extracted: " +constraints, constraintCount, cons.size());

@@ -54,6 +54,11 @@ public interface GrailsPlugin extends ApplicationContextAware {
      * Eviction occurs when the PluginManager loads 
      */
     String EVICT = "evict";
+    
+    /**
+     * The status of the plugin
+     */
+    String STATUS = "status";
     /**
      * Defines the name of the property that defines a list of plugin names that this plugin influences.
      * A influenced plugin will be refreshed (@see refresh()) when a watched resource changes
@@ -136,6 +141,12 @@ public interface GrailsPlugin extends ApplicationContextAware {
 	 * @return The names of the plugins this plugin is dependant on
 	 */
 	String[] getDependencyNames();
+	
+	/**
+	 * 
+	 * @return The names of the plugins this plugin should evict onload
+	 */
+	String[] getEvictionNames();
 	
 	/**
 	 * Retrieves the names of plugins that this plugin should be loaded after. This differs

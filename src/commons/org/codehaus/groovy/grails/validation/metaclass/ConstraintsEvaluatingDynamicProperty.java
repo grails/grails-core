@@ -22,7 +22,6 @@ import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
 import org.codehaus.groovy.grails.commons.metaclass.AbstractDynamicProperty;
 import org.codehaus.groovy.grails.commons.metaclass.ProxyMetaClass;
-import org.codehaus.groovy.grails.orm.hibernate.validation.ConstrainedPersistentProperty;
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 import org.codehaus.groovy.grails.validation.ConstrainedPropertyBuilder;
 
@@ -46,11 +45,11 @@ public class ConstraintsEvaluatingDynamicProperty extends AbstractDynamicPropert
 
     public static final String PROPERTY_NAME = "constraints";
 
-	private GrailsDomainClassProperty[] persistentProperties;
+	private GrailsDomainClassProperty[] properties;
 
     public ConstraintsEvaluatingDynamicProperty(GrailsDomainClassProperty[] properties) {
         super(PROPERTY_NAME);
-        this.persistentProperties = properties;
+        this.properties = properties;
     }
     
     public ConstraintsEvaluatingDynamicProperty() {
@@ -101,14 +100,14 @@ public class ConstraintsEvaluatingDynamicProperty extends AbstractDynamicPropert
 
 
         Map constrainedProperties = delegate.getConstrainedProperties();
-        if(this.persistentProperties != null) {
-            for (int i = 0; i < this.persistentProperties.length; i++) {
-                GrailsDomainClassProperty p = this.persistentProperties[i];
+        if(this.properties != null) {
+            for (int i = 0; i < this.properties.length; i++) {
+                GrailsDomainClassProperty p = this.properties[i];
                 if(!p.isOptional()) {
                     ConstrainedProperty cp = (ConstrainedProperty)constrainedProperties.get(p.getName());
                     if(cp == null) {
 
-                        cp = new ConstrainedPersistentProperty(p.getDomainClass().getClazz(),
+                        cp = new ConstrainedProperty(p.getDomainClass().getClazz(),
                                                                p.getName(),
                                                                p.getType());
                         cp.setOrder(constrainedProperties.size()+1);

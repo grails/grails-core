@@ -16,6 +16,7 @@ package org.codehaus.groovy.grails.orm.hibernate.validation;
 
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 import org.codehaus.groovy.grails.validation.Constraint;
+import org.codehaus.groovy.grails.validation.AbstractConstraint;
 import org.codehaus.groovy.grails.metaclass.IdentDynamicMethod;
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.hibernate.HibernateException;

@@ -30,9 +30,11 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.logging.Log;
@@ -86,7 +88,6 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
 	private String[] loadAfterNames = new String[0];
 	private String[] influencedPluginNames = new String[0];
 	private MetaClassRegistry registry;
-	
 	public DefaultGrailsPlugin(Class pluginClass, GrailsApplication application) {
 		super(pluginClass, application);
 		this.registry = InvokerHelper.getInstance().getMetaRegistry();
@@ -105,6 +106,17 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
 			List loadAfterNamesList = (List)GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(this.plugin, PLUGIN_LOAD_AFTER_NAMES);
 			if(loadAfterNamesList != null) {
 				this.loadAfterNames = (String[])loadAfterNamesList.toArray(new String[loadAfterNamesList.size()]);
+			}
+		}
+		if(this.pluginBean.isReadableProperty(EVICT)) {
+			List pluginsToEvict = (List)GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(this.plugin, EVICT);
+			if(pluginsToEvict != null) {
+				this.evictionList = new String[pluginsToEvict.size()];
+				int index = 0;
+				for (Iterator i = pluginsToEvict.iterator(); i.hasNext();) {
+					Object o = i.next();
+					evictionList[index++] = o != null ? o.toString() : "";
+				}
 			}
 		}
 		if(this.pluginBean.isReadableProperty(VERSION)) {

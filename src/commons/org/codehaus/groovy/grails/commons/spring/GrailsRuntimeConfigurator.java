@@ -17,31 +17,15 @@
 package org.codehaus.groovy.grails.commons.spring;
 
 import grails.spring.BeanBuilder;
-
-import java.io.IOException;
-import java.net.URL;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Properties;
-
-import javax.servlet.ServletContext;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.GrailsDataSource;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.commons.GrailsServiceClass;
 import org.codehaus.groovy.grails.commons.GrailsTagLibClass;
-import org.codehaus.groovy.grails.orm.hibernate.ConfigurableLocalSessionFactoryBean;
-import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsDomainConfigurationUtil;
-import org.codehaus.groovy.grails.orm.hibernate.validation.GrailsDomainClassValidator;
 import org.codehaus.groovy.grails.plugins.DefaultGrailsPluginManager;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.codehaus.groovy.grails.plugins.PluginManagerHolder;
-import org.codehaus.groovy.grails.scaffolding.ScaffoldDomain;
-import org.hibernate.SessionFactory;
 import org.springframework.aop.framework.ProxyFactoryBean;
 import org.springframework.aop.target.HotSwappableTargetSource;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -50,15 +34,16 @@ import org.springframework.beans.factory.config.RuntimeBeanReference;
 import org.springframework.beans.factory.support.ManagedList;
 import org.springframework.beans.factory.xml.XmlBeanFactory;
 import org.springframework.context.ApplicationContext;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.mock.web.MockServletContext;
-import org.springframework.orm.hibernate3.HibernateTransactionManager;
-import org.springframework.orm.hibernate3.support.OpenSessionInViewInterceptor;
 import org.springframework.transaction.interceptor.TransactionProxyFactoryBean;
 import org.springframework.util.Assert;
-import org.springframework.validation.Validator;
 import org.springframework.web.context.WebApplicationContext;
+
+import javax.servlet.ServletContext;
+import java.io.IOException;
+import java.util.Collection;
+import java.util.Properties;
 
 /**
  * A class that handles the runtime configuration of the Grails ApplicationContext
@@ -89,8 +74,7 @@ public class GrailsRuntimeConfigurator {
 	
 	private GrailsApplication application;
 	private ApplicationContext parent;
-	private boolean loadExternalPersistenceConfig = true;
-    private boolean parentDataSource = false;
+    private boolean parentDataSource;
 	private GrailsPluginManager pluginManager;
 
     public GrailsRuntimeConfigurator(GrailsApplication application) {
@@ -101,7 +85,8 @@ public class GrailsRuntimeConfigurator {
 		super();
 		this.application = application;
 		this.parent = parent;
-		if(parent != null)
+        parentDataSource = false;
+        if(parent != null)
 			this.parentDataSource = parent.containsBean(DATA_SOURCE_BEAN);
         try {
 			this.pluginManager = PluginManagerHolder.getPluginManager();
@@ -220,7 +205,7 @@ public class GrailsRuntimeConfigurator {
 	 * 
 	 * @param grailsDomainClass The domain class
 	 * @param context The application context
-	 */
+
 	public void registerDomainClass(GrailsDomainClass grailsDomainClass, GrailsWebApplicationContext context) {
 		
 		RuntimeSpringConfiguration springConfig = new DefaultRuntimeSpringConfiguration();
@@ -267,7 +252,7 @@ public class GrailsRuntimeConfigurator {
 											.addProperty(MESSAGE_SOURCE_BEAN , new RuntimeBeanReference(MESSAGE_SOURCE_BEAN));
 		
 		context.registerBeanDefinition(grailsDomainClass.getFullName() + "Validator",validatorBean.getBeanDefinition());
-	}
+	}  */
 	
 	/**
 	 * Updates an existing domain class within the application context
@@ -292,6 +277,7 @@ public class GrailsRuntimeConfigurator {
 	 * Configures the Grails application context at runtime
 	 * 
 	 * @return An ApplicationContext instance
+     * @param context A ServletContext instance
 	 */
 	public WebApplicationContext configure(ServletContext context) {		
 		RuntimeSpringConfiguration springConfig = parent != null ? new DefaultRuntimeSpringConfiguration(parent) : new DefaultRuntimeSpringConfiguration();
@@ -369,58 +355,9 @@ public class GrailsRuntimeConfigurator {
 			LOG.warn("[RuntimeConfiguration] Unable to perform post initialization config: " + SPRING_RESOURCES_XML , ex);
 		}
 	}
-	public void refreshSessionFactory(GrailsApplication app, GrailsWebApplicationContext context) {
-
-		RuntimeSpringConfiguration springConfig = new DefaultRuntimeSpringConfiguration();
-		BeanConfiguration sessionFactoryBean = springConfig
-												.createSingletonBean(ConfigurableLocalSessionFactoryBean.class)
-												.addProperty("grailsApplication",new RuntimeBeanReference(GrailsApplication.APPLICATION_ID,true))
-												.addProperty("classLoader", new RuntimeBeanReference(CLASS_LOADER_BEAN))
-												.addProperty("dataSource", new RuntimeBeanReference(DATA_SOURCE_BEAN,parentDataSource))
-												.addProperty("hibernateProperties", new RuntimeBeanReference(HIBERNATE_PROPERTIES_BEAN));
-		
-		GrailsDataSource ds = app.getGrailsDataSource();
-		if(ds != null && ds.getConfigurationClass() != null) {
-			sessionFactoryBean.addProperty("configClass",ds.getConfigurationClass());
-		}
-
-		if(loadExternalPersistenceConfig) {
-			URL hibernateConfig = application.getClassLoader().getResource("hibernate.cfg.xml");
-			if(hibernateConfig != null) {
-				sessionFactoryBean
-					.addProperty("configLocation",new ClassPathResource("hibernate.cfg.xml"));
-			}
-		}
-		
-		SessionFactory sf = (SessionFactory)context.getBean(SESSION_FACTORY_BEAN);
-		context.registerBeanDefinition(SESSION_FACTORY_BEAN,sessionFactoryBean.getBeanDefinition());
-		GrailsDomainConfigurationUtil.configureDynamicMethods(context,app);
-		
-		// update transaction manager reference
-		if(context.containsBean(TRANSACTION_MANAGER_BEAN)) {
-			((HibernateTransactionManager)context.getBean(TRANSACTION_MANAGER_BEAN)).setSessionFactory(sf);
-		}
-		// update OSIVI reference
-		if(context.containsBean(OPEN_SESSION_IN_VIEW_INTERCEPTOR_BEAN)) {
-			((OpenSessionInViewInterceptor)context.getBean(OPEN_SESSION_IN_VIEW_INTERCEPTOR_BEAN)).setSessionFactory(sf);
-		}
-		// update validators
-		String[] validatorBeanNames = context.getBeanNamesForType(Validator.class);
-		for (int i = 0; i < validatorBeanNames.length; i++) {
-			GrailsDomainClassValidator validator = (GrailsDomainClassValidator) context.getBean(validatorBeanNames[i]);
-			validator.setSessionFactory(sf);
-		}
-		// update scaffold domains
-		Map scaffoldDomains = context.getBeansOfType(ScaffoldDomain.class);
-		for (Iterator i = scaffoldDomains.values().iterator(); i.hasNext();) {
-			ScaffoldDomain sd = (ScaffoldDomain) i.next();
-			sd.setSessionFactory(sf);
-		}
-	}
 
 	public void setLoadExternalPersistenceConfig(boolean b) {
-		this.loadExternalPersistenceConfig = b;
-	}
+    }
 
 	public void setPluginManager(GrailsPluginManager manager) {
 		this.pluginManager = manager;

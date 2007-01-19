@@ -192,6 +192,7 @@ public final class GrailsDomainBinder {
 				ManyToOne element = new ManyToOne( collection.getCollectionTable() );
 				bindManyToMany(otherSide, element, mappings);
 				collection.setElement(element);	
+				collection.setLazy(true);
 			}
 			else {
 				// TODO support unidirectional many-to-many
@@ -939,7 +940,14 @@ w	 * Binds a simple value to the Hibernate metamodel. A simple value is
 	 */
 	private static void bindColumn(GrailsDomainClassProperty grailsProp, Column column, Table table) {						
 		if(grailsProp.isAssociation()) {
-			column.setName( namingStrategy.propertyToColumnName(grailsProp.getName()) + FOREIGN_KEY_SUFFIX );
+			if(!grailsProp.isBidirectional() && grailsProp.isOneToMany()) {
+				String prefix = namingStrategy.classToTableName(grailsProp.getDomainClass().getName());
+				String columnName = namingStrategy.propertyToColumnName(grailsProp.getName()) + FOREIGN_KEY_SUFFIX ;
+				column.setName(prefix+'_'+columnName);
+			}
+			else {
+				column.setName( namingStrategy.propertyToColumnName(grailsProp.getName()) + FOREIGN_KEY_SUFFIX );				
+			}
 			column.setNullable(true);
 			
 		} 

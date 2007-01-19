@@ -107,7 +107,6 @@ public class GrailsHibernateConfigurationTests extends AbstractDependencyInjecti
 		assertNotNull(this.sessionFactory);
 		
 		GrailsDomainClass[] domainClasses = grailsApplication.getGrailsDomainClasses();
-		assertEquals(7,domainClasses.length);
 		
 		
 		HibernateTemplate template = new HibernateTemplate(this.sessionFactory);

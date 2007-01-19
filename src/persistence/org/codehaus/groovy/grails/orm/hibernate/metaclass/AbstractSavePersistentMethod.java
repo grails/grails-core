@@ -65,9 +65,6 @@ public abstract class AbstractSavePersistentMethod extends
         	Validator validator = domainClass.getValidator();
         	Errors errors = new BindException(target, target.getClass().getName());
             if(validator != null) {
-                if(validator instanceof GrailsDomainClassValidator) {
-                     ((GrailsDomainClassValidator)validator).setHibernateTemplate(getHibernateTemplate());
-                }
                 validator.validate(target,errors);
 
                 if(errors.hasErrors()) {

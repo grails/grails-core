@@ -69,7 +69,7 @@ public class GrailsOpenSessionInViewFilter extends OpenSessionInViewFilter {
     }
 
     protected void closeSession(Session session, SessionFactory sessionFactory) {
-        if(!FlushMode.NEVER.equals(session.getFlushMode())) {
+        if(!FlushMode.MANUAL.equals(session.getFlushMode())) {
             session.flush();
         }
         super.closeSession(session, sessionFactory);

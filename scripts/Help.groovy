@@ -83,8 +83,8 @@ task ( 'default' : "Prints out the help for each script") {
 		def sw = new StringWriter()      		
 		def pw = new PrintWriter(sw)
 
-		scripts.each { file ->
-			use(HelpEvaluatingCategory.class) { 
+		use(HelpEvaluatingCategory.class) {    
+			scripts.each { file ->
 				try {
 					def script = gcl.parseClass(file).newInstance()			
 					script.binding = binding
@@ -98,8 +98,8 @@ task ( 'default' : "Prints out the help for each script") {
 					println "Error creating help for ${file}: ${t.message}"
 					t.printStackTrace(System.out)
 				}
-			}	   
-		} 
+			}        
+		}	   		
 		helpText = sw.toString()     
 		new File("${grailsHome}/scripts/help.txt").write(helpText) 		  		
 	}                                                              

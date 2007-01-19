@@ -5,7 +5,7 @@ import org.codehaus.groovy.grails.commons.*
 class TwoUnidirecitonalOneToManyTests extends AbstractGrailsHibernateTests {
 
 	void testTwoUniOneToManys() {
-	/*	def mailing = ga.getDomainClass("Mailing").newInstance()
+		def mailing = ga.getDomainClass("Mailing").newInstance()
 		def recipient = ga.getDomainClass("Recipient").newInstance()
 		def doc1 = ga.getDomainClass("Document").newInstance()
 		def doc2 = ga.getDomainClass("Document").newInstance()
@@ -17,13 +17,13 @@ class TwoUnidirecitonalOneToManyTests extends AbstractGrailsHibernateTests {
 		mailing.save(true)
 		
 		recipient.addDocument(doc2)
-		recipient.save(true)*/
+		recipient.save(true)
 	}
 	
 
 	
 	void onSetUp() {
-	/*	this.gcl.parseClass('''
+		this.gcl.parseClass('''
 class Mailing {
 	Long id
 	Long version
@@ -42,7 +42,7 @@ class Document {
 	String filename
 }
 '''
-		)*/
+		)
 	}
 	
 	void onTearDown() {

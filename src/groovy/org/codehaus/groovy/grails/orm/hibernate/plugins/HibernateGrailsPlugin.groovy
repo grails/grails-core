@@ -111,7 +111,6 @@ class HibernateGrailsPlugin {
 				"${dc.fullName}Validator"(GrailsDomainClassValidator) {
 					domainClass = ref("${dc.fullName}Proxy")
 					messageSource = messageSource
-					sessionFactory = sessionFactory
 				}			
 			}
 	}

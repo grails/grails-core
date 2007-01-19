@@ -19,8 +19,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-
-import org.codehaus.groovy.grails.orm.hibernate.validation.ConstrainedPersistentProperty;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.beans.InvalidPropertyException;
@@ -59,7 +57,7 @@ public class ConstrainedPropertyBuilder extends BuilderSupport {
 			}
 			else {
 				PropertyDescriptor pd = this.bean.getPropertyDescriptor(property);
-				cp = new ConstrainedPersistentProperty(this.target.getClass(), property, pd.getPropertyType());
+				cp = new ConstrainedProperty(this.target.getClass(), property, pd.getPropertyType());
 				cp.setOrder(order++);
 				constrainedProperties.put( property, cp );
 			}

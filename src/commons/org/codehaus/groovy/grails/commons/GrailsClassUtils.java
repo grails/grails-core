@@ -111,7 +111,7 @@ public class GrailsClassUtils {
      */
     public static boolean isControllerClass( Class clazz ) {
     	if(clazz == null) return false;
-        return isControllerClass(clazz.getName())  && !Closure.class.isAssignableFrom(clazz);
+        return isControllerClass(clazz.getName())  && !Closure.class.isAssignableFrom(clazz) && !Modifier.isAbstract(clazz.getModifiers());
     }
 
     public static boolean isControllerClass(String className) {

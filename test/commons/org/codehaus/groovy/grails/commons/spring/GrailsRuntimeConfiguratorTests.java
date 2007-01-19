@@ -255,7 +255,7 @@ public class GrailsRuntimeConfiguratorTests extends TestCase {
         assertEquals("hello",serviceInstance.invokeMethod("serviceMethod",null));
     }
 
-    public void testRegisterDomainClass() throws Exception {
+   /* public void testRegisterDomainClass() throws Exception {
         GroovyClassLoader gcl = new GroovyClassLoader();
 
         GrailsApplication app = new DefaultGrailsApplication(new Class[0], gcl );
@@ -274,9 +274,9 @@ public class GrailsRuntimeConfiguratorTests extends TestCase {
         assertTrue(ctx.containsBean("TestTargetSource"));
         assertTrue(ctx.containsBean("TestProxy"));
         assertTrue(ctx.containsBean("TestPersistentClass"));
-    }
+    }  */
 
-    public void testRefreshSessionFactory() throws Exception {
+   /*public void testRefreshSessionFactory() throws Exception {
         GroovyClassLoader gcl = new GroovyClassLoader();
         Class dc = gcl.parseClass("class Test { Long id; Long version; }");
 
@@ -296,7 +296,7 @@ public class GrailsRuntimeConfiguratorTests extends TestCase {
         conf.updateDomainClass(domainClass, ctx);
 
         conf.refreshSessionFactory(app,ctx);
-    }
+    }*/
 
     public void testCustomDialectConfiguration() throws Exception {
         GroovyClassLoader gcl = new GroovyClassLoader();

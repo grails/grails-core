@@ -31,10 +31,12 @@ import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -100,6 +102,7 @@ public class DefaultGrailsPluginManager implements GrailsPluginManager {
 	private ApplicationContext parentCtx;
 	private PathMatchingResourcePatternResolver resolver;
 	boolean initialised = false;
+	private Map delayedEvictions = new HashMap();
 
 	public DefaultGrailsPluginManager(String resourcePath, GrailsApplication application) throws IOException {
 		super();
@@ -166,8 +169,23 @@ public class DefaultGrailsPluginManager implements GrailsPluginManager {
 			if(!delayedLoadPlugins.isEmpty()) {
 				loadDelayedPlugins();
 			}
+			if(!delayedEvictions.isEmpty()) {
+				processDelayedEvictions();
+			}
 			initializePlugins();
 			initialised = true;
+		}
+	}
+
+	private void processDelayedEvictions() {
+		for (Iterator i = delayedEvictions.keySet().iterator(); i.hasNext();) {
+			GrailsPlugin plugin = (GrailsPlugin) i.next();
+			String[] pluginToEvict = (String[])delayedEvictions.get(plugin);
+			
+			for (int j = 0; j < pluginToEvict.length; j++) {
+				String pluginName = pluginToEvict[j];
+				evictPlugin(plugin, pluginName);
+			}
 		}
 	}
 
@@ -192,6 +210,7 @@ public class DefaultGrailsPluginManager implements GrailsPluginManager {
 				loadCorePluginsFromResources(resources);
 			}
 			else {
+				LOG.warn("WARNING: Grails was unable to load core plugins dynamically. This is normally a problem with the container class loader configuration, see troubleshooting and FAQ for more info. ");
 				loadCorePluginsStatically();
 			}
 		} catch (IOException e) {
@@ -200,7 +219,7 @@ public class DefaultGrailsPluginManager implements GrailsPluginManager {
 	}
 
 	private void loadCorePluginsStatically() {
-		LOG.warn("WARNING: Grails was unable to load core plugins dynamically. This is normally a problem with the container. Attempting static load..");
+		
 
 		// This is a horrible hard coded hack, but there seems to be no way to resolve .class files dynamically
 		// on OC4J. If anyones knows how to fix this shout
@@ -387,8 +406,24 @@ public class DefaultGrailsPluginManager implements GrailsPluginManager {
 			((ParentApplicationContextAware)plugin).setParentApplicationContext(parentCtx);
 		}
 		plugin.setManager(this);
+		String[] evictionNames = plugin.getEvictionNames();
+		if(evictionNames.length > 0)
+			delayedEvictions.put(plugin, evictionNames);
+
 		pluginList.add(plugin);
 		plugins.put(plugin.getName(), plugin);
+	}
+
+	protected void evictPlugin(GrailsPlugin evictor, String evicteeName) {
+		GrailsPlugin pluginToEvict = (GrailsPlugin)plugins.get(evicteeName);
+		if(pluginToEvict!=null) {
+			pluginList.remove(pluginToEvict);
+			plugins.remove(pluginToEvict.getName());
+			
+			if(LOG.isDebugEnabled()) {
+				LOG.debug("Grails plug-in "+pluginToEvict+" was evicted by " + evictor);
+			}						
+		}
 	}
 
 	private boolean hasGrailsPlugin(String name, BigDecimal version) {

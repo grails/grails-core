@@ -37,6 +37,12 @@ task ( "default" : "Creates a Grails project, including the necessary directory 
 task( createApp: "The implementation task")  {
    depends( appName, createStructure, init )   
 	
+	createEclipseProject()
+	
+	println "Created Grails Application at $basedir"	
+}                         
+
+task( createEclipseProject: "Creates the Eclipse project files") {
 	Ant.copy(todir:"${basedir}") {
 		fileset(dir:"${grailsHome}/src/grails/templates/ide-support/eclipse",
 				includes:"*.*",
@@ -53,9 +59,7 @@ task( createApp: "The implementation task")  {
     Ant.replace(dir:"${basedir}", includes:"*.*", 
     			token:"@grails.version@", value:"${grailsVersion}" )
 	Ant.replace(dir:"${basedir}", includes:"*.*", 
-				token:"@grails.project.name@", value:"${grailsAppName}" )
-	
-	println "Created Grails Application at $basedir"	
+				token:"@grails.project.name@", value:"${grailsAppName}" )	
 }
     
 task ( appName : "Evaluates the application name") {

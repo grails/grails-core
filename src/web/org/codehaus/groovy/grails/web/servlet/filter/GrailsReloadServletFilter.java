@@ -16,39 +16,17 @@
 package org.codehaus.groovy.grails.web.servlet.filter;
 
 import groovy.lang.GroovyClassLoader;
-
-import java.io.File;
-import java.io.IOException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Properties;
-
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsControllerClass;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
-import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
-import org.codehaus.groovy.grails.commons.GrailsPageFlowClass;
-import org.codehaus.groovy.grails.commons.GrailsServiceClass;
-import org.codehaus.groovy.grails.commons.GrailsTagLibClass;
 import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator;
 import org.codehaus.groovy.grails.commons.spring.GrailsWebApplicationContext;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.codehaus.groovy.grails.plugins.PluginManagerHolder;
 import org.codehaus.groovy.grails.scaffolding.GrailsTemplateGenerator;
-import org.codehaus.groovy.grails.scaffolding.ScaffoldDomain;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsUrlHandlerMapping;
 import org.codehaus.groovy.grails.web.servlet.mvc.SimpleGrailsController;
@@ -58,6 +36,14 @@ import org.springframework.web.context.request.WebRequestInterceptor;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.handler.WebRequestHandlerInterceptorAdapter;
+
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.net.URL;
+import java.util.Properties;
 
 /**
  * A servlet filter that copies resources from the source on content change and manages reloading if necessary
@@ -72,13 +58,13 @@ public class GrailsReloadServletFilter extends OncePerRequestFilter {
     ResourceCopier copyScript;
     GrailsWebApplicationContext context;
     GrailsApplication application;
-    private boolean initialised = false;
-    private Map resourceMetas = Collections.synchronizedMap(new HashMap());
-    private GrailsTemplateGenerator templateGenerator;
 
-	private GrailsRuntimeConfigurator config;
+    private GrailsRuntimeConfigurator config;
 
 	private GrailsPluginManager manager;
+
+    public GrailsReloadServletFilter() {
+    }
 
     class ResourceMeta {
         long lastModified;
@@ -117,7 +103,7 @@ public class GrailsReloadServletFilter extends OncePerRequestFilter {
               groovyClass = gcl.parseClass(gcl.getResource("org/codehaus/groovy/grails/web/servlet/filter/GrailsResourceCopier.groovy").openStream());
               copyScript = (ResourceCopier)groovyClass.newInstance();
               groovyClass = gcl.loadClass("org.codehaus.groovy.grails.scaffolding.DefaultGrailsTemplateGenerator");
-              templateGenerator = (GrailsTemplateGenerator)groovyClass.newInstance();
+              GrailsTemplateGenerator templateGenerator = (GrailsTemplateGenerator) groovyClass.newInstance();
               templateGenerator.setOverwrite(true);
               // perform initial generation of views
               GrailsControllerClass[] controllers = application.getControllers();
@@ -174,101 +160,6 @@ public class GrailsReloadServletFilter extends OncePerRequestFilter {
         filterChain.doFilter(httpServletRequest,httpServletResponse);
     }
 
-    private void loadServiceClass(Class loadedClass, boolean isNew) {
-
-        GrailsServiceClass serviceClass = application.addServiceClass(loadedClass);
-        if(serviceClass.isTransactional() && !isNew) {
-            LOG.warn("Cannot reload class ["+loadedClass+"] reloading of transactional service classes is not currently possible. Set class to non-transactional first.");
-        }
-        else {
-            // reload whole context
-            if(serviceClass != null) {
-                // if its a new taglib, reload app context
-                if(isNew) {
-                    config.registerService(serviceClass,context);
-                }
-                else {
-                    // swap target source in app context
-                    HotSwappableTargetSource targetSource = (HotSwappableTargetSource)context.getBean(serviceClass.getFullName() + "TargetSource");
-                    targetSource.swap(serviceClass.newInstance());
-                }
-            }
-        }
-    }
-
-    private void loadTagLibClass(Class loadedClass, boolean isNew) {
-        GrailsTagLibClass tagLibClass = application.addTagLibClass(loadedClass);
-        if(tagLibClass != null) {
-            // if its a new taglib, reload app context
-            if(isNew) {
-            	config.registerTagLibrary(tagLibClass, context);            
-            }
-            else {
-                // swap target source in app context
-                HotSwappableTargetSource targetSource = (HotSwappableTargetSource)context.getBean(tagLibClass.getFullName() + "TargetSource");
-                targetSource.swap(tagLibClass);
-            }
-        }
-    }
-
-    private void loadDomainClass(Class loadedClass, boolean isNew) throws ClassNotFoundException {
-        GrailsDomainClass domainClass = application.addDomainClass(loadedClass);
-        Collection loadedDomainClasses = new ArrayList();
-        loadedDomainClasses.add( domainClass );
-
-        // go through all domain classes an establish if they are related to this one.
-        // and don't already have a reference within the class itself
-        GrailsDomainClass[] domainClasses = application.getGrailsDomainClasses();
-        for (int i = 0; i < domainClasses.length; i++) {
-            GrailsDomainClass grailsDomainClass = domainClasses[i];
-            if(!grailsDomainClass.equals(domainClass)) {
-                GrailsDomainClassProperty[] properties = grailsDomainClass.getPersistantProperties();
-                for (int j = 0; j < properties.length; j++) {
-                    GrailsDomainClassProperty property = properties[j];
-                    if(property.getType().getName().equals(domainClass.getFullName())) {
-                        ResourceMeta rm = (ResourceMeta)resourceMetas.get(grailsDomainClass.getClazz().getName());
-                        if(rm != null) {
-                            File groovyFile = new File(rm.url.getFile());
-                            if(groovyFile.exists()) {
-                                groovyFile.setLastModified(System.currentTimeMillis());
-
-                                Class relatedClass = application
-                                                        .getClassLoader()
-                                                        .loadClass(grailsDomainClass.getClazz().getName(),true,false);
-                                loadedDomainClasses.add( application.addDomainClass(relatedClass) );
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        if(isNew) {
-        	config.registerDomainClass(domainClass,context);        	
-        }
-        else {
-        	config.updateDomainClass(domainClass,context);
-        }
-        
-        for (Iterator i = loadedDomainClasses.iterator(); i.hasNext();) {
-            GrailsDomainClass grailsDomainClass = (GrailsDomainClass) i.next();
-            config.updateDomainClass(grailsDomainClass,context);
-            
-            GrailsControllerClass controllerClass = application.getScaffoldingController(grailsDomainClass);
-            if(controllerClass != null && controllerClass.isScaffolding()) {
-                // generate new views
-            	ScaffoldDomain scaffoldDomain = (ScaffoldDomain)context.getBean(grailsDomainClass.getFullName()+"ScaffoldDomain");
-            	scaffoldDomain.setPersistentClass(grailsDomainClass.getClazz());
-                LOG.info("Re-generating views for scaffold controller ["+controllerClass.getFullName()+"]");
-                templateGenerator.generateViews(domainClass,getServletContext().getRealPath("/WEB-INF"));
-                // overwrite with user defined views
-                copyScript.copyViews(true);
-            }
-
-        }
-        config.refreshSessionFactory(application,context);
-    }
-
     void loadControllerClass(Class loadedClass, boolean isNew) {
         GrailsControllerClass controllerClass = application.addControllerClass(loadedClass);
         if(controllerClass != null) {
@@ -291,10 +182,6 @@ public class GrailsReloadServletFilter extends OncePerRequestFilter {
                         if(!mappings.containsKey(simpleController.getURIs()[x]))
                             mappings.put(simpleController.getURIs()[x], SimpleGrailsController.APPLICATION_CONTEXT_ID);
                     }
-                }
-                for (int i = 0; i < application.getPageFlows().length; i++) {
-                    GrailsPageFlowClass pageFlow = application.getPageFlows()[i];
-                    mappings.put(pageFlow.getUri(), pageFlow.getFullName() + "Controller");
                 }
 
                 HotSwappableTargetSource urlMappingsTargetSource = (HotSwappableTargetSource)context.getBean(GrailsUrlHandlerMapping.APPLICATION_CONTEXT_TARGET_SOURCE);

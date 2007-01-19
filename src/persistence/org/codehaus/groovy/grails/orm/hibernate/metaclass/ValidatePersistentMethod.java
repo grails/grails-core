@@ -68,9 +68,6 @@ public class ValidatePersistentMethod extends AbstractDynamicPersistentMethod {
                     evict = ((Boolean)arguments[0]).booleanValue();
                 }
             }
-            if(validator instanceof GrailsDomainClassValidator) {
-                 ((GrailsDomainClassValidator)validator).setHibernateTemplate(getHibernateTemplate());
-            }
             validator.validate(target,errors);
 
             if(errors.hasErrors()) {

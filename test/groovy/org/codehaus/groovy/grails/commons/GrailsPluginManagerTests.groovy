@@ -95,6 +95,17 @@ public class GrailsPluginManagerTests extends AbstractGrailsMockTests {
 		
 		assert ctx.containsBean("localeResolver")
 	}
+	
+	public void testEviction() {
+		def manager = new DefaultGrailsPluginManager([MyGrailsPlugin,AnotherGrailsPlugin,SomeOtherGrailsPlugin,ShouldEvictSomeOtherGrailsPlugin] as Class[], ga)
+		
+		manager.loadPlugins()
+		
+		assertFalse manager.hasGrailsPlugin("someOther")
+		assertTrue manager.hasGrailsPlugin("my")
+		assertTrue manager.hasGrailsPlugin("another")
+		assertTrue manager.hasGrailsPlugin("shouldEvictSomeOther")
+	}
 
 }
 class MyGrailsPlugin {
@@ -118,4 +129,8 @@ class SomeOtherGrailsPlugin {
 class ShouldLoadLastGrailsPlugin {
 	def loadAfter = ["my", "someOther"]
 	def version = 1.5	             
+}
+class ShouldEvictSomeOtherGrailsPlugin {
+	def evict = ['someOther']
+	def version = 1.1
 }

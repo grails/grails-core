@@ -49,6 +49,7 @@ public abstract class AbstractGrailsPlugin extends GroovyObjectSupport implement
 	protected Class pluginClass;
 	protected ApplicationContext applicationContext;
 	protected GrailsPluginManager manager;
+	protected String[] evictionList = new String[0];
 
 	/**
 	 * Wrapper Grails class for plugins
@@ -122,6 +123,9 @@ public abstract class AbstractGrailsPlugin extends GroovyObjectSupport implement
 	 */
 	public void setApplication(GrailsApplication application) {
 		this.application = application;
+	}
+	public String[] getEvictionNames() {
+		return this.evictionList;
 	}
 	
 	
