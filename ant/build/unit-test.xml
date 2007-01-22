@@ -9,6 +9,10 @@
 
     <taskdef resource="tasks.properties">
         <classpath>
+	      <pathelement path="${grails.build}/core"/>			      
+	      <pathelement path="${grails.build}/web"/>			      
+	      <pathelement path="${grails.build}/gorm"/>			      						
+	      <pathelement path="${grails.build}/crud"/>			      									
             <fileset dir="cruise/coverage/lib" includes="*.jar"/>
         </classpath>
 	    <classpath refid="classpath"/>
@@ -56,12 +60,23 @@
 			<src path="${grails.test.src.persistence}"/>
 			<src path="${grails.test.src.scaffolding}"/>
 			<classpath refid="classpath"/>
-			<classpath location="${grails.build}"/>
+	        <classpath>
+		      <pathelement path="${grails.build}/core"/>			      
+		      <pathelement path="${grails.build}/web"/>			      
+		      <pathelement path="${grails.build}/gorm"/>			      						
+		      <pathelement path="${grails.build}/crud"/>			      									
+			</classpath>
 		</javac>
 		<groovyc srcdir="test/groovy" destdir="${grails.test.build}">    	
 			<classpath refid="classpath"/>  
 			<classpath location="${grails.test.build}" />
 			<classpath location="${grails.build}"/>			
+	        <classpath>
+		      <pathelement path="${grails.build}/core"/>			      
+		      <pathelement path="${grails.build}/web"/>			      
+		      <pathelement path="${grails.build}/gorm"/>			      						
+		      <pathelement path="${grails.build}/crud"/>			      									
+			</classpath>
 		</groovyc>
 	</target>
 
@@ -73,12 +88,18 @@
 			<classpath location="${coverage.build}"/>                 <!-- must be first in cp!    -->
 			<classpath location="cruise/coverage/lib/cobertura.jar"/> <!-- only neede for coverage -->
             <classpath refid="classpath"/>
-			<classpath location="${grails.build}"/>
+	        <classpath>
+		      <pathelement path="${grails.build}/core"/>			      
+		      <pathelement path="${grails.build}/web"/>			      
+		      <pathelement path="${grails.build}/gorm"/>			      						
+		      <pathelement path="${grails.build}/crud"/>			      									
+			</classpath>
 			<classpath location="${grails.test.build}"/>
 			<classpath location="${grails.test.src.web}"/>
 			<classpath location="${grails.test.src.commons}"/>
 			<classpath location="${grails.test.src.persistence}"/>
 			<classpath location="${grails.test.src.scaffolding}"/>
+			<classpath location="${grails.test.src.groovy}"/>			
 
 			<formatter type="xml" />
 			<batchtest todir="${grails.test.reports}" failureproperty="grails.test.failure">

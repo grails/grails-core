@@ -1,8 +1,13 @@
 <project name="grails-bundle">
 
 	<target name="jar" depends="build-test" description="Build the entire source, run all tests and create the Grails JAR file.">
-		<delete file="${grails.dist}/${grails.dist.jar}"/>
-		<jar destfile="${grails.dist}/${grails.dist.jar}" basedir="${grails.build}"/>
+		<delete>
+			<fileset dir="${grails.dist}" includes="*"/>
+		</delete>
+		<jar destfile="${grails.dist}/grails-core-${grails.version}.jar" basedir="${grails.build}/core"/>
+		<jar destfile="${grails.dist}/grails-gorm-${grails.version}.jar" basedir="${grails.build}/gorm"/>		
+		<jar destfile="${grails.dist}/grails-web-${grails.version}.jar" basedir="${grails.build}/web"/>		
+		<jar destfile="${grails.dist}/grails-crud-${grails.version}.jar" basedir="${grails.build}/crud"/>		
 	</target>
 
     <target name="package" depends="clean,test,jar,javadoc" description="Create the release archives for Grails.">
