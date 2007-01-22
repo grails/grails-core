@@ -30,7 +30,7 @@ import org.springframework.transaction.interceptor.TransactionProxyFactoryBean
 class ServicesGrailsPlugin {
 	
 	def version = GrailsPluginUtils.getGrailsVersion()
-	def dependsOn = [hibernate:version]
+	def loadAfter = ['hibernate']
 	                 
     def watchedResources = "**/grails-app/services/*Service.groovy"
     def influences = ['controllers']
