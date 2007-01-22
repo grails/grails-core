@@ -52,14 +52,20 @@ task( createEclipseProject: "Creates the Eclipse project files") {
 	Ant.copy(file:"${grailsHome}/src/grails/templates/ide-support/eclipse/.launch", 
 			tofile:"${basedir}/${grailsAppName}.launch")
 			
-	Ant.replace(dir:"${basedir}",includes:"*.*", 
+	Ant.replace(dir:"${basedir}",includes:"**/*.*", 
 				token:"@grails.libs@", value:"${getGrailsLibs()}" )
-	Ant.replace(dir:"${basedir}", includes:"*.*", 
+	Ant.replace(dir:"${basedir}", includes:"**/*.*",
 				token:"@grails.jar@", value:"${getGrailsJar()}" )
-    Ant.replace(dir:"${basedir}", includes:"*.*", 
+    Ant.replace(dir:"${basedir}", includes:"**/*.*",
     			token:"@grails.version@", value:"${grailsVersion}" )
-	Ant.replace(dir:"${basedir}", includes:"*.*", 
-				token:"@grails.project.name@", value:"${grailsAppName}" )	
+
+
+    def appKey = grailsAppName.replaceAll( /\s/, '.' ).toLowerCase()
+
+	Ant.replace(dir:"${basedir}", includes:"**/*.*",
+				token:"@grails.project.name@", value:"${grailsAppName}" )
+	Ant.replace(dir:"${basedir}", includes:"**/*.*",
+				token:"@grails.project.key@", value:"${appKey}" )				
 }
     
 task ( appName : "Evaluates the application name") {

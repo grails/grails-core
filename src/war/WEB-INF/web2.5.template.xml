@@ -14,6 +14,12 @@
 	  <param-value>/WEB-INF/applicationContext.xml</param-value>
 	</context-param>
 
+    <context-param>
+        <param-name>webAppRootKey</param-name>
+        <param-value>@grails.project.key@</param-value>
+    </context-param>
+
+
     <filter>
            <filter-name>sitemesh</filter-name>
         <filter-class>org.codehaus.groovy.grails.web.sitemesh.GrailsPageFilter</filter-class>

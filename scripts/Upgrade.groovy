@@ -78,7 +78,13 @@ task( upgrade: "main upgrade task") {
 		    fileset(file:"${grailsHome}/src/war/WEB-INF/web${servletVersion}.template.xml") {
                 //present(present:"srconly", targetdir:"${basedir}/web-app/WEB-INF")
             }
-        }
+        }         
+
+	    def appKey = baseName.replaceAll( /\s/, '.' ).toLowerCase()
+
+		replace(dir:"${basedir}/web-app/WEB-INF", includes:"**/*.*",
+		    		token:"@grails.project.key@", value:"${appKey}" )				
+
 
 		if(servletVersion != "2.3") {
 			replace(file:"${basedir}/web-app/index.jsp", token:"http://java.sun.com/jstl/core",
