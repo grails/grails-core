@@ -299,11 +299,11 @@ public class GrailsRuntimeConfigurator {
 		
 		this.pluginManager.setApplicationContext(ctx);
 		
-		performPostProcessing(ctx);
-		
 		this.pluginManager.doDynamicMethods();
-		
-		return ctx;
+
+        performPostProcessing(ctx);
+
+        return ctx;
 	}
 	
 	private void performPostProcessing(WebApplicationContext ctx) {

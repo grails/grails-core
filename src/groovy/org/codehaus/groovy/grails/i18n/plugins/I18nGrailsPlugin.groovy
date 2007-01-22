@@ -15,7 +15,7 @@
  */ 
 package org.codehaus.groovy.grails.i18n.plugins
 
-import org.codehaus.groovy.grails.plugins.support.*
+import org.codehaus.groovy.grails.plugins.support.GrailsPluginUtils
 import org.springframework.web.servlet.i18n.CookieLocaleResolver;
 import org.springframework.web.servlet.i18n.LocaleChangeInterceptor;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;

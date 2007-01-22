@@ -128,7 +128,7 @@ public class GrailsWrappedRuntimeException extends GrailsException {
                 if(gspFile == null) {
                     String fileName = this.className.replace('.', '/') + ".groovy";
                     String urlPrefix = URL_PREFIX;
-                    if(GrailsClassUtils.isControllerClass(className) || GrailsClassUtils.isPageFlowClass(className)) {
+                    if(GrailsClassUtils.isControllerClass(className)) {
                         urlPrefix += "/controllers/";
                     }
                     else if(GrailsClassUtils.isTagLibClass(className)) {

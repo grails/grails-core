@@ -15,7 +15,7 @@
  */ 
 package org.codehaus.groovy.grails.plugins
 
-import org.codehaus.groovy.grails.plugins.support.*
+import org.codehaus.groovy.grails.plugins.support.GrailsPluginUtils
 import org.codehaus.groovy.grails.commons.metaclass.*
 import org.codehaus.groovy.grails.support.ClassEditor
 import org.springframework.beans.factory.config.CustomEditorConfigurer

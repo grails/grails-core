@@ -20,7 +20,7 @@ import groovy.lang.GroovyObject;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.WordUtils;
-import org.codehaus.groovy.grails.scaffolding.DefaultGrailsScaffolder;
+import org.codehaus.groovy.grails.scaffolding.GrailsScaffolder;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 
 import java.beans.PropertyDescriptor;
@@ -91,21 +91,21 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass
             this.uri2viewMap.put(uri,uri + SLASH +  defaultActionName);
             this.viewNames.put( defaultActionName, uri + SLASH + defaultActionName );
             
-            for(int i = 0; i < DefaultGrailsScaffolder.ACTION_NAMES.length;i++) {
-                closureNames.add(DefaultGrailsScaffolder.ACTION_NAMES[i]);
-                String viewName = (String)getPropertyOrStaticPropertyOrFieldValue(DefaultGrailsScaffolder.ACTION_NAMES[i] + VIEW, String.class);
+            for(int i = 0; i < GrailsScaffolder.ACTION_NAMES.length;i++) {
+                closureNames.add(GrailsScaffolder.ACTION_NAMES[i]);
+                String viewName = (String)getPropertyOrStaticPropertyOrFieldValue(GrailsScaffolder.ACTION_NAMES[i] + VIEW, String.class);
                 // if no explicity view name is specified just use action name
                 if(viewName == null) {
-                    viewName =DefaultGrailsScaffolder.ACTION_NAMES[i];
+                    viewName =GrailsScaffolder.ACTION_NAMES[i];
                 }
-                String tmpUri = uri + SLASH + DefaultGrailsScaffolder.ACTION_NAMES[i];
+                String tmpUri = uri + SLASH + GrailsScaffolder.ACTION_NAMES[i];
                 String viewUri = uri + SLASH + viewName;
                 if (StringUtils.isNotBlank(viewName)) {
                     this.uri2viewMap.put(tmpUri, viewUri);
-                    this.viewNames.put( DefaultGrailsScaffolder.ACTION_NAMES[i], viewUri );
+                    this.viewNames.put( GrailsScaffolder.ACTION_NAMES[i], viewUri );
                 }
-                this.uri2closureMap.put(tmpUri, DefaultGrailsScaffolder.ACTION_NAMES[i]);
-                this.uri2closureMap.put(tmpUri + SLASH +"**", DefaultGrailsScaffolder.ACTION_NAMES[i]);
+                this.uri2closureMap.put(tmpUri, GrailsScaffolder.ACTION_NAMES[i]);
+                this.uri2closureMap.put(tmpUri + SLASH +"**", GrailsScaffolder.ACTION_NAMES[i]);
             }
         }
 

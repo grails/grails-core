@@ -21,8 +21,9 @@ import groovy.lang.MetaClass;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 
-import org.codehaus.groovy.grails.orm.support.TransactionManagerPostProcessor;
+
 import org.codehaus.groovy.runtime.InvokerHelper;
+import org.codehaus.groovy.grails.orm.support.TransactionManagerPostProcessor;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.beans.BeansException;

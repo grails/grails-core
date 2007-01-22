@@ -15,7 +15,7 @@
  */
 package org.codehaus.groovy.grails.web.metaclass
 
-import org.codehaus.groovy.grails.metaclass.SetPropertiesDynamicProperty
+import org.codehaus.groovy.grails.web.metaclass.SetPropertiesDynamicProperty
 
 /**
  * Tests for the "properties" dynamic property

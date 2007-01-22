@@ -15,7 +15,7 @@
  */ 
 package org.codehaus.groovy.grails.datasource.plugins;
 
-import org.codehaus.groovy.grails.plugins.support.*
+import org.codehaus.groovy.grails.plugins.support.GrailsPluginUtils
 import org.apache.commons.dbcp.BasicDataSource
 import org.springframework.jdbc.datasource.DriverManagerDataSource
 

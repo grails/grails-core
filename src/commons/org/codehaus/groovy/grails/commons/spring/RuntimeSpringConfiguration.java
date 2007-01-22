@@ -20,6 +20,7 @@ import java.util.Collection;
 import javax.servlet.ServletContext;
 
 import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.web.context.WebApplicationContext;
 /**
  * A programmable runtime Spring configuration that allows a spring ApplicationContext
@@ -162,4 +163,11 @@ public interface RuntimeSpringConfiguration {
 	 * @return The BeanConfiguration
 	 */
 	public BeanConfiguration getBeanConfig(String name);
+
+    /**
+     * Registers a bean factory post processor with the context
+     *
+     * @param processor The BeanFactoryPostProcessor instance
+     */
+    public void registerPostProcessor(BeanFactoryPostProcessor processor);
 }

@@ -1,6 +1,7 @@
 package org.codehaus.groovy.grails.orm.hibernate.cfg;
 
 import junit.framework.TestCase;
+import org.codehaus.groovy.grails.commons.GrailsDomainConfigurationUtil;
 
 public class GrailsDomainConfigurationUtilTest extends TestCase {
 

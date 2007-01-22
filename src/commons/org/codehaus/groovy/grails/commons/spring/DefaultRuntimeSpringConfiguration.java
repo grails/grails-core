@@ -28,6 +28,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.PropertyValue;
 import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.context.WebApplicationContext;
 /**
@@ -172,5 +173,9 @@ public class DefaultRuntimeSpringConfiguration implements
 	public BeanConfiguration getBeanConfig(String name) {
 		return (BeanConfiguration)beanConfigs.get(name);
 	}
+
+    public void registerPostProcessor(BeanFactoryPostProcessor processor) {
+        this.context.addBeanFactoryPostProcessor(processor);
+    }
 
 }

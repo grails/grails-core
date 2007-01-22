@@ -25,7 +25,30 @@ import groovy.lang.GroovyObject;
  */
 public interface GrailsScaffolder {
 
-	/**
+    String INDEX_ACTION = "index";
+    String LIST_ACTION = "list";
+    String SHOW_ACTION = "show";
+    String EDIT_ACTION = "edit";
+    String DELETE_ACTION = "delete";
+    String CREATE_ACTION = "create";
+    String SAVE_ACTION = "save";
+    String UPDATE_ACTION = "update";
+    // TODO: Implement search scaffolding
+    String SEARCH_ACTION = "search";
+    String FIND_ACTION = "find";
+
+    public String[] ACTION_NAMES = new String[] {
+        INDEX_ACTION,
+        LIST_ACTION,
+        SHOW_ACTION,
+        EDIT_ACTION,
+        DELETE_ACTION,
+        CREATE_ACTION,
+        SAVE_ACTION,
+        UPDATE_ACTION
+    };
+
+    /**
 	 * @param actionName The name of the action
 	 * @return True if the action is supported by the scaffolder
 	 */

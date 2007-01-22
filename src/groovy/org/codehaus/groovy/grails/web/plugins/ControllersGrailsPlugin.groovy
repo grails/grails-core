@@ -15,7 +15,7 @@
  */ 
 package org.codehaus.groovy.grails.web.plugins;
 
-import org.codehaus.groovy.grails.plugins.support.*
+import org.codehaus.groovy.grails.plugins.support.GrailsPluginUtils
 import org.codehaus.groovy.grails.web.errors.GrailsExceptionResolver;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsUrlHandlerMapping;
@@ -39,6 +39,7 @@ import org.springframework.web.context.request.RequestContextHolder as RCH
 import org.springframework.web.context.WebApplicationContext;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.web.metaclass.*
+import org.codehaus.groovy.grails.commons.metaclass.*
 import org.codehaus.groovy.grails.web.servlet.*
 import org.springframework.validation.Errors
 import org.codehaus.groovy.grails.web.pages.GroovyPage
@@ -259,7 +260,8 @@ class ControllersGrailsPlugin {
 		   metaClass.getGrailsApplication = {-> RCH.currentRequestAttributes().attributes.grailsApplication }
 		
 	}
-	
+
+
 	def doWithDynamicMethods = { ctx ->
 	   	
 		// add common objects and out variable for tag libraries
@@ -353,6 +355,19 @@ class ControllersGrailsPlugin {
 		    	new BindDynamicMethod().invoke(delegate, [target, args, disallowed] as Object[])
 		    }
 		}
+	}
+
+	def doWithApplicationContext = { ctx ->
+        def registry = InvokerHelper.getInstance().getMetaRegistry()
+
+        application.domainClasses.each { domainClass ->
+            def metaClass = registry.getMetaClass(domainClass.getClazz())
+
+            if(metaClass instanceof DynamicMethodsMetaClass) {
+                   metaClass.dynamicMethods.addDynamicConstructor(new DataBindingDynamicConstructor())
+                   metaClass.dynamicMethods.addDynamicProperty(new SetPropertiesDynamicProperty())                                       	
+            }
+        }
 	}
 	
 	def onChange = { event ->

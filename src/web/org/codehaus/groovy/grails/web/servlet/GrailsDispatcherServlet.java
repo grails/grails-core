@@ -22,6 +22,7 @@ import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsBootstrapClass;
 import org.codehaus.groovy.grails.commons.GrailsConfigUtils;
 import org.codehaus.groovy.grails.commons.spring.GrailsWebApplicationContext;
+import org.codehaus.groovy.grails.scaffolding.GrailsScaffoldingUtil;
 import org.springframework.beans.BeansException;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
@@ -58,7 +59,7 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
             webContext = GrailsConfigUtils.configureWebApplicationContext(getServletContext(), parent);     		
     	}
                 // configure scaffolders
-        GrailsConfigUtils.configureScaffolders(application, webContext);
+        GrailsScaffoldingUtil.configureScaffolders(application, webContext);
         GrailsConfigUtils.executeGrailsBootstraps(application, webContext, getServletContext());
 
         return webContext;

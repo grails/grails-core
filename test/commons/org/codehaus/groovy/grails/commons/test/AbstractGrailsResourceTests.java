@@ -27,7 +27,7 @@ import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsControllerClass;
 import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator;
-import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsDomainConfigurationUtil;
+import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil;
 import org.codehaus.groovy.grails.support.MockApplicationContext;
 import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
@@ -112,7 +112,7 @@ public abstract class AbstractGrailsResourceTests extends TestCase {
 		
 		if(this.applicationContext.containsBean(GrailsRuntimeConfigurator.SESSION_FACTORY_BEAN)) {
 	        this.sessionFactory = (SessionFactory)this.applicationContext.getBean(GrailsRuntimeConfigurator.SESSION_FACTORY_BEAN);
-	        GrailsDomainConfigurationUtil.configureDynamicMethods(applicationContext,ga);
+	        GrailsHibernateUtil.configureDynamicMethods(applicationContext,ga);
 
 	        if(!TransactionSynchronizationManager.hasResource(this.sessionFactory)) {
 	            this.session = this.sessionFactory.openSession();

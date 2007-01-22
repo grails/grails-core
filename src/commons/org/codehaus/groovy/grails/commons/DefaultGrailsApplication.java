@@ -38,7 +38,7 @@ import org.codehaus.groovy.control.Phases;
 import org.codehaus.groovy.grails.commons.spring.GrailsResourceHolder;
 import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException;
 import org.codehaus.groovy.grails.injection.GrailsInjectionOperation;
-import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsDomainConfigurationUtil;
+import org.codehaus.groovy.grails.commons.GrailsDomainConfigurationUtil;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.Resource;
@@ -56,7 +56,6 @@ import org.springframework.util.Assert;
 public class DefaultGrailsApplication implements GrailsApplication {
     private GroovyClassLoader cl = null;
     private GrailsControllerClass[] controllerClasses = null;
-    private GrailsPageFlowClass[] pageFlows = null;
     private GrailsDomainClass[] domainClasses = null;
     private GrailsCodecClass[] codecClasses;
     //private GrailsDataSource[] dataSources = null;
@@ -211,12 +210,7 @@ public class DefaultGrailsApplication implements GrailsApplication {
                 if (grailsControllerClass.getAvailable()) {                	
                     this.controllerMap.put(grailsControllerClass.getFullName(), grailsControllerClass);
                 }
-            } else if (GrailsClassUtils.isPageFlowClass(classes[i])) {
-                GrailsPageFlowClass grailsPageFlowClass = new DefaultGrailsPageFlowClass(classes[i]);
-                if (grailsPageFlowClass.getAvailable()) {
-                    this.pageFlowMap.put(grailsPageFlowClass.getFullName(), grailsPageFlowClass);
-                }
-            } else if (GrailsClassUtils.isDataSource(classes[i])) {
+            }  else if (GrailsClassUtils.isDataSource(classes[i])) {
                 GrailsDataSource tmpDataSource = new DefaultGrailsDataSource(classes[i]);
                 this.dataSourceMap.put(GrailsClassUtils.getPropertyNameRepresentation(tmpDataSource.getName()),tmpDataSource);
             } else if (GrailsClassUtils.isService(classes[i])) {
@@ -245,7 +239,6 @@ public class DefaultGrailsApplication implements GrailsApplication {
 
         
         this.controllerClasses = ((GrailsControllerClass[])controllerMap.values().toArray(new GrailsControllerClass[controllerMap.size()]));
-        this.pageFlows = ((GrailsPageFlowClass[])pageFlowMap.values().toArray(new GrailsPageFlowClass[pageFlowMap.size()]));
         this.domainClasses = ((GrailsDomainClass[])this.domainMap.values().toArray(new GrailsDomainClass[domainMap.size()]));
         this.services = ((GrailsServiceClass[])this.serviceMap.values().toArray(new GrailsServiceClass[serviceMap.size()]));
         this.bootstrapClasses = ((GrailsBootstrapClass[])bootstrapMap.values().toArray(new GrailsBootstrapClass[bootstrapMap.size()]));
@@ -452,15 +445,6 @@ public class DefaultGrailsApplication implements GrailsApplication {
         }
         return null;
     }
-
-    public GrailsPageFlowClass getPageFlow(String fullname) {
-        return (GrailsPageFlowClass)this.pageFlowMap.get(fullname);
-    }
-
-    public GrailsPageFlowClass[] getPageFlows() {
-        return this.pageFlows;
-    }
-
     public GroovyClassLoader getClassLoader() {
         return this.cl;
     }

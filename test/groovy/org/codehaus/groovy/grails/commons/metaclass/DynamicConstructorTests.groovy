@@ -19,7 +19,7 @@ class Test {
 		
 		def i = new GroovyDynamicMethodsInterceptor(go)
 		pmc.interceptor = i
-		i.addDynamicConstructor( new org.codehaus.groovy.grails.metaclass.DataBindingDynamicConstructor() )
+		i.addDynamicConstructor( new org.codehaus.groovy.grails.web.metaclass.DataBindingDynamicConstructor() )
 		
 		def registry = InvokerHelper.getInstance().getMetaRegistry()
 		registry.setMetaClass(clz, pmc)

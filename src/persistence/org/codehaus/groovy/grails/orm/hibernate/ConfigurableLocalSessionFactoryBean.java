@@ -18,7 +18,7 @@ package org.codehaus.groovy.grails.orm.hibernate;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.DefaultGrailsDomainConfiguration;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsDomainConfiguration;
-import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsDomainConfigurationUtil;
+import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil;
 import org.hibernate.cfg.Configuration;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeansException;
@@ -90,7 +90,7 @@ public class ConfigurableLocalSessionFactoryBean extends
         super.afterPropertiesSet();
 
         if(this.applicationContext!= null) {
-        	GrailsDomainConfigurationUtil.configureDynamicMethods(applicationContext,this.grailsApplication);
+        	GrailsHibernateUtil.configureDynamicMethods(applicationContext,this.grailsApplication);
         }
                 
         if (originalClassLoader != null) {

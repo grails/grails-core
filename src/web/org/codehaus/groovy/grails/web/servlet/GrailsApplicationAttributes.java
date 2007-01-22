@@ -7,6 +7,7 @@ import org.springframework.context.ApplicationContext;
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.commons.ApplicationAttributes;
 import groovy.lang.GroovyObject;
 
 import javax.servlet.ServletRequest;
@@ -20,12 +21,11 @@ import javax.servlet.http.HttpServletResponse;
  * @author Graeme Rocher
  * @since 17-Jan-2006
  */
-public interface GrailsApplicationAttributes {
+public interface GrailsApplicationAttributes extends ApplicationAttributes {
 
 	String GSP_FILE_EXTENSION = ".gsp";
 	String PATH_TO_VIEWS = "/WEB-INF/grails-app/views";
     String GSP_TEMPLATE_ENGINE = "org.codehaus.groovy.grails.GSP_TEMPLATE_ENGINE";
-    String APPLICATION_CONTEXT = "org.codehaus.groovy.grails.APPLICATION_CONTEXT";
     String FLASH_SCOPE = "org.codehaus.groovy.grails.FLASH_SCOPE";
     String PARAMS_OBJECT = "org.codehaus.groovy.grails.PARAMS_OBJECT";
     String CONTROLLER = "org.codehaus.groovy.grails.CONTROLLER";
@@ -34,15 +34,7 @@ public interface GrailsApplicationAttributes {
     String OUT = "org.codehaus.groovy.grails.RESPONSE_OUT";
     String TAG_CACHE = "org.codehaus.groovy.grails.TAG_CACHE";
     String ID_PARAM = "id";
-    String PARENT_APPLICATION_CONTEXT = "org.codehaus.groovy.grails.PARENT_APPLICATION_CONTEXT";
-	String GSP_TO_RENDER = "org.codehaus.groovy.grails.GSP_TO_RENDER";
-	String REQUEST_SCOPE_ID = "org.codehaus.groovy.grails.GRAILS_APPLICATION_ATTRIBUTES";
-	String PLUGIN_MANAGER = "org.codehaus.groovy.grails.GRAILS_PLUGIN_MANAGER";
-
-    /**
-     * @return The application context for servlet
-     */
-    ApplicationContext getApplicationContext();
+    String GSP_TO_RENDER = "org.codehaus.groovy.grails.GSP_TO_RENDER";
 
     /**
      * @return The controller for the request
@@ -119,12 +111,6 @@ public interface GrailsApplicationAttributes {
      * @return Retrieves the shared GSP template engine
      */
     GroovyPagesTemplateEngine getPagesTemplateEngine();
-
-    /**
-     *
-     * @return Retrieves the grails application instance
-     */
-    GrailsApplication getGrailsApplication();
 
     /**
      * Retrieves a Grails tag library from the request for the named tag

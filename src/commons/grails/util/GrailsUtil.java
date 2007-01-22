@@ -16,19 +16,14 @@ package grails.util;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.grails.commons.ApplicationAttributes;
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
 import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator;
-import org.codehaus.groovy.grails.commons.spring.GrailsWebApplicationContext;
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
-import org.springframework.mock.web.MockHttpServletRequest;
-import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.mock.web.MockServletContext;
 import org.springframework.util.Assert;
-import org.springframework.web.context.request.RequestContextHolder;
 
 /**
  * 
@@ -54,17 +49,8 @@ public class GrailsUtil {
 		GrailsRuntimeConfigurator config = new GrailsRuntimeConfigurator(application,parent);
 		MockServletContext servletContext = new MockServletContext();
 		ConfigurableApplicationContext appCtx = (ConfigurableApplicationContext)config.configure(servletContext);
-		servletContext.setAttribute( GrailsApplicationAttributes.APPLICATION_CONTEXT, appCtx);
+		servletContext.setAttribute( ApplicationAttributes.APPLICATION_CONTEXT, appCtx);
 		Assert.notNull(appCtx);
 		return appCtx;
-	}
-	
-	public static void bindMockWebRequest(GrailsWebApplicationContext ctx) {
-		GrailsWebRequest webRequest = new GrailsWebRequest(
-												new MockHttpServletRequest(),
-												new MockHttpServletResponse(),
-												ctx.getServletContext()
-											);
-		RequestContextHolder.setRequestAttributes(webRequest);
 	}
 }

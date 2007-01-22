@@ -92,23 +92,6 @@ public interface GrailsApplication extends ApplicationContextAware {
      */    
     public GrailsTaskClass getGrailsTaskClass( String fullname );
     
-    /**
-     * <p>Returns all page flows in an application.
-     *
-     * @return page flows in an application.
-     * @deprecated Will be removed in future version
-     */
-    public GrailsPageFlowClass[] getPageFlows();
-
-    /**
-     * <p>Returns the page flow with the given full name or null if no page flow was found with that name.
-     *
-     * @param fullname the page flow full name
-     * @return the page flow or null if no controller was found.
-     * 
-     * @deprecated Will be removed in future version
-     */
-    public GrailsPageFlowClass getPageFlow(String fullname);
 
     /**
      * <p>Returns an array of all the Grails Domain classes</p>

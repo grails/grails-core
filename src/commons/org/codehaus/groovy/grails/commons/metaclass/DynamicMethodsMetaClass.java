@@ -62,19 +62,13 @@ public class DynamicMethodsMetaClass extends MetaClassImpl implements AdapterMet
 		if(inRegistry) {
 			registry.setMetaClass(clazz, this);
 		}
-	}	
-
-	public Object invokeMethod(Object target, String methodName, Object[] arguments) {
-		InvocationCallback callback = new InvocationCallback();
-		Object returnValue = this.dynamicMethods.invokeMethod(target, methodName, arguments, callback);
-		if (callback.isInvoked()) {
-			return returnValue;
-		} else {
-			return adaptee.invokeMethod(target, methodName, arguments);
-		}
 	}
-	
-	public Object invokeStaticMethod(Object target, String methodName, Object[] arguments) {
+
+    public DynamicMethods getDynamicMethods() {
+        return dynamicMethods;
+    }
+
+    public Object invokeStaticMethod(Object target, String methodName, Object[] arguments) {
 		InvocationCallback callback = new InvocationCallback();
 		Object returnValue = this.dynamicMethods.invokeStaticMethod(target, methodName, arguments, callback);
 		if (callback.isInvoked()) {
@@ -84,25 +78,24 @@ public class DynamicMethodsMetaClass extends MetaClassImpl implements AdapterMet
 		}
 	}
 
-	public void setProperty(Object object, String property, Object newValue) {
-		InvocationCallback callback = new InvocationCallback();
-		this.dynamicMethods.setProperty(object,property,newValue,callback);
-		if (!callback.isInvoked()) {
-			adaptee.setProperty(object, property, newValue);
-		}		
-	}
+    public void setProperty(Class aClass, Object object, String property, Object newValue, boolean b, boolean b1) {
+        InvocationCallback callback = new InvocationCallback();
+        this.dynamicMethods.setProperty(object,property,newValue,callback);
+        if (!callback.isInvoked()) {
+            adaptee.setProperty(object, property, newValue);
+        }
+    }
 
-	public Object getProperty(Object object, String property) {
-		InvocationCallback callback = new InvocationCallback();
-		Object returnValue = this.dynamicMethods.getProperty(object,property,callback);
-		if (callback.isInvoked()) {
-			return returnValue;
-		} else {
-			return adaptee.getProperty(object,property);
-		}	
-	}
+    public Object getProperty(Class aClass, Object object, String property, boolean b, boolean b1) {
+        InvocationCallback callback = new InvocationCallback();
+        Object returnValue = this.dynamicMethods.getProperty(object,property,callback);
+        if (callback.isInvoked()) {
+            return returnValue;
+        } else {
+            return adaptee.getProperty(object,property);
+        }
 
-	/* (non-Javadoc)
+    }/* (non-Javadoc)
 	 * @see groovy.lang.MetaClassImpl#invokeConstructor(java.lang.Object[])
 	 */
 	public Object invokeConstructor(Object[] arg0) {
@@ -116,21 +109,19 @@ public class DynamicMethodsMetaClass extends MetaClassImpl implements AdapterMet
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see groovy.lang.MetaClassImpl#invokeConstructorAt(java.lang.Class, java.lang.Object[])
-	 */
-	public Object invokeConstructorAt(Class arg0, Object[] arg1) {
-		InvocationCallback callback = new InvocationCallback();
-		Object instance = this.dynamicMethods.invokeConstructor(arg1,callback);
-		if(callback.isInvoked()) {
-			return instance;
-		}
-		else {
-			return adaptee.invokeConstructor(arg1);
-		}
-	}
+    public Object invokeMethod(Class aClass, Object target, String methodName, Object[] arguments, boolean b, boolean b1) {
+        InvocationCallback callback = new InvocationCallback();
+        Object returnValue = this.dynamicMethods.invokeMethod(target, methodName, arguments, callback);
+        if (callback.isInvoked()) {
+            return returnValue;
+        } else {
+            return adaptee.invokeMethod(target, methodName, arguments);
+        }
 
-	public void setAdaptee(MetaClass a) {
+    }
+
+
+    public void setAdaptee(MetaClass a) {
 		this.adaptee = a;
 	}
 	

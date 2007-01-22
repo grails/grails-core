@@ -569,7 +569,8 @@ public class DefaultGrailsPluginManager implements GrailsPluginManager {
 		for (Iterator i = pluginList.iterator(); i.hasNext();) {
 			GrailsPlugin plugin = (GrailsPlugin) i.next();
 			plugin.setApplication(application);
-		}
+            
+        }
 	}
 
 	public void doDynamicMethods() {

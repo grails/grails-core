@@ -16,26 +16,8 @@
 package org.codehaus.groovy.grails.plugins;
 
 import grails.spring.BeanBuilder;
-import groovy.lang.Binding;
-import groovy.lang.Closure;
-import groovy.lang.GroovyObject;
-import groovy.lang.MetaClass;
-import groovy.lang.MetaClassRegistry;
-import groovy.lang.MetaMethod;
+import groovy.lang.*;
 import groovy.util.slurpersupport.GPathResult;
-
-import java.io.IOException;
-import java.math.BigDecimal;
-import java.net.URL;
-import java.net.URLConnection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -48,15 +30,23 @@ import org.codehaus.groovy.grails.commons.metaclass.ClosureInvokingMethod;
 import org.codehaus.groovy.grails.commons.metaclass.ExpandoMetaClass;
 import org.codehaus.groovy.grails.commons.metaclass.ThreadManagedMetaBeanProperty;
 import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration;
+import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException;
 import org.codehaus.groovy.grails.plugins.exceptions.PluginException;
 import org.codehaus.groovy.grails.support.ParentApplicationContextAware;
-import org.codehaus.groovy.grails.web.metaclass.TagLibMetaClass;
 import org.codehaus.groovy.runtime.InvokerHelper;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+
+import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.math.BigDecimal;
+import java.net.URL;
+import java.net.URLConnection;
+import java.util.*;
 
 /**
  * Implementation of the GrailsPlugin interface that wraps a Groovy plugin class
@@ -84,7 +74,7 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
 	private long[] modifiedTimes = new long[0];
 	private PathMatchingResourcePatternResolver resolver;
 	private String resourcesReference;
-	private ApplicationContext parentCtx;
+
 	private String[] loadAfterNames = new String[0];
 	private String[] influencedPluginNames = new String[0];
 	private MetaClassRegistry registry;
@@ -95,7 +85,7 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
 		this.plugin = (GroovyObject)this.pluginGrailsClass.newInstance();
 		this.pluginBean = new BeanWrapperImpl(this.plugin);
 		this.dependencies = Collections.EMPTY_MAP;
-		this.parentCtx = application.getParentContext();
+
 		this.resolver = new PathMatchingResourcePatternResolver();
 		
 		if(this.pluginBean.isReadableProperty(DEPENDS_ON)) {
@@ -200,11 +190,11 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
 
 
 	public ApplicationContext getParentCtx() {
-		return parentCtx;
+		return application.getParentContext();
 	}
 
 	public BeanBuilder beans(Closure closure) {
-		BeanBuilder bb = new BeanBuilder(this.parentCtx);
+		BeanBuilder bb = new BeanBuilder(getParentCtx());
 		bb.invokeMethod("beans", new Object[]{closure});
 		return bb;
 	}
@@ -239,7 +229,8 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
 			b.setVariable("application", application);
 			b.setVariable("manager", getManager());
 			b.setVariable("plugin", this);
-			bb.setBinding(b);
+            b.setVariable("parentCtx", getParentCtx());
+            bb.setBinding(b);
 			c.setDelegate(bb);
 			bb.invokeMethod("beans", new Object[]{c});
 		}
@@ -426,7 +417,7 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
 	private void replaceExpandoMetaClass(Class loadedClass, Class oldClass) {
 		MetaClass oldMetaClass = registry.getMetaClass(oldClass);
 		AdapterMetaClass adapter = null;
-		ExpandoMetaClass emc = null;
+		ExpandoMetaClass emc;
 		
 		if(oldMetaClass instanceof AdapterMetaClass) {
 			adapter = ((AdapterMetaClass)oldMetaClass);
@@ -471,15 +462,16 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
 			if(LOG.isDebugEnabled()) {
 				LOG.debug("Replacing reloaded class ["+loadedClass+"] MetaClass ["+replacement+"] with adapter ["+adapter+"]");
 			}
-			if(adapter instanceof TagLibMetaClass) {
-				registry.setMetaClass(loadedClass, new TagLibMetaClass(replacement));
-			}
-			else {
-				adapter.setAdaptee(replacement);
-				registry.setMetaClass(loadedClass, (MetaClass)adapter);
-			}
-			
-		}
+            try {
+                Constructor c = adapter.getClass().getConstructor(new Class[]{MetaClass.class});
+                MetaClass newAdapter = (MetaClass)BeanUtils.instantiateClass(c,new Object[]{replacement});
+                registry.setMetaClass(loadedClass,newAdapter);
+
+            } catch (NoSuchMethodException e) {
+               throw new GrailsConfigurationException("Unable to re-create configuration for reloaded class ("+e.getMessage()+"): " + loadedClass, e);
+            }
+
+        }
 			
 	}
 
@@ -520,8 +512,9 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
 		return this;
 	}
 
-	public void setParentApplicationContext(ApplicationContext parent) {
-		this.parentCtx = parent;
+
+    public void setParentApplicationContext(ApplicationContext parent) {
+		// do nothing for the moment
 	}
 
 

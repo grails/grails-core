@@ -40,22 +40,8 @@ import java.util.Map;
  */
 public class DefaultGrailsScaffolder implements GrailsScaffolder {
 
-    private static final String INDEX_ACTION = "index";
-    private static final String LIST_ACTION = "list";
-	private static final String SHOW_ACTION = "show";
-	private static final String EDIT_ACTION = "edit";		
-	private static final String DELETE_ACTION = "delete";
-	private static final String CREATE_ACTION = "create";
-	private static final String SAVE_ACTION = "save";			
-	private static final String UPDATE_ACTION = "update";	
-	
-	// TODO: Implement search scaffolding
-	private static final String SEARCH_ACTION = "search";
-	private static final String FIND_ACTION = "find";	
-	
-	
 
-	private ScaffoldRequestHandler scaffoldRequestHandler;
+    private ScaffoldRequestHandler scaffoldRequestHandler;
 	private ScaffoldResponseHandlerFactory scaffoldResponseHandlerFactory;
 
 	/**
@@ -343,8 +329,6 @@ public class DefaultGrailsScaffolder implements GrailsScaffolder {
 	protected static Map actions = new HashMap();
 	protected static Map actionClassToNameMap = new HashMap();
 	
-	public static String[] ACTION_NAMES;
-	
 	static {
 		actions.put( INDEX_ACTION, IndexAction.class.getConstructors()[0] );
 		actionClassToNameMap.put(IndexAction.class, INDEX_ACTION);
@@ -370,8 +354,6 @@ public class DefaultGrailsScaffolder implements GrailsScaffolder {
 		actions.put( CREATE_ACTION, CreateAction.class.getConstructors()[0] );
 		actionClassToNameMap.put(CreateAction.class, CREATE_ACTION);				
 		
-		// setup the action names
-		ACTION_NAMES = (String[])actions.keySet().toArray( new String[actions.keySet().size()] );
 	}
 	
 	public boolean supportsAction(String actionName) {

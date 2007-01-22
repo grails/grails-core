@@ -14,19 +14,14 @@
  */
 package org.codehaus.groovy.grails.commons;
 
-import javax.servlet.ServletContext;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
-import org.codehaus.groovy.grails.scaffolding.GrailsScaffolder;
-import org.codehaus.groovy.grails.scaffolding.ScaffoldDomain;
 import org.codehaus.groovy.grails.support.PersistenceContextInterceptor;
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
-import org.springframework.beans.factory.NoSuchBeanDefinitionException;
-import org.springframework.context.ApplicationContext;
 import org.springframework.web.context.WebApplicationContext;
+
+import javax.servlet.ServletContext;
 
 /**
  * A common class where shared configurational methods can reside
@@ -38,31 +33,7 @@ public class GrailsConfigUtils {
 	
 	private static final Log LOG = LogFactory.getLog(GrailsConfigUtils.class);
 
-    public static void configureScaffolders(GrailsApplication application, ApplicationContext appContext) {
-        GrailsControllerClass[] controllerClasses = application.getControllers();
-        for (int i = 0; i < controllerClasses.length; i++) {
-            GrailsControllerClass controllerClass = controllerClasses[i];
-            if(controllerClass.isScaffolding()) {
-                try {
-                    GrailsScaffolder gs = (GrailsScaffolder)appContext.getBean(controllerClass.getFullName() + "Scaffolder");
-                    if(gs != null) {
-                        ScaffoldDomain sd = gs.getScaffoldRequestHandler()
-                                                .getScaffoldDomain();
-
-                        GrailsDomainClass dc = application.getGrailsDomainClass(sd.getPersistentClass().getName());
-                        if(dc != null) {
-                            sd.setIdentityPropertyName(dc.getIdentifier().getName());
-                            sd.setValidator(dc.getValidator());
-                        }
-                    }
-                } catch (NoSuchBeanDefinitionException e) {
-                    // ignore
-                }
-            }
-        }
-    }
-
-	/**
+    /**
 	 * Executes Grails bootstrap classes
 	 * 
 	 * @param application The Grails ApplicationContext instance
@@ -105,16 +76,16 @@ public class GrailsConfigUtils {
         	GrailsPluginManager pluginManager = (GrailsPluginManager)parent.getBean(GrailsPluginManager.BEAN_NAME);
         	configurator.setPluginManager(pluginManager);
         }
-        servletContext.setAttribute(GrailsApplicationAttributes.PLUGIN_MANAGER, configurator.getPluginManager());
+        servletContext.setAttribute(ApplicationAttributes.PLUGIN_MANAGER, configurator.getPluginManager());
         // use config file locations if available
-        servletContext.setAttribute(GrailsApplicationAttributes.PARENT_APPLICATION_CONTEXT,parent);        
+        servletContext.setAttribute(ApplicationAttributes.PARENT_APPLICATION_CONTEXT,parent);
         servletContext.setAttribute(GrailsApplication.APPLICATION_ID,application);
         
 	    
 	    // return a context that obeys grails' settings
 	    WebApplicationContext webContext = configurator.configure( servletContext );
 	    configurator.getPluginManager().setApplicationContext(webContext);
-	    servletContext.setAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT,webContext );
+	    servletContext.setAttribute(ApplicationAttributes.APPLICATION_CONTEXT,webContext );
 	    LOG.info("[GrailsContextLoader] Grails application loaded.");
 		return webContext;
 	}

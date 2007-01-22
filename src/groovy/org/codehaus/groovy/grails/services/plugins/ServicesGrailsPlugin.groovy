@@ -15,7 +15,7 @@
  */ 
 package org.codehaus.groovy.grails.services.plugins
 
-import org.codehaus.groovy.grails.plugins.support.*
+import org.codehaus.groovy.grails.plugins.support.GrailsPluginUtils
 import org.springframework.beans.factory.config.MethodInvokingFactoryBean
 import org.springframework.aop.framework.ProxyFactoryBean
 import org.springframework.aop.target.HotSwappableTargetSource

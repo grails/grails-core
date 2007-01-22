@@ -39,7 +39,6 @@ import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.grails.commons.metaclass.AdapterMetaClass;
 import org.codehaus.groovy.grails.commons.metaclass.DynamicMethodsMetaClass;
 import org.codehaus.groovy.grails.commons.metaclass.ProxyMetaClass;
-import org.codehaus.groovy.grails.web.metaclass.TagLibMetaClass;
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeanWrapper;
@@ -116,21 +115,6 @@ public class GrailsClassUtils {
 
     public static boolean isControllerClass(String className) {
         return className.endsWith(DefaultGrailsControllerClass.CONTROLLER);
-    }
-
-    /**
-     * <p>Returns true if the specified class is a page flow class type</p>
-     *
-     * @param clazz the class to check
-     * @return  True if the class is a page flow class
-     */
-    public static boolean isPageFlowClass( Class clazz ) {
-    	if(clazz == null) return false;
-        return isPageFlowClass(clazz.getName())  && !Closure.class.isAssignableFrom(clazz);
-    }
-
-    public static boolean isPageFlowClass(String className) {
-        return className.endsWith(DefaultGrailsPageFlowClass.PAGE_FLOW);
     }
 
     /**
@@ -954,7 +938,7 @@ public class GrailsClassUtils {
 		if(mc instanceof DynamicMethodsMetaClass) {
 			return ((DynamicMethodsMetaClass) mc).getAdaptee();
 		}
-		else if(mc instanceof TagLibMetaClass) {
+		else if(mc instanceof AdapterMetaClass) {
 			return ((AdapterMetaClass)mc).getAdaptee();
 		}
 		else if(mc instanceof ProxyMetaClass) {

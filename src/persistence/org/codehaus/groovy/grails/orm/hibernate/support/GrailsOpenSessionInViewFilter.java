@@ -15,7 +15,6 @@
  */ 
 package org.codehaus.groovy.grails.orm.hibernate.support;
 
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.hibernate.FlushMode;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -25,6 +24,7 @@ import org.springframework.orm.hibernate3.SessionFactoryUtils;
 import org.springframework.orm.hibernate3.support.OpenSessionInViewFilter;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
+import org.codehaus.groovy.grails.commons.ApplicationAttributes;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -44,7 +44,7 @@ public class GrailsOpenSessionInViewFilter extends OpenSessionInViewFilter {
         WebApplicationContext parent =
             WebApplicationContextUtils.getRequiredWebApplicationContext(getServletContext());
 
-        ApplicationContext context = (ApplicationContext)getServletContext().getAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT);
+        ApplicationContext context = (ApplicationContext)getServletContext().getAttribute(ApplicationAttributes.APPLICATION_CONTEXT);
 
         if(context != null) {
             return (SessionFactory) context.getBean(getSessionFactoryBeanName(), SessionFactory.class);

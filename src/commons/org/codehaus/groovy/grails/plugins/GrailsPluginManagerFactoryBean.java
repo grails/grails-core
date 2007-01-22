@@ -62,11 +62,12 @@ public class GrailsPluginManagerFactoryBean implements FactoryBean, Initializing
 
 	public void afterPropertiesSet() throws Exception {
 		this.pluginManager = PluginManagerHolder.getPluginManager();
-		
+
 		if(pluginManager == null) {
 			pluginManager = new DefaultGrailsPluginManager(pluginFiles, application);
 			PluginManagerHolder.setPluginManager(pluginManager);
 		}
-	}
+        this.pluginManager.setApplication(application);
+    }
 
 }

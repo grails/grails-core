@@ -16,10 +16,10 @@
 package org.codehaus.groovy.grails.metaclass;
 
 import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.commons.metaclass.AbstractDynamicMethodInvocation;
 import org.codehaus.groovy.grails.commons.metaclass.AbstractDynamicMethods;
 import org.codehaus.groovy.grails.commons.metaclass.CreateDynamicMethod;
 import org.codehaus.groovy.grails.commons.metaclass.WeakGenericDynamicProperty;
-import org.codehaus.groovy.grails.commons.metaclass.AbstractDynamicMethodInvocation;
 import org.codehaus.groovy.grails.orm.hibernate.metaclass.*;
 import org.codehaus.groovy.grails.orm.support.TransactionManagerAware;
 import org.codehaus.groovy.grails.validation.metaclass.ConstraintsDynamicProperty;
@@ -47,9 +47,6 @@ public class DomainClassMethods extends AbstractDynamicMethods implements Transa
     public DomainClassMethods(GrailsApplication application, Class theClass, SessionFactory sessionFactory, ClassLoader classLoader)
             throws IntrospectionException {
         super(theClass);
-        // constructors
-        addDynamicConstructor(new DataBindingDynamicConstructor());
-
         // dynamic methods
         addDynamicMethodInvocation(new IdentDynamicMethod(application));
         addDynamicMethodInvocation(new SavePersistentMethod(sessionFactory, classLoader,application));
@@ -91,7 +88,6 @@ public class DomainClassMethods extends AbstractDynamicMethods implements Transa
         addStaticMethodInvocation(new WithTransactionPersistentMethod(sessionFactory,classLoader));
 
         // add dynamic properties
-        addDynamicProperty( new SetPropertiesDynamicProperty() );
         addDynamicProperty( new ConstraintsDynamicProperty(application) );
         addDynamicProperty( new WeakGenericDynamicProperty(ERRORS_PROPERTY, Errors.class,null,false) );
 

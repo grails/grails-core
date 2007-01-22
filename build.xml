@@ -10,7 +10,11 @@
 	    <fileset dir="${env.JAVA_HOME}/lib">
 	        <include name="tools.jar"/>
 	    </fileset>	
-        <pathelement location="${grails.src.war}/WEB-INF"/>
+        <pathelement location="${grails.src.war}/WEB-INF"/> 
+      <pathelement path="${grails.build}/core"/>			      
+      <pathelement path="${grails.build}/web"/>			      
+      <pathelement path="${grails.build}/gorm"/>			      						
+      <pathelement path="${grails.build}/crud"/>			      									
     </path>
 
     <target name="clean" description="Clean the build directory.">

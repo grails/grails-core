@@ -6,7 +6,7 @@ import java.util.Map;
 import org.codehaus.groovy.grails.commons.metaclass.AbstractDynamicMethods;
 import org.codehaus.groovy.grails.commons.metaclass.DynamicMethodsMetaClass;
 import org.codehaus.groovy.grails.commons.metaclass.DynamicMethods;
-import org.codehaus.groovy.grails.metaclass.DataBindingDynamicConstructor;
+import org.codehaus.groovy.grails.web.metaclass.DataBindingDynamicConstructor;
 
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyObject;
