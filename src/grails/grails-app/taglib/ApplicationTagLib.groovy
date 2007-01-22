@@ -97,7 +97,7 @@ class ApplicationTagLib {
             out << '?'
             def i = 0
             pms.each { k,v ->
-                out << "${k}=${v}"
+                out << "${k.toString().encodeURL()}=${v.toString().encodeURL()}"
                 if(++i < pms.size())
                    out << '&'
             }
