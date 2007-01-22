@@ -47,14 +47,20 @@
 		      <pathelement path="${grails.build}/core"/>
 		    </classpath>  
 			<classpath refid="classpath"/>    
-		</groovyc>
-        <groovyc destdir="${grails.build}/web" includes="**/web/**" >
-   			<src path="${grails.src.groovy}"/>
-   		    <classpath>   		      
+		</groovyc> 
+        <groovyc destdir="${grails.build}/core" srcdir="${grails.src.groovy}">
+             <exclude name="**/orm/**" />
+             <exclude name="**/web/**" />
+             <exclude name="**/scaffolding/**" />	
+   		    <classpath>
+		      <pathelement path="${grails.build}/core"/>			      
 		      <pathelement path="${grails.build}/web"/>			      
+		      <pathelement path="${grails.build}/gorm"/>			      						
+		      <pathelement path="${grails.build}/crud"/>			      							
    		    </classpath>  
    			<classpath refid="classpath"/>    
-   		</groovyc> 
+   		</groovyc>		
+	
         <groovyc destdir="${grails.build}/web" includes="**/web/**" >
    			<src path="${grails.src.groovy}"/>
    		    <classpath>
@@ -88,18 +94,6 @@
    			<classpath refid="classpath"/>    
    		</groovyc>		
    	
-        <groovyc destdir="${grails.build}/core" srcdir="${grails.src.groovy}">
-             <exclude name="**/orm/**" />
-             <exclude name="**/web/**" />
-             <exclude name="**/scaffolding/**" />	
-   		    <classpath>
-		      <pathelement path="${grails.build}/core"/>			      
-		      <pathelement path="${grails.build}/web"/>			      
-		      <pathelement path="${grails.build}/gorm"/>			      						
-		      <pathelement path="${grails.build}/crud"/>			      							
-   		    </classpath>  
-   			<classpath refid="classpath"/>    
-   		</groovyc>		
 	
    	
 		<copy todir="${grails.build}/core">
