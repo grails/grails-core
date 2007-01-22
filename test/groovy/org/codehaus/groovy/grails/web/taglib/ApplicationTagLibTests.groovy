@@ -6,15 +6,13 @@ import org.codehaus.groovy.grails.commons.metaclass.ExpandoMetaClass
 class ApplicationTagLibTests extends AbstractGrailsTagTests {
 
 	void testCreateLinkURLEncoding() {
-/*
-        InvokerHelper.getInstance().getMetaRegistry().removeMetaClass(String.class)
-
-        assert InvokerHelper.getInstance().getMetaRegistry().getMetaClass(String.class).getClass() == ExpandoMetaClass.class
+    /*
 
 		StringWriter sw = new StringWriter();
 
 		withTag("createLink", sw) { tag ->
 
+		    println grailsApplication.allClasses.inspect()
 			// test URL encoding. Params unordered to have to try one test at a time
 			def attrs = [action:'testAction', controller: 'testController',
 			    params:['name':'Marc Palmer']]
@@ -23,8 +21,8 @@ class ApplicationTagLibTests extends AbstractGrailsTagTests {
 			println "output: ${sw}"
 
 			assertEquals '<a href="/testController/testAction?name=Marc%20Palmer"></a>"', sw.toString()
-		}
-*/
+		}*/
+
 	}
 
 	void testCreateLinkURLEncodingWithHTMLChars() {

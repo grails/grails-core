@@ -5,7 +5,10 @@
 	<bean id="grailsApplication" class="org.codehaus.groovy.grails.commons.GrailsApplicationFactoryBean">
 		<description>Grails application factory bean</description>
 		<property name="groovyFiles">
-			<value>file:./src/grails/grails-app/taglib/*.groovy</value>
-		</property>
+            <list>
+                <value>file:./src/grails/grails-app/taglib/*.groovy</value>
+                <value>file:./src/grails/grails-app/utils/*.groovy</value>                                                
+            </list>
+        </property>
 	</bean>	
 </beans>
