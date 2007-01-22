@@ -17,26 +17,9 @@ package org.codehaus.groovy.grails.web.metaclass;
 
 import grails.util.JSonBuilder;
 import grails.util.OpenRicoBuilder;
-import groovy.lang.Closure;
-import groovy.lang.GString;
-import groovy.lang.GroovyObject;
-import groovy.lang.GroovyRuntimeException;
-import groovy.lang.MissingMethodException;
-import groovy.lang.Writable;
+import groovy.lang.*;
 import groovy.text.Template;
 import groovy.xml.StreamingMarkupBuilder;
-
-import java.io.IOException;
-import java.io.Writer;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.regex.Pattern;
-
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-
 import org.apache.commons.beanutils.BeanMap;
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
@@ -44,11 +27,21 @@ import org.codehaus.groovy.grails.commons.GrailsControllerClass;
 import org.codehaus.groovy.grails.commons.metaclass.AbstractDynamicMethodInvocation;
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
+import org.codehaus.groovy.grails.web.servlet.GrailsHttpServletRequest;
 import org.codehaus.groovy.grails.web.servlet.GrailsHttpServletResponse;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.servlet.ModelAndView;
+
+import javax.servlet.ServletException;
+import java.io.IOException;
+import java.io.Writer;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.regex.Pattern;
 
 /**
  * Allows rendering of text, views, and templates to the response
@@ -76,25 +69,23 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
     private static final String BUILDER_TYPE_RICO = "rico";
     private static final String BUILDER_TYPE_JSON = "json";
 
-    protected GrailsHttpServletResponse response;
-	private HttpServletRequest request;
-	private GrailsApplication application;
-	private GrailsWebRequest webRequest;
     private static final String ARGUMENT_TO = "to";
 
 
     public RenderDynamicMethod() {
         super(METHOD_PATTERN);
         
-        this.webRequest = (GrailsWebRequest)RequestContextHolder.currentRequestAttributes();
-        this.application = webRequest.getAttributes().getGrailsApplication();
-        this.request = webRequest.getCurrentRequest();
-        this.response = webRequest.getCurrentResponse();
     }
 
     public Object invoke(Object target, Object[] arguments) {
         if(arguments.length == 0)
             throw new MissingMethodException(METHOD_SIGNATURE,target.getClass(),arguments);
+
+        GrailsWebRequest webRequest = (GrailsWebRequest)RequestContextHolder.currentRequestAttributes();
+        GrailsApplication application = webRequest.getAttributes().getGrailsApplication();
+        GrailsHttpServletRequest request = webRequest.getCurrentRequest();
+        GrailsHttpServletResponse response = webRequest.getCurrentResponse();
+
 
         boolean renderView = true;
         GroovyObject controller = (GroovyObject)target;

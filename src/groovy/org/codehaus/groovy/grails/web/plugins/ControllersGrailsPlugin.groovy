@@ -327,32 +327,37 @@ class ControllersGrailsPlugin {
 			metaClass.hasErrors = {->
 				errors?.hasErrors() ? true : false
 			}
+
+			def redirect = new RedirectDynamicMethod()
+			def chain = new ChainDynamicMethod()
+			def render = new RenderDynamicMethod()
+			def bind = new BindDynamicMethod()
 			// the redirect dynamic method
 			metaClass.redirect = { Map args ->
-				new RedirectDynamicMethod().invoke(delegate,args)
+				redirect.invoke(delegate,args)
 			} 
 		    metaClass.chain = { Map args ->
-		    	new ChainDynamicMethod().invoke(delegate, args)
+		    	chain.invoke(delegate, args)
 		    }
 		    // the render method
 		    metaClass.render = { String txt ->
-				new RenderDynamicMethod().invoke(delegate, [txt] as Object[])
+				render.invoke(delegate, [txt] as Object[])
 		    }
 		    metaClass.render = { Map args ->
-				new RenderDynamicMethod().invoke(delegate, [args] as Object[])
+				render.invoke(delegate, [args] as Object[])
 	    	}	
 		    metaClass.render = { Closure c ->
-				new RenderDynamicMethod().invoke(delegate, [c] as Object[])
+				render.invoke(delegate, [c] as Object[])
 	    	}		   
 		    metaClass.render = { Map args, Closure c ->
-				new RenderDynamicMethod().invoke(delegate, [args, c] as Object[])
+				render.invoke(delegate, [args, c] as Object[])
 		    }		   
 		    // the bindData method
 		    metaClass.bindData = { Object target, Object args ->
-		    	new BindDynamicMethod().invoke(delegate, [target, args] as Object[])
+		    	bind.invoke(delegate, [target, args] as Object[])
 		    }
 		    metaClass.bindData = { Object target, Object args, List disallowed ->
-		    	new BindDynamicMethod().invoke(delegate, [target, args, disallowed] as Object[])
+		    	bind.invoke(delegate, [target, args, disallowed] as Object[])
 		    }
 		}
 	}
