@@ -281,7 +281,10 @@ public class DefaultGrailsPluginManager implements GrailsPluginManager {
 				if(!hasValidPluginsToLoadBefore(plugin)) {
 					registerPlugin(plugin);
 				}
-			}
+                else {
+                    delayedLoadPlugins.add(plugin);
+                }
+            }
 			else {
 				// ok, it still hasn't resolved the dependency after the initial
 				// load of all plugins. All hope is not lost, however, so lets first

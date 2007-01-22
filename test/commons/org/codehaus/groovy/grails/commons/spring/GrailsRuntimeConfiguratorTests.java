@@ -325,7 +325,7 @@ public class GrailsRuntimeConfiguratorTests extends TestCase {
 
         GrailsRuntimeConfigurator conf = new GrailsRuntimeConfigurator(app,parent);
         conf.setLoadExternalPersistenceConfig(false);
-        GrailsWebApplicationContext ctx = (GrailsWebApplicationContext)conf.configure(new MockServletContext());
+        GrailsWebApplicationContext ctx = (GrailsWebApplicationContext)conf.configure(new MockServletContext(), false);
         assertNotNull(ctx);
 
         GroovyObject anotherService = (GroovyObject)ctx.getBean("anotherService");

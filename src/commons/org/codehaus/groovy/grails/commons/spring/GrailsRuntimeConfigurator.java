@@ -280,33 +280,39 @@ public class GrailsRuntimeConfigurator {
      * @param context A ServletContext instance
 	 */
 	public WebApplicationContext configure(ServletContext context) {		
+        return configure(context, true);
+	}
+
+    public WebApplicationContext configure(ServletContext context, boolean loadExternalBeans) {
 		RuntimeSpringConfiguration springConfig = parent != null ? new DefaultRuntimeSpringConfiguration(parent) : new DefaultRuntimeSpringConfiguration();
 		if(context != null)
 			springConfig.setServletContext(context);
-		
+
 		if(!this.pluginManager.isInitialised())
 			this.pluginManager.loadPlugins();
 
         Assert.notNull(application);
-        
+
         this.pluginManager.doRuntimeConfiguration(springConfig);
-        
+
 		// configure scaffolding
 		LOG.debug("[RuntimeConfiguration] Proccessing additional external configurations");
-		doPostResourceConfiguration(springConfig);
-	
+        
+        if(loadExternalBeans)
+            doPostResourceConfiguration(springConfig);
+
 		WebApplicationContext ctx = springConfig.getApplicationContext();
-		
+
 		this.pluginManager.setApplicationContext(ctx);
-		
+
 		this.pluginManager.doDynamicMethods();
 
         performPostProcessing(ctx);
 
         return ctx;
-	}
-	
-	private void performPostProcessing(WebApplicationContext ctx) {
+    }
+
+    private void performPostProcessing(WebApplicationContext ctx) {
 		this.pluginManager.doPostProcessing(ctx);
 	}
 
@@ -366,6 +372,7 @@ public class GrailsRuntimeConfigurator {
 	public GrailsPluginManager getPluginManager() {
 		return this.pluginManager;
 	}
+
 
 
 }
