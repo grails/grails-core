@@ -2,10 +2,14 @@
 
     <target name="test-with-coverage"
             depends="build-test, instrument-for-coverage, run-test, coverage-report"
-            description="Compile and Run the unit tests while measuring coverage"/>
+            description="Compile and Run the unit tests while measuring coverage">
+	    <fail if="grails.test.failure">The tests failed. Have a look at ${grails.test.reports}</fail>
+	</target>
     <target name="test"
             depends="clean-instrumented, run-test"
-            description="Compile and Run the unit tests plainly"/>
+            description="Compile and Run the unit tests plainly">
+    	<fail if="grails.test.failure">The tests failed. Have a look at ${grails.test.reports}</fail>
+	</target>
 
     <taskdef resource="tasks.properties">
         <classpath>
@@ -111,12 +115,10 @@
             <!-- GrailsHibernateConfigurationTests needs it's own VM -->
             <test todir="${grails.test.reports}" name="org.codehaus.groovy.grails.orm.hibernate.GrailsHibernateConfigurationTests" fork="true"/>
             <test todir="${grails.test.reports}" name="org.codehaus.groovy.grails.commons.ClassReloadingTests" fork="true"/>
-
         </junit>
-        <fail if="grails.test.failure">The tests failed. Have a look at ${grails.test.reports}</fail>
     </target>
 
-	<target name="test-report" depends="test" description="Runs unit tests and generates HTML report">
+	<target name="test-report" depends="clean-instrumented, run-test" description="Runs unit tests and generates HTML report">
 		<mkdir dir="${grails.test.html.reports}"/>
         <junitreport todir="${grails.test.html.reports}">
 			<fileset dir="${grails.test.reports}">
@@ -124,5 +126,6 @@
 			</fileset>
 			<report format="frames" todir="${grails.test.html.reports}"/>
 		</junitreport>
+        <fail if="grails.test.failure">The tests failed. Have a look at ${grails.test.html.reports}/index.html</fail>
 	</target>
 </project>
