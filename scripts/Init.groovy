@@ -37,7 +37,8 @@ serverPort = System.getProperty('server.port') ? System.getProperty('server.port
 basedir = System.getProperty("base.dir")    
 baseFile = new File(basedir)
 baseName = baseFile.name
-resolver = new PathMatchingResourcePatternResolver()    
+resolver = new PathMatchingResourcePatternResolver()
+grailsAppName = null
 // a resolver that doesn't throw exceptions when resolving resources
 resolveResources = { String pattern ->
 	try {
@@ -46,6 +47,21 @@ resolveResources = { String pattern ->
 	catch(Exception e) {
      	return []
 	}	
+}
+
+getGrailsLibs =  {
+  def result = ''
+   (new File("${grailsHome}/lib")).eachFileMatch(~/.*\.jar/) { file ->
+      result += "<classpathentry kind=\"var\" path=\"GRAILS_HOME/lib/${file.name}\" />\n\n"
+   }
+   result
+}
+getGrailsJar =  { args ->
+   result = ''
+   (new File("${grailsHome}/dist")).eachFileMatch(~/^grails-.*\.jar/) { file ->
+      result =  file.name
+   }
+   result
 }
 
 args = System.getProperty("grails.cli.args")     
@@ -82,6 +98,9 @@ task ( createStructure: "Creates the application directory structure") {
 }  
 
 task ( copyBasics: "Copies the basic resources required for a Grails app to function") {
+    def libs = getGrailsLibs()
+    def jars =  getGrailsJar()
+
 	Ant.sequential {
 		copy(todir:"${basedir}") {
 			fileset(dir:"${grailsHome}/src/grails/templates/ide-support/eclipse",
@@ -89,9 +108,9 @@ task ( copyBasics: "Copies the basic resources required for a Grails app to func
 					excludes:".launch")
 		} 
 		replace(dir:"${basedir}",includes:"*.*", 
-				token:"@grails.libs@", value:"${getGrailsLibs()}" )
+				token:"@grails.libs@", value:"${libs}" )
 		replace(dir:"${basedir}", includes:"*.*", 
-				token:"@grails.jar@", value:"${getGrailsJar()}" )
+				token:"@grails.jar@", value:"${jars}" )
 		replace(dir:"${basedir}", includes:"*.*", 
 				token:"@grails.project.name@", value:"${grailsAppName}" )
 		

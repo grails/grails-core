@@ -82,18 +82,3 @@ task ( appName : "Evaluates the application name") {
 	basedir = "${basedir}/${grailsAppName}"
 }                                    
     
-
-getGrailsLibs =  { 
-  def result = ''
-   (new File("${grailsHome}/lib")).eachFileMatch(~/.*\.jar/) { file ->
-      result += "<classpathentry kind=\"var\" path=\"GRAILS_HOME/lib/${file.name}\" />\n\n"
-   }
-   result	
-}   
-getGrailsJar =  { args ->
-   result = ''
-   (new File("${grailsHome}/dist")).eachFileMatch(~/^grails-.*\.jar/) { file ->
-      result =  file.name
-   }
-   result	
-}
