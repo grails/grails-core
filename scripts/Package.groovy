@@ -166,9 +166,12 @@ task( generateWebXml : "Generates the web.xml file") {
 
         jarFiles.each { jar ->
             cpath << jar.file.absolutePath << File.pathSeparator
-            rootLoader.addURL(jar.URL)
+            rootLoader.addURL(jar.URL)       
         }
         cpath << "${basedir}/web-app/WEB-INF/classes"
+		rootLoader.addURL(new File("${basedir}/web-app/WEB-INF/classes").toURL())
+        cpath << "${basedir}/web-app/WEB-INF"
+		rootLoader.addURL(new File("${basedir}/web-app/WEB-INF").toURL())
     
    //     println "Classpath with which to generate web.xml: \n${cpath.toString()}"
         
