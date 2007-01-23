@@ -16,9 +16,12 @@
 package org.codehaus.groovy.grails.web.servlet.filter;
 
 import groovy.lang.GroovyClassLoader;
+import groovy.lang.Writable;
+import groovy.text.Template;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.control.CompilationFailedException;
+import org.codehaus.groovy.control.MultipleCompilationErrorsException;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsControllerClass;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
@@ -28,8 +31,11 @@ import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.codehaus.groovy.grails.plugins.PluginManagerHolder;
 import org.codehaus.groovy.grails.scaffolding.GrailsTemplateGenerator;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
+import org.codehaus.groovy.grails.web.servlet.DefaultGrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsUrlHandlerMapping;
 import org.codehaus.groovy.grails.web.servlet.mvc.SimpleGrailsController;
+import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
+import org.codehaus.groovy.grails.web.errors.GrailsWrappedRuntimeException;
 import org.springframework.aop.target.HotSwappableTargetSource;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.request.WebRequestInterceptor;
@@ -44,6 +50,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Properties;
+import java.util.Map;
+import java.util.HashMap;
 
 /**
  * A servlet filter that copies resources from the source on content change and manages reloading if necessary
@@ -74,7 +82,8 @@ public class GrailsReloadServletFilter extends OncePerRequestFilter {
     }
 
     protected void doFilterInternal(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, FilterChain filterChain) throws ServletException, IOException {
-      context = (GrailsWebApplicationContext)getServletContext().getAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT);
+      GrailsApplicationAttributes attrs = new DefaultGrailsApplicationAttributes(getServletContext());
+      context = (GrailsWebApplicationContext)attrs.getApplicationContext();
 
       if(LOG.isDebugEnabled()) {
 	      LOG.debug("Executing Grails reload filter...");
@@ -148,16 +157,34 @@ public class GrailsReloadServletFilter extends OncePerRequestFilter {
         if(manager == null) {
         	manager = PluginManagerHolder.getPluginManager();
         }
-        if(manager != null) {
-        	if(LOG.isDebugEnabled())
-        		LOG.debug("Checking Plugin manager for changes..");
-        	manager.checkForChanges();
-        }
-        else if(LOG.isDebugEnabled()) {
-        	LOG.debug("Plugin manager not found, skipping change check");
-        }
+        try {
+            if(manager != null) {
+                if(LOG.isDebugEnabled())
+                    LOG.debug("Checking Plugin manager for changes..");
+                manager.checkForChanges();
+            }
+            else if(LOG.isDebugEnabled()) {
+                LOG.debug("Plugin manager not found, skipping change check");
+            }
 
-        filterChain.doFilter(httpServletRequest,httpServletResponse);
+            filterChain.doFilter(httpServletRequest,httpServletResponse);
+        } catch (MultipleCompilationErrorsException mce) {
+            if(LOG.isDebugEnabled())
+                LOG.debug("Compilation error occured reloading application: " + mce.getMessage(),mce);
+
+            GroovyPagesTemplateEngine engine = attrs.getPagesTemplateEngine();
+
+            Template t = engine.createTemplate(GrailsApplicationAttributes.PATH_TO_VIEWS+"/error.gsp", getServletContext(), httpServletRequest, httpServletResponse);
+
+            GrailsWrappedRuntimeException wrapped = new GrailsWrappedRuntimeException(getServletContext(), mce);
+            Map model = new HashMap();
+            model.put("exception", wrapped);
+
+            Writable w = t.make(model);
+
+            w.writeTo(httpServletResponse.getWriter());
+            
+        }
     }
 
     void loadControllerClass(Class loadedClass, boolean isNew) {

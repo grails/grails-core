@@ -35,12 +35,16 @@ import org.codehaus.groovy.grails.exceptions.GrailsException;
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
 import org.codehaus.groovy.grails.web.servlet.DefaultGrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+import org.springframework.core.io.Resource;
 
 /**
  *  An exception that wraps a Grails RuntimeException and attempts to extract more relevent diagnostic messages from the stack trace
  * 
  * @author Graeme Rocher
- * @since 22 Dec, 2005
+ * @since 0.1
+ *
+ * Created: 22 Dec, 2005
  */
 public class GrailsWrappedRuntimeException extends GrailsException {
 
@@ -55,11 +59,12 @@ public class GrailsWrappedRuntimeException extends GrailsException {
     private String[] codeSnippet = new String[0];
     private String gspFile;
 	private Throwable cause;
+    private PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
 
 
     /**
-     * @param servletContext
-     * @param t
+     * @param servletContext The ServletContext instance
+     * @param t The exception that was thrown
      */
     public GrailsWrappedRuntimeException(ServletContext servletContext, Throwable t) {
         super(t.getMessage(), t);
@@ -90,6 +95,7 @@ public class GrailsWrappedRuntimeException extends GrailsException {
                 String messageText = sw.toString();
                 if(messageText.indexOf(':') > -1) {
                 	this.className = sw.toString().substring(0,messageText.indexOf(':'));
+                    this.className = this.className.trim();
                 }
         	}
         	
@@ -125,9 +131,11 @@ public class GrailsWrappedRuntimeException extends GrailsException {
         try {
             if(getLineNumber() > -1) {
                 String url;
+                String fileName = this.className.replace('.', '/') + ".groovy";
+                String urlPrefix = "";
                 if(gspFile == null) {
-                    String fileName = this.className.replace('.', '/') + ".groovy";
-                    String urlPrefix = URL_PREFIX;
+
+
                     if(GrailsClassUtils.isControllerClass(className)) {
                         urlPrefix += "/controllers/";
                     }
@@ -137,7 +145,7 @@ public class GrailsWrappedRuntimeException extends GrailsException {
                     else if(GrailsClassUtils.isService(className)) {
                        urlPrefix += "/services/";
                     }
-                    url = urlPrefix + fileName;
+                    url = URL_PREFIX + urlPrefix + fileName;
                 }
                 else {
                     url = gspFile;
@@ -150,6 +158,16 @@ public class GrailsWrappedRuntimeException extends GrailsException {
                 }
 
                 InputStream in = servletContext.getResourceAsStream(url);
+                LOG.debug("Attempting to display code snippet found in url " + url);
+                if(in == null) {
+                    try {
+                        Resource r = resolver.getResource("grails-app" + urlPrefix + fileName);
+                        in = r.getInputStream();
+                    } catch (Throwable e) {
+                        // ignore
+                    }
+                }
+
                 if(in != null) {
                     reader = new LineNumberReader(new InputStreamReader( in ));
                     String currentLine = reader.readLine();

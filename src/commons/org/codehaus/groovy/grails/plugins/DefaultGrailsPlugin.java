@@ -21,7 +21,6 @@ import groovy.util.slurpersupport.GPathResult;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.commons.GrailsResourceUtils;
@@ -488,9 +487,7 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
 	private Class attemptClassReload(String className) {
 		try {
 			return application.getClassLoader().loadClass(className,true,false);
-		} catch (CompilationFailedException e) {
-			LOG.error("Compilation error reloading plugin resource ["+className+"]:" + e.getMessage(),e);
-		} catch (ClassNotFoundException e) {
+        } catch (ClassNotFoundException e) {
 			LOG.error("Class not found error reloading plugin resource ["+className+"]:" + e.getMessage(),e);
 		}
 		return null;

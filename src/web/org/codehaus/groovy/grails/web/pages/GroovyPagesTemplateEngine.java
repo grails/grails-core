@@ -48,6 +48,7 @@ import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods;
 import org.codehaus.groovy.grails.web.metaclass.GetParamsDynamicProperty;
 import org.codehaus.groovy.grails.web.metaclass.GetSessionDynamicProperty;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
+import org.codehaus.groovy.grails.web.servlet.DefaultGrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap;
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.springframework.context.ApplicationContext;
@@ -468,8 +469,9 @@ public class GroovyPagesTemplateEngine {
             }
             else {
             	// if there is no controller in the request configure using existing attributes, creating objects where necessary
-            	GrailsApplicationAttributes attrs = (GrailsApplicationAttributes)request.getAttribute(GrailsApplicationAttributes.REQUEST_SCOPE_ID);            	
-	            binding.setVariable(GroovyPage.REQUEST, request);
+            	GrailsApplicationAttributes attrs = (GrailsApplicationAttributes)request.getAttribute(GrailsApplicationAttributes.REQUEST_SCOPE_ID);
+                if(attrs == null) attrs = new DefaultGrailsApplicationAttributes(context);
+                binding.setVariable(GroovyPage.REQUEST, request);
 	            binding.setVariable(GroovyPage.RESPONSE, response);
 	            binding.setVariable(GroovyPage.FLASH, attrs.getFlashScope(request));
 	            binding.setVariable(GroovyPage.SERVLET_CONTEXT, context);
