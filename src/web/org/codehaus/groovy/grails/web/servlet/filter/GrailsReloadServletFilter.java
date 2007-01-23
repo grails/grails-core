@@ -172,6 +172,9 @@ public class GrailsReloadServletFilter extends OncePerRequestFilter {
             if(LOG.isDebugEnabled())
                 LOG.debug("Compilation error occured reloading application: " + mce.getMessage(),mce);
 
+
+            httpServletResponse.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+
             GroovyPagesTemplateEngine engine = attrs.getPagesTemplateEngine();
 
             Template t = engine.createTemplate(GrailsApplicationAttributes.PATH_TO_VIEWS+"/error.gsp", getServletContext(), httpServletRequest, httpServletResponse);

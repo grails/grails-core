@@ -37,6 +37,7 @@ public class GrailsExceptionResolver  extends SimpleMappingExceptionResolver imp
       */
     public ModelAndView resolveException(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) {
         ModelAndView mv = super.resolveException(request, response, handler, ex);
+        response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         GrailsWrappedRuntimeException gwrex = new GrailsWrappedRuntimeException(servletContext,ex);
         mv.addObject("exception",gwrex);
         return mv;
