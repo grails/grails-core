@@ -19,8 +19,8 @@
 
     <target name="clean" description="Clean the build directory.">
         <delete dir="${grails.dist}"/>
-        <delete dir="${grails.build}"/>
-        <delete dir="${grails.test.build}"/>
+        <delete dir="${grails.target}"/>
+        <delete dir="${grails.doc}"/>
     </target>
 
     <import file="ant/build/resolve.xml"   /> 
