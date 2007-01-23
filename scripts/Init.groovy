@@ -191,7 +191,7 @@ task ('createArtifact': "Creates a specific Grails artifact") {
 	}
 		
 	// first check for presence of template in application
-	templateFile = "${basedir}/templates/artifacts/${artifactName}.groovy"
+	templateFile = "${basedir}/src/templates/artifacts/${artifactName}.groovy"
 	if (!new File(templateFile).exists()) {
 		// template not found in application, use default template
 		templateFile = "${grailsHome}/src/grails/templates/artifacts/${artifactName}.groovy"

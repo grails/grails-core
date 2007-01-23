@@ -31,7 +31,7 @@ includeTargets << new File ( "${grailsHome}/scripts/Init.groovy" )
 
 task ('default': "Installs the artifact and scaffolding templates") {
 
-	targetDir = "${basedir}/templates"
+	targetDir = "${basedir}/src/templates"
 	overwrite = false
 
 	// only if template dir already exists in, ask to overwrite templates

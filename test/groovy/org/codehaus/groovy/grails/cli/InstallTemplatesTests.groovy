@@ -8,7 +8,7 @@ class InstallTemplatesTests extends AbstractCliTests {
 	void testInstallTemplatesCreatesTemplates() {				
 		Gant.main(["-f", "scripts/CreateApp.groovy"] as String[])
 
-    def templatesDirectory = "${appBase}/templates/"
+		def templatesDirectory = "${appBase}/src/templates/"
         
 		assertFalse "${templatesDirectory} exists, but should not", new File(templatesDirectory).exists()
 

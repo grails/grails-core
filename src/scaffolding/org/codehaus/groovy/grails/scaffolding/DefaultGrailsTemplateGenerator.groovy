@@ -394,7 +394,7 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator  {
     
     private getTemplateText(String template) {
         // first check for presence of template in application               
-        def templateFile = "${basedir}/templates/scaffolding/${template}"
+        def templateFile = "${basedir}/src/templates/scaffolding/${template}"
         if (!new File(templateFile).exists()) {
             // template not found in application, use default template
             def ant = new AntBuilder()
