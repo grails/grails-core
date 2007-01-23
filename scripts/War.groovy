@@ -46,6 +46,9 @@ task (war: "The implementation task") {
 			fileset(dir:"${grailsHome}/dist") {
 					include(name:"grails-*.jar")
 			}
+			fileset(dir:"${basedir}/lib") {
+					include(name:"*.jar")
+			}
 		}
 		
 		Ant.replace(file:appCtxFile, 

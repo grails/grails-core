@@ -34,18 +34,25 @@ includeTargets << new File ( "${grailsHome}/scripts/RunApp.groovy" )
 
 task ('default': "Run's all of the Web tests against a Grails application") { 
 	depends( runApp )
-    runWebTest()                
-	stopServer()
+	println "Running WebTest!"
+	try {
+	    runWebTest()
+    }
+    finally {
+        stopServer()
+    }
 }                 
 task ( runWebTest : "Main implementation that executes a Grails' Web tests") {
-	Ant.java(classname:"groovy.ui.GroovyMain", failonerror:true) {
-		arg(line:"${basedir}/webtest/tests/TestSuite")
-		classpath {
-			pathelement(location:"${basedir}/webtest/tests")
-			pathelement(location:"${grailsHome}/downloads/webtest/lib")
-			fileset(dir:"${grailsHome}/downloads/webtest/lib",
-					includes:"**/*.jar",
-					excludes:"**/groovy-*") // avoid conflict with current runtime				   			
-		}
-	}
-}    
+
+    def rootLoader = getClass().classLoader.rootLoader
+
+    rootLoader.addURL(new File("${basedir}/webtest/tests").toURL())
+    rootLoader.addURL(new File("${grailsHome}/downloads/webtest/lib").toURL())
+    resolver.getResources("file:${grailsHome}/downloads/webtest/lib/*.jar").URL.each {
+        rootLoader.addURL(it)
+    }
+
+    def testRunner = new GroovyClassLoader().parseClass(new File("${basedir}/webtest/tests/TestSuite.groovy")).newInstance()
+
+    testRunner.runTests()
+}
