@@ -83,8 +83,17 @@
 			</classpath>
 		</groovyc>
 	</target>
-
-	<target name="run-test" depends="build-test" >
+	
+	<target name="defineTestingScope">
+	    <!--Sets the test value to all tests ('*') if no value is provided-->
+	    <condition property="test" value="*">
+	      <not>
+	        <isset property="test" />
+	      </not>
+	    </condition>
+	</target>
+	
+	<target name="run-test" depends="defineTestingScope, build-test" >
         <delete dir="${grails.test.reports}"/>
         <mkdir dir="${grails.test.reports}"/>
         <junit fork="true" forkmode="once">                           <!-- only fork VMs as needed -->  
@@ -107,7 +116,7 @@
 
 			<formatter type="xml" />
 			<batchtest todir="${grails.test.reports}" failureproperty="grails.test.failure">
-				<fileset dir="${grails.test.build}" includes="**/*Tests.class"
+				<fileset dir="${grails.test.build}" includes="**/${test}Tests.class"
                          excludes="**/Abstract*, **/ControllerScaffoldingTests.*,
                          **/GrailsHibernateConfigurationTests*,
                          **/ClassReloadingTests*"/>
