@@ -66,7 +66,7 @@ task (war: "The implementation task") {
    
 task(cleanUpAfterWar:"Cleans up after performing a WAR") {
  	Ant.move(file:"${basedir}/.appctxbck", tofile:appCtxFile, overwrite:true)
-	Ant.delete(dir:"${basedir}/web-app/WEB-INF/grails-app")
+	Ant.delete(dir:"${basedir}/web-app/WEB-INF/grails-app", failonerror:true)
 	Ant.delete(dir:"${basedir}/web-app/WEB-INF/plugins") 
 	Ant.delete {
 		fileset(dir:"${basedir}/web-app/WEB-INF/lib") {

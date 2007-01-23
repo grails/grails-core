@@ -45,7 +45,7 @@ task ('default': "Packages a Grails application. Note: To create WAR use 'grails
 task( packageApp : "Implementation of package task") {
 	depends(createStructure,compile)
 	copyDependencies()
-	
+    Ant.delete(dir:"${basedir}/web-app/WEB-INF/grails-app", failonerror:true)	
 	Ant.mkdir(dir:"${basedir}/web-app/WEB-INF/grails-app/views")
 	Ant.mkdir(dir:"${basedir}/web-app/WEB-INF/grails-app/i18n")
 		
@@ -144,19 +144,36 @@ task( generateWebXml : "Generates the web.xml file") {
     
         StringBuffer cpath = new StringBuffer("")
         //println "Generating web.xml generator classpath: "
-        new File ("${basedir}/web-app/WEB-INF/lib").eachFile { jar ->
-            //println "${jar.absolutePath}${File.pathSeparator}"
-            cpath  << jar.absolutePath << File.pathSeparator 
+
+        def jarFiles = resolver.getResources("lib/*.jar").toList()
+
+        try {
+            resolver.getResources("plugins/*/lib").each { pluginJar ->
+                boolean matches = jarFiles.any { it.file.name == pluginJar.file.name }
+                if(!matches) jarFiles.add(pluginJar)
+            }
+        }
+        catch(FileNotFoundException e) {
+            // ignore
+        }
+
+        def rootLoader = getClass().classLoader.rootLoader
+
+        jarFiles.each { jar ->
+            cpath << jar.file.absolutePath << File.pathSeparator
+            rootLoader.addURL(jar.URL)
         }
         cpath << "${basedir}/web-app/WEB-INF/classes"
     
-        //println "Classpath with which to generate web.xml: \n${cpath.toString()}"
+   //     println "Classpath with which to generate web.xml: \n${cpath.toString()}"
         
     	def parentLoader = getClass().getClassLoader()
     	def compConfig = new CompilerConfiguration()
     	compConfig.setClasspath(cpath.toString());
-    	
-        pluginManager = new DefaultGrailsPluginManager("classpath:plugins/**/*GrailsPlugin.groovy", new DefaultGrailsApplication(new Class[0], new GroovyClassLoader(parentLoader,compConfig,true)))
+
+        def classLoader = new GroovyClassLoader(parentLoader,compConfig,true)
+
+        pluginManager = new DefaultGrailsPluginManager("classpath:plugins/**/*GrailsPlugin.groovy", new DefaultGrailsApplication(new Class[0], classLoader))
     	PluginManagerHolder.setPluginManager(pluginManager)
 
     	def webXml = resolver.getResource("classpath:web-app/WEB-INF/web.template.xml")

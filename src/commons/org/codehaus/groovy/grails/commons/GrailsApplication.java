@@ -54,6 +54,11 @@ public interface GrailsApplication extends ApplicationContextAware {
      */
 	String ENV_PRODUCTION = "production";
 
+    /*
+     * Constant for the test environment
+     */
+    String ENV_TEST  = "test";
+
     /**
      * <p>Returns all controllers in an application
      *

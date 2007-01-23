@@ -14,16 +14,21 @@
  */
 package grails.util;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.ApplicationAttributes;
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
+import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.mock.web.MockServletContext;
 import org.springframework.util.Assert;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * 
@@ -40,8 +45,15 @@ import org.springframework.util.Assert;
 public class GrailsUtil {
 
 	private static final Log LOG  = LogFactory.getLog(GrailsUtil.class);
-	
-	public static ApplicationContext bootstrapGrailsFromClassPath() {
+
+
+    private static Map envNameMappings = new HashMap() {{
+        put("dev", GrailsApplication.ENV_DEVELOPMENT);
+        put("prod", GrailsApplication.ENV_PRODUCTION);
+        put("test", GrailsApplication.ENV_TEST);
+    }};
+
+    public static ApplicationContext bootstrapGrailsFromClassPath() {
 		LOG.info("Loading Grails environment");
 		ApplicationContext parent = new ClassPathXmlApplicationContext("applicationContext.xml");
 		DefaultGrailsApplication application = (DefaultGrailsApplication)parent.getBean("grailsApplication", DefaultGrailsApplication.class);
@@ -53,4 +65,25 @@ public class GrailsUtil {
 		Assert.notNull(appCtx);
 		return appCtx;
 	}
+
+    /**
+     * Retrieves the current execution environment
+     *
+     * @return The environment Grails is executing under
+     */
+    public static String getEnvironment() {
+        String envName = System.getProperty(GrailsApplication.ENVIRONMENT);
+        if(StringUtils.isBlank(envName)) {
+            // for now if no environment specified default to production
+            return GrailsApplication.ENV_PRODUCTION;                
+        }
+        else {
+            if(envNameMappings.containsKey(envName)) {
+                return (String)envNameMappings.get(envName);
+            }
+            else {
+                return envName;
+            }
+        }
+    }
 }
