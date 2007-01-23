@@ -144,8 +144,13 @@ task( generateWebXml : "Generates the web.xml file") {
     
         StringBuffer cpath = new StringBuffer("")
         //println "Generating web.xml generator classpath: "
-
-        def jarFiles = resolver.getResources("lib/*.jar").toList()
+        def jarFiles = []
+        try {
+            jarFiles = resolver.getResources("lib/*.jar").toList()
+        }
+        catch(FileNotFoundException e) {
+            // ignore
+        }
 
         try {
             resolver.getResources("plugins/*/lib").each { pluginJar ->
