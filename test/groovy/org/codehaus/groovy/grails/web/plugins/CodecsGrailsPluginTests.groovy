@@ -34,17 +34,17 @@ class CodecsGrailsPluginTests extends AbstractGrailsPluginTests {
 	void testCodecsPlugin() {
 		def someString = 'some string'
 		
-		assert someString.encodeFirst() == 'found first encode method for string: some string'
-		assert someString.decodeFirst() == 'found first decode method for string: some string'
-		assert someString.encodeSecond() == 'found second encode method for string: some string'
-		assert someString.decodeThird() == 'found third decode method for string: some string'
+		assert someString.encodeAsFirst() == 'found first encode method for string: some string'
+		assert someString.decodeAsFirst() == 'found first decode method for string: some string'
+		assert someString.encodeAsSecond() == 'found second encode method for string: some string'
+		assert someString.decodeAsThird() == 'found third decode method for string: some string'
 			
 		shouldFail(MissingMethodException) {
-			someString.decodeSecond()
+			someString.decodeAsSecond()
 		}
 		
 		shouldFail(MissingMethodException) {
-			someString.encodeThird()
+			someString.encodeAsThird()
 		}
 	}
 }

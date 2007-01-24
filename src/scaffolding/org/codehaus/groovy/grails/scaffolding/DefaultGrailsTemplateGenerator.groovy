@@ -126,16 +126,16 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator  {
     private renderStringEditor(domainClass, property) {
         def cp = domainClass.constrainedProperties[property.name]
         if(!cp) {
-            return "<input type='text' name='${property.name}' value=\"\${${domainClass.propertyName}?.${property.name}.toString().encodeHTML()}\" />"
+            return "<input type='text' name='${property.name}' value=\"\${${domainClass.propertyName}?.${property.name}.toString().encodeAsHTML()}\" />"
         }
         else {
 			if("textarea" == cp.widget || (cp.maxSize > 250 && !cp.password && !cp.inList)) {
-                return "<textarea rows='5' cols='40' name='${property.name}'>\${${domainClass.propertyName}?.${property.name}.toString().encodeHTML()}</textarea>"
+                return "<textarea rows='5' cols='40' name='${property.name}'>\${${domainClass.propertyName}?.${property.name}.toString().encodeAsHTML()}</textarea>"
             }
             else {
                 if(cp.inList) {
                    def sb = new StringBuffer('<g:select ')
-                   sb << "name='${property.name}' from='\${${domainClass.propertyName}.constraints.${property.name}.inList}' value=\"\${${domainClass.propertyName}.${property.name}.toString().encodeHTML()}\">"
+                   sb << "name='${property.name}' from='\${${domainClass.propertyName}.constraints.${property.name}.inList}' value=\"\${${domainClass.propertyName}.${property.name}.toString().encodeAsHTML()}\">"
                    sb << '</g:select>'
                    return sb.toString()
                 }
@@ -144,7 +144,7 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator  {
                     cp.password ? sb << 'type="password" ' : sb << 'type="text" '
                     if(!cp.editable) sb << 'readonly="readonly" '
                     if(cp.maxSize) sb << "maxlength='${cp.maxSize}' "
-                    sb << "name='${property.name}' value=\"\${${domainClass.propertyName}?.${property.name}.toString().encodeHTML()}\"></input>"
+                    sb << "name='${property.name}' value=\"\${${domainClass.propertyName}?.${property.name}.toString().encodeAsHTML()}\"></input>"
                     return sb.toString()
                 }
             }
@@ -177,21 +177,21 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator  {
         def cp = domainClass.constrainedProperties[property.name]
         if(!cp) {
             if(property.type == Byte.class) {
-                return "<g:select from='\${-128..127}' name='${property.name}' value=\"\${${domainClass.propertyName}?.${property.name}.toString().encodeHTML()}\"></g:select>"
+                return "<g:select from='\${-128..127}' name='${property.name}' value=\"\${${domainClass.propertyName}?.${property.name}.toString().encodeAsHTML()}\"></g:select>"
             }
             else {
-                return "<input type='text' name='${property.name}' value=\"\${${domainClass.propertyName}?.${property.name}.toString().encodeHTML()}\"></input>"
+                return "<input type='text' name='${property.name}' value=\"\${${domainClass.propertyName}?.${property.name}.toString().encodeAsHTML()}\"></input>"
             }
         }
         else {
             if(cp.range) {
-                return "<g:select from='\${${cp.range.from}..${cp.range.to}}' name='${property.name}' value=\"\${${domainClass.propertyName}?.${property.name}.toString().encodeHTML()}\"></g:select>"
+                return "<g:select from='\${${cp.range.from}..${cp.range.to}}' name='${property.name}' value=\"\${${domainClass.propertyName}?.${property.name}.toString().encodeAsHTML()}\"></g:select>"
             }
             else if(cp.size) {
-                return "<g:select from='\${${cp.size.from}..${cp.size.to}}' name='${property.name}' value=\"\${${domainClass.propertyName}?.${property.name}.toString().encodeHTML()}\"></g:select>"
+                return "<g:select from='\${${cp.size.from}..${cp.size.to}}' name='${property.name}' value=\"\${${domainClass.propertyName}?.${property.name}.toString().encodeAsHTML()}\"></g:select>"
             }
             else {
-                return "<input type='text' name='${property.name}' value=\"\${${domainClass.propertyName}?.${property.name}.toString().encodeHTML()}\"></input>"
+                return "<input type='text' name='${property.name}' value=\"\${${domainClass.propertyName}?.${property.name}.toString().encodeAsHTML()}\"></input>"
             }
         }
     }
@@ -200,13 +200,13 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator  {
 
         def cp = domainClass.constrainedProperties[property.name]
         if(!cp) {
-            return "<g:checkBox name='${property.name}' value=\"\${${domainClass.propertyName}?.${property.name}.toString().encodeHTML()}\"></g:checkBox>"
+            return "<g:checkBox name='${property.name}' value=\"\${${domainClass.propertyName}?.${property.name}.toString().encodeAsHTML()}\"></g:checkBox>"
         }
         else {
             def buf = new StringBuffer('<g:checkBox ')
             if(cp.widget) buf << "widget='${cp.widget}'";
 
-            buf << "name='${property.name}' value=\"\${${domainClass.propertyName}?.${property.name}.toString().encodeHTML()}\" "
+            buf << "name='${property.name}' value=\"\${${domainClass.propertyName}?.${property.name}.toString().encodeAsHTML()}\" "
             cp.attributes.each { k,v ->
                   buf << "${k}=\"${v}\" "
             }
@@ -219,7 +219,7 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator  {
     private renderDateEditor(domainClass,property) {
         def cp = domainClass.constrainedProperties[property.name]
         if(!cp) {
-            return "<g:datePicker name='${property.name}' value=\"\${${domainClass.propertyName}?.${property.name}.toString().encodeHTML()}\"></g:datePicker>"
+            return "<g:datePicker name='${property.name}' value=\"\${${domainClass.propertyName}?.${property.name}.toString().encodeAsHTML()}\"></g:datePicker>"
         }
         else {
           if(!cp.editable) {
@@ -233,7 +233,7 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator  {
             cp.attributes.each { k,v ->
                   buf << "${k}=\"${v}\" "
             }
-            buf << "name='${property.name}' value=\"\${${domainClass.propertyName}?.${property.name}.toString().encodeHTML()}\"></g:datePicker>"
+            buf << "name='${property.name}' value=\"\${${domainClass.propertyName}?.${property.name}.toString().encodeAsHTML()}\"></g:datePicker>"
             return buf.toString()
           }
         }
@@ -242,7 +242,7 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator  {
     private renderSelectTypeEditor(type,domainClass,property) {
        def cp = domainClass.constrainedProperties[property.name]
         if(!cp) {
-            return "<g:${type}Select name='${property.name}' value=\"\${${domainClass.propertyName}?.${property.name}.toString().encodeHTML()}\"></g:${type}Select>"
+            return "<g:${type}Select name='${property.name}' value=\"\${${domainClass.propertyName}?.${property.name}.toString().encodeAsHTML()}\"></g:${type}Select>"
         }
         else {
             def buf = new StringBuffer('<g:${type}Select ')
@@ -250,7 +250,7 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator  {
             cp.attributes.each { k,v ->
                   buf << "${k}=\"${v}\" "
             }
-            buf << "name='${property.name}' value=\"\${${domainClass.propertyName}?.${property.name}.toString().encodeHTML()}\"></g:${type}Select>"
+            buf << "name='${property.name}' value=\"\${${domainClass.propertyName}?.${property.name}.toString().encodeAsHTML()}\"></g:${type}Select>"
             return buf.toString()
         }
     }
