@@ -22,6 +22,8 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.WordUtils;
 import org.codehaus.groovy.grails.scaffolding.GrailsScaffolder;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
+import org.springframework.beans.BeanWrapper;
+import org.springframework.beans.BeanWrapperImpl;
 
 import java.beans.PropertyDescriptor;
 import java.util.*;
@@ -261,14 +263,18 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass
 	}
 
 	public Closure getBeforeInterceptor(GroovyObject controller) {
-		final Map controllerProperties = DefaultGroovyMethods.getProperties(controller);
-		return getInterceptor(controllerProperties.get(BEFORE_INTERCEPTOR));
+        if(getReference().isReadableProperty(BEFORE_INTERCEPTOR)) {
+            return getInterceptor(controller.getProperty(BEFORE_INTERCEPTOR));
+        }
+        return null;
 	}
 
 	public Closure getAfterInterceptor(GroovyObject controller) {
-		final Map controllerProperties = DefaultGroovyMethods.getProperties(controller);
-		return getInterceptor(controllerProperties.get(AFTER_INTERCEPTOR));
-	}
+        if(getReference().isReadableProperty(AFTER_INTERCEPTOR)) {
+            return getInterceptor(controller.getProperty(AFTER_INTERCEPTOR));
+        }
+        return null;
+    }
 
 	private Closure getInterceptor(Object ip) {
 		if(ip instanceof Map) {
