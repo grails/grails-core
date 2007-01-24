@@ -52,7 +52,7 @@ class CodecsGrailsPlugin {
 				}
 			}
 
-			def decodeMethodName = "decodeAs${codecName}" 
+			def decodeMethodName = "decodeFrom${codecName}" 
 			String.metaClass."${decodeMethodName}" << {
 				def codecClass = application.getGrailsCodecClass(codecClassName)
 				def decodeMethod = codecClass.decodeMethod
