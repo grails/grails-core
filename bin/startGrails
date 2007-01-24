@@ -201,16 +201,15 @@ if $cygwin; then
     	OURCYGPATTERN="$OURCYGPATTERN|($GROOVY_CYGPATTERN)"
     fi
     # Now convert the arguments
-    declare -i count
+	ARGUMENTS=""
     for arg in "$@" ; do
     	CHECK=`echo "$arg"|egrep -c "$OURCYGPATTERN" -`
     	if [ $CHECK -ne 0 ] ; then
 	    	convArg=`cygpath --path --ignore --mixed "$arg"`
     	else
 			convArg=$arg
-    	fi
-    	ARGUMENTS[$count]=$convArg
-    	count+=1
+    	fi   
+		ARGUMENTS="$ARGUMENTS $convArg"
     done
 fi
 
