@@ -23,7 +23,7 @@
  */
 import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU  
  
-DEFAULT_PLUGIN_DIST = "http://dist.codehaus.org/grails/plugins"            
+DEFAULT_PLUGIN_DIST = "http://dist.codehaus.org/grails-plugins/"            
 ERROR_MESSAGE = """
 You need to specify either the direct URL of the plugin or the name and version of a distributed Grails plugin found
 at $DEFAULT_PLUGIN_DIST. 
@@ -46,41 +46,53 @@ task ( "default" : "Installs a plug-in for the given URL or name and version") {
 task(installPlugin:"Implementation task") {   
 	def pluginsBase = "${basedir}/plugins"
 	if(args) {      
-		def pluginFile = new File(args.trim())            
+		def pluginFile = new File(args.trim())
+		Ant.mkdir(dir:pluginsBase)   		            
+		
 		if(args.trim().startsWith("http://")) {
 			def url = new URL(args.trim())			
 			Ant.mkdir(dir:"${basedir}/plugins")   
-			
-			def file = "${basedir}/plugins/${url.file}"
+			                                         
+			def slash = url.file.lastIndexOf('/')
+			                       
+
+			def file = "${basedir}/plugins/${url.file[slash+8..-1]}"
+			println file
 			Ant.get(dest:file,
 				src:"${url}",
 				verbose:true,
 				usetimestamp:true)			
-		    def dirName =  file[0..-5]
+		    def dirName =  file[0..-5] 
+			Ant.delete(dir:dirName, failonerror:false)
 			Ant.mkdir(dir:dirName)
 			Ant.unzip(dest:dirName, src:file)
 		}  
 		else if(pluginFile.exists()) {
-			Ant.mkdir(dir:pluginsBase)  
-			Ant.copy(file:"${pluginFile}", todir:pluginsBase)
-			pluginFile = new File("${pluginsBase}/${pluginFile.name}") 
-			def dirName = pluginFile.name[7..-5]
-			Ant.mkdir(dir:"${pluginsBase}/$dirName")
-			Ant.unzip(dest:"${pluginsBase}/$dirName", src:pluginFile)
+
+			def pluginDir = new File("${pluginsBase}/${pluginFile.name[7..-5]}") 
+
+			Ant.delete(dir:pluginDir, failonerror:false)			
+			Ant.mkdir(dir:pluginDir)
+			Ant.unzip(dest:pluginDir, src:pluginFile)
 		} 
 		else if(args.indexOf("\n") > -1) {
 			def tokens = args.split("\n") 
 			def name = tokens[0].trim()
 			def version = tokens[1].trim()
-			
+			                         
+			def dirName = "grails-${name}-${version}"
 			Ant.mkdir(dir:"${basedir}/plugins")
-			Ant.get(dest:"${basedir}/plugins/grails-${name}-${version}.zip",
-				src:"${DEFAULT_PLUGIN_DIST}/grails-${name}-${version}.zip",
+			Ant.get(dest:"${basedir}/plugins/${dirName}.zip",
+				src:"${DEFAULT_PLUGIN_DIST}/${dirName}.zip",
 				verbose:true,
-				usetimestamp:true) 
-			Ant.mkdir(dir:"${basedir}/plugins/${name[7..-1]}-${version}")				
-			Ant.unzip(dest:"${basedir}/plugin/${name[7..-1]}-${version}",
-					   src:"${basedir}/plugin/grails-${name}-${version}.zip")   		
+				usetimestamp:true)                    
+			 
+			              
+			def pluginDir = "${basedir}/plugins/${dirName[7..-1]}"                                 
+			Ant.delete(dir:pluginDir, failonerror:false)	 	
+			Ant.mkdir(dir:pluginDir)				
+			Ant.unzip(dest:pluginDir,
+					   src:"${basedir}/plugins/${dirName}.zip")   		
 			
 		}                             
 		else {
