@@ -15,7 +15,6 @@
 import org.springframework.validation.Errors;
 import org.springframework.context.NoSuchMessageException;
 import org.springframework.web.servlet.support.RequestContextUtils as RCU;
-import org.springframework.web.util.HtmlUtils;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU;
 
  /**
@@ -76,7 +75,7 @@ class FormTagLib {
 
 		out << "<textarea "
         outputAttributes(attrs)
-		out << ">" << (escapeHtml ? HtmlUtils.htmlEscape(value) : value) << "</textarea>"
+		out << ">" << (escapeHtml ? value.encodeAsHTML() : value) << "</textarea>"
 	}
 
     /**
@@ -118,7 +117,7 @@ class FormTagLib {
     */
     private escapeAttributeValue(value)
     {
-    	HtmlUtils.htmlEscape(value).replaceAll('"', '&quot;')
+    	value.encodeAsHTML().replaceAll('"', '&quot;')
     }
 
     /**
