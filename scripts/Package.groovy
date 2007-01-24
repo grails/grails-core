@@ -153,7 +153,8 @@ task( generateWebXml : "Generates the web.xml file") {
         }
 
         try {
-            resolver.getResources("plugins/*/lib").each { pluginJar ->
+            resolver.getResources("plugins/*/lib/*.jar").each { pluginJar ->  
+				println("Adding Plugin jar $pluginJar to classpath")
                 boolean matches = jarFiles.any { it.file.name == pluginJar.file.name }
                 if(!matches) jarFiles.add(pluginJar)
             }
