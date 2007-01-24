@@ -229,6 +229,7 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
 			b.setVariable("manager", getManager());
 			b.setVariable("plugin", this);
             b.setVariable("parentCtx", getParentCtx());
+            b.setVariable("resolver", getResolver());
             bb.setBinding(b);
 			c.setDelegate(bb);
 			bb.invokeMethod("beans", new Object[]{c});
