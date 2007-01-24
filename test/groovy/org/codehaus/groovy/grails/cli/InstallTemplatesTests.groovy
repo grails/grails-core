@@ -18,16 +18,16 @@ class InstallTemplatesTests extends AbstractCliTests {
 		
 		// expected templates to be installed
 		def templates = [
-		  "/artifacts/BootStrap.groovy"
-		  /*"/artifacts/Controller.groovy",
+		  "/artifacts/BootStrap.groovy",
+		  "/artifacts/Controller.groovy",
 		  "/artifacts/DataSource.groovy",
 		  "/artifacts/DomainClass.groovy",
 		  "/artifacts/Job.groovy",
 		  "/artifacts/Service.groovy",
 		  "/artifacts/TagLib.groovy",
 		  "/artifacts/Tests.groovy",
-		  "/artifacts/WebTest.groovy",
-		  "/scaffolding/Controller.groovy",
+		  "/artifacts/WebTest.groovy"
+		  /*"/scaffolding/Controller.groovy"
 		  "/scaffolding/create.gsp",
 		  "/scaffolding/edit.gsp",
 		  "/scaffolding/list.gsp",
