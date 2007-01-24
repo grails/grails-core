@@ -32,6 +32,8 @@ class CodecsGrailsPluginTests extends AbstractGrailsPluginTests {
 	}
 	
 	void testCodecsPlugin() {
+
+	    
 		def someString = 'some string'
 		
 		assert someString.encodeAsFirst() == 'found first encode method for string: some string'

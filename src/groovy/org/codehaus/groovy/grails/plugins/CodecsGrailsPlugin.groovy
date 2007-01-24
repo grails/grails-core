@@ -41,23 +41,26 @@ class CodecsGrailsPlugin {
 			def codecName = it.name
 			def codecClassName = it.fullName
 
+
 			def encodeMethodName = "encodeAs${codecName}"
-			String.metaClass."${encodeMethodName}" << {
+
+			Object.metaClass."${encodeMethodName}" << {->
 				def codecClass = application.getGrailsCodecClass(codecClassName)
 				def encodeMethod = codecClass.encodeMethod
 				if(encodeMethod) {
-					return encodeMethod(delegate)
+					return encodeMethod(delegate.toString())
 				} else {
 					throw new MissingMethodException(encodeMethodName, String, [] as Object[])
 				}
-			}
+            }
+
 
 			def decodeMethodName = "decodeFrom${codecName}" 
-			String.metaClass."${decodeMethodName}" << {
+			Object.metaClass."${decodeMethodName}" << {->
 				def codecClass = application.getGrailsCodecClass(codecClassName)
 				def decodeMethod = codecClass.decodeMethod
 				if(decodeMethod) {
-					return decodeMethod(delegate)
+					return decodeMethod(delegate.toString())
 				} else {
 					throw new MissingMethodException(decodeMethodName, String, [] as Object[])
 				}
