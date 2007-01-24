@@ -3,6 +3,7 @@ package org.codehaus.groovy.grails.web.plugins
 import org.codehaus.groovy.grails.commons.test.*
 import org.codehaus.groovy.grails.commons.spring.*
 import org.codehaus.groovy.grails.plugins.*
+import org.codehaus.groovy.runtime.*
 
 class CodecsGrailsPluginTests extends AbstractGrailsPluginTests {
 	
@@ -32,7 +33,9 @@ class CodecsGrailsPluginTests extends AbstractGrailsPluginTests {
 	}
 	
 	void testCodecsPlugin() {
+        def registry = InvokerHelper.getInstance().getMetaRegistry()
 
+        registry.removeMetaClass(String.class)                
 	    
 		def someString = 'some string'
 		
