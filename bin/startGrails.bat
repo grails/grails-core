@@ -58,14 +58,6 @@ goto end
 :check_GROOVY_HOME
 @rem Define GROOVY_HOME if not set
 if "%GROOVY_HOME%" == "" set GROOVY_HOME=%DIRNAME%..
-
-@rem classpath handling
-set CP=
-if "x%~1" == "x-cp" set CP=%~2
-if "x%~1" == "x-classpath" set CP=%~2
-if "x" == "x%CP%" goto init
-shift 
-shift
  
 :init
 @rem Get command-line arguments, handling Windowz variants
@@ -75,12 +67,35 @@ if "%eval[2+2]" == "4" goto 4NT_args
 :win9xME_args
 @rem Slurp the command line arguments.  
 set CMD_LINE_ARGS=
+set SERVER_PORT=
+set CP=
 
 :win9xME_args_slurp
 if "x%~1" == "x" goto execute
-set CMD_LINE_ARGS=%CMD_LINE_ARGS% %1
-shift
-goto win9xME_args_slurp
+if "%~1" == "-Dserver.port" (
+	set SERVER_PORT=%~1=%~2
+	shift
+	shift	
+	goto win9xME_args_slurp
+) else (
+	if "x%~1" == "x-cp" (
+		set CP=%~2
+		shift	
+		shift	
+		goto win9xME_args_slurp
+	) else (
+		if "x%~1" == "x-classpath" (
+			set CP=%~2
+			shift	
+			shift	
+			goto win9xME_args_slurp
+		) else (
+			set CMD_LINE_ARGS=%CMD_LINE_ARGS% %1
+			shift
+			goto win9xME_args_slurp
+		)
+	)
+)
 
 :4NT_args
 @rem Get arguments from the 4NT Shell from JP Software
@@ -120,7 +135,7 @@ set JAVA_OPTS=%JAVA_OPTS% -Dgroovy.starter.conf="%STARTER_CONF%"
 if exist "%USERPROFILE%/.groovy/postinit.bat" call "%USERPROFILE%/.groovy/postinit.bat"
 
 @rem Execute Groovy
-"%JAVA_EXE%" %JAVA_OPTS% -classpath "%STARTER_CLASSPATH%" %STARTER_MAIN_CLASS% --main %CLASS% --conf "%STARTER_CONF%" --classpath "%CP%" "%CMD_LINE_ARGS%"
+"%JAVA_EXE%" %JAVA_OPTS% %SERVER_PORT% -classpath "%STARTER_CLASSPATH%" %STARTER_MAIN_CLASS% --main %CLASS% --conf "%STARTER_CONF%" --classpath "%CP%" "%CMD_LINE_ARGS%"
 
 :end
 @rem End local scope for the variables with windows NT shell
