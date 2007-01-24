@@ -618,4 +618,11 @@ public class DefaultGrailsApplication implements GrailsApplication {
 		}
 		return null;
 	}
+
+    public void refreshConstraints() {
+        for (int i = 0; i < domainClasses.length; i++) {
+            GrailsDomainClass domainClass = domainClasses[i];
+            domainClass.refreshConstraints();
+        }
+    }
 }

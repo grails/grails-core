@@ -14,31 +14,29 @@
  */
 package org.codehaus.groovy.grails.orm.hibernate.cfg;
 
-import org.hibernate.SessionFactory;
-import org.hibernate.EntityMode;
-import org.hibernate.metadata.ClassMetadata;
+import groovy.lang.GroovyObject;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
 import org.codehaus.groovy.grails.commons.metaclass.DynamicMethods;
 import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator;
-import org.codehaus.groovy.grails.metaclass.DomainClassMethods;
-import org.codehaus.groovy.grails.metaclass.AddToRelatedDynamicMethod;
 import org.codehaus.groovy.grails.metaclass.AddRelatedDynamicMethod;
-import org.codehaus.groovy.grails.orm.support.TransactionManagerAware;
+import org.codehaus.groovy.grails.metaclass.AddToRelatedDynamicMethod;
+import org.codehaus.groovy.grails.metaclass.DomainClassMethods;
 import org.codehaus.groovy.grails.orm.hibernate.GrailsHibernateDomainClass;
+import org.hibernate.EntityMode;
+import org.hibernate.SessionFactory;
+import org.hibernate.metadata.ClassMetadata;
 import org.springframework.context.ApplicationContext;
 import org.springframework.transaction.PlatformTransactionManager;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
-import java.util.*;
 import java.beans.IntrospectionException;
-
-import groovy.lang.GroovyObject;
+import java.util.*;
 
 /**
- * Class description here.
+ * A class containing utility methods for configuring Hibernate inside Grails
  *
  * @author Graeme Rocher
  * @since 0.4
@@ -89,12 +87,11 @@ public class GrailsHibernateUtil {
 
         for (Iterator i = dynamicMethods.iterator(); i.hasNext();) {
             DomainClassMethods methods = (DomainClassMethods) i.next();
-            boolean isTransactionAware = applicationContext.containsBean(GrailsRuntimeConfigurator.TRANSACTION_MANAGER_BEAN) &&
-                    (methods instanceof TransactionManagerAware);
+            boolean isTransactionAware = applicationContext.containsBean(GrailsRuntimeConfigurator.TRANSACTION_MANAGER_BEAN);
             if(isTransactionAware) {
                 PlatformTransactionManager ptm = (PlatformTransactionManager)applicationContext.getBean(GrailsRuntimeConfigurator.TRANSACTION_MANAGER_BEAN);
 
-                ((TransactionManagerAware)methods).setTransactionManager(ptm);
+                methods.setTransactionManager(ptm);
             }
         }
     }

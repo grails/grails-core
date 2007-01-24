@@ -33,7 +33,7 @@ import org.codehaus.groovy.grails.commons.metaclass.AbstractDynamicMethodsInterc
 import org.codehaus.groovy.grails.commons.metaclass.DynamicMethods;
 import org.codehaus.groovy.grails.commons.metaclass.Interceptor;
 import org.codehaus.groovy.grails.commons.metaclass.ProxyMetaClass;
-import org.codehaus.groovy.grails.orm.hibernate.validation.GrailsDomainClassValidator;
+import org.codehaus.groovy.grails.validation.GrailsDomainClassValidator;
 import org.codehaus.groovy.grails.validation.metaclass.ConstraintsEvaluatingDynamicProperty;
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.hibernate.EntityMode;
@@ -71,6 +71,8 @@ public class GrailsHibernateDomainClass extends AbstractGrailsClass implements E
      * new instance and get the name right.
      *
      * @param clazz        the Grails class
+     * @param sessionFactory The Hibernate SessionFactory instance
+     * @param metaData The ClassMetaData for this class retrieved from the SF
      */
     public GrailsHibernateDomainClass(Class clazz, SessionFactory sessionFactory,ClassMetadata metaData) {
         super(clazz, "");
@@ -146,7 +148,7 @@ public class GrailsHibernateDomainClass extends AbstractGrailsClass implements E
 					ProxyMetaClass pmc = new ProxyMetaClass(metaRegistry, instance.getClass(), meta);
 					pmc.setInterceptor((Interceptor)interceptor);
 					
-					this.constraints = (Map)pmc.getProperty(instance,GrailsDomainClassProperty.CONSTRAINTS);													        
+					this.constraints = (Map)pmc.getProperty(getClazz(),instance,GrailsDomainClassProperty.CONSTRAINTS, false, false);
 				}
 				finally {
 					metaRegistry.setMetaClass(instance.getClass(),meta);
@@ -195,20 +197,12 @@ public class GrailsHibernateDomainClass extends AbstractGrailsClass implements E
 
     public boolean isOneToMany(String propertyName) {
         GrailsDomainClassProperty prop = getPropertyByName(propertyName);
-        if(prop == null)
-            return false;
-        else {
-            return prop.isOneToMany();
-        }
+        return prop != null && prop.isOneToMany();
     }
 
     public boolean isManyToOne(String propertyName) {
         GrailsDomainClassProperty prop = getPropertyByName(propertyName);
-        if(prop == null)
-            return false;
-        else {
-            return prop.isManyToOne();
-        }
+        return prop != null && prop.isManyToOne();
     }
 
     public boolean isBidirectional(String propertyName) {
@@ -230,7 +224,7 @@ public class GrailsHibernateDomainClass extends AbstractGrailsClass implements E
 
     public Validator getValidator() {
         if(this.validator == null) {
-            GrailsDomainClassValidator gdcv = new GrailsDomainClassValidator();
+            org.codehaus.groovy.grails.validation.GrailsDomainClassValidator gdcv = new GrailsDomainClassValidator();
             gdcv.setDomainClass(this);
             this.validator = gdcv;
         }
@@ -250,8 +244,12 @@ public class GrailsHibernateDomainClass extends AbstractGrailsClass implements E
 		return this.subClasses;
 	}
 
+    public void refreshConstraints() {
+        this.evaluateConstraints();
+    }
 
-	public boolean isRoot() {
+
+    public boolean isRoot() {
 		return getClazz().getSuperclass().equals(Object.class);
 	}
 

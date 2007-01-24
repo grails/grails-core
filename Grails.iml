@@ -17,7 +17,6 @@
       <sourceFolder url="file://$MODULE_DIR$/test/persistence" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/test/scaffolding" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/test/web" isTestSource="true" />
-      <excludeFolder url="file://$MODULE_DIR$/ant" />
       <excludeFolder url="file://$MODULE_DIR$/bin" />
       <excludeFolder url="file://$MODULE_DIR$/cruise" />
       <excludeFolder url="file://$MODULE_DIR$/samples" />
@@ -44,6 +43,42 @@
     <orderEntry type="module-library">
       <library>
         <CLASSES>
+          <root url="file://$MODULE_DIR$/target/classes/gorm" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/target/classes/core" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/target/classes/crud" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/target/classes/web" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
           <root url="file://$MODULE_DIR$/target/test-classes" />
         </CLASSES>
         <JAVADOC />
@@ -55,6 +90,7 @@
       <root url="file://$MODULE_DIR$/../spring-framework-2.0/docs/api" />
       <root url="file://$MODULE_DIR$/../hibernate-3.2/doc/api" />
       <root url="file://$MODULE_DIR$/../sitemesh-2.2.1/docs/api" />
+      <root url="file://$MODULE_DIR$/../spring-framework-2.0/docs/api" />
     </javadoc-paths>
   </component>
 </module>

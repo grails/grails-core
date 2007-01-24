@@ -410,7 +410,7 @@ public class BeanBuilder extends GroovyObjectSupport {
 	 * This method is called when a bean definition node is called
 	 * 
 	 * @param name The name of the bean to define
-	 * @param arg The arguments to the bean. The first argument is the class name, the last argument is sometimes a closure. All
+	 * @param args The arguments to the bean. The first argument is the class name, the last argument is sometimes a closure. All
 	 * the arguments in between are constructor arguments
 	 * @return The bean configuration instance
 	 */

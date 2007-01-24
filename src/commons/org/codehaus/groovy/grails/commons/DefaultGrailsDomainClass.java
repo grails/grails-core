@@ -682,4 +682,8 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
     public Set getSubClasses() {
         return this.subClasses;
     }
+
+    public void refreshConstraints() {
+        evaluateConstraints();
+    }
 }

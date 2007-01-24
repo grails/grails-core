@@ -1,23 +1,6 @@
 package org.codehaus.groovy.grails.plugins;
 
 import junit.framework.TestCase;
-import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
-import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.plugins.support.aware.ClassLoaderAware;
-import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware;
-import org.codehaus.groovy.grails.web.errors.GrailsExceptionResolver;
-import org.springframework.aop.support.AopUtils;
-import org.springframework.beans.MutablePropertyValues;
-import org.springframework.beans.factory.support.RootBeanDefinition;
-import org.springframework.context.support.GenericApplicationContext;
-import org.springframework.context.support.ReloadableResourceBundleMessageSource;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.Resource;
-import org.springframework.web.multipart.commons.CommonsMultipartResolver;
-import org.springframework.web.servlet.i18n.CookieLocaleResolver;
-import org.springframework.web.servlet.i18n.LocaleChangeInterceptor;
-
-import java.util.Map;
 
 /**
  * NOTE: This test covers the old plug-in system. The system has been heavily re-worked. Please see
@@ -100,7 +83,7 @@ public class PluginTests extends TestCase {
     }
 
     public static class MyClassLoaderAware implements ClassLoaderAware {
-        public void setClassLoader(ClassLoader classLoader) {
+        public void setCompilerConfiguration(ClassLoader classLoader) {
 
         }
     }

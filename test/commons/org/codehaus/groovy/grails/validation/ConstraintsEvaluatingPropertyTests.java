@@ -3,7 +3,6 @@ package org.codehaus.groovy.grails.validation;
 import groovy.lang.GroovyClassLoader;
 import junit.framework.TestCase;
 import org.codehaus.groovy.grails.commons.DefaultGrailsDomainClass;
-import org.codehaus.groovy.grails.orm.hibernate.validation.ConstrainedPersistentProperty;
 import org.codehaus.groovy.grails.validation.metaclass.ConstraintsEvaluatingDynamicProperty;
 
 import java.util.Collection;

@@ -317,4 +317,10 @@ public interface GrailsApplication extends ApplicationContextAware {
 	 * @return The class or null
 	 */
 	public Class getClassForName(String className);
+
+
+    /**
+     * This method will rebuild the constraint definitions
+     */
+    public void refreshConstraints();
 }

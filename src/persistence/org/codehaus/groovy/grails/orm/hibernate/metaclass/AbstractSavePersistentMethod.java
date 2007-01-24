@@ -25,7 +25,6 @@ import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
 import org.codehaus.groovy.grails.commons.metaclass.DynamicMethodsMetaClass;
 import org.codehaus.groovy.grails.metaclass.DomainClassMethods;
-import org.codehaus.groovy.grails.orm.hibernate.validation.GrailsDomainClassValidator;
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.hibernate.SessionFactory;
 import org.springframework.beans.BeanWrapper;

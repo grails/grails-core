@@ -12,12 +12,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */ 
-package org.codehaus.groovy.grails.orm.hibernate.validation;
+package org.codehaus.groovy.grails.validation;
 
 import groovy.lang.GroovyObject;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
-import org.codehaus.groovy.grails.metaclass.DomainClassMethods;
-import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
@@ -36,10 +34,10 @@ import java.util.Iterator;
  */
 public class GrailsDomainClassValidator implements Validator {
 
-    private Collection constrainedProperties;
     private Class targetClass;
     private GrailsDomainClass domainClass;
     private MessageSource messageSource;
+    private static final String ERRORS_PROPERTY = "errors";
 
     public boolean supports(Class clazz) {
         return this.targetClass.equals( clazz );
@@ -53,7 +51,11 @@ public class GrailsDomainClassValidator implements Validator {
         this.domainClass = domainClass;
         this.domainClass.setValidator(this);
         this.targetClass = this.domainClass.getClazz();
-        this.constrainedProperties = domainClass.getConstrainedProperties().values();
+    }
+
+
+    public GrailsDomainClass getDomainClass() {
+        return domainClass;
     }
 
     /**
@@ -70,6 +72,7 @@ public class GrailsDomainClassValidator implements Validator {
 
         BeanWrapper bean = new BeanWrapperImpl(obj);
 
+        Collection constrainedProperties = domainClass.getConstrainedProperties().values();
         for (Iterator i = constrainedProperties.iterator(); i.hasNext();) {
 
             ConstrainedProperty c = (ConstrainedProperty)i.next();
@@ -78,10 +81,10 @@ public class GrailsDomainClassValidator implements Validator {
         }
 
          if(obj instanceof GroovyObject) {
-            ((GroovyObject)obj).setProperty(DomainClassMethods.ERRORS_PROPERTY, errors);
+            ((GroovyObject)obj).setProperty(ERRORS_PROPERTY, errors);
          }
          else {
-            InvokerHelper.setProperty(obj,DomainClassMethods.ERRORS_PROPERTY,errors);
+            InvokerHelper.setProperty(obj,ERRORS_PROPERTY,errors);
          }
     }
 

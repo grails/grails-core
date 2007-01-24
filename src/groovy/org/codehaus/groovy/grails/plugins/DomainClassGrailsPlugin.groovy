@@ -15,6 +15,7 @@
  */ 
 package org.codehaus.groovy.grails.plugins
 
+import org.codehaus.groovy.grails.validation.*
 import org.codehaus.groovy.grails.plugins.support.GrailsPluginUtils
 import org.springframework.beans.factory.config.MethodInvokingFactoryBean
 import org.springframework.aop.framework.ProxyFactoryBean
@@ -32,28 +33,23 @@ class DomainClassGrailsPlugin {
 	def dependsOn = [i18n:version]
 	
 	def doWithSpring = {
-		application.grailsDomainClasses.each { domainClass ->
-		    // This code sets up four beans in the application context for 
-		    // each domain class. A bean for the domain class wrapper (GrailsDomainClass), a target source
-		    // ,a proxy to domain class and reference to the persistent class 
+		application.grailsDomainClasses.each { dc ->
 		    // Note the use of Groovy's ability to use dynamic strings in method names!
 		    
-			"${domainClass.fullName}DomainClass"(MethodInvokingFactoryBean) {
+			"${dc.fullName}DomainClass"(MethodInvokingFactoryBean) {
 				targetObject = ref("grailsApplication", true)
 				targetMethod = "getGrailsDomainClass"
-				arguments = domainClass.fullName
+				arguments = dc.fullName
 			}
-			"${domainClass.fullName}TargetSource"(	HotSwappableTargetSource, 
-													ref("${domainClass.fullName}DomainClass"))
-			
-			"${domainClass.fullName}Proxy"(ProxyFactoryBean) {
-				targetSource = ref("${domainClass.fullName}TargetSource")
-				proxyInterfaces = org.codehaus.groovy.grails.commons.GrailsDomainClass.class
-			}
-			"${domainClass.fullName}PersistentClass"(MethodInvokingFactoryBean) {
-				targetObject = ref("${domainClass.fullName}Proxy")
-				targetMethod = "getClazz"
-			}
+			"${dc.fullName}PersistentClass"(MethodInvokingFactoryBean) {
+				targetObject = ref("${dc.fullName}DomainClass")
+				targetMethod = "getClazz"        						
+            }
+            "${dc.fullName}Validator"(GrailsDomainClassValidator) {
+                messageSource = ref("messageSource")
+                domainClass = ref("${dc.fullName}DomainClass")                
+            }
+
 		}
 	}
 }

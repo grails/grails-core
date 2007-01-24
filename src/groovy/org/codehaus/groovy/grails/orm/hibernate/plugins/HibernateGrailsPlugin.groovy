@@ -15,10 +15,11 @@
  */ 
 package org.codehaus.groovy.grails.orm.hibernate.plugins;
 
+import org.codehaus.groovy.grails.validation.*
 import org.codehaus.groovy.grails.plugins.support.GrailsPluginUtils
 import org.codehaus.groovy.grails.orm.hibernate.ConfigurableLocalSessionFactoryBean;
 import org.codehaus.groovy.grails.orm.hibernate.support.*
-import org.codehaus.groovy.grails.orm.hibernate.validation.GrailsDomainClassValidator;
+import org.codehaus.groovy.grails.orm.hibernate.validation.*
 import org.springframework.orm.hibernate3.HibernateTransactionManager;
 import org.springmodules.beans.factory.config.MapToPropertiesFactoryBean;
 import org.springframework.orm.hibernate3.support.OpenSessionInViewInterceptor;
@@ -42,7 +43,7 @@ class HibernateGrailsPlugin {
 	def loadAfter = ['controllers']	                 
 	
 	def watchedResources = "**/grails-app/domain/*.groovy"
-		
+
 	def doWithSpring = {
 			def vendorToDialect = new Properties()
 			def hibernateDialects = application.classLoader.getResource("hibernate-dialects.properties")
@@ -106,16 +107,12 @@ class HibernateGrailsPlugin {
 				grailsUrlHandlerMapping.interceptors << openSessionInViewInterceptor
 			}	
 			
-			application.grailsDomainClasses.each { dc ->
-				"${dc.fullName}Validator"(GrailsDomainClassValidator) {
-					domainClass = ref("${dc.fullName}Proxy")
-					messageSource = messageSource
-				}			
-			}
+
 	}
 	
 	def doWithApplicationContext = { ctx ->
-			
+        def factory = new PersistentConstraintFactory(ctx.sessionFactory, UniqueConstraint.class)
+        ConstrainedProperty.registerNewConstraint(UniqueConstraint.UNIQUE_CONSTRAINT, factory);			
 	}
 	
 	def onChange = {

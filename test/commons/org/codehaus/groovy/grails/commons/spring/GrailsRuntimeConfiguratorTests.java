@@ -9,14 +9,12 @@ import java.util.Properties;
 import junit.framework.TestCase;
 
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
-import org.codehaus.groovy.grails.commons.DefaultGrailsDomainClass;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsControllerClass;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.commons.GrailsServiceClass;
 import org.codehaus.groovy.grails.commons.GrailsTagLibClass;
 import org.codehaus.groovy.grails.commons.metaclass.ExpandoMetaClassCreationHandle;
-import org.codehaus.groovy.grails.orm.hibernate.validation.GrailsDomainClassValidator;
 import org.codehaus.groovy.grails.plugins.DefaultGrailsPluginManager;
 import org.codehaus.groovy.grails.support.ClassEditor;
 import org.codehaus.groovy.grails.support.MockApplicationContext;
@@ -114,7 +112,7 @@ public class GrailsRuntimeConfiguratorTests extends TestCase {
         Class persistentClass = (Class)ctx.getBean("TestPersistentClass");
         assertEquals(dc,persistentClass);
 
-        GrailsDomainClassValidator validator = (GrailsDomainClassValidator)ctx.getBean("TestValidator");
+        org.codehaus.groovy.grails.validation.GrailsDomainClassValidator validator = (org.codehaus.groovy.grails.validation.GrailsDomainClassValidator)ctx.getBean("TestValidator");
         assertTrue(validator.supports(dc));
 
         // test service config

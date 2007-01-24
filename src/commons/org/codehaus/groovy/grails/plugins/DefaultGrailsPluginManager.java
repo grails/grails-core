@@ -455,12 +455,8 @@ public class DefaultGrailsPluginManager implements GrailsPluginManager {
 		if(plugin == null) throw new PluginException("Plugin ["+pluginName+"] not found");
 
 		String[] dependencyNames = plugin.getDependencyNames();
-		for (int i = 0; i < dependencyNames.length; i++) {
-			String dn = dependencyNames[i];
-			GrailsPlugin current = getGrailsPlugin(dn);
-			current.doWithRuntimeConfiguration(springConfig);
-		}
-		String[] loadAfters = plugin.getLoadAfterNames();
+        doRuntimeConfigurationForDependencies(dependencyNames, springConfig);
+        String[] loadAfters = plugin.getLoadAfterNames();
 		for (int i = 0; i < loadAfters.length; i++) {
 			String name = loadAfters[i];
 			GrailsPlugin current = getGrailsPlugin(name);
@@ -471,9 +467,21 @@ public class DefaultGrailsPluginManager implements GrailsPluginManager {
 		plugin.doWithRuntimeConfiguration(springConfig);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.codehaus.groovy.grails.plugins.GrailsPluginManager#doPostProcessing(org.springframework.context.ApplicationContext)
-	 */
+    private void doRuntimeConfigurationForDependencies(String[] dependencyNames, RuntimeSpringConfiguration springConfig) {
+        for (int i = 0; i < dependencyNames.length; i++) {
+            String dn = dependencyNames[i];
+            GrailsPlugin current = getGrailsPlugin(dn);
+            if(current == null) throw new PluginException("Cannot load Plugin. Dependency ["+current+"] not found");
+            String[] pluginDependencies = current.getDependencyNames();
+            if(pluginDependencies.length > 0)
+                doRuntimeConfigurationForDependencies(pluginDependencies, springConfig);
+            current.doWithRuntimeConfiguration(springConfig);
+        }
+    }
+
+    /* (non-Javadoc)
+      * @see org.codehaus.groovy.grails.plugins.GrailsPluginManager#doPostProcessing(org.springframework.context.ApplicationContext)
+      */
 	public void doPostProcessing(ApplicationContext applicationContext) {
 		checkInitialised();
 		for (Iterator i = pluginList.iterator(); i.hasNext();) {

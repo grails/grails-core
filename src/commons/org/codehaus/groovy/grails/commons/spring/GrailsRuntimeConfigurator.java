@@ -306,15 +306,19 @@ public class GrailsRuntimeConfigurator {
 		this.pluginManager.setApplicationContext(ctx);
 
 		this.pluginManager.doDynamicMethods();
+        
 
         performPostProcessing(ctx);
+
+        application.refreshConstraints();
 
         return ctx;
     }
 
     private void performPostProcessing(WebApplicationContext ctx) {
 		this.pluginManager.doPostProcessing(ctx);
-	}
+
+    }
 
 	public WebApplicationContext configureDomainOnly() {
 		RuntimeSpringConfiguration springConfig = parent != null ? new DefaultRuntimeSpringConfiguration(parent) : new DefaultRuntimeSpringConfiguration();
@@ -328,9 +332,11 @@ public class GrailsRuntimeConfigurator {
 			pluginManager.doRuntimeConfiguration("hibernate", springConfig);
 		
 		WebApplicationContext ctx = springConfig.getApplicationContext();
-
-		performPostProcessing(ctx);		
-		return ctx;		
+        
+        performPostProcessing(ctx);
+        application.refreshConstraints();
+        
+        return ctx;
 	}
 	private void doPostResourceConfiguration(RuntimeSpringConfiguration springConfig) {
 	     try {

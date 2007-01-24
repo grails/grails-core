@@ -19,6 +19,7 @@ import groovy.lang.IntRange;
 import groovy.lang.MissingPropertyException;
 import groovy.lang.Range;
 import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.validation.exceptions.ConstraintException;
@@ -198,6 +199,25 @@ public class ConstrainedProperty   {
         this.propertyName = propertyName;
         this.propertyType = propertyType;
         this.bean = new BeanWrapperImpl(this);
+    }
+
+
+    public static void registerNewConstraint(String name, Class constraintClass) {
+        if(StringUtils.isBlank(name))
+            throw new IllegalArgumentException("Argument [name] cannot be null");
+        if(constraintClass == null || !Constraint.class.isAssignableFrom(constraintClass))
+            throw new IllegalArgumentException("Argument [constraintClass] with value ["+constraintClass+"] is not a valid constraint");
+
+        constraints.put(name, constraintClass);
+    }
+
+    public static void registerNewConstraint(String name, ConstraintFactory factory) {
+        if(StringUtils.isBlank(name))
+            throw new IllegalArgumentException("Argument [name] cannot be null");
+        if(factory == null)
+            throw new IllegalArgumentException("Argument [constraintClass] with value ["+factory+"] is not a valid constraint");
+
+        constraints.put(name, factory);
     }
 
 
@@ -982,9 +1002,8 @@ public class ConstrainedProperty   {
         if(!constraints.containsKey(constraintName)) {
             return this.bean.isWritableProperty(constraintName);
         }
-        Class constraintClass = (Class)constraints.get(constraintName);
         try {
-            Constraint c = (Constraint)constraintClass.newInstance();
+            Constraint c = instantiateConstraint(constraintName);
             return c.supports(propertyType);
 
         } catch (Exception e) {
@@ -1024,9 +1043,10 @@ public class ConstrainedProperty   {
                 this.appliedConstraints.remove(constraintName);
             }
             else {
-                Class constraintClass = (Class)constraints.get(constraintName);
+
                 try {
-                    Constraint c = (Constraint)constraintClass.newInstance();
+                    Constraint c = instantiateConstraint(constraintName);
+
                     c.setOwningClass(this.owningClass);
                     c.setPropertyName(this.propertyName);
                     c.setParameter( constrainingValue );
@@ -1044,6 +1064,16 @@ public class ConstrainedProperty   {
             throw new ConstraintException("Constraint ["+constraintName+"] is not supported for property ["+propertyName+"] of class ["+owningClass+"] with type ["+propertyType+"]");
         }
 
+    }
+
+    private Constraint instantiateConstraint(String constraintName) throws InstantiationException, IllegalAccessException {
+        Object constraintFactory = constraints.get(constraintName);
+        Constraint c;
+        if(constraintFactory instanceof ConstraintFactory)
+            c = ((ConstraintFactory)constraintFactory).newInstance();
+        else
+            c = (Constraint)((Class)constraintFactory).newInstance();
+        return c;
     }
 
 

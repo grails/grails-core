@@ -165,4 +165,9 @@ public interface GrailsDomainClass extends GrailsClass {
 	 * @return A set of sub classes or an empty set if none exist
 	 */
 	public Set getSubClasses();
+
+    /**
+     * Refreshes the constraint defined on a domain class
+     */
+    void refreshConstraints();
 }

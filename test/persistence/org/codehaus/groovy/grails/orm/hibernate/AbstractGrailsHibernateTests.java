@@ -26,6 +26,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.orm.hibernate3.SessionHolder;
 import org.springframework.orm.hibernate3.SessionFactoryUtils;
+import org.springframework.context.support.StaticMessageSource;
 import org.hibernate.SessionFactory;
 import org.hibernate.classic.Session;
 
@@ -60,7 +61,7 @@ public abstract class AbstractGrailsHibernateTests extends TestCase {
      * A Hibernate session that is bound to the current thread so that the Spring TransactionManager works correctly
      */
     protected Session session;
-	private WebApplicationContext applicationContext;
+    protected WebApplicationContext applicationContext;
 
     protected final void setUp() throws Exception {
         super.setUp();
@@ -89,6 +90,7 @@ public abstract class AbstractGrailsHibernateTests extends TestCase {
 //        this.sessionFactory = config.buildSessionFactory();
         MockApplicationContext mc = new MockApplicationContext();
         mc.registerMockBean(GrailsApplication.APPLICATION_ID, ga);
+        mc.registerMockBean("messageSource", new StaticMessageSource());
        
         GrailsRuntimeConfigurator grc = new GrailsRuntimeConfigurator(ga, mc);
         this.applicationContext = grc.configureDomainOnly();

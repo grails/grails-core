@@ -32,8 +32,5 @@ class Test {
 		def appCtx = springConfig.getApplicationContext()
 		
 		assert appCtx.containsBean("TestDomainClass")
-		assert appCtx.containsBean("TestProxy")
-		assert appCtx.containsBean("TestPersistentClass")
-		assert appCtx.containsBean("TestTargetSource")
-	}	
+	}
 }
