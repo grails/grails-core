@@ -27,20 +27,20 @@
     <h1>Grails Runtime Exception</h1>
     <h2>Error Details</h2>
   	<div class="message">
-  		<strong>Message:</strong> ${exception.message} <br />
-  		<strong>Caused by:</strong> ${exception.cause?.message} <br />
+  		<strong>Message:</strong> ${exception.message?.encodeAsHTML()} <br />
+  		<strong>Caused by:</strong> ${exception.cause?.message?.encodeAsHTML()} <br />
   		<strong>Class:</strong> ${exception.className} <br />  		  		
   		<strong>At Line:</strong> [${exception.lineNumber}] <br />  		
   		<strong>Code Snippet:</strong><br />   		
   		<div class="snippet">
   			<g:each var="cs" in="${exception.codeSnippet}"> 
-  				${cs}<br />  			
+  				${cs?.encodeAsHTML()}<br />  			
   			</g:each>  	
   		</div>	  		
   	</div>
     <h2>Stack Trace</h2>
     <div class="stack">
-	    ${exception.stackTraceText}
+	    ${exception.stackTraceText?.encodeAsHTML()}
     </div>
   </body>
 </html>
