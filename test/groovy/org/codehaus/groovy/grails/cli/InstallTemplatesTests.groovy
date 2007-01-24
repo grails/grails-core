@@ -16,11 +16,10 @@ class InstallTemplatesTests extends AbstractCliTests {
 
 		assertTrue "${templatesDirectory} does not exist", new File(templatesDirectory).exists()
 		
-		/*
 		// expected templates to be installed
 		def templates = [
 		  "/artifacts/BootStrap.groovy",
-		  "/artifacts/Controller.groovy",
+		  /*"/artifacts/Controller.groovy",
 		  "/artifacts/DataSource.groovy",
 		  "/artifacts/DomainClass.groovy",
 		  "/artifacts/Job.groovy",
@@ -32,7 +31,7 @@ class InstallTemplatesTests extends AbstractCliTests {
 		  "/scaffolding/create.gsp",
 		  "/scaffolding/edit.gsp",
 		  "/scaffolding/list.gsp",
-		  "/scaffolding/show.gsp"
+		  "/scaffolding/show.gsp"*/
 		]
 		
 		for (t in templates) {
