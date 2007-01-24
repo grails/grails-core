@@ -34,6 +34,7 @@ import javax.servlet.http.HttpServletRequestWrapper;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.grails.commons.metaclass.CreateDynamicMethod;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
@@ -255,7 +256,16 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
                 if(type == Date.class || type == Calendar.class) {
                     try {
                            // The request will always include the year value
-                        int year = Integer.parseInt(request.getParameter(propertyName + "_year"));
+                    	String yearString = request.getParameter(propertyName + "_year");
+                    	int year;
+                    	
+                    	if(StringUtils.isBlank(yearString)) {
+                            Calendar now = Calendar.getInstance(RequestContextUtils.getLocale((HttpServletRequest) request));
+                            year = now.get(Calendar.YEAR);
+                    	}
+                    	else {
+                    		year = Integer.parseInt(yearString);
+                    	}
 
                         // The request may not include the other date values, so be prepared to use the
                         // default values.  Default values --> month = January; day = 1st day of the month;
