@@ -1,11 +1,11 @@
 import org.springframework.web.util.HtmlUtils
 
 class HTMLCodec {
-    static def encode = { str ->
-        HtmlUtils.htmlEscape(str)
+    static def encode = { theTarget ->
+        HtmlUtils.htmlEscape(theTarget.toString())
     }
     
-    static def decode = { str ->
-    	HtmlUtils.htmlUnescape(str)
+    static def decode = { theTarget ->
+    	HtmlUtils.htmlUnescape(theTarget.toString())
     }
 }
