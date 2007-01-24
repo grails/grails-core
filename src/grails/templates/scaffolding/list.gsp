@@ -36,7 +36,7 @@
                     <tr>
                        <%props.eachWithIndex { p,i ->
                              if(i < 6) {%>
-                            <td>\${it.${p.name}}</td>
+                            <td>\${it.${p.name}?.encodeAsHTML()}</td>
                        <%}}%>
                        <td class="actionButtons">
                             <span class="actionButton"><g:link action="show" id="\${it.id}">Show</g:link></span>
