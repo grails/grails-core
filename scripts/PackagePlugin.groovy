@@ -64,7 +64,7 @@ task(packagePlugin:"Implementation task") {
 		def pluginName = GCU.getLogicalName(pluginClass, "GrailsPlugin")         
 		def pluginZip = "${basedir}/grails-${pluginName}-${plugin.version}.zip"
 		Ant.delete(file:pluginZip)
-        Ant.zip(basedir:"${basedir}", destfile:pluginZip)
+        Ant.zip(basedir:"${basedir}", destfile:pluginZip, excludes:"**/WEB-INF/**")
    }
    catch(Throwable t) {
      println "Throwable: ${t.message}"
