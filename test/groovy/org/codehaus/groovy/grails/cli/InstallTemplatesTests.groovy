@@ -26,12 +26,12 @@ class InstallTemplatesTests extends AbstractCliTests {
 		  "/artifacts/Service.groovy",
 		  "/artifacts/TagLib.groovy",
 		  "/artifacts/Tests.groovy",
-		  "/artifacts/WebTest.groovy"
-		  /*"/scaffolding/Controller.groovy"
+		  "/artifacts/WebTest.groovy",
+		  "/scaffolding/Controller.groovy",
 		  "/scaffolding/create.gsp",
 		  "/scaffolding/edit.gsp",
 		  "/scaffolding/list.gsp",
-		  "/scaffolding/show.gsp"*/
+		  "/scaffolding/show.gsp"
 		]
 		
 		for (t in templates) {
