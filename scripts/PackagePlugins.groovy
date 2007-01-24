@@ -37,9 +37,9 @@ task ( "default" : "Performs packaging of Grails plugins for when they are distr
 task( packagePlugins : "Packages any Grails plugins that are installed for this project") {
 	depends( classpath )
 	try {
-	   	def plugins = resolver.getResources("classpath:**/plugins/**/*GrailsPlugin.groovy")
+	   	def plugins = resolver.getResources("**/plugins/**/*GrailsPlugin.groovy")
 
-	   	plugins?.each { p ->
+	   	plugins?.each { p ->  	   
 	   		def pluginBase = p.file.parentFile  
 	     	def pluginPath = pluginBase.absolutePath
 			def pluginName = pluginBase.name[0..-5]
@@ -57,7 +57,7 @@ task( packagePlugins : "Packages any Grails plugins that are installed for this 
 	            if(new File("${pluginPath}/web-app").exists()) {
 					Ant.mkdir(dir:"${basedir}/web-app/plugins/${pluginName}")
 		  			copy(todir:"${basedir}/web-app/plugins/${pluginName}") {
-		   				fileset(dir:"${pluginBase}/web-app", includes:"**")
+		   				fileset(dir:"${pluginBase}/web-app", includes:"**", excludes:"**/WEB-INF/**, **/META-INF/**")
 		   			}  		                     	
 				}
 				path(id:"classpath") {
