@@ -3,11 +3,11 @@ import java.net.URLDecoder
 import org.springframework.web.context.request.RequestContextHolder
 
 class URLCodec {
-    static def encode = { str ->
+    static encode = { str ->
         URLEncoder.encode(str, URLCodec.getEncoding())
     }
 
-    static def decode = { str ->
+    static decode = { str ->
         URLEncoder.decode(str, URLCodec.getEncoding())
     }
 
