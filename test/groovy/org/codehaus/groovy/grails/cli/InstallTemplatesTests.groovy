@@ -12,10 +12,11 @@ class InstallTemplatesTests extends AbstractCliTests {
         
 		assertFalse "${templatesDirectory} exists, but should not", new File(templatesDirectory).exists()
 
-		/*Gant.main(["-f", "scripts/InstallTemplates.groovy"] as String[])
+		Gant.main(["-f", "scripts/InstallTemplates.groovy"] as String[])
 
 		assertTrue "${templatesDirectory} does not exist", new File(templatesDirectory).exists()
 		
+		/*
 		// expected templates to be installed
 		def templates = [
 		  "/artifacts/BootStrap.groovy",
