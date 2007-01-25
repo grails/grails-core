@@ -30,6 +30,11 @@ class NullableConstraint extends AbstractConstraint {
 
     private boolean nullable;
 
+
+    public boolean isNullable() {
+        return nullable;
+    }
+
     /* (non-Javadoc)
      * @see org.codehaus.groovy.grails.validation.Constraint#supports(java.lang.Class)
      */
