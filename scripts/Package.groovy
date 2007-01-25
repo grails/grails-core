@@ -139,46 +139,10 @@ task( copyDependencies : "Copies the necessary dependencies (jar files) into the
 	}
 }
 
-task( generateWebXml : "Generates the web.xml file") {
-    new File( "${basedir}/web-app/WEB-INF/web.xml" ).withWriter { w ->
-    
-        StringBuffer cpath = new StringBuffer("")
-        //println "Generating web.xml generator classpath: "
-        def jarFiles = []
-        try {
-            jarFiles = resolver.getResources("lib/*.jar").toList()
-        }
-        catch(FileNotFoundException e) {
-            // ignore
-        }
-
-        try {
-            resolver.getResources("plugins/*/lib/*.jar").each { pluginJar ->  
-				println("Adding Plugin jar $pluginJar to classpath")
-                boolean matches = jarFiles.any { it.file.name == pluginJar.file.name }
-                if(!matches) jarFiles.add(pluginJar)
-            }
-        }
-        catch(FileNotFoundException e) {
-            // ignore
-        }
-
-        def rootLoader = getClass().classLoader.rootLoader
-
-        jarFiles.each { jar ->
-            cpath << jar.file.absolutePath << File.pathSeparator
-            rootLoader?.addURL(jar.URL)       
-        }
-        cpath << "${basedir}/web-app/WEB-INF/classes"
-		rootLoader?.addURL(new File("${basedir}/web-app/WEB-INF/classes").toURL())
-        cpath << "${basedir}/web-app/WEB-INF"
-		rootLoader?.addURL(new File("${basedir}/web-app/WEB-INF").toURL())
-    
-   //     println "Classpath with which to generate web.xml: \n${cpath.toString()}"
-        
-    	def parentLoader = getClass().getClassLoader()
-    	def compConfig = new CompilerConfiguration()
-    	compConfig.setClasspath(cpath.toString());
+task( generateWebXml : "Generates the web.xml file") {                
+	depends(classpath)
+	
+    new File( "${basedir}/web-app/WEB-INF/web.xml" ).withWriter { w ->   
 
         def classLoader = new GroovyClassLoader(parentLoader,compConfig,true)
 

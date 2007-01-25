@@ -22,7 +22,8 @@
  * @since 0.4
  */    
 import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
-import org.springframework.core.io.support.PathMatchingResourcePatternResolver
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver            
+import org.codehaus.groovy.control.*  
 
 Ant.property(environment:"env")       
 
@@ -222,4 +223,41 @@ task(classpath:"Sets the Grails classpath") {
 		fileset(dir:"${grailsHome}/dist")
 		fileset(dir:"lib")		
 	}
+    StringBuffer cpath = new StringBuffer("")
+    //println "Generating web.xml generator classpath: "
+    def jarFiles = []
+    try {
+        jarFiles = resolver.getResources("lib/*.jar").toList()
+    }
+    catch(FileNotFoundException e) {
+        // ignore
+    }
+
+    try {
+        resolver.getResources("plugins/*/lib/*.jar").each { pluginJar ->  		    
+            boolean matches = jarFiles.any { it.file.name == pluginJar.file.name }
+            if(!matches) jarFiles.add(pluginJar)
+        }
+    }
+    catch(FileNotFoundException e) {
+        // ignore
+    }
+
+    def rootLoader = getClass().classLoader.rootLoader
+
+    jarFiles.each { jar ->
+        cpath << jar.file.absolutePath << File.pathSeparator
+        rootLoader?.addURL(jar.URL)       
+    }
+    cpath << "${basedir}/web-app/WEB-INF/classes"  
+	rootLoader?.addURL(new File("${basedir}/web-app/WEB-INF/classes").toURL())
+       cpath << "${basedir}/web-app/WEB-INF"
+	rootLoader?.addURL(new File("${basedir}/web-app/WEB-INF").toURL())
+
+  	// println "Classpath with which to generate web.xml: \n${cpath.toString()}"
+
+   	parentLoader = getClass().getClassLoader()
+   	compConfig = new CompilerConfiguration()
+   	compConfig.setClasspath(cpath.toString());	
 }
+
