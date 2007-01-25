@@ -401,21 +401,28 @@ public class DefaultGrailsPluginManager implements GrailsPluginManager {
 
 
 	private void registerPlugin(GrailsPlugin plugin) {
-		if(LOG.isInfoEnabled()) {
-			LOG.info("Grails plug-in ["+plugin.getName()+"] with version ["+plugin.getVersion()+"] loaded successfully");
-		}
-		
-		if(plugin instanceof ParentApplicationContextAware) {
-			((ParentApplicationContextAware)plugin).setParentApplicationContext(parentCtx);
-		}
-		plugin.setManager(this);
-		String[] evictionNames = plugin.getEvictionNames();
-		if(evictionNames.length > 0)
-			delayedEvictions.put(plugin, evictionNames);
+        if(plugin.isEnabled()) {
+            if(LOG.isInfoEnabled()) {
+                LOG.info("Grails plug-in ["+plugin.getName()+"] with version ["+plugin.getVersion()+"] loaded successfully");
+            }
 
-		pluginList.add(plugin);
-		plugins.put(plugin.getName(), plugin);
-	}
+            if(plugin instanceof ParentApplicationContextAware) {
+                ((ParentApplicationContextAware)plugin).setParentApplicationContext(parentCtx);
+            }
+            plugin.setManager(this);
+            String[] evictionNames = plugin.getEvictionNames();
+            if(evictionNames.length > 0)
+                delayedEvictions.put(plugin, evictionNames);
+
+            pluginList.add(plugin);
+            plugins.put(plugin.getName(), plugin);
+        }
+        else {
+            if(LOG.isInfoEnabled()) {
+                LOG.info("Grails plugin " + plugin + " is disabled and was not loaded");
+            }
+        }
+    }
 
 	protected void evictPlugin(GrailsPlugin evictor, String evicteeName) {
 		GrailsPlugin pluginToEvict = (GrailsPlugin)plugins.get(evicteeName);

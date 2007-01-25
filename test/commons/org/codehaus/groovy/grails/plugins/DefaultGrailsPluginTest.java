@@ -35,8 +35,9 @@ public class DefaultGrailsPluginTest extends AbstractGrailsMockTests {
 	private Class versioned;
 	private Class notVersion;
 	private Class notPluginClass;
+    private Class disabled;
 
-	protected void onSetUp() {
+    protected void onSetUp() {
 		versioned = gcl.parseClass("class MyGrailsPlugin {\n" +
 						"def version = 1.1;" +
 						"def doWithSpring = {" +
@@ -51,7 +52,11 @@ public class DefaultGrailsPluginTest extends AbstractGrailsMockTests {
 		notPluginClass = gcl.parseClass("class SomeOtherPlugin {\n" +
 									"def version = 1.4;" +
 									"}");
-	}
+
+        disabled = gcl.parseClass("class DisabledGrailsPlugin {" +
+                                          "def version = 1.1; " +
+                "                           def status = 'disabled'; }");
+    }
 
 	public void testDefaultGrailsPlugin() {
 		 GrailsPlugin versionPlugin = new DefaultGrailsPlugin(versioned, ga);
@@ -71,7 +76,17 @@ public class DefaultGrailsPluginTest extends AbstractGrailsMockTests {
 		}
 	}
 
-	public void testDoWithApplicationContext() {
+    public void testDisabledPlugin() {
+        GrailsPlugin disabledPlugin = new DefaultGrailsPlugin(disabled, ga);
+        GrailsPlugin enabledPlugin = new DefaultGrailsPlugin(versioned, ga);
+
+
+
+        assertFalse(disabledPlugin.isEnabled());
+        assertTrue(enabledPlugin.isEnabled());
+    }
+
+    public void testDoWithApplicationContext() {
 		GrailsPlugin versionPlugin = new DefaultGrailsPlugin(versioned, ga);
 		
 		RuntimeSpringConfiguration springConfig = new DefaultRuntimeSpringConfiguration();

@@ -1,3 +1,5 @@
+package org.codehaus.groovy.grails.commons;
+
 import java.io.IOException;
 
 import org.codehaus.groovy.grails.plugins.*
@@ -11,6 +13,15 @@ import org.springframework.web.servlet.i18n.CookieLocaleResolver;
 public class GrailsPluginManagerTests extends AbstractGrailsMockTests {
 
 	private static final String RESOURCE_PATH = "classpath:org/codehaus/groovy/grails/plugins/ClassEditorGrailsPlugin.groovy";
+
+	public void testDisabledPlugin() {
+		def manager = new DefaultGrailsPluginManager([MyGrailsPlugin,AnotherGrailsPlugin,DisabledGrailsPlugin] as Class[], ga)
+
+		manager.loadPlugins()
+
+	    assertTrue manager.hasGrailsPlugin("my")
+	    assertFalse manager.hasGrailsPlugin("disabled")
+    }
 
 	public void testDefaultGrailsPluginManager() throws Exception {
 		DefaultGrailsPluginManager manager = new DefaultGrailsPluginManager(RESOURCE_PATH,ga);
@@ -107,6 +118,8 @@ public class GrailsPluginManagerTests extends AbstractGrailsMockTests {
 		assertTrue manager.hasGrailsPlugin("shouldEvictSomeOther")
 	}
 
+
+
 }
 class MyGrailsPlugin {
 	def dependsOn = [another:1.2]
@@ -133,4 +146,8 @@ class ShouldLoadLastGrailsPlugin {
 class ShouldEvictSomeOtherGrailsPlugin {
 	def evict = ['someOther']
 	def version = 1.1
+}
+class DisabledGrailsPlugin {
+    def version = 1.0
+    def status = "disabled"
 }

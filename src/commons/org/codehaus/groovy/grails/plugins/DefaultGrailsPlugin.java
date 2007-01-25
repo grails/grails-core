@@ -77,63 +77,49 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
 	private String[] loadAfterNames = new String[0];
 	private String[] influencedPluginNames = new String[0];
 	private MetaClassRegistry registry;
-	public DefaultGrailsPlugin(Class pluginClass, GrailsApplication application) {
+    private String status = STATUS_ENABLED;
+
+    public DefaultGrailsPlugin(Class pluginClass, GrailsApplication application) {
 		super(pluginClass, application);
-		this.registry = InvokerHelper.getInstance().getMetaRegistry();
+        // create properties
+        this.registry = InvokerHelper.getInstance().getMetaRegistry();
 		this.pluginGrailsClass = new GrailsPluginClass(pluginClass);
 		this.plugin = (GroovyObject)this.pluginGrailsClass.newInstance();
 		this.pluginBean = new BeanWrapperImpl(this.plugin);
 		this.dependencies = Collections.EMPTY_MAP;
-
 		this.resolver = new PathMatchingResourcePatternResolver();
-		
-		if(this.pluginBean.isReadableProperty(DEPENDS_ON)) {
-			this.dependencies = (Map)GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(this.plugin, DEPENDS_ON);
-			this.dependencyNames = (String[])this.dependencies.keySet().toArray(new String[this.dependencies.size()]);
-		}
-		if(this.pluginBean.isReadableProperty(PLUGIN_LOAD_AFTER_NAMES)) {
-			List loadAfterNamesList = (List)GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(this.plugin, PLUGIN_LOAD_AFTER_NAMES);
-			if(loadAfterNamesList != null) {
-				this.loadAfterNames = (String[])loadAfterNamesList.toArray(new String[loadAfterNamesList.size()]);
-			}
-		}
-		if(this.pluginBean.isReadableProperty(EVICT)) {
-			List pluginsToEvict = (List)GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(this.plugin, EVICT);
-			if(pluginsToEvict != null) {
-				this.evictionList = new String[pluginsToEvict.size()];
-				int index = 0;
-				for (Iterator i = pluginsToEvict.iterator(); i.hasNext();) {
-					Object o = i.next();
-					evictionList[index++] = o != null ? o.toString() : "";
-				}
-			}
-		}
-		if(this.pluginBean.isReadableProperty(VERSION)) {
-			Object vobj = this.plugin.getProperty("version");
-			if(vobj instanceof BigDecimal)
-				this.version = (BigDecimal)vobj;
-			else 
-				throw new PluginException("Plugin "+this+" must specify a version as a Groovy BigDecimal. eg: def version = 0.1");
-		}
-		else {
-			throw new PluginException("Plugin ["+getName()+"] must specify a version!");
-		}
-		if(this.pluginBean.isReadableProperty(INFLUENCES)) {
-			List influencedList = (List)this.pluginBean.getPropertyValue(INFLUENCES);
-			if(influencedList != null) {
-				this.influencedPluginNames = (String[])influencedList.toArray(new String[influencedList.size()]);
-			}
-		}
-		if(this.pluginBean.isReadableProperty(ON_CHANGE)) {
-			this.onChangeListener = (Closure)GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(this.plugin, ON_CHANGE);
+
+        // configure plugin
+        evaluatePluginVersion();
+        evaluatePluginDependencies();
+        evaluatePluginLoadAfters();
+        evaluatePluginEvictionPolicy();
+        evaluatePluginInfluencePolicy();
+        evaluateOnChangeListener();
+        evaluatePluginStatus();
+    }
+
+    private void evaluatePluginStatus() {
+        if(this.pluginBean.isReadableProperty(STATUS)) {
+            Object statusObj = GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(this.plugin, STATUS);
+            if(statusObj != null) {
+                this.status = statusObj.toString().toLowerCase();
+            }
+        }
+    }
+
+    private void evaluateOnChangeListener() {
+        if(this.pluginBean.isReadableProperty(ON_CHANGE)) {
+			this.onChangeListener = (Closure) GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(this.plugin, ON_CHANGE);
 			Object referencedResources = GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(this.plugin, WATCHED_RESOURCES);
-			
-			try {
+
+
+            try {
 				if(referencedResources instanceof String) {
 					if(LOG.isDebugEnabled()) {
 						LOG.debug("Configuring plugin "+this+" to watch resources with pattern: " + referencedResources);
 					}
-					
+
 					 this.resourcesReference = referencedResources.toString();
 					 watchedResources  = resolver.getResources(resourcesReference);
 					 if(watchedResources.length == 0) {
@@ -151,18 +137,18 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
 						}
 						if(tmp.length == 0)
 							tmp = resolver.getResources("classpath*:" + res);
-						
+
 						if(tmp.length > 0){
 							watchedResources = (Resource[])ArrayUtils.addAll(this.watchedResources, tmp);
-						}					
+						}
 					}
 				}
-			} catch (IOException e) {
+            } catch (IOException e) {
 				LOG.warn("I/O exception loading plug-in resource watch list: " + e.getMessage(), e);
-			}				
+			}
 			if(LOG.isDebugEnabled()) {
 				LOG.debug("Plugin "+this+" found ["+watchedResources.length+"] to watch");
-			}								
+			}
 			try {
 				initializeModifiedTimes();
 			} catch (IOException e) {
@@ -170,11 +156,62 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
 			}
 
 		}
-	}
-	
-	
+    }
 
-	public String[] getLoadAfterNames() {
+    private void evaluatePluginInfluencePolicy() {
+        if(this.pluginBean.isReadableProperty(INFLUENCES)) {
+			List influencedList = (List)this.pluginBean.getPropertyValue(INFLUENCES);
+			if(influencedList != null) {
+				this.influencedPluginNames = (String[])influencedList.toArray(new String[influencedList.size()]);
+			}
+		}
+    }
+
+    private void evaluatePluginVersion() {
+        if(this.pluginBean.isReadableProperty(VERSION)) {
+			Object vobj = this.plugin.getProperty("version");
+			if(vobj instanceof BigDecimal)
+				this.version = (BigDecimal)vobj;
+			else
+				throw new PluginException("Plugin "+this+" must specify a version as a Groovy BigDecimal. eg: def version = 0.1");
+		}
+		else {
+			throw new PluginException("Plugin ["+getName()+"] must specify a version!");
+		}
+    }
+
+    private void evaluatePluginEvictionPolicy() {
+        if(this.pluginBean.isReadableProperty(EVICT)) {
+			List pluginsToEvict = (List) GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(this.plugin, EVICT);
+			if(pluginsToEvict != null) {
+				this.evictionList = new String[pluginsToEvict.size()];
+				int index = 0;
+				for (Iterator i = pluginsToEvict.iterator(); i.hasNext();) {
+					Object o = i.next();
+					evictionList[index++] = o != null ? o.toString() : "";
+				}
+			}
+		}
+    }
+
+    private void evaluatePluginLoadAfters() {
+        if(this.pluginBean.isReadableProperty(PLUGIN_LOAD_AFTER_NAMES)) {
+			List loadAfterNamesList = (List) GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(this.plugin, PLUGIN_LOAD_AFTER_NAMES);
+			if(loadAfterNamesList != null) {
+				this.loadAfterNames = (String[])loadAfterNamesList.toArray(new String[loadAfterNamesList.size()]);
+			}
+		}
+    }
+
+    private void evaluatePluginDependencies() {
+        if(this.pluginBean.isReadableProperty(DEPENDS_ON)) {
+            this.dependencies = (Map) GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(this.plugin, DEPENDS_ON);
+            this.dependencyNames = (String[])this.dependencies.keySet().toArray(new String[this.dependencies.size()]);
+        }
+    }
+
+
+    public String[] getLoadAfterNames() {
 		return this.loadAfterNames;
 	}
 
@@ -539,4 +576,8 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
 			c.call(new Object[]{applicationContext});						
 		}
 	}
+
+    public boolean isEnabled() {
+        return STATUS_ENABLED.equals(this.status);
+    }
 }

@@ -59,6 +59,15 @@ public interface GrailsPlugin extends ApplicationContextAware {
      * The status of the plugin
      */
     String STATUS = "status";
+
+    /**
+     * When a plugin is "enabled" it will be loaded as usual
+     */
+    String STATUS_ENABLED = "enabled";
+    /**
+     * When a plugin is "disabled" it will not be loaded
+     */
+    String STATUS_DISABLED = "disabled";
     /**
      * Defines the name of the property that defines a list of plugin names that this plugin influences.
      * A influenced plugin will be refreshed (@see refresh()) when a watched resource changes
@@ -97,11 +106,13 @@ public interface GrailsPlugin extends ApplicationContextAware {
 	String DEPENDS_ON = "dependsOn";
 
 
-	/**
+
+
+    /**
      * <p>This method is called to allow the plugin to add {@link org.springframework.beans.factory.config.BeanDefinition}s
-     * to the {@link org.springframework.beans.factory.config.BeanDefinitionRegistry}.</p>
+     * to the {@link org.springframework.beans.factory.support.BeanDefinitionRegistry}.</p>
      *
-     * @param applicationContext
+     * @param applicationContext The Spring ApplicationContext instance
      */
     void doWithApplicationContext(ApplicationContext applicationContext);
     
@@ -199,8 +210,13 @@ public interface GrailsPlugin extends ApplicationContextAware {
 
 	/**
 	 * Calls a "doWithDynamicMethods" closure that allows a plugin to register dynamic methods at runtime
-	 * @param applicationContext 
+	 * @param applicationContext The Spring ApplicationContext instance 
 	 *
 	 */
 	void doWithDynamicMethods(ApplicationContext applicationContext);
+
+    /** 
+     * @return Whether the plugin is enabled or not
+     */
+    boolean isEnabled();
 }
