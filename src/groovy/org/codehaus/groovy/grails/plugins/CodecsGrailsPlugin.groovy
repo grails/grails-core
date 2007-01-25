@@ -48,7 +48,7 @@ class CodecsGrailsPlugin {
 				def codecClass = application.getGrailsCodecClass(codecClassName)
 				def encodeMethod = codecClass.encodeMethod
 				if(encodeMethod) {
-					return encodeMethod(delegate.toString())
+					return encodeMethod(delegate)
 				} else {
 					throw new MissingMethodException(encodeMethodName, String, [] as Object[])
 				}
@@ -60,7 +60,7 @@ class CodecsGrailsPlugin {
 				def codecClass = application.getGrailsCodecClass(codecClassName)
 				def decodeMethod = codecClass.decodeMethod
 				if(decodeMethod) {
-					return decodeMethod(delegate.toString())
+					return decodeMethod(delegate)
 				} else {
 					throw new MissingMethodException(decodeMethodName, String, [] as Object[])
 				}
