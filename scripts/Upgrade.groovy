@@ -74,11 +74,9 @@ task( upgrade: "main upgrade task") {
             }
 		}
 						   	 
-		copy(tofile:"${basedir}/web-app/WEB-INF/web.template.xml") {
-		    fileset(file:"${grailsHome}/src/war/WEB-INF/web${servletVersion}.template.xml") {
-                //present(present:"srconly", targetdir:"${basedir}/web-app/WEB-INF")
-            }
-        }         
+		copy(file:"${grailsHome}/src/war/WEB-INF/web${servletVersion}.template.xml", 
+				 tofile:"${basedir}/web-app/WEB-INF/web.template.xml",
+				 overwrite:"true") 
 
 	    def appKey = baseName.replaceAll( /\s/, '.' ).toLowerCase()
 
