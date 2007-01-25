@@ -65,6 +65,15 @@ Grails home is set to: ${grailsHome}
 
 			baseDir = establishBaseDir()
             println "Base Directory: ${baseDir.absolutePath}"
+		         		    
+		    def rootLoader = getClass().classLoader ? getClass().classLoader.rootLoader : Thread.currentThread().getContextClassLoader().rootLoader
+		                        
+			def appDir = "${baseDir.absolutePath}/grails-app" 
+			new File(appDir).eachDir { dir ->
+				rootLoader?.addURL(dir.toURL()) 
+			}
+		              
+
 		
 			def scriptName
 			def allArgs = args[0].trim() 
