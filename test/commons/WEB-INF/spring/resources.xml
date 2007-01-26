@@ -11,7 +11,7 @@
 	</bean> 
 	
 	<bean id="grailsDependent" class="org.codehaus.groovy.grails.commons.spring.GrailsMockDependantObject">
-		<property name="sessionFactory" ref="sessionFactory" />
+		<property name="application" ref="grailsApplication" />
 	</bean>
 		
 </beans>

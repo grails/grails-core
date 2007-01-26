@@ -366,7 +366,7 @@ public class GrailsRuntimeConfiguratorTests extends TestCase {
         assertNotNull(ctx);
         
         GrailsMockDependantObject gdo = (GrailsMockDependantObject)ctx.getBean("grailsDependent");
-        assertNotNull(gdo.getSessionFactory());
+        assertNotNull(gdo.getApplication());
     	
     }
 }

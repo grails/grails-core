@@ -1,16 +1,17 @@
 package org.codehaus.groovy.grails.commons.spring;
 
-import org.hibernate.SessionFactory;
+import org.codehaus.groovy.grails.commons.GrailsApplication;
 
 public class GrailsMockDependantObject {
 
-	SessionFactory sessionFactory;
+    GrailsApplication application;
 
-	public SessionFactory getSessionFactory() {
-		return sessionFactory;
-	}
 
-	public void setSessionFactory(SessionFactory sessionFactory) {
-		this.sessionFactory = sessionFactory;
-	}
+    public GrailsApplication getApplication() {
+        return application;
+    }
+
+    public void setApplication(GrailsApplication application) {
+        this.application = application;
+    }
 }
