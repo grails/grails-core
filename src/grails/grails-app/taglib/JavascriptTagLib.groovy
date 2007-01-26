@@ -168,7 +168,7 @@ class JavascriptTagLib  {
 		def value = attrs.remove('value') 
 		if(!value) value = ''
 		
-		out << "<input type='text' name='${attrs.remove('name')}' value='${value}' onkeyup=\""
+		out << "<input type=\"text\" name=\"${attrs.remove('name')}\" value=\"${value}\" onkeyup=\""
 		if(attrs.params) {
 			if(attrs instanceof Map) {
 				attrs.params.put(paramName, 'this.value')
