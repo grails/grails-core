@@ -525,7 +525,7 @@ class DojoProvider implements JavascriptProvider {
 			out << ";${attrs.onComplete};"
 		}				
 	     out << '}'
-	     attrs.params?.each {k,v ->
+	     attrs.options?.each {k,v ->
 	     	out << ",$k:$v"
 	     }
 		 out << '});'
