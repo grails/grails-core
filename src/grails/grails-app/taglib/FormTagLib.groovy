@@ -272,7 +272,7 @@ class FormTagLib {
 				if (i == day) {
 					out.println " selected=\"selected\""
 				}
-				out.println ">${i.encodeAsHTML()}</option>"
+				out.println ">${i}</option>"
             }
             out.println '</select>'
         }
@@ -291,7 +291,7 @@ class FormTagLib {
                     out << "<option value=\"${monthIndex}\""
                     if(month == i) out << " selected=\"selected\""
                     out << '>'
-                    out << m.toString().encodeAsHTML()
+                    out << m
                     out.println '</option>'
                 }
             }
@@ -311,7 +311,7 @@ class FormTagLib {
 				if (i == year) {
 					out.println " selected=\"selected\""
 				}
-				out.println ">${i.toString().encodeAsHTML()}</option>"
+				out.println ">${i}</option>"
             }
             out.println '</select>'
         }
@@ -329,7 +329,7 @@ class FormTagLib {
                 if(i < 10) h = '0' + h
                 out << "<option value=\"${h}\" "
                 if(hour == h.toInteger()) out << "selected=\"selected\""
-                out << '>' << h.toString().encodeAsHTML() << '</option>'
+                out << '>' << h << '</option>'
                 out.println()
             }
             out.println '</select> :'
@@ -353,7 +353,7 @@ class FormTagLib {
                 if(i < 10) m = '0' + m
                 out << "<option value=\"${m}\" "
                 if(minute == m.toInteger()) out << "selected=\"selected\""
-                out << '>' << m.toString().encodeAsHTML() << '</option>'
+                out << '>' << m << '</option>'
                 out.println()
             }
             out.println '</select>'
