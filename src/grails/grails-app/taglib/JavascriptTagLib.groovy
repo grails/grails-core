@@ -498,7 +498,7 @@ class DojoProvider implements JavascriptProvider {
 		attrs.remove('params')
 		 out << '\',load:function(type,data,evt) {'
 	    if(attrs.onLoaded) {
-			out << "${attrs.onLoaded}";
+			out << "${attrs.onLoaded};"
 		}		
 		 if(attrs.update) {			
 			out << 'dojo.html.textContent( dojo.byId(\''
