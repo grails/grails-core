@@ -37,7 +37,10 @@ defaultEnv = System.getProperty("grails.default.env") == "true" ? true : false
 serverPort = System.getProperty('server.port') ? System.getProperty('server.port').toInteger() : 8080   
 basedir = System.getProperty("base.dir")    
 baseFile = new File(basedir)
-baseName = baseFile.name
+baseName = baseFile.name      
+userHome = Ant.antProject.properties."user.home"                     
+grailsTmp = "${userHome}/.grails/tmp"
+
 resolver = new PathMatchingResourcePatternResolver()
 grailsAppName = null
 // a resolver that doesn't throw exceptions when resolving resources

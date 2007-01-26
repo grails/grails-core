@@ -23,7 +23,8 @@
  */
 
 import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU;
-import grails.util.GrailsUtil as GU;
+import grails.util.GrailsUtil as GU;  
+import grails.util.GrailsWebUtil as GWU
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.support.*
 import java.lang.reflect.Modifier;
@@ -66,7 +67,7 @@ task(testApp:"The test app implementation task") {
 		
 		def suite = new TestSuite()
 		
-		GU.bindMockWebRequest(ctx)
+		GWU.bindMockWebRequest(ctx)
 		
 		app.allClasses.each { c ->			
 			if(TestCase.isAssignableFrom(c) && !Modifier.isAbstract(c.modifiers)) {

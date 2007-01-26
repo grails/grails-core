@@ -44,7 +44,7 @@ class HelpEvaluatingCategory {
 }
 
 def shouldGenerateHelp =  { List scripts ->
-	def countFile = new File("${grailsHome}/scripts/count.tmp")	
+	def countFile = new File("${grailsTmp}/count.tmp")	
 	if(!countFile.exists()) {  
 		countFile << scripts.size()
 		return true
@@ -54,14 +54,16 @@ def shouldGenerateHelp =  { List scripts ->
 		countFile.write("${scripts.size()}")
 		return true
 	}                     
-	def helpFile = new File("${grailsHome}/scripts/help.txt")
+	def helpFile = new File("${grailsTmp}/help.txt")
 	if(scripts.find { helpFile.lastModified() < it.lastModified() }) {
 		return true
 	}	           
 	return false
-}                                       
+}
+                                
 
-task ( 'default' : "Prints out the help for each script") {
+task ( 'default' : "Prints out the help for each script") { 
+	Ant.mkdir(dir:grailsTmp)    	
 	def scripts = []   
     resolveResources("file:${grailsHome}/scripts/**.groovy").each { scripts << it.file }	
 	resolveResources("file:${basedir}/scripts/*.groovy").each { scripts << it.file }		
@@ -70,7 +72,6 @@ task ( 'default' : "Prints out the help for each script") {
 		resolveResources("file:${basedir}/plugins/*/scripts/*.groovy").each { scripts << it.file }  
 	}
 
-	def userHome = Ant.antProject.properties."user.home"
 	if(new File("${userHome}/.grails/scripts/").exists()) {
 		resolveResources("file:${userHome}/.grails/scripts/*.groovy").each { scripts << it.file }
 	}
@@ -100,11 +101,12 @@ task ( 'default' : "Prints out the help for each script") {
 				}
 			}        
 		}	   		
-		helpText = sw.toString()     
-		new File("${grailsHome}/scripts/help.txt").write(helpText) 		  		
+		helpText = sw.toString() 
+
+		new File("${grailsTmp}/help.txt").write(helpText) 		  		
 	}                                                              
 	else {
-		helpText = new File("${grailsHome}/scripts/help.txt").text
+		helpText = new File("${grailsTmp}/help.txt").text
 	}
 
 	println """
@@ -119,4 +121,5 @@ Available Targets:"""
 	println helpText
 	
 } 
+       
 
