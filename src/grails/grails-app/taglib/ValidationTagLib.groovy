@@ -45,7 +45,7 @@ class ValidationTagLib {
 					if(ra) {
                         if(ra instanceof Errors)
                             checkList << ra
-	                    else if ((ra.errors != null) && (ra.errors instanceof Errors)) {
+	                    else if ((ra.properties.errors) && (ra.errors instanceof Errors)) {
                             checkList << ra
 						}
 					}
