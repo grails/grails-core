@@ -57,7 +57,7 @@ class FormTagLib {
 	def field = { attrs ->  
         resolveAttributes( attrs)
 
-		out << "<input type='${attrs.remove('type')}' "
+		out << "<input type=\"${attrs.remove('type')}\" "
         outputAttributes(attrs)
 		out << "/>"
 	}
@@ -158,7 +158,7 @@ class FormTagLib {
         out << '<input type="submit" name="_action" '
         def value = attrs.remove('value')
         if(value) {
-             out << "value='${value}'"
+             out << "value=\"${value}\""
         }
         // process remaining attributes
         outputAttributes(attrs)
@@ -179,11 +179,11 @@ class FormTagLib {
         out << '<input type="image" name="_action" '
         def value = attrs.remove('value')
         if(value) {
-             out << "value='${value}'"
+             out << "value=\"${value}\""
         }
         def src = attrs.remove('src')
         if(src) {
-             out << "src='${src}'"
+             out << "src=\"${src}\""
         }
         // process remaining attributes
         outputAttributes(attrs)
@@ -257,29 +257,29 @@ class FormTagLib {
 			years = (tempyear-100)..(tempyear+100)
 		}
 
-        out << "<input type='hidden' name='${name}' value='struct' />"
+        out << "<input type=\"hidden\" name=\"${name}\" value=\"struct\" />"
 
         // create day select
         if (precision >= PRECISION_RANKINGS["day"]) {
-            out.println "<select name='${name}_day'>"
+            out.println "<select name=\"${name}_day\">"
 
             if (noSelection) {
 	    		renderNoSelectionOption( noSelection.key, noSelection.value, '')
             }
 
             for(i in 1..31) {
-                out.println "<option value='${i}'"
+                out.println "<option value=\"${i}\""
 				if (i == day) {
-					out.println " selected='selected'"
+					out.println " selected=\"selected\""
 				}
-				out.println ">${i.toString().encodeAsHTML()}</option>"
+				out.println ">${i.encodeAsHTML()}</option>"
             }
             out.println '</select>'
         }
 
         // create month select
         if (precision >= PRECISION_RANKINGS["month"]) {
-            out.println "<select name='${name}_month'>"
+            out.println "<select name=\"${name}_month\">"
 
             if (noSelection) {
 	    		renderNoSelectionOption( noSelection.key, noSelection.value, '')
@@ -288,8 +288,8 @@ class FormTagLib {
             dfs.months.eachWithIndex { m,i ->
                 if(m) {
                     def monthIndex = i + 1
-                    out << "<option value='${monthIndex}'"
-                    if(month == i) out << " selected='selected'"
+                    out << "<option value=\"${monthIndex}\""
+                    if(month == i) out << " selected=\"selected\""
                     out << '>'
                     out << m.toString().encodeAsHTML()
                     out.println '</option>'
@@ -300,16 +300,16 @@ class FormTagLib {
 
         // create year select
         if (precision >= PRECISION_RANKINGS["year"]) {
-            out.println "<select name='${name}_year'>"
+            out.println "<select name=\"${name}_year\">"
 
             if (noSelection) {
     			renderNoSelectionOption( noSelection.key, noSelection.value, '')
             }
 
             for(i in years) {
-                out.println "<option value='${i}'"
+                out.println "<option value=\"${i}\""
 				if (i == year) {
-					out.println " selected='selected'"
+					out.println " selected=\"selected\""
 				}
 				out.println ">${i.toString().encodeAsHTML()}</option>"
             }
@@ -318,7 +318,7 @@ class FormTagLib {
 
         // do hour select
         if (precision >= PRECISION_RANKINGS["hour"]) {
-            out.println "<select name='${name}_hour'>"
+            out.println "<select name=\"${name}_hour\">"
 
             if (noSelection) {
 	    		renderNoSelectionOption( noSelection.key, noSelection.value, '')
@@ -327,8 +327,8 @@ class FormTagLib {
             for(i in 0..23) {
                 def h = '' + i
                 if(i < 10) h = '0' + h
-                out << "<option value='${h}' "
-                if(hour == h.toInteger()) out << "selected='selected'"
+                out << "<option value=\"${h}\" "
+                if(hour == h.toInteger()) out << "selected=\"selected\""
                 out << '>' << h.toString().encodeAsHTML() << '</option>'
                 out.println()
             }
@@ -342,7 +342,7 @@ class FormTagLib {
 
         // do minute select
         if (precision >= PRECISION_RANKINGS["minute"]) {
-            out.println "<select name='${name}_minute'>"
+            out.println "<select name=\"${name}_minute\">"
 
             if (noSelection) {
 	    		renderNoSelectionOption( noSelection.key, noSelection.value, '')
@@ -351,8 +351,8 @@ class FormTagLib {
             for(i in 0..59) {
                 def m = '' + i
                 if(i < 10) m = '0' + m
-                out << "<option value='${m}' "
-                if(minute == m.toInteger()) out << "selected='selected'"
+                out << "<option value=\"${m}\" "
+                if(minute == m.toInteger()) out << "selected=\"selected\""
                 out << '>' << m.toString().encodeAsHTML() << '</option>'
                 out.println()
             }
@@ -447,7 +447,7 @@ class FormTagLib {
             noSelection = noSelection.entrySet().iterator().next()
         }
 
-        out << "<select name='${attrs.remove('name')}' "
+        out << "<select name=\"${attrs.remove('name')}\" "
         // process remaining attributes
         outputAttributes(attrs)
 
@@ -488,7 +488,7 @@ class FormTagLib {
                     }
                 }
                 else {
-                    out << "value='${el}' "
+                    out << "value=\"${el}\" "
                     if(el == value) {
                         out << 'selected="selected" '
                     }
@@ -524,11 +524,11 @@ class FormTagLib {
           out << '<input type="hidden" '
           out << "name=\"_${name}\" />"
           out << '<input type="checkbox" '
-          out << "name='${name}' "
+          out << "name=\"${name}\" "
           if(value) {
                 out << 'checked="checked" '
           }
-          out << "value='true' "
+          out << "value=\"true\" "
         // process remaining attributes
         outputAttributes(attrs)
 
@@ -545,7 +545,7 @@ class FormTagLib {
           def name = attrs.remove('name')
           def checked = (attrs.remove('checked') ? true : false)
           out << '<input type="radio" '
-          out << "name='${name}' "
+          out << "name=\"${name}\" "
           if(checked) {
                 out << 'checked="checked" '
           }
