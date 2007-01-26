@@ -11,6 +11,14 @@ class Test {
   static constraints = {
 	  name(length:5..15)
   }
+}    
+class ApplicationDataSource {
+   boolean pooling = true
+   String dbCreate = "create-drop"
+   String url = "jdbc:hsqldb:mem:devDB"
+   String driverClassName = "org.hsqldb.jdbcDriver"
+   String username = "sa"
+   String password = ""
 }
 ''')
 

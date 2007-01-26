@@ -234,8 +234,8 @@ public class GrailsRuntimeConfiguratorTests extends TestCase {
 
     public void testRegisterService() throws Exception {
         GroovyClassLoader gcl = new GroovyClassLoader();
-
-        GrailsApplication app = new DefaultGrailsApplication(new Class[0], gcl );
+		gcl.parseClass("class ApplicationDataSource { String url = \"jdbc:hsqldb:mem:testDB\"; String driverClassName = \"org.hsqldb.jdbcDriver\" ;String username = \"sa\";String password = \"\"}");
+        GrailsApplication app = new DefaultGrailsApplication(gcl.getLoadedClasses(), gcl );
         MockApplicationContext parent = new MockApplicationContext();
         parent.registerMockBean(GrailsApplication.APPLICATION_ID, app);
 
