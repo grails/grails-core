@@ -76,7 +76,7 @@ task(testApp:"The test app implementation task") {
 		}    
 		def beanNames = ctx.getBeanNamesForType(PersistenceContextInterceptor)
 		def interceptor = null
-		if(beanNames)interceptor = ctx.getBean(beanNames[0])
+		if(beanNames.size() > 0)interceptor = ctx.getBean(beanNames[0])
 							
 		
 		try {
@@ -92,17 +92,20 @@ task(testApp:"The test app implementation task") {
 	catch(Exception e) {
 		println "Error executing tests ${e.message}"
 		e.printStackTrace(System.out)   
-		Ant.fail("Tests failed with exception!!")
+		println "Tests failed with exception!!"
+		System.exit(1)
 	}
 	finally {
 		Ant.move(todir:"${basedir}/grails-tests") {
 			fileset(dir:testDir)			
 		}		
 		Ant.delete(dir:testDir)
-		if(result) {
+		if(result) { 
 			if(result.errorCount() > 0 || result.failureCount() > 0) {
-				Ant.fail("Tests failed!!!")
-			}			
+				println "Test Failures!!!"
+				System.exit(1)				
+			}			       
+
 		}
 	}	
 }
