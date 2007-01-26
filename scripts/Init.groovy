@@ -226,7 +226,9 @@ task(promptForName:"Prompts the user for the name of the Artifact if it isn't sp
 	}          	
 }
 
-task(classpath:"Sets the Grails classpath") {
+task(classpath:"Sets the Grails classpath") {    
+	def grailsDir = resolveResources("${basedir}/grails-app/*")
+	
 	Ant.path(id:"grails.classpath")  {
 		pathelement(location:"${basedir}") 		
 		pathelement(location:"${basedir}/grails-tests")		
@@ -235,38 +237,38 @@ task(classpath:"Sets the Grails classpath") {
 		pathelement(location:"${basedir}/web-app/classes")				
 		fileset(dir:"${grailsHome}/lib")
 		fileset(dir:"${grailsHome}/dist")
-		fileset(dir:"lib")		
+		fileset(dir:"lib") 
+		for(d in grailsDir) {
+			pathelement(location:"%{d.file.absolutePath}")
+		}  	
 	}
     StringBuffer cpath = new StringBuffer("")
     //println "Generating web.xml generator classpath: "
-    def jarFiles = []
-    try {
-        jarFiles = resolver.getResources("lib/*.jar").toList()
-    }
-    catch(FileNotFoundException e) {
-        // ignore
-    }
+    def jarFiles = resolveResources("lib/*.jar").toList()
 
-    try {
-        resolver.getResources("plugins/*/lib/*.jar").each { pluginJar ->  		    
-            boolean matches = jarFiles.any { it.file.name == pluginJar.file.name }
-            if(!matches) jarFiles.add(pluginJar)
-        }
+    resolveResources("plugins/*/lib/*.jar").each { pluginJar ->  		    
+        boolean matches = jarFiles.any { it.file.name == pluginJar.file.name }
+        if(!matches) jarFiles.add(pluginJar)
     }
-    catch(FileNotFoundException e) {
-        // ignore
-    }
-
+                         
+	
     def rootLoader = getClass().classLoader.rootLoader
 
     jarFiles.each { jar ->
         cpath << jar.file.absolutePath << File.pathSeparator
         rootLoader?.addURL(jar.URL)       
-    }
+    }  
+
+	.each { dir ->
+        cpath << dir.file.absolutePath << File.pathSeparator		
+		rootLoader?.addURL(dir.URL)
+   }                              
+
     cpath << "${basedir}/web-app/WEB-INF/classes"  
 	rootLoader?.addURL(new File("${basedir}/web-app/WEB-INF/classes").toURL())
        cpath << "${basedir}/web-app/WEB-INF"
 	rootLoader?.addURL(new File("${basedir}/web-app/WEB-INF").toURL())
+             
 
   	// println "Classpath with which to generate web.xml: \n${cpath.toString()}"
 
