@@ -521,7 +521,13 @@ public class ExpandoMetaClass extends MetaClassImpl implements GroovyObject {
 			// this insures the registry doesn't grow and get out of hand. By doing this we're
 			// saying this this EMC will be a hard reference in the registry. As we're only
 			// going have a small number of classes that have modified EMC this is ok
-			registry.setMetaClass(theClass, this);
+            MetaClass currMetaClass = registry.getMetaClass(theClass);
+            if(!(currMetaClass instanceof ExpandoMetaClass) && currMetaClass instanceof AdapterMetaClass) {
+                ((AdapterMetaClass)currMetaClass).setAdaptee(this);
+            } else {
+                registry.setMetaClass(theClass, this);
+            }
+
 			this.inRegistry = true;
 		}
 		// Implementation note: EMC handles most cases by itself except for the case where yuou
