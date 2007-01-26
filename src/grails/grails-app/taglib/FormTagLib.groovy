@@ -168,30 +168,94 @@ class FormTagLib {
 
     }
     /**
+     * Creates a an image submit button that submits to an action in the controller specified by the form action
+     * The value of the action attribute is translated into the action name, for example "Edit" becomes
+     * "edit" or "List People" becomes "listPeople"
+     *
+     *  <g:actionSubmitImage src="/images/submitButton.gif" action="Edit" />
+     *
+     */
+    def actionSubmitImage = { attrs ->
+        out << '<input type="image" name="_action" '
+        def value = attrs.remove('value')
+        if(value) {
+             out << "value='${value}'"
+        }
+        def src = attrs.remove('src')
+        if(src) {
+             out << "src='${src}'"
+        }
+        // process remaining attributes
+        outputAttributes(attrs)
+
+        // close tag
+        out.println '/>'
+
+    }
+
+   /**
      * A simple date picker that renders a date as selects
      * eg. <g:datePicker name="myDate" value="${new Date()}" />
      */
     def datePicker = { attrs ->
-        def value = (attrs['value'] ? attrs['value'] : new Date())
+        def xdefault = attrs['default']
+		if (xdefault == null) {
+			xdefault = new Date()
+		} else if (xdefault != 'none') {
+			xdefault = DateFormat.getInstance().parse(xdefault)
+		} else {
+			xdefault = null
+		}
+
+        def value = (attrs['value'] ? attrs['value'] : xdefault)
         def name = attrs['name']
+		def noSelection = attrs['noSelection']
+		if (noSelection != null)
+		{
+		    noSelection = noSelection.entrySet().iterator().next()
+		}
+
+		def years = attrs['years']
 
         final PRECISION_RANKINGS = ["year":0, "month":10, "day":20, "hour":30, "minute":40]
         def precision = (attrs['precision'] ? PRECISION_RANKINGS[attrs['precision']] : PRECISION_RANKINGS["minute"])
+
+        def day
+        def month
+        def year
+        def hour
+        def minute
+        def dfs = new java.text.DateFormatSymbols(RCU.getLocale(request))
 
         def c = null
         if(value instanceof Calendar) {
             c = value
         }
-        else {
+        else if (value != null) {
             c = new GregorianCalendar();
             c.setTime(value)
         }
-        def day = c.get(GregorianCalendar.DAY_OF_MONTH)
-        def month = c.get(GregorianCalendar.MONTH)
-        def year = c.get(GregorianCalendar.YEAR)
-        def hour = c.get(GregorianCalendar.HOUR_OF_DAY)
-        def minute = c.get(GregorianCalendar.MINUTE)
-        def dfs = new java.text.DateFormatSymbols(RCU.getLocale(request))
+
+		if (c != null) {
+	        day = c.get(GregorianCalendar.DAY_OF_MONTH)
+	        month = c.get(GregorianCalendar.MONTH)
+	        year = c.get(GregorianCalendar.YEAR)
+	        hour = c.get(GregorianCalendar.HOUR_OF_DAY)
+	        minute = c.get(GregorianCalendar.MINUTE)
+		}
+
+		if (years == null) {
+			def tempyear
+			if (year == null) {
+				// If no year, we need to get current year to setup a default range... ugly
+            	def tempc = new GregorianCalendar()
+            	tempc.setTime(new Date())
+	        	tempyear = tempc.get(GregorianCalendar.YEAR)
+			} else {
+				tempyear = year
+			}
+			years = (tempyear-100)..(tempyear+100)
+		}
 
         out << "<input type='hidden' name='${name}' value='struct' />"
 
@@ -199,14 +263,16 @@ class FormTagLib {
         if (precision >= PRECISION_RANKINGS["day"]) {
             out.println "<select name='${name}_day'>"
 
-            if (day > 1) {
-                for(i in 1..(day-1)) {
-                       out.println "<option value='${i}'>${i}</option>"
-                }
+            if (noSelection) {
+	    		renderNoSelectionOption( noSelection.key, noSelection.value, '')
             }
-            out.println "<option value='${day}' selected='selected'>${day}</option>"
-            for(i in (day+1)..31) {
-                   out.println "<option value='${i}'>${i}</option>"
+
+            for(i in 1..31) {
+                out.println "<option value='${i}'"
+				if (i == day) {
+					out.println " selected='selected'"
+				}
+				out.println ">${i.toString().encodeAsHTML()}</option>"
             }
             out.println '</select>'
         }
@@ -214,13 +280,18 @@ class FormTagLib {
         // create month select
         if (precision >= PRECISION_RANKINGS["month"]) {
             out.println "<select name='${name}_month'>"
+
+            if (noSelection) {
+	    		renderNoSelectionOption( noSelection.key, noSelection.value, '')
+            }
+
             dfs.months.eachWithIndex { m,i ->
                 if(m) {
                     def monthIndex = i + 1
                     out << "<option value='${monthIndex}'"
                     if(month == i) out << " selected='selected'"
                     out << '>'
-                    out << m
+                    out << m.toString().encodeAsHTML()
                     out.println '</option>'
                 }
             }
@@ -230,12 +301,17 @@ class FormTagLib {
         // create year select
         if (precision >= PRECISION_RANKINGS["year"]) {
             out.println "<select name='${name}_year'>"
-            for(i in (year - 100)..(year-1)) {
-                out.println "<option value='${i}'>${i}</option>"
+
+            if (noSelection) {
+    			renderNoSelectionOption( noSelection.key, noSelection.value, '')
             }
-            out.println "<option value='${year}' selected='selected'>${year}</option>"
-            for(i in (year + 1)..(year+100)) {
-                out.println "<option value='${i}'>${i}</option>"
+
+            for(i in years) {
+                out.println "<option value='${i}'"
+				if (i == year) {
+					out.println " selected='selected'"
+				}
+				out.println ">${i.toString().encodeAsHTML()}</option>"
             }
             out.println '</select>'
         }
@@ -243,12 +319,17 @@ class FormTagLib {
         // do hour select
         if (precision >= PRECISION_RANKINGS["hour"]) {
             out.println "<select name='${name}_hour'>"
+
+            if (noSelection) {
+	    		renderNoSelectionOption( noSelection.key, noSelection.value, '')
+            }
+
             for(i in 0..23) {
                 def h = '' + i
                 if(i < 10) h = '0' + h
                 out << "<option value='${h}' "
                 if(hour == h.toInteger()) out << "selected='selected'"
-                out << '>' << h << '</option>'
+                out << '>' << h.toString().encodeAsHTML() << '</option>'
                 out.println()
             }
             out.println '</select> :'
@@ -262,17 +343,34 @@ class FormTagLib {
         // do minute select
         if (precision >= PRECISION_RANKINGS["minute"]) {
             out.println "<select name='${name}_minute'>"
+
+            if (noSelection) {
+	    		renderNoSelectionOption( noSelection.key, noSelection.value, '')
+            }
+
             for(i in 0..59) {
                 def m = '' + i
                 if(i < 10) m = '0' + m
                 out << "<option value='${m}' "
                 if(minute == m.toInteger()) out << "selected='selected'"
-                out << '>' << m << '</option>'
+                out << '>' << m.toString().encodeAsHTML() << '</option>'
                 out.println()
             }
             out.println '</select>'
         }
     }
+
+	def renderNoSelectionOption = { noSelectionKey, noSelectionValue, value ->
+		// If a label for the '--Please choose--' first item is supplied, write it out
+		if (noSelectionValue) {
+			out << '<option value="' << (noSelectionKey == null ? "" : noSelectionKey) << '"'
+            if(noSelectionKey == value) {
+                out << ' selected="selected" '
+            }
+			out << '>' << noSelectionValue.encodeAsHTML() << '</option>'
+	        out.println()
+		}
+	}
 
     /**
      *  A helper tag for creating TimeZone selects
@@ -344,6 +442,10 @@ class FormTagLib {
         def optionKey = attrs.remove('optionKey')
         def optionValue = attrs.remove('optionValue')
         def value = attrs.remove('value')
+		def noSelection = attrs.remove('noSelection')
+        if (noSelection != null) {
+            noSelection = noSelection.entrySet().iterator().next()
+        }
 
         out << "<select name='${attrs.remove('name')}' "
         // process remaining attributes
@@ -351,6 +453,11 @@ class FormTagLib {
 
         out << '>'
         out.println()
+
+        if (noSelection) {
+		    renderNoSelectionOption(noSelection.key, noSelection.value, value)
+        }
+
         // create options from list
         if(from) {
             from.eachWithIndex { el,i ->
@@ -389,15 +496,15 @@ class FormTagLib {
                 out << '>'
                 if(optionValue) {
                     if(optionValue instanceof Closure) {
-                         out << optionValue(el)
+                         out << optionValue(el).toString().encodeAsHTML()
                     }
                     else {
-                        out << el.properties[optionValue]
+                        out << el.properties[optionValue].toString().encodeAsHTML()
                     }
                 }
                 else {
                     def s = el.toString()
-                    if(s) out << s
+                    if(s) out << s.encodeAsHTML()
                 }
                 out << '</option>'
                 out.println()
@@ -442,7 +549,7 @@ class FormTagLib {
           if(checked) {
                 out << 'checked="checked" '
           }
-          out << "value=\"$value\" "
+          out << "value=\"${value.toString().encodeAsHTML()}\" "
         // process remaining attributes
         outputAttributes(attrs)
 

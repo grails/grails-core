@@ -31,6 +31,7 @@ public class FormTagLibTests extends AbstractGrailsTagTests {
 
     /** The name used for the datePicker tags created in the test cases. */
     private static final String DATE_PICKER_TAG_NAME = "testDatePicker";
+    private static final def SELECT_TAG_NAME = "testSelect";
 
     private static final Collection DATE_PRECISIONS_INCLUDING_MINUTE = Collections.unmodifiableCollection(Arrays.asList( ["minute", null] as String[] ))
     private static final Collection DATE_PRECISIONS_INCLUDING_HOUR = Collections.unmodifiableCollection(Arrays.asList(["hour", "minute",null] as String[] ))
@@ -118,6 +119,97 @@ public class FormTagLibTests extends AbstractGrailsTagTests {
 
     		assertEquals "<input type=\"radio\" name='testRadio' value=\"2\"  ></input>", sw.toString()
     	}
+    }
+
+    public void testSelectTag() {
+    	final StringWriter sw = new StringWriter();
+    	final PrintWriter pw = new PrintWriter(sw);
+
+        def range = 1..10
+
+    	withTag("select", pw) { tag ->
+	    	// use sorted map to be able to predict the order in which tag attributes are generated
+    		def attributes = new TreeMap([name: SELECT_TAG_NAME, from: range ])
+    		tag.call(attributes)
+    	}
+
+
+        def doc = DocumentHelper.parseText( sw.toString() )
+        assertNotNull( doc)
+
+        range.each() {
+            assertSelectFieldPresentWithValue( doc, SELECT_TAG_NAME, it.toString() )
+        }
+
+    	sw = new StringWriter();
+    	pw = new PrintWriter(sw);
+
+        def sel = 5
+
+    	withTag("select", pw) { tag ->
+	    	// use sorted map to be able to predict the order in which tag attributes are generated
+    		def attributes = new TreeMap([name: SELECT_TAG_NAME, value: sel, from: range ])
+    		tag.call(attributes)
+    	}
+
+
+        doc = DocumentHelper.parseText( sw.toString() )
+        assertNotNull( doc)
+
+        range.each() {
+            if (it != sel) {
+                assertSelectFieldPresentWithValue( doc, SELECT_TAG_NAME, it.toString() )
+            } else {
+                assertSelectFieldPresentWithSelectedValue( doc, SELECT_TAG_NAME, it.toString() )
+            }
+        }
+
+
+    }
+
+    public void testSelectTagWithNoSelectionSet() {
+    	final StringWriter sw = new StringWriter();
+    	final PrintWriter pw = new PrintWriter(sw);
+
+        def range = ['a', 'b', 'c', 'd', 'e']
+
+    	withTag("select", pw) { tag ->
+	    	// use sorted map to be able to predict the order in which tag attributes are generated
+    		def attributes = new TreeMap([name: SELECT_TAG_NAME, noSelection:['?':'NONE'], from: range ])
+    		tag.call(attributes)
+    	}
+
+
+        def doc = DocumentHelper.parseText( sw.toString() )
+        assertNotNull( doc)
+
+        assertSelectFieldPresentWithValueAndText( doc, SELECT_TAG_NAME, '?', 'NONE' )
+        range.each() {
+            assertSelectFieldPresentWithValue( doc, SELECT_TAG_NAME, it.toString() )
+        }
+
+
+    	sw = new StringWriter();
+    	pw = new PrintWriter(sw);
+
+    	withTag("select", pw) { tag ->
+	    	// use sorted map to be able to predict the order in which tag attributes are generated
+    		def attributes = new TreeMap([name: SELECT_TAG_NAME, value: '', noSelection:['':'NONE'], from: range ])
+    		tag.call(attributes)
+    	}
+
+
+        println sw
+        
+        doc = DocumentHelper.parseText( sw.toString() )
+        assertNotNull( doc)
+
+        assertSelectFieldPresentWithSelectedValue( doc, SELECT_TAG_NAME, '')
+        range.each() {
+            assertSelectFieldPresentWithValue( doc, SELECT_TAG_NAME, it.toString() )
+        }
+
+
     }
 
     public void testCheckboxTag() {
@@ -232,7 +324,7 @@ public class FormTagLibTests extends AbstractGrailsTagTests {
         }
         else {
         	
-            assertSelectFieldNotPresentValue(document, FIELD_NAME);
+            assertSelectFieldNotPresent(document, FIELD_NAME);
         }
     }
 
@@ -245,7 +337,7 @@ public class FormTagLibTests extends AbstractGrailsTagTests {
             assertSelectFieldPresentWithSelectedValue(document, FIELD_NAME, expectedDayValue);
         }
         else {
-            assertSelectFieldNotPresentValue(document, FIELD_NAME);
+            assertSelectFieldNotPresent(document, FIELD_NAME);
         }
     }
 
@@ -259,7 +351,7 @@ public class FormTagLibTests extends AbstractGrailsTagTests {
             assertSelectFieldPresentWithSelectedValue(document, FIELD_NAME, expectedHourValue);
         }
         else {
-            assertSelectFieldNotPresentValue(document, FIELD_NAME);
+            assertSelectFieldNotPresent(document, FIELD_NAME);
         }
     }
 
@@ -273,16 +365,26 @@ public class FormTagLibTests extends AbstractGrailsTagTests {
             assertSelectFieldPresentWithSelectedValue(document, FIELD_NAME, expectedMinuteValue);
         }
         else {
-            assertSelectFieldNotPresentValue(document, FIELD_NAME);
+            assertSelectFieldNotPresent(document, FIELD_NAME);
         }
     }
 
     private void assertSelectFieldPresentWithSelectedValue(Document document, String fieldName, String value) {
         XPath xpath = new DefaultXPath("//select[@name='" + fieldName + "']/option[@selected='selected' and @value='" + value + "']");
-//        assertTrue(xpath.booleanValueOf(document)); TODO
+        assertTrue(xpath.booleanValueOf(document)); 
     }
 
-    private void assertSelectFieldNotPresentValue(Document document, String fieldName) {
+    private void assertSelectFieldPresentWithValue(Document document, String fieldName, String value) {
+        XPath xpath = new DefaultXPath("//select[@name='" + fieldName + "']/option[@value='" + value + "']");
+        assertTrue(xpath.booleanValueOf(document));
+    }
+
+    private void assertSelectFieldPresentWithValueAndText(Document document, String fieldName, String value, String label) {
+        XPath xpath = new DefaultXPath("//select[@name='" + fieldName + "']/option[@value='" + value + "' and text()='"+label+"']");
+        assertTrue(xpath.booleanValueOf(document));
+    }
+
+    private void assertSelectFieldNotPresent(Document document, String fieldName) {
         XPath xpath = new DefaultXPath("//select[@name='" + fieldName + "']");
         assertFalse(xpath.booleanValueOf(document));
     }
