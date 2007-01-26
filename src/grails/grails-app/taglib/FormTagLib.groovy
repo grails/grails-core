@@ -108,16 +108,8 @@ class FormTagLib {
     void outputAttributes(attrs)
     {
         attrs.each { k,v ->
-            out << k << "=\"" << escapeAttributeValue(v) << "\" "
+            out << k << "=\"" << v.encodeAsHTML() << "\" "
         }
-    }
-
-    /**
-    * Html special characters as well as quote used to surround value need to be escaped
-    */
-    private escapeAttributeValue(value)
-    {
-    	value.encodeAsHTML().replaceAll('"', '&quot;')
     }
 
     /**
