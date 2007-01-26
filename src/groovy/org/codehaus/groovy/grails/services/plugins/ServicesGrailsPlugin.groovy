@@ -44,8 +44,7 @@ class ServicesGrailsPlugin {
 				arguments = serviceClass.fullName
 			}
 
-			def hasDataSource = (application.grailsDataSource || application.domainClasses.size() > 0)
-            println "services plugin ds $hasDataSource"						
+			def hasDataSource = (application.grailsDataSource || application.domainClasses.size() > 0)						
 			if(serviceClass.transactional && hasDataSource) {
 				def props = new Properties()
 				props."*"="PROPAGATION_REQUIRED"

@@ -56,7 +56,6 @@ class HibernateGrailsPlugin {
 			}
 			def ds = application.grailsDataSource
 			if(ds || application.domainClasses.size() > 0) {
-			    println "configuring Hibernate with ds"
                 def hibProps = [:]
                 if(ds && ds.loggingSql) {
                     hibProps."hibernate.show_sql" = "true"
