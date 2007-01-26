@@ -77,8 +77,13 @@ public class GrailsDomainConfigurationUtil {
                     GrailsDomainClassProperty prop = props[j];
                     GrailsDomainClass referenced = prop.getReferencedDomainClass();
                     if(referenced != null) {
-                    	String refPropertyName = prop.getReferencedPropertyName();
-                    	if(!StringUtils.isBlank(refPropertyName)) {
+                        String refPropertyName = null;
+                        try {
+                            refPropertyName = prop.getReferencedPropertyName();
+                        } catch (UnsupportedOperationException e) {
+                            // ignore (to support Hibernate entities)
+                        }
+                        if(!StringUtils.isBlank(refPropertyName)) {
                     		prop.setOtherSide(referenced.getPropertyByName(refPropertyName));
                     	}
                     	else {

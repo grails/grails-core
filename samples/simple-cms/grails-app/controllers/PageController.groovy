@@ -236,7 +236,8 @@ class PageController {
 		if(!p) {
 			renderError "Page not found for id ${params.id}"	
 		}
-		
+		              
+		println "publishing site with GSP engine"
 		// get GSP engine
 		//def engine = grailsAttributes.getPagesTemplateEngine()
 		def engine = new groovy.text.SimpleTemplateEngine()
@@ -259,8 +260,13 @@ class PageController {
 		}
 		// publish page
 		def pageUri = getTemplateUri("pages/${p.id}")
-		 
-		new File(servletContext.getRealPath(pageUri)).withWriter { w ->
+		
+		def pageFile = new File(servletContext.getRealPath(pageUri))
+		if(!pageFile.parentFile.exists()) {
+			   pageFile.parentFile.mkdirs()
+		}
+		
+		pageFile.withWriter { w ->
 			w << t.make(page:p)
 		}
 				
@@ -670,7 +676,8 @@ class PageController {
 	
     def save = {
        def page = Page.get(params.page)
-		if(page) {
+		if(page) {        
+			page.site = Site.get(session.site.id)
 			// update the content      
 			if(params.editor?.class.isArray())
 				page.content = params.editor[0]
@@ -725,7 +732,7 @@ class PageController {
 				render(template:"/pagexml",model:[page:page,alert:"Page saved. A Content approver has been notified."])				
 			}
 			else {
-				render(template:"/pagexml",model:[page:page,alert:"Unable to save page."])					
+				render(template:"/pagexml",model:[page:page,alert:"Unable to save page" ])					
 			}				
 		}
 		else {

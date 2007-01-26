@@ -14,6 +14,11 @@
 	  <param-value>/WEB-INF/applicationContext.xml</param-value>
 	</context-param>
 
+    <context-param>
+        <param-name>webAppRootKey</param-name>
+        <param-value>simple-cms</param-value>
+    </context-param>
+
     <filter>
            <filter-name>sitemesh</filter-name>
         <filter-class>org.codehaus.groovy.grails.web.sitemesh.GrailsPageFilter</filter-class>
@@ -31,18 +36,6 @@
           <param-value>true</param-value>
         </init-param>
       </filter>
-
-    <% if(dev) { %>
-        <filter>
-            <filter-name>reloadFilter</filter-name>
-            <filter-class>org.codehaus.groovy.grails.web.servlet.filter.GrailsReloadServletFilter</filter-class>
-        </filter>
-
-        <filter-mapping>
-            <filter-name>reloadFilter</filter-name>
-            <url-pattern>/*</url-pattern>
-        </filter-mapping>
-    <% } %>
 
     <filter-mapping>
         <filter-name>charEncodingFilter</filter-name>
@@ -73,36 +66,12 @@
       <servlet>
         <servlet-name>gsp</servlet-name>
         <servlet-class>org.codehaus.groovy.grails.web.pages.GroovyPagesServlet</servlet-class>
-        <% if(dev) { %>
-        <init-param>
-            <description>
-              Allows developers to view the intermediade source code, when they pass
-                a spillGroovy argument in the URL.
-           </description>        
-            <param-name>showSource</param-name>
-            <param-value>1</param-value>
-        </init-param>
-        <% } %>
      </servlet>
 
     <servlet-mapping>
         <servlet-name>gsp</servlet-name>
         <url-pattern>*.gsp</url-pattern>
     </servlet-mapping>
-    <!-- Map all requests to the Grails dispatcher servlet -->
-    <% for ( c in controllers ) { %>
-        <servlet-mapping>
-            <servlet-name>grails</servlet-name>
-            <url-pattern>/${c}/*</url-pattern>
-        </servlet-mapping>
-    <% } %>
-
-    <% for ( f in flows ) { %>
-        <servlet-mapping>
-            <servlet-name>grails</servlet-name>
-            <url-pattern>/${f}/*</url-pattern>
-        </servlet-mapping>
-    <% } %>
 
     <welcome-file-list>
          <!--

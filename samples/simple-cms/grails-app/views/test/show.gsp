@@ -5,7 +5,7 @@
 		  <g:javascript library="rico"></g:javascript>
 		  <g:javascript>
 		  		var questionClasses = [
-					<g:def var="i" expr="${0}" />
+					<g:def var="i" value="${0}" />
 					<g:each var="q" in="${questions}">
 						<g:set var="i" value="${i+1}" />
 						"question${q.id}"<g:if test="${i!=questions.size()}">,</g:if>

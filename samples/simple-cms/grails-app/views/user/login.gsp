@@ -17,11 +17,7 @@
            <g:if test="${flash['message']}">
                  <div class="message">${flash['message']}</div>
            </g:if>
-           <g:hasErrors bean="${user}">
-                <div class="errors">
-                    <g:renderErrors bean="${user}" as="list" />
-                </div>
-           </g:hasErrors>
+
            <g:form action="handleLogin" method="post">
            		<input name="forward" type="hidden" value="${flash.forward}" />
                <div class="dialog">
