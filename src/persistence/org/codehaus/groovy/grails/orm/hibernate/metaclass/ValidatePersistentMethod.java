@@ -81,7 +81,7 @@ public class ValidatePersistentMethod extends AbstractDynamicPersistentMethod {
                     }
                 }
                 DynamicMethodsMetaClass metaClass = (DynamicMethodsMetaClass)InvokerHelper.getInstance().getMetaRegistry().getMetaClass(target.getClass());
-                metaClass.setProperty(target,DomainClassMethods.ERRORS_PROPERTY,errors);
+                metaClass.setProperty(target.getClass(),target,DomainClassMethods.ERRORS_PROPERTY,errors, false,false);
             }
         }
         return valid;

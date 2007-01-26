@@ -1,21 +1,18 @@
 package org.codehaus.groovy.grails.web.sitemesh;
 
+import com.opensymphony.module.sitemesh.Config;
+import com.opensymphony.module.sitemesh.Decorator;
+import com.opensymphony.module.sitemesh.Page;
+import com.opensymphony.module.sitemesh.parser.HTMLPageParser;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyObject;
-
-import java.io.StringReader;
-
 import junit.framework.TestCase;
-
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockServletConfig;
 import org.springframework.mock.web.MockServletContext;
 
-import com.opensymphony.module.sitemesh.Config;
-import com.opensymphony.module.sitemesh.Decorator;
-import com.opensymphony.module.sitemesh.Page;
-import com.opensymphony.module.sitemesh.parser.FastPageParser;
+import java.io.StringReader;
 
 public class GrailsLayoutDecoratorMapperTests extends TestCase {
 
@@ -28,11 +25,11 @@ public class GrailsLayoutDecoratorMapperTests extends TestCase {
 		GrailsLayoutDecoratorMapper m = new GrailsLayoutDecoratorMapper();
 		Config c = new Config(new MockServletConfig(context));
 		m.init(c, null, null);
-		FastPageParser parser = new FastPageParser();
+		HTMLPageParser parser = new HTMLPageParser();
 		String html = "<html><head><title>Test title</title><meta name=\"layout\" content=\"test\"></meta></head><body>here is the body</body></html>";
 		
 		
-		Page page = parser.parse( new StringReader(html) ); 
+		Page page = parser.parse( html.toCharArray() );
 		Decorator d = m.getDecorator(request, page);
 		assertNotNull(d);
 		assertEquals("/WEB-INF/grails-app/views/layouts/test.gsp", d.getURIPath());
@@ -54,11 +51,11 @@ public class GrailsLayoutDecoratorMapperTests extends TestCase {
 		request.setAttribute(GrailsApplicationAttributes.CONTROLLER, controller);		GrailsLayoutDecoratorMapper m = new GrailsLayoutDecoratorMapper();
 		Config c = new Config(new MockServletConfig(context));
 		m.init(c, null, null);
-		FastPageParser parser = new FastPageParser();
+		HTMLPageParser parser = new HTMLPageParser();
 		String html = "<html><head><title>Test title</title></head><body>here is the body</body></html>";
 		
 		
-		Page page = parser.parse( new StringReader(html) ); 
+		Page page = parser.parse( html.toCharArray() );
 		Decorator d = m.getDecorator(request, page);
 		assertNotNull(d);
 		assertEquals("/WEB-INF/grails-app/views/layouts/test.gsp", d.getURIPath());
@@ -79,11 +76,11 @@ public class GrailsLayoutDecoratorMapperTests extends TestCase {
 		request.setAttribute(GrailsApplicationAttributes.CONTROLLER, controller);		GrailsLayoutDecoratorMapper m = new GrailsLayoutDecoratorMapper();
 		Config c = new Config(new MockServletConfig(context));
 		m.init(c, null, null);
-		FastPageParser parser = new FastPageParser();
+		HTMLPageParser parser = new HTMLPageParser();
 		String html = "<html><head><title>Test title</title></head><body>here is the body</body></html>";
 		
 		
-		Page page = parser.parse( new StringReader(html) ); 
+		Page page = parser.parse( html.toCharArray() ); 
 		Decorator d = m.getDecorator(request, page);
 		assertNotNull(d);
 		assertEquals("/WEB-INF/grails-app/views/layouts/test2/testAction.gsp", d.getURIPath());

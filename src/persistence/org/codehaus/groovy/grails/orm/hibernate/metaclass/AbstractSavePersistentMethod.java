@@ -98,7 +98,9 @@ public abstract class AbstractSavePersistentMethod extends
 
 	/**
 	 * Performs automatic association retrieval
-	 */
+     * @param domainClass The domain class to retrieve associations for
+     * @param target The target object
+     */
 	private void autoRetrieveAssocations(GrailsDomainClass domainClass, Object target) {
 		BeanWrapper bean = new BeanWrapperImpl(target);
 		HibernateTemplate t = getHibernateTemplate();
@@ -124,7 +126,10 @@ public abstract class AbstractSavePersistentMethod extends
 
 	/**
 	 * Handles a validation error
-	 */
+     * @return Returns null, as this represents a validation error
+     * @param target The target object being validated
+     * @param errors The Errors instance
+     */
 	protected Object handleValidationError(Object target, Errors errors) {
 		HibernateTemplate t = getHibernateTemplate();
         // if the target is within the session evict it
@@ -138,14 +143,17 @@ public abstract class AbstractSavePersistentMethod extends
 		}   
 		else {
 		    DynamicMethodsMetaClass metaClass = (DynamicMethodsMetaClass)InvokerHelper.getInstance().getMetaRegistry().getMetaClass(target.getClass());
-		    metaClass.setProperty(target,DomainClassMethods.ERRORS_PROPERTY,errors);						
+		    metaClass.setProperty(target.getClass() ,target,DomainClassMethods.ERRORS_PROPERTY,errors, false, false);
 		}
 		return null;
 	}
 
 	/**
  	 * Checks whether validation should be performed
-	 */
+     * @return True if the domain class should be validated
+     * @param arguments  The arguments to the validate method
+     * @param domainClass The domain class
+     */
 	private boolean shouldValidate(Object[] arguments, GrailsDomainClass domainClass) {
 		if(domainClass != null) {          
             if(arguments.length > 0) {
