@@ -86,4 +86,13 @@ public class GrailsUtil {
             }
         }
     }
+
+    /**
+     * Retrieves whether the current execution environment is the development one
+     *
+     * @return True if it is the development environment
+     */
+    public static boolean isDevelopmentEnv() {
+        return GrailsApplication.ENV_DEVELOPMENT.equals(GrailsUtil.getEnvironment());
+    }
 }

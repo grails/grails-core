@@ -18,6 +18,8 @@ package org.codehaus.groovy.grails.web.errors;
 import org.springframework.web.context.ServletContextAware;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.handler.SimpleMappingExceptionResolver;
+import org.apache.commons.logging.LogFactory;
+import org.apache.commons.logging.Log;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
@@ -32,12 +34,17 @@ import javax.servlet.http.HttpServletResponse;
 public class GrailsExceptionResolver  extends SimpleMappingExceptionResolver implements ServletContextAware {
     private ServletContext servletContext;
 
+    private static final Log LOG = LogFactory.getLog(GrailsExceptionResolver.class);
+
     /* (non-Javadoc)
-      * @see org.springframework.web.servlet.handler.SimpleMappingExceptionResolver#resolveException(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, java.lang.Object, java.lang.Exception)
-      */
+    * @see org.springframework.web.servlet.handler.SimpleMappingExceptionResolver#resolveException(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, java.lang.Object, java.lang.Exception)
+    */
     public ModelAndView resolveException(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) {
         ModelAndView mv = super.resolveException(request, response, handler, ex);
         response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+
+        LOG.error(ex.getMessage(), ex);
+        
         GrailsWrappedRuntimeException gwrex = new GrailsWrappedRuntimeException(servletContext,ex);
         mv.addObject("exception",gwrex);
         return mv;
