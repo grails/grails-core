@@ -199,8 +199,6 @@ public class FormTagLibTests extends AbstractGrailsTagTests {
     	}
 
 
-        println sw
-        
         doc = DocumentHelper.parseText( sw.toString() )
         assertNotNull( doc)
 
