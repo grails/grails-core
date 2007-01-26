@@ -214,6 +214,8 @@ class JavascriptTagLib  {
 		             ]
 		attrs.remove('url')		             
 	    params.putAll(attrs)
+		if(params.name && !params.id)
+			params.id = params.name
 	    withTag(name:'form',attrs:params) {
 			body()   
 	    }		
@@ -255,9 +257,9 @@ class JavascriptTagLib  {
 			}
 		}
 		else if(provider instanceof DojoProvider) {
-			if(attrs.params) attrs.params.formNode = "dojo.byId('${attrs.name}')"
+			if(attrs.options) attrs.options.formNode = "dojo.byId('${attrs.name}')"
 			else {
-				attrs.params = [formNode:"dojo.byId('${attrs.name}')"]
+				attrs.options = [formNode:"dojo.byId('${attrs.name}')"]
 			}
 		}
 	 }
@@ -397,7 +399,14 @@ class PrototypeProvider implements JavascriptProvider {
             }
 
             if(options.params) {
-                ajaxOptions << "parameters:${options.remove('params')}"
+				def params = options.remove('params')
+				if (params instanceof Map) {
+				ajaxOptions << "parameters:'" +
+					options.remove('params').collect { k, v -> "${k}=${v}" }.join('&') +
+				"'"
+				} else {
+					ajaxOptions << "parameters:${params}"
+				}
             }
             // remaining options
             options.options?.each { k, v ->
@@ -494,6 +503,7 @@ class DojoProvider implements JavascriptProvider {
 			out << "${attrs.onLoading};"
 		}		
 		 out << 'dojo.io.bind({url:\''
+
 		 taglib.createLink(attrs) 
 		attrs.remove('params')
 		 out << '\',load:function(type,data,evt) {'
@@ -528,6 +538,7 @@ class DojoProvider implements JavascriptProvider {
 	     attrs.options?.each {k,v ->
 	     	out << ",$k:$v"
 	     }
-		 out << '});'
+		 out << '});' 
+		attrs.remove('options')
 	 }
 }
