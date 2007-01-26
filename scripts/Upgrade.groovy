@@ -30,8 +30,35 @@ includeTargets << new File ( "${grailsHome}/scripts/Init.groovy" )
 
 task( upgrade: "main upgrade task") {
 	depends( createStructure )    
+   
+	 Ant.input(message: """
+	WARNING: This task will upgrade an older Grails application to ${grailsVersion}.
+	However, tag libraries provided by earlier versions of Grails found in grails-app/taglib will be removed. 
+	The task will not, however, delete tag libraries developed by yourself.
+	Are you sure you want to continue? 
+			   """,
+			validargs:"y,n", 
+			addproperty:"grails.upgrade.warning")
+
+       def answer = Ant.antProject.properties."grails.upgrade.warning"        
+
+	if(answer == "n") System.exit(0)
+	createCorePlugin()
 	
-	Ant.sequential {  
+	def coreTaglibs = new File("${basedir}/plugins/core/grails-app/taglib")
+	assert coreTaglibs.exists()   
+	coreTaglibs.eachFile { f ->
+		if(!f.isDirectory())
+			Ant.delete(file:"${basedir}/grails-app/taglib/${f.name}")
+	}                      
+	def coreUtils = new File("${basedir}/plugins/core/grails-app/utils")	
+	coreUtils.eachFile { f ->
+		if(!f.isDirectory())
+			Ant.delete(file:"${basedir}/grails-app/utils/${f.name}")
+	}
+	
+	Ant.sequential {       
+   	   		
         delete(dir:"${basedir}/tmp", failonerror:false)
 		copy(todir:"${basedir}/web-app") {
 			fileset(dir:"${grailsHome}/src/war") {
@@ -62,18 +89,6 @@ task( upgrade: "main upgrade task") {
             }
         }
 			
-		copy(todir:"${basedir}/grails-app") {
-			fileset(dir:"${grailsHome}/src/grails/grails-app") {
-                present(present:"srconly", targetdir:"${basedir}/grails-app")
-            }
-		}
-
-		copy(todir:"${basedir}/grails-app/taglib") {
-			fileset(dir:"${grailsHome}/src/grails/grails-app/taglib") {
-                present(present:"srconly", targetdir:"${basedir}/grails-app/taglib")
-            }
-		}
-						   	 
 		copy(file:"${grailsHome}/src/war/WEB-INF/web${servletVersion}.template.xml", 
 				 tofile:"${basedir}/web-app/WEB-INF/web.template.xml",
 				 overwrite:"true") 

@@ -22,7 +22,9 @@ task(bootstrap: "The implementation task") {
 	depends(classpath)
 	
 	def parent = new ClassPathXmlApplicationContext("applicationContext.xml");
-	application = parent.getBean("grailsApplication");
+	application = parent.getBean("grailsApplication"); 
+	
+	Thread.currentThread().setContextClassLoader(application.getClassLoader())
 	
 	def config = new GrailsRuntimeConfigurator(application,parent);
 	servletContext = new MockServletContext();

@@ -151,9 +151,11 @@ task( init: "main init task") {
 			 tofile:"${basedir}/grails-app/conf/log4j.production.properties")	
 			
 		copy(todir:"${basedir}/grails-app") {
-			fileset(dir:"${grailsHome}/src/grails/grails-app")
-		}		 
-			
+			fileset(dir:"${grailsHome}/src/grails/grails-app", excludes:"**/taglib/**, **/utils/**")
+		} 
+		
+		createCorePlugin()   	                                                                                  
+					
 		if(servletVersion != "2.3") {
 			replace(file:"${basedir}/web-app/index.jsp", token:"http://java.sun.com/jstl/core",
 					value:"http://java.sun.com/jsp/jstl/core")
@@ -168,6 +170,18 @@ task( init: "main init task") {
 	}
 }
 
+task(createCorePlugin:"Creates the core plugin and its resources") {
+	Ant.mkdir(dir:"${basedir}/plugins/core/grails-app/taglib")
+	Ant.mkdir(dir:"${basedir}/plugins/core/grails-app/utils")		
+
+	Ant.copy(todir:"${basedir}/plugins/core/grails-app/taglib") {
+			fileset(dir:"${grailsHome}/src/grails/grails-app/taglib", includes:"*")
+	}		                                                                                  
+	Ant.copy(todir:"${basedir}/plugins/core/grails-app/utils") {
+			fileset(dir:"${grailsHome}/src/grails/grails-app/utils", includes:"*")
+    } 
+	println "finished"
+}
 task("default": "Initializes a Grails application. Warning: This task will overwrite artifacts,use the 'upgrade' task for upgrades.") {
 	depends( init )
 }  
