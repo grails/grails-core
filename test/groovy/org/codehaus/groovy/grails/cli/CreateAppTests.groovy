@@ -44,12 +44,12 @@ class CreateAppTests extends AbstractCliTests {
 		assert new File("${appBase}/testapp/grails-app/i18n/messages.properties").exists()
 		assert new File("${appBase}/testapp/grails-app/views/error.gsp").exists()
 		assert new File("${appBase}/testapp/grails-app/views/layouts/main.gsp").exists()
-		assert new File("${appBase}/testapp/grails-app/taglib/ApplicationTagLib.groovy").exists()
-		assert new File("${appBase}/testapp/grails-app/taglib/FormTagLib.groovy").exists()
-		assert new File("${appBase}/testapp/grails-app/taglib/JavascriptTagLib.groovy").exists()
-		assert new File("${appBase}/testapp/grails-app/taglib/RenderTagLib.groovy").exists()
-		assert new File("${appBase}/testapp/grails-app/taglib/UITagLib.groovy").exists()
-		assert new File("${appBase}/testapp/grails-app/taglib/ValidationTagLib.groovy").exists()
+		assert new File("${appBase}/testapp/plugins/core/grails-app/taglib/ApplicationTagLib.groovy").exists()
+		assert new File("${appBase}/testapp/plugins/core/grails-app/taglib/FormTagLib.groovy").exists()
+		assert new File("${appBase}/testapp/plugins/core/grails-app/taglib/JavascriptTagLib.groovy").exists()
+		assert new File("${appBase}/testapp/plugins/core/grails-app/taglib/RenderTagLib.groovy").exists()
+		assert new File("${appBase}/testapp/plugins/core/grails-app/taglib/UITagLib.groovy").exists()
+		assert new File("${appBase}/testapp/plugins/core/grails-app/taglib/ValidationTagLib.groovy").exists()
 		
 	}
 
