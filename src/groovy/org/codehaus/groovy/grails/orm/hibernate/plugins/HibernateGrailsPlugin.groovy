@@ -55,64 +55,70 @@ class HibernateGrailsPlugin {
 				}
 			}
 			def ds = application.grailsDataSource
-			def hibProps = [:]
-			if(ds && ds.loggingSql) {
-				hibProps."hibernate.show_sql" = "true"
-				hibProps."hibernate.format_sql" = "true"
-			}
-			if(ds && ds.dialect) {
-				hibProps."hibernate.dialect" = ds.dialect.name
-			}
-			else {
-				dialectDetector(HibernateDialectDetectorFactoryBean) {
-					dataSource = dataSource					
-					vendorNameDialectMappings = vendorToDialect
-				}
-				hibProps."hibernate.dialect" = dialectDetector
-			}
-			if(!ds) {
-				hibProps."hibernate.hbm2ddl.auto" = "create-drop"
-			}
-			else if(ds.dbCreate) {
-				hibProps."hibernate.hbm2ddl.auto" = ds.dbCreate
-			}
-			
-			hibernateProperties(MapToPropertiesFactoryBean) {
-				map = hibProps
-			}
-			sessionFactory(ConfigurableLocalSessionFactoryBean) {
-				dataSource = dataSource
-				if(application.classLoader.getResource("hibernate.cfg.xml")) {
-					configLocation = "classpath:hibernate.cfg.xml"
-				}
-				if(ds?.configClass) {
-					configClass = ds.configClass
-				}
-				hibernateProperties = hibernateProperties
-				grailsApplication = ref("grailsApplication", true)
-				classLoader = classLoader
-			}
-			transactionManager(HibernateTransactionManager) {
-				sessionFactory = sessionFactory
-			}
-			persistenceInterceptor(HibernatePersistenceContextInterceptor) {
-				sessionFactory = sessionFactory
-			}
-			
-			if(manager?.hasGrailsPlugin("controllers")) {
-				openSessionInViewInterceptor(OpenSessionInViewInterceptor) {
-					flushMode = HibernateAccessor.FLUSH_AUTO
-					sessionFactory = sessionFactory
-				}	
-				grailsUrlHandlerMapping.interceptors << openSessionInViewInterceptor
-			}	
-			
+			if(ds || application.domainClasses.size() > 0) {
+			    println "configuring Hibernate with ds"
+                def hibProps = [:]
+                if(ds && ds.loggingSql) {
+                    hibProps."hibernate.show_sql" = "true"
+                    hibProps."hibernate.format_sql" = "true"
+                }
+                if(ds && ds.dialect) {
+                    hibProps."hibernate.dialect" = ds.dialect.name
+                }
+                else {
+                    dialectDetector(HibernateDialectDetectorFactoryBean) {
+                        dataSource = dataSource
+                        vendorNameDialectMappings = vendorToDialect
+                    }
+                    hibProps."hibernate.dialect" = dialectDetector
+                }
+                if(!ds) {
+                    hibProps."hibernate.hbm2ddl.auto" = "create-drop"
+                }
+                else if(ds.dbCreate) {
+                    hibProps."hibernate.hbm2ddl.auto" = ds.dbCreate
+                }
+
+                hibernateProperties(MapToPropertiesFactoryBean) {
+                    map = hibProps
+                }
+                sessionFactory(ConfigurableLocalSessionFactoryBean) {
+                    dataSource = dataSource
+                    if(application.classLoader.getResource("hibernate.cfg.xml")) {
+                        configLocation = "classpath:hibernate.cfg.xml"
+                    }
+                    if(ds?.configClass) {
+                        configClass = ds.configClass
+                    }
+                    hibernateProperties = hibernateProperties
+                    grailsApplication = ref("grailsApplication", true)
+                    classLoader = classLoader
+                }
+                transactionManager(HibernateTransactionManager) {
+                    sessionFactory = sessionFactory
+                }
+                persistenceInterceptor(HibernatePersistenceContextInterceptor) {
+                    sessionFactory = sessionFactory
+                }
+
+                if(manager?.hasGrailsPlugin("controllers")) {
+                    openSessionInViewInterceptor(OpenSessionInViewInterceptor) {
+                        flushMode = HibernateAccessor.FLUSH_AUTO
+                        sessionFactory = sessionFactory
+                    }
+                    grailsUrlHandlerMapping.interceptors << openSessionInViewInterceptor
+                }
+
+            }
+
 
 	}
 	
 	def doWithApplicationContext = { ctx ->
-        def factory = new PersistentConstraintFactory(ctx.sessionFactory, UniqueConstraint.class)
-        ConstrainedProperty.registerNewConstraint(UniqueConstraint.UNIQUE_CONSTRAINT, factory);			
+	    if(ctx.containsBean('sessionFactory')) {
+            def factory = new PersistentConstraintFactory(ctx.sessionFactory, UniqueConstraint.class)
+            ConstrainedProperty.registerNewConstraint(UniqueConstraint.UNIQUE_CONSTRAINT, factory);
+        }
 	}
 	
 	def onChange = {

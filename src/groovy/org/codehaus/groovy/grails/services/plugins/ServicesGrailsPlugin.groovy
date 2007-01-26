@@ -31,9 +31,10 @@ class ServicesGrailsPlugin {
 	
 	def version = GrailsPluginUtils.getGrailsVersion()
 	def loadAfter = ['hibernate']
+	def influences = ['controllers']
 	                 
     def watchedResources = "**/grails-app/services/*Service.groovy"
-    def influences = ['controllers']
+
 	                 
 	def doWithSpring = {
 		application.grailsServiceClasses.each { serviceClass ->
@@ -42,8 +43,10 @@ class ServicesGrailsPlugin {
 				targetMethod = "getGrailsServiceClass"
 				arguments = serviceClass.fullName
 			}
-						
-			if(serviceClass.transactional) {
+
+			def hasDataSource = (application.grailsDataSource || application.domainClasses.size() > 0)
+            println "services plugin ds $hasDataSource"						
+			if(serviceClass.transactional && hasDataSource) {
 				def props = new Properties()
 				props."*"="PROPAGATION_REQUIRED"
 				"${serviceClass.propertyName}"(TransactionProxyFactoryBean) {

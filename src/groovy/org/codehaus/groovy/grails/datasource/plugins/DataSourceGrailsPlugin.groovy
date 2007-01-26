@@ -34,26 +34,31 @@ class DataSourceGrailsPlugin {
 		
 	def doWithSpring = {
 		def ds = application.grailsDataSource
-		def properties = {
-				driverClassName = ds?.driverClassName ? ds.driverClassName : "org.hsqldb.jdbcDriver"
-				url = ds?.url ? ds.url : "jdbc:hsqldb:mem:grailsDB"
-				username = ds?.username ? ds.username : "sa"
-				password = ds?.password ? ds.password : ""
-		}		
-		if(ds && !parentCtx?.containsBean("dataSource")) {			
-			log.info("[RuntimeConfiguration] Configuring for environment: ${ds.name}");
-			if(ds.pooled) {
-				def bean = dataSource(BasicDataSource, properties)
-				bean.destroyMethod = "close"
-			}
-			else {
-				dataSource(DriverManagerDataSource, properties)
-			}
-		}
-		else if(!parentCtx?.containsBean("dataSource")) {
-			def bean = dataSource(BasicDataSource, properties)
-			bean.destroyMethod = "close"			
-		}		
+		if(ds || application.domainClasses.size() > 0) {
+            def properties = {
+                    driverClassName = ds?.driverClassName ? ds.driverClassName : "org.hsqldb.jdbcDriver"
+                    url = ds?.url ? ds.url : "jdbc:hsqldb:mem:grailsDB"
+                    username = ds?.username ? ds.username : "sa"
+                    password = ds?.password ? ds.password : ""
+            }
+            if(ds && !parentCtx?.containsBean("dataSource")) {
+                log.info("[RuntimeConfiguration] Configuring for environment: ${ds.name}");
+                if(ds.pooled) {
+                    def bean = dataSource(BasicDataSource, properties)
+                    bean.destroyMethod = "close"
+                }
+                else {
+                    dataSource(DriverManagerDataSource, properties)
+                }
+            }
+            else if(!parentCtx?.containsBean("dataSource")) {
+                def bean = dataSource(BasicDataSource, properties)
+                bean.destroyMethod = "close"
+            }				
+        }
+        else {
+            log.info "No data source or domain classes found. Data source configuration skipped"
+        }
 	}
 		
 	def onChange = {
