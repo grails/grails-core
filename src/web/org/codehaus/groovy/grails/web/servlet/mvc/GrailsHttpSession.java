@@ -45,146 +45,186 @@ public class GrailsHttpSession implements
 	 * @see javax.servlet.http.HttpSession#getAttribute(java.lang.String)
 	 */
 	public Object getAttribute(String name) {
-		return adaptee.getAttribute(name);
-	}
+		synchronized (adaptee) {
+            return adaptee.getAttribute(name);
+        }
+    }
 
 	/* (non-Javadoc)
 	 * @see javax.servlet.http.HttpSession#getAttributeNames()
 	 */
 	public Enumeration getAttributeNames() {
-		return adaptee.getAttributeNames();
-	}
+        synchronized (adaptee) {
+    		return adaptee.getAttributeNames();
+        }
+    }
 
 	/* (non-Javadoc)
 	 * @see javax.servlet.http.HttpSession#getCreationTime()
 	 */
 	public long getCreationTime() {
-		return adaptee.getCreationTime();
-	}
+        synchronized (adaptee) {
+    		return adaptee.getCreationTime();
+        }
+    }
 
 	/* (non-Javadoc)
 	 * @see javax.servlet.http.HttpSession#getId()
 	 */
 	public String getId() {
-		return adaptee.getId();
-	}
+        synchronized (adaptee) {
+    		return adaptee.getId();
+        }
+    }
 
 	/* (non-Javadoc)
 	 * @see javax.servlet.http.HttpSession#getLastAccessedTime()
 	 */
 	public long getLastAccessedTime() {
-		return adaptee.getLastAccessedTime();
-	}
+        synchronized (adaptee) {
+    		return adaptee.getLastAccessedTime();
+        }
+    }
 
 	/* (non-Javadoc)
 	 * @see javax.servlet.http.HttpSession#getMaxInactiveInterval()
 	 */
 	public int getMaxInactiveInterval() {
-		return adaptee.getMaxInactiveInterval();
-	}
+        synchronized (adaptee) {
+    		return adaptee.getMaxInactiveInterval();
+        }
+    }
 
 	/* (non-Javadoc)
 	 * @see javax.servlet.http.HttpSession#getServletContext()
 	 */
 	public ServletContext getServletContext() {
-		return adaptee.getServletContext();
-	}
+        synchronized (adaptee) {
+    		return adaptee.getServletContext();
+        }
+    }
 
 	/* (non-Javadoc)
 	 * @see javax.servlet.http.HttpSession#getSessionContext()
 	 */
 	public HttpSessionContext getSessionContext() {
-		return adaptee.getSessionContext();
-	}
+        synchronized (adaptee) {
+    		return adaptee.getSessionContext();
+        }
+    }
 
 	/* (non-Javadoc)
 	 * @see javax.servlet.http.HttpSession#getValue(java.lang.String)
 	 */
 	public Object getValue(String name) {
-		return adaptee.getAttribute(name);
-	}
+        synchronized (adaptee) {
+    		return adaptee.getAttribute(name);
+        }
+    }
 
 	/* (non-Javadoc)
 	 * @see javax.servlet.http.HttpSession#getValueNames()
 	 */
 	public String[] getValueNames() {
-		return adaptee.getValueNames();
-	}
+        synchronized (adaptee) {
+    		return adaptee.getValueNames();
+        }
+    }
 
 	/* (non-Javadoc)
 	 * @see javax.servlet.http.HttpSession#invalidate()
 	 */
 	public void invalidate() {
-		adaptee.invalidate();
-	}
+        synchronized (adaptee) {
+    		adaptee.invalidate();
+        }
+    }
 
 	/* (non-Javadoc)
 	 * @see javax.servlet.http.HttpSession#isNew()
 	 */
 	public boolean isNew() {
-		return adaptee.isNew();
-	}
+        synchronized (adaptee) {
+    		return adaptee.isNew();
+        }
+    }
 
 	/* (non-Javadoc)
 	 * @see javax.servlet.http.HttpSession#putValue(java.lang.String, java.lang.Object)
 	 */
 	public void putValue(String name, Object value) {
-		adaptee.setAttribute(name, value);
-	}
+        synchronized (adaptee) {
+    		adaptee.setAttribute(name, value);
+        }
+    }
 
 	/* (non-Javadoc)
 	 * @see javax.servlet.http.HttpSession#removeAttribute(java.lang.String)
 	 */
 	public void removeAttribute(String name) {
-		adaptee.removeAttribute(name);
-	}
+        synchronized (adaptee) {
+    		adaptee.removeAttribute(name);
+        }
+    }
 
 	/* (non-Javadoc)
 	 * @see javax.servlet.http.HttpSession#removeValue(java.lang.String)
 	 */
 	public void removeValue(String name) {
-		adaptee.removeAttribute(name);
-	}
+        synchronized (adaptee) {
+    		adaptee.removeAttribute(name);
+        }
+    }
 
 	/* (non-Javadoc)
 	 * @see javax.servlet.http.HttpSession#setAttribute(java.lang.String, java.lang.Object)
 	 */
 	public void setAttribute(String name, Object value) {
-		adaptee.setAttribute(name, value);
-	}
+        synchronized (adaptee) {
+    		adaptee.setAttribute(name, value);
+        }
+    }
 
 	/* (non-Javadoc)
 	 * @see javax.servlet.http.HttpSession#setMaxInactiveInterval(int)
 	 */
 	public void setMaxInactiveInterval(int arg0) {
-		adaptee.setMaxInactiveInterval(arg0);
-	}
+        synchronized (adaptee) {
+    		adaptee.setMaxInactiveInterval(arg0);
+        }
+    }
 
 	/* (non-Javadoc)
 	 * @see java.util.Map#clear()
 	 */
 	public void clear() {
-		adaptee.invalidate();
-	}
+        synchronized (adaptee) {
+    		adaptee.invalidate();
+        }
+    }
 
 	/* (non-Javadoc)
 	 * @see java.util.Map#containsKey(java.lang.Object)
 	 */
 	public boolean containsKey(Object key) {
 		if(key == null)return false;
-		return adaptee.getAttribute(key.toString()) != null;
-	}
+        synchronized (adaptee) {
+    		return adaptee.getAttribute(key.toString()) != null;
+        }
+    }
 
 	/* (non-Javadoc)
 	 * @see java.util.Map#containsValue(java.lang.Object)
 	 */
 	public boolean containsValue(Object value) {
-		for (Enumeration e = getAttributeNames(); e.hasMoreElements();) {
-			if(getAttribute(e.nextElement().toString()).equals(value))
-				return true;
-			
-		}
-		return false;
+        synchronized (adaptee) {
+            for (Enumeration e = getAttributeNames(); e.hasMoreElements();) {
+                if(getAttribute(e.nextElement().toString()).equals(value))
+                    return true;
+
+            }
+        }
+        return false;
 	}
 
 	/* (non-Javadoc)
@@ -199,15 +239,19 @@ public class GrailsHttpSession implements
 	 */
 	public Object get(Object key) {
 		if(key == null)return null;
-		return getAttribute(key.toString());
-	}
+        synchronized (adaptee) {
+    		return getAttribute(key.toString());
+        }
+    }
 
 	/* (non-Javadoc)
 	 * @see java.util.Map#isEmpty()
 	 */
 	public boolean isEmpty() {
-		return !getAttributeNames().hasMoreElements();
-	}
+        synchronized (adaptee) {
+    		return !getAttributeNames().hasMoreElements();
+        }
+    }
 
 	/* (non-Javadoc)
 	 * @see java.util.Map#keySet()
@@ -220,8 +264,10 @@ public class GrailsHttpSession implements
 	 * @see java.util.Map#put(java.lang.Object, java.lang.Object)
 	 */
 	public Object put(Object key, Object value) {
-		setAttribute(key.toString(), value);
-		return value;
+        synchronized (adaptee) {
+    		setAttribute(key.toString(), value);
+        }
+        return value;
 	}
 
 	/* (non-Javadoc)
@@ -229,14 +275,16 @@ public class GrailsHttpSession implements
 	 */
 	public void putAll(Map t) {
 		if(t!=null) {
-			for (Iterator i = t.keySet().iterator(); i.hasNext();) {
-				Object key = i.next();
-				String name = key.toString();
-				
-				setAttribute(name, t.get(key));
-				
-			}
-		}
+            synchronized (adaptee) {
+                for (Iterator i = t.keySet().iterator(); i.hasNext();) {
+                    Object key = i.next();
+                    String name = key.toString();
+
+                    setAttribute(name, t.get(key));
+
+                }
+            }
+        }
 	}
 
 	/* (non-Javadoc)
@@ -245,9 +293,13 @@ public class GrailsHttpSession implements
 	public Object remove(Object key) {
 		if(key == null)return null;
 		
-		Object obj = getAttribute(key.toString());
-		removeAttribute(key.toString());
-		return obj;
+        Object obj;
+        synchronized (adaptee) {
+    		obj = getAttribute(key.toString());
+	    	removeAttribute(key.toString());
+        }
+
+        return obj;
 	}
 
 	/* (non-Javadoc)
