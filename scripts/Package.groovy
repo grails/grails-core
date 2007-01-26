@@ -67,7 +67,7 @@ task( packageApp : "Implementation of package task") {
 		}
 	}           
 	def logFile = "${basedir}/grails-app/conf/log4j.${grailsEnv}.properties"
-	def logDest = "${basedir}/web-app/WEB-INF/log4j.properties"
+	def logDest = "${basedir}/web-app/WEB-INF/classes/log4j.properties"
 	if(new File(logFile).exists()) {
 		Ant.copy(file:logFile, tofile:logDest)
 	}
