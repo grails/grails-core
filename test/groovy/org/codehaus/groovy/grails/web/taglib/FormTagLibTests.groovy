@@ -36,8 +36,21 @@ public class FormTagLibTests extends AbstractGrailsTagTests {
     private static final Collection DATE_PRECISIONS_INCLUDING_MINUTE = Collections.unmodifiableCollection(Arrays.asList( ["minute", null] as String[] ))
     private static final Collection DATE_PRECISIONS_INCLUDING_HOUR = Collections.unmodifiableCollection(Arrays.asList(["hour", "minute",null] as String[] ))
     private static final Collection DATE_PRECISIONS_INCLUDING_DAY = Collections.unmodifiableCollection(Arrays.asList(["day", "hour", "minute", null] as String[] ))
-    private static final Collection DATE_PRECISIONS_INCLUDING_MONTH = Collections.unmodifiableCollection(Arrays.asList(["month", "day", "hour", "minute", null] as String[]
-                                                                                                                                                                          ))
+    private static final Collection DATE_PRECISIONS_INCLUDING_MONTH = Collections.unmodifiableCollection(Arrays.asList(["month", "day", "hour", "minute", null] as String[] ))
+
+    void testFormWithURL() {
+    	final StringWriter sw = new StringWriter();
+    	final PrintWriter pw = new PrintWriter(sw);
+
+    	withTag("form", pw) { tag ->
+    	    // use sorted map to be able to predict the order in which tag attributes are generated
+	    	def attributes = new TreeMap([url:[controller:'con', action:'action'], id:'formElementId'])
+    	    tag.call(attributes, { })
+    	    println sw.toString()
+    	    assertEquals '<form action="/con/action" method="post" id="formElementId" ></form>', sw.toString().trim()
+    	}
+    }
+
     public void testHtmlEscapingTextAreaTag() {
     	final StringWriter sw = new StringWriter();
     	final PrintWriter pw = new PrintWriter(sw);
