@@ -1,16 +1,14 @@
 package org.codehaus.groovy.grails.plugins.support;
 
+import grails.util.GrailsUtil
 
 class GrailsPluginUtils {
 
 	static grailsVersion = null
 	static getGrailsVersion() {
 		if(grailsVersion)return grailsVersion
-		def ant = new AntBuilder()
-	    ant.property(environment:"env")   
-		def grailsHome = ant.antProject.properties."env.GRAILS_HOME"
-		ant.property(file:"${grailsHome}/build.properties")	
-		def grailsVersion =  ant.antProject.properties.'grails.version'
+
+		grailsVersion = GrailsUtil.getGrailsVersion()
 		if(!grailsVersion)return 0.1
 		if(grailsVersion.endsWith("-SNAPSHOT"))
 			grailsVersion = grailsVersion[0..-10].toBigDecimal()

@@ -21,14 +21,20 @@ import org.codehaus.groovy.grails.commons.ApplicationAttributes;
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator;
+import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.mock.web.MockServletContext;
 import org.springframework.util.Assert;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+import org.springframework.core.io.Resource;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.jar.Manifest;
+import java.util.jar.Attributes;
+import java.io.IOException;
 
 /**
  * 
@@ -45,13 +51,48 @@ import java.util.Map;
 public class GrailsUtil {
 
 	private static final Log LOG  = LogFactory.getLog(GrailsUtil.class);
+    private static final String GRAILS_IMPLEMENTATION_TITLE = "Grails";
+    private static final String GRAILS_VERSION;
+
+    static {
+        PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
+
+        try {
+            Resource[] manifests = resolver.getResources("classpath*:META-INF/GRAILS-MANIFEST.MF");
+            Manifest grailsManifest = null;
+            for (int i = 0; i < manifests.length; i++) {
+                Resource r = manifests[i];
+                Manifest mf = new Manifest(r.getInputStream());
+                String implTitle = mf.getMainAttributes().getValue(Attributes.Name.IMPLEMENTATION_TITLE);
+                if(!StringUtils.isBlank(implTitle) && implTitle.equals(GRAILS_IMPLEMENTATION_TITLE))   {
+                    grailsManifest = mf;
+                    break;
+                }
+            }
+            String version = null;
+            if(grailsManifest != null) {
+                version = grailsManifest.getMainAttributes().getValue(Attributes.Name.IMPLEMENTATION_VERSION);
+            }
+
+            if(!StringUtils.isBlank(version)) {
+                GRAILS_VERSION = version;
+            }
+            else {
+                GRAILS_VERSION = null;
+                throw new GrailsConfigurationException("Unable to read Grails version from MANIFEST.MF. Are you sure it the grails-core jar is on the classpath? " );
+            }
+        } catch (IOException e) {
+            throw new GrailsConfigurationException("Unable to read Grails version from MANIFEST.MF. Are you sure it the grails-core jar is on the classpath? " + e.getMessage(), e);
+        }
 
 
+    }
     private static Map envNameMappings = new HashMap() {{
         put("dev", GrailsApplication.ENV_DEVELOPMENT);
         put("prod", GrailsApplication.ENV_PRODUCTION);
         put("test", GrailsApplication.ENV_TEST);
     }};
+
 
     public static ApplicationContext bootstrapGrailsFromClassPath() {
 		LOG.info("Loading Grails environment");
@@ -94,5 +135,10 @@ public class GrailsUtil {
      */
     public static boolean isDevelopmentEnv() {
         return GrailsApplication.ENV_DEVELOPMENT.equals(GrailsUtil.getEnvironment());
+    }
+
+
+    public static String getGrailsVersion() {
+        return GRAILS_VERSION;
     }
 }

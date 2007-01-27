@@ -59,7 +59,9 @@
 		      <pathelement path="${grails.build}/crud"/>			      							
    		    </classpath>  
    			<classpath refid="classpath"/>    
-   		</groovyc>		
+   		</groovyc>
+
+
 	
         <groovyc destdir="${grails.build}/web" includes="**/web/**" >
    			<src path="${grails.src.groovy}"/>
@@ -94,18 +96,38 @@
    			<classpath refid="classpath"/>    
    		</groovyc>		
    	
-	
-   	
-		<copy todir="${grails.build}/core">
+
+        <mkdir dir="${grails.build}/core/META-INF"  />
+        <manifest file="${grails.build}/core/META-INF/MANIFEST.MF">
+          <attribute name="Built-By" value="${user.name}"/>
+          <attribute name="Implementation-Title" value="Grails"/>
+          <attribute name="Implementation-Version" value="${grails.version}"/>
+          <attribute name="Implementation-Vendor" value="grails.org"/>
+        </manifest>
+
+        <copy file="${grails.build}/core/META-INF/MANIFEST.MF" tofile="${grails.build}/core/META-INF/GRAILS-MANIFEST.MF" />
+        <copy todir="${grails.build}/core">
 			<fileset dir="${grails.src.commons}" excludes="**/*.java" />
 		</copy>
-		<copy todir="${grails.build}/web">
+
+        <mkdir dir="${grails.build}/web/META-INF/" />
+        <copy file="${grails.build}/core/META-INF/MANIFEST.MF" tofile="${grails.build}/web/META-INF/MANIFEST.MF" />
+
+        <copy todir="${grails.build}/web">
 			<fileset dir="${grails.src.web}" excludes="**/*.java" />
 		</copy>
-		<copy todir="${grails.build}/gorm">
+
+        <mkdir dir="${grails.build}/gorm/META-INF/" />
+        <copy file="${grails.build}/core/META-INF/MANIFEST.MF" tofile="${grails.build}/gorm/META-INF/MANIFEST.MF" />
+
+        <copy todir="${grails.build}/gorm">
 			<fileset dir="${grails.src.persistence}" excludes="**/*.java"/>
 		</copy>
-		<copy todir="${grails.build}/crud">
+
+        <mkdir dir="${grails.build}/crud/META-INF/" />
+        <copy file="${grails.build}/core/META-INF/MANIFEST.MF" tofile="${grails.build}/crud/META-INF/MANIFEST.MF" />
+
+        <copy todir="${grails.build}/crud">
 			<fileset dir="${grails.src.scaffolding}" excludes="**/*.java"/>
 		</copy>
 		
