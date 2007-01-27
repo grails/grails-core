@@ -45,12 +45,6 @@ class MaxConstraint extends AbstractConstraint {
      * @see org.codehaus.groovy.grails.validation.Constraint#supports(java.lang.Class)
      */
     public boolean supports(Class type) {
-    	System.out.println("type=" + type);
-    	Map m = GrailsClassUtils.PRIMITIVE_TYPE_COMPATIBLE_CLASSES;
-    	System.out.println("m=" + m);
-    	Class c = (Class)GrailsClassUtils.PRIMITIVE_TYPE_COMPATIBLE_CLASSES.get(type);
-    	System.out.println("c=" + c);
-    	
         return type != null && (Comparable.class.isAssignableFrom(type) ||
         		GrailsClassUtils.isAssignableOrConvertibleFrom(Number.class, type));
     }
