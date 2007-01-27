@@ -947,4 +947,33 @@ public class GrailsClassUtils {
 		return mc;
 	}	
 	
+    /**
+     * Returns true if the specified clazz parameter is either the same as, or is a superclass or superinterface 
+     * of, the specified type parameter. Converts primitive types to compatible class automatically.
+     * 
+     * @param clazz
+     * @param type
+     * @return True if the class is a taglib
+     * @see java.lang.Class#isAssignableFrom(Class)
+     */
+    public static boolean isAssignableOrConvertibleFrom(Class clazz, Class type) {
+    	if (type == null || clazz == null) {
+    		return false;
+    	}
+    	else if (type.isPrimitive()) {
+    		// convert primitive type to compatible class 
+    		Class primitiveClass = (Class)GrailsClassUtils.PRIMITIVE_TYPE_COMPATIBLE_CLASSES.get(type);
+    		if (primitiveClass == null) {
+    			// no compatible class found for primitive type
+    			return false;
+    		}
+    		else {
+    			return clazz.isAssignableFrom(primitiveClass);
+    		}
+    	}
+    	else {
+    		return clazz.isAssignableFrom(type);
+    	}
+    }
+	
 }

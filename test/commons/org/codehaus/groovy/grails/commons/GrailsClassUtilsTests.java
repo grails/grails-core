@@ -278,4 +278,138 @@ public class GrailsClassUtilsTests extends TestCase {
     	assertEquals("GrailsClassUtilsTests", GrailsClassUtils.getNameFromScript("grails-class-utils-tests"));
     	assertEquals("Grails", GrailsClassUtils.getNameFromScript("grails"));
     }
+    
+    public void testIsAssignableOrConvertibleFrom() {
+    	
+    	// test number
+    	assertTrue(GrailsClassUtils.isAssignableOrConvertibleFrom(Number.class, int.class));
+    	assertTrue(GrailsClassUtils.isAssignableOrConvertibleFrom(Number.class, Integer.class));
+    	assertTrue(GrailsClassUtils.isAssignableOrConvertibleFrom(Number.class, short.class));
+    	assertTrue(GrailsClassUtils.isAssignableOrConvertibleFrom(Number.class, Short.class));
+    	assertTrue(GrailsClassUtils.isAssignableOrConvertibleFrom(Number.class, byte.class));
+    	assertTrue(GrailsClassUtils.isAssignableOrConvertibleFrom(Number.class, Byte.class));
+    	assertTrue(GrailsClassUtils.isAssignableOrConvertibleFrom(Number.class, long.class));
+    	assertTrue(GrailsClassUtils.isAssignableOrConvertibleFrom(Number.class, Long.class));
+    	assertTrue(GrailsClassUtils.isAssignableOrConvertibleFrom(Number.class, float.class));
+    	assertTrue(GrailsClassUtils.isAssignableOrConvertibleFrom(Number.class, Float.class));
+    	assertTrue(GrailsClassUtils.isAssignableOrConvertibleFrom(Number.class, double.class));
+    	assertTrue(GrailsClassUtils.isAssignableOrConvertibleFrom(Number.class, Double.class));
+    	
+    	// test integer
+    	assertTrue(GrailsClassUtils.isAssignableOrConvertibleFrom(Integer.class, int.class));
+    	assertTrue(GrailsClassUtils.isAssignableOrConvertibleFrom(Integer.class, Integer.class));
+    	assertFalse(GrailsClassUtils.isAssignableOrConvertibleFrom(Integer.class, short.class));
+    	assertFalse(GrailsClassUtils.isAssignableOrConvertibleFrom(Integer.class, Short.class));
+    	assertFalse(GrailsClassUtils.isAssignableOrConvertibleFrom(Integer.class, byte.class));
+    	assertFalse(GrailsClassUtils.isAssignableOrConvertibleFrom(Integer.class, Byte.class));
+    	assertFalse(GrailsClassUtils.isAssignableOrConvertibleFrom(Integer.class, long.class));
+    	assertFalse(GrailsClassUtils.isAssignableOrConvertibleFrom(Integer.class, Long.class));
+    	assertFalse(GrailsClassUtils.isAssignableOrConvertibleFrom(Integer.class, float.class));
+    	assertFalse(GrailsClassUtils.isAssignableOrConvertibleFrom(Integer.class, Float.class));
+    	assertFalse(GrailsClassUtils.isAssignableOrConvertibleFrom(Integer.class, double.class));
+    	assertFalse(GrailsClassUtils.isAssignableOrConvertibleFrom(Integer.class, Double.class));
+    	
+    	// test short
+    	assertFalse(GrailsClassUtils.isAssignableOrConvertibleFrom(Short.class, int.class));
+    	assertFalse(GrailsClassUtils.isAssignableOrConvertibleFrom(Short.class, Integer.class));
+    	assertTrue(GrailsClassUtils.isAssignableOrConvertibleFrom(Short.class, short.class));
+    	assertTrue(GrailsClassUtils.isAssignableOrConvertibleFrom(Short.class, Short.class));
+    	assertFalse(GrailsClassUtils.isAssignableOrConvertibleFrom(Short.class, byte.class));
+    	assertFalse(GrailsClassUtils.isAssignableOrConvertibleFrom(Short.class, Byte.class));
+    	assertFalse(GrailsClassUtils.isAssignableOrConvertibleFrom(Short.class, long.class));
+    	assertFalse(GrailsClassUtils.isAssignableOrConvertibleFrom(Short.class, Long.class));
+    	assertFalse(GrailsClassUtils.isAssignableOrConvertibleFrom(Short.class, float.class));
+    	assertFalse(GrailsClassUtils.isAssignableOrConvertibleFrom(Short.class, Float.class));
+    	assertFalse(GrailsClassUtils.isAssignableOrConvertibleFrom(Short.class, double.class));
+    	assertFalse(GrailsClassUtils.isAssignableOrConvertibleFrom(Short.class, Double.class));
+    	
+    	// test byte
+    	assertFalse(GrailsClassUtils.isAssignableOrConvertibleFrom(Byte.class, int.class));
+    	assertFalse(GrailsClassUtils.isAssignableOrConvertibleFrom(Byte.class, Integer.class));
+    	assertFalse(GrailsClassUtils.isAssignableOrConvertibleFrom(Byte.class, short.class));
+    	assertFalse(GrailsClassUtils.isAssignableOrConvertibleFrom(Byte.class, Short.class));
+    	assertTrue(GrailsClassUtils.isAssignableOrConvertibleFrom(Byte.class, byte.class));
+    	assertTrue(GrailsClassUtils.isAssignableOrConvertibleFrom(Byte.class, Byte.class));
+    	assertFalse(GrailsClassUtils.isAssignableOrConvertibleFrom(Byte.class, long.class));
+    	assertFalse(GrailsClassUtils.isAssignableOrConvertibleFrom(Byte.class, Long.class));
+    	assertFalse(GrailsClassUtils.isAssignableOrConvertibleFrom(Byte.class, float.class));
+    	assertFalse(GrailsClassUtils.isAssignableOrConvertibleFrom(Byte.class, Float.class));
+    	assertFalse(GrailsClassUtils.isAssignableOrConvertibleFrom(Byte.class, double.class));
+    	assertFalse(GrailsClassUtils.isAssignableOrConvertibleFrom(Byte.class, Double.class));
+    	
+    	// test long
+    	assertFalse(GrailsClassUtils.isAssignableOrConvertibleFrom(Long.class, int.class));
+    	assertFalse(GrailsClassUtils.isAssignableOrConvertibleFrom(Long.class, Integer.class));
+    	assertFalse(GrailsClassUtils.isAssignableOrConvertibleFrom(Long.class, short.class));
+    	assertFalse(GrailsClassUtils.isAssignableOrConvertibleFrom(Long.class, Short.class));
+    	assertFalse(GrailsClassUtils.isAssignableOrConvertibleFrom(Long.class, byte.class));
+    	assertFalse(GrailsClassUtils.isAssignableOrConvertibleFrom(Long.class, Byte.class));
+    	assertTrue(GrailsClassUtils.isAssignableOrConvertibleFrom(Long.class, long.class));
+    	assertTrue(GrailsClassUtils.isAssignableOrConvertibleFrom(Long.class, Long.class));
+    	assertFalse(GrailsClassUtils.isAssignableOrConvertibleFrom(Long.class, float.class));
+    	assertFalse(GrailsClassUtils.isAssignableOrConvertibleFrom(Long.class, Float.class));
+    	assertFalse(GrailsClassUtils.isAssignableOrConvertibleFrom(Long.class, double.class));
+    	assertFalse(GrailsClassUtils.isAssignableOrConvertibleFrom(Long.class, Double.class));
+    	
+    	// test float
+    	assertFalse(GrailsClassUtils.isAssignableOrConvertibleFrom(Float.class, int.class));
+    	assertFalse(GrailsClassUtils.isAssignableOrConvertibleFrom(Float.class, Integer.class));
+    	assertFalse(GrailsClassUtils.isAssignableOrConvertibleFrom(Float.class, short.class));
+    	assertFalse(GrailsClassUtils.isAssignableOrConvertibleFrom(Float.class, Short.class));
+    	assertFalse(GrailsClassUtils.isAssignableOrConvertibleFrom(Float.class, byte.class));
+    	assertFalse(GrailsClassUtils.isAssignableOrConvertibleFrom(Float.class, Byte.class));
+    	assertFalse(GrailsClassUtils.isAssignableOrConvertibleFrom(Float.class, long.class));
+    	assertFalse(GrailsClassUtils.isAssignableOrConvertibleFrom(Float.class, Long.class));
+    	assertTrue(GrailsClassUtils.isAssignableOrConvertibleFrom(Float.class, float.class));
+    	assertTrue(GrailsClassUtils.isAssignableOrConvertibleFrom(Float.class, Float.class));
+    	assertFalse(GrailsClassUtils.isAssignableOrConvertibleFrom(Float.class, double.class));
+    	assertFalse(GrailsClassUtils.isAssignableOrConvertibleFrom(Float.class, Double.class));
+    	
+    	// test double
+    	assertFalse(GrailsClassUtils.isAssignableOrConvertibleFrom(Double.class, int.class));
+    	assertFalse(GrailsClassUtils.isAssignableOrConvertibleFrom(Double.class, Integer.class));
+    	assertFalse(GrailsClassUtils.isAssignableOrConvertibleFrom(Double.class, short.class));
+    	assertFalse(GrailsClassUtils.isAssignableOrConvertibleFrom(Double.class, Short.class));
+    	assertFalse(GrailsClassUtils.isAssignableOrConvertibleFrom(Double.class, byte.class));
+    	assertFalse(GrailsClassUtils.isAssignableOrConvertibleFrom(Double.class, Byte.class));
+    	assertFalse(GrailsClassUtils.isAssignableOrConvertibleFrom(Double.class, long.class));
+    	assertFalse(GrailsClassUtils.isAssignableOrConvertibleFrom(Double.class, Long.class));
+    	assertFalse(GrailsClassUtils.isAssignableOrConvertibleFrom(Double.class, float.class));
+    	assertFalse(GrailsClassUtils.isAssignableOrConvertibleFrom(Double.class, Float.class));
+    	assertTrue(GrailsClassUtils.isAssignableOrConvertibleFrom(Double.class, double.class));
+    	assertTrue(GrailsClassUtils.isAssignableOrConvertibleFrom(Double.class, Double.class));
+    	
+    	// test boolean
+    	assertTrue(GrailsClassUtils.isAssignableOrConvertibleFrom(Boolean.class, boolean.class));
+    	assertTrue(GrailsClassUtils.isAssignableOrConvertibleFrom(Boolean.class, Boolean.class));
+    	
+    	// test character
+    	assertTrue(GrailsClassUtils.isAssignableOrConvertibleFrom(Character.class, char.class));
+    	assertTrue(GrailsClassUtils.isAssignableOrConvertibleFrom(Character.class, Character.class));
+    	
+    	// test object
+    	assertTrue(GrailsClassUtils.isAssignableOrConvertibleFrom(Object.class, int.class));
+    	assertTrue(GrailsClassUtils.isAssignableOrConvertibleFrom(Object.class, Integer.class));
+    	assertTrue(GrailsClassUtils.isAssignableOrConvertibleFrom(Object.class, short.class));
+    	assertTrue(GrailsClassUtils.isAssignableOrConvertibleFrom(Object.class, Short.class));
+    	assertTrue(GrailsClassUtils.isAssignableOrConvertibleFrom(Object.class, byte.class));
+    	assertTrue(GrailsClassUtils.isAssignableOrConvertibleFrom(Object.class, Byte.class));
+    	assertTrue(GrailsClassUtils.isAssignableOrConvertibleFrom(Object.class, long.class));
+    	assertTrue(GrailsClassUtils.isAssignableOrConvertibleFrom(Object.class, Long.class));
+    	assertTrue(GrailsClassUtils.isAssignableOrConvertibleFrom(Object.class, float.class));
+    	assertTrue(GrailsClassUtils.isAssignableOrConvertibleFrom(Object.class, Float.class));
+    	assertTrue(GrailsClassUtils.isAssignableOrConvertibleFrom(Object.class, double.class));
+    	assertTrue(GrailsClassUtils.isAssignableOrConvertibleFrom(Object.class, Double.class));
+    	assertTrue(GrailsClassUtils.isAssignableOrConvertibleFrom(Object.class, boolean.class));
+    	assertTrue(GrailsClassUtils.isAssignableOrConvertibleFrom(Object.class, Boolean.class));
+    	assertTrue(GrailsClassUtils.isAssignableOrConvertibleFrom(Object.class, char.class));
+    	assertTrue(GrailsClassUtils.isAssignableOrConvertibleFrom(Object.class, Character.class));
+    	
+    	// test null
+    	assertFalse(GrailsClassUtils.isAssignableOrConvertibleFrom(null, null));
+    	assertFalse(GrailsClassUtils.isAssignableOrConvertibleFrom(Integer.class, null));
+    	assertFalse(GrailsClassUtils.isAssignableOrConvertibleFrom(null, int.class));
+    	
+    }
+    
 }
