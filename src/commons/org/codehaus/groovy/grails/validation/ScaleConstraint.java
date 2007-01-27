@@ -14,11 +14,12 @@
  */
 package org.codehaus.groovy.grails.validation;
 
-import org.springframework.validation.Errors;
+import java.math.BigDecimal;
+
+import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
-
-import java.math.BigDecimal;
+import org.springframework.validation.Errors;
 
 /**
  * A constraint to manage the scale for floating point numbers (i.e., the
@@ -56,14 +57,9 @@ class ScaleConstraint extends AbstractConstraint {
      * @see org.codehaus.groovy.grails.validation.Constraint#supports(java.lang.Class)
      */
     public boolean supports(Class type) {
-        boolean isSupported = false;
-
-        if (type != null) {
-            isSupported = Float.class.isAssignableFrom(type) || Double.class.isAssignableFrom(type)
-                    || BigDecimal.class.isAssignableFrom(type);
-        }
-
-        return isSupported;
+        return type != null && (BigDecimal.class.isAssignableFrom(type) ||
+        		GrailsClassUtils.isAssignableOrConvertibleFrom(Float.class, type) ||
+        		GrailsClassUtils.isAssignableOrConvertibleFrom(Double.class, type));
     }
 
     /*

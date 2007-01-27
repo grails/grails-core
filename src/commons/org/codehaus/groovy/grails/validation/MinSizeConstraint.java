@@ -14,6 +14,7 @@
  */
 package org.codehaus.groovy.grails.validation;
 
+import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.springframework.validation.Errors;
 
 import java.util.Collection;
@@ -60,13 +61,11 @@ class MinSizeConstraint extends AbstractConstraint {
        * @see org.codehaus.groovy.grails.validation.Constraint#supports(java.lang.Class)
        */
     public boolean supports(Class type) {
-        if(type == null)
-            return false;
-
-        return Comparable.class.isAssignableFrom(type) ||
-                Number.class.isAssignableFrom(type) ||
+        return type != null && (Comparable.class.isAssignableFrom(type) ||
+        		GrailsClassUtils.isAssignableOrConvertibleFrom(Number.class, type) ||
                 Collection.class.isAssignableFrom(type) ||
-                type.isArray();
+                type.isArray());
+        
     }
 
     protected void processValidate(Object target, Object propertyValue, Errors errors) {

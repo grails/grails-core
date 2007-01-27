@@ -14,6 +14,7 @@
  */
 package org.codehaus.groovy.grails.validation;
 
+import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.springframework.validation.Errors;
 
 /**
@@ -44,8 +45,7 @@ class MinConstraint extends AbstractConstraint {
      */
     public boolean supports(Class type) {
         return type != null && (Comparable.class.isAssignableFrom(type) ||
-                Number.class.isAssignableFrom(type));
-
+        		GrailsClassUtils.isAssignableOrConvertibleFrom(Number.class, type));
     }
 
 

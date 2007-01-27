@@ -15,6 +15,8 @@
 package org.codehaus.groovy.grails.validation;
 
 import groovy.lang.Range;
+
+import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.springframework.validation.Errors;
 
 /**
@@ -41,8 +43,7 @@ class RangeConstraint extends AbstractConstraint {
      */
     public boolean supports(Class type) {
         return type != null && (Comparable.class.isAssignableFrom(type) ||
-                Number.class.isAssignableFrom(type));
-
+        		GrailsClassUtils.isAssignableOrConvertibleFrom(Number.class, type));
     }
 
 

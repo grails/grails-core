@@ -19,6 +19,7 @@ import groovy.lang.IntRange;
 import java.util.Collection;
 import java.lang.reflect.Array;
 
+import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.springframework.validation.Errors;
 
 /**
@@ -50,10 +51,10 @@ class SizeConstraint extends AbstractConstraint {
      */
     public boolean supports(Class type) {
         return type != null && (Comparable.class.isAssignableFrom(type) ||
-                Number.class.isAssignableFrom(type) ||
+        		GrailsClassUtils.isAssignableOrConvertibleFrom(Number.class, type) ||
                 Collection.class.isAssignableFrom(type) ||
                 type.isArray());
-
+        
     }
 
 
