@@ -29,7 +29,7 @@ import org.springframework.context.support.ReloadableResourceBundleMessageSource
 class I18nGrailsPlugin {
 	
 	def version = GrailsPluginUtils.getGrailsVersion()
-	def watchedResources = "**/grails-app/i18n/messages.properties"
+	def watchedResources = "**/grails-app/i18n/messages*.properties"
 	
 	def doWithSpring = {
 		messageSource(ReloadableResourceBundleMessageSource) {
