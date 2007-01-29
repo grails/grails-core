@@ -41,7 +41,6 @@ import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator as GR
 Ant.property(environment:"env")                             
 grailsHome = Ant.antProject.properties."env.GRAILS_HOME"    
 
-includeTargets << new File ( "${grailsHome}/scripts/Init.groovy" )
 includeTargets << new File ( "${grailsHome}/scripts/Package.groovy" )
 
 task ('default': "Run a Grails applications unit tests") {      
@@ -52,28 +51,31 @@ task ('default': "Run a Grails applications unit tests") {
 }            
 
 task(testApp:"The test app implementation task") {               
-	testDir = "${basedir}/grails-app/tests"
-	Ant.sequential {
-		mkdir(dir:testDir)
-		move(todir:testDir) {
-			fileset(dir:"${basedir}/grails-tests")			
-		}
-	}  
 	def result = null
-	try {
+	try {        
+		def testFiles = resolveResources("grails-tests/*.groovy")
+		if(testFiles.size() == 0) {
+			println "No tests found in grails-test to execute"
+			System.exit(-1)
+		}
+				
 		def ctx = GU.bootstrapGrailsFromClassPath()
 		
 		def app = ctx.getBean(GrailsApplication.APPLICATION_ID)
+		def classLoader = app.classLoader
 		
 		def suite = new TestSuite()
 		
 		GWU.bindMockWebRequest(ctx)
-		
-		app.allClasses.each { c ->			
+		                   
+
+		testFiles.each { r ->
+			def c = classLoader.parseClass(r.file)
 			if(TestCase.isAssignableFrom(c) && !Modifier.isAbstract(c.modifiers)) {
 				suite.addTest(new GrailsTestSuite(ctx.beanFactory, c))
-			}
-		}    
+			}			
+		}
+		
 		def beanNames = ctx.getBeanNamesForType(PersistenceContextInterceptor)
 		def interceptor = null
 		if(beanNames.size() > 0)interceptor = ctx.getBean(beanNames[0])
@@ -96,10 +98,6 @@ task(testApp:"The test app implementation task") {
 		System.exit(1)
 	}
 	finally {
-		Ant.move(todir:"${basedir}/grails-tests") {
-			fileset(dir:testDir)			
-		}		
-		Ant.delete(dir:testDir)
 		if(result) { 
 			if(result.errorCount() > 0 || result.failureCount() > 0) {
 				println "Test Failures!!!"

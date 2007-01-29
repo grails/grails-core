@@ -208,20 +208,22 @@ Grails home is set to: ${grailsHome}
 		return baseDir
 	}      
 	private static setDefaultEnvironment(args) {
-		switch(args.toLowerCase()) {
-			case "war":
-				System.setProperty("grails.env", "production")					
-			break
-			case "test-app":
-				System.setProperty("grails.env", "test")					
-			break
-			case "run-webtest":
-				System.setProperty("grails.env", "test")					
-			break					
-			default:
-				System.setProperty("grails.env", "development")					
-			break
-		}        		
+	    if(!System.properties."grails.env") {
+            switch(args.toLowerCase()) {
+                case "war":
+                    System.setProperty("grails.env", "production")
+                break
+                case "test-app":
+                    System.setProperty("grails.env", "test")
+                break
+                case "run-webtest":
+                    System.setProperty("grails.env", "test")
+                break
+                default:
+                    System.setProperty("grails.env", "development")
+                break
+            }        			    
+        }
 	}
 	private static calculateEnvironment(env) { 	
 		switch(env) {

@@ -35,7 +35,7 @@ public class GrailsPluginManagerTests extends AbstractGrailsMockTests {
 		GrailsPlugin plugin = manager.getGrailsPlugin("classEditor");
 		assertNotNull(plugin);
 		assertEquals("classEditor",plugin.getName());
-		assertEquals(1.1, plugin.getVersion());
+		assertEquals("1.1", plugin.getVersion());
 		
 		plugin = manager.getGrailsPlugin("classEditor", 1.1);
 		assertNotNull(plugin);

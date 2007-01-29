@@ -112,7 +112,7 @@ public abstract class AbstractGrailsPluginManager implements GrailsPluginManager
 	public GrailsPlugin getGrailsPlugin(String name) {
 		return (GrailsPlugin)this.plugins.get(name);
 	}
-	public GrailsPlugin getGrailsPlugin(String name, BigDecimal version) {
+	public GrailsPlugin getGrailsPlugin(String name, Object version) {
 		GrailsPlugin plugin = (GrailsPlugin)this.plugins.get(name);
 		if(plugin != null) {
 			if(plugin.getVersion().equals(version))

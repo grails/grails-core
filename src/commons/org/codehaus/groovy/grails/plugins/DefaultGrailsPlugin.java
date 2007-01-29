@@ -170,10 +170,10 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
     private void evaluatePluginVersion() {
         if(this.pluginBean.isReadableProperty(VERSION)) {
 			Object vobj = this.plugin.getProperty("version");
-			if(vobj instanceof BigDecimal)
-				this.version = (BigDecimal)vobj;
+			if(vobj != null)
+				this.version = vobj.toString();
 			else
-				throw new PluginException("Plugin "+this+" must specify a version as a Groovy BigDecimal. eg: def version = 0.1");
+				throw new PluginException("Plugin "+this+" must specify a version. eg: def version = 0.1");
 		}
 		else {
 			throw new PluginException("Plugin ["+getName()+"] must specify a version!");
@@ -256,9 +256,12 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
 
 	public void doWithRuntimeConfiguration(
 			RuntimeSpringConfiguration springConfig) {
-		
-		if(this.pluginBean.isReadableProperty(DO_WITH_SPRING)) {
-			Closure c = (Closure)this.plugin.getProperty(DO_WITH_SPRING);
+
+        if(this.pluginBean.isReadableProperty(DO_WITH_SPRING)) {
+            if(LOG.isDebugEnabled()) {
+                LOG.debug("Plugin " + this + " is participating in Spring configuration...");
+            }
+            Closure c = (Closure)this.plugin.getProperty(DO_WITH_SPRING);
 			BeanBuilder bb = new BeanBuilder(getParentCtx());
 			bb.setSpringConfig(springConfig);
 			Binding b = new Binding();
@@ -278,7 +281,7 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
 		return this.pluginGrailsClass.getLogicalPropertyName();
 	}
 
-	public BigDecimal getVersion() {		
+	public String getVersion() {
 		return this.version;
 	}
 	public String[] getDependencyNames() {
@@ -292,12 +295,12 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
 		return watchedResources;
 	}
 
-	public BigDecimal getDependentVersion(String name) {
-		BigDecimal dependentVersion = (BigDecimal)this.dependencies.get(name);
+	public String getDependentVersion(String name) {
+		Object dependentVersion = this.dependencies.get(name);
 		if(dependentVersion == null)
 			throw new PluginException("Plugin ["+getName()+"] referenced dependency ["+name+"] with no version!");
 		else 
-			return dependentVersion;
+			return dependentVersion.toString();
 	}
 
 	public String toString() {

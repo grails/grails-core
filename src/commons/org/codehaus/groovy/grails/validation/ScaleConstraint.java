@@ -115,11 +115,11 @@ class ScaleConstraint extends AbstractConstraint {
             BeanWrapper bean = new BeanWrapperImpl(target);
 
             if (propertyValue instanceof Float) {
-                bigDecimal = new BigDecimal(((Float) propertyValue).toString());
+                bigDecimal = new BigDecimal(propertyValue.toString());
                 bigDecimal = getScaledValue(bigDecimal);
                 bean.setPropertyValue(this.getPropertyName(), new Float(bigDecimal.floatValue()));
             } else if (propertyValue instanceof Double) {
-                bigDecimal = new BigDecimal(((Double) propertyValue).toString());
+                bigDecimal = new BigDecimal(propertyValue.toString());
                 bigDecimal = getScaledValue(bigDecimal);
                 bean.setPropertyValue(this.getPropertyName(), new Double(bigDecimal.doubleValue()));
             } else if (propertyValue instanceof BigDecimal) {
@@ -135,6 +135,7 @@ class ScaleConstraint extends AbstractConstraint {
 
     /**
      * @return the <code>BigDecimal</code> object that results from applying the contraint's scale to the underlying number
+     * @param originalValue The original value
      */
     private BigDecimal getScaledValue(BigDecimal originalValue) {
         return originalValue.setScale(this.scale, BigDecimal.ROUND_HALF_UP);

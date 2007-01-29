@@ -21,25 +21,6 @@ import groovy.lang.GroovyShell;
 import groovy.lang.Writable;
 import groovy.util.XmlSlurper;
 import groovy.util.slurpersupport.GPathResult;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.Writer;
-import java.lang.reflect.Modifier;
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.xml.parsers.ParserConfigurationException;
-
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -54,6 +35,11 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.xml.sax.SAXException;
+
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.*;
+import java.lang.reflect.Modifier;
+import java.util.*;
 
 /**
  * <p>A class that handles the loading and management of plug-ins in the Grails system.
@@ -330,7 +316,7 @@ public class DefaultGrailsPluginManager implements GrailsPluginManager {
 		String[] dependencies = plugin.getDependencyNames();
 		for (int i = 0; i < dependencies.length; i++) {
 			String name = dependencies[i];
-			BigDecimal version = plugin.getDependentVersion(name);
+			String version = plugin.getDependentVersion(name);
 
 			if(name.equals(dependancy.getName()) && version.equals(dependancy.getVersion()))
 				return true;
@@ -343,7 +329,7 @@ public class DefaultGrailsPluginManager implements GrailsPluginManager {
 		if(dependencies.length > 0) {
 			for (int i = 0; i < dependencies.length; i++) {
 				String name = dependencies[i];
-				BigDecimal version = plugin.getDependentVersion(name);
+				String version = plugin.getDependentVersion(name);
 				if(!hasGrailsPlugin(name, version)) {
 					return false;
 				}
@@ -436,7 +422,7 @@ public class DefaultGrailsPluginManager implements GrailsPluginManager {
 		}
 	}
 
-	private boolean hasGrailsPlugin(String name, BigDecimal version) {
+	private boolean hasGrailsPlugin(String name, String version) {
 		return getGrailsPlugin(name, version) != null;
 	}
 
@@ -505,10 +491,10 @@ public class DefaultGrailsPluginManager implements GrailsPluginManager {
 		return (GrailsPlugin)this.plugins.get(name);
 	}
 
-	public GrailsPlugin getGrailsPlugin(String name, BigDecimal version) {
+	public GrailsPlugin getGrailsPlugin(String name, Object version) {
 		GrailsPlugin plugin = (GrailsPlugin)this.plugins.get(name);
 		if(plugin != null) {
-			if(plugin.getVersion().equals(version))
+			if(plugin.getVersion().equals(version.toString()))
 				return plugin;
 		}
 		return null;

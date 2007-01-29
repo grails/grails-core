@@ -17,16 +17,15 @@ package org.codehaus.groovy.grails.plugins;
 
 import groovy.lang.GroovyObjectSupport;
 import groovy.util.slurpersupport.GPathResult;
-
-import java.math.BigDecimal;
-import java.util.HashMap;
-import java.util.Map;
-
 import org.codehaus.groovy.grails.commons.AbstractGrailsClass;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
+
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Abstract implementation that provides some default behaviours
  * 
@@ -43,7 +42,7 @@ public abstract class AbstractGrailsPlugin extends GroovyObjectSupport implement
 	}
 	
 	protected GrailsApplication application;
-	protected BigDecimal version = new BigDecimal("0.1");
+	protected String version = "1.0";
 	protected Map dependencies = new HashMap();
 	protected String[] dependencyNames = new String[0];
 	protected Class pluginClass;
@@ -90,7 +89,7 @@ public abstract class AbstractGrailsPlugin extends GroovyObjectSupport implement
 		return this.dependencyNames;
 	}
 
-	public BigDecimal getDependentVersion(String name) {
+	public String getDependentVersion(String name) {
 		return null;
 	}
 
@@ -98,7 +97,7 @@ public abstract class AbstractGrailsPlugin extends GroovyObjectSupport implement
 		return pluginClass.getName();
 	}
 
-	public BigDecimal getVersion() {
+	public String getVersion() {
 		return this.version;
 	}
 

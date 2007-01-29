@@ -144,7 +144,7 @@ public interface GrailsPlugin extends ApplicationContextAware {
 	 * 
 	 * @return The version of the plug-in
 	 */
-	BigDecimal getVersion();
+	String getVersion();
 
 
 	/**
@@ -175,7 +175,7 @@ public interface GrailsPlugin extends ApplicationContextAware {
 	 * @param name the name of the dependency
 	 * @return The version
 	 */
-	BigDecimal getDependentVersion(String name);
+	String getDependentVersion(String name);
 	
 	
 	/**

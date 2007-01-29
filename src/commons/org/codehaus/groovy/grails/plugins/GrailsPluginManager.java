@@ -15,16 +15,15 @@
  */ 
 package org.codehaus.groovy.grails.plugins;
 
-import java.io.File;
-import java.io.Writer;
-import java.math.BigDecimal;
-
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration;
 import org.codehaus.groovy.grails.plugins.exceptions.PluginException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.io.Resource;
+
+import java.io.File;
+import java.io.Writer;
 
 /**
  * <p>A class that handles the loading and management of plug-ins in the Grails system.
@@ -68,7 +67,7 @@ public interface GrailsPluginManager extends ApplicationContextAware {
 	 * Performs the initial load of plug-ins throwing an exception if any dependencies
 	 * don't resolve 
 	 * 
-	 * @throws PluginException 
+	 * @throws PluginException Thrown when an error occurs loading the plugins
 	 */
 	public abstract void loadPlugins() throws PluginException;
 
@@ -132,7 +131,7 @@ public interface GrailsPluginManager extends ApplicationContextAware {
 	 * @param version The version of the plugin
 	 * @return The GrailsPlugin instance or null if it doesn't exist
 	 */
-	public abstract GrailsPlugin getGrailsPlugin(String name, BigDecimal version);
+	public abstract GrailsPlugin getGrailsPlugin(String name, Object version);
 
 	/**
 	 * Executes the runtime configuration for a specific plugin AND all its dependencies

@@ -109,7 +109,7 @@ task( upgrade: "main upgrade task") {
 			fileset(dir:"${grailsHome}/src/war/WEB-INF/tld", includes:"spring.tld")
 			fileset(dir:"${grailsHome}/src/war/WEB-INF/tld", includes:"grails.tld")			
 		}	 
-		copy(todir:"${basedir}/spring") {
+		copy(todir:"${basedir}/spring",overwrite:false) {
 			fileset(dir:"${grailsHome}/src/war/WEB-INF/spring") {
 				include(name:"*.xml")
 				include(name:"*.groovy")    				
