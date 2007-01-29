@@ -43,7 +43,8 @@ task ('default': "Run's all of the Web tests against a Grails application") {
     }
 }                 
 task ( runWebTest : "Main implementation that executes a Grails' Web tests") {
-
+	depends( classpath )
+	
     def rootLoader = getClass().classLoader.rootLoader
 
     rootLoader.addURL(new File("${basedir}/webtest/tests").toURL())
