@@ -44,6 +44,29 @@ class SimpleGrailsControllerHelperTests extends AbstractGrailsControllerTests {
 		assertEquals "four", extraParams["three"]			                                
 	}
 
+	void testConfigureStateForUri2() {
+		def helper = new SimpleGrailsControllerHelper(null, null, null)
+		helper.configureStateForUri("/location/show/united-kingdom")
+
+		assertEquals "location", helper.@controllerName
+		assertEquals "show", helper.@actionName
+		assertEquals "united-kingdom", helper.@id
+
+    }
+
+	void testConfigureStateForUri3() {
+		def helper = new SimpleGrailsControllerHelper(null, null, null)
+		helper.configureStateForUri("/location/show/united-kingdom/london")
+
+		assertEquals "location", helper.@controllerName
+		assertEquals "show", helper.@actionName
+		assertEquals "united-kingdom", helper.@id
+
+		assertTrue helper.@extraParams.containsKey("london")
+
+    }
+    
+
 	void testConfigureStateForUri() {
 		def helper = new SimpleGrailsControllerHelper(null, null, null)
 		helper.configureStateForUri("/controller/action/id")

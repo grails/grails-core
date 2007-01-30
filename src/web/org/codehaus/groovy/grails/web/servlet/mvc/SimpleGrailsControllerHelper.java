@@ -73,7 +73,7 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
     private GrailsScaffolder scaffolder;
     private ServletContext servletContext;
     private GrailsApplicationAttributes grailsAttributes;
-    private Pattern uriPattern = Pattern.compile("/(\\w+)/?(\\w*)/?(\\w*)/?(.*)");
+    private Pattern uriPattern = Pattern.compile("/(\\w+)/?(\\w*)/?([^/]*)/?(.*)");
 
 
 	private GrailsWebRequest webRequest;
@@ -334,17 +334,24 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
             uri = '/' + controllerName + '/' + actionName;
             id = m.group(3);
             String extraParamsString = m.group(4);
-            if(extraParamsString != null && extraParamsString.indexOf('/') > - 1) {
-                String[] tokens = extraParamsString.split("/");
+            if(!StringUtils.isBlank(extraParamsString)) {
                 extraParams = new HashMap();
-                for (int i = 0; i < tokens.length; i++) {
-                    String token = tokens[i];
-                    if(i == 0 || ((i % 2) == 0)) {
-                        if((i + 1) < tokens.length) {
-                            extraParams.put(token, tokens[i + 1]);
+                if(extraParamsString.indexOf('/') > -1) {
+                    String[] tokens = extraParamsString.split("/");
+
+                    for (int i = 0; i < tokens.length; i++) {
+                        String token = tokens[i];
+                        if(i == 0 || ((i % 2) == 0)) {
+                            if((i + 1) < tokens.length) {
+                                extraParams.put(token, tokens[i + 1]);
+                            }
                         }
                     }
                 }
+                else {
+                   extraParams.put(extraParamsString, null); 
+                }
+
 
             }
         }
