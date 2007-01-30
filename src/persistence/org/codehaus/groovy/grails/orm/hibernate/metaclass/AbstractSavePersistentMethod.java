@@ -19,6 +19,7 @@ import groovy.lang.GroovyObject;
 
 import java.io.Serializable;
 import java.util.regex.Pattern;
+import java.sql.SQLException;
 
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
@@ -27,9 +28,13 @@ import org.codehaus.groovy.grails.commons.metaclass.DynamicMethodsMetaClass;
 import org.codehaus.groovy.grails.metaclass.DomainClassMethods;
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.hibernate.SessionFactory;
+import org.hibernate.Session;
+import org.hibernate.HibernateException;
+import org.hibernate.FlushMode;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.orm.hibernate3.HibernateTemplate;
+import org.springframework.orm.hibernate3.HibernateCallback;
 import org.springframework.validation.BindException;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
@@ -124,31 +129,49 @@ public abstract class AbstractSavePersistentMethod extends
 		}
 	}
 
-	/**
-	 * Handles a validation error
-     * @return Returns null, as this represents a validation error
-     * @param target The target object being validated
+    /**
+     * This method willl set the save() method will set the flush mode to manual. What this does
+     * is ensure that the database changes are not persisted to the database if a validation error occurs.
+     * If save() is called again and validation passes the code will check if there is a manual flush mode and
+     * flush manually if necessary
+     *
+     * @param target The target object that failed validation
      * @param errors The Errors instance
+     * @return This method will return null signaling a validation failure
      */
 	protected Object handleValidationError(Object target, Errors errors) {
 		HibernateTemplate t = getHibernateTemplate();
         // if the target is within the session evict it
         // this is so that if validation fails hibernate doesn't save
         // the object automatically when the session is flushed		
-		if(t.contains(target)) {
-		    t.evict(target);
-		}        
-		if(target instanceof GroovyObject) {
-			((GroovyObject)target).setProperty(DomainClassMethods.ERRORS_PROPERTY,errors);
-		}   
-		else {
-		    DynamicMethodsMetaClass metaClass = (DynamicMethodsMetaClass)InvokerHelper.getInstance().getMetaRegistry().getMetaClass(target.getClass());
-		    metaClass.setProperty(target.getClass() ,target,DomainClassMethods.ERRORS_PROPERTY,errors, false, false);
-		}
-		return null;
+       t.execute(new HibernateCallback() {
+
+            public Object doInHibernate(Session session) throws HibernateException, SQLException {
+                session.setFlushMode(FlushMode.MANUAL);
+                return null;
+            }
+        });        
+        setErrorsOnInstance(target, errors);
+        return null;
 	}
 
-	/**
+    /**
+     * Associates the Errors object on the instance
+     *
+     * @param target The target instance
+     * @param errors The Errors object
+     */
+    protected void setErrorsOnInstance(Object target, Errors errors) {
+        if(target instanceof GroovyObject) {
+            ((GroovyObject)target).setProperty(DomainClassMethods.ERRORS_PROPERTY,errors);
+        }
+        else {
+            DynamicMethodsMetaClass metaClass = (DynamicMethodsMetaClass) InvokerHelper.getInstance().getMetaRegistry().getMetaClass(target.getClass());
+            metaClass.setProperty(target.getClass() ,target,DomainClassMethods.ERRORS_PROPERTY,errors, false, false);
+        }
+    }
+
+    /**
  	 * Checks whether validation should be performed
      * @return True if the domain class should be validated
      * @param arguments  The arguments to the validate method

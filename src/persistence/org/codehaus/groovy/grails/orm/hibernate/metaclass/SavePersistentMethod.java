@@ -15,10 +15,16 @@
  */ 
 package org.codehaus.groovy.grails.orm.hibernate.metaclass;
 
-import java.util.regex.Pattern;
-
 import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.hibernate.FlushMode;
+import org.hibernate.HibernateException;
+import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.springframework.orm.hibernate3.HibernateCallback;
+import org.springframework.orm.hibernate3.HibernateTemplate;
+
+import java.sql.SQLException;
+import java.util.regex.Pattern;
 
 /**
  * This method follows the semantics of saveOrUpdate of scheduling the object
@@ -27,7 +33,9 @@ import org.hibernate.SessionFactory;
  * @author Steven Devijver
  * @author Graeme Rocher
  * 
- * @since Aug 7, 2005
+ * @since 0.1
+ *
+ * Created: Aug 7, 2005
  */
 public class SavePersistentMethod extends AbstractSavePersistentMethod {
 
@@ -40,10 +48,16 @@ public class SavePersistentMethod extends AbstractSavePersistentMethod {
         super(METHOD_PATTERN,sessionFactory, classLoader, application);
     }
 
-	protected void performSave(Object target, boolean flush) {
-		getHibernateTemplate().saveOrUpdate(target);
-		if(flush)
-			getHibernateTemplate().flush();
+	protected void performSave(final Object target, final boolean flush) {
+        HibernateTemplate ht = getHibernateTemplate();
+        ht.execute(new HibernateCallback() {
+            public Object doInHibernate(Session session) throws HibernateException, SQLException {
+                session.saveOrUpdate(target);
+                if(flush && FlushMode.isManualFlushMode(session.getFlushMode()))
+                    getHibernateTemplate().flush();
+                return target;
+            }
+        });
 	}
-       
+
 }
