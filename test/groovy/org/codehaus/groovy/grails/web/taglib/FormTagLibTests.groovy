@@ -46,8 +46,32 @@ public class FormTagLibTests extends AbstractGrailsTagTests {
     	    // use sorted map to be able to predict the order in which tag attributes are generated
 	    	def attributes = new TreeMap([url:[controller:'con', action:'action'], id:'formElementId'])
     	    tag.call(attributes, { })
-    	    println sw.toString()
     	    assertEquals '<form action="/con/action" method="post" id="formElementId" ></form>', sw.toString().trim()
+    	}
+    }
+
+    void testActionSubmitWhitespace() {
+    	final StringWriter sw = new StringWriter();
+    	final PrintWriter pw = new PrintWriter(sw);
+
+    	withTag("actionSubmit", pw) { tag ->
+    	    // use sorted map to be able to predict the order in which tag attributes are generated
+	    	def attributes = new TreeMap([value:'Go'])
+    	    tag.call(attributes)
+    	    println sw.toString()
+    	    assertEquals '<input type="submit" name="_action" value="Go" />', sw.toString() // NO TRIM, TEST WS!
+    	}
+    }
+
+    void testActionSubmitImageWhitespace() {
+    	final StringWriter sw = new StringWriter();
+    	final PrintWriter pw = new PrintWriter(sw);
+
+    	withTag("actionSubmitImage", pw) { tag ->
+    	    // use sorted map to be able to predict the order in which tag attributes are generated
+	    	def attributes = new TreeMap([src:'button.gif', value:'Go'])
+    	    tag.call(attributes)
+    	    assertEquals '<input type="image" name="_action" value="Go" src="button.gif" />', sw.toString() // NO TRIM, TEST WS!
     	}
     }
 

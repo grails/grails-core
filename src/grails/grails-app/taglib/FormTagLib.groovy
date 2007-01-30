@@ -150,13 +150,13 @@ class FormTagLib {
         out << '<input type="submit" name="_action" '
         def value = attrs.remove('value')
         if(value) {
-             out << "value=\"${value}\""
+             out << "value=\"${value}\" "
         }
         // process remaining attributes
         outputAttributes(attrs)
 
         // close tag
-        out.println '/>'
+        out << '/>'
 
     }
     /**
@@ -171,17 +171,17 @@ class FormTagLib {
         out << '<input type="image" name="_action" '
         def value = attrs.remove('value')
         if(value) {
-             out << "value=\"${value}\""
+             out << "value=\"${value}\" "
         }
         def src = attrs.remove('src')
         if(src) {
-             out << "src=\"${src}\""
+             out << "src=\"${src}\" "
         }
         // process remaining attributes
         outputAttributes(attrs)
 
         // close tag
-        out.println '/>'
+        out << '/>'
 
     }
 
