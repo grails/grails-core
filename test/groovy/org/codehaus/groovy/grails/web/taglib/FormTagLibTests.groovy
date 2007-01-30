@@ -58,7 +58,6 @@ public class FormTagLibTests extends AbstractGrailsTagTests {
     	    // use sorted map to be able to predict the order in which tag attributes are generated
 	    	def attributes = new TreeMap([value:'Go'])
     	    tag.call(attributes)
-    	    println sw.toString()
     	    assertEquals '<input type="submit" name="_action" value="Go" />', sw.toString() // NO TRIM, TEST WS!
     	}
     }
