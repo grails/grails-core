@@ -45,6 +45,7 @@ class Author {
 	    a.save(true)
 
 	    assert session.contains(a)
+	    session.flush()
 
 	    session.evict(a)
 	    session.evict(b1)
@@ -60,8 +61,6 @@ class Author {
 	    a.save()
 
 	    assertTrue FlushMode.isManualFlushMode(session.getFlushMode())
-
-	    assertEquals 2, a.books.size()
 
     }
 	
