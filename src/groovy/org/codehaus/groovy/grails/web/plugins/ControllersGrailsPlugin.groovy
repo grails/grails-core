@@ -177,13 +177,14 @@ class ControllersGrailsPlugin {
 					'filter-name'('reloadFilter')
 					'filter-class'('org.codehaus.groovy.grails.web.servlet.filter.GrailsReloadServletFilter')
 				}				
-			}
+			}			
+		}        
+		lastFilterMapping + {
 			'filter-mapping' {						
 				'filter-name'('grailsWebRequest')
 				'url-pattern'("/*")						
-			}
-			
-		}
+			}			
+		}		
 		// if we're in development environment first add a the reload filter
 		// to the web.xml by finding the last filter and appending it after		
 		if(grailsEnv == "development") {
@@ -210,7 +211,7 @@ class ControllersGrailsPlugin {
 					'param-value'(1)
 				}
 			}
-		}
+		}   	   
 
 	}
 	
