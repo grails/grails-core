@@ -165,6 +165,7 @@ class ControllersGrailsPlugin {
 		
 		def lastFilter = filters[filters.size()-1]
 		def lastFilterMapping = filterMappings[filterMappings.size()-1]
+		def charEncodingFilter = filterMappings.find { it.'filter-name'.text() == 'charEncodingFilter'}
 		                                       
 		// add the Grails web request filter
 		lastFilter + {
@@ -179,12 +180,18 @@ class ControllersGrailsPlugin {
 				}				
 			}			
 		}        
-		lastFilterMapping + {
+		def grailsWebRequestFilter = {
 			'filter-mapping' {						
 				'filter-name'('grailsWebRequest')
 				'url-pattern'("/*")						
 			}			
-		}		
+		}		                    
+		if(charEncodingFilter) {
+			charEncodingFilter + grailsWebRequestFilter
+		}                                              
+		else {
+			lastFilterMapping + grailsWebRequestFilter
+		}
 		// if we're in development environment first add a the reload filter
 		// to the web.xml by finding the last filter and appending it after		
 		if(grailsEnv == "development") {
