@@ -414,9 +414,14 @@ class FormTagLib {
     def currencySelect = { attrs, body ->
         if(!attrs['from']) {
             attrs['from'] = ['EUR', 'XCD','USD','XOF','NOK','AUD','XAF','NZD','MAD','DKK','GBP','CHF','XPF','ILS','ROL','TRL']
-        }
-        def currency = (attrs['value'] ? attrs['value'] : Currency.getInstance( RCU.getLocale(request) ))
-        attrs['value'] = currency.currencyCode
+        }       
+		try {
+	        def currency = (attrs['value'] ? attrs['value'] : Currency.getInstance( RCU.getLocale(request) ))
+	        attrs.value = currency.currencyCode			
+		}   
+		catch(IllegalArgumentException iae) {
+		   	attrs.value = null
+		}
         // invoke generic select
         select( attrs )
     }
