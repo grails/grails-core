@@ -48,7 +48,9 @@ public class HibernatePersistenceContextInterceptor implements
             SessionHolder holder = (SessionHolder)TransactionSynchronizationManager.unbindResource(sessionFactory);
             LOG.debug("Closing single Hibernate session in GrailsDispatcherServlet");
             try {
-                SessionFactoryUtils.releaseSession(holder.getSession(), sessionFactory);
+                Session session = holder.getSession();
+                session.flush();
+                SessionFactoryUtils.releaseSession(session, sessionFactory);
             }
             catch (RuntimeException ex) {
             	LOG.error("Unexpected exception on closing Hibernate Session", ex);
