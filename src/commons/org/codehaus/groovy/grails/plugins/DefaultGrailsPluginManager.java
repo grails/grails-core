@@ -416,8 +416,8 @@ public class DefaultGrailsPluginManager implements GrailsPluginManager {
 			pluginList.remove(pluginToEvict);
 			plugins.remove(pluginToEvict.getName());
 			
-			if(LOG.isDebugEnabled()) {
-				LOG.debug("Grails plug-in "+pluginToEvict+" was evicted by " + evictor);
+			if(LOG.isInfoEnabled()) {
+				LOG.info("Grails plug-in "+pluginToEvict+" was evicted by " + evictor);
 			}						
 		}
 	}
