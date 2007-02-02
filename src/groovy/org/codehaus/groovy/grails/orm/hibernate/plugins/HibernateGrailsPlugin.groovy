@@ -101,7 +101,7 @@ class HibernateGrailsPlugin {
                 }
 
                 if(manager?.hasGrailsPlugin("controllers")) {
-                    openSessionInViewInterceptor(OpenSessionInViewInterceptor) {
+                    openSessionInViewInterceptor(GrailsOpenSessionInViewInterceptor) {
                         flushMode = HibernateAccessor.FLUSH_AUTO
                         sessionFactory = sessionFactory
                     }
