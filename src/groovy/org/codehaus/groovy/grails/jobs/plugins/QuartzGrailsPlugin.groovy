@@ -70,10 +70,9 @@ class QuartzGrailsPlugin {
 		
 			schedulerReferences << ref("${fullName}Trigger")
 		}
-		if(schedulerReferences) {
-			quartzScheduler(SchedulerFactoryBean) {
-				triggers = schedulerReferences
-			}			
-		}
+        quartzScheduler(SchedulerFactoryBean) {
+            triggers = schedulerReferences
+        }
+		
 	}
 }
