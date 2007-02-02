@@ -257,6 +257,7 @@ class FormTagLib {
 
             if (noSelection) {
 	    		renderNoSelectionOption( noSelection.key, noSelection.value, '')
+                out.println()
             }
 
             for(i in 1..31) {
@@ -275,6 +276,7 @@ class FormTagLib {
 
             if (noSelection) {
 	    		renderNoSelectionOption( noSelection.key, noSelection.value, '')
+                out.println()
             }
 
             dfs.months.eachWithIndex { m,i ->
@@ -296,6 +298,7 @@ class FormTagLib {
 
             if (noSelection) {
     			renderNoSelectionOption( noSelection.key, noSelection.value, '')
+                out.println()
             }
 
             for(i in years) {
@@ -314,6 +317,7 @@ class FormTagLib {
 
             if (noSelection) {
 	    		renderNoSelectionOption( noSelection.key, noSelection.value, '')
+                out.println()
             }
 
             for(i in 0..23) {
@@ -338,6 +342,7 @@ class FormTagLib {
 
             if (noSelection) {
 	    		renderNoSelectionOption( noSelection.key, noSelection.value, '')
+                out.println()
             }
 
             for(i in 0..59) {
@@ -354,14 +359,11 @@ class FormTagLib {
 
 	def renderNoSelectionOption = { noSelectionKey, noSelectionValue, value ->
 		// If a label for the '--Please choose--' first item is supplied, write it out
-		if (noSelectionValue) {
-			out << '<option value="' << (noSelectionKey == null ? "" : noSelectionKey) << '"'
-            if(noSelectionKey == value) {
-                out << ' selected="selected" '
-            }
-			out << '>' << noSelectionValue.encodeAsHTML() << '</option>'
-	        out.println()
-		}
+        out << '<option value="' << (noSelectionKey == null ? "" : noSelectionKey) << '"'
+        if(noSelectionKey == value) {
+            out << ' selected="selected" '
+        }
+        out << '>' << noSelectionValue.encodeAsHTML() << '</option>'
 	}
 
     /**
@@ -414,11 +416,11 @@ class FormTagLib {
     def currencySelect = { attrs, body ->
         if(!attrs['from']) {
             attrs['from'] = ['EUR', 'XCD','USD','XOF','NOK','AUD','XAF','NZD','MAD','DKK','GBP','CHF','XPF','ILS','ROL','TRL']
-        }       
+        }
 		try {
 	        def currency = (attrs['value'] ? attrs['value'] : Currency.getInstance( RCU.getLocale(request) ))
-	        attrs.value = currency.currencyCode			
-		}   
+	        attrs.value = currency.currencyCode
+		}
 		catch(IllegalArgumentException iae) {
 		   	attrs.value = null
 		}
@@ -453,6 +455,7 @@ class FormTagLib {
 
         if (noSelection) {
 		    renderNoSelectionOption(noSelection.key, noSelection.value, value)
+            out.println()
         }
 
         // create options from list

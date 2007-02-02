@@ -259,6 +259,19 @@ public class FormTagLibTests extends AbstractGrailsTagTests {
     	}
     }
 
+    void testRenderingNoSelectionOption() {
+    	final StringWriter sw = new StringWriter();
+    	final PrintWriter pw = new PrintWriter(sw);
+
+        // This isn't really a tag...
+    	withTag("renderNoSelectionOption", pw) { tag ->
+    	    tag.call( '', '', null)
+
+	        println "SW: "+sw.toString()
+	        assertEquals '<option value=""></option>', sw.toString()
+        }
+    }
+
     public void testNoHtmlEscapingTextAreaTag() throws Exception {
     	final StringWriter sw = new StringWriter();
     	final PrintWriter pw = new PrintWriter(sw);
