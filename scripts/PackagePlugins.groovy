@@ -37,12 +37,12 @@ task ( "default" : "Performs packaging of Grails plugins for when they are distr
 task( packagePlugins : "Packages any Grails plugins that are installed for this project") {
 	depends( classpath )
 	try {
-	   	def plugins = resolver.getResources("**/plugins/**/*GrailsPlugin.groovy")
+	   	def plugins = resolver.getResources("**GrailsPlugin.groovy")
 
 	   	plugins?.each { p ->  	   
 	   		def pluginBase = p.file.parentFile  
 	     	def pluginPath = pluginBase.absolutePath
-			def pluginName = pluginBase.name[0..-5]
+			def pluginName = pluginBase.name[0..pluginBase.name.lastIndexOf('-')]
 	   		Ant.sequential {            
 				if(new File("${pluginBase}/lib").exists()) {
 		   			copy(todir:"${basedir}/web-app/WEB-INF/lib", failonerror:false) {
