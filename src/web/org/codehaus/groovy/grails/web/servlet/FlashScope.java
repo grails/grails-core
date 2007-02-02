@@ -15,6 +15,7 @@
 package org.codehaus.groovy.grails.web.servlet;
 
 import java.util.Map;
+import java.io.Serializable;
 
 /**
  * An interface that represents flash scope and allows a flash scope map to be set to the next
@@ -26,7 +27,7 @@ import java.util.Map;
  * @author Graeme Rocher
  * @since 07-Feb-2006
  */
-public interface FlashScope extends Map {
+public interface FlashScope extends Map, Serializable {
     /**
      * Sets the flash scope to the next state upon a new request
      */
