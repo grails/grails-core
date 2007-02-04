@@ -111,8 +111,13 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator  {
             destFile.parentFile.mkdirs()
 
             def templateText = getTemplateText("Controller.groovy")
-		
-            def binding = [ packageName:domainClass.packageName,className: domainClass.shortName, propertyName:domainClass.propertyName ]
+
+            def binding = [ packageName:domainClass.packageName,
+                            domainClass:domainClass, 
+                            className:domainClass.shortName,
+                            propertyName:domainClass.propertyName,
+                            comparator:org.codehaus.groovy.grails.scaffolding.DomainClassPropertyComparator.class]
+                            
             def t = engine.createTemplate(templateText)
 
             destFile.withWriter { w ->
