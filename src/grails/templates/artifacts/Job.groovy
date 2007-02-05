@@ -1,5 +1,5 @@
-class @artifact.name@Job {
-	def timeout = "1000"
+class @artifact.name@ {
+	def timeout = 1000
 
 	def execute() {	
 	    // execute task

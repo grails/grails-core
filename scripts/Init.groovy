@@ -194,8 +194,8 @@ task ('createArtifact': "Creates a specific Grails artifact") {
 	
 	Ant.mkdir(dir:"${basedir}/${artifactPath}")
 	
-	className = GCU.getClassNameRepresentation(args)
-	propertyName = GCU.getPropertyNameRepresentation(args)
+	className = GCU.getClassNameRepresentation(args)   
+	propertyName = GCU.getPropertyNameRepresentation(args)            
 	artifactFile = "${basedir}/${artifactPath}/${className}${typeName}.groovy"
 	 
 	if("Controller" == artifactName) {
@@ -214,10 +214,9 @@ task ('createArtifact': "Creates a specific Grails artifact") {
 		// template not found in application, use default template
 		templateFile = "${grailsHome}/src/grails/templates/artifacts/${artifactName}.groovy"
 	}
-	Ant.copy(file: templateFile, tofile: artifactFile)
-			
+	Ant.copy(file: templateFile, tofile: artifactFile, overwrite:true)
 	Ant.replace(file:artifactFile, 
-				token:"@artifact.name@", value:className )
+				token:"@artifact.name@", value:"${className}${typeName}" )
 				
 	println "Created ${typeName} at ${artifactFile}"
 }  
