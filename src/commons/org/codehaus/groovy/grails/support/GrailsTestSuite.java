@@ -42,7 +42,7 @@ public class GrailsTestSuite extends TestSuite {
 
 	public void runTest(Test test, TestResult result) {
 		if (test instanceof TestCase) {
-			beanFactory.autowireBeanProperties(test, AutowireCapableBeanFactory.AUTOWIRE_BY_TYPE, false);
+			beanFactory.autowireBeanProperties(test, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
 		}
 		test.run(result);
 	}
