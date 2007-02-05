@@ -15,9 +15,6 @@
 package com.recipes;
 
 import groovy.lang.IntRange;
-import org.codehaus.groovy.grails.orm.hibernate.validation.ConstrainedPersistentProperty;
-import org.codehaus.groovy.grails.validation.ConstrainedProperty;
-
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
