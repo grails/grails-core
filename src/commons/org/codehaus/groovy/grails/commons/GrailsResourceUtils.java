@@ -19,11 +19,16 @@ package org.codehaus.groovy.grails.commons;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.net.MalformedURLException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException;
 import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 /**
  * Utility methods for working with Grails resources and URLs that represent artifacts
  * within a Grails application
@@ -64,8 +69,9 @@ public class GrailsResourceUtils {
     }
 
     public static final Pattern[] patterns = new Pattern[]{ GRAILS_RESOURCE_PATTERN_FIRST_MATCH, GRAILS_RESOURCE_PATTERN_SECOND_MATCH, GRAILS_RESOURCE_PATTERN_THIRD_MATCH, GRAILS_RESOURCE_PATTERN_FOURTH_MATCH};
+    private static final Log LOG = LogFactory.getLog(GrailsResourceUtils.class);
 
-	private static String createGrailsResourcePattern(String separator, String base) {
+    private static String createGrailsResourcePattern(String separator, String base) {
 		return ".+"+separator +base+separator +"(.+)\\.groovy";
 	}
 
@@ -136,4 +142,59 @@ public class GrailsResourceUtils {
 			return false;
 		}
 	}
+
+    public static Resource getViewsDir(Resource resource) {
+        if(resource == null)return null;
+
+        try {
+            Resource appDir = getAppDir(resource);
+            StringBuffer buf = new StringBuffer(appDir.getURL().toString());
+
+            String className = getClassName(resource);
+            buf.append("/views");
+            if(GrailsClassUtils.isControllerClass(className)) {
+               buf.append("/").append(GrailsClassUtils.getLogicalPropertyName(className, "Controller"));
+            }
+            else if(GrailsClassUtils.isTagLibClass(className)) {
+                buf.append("/").append(GrailsClassUtils.getLogicalPropertyName(className, "TagLib"));
+            }
+            else if(isDomainClass(resource.getURL())) {
+                buf.append("/").append(GrailsClassUtils.getPropertyName(className));
+            }
+
+            return new UrlResource(buf.toString());
+
+        } catch (IOException e) {
+            if(LOG.isDebugEnabled()) {
+                LOG.debug("Error reading URL whilst resolving views dir from ["+resource+"]: " + e.getMessage(),e);
+            }
+            return null;
+        }
+
+    }
+
+    public static Resource getAppDir(Resource resource) {
+        if(resource == null)return null;
+
+
+        try {
+            String url = resource.getURL().toString();
+
+            int i = url.lastIndexOf("grails-app");
+            if(i > -1) {
+                url = url.substring(0, i+10);
+                return new UrlResource(url);
+            }
+            else {
+                return null;
+            }
+        } catch (MalformedURLException e) {
+            return null;
+        } catch (IOException e) {
+            if(LOG.isDebugEnabled()) {
+                LOG.debug("Error reading URL whilst resolving app dir from ["+resource+"]: " + e.getMessage(),e);
+            }
+            return null;
+        }
+    }
 }

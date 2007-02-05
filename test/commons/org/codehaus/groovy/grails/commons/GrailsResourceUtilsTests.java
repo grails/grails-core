@@ -7,10 +7,11 @@ import org.springframework.core.io.UrlResource;
 
 import junit.framework.TestCase;
 
-public class GrailsResourceUtilsTest extends TestCase {
+public class GrailsResourceUtilsTests extends TestCase {
 
 	private static final String TEST_URL = "file:///test/grails/app/grails-app/domain/Test.groovy";
-	private static final String UNIT_TESTS_URL = "file:///test/grails/app/grails-tests/SomeTests.groovy";
+    private static final String TEST_CONTROLLER_URL = "file:///test/grails/app/grails-app/controllers/TestController.groovy";
+    private static final String UNIT_TESTS_URL = "file:///test/grails/app/grails-tests/SomeTests.groovy";
 
 	protected void setUp() throws Exception {
 		super.setUp();
@@ -18,7 +19,7 @@ public class GrailsResourceUtilsTest extends TestCase {
 
 	public void testIsDomainClass() throws Exception {
 
-        URL testUrl = new URL(GrailsResourceUtilsTest.TEST_URL);
+        URL testUrl = new URL(TEST_URL);
 
 		assertTrue(GrailsResourceUtils.isDomainClass(testUrl));
 	}
@@ -49,5 +50,26 @@ public class GrailsResourceUtilsTest extends TestCase {
 	public void testGetTestNameString() {
 		assertEquals("SomeTests", GrailsResourceUtils.getClassName(UNIT_TESTS_URL));
 	}
+
+    public void testGetViewsDirForURL() throws Exception {
+        Resource viewsDir = GrailsResourceUtils.getViewsDir(new UrlResource(TEST_CONTROLLER_URL));
+
+        assertEquals("file:/test/grails/app/grails-app/views/test", viewsDir.getURL().toString());
+
+        viewsDir = GrailsResourceUtils.getViewsDir(new UrlResource(TEST_URL));
+
+        assertEquals("file:/test/grails/app/grails-app/views/test", viewsDir.getURL().toString());
+    }
+
+    public void testGetAppDir() throws Exception {
+        Resource appDir = GrailsResourceUtils.getAppDir(new UrlResource(TEST_CONTROLLER_URL));
+
+        assertEquals("file:/test/grails/app/grails-app", appDir.getURL().toString());
+
+        appDir = GrailsResourceUtils.getAppDir(new UrlResource(TEST_URL));
+
+        assertEquals("file:/test/grails/app/grails-app", appDir.getURL().toString());
+
+    }
 
 }

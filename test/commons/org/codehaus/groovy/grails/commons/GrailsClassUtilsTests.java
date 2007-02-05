@@ -19,8 +19,6 @@ import junit.framework.TestCase;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.springframework.beans.BeanUtils;
-
 /**
  * @author Graeme Rocher
  * @since 15-Feb-2006
@@ -33,6 +31,16 @@ public class GrailsClassUtilsTests extends TestCase {
         assertEquals("URL", GrailsClassUtils.getNaturalName("URL"));
         assertEquals("Local URL", GrailsClassUtils.getNaturalName("localURL"));
         assertEquals("URL local", GrailsClassUtils.getNaturalName("URLlocal"));
+    }
+
+
+    public void testGetLogicalName() {
+
+        assertEquals("Test", GrailsClassUtils.getLogicalName("TestController", "Controller"));
+    }
+
+    public void testGetLogicalPropertyName() {
+        assertEquals("myFunky", GrailsClassUtils.getLogicalPropertyName("MyFunkyController", "Controller"));
     }
 
     public void testIsDomainClass() throws Exception

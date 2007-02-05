@@ -840,16 +840,32 @@ public class GrailsClassUtils {
 	 * @return The logical class name
 	 */
 	public static String getLogicalName(Class clazz, String trailingName) {
-		if(!StringUtils.isBlank(trailingName)) {
-			String shortName = getShortName(clazz);		
-			if(shortName.indexOf( trailingName ) > - 1) {
-			    return shortName.substring(0, shortName.length() - trailingName.length());
-			}			
-		}
-		return clazz.getName();
+        return getLogicalName(clazz.getName(), trailingName);
 	}
 
-	/**
+    /**
+     * Retrieves the logical name of the classs without the trailing name
+     * @param name The name of the class
+     * @param trailingName The trailing name
+     * @return The logical name
+     */
+    public static String getLogicalName(String name, String trailingName ) {
+        if(!StringUtils.isBlank(trailingName)) {
+            String shortName = getShortName(name);
+            if(shortName.indexOf( trailingName ) > - 1) {
+                return shortName.substring(0, shortName.length() - trailingName.length());
+            }
+        }
+        return name;
+    }
+
+    public static String getLogicalPropertyName(String className, String trailingName) {
+        return getLogicalName(getPropertyName(className), trailingName);
+    }
+
+    
+
+    /**
 	 * Retrieves the name of a setter for the specified property name
 	 * @param propertyName The property name
 	 * @return The setter equivalent
@@ -975,5 +991,6 @@ public class GrailsClassUtils {
     		return clazz.isAssignableFrom(type);
     	}
     }
-	
+
+
 }
