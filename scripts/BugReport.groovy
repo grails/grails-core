@@ -46,8 +46,15 @@ task ('default': "Creates a ZIP containing source artifacts for reporting bugs")
 	def date = new java.text.SimpleDateFormat("ddMMyyyy").format(new Date())
 	def zipName = "${basedir}/${fileName}-bug-report-${date}.zip"
 
-	Ant.zip(destfile:zipName, basedir:"${basedir}/grails-app")
+	Ant.zip(destfile:zipName) {
+	    fileset(dir: "${basedir}", includes: "grails-app/**/*")
+	    fileset(dir: "${basedir}", includes: "grails-tests/**/*")
+	    fileset(dir: "${basedir}", includes: "scripts/**/*")
+	    fileset(dir: "${basedir}", includes: "spring/**/*")
+	    fileset(dir: "${basedir}", includes: "src/**/*")
+	}
 
-	println "Created bug-report ZIP at ${zipName}"
+	println "Created bug-report ZIP at ${zipName}, excluding lib/, hibernate/, plugins/, scripts/ and web-app/"
+	println "Please attach this ZIP to your Jira issue."
 }
 
