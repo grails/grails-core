@@ -61,7 +61,7 @@
 			<div class="searchbar">
 				<div id="total" class="total">You have (${Bookmark.countByUser(session.user)}) bookmarks</div>
 				<div class="search">
-					<g:form id="searchForm" url="[action:'search']">
+					<g:form id="searchForm" url="[action:'search', controller:'bookmark']">
 						<input type="text" name="q" /> <input type="submit" value="search" />
 					</g:form>
 				</div>
