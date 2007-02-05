@@ -31,7 +31,20 @@ class BookmarkController extends SecureController {
 		else {
 			render "bookmark not found for id ${params.id}"
 		}
+	}           
+	
+	def delete = {
+		def b = Bookmark.get(params.id)
+		if(b) {
+			b.delete()
+			flash.message = "Bookmark ${b.id} deleted."
+			redirect(action:list)
+		}
+		else {
+			render "Bookmark not found"
+		}
 	}
+		
 	def update = {
 		def b = Bookmark.get(params.id)
  		if(b) {
