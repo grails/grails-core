@@ -45,7 +45,7 @@ public abstract class AbstractDynamicPersistentMethod extends
         return new HibernateTemplate(this.sessionFactory);
     }
 
-    public Object invoke(Object target, Object[] arguments) {
+    public Object invoke(Object target, String methodName, Object[] arguments) {
         ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
         Thread.currentThread().setContextClassLoader(this.classLoader);
         Object returnValue = doInvokeInternal(target, arguments);

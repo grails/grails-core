@@ -36,7 +36,7 @@ class BindDataMethodTests extends AbstractGrailsControllerTests {
             def safeMeta = target.metaClass
             def src = [ 'metaClass' : this.metaClass, 'name' : 'Marc Palmer' ]
 
-            method.invoke( mockController, [target, src].toArray() )
+            method.invoke( mockController, "bindData", [target, src].toArray() )
 
             assertEquals "Marc Palmer", target.name
             assertEquals safeMeta, target.metaClass
@@ -54,7 +54,7 @@ class BindDataMethodTests extends AbstractGrailsControllerTests {
             def src = [ 'metaClass' : this.metaClass, 'name' : 'Marc Palmer', 'email' : 'dontwantthis' ]
             def excludes = ['email']
 
-            method.invoke( mockController, [target, src, excludes].toArray() )
+            method.invoke( mockController,"bindData", [target, src, excludes].toArray() )
 
             assertEquals "Marc Palmer", target.name
             assertEquals safeMeta, target.metaClass

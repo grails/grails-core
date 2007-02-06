@@ -343,30 +343,30 @@ class ControllersGrailsPlugin {
 			def bind = new BindDynamicMethod()
 			// the redirect dynamic method
 			metaClass.redirect = { Map args ->
-				redirect.invoke(delegate,args)
+				redirect.invoke(delegate,"redirect",args)
 			} 
 		    metaClass.chain = { Map args ->
-		    	chain.invoke(delegate, args)
+		    	chain.invoke(delegate, "chain",args)
 		    }
 		    // the render method
 		    metaClass.render = { String txt ->
-				render.invoke(delegate, [txt] as Object[])
+				render.invoke(delegate, "render",[txt] as Object[])
 		    }
 		    metaClass.render = { Map args ->
-				render.invoke(delegate, [args] as Object[])
+				render.invoke(delegate, "render",[args] as Object[])
 	    	}	
 		    metaClass.render = { Closure c ->
-				render.invoke(delegate, [c] as Object[])
+				render.invoke(delegate,"render", [c] as Object[])
 	    	}		   
 		    metaClass.render = { Map args, Closure c ->
-				render.invoke(delegate, [args, c] as Object[])
+				render.invoke(delegate,"render", [args, c] as Object[])
 		    }		   
 		    // the bindData method
 		    metaClass.bindData = { Object target, Object args ->
-		    	bind.invoke(delegate, [target, args] as Object[])
+		    	bind.invoke(delegate, "bindData", [target, args] as Object[])
 		    }
 		    metaClass.bindData = { Object target, Object args, List disallowed ->
-		    	bind.invoke(delegate, [target, args, disallowed] as Object[])
+		    	bind.invoke(delegate, "bindData", [target, args, disallowed] as Object[])
 		    }
 		}
 	}

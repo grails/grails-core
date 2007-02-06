@@ -151,7 +151,7 @@ public abstract class AbstractDynamicMethods implements DynamicMethods {
 				}				
 				
 				try {
-					Object result = methodInvocation.invoke(object, arguments);
+					Object result = methodInvocation.invoke(object, methodName,arguments);
 					if(LOG.isDebugEnabled()) {
 						LOG.debug("[DynamicMethods] Instance method ["+methodName+"] invoked successfully with result ["+result+"]. Marking as invoked");			
 					}	

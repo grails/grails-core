@@ -15,6 +15,8 @@
  */
 package org.codehaus.groovy.grails.commons.metaclass;
 
+import java.beans.IntrospectionException;
+
 /**
  * Simple concrete class implementation of AbstractDynamicMethods class
  * 
@@ -23,4 +25,10 @@ package org.codehaus.groovy.grails.commons.metaclass;
  *
  */
 public class DefaultDynamicMethods extends AbstractDynamicMethods {
+
+    public DefaultDynamicMethods(Class theClass) throws IntrospectionException {
+        super();
+        this.clazz = theClass;
+    }
+    
 }

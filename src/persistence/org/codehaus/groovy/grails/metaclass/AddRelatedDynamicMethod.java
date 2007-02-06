@@ -50,15 +50,15 @@ public class AddRelatedDynamicMethod extends AbstractAddRelatedDynamicMethod {
         this.property = property;
     }
 
-    public Object invoke(Object target, Object[] arguments) {
+    public Object invoke(Object target, String methodName, Object[] arguments) {
         if(arguments.length == 0 ) {
-           throw new MissingMethodException(methodName,target.getClass(),arguments);
+           throw new MissingMethodException(this.methodName,target.getClass(),arguments);
         }
         if(arguments[0] == null) {
-        	throw new IllegalArgumentException("Argument to ["+methodName+"] cannot be null");
+        	throw new IllegalArgumentException("Argument to ["+ this.methodName +"] cannot be null");
         }
         if(!arguments[0].getClass().equals(property.getReferencedPropertyType())) {
-           throw new MissingMethodException(methodName,target.getClass(),arguments);
+           throw new MissingMethodException(this.methodName,target.getClass(),arguments);
         }
 
         Object toAdd = arguments[0];

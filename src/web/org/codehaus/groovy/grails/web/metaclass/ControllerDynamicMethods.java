@@ -15,7 +15,6 @@
  */
 package org.codehaus.groovy.grails.web.metaclass;
 
-import groovy.lang.Closure;
 import groovy.lang.GroovyObject;
 import groovy.lang.MissingMethodException;
 import org.codehaus.groovy.grails.commons.GrailsControllerClass;
@@ -29,7 +28,6 @@ import org.codehaus.groovy.grails.web.servlet.GrailsHttpServletRequest;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.FlashScope;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsControllerHelper;
-import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.springframework.validation.Errors;
 import org.springframework.web.servlet.ModelAndView;
 import org.apache.commons.logging.Log;
@@ -39,7 +37,6 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.beans.IntrospectionException;
-import java.util.Map;
 import java.util.regex.Pattern;
 
 /**
@@ -119,7 +116,7 @@ public class ControllerDynamicMethods extends
         // the getViewUri(name,request) method that retrieves the name of a view for current controller
         addDynamicMethodInvocation( new AbstractDynamicMethodInvocation(GET_VIEW_URI_PATTERN){
 
-            public Object invoke(Object target, Object[] arguments) {
+            public Object invoke(Object target, String methodName, Object[] arguments) {
                 if(arguments.length==0)
                     throw new MissingMethodException(GET_VIEW_URI,target.getClass(),arguments);
                 if(arguments[0] == null)
@@ -133,7 +130,7 @@ public class ControllerDynamicMethods extends
         // the getTemplateUri(name,request) method that retrieves the name of a template for current controller        
         addDynamicMethodInvocation( new AbstractDynamicMethodInvocation(GET_TEMPLATE_URI_PATTERN){
 
-            public Object invoke(Object target, Object[] arguments) {
+            public Object invoke(Object target, String methodName, Object[] arguments) {
                 if(arguments.length==0)
                     throw new MissingMethodException(GET_TEMPLATE_URI,target.getClass(),arguments);
                 if(arguments[0] == null)
@@ -146,7 +143,7 @@ public class ControllerDynamicMethods extends
 
         // the hasErrors() dynamic method that checks of there are any errors in the controller
         addDynamicMethodInvocation( new AbstractDynamicMethodInvocation(HAS_ERRORS_METHOD_PATTERN) {
-            public Object invoke(Object target, Object[] arguments) {
+            public Object invoke(Object target, String methodName, Object[] arguments) {
                 GroovyObject controller = (GroovyObject)target;
                 Errors errors = (Errors)controller.getProperty(ERRORS_PROPERTY);
                 return Boolean.valueOf(errors.hasErrors());

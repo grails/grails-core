@@ -56,7 +56,7 @@ public class DomainClassMethods extends AbstractDynamicMethods implements Transa
         addDynamicMethodInvocation(new RefreshPersistentMethod(sessionFactory, classLoader));
         addDynamicMethodInvocation(new ValidatePersistentMethod(sessionFactory, classLoader, application ));
         addDynamicMethodInvocation(new AbstractDynamicMethodInvocation(HAS_ERRORS_METHOD_PATTERN) {
-            public Object invoke(Object target, Object[] arguments) {
+            public Object invoke(Object target, String methodName, Object[] arguments) {
                 Errors errors = (Errors)getDynamicProperty(ERRORS_PROPERTY).get(target);
                 if(errors == null || !errors.hasErrors()) {
                     return Boolean.FALSE;

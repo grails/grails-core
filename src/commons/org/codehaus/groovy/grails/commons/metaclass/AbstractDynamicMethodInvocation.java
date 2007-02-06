@@ -47,5 +47,5 @@ public abstract class AbstractDynamicMethodInvocation implements
         return this.pattern.matcher(methodName.subSequence(0, methodName.length())).matches();
     }
 
-    public abstract Object invoke(Object target, Object[] arguments);
+    public abstract Object invoke(Object target, String methodName, Object[] arguments);
 }

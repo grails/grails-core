@@ -48,7 +48,7 @@ public class AddToRelatedDynamicMethod extends AbstractAddRelatedDynamicMethod {
 		this.domainClass = domainClass;
 	}
 
-	public Object invoke(Object target, Object[] arguments) {
+	public Object invoke(Object target, String methodName, Object[] arguments) {
 		if(arguments.length < 2)
 			throw new MissingMethodException(METHOD_NAME,target.getClass(),arguments);
         if(arguments[1] == null) {

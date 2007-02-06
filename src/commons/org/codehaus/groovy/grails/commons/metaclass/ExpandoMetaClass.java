@@ -91,7 +91,7 @@ import org.codehaus.groovy.runtime.MethodKey;
  * @author Graeme Rocher
  * @since 0.4
  */
-public class ExpandoMetaClass extends MetaClassImpl implements GroovyObject {
+public class  ExpandoMetaClass extends MetaClassImpl implements GroovyObject {
 
 	private static final String META_CLASS = "metaClass";
 	private static final String CLASS = "class";
@@ -115,8 +115,8 @@ public class ExpandoMetaClass extends MetaClassImpl implements GroovyObject {
 	private Set inheritedMetaMethods = new HashSet();
 	private List expandoMethods = new LinkedList();
 	private List expandoProperties = new LinkedList();
-	
-	interface Callable {
+
+    interface Callable {
 		void call();
 	}
 
@@ -238,14 +238,14 @@ public class ExpandoMetaClass extends MetaClassImpl implements GroovyObject {
 	 * @author Graeme Rocher
 	 *
 	 */
-	private class ExpandoMetaProperty extends GroovyObjectSupport {
+	protected class ExpandoMetaProperty extends GroovyObjectSupport {
 		
 		String propertyName;
 		boolean isStatic = false;
-		private ExpandoMetaProperty(String name) {
+		protected ExpandoMetaProperty(String name) {
 			this(name, false);
 		}
-		private ExpandoMetaProperty(String name, boolean isStatic) {
+		protected ExpandoMetaProperty(String name, boolean isStatic) {
 			this.propertyName = name;
 			this.isStatic = isStatic;
 		}
@@ -345,7 +345,7 @@ public class ExpandoMetaClass extends MetaClassImpl implements GroovyObject {
 	 * @author Graeme Rocher
 	 *
 	 */
-	private class ExpandoMetaConstructor extends GroovyObjectSupport {
+	protected class ExpandoMetaConstructor extends GroovyObjectSupport {
 		
 
 		public Object leftShift(Closure c) {

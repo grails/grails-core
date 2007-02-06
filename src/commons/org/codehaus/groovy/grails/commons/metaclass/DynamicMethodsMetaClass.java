@@ -17,6 +17,7 @@ package org.codehaus.groovy.grails.commons.metaclass;
 
 import groovy.lang.MetaClass;
 import groovy.lang.MetaClassImpl;
+import groovy.lang.GroovyObject;
 
 import java.beans.IntrospectionException;
 
@@ -37,12 +38,11 @@ import org.codehaus.groovy.runtime.InvokerHelper;
  */
 public class DynamicMethodsMetaClass extends MetaClassImpl implements AdapterMetaClass {
 
-	DynamicMethods dynamicMethods = null;
+	DynamicMethods dynamicMethods;
 	MetaClass adaptee = null;
-	
-	
-	
-	/**
+
+
+    /**
 	 * @return the adaptee
 	 */
 	public MetaClass getAdaptee() {
@@ -53,12 +53,21 @@ public class DynamicMethodsMetaClass extends MetaClassImpl implements AdapterMet
 			throws IntrospectionException {
 		this(clazz,dynamicMethods,true);
 	}
-	
-	public DynamicMethodsMetaClass(Class clazz, DynamicMethods dynamicMethods, boolean inRegistry)
+
+	public DynamicMethodsMetaClass(Class clazz)
+			throws IntrospectionException {
+		this(clazz,null,false);
+	}
+
+    public DynamicMethodsMetaClass(Class clazz, DynamicMethods dynamicMethods, boolean inRegistry)
 			throws IntrospectionException {
 		super(InvokerHelper.getInstance().getMetaRegistry(), clazz);
-		this.dynamicMethods = dynamicMethods;
-		adaptee = registry.getMetaClass(clazz);		
+        if(dynamicMethods != null)
+            this.dynamicMethods = dynamicMethods;
+        else
+            this.dynamicMethods = new DefaultDynamicMethods(clazz);
+        
+        adaptee = registry.getMetaClass(clazz);
 		if(inRegistry) {
 			registry.setMetaClass(clazz, this);
 		}
@@ -124,6 +133,4 @@ public class DynamicMethodsMetaClass extends MetaClassImpl implements AdapterMet
     public void setAdaptee(MetaClass a) {
 		this.adaptee = a;
 	}
-	
-	
 }

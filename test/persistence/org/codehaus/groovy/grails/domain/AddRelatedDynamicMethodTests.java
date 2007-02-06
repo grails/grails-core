@@ -65,20 +65,20 @@ public class AddRelatedDynamicMethodTests extends TestCase {
         AbstractAddRelatedDynamicMethod ardm = new AddRelatedDynamicMethod(authorDC.getPropertyByName("books"));
 
         try {
-            ardm.invoke(author,new Object[0]);
+            ardm.invoke(author, "addBook", new Object[0]);
             fail("Should have thrown missing method exception!");
         } catch (MissingMethodException e) {
             // expected
         }
 
         try {
-            ardm.invoke(author,new Object[]{"blah"});
+            ardm.invoke(author, "addBook", new Object[]{"blah"});
             fail("Should have thrown missing method exception!");
         } catch (MissingMethodException e) {
             // expected
         }
 
-        ardm.invoke(author, new Object[]{book});
+        ardm.invoke(author, "addBook", new Object[]{book});
 
         assertEquals(author,book.getProperty("author"));
         Set books = (Set)author.getProperty("books");
@@ -113,20 +113,20 @@ public class AddRelatedDynamicMethodTests extends TestCase {
          AbstractAddRelatedDynamicMethod ardm = new AddRelatedDynamicMethod(authorDC.getPropertyByName("books"));
 
          try {
-             ardm.invoke(author,new Object[0]);
+             ardm.invoke(author, "addBook", new Object[0]);
              fail("Should have thrown missing method exception!");
          } catch (MissingMethodException e) {
              // expected
          }
 
          try {
-             ardm.invoke(author,new Object[]{"blah"});
+             ardm.invoke(author, "addBook", new Object[]{"blah"});
              fail("Should have thrown missing method exception!");
          } catch (MissingMethodException e) {
              // expected
          }
 
-         ardm.invoke(author, new Object[]{book});
+         ardm.invoke(author, "addBook", new Object[]{book});
 
          assertEquals(author,book.getProperty("author"));
          SortedSet books = (SortedSet)author.getProperty("books");

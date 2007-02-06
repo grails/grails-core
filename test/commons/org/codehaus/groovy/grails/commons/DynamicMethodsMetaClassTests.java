@@ -30,7 +30,7 @@ public class DynamicMethodsMetaClassTests extends TestCase {
 
         DynamicMethods methods = new AbstractDynamicMethods(groovyClass) {};
         methods.addDynamicMethodInvocation(new AbstractDynamicMethodInvocation(Pattern.compile("^testDynamic$")) {
-            public Object invoke(Object target, Object[] arguments) {
+            public Object invoke(Object target, String methodName, Object[] arguments) {
                 return "success";
             }
 
