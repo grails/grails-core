@@ -63,7 +63,7 @@ getGrailsLibs =  {
 getGrailsJar =  { args ->
    result = ''
    (new File("${grailsHome}/dist")).eachFileMatch(~/^grails-.*\.jar/) { file ->
-      result =  file.name
+      result += "<classpathentry kind=\"var\" path=\"GRAILS_HOME/dist/${file.name}\" />\n\n"
    }
    result
 }

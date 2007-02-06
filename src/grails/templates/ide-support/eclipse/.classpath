@@ -11,6 +11,6 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="var" path="GRAILS_HOME/ant/lib/ant.jar"/>
     @grails.libs@
-	<classpathentry kind="var" path="GRAILS_HOME/dist/@grails.jar@"/>
+	@grails.jar@
 	<classpathentry kind="output" path="web-app/WEB-INF/classes"/>
 </classpath>
