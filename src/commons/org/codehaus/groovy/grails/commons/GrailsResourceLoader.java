@@ -22,6 +22,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 
 /**
  * A GroovyResourceLoader that loads groovy files using Spring's IO abstraction
@@ -32,6 +34,7 @@ import java.util.List;
 public class GrailsResourceLoader implements GroovyResourceLoader {
     private Resource[] resources;
     private List loadedResources = new ArrayList();
+    private Map classToResource = new HashMap();
 
     public GrailsResourceLoader(Resource[] resources) {
          this.resources = resources;
@@ -45,9 +48,9 @@ public class GrailsResourceLoader implements GroovyResourceLoader {
         this.resources = resources;
     }
 
-    public URL loadGroovySource(String resource) throws MalformedURLException {
-    	if(resource == null) return null;
-        String groovyFile = resource.replace('.', '/') + ".groovy";
+    public URL loadGroovySource(String className) throws MalformedURLException {
+    	if(className == null) return null;
+        String groovyFile = className.replace('.', '/') + ".groovy";
         Resource foundResource = null;
         for (int i = 0; resources != null && i < resources.length; i++) {
             if (resources[i].getFilename().equals(groovyFile)) {
@@ -61,6 +64,7 @@ public class GrailsResourceLoader implements GroovyResourceLoader {
         try {
             if (foundResource != null) {
                 loadedResources.add(foundResource);
+                classToResource.put(className, foundResource);
                 return foundResource.getURL();
             } else {
                 return null;
@@ -68,5 +72,15 @@ public class GrailsResourceLoader implements GroovyResourceLoader {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    /**
+     * Returns the Grails resource for the given class or null if it is not a Grails resource
+     *
+     * @param theClass The class
+     * @return The Resource or null
+     */
+    public Resource getResourceForClass(Class theClass) {
+        return (Resource)classToResource.get(theClass.getName());
     }
 }

@@ -83,7 +83,6 @@ task(warPlugins:"Includes the plugins in the WAR") {
 		copy(todir:"${basedir}/web-app/WEB-INF/plugins", failonerror:false) {
 			fileset(dir:"${basedir}/plugins")  {
 				include(name:"**/grails-app/**")
-				exclude(name:"**/grails-app/views")
 				exclude(name:"**/grails-app/i18n")				
 			}
 		}

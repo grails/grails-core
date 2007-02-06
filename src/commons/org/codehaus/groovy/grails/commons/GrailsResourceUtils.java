@@ -148,21 +148,7 @@ public class GrailsResourceUtils {
 
         try {
             Resource appDir = getAppDir(resource);
-            StringBuffer buf = new StringBuffer(appDir.getURL().toString());
-
-            String className = getClassName(resource);
-            buf.append("/views");
-            if(GrailsClassUtils.isControllerClass(className)) {
-               buf.append("/").append(GrailsClassUtils.getLogicalPropertyName(className, "Controller"));
-            }
-            else if(GrailsClassUtils.isTagLibClass(className)) {
-                buf.append("/").append(GrailsClassUtils.getLogicalPropertyName(className, "TagLib"));
-            }
-            else if(isDomainClass(resource.getURL())) {
-                buf.append("/").append(GrailsClassUtils.getPropertyName(className));
-            }
-
-            return new UrlResource(buf.toString());
+            return new UrlResource(appDir.getURL().toString()+"/views");
 
         } catch (IOException e) {
             if(LOG.isDebugEnabled()) {
@@ -196,5 +182,47 @@ public class GrailsResourceUtils {
             }
             return null;
         }
+    }
+
+
+    private static final Pattern PLUGIN_PATTERN = Pattern.compile(".+?(/plugins/.+?/grails-app/.+)");
+    /**
+     * This method will take a Grails resource (one located inside the grails-app dir) and get its relative path inside the WEB-INF directory
+     * when deployed
+     *
+     * @param resource The Grails resource, which is a file inside the grails-app dir
+     * @return The relative URL of the file inside the WEB-INF dir at deployment time or null if it cannot be established
+     */
+    public static String getRelativeInsideWebInf(Resource resource) {
+        if(resource == null) return null;
+
+        try {
+            String url = resource.getURL().toString();
+            int i = url.indexOf("/WEB-INF");
+            if(i > -1) {
+                return url.substring(i);
+            }
+            else {
+                Matcher m = PLUGIN_PATTERN.matcher(url);
+                if(m.find()) {
+                    return "/WEB-INF"+m.group(1);
+                }
+                else {
+                    i = url.lastIndexOf("grails-app");
+                    if(i > -1) {
+                        return "/WEB-INF/" + url.substring(i);
+                    }
+                }
+            }
+            
+        } catch (IOException e) {
+            if(LOG.isDebugEnabled()) {
+                LOG.debug("Error reading URL whilst resolving relative path within WEB-INF from ["+resource+"]: " + e.getMessage(),e);
+            }
+            return null;
+
+        }
+        return null;
+        
     }
 }

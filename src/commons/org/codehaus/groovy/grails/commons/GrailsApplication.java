@@ -17,6 +17,7 @@ package org.codehaus.groovy.grails.commons;
 
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.core.io.Resource;
 
 import groovy.lang.GroovyClassLoader;
 
@@ -323,4 +324,12 @@ public interface GrailsApplication extends ApplicationContextAware {
      * This method will rebuild the constraint definitions
      */
     public void refreshConstraints();
+
+    /**
+     * Retrieves a Resource instance for the given Grails class or null it doesn't exist
+     *
+     * @param theClazz The Grails class
+     * @return A Resource or null
+     */
+    public Resource getResourceForClass(Class theClazz);
 }

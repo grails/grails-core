@@ -37,20 +37,24 @@ task ( "default" : "Performs packaging of Grails plugins for when they are distr
 task( packagePlugins : "Packages any Grails plugins that are installed for this project") {
 	depends( classpath )
 	try {
-	   	def plugins = resolver.getResources("**GrailsPlugin.groovy")
-
+	   	def plugins = resolveResources("**GrailsPlugin.groovy").toList()
+		plugins += resolveResources("plugins/*/*GrailsPlugin.groovy").toList()
 	   	plugins?.each { p ->  	   
 	   		def pluginBase = p.file.parentFile  
 	     	def pluginPath = pluginBase.absolutePath
-			def pluginName = pluginBase.name[0..pluginBase.name.lastIndexOf('-')]
+			def pluginName = pluginBase.name[0..pluginBase.name.lastIndexOf('-')-1]
+			def pluginNameWithVersion = pluginBase.name
+			
 	   		Ant.sequential {            
 				if(new File("${pluginBase}/lib").exists()) {
 		   			copy(todir:"${basedir}/web-app/WEB-INF/lib", failonerror:false) {
 		   				fileset(dir:"${pluginBase}/lib", includes:"**")
 		   			}   			                     					
 				}        
-				if(new File("${pluginBase}/grails-app/views").exists()) {				
-	   				copy(todir:"${basedir}/web-app/WEB-INF/grails-app/views", failonerror:false) {
+				if(new File("${pluginBase}/grails-app/views").exists()) { 
+					def pluginViews = "${basedir}/web-app/WEB-INF/plugins/${pluginNameWithVersion}/grails-app/views"
+					mkdir(dir:pluginViews)   			
+	   				copy(todir:pluginViews, failonerror:false) {
 	   					fileset(dir:"${pluginBase}/grails-app/views", includes:"**")
 	   				}
 	            }

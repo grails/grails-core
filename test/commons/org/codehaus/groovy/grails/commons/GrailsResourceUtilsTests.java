@@ -11,6 +11,11 @@ public class GrailsResourceUtilsTests extends TestCase {
 
 	private static final String TEST_URL = "file:///test/grails/app/grails-app/domain/Test.groovy";
     private static final String TEST_CONTROLLER_URL = "file:///test/grails/app/grails-app/controllers/TestController.groovy";
+    private static final String TEST_PLUGIN_CTRL = "file:///test/grails/app/plugins/myplugin/grails-app/controllers/TestController.groovy";
+
+    private static final String WEBINF_CONTROLLER = "file:///test/grails/app/WEB-INF/grails-app/controllers/TestController.groovy";
+    private static final String WEBINF_PLUGIN_CTRL = "file:///test/grails/app/WEB-INF/plugins/myplugin/grails-app/controllers/TestController.groovy";
+
     private static final String UNIT_TESTS_URL = "file:///test/grails/app/grails-tests/SomeTests.groovy";
 
 	protected void setUp() throws Exception {
@@ -69,6 +74,27 @@ public class GrailsResourceUtilsTests extends TestCase {
         appDir = GrailsResourceUtils.getAppDir(new UrlResource(TEST_URL));
 
         assertEquals("file:/test/grails/app/grails-app", appDir.getURL().toString());
+
+    }
+
+    public void testGetDirWithinWebInf() throws Exception {
+        Resource viewsDir = GrailsResourceUtils.getViewsDir(new UrlResource(TEST_CONTROLLER_URL));
+        Resource pluginViews = GrailsResourceUtils.getViewsDir(new UrlResource(TEST_PLUGIN_CTRL));
+
+        Resource webInfViews = GrailsResourceUtils.getViewsDir(new UrlResource(WEBINF_CONTROLLER));
+        Resource webInfPluginViews = GrailsResourceUtils.getViewsDir(new UrlResource(WEBINF_PLUGIN_CTRL));
+
+        assertEquals("file:/test/grails/app/grails-app/views", viewsDir.getURL().toString());
+        assertEquals("file:/test/grails/app/plugins/myplugin/grails-app/views", pluginViews.getURL().toString());
+        assertEquals("file:/test/grails/app/WEB-INF/grails-app/views", webInfViews.getURL().toString());
+        assertEquals("file:/test/grails/app/WEB-INF/plugins/myplugin/grails-app/views", webInfPluginViews.getURL().toString());
+
+        assertEquals("/WEB-INF/grails-app/views", GrailsResourceUtils.getRelativeInsideWebInf(webInfViews));
+        assertEquals("/WEB-INF/plugins/myplugin/grails-app/views", GrailsResourceUtils.getRelativeInsideWebInf(webInfPluginViews));
+
+        assertEquals("/WEB-INF/plugins/myplugin/grails-app/views", GrailsResourceUtils.getRelativeInsideWebInf(pluginViews));
+        assertEquals("/WEB-INF/grails-app/views", GrailsResourceUtils.getRelativeInsideWebInf(viewsDir));
+
 
     }
 

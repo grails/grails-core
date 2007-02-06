@@ -15,36 +15,27 @@
  */ 
 package org.codehaus.groovy.grails.commons;
 
+import grails.util.GrailsUtil;
 import groovy.lang.GroovyClassLoader;
-import groovy.lang.MetaClass;
-
-import java.io.IOException;
-import java.lang.reflect.Modifier;
-import java.security.CodeSource;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.control.CompilationUnit;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.Phases;
-import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.grails.commons.spring.GrailsResourceHolder;
 import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException;
 import org.codehaus.groovy.grails.injection.GrailsInjectionOperation;
-import org.codehaus.groovy.grails.commons.GrailsDomainConfigurationUtil;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.Resource;
 import org.springframework.util.Assert;
-import grails.util.GrailsUtil;
+
+import java.io.IOException;
+import java.lang.reflect.Modifier;
+import java.security.CodeSource;
+import java.util.*;
 
 /**
  * Default implementation of the GrailsApplication interface that manages application loading,
@@ -68,7 +59,6 @@ public class DefaultGrailsApplication implements GrailsApplication {
 
     private Map controllerMap = null;
     private Map domainMap = null;
-    private Map pageFlowMap = null;
     private Map serviceMap = null;
     private Map taglibMap = null;
     private Map taskMap = null;
@@ -81,8 +71,8 @@ public class DefaultGrailsApplication implements GrailsApplication {
     private static Log log = LogFactory.getLog(DefaultGrailsApplication.class);
     private Map tag2libMap;
 	private ApplicationContext parentContext;
-	private MetaClass[] metaClasses;
-	private Set loadedClasses = new HashSet();
+    private Set loadedClasses = new HashSet();
+    private GrailsResourceLoader resourceLoader;
 
 
     public DefaultGrailsApplication(final Class[] classes, GroovyClassLoader classLoader) {
@@ -102,10 +92,10 @@ public class DefaultGrailsApplication implements GrailsApplication {
 
         log.debug("Loading Grails application.");
 
-        final GrailsResourceLoader resourceLoader = new GrailsResourceLoader(resources);
+        this.resourceLoader = new GrailsResourceLoader(resources);
         GrailsResourceHolder resourceHolder = new GrailsResourceHolder();
 
-        this.cl = configureClassLoader(injectionOperation, resourceLoader, resources, resourceHolder);
+        this.cl = configureClassLoader(injectionOperation, resourceLoader);
 
         Collection loadedResources = new ArrayList();
         this.loadedClasses = new HashSet();
@@ -159,7 +149,7 @@ public class DefaultGrailsApplication implements GrailsApplication {
         configureLoadedClasses(classes);
     }
 
-    private GroovyClassLoader configureClassLoader(final GrailsInjectionOperation injectionOperation, final GrailsResourceLoader resourceLoader, Resource[] resources, GrailsResourceHolder resourceHolder) throws IOException {
+    private GroovyClassLoader configureClassLoader(final GrailsInjectionOperation injectionOperation, final GrailsResourceLoader resourceLoader) throws IOException {
         GroovyClassLoader cl;
 
 
@@ -222,7 +212,6 @@ public class DefaultGrailsApplication implements GrailsApplication {
         }
 
         this.controllerMap = new HashMap();
-        this.pageFlowMap = new HashMap();
         this.serviceMap = new HashMap();
         Map bootstrapMap = new HashMap();
         this.taglibMap = new HashMap();
@@ -638,5 +627,9 @@ public class DefaultGrailsApplication implements GrailsApplication {
             GrailsDomainClass domainClass = domainClasses[i];
             domainClass.refreshConstraints();
         }
+    }
+
+    public Resource getResourceForClass(Class theClazz) {
+        return this.resourceLoader.getResourceForClass(theClazz);
     }
 }
