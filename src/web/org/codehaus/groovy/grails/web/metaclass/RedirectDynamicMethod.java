@@ -69,7 +69,7 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
         super(METHOD_PATTERN);
     }
 
-    public Object invoke(Object target, Object[] arguments) {
+    public Object invoke(Object target, String methodName, Object[] arguments) {
         if(arguments.length == 0)
             throw new MissingMethodException(METHOD_SIGNATURE,target.getClass(),arguments);
 
