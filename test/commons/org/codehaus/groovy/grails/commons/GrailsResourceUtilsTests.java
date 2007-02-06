@@ -59,11 +59,11 @@ public class GrailsResourceUtilsTests extends TestCase {
     public void testGetViewsDirForURL() throws Exception {
         Resource viewsDir = GrailsResourceUtils.getViewsDir(new UrlResource(TEST_CONTROLLER_URL));
 
-        assertEquals("file:/test/grails/app/grails-app/views/test", viewsDir.getURL().toString());
+        assertEquals("file:/test/grails/app/grails-app/views", viewsDir.getURL().toString());
 
         viewsDir = GrailsResourceUtils.getViewsDir(new UrlResource(TEST_URL));
 
-        assertEquals("file:/test/grails/app/grails-app/views/test", viewsDir.getURL().toString());
+        assertEquals("file:/test/grails/app/grails-app/views", viewsDir.getURL().toString());
     }
 
     public void testGetAppDir() throws Exception {
