@@ -41,7 +41,7 @@ public class IdentDynamicMethod extends AbstractDynamicMethodInvocation {
         this.application = application;
     }
 
-    public Object invoke(Object target, Object[] arguments) {
+    public Object invoke(Object target, String methodName, Object[] arguments) {
         BeanWrapper bean = new BeanWrapperImpl(target);
         GrailsDomainClass domainClass = application.getGrailsDomainClass(target.getClass().getName());
         return bean.getPropertyValue(domainClass.getIdentifier().getName());
