@@ -69,13 +69,15 @@ public class GrailsLayoutDecoratorMapper extends AbstractDecoratorMapper impleme
 		if(StringUtils.isBlank(layoutName)) {		
 			GroovyObject controller = (GroovyObject)request.getAttribute(GrailsApplicationAttributes.CONTROLLER);		
 			if(controller != null) {
-				if(LOG.isDebugEnabled())
-					LOG.debug("Found controller in request, checking for layout");
-				
+
 				String controllerName = (String)controller.getProperty(ControllerDynamicMethods.CONTROLLER_NAME_PROPERTY);
 				String actionUri = (String)controller.getProperty(ControllerDynamicMethods.ACTION_URI_PROPERTY);
-				
-				Decorator d = getNamedDecorator(request, actionUri.substring(1));
+
+                if(LOG.isDebugEnabled())
+                    LOG.debug("Found controller in request, location layout for controller ["+controllerName+"] and action ["+actionUri+"]");
+
+
+                Decorator d = getNamedDecorator(request, actionUri.substring(1));
 			    if(d!=null) {
 			    	return d;
 			    } else if(!StringUtils.isBlank(controllerName)) {

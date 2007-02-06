@@ -48,7 +48,8 @@ public class GrailsLayoutDecoratorMapperTests extends TestCase {
 				"def actionUri = '/test/testAction'\n" +
 		"}").newInstance();
 		
-		request.setAttribute(GrailsApplicationAttributes.CONTROLLER, controller);		GrailsLayoutDecoratorMapper m = new GrailsLayoutDecoratorMapper();
+		request.setAttribute(GrailsApplicationAttributes.CONTROLLER, controller);
+        GrailsLayoutDecoratorMapper m = new GrailsLayoutDecoratorMapper();
 		Config c = new Config(new MockServletConfig(context));
 		m.init(c, null, null);
 		HTMLPageParser parser = new HTMLPageParser();
