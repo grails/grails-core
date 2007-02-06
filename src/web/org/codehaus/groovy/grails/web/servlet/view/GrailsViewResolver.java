@@ -83,6 +83,7 @@ public class GrailsViewResolver extends InternalResourceViewResolver {
 
 
                 String gspView;
+                String pluginContextPath = "";
                 // try to resolve the view relative to the controller first, this allows us to support
                 // views provided by plugins
                 if(controller != null && application != null) {

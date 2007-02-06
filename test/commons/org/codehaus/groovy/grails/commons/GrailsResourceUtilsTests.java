@@ -4,6 +4,8 @@ import java.net.URL;
 
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
+import org.springframework.mock.web.MockServletContext;
+import org.springframework.mock.web.MockHttpServletRequest;
 
 import junit.framework.TestCase;
 
@@ -95,6 +97,28 @@ public class GrailsResourceUtilsTests extends TestCase {
         assertEquals("/WEB-INF/plugins/myplugin/grails-app/views", GrailsResourceUtils.getRelativeInsideWebInf(pluginViews));
         assertEquals("/WEB-INF/grails-app/views", GrailsResourceUtils.getRelativeInsideWebInf(viewsDir));
 
+    }
+
+    public void testGetPluginContextPath() throws Exception {
+        Resource viewsDir = GrailsResourceUtils.getViewsDir(new UrlResource(TEST_CONTROLLER_URL));
+        Resource pluginViews = GrailsResourceUtils.getViewsDir(new UrlResource(TEST_PLUGIN_CTRL));
+        Resource webInfViews = GrailsResourceUtils.getViewsDir(new UrlResource(WEBINF_CONTROLLER));
+        Resource webInfPluginViews = GrailsResourceUtils.getViewsDir(new UrlResource(WEBINF_PLUGIN_CTRL));
+
+        
+        String webInfViewsPath = GrailsResourceUtils.getRelativeInsideWebInf(webInfViews);
+        String webInfPluginViewsPath = GrailsResourceUtils.getRelativeInsideWebInf(webInfPluginViews);
+        String pluginViewsPath=GrailsResourceUtils.getRelativeInsideWebInf(pluginViews);
+        String viewsPath=GrailsResourceUtils.getRelativeInsideWebInf(viewsDir);
+
+        MockServletContext servletContext = new MockServletContext("/myapp");
+        MockHttpServletRequest request = new MockHttpServletRequest(servletContext);
+        request.setContextPath("/myapp");
+
+        assertEquals("/myapp", GrailsResourceUtils.getStaticResourcePathForResource(new UrlResource(TEST_CONTROLLER_URL), request.getContextPath()));
+        assertEquals("/myapp/plugins/myplugin", GrailsResourceUtils.getStaticResourcePathForResource(new UrlResource(TEST_PLUGIN_CTRL), request.getContextPath()));
+        assertEquals("/myapp", GrailsResourceUtils.getStaticResourcePathForResource(new UrlResource(WEBINF_CONTROLLER), request.getContextPath()));
+        assertEquals("/myapp/plugins/myplugin", GrailsResourceUtils.getStaticResourcePathForResource(new UrlResource(WEBINF_PLUGIN_CTRL), request.getContextPath()));
 
     }
 

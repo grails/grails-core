@@ -36,6 +36,18 @@ public interface GrailsApplicationAttributes extends ApplicationAttributes {
     String ID_PARAM = "id";
     String GSP_TO_RENDER = "org.codehaus.groovy.grails.GSP_TO_RENDER";
 
+
+    /**
+     * Retrieves the plugin context path for the current request. The plugin context path is the path
+     * used by plugins to reference resources such as javascript, CSS and so forth
+     *
+     * It is established by evaluating the current controller, if the current controller is plugin provided
+     * then it will attempt to evaluate the path based on the plugin the controller came from
+     *
+     * @return The plugin context path
+     */
+    String getPluginContextPath(HttpServletRequest request);
+
     /**
      * @return The controller for the request
      */

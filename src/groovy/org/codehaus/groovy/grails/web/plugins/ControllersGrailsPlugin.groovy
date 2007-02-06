@@ -266,7 +266,8 @@ class ControllersGrailsPlugin {
 		   metaClass.getGrailsAttributes = grailsAttrsObject
 		   // The GrailsApplication object
 		   metaClass.getGrailsApplication = {-> RCH.currentRequestAttributes().attributes.grailsApplication }
-		
+
+		   metaClass.getPluginContextPath = {-> RCH.currentRequestAttributes().attributes.getPluginContextPath( request ) }		
 	}
 
 

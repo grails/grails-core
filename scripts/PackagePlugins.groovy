@@ -42,7 +42,7 @@ task( packagePlugins : "Packages any Grails plugins that are installed for this 
 	   	plugins?.each { p ->  	   
 	   		def pluginBase = p.file.parentFile  
 	     	def pluginPath = pluginBase.absolutePath
-			def pluginName = pluginBase.name[0..pluginBase.name.lastIndexOf('-')-1]
+			def pluginName = pluginBase.name
 			def pluginNameWithVersion = pluginBase.name
 			
 	   		Ant.sequential {            

@@ -46,7 +46,8 @@ import java.util.*;
  *
  * @since Jul 2, 2005
  */
-public class DefaultGrailsApplication implements GrailsApplication {
+public class
+        DefaultGrailsApplication implements GrailsApplication {
     private GroovyClassLoader cl = null;
     private GrailsControllerClass[] controllerClasses = null;
     private GrailsDomainClass[] domainClasses = null;
@@ -630,6 +631,7 @@ public class DefaultGrailsApplication implements GrailsApplication {
     }
 
     public Resource getResourceForClass(Class theClazz) {
+        if(this.resourceLoader == null) return null;
         return this.resourceLoader.getResourceForClass(theClazz);
     }
 }

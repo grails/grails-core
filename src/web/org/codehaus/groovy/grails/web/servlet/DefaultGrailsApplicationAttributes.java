@@ -29,6 +29,7 @@ import javax.servlet.http.HttpSession;
 
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsTagLibClass;
+import org.codehaus.groovy.grails.commons.GrailsResourceUtils;
 import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods;
 import org.codehaus.groovy.grails.web.metaclass.TagLibDynamicMethods;
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
@@ -37,6 +38,7 @@ import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecution
 import org.springframework.context.ApplicationContext;
 import org.springframework.validation.Errors;
 import org.springframework.web.util.UrlPathHelper;
+import org.springframework.core.io.Resource;
 
 /**
  * @author Graeme Rocher
@@ -54,6 +56,19 @@ public class DefaultGrailsApplicationAttributes implements GrailsApplicationAttr
 
     public ApplicationContext getApplicationContext() {
         return (ApplicationContext)this.context.getAttribute(APPLICATION_CONTEXT);
+    }
+
+    public String getPluginContextPath(HttpServletRequest request) {
+        GroovyObject controller = getController(request);
+        GrailsApplication application = getGrailsApplication();
+
+        if(controller != null && application != null) {
+            Resource controllerResource = application.getResourceForClass(controller.getClass());
+            return GrailsResourceUtils.getStaticResourcePathForResource(controllerResource, request.getContextPath());
+        }
+        else {
+            return request.getContextPath();
+        }
     }
 
     public GroovyObject getController(ServletRequest request) {

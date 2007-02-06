@@ -28,6 +28,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.commons.lang.StringUtils;
 
 /**
  * Utility methods for working with Grails resources and URLs that represent artifacts
@@ -186,6 +187,7 @@ public class GrailsResourceUtils {
 
 
     private static final Pattern PLUGIN_PATTERN = Pattern.compile(".+?(/plugins/.+?/grails-app/.+)");
+
     /**
      * This method will take a Grails resource (one located inside the grails-app dir) and get its relative path inside the WEB-INF directory
      * when deployed
@@ -224,5 +226,37 @@ public class GrailsResourceUtils {
         }
         return null;
         
+    }
+
+    private static final Pattern PLUGIN_RESOURCE_PATTERN = Pattern.compile(".+?/(plugins/.+?)/grails-app/.+");
+    
+    /**
+     * Retrieves the static resource path for the given Grails resource artifact (controller/taglib etc.)
+     * 
+     * @param resource The Resource
+     * @param contextPath The additonal context path to prefix
+     * @return The resource path
+     */
+    public static String getStaticResourcePathForResource(Resource resource, String contextPath) {
+
+        if(contextPath == null)contextPath = "";
+        if(resource == null)return contextPath;
+
+        String url;
+        try {
+            url = resource.getURL().toString();
+        } catch (IOException e) {
+            if(LOG.isDebugEnabled()) {
+                LOG.debug("Error reading URL whilst resolving static resource path from ["+resource+"]: " + e.getMessage(),e);
+            }
+            return contextPath;
+        }
+
+        Matcher m = PLUGIN_RESOURCE_PATTERN.matcher(url);
+        if(m.find()) {            
+             return contextPath + "/" + m.group(1);
+        }
+
+        return contextPath; 
     }
 }

@@ -465,7 +465,8 @@ public class GroovyPagesTemplateEngine {
 	            binding.setVariable(GrailsApplicationAttributes.CONTROLLER, controller);
 	            binding.setVariable(GroovyPage.SESSION, controller.getProperty(GetSessionDynamicProperty.PROPERTY_NAME));
 	            binding.setVariable(GroovyPage.PARAMS, controller.getProperty(GetParamsDynamicProperty.PROPERTY_NAME));
-	            binding.setVariable(GroovyPage.OUT, out);
+                binding.setVariable(GroovyPage.PLUGIN_CONTEXT_PATH, controller.getProperty(GroovyPage.PLUGIN_CONTEXT_PATH));
+                binding.setVariable(GroovyPage.OUT, out);
             }
             else {
             	// if there is no controller in the request configure using existing attributes, creating objects where necessary
@@ -480,7 +481,7 @@ public class GroovyPagesTemplateEngine {
 	            binding.setVariable(GrailsApplication.APPLICATION_ID, appContext.getBean(GrailsApplication.APPLICATION_ID));	            
 	            binding.setVariable(GroovyPage.SESSION, request.getSession());
 	            binding.setVariable(GroovyPage.PARAMS, new GrailsParameterMap(request));
-	            binding.setVariable(GroovyPage.OUT, out);            	
+	            binding.setVariable(GroovyPage.OUT, out);
             }
 
 
