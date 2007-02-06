@@ -11,7 +11,7 @@ class GroovyEachParseTests extends ParseTests {
 """);	
 		def expected = '"blah".each { t ->'
 
-			assertEquals("""import org.codehaus.groovy.grails.web.pages.GroovyPage
+			assertEquals(trimAndRemoveCR("""import org.codehaus.groovy.grails.web.pages.GroovyPage
 import org.codehaus.groovy.grails.web.taglib.*
 
 class myTest extends GroovyPage {
@@ -23,7 +23,7 @@ out.print('\\n')
 out.print('\\n')
 }
 }
-""",output )
+"""),trimAndRemoveCR(output) )
 
 				
 	}
@@ -34,7 +34,7 @@ out.print('\\n')
 	</g:each>
 	""");	
 		
-			assertEquals("""import org.codehaus.groovy.grails.web.pages.GroovyPage
+			assertEquals(trimAndRemoveCR("""import org.codehaus.groovy.grails.web.pages.GroovyPage
 import org.codehaus.groovy.grails.web.taglib.*
 
 class myTest2 extends GroovyPage {
@@ -46,7 +46,7 @@ out.print('\\n\\t')
 out.print('\\n\\t')
 }
 }
-""",output )
+"""),trimAndRemoveCR(output) )
 					
 		}	
 		
@@ -56,7 +56,7 @@ out.print('\\n\\t')
 	</g:each>
 	""");	
 						
-		  assertEquals("""import org.codehaus.groovy.grails.web.pages.GroovyPage
+		  assertEquals(trimAndRemoveCR("""import org.codehaus.groovy.grails.web.pages.GroovyPage
 import org.codehaus.groovy.grails.web.taglib.*
 
 class myTest2 extends GroovyPage {
@@ -68,7 +68,7 @@ out.print('\\n\\t')
 out.print('\\n\\t')
 }
 }
-""",output )			
+"""),trimAndRemoveCR(output) )
 		}
 
 }
