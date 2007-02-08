@@ -50,7 +50,12 @@ task( packagePlugins : "Packages any Grails plugins that are installed for this 
 		   			copy(todir:"${basedir}/web-app/WEB-INF/lib", failonerror:false) {
 		   				fileset(dir:"${pluginBase}/lib", includes:"**")
 		   			}   			                     					
-				}        
+				}                                           
+				if(new File("${pluginBase}/grails-app/conf").exists()) {
+		   			copy(todir:"${basedir}/web-app/WEB-INF/classes", failonerror:false) {
+		   				fileset(dir:"${pluginBase}/grails-app/conf", includes:"*", excludes:"*.groovy")
+		   			}   			                     										
+				}
 				if(new File("${pluginBase}/grails-app/views").exists()) { 
 					def pluginViews = "${basedir}/web-app/WEB-INF/plugins/${pluginNameWithVersion}/grails-app/views"
 					mkdir(dir:pluginViews)   			

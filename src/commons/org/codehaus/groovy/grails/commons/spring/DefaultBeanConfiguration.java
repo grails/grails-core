@@ -195,7 +195,6 @@ public class DefaultBeanConfiguration extends GroovyObjectSupport implements Bea
 			}
 			 bd = new RootBeanDefinition(clazz,cav,null);
 			bd.setSingleton(singleton);
-			return bd;
 		}
 		else {
 			bd = new RootBeanDefinition(clazz,singleton);

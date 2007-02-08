@@ -183,7 +183,6 @@ task(createCorePlugin:"Creates the core plugin and its resources") {
 	Ant.copy(todir:"${basedir}/plugins/core/grails-app/utils") {
 			fileset(dir:"${grailsHome}/src/grails/grails-app/utils", includes:"*")
     } 
-	println "finished"
 }
 task("default": "Initializes a Grails application. Warning: This task will overwrite artifacts,use the 'upgrade' task for upgrades.") {
 	depends( init )
@@ -245,7 +244,7 @@ task(classpath:"Sets the Grails classpath") {
 		}  	
 	}
     StringBuffer cpath = new StringBuffer("")
-    //println "Generating web.xml generator classpath: "
+
     def jarFiles = resolveResources("lib/*.jar").toList()
 
     resolveResources("plugins/*/lib/*.jar").each { pluginJar ->  		    
@@ -261,7 +260,7 @@ task(classpath:"Sets the Grails classpath") {
         rootLoader?.addURL(jar.URL)       
     }  
 
-	.each { dir ->
+	grailsDir.each { dir ->
         cpath << dir.file.absolutePath << File.pathSeparator		
 		rootLoader?.addURL(dir.URL)
    }                              
