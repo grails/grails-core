@@ -29,12 +29,15 @@ import org.springframework.mock.web.MockServletContext;
 import org.springframework.util.Assert;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.io.Resource;
+import org.springframework.core.io.DefaultResourceLoader;
+import org.springframework.core.io.FileSystemResource;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.jar.Manifest;
 import java.util.jar.Attributes;
 import java.io.IOException;
+import java.io.File;
 
 /**
  * 
@@ -100,12 +103,26 @@ public class GrailsUtil {
 		DefaultGrailsApplication application = (DefaultGrailsApplication)parent.getBean("grailsApplication", DefaultGrailsApplication.class);
 		
 		GrailsRuntimeConfigurator config = new GrailsRuntimeConfigurator(application,parent);
-		MockServletContext servletContext = new MockServletContext();
+		MockServletContext servletContext = new MockServletContext(new DefaultResourceLoader() {
+
+            public Resource getResource(String location) {
+                Resource r  = super.getResource(location);
+                if(!r.exists() && isNotPrefixed(location)) {
+                    if(!location.startsWith("/"))location = "/" + location;
+                    r = new FileSystemResource(new File("./web-app/WEB-INF"+location));
+                }
+                return r;
+            }
+        });
 		ConfigurableApplicationContext appCtx = (ConfigurableApplicationContext)config.configure(servletContext);
 		servletContext.setAttribute( ApplicationAttributes.APPLICATION_CONTEXT, appCtx);
 		Assert.notNull(appCtx);
 		return appCtx;
 	}
+
+    private static boolean isNotPrefixed(String location) {
+        return !location.startsWith("classpath:") && !location.startsWith("classpath*:") && !location.startsWith("file:");
+    }
 
     /**
      * Retrieves the current execution environment

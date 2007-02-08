@@ -49,7 +49,6 @@ public class HibernatePersistenceContextInterceptor implements
             LOG.debug("Closing single Hibernate session in GrailsDispatcherServlet");
             try {
                 Session session = holder.getSession();
-                session.flush();
                 SessionFactoryUtils.releaseSession(session, sessionFactory);
             }
             catch (RuntimeException ex) {
@@ -58,9 +57,14 @@ public class HibernatePersistenceContextInterceptor implements
         }       
 	}
 
-	/* (non-Javadoc)
-	 * @see org.codehaus.groovy.grails.support.PersistenceContextInterceptor#init()
-	 */
+    public void flush() {
+        Session session = SessionFactoryUtils.getSession(sessionFactory,true);
+        session.flush();
+    }
+
+    /* (non-Javadoc)
+      * @see org.codehaus.groovy.grails.support.PersistenceContextInterceptor#init()
+      */
 	public void init() {
         if (TransactionSynchronizationManager.hasResource(sessionFactory)) {
             // Do not modify the Session: just set the participate flag.

@@ -56,7 +56,8 @@ public class GrailsConfigUtils {
 	            for (int i = 0; i < bootstraps.length; i++) {
 	                bootstraps[i].callInit(  servletContext );
 	            }
-	        }
+                interceptor.flush();
+            }
 	        finally {
 	        	interceptor.destroy();
 	        }

@@ -76,8 +76,10 @@ public class RunTests {
 				exitCode = r.errorCount() + r.failureCount();
 				if(exitCode > 0) {
 					System.err.println("Tests failed!");
-				}				
-			}
+				}
+                if(interceptor !=null)
+                    interceptor.flush();                
+            }
 			finally {
 				if(interceptor !=null)
 					interceptor.destroy();

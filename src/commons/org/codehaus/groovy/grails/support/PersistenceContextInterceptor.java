@@ -34,4 +34,9 @@ public interface PersistenceContextInterceptor  {
 	 * Called to finalize the persistent context
 	 */
 	void destroy();
+
+    /**
+     *  Flushes any pending changes to the DB
+     */
+    void flush();
 }

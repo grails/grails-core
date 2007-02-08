@@ -84,7 +84,6 @@ task(testApp:"The test app implementation task") {
 		try {
 			interceptor?.init()      
 			result = TestRunner.run(suite)
-			
 		}   
 		finally {
 			interceptor?.destroy()
