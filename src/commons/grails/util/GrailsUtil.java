@@ -22,6 +22,7 @@ import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator;
 import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException;
+import org.codehaus.groovy.grails.support.MockResourceLoader;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
@@ -103,26 +104,14 @@ public class GrailsUtil {
 		DefaultGrailsApplication application = (DefaultGrailsApplication)parent.getBean("grailsApplication", DefaultGrailsApplication.class);
 		
 		GrailsRuntimeConfigurator config = new GrailsRuntimeConfigurator(application,parent);
-		MockServletContext servletContext = new MockServletContext(new DefaultResourceLoader() {
-
-            public Resource getResource(String location) {
-                Resource r  = super.getResource(location);
-                if(!r.exists() && isNotPrefixed(location)) {
-                    if(!location.startsWith("/"))location = "/" + location;
-                    r = new FileSystemResource(new File("./web-app/WEB-INF"+location));
-                }
-                return r;
-            }
-        });
+		MockServletContext servletContext = new MockServletContext(new MockResourceLoader());
 		ConfigurableApplicationContext appCtx = (ConfigurableApplicationContext)config.configure(servletContext);
 		servletContext.setAttribute( ApplicationAttributes.APPLICATION_CONTEXT, appCtx);
 		Assert.notNull(appCtx);
 		return appCtx;
 	}
 
-    private static boolean isNotPrefixed(String location) {
-        return !location.startsWith("classpath:") && !location.startsWith("classpath*:") && !location.startsWith("file:");
-    }
+
 
     /**
      * Retrieves the current execution environment

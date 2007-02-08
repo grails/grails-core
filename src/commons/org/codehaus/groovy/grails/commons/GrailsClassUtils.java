@@ -15,9 +15,7 @@
 package org.codehaus.groovy.grails.commons;
 
 
-import groovy.lang.Closure;
-import groovy.lang.GroovyObject;
-import groovy.lang.MetaClass;
+import groovy.lang.*;
 
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
@@ -950,8 +948,10 @@ public class GrailsClassUtils {
 	}
 
 	public static MetaClass getExpandoMetaClass(Class clazz) {
-		MetaClass mc = InvokerHelper.getInstance().getMetaRegistry().getMetaClass(clazz);
-		if(mc instanceof DynamicMethodsMetaClass) {
+        MetaClassRegistry registry = InvokerHelper.getInstance().getMetaRegistry();
+        MetaClass mc = registry.getMetaClass(clazz);
+
+        if(mc instanceof DynamicMethodsMetaClass) {
 			return ((DynamicMethodsMetaClass) mc).getAdaptee();
 		}
 		else if(mc instanceof AdapterMetaClass) {
@@ -960,7 +960,12 @@ public class GrailsClassUtils {
 		else if(mc instanceof ProxyMetaClass) {
 			return ((ProxyMetaClass)mc).getAdaptee();
 		}
-		return mc;
+        else if(MetaClassImpl.class == mc.getClass()) {
+            // removes cached version
+            registry.removeMetaClass(clazz);
+            return registry.getMetaClass(clazz);
+        }
+        return mc;
 	}	
 	
     /**

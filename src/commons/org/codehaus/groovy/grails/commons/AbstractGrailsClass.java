@@ -214,7 +214,7 @@ public abstract class AbstractGrailsClass implements GrailsClass {
 	 * @see org.codehaus.groovy.grails.commons.GrailsClass#getPropertyValue(java.lang.String)
 	 */
 	public Object getPropertyValue(String name) {
-		return getReference().getPropertyValue(name);
+		return getPropertyOrStaticPropertyOrFieldValue(name, Object.class);
 	}
 	
 	

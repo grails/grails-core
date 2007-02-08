@@ -26,6 +26,7 @@ abstract class AbstractGrailsPluginTests extends GroovyTestCase {
 	def springConfig
 	def appCtx
 	def pluginsToLoad = []
+	def resolver = new PathMatchingResourcePatternResolver()
 	
 	void onSetup() {
 	}
@@ -55,7 +56,7 @@ abstract class AbstractGrailsPluginTests extends GroovyTestCase {
 		
 		def dependentPlugins = pluginsToLoad.collect { new DefaultGrailsPlugin(it, ga)}
 		springConfig = new DefaultRuntimeSpringConfiguration(ctx)
-		servletContext = new MockServletContext()
+		servletContext = new MockServletContext(new MockResourceLoader())
 		springConfig.servletContext = servletContext		
 		
 		dependentPlugins*.doWithRuntimeConfiguration(springConfig)
@@ -64,7 +65,8 @@ abstract class AbstractGrailsPluginTests extends GroovyTestCase {
 		appCtx = springConfig.getApplicationContext()
 		mockManager.applicationContext = appCtx
 		servletContext.setAttribute( GrailsApplicationAttributes.APPLICATION_CONTEXT, appCtx)
-		mockManager.doDynamicMethods()		
+		dependentPlugins*.doWithApplicationContext(appCtx)
+		dependentPlugins*.doWithDynamicMethods(appCtx)		
 	}
 	
 	void tearDown() {
