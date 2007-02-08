@@ -33,7 +33,7 @@ grailsHome = Ant.antProject.properties."env.GRAILS_HOME"
 includeTargets << new File ( "${grailsHome}/scripts/RunApp.groovy" )  
 
 task ('default': "Run's all of the Web tests against a Grails application") { 
-	depends( runApp )
+	depends( classpath )
 	println "Running WebTest!"
 	try {
 	    runWebTest()
@@ -43,7 +43,7 @@ task ('default': "Run's all of the Web tests against a Grails application") {
     }
 }                 
 task ( runWebTest : "Main implementation that executes a Grails' Web tests") {
-	depends( classpath )
+	depends( runApp )
 	
     def rootLoader = getClass().classLoader.rootLoader
 
@@ -53,7 +53,8 @@ task ( runWebTest : "Main implementation that executes a Grails' Web tests") {
         rootLoader.addURL(it)
     }
 
-    def testRunner = new GroovyClassLoader().parseClass(new File("${basedir}/webtest/tests/TestSuite.groovy")).newInstance()
+    def classLoader = new GroovyClassLoader(parentLoader,compConfig,true)
+    def testRunner = classLoader.parseClass(new File("${basedir}/webtest/tests/TestSuite.groovy")).newInstance()
 
     testRunner.runTests()
 }
