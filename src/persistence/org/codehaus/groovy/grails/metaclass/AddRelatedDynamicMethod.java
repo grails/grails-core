@@ -57,7 +57,7 @@ public class AddRelatedDynamicMethod extends AbstractAddRelatedDynamicMethod {
         if(arguments[0] == null) {
         	throw new IllegalArgumentException("Argument to ["+ this.methodName +"] cannot be null");
         }
-        if(!arguments[0].getClass().equals(property.getReferencedPropertyType())) {
+        if(!property.getReferencedPropertyType().isAssignableFrom(arguments[0].getClass())) {
            throw new MissingMethodException(this.methodName,target.getClass(),arguments);
         }
 

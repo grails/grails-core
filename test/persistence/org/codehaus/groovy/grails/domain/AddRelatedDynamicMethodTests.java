@@ -41,70 +41,28 @@ import org.codehaus.groovy.grails.metaclass.AddRelatedDynamicMethod;
 public class AddRelatedDynamicMethodTests extends TestCase {
 
     public void testInvoke() throws Exception {
-       GroovyClassLoader gcl = new GroovyClassLoader();
-       gcl.parseClass("class Book {\n" +
-                                    "\tLong id\n" +
-                                    "\tLong version\n" +
-                                    "\n" +
-                                    "\tAuthor author\n" +
-                                    "}\n" +
-                                    "class Author {\n" +
-                                    "\tLong id\n" +
-                                    "\tLong version\n" +
-                                    "\tdef relatesToMany = [books:Book]\n" +
-                                    "\tSet books\n" +
-                                    "}");
-
-
-        GroovyObject book = (GroovyObject)gcl.loadClass("Book",false,true).newInstance();
-        GroovyObject author = (GroovyObject)gcl.loadClass("Author",false,true).newInstance();
-
-        GrailsApplication ga = new DefaultGrailsApplication(new Class[]{book.getClass(),author.getClass()},gcl);
-        GrailsDomainClass authorDC = ga.getGrailsDomainClass("Author");
-
-        AbstractAddRelatedDynamicMethod ardm = new AddRelatedDynamicMethod(authorDC.getPropertyByName("books"));
-
-        try {
-            ardm.invoke(author, "addBook", new Object[0]);
-            fail("Should have thrown missing method exception!");
-        } catch (MissingMethodException e) {
-            // expected
-        }
-
-        try {
-            ardm.invoke(author, "addBook", new Object[]{"blah"});
-            fail("Should have thrown missing method exception!");
-        } catch (MissingMethodException e) {
-            // expected
-        }
-
-        ardm.invoke(author, "addBook", new Object[]{book});
-
-        assertEquals(author,book.getProperty("author"));
-        Set books = (Set)author.getProperty("books");
-        assertNotNull(books);
-        assertEquals(1,books.size());
-        assertTrue(books.contains(book));
-    }
-
-    public void testInvokeWithSortedSet() throws Exception {
         GroovyClassLoader gcl = new GroovyClassLoader();
-        gcl.parseClass("class Book implements Comparable {\n" +
+        gcl.parseClass("class Book {\n" +
                                      "\tLong id\n" +
                                      "\tLong version\n" +
                                      "\n" +
                                      "\tAuthor author\n" +
-                                     "int compareTo(other) { 1 }" +
                                      "}\n" +
                                      "class Author {\n" +
                                      "\tLong id\n" +
                                      "\tLong version\n" +
                                      "\tdef relatesToMany = [books:Book]\n" +
-                                     "\tSortedSet books\n" +
-                                     "}");
+                                     "\tSet books\n" +
+                                     "}\n"+
+                                     "class SubBook extends Book{\n" +
+                                     "\tString subtitle\n" +
+                                     "\n" +
+                                     "}"
+                                     );
 
 
          GroovyObject book = (GroovyObject)gcl.loadClass("Book",false,true).newInstance();
+         GroovyObject subbook = (GroovyObject)gcl.loadClass("SubBook",false,true).newInstance();
          GroovyObject author = (GroovyObject)gcl.loadClass("Author",false,true).newInstance();
 
          GrailsApplication ga = new DefaultGrailsApplication(new Class[]{book.getClass(),author.getClass()},gcl);
@@ -113,24 +71,74 @@ public class AddRelatedDynamicMethodTests extends TestCase {
          AbstractAddRelatedDynamicMethod ardm = new AddRelatedDynamicMethod(authorDC.getPropertyByName("books"));
 
          try {
-             ardm.invoke(author, "addBook", new Object[0]);
+             ardm.invoke(author,"addAuthor",new Object[0]);
              fail("Should have thrown missing method exception!");
          } catch (MissingMethodException e) {
              // expected
          }
 
          try {
-             ardm.invoke(author, "addBook", new Object[]{"blah"});
+             ardm.invoke(author,"addAuthor",new Object[]{"blah"});
              fail("Should have thrown missing method exception!");
          } catch (MissingMethodException e) {
              // expected
          }
 
-         ardm.invoke(author, "addBook", new Object[]{book});
-
+         ardm.invoke(author,"addAuthor", new Object[]{book});
+         ardm.invoke(author,"addAuthor", new Object[]{subbook});
+         
          assertEquals(author,book.getProperty("author"));
-         SortedSet books = (SortedSet)author.getProperty("books");
+         Set books = (Set)author.getProperty("books");
          assertNotNull(books);
+         assertEquals(2,books.size());
+         assertTrue(books.contains(book));
+     }
 
-    }
+     public void testInvokeWithSortedSet() throws Exception {
+         GroovyClassLoader gcl = new GroovyClassLoader();
+         gcl.parseClass("class Book implements Comparable {\n" +
+                                      "\tLong id\n" +
+                                      "\tLong version\n" +
+                                      "\n" +
+                                      "\tAuthor author\n" +
+                                      "int compareTo(other) { 1 }" +
+                                      "}\n" +
+                                      "class Author {\n" +
+                                      "\tLong id\n" +
+                                      "\tLong version\n" +
+                                      "\tdef relatesToMany = [books:Book]\n" +
+                                      "\tSortedSet books\n" +
+                                      "}");
+
+
+          GroovyObject book = (GroovyObject)gcl.loadClass("Book",false,true).newInstance();
+          GroovyObject author = (GroovyObject)gcl.loadClass("Author",false,true).newInstance();
+
+          GrailsApplication ga = new DefaultGrailsApplication(new Class[]{book.getClass(),author.getClass()},gcl);
+          GrailsDomainClass authorDC = ga.getGrailsDomainClass("Author");
+
+          AbstractAddRelatedDynamicMethod ardm = new AddRelatedDynamicMethod(authorDC.getPropertyByName("books"));
+
+          try {
+              ardm.invoke(author,"addAuthor",new Object[0]);
+              fail("Should have thrown missing method exception!");
+          } catch (MissingMethodException e) {
+              // expected
+          }
+
+          try {
+              ardm.invoke(author,"addAuthor",new Object[]{"blah"});
+              fail("Should have thrown missing method exception!");
+          } catch (MissingMethodException e) {
+              // expected
+          }
+
+          ardm.invoke(author, "addAuthor",new Object[]{book});
+
+          assertEquals(author,book.getProperty("author"));
+          SortedSet books = (SortedSet)author.getProperty("books");
+          assertNotNull(books);
+
+     }
+
 }
