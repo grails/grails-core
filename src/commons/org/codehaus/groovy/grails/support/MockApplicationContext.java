@@ -1,5 +1,7 @@
 package org.codehaus.groovy.grails.support;
 
+import groovy.lang.GroovyObjectSupport;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -10,6 +12,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.BeanFactory;
@@ -22,17 +25,30 @@ import org.springframework.context.MessageSource;
 import org.springframework.context.MessageSourceResolvable;
 import org.springframework.context.NoSuchMessageException;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.DescriptiveResource;
 import org.springframework.core.io.Resource;
-import groovy.lang.GroovyObjectSupport;
+import org.springframework.util.AntPathMatcher;
+import org.springframework.util.PathMatcher;
 
 public class MockApplicationContext extends GroovyObjectSupport implements ApplicationContext {
 
 	Date startupDate = new Date();
 	Map beans = new HashMap();
+	List resources = new ArrayList();
+	PathMatcher pathMatcher = new AntPathMatcher();
 	
 	public void registerMockBean(String name, Object instance) {
 		beans.put(name,instance);
 	}
+	
+	/**
+	 * Registers a mock resource. Path separator: "/"
+	 * @param location the location of the resource. Example: /WEB-INF/grails-app/i18n/messages.properties
+	 */
+	public void registerMockResource(String location) {
+		resources.add(location);
+	}
+	
 	public ApplicationContext getParent() {
 		throw new UnsupportedOperationException("Method not supported by implementation");	
 	}
@@ -157,7 +173,18 @@ public class MockApplicationContext extends GroovyObjectSupport implements Appli
 	}
 
 	public Resource[] getResources(String locationPattern) throws IOException {
-		throw new UnsupportedOperationException("Method not supported by implementation");
+		if (locationPattern.startsWith("classpath:") || locationPattern.startsWith("file:"))
+			throw new UnsupportedOperationException("Location patterns 'classpath:' and 'file:' not supported by implementation");
+		
+		locationPattern = StringUtils.removeStart(locationPattern, "/"); // starting with "**/" is OK
+		List result = new ArrayList();
+		for (Iterator i = resources.iterator(); i.hasNext();) {
+			String location = (String)i.next();
+			if (pathMatcher.match(locationPattern, StringUtils.removeStart(location, "/"))) {
+				result.add(new DescriptiveResource(location));
+			}
+		}
+		return (Resource[])result.toArray(new Resource[0]);
 	}
 
 	public Resource getResource(String location) {
