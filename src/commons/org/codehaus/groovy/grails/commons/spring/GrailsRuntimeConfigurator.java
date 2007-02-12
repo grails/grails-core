@@ -284,10 +284,13 @@ public class GrailsRuntimeConfigurator {
 	}
 
     public WebApplicationContext configure(ServletContext context, boolean loadExternalBeans) {
-		RuntimeSpringConfiguration springConfig = parent != null ? new DefaultRuntimeSpringConfiguration(parent) : new DefaultRuntimeSpringConfiguration();
+		if(parent != null && application.getParentContext() == null)
+			application.setApplicationContext(parent);
+    	
+    	RuntimeSpringConfiguration springConfig = parent != null ? new DefaultRuntimeSpringConfiguration(parent) : new DefaultRuntimeSpringConfiguration();
 		if(context != null)
 			springConfig.setServletContext(context);
-
+		
 		if(!this.pluginManager.isInitialised())
 			this.pluginManager.loadPlugins();
 

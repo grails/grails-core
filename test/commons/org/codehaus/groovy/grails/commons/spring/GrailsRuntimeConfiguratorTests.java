@@ -79,6 +79,10 @@ public class GrailsRuntimeConfiguratorTests extends TestCase {
         parent.registerMockBean("manager",manager);
         conf.setPluginManager(manager);
         ApplicationContext ctx = conf.configure(new MockServletContext());
+
+        // test parent ctx
+        assertEquals(parent, app.getParentContext());
+        
         // test class editor setup
         assertNotNull(ctx);
         assertTrue(ctx.getBean(GrailsRuntimeConfigurator.CLASS_LOADER_BEAN) instanceof GroovyClassLoader );
