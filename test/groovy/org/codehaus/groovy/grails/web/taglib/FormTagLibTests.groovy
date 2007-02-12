@@ -464,3 +464,4 @@ public class FormTagLibTests extends AbstractGrailsTagTests {
         return document
     }
 }
+
