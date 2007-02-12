@@ -71,6 +71,10 @@ public class GrailsConfigUtils {
 		if(LOG.isDebugEnabled()) {
 			LOG.debug("[GrailsContextLoader] Configurating Grails Application");
 		}
+
+		if(application.getParentContext() == null) {
+			application.setApplicationContext(parent);
+		}
 		
 	    GrailsRuntimeConfigurator configurator = new GrailsRuntimeConfigurator(application,parent);
         if(parent.containsBean(GrailsPluginManager.BEAN_NAME)) {
