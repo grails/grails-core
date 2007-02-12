@@ -24,7 +24,6 @@
            <div class="prop">
 	      <span class="name">Id:</span>
 	      <span class="value">\${${propertyName}?.id}</span>
-	      <input type="hidden" name="${propertyName}.id" value="\${${propertyName}?.id}" />
            </div>           
            <g:form controller="${propertyName}" method="post" <%= multiPart ? ' enctype="multipart/form-data"' : '' %>>
                <input type="hidden" name="id" value="\${${propertyName}?.id}" />
