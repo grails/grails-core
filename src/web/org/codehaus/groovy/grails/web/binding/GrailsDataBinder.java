@@ -18,26 +18,11 @@ import groovy.lang.GroovyObject;
 import groovy.lang.GroovyRuntimeException;
 import groovy.lang.MetaClass;
 import groovy.lang.MissingMethodException;
-
-import java.net.URI;
-import java.text.DateFormat;
-import java.util.Calendar;
-import java.util.Currency;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.Locale;
-import java.util.TimeZone;
-
-import javax.servlet.ServletRequest;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletRequestWrapper;
-
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.commons.lang.StringUtils;
-import org.codehaus.groovy.grails.commons.metaclass.CreateDynamicMethod;
-import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
+import org.codehaus.groovy.grails.commons.metaclass.CreateDynamicMethod;
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.springframework.beans.ConfigurablePropertyAccessor;
 import org.springframework.beans.InvalidPropertyException;
@@ -52,6 +37,13 @@ import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.springframework.web.multipart.support.ByteArrayMultipartFileEditor;
 import org.springframework.web.multipart.support.StringMultipartFileEditor;
 import org.springframework.web.servlet.support.RequestContextUtils;
+
+import javax.servlet.ServletRequest;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletRequestWrapper;
+import java.net.URI;
+import java.text.DateFormat;
+import java.util.*;
 
 /**
  * A data binder that handles binding dates that are specified with a "struct"-like syntax in request parameters.
@@ -72,7 +64,8 @@ import org.springframework.web.servlet.support.RequestContextUtils;
  */
 public class GrailsDataBinder extends ServletRequestDataBinder {
     private static final Log LOG = LogFactory.getLog(GrailsDataBinder.class);
-	private static ConfigurablePropertyAccessor bean;
+
+    protected ConfigurablePropertyAccessor bean;
 
     public static final String[] GROOVY_DISALLOWED = new String[] { "metaClass", "properties" };
     public static final String[] DOMAINCLASS_DISALLOWED = new String[] { "id", "version" };
@@ -107,9 +100,9 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
     /**
      * Utility method for creating a GrailsDataBinder instance
      *
-     * @param target
-     * @param objectName
-     * @param request
+     * @param target The target object to bind to
+     * @param objectName The name of the object
+     * @param request A request instance
      * @return A GrailsDataBinder instance
      */
     public static GrailsDataBinder createBinder(Object target, String objectName, HttpServletRequest request) {
@@ -121,8 +114,8 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
     /**
      * Utility method for creating a GrailsDataBinder instance
      *
-     * @param target
-     * @param objectName
+     * @param target The target object to bind to
+     * @param objectName The name of the object
      * @return A GrailsDataBinder instance
      */
     public static GrailsDataBinder createBinder(Object target, String objectName) {
@@ -208,7 +201,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
      * 
      * @param mpvs the <code>MutablePropertyValues</code> object holding the parameters from the request
      */
-    private void bindAssociations(MutablePropertyValues mpvs) {
+    protected void bindAssociations(MutablePropertyValues mpvs) {
         PropertyValue[] pvs = mpvs.getPropertyValues();
         for (int i = 0; i < pvs.length; i++) {
             PropertyValue pv = pvs[i];
@@ -227,7 +220,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
                     ClassLoader grailsClassLoader = getTarget().getClass().getClassLoader();
                     try {
                         Thread.currentThread().setContextClassLoader(grailsClassLoader);
-						Object persisted = null;
+						Object persisted;
                         	
                        	persisted = InvokerHelper.invokeStaticMethod(type, "get", pv.getValue());
                         

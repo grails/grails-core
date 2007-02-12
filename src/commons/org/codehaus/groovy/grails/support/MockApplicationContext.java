@@ -23,8 +23,9 @@ import org.springframework.context.MessageSourceResolvable;
 import org.springframework.context.NoSuchMessageException;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
+import groovy.lang.GroovyObjectSupport;
 
-public class MockApplicationContext implements ApplicationContext {
+public class MockApplicationContext extends GroovyObjectSupport implements ApplicationContext {
 
 	Date startupDate = new Date();
 	Map beans = new HashMap();
@@ -102,7 +103,14 @@ public class MockApplicationContext implements ApplicationContext {
 		return beans.get(name);
 	}
 
-	public boolean containsBean(String name) {
+
+    public Object getProperty(String name) {
+        if(beans.containsKey(name)) return beans.get(name);
+        else
+            return super.getProperty(name);
+    }
+
+    public boolean containsBean(String name) {
 		return beans.containsKey(name);
 	}
 
