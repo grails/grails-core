@@ -25,7 +25,6 @@ import org.springframework.context.MessageSource;
 import org.springframework.context.MessageSourceResolvable;
 import org.springframework.context.NoSuchMessageException;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.DescriptiveResource;
 import org.springframework.core.io.Resource;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.util.PathMatcher;
@@ -181,7 +180,7 @@ public class MockApplicationContext extends GroovyObjectSupport implements Appli
 		for (Iterator i = resources.iterator(); i.hasNext();) {
 			String location = (String)i.next();
 			if (pathMatcher.match(locationPattern, StringUtils.removeStart(location, "/"))) {
-				result.add(new DescriptiveResource(location));
+				result.add(new ClassPathResource(location));
 			}
 		}
 		return (Resource[])result.toArray(new Resource[0]);
