@@ -49,7 +49,7 @@ class GrailsResourceCopier implements ResourceCopier {
         if(new File("${basedir}/grails-app/i18n").exists()) {
         	ant.native2ascii(src:"${basedir}/grails-app/i18n",
 					 dest:"${destdir}/WEB-INF/grails-app/i18n",
-					 includes:"**",
+					 includes:"*.properties",
 					 encoding:"UTF-8")
         }
     }

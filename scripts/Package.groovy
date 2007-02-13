@@ -54,7 +54,7 @@ task( packageApp : "Implementation of package task") {
 	} 
 	Ant.native2ascii(src:"${basedir}/grails-app/i18n",
 					 dest:"${basedir}/web-app/WEB-INF/grails-app/i18n",
-					 includes:"messages*.properties",
+					 includes:"*.properties",
 					 encoding:"UTF-8")   
     Ant.copy(todir:"${basedir}/web-app/WEB-INF/spring") {
 		fileset(dir:"${basedir}/spring", includes:"**")

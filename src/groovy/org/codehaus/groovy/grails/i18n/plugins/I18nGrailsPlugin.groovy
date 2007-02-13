@@ -15,7 +15,9 @@
  */ 
 package org.codehaus.groovy.grails.i18n.plugins
 
-import org.codehaus.groovy.grails.plugins.support.GrailsPluginUtils
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang.StringUtils;
+import org.codehaus.groovy.grails.plugins.support.GrailsPluginUtils;
 import org.springframework.web.servlet.i18n.CookieLocaleResolver;
 import org.springframework.web.servlet.i18n.LocaleChangeInterceptor;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
@@ -29,11 +31,22 @@ import org.springframework.context.support.ReloadableResourceBundleMessageSource
 class I18nGrailsPlugin {
 	
 	def version = GrailsPluginUtils.getGrailsVersion()
-	def watchedResources = "**/grails-app/i18n/messages*.properties"
+	def watchedResources = "**/grails-app/i18n/*.properties"
 	
 	def doWithSpring = {
+		// find i18n resource bundles and resolve basenames
+		def baseNames = []
+		parentCtx?.getResources("**/WEB-INF/grails-app/i18n/*.properties")?.toList()?.each {
+			def baseName = FilenameUtils.getBaseName(it.filename)
+			baseName = StringUtils.substringBefore(baseName, "_") // trims possible locale specification
+			baseNames << "WEB-INF/grails-app/i18n/" + baseName
+		}
+		baseNames = baseNames.unique()
+		
+		log.debug("Creating messageSource with basenames: " + baseNames);
+		
 		messageSource(ReloadableResourceBundleMessageSource) {
-			basename = "WEB-INF/grails-app/i18n/messages"
+			basenames = baseNames.toArray()
 		}
 		localeChangeInterceptor(LocaleChangeInterceptor) {
 			paramName = "lang"
@@ -53,7 +66,7 @@ class I18nGrailsPlugin {
 			messageSource.clearCache()
 		}
 		else {
-			log.debug("Bean messageSource is not an instance of org.springframework.context.support.ReloadableResourceBundleMessageSource. Can't reload")
+			log.warn("Bean messageSource is not an instance of org.springframework.context.support.ReloadableResourceBundleMessageSource. Can't reload")
 		}
 	}
 }
