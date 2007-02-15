@@ -106,7 +106,35 @@ public class DefaultGrailsPluginManager implements GrailsPluginManager {
 		this.application = application;
 	}
 
-	public DefaultGrailsPluginManager(Class[] plugins, GrailsApplication application) throws IOException {
+
+    public DefaultGrailsPluginManager(String[] pluginResources, GrailsApplication application) {
+        if(application == null)
+            throw new IllegalArgumentException("Argument [application] cannot be null!");
+
+        resolver = new PathMatchingResourcePatternResolver();
+
+        List resourceList = new ArrayList();
+        for (int i = 0; i < pluginResources.length; i++) {
+            String resourcePath = pluginResources[i];
+            try {
+                Resource[] resources = resolver.getResources(resourcePath);
+                for (int j = 0; j < resources.length; j++) {
+                    Resource resource = resources[j];
+                    resourceList.add(resource);
+                }
+
+            }
+            catch(IOException ioe) {
+                LOG.debug("Unable to load plugins for resource path " + resourcePath, ioe);
+            }
+            
+        }
+
+        this.pluginResources = (Resource[])resourceList.toArray(new Resource[resourceList.size()]);
+        this.application = application;
+    }
+
+    public DefaultGrailsPluginManager(Class[] plugins, GrailsApplication application) throws IOException {
 		this.pluginClasses = plugins;
 		resolver = new PathMatchingResourcePatternResolver();
 		//this.corePlugins = new PathMatchingResourcePatternResolver().getResources("classpath:org/codehaus/groovy/grails/**/plugins/**GrailsPlugin.groovy");
@@ -120,8 +148,9 @@ public class DefaultGrailsPluginManager implements GrailsPluginManager {
 		this.pluginResources = pluginFiles;
         this.application = application;
     }
+    
 
-	/**
+    /**
 	 * @return the initialised
 	 */
 	public boolean isInitialised() {

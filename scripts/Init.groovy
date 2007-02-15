@@ -236,7 +236,7 @@ task(classpath:"Sets the Grails classpath") {
 		pathelement(location:"${basedir}/grails-tests")		
 		pathelement(location:"${basedir}/web-app")
 		pathelement(location:"${basedir}/web-app/WEB-INF")
-		pathelement(location:"${basedir}/web-app/classes")				
+		pathelement(location:"${basedir}/web-app/WEB-INF/classes")				
 		fileset(dir:"${grailsHome}/lib")
 		fileset(dir:"${grailsHome}/dist")
 		fileset(dir:"lib") 
@@ -252,7 +252,9 @@ task(classpath:"Sets the Grails classpath") {
         boolean matches = jarFiles.any { it.file.name == pluginJar.file.name }
         if(!matches) jarFiles.add(pluginJar)
     }
-                         
+    resolveResources("${grailsHome}/lib/junit-*.jar").each { testJar ->
+		jarFiles.add(testJar)
+	}                     
 	
     def rootLoader = getClass().classLoader.rootLoader
 

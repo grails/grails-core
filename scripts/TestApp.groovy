@@ -35,9 +35,6 @@ import junit.textui.TestRunner;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator as GRC;
 
-
-
-
 Ant.property(environment:"env")                             
 grailsHome = Ant.antProject.properties."env.GRAILS_HOME"    
 
@@ -51,6 +48,32 @@ task ('default': "Run a Grails applications unit tests") {
 }            
 
 task(testApp:"The test app implementation task") {               
+	//runCompiledTests()	
+	runGrailsTests()
+}                     
+
+task(runCompiledTests:"Runs the tests located under src/test which are compiled then executed") {
+	compileTests()
+	Ant.mkdir(dir:"${basedir}/target/test-reports")
+	Ant.mkdir(dir:"${basedir}/target/test-reports/html")	
+	Ant.junit(fork:true, forkmode:"once") {
+		jvmarg(value:"-Xmx256M")
+
+		formatter(type:"xml")
+		batchtest(todir:"${basedir}/target/test-reports") {
+			fileset(dir:"${basedir}/target/test-classes", includes:"**/*Tests.class")
+		}
+	} 
+	Ant.junitreport {
+		fileset(dir:"${basedir}/target/test-reports") {
+			include(name:"TEST-*.xml")
+			report(format:"frames", todir:"${basedir}/target/test-reports/html")
+		}
+	} 
+	System.exit(-1)
+}
+
+task(runGrailsTests:"Runs Grails' tests under the grails-test directory") {
 	def result = null
 	try {        
 		def testFiles = resolveResources("grails-tests/*.groovy")
@@ -105,4 +128,5 @@ task(testApp:"The test app implementation task") {
 
 		}
 	}	
+	
 }

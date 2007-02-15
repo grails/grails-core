@@ -33,7 +33,7 @@ class ServicesGrailsPlugin {
 	def loadAfter = ['hibernate']
 	def influences = ['controllers']
 	                 
-    def watchedResources = "**/grails-app/services/*Service.groovy"
+    def watchedResources = "file:./grails-app/services/*Service.groovy"
 
 	                 
 	def doWithSpring = {

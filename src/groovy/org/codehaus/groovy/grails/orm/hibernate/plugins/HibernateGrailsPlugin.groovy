@@ -42,7 +42,7 @@ class HibernateGrailsPlugin {
 	                 
 	def loadAfter = ['controllers']	                 
 	
-	def watchedResources = "**/grails-app/domain/*.groovy"
+	def watchedResources = "file:./grails-app/domain/*.groovy"
 
 	def doWithSpring = {
 			def vendorToDialect = new Properties()

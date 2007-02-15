@@ -46,17 +46,24 @@ task ('default': "Performs compilation on any source files (Java or Groovy) in t
 }            
 
 task(compile : "Implementation of compilation phase") { 
-	println "Compiling sources.."
-	depends(classpath)           
-	
-	Ant.sequential {                       
-		mkdir(dir:"${basedir}/web-app/WEB-INF/classes") 
-		
-		javac(srcdir:"${basedir}/src/java",destdir:"${basedir}/web-app/WEB-INF/classes",
-				classpathref:"grails.classpath",debug:"on",deprecation:"on", optimize:"off")
+}   
 
-		groovyc(srcdir:"${basedir}/src/groovy",destdir:"${basedir}/web-app/WEB-INF/classes",
-				classpathref:"grails.classpath")
-	}
+task(compileTests: "Compiles test cases located in src/test") {
+	
+	if(new File("${basedir}/src/test").exists()) {
+		println "Compiling test cases.."
+		depends(classpath)           
+
+		Ant.sequential {                       
+			mkdir(dir:"${basedir}/target/test-classes") 
+
+			javac(srcdir:"${basedir}/src/test",destdir:"${basedir}/target/test-classes",
+					classpathref:"grails.classpath",debug:"on",deprecation:"on", optimize:"off")
+
+			groovyc(srcdir:"${basedir}/src/test",destdir:"${basedir}/target/test-classes",
+					classpathref:"grails.classpath")
+		}
+		
+	}	
 }
 

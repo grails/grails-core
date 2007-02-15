@@ -13,7 +13,7 @@
 	<bean id="pluginManager" class="org.codehaus.groovy.grails.plugins.GrailsPluginManagerFactoryBean">
 		<description>A bean that manages Grails plugins</description>
 		<property name="pluginFiles">
-			<value>classpath*:**/plugins/*GrailsPlugin.groovy</value>
+			<value>classpath*:**/plugins/**/*GrailsPlugin.groovy</value>
 		</property>
 		<property name="application" ref="grailsApplication" />
 	</bean>

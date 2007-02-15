@@ -54,8 +54,8 @@ import org.codehaus.groovy.runtime.InvokerHelper
  */
 class ControllersGrailsPlugin {
 
-	def watchedResources = ["**/grails-app/controllers/*Controller.groovy",
-	                        "**/grails-app/taglib/*TagLib.groovy"]
+	def watchedResources = ["file:./grails-app/controllers/*Controller.groovy",
+	                        "file:./grails-app/taglib/*TagLib.groovy"]
 	
 	def version = GrailsPluginUtils.getGrailsVersion()
 	def dependsOn = [i18n:version]

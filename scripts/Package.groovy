@@ -147,7 +147,7 @@ task( generateWebXml : "Generates the web.xml file") {
 
         def classLoader = new GroovyClassLoader(parentLoader,compConfig,true)
 
-        pluginManager = new DefaultGrailsPluginManager("**GrailsPlugin.groovy", new DefaultGrailsApplication(new Class[0], classLoader))
+        pluginManager = new DefaultGrailsPluginManager(["*GrailsPlugin.groovy", "plugins/*/*GrailsPlugin.groovy"] as String[], new DefaultGrailsApplication(new Class[0], classLoader))
     	PluginManagerHolder.setPluginManager(pluginManager)
 
     	def webXml = resolver.getResource("file:${basedir}/web-app/WEB-INF/web.template.xml")
