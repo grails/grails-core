@@ -43,22 +43,15 @@ class HelpEvaluatingCategory {
 	
 }
 
-def shouldGenerateHelp =  { List scripts ->
-	def countFile = new File("${grailsTmp}/count.tmp")	
-	if(!countFile.exists()) {  
-		countFile << scripts.size()
-		return true
-	}                                             
-	def count = new GroovyShell().evaluate(countFile) 
-	if(count != scripts.size()) {
-		countFile.write("${scripts.size()}")
-		return true
-	}                     
-	def helpFile = new File("${grailsTmp}/help.txt")
-	if(scripts.find { helpFile.lastModified() < it.lastModified() }) {
-		return true
-	}	           
-	return false
+File getHelpFile(File script) {
+    File helpDir = new File(script.getParentFile(), "help")
+    if (!helpDir.exists()) helpDir.mkdir()
+    String scriptname = script.getName()
+	return new File(helpDir, scriptname.substring(0, scriptname.lastIndexOf('.')) + ".txt")
+}
+
+boolean shouldGenerateHelp(File script) {
+	return (getHelpFile(script).lastModified() < script.lastModified() )
 }
                                 
 
@@ -77,38 +70,7 @@ task ( 'default' : "Prints out the help for each script") {
 	}
         
 	def helpText = ""
-	if(shouldGenerateHelp(scripts)) { 
-		println "Generating Help, please wait. This happens when scripts change or the first time you use Grails."		
-		  
-		def gcl = new GroovyClassLoader()    		
-		def sw = new StringWriter()      		
-		def pw = new PrintWriter(sw)
-
-		use(HelpEvaluatingCategory.class) {    
-			scripts.each { file ->
-				try {
-					def script = gcl.parseClass(file).newInstance()			
-					script.binding = binding
-					script.run()
-
-					def scriptName = GCU.getScriptName(file.name)
-
-					pw.println "grails ${scriptName} -- ${getDefaultTask()}"					
-				}                                                      
-				catch(Throwable t) {
-					println "Error creating help for ${file}: ${t.message}"
-					t.printStackTrace(System.out)
-				}
-			}        
-		}	   		
-		helpText = sw.toString() 
-
-		new File("${grailsTmp}/help.txt").write(helpText) 		  		
-	}                                                              
-	else {
-		helpText = new File("${grailsTmp}/help.txt").text
-	}
-
+      
 	println """
 Usage (optionals marked with *): 
 grails [environment]* [target] [arguments]*
@@ -118,8 +80,31 @@ grails dev run-app
 grails create-app books
 
 Available Targets:"""
-	println helpText
+		  
+	def gcl = new GroovyClassLoader()    		
+
+	use(HelpEvaluatingCategory.class) {    
+		scripts.each { file ->
+			if (shouldGenerateHelp(file)) {
+				try {
+					def script = gcl.parseClass(file).newInstance()			
+					script.binding = binding
+					script.run()
+
+					def scriptName = GCU.getScriptName(file.name)
+
+					helpText = "grails ${scriptName} -- ${getDefaultTask()}"					
+					getHelpFile(file).write(helpText) 		  		
+				}                                                      
+				catch(Throwable t) {
+					println "Error creating help for ${file}: ${t.message}"
+					t.printStackTrace(System.out)
+				}
+			} else {
+				helpText = getHelpFile(file).text
+			}
+			println helpText
+		}        
+	}	   		
 	
 } 
-       
-
