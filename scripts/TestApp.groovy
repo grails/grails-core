@@ -70,7 +70,6 @@ task(runCompiledTests:"Runs the tests located under src/test which are compiled 
 			report(format:"frames", todir:"${basedir}/target/test-reports/html")
 		}
 	} 
-	System.exit(-1)
 }
 
 task(runGrailsTests:"Runs Grails' tests under the grails-test directory") {
@@ -79,7 +78,7 @@ task(runGrailsTests:"Runs Grails' tests under the grails-test directory") {
 		def testFiles = resolveResources("grails-tests/*.groovy")
 		if(testFiles.size() == 0) {
 			println "No tests found in grails-test to execute"
-			System.exit(-1)
+			System.exit(0)
 		}
 				
 		def ctx = GU.bootstrapGrailsFromClassPath()
@@ -124,8 +123,14 @@ task(runGrailsTests:"Runs Grails' tests under the grails-test directory") {
 			if(result.errorCount() > 0 || result.failureCount() > 0) {
 				println "Test Failures!!!"
 				System.exit(1)				
+			}
+			else {
+				System.exit(0)
 			}			       
 
+		}  
+		else {
+			System.exit(0)
 		}
 	}	
 	
