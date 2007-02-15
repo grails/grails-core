@@ -44,7 +44,7 @@ public class DefaultGrailsBootstrapClass extends AbstractGrailsClass implements 
 	}
 
 	public void callDestroy() {
-		Closure destroy = getInitClosure();
+		Closure destroy = getDestroyClosure();
 		destroy.call();
 	}
 }
