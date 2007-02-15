@@ -35,7 +35,7 @@ task ( "default" : "Creates a Grails plug-in project, including the necessary di
 }     
 
 task( createPlugin: "The implementation task")  {            
-	depends( appName, createStructure, copyBasics, createIDESupportFiles )
+	depends( appName, createStructure, copyBasics, createIDESupportFiles,createCorePlugin )
 	pluginName = GCU.getNameFromScript(grailsAppName)
  	new File("${basedir}/${pluginName}GrailsPlugin.groovy") <<
 """
