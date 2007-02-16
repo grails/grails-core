@@ -89,6 +89,8 @@
    			<src path="${grails.src.groovy}"/>
    		    <classpath>
 		      <pathelement path="${grails.build}/core"/>			      
+			  <pathelement path="${grails.src.web}"/>  
+			  <pathelement path="${grails.src.scaffolding}"/> 			
 		      <pathelement path="${grails.build}/web"/>			      
 		      <pathelement path="${grails.build}/gorm"/>			      						
 		      <pathelement path="${grails.build}/crud"/>			      							
