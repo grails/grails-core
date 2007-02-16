@@ -14,12 +14,28 @@ public class GrailsPluginManagerTests extends AbstractGrailsMockTests {
 
 	private static final String RESOURCE_PATH = "classpath:org/codehaus/groovy/grails/plugins/ClassEditorGrailsPlugin.groovy";
 
+    public void testObservablePlugin() {
+         def manager = new DefaultGrailsPluginManager([MyGrailsPlugin,AnotherGrailsPlugin, ObservingGrailsPlugin] as Class[], ga)
+
+         manager.loadPlugins()
+         
+         assertTrue manager.hasGrailsPlugin("another")
+         def plugin = manager.getGrailsPlugin("another")
+         assertEquals 1, manager.getPluginObservers(plugin)?.size()
+         def event = [source:"foo"]
+         
+         manager.informObservers("another", event)
+
+         assertEquals "bar", event.source
+    }	
+
 	public void testDisabledPlugin() {
 		def manager = new DefaultGrailsPluginManager([MyGrailsPlugin,AnotherGrailsPlugin,DisabledGrailsPlugin] as Class[], ga)
 
 		manager.loadPlugins()
 
 	    assertTrue manager.hasGrailsPlugin("my")
+	    assertNotNull manager.getGrailsPlugin("my").instance
 	    assertFalse manager.hasGrailsPlugin("disabled")
     }
 
@@ -106,12 +122,13 @@ public class GrailsPluginManagerTests extends AbstractGrailsMockTests {
 		
 		assert ctx.containsBean("localeResolver")
 	}
-	
+
+
 	public void testEviction() {
 		def manager = new DefaultGrailsPluginManager([MyGrailsPlugin,AnotherGrailsPlugin,SomeOtherGrailsPlugin,ShouldEvictSomeOtherGrailsPlugin] as Class[], ga)
-		
+
 		manager.loadPlugins()
-		
+
 		assertFalse manager.hasGrailsPlugin("someOther")
 		assertTrue manager.hasGrailsPlugin("my")
 		assertTrue manager.hasGrailsPlugin("another")
@@ -129,7 +146,8 @@ class MyGrailsPlugin {
 	}
 }
 class AnotherGrailsPlugin {
-	def version = 1.2	
+	def version = 1.2
+    def watchedResources = ['classpath:org/codehaus/groovy/grails/plugins/*.xml']
 	def doWithApplicationContext = { ctx ->
     	RootBeanDefinition bd = new RootBeanDefinition(CookieLocaleResolver.class);
     	ctx.registerBeanDefinition("localeResolver", bd);			
@@ -150,4 +168,13 @@ class ShouldEvictSomeOtherGrailsPlugin {
 class DisabledGrailsPlugin {
     def version = 1.0
     def status = "disabled"
+}
+class ObservingGrailsPlugin {
+    def version = "1.0-RC1"
+    def observe = ['another']
+
+    def onChange = { event ->
+        assert event.source != null
+        event.source = "bar"
+    }
 }

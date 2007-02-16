@@ -21,9 +21,13 @@ import org.codehaus.groovy.grails.plugins.exceptions.PluginException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.io.Resource;
+import org.springframework.web.context.ServletContextAware;
 
 import java.io.File;
 import java.io.Writer;
+import java.util.List;
+import java.util.Collection;
+import java.util.Map;
 
 /**
  * <p>A class that handles the loading and management of plug-ins in the Grails system.
@@ -59,7 +63,7 @@ import java.io.Writer;
  * @since 0.4
  *
  */
-public interface GrailsPluginManager extends ApplicationContextAware {
+public interface GrailsPluginManager extends ApplicationContextAware, ServletContextAware {
 
 	String BEAN_NAME = "grailsPluginManager";
 
@@ -158,4 +162,27 @@ public interface GrailsPluginManager extends ApplicationContextAware {
 	 */
 	public boolean isInitialised();
 
+    /**
+     * Refreshes the specified plugin. A refresh will force to plugin to "touch" each of its watched resources
+     * and fire modified events for each
+     *
+     * @param name The name of the plugin to refresh
+     */
+    public void refreshPlugin(String name);
+
+    /**
+     * Retrieves a collection of plugins that are observing the specified plugin
+     *
+     * @param plugin The plugin to retrieve observers for
+     * @return A collection of observers
+     */
+    public Collection getPluginObservers(GrailsPlugin plugin);
+
+    /**
+     * inform the specified plugins observers of the event specified by the passsed Map instance
+     *
+     * @param pluginName The name of the plugin
+     * @param event The event
+     */
+    public void informObservers(String pluginName, Map event);
 }

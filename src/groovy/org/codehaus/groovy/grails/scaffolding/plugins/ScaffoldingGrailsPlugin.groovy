@@ -17,7 +17,9 @@ package org.codehaus.groovy.grails.scaffolding.plugins;
 
 import org.codehaus.groovy.grails.plugins.support.GrailsPluginUtils
 import org.codehaus.groovy.grails.scaffolding.*;
-import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
+import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU 
+import org.codehaus.groovy.grails.web.servlet.filter.GrailsResourceCopier
+import org.codehaus.groovy.grails.scaffolding.*
 
 /**
  * A plug-in that handles the configuration of Hibernate within Grails 
@@ -29,6 +31,15 @@ class ScaffoldingGrailsPlugin {
 
 	def version = GrailsPluginUtils.getGrailsVersion()
 	def dependsOn = [hibernate:version, controllers:version]
+	def observe = ['hibernate']
+	def copyScript 
+	def templateGenerator
+	
+	ScaffoldingGrailsPlugin() {
+        copyScript = new GrailsResourceCopier()   
+		templateGenerator = new DefaultGrailsTemplateGenerator()
+		templateGenerator.overwrite = true
+	}
 	                 
 	def doWithSpring = {
 		application.controllers.each { controller ->
@@ -69,11 +80,52 @@ class ScaffoldingGrailsPlugin {
 			}
 		}
 	}
-	
+	    
+	/**
+	 * Performs initial generation of views at runtime
+	 */
+	def doWithApplicationContext = { ctx ->
+		
+		application.controllers.each { controller ->
+			if(controller.scaffolding) {
+			     def clazz = controller.scaffoldedClass
+			 	 def domainClass
+			     if(clazz) domainClass = application.getDomainClass(clazz.name)
+			     else {
+				  	domainClass = application.getDomainClass(controller.name)
+				 } 
+				
+				 if(domainClass) {
+				     templateGenerator.generateViews(domainClass, ctx.servletContext.getRealPath("/WEB-INF"))
+				 }
+			}
+		} 
+		// overwrite with user defined views
+		copyScript?.copyViews(true)
+	 }
 	/**
 	 * Handles registration of dynamic scaffolded methods
 	 */
 	def doWithDynamicMethods = { ctx ->
+		registerScaffoldedActions(application, ctx)
+        // configure scaffolders
+        GrailsScaffoldingUtil.configureScaffolders(application, ctx);		
+	}  
+	
+	def onChange = { event ->		
+	    if(event.source) {
+			def domainClass = application.getDomainClass(event.source.name)
+			def path = event.ctx?.servletContext?.getRealPath("/WEB-INF")
+			if(domainClass && path) {
+				 templateGenerator.generateViews(domainClass, path)				
+			}
+			registerScaffoldedActions(application, event.ctx)   
+             // configure scaffolders
+	        GrailsScaffoldingUtil.configureScaffolders(application, event.ctx);			
+		}
+	}
+	
+	def registerScaffoldedActions(application,ctx) {
 		application.controllers.each { controller ->
 			if(controller.scaffolding) {
 				if(ctx.containsBean("${controller.fullName}Scaffolder")) {
@@ -90,5 +142,6 @@ class ScaffoldingGrailsPlugin {
 				}
 			}
 		}
+		
 	}
 }

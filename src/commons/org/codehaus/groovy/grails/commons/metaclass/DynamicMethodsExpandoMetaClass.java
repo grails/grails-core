@@ -52,10 +52,9 @@ import java.beans.IntrospectionException;
  *        Created: Feb 2, 2007
  *        Time: 6:31:31 PM
  */
-public class DynamicMethodsExpandoMetaClass extends ExpandoMetaClass implements AdapterMetaClass {
+public class DynamicMethodsExpandoMetaClass extends ExpandoMetaClass {
     
     private DynamicMethods dynamicMethods;
-    private ExpandoMetaClass adaptee;
     private static final String REGEX_START = "^";
     private static final String REGEX_END = "$";
 
@@ -70,9 +69,7 @@ public class DynamicMethodsExpandoMetaClass extends ExpandoMetaClass implements 
      */
     public DynamicMethodsExpandoMetaClass(Class aClass) throws IntrospectionException {
         super(aClass);
-		adaptee = new ExpandoMetaClass(aClass);
-        adaptee.initialize();
-        adaptee.setAllowChangesAfterInit(true);
+        setAllowChangesAfterInit(true);
         this.dynamicMethods = new DefaultDynamicMethods(aClass);
     }
 
@@ -85,9 +82,7 @@ public class DynamicMethodsExpandoMetaClass extends ExpandoMetaClass implements 
      */
     public DynamicMethodsExpandoMetaClass(Class aClass, boolean inReg) throws IntrospectionException {
         super(aClass);
-		adaptee = new ExpandoMetaClass(aClass, true);
-        adaptee.initialize();
-        adaptee.setAllowChangesAfterInit(true);
+		setAllowChangesAfterInit(true);
         this.dynamicMethods = new DefaultDynamicMethods(aClass);
         if(inReg) {
             registry.setMetaClass(aClass, this);
@@ -108,7 +103,7 @@ public class DynamicMethodsExpandoMetaClass extends ExpandoMetaClass implements 
 		if (callback.isInvoked()) {
 			return returnValue;
 		} else {
-			return adaptee.invokeStaticMethod(target, methodName, arguments);
+			return super.invokeStaticMethod(target, methodName, arguments);
 		}
 	}
 
@@ -116,7 +111,7 @@ public class DynamicMethodsExpandoMetaClass extends ExpandoMetaClass implements 
         InvocationCallback callback = new InvocationCallback();
         this.dynamicMethods.setProperty(object,property,newValue,callback);
         if (!callback.isInvoked()) {
-            adaptee.setProperty(aClass,object, property, newValue, b ,b1);
+            super.setProperty(aClass,object, property, newValue, b ,b1);
         }
     }
 
@@ -126,7 +121,7 @@ public class DynamicMethodsExpandoMetaClass extends ExpandoMetaClass implements 
         if (callback.isInvoked()) {
             return returnValue;
         } else {
-            return adaptee.getProperty(aClass,object,property, b, b1);
+            return super.getProperty(aClass,object,property, b, b1);
         }
 
     }/* (non-Javadoc)
@@ -139,7 +134,7 @@ public class DynamicMethodsExpandoMetaClass extends ExpandoMetaClass implements 
 			return instance;
 		}
 		else {
-			return adaptee.invokeConstructor(arg0);
+			return super.invokeConstructor(arg0);
 		}
 	}
 
@@ -149,22 +144,11 @@ public class DynamicMethodsExpandoMetaClass extends ExpandoMetaClass implements 
         if (callback.isInvoked()) {
             return returnValue;
         } else {
-            return adaptee.invokeMethod(aClass, target, methodName, arguments, b, b1);
+            return super.invokeMethod(aClass, target, methodName, arguments, b, b1);
         }
 
     }
 
-
-    public MetaClass getAdaptee() {
-        return this.adaptee;
-    }
-
-    public void setAdaptee(MetaClass adaptee) {
-        if(adaptee instanceof ExpandoMetaClass)
-            this.adaptee = (ExpandoMetaClass)adaptee;
-        else
-            throw new IllegalArgumentException("Adaptee must be an instance of " + ExpandoMetaClass.class);
-    }
 
 
     /**
@@ -200,10 +184,10 @@ public class DynamicMethodsExpandoMetaClass extends ExpandoMetaClass implements 
             }
             else if(newValue instanceof Closure) {
                 if(isStatic) {
-                    adaptee.registerStaticMethod(property, (Closure)newValue);
+                    registerStaticMethod(property, (Closure)newValue);
                 }
                 else {
-                    adaptee.registerInstanceMethod(property, (Closure)newValue);
+                    registerInstanceMethod(property, (Closure)newValue);
                 }
             }
         }
@@ -228,7 +212,7 @@ public class DynamicMethodsExpandoMetaClass extends ExpandoMetaClass implements 
             this.dynamicMethods.addDynamicMethodInvocation(new ClosureInvokingDynamicMethod(name, (Closure)value));
         }
         else {
-            adaptee.setProperty(name,value);
+            super.setProperty(name,value);
         }
     }
 

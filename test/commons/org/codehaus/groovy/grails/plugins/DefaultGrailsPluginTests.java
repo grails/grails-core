@@ -29,13 +29,14 @@ import org.springframework.context.ApplicationContext;
  * @author Graeme Rocher
  *
  */
-public class DefaultGrailsPluginTest extends AbstractGrailsMockTests {
+public class DefaultGrailsPluginTests extends AbstractGrailsMockTests {
 	
 
 	private Class versioned;
 	private Class notVersion;
 	private Class notPluginClass;
     private Class disabled;
+    private Class observed;
 
     protected void onSetUp() {
 		versioned = gcl.parseClass("class MyGrailsPlugin {\n" +
@@ -55,7 +56,12 @@ public class DefaultGrailsPluginTest extends AbstractGrailsMockTests {
 
         disabled = gcl.parseClass("class DisabledGrailsPlugin {" +
                                           "def version = 1.1; " +
-                "                           def status = 'disabled'; }");
+                                            "def status = 'disabled'; }");
+
+        observed = gcl.parseClass("class ObservingGrailsPlugin {" +
+                                          "def observe = ['another'];" +
+                                          "def version = 1.1; " +
+                                            "def status = 'disabled'; }");
     }
 
 	public void testDefaultGrailsPlugin() {
@@ -117,7 +123,16 @@ public class DefaultGrailsPluginTest extends AbstractGrailsMockTests {
 
 	public void testGetVersion() {
 		GrailsPlugin versionPlugin = new DefaultGrailsPlugin(versioned, ga);
-		assertEquals(new BigDecimal("1.1"), versionPlugin.getVersion());
+		assertEquals("1.1", versionPlugin.getVersion());
 	}
+
+    public void testObservers() {
+
+        GrailsPlugin observingPlugin = new DefaultGrailsPlugin(observed, ga);
+
+        assertEquals(1, observingPlugin.getObservedPluginNames().length);
+        assertEquals("another", observingPlugin.getObservedPluginNames()[0]);
+
+    }
 
 }

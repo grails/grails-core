@@ -111,30 +111,7 @@ public class GrailsReloadServletFilter extends OncePerRequestFilter {
           try {
               groovyClass = gcl.parseClass(gcl.getResource("org/codehaus/groovy/grails/web/servlet/filter/GrailsResourceCopier.groovy").openStream());
               copyScript = (ResourceCopier)groovyClass.newInstance();
-              groovyClass = gcl.loadClass("org.codehaus.groovy.grails.scaffolding.DefaultGrailsTemplateGenerator");
-              GrailsTemplateGenerator templateGenerator = (GrailsTemplateGenerator) groovyClass.newInstance();
-              templateGenerator.setOverwrite(true);
-              // perform initial generation of views
-              GrailsControllerClass[] controllers = application.getControllers();
-              for (int i = 0; i < controllers.length; i++) {
-                  GrailsControllerClass controller = controllers[i];
-                  if(controller.isScaffolding()) {
-                    Class clazz = controller.getScaffoldedClass();
-                    GrailsDomainClass domainClass;
-                    if(clazz != null) {
-                       domainClass = application.getGrailsDomainClass(clazz.getName());
-                    }
-                    else {
-                       domainClass = application.getGrailsDomainClass(controller.getName());
-                    }
-                    if(domainClass != null) {
-                        // generate new views
-                        templateGenerator.generateViews(domainClass,getServletContext().getRealPath("/WEB-INF"));
-                    }
-                  }
-              }
-            // overwrite with user defined views
-            copyScript.copyViews(true);
+              copyScript.copyViews(true);
           } catch (IllegalAccessException e) {
               LOG.error("Illegal access creating resource copier. Save/reload disabled: " + e.getMessage(), e);
           } catch (InstantiationException e) {
@@ -190,77 +167,4 @@ public class GrailsReloadServletFilter extends OncePerRequestFilter {
         }
     }
 
-    void loadControllerClass(Class loadedClass, boolean isNew) {
-        GrailsControllerClass controllerClass = application.addControllerClass(loadedClass);
-        if(controllerClass != null) {
-             // if its a new controller re-generate web.xml, reload app context
-            if(isNew) {
-            	if(copyScript != null) {            		
-                    // clean controllers
-                    copyScript.cleanControllers();
-                    // re-generate web.xml
-                    LOG.info("New controller added, re-generating web.xml");
-                    copyScript.generateWebXml();
-            	}
-            }
-            else {
-                // regenerate controller urlMap
-                Properties mappings = new Properties();
-                for (int i = 0; i < application.getControllers().length; i++) {
-                    GrailsControllerClass simpleController = application.getControllers()[i];
-                    for (int x = 0; x < simpleController.getURIs().length; x++) {
-                        if(!mappings.containsKey(simpleController.getURIs()[x]))
-                            mappings.put(simpleController.getURIs()[x], SimpleGrailsController.APPLICATION_CONTEXT_ID);
-                    }
-                }
-
-                HotSwappableTargetSource urlMappingsTargetSource = (HotSwappableTargetSource)context.getBean(GrailsUrlHandlerMapping.APPLICATION_CONTEXT_TARGET_SOURCE);
-
-                GrailsUrlHandlerMapping urlMappings = new GrailsUrlHandlerMapping();
-                urlMappings.setApplicationContext(context);
-                urlMappings.setMappings(mappings);
-                String[] interceptorNames = context.getBeanNamesForType(HandlerInterceptor.class);
-                String[] webRequestInterceptors = context.getBeanNamesForType( WebRequestInterceptor.class);
-                
-                HandlerInterceptor[] interceptors = new HandlerInterceptor[interceptorNames.length+webRequestInterceptors.length];
-                int j = 0;
-                for (int i = 0; i < interceptorNames.length; i++) {
-                    String interceptorName = interceptorNames[i];
-                    interceptors[i] = (HandlerInterceptor)context.getBean(interceptorName);
-                    j = i+1;
-                }
-                for(int i = 0; i < webRequestInterceptors.length; i++) {
-                	j = i+j;
-                	interceptors[j] = new WebRequestHandlerInterceptorAdapter( (WebRequestInterceptor) context.getBean(webRequestInterceptors[i]));
-                }
-                LOG.info("Re-adding " + interceptors.length + " interceptors to mapping");
-                urlMappings.setInterceptors(interceptors);
-                urlMappings.initApplicationContext();
-
-
-                urlMappingsTargetSource.swap(urlMappings);
-
-
-                // swap target source in app context
-                HotSwappableTargetSource controllerTargetSource = (HotSwappableTargetSource)context.getBean(controllerClass.getFullName() + "TargetSource");
-                controllerTargetSource.swap(controllerClass);
-            }
-        }
-    }
-
-/*    private void reloadApplicationContext() {
-        WebApplicationContext parent = (WebApplicationContext)getServletContext().getAttribute(GrailsApplicationAttributes.PARENT_APPLICATION_CONTEXT);
-        // construct the SpringConfig for the container managed application
-        if(this.application == null)
-            this.application = (GrailsApplication) parent.getBean(GrailsApplication.APPLICATION_ID, GrailsApplication.class);
-
-        GrailsRuntimeConfigurator config = new GrailsRuntimeConfigurator(application,parent);
-        context = (GrailsWebApplicationContext)config.configure(super.getServletContext());
-
-       getServletContext().setAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT, context );
-       getServletContext().setAttribute(GrailsApplication.APPLICATION_ID, context.getBean(GrailsApplication.APPLICATION_ID) );
-
-        // re-configure scaffolders
-        GrailsConfigUtils.configureScaffolders(application,context);
-    }*/
 }

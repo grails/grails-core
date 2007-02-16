@@ -46,8 +46,11 @@ public class GrailsViewResolver extends InternalResourceViewResolver {
     private String localPrefix;
     private static final Log LOG = LogFactory.getLog(GrailsViewResolver.class);
     private static final String GSP_SUFFIX = ".gsp";
-    private Map resolvedCache = new HashMap();
 
+
+    public GrailsViewResolver() {
+        setCache(!GrailsUtil.isDevelopmentEnv());
+    }
 
     public void setPrefix(String prefix) {
         super.setPrefix(prefix);
@@ -59,54 +62,45 @@ public class GrailsViewResolver extends InternalResourceViewResolver {
     }
 
     protected View loadView(String viewName, Locale locale) throws Exception {
+
         AbstractUrlBasedView view = buildView(viewName);
 
         ServletContext context = getServletContext();
         URL res = context.getResource(view.getUrl());
         // try GSP if res is null
-        if(res == null) {
-            if(resolvedCache.containsKey(viewName)) {
-        		view.setUrl(resolvedCache.get(viewName).toString());
-        	}
-        	else {
 
-                GrailsWebRequest webRequest = (GrailsWebRequest)RequestContextHolder.currentRequestAttributes();
+        GrailsWebRequest webRequest = (GrailsWebRequest)RequestContextHolder.currentRequestAttributes();
 
-                GrailsHttpServletRequest request = webRequest.getCurrentRequest();
-                GroovyObject controller = webRequest
-                                                .getAttributes()
-                                                .getController(request);
+        GrailsHttpServletRequest request = webRequest.getCurrentRequest();
+        GroovyObject controller = webRequest
+                                        .getAttributes()
+                                        .getController(request);
 
-                GrailsApplication application = webRequest
-                                                    .getAttributes()
-                                                    .getGrailsApplication();
+        GrailsApplication application = webRequest
+                                            .getAttributes()
+                                            .getGrailsApplication();
 
 
-                String gspView;
-                String pluginContextPath = "";
-                // try to resolve the view relative to the controller first, this allows us to support
-                // views provided by plugins
-                if(controller != null && application != null) {
-                    Resource controllerResource = application.getResourceForClass(controller.getClass());
-                    Resource viewsDir = GrailsResourceUtils.getViewsDir(controllerResource);
+        String gspView;
+        String pluginContextPath = "";
+        // try to resolve the view relative to the controller first, this allows us to support
+        // views provided by plugins
+        if(controller != null && application != null) {
+            Resource controllerResource = application.getResourceForClass(controller.getClass());
+            Resource viewsDir = GrailsResourceUtils.getViewsDir(controllerResource);
 
-                    String pathToView = GrailsResourceUtils.getRelativeInsideWebInf(viewsDir);
-                    gspView = pathToView + viewName + GSP_SUFFIX;
-                }
-                else {
-                    gspView = localPrefix + viewName + GSP_SUFFIX;
-                }
-                if(LOG.isDebugEnabled()) {
-                    LOG.debug("Attempting to resolve view for URI ["+gspView+"]");
-                }
-	            res = context.getResource(gspView);
-	            if(res != null) {
-	                view.setUrl(gspView);
-                    if(!GrailsUtil.isDevelopmentEnv()) {
-                        this.resolvedCache.put(viewName,gspView);
-                    }                    
-	            }
-        	}
+            String pathToView = GrailsResourceUtils.getRelativeInsideWebInf(viewsDir);
+            gspView = pathToView + viewName + GSP_SUFFIX;
+        }
+        else {
+            gspView = localPrefix + viewName + GSP_SUFFIX;
+        }
+        if(LOG.isDebugEnabled()) {
+            LOG.debug("Attempting to resolve view for URI ["+gspView+"]");
+        }
+        res = context.getResource(gspView);
+        if(res != null) {
+            view.setUrl(gspView);
         }
 
         view.setApplicationContext(getApplicationContext());

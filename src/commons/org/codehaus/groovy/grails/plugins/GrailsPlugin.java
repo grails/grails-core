@@ -18,6 +18,7 @@ package org.codehaus.groovy.grails.plugins;
 import groovy.util.slurpersupport.GPathResult;
 
 import java.math.BigDecimal;
+import java.util.Map;
 
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration;
@@ -196,8 +197,14 @@ public interface GrailsPlugin extends ApplicationContextAware {
 	 * @return The PluginManager or null
 	 */
 	GrailsPluginManager getManager();
-	
-	/**
+
+    /**
+     * Retrieves the wrapped plugin instance for this plugin
+     * @return The plugin instance
+     */
+    Object getInstance();
+
+    /**
 	 * Sets the plugin manager for this plugin
 	 * 
 	 * @param manager A GrailsPluginManager instance 
@@ -219,4 +226,18 @@ public interface GrailsPlugin extends ApplicationContextAware {
      * @return Whether the plugin is enabled or not
      */
     boolean isEnabled();
+
+    /**
+     * Retrieve the plugin names that this plugin is observing for changes
+     *
+     * @return The names of the observed plugins
+     */
+    String[] getObservedPluginNames();
+
+    /**
+     * Notifies this plugin of the specified Event calling the onChange listener
+     *
+     * @param event The event to listen for
+     */
+    void notifyOfEvent(Map event);
 }

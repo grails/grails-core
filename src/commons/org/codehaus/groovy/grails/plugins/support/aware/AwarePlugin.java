@@ -6,6 +6,8 @@ import org.codehaus.groovy.grails.plugins.AbstractGrailsPlugin;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.GenericApplicationContext;
 
+import java.util.Map;
+
 /**
  * <p>Grails plugin that registers <code>*Aware</code> {@link org.springframework.beans.factory.config.BeanPostProcessor}s.</p>
  *
@@ -46,12 +48,24 @@ public class AwarePlugin extends AbstractGrailsPlugin {
 		
 	}
 
-	public void doWithDynamicMethods(ApplicationContext applicationContext) {
+    public Object getInstance() {
+        throw new UnsupportedOperationException("Method [getInstance] not supported on AwarePlugin");
+    }
+
+    public void doWithDynamicMethods(ApplicationContext applicationContext) {
 		// do nothing
 	}
 
     public boolean isEnabled() {
         return true;
+    }
+
+    public String[] getObservedPluginNames() {
+        return new String[0];  
+    }
+
+    public void notifyOfEvent(Map event) {
+        // do nothing
     }
 
 }

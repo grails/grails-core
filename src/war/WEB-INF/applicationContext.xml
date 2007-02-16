@@ -16,7 +16,14 @@
 			<value>classpath*:**/plugins/**/*GrailsPlugin.groovy</value>
 		</property>
 		<property name="application" ref="grailsApplication" />
-	</bean>
+	</bean>    
+	
+	<bean id="grailsConfigurator" class="org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator">
+        <constructor-arg>
+            <ref bean="grailsApplication" />
+        </constructor-arg>
+        <property name="pluginManager" ref="pluginManager" />
+    </bean>
 	
     <bean id="grailsResourceHolder" singleton="false" class="org.codehaus.groovy.grails.commons.spring.GrailsResourceHolder">
         <property name="resources">

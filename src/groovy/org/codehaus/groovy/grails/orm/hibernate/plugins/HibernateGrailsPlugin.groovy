@@ -14,7 +14,8 @@
  * limitations under the License.
  */ 
 package org.codehaus.groovy.grails.orm.hibernate.plugins;
-
+                                              
+import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
 import org.codehaus.groovy.grails.validation.*
 import org.codehaus.groovy.grails.plugins.support.GrailsPluginUtils
 import org.codehaus.groovy.grails.orm.hibernate.ConfigurableLocalSessionFactoryBean;
@@ -120,8 +121,22 @@ class HibernateGrailsPlugin {
         }
 	}
 	
-	def onChange = {
+	def onChange = {  event ->
+			def configurator = event.ctx.grailsConfigurator
+ 			def application = event.application
+   		    def manager = event.manager
+
+			assert configurator
+			assert application
+			assert manager
 			
+			if(GCU.isDomainClass(event.source)) {
+					// refresh whole application
+					application.refresh()
+					// rebuild context
+					configurator.reconfigure(event.ctx, manager.servletContext, false)					
+			}
+
 	}
 
 }

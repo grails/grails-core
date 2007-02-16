@@ -20,11 +20,15 @@ import groovy.lang.GroovyClassLoader;
 import java.io.File;
 import java.io.Writer;
 import java.math.BigDecimal;
+import java.util.Collection;
+import java.util.Map;
 
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.plugins.exceptions.PluginException;
 import org.springframework.core.io.Resource;
+
+import javax.servlet.ServletContext;
 
 /**
  * @author Graeme Rocher
@@ -33,8 +37,14 @@ import org.springframework.core.io.Resource;
  */
 
 public class MockGrailsPluginManager extends AbstractGrailsPluginManager {
+    private ServletContext servletContext;
 
-	public MockGrailsPluginManager(GrailsApplication application) {
+
+    public ServletContext getServletContext() {
+        return servletContext;
+    }
+
+    public MockGrailsPluginManager(GrailsApplication application) {
 		super(application);
 		loadPlugins();
 	}
@@ -80,4 +90,22 @@ public class MockGrailsPluginManager extends AbstractGrailsPluginManager {
 		return true;
 	}
 
+    public void refreshPlugin(String name) {
+        GrailsPlugin plugin = (GrailsPlugin)plugins.get(name);
+        if(plugin != null) {
+            plugin.refresh();
+        }
+    }
+
+    public Collection getPluginObservers(GrailsPlugin plugin) {
+        throw new UnsupportedOperationException("The class [MockGrailsPluginManager] doesn't support the method getPluginObservers");
+    }
+
+    public void informObservers(String pluginName, Map event) {
+        // do nothing
+    }
+
+    public void setServletContext(ServletContext servletContext) {
+        this.servletContext = servletContext;
+    }
 }

@@ -58,8 +58,6 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
     	else {
             webContext = GrailsConfigUtils.configureWebApplicationContext(getServletContext(), parent);     		
     	}
-                // configure scaffolders
-        GrailsScaffoldingUtil.configureScaffolders(application, webContext);
         GrailsConfigUtils.executeGrailsBootstraps(application, webContext, getServletContext());
 
         return webContext;

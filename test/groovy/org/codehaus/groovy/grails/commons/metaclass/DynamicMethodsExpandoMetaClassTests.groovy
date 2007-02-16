@@ -25,6 +25,7 @@ class DynamicMethodsExpandoMetaClassTests extends GroovyTestCase {
 
 	void testRegexMethodDefinition() {
        def metaClass = new DynamicMethodsExpandoMetaClass(Book.class)
+       metaClass.initialize()
 
        metaClass./^findBy(\w+)$/ = { matcher, args ->
             assert matcher instanceof java.util.regex.Matcher
@@ -42,6 +43,7 @@ class DynamicMethodsExpandoMetaClassTests extends GroovyTestCase {
 
     void testRegexStaticMethodDefinition() {
        def metaClass = new DynamicMethodsExpandoMetaClass(Book.class, true)
+       metaClass.initialize()
 
        metaClass.'static'./^findBy(\w+)$/ = { matcher, args ->
             assert matcher instanceof java.util.regex.Matcher
@@ -58,6 +60,7 @@ class DynamicMethodsExpandoMetaClassTests extends GroovyTestCase {
 
     void testMixStandardAndRegixMethodDefinitions() {
        def metaClass = new DynamicMethodsExpandoMetaClass(Book.class, true)
+       metaClass.initialize()
 
        metaClass.'static'./^findBy(\w+)$/ = { matcher, args ->
             assert matcher instanceof java.util.regex.Matcher

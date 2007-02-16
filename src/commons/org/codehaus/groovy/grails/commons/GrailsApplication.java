@@ -326,6 +326,11 @@ public interface GrailsApplication extends ApplicationContextAware {
     public void refreshConstraints();
 
     /**
+     * This method will refresh the entire application
+     */
+    public void refresh();
+
+    /**
      * Retrieves a Resource instance for the given Grails class or null it doesn't exist
      *
      * @param theClazz The Grails class

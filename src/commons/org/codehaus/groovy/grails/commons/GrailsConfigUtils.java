@@ -1,11 +1,11 @@
 /* Copyright 2004-2005 the original author or authors.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -30,24 +30,24 @@ import javax.servlet.ServletContext;
  * @since 22-Feb-2006
  */
 public class GrailsConfigUtils {
-	
+
 	private static final Log LOG = LogFactory.getLog(GrailsConfigUtils.class);
 
     /**
 	 * Executes Grails bootstrap classes
-	 * 
+	 *
 	 * @param application The Grails ApplicationContext instance
 	 * @param webContext The WebApplicationContext instance
 	 * @param servletContext The ServletContext instance
 	 */
 	public static void executeGrailsBootstraps(GrailsApplication application, WebApplicationContext webContext, ServletContext servletContext) {
-		
+
 		PersistenceContextInterceptor interceptor = null;
 		String[] beanNames = webContext.getBeanNamesForType(PersistenceContextInterceptor.class);
 		if(beanNames.length > 0) {
 			interceptor = (PersistenceContextInterceptor)webContext.getBean(beanNames[0]);
 		}
-	
+
 	    if(interceptor != null) {
 	    	interceptor.init();
 	    	// init the Grails application
@@ -61,13 +61,13 @@ public class GrailsConfigUtils {
 	        finally {
 	        	interceptor.destroy();
 	        }
-	        
+
 	    }
 	}
 
 	public static WebApplicationContext configureWebApplicationContext(ServletContext servletContext, WebApplicationContext parent) {
 		GrailsApplication application = (GrailsApplication)parent.getBean(GrailsApplication.APPLICATION_ID);
-	
+
 		if(LOG.isDebugEnabled()) {
 			LOG.debug("[GrailsContextLoader] Configurating Grails Application");
 		}
@@ -75,18 +75,24 @@ public class GrailsConfigUtils {
 		if(application.getParentContext() == null) {
 			application.setApplicationContext(parent);
 		}
-		
-	    GrailsRuntimeConfigurator configurator = new GrailsRuntimeConfigurator(application,parent);
-        if(parent.containsBean(GrailsPluginManager.BEAN_NAME)) {
-        	GrailsPluginManager pluginManager = (GrailsPluginManager)parent.getBean(GrailsPluginManager.BEAN_NAME);
-        	configurator.setPluginManager(pluginManager);
+
+	    GrailsRuntimeConfigurator configurator;
+        if(parent.containsBean(GrailsRuntimeConfigurator.BEAN_ID)) {
+            configurator = (GrailsRuntimeConfigurator)parent.getBean(GrailsRuntimeConfigurator.BEAN_ID);
+        }
+        else {
+            configurator = new GrailsRuntimeConfigurator(application,parent);
+            if(parent.containsBean(GrailsPluginManager.BEAN_NAME)) {
+                GrailsPluginManager pluginManager = (GrailsPluginManager)parent.getBean(GrailsPluginManager.BEAN_NAME);
+                configurator.setPluginManager(pluginManager);
+            }            
         }
         servletContext.setAttribute(ApplicationAttributes.PLUGIN_MANAGER, configurator.getPluginManager());
         // use config file locations if available
         servletContext.setAttribute(ApplicationAttributes.PARENT_APPLICATION_CONTEXT,parent);
         servletContext.setAttribute(GrailsApplication.APPLICATION_ID,application);
-        
-	    
+
+
 	    // return a context that obeys grails' settings
 	    WebApplicationContext webContext = configurator.configure( servletContext );
 	    configurator.getPluginManager().setApplicationContext(webContext);
