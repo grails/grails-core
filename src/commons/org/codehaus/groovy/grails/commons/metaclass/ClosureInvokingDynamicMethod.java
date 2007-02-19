@@ -79,6 +79,7 @@ public class ClosureInvokingDynamicMethod implements DynamicMethodInvocation,Sta
     private Object invokeMethod(String methodName, Object[] arguments, Closure c) {
 
         Matcher matcher = pattern.matcher(methodName);
+        matcher.find();
 
         switch(c.getParameterTypes().length) {
              case 0:

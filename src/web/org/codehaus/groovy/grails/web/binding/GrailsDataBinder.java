@@ -154,7 +154,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
      *
      * @param mpvs A MutablePropertyValues instance
      */
-    private void autoCreateIfPossible(MutablePropertyValues mpvs) {
+    protected void autoCreateIfPossible(MutablePropertyValues mpvs) {
         PropertyValue[] pvs = mpvs.getPropertyValues();
         for (int i = 0; i < pvs.length; i++) {
             PropertyValue pv = pvs[i];
