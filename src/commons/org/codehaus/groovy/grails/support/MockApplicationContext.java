@@ -1,7 +1,5 @@
 package org.codehaus.groovy.grails.support;
 
-import groovy.lang.GroovyObjectSupport;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -26,20 +24,23 @@ import org.springframework.context.MessageSourceResolvable;
 import org.springframework.context.NoSuchMessageException;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
-import org.springframework.util.AntPathMatcher;
-import org.springframework.util.PathMatcher;
+import org.springframework.web.context.WebApplicationContext;
+import org.springframework.mock.web.MockServletContext;
+import groovy.lang.GroovyObjectSupport;
 
-public class MockApplicationContext extends GroovyObjectSupport implements ApplicationContext {
+import javax.servlet.ServletContext;
+
+public class MockApplicationContext extends GroovyObjectSupport implements WebApplicationContext {
 
 	Date startupDate = new Date();
 	Map beans = new HashMap();
 	List resources = new ArrayList();
 	PathMatcher pathMatcher = new AntPathMatcher();
-	
+
 	public void registerMockBean(String name, Object instance) {
 		beans.put(name,instance);
 	}
-	
+
 	/**
 	 * Registers a mock resource. Path separator: "/"
 	 * @param location the location of the resource. Example: /WEB-INF/grails-app/i18n/messages.properties
@@ -47,9 +48,9 @@ public class MockApplicationContext extends GroovyObjectSupport implements Appli
 	public void registerMockResource(String location) {
 		resources.add(location);
 	}
-	
+
 	public ApplicationContext getParent() {
-		throw new UnsupportedOperationException("Method not supported by implementation");	
+		throw new UnsupportedOperationException("Method not supported by implementation");
 	}
 
 	public String getDisplayName() {
@@ -64,7 +65,7 @@ public class MockApplicationContext extends GroovyObjectSupport implements Appli
 		// do nothing
 	}
 
-	public boolean containsBeanDefinition(String beanName) {	
+	public boolean containsBeanDefinition(String beanName) {
 		return beans.containsKey(beanName);
 	}
 
@@ -86,7 +87,7 @@ public class MockApplicationContext extends GroovyObjectSupport implements Appli
 			String beanName = (String)i.next();
 			if(type.isAssignableFrom( beans.get(beanName).getClass() )) {
 				beanNames.add(beanName);
-			}			
+			}
 		}
 		return (String[])beanNames.toArray(new String[beanNames.size()]);
 	}
@@ -97,13 +98,27 @@ public class MockApplicationContext extends GroovyObjectSupport implements Appli
 	}
 
 	public Map getBeansOfType(Class type) throws BeansException {
-		return Collections.EMPTY_MAP;
+        String[] beanNames = getBeanNamesForType(type);
+        Map newMap = new HashMap();
+        for (int i = 0; i < beanNames.length; i++) {
+            String beanName = beanNames[i];
+            newMap.put(beanName, getBean(beanName));
+
+        }
+        return newMap;
 	}
 
 	public Map getBeansOfType(Class type, boolean includePrototypes,
 			boolean includeFactoryBeans) throws BeansException {
-		throw new UnsupportedOperationException("Method not supported by implementation");
-	}
+        String[] beanNames = getBeanNamesForType(type);
+        Map newMap = new HashMap();
+        for (int i = 0; i < beanNames.length; i++) {
+            String beanName = beanNames[i];
+            newMap.put(beanName, getBean(beanName));
+
+        }
+        return newMap;
+    }
 
 	public Object getBean(String name) throws BeansException {
 		if(!beans.containsKey(name))throw new NoSuchBeanDefinitionException(name);
@@ -114,7 +129,7 @@ public class MockApplicationContext extends GroovyObjectSupport implements Appli
 			throws BeansException {
 		if(!beans.containsKey(name))throw new NoSuchBeanDefinitionException( name);
 		if(requiredType != null && beans.get(name).getClass() != requiredType)throw new NoSuchBeanDefinitionException(name);
-		
+
 		return beans.get(name);
 	}
 
@@ -136,7 +151,7 @@ public class MockApplicationContext extends GroovyObjectSupport implements Appli
 
 	public Class getType(String name) throws NoSuchBeanDefinitionException {
 		if(!beans.containsKey(name))throw new NoSuchBeanDefinitionException(name);
-		
+
 		return beans.get(name).getClass();
 	}
 
@@ -154,7 +169,7 @@ public class MockApplicationContext extends GroovyObjectSupport implements Appli
 		MessageSource messageSource = (MessageSource)getBean("messageSource");
 		if(messageSource == null) throw new BeanCreationException("No bean [messageSource] found in MockApplicationContext");
 		return messageSource.getMessage(code, args, defaultMessage, locale);
-		
+
 	}
 
 	public String getMessage(String code, Object[] args, Locale locale)
@@ -174,7 +189,7 @@ public class MockApplicationContext extends GroovyObjectSupport implements Appli
 	public Resource[] getResources(String locationPattern) throws IOException {
 		if (locationPattern.startsWith("classpath:") || locationPattern.startsWith("file:"))
 			throw new UnsupportedOperationException("Location patterns 'classpath:' and 'file:' not supported by implementation");
-		
+
 		locationPattern = StringUtils.removeStart(locationPattern, "/"); // starting with "**/" is OK
 		List result = new ArrayList();
 		for (Iterator i = resources.iterator(); i.hasNext();) {
@@ -199,4 +214,7 @@ public class MockApplicationContext extends GroovyObjectSupport implements Appli
 		return getClass().getClassLoader();
 	}
 
+    public ServletContext getServletContext() {
+        return new MockServletContext();
+    }
 }

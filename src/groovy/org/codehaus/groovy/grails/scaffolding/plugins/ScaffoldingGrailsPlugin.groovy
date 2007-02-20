@@ -118,7 +118,7 @@ class ScaffoldingGrailsPlugin {
 			def path = event.ctx?.servletContext?.getRealPath("/WEB-INF")
 			if(domainClass && path) {
 				 templateGenerator.generateViews(domainClass, path)				
-			}
+			}                                        
 			registerScaffoldedActions(application, event.ctx)   
              // configure scaffolders
 	        GrailsScaffoldingUtil.configureScaffolders(application, event.ctx);			

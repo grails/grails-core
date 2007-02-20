@@ -101,10 +101,6 @@ class ControllersGrailsPlugin {
 			if(controller.available) {
 				configureAOPProxyBean.delegate = delegate
 				configureAOPProxyBean(controller, "getController", org.codehaus.groovy.grails.commons.GrailsControllerClass.class, false)				
-				controller.URIs.each { uri ->
-					if(!urlMappings.containsKey(uri)) 
-						urlMappings[uri] = "simpleGrailsController"
-				}
 			}
 		}
 		
@@ -385,55 +381,23 @@ class ControllersGrailsPlugin {
 	}
 	
 	def onChange = { event ->
-		if(GCU.isControllerClass(event.source)) {
-			log.debug("Controller ${event.source} changed. Reloading...")
+		if(GCU.isControllerClass(event.source)) {  
+			if(log.isDebugEnabled())
+				log.debug("Controller ${event.source} changed. Reloading...")
 			def context = event.ctx
 			if(!context) {
-				log.debug("Application context not found. Can't reload")
+				if(log.isDebugEnabled())
+					log.debug("Application context not found. Can't reload")
 				return
 			}
 			boolean isNew = application.getController(event.source?.name) ? false : true
 										
-			def controllerClass = application.addControllerClass(event.source)
-			
-			def mappings = new Properties()
-			application.controllers.each { c ->
-				c.URIs.each { uri ->
-				  mappings[uri] = SimpleGrailsController.APPLICATION_CONTEXT_ID
-				}
-			}
-			
-			def urlMappingsTargetSource = context.getBean(GrailsUrlHandlerMapping.APPLICATION_CONTEXT_TARGET_SOURCE)
-			def urlMappings = new GrailsUrlHandlerMapping(applicationContext:context)
-			urlMappings.mappings = mappings
-			
-            def interceptorNames = context.getBeanNamesForType(HandlerInterceptor.class)
-            def webRequestInterceptors = context.getBeanNamesForType( WebRequestInterceptor.class)			
-		
-            HandlerInterceptor[] interceptors = new HandlerInterceptor[interceptorNames.size()+webRequestInterceptors.size()]
-                
-			def j = 0                                                                       
-			for(i in 0..<interceptorNames.size()) {
-				interceptors[i] = context.getBean(interceptorNames[i])
-				j = i+1
-			}
-			for(i in 0..<webRequestInterceptors.size()) {
-				j = i+j
-				interceptors[j] = new WebRequestHandlerInterceptorAdapter(context.getBean(webRequestInterceptors[i]))
-			}
-         
-			log.debug("Re-adding ${interceptors.length} interceptors to mapping")
-			
-			urlMappings.interceptors = interceptors
-			urlMappings.initApplicationContext()
-			
-			urlMappingsTargetSource.swap(urlMappings)
-			
+			def controllerClass = application.addControllerClass(event.source)						
 			def controllerTargetSource = context.getBean("${controllerClass.fullName}TargetSource")
 			controllerTargetSource.swap(controllerClass)
 			
 			if(isNew) {
-				log.info "Re-generating web.xml file..."
+				log.info "Re-generating web.xml file. This may require a second refresh..."
 				def webTemplateXml = resolver.getResource("/WEB-INF/web.template.xml")
 				def webXml = resolver.getResource("/WEB-INF/web.xml")?.getFile()
 				webXml?.withWriter { w ->

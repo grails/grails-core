@@ -482,6 +482,8 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
 
     private void replaceExpandoMetaClass(Class loadedClass, Class oldClass) {
         MetaClass oldMetaClass = registry.getMetaClass(oldClass);
+        registry.removeMetaClass(oldClass);
+        
         AdapterMetaClass adapter = null;
         ExpandoMetaClass emc;
 
@@ -534,7 +536,7 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
                 registry.setMetaClass(loadedClass,newAdapter);
 
             } catch (NoSuchMethodException e) {
-               LOG.warn("Unable to re-create configuration for reloaded class ("+e.getMessage()+"): " + loadedClass, e);
+               // safe to ignore, plugin must take responsibility here
             }
 
         }
@@ -587,6 +589,10 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
      * @see org.codehaus.groovy.grails.plugins.AbstractGrailsPlugin#refresh()
      */
     public void refresh() {
+        refresh(true);
+    }
+
+    public void refresh(boolean fireEvent) {
         for (int i = 0; i < watchedResources.length; i++) {
             Resource r = watchedResources[i];
             try {
@@ -594,9 +600,11 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
             } catch (IOException e) {
                 // ignore
             }
-            fireModifiedEvent(r, this);
+            if(fireEvent)
+                fireModifiedEvent(r, this);
         }
     }
+
 
     public Object getInstance() {
         return this.plugin;

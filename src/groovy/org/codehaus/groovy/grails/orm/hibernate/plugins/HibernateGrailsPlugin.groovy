@@ -24,7 +24,8 @@ import org.codehaus.groovy.grails.orm.hibernate.validation.*
 import org.springframework.orm.hibernate3.HibernateTransactionManager;
 import org.springmodules.beans.factory.config.MapToPropertiesFactoryBean;
 import org.springframework.orm.hibernate3.support.OpenSessionInViewInterceptor;
-import org.springframework.orm.hibernate3.HibernateAccessor;
+import org.springframework.orm.hibernate3.HibernateAccessor;         
+import org.codehaus.groovy.runtime.InvokerHelper;
 
 
 /**
@@ -125,16 +126,26 @@ class HibernateGrailsPlugin {
 			def configurator = event.ctx.grailsConfigurator
  			def application = event.application
    		    def manager = event.manager
+			MetaClassRegistry registry = InvokerHelper
+											.getInstance()
+											.getMetaRegistry();
+
 
 			assert configurator
 			assert application
 			assert manager
 			
-			if(GCU.isDomainClass(event.source)) {
+			if(GCU.isDomainClass(event.source)) { 				
 					// refresh whole application
-					application.refresh()
+					application.refresh()  
+					
+					application.domainClasses.each { dc ->
+							registry.removeMetaClass(dc.getClazz())
+					}
 					// rebuild context
 					configurator.reconfigure(event.ctx, manager.servletContext, false)					
+					// refresh constraints
+					application.refreshConstraints()
 			}
 
 	}

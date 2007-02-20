@@ -24,6 +24,7 @@ import org.codehaus.groovy.grails.scaffolding.GrailsScaffolder;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
+import org.springframework.util.AntPathMatcher;
 
 import java.beans.PropertyDescriptor;
 import java.util.*;
@@ -56,6 +57,7 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass
 	private Map viewNames = null;
 	private String[] uris = null;
     private String uri;
+    private AntPathMatcher pathMatcher = new AntPathMatcher();
 
     private boolean scaffolding;
     private Class scaffoldedClass;
@@ -162,7 +164,7 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass
 
 	public boolean mapsToURI(String uri) {
 		for (int i = 0; i < uris.length; i++) {
-			if (uris[i].equals(uri)) {
+			if (pathMatcher.match( uris[i], uri)) {
 				return true;
 			}
 		}

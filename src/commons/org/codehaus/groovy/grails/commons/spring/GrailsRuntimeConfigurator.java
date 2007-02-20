@@ -45,10 +45,7 @@ import org.springframework.web.context.WebApplicationContext;
 
 import javax.servlet.ServletContext;
 import java.io.IOException;
-import java.util.Collection;
-import java.util.Properties;
-import java.util.Map;
-import java.util.Iterator;
+import java.util.*;
 
 /**
 * A class that handles the runtime configuration of the Grails ApplicationContext
@@ -277,12 +274,15 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
 
       this.pluginManager.doRuntimeConfiguration(springConfig);
 
-      Map beanDefinitions = springConfig.createBeanDefinitions();
-
-      for (Iterator i = beanDefinitions.keySet().iterator(); i.hasNext();) {
-          String beanName = (String) i.next();
-          current.registerBeanDefinition(beanName, (BeanDefinition)beanDefinitions.get(beanName));
+      List beanNames = springConfig.getBeanNames();
+      for (Iterator i = beanNames.iterator(); i.hasNext();) {
+          String name = (String) i.next();
+          if(LOG.isDebugEnabled()) {
+              LOG.debug("Re-creating bean definition ["+name+"]");
+          }
+          current.registerBeanDefinition(name, springConfig.createBeanDefinition(name));
       }
+      this.pluginManager.doDynamicMethods();
 
       if(loadExternalBeans)
           doPostResourceConfiguration(springConfig);

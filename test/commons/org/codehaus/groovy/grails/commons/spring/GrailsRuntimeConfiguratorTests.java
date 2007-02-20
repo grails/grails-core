@@ -123,15 +123,6 @@ public class GrailsRuntimeConfiguratorTests extends TestCase {
         // test controller config
         HotSwappableTargetSource ts = (HotSwappableTargetSource)ctx.getBean(GrailsUrlHandlerMapping.APPLICATION_CONTEXT_TARGET_SOURCE);
         assertNotNull(ts.getTarget());
-        GrailsUrlHandlerMapping mapping = (GrailsUrlHandlerMapping)ts.getTarget();
-        MockHttpServletRequest request = new MockHttpServletRequest();
-        request.setRequestURI("/test/list");
-
-        HandlerExecutionChain h = mapping.getHandler(request);
-        assertNotNull(h);
-        assertNotNull(h.getHandler());
-        assertEquals(SimpleGrailsController.class,h.getHandler().getClass());
-//        assertEquals(2,h.getInterceptors().length);
         
         ts = (HotSwappableTargetSource)ctx.getBean("TestControllerTargetSource");
         GrailsControllerClass gcc = (GrailsControllerClass)ts.getTarget();

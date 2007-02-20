@@ -70,7 +70,6 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
     private GrailsApplication application;
     private ApplicationContext applicationContext;
     private Map chainModel = Collections.EMPTY_MAP;
-    private GrailsScaffolder scaffolder;
     private ServletContext servletContext;
     private GrailsApplicationAttributes grailsAttributes;
     private Pattern uriPattern = Pattern.compile("/(\\w+)/?(\\w*)/?([^/]*)/?(.*)");
@@ -213,9 +212,10 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
 
 
         // Step 3: if scaffolding retrieve scaffolder
+        GrailsScaffolder scaffolder = null;
         if(controllerClass.isScaffolding())  {
-            this.scaffolder = (GrailsScaffolder)applicationContext.getBean( controllerClass.getFullName() + SCAFFOLDER );
-            if(this.scaffolder == null)
+            scaffolder = (GrailsScaffolder)applicationContext.getBean( controllerClass.getFullName() + SCAFFOLDER );
+            if(scaffolder == null)
                 throw new IllegalStateException("Scaffolding set to true for controller ["+controllerClass.getFullName()+"] but no scaffolder available!");
         }
 
