@@ -26,6 +26,8 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.mock.web.MockServletContext;
+import org.springframework.util.PathMatcher;
+import org.springframework.util.AntPathMatcher;
 import groovy.lang.GroovyObjectSupport;
 
 import javax.servlet.ServletContext;
