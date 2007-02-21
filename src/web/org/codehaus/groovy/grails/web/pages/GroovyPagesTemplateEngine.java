@@ -14,11 +14,7 @@
  */
 package org.codehaus.groovy.grails.web.pages;
 
-import groovy.lang.Binding;
-import groovy.lang.GroovyClassLoader;
-import groovy.lang.GroovyObject;
-import groovy.lang.Script;
-import groovy.lang.Writable;
+import groovy.lang.*;
 import groovy.text.Template;
 
 import java.io.IOException;
@@ -454,21 +450,31 @@ public class GroovyPagesTemplateEngine {
             Binding binding = new Binding();
 
             GroovyObject controller = (GroovyObject)request.getAttribute(GrailsApplicationAttributes.CONTROLLER);
+            boolean initialiseFromRequest = false;
+
             if(controller!=null) {
-	            binding.setVariable(GroovyPage.REQUEST, controller.getProperty(ControllerDynamicMethods.REQUEST_PROPERTY));
-	            binding.setVariable(GroovyPage.RESPONSE, controller.getProperty(ControllerDynamicMethods.RESPONSE_PROPERTY));
-	            binding.setVariable(GroovyPage.FLASH, controller.getProperty(ControllerDynamicMethods.FLASH_SCOPE_PROPERTY));
-	            binding.setVariable(GroovyPage.SERVLET_CONTEXT, context);
-	            ApplicationContext appContext = (ApplicationContext)context.getAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT);
-	            binding.setVariable(GroovyPage.APPLICATION_CONTEXT, appContext);
-	            binding.setVariable(GrailsApplication.APPLICATION_ID, appContext.getBean(GrailsApplication.APPLICATION_ID));
-	            binding.setVariable(GrailsApplicationAttributes.CONTROLLER, controller);
-	            binding.setVariable(GroovyPage.SESSION, controller.getProperty(GetSessionDynamicProperty.PROPERTY_NAME));
-	            binding.setVariable(GroovyPage.PARAMS, controller.getProperty(GetParamsDynamicProperty.PROPERTY_NAME));
-                binding.setVariable(GroovyPage.PLUGIN_CONTEXT_PATH, controller.getProperty(GroovyPage.PLUGIN_CONTEXT_PATH));
-                binding.setVariable(GroovyPage.OUT, out);
+                try {
+                    binding.setVariable(GroovyPage.REQUEST, controller.getProperty(ControllerDynamicMethods.REQUEST_PROPERTY));
+                    binding.setVariable(GroovyPage.RESPONSE, controller.getProperty(ControllerDynamicMethods.RESPONSE_PROPERTY));
+                    binding.setVariable(GroovyPage.FLASH, controller.getProperty(ControllerDynamicMethods.FLASH_SCOPE_PROPERTY));
+                    binding.setVariable(GroovyPage.SERVLET_CONTEXT, context);
+                    ApplicationContext appContext = (ApplicationContext)context.getAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT);
+                    binding.setVariable(GroovyPage.APPLICATION_CONTEXT, appContext);
+                    binding.setVariable(GrailsApplication.APPLICATION_ID, appContext.getBean(GrailsApplication.APPLICATION_ID));
+                    binding.setVariable(GrailsApplicationAttributes.CONTROLLER, controller);
+                    binding.setVariable(GroovyPage.SESSION, controller.getProperty(GetSessionDynamicProperty.PROPERTY_NAME));
+                    binding.setVariable(GroovyPage.PARAMS, controller.getProperty(GetParamsDynamicProperty.PROPERTY_NAME));
+                    binding.setVariable(GroovyPage.PLUGIN_CONTEXT_PATH, controller.getProperty(GroovyPage.PLUGIN_CONTEXT_PATH));
+                    binding.setVariable(GroovyPage.OUT, out);
+                    initialiseFromRequest = true;
+
+                }
+                catch(MissingPropertyException mpe) {
+                    initialiseFromRequest = true;
+                }
             }
-            else {
+            
+            if(initialiseFromRequest) {
             	// if there is no controller in the request configure using existing attributes, creating objects where necessary
             	GrailsApplicationAttributes attrs = (GrailsApplicationAttributes)request.getAttribute(GrailsApplicationAttributes.REQUEST_SCOPE_ID);
                 if(attrs == null) attrs = new DefaultGrailsApplicationAttributes(context);
