@@ -16,6 +16,7 @@ package org.codehaus.groovy.grails.commons;
 
 import groovy.lang.GroovyResourceLoader;
 import org.springframework.core.io.Resource;
+import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -57,7 +58,11 @@ public class GrailsResourceLoader implements GroovyResourceLoader {
                 if (foundResource == null) {
                     foundResource = resources[i];
                 } else {
-                    throw new IllegalArgumentException("Resources [" + resources[i].getFilename() + "] and [" + foundResource.getFilename() + "] end with [" + groovyFile + "]. Cannot load because of duplicate match!");
+                    try {
+                        throw new IllegalArgumentException("Found two identical classes at [" + resources[i].getFile().getAbsolutePath()+ "] and [" + foundResource.getFile().getAbsolutePath() + "] whilst attempting to load [" + className + "]. Please check remove one to avoid duplicates.");
+                    } catch (IOException e) {
+                        throw new GrailsConfigurationException("I/O error whilst attempting to load class " + className, e);
+                    }
                 }
             }
         }
