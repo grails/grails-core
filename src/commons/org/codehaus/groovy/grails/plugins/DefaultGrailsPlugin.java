@@ -482,7 +482,7 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
 
     private void replaceExpandoMetaClass(Class loadedClass, Class oldClass) {
         MetaClass oldMetaClass = registry.getMetaClass(oldClass);
-        registry.removeMetaClass(oldClass);
+
         
         AdapterMetaClass adapter = null;
         ExpandoMetaClass emc;
@@ -490,6 +490,7 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
         if(oldMetaClass instanceof AdapterMetaClass) {
             adapter = ((AdapterMetaClass)oldMetaClass);
             emc = (ExpandoMetaClass)adapter.getAdaptee();
+            registry.removeMetaClass(oldClass);
         }
         else {
             emc = (ExpandoMetaClass)oldMetaClass;
