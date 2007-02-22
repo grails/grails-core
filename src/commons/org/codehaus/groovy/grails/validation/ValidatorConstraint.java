@@ -44,7 +44,7 @@ import java.util.Collection;
  *
  * @author Marc Palmer
  * @since 0.4
- *        <p/>
+ *
  *        Created: Jan 19, 2007
  *        Time: 8:44:39 AM
  */
