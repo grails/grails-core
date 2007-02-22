@@ -87,10 +87,15 @@ public class GrailsViewResolver extends InternalResourceViewResolver {
         // views provided by plugins
         if(controller != null && application != null) {
             Resource controllerResource = application.getResourceForClass(controller.getClass());
-            Resource viewsDir = GrailsResourceUtils.getViewsDir(controllerResource);
-
-            String pathToView = GrailsResourceUtils.getRelativeInsideWebInf(viewsDir);
-            gspView = pathToView + viewName + GSP_SUFFIX;
+            if(controllerResource != null) {
+                Resource viewsDir = GrailsResourceUtils.getViewsDir(controllerResource);
+                String pathToView = GrailsResourceUtils.getRelativeInsideWebInf(viewsDir);
+                gspView = pathToView + viewName + GSP_SUFFIX;
+            	
+            }
+            else {
+                gspView = localPrefix + viewName + GSP_SUFFIX;            	
+            }
         }
         else {
             gspView = localPrefix + viewName + GSP_SUFFIX;
