@@ -40,11 +40,13 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.commons.GrailsServiceClass;
 import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods;
 import org.codehaus.groovy.grails.web.metaclass.GetParamsDynamicProperty;
 import org.codehaus.groovy.grails.web.metaclass.GetSessionDynamicProperty;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.DefaultGrailsApplicationAttributes;
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsHttpSession;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap;
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.springframework.context.ApplicationContext;
@@ -485,7 +487,7 @@ public class GroovyPagesTemplateEngine {
 	            ApplicationContext appContext = (ApplicationContext)context.getAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT);
 	            binding.setVariable(GroovyPage.APPLICATION_CONTEXT, appContext);
 	            binding.setVariable(GrailsApplication.APPLICATION_ID, appContext.getBean(GrailsApplication.APPLICATION_ID));	            
-	            binding.setVariable(GroovyPage.SESSION, request.getSession());
+	            binding.setVariable(GroovyPage.SESSION, new GrailsHttpSession(request.getSession()));
 	            binding.setVariable(GroovyPage.PARAMS, new GrailsParameterMap(request));
 	            binding.setVariable(GroovyPage.OUT, out);
             }
