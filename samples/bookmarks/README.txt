@@ -9,7 +9,6 @@ It also includes del.icio.us integration.
 
 To get started type 
 
-grails init
 grails run-app
 
 And navigate to:
