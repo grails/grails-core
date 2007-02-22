@@ -17,38 +17,38 @@ package org.codehaus.groovy.grails.plugins;
 
 import grails.spring.BeanBuilder;
 import grails.util.GrailsUtil;
-import groovy.lang.*;
+import groovy.lang.Binding;
+import groovy.lang.Closure;
+import groovy.lang.GroovyObject;
+import groovy.lang.MetaClassRegistry;
 import groovy.util.slurpersupport.GPathResult;
+
+import java.io.IOException;
+import java.net.URL;
+import java.net.URLConnection;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
-import org.codehaus.groovy.grails.commons.GrailsResourceUtils;
 import org.codehaus.groovy.grails.commons.GrailsMetaClassUtils;
-import org.codehaus.groovy.grails.commons.metaclass.AdapterMetaClass;
-import org.codehaus.groovy.grails.commons.metaclass.ClosureInvokingMethod;
-import org.codehaus.groovy.grails.commons.metaclass.ExpandoMetaClass;
-import org.codehaus.groovy.grails.commons.metaclass.ThreadManagedMetaBeanProperty;
+import org.codehaus.groovy.grails.commons.GrailsResourceUtils;
 import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration;
-import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException;
 import org.codehaus.groovy.grails.plugins.exceptions.PluginException;
 import org.codehaus.groovy.grails.support.ParentApplicationContextAware;
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsUrlHandlerMapping;
 import org.codehaus.groovy.runtime.InvokerHelper;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
-
-import java.io.IOException;
-import java.lang.reflect.Constructor;
-import java.math.BigDecimal;
-import java.net.URL;
-import java.net.URLConnection;
-import java.util.*;
 
 /**
  * Implementation of the GrailsPlugin interface that wraps a Groovy plugin class
