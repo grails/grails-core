@@ -24,6 +24,7 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.commons.GrailsResourceUtils;
+import org.codehaus.groovy.grails.commons.GrailsMetaClassUtils;
 import org.codehaus.groovy.grails.commons.metaclass.AdapterMetaClass;
 import org.codehaus.groovy.grails.commons.metaclass.ClosureInvokingMethod;
 import org.codehaus.groovy.grails.commons.metaclass.ExpandoMetaClass;
@@ -454,7 +455,7 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
         }
     }
 
-    private void fireModifiedEvent(final Resource resource, final GrailsPlugin plugin) {
+    protected void fireModifiedEvent(final Resource resource, final GrailsPlugin plugin) {
 
         Class loadedClass = null;
         String className = GrailsResourceUtils.getClassName(resource);
@@ -481,67 +482,7 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
     }
 
     private void replaceExpandoMetaClass(Class loadedClass, Class oldClass) {
-        MetaClass oldMetaClass = registry.getMetaClass(oldClass);
-
-        
-        AdapterMetaClass adapter = null;
-        ExpandoMetaClass emc;
-
-        if(oldMetaClass instanceof AdapterMetaClass) {
-            adapter = ((AdapterMetaClass)oldMetaClass);
-            emc = (ExpandoMetaClass)adapter.getAdaptee();
-            registry.removeMetaClass(oldClass);
-        }
-        else {
-            emc = (ExpandoMetaClass)oldMetaClass;
-        }
-
-        List metaMethods = emc.getExpandoMethods();
-        ExpandoMetaClass replacement = new ExpandoMetaClass(loadedClass);
-        replacement.setAllowChangesAfterInit(true);
-        for (Iterator i = metaMethods.iterator(); i.hasNext();) {
-            Object obj = i.next();
-            if(obj instanceof ClosureInvokingMethod) {
-                ClosureInvokingMethod cim = (ClosureInvokingMethod) obj;
-                Closure callable = cim.getClosure();
-                if(!cim.isStatic()) {
-                    replacement.setProperty(cim.getName(), callable);
-                }
-                else {
-                    ((GroovyObject)replacement.getProperty(ExpandoMetaClass.STATIC_QUALIFIER)).setProperty(cim.getName(),callable);
-                }
-            }
-        }
-        List metaProperties = emc.getExpandoProperties();
-        for (Iterator i = metaProperties.iterator(); i.hasNext();) {
-            Object o = i.next();
-            if(o instanceof ThreadManagedMetaBeanProperty) {
-                ThreadManagedMetaBeanProperty mbp = (ThreadManagedMetaBeanProperty)o;
-                replacement.setProperty( mbp.getName(), mbp.getInitialValue() );
-            }
-        }
-        replacement.initialize();
-        if(adapter == null) {
-            if(LOG.isDebugEnabled()) {
-                LOG.debug("Replacing reloaded class ["+loadedClass+"] MetaClass ["+replacement+"]");
-            }
-            registry.setMetaClass(loadedClass, replacement);
-        }
-        else {
-            if(LOG.isDebugEnabled()) {
-                LOG.debug("Replacing reloaded class ["+loadedClass+"] MetaClass ["+replacement+"] with adapter ["+adapter+"]");
-            }
-            try {
-                Constructor c = adapter.getClass().getConstructor(new Class[]{MetaClass.class});
-                MetaClass newAdapter = (MetaClass)BeanUtils.instantiateClass(c,new Object[]{replacement});
-                registry.setMetaClass(loadedClass,newAdapter);
-
-            } catch (NoSuchMethodException e) {
-               // safe to ignore, plugin must take responsibility here
-            }
-
-        }
-
+        GrailsMetaClassUtils.copyExpandoMetaClass(oldClass, loadedClass, true);
     }
 
     private Class attemptClassReload(final Resource resource) {

@@ -39,13 +39,16 @@ AbstractDependencyInjectionSpringContextTests {
 	def response
 	def ctx
 	def originalHandler
+	def appCtx
+	def ga
+	def mockManager
 	
 	GrailsApplication grailsApplication;
 	MessageSource messageSource;
 
 	
 	GroovyClassLoader gcl = new GroovyClassLoader()
-	
+
 	def withTag(String tagName, Writer out, Closure callable) {
 		def result = null
 		runTest {
@@ -54,8 +57,12 @@ AbstractDependencyInjectionSpringContextTests {
 	        request.setAttribute(GrailsApplicationAttributes.CONTROLLER, mockController);
 	        request.setAttribute(DispatcherServlet.LOCALE_RESOLVER_ATTRIBUTE, new AcceptHeaderLocaleResolver());
 	        request.setAttribute(GrailsApplicationAttributes.CONTROLLER, mockController);
-	        
-	        def go = grailsApplication.getTagLibClassForTag(tagName).newInstance()
+
+	        def tagLibrary = grailsApplication.getTagLibClassForTag(tagName)
+	        if(!tagLibrary) {
+	            fail("No tag library found for tag $tagName")
+            }
+	        def go = tagLibrary.newInstance()
 	        def webRequest = RequestContextHolder.currentRequestAttributes()
 	        webRequest.out = out
 	        result = callable.call(go.getProperty(tagName))
@@ -73,14 +80,17 @@ AbstractDependencyInjectionSpringContextTests {
 		.metaClassCreationHandle = new ExpandoMetaClassCreationHandle();
         
         onInit()
-    	
+        gcl.loadedClasses.find { it.name.endsWith("TagLib") }.each {
+            grailsApplication.addTagLibClass(it)    	
+        }
+        ga = grailsApplication
 		def mockControllerClass = gcl.parseClass("class MockController {  def index = {} } ")
         ctx = new MockApplicationContext();
         grailsApplication.addControllerClass(mockControllerClass)
         
         grailsApplication.setApplicationContext(ctx);
         ctx.registerMockBean(GrailsApplication.APPLICATION_ID, grailsApplication);
-		def mockManager = new MockGrailsPluginManager(grailsApplication)
+		mockManager = new MockGrailsPluginManager(grailsApplication)
 		
 		messageSource = new StaticMessageSource()
 		ctx.registerMockBean("manager", mockManager )
@@ -102,7 +112,7 @@ AbstractDependencyInjectionSpringContextTests {
 		dependentPlugins*.doWithRuntimeConfiguration(springConfig)
 		dependentPlugins.each{ mockManager.registerMockPlugin(it); it.manager = mockManager }
 			
-		def appCtx = springConfig.getApplicationContext()
+		appCtx = springConfig.getApplicationContext()
 		mockManager.applicationContext = appCtx
 		servletContext.setAttribute( GrailsApplicationAttributes.APPLICATION_CONTEXT, appCtx)
 		mockManager.doDynamicMethods()

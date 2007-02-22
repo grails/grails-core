@@ -33,7 +33,8 @@ class ServicesGrailsPlugin {
 	def loadAfter = ['hibernate']
 	def influences = ['controllers']
 	                 
-    def watchedResources = "file:./grails-app/services/*Service.groovy"
+    def watchedResources = ["file:./grails-app/services/*Service.groovy",
+							"file:./plugins/*/grails-app/services/*Service.groovy"]
 
 	                 
 	def doWithSpring = {
@@ -70,11 +71,35 @@ class ServicesGrailsPlugin {
 	def onChange = { event ->
 		if(event.source) {
 			def serviceClass = application.addServiceClass(event.source)
-			if(serviceClass.transactional) {
-				log.warn "Transactional services classes cannot be reloaded. Skipping ${serviceClass.fullName}."
+			def serviceName = "${serviceClass.propertyName}"
+
+			if(serviceClass.transactional && event.ctx.containsBean("transactionManager")) {
+				def beans = beans {                 
+					"${serviceClass.fullName}ServiceClass"(MethodInvokingFactoryBean) {
+						targetObject = ref("grailsApplication", true)
+						targetMethod = "getGrailsServiceClass"
+						arguments = serviceClass.fullName
+					}									
+					def props = new Properties()
+					props."*"="PROPAGATION_REQUIRED"
+					"${serviceName}"(TransactionProxyFactoryBean) {
+						target = { bean ->
+							bean.factoryBean = "${serviceClass.fullName}ServiceClass"
+							bean.factoryMethod = "newInstance"
+							bean.autowire = "byName"
+						}
+						proxyTargetClass = true
+						transactionAttributes = props
+						transactionManager = ref("transactionManager")
+					}
+				}     
+				if(event.ctx) {  
+					event.ctx.registerBeanDefinition("${serviceClass.fullName}ServiceClass", beans.getBeanDefinition("${serviceClass.fullName}ServiceClass"))					
+					event.ctx.registerBeanDefinition(serviceName, beans.getBeanDefinition(serviceName))
+				}				
 			}
 			else {
-				def serviceName = "${serviceClass.propertyName}"
+			   
 				def beans = beans {
 					"$serviceName"(serviceClass.getClazz()) { bean ->
 						bean.autowire =  true

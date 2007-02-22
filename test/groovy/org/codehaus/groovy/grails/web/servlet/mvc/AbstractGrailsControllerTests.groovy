@@ -25,7 +25,8 @@ abstract class AbstractGrailsControllerTests extends GroovyTestCase {
 	GroovyClassLoader gcl = new GroovyClassLoader()
     def ga;
 	def mockManager
-    MockApplicationContext ctx;	
+    MockApplicationContext ctx;
+    def appCtx;
 	def originalHandler
 	
 	void onSetUp() {
@@ -68,7 +69,7 @@ abstract class AbstractGrailsControllerTests extends GroovyTestCase {
 		dependentPlugins*.doWithRuntimeConfiguration(springConfig)
 		dependentPlugins.each{ mockManager.registerMockPlugin(it); it.manager = mockManager }
 			
-		def appCtx = springConfig.getApplicationContext()
+		appCtx = springConfig.getApplicationContext()
 		mockManager.applicationContext = appCtx
 		servletContext.setAttribute( GrailsApplicationAttributes.APPLICATION_CONTEXT, appCtx)
 		mockManager.doDynamicMethods()		
