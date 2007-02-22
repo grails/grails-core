@@ -468,12 +468,14 @@ public class GroovyPagesTemplateEngine {
                     binding.setVariable(GroovyPage.PARAMS, controller.getProperty(GetParamsDynamicProperty.PROPERTY_NAME));
                     binding.setVariable(GroovyPage.PLUGIN_CONTEXT_PATH, controller.getProperty(GroovyPage.PLUGIN_CONTEXT_PATH));
                     binding.setVariable(GroovyPage.OUT, out);
-                    initialiseFromRequest = true;
 
                 }
                 catch(MissingPropertyException mpe) {
                     initialiseFromRequest = true;
                 }
+            }
+            else {
+            	initialiseFromRequest = true;
             }
             
             if(initialiseFromRequest) {
