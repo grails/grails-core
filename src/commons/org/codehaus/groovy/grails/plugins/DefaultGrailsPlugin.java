@@ -16,6 +16,7 @@
 package org.codehaus.groovy.grails.plugins;
 
 import grails.spring.BeanBuilder;
+import grails.util.GrailsUtil;
 import groovy.lang.*;
 import groovy.util.slurpersupport.GPathResult;
 import org.apache.commons.lang.ArrayUtils;
@@ -33,6 +34,7 @@ import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration;
 import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException;
 import org.codehaus.groovy.grails.plugins.exceptions.PluginException;
 import org.codehaus.groovy.grails.support.ParentApplicationContextAware;
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsUrlHandlerMapping;
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeanWrapper;
@@ -167,10 +169,12 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
                 }
             }
             catch (IllegalArgumentException e) {
-                LOG.warn("Cannot load plug-in resource watch list from ["+resourcesReference+"]: " + e.getMessage(), e);
+            	if(GrailsUtil.isDevelopmentEnv())
+            		LOG.warn("Cannot load plug-in resource watch list from ["+resourcesReference+"]. This means that the plugin "+this+", will not be able to auto-reload changes effectively. Try runnng grails upgrade.: " + e.getMessage(), e);
             }
             catch (IOException e) {
-                LOG.warn("I/O exception loading plug-in resource watch list: " + e.getMessage(), e);
+            	if(GrailsUtil.isDevelopmentEnv())
+            		LOG.warn("Cannot load plug-in resource watch list from ["+resourcesReference+"]. This means that the plugin "+this+", will not be able to auto-reload changes effectively. Try runnng grails upgrade.: " + e.getMessage(), e);
             }
             if(LOG.isDebugEnabled()) {
                 LOG.debug("Plugin "+this+" found ["+watchedResources.length+"] to watch");
