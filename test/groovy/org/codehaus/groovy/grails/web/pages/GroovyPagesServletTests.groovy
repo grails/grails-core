@@ -4,6 +4,7 @@ import org.springframework.mock.web.*
 import org.springframework.web.context.request.*
 import org.codehaus.groovy.grails.web.servlet.mvc.*
 import org.codehaus.groovy.grails.web.errors.*
+import grails.util.*
 
 class GroovyPagesServletTests extends GroovyTestCase {
 
@@ -24,17 +25,22 @@ class GroovyPagesServletTests extends GroovyTestCase {
     }
 
     void testHandleException() {
+
+        def webRequest = GrailsWebUtil.bindMockWebRequest()
+        def request = webRequest.currentRequest
+        
+        def gpte = new GroovyPagesTemplateEngine(new MockServletContext())
+
          def gps = new GroovyPagesServlet()
          gps.init(new MockServletConfig(new MockServletContext()))
          def e = new Exception()
-         def request = new MockHttpServletRequest()
-         gps.handleException(e,request, new MockHttpServletResponse())
+
+         def response = new MockHttpServletResponse()
 
 
 
-         def error = request.getAttribute(GroovyPagesServlet.EXCEPTION_MODEL_KEY)
-         assertNotNull(error)
-         assertTrue(error instanceof GrailsWrappedRuntimeException)
+         gps.handleException(e,response.getWriter(),gpte)
+
     }
 
     void tearDown() {
