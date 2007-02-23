@@ -59,7 +59,7 @@ public class GrailsResourceLoader implements GroovyResourceLoader {
                     foundResource = resources[i];
                 } else {
                     try {
-                        throw new IllegalArgumentException("Found two identical classes at [" + resources[i].getFile().getAbsolutePath()+ "] and [" + foundResource.getFile().getAbsolutePath() + "] whilst attempting to load [" + className + "]. Please check remove one to avoid duplicates.");
+                        throw new IllegalArgumentException("Found two identical classes at [" + resources[i].getFile().getAbsolutePath()+ "] and [" + foundResource.getFile().getAbsolutePath() + "] whilst attempting to load [" + className + "]. Please remove one to avoid duplicates.");
                     } catch (IOException e) {
                         throw new GrailsConfigurationException("I/O error whilst attempting to load class " + className, e);
                     }
