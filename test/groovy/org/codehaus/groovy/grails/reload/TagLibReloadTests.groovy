@@ -17,7 +17,7 @@ class TagLibReloadTests extends AbstractGrailsTagTests {
     void testReloadTagLibrary() {
         def sw = new StringWriter()
         def pw = new PrintWriter(sw)
-        Class oldClass = ga.getTagLib("TestTagLib").getClazz()
+        Class oldClass = ga.getTagLibClass("TestTagLib").getClazz()
 		withTag("myTag",pw) { tag ->
             tag.call([foo:"bar"],null)
         }

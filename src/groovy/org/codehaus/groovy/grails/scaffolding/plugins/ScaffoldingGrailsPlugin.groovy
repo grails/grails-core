@@ -19,7 +19,7 @@ import org.codehaus.groovy.grails.plugins.support.GrailsPluginUtils
 import org.codehaus.groovy.grails.scaffolding.*;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU 
 import org.codehaus.groovy.grails.web.servlet.filter.GrailsResourceCopier
-import org.codehaus.groovy.grails.scaffolding.*
+import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler
 
 /**
  * A plug-in that handles the configuration of Hibernate within Grails 
@@ -42,12 +42,12 @@ class ScaffoldingGrailsPlugin {
 	}
 	                 
 	def doWithSpring = {
-		application.controllers.each { controller ->
+		application.controllerClasses.each { controller ->
 			log.debug("Checking controller ${controller.name} for scaffolding settings")
 			
 			def scaffoldClass = controller.scaffoldedClass
 			if(!scaffoldClass) {
-				scaffoldClass = application.getGrailsDomainClass(controller.name)?.clazz
+				scaffoldClass = application.getArtefact(DomainClassArtefactHandler.TYPE, controller.name)?.clazz
 			}
 			
 			if(scaffoldClass) {
@@ -86,7 +86,7 @@ class ScaffoldingGrailsPlugin {
 	 */
 	def doWithApplicationContext = { ctx ->
 		
-		application.controllers.each { controller ->
+		application.controllerClasses.each { controller ->
 			if(controller.scaffolding) {
 			     def clazz = controller.scaffoldedClass
 			 	 def domainClass
@@ -126,7 +126,7 @@ class ScaffoldingGrailsPlugin {
 	}
 	
 	def registerScaffoldedActions(application,ctx) {
-		application.controllers.each { controller ->
+		application.controllerClasses.each { controller ->
 			if(controller.scaffolding) {
 				if(ctx.containsBean("${controller.fullName}Scaffolder")) {
 					def scaffolder = ctx."${controller.fullName}Scaffolder"

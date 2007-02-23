@@ -22,6 +22,8 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
+import org.codehaus.groovy.grails.commons.ApplicationHolder;
+import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
 import org.codehaus.groovy.grails.commons.metaclass.CreateDynamicMethod;
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.springframework.beans.ConfigurablePropertyAccessor;
@@ -83,7 +85,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
         bean = ((BeanPropertyBindingResult)super.getBindingResult()).getPropertyAccessor();
 
         String[] disallowed = null;
-        if (GrailsClassUtils.isDomainClass(target.getClass())) {
+        if (ApplicationHolder.getApplication().isArtefactOfType(DomainClassArtefactHandler.TYPE, target.getClass())) {
             if (target instanceof GroovyObject) {
                 disallowed = GROOVY_DOMAINCLASS_DISALLOWED;
             } else {

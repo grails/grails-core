@@ -18,6 +18,7 @@ package org.codehaus.groovy.grails.metaclass;
 import org.codehaus.groovy.grails.commons.metaclass.AbstractDynamicMethodInvocation;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
+import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
 
@@ -43,7 +44,8 @@ public class IdentDynamicMethod extends AbstractDynamicMethodInvocation {
 
     public Object invoke(Object target, String methodName, Object[] arguments) {
         BeanWrapper bean = new BeanWrapperImpl(target);
-        GrailsDomainClass domainClass = application.getGrailsDomainClass(target.getClass().getName());
+        GrailsDomainClass domainClass = (GrailsDomainClass) application.getArtefact(
+            DomainClassArtefactHandler.TYPE, target.getClass().getName());
         return bean.getPropertyValue(domainClass.getIdentifier().getName());
     }
 }

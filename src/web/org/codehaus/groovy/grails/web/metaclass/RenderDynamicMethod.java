@@ -24,6 +24,7 @@ import org.apache.commons.beanutils.BeanMap;
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsControllerClass;
+import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
 import org.codehaus.groovy.grails.commons.metaclass.AbstractDynamicMethodInvocation;
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
@@ -188,7 +189,8 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
                     viewUri = viewName;
                 }
                 else {
-                    GrailsControllerClass controllerClass = application.getController(target.getClass().getName());
+                    GrailsControllerClass controllerClass = (GrailsControllerClass) application.getArtefact(ControllerArtefactHandler.TYPE,
+                        target.getClass().getName());
                     viewUri = controllerClass.getViewByName(viewName);
                 }
 

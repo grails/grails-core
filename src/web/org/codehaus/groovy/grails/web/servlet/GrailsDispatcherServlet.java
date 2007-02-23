@@ -18,9 +18,7 @@ package org.codehaus.groovy.grails.web.servlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.GrailsBootstrapClass;
-import org.codehaus.groovy.grails.commons.GrailsConfigUtils;
+import org.codehaus.groovy.grails.commons.*;
 import org.codehaus.groovy.grails.commons.GrailsControllerClass;
 import org.codehaus.groovy.grails.commons.spring.GrailsWebApplicationContext;
 import org.codehaus.groovy.grails.scaffolding.GrailsScaffoldingUtil;
@@ -118,9 +116,9 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
         WebApplicationContext webContext = getWebApplicationContext();
         GrailsApplication application = (GrailsApplication) webContext.getBean(GrailsApplication.APPLICATION_ID, GrailsApplication.class);
 
-        GrailsBootstrapClass[] bootstraps =  application.getGrailsBootstrapClasses();
+        GrailsClass[] bootstraps =  application.getArtefacts(BootstrapArtefactHandler.TYPE);
         for (int i = 0; i < bootstraps.length; i++) {
-            bootstraps[i].callDestroy();
+            ((GrailsBootstrapClass)bootstraps[i]).callDestroy();
         }
         // call super
         super.destroy();
@@ -150,7 +148,8 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
      */
     protected HandlerExecutionChain getHandler(HttpServletRequest request, boolean cache) throws Exception {
         String uri = urlHelper.getPathWithinApplication(request);
-        GrailsControllerClass controllerClass = application.getControllerByURI(uri);
+        GrailsControllerClass controllerClass = (GrailsControllerClass) application.getArtefactForFeature(
+            ControllerArtefactHandler.TYPE, uri);
         if(controllerClass!=null) {
              HandlerInterceptor[] interceptors;
             // if we're in a development environment we want to re-establish interceptors just in case they

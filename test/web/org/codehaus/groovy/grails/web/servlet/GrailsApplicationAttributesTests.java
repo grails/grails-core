@@ -8,8 +8,7 @@ import java.util.Map;
 import junit.framework.TestCase;
 
 import org.codehaus.groovy.grails.support.MockApplicationContext;
-import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
-import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.commons.*;
 import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods;
 import org.codehaus.groovy.grails.web.servlet.mvc.SimpleGrailsControllerHelper;
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -90,13 +89,16 @@ public class GrailsApplicationAttributesTests extends TestCase {
 
 		GrailsApplication app = new DefaultGrailsApplication(classes,gcl);
 		context.registerMockBean(GrailsApplication.APPLICATION_ID,app);
-		
-		for (int i = 0; i < app.getControllers().length; i++) {
-			context.registerMockBean(app.getControllers()[i].getFullName(), app.getControllers()[i].newInstance());
+
+        GrailsClass[] controllers = app.getArtefacts(ControllerArtefactHandler.TYPE);
+        for (int i = 0; i < controllers.length; i++) {
+			context.registerMockBean(((GrailsControllerClass)controllers[i]).getFullName(),
+                controllers[i].newInstance());
 		}
 		
-		for (int i = 0; i < app.getGrailsTabLibClasses().length; i++) {
-			context.registerMockBean(app.getGrailsTabLibClasses()[i].getFullName(), app.getGrailsTabLibClasses()[i].newInstance());
+        GrailsClass[] taglibs = app.getArtefacts(TagLibArtefactHandler.TYPE);
+		for (int i = 0; i < taglibs.length; i++) {
+			context.registerMockBean(taglibs[i].getFullName(), taglibs[i].newInstance());
 		}		
 		return new DefaultGrailsApplicationAttributes(servletContext);		
 	}

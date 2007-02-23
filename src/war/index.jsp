@@ -14,7 +14,7 @@
         click on each to execute its default action:</p>
         <div class="dialog" style="margin-left:20px;width:60%;">
             <ul>
-              <c:forEach var="c" items="${applicationScope.grailsApplication.controllers}">
+              <c:forEach var="c" items="${applicationScope.grailsApplication.controllerClasses}">
                     <li class="controller"><a href="<c:out value='${c.logicalPropertyName}' />/"><c:out value="${c.fullName}" /></a> </li>
               </c:forEach>
             </ul>

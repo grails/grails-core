@@ -27,7 +27,7 @@ class RenderMethodTests extends AbstractGrailsControllerTests {
 
 	void testRenderText() {
 		runTest {
-			def mockController = ga.getController("RenderController").newInstance()
+			def mockController = ga.getControllerClass("RenderController").newInstance()
 			mockController.renderText.call()
 			
 			def request = mockController.request
@@ -43,7 +43,7 @@ class RenderMethodTests extends AbstractGrailsControllerTests {
 	
 	void testRenderXml() {
 		runTest {
-			def mockController = ga.getController("RenderController").newInstance()
+			def mockController = ga.getControllerClass("RenderController").newInstance()
 		
 			mockController.renderXML.call()
 			
@@ -65,7 +65,7 @@ class RenderMethodTests extends AbstractGrailsControllerTests {
 	void testRenderTemplate() {
 		
 		runTest {
-			def mockController = ga.getController("RenderController").newInstance()
+			def mockController = ga.getControllerClass("RenderController").newInstance()
 			
 			request.setAttribute( GrailsApplicationAttributes.CONTROLLER, mockController)
 			webRequest.controllerName = "render"

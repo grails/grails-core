@@ -19,10 +19,7 @@ package org.codehaus.groovy.grails.commons.spring;
 import grails.spring.BeanBuilder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.GrailsDomainClass;
-import org.codehaus.groovy.grails.commons.GrailsServiceClass;
-import org.codehaus.groovy.grails.commons.GrailsTagLibClass;
+import org.codehaus.groovy.grails.commons.*;
 import org.codehaus.groovy.grails.plugins.DefaultGrailsPluginManager;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.codehaus.groovy.grails.plugins.PluginManagerHolder;
@@ -120,8 +117,10 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
       BeanConfiguration serviceClassBean = springConfig
                                               .createSingletonBean(MethodInvokingFactoryBean.class)
                                               .addProperty("targetObject", new RuntimeBeanReference(GrailsApplication.APPLICATION_ID,true))
-                                              .addProperty("targetMethod", "getGrailsServiceClass")
-                                              .addProperty("arguments", grailsServiceClass.getFullName());
+                                              .addProperty("targetMethod", "getArtefact")
+                                              .addProperty("arguments", new Object[] {
+                                                  ServiceArtefactHandler.TYPE,
+                                                  grailsServiceClass.getFullName()});
       context.registerBeanDefinition(grailsServiceClass.getFullName() + "Class",serviceClassBean.getBeanDefinition());
 
 
@@ -172,8 +171,8 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
       BeanConfiguration tagLibClassBean = springConfig.createSingletonBean(MethodInvokingFactoryBean.class);
       tagLibClassBean
           .addProperty("targetObject", new RuntimeBeanReference(GrailsApplication.APPLICATION_ID,true))
-          .addProperty("targetMethod", "getGrailsTagLibClass")
-          .addProperty("arguments", tagLibClass.getFullName());
+          .addProperty("targetMethod", "getArtefact")
+          .addProperty("arguments", new Object[] { TagLibArtefactHandler.TYPE, tagLibClass.getFullName()});
       context.registerBeanDefinition(tagLibClass.getFullName() + "Class", tagLibClassBean.getBeanDefinition());
 
       // configure taglib class as hot swappable target source

@@ -25,10 +25,7 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.GrailsDomainClass;
-import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
-import org.codehaus.groovy.grails.commons.GrailsClassUtils;
+import org.codehaus.groovy.grails.commons.*;
 import org.hibernate.SessionFactory;
 import org.hibernate.criterion.Criterion;
 import org.hibernate.criterion.Expression;
@@ -98,7 +95,7 @@ public abstract class AbstractClausedStaticPersistentMethod extends
 			if(args.length != argumentsRequired)
 				throw new IllegalArgumentException("Method expression '"+this.type+"' requires " + argumentsRequired + " arguments");
 
-			GrailsDomainClass dc = application.getGrailsDomainClass(targetClass.getName());
+			GrailsDomainClass dc = (GrailsDomainClass) application.getArtefact(DomainClassArtefactHandler.TYPE, targetClass.getName());
 			GrailsDomainClassProperty prop = dc.getPropertyByName(propertyName);
 
 			if(prop == null)

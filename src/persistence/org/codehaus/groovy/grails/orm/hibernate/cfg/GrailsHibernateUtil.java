@@ -20,12 +20,14 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
+import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
 import org.codehaus.groovy.grails.commons.metaclass.DynamicMethods;
 import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator;
 import org.codehaus.groovy.grails.metaclass.AddRelatedDynamicMethod;
 import org.codehaus.groovy.grails.metaclass.AddToRelatedDynamicMethod;
 import org.codehaus.groovy.grails.metaclass.DomainClassMethods;
 import org.codehaus.groovy.grails.orm.hibernate.GrailsHibernateDomainClass;
+import org.codehaus.groovy.runtime.InvokerHelper;
 import org.hibernate.EntityMode;
 import org.hibernate.SessionFactory;
 import org.hibernate.metadata.ClassMetadata;
@@ -48,6 +50,7 @@ public class GrailsHibernateUtil {
     private static final Log LOG = LogFactory.getLog(GrailsHibernateUtil.class);
 
     public static Collection configureDynamicMethods(SessionFactory sessionFactory, GrailsApplication application) {
+        LOG.trace("Configuring dynamic methods");
         // if its not a grails domain class and one written in java then add it
         // to grails
         Map hibernateDomainClassMap = new HashMap();
@@ -64,6 +67,7 @@ public class GrailsHibernateUtil {
             if(dc != null) {
             	dynamicMethods.add( configureDynamicMethodsFor(sessionFactory, application, persistentClass, dc) );
             }
+
         }
         configureInheritanceMappings(hibernateDomainClassMap);
 
@@ -78,6 +82,7 @@ public class GrailsHibernateUtil {
      * @param application The grails application instance
      */
     public static void configureDynamicMethods(ApplicationContext applicationContext, GrailsApplication application) {
+        LOG.trace("Configuring dynamic methods");
         if(applicationContext == null)
             throw new IllegalArgumentException("Cannot configure dynamic methods for null ApplicationContext");
 
@@ -97,7 +102,9 @@ public class GrailsHibernateUtil {
     }
 
     public static DynamicMethods configureDynamicMethodsFor(SessionFactory sessionFactory, GrailsApplication application, Class persistentClass, GrailsDomainClass dc) {
-		LOG.debug("[GrailsDomainConfiguration] Registering dynamic methods on class ["+persistentClass+"]");
+		if (LOG.isTraceEnabled()) {
+            LOG.trace("Registering dynamic methods on class ["+persistentClass+"]");
+        }
 		DynamicMethods dm = null;
 		try {
 			dm = new DomainClassMethods(application,persistentClass,sessionFactory,application.getClassLoader());
@@ -108,8 +115,12 @@ public class GrailsHibernateUtil {
 		              dm.addDynamicMethodInvocation(new AddRelatedDynamicMethod(p));
 		          }
 		    }
-		} catch (IntrospectionException e) {
-		    LOG.warn("[GrailsDomainConfiguration] Introspection exception registering dynamic methods for ["+persistentClass+"]:" + e.getMessage(), e);
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Metaclass for persistent class ["+persistentClass+"]: "
+                    + InvokerHelper.getInstance().getMetaRegistry().getMetaClass(persistentClass));
+            }
+        } catch (IntrospectionException e) {
+		    LOG.warn("Introspection exception registering dynamic methods for ["+persistentClass+"]:" + e.getMessage(), e);
 		}
 		return dm;
 	}
@@ -138,7 +149,8 @@ public class GrailsHibernateUtil {
     }
 
     public static GrailsDomainClass configureDomainClass(SessionFactory sessionFactory, GrailsApplication application, ClassMetadata cmd, Class persistentClass, Map hibernateDomainClassMap) {
-		GrailsDomainClass dc = application.getGrailsDomainClass(persistentClass.getName());
+        LOG.trace("Configuring domain class ["+persistentClass+"]");
+        GrailsDomainClass dc = (GrailsDomainClass) application.getArtefact(DomainClassArtefactHandler.TYPE, persistentClass.getName());
 		if( dc == null) {
 			// a patch to add inheritance to this system
 			GrailsHibernateDomainClass ghdc = new
@@ -149,7 +161,7 @@ public class GrailsHibernateUtil {
 											.getName(),
 										ghdc);
 
-			dc = application.addDomainClass(ghdc);
+			dc = (GrailsDomainClass) application.addArtefact( DomainClassArtefactHandler.TYPE, ghdc);
 		}
 		return dc;
 

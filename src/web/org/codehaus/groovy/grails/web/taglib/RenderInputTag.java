@@ -19,6 +19,7 @@ import groovy.text.Template;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
+import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
@@ -76,7 +77,8 @@ public class RenderInputTag extends RequestContextTag {
 
     protected void doStartTagInternal() {
 
-         GrailsDomainClass domainClass = this.grailsApplication.getGrailsDomainClass(bean.getClass().getName());
+         GrailsDomainClass domainClass = (GrailsDomainClass) this.grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE,
+             bean.getClass().getName());
          if(domainClass != null) {
              this.constrainedProperties = domainClass.getConstrainedProperties();
          }

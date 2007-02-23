@@ -67,7 +67,7 @@ class ControllersDynamicMethodsTests extends AbstractGrailsMockTests {
 	
 	void testFlashObject() {
 		runTest {
-			def testCtrl = ga.getController("TestController").newInstance()
+			def testCtrl = ga.getControllerClass("TestController").newInstance()
 			testCtrl.flash.test = "hello"
 			
 			assertEquals "hello", testCtrl.flash.test			
@@ -76,7 +76,7 @@ class ControllersDynamicMethodsTests extends AbstractGrailsMockTests {
 	
 	void testParamsObject() {
 		runTest {
-			def testCtrl = ga.getController("TestController").newInstance()
+			def testCtrl = ga.getControllerClass("TestController").newInstance()
 			testCtrl.params.test = "hello"
 			
 			assertEquals "hello", testCtrl.params.test
@@ -86,7 +86,7 @@ class ControllersDynamicMethodsTests extends AbstractGrailsMockTests {
 	
 	void testSessionObject() {
 		runTest {
-			def testCtrl = ga.getController("TestController").newInstance()
+			def testCtrl = ga.getControllerClass("TestController").newInstance()
 			testCtrl.session.test = "hello"
 			
 			assertEquals "hello", testCtrl.session.test			
@@ -95,7 +95,7 @@ class ControllersDynamicMethodsTests extends AbstractGrailsMockTests {
 	
 	void testRequestObjects() {
 		runTest {
-			def testCtrl = ga.getController("TestController").newInstance()
+			def testCtrl = ga.getControllerClass("TestController").newInstance()
 			
 			assertNotNull(testCtrl.request)
 			assertTrue(testCtrl.request instanceof GrailsHttpServletRequest)
@@ -107,7 +107,7 @@ class ControllersDynamicMethodsTests extends AbstractGrailsMockTests {
 	
 	void testErrorsObject() {
 		runTest {
-			def testCtrl = ga.getController("TestController").newInstance()
+			def testCtrl = ga.getControllerClass("TestController").newInstance()
 			def errors = new BindException(this,"test")
 			testCtrl.errors = errors
 			assertEquals errors, testCtrl.errors
@@ -116,7 +116,7 @@ class ControllersDynamicMethodsTests extends AbstractGrailsMockTests {
 	
 	void testModelAndViewObject() {
 		runTest {
-			def testCtrl = ga.getController("TestController").newInstance()
+			def testCtrl = ga.getControllerClass("TestController").newInstance()
 			def mav = new ModelAndView("myView",[hello:"world"])
 			testCtrl.modelAndView = mav
 			assertEquals mav, testCtrl.modelAndView
@@ -127,14 +127,14 @@ class ControllersDynamicMethodsTests extends AbstractGrailsMockTests {
 	// we test the actual functionally of each method in separate tests (eg. RenderMethodTests)
 	void testRedirectMethod() {
 		runTest {
-			def testCtrl = ga.getController("TestController").newInstance()
+			def testCtrl = ga.getControllerClass("TestController").newInstance()
 			testCtrl.redirect(controller:"blah",action:"list")
 		}		
 	}
 	
 	void testRenderMethod() {
 		runTest {
-			def testCtrl = ga.getController("TestController").newInstance()
+			def testCtrl = ga.getControllerClass("TestController").newInstance()
 			testCtrl.render "test"
 		}
 	}
@@ -143,7 +143,7 @@ class ControllersDynamicMethodsTests extends AbstractGrailsMockTests {
 	
 	void testBindDataMethod() {
 		runTest {
-			def testCtrl = ga.getController("TestController").newInstance()
+			def testCtrl = ga.getControllerClass("TestController").newInstance()
 			testCtrl.bindData(this, [test1:"1"])
 			assertEquals 1, test1
 		}
@@ -152,7 +152,7 @@ class ControllersDynamicMethodsTests extends AbstractGrailsMockTests {
 	
 	void testActionInfoMethods() {
 		runTest {
-			def testCtrl = ga.getController("TestController").newInstance()
+			def testCtrl = ga.getControllerClass("TestController").newInstance()
 			
 			def webRequest = RequestContextHolder.currentRequestAttributes()
 			webRequest.actionName = "action"

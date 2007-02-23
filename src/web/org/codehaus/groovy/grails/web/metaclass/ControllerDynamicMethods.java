@@ -101,12 +101,15 @@ public class ControllerDynamicMethods extends
         addDynamicProperty(new GenericDynamicProperty(RENDER_VIEW_PROPERTY,Boolean.class, Boolean.TRUE,false));
 
         // @todo Check that LOG4J is not creating a new log for every request!
-        addDynamicProperty(new GenericDynamicProperty(LOG_PROPERTY, Log.class, new FunctionCallback() {
+        /*
+
+         addDynamicProperty(new GenericDynamicProperty(LOG_PROPERTY, Log.class, new FunctionCallback() {
             public Object execute(Object object) {
                 return LogFactory.getLog(controllerClass.getFullName());
             }
         }, true));
-
+        */
+        
         // add dynamic methods
         //addDynamicMethodInvocation( new RedirectDynamicMethod(helper,request,response) );
         //addDynamicMethodInvocation( new ChainDynamicMethod(helper, request, response ) );

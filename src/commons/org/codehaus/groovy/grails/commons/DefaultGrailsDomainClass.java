@@ -246,7 +246,7 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
                 establishRelationshipForSet( currentProp);
             }
             // otherwise if the type is a domain class establish relationship
-            else if(GrailsClassUtils.isDomainClass(currentPropType) &&
+            else if(DomainClassArtefactHandler.isDomainClass(currentPropType) &&
                     currentProp.isPersistent()) {
 
                 establishDomainClassRelationship( currentProp );
@@ -274,7 +274,7 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
 
             // if the related type is a domain class
             // then figure out what kind of relationship it is
-            if(GrailsClassUtils.isDomainClass( relatedClassType )) {
+            if(DomainClassArtefactHandler.isDomainClass(relatedClassType)) {
 
 
                 // check the relationship defined in the referenced type
@@ -439,7 +439,7 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
             property.setManyToMany(true);            
             property.setBidirectional(true);
         }
-        else if( GrailsClassUtils.isDomainClass( relatedClassPropertyType ) ) {
+        else if(DomainClassArtefactHandler.isDomainClass(relatedClassPropertyType)) {
             // bi-directional one-to-many
             property.setOneToMany( true );
             property.setBidirectional( true );
@@ -544,7 +544,7 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
             property.setBidirectional(true);
         }
         // bi-directional one-to-one
-        else if( GrailsClassUtils.isDomainClass( relatedClassPropertyType ) ) {
+        else if(DomainClassArtefactHandler.isDomainClass(relatedClassPropertyType)) {
             property.setOneToOne(true);
             property.setBidirectional(true);
         }

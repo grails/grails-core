@@ -5,8 +5,8 @@ import org.codehaus.groovy.grails.commons.*
 class ManyToManyTests extends AbstractGrailsHibernateTests {
 
 	void testManyToManyDomain() {
-		def authorDomain = ga.getGrailsDomainClass("Author")
-		def bookDomain = ga.getGrailsDomainClass("Book")
+		def authorDomain = ga.getDomainClass("Author")
+		def bookDomain = ga.getDomainClass("Book")
 
 		
 		def books = authorDomain?.getPropertyByName("books")
@@ -18,8 +18,8 @@ class ManyToManyTests extends AbstractGrailsHibernateTests {
 		assert !authors?.isOneToMany()				
 	}
 	void testManyToManyMapping() {
-		def authorClass = ga.getGrailsDomainClass("Author")
-		def bookClass = ga.getGrailsDomainClass("Book")
+		def authorClass = ga.getDomainClass("Author")
+		def bookClass = ga.getDomainClass("Book")
 		def a = authorClass.newInstance()
 		
 		a.addBook(bookClass.newInstance())

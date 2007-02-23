@@ -20,6 +20,7 @@ import org.codehaus.groovy.grails.plugins.support.GrailsPluginUtils
 import org.springframework.beans.factory.config.MethodInvokingFactoryBean
 import org.springframework.aop.framework.ProxyFactoryBean
 import org.springframework.aop.target.HotSwappableTargetSource
+import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler
 
 /**
  * A plug-in that configures the domain classes in the spring context 
@@ -33,13 +34,13 @@ class DomainClassGrailsPlugin {
 	def dependsOn = [i18n:version]
 	
 	def doWithSpring = {
-		application.grailsDomainClasses.each { dc ->
+		application.domainClasses.each { dc ->
 		    // Note the use of Groovy's ability to use dynamic strings in method names!
 		    
 			"${dc.fullName}DomainClass"(MethodInvokingFactoryBean) {
 				targetObject = ref("grailsApplication", true)
-				targetMethod = "getGrailsDomainClass"
-				arguments = dc.fullName
+				targetMethod = "getArtefact"
+				arguments = [DomainClassArtefactHandler.TYPE, dc.fullName]
 			}
 			"${dc.fullName}PersistentClass"(MethodInvokingFactoryBean) {
 				targetObject = ref("${dc.fullName}DomainClass")

@@ -25,7 +25,7 @@ class TagLibDynamicMethodsTests extends AbstractGrailsControllerTests {
 	
 	void testFlashObject() {
 		runTest {
-			def testTagLib = ga.getTagLib("TestTagLib").newInstance()
+			def testTagLib = ga.getTagLibClass("TestTagLib").newInstance()
 			testTagLib.flash.test = "hello"
 			
 			assertEquals "hello", testTagLib.flash.test			
@@ -34,7 +34,7 @@ class TagLibDynamicMethodsTests extends AbstractGrailsControllerTests {
 	
 	void testParamsObject() {
 		runTest {
-			def testTagLib = ga.getTagLib("TestTagLib").newInstance()
+			def testTagLib = ga.getTagLibClass("TestTagLib").newInstance()
 			testTagLib.params.test = "hello"
 			
 			assertEquals "hello", testTagLib.params.test
@@ -44,7 +44,7 @@ class TagLibDynamicMethodsTests extends AbstractGrailsControllerTests {
 	
 	void testSessionObject() {
 		runTest {
-			def testTagLib = ga.getTagLib("TestTagLib").newInstance()
+			def testTagLib = ga.getTagLibClass("TestTagLib").newInstance()
 			testTagLib.session.test = "hello"
 			
 			assertEquals "hello", testTagLib.session.test			
@@ -53,14 +53,14 @@ class TagLibDynamicMethodsTests extends AbstractGrailsControllerTests {
 	
 	void testGrailsAttributesObject() {
 		runTest {
-			def testTagLib = ga.getTagLib("TestTagLib").newInstance()
+			def testTagLib = ga.getTagLibClass("TestTagLib").newInstance()
 		 	assertNotNull(testTagLib.grailsAttributes)			
 		}		
 	}
 	
 	void testRequestObjects() {
 		runTest {
-			def testTagLib = ga.getTagLib("TestTagLib").newInstance()
+			def testTagLib = ga.getTagLibClass("TestTagLib").newInstance()
 			
 			assertNotNull(testTagLib.request)
 			assertTrue(testTagLib.request instanceof GrailsHttpServletRequest)

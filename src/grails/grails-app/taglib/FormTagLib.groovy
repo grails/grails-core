@@ -16,6 +16,7 @@ import org.springframework.validation.Errors;
 import org.springframework.context.NoSuchMessageException;
 import org.springframework.web.servlet.support.RequestContextUtils as RCU;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU;
+import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
 
  /**
  *  A  tag lib that provides tags for working with form controls
@@ -474,7 +475,7 @@ class FormTagLib {
                         keyValue = optionKey(el)
                          out << 'value="' << keyValue << '" '
                     }
-                    else if(el !=null && optionKey == 'id' && grailsApplication.getGrailsDomainClass(el.getClass().name)) {
+                    else if(el !=null && optionKey == 'id' && grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE, el.getClass().name)) {
                         keyValue = el.ident()
                         out << 'value="' << keyValue << '" '
                     }

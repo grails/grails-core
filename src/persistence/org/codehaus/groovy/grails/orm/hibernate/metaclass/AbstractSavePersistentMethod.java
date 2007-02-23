@@ -24,6 +24,7 @@ import java.sql.SQLException;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
+import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
 import org.codehaus.groovy.grails.commons.metaclass.DynamicMethodsMetaClass;
 import org.codehaus.groovy.grails.metaclass.DomainClassMethods;
 import org.codehaus.groovy.runtime.InvokerHelper;
@@ -63,7 +64,8 @@ public abstract class AbstractSavePersistentMethod extends
 	 * @see org.codehaus.groovy.grails.orm.hibernate.metaclass.AbstractDynamicPersistentMethod#doInvokeInternal(java.lang.Object, java.lang.Object[])
 	 */
 	protected Object doInvokeInternal(Object target, Object[] arguments) {
-        GrailsDomainClass domainClass = application.getGrailsDomainClass( target.getClass().getName() );
+        GrailsDomainClass domainClass = (GrailsDomainClass) application.getArtefact(DomainClassArtefactHandler.TYPE,
+            target.getClass().getName() );
         
         if(shouldValidate(arguments, domainClass)) {
         	Validator validator = domainClass.getValidator();
@@ -115,7 +117,8 @@ public abstract class AbstractSavePersistentMethod extends
 		    if(prop.isManyToOne() || prop.isOneToOne()) {
 		        Object propValue = bean.getPropertyValue(prop.getName());
 		        if(propValue != null && !t.contains(propValue)) {
-		            GrailsDomainClass otherSide = application.getGrailsDomainClass(prop.getType().getName());
+		            GrailsDomainClass otherSide = (GrailsDomainClass) application.getArtefact(DomainClassArtefactHandler.TYPE,
+                        prop.getType().getName());
 		            if(otherSide != null) {
 		                BeanWrapper propBean = new BeanWrapperImpl(propValue);
 

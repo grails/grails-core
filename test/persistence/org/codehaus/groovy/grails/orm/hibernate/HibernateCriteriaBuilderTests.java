@@ -9,6 +9,7 @@ import org.apache.commons.lang.ArrayUtils;
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
+import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.DefaultGrailsDomainConfiguration;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil;
 import org.codehaus.groovy.runtime.InvokerInvocationException;
@@ -114,7 +115,7 @@ public class HibernateCriteriaBuilderTests extends
         GroovyObject go = (GroovyObject)clazz.newInstance();
         go.setProperty("sf", this.sessionFactory);
 
-        Class tc = this.grailsApplication.getGrailsDomainClasses()[0].getClazz();
+        Class tc = this.grailsApplication.getArtefacts(DomainClassArtefactHandler.TYPE)[0].getClazz();
         go.setProperty("tc", tc);
 
         Closure closure = (Closure)go.getProperty("test");
@@ -123,7 +124,8 @@ public class HibernateCriteriaBuilderTests extends
 
     }
     public void testWithGString() throws Exception {
-        GrailsDomainClass domainClass = this.grailsApplication.getGrailsDomainClass("CriteriaBuilderTestClass");
+        GrailsDomainClass domainClass = (GrailsDomainClass) this.grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE,
+            "CriteriaBuilderTestClass");
 
         assertNotNull(domainClass);
 
@@ -144,7 +146,8 @@ public class HibernateCriteriaBuilderTests extends
     }
 
     public void testAssociations() throws Exception {
-        GrailsDomainClass domainClass = this.grailsApplication.getGrailsDomainClass("CriteriaBuilderTestClass");
+        GrailsDomainClass domainClass =  (GrailsDomainClass) this.grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE,
+            "CriteriaBuilderTestClass");
 
         assertNotNull(domainClass);
 
@@ -185,7 +188,8 @@ public class HibernateCriteriaBuilderTests extends
     }
 
     public void testNestedAssociation() throws Exception {
-        GrailsDomainClass domainClass = this.grailsApplication.getGrailsDomainClass("CriteriaBuilderTestClass");
+        GrailsDomainClass domainClass =  (GrailsDomainClass) this.grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE,
+            "CriteriaBuilderTestClass");
 
         assertNotNull(domainClass);
 
@@ -238,7 +242,8 @@ public class HibernateCriteriaBuilderTests extends
     }
 
     public void testJunctions() throws Exception {
-        GrailsDomainClass domainClass = this.grailsApplication.getGrailsDomainClass("CriteriaBuilderTestClass");
+        GrailsDomainClass domainClass =  (GrailsDomainClass) this.grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE,
+            "CriteriaBuilderTestClass");
 
         assertNotNull(domainClass);
 
@@ -278,7 +283,8 @@ public class HibernateCriteriaBuilderTests extends
     }
 
     public void testDistinct() throws Exception {
-        GrailsDomainClass domainClass = this.grailsApplication.getGrailsDomainClass("CriteriaBuilderTestClass");
+        GrailsDomainClass domainClass =  (GrailsDomainClass) this.grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE,
+            "CriteriaBuilderTestClass");
 
         assertNotNull(domainClass);
 
@@ -328,7 +334,8 @@ public class HibernateCriteriaBuilderTests extends
 
     public void testHibernateCriteriaBuilder()
         throws Exception {
-        GrailsDomainClass domainClass = this.grailsApplication.getGrailsDomainClass("CriteriaBuilderTestClass");
+        GrailsDomainClass domainClass =  (GrailsDomainClass) this.grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE,
+            "CriteriaBuilderTestClass");
 
         assertNotNull(domainClass);
 

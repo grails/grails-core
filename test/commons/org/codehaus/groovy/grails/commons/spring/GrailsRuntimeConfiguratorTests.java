@@ -8,12 +8,7 @@ import java.util.Properties;
 
 import junit.framework.TestCase;
 
-import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
-import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.GrailsControllerClass;
-import org.codehaus.groovy.grails.commons.GrailsDomainClass;
-import org.codehaus.groovy.grails.commons.GrailsServiceClass;
-import org.codehaus.groovy.grails.commons.GrailsTagLibClass;
+import org.codehaus.groovy.grails.commons.*;
 import org.codehaus.groovy.grails.commons.metaclass.ExpandoMetaClassCreationHandle;
 import org.codehaus.groovy.grails.plugins.DefaultGrailsPluginManager;
 import org.codehaus.groovy.grails.support.ClassEditor;
@@ -215,8 +210,8 @@ public class GrailsRuntimeConfiguratorTests extends TestCase {
         assertNotNull(ctx);
 
         Class tag = gcl.parseClass("class TestTagLib { def myTag = { attrs -> } }");
-        GrailsTagLibClass tagLibClass = app.addTagLibClass(tag);
-        conf.registerTagLibrary(tagLibClass, ctx);
+        GrailsTagLibClass tagLibClass = (GrailsTagLibClass)app.addArtefact(TagLibArtefactHandler.TYPE, tag);
+        GrailsRuntimeConfigurator.registerTagLibrary(tagLibClass, ctx);
 
         GroovyObject tagLib = (GroovyObject)ctx.getBean("TestTagLib");
         assertEquals(tag, tagLib.getClass());
@@ -236,7 +231,7 @@ public class GrailsRuntimeConfiguratorTests extends TestCase {
         assertNotNull(ctx);
 
         Class service = gcl.parseClass("class TestService { boolean transactional = true;def serviceMethod() { 'hello' } }");
-        GrailsServiceClass serviceClass = app.addServiceClass(service);
+        GrailsServiceClass serviceClass = (GrailsServiceClass) app.addArtefact(ServiceArtefactHandler.TYPE, service);
         conf.registerService(serviceClass,ctx);
 
         assertTrue(ctx.containsBean("TestServiceClass"));

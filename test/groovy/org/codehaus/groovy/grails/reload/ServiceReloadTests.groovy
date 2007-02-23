@@ -26,7 +26,7 @@ class NonTransactionalService {
 
             assertEquals "bar", testService.myMethod()
 
-            testService = ga.getService("NonTransactionalService").newInstance()
+            testService = ga.getServiceClass("NonTransactionalService").newInstance()
 
             assertEquals "bar", testService.myMethod()
 
@@ -48,7 +48,7 @@ class NonTransactionalService {
 
             assertEquals "foo", newService.myMethod()
 
-            newService = ga.getService("NonTransactionalService").newInstance()
+            newService = ga.getServiceClass("NonTransactionalService").newInstance()
 
             assertEquals "foo", newService.myMethod()
     }

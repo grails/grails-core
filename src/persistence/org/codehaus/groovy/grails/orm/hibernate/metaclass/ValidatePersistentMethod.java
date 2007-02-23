@@ -18,6 +18,7 @@ package org.codehaus.groovy.grails.orm.hibernate.metaclass;
 
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
+import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
 import org.codehaus.groovy.grails.commons.metaclass.DynamicMethodsMetaClass;
 import org.codehaus.groovy.grails.metaclass.DomainClassMethods;
 import org.codehaus.groovy.runtime.InvokerHelper;
@@ -52,11 +53,13 @@ public class ValidatePersistentMethod extends AbstractDynamicPersistentMethod {
 
     protected Object doInvokeInternal(Object target, Object[] arguments) {
         Errors errors = new BindException(target, target.getClass().getName());
-        GrailsDomainClass domainClass = application.getGrailsDomainClass( target.getClass().getName() );
+        GrailsDomainClass domainClass = (GrailsDomainClass) application.getArtefact(DomainClassArtefactHandler.TYPE,
+            target.getClass().getName() );
         Validator validator = null;
 
         if(domainClass != null)
-            validator = application.getGrailsDomainClass( target.getClass().getName() ).getValidator();
+            validator = ((GrailsDomainClass)application.getArtefact(DomainClassArtefactHandler.TYPE, 
+                target.getClass().getName() )).getValidator();
 
         Boolean valid = Boolean.TRUE;
         if(validator != null) {

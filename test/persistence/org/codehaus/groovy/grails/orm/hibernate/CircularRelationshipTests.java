@@ -22,9 +22,7 @@ import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
 
-import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
-import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.GrailsDomainClass;
+import org.codehaus.groovy.grails.commons.*;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.DefaultGrailsDomainConfiguration;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil;
 import org.hibernate.Session;
@@ -101,13 +99,15 @@ public class CircularRelationshipTests extends AbstractDependencyInjectionSpring
 	public void testHibernateConfiguration() throws Exception {		
 		assertNotNull(this.sessionFactory);
 		
-		GrailsDomainClass[] domainClasses = grailsApplication.getGrailsDomainClasses();
+		GrailsClass[] domainClasses = grailsApplication.getArtefacts(DomainClassArtefactHandler.TYPE);
 		assertEquals(1,domainClasses.length);
 		
 		
 		//HibernateTemplate template = new HibernateTemplate(this.sessionFactory);
-		GroovyObject obj = (GroovyObject)grailsApplication.getGrailsDomainClass("org.codehaus.groovy.grails.domain.CircularRelationship").newInstance();
-		GroovyObject child = (GroovyObject)grailsApplication.getGrailsDomainClass("org.codehaus.groovy.grails.domain.CircularRelationship").newInstance();
+		GroovyObject obj = (GroovyObject)grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE,
+            "org.codehaus.groovy.grails.domain.CircularRelationship").newInstance();
+		GroovyObject child = (GroovyObject)grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE,
+            "org.codehaus.groovy.grails.domain.CircularRelationship").newInstance();
 		assertNotNull(obj);
 		
 		child.setProperty("parent",obj);

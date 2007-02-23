@@ -20,19 +20,21 @@ import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.context.MessageSource;
 import org.springframework.context.support.StaticMessageSource;
 import org.codehaus.groovy.runtime.InvokerHelper;
+import org.codehaus.groovy.grails.commons.ControllerArtefactHandler
+import org.codehaus.groovy.grails.commons.TagLibArtefactHandler
 
 abstract class AbstractGrailsTagTests extends
 AbstractDependencyInjectionSpringContextTests {
-		
-	
+
+
 	public AbstractGrailsTagTests() {
-		dependencyCheck = false		
+		dependencyCheck = false
 	}
-	
+
 	protected String[] getConfigLocations() {
         return [ "org/codehaus/groovy/grails/web/taglib/grails-taglib-tests.xml" ] as String[]
     }
-	
+
 	def servletContext
 	def webRequest
 	def request
@@ -42,24 +44,24 @@ AbstractDependencyInjectionSpringContextTests {
 	def appCtx
 	def ga
 	def mockManager
-	
+
 	GrailsApplication grailsApplication;
 	MessageSource messageSource;
 
-	
+
 	GroovyClassLoader gcl = new GroovyClassLoader()
 
 	def withTag(String tagName, Writer out, Closure callable) {
 		def result = null
 		runTest {
-			def mockController = grailsApplication.getController("MockController").newInstance()
-			
+			def mockController = grailsApplication.getControllerClass("MockController").newInstance()
+
 	        request.setAttribute(GrailsApplicationAttributes.CONTROLLER, mockController);
 	        request.setAttribute(DispatcherServlet.LOCALE_RESOLVER_ATTRIBUTE, new AcceptHeaderLocaleResolver());
 	        request.setAttribute(GrailsApplicationAttributes.CONTROLLER, mockController);
 
-	        def tagLibrary = grailsApplication.getTagLibClassForTag(tagName)
-	        if(!tagLibrary) {
+	        def tagLibrary = grailsApplication.getArtefactForFeature(TagLibArtefactHandler.TYPE, tagName)
+            if(!tagLibrary) {
 	            fail("No tag library found for tag $tagName")
             }
 	        def go = tagLibrary.newInstance()
@@ -69,7 +71,7 @@ AbstractDependencyInjectionSpringContextTests {
 		}
 		return result
 	}
-	
+
     protected final void onSetUp() throws Exception {
         originalHandler = 	InvokerHelper.getInstance()
 		.getMetaRegistry()
@@ -78,15 +80,15 @@ AbstractDependencyInjectionSpringContextTests {
 		InvokerHelper.getInstance()
 		.getMetaRegistry()
 		.metaClassCreationHandle = new ExpandoMetaClassCreationHandle();
-        
+
         onInit()
         gcl.loadedClasses.find { it.name.endsWith("TagLib") }.each {
-            grailsApplication.addTagLibClass(it)    	
+            grailsApplication.addArtefact(TagLibArtefactHandler.TYPE, it)
         }
         ga = grailsApplication
 		def mockControllerClass = gcl.parseClass("class MockController {  def index = {} } ")
         ctx = new MockApplicationContext();
-        grailsApplication.addControllerClass(mockControllerClass)
+        grailsApplication.addArtefact(ControllerArtefactHandler.TYPE, mockControllerClass)
         
         grailsApplication.setApplicationContext(ctx);
         ctx.registerMockBean(GrailsApplication.APPLICATION_ID, grailsApplication);

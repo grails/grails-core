@@ -20,6 +20,7 @@ import org.springframework.beans.factory.config.MethodInvokingFactoryBean
 import org.springframework.aop.framework.ProxyFactoryBean
 import org.springframework.aop.target.HotSwappableTargetSource
 import org.springframework.transaction.interceptor.TransactionProxyFactoryBean
+import org.codehaus.groovy.grails.commons.ServiceArtefactHandler
 
 /**
  * A plug-in that configures services in the spring context 
@@ -38,11 +39,11 @@ class ServicesGrailsPlugin {
 
 	                 
 	def doWithSpring = {
-		application.grailsServiceClasses.each { serviceClass ->
+		application.serviceClasses.each { serviceClass ->
 			"${serviceClass.fullName}ServiceClass"(MethodInvokingFactoryBean) {
 				targetObject = ref("grailsApplication", true)
-				targetMethod = "getGrailsServiceClass"
-				arguments = serviceClass.fullName
+				targetMethod = "getArtefact"
+				arguments = [ServiceArtefactHandler.TYPE, serviceClass.fullName]
 			}
 
 			def hasDataSource = (application.grailsDataSource || application.domainClasses.size() > 0)						
@@ -70,15 +71,15 @@ class ServicesGrailsPlugin {
 	
 	def onChange = { event ->
 		if(event.source) {
-			def serviceClass = application.addServiceClass(event.source)
+			def serviceClass = application.addArtefact(ServiceArtefactHandler.TYPE, event.source)
 			def serviceName = "${serviceClass.propertyName}"
 
 			if(serviceClass.transactional && event.ctx.containsBean("transactionManager")) {
 				def beans = beans {                 
 					"${serviceClass.fullName}ServiceClass"(MethodInvokingFactoryBean) {
 						targetObject = ref("grailsApplication", true)
-						targetMethod = "getGrailsServiceClass"
-						arguments = serviceClass.fullName
+						targetMethod = "getArtefact"
+						arguments = [ServiceArtefactHandler.TYPE, serviceClass.fullName]
 					}									
 					def props = new Properties()
 					props."*"="PROPAGATION_REQUIRED"

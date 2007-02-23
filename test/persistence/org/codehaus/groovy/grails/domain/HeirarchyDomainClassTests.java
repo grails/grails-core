@@ -17,6 +17,7 @@ package org.codehaus.groovy.grails.domain;
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
+import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
 
 import groovy.lang.GroovyClassLoader;
 import junit.framework.TestCase;
@@ -39,19 +40,19 @@ public class HeirarchyDomainClassTests extends TestCase {
 		
 		GrailsApplication ga = new DefaultGrailsApplication(gcl.getLoadedClasses(),gcl);
 		
-		GrailsDomainClass gdc1 = ga.getGrailsDomainClass("Super");
+		GrailsDomainClass gdc1 = (GrailsDomainClass) ga.getArtefact(DomainClassArtefactHandler.TYPE, "Super");
 		assertNotNull(gdc1);
 		assertTrue(gdc1.isRoot());
 		assertEquals(2,gdc1.getSubClasses().size());
 		assertFalse(gdc1.getPropertyByName("id").isInherited());
 		
-		GrailsDomainClass gdc2 = ga.getGrailsDomainClass("Sub");
+		GrailsDomainClass gdc2 = (GrailsDomainClass) ga.getArtefact(DomainClassArtefactHandler.TYPE, "Sub");
 		
 		assertFalse(gdc2.isRoot());
 		assertEquals(1,gdc2.getSubClasses().size());
 		assertTrue(gdc2.getPropertyByName("id").isInherited());
 		
-		GrailsDomainClass gdc3 = ga.getGrailsDomainClass("Sub2");
+		GrailsDomainClass gdc3 = (GrailsDomainClass) ga.getArtefact(DomainClassArtefactHandler.TYPE, "Sub2");
 		
 		assertFalse(gdc3.isRoot());
 		assertEquals(0,gdc3.getSubClasses().size());

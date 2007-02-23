@@ -38,13 +38,13 @@ public class GrailsDomainConfigurationUtil {
      * @param domainClasses The domain classes to configure relationships for
      * @param domainMap The domain class map
      */
-    public static void configureDomainClassRelationships(GrailsDomainClass[] domainClasses, Map domainMap) {
+    public static void configureDomainClassRelationships(GrailsClass[] domainClasses, Map domainMap) {
 
     	// configure super/sub class relationships
     	// and configure how domain class properties reference each other
         for (int i = 0; i < domainClasses.length; i++) {
-        	
-        	if(!domainClasses[i].isRoot()) {
+        	GrailsDomainClass domainClass = (GrailsDomainClass) domainClasses[i];
+        	if(!domainClass.isRoot()) {
         		Class superClass = domainClasses[i].getClazz().getSuperclass();
         		while(!superClass.equals(Object.class)&&!superClass.equals(GroovyObject.class)) {
             		GrailsDomainClass gdc = (GrailsDomainClass)domainMap.get(superClass.getName());
@@ -55,7 +55,7 @@ public class GrailsDomainConfigurationUtil {
             		superClass = superClass.getSuperclass();
         		}
         	}        	
-            GrailsDomainClassProperty[] props = domainClasses[i].getPersistantProperties();
+            GrailsDomainClassProperty[] props = domainClass.getPersistantProperties();
 
             for (int j = 0; j < props.length; j++) {
                 if(props[j].isAssociation()) {
@@ -70,7 +70,8 @@ public class GrailsDomainConfigurationUtil {
 
         // now configure so that the 'other side' of a property can be resolved by the property itself
         for (int i = 0; i < domainClasses.length; i++) {
-            GrailsDomainClassProperty[] props = domainClasses[i].getPersistantProperties();
+            GrailsDomainClass domainClass = (GrailsDomainClass) domainClasses[i];
+            GrailsDomainClassProperty[] props = domainClass.getPersistantProperties();
 
             for (int j = 0; j < props.length; j++) {
                 if(props[j].isAssociation()) {

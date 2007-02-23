@@ -28,7 +28,7 @@ class BindDataMethodTests extends AbstractGrailsControllerTests {
 
 	void testBindDataFromMap() {
 	    runTest() {
-            def mockController = ga.getController("BindController")
+            def mockController = ga.getControllerClass("BindController")
 
             def method = new BindDynamicMethod()
 
@@ -45,7 +45,7 @@ class BindDataMethodTests extends AbstractGrailsControllerTests {
 
 	void testBindDataWithDisallowed() {
 	    runTest() {
-            def mockController = ga.getController("BindController")
+            def mockController = ga.getControllerClass("BindController")
 
             def method = new BindDynamicMethod()
 

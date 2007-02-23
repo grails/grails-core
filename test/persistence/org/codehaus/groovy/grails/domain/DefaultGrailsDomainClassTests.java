@@ -17,13 +17,8 @@ package org.codehaus.groovy.grails.domain;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
-import org.codehaus.groovy.grails.commons.DefaultGrailsDomainClass;
-import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.GrailsDomainClass;
-import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
 import org.codehaus.groovy.grails.exceptions.InvalidPropertyException;
-import org.codehaus.groovy.grails.commons.GrailsDomainConfigurationUtil;
+import org.codehaus.groovy.grails.commons.*;
 
 import groovy.lang.GroovyClassLoader;
 import junit.framework.TestCase;
@@ -119,8 +114,10 @@ public class DefaultGrailsDomainClassTests extends TestCase {
 										
 		GrailsApplication grailsApplication = new DefaultGrailsApplication(new Class[]{ relClass,oneToManyClass,oneToOneClass,manyToManyClass },cl);
 		
-		GrailsDomainClass c1dc = grailsApplication.getGrailsDomainClass(relClass.getName());
-		GrailsDomainClass c2dc = grailsApplication.getGrailsDomainClass(oneToManyClass.getName());
+		GrailsDomainClass c1dc = (GrailsDomainClass) grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE,
+            relClass.getName());
+		GrailsDomainClass c2dc = (GrailsDomainClass) grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE,
+            oneToManyClass.getName());
 		
 		// test relationship property
 		assertEquals( c1dc.getPropertyByName("ones").getOtherSide(), c2dc.getPropertyByName("other") );
@@ -189,7 +186,7 @@ public class DefaultGrailsDomainClassTests extends TestCase {
 	public void testOneToOneRelationships() 
 		throws Exception {
 		GrailsDomainClass c1dc = new DefaultGrailsDomainClass(relClass);
-		GrailsDomainClass c2dc = new DefaultGrailsDomainClass(oneToOneClass);		
+		GrailsDomainClass c2dc = new DefaultGrailsDomainClass(oneToOneClass);
 		
 		// test relationships
 		assertTrue( c1dc.getPropertyByName( "one" ).isPersistent() );

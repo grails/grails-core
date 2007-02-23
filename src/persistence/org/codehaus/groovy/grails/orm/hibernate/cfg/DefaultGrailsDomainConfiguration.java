@@ -20,6 +20,8 @@ import java.util.Set;
 
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
+import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
+import org.codehaus.groovy.grails.commons.GrailsClass;
 import org.hibernate.MappingException;
 import org.hibernate.cfg.Configuration;
 
@@ -64,9 +66,9 @@ public class DefaultGrailsDomainConfiguration extends Configuration implements G
     public void setGrailsApplication(GrailsApplication application) {
         this.grailsApplication = application;
         if(this.grailsApplication != null) {
-            GrailsDomainClass[] existingDomainClasses = this.grailsApplication.getGrailsDomainClasses();
+            GrailsClass[] existingDomainClasses = this.grailsApplication.getArtefacts(DomainClassArtefactHandler.TYPE);
             for(int i = 0; i < existingDomainClasses.length;i++) {
-                addDomainClass(existingDomainClasses[i]);
+                addDomainClass((GrailsDomainClass)existingDomainClasses[i]);
             }
         }
     }

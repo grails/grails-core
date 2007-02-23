@@ -22,7 +22,7 @@ import org.springframework.scheduling.quartz.CronTriggerBean;
 import org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean;
 import org.springframework.scheduling.quartz.SchedulerFactoryBean;
 import org.springframework.scheduling.quartz.SimpleTriggerBean;
-
+import org.codehaus.groovy.grails.commons.TaskArtefactHandler
 
 /**
  * A plug-in that configures Quartz job support in Grails 
@@ -36,13 +36,13 @@ class QuartzGrailsPlugin {
 	
 	def doWithSpring = {
 		def schedulerReferences = []
-		application.grailsTasksClasses.each { jobClass ->
+		application.taskClasses.each { jobClass ->
 			
 			def fullName = jobClass.fullName
 			"${fullName}JobClass"(MethodInvokingFactoryBean) {
 				targetObject = ref("grailsApplication", true)
-				targetMethod = "getGrailsTaskClass"
-				arguments = fullName
+				targetMethod = "getArtefact"
+				arguments = [TaskArtefactHandler.TYPE, fullName]
 			}
 			"${fullName}"(ref("${fullName}JobClass")) { bean ->
 				bean.factoryMethod = "newInstance"

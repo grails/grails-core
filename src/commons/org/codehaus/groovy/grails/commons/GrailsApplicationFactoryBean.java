@@ -66,7 +66,9 @@ public class GrailsApplicationFactoryBean implements FactoryBean, InitializingBe
 		else {
 			this.grailsApplication = new DefaultGrailsApplication(this.groovyFiles);
 		}
-	}
+
+        ApplicationHolder.setApplication(this.grailsApplication);
+    }
 	
 	public Object getObject() throws Exception {
 		return this.grailsApplication;

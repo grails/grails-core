@@ -61,85 +61,6 @@ public interface GrailsApplication extends ApplicationContextAware {
     String ENV_TEST  = "test";
 
     /**
-     * <p>Returns all controllers in an application
-     *
-     * @return controllers in an application
-     */
-    public GrailsControllerClass[] getControllers();
-
-    /**
-     * <p>Returns the controller with the given full name or null if no controller was found with that name.
-     *
-     * @param fullname the controller full name
-     * @return the controller or null if no controller was found.
-     */
-    public GrailsControllerClass getController(String fullname);
-
-    /**
-     * <p>Returns the controllers that maps to the given URI or null if no controller was found with that name.
-     *
-     * @param uri the uri of the request
-     * @return the controller or null if no controller was found
-     */
-    public GrailsControllerClass getControllerByURI(String uri);
-
-    /**
-     * <p>Returns all tasks in an application.</p>
-     *
-     * @return page flows in an application.
-     */
-    public GrailsTaskClass[] getGrailsTasksClasses();
-    
-    /**
-     * <p>Returns the task class with the given full name or null if no task was found with that name.
-     *
-     * @param fullname name of the task class to retrieve
-     * @return the retrieved task class
-     */    
-    public GrailsTaskClass getGrailsTaskClass( String fullname );
-    
-
-    /**
-     * <p>Returns an array of all the Grails Domain classes</p>
-     *
-     * @return The domain classes in the domain
-     * 
-     */
-    public GrailsDomainClass[] getGrailsDomainClasses();
-    
-    /**
-     * The same as getGrailsDomainClasses which may be deprecated in future
-     * @return The GrailsDomainClass instances
-     */
-    public GrailsDomainClass[] getDomainClasses();
-    
-    /**
-     * 
-     * @return The GrailsCodecClass instances
-     */
-    public GrailsCodecClass[] getCodecClasses();
-
-    /**
-     * Check whether the specified class is a grails domain class
-     * @param domainClass The class to check
-     * @return True if it is
-     */
-    public boolean isGrailsDomainClass(Class domainClass);
-
-    /**
-     * <p>Retrieves a domain class for the specified name</p>
-     *
-     * @param name The name of the domain class to retrieve
-     * @return The retrieved domain class
-     */
-    public GrailsDomainClass getGrailsDomainClass(String name);
-    
-    /**
-     *  The same as getGrailsDomainClass which may be deprecated in future
-     */
-    public GrailsDomainClass getDomainClass( String name );
-
-    /**
      * <p>Returns the active data source for this Grails application or null if not available.
      *
      * @return the active data source or null if not available.
@@ -154,137 +75,6 @@ public interface GrailsApplication extends ApplicationContextAware {
     public GroovyClassLoader getClassLoader();
 
     /**
-     * <p>Returns all service classes for the Grails application.
-     *
-     * @return service class for Grails application
-     */
-    public GrailsServiceClass[] getGrailsServiceClasses();
-    
-    /**
-     *  
-     * @return All the GrailsServiceClass instances
-     */
-    public GrailsServiceClass[] getServices();
-
-    /**
-     * <p>Returns the service with the specified full name.
-     *
-     * @param name the full name of the service class
-     * @return the service class
-     */
-    public GrailsServiceClass getGrailsServiceClass(String name);
-    
-    /**
-     * The same as getGrailsServiceClass which may be deprecated in future
-     * 
-     * @param name The name of the service clas
-     * @return The GrailsServiceClass instance or null
-     */
-    public GrailsServiceClass getService(String name);
-
-    /**
-     * <p>Returns all the bootstrap classes for the Grails application
-     *
-     * @return An array of BootStrap classes
-     */
-    public GrailsBootstrapClass[] getGrailsBootstrapClasses();
-    
-    /**
-     * The same as getGrailsBoostrapClasses() which may be deprecated in future
-     * @return The bootstrap classes in the system
-     */
-    public GrailsBootstrapClass[] getBootstraps();
-
-    /**
-     * <p>Returns all the tag lib classes for the Grails application
-     *
-     * @return An array of TagLib classes
-     */
-    public GrailsTagLibClass[] getGrailsTabLibClasses();
-
-    /**
-     * Sames as getGrailsTagLibClasses() which may be deprecated in future
-     * 
-     * @return The GrailsTagLibClass instances
-     */
-    public GrailsTagLibClass[] getTagLibs();
-    /**
-     * <p>Returns a tag lib class for the specified name
-     *
-     * @param tagLibName The name of the taglib class
-     * @return A taglib class instance or null if non exists
-     */
-    public GrailsTagLibClass getGrailsTagLibClass(String tagLibName);
-    
-    /**
-     * 
-     * @param codecName The name of the codec class
-     * @return A codec class instance or null if non exists
-     */
-    public GrailsCodecClass getGrailsCodecClass(String codecName);
-    
-    /**
-     * Adds a new Grails codec class to the application. If it already exists the old one will be replaced
-     * 
-     * @param codecClass The codec class to add
-     * @return The newly added class
-     */
-    public GrailsCodecClass addCodecClass(Class codecClass);
-    
-    /**
-     * Same as getGrailsTagLibClass which may be deprected in future
-     * 
-     * @param name The name of the taglib
-     * @return The tag lib class or null
-     */
-    public GrailsTagLibClass getTagLib(String name);
-
-    /**
-     * <p>Retrieves the tag lib class for the specified tag
-     *
-     * @param tagName The name of the tag
-     * @return A array of tag lib classes
-     */
-    public GrailsTagLibClass getTagLibClassForTag(String tagName);
-
-    /**
-     * Adds a new Grails controller class to the application
-     * @param controllerClass The grails controller class to add
-     * @return A GrailsControllerClass instance
-     */
-    GrailsControllerClass addControllerClass(Class controllerClass);
-
-    /**
-     * Adds a new Grails taglib class to the application. If it already exists the old one will be replaced
-     * 
-     * @param tagLibClass The taglib class to add
-     * @return The newly added class
-     */
-    GrailsTagLibClass addTagLibClass(Class tagLibClass);
-
-    /**
-     * Adds a new Grails service class to the application. If it already exists the old one will be replaced
-     *
-     * @param serviceClass The service class to add
-     * @return The newly added class or null if the class is abstract and was not added
-     */
-    GrailsServiceClass addServiceClass(Class serviceClass);
-
-    /**
-     * Adds a new domain class to the grails application
-     * @param domainClass The domain class to add
-     * @return The GrailsDomainClass instance or null if the class is abstract and was not added
-     */
-    GrailsDomainClass addDomainClass(Class domainClass);
-
-    /**
-     * Adds a new domain class to the grails application
-     * @param domainClass The domain class to add
-     * @return The GrailsDomainClass instance or null if the class is abstract and was not added
-     */
-    GrailsDomainClass addDomainClass(GrailsDomainClass domainClass);
-
-    /**
      * Retrieves the controller that is scaffolding the specified domain class
      *
      * @param domainClass The domain class to check
@@ -292,18 +82,17 @@ public interface GrailsApplication extends ApplicationContextAware {
      */
     GrailsControllerClass getScaffoldingController(GrailsDomainClass domainClass);
 
-    /**
-     * Adds a new task class to the grails application
-     * @param loadedClass The task class to add
-     * @return The GrailsDomainClass instance or null if the class is abstract and was not added
-     */
-	public GrailsTaskClass addTaskClass(Class loadedClass);
-
 	/**
 	 * Retrieves all java.lang.Class instances loaded by the Grails class loader
 	 * @return An array of classes
 	 */
 	public Class[] getAllClasses();
+
+	/**
+	 * Retrieves all java.lang.Class instances considered Artefacts loaded by the Grails class loader
+	 * @return An array of classes
+	 */
+	public Class[] getAllArtefacts();
 
 	/**
 	 * 
@@ -322,6 +111,7 @@ public interface GrailsApplication extends ApplicationContextAware {
 
     /**
      * This method will rebuild the constraint definitions
+     * @todo move this out? Why ORM dependencies in here?
      */
     public void refreshConstraints();
 
@@ -337,4 +127,92 @@ public interface GrailsApplication extends ApplicationContextAware {
      * @return A Resource or null
      */
     public Resource getResourceForClass(Class theClazz);
+
+    /**
+     * <p>Call this to find out if the class you have is an artefact loaded by grails.</p>
+     * @param theClazz A class to test
+     * @return True if and only if the class was loaded from grails-app/
+     * @since 0.5
+     */
+    public boolean isArtefact(Class theClazz);
+
+    /**
+     * <p>Check if the specified artefact Class has been loaded by Grails already AND is
+     * of the type expected</p>
+     * @param artefactType A string identifying the artefact type to check for
+     * @param theClazz The class to check
+     * @return True if Grails considers the class to be managed as an artefact of the type specified.
+     * @since 0.5
+     */
+    public boolean isArtefactOfType(String artefactType, Class theClazz);
+
+    /**
+     * <p>Check if the artefact Class with the name specified is of the type expected</p>
+     * @param artefactType A string identifying the artefact type to check for
+     * @param className The name of a class to check
+     * @return True if Grails considers the class to be managed as an artefact of the type specified.
+     * @since 0.5
+     */
+    public boolean isArtefactOfType(String artefactType, String className);
+
+    /**
+     * <p>Gets the GrailsClass associated with the named artefact class</p>
+     * <p>i.e. to get the GrailsClass for  controller called "BookController" you pass the name "BookController"</p>
+     * @param artefactType The type of artefact to retrieve, i.e. "Controller"
+     * @param name The name of an artefact such as "BookController"
+     * @return The associated GrailsClass or null
+     * @since 0.5
+     */
+    public GrailsClass getArtefact(String artefactType, String name);
+
+    /**
+     * <p>Obtain all the class information about the artefactType specified</p>
+     * @param artefactType An artefact type identifier i.e. "Domain"
+     * @return The artefact info or null if the artefactType is not recognized
+     * @since 0.5
+     */
+    public ArtefactInfo getArtefactInfo(String artefactType);
+
+    /**
+     * <p>Get an array of all the GrailsClass instances relating to artefacts of the specified type.</p>
+     * @param artefactType The type of artefact to retrieve, i.e. "Task"
+     * @return An array of GrailsClasses which may empty by not null
+     * @since 0.5
+     */
+    public GrailsClass[] getArtefacts(String artefactType);
+
+    /**
+     * <p>Get an artefact GrailsClass by a "feature" which depending on the artefact may be a URI or tag name
+     * for example</p>
+     * @param artefactType The type ID of the artefact, i.e. "TagLib"
+     * @param featureID The "feature" ID, say a URL or tag name
+     * @return The grails class or null if none is found
+     * @since 0.5
+     */
+    public GrailsClass getArtefactForFeature(String artefactType, Object featureID);
+
+    /**
+     * <p>Registers a new artefact</p>
+     * @param artefactType The type ID of the artefact, i.e. "TagLib"
+     * @param artefactClass The class of the artefact. A new GrailsClass will be created automatically and added
+     * to internal structures, using the appropriate ArtefactHandler
+     * @return The new grails class for the artefact class
+     * @since 0.5
+     */
+    public GrailsClass addArtefact(String artefactType, Class artefactClass);
+
+    /**
+     * <p>Registers a new artefact</p>
+     * @param artefactType The type ID of the artefact, i.e. "TagLib"
+     * @param artefactGrailsClass The GrailsClass of the artefact.
+     * @return The supplied grails class for the artefact class
+     * @since 0.5
+     */
+    public GrailsClass addArtefact(String artefactType, GrailsClass artefactGrailsClass);
+
+    /**
+     * <p>Register a new artefact handler</p>
+     * @param handler The new handler to add
+     */
+    public void registerArtefactHandler(ArtefactHandler handler);
 }

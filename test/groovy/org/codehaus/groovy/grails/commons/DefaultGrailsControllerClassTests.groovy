@@ -26,7 +26,7 @@ class  ChildController extends ParentController {
 
         def ga = new DefaultGrailsApplication(gcl.loadedClasses, gcl)
 
-        def child = ga.getController("ChildController")
+        def child = ga.getControllerClass("ChildController")
 
         def obj = child.newInstance()
 

@@ -18,7 +18,6 @@ package org.codehaus.groovy.grails.web.servlet.mvc;
 import groovy.lang.Closure;
 import groovy.lang.GroovyObject;
 import groovy.lang.MissingPropertyException;
-import groovy.lang.ProxyMetaClass;
 import groovy.util.Proxy;
 import org.apache.commons.beanutils.BeanMap;
 import org.apache.commons.collections.map.CompositeMap;
@@ -29,7 +28,7 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsControllerClass;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
-import org.codehaus.groovy.grails.commons.metaclass.GenericDynamicProperty;
+import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
 import org.codehaus.groovy.grails.scaffolding.GrailsScaffolder;
 import org.codehaus.groovy.grails.web.metaclass.ChainDynamicMethod;
 import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods;
@@ -45,7 +44,6 @@ import org.springframework.web.servlet.ModelAndView;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.beans.IntrospectionException;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
@@ -109,7 +107,8 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
       * @see org.codehaus.groovy.grails.web.servlet.mvc.GrailsControllerHelper#getControllerClassByName(java.lang.String)
       */
     public GrailsControllerClass getControllerClassByName(String name) {
-        return this.application.getController(name);
+        return (GrailsControllerClass) this.application.getArtefact(
+            ControllerArtefactHandler.TYPE, name);
     }
 
 
@@ -117,7 +116,8 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
       * @see org.codehaus.groovy.grails.web.servlet.mvc.GrailsControllerHelper#getControllerClassByURI(java.lang.String)
       */
     public GrailsControllerClass getControllerClassByURI(String uri) {
-        return this.application.getControllerByURI(uri);
+        return (GrailsControllerClass) this.application.getArtefactForFeature(
+            ControllerArtefactHandler.TYPE, uri);
     }
 
     /* (non-Javadoc)

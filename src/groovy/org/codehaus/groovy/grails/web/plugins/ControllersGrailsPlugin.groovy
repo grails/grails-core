@@ -26,6 +26,7 @@ import org.springframework.aop.target.HotSwappableTargetSource;
 import org.springframework.aop.framework.ProxyFactoryBean;
 
 import org.springframework.web.multipart.commons.CommonsMultipartResolver;
+import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
 import org.codehaus.groovy.grails.commons.spring.*
 import org.springframework.beans.factory.config.RuntimeBeanReference;
 import org.springframework.beans.factory.config.MethodInvokingFactoryBean;
@@ -45,10 +46,12 @@ import org.springframework.validation.Errors
 import org.codehaus.groovy.grails.web.pages.GroovyPage
 import org.codehaus.groovy.grails.web.metaclass.TagLibMetaClass
 import org.codehaus.groovy.runtime.InvokerHelper
+import org.codehaus.groovy.grails.commons.TagLibArtefactHandler
+import org.codehaus.groovy.grails.commons.ControllerArtefactHandler
 
 /**
- * A plug-in that handles the configuration of controllers for Grails 
- * 
+ * A plug-in that handles the configuration of controllers for Grails
+ *
  * @author Graeme Rocher
  * @since 0.4
  */
@@ -56,12 +59,12 @@ class ControllersGrailsPlugin {
 
 	def watchedResources = ["file:./grails-app/controllers/*Controller.groovy",
 							"file:./plugins/*/grails-app/controllers/*Controller.groovy",
-							"file:./plugins/*/grails-app/taglib/*TagLib.groovy",							
+							"file:./plugins/*/grails-app/taglib/*TagLib.groovy",
 	                        "file:./grails-app/taglib/*TagLib.groovy"]
-	
+
 	def version = GrailsPluginUtils.getGrailsVersion()
 	def dependsOn = [i18n:version]
-	
+
 	def doWithSpring = {
 		exceptionHandler(GrailsExceptionResolver) {
 			exceptionMappings = ['java.lang.Exception':'/error']
@@ -72,83 +75,83 @@ class ControllersGrailsPlugin {
 			mappings = urlMappings
 		}
 		simpleGrailsController(SimpleGrailsController.class) {
-			grailsApplication = ref("grailsApplication", true)			
+			grailsApplication = ref("grailsApplication", true)
 		}
-		
-	    
+
+
 		jspViewResolver(GrailsViewResolver) {
 			viewClass = org.springframework.web.servlet.view.JstlView.class
 			prefix = GrailsApplicationAttributes.PATH_TO_VIEWS
 		    suffix = ".jsp"
 		}
-		if(application.controllers) {
+		if(application.controllerClasses) {
 			def handlerInterceptors = []
-				                           
+
 			grailsUrlHandlerMapping(GrailsUrlHandlerMapping) {
 				interceptors = handlerInterceptors
-				mappings =  grailsUrlMappings				                
+				mappings =  grailsUrlMappings
 			}
 			handlerMappingTargetSource(HotSwappableTargetSource, grailsUrlHandlerMapping)
 			handlerMapping(ProxyFactoryBean) {
 				targetSource = handlerMappingTargetSource
 				proxyInterfaces = [org.springframework.web.servlet.HandlerMapping]
 			}
-					
+
 		}
-		
+
 		// Go through all the controllers and configure them in spring with AOP proxies for auto-updates and
 		// mappings in the urlMappings bean
-		application.controllers.each { controller ->
+		application.controllerClasses.each { controller ->
 			log.debug "Configuring controller $controller.fullName"
 			if(controller.available) {
 				configureAOPProxyBean.delegate = delegate
-				configureAOPProxyBean(controller, "getController", org.codehaus.groovy.grails.commons.GrailsControllerClass.class, false)				
+                configureAOPProxyBean(controller, ControllerArtefactHandler.TYPE, org.codehaus.groovy.grails.commons.GrailsControllerClass.class, false)
 			}
 		}
-		
+
 		// Now go through tag libraries and configure them in spring too. With AOP proxies and so on
-		application.grailsTabLibClasses.each { taglib ->
+		application.tagLibClasses.each { taglib ->
 			configureAOPProxyBean.delegate = delegate
-			configureAOPProxyBean(taglib, "getGrailsTagLibClass", org.codehaus.groovy.grails.commons.GrailsTagLibClass.class, true)
+			configureAOPProxyBean(taglib, TagLibArtefactHandler.TYPE, org.codehaus.groovy.grails.commons.GrailsTagLibClass.class, true)
 		}
 	}
-	
-	def configureAOPProxyBean = { grailsClass, factoryMethod, proxyClass, singleton ->
+
+	def configureAOPProxyBean = { grailsClass, artefactType, proxyClass, singleton ->
 		"${grailsClass.fullName}Class"(MethodInvokingFactoryBean) {
 			targetObject = ref("grailsApplication", true)
-			targetMethod = factoryMethod
-			arguments = [grailsClass.fullName]
+			targetMethod = "getArtefact"
+			arguments = [artefactType, grailsClass.fullName]
 		}
 		"${grailsClass.fullName}TargetSource"(HotSwappableTargetSource, ref("${grailsClass.fullName}Class"))
-		
+
 		"${grailsClass.fullName}Proxy"(ProxyFactoryBean) {
 			targetSource = ref("${grailsClass.fullName}TargetSource")
 			proxyInterfaces = [proxyClass]
 		}
-		"${grailsClass.fullName}"("${grailsClass.fullName}Proxy":"newInstance") { bean ->			
+		"${grailsClass.fullName}"("${grailsClass.fullName}Proxy":"newInstance") { bean ->
 			bean.singleton = singleton
 			bean.autowire = "byName"
-		}		
-			
+		}
+
 	}
-	
+
 	def doWithWebDescriptor = { webXml ->
 		def controllers = [] as HashSet
 		def webflows = []
 		def basedir = System.getProperty("base.dir")
 		def grailsEnv = System.getProperty("grails.env")
-		
+
 		// first for all the watched resources for this controller that are controllers
 		// create a servlet-mapping element that maps to the Grails dispatch servlet
 	    plugin.watchedResources.each {
 	        def match = it.filename =~ /(\w+)(Controller.groovy$)/
 	        if(match) {
 	            def controllerName = match[0][1]
-	            controllerName = GCU.getPropertyName(controllerName)	            
+	            controllerName = GCU.getPropertyName(controllerName)
 	            controllers << controllerName
 	        }
 		}
-		def mappingElement = webXml.'servlet-mapping'		
+		def mappingElement = webXml.'servlet-mapping'
 		controllers.each { c ->
 			mappingElement + {
 				'servlet-mapping' {
@@ -157,14 +160,14 @@ class ControllersGrailsPlugin {
 				}
 			}
 		}
-		
+
 		def filters = webXml.filter
 		def filterMappings = webXml.'filter-mapping'
-		
+
 		def lastFilter = filters[filters.size()-1]
 		def lastFilterMapping = filterMappings[filterMappings.size()-1]
 		def charEncodingFilter = filterMappings.find { it.'filter-name'.text() == 'charEncodingFilter'}
-		                                       
+
 		// add the Grails web request filter
 		lastFilter + {
 			filter {
@@ -175,33 +178,33 @@ class ControllersGrailsPlugin {
 				filter {
 					'filter-name'('reloadFilter')
 					'filter-class'('org.codehaus.groovy.grails.web.servlet.filter.GrailsReloadServletFilter')
-				}				
-			}			
-		}        
+				}
+			}
+		}
 		def grailsWebRequestFilter = {
-			'filter-mapping' {						
+			'filter-mapping' {
 				'filter-name'('grailsWebRequest')
-				'url-pattern'("/*")						
-			}			
-		}		                    
+				'url-pattern'("/*")
+			}
+		}
 		if(charEncodingFilter) {
 			charEncodingFilter + grailsWebRequestFilter
-		}                                              
+		}
 		else {
 			lastFilterMapping + grailsWebRequestFilter
 		}
 		// if we're in development environment first add a the reload filter
-		// to the web.xml by finding the last filter and appending it after		
+		// to the web.xml by finding the last filter and appending it after
 		if(grailsEnv == "development") {
-			
+
 			// now map each controller request to the filter
 			controllers.each { c ->
 				lastFilterMapping + {
-					'filter-mapping' {						
+					'filter-mapping' {
 						'filter-name'('reloadFilter')
-						'url-pattern'("/${c}/*")						
+						'url-pattern'("/${c}/*")
 					}
-				}			
+				}
 			}
 			// now find the GSP servlet and allow viewing generated source in
 			// development mode
@@ -210,30 +213,30 @@ class ControllersGrailsPlugin {
 				'init-param' {
 					description """
 		              Allows developers to view the intermediade source code, when they pass
-		                a spillGroovy argument in the URL.					
-							"""					
+		                a spillGroovy argument in the URL.
+							"""
 					'param-name'('showSource')
 					'param-value'(1)
 				}
 			}
-		}   	   
+		}
 
 	}
-	
+
 	/**
 	 * This creates the difference dynamic methods and properties on the controllers. Most methods
-	 * are implemented by looking up the current request from the RequestContextHolder (RCH) 
+	 * are implemented by looking up the current request from the RequestContextHolder (RCH)
 	 */
-	 
+
 	def registerCommonObjects(metaClass) {
-	   	def paramsObject = {->			
-			RCH.currentRequestAttributes().params	
+	   	def paramsObject = {->
+			RCH.currentRequestAttributes().params
 		}
 	    def flashObject = {->
 				RCH.currentRequestAttributes().flashScope
 		}
 	   	def sessionObject = {->
-			RCH.currentRequestAttributes().session			
+			RCH.currentRequestAttributes().session
 		}
 	   	def requestObject = {->
 			RCH.currentRequestAttributes().currentRequest
@@ -242,12 +245,12 @@ class ControllersGrailsPlugin {
 			RCH.currentRequestAttributes().currentResponse
 		}
 	   	def servletContextObject = {->
-				RCH.currentRequestAttributes().servletContext		   
+				RCH.currentRequestAttributes().servletContext
 		}
 	   	def grailsAttrsObject = {->
 				RCH.currentRequestAttributes().attributes
 		}
-		
+
 		   // the params object
 		   metaClass.getParams = paramsObject
 		   // the flash object
@@ -265,18 +268,18 @@ class ControllersGrailsPlugin {
 		   // The GrailsApplication object
 		   metaClass.getGrailsApplication = {-> RCH.currentRequestAttributes().attributes.grailsApplication }
 
-		   metaClass.getPluginContextPath = {-> RCH.currentRequestAttributes().attributes.getPluginContextPath( request ) }		
+		   metaClass.getPluginContextPath = {-> RCH.currentRequestAttributes().attributes.getPluginContextPath( request ) }
 	}
 
 
 	def doWithDynamicMethods = { ctx ->
-	   	
+
 		// add common objects and out variable for tag libraries
 		def registry = InvokerHelper.getInstance().getMetaRegistry()
-	   	application.tagLibs.each { taglib ->
+	   	application.tagLibClasses.each { taglib ->
 	   		def metaClass = taglib.metaClass
 	   		registerCommonObjects(metaClass)
-				   		
+
 	   		metaClass.throwTagError = { String message ->
 	   			throw new org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException(message)
 	   		}
@@ -284,19 +287,19 @@ class ControllersGrailsPlugin {
 	   			RCH.currentRequestAttributes().out
 	   		}
 	   		metaClass.setOut = { Writer newOut ->
-	   			RCH.currentRequestAttributes().out = newOut 
+	   			RCH.currentRequestAttributes().out = newOut
 	   		}
-	   		
+
 	   		def adaptedMetaClass = new TagLibMetaClass(taglib.metaClass)
-	   		
+
 	   		registry.setMetaClass(taglib.clazz, adaptedMetaClass)
 	   		ctx.getBean(taglib.fullName).metaClass = adaptedMetaClass
 	   	}
 		// add commons objects and dynamic methods like render and redirect to controllers
-		application.controllers.each { controller ->
+		application.controllerClasses.each { controller ->
 		   def metaClass = controller.metaClass
 			registerCommonObjects(metaClass)
-		   
+
 			metaClass.getActionUri = {-> "/$controllerName/$actionName".toString()	}
 			metaClass.getControllerUri = {-> "/$controllerName".toString()	}
 		    metaClass.getTemplateUri = { String name ->
@@ -305,7 +308,7 @@ class ControllersGrailsPlugin {
 		    }
 		    metaClass.getViewUri = { String name ->
 		    	def webRequest = RCH.currentRequestAttributes()
-		    	webRequest.attributes.getViewUri(name, webRequest.currentRequest)		    	
+		    	webRequest.attributes.getViewUri(name, webRequest.currentRequest)
 		    }
 			metaClass.getActionName = {->
 				RCH.currentRequestAttributes().actionName
@@ -313,9 +316,9 @@ class ControllersGrailsPlugin {
 			metaClass.getControllerName = {->
 				RCH.currentRequestAttributes().controllerName
 			}
-			
+
 		    metaClass.log = LogFactory.getLog(controller.fullName)
-		   		   
+
 			metaClass.setErrors = { Errors errors ->
 				RCH.currentRequestAttributes().setAttribute( GrailsApplicationAttributes.ERRORS, errors, 0)
 			}
@@ -326,7 +329,7 @@ class ControllersGrailsPlugin {
 				RCH.currentRequestAttributes().setAttribute( GrailsApplicationAttributes.MODEL_AND_VIEW, mav, 0)
 			}
 		    metaClass.getModelAndView = {->
-	   			RCH.currentRequestAttributes().getAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW, 0)		    
+	   			RCH.currentRequestAttributes().getAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW, 0)
 		    }
 		    metaClass.getChainModel = {->
 		    	RCH.currentRequestAttributes().flashScope["chainModel"]
@@ -342,7 +345,7 @@ class ControllersGrailsPlugin {
 			// the redirect dynamic method
 			metaClass.redirect = { Map args ->
 				redirect.invoke(delegate,"redirect",args)
-			} 
+			}
 		    metaClass.chain = { Map args ->
 		    	chain.invoke(delegate, "chain",args)
 		    }
@@ -352,13 +355,13 @@ class ControllersGrailsPlugin {
 		    }
 		    metaClass.render = { Map args ->
 				render.invoke(delegate, "render",[args] as Object[])
-	    	}	
+	    	}
 		    metaClass.render = { Closure c ->
 				render.invoke(delegate,"render", [c] as Object[])
-	    	}		   
+	    	}
 		    metaClass.render = { Map args, Closure c ->
 				render.invoke(delegate,"render", [args, c] as Object[])
-		    }		   
+		    }
 		    // the bindData method
 		    metaClass.bindData = { Object target, Object args ->
 		    	bind.invoke(delegate, "bindData", [target, args] as Object[])
@@ -377,13 +380,13 @@ class ControllersGrailsPlugin {
 
             if(metaClass instanceof DynamicMethodsMetaClass) {
                    metaClass.dynamicMethods.addDynamicConstructor(new DataBindingDynamicConstructor())
-                   metaClass.dynamicMethods.addDynamicProperty(new SetPropertiesDynamicProperty())                                       	
+                   metaClass.dynamicMethods.addDynamicProperty(new SetPropertiesDynamicProperty())
             }
         }
 	}
-	
+
 	def onChange = { event ->
-		if(GCU.isControllerClass(event.source)) {  
+        if(application.isArtefactOfType(ControllerArtefactHandler.TYPE, event.source)) {
 			if(log.isDebugEnabled())
 				log.debug("Controller ${event.source} changed. Reloading...")
 			def context = event.ctx
@@ -392,25 +395,25 @@ class ControllersGrailsPlugin {
 					log.debug("Application context not found. Can't reload")
 				return
 			}
-			boolean isNew = application.getController(event.source?.name) ? false : true
-										
-			def controllerClass = application.addControllerClass(event.source)						
+			boolean isNew = application.getControllerClass(event.source?.name) ? false : true
+
+			def controllerClass = application.addArtefact(ControllerArtefactHandler.TYPE, event.source)
 			def controllerTargetSource = context.getBean("${controllerClass.fullName}TargetSource")
 			controllerTargetSource.swap(controllerClass)
-			
+
 			if(isNew) {
 				log.info "Re-generating web.xml file. This may require a second refresh..."
 				def webTemplateXml = resolver.getResource("/WEB-INF/web.template.xml")
 				def webXml = resolver.getResource("/WEB-INF/web.xml")?.getFile()
 				webXml?.withWriter { w ->
 					manager.doWebDescriptor(webTemplateXml, w)
-				}				
+				}
 			}
-			
+
 		}
-		else if(GCU.isTagLibClass(event.source)) {
-			boolean isNew = application.getGrailsTagLibClass(event.source?.name) ? false : true
-			def taglibClass = application.addTagLibClass(event.source)
+		else if(application.isArtefactOfType(TagLibArtefactHandler.TYPE, event.source)) {
+			boolean isNew = application.getTagLibClass(event.source?.name) ? false : true
+			def taglibClass = application.addArtefact(TagLibArtefactHandler.TYPE, event.source)
 			if(taglibClass) {
 				if(isNew) {
 					GrailsRuntimeConfigurator.registerTagLibrary(taglibClass, source.ctx)

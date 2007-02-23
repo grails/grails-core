@@ -5,8 +5,8 @@ import org.codehaus.groovy.grails.orm.hibernate.*
 class AddToRelationshipTests extends AbstractGrailsHibernateTests {
 
 	void testAddToRelationship() {
-		def testClass = ga.getGrailsDomainClass("Test")
-		def otherClass = ga.getGrailsDomainClass("Other")
+		def testClass = ga.getDomainClass("Test")
+		def otherClass = ga.getDomainClass("Other")
 		def t = testClass.newInstance()		
 		def o1 = otherClass.newInstance()
 		o1.name = "test1"

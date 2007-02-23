@@ -29,6 +29,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.commons.GrailsControllerClass;
+import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
 import org.codehaus.groovy.grails.commons.metaclass.AbstractDynamicMethodInvocation;
 import org.codehaus.groovy.grails.scaffolding.GrailsScaffolder;
 import org.codehaus.groovy.grails.web.servlet.FlashScope;
@@ -181,7 +182,8 @@ public class ChainDynamicMethod extends AbstractDynamicMethodInvocation {
     
     public GrailsScaffolder getScaffolderForController(String controllerName, GrailsWebRequest webRequest) {
     	GrailsApplicationAttributes attributes = webRequest.getAttributes();
-		GrailsControllerClass controllerClass = attributes.getGrailsApplication().getController(controllerName);    	
+		GrailsControllerClass controllerClass = (GrailsControllerClass) attributes.getGrailsApplication().getArtefact(
+            ControllerArtefactHandler.TYPE, controllerName);
         return (GrailsScaffolder)attributes
         							.getApplicationContext()
         							.getBean(controllerClass.getFullName() + SCAFFOLDER );

@@ -31,8 +31,8 @@ class CodecsGrailsPlugin {
 	def watchedResources = "file:./grails-app/utils/*Codec.groovy"
 
 	def onChange = { event ->
-		if(GCU.isCodecClass(event.source)) {
-			application.addCodecClass(event.source)
+		if(application.isArtefactOfType(CodecArtefactHandler.TYPE, event.source)) {
+			application.addArtefact(CodecArtefactHandler.TYPE, event.source)
 		}
 	}
 
@@ -45,7 +45,7 @@ class CodecsGrailsPlugin {
 			def encodeMethodName = "encodeAs${codecName}"
 
 			Object.metaClass."${encodeMethodName}" << {->
-				def codecClass = application.getGrailsCodecClass(codecClassName)
+				def codecClass = application.getCodecClass(codecClassName)
 				def encodeMethod = codecClass.encodeMethod
 				if(encodeMethod) {
 					return encodeMethod(delegate)
@@ -57,7 +57,7 @@ class CodecsGrailsPlugin {
 
 			def decodeMethodName = "decode${codecName}" 
 			Object.metaClass."${decodeMethodName}" << {->
-				def codecClass = application.getGrailsCodecClass(codecClassName)
+				def codecClass = application.getCodecClass(codecClassName)
 				def decodeMethod = codecClass.decodeMethod
 				if(decodeMethod) {
 					return decodeMethod(delegate)

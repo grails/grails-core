@@ -4,7 +4,7 @@ package org.codehaus.groovy.grails.orm.hibernate;
 class CircularOneToManyTests extends AbstractGrailsHibernateTests  {
 
 	void testCircularDomain() {
-		def taskDomain = ga.getGrailsDomainClass("Task")
+		def taskDomain = ga.getDomainClass("Task")
 
 		
 		def tasks = taskDomain?.getPropertyByName("tasks")

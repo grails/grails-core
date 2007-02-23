@@ -45,7 +45,7 @@ class MyPage extends org.codehaus.groovy.grails.web.pages.GroovyPage {
 		runTest {
 			def webRequest = RequestContextHolder.currentRequestAttributes()
 			def script = gcl.loadClass("MyPage").newInstance()
-			def controller = ga.getController("TestController").newInstance()
+			def controller = ga.getControllerClass("TestController").newInstance()
 			def sw = new StringWriter()
 			webRequest.out =  new PrintWriter(sw)
 			def b = new Binding(application:controller.servletContext,

@@ -26,6 +26,7 @@ import groovy.lang.GroovyObject;
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsControllerClass;
+import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
 import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil;
 import org.codehaus.groovy.grails.support.MockApplicationContext;
@@ -122,7 +123,8 @@ public abstract class AbstractGrailsIntegrationTests extends TestCase {
     
     protected GroovyObject getMockController(String name) throws IntrospectionException {
     	
-    	GrailsControllerClass controllerClass = ga.getController(name);
+    	GrailsControllerClass controllerClass = (GrailsControllerClass) ga.getArtefact(
+            ControllerArtefactHandler.TYPE, name);
     	if(controllerClass == null)
     		throw new IllegalArgumentException("Controller not found for name " + name);
     	

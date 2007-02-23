@@ -219,7 +219,7 @@ class ValidationTagLib {
         }
 
         def app = grailsAttributes.getGrailsApplication()
-        def dc = app.getGrailsDomainClass(againstClass)
+        def dc = app.getDomainClass(againstClass)
 
         if(!dc)
             throwTagError("Tag [validate] could not find a domain class to validate against for name [${againstClass}]")

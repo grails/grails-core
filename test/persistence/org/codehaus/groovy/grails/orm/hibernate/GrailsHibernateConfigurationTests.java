@@ -17,9 +17,7 @@ package org.codehaus.groovy.grails.orm.hibernate;
 
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyObject;
-import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
-import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.GrailsDomainClass;
+import org.codehaus.groovy.grails.commons.*;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.DefaultGrailsDomainConfiguration;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
@@ -106,11 +104,12 @@ public class GrailsHibernateConfigurationTests extends AbstractDependencyInjecti
 	public void testHibernateConfiguration() throws Exception {		
 		assertNotNull(this.sessionFactory);
 		
-		GrailsDomainClass[] domainClasses = grailsApplication.getGrailsDomainClasses();
+		GrailsClass[] domainClasses = grailsApplication.getArtefacts(DomainClassArtefactHandler.TYPE);
 		
 		
 		HibernateTemplate template = new HibernateTemplate(this.sessionFactory);
-		GroovyObject obj = (GroovyObject)grailsApplication.getGrailsDomainClass("org.codehaus.groovy.grails.domain.Test1").newInstance();
+		GroovyObject obj = (GroovyObject)grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE,
+            "org.codehaus.groovy.grails.domain.Test1").newInstance();
 		assertNotNull(obj);
 		
 		obj.setProperty("firstName", "Joe");
@@ -138,8 +137,10 @@ public class GrailsHibernateConfigurationTests extends AbstractDependencyInjecti
 		assertEquals("Joe",obj.getProperty("firstName"));
 		
 		// test one-to-one
-		GroovyObject parent = (GroovyObject)grailsApplication.getGrailsDomainClass( "org.codehaus.groovy.grails.domain.RelationshipsTest" ).newInstance();
-		GroovyObject child = (GroovyObject)grailsApplication.getGrailsDomainClass( "org.codehaus.groovy.grails.domain.OneToOneTest" ).newInstance();
+		GroovyObject parent = (GroovyObject)grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE,
+            "org.codehaus.groovy.grails.domain.RelationshipsTest" ).newInstance();
+		GroovyObject child = (GroovyObject)grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE,
+            "org.codehaus.groovy.grails.domain.OneToOneTest" ).newInstance();
 		
 		assertNotNull(child);
 		
@@ -149,11 +150,13 @@ public class GrailsHibernateConfigurationTests extends AbstractDependencyInjecti
 		
 		
 		// test uni-directional one-to-many
-		GrailsDomainClass one2ManyDomain = grailsApplication.getGrailsDomainClass( "org.codehaus.groovy.grails.domain.RelationshipsTest" );
+		GrailsDomainClass one2ManyDomain = (GrailsDomainClass) grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE,
+            "org.codehaus.groovy.grails.domain.RelationshipsTest" );
 		GroovyObject one2many = (GroovyObject)one2ManyDomain.newInstance();
 
 		
-		child = (GroovyObject)grailsApplication.getGrailsDomainClass( "org.codehaus.groovy.grails.domain.UniOneToManyTest" ).newInstance();
+		child = (GroovyObject)grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE,
+            "org.codehaus.groovy.grails.domain.UniOneToManyTest" ).newInstance();
 		assertNotNull(child);
 									
 		// create one-to-many relationship
@@ -175,11 +178,13 @@ public class GrailsHibernateConfigurationTests extends AbstractDependencyInjecti
 		assertEquals(1, set.size());
 		
 		// test bidirectional one-to-many
-		one2ManyDomain = grailsApplication.getGrailsDomainClass( "org.codehaus.groovy.grails.domain.RelationshipsTest" );
+		one2ManyDomain = (GrailsDomainClass) grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE,
+            "org.codehaus.groovy.grails.domain.RelationshipsTest" );
 		one2many = (GroovyObject)one2ManyDomain.newInstance();
 
 		
-		child = (GroovyObject)grailsApplication.getGrailsDomainClass( "org.codehaus.groovy.grails.domain.OneToManyTest2" ).newInstance();
+		child = (GroovyObject)grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE,
+            "org.codehaus.groovy.grails.domain.OneToManyTest2" ).newInstance();
 		
 		assertNotNull(child);
 		template.save(one2many);
@@ -201,11 +206,13 @@ public class GrailsHibernateConfigurationTests extends AbstractDependencyInjecti
 		assertEquals(1, set.size());
 		
 		// test many-to-one
-		one2ManyDomain = grailsApplication.getGrailsDomainClass( "org.codehaus.groovy.grails.domain.RelationshipsTest" );
+		one2ManyDomain = (GrailsDomainClass) grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE,
+            "org.codehaus.groovy.grails.domain.RelationshipsTest" );
 		one2many = (GroovyObject)one2ManyDomain.newInstance();
 
 		
-		GroovyObject many2one = (GroovyObject)grailsApplication.getGrailsDomainClass( "org.codehaus.groovy.grails.domain.OneToManyTest2" ).newInstance();
+		GroovyObject many2one = (GroovyObject)grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE,
+            "org.codehaus.groovy.grails.domain.OneToManyTest2" ).newInstance();
 		assertNotNull(many2one);
 		set = new HashSet();
 		one2many.setProperty("ones", set);

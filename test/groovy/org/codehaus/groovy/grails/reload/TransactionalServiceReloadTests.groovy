@@ -27,7 +27,7 @@ class TransactionalService {
 
             assertEquals "foo", testService.myMethod()
 
-            testService = ga.getService("TransactionalService").newInstance()
+            testService = ga.getServiceClass("TransactionalService").newInstance()
 
             assertEquals "foo", testService.myMethod()
 
@@ -44,7 +44,7 @@ class TransactionalService {
             eventHandler.call(event)
 
 
-            def newService = ga.getService("TransactionalService").newInstance()
+            def newService = ga.getServiceClass("TransactionalService").newInstance()
 
             assertEquals "bar", newService.myMethod()
 

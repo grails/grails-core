@@ -59,7 +59,7 @@ class TestController {
 		
 		assertNotNull(appCtx.getBean("TestControllerScaffolder").scaffoldRequestHandler)
 		
-		def testClass = ga.getGrailsDomainClass("Test").clazz
+		def testClass = ga.getDomainClass("Test").clazz
 		
 		def testObj = testClass.newInstance()
 		testObj.save()

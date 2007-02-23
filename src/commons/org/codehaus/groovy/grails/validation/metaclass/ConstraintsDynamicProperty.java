@@ -16,6 +16,7 @@ package org.codehaus.groovy.grails.validation.metaclass;
 
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
+import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
 import org.codehaus.groovy.grails.commons.metaclass.AbstractDynamicProperty;
 /**
  * This is a dynamic property that instead of returning the closure sets a new proxy meta class for the scope 
@@ -35,7 +36,8 @@ public class ConstraintsDynamicProperty extends AbstractDynamicProperty {
 	}
 
 	public Object get(Object object)  {
-		GrailsDomainClass domainClass = application.getGrailsDomainClass(object.getClass().getName());
+		GrailsDomainClass domainClass = (GrailsDomainClass) application.getArtefact(DomainClassArtefactHandler.TYPE, 
+            object.getClass().getName());
 		return domainClass.getConstrainedProperties();		
 	}
 

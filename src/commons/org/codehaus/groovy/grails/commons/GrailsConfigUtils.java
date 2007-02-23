@@ -40,7 +40,8 @@ public class GrailsConfigUtils {
 	 * @param webContext The WebApplicationContext instance
 	 * @param servletContext The ServletContext instance
 	 */
-	public static void executeGrailsBootstraps(GrailsApplication application, WebApplicationContext webContext, ServletContext servletContext) {
+	public static void executeGrailsBootstraps(GrailsApplication application, WebApplicationContext webContext,
+        ServletContext servletContext) {
 
 		PersistenceContextInterceptor interceptor = null;
 		String[] beanNames = webContext.getBeanNamesForType(PersistenceContextInterceptor.class);
@@ -52,9 +53,9 @@ public class GrailsConfigUtils {
 	    	interceptor.init();
 	    	// init the Grails application
 	        try {
-	            GrailsBootstrapClass[] bootstraps =  application.getGrailsBootstrapClasses();
+	            GrailsClass[] bootstraps =  application.getArtefacts(BootstrapArtefactHandler.TYPE);
 	            for (int i = 0; i < bootstraps.length; i++) {
-	                bootstraps[i].callInit(  servletContext );
+	                ((GrailsBootstrapClass)bootstraps[i]).callInit(  servletContext );
 	            }
                 interceptor.flush();
             }

@@ -6,8 +6,8 @@ import org.hibernate.LazyInitializationException
 class ManyToManyLazinessTests extends AbstractGrailsHibernateTests {
 
 	void testManyToManyLazyLoading() {
-		def authorClass = ga.getGrailsDomainClass("Author")
-		def bookClass = ga.getGrailsDomainClass("Book")
+		def authorClass = ga.getDomainClass("Author")
+		def bookClass = ga.getDomainClass("Book")
 		def a = authorClass.newInstance()
 		
 		a.addBook(bookClass.newInstance())

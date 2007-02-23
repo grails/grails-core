@@ -27,6 +27,7 @@ import junit.framework.TestCase;
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
+import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
 import org.codehaus.groovy.grails.metaclass.AbstractAddRelatedDynamicMethod;
 import org.codehaus.groovy.grails.metaclass.AddRelatedDynamicMethod;
 
@@ -66,7 +67,7 @@ public class AddRelatedDynamicMethodTests extends TestCase {
          GroovyObject author = (GroovyObject)gcl.loadClass("Author",false,true).newInstance();
 
          GrailsApplication ga = new DefaultGrailsApplication(new Class[]{book.getClass(),author.getClass()},gcl);
-         GrailsDomainClass authorDC = ga.getGrailsDomainClass("Author");
+         GrailsDomainClass authorDC = (GrailsDomainClass) ga.getArtefact(DomainClassArtefactHandler.TYPE, "Author");
 
          AbstractAddRelatedDynamicMethod ardm = new AddRelatedDynamicMethod(authorDC.getPropertyByName("books"));
 
@@ -115,7 +116,7 @@ public class AddRelatedDynamicMethodTests extends TestCase {
           GroovyObject author = (GroovyObject)gcl.loadClass("Author",false,true).newInstance();
 
           GrailsApplication ga = new DefaultGrailsApplication(new Class[]{book.getClass(),author.getClass()},gcl);
-          GrailsDomainClass authorDC = ga.getGrailsDomainClass("Author");
+          GrailsDomainClass authorDC = (GrailsDomainClass) ga.getArtefact(DomainClassArtefactHandler.TYPE, "Author");
 
           AbstractAddRelatedDynamicMethod ardm = new AddRelatedDynamicMethod(authorDC.getPropertyByName("books"));
 

@@ -30,7 +30,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.control.MultipleCompilationErrorsException;
 import org.codehaus.groovy.control.messages.SyntaxErrorMessage;
-import org.codehaus.groovy.grails.commons.GrailsClassUtils;
+import org.codehaus.groovy.grails.commons.*;
 import org.codehaus.groovy.grails.exceptions.GrailsException;
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
 import org.codehaus.groovy.grails.web.servlet.DefaultGrailsApplicationAttributes;
@@ -136,13 +136,15 @@ public class GrailsWrappedRuntimeException extends GrailsException {
                 if(gspFile == null) {
 
 
-                    if(GrailsClassUtils.isControllerClass(className)) {
+                    GrailsApplication application = ApplicationHolder.getApplication();
+                    // @todo Refactor this to get the urlPrefix from the ArtefactHandler
+                    if(application.isArtefactOfType(ControllerArtefactHandler.TYPE, className)) {
                         urlPrefix += "/controllers/";
                     }
-                    else if(GrailsClassUtils.isTagLibClass(className)) {
+                    else if(application.isArtefactOfType(TagLibArtefactHandler.TYPE, className)) {
                         urlPrefix += "/taglib/";
                     }
-                    else if(GrailsClassUtils.isService(className)) {
+                    else if(application.isArtefactOfType(ServiceArtefactHandler.TYPE, className)) {
                        urlPrefix += "/services/";
                     }
                     url = URL_PREFIX + urlPrefix + fileName;

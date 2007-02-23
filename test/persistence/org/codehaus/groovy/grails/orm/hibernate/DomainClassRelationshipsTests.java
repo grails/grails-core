@@ -4,6 +4,8 @@ import groovy.lang.GroovyObject;
 
 import java.util.Set;
 
+import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
+
 /**
  * Tests that check the relationship management capability of Grails domain classes
  *
@@ -14,9 +16,9 @@ public class DomainClassRelationshipsTests extends AbstractGrailsHibernateTests 
 
     public void testBidirectional() throws Exception {
 
-        GroovyObject author = (GroovyObject)ga.getGrailsDomainClass("Author").newInstance();
+        GroovyObject author = (GroovyObject)ga.getArtefact(DomainClassArtefactHandler.TYPE, "Author").newInstance();
 
-        GroovyObject book1 = (GroovyObject)ga.getGrailsDomainClass("Book").newInstance();
+        GroovyObject book1 = (GroovyObject)ga.getArtefact(DomainClassArtefactHandler.TYPE, "Book").newInstance();
 
         Object result = author.invokeMethod("addBook", new Object[]{book1});
 
@@ -30,8 +32,8 @@ public class DomainClassRelationshipsTests extends AbstractGrailsHibernateTests 
     }
 
     public void testUnidirectional() throws Exception {
-        GroovyObject car = (GroovyObject)ga.getGrailsDomainClass("Car").newInstance();
-        GroovyObject owner = (GroovyObject)ga.getGrailsDomainClass("Owner").newInstance();
+        GroovyObject car = (GroovyObject)ga.getArtefact(DomainClassArtefactHandler.TYPE, "Car").newInstance();
+        GroovyObject owner = (GroovyObject)ga.getArtefact(DomainClassArtefactHandler.TYPE, "Owner").newInstance();
 
         Object result = owner.invokeMethod("addCar", new Object[]{car});
 

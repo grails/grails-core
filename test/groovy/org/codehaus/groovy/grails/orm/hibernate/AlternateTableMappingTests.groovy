@@ -4,7 +4,7 @@ package org.codehaus.groovy.grails.orm.hibernate;
 class AlternateTableMappingTests extends AbstractGrailsHibernateTests {
 
 	void testAlternateTable() {
-		def bookClass = ga.getGrailsDomainClass("Book")
+		def bookClass = ga.getDomainClass("Book")
 		
 		def book = bookClass.newInstance()
 		book.title = "The Stand"

@@ -21,7 +21,7 @@ class TestController {
     '''
     void testReloadController() {
         runTest {
-            def testController = ga.getController("TestController").newInstance()
+            def testController = ga.getControllerClass("TestController").newInstance()
             testController.testMe.call()
 
             assertEquals "foo", testController.response.delegate.contentAsString
@@ -37,7 +37,7 @@ class TestController {
             eventHandler.call(event)
             GrailsMetaClassUtils.copyExpandoMetaClass(testController.getClass(), event.source, true)
 
-            def newController = ga.getController("TestController").newInstance()
+            def newController = ga.getControllerClass("TestController").newInstance()
 
             newController.testMe.call()
 

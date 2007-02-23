@@ -36,10 +36,10 @@ class DefaultGrailsDomainClassTests extends GroovyTestCase {
 		
 		def ga = new DefaultGrailsApplication(gcl.loadedClasses, gcl)
 		
-		def testDomain = ga.getGrailsDomainClass("Test")
+		def testDomain = ga.getDomainClass("Test")
 		assertEquals(GrailsDomainClassProperty.FETCH_EAGER, testDomain.getPropertyByName('others').getFetchMode())
 		
-		def otherDomain = ga.getGrailsDomainClass("Other")
+		def otherDomain = ga.getDomainClass("Other")
 		assertEquals(GrailsDomainClassProperty.FETCH_LAZY, otherDomain.getPropertyByName('anothers').getFetchMode())
 	}
 	
@@ -65,8 +65,8 @@ class DefaultGrailsDomainClassTests extends GroovyTestCase {
 		
 		def ga = new DefaultGrailsApplication(gcl.loadedClasses, gcl)
 		
-		def testDomain = ga.getGrailsDomainClass("Test")
-		def otherDomain = ga.getGrailsDomainClass("Other")
+		def testDomain = ga.getDomainClass("Test")
+		def otherDomain = ga.getDomainClass("Other")
 		
 		def others = testDomain?.getPropertyByName("others")
 		def tests = otherDomain?.getPropertyByName("tests")

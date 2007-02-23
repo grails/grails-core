@@ -110,4 +110,5 @@ public class GrailsTemplateGeneratorsTests extends TestCase {
         File editFile = new File("test/grails-app/views/test/edit.gsp");
         assertTrue(editFile.exists());        
     }
+
 }

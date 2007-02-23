@@ -4,6 +4,7 @@ import groovy.lang.*;
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
+import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
 import org.codehaus.groovy.grails.metaclass.DomainClassMethods;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.DefaultGrailsDomainConfiguration;
 import org.codehaus.groovy.grails.orm.hibernate.exceptions.GrailsQueryException;
@@ -96,8 +97,8 @@ public class PersistentMethodTests extends AbstractDependencyInjectionSpringCont
     protected void initDomainClass(Class groovyClass, String classname) throws IntrospectionException {
         new DomainClassMethods(grailsApplication,groovyClass,sessionFactory,cl);
         GrailsDomainClassValidator validator = new GrailsDomainClassValidator();
-        GrailsDomainClass domainClass =this.grailsApplication.getGrailsDomainClass(classname);
-        validator.setDomainClass(this.grailsApplication.getGrailsDomainClass(classname));
+        GrailsDomainClass domainClass = (GrailsDomainClass) this.grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE, classname);
+        validator.setDomainClass(domainClass);
         domainClass.setValidator(validator);
     }
 
@@ -118,7 +119,8 @@ public class PersistentMethodTests extends AbstractDependencyInjectionSpringCont
         // init spring config
 
 
-        GrailsDomainClass domainClass = this.grailsApplication.getGrailsDomainClass("PersistentMethodTests");
+        GrailsDomainClass domainClass = (GrailsDomainClass) this.grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE,
+            "PersistentMethodTests");
 
         GroovyObject obj = (GroovyObject)domainClass.newInstance();
         obj.setProperty( "id", new Long(1) );
@@ -137,7 +139,8 @@ public class PersistentMethodTests extends AbstractDependencyInjectionSpringCont
         // init spring config
 
 
-        GrailsDomainClass domainClass = this.grailsApplication.getGrailsDomainClass("PersistentMethodTests");
+        GrailsDomainClass domainClass = (GrailsDomainClass) this.grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE,
+            "PersistentMethodTests");
 
         GroovyObject obj = (GroovyObject)domainClass.newInstance();
         obj.setProperty( "id", new Long(1) );
@@ -152,7 +155,8 @@ public class PersistentMethodTests extends AbstractDependencyInjectionSpringCont
     }
     
     public void testValidatePersistentMethodOnDerivedClass() {
-        GrailsDomainClass domainClass = this.grailsApplication.getGrailsDomainClass("PersistentMethodTestsDescendent");
+        GrailsDomainClass domainClass = (GrailsDomainClass) this.grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE,
+            "PersistentMethodTestsDescendent");
 
         GroovyObject obj = (GroovyObject)domainClass.newInstance();
         obj.setProperty( "id", new Long(1) );
@@ -182,7 +186,8 @@ public class PersistentMethodTests extends AbstractDependencyInjectionSpringCont
     }
 
     public void testFindPersistentMethods() {
-        GrailsDomainClass domainClass = this.grailsApplication.getGrailsDomainClass("PersistentMethodTests");
+        GrailsDomainClass domainClass = (GrailsDomainClass) this.grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE,
+            "PersistentMethodTests");
 
         GroovyObject obj = (GroovyObject)domainClass.newInstance();
         obj.setProperty( "id", new Long(1) );
@@ -230,7 +235,8 @@ public class PersistentMethodTests extends AbstractDependencyInjectionSpringCont
     }
     
     public void testFindByPersistentMethods() {
-        GrailsDomainClass domainClass = this.grailsApplication.getGrailsDomainClass("PersistentMethodTests");
+        GrailsDomainClass domainClass = (GrailsDomainClass) this.grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE,
+            "PersistentMethodTests");
 
         GroovyObject obj = (GroovyObject)domainClass.newInstance();
         obj.setProperty( "id", new Long(1) );
@@ -333,7 +339,8 @@ public class PersistentMethodTests extends AbstractDependencyInjectionSpringCont
     }
 
     public void testGetPersistentMethod() {
-        GrailsDomainClass domainClass = this.grailsApplication.getGrailsDomainClass("PersistentMethodTests");
+        GrailsDomainClass domainClass = (GrailsDomainClass) this.grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE,
+            "PersistentMethodTests");
 
         GroovyObject obj = (GroovyObject)domainClass.newInstance();
         obj.setProperty( "id", new Long(1) );
@@ -356,7 +363,8 @@ public class PersistentMethodTests extends AbstractDependencyInjectionSpringCont
     }
 
     public void testDiscardMethod() {
-        GrailsDomainClass domainClass = this.grailsApplication.getGrailsDomainClass("PersistentMethodTests");
+        GrailsDomainClass domainClass = (GrailsDomainClass) this.grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE,
+            "PersistentMethodTests");
 
         GroovyObject obj = (GroovyObject)domainClass.newInstance();
         obj.setProperty( "id", new Long(1) );
@@ -371,7 +379,8 @@ public class PersistentMethodTests extends AbstractDependencyInjectionSpringCont
         
     }
     public void testFindAllPersistentMethod() {
-        GrailsDomainClass domainClass = this.grailsApplication.getGrailsDomainClass("PersistentMethodTests");
+        GrailsDomainClass domainClass = (GrailsDomainClass) this.grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE,
+            "PersistentMethodTests");
 
         GroovyObject obj = (GroovyObject)domainClass.newInstance();
         obj.setProperty( "id", new Long(1) );
@@ -425,7 +434,8 @@ public class PersistentMethodTests extends AbstractDependencyInjectionSpringCont
     }
 
     public void testListPersistentMethods() {
-        GrailsDomainClass domainClass = this.grailsApplication.getGrailsDomainClass("PersistentMethodTests");
+        GrailsDomainClass domainClass = (GrailsDomainClass) this.grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE,
+            "PersistentMethodTests");
 
         GroovyObject obj = (GroovyObject)domainClass.newInstance();
         obj.setProperty( "id", new Long(1) );
@@ -487,7 +497,8 @@ public class PersistentMethodTests extends AbstractDependencyInjectionSpringCont
 
 
     public void testDMLOperation() throws Exception {
-        GrailsDomainClass domainClass = this.grailsApplication.getGrailsDomainClass("PersistentMethodTests");
+        GrailsDomainClass domainClass = (GrailsDomainClass) this.grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE,
+            "PersistentMethodTests");
 
         GroovyObject obj = (GroovyObject)domainClass.newInstance();
         obj.setProperty( "id", new Long(1) );

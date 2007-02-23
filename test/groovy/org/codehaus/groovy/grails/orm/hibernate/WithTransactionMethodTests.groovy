@@ -5,7 +5,7 @@ class WithTransactionMethodTests extends AbstractGrailsHibernateTests {
 
 	void testWithTransactionMethod() {
 		def authors = []
-		def domainClass = ga.getGrailsDomainClass("Author")
+		def domainClass = ga.getDomainClass("Author")
 		authors << domainClass.newInstance()
 		authors << domainClass.newInstance()
 		authors << domainClass.newInstance()

@@ -18,6 +18,8 @@ package org.codehaus.groovy.grails.scaffolding;
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsControllerClass;
+import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
+
 /**
  * A view resolver that uses a GrailsApplication instance to resolve view names from uris
  * 
@@ -33,7 +35,8 @@ public class DefaultGrailsScaffoldViewResolver implements ScaffoldViewResolver {
 	}
 
 	public String resolveViewForUri(String uri) {
-		GrailsControllerClass controllerClass = application.getControllerByURI(uri);
+		GrailsControllerClass controllerClass = (GrailsControllerClass) application.getArtefactForFeature(
+            ControllerArtefactHandler.TYPE, uri);
 		
 		if(controllerClass != null) {
 			return controllerClass.getViewByURI(uri);
@@ -45,7 +48,8 @@ public class DefaultGrailsScaffoldViewResolver implements ScaffoldViewResolver {
 		if(StringUtils.isBlank(action)) {
 			return resolveViewForUri(uri);
 		}
-		GrailsControllerClass controllerClass = application.getControllerByURI(uri);
+        GrailsControllerClass controllerClass = (GrailsControllerClass) application.getArtefactForFeature(
+            ControllerArtefactHandler.TYPE, uri);
 		
 		if(controllerClass != null) {
 			return controllerClass.getViewByName(action);

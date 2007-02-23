@@ -24,8 +24,7 @@ import org.codehaus.groovy.grails.orm.hibernate.validation.*
 import org.springframework.orm.hibernate3.HibernateTransactionManager;
 import org.springmodules.beans.factory.config.MapToPropertiesFactoryBean;
 import org.springframework.orm.hibernate3.support.OpenSessionInViewInterceptor;
-import org.springframework.orm.hibernate3.HibernateAccessor;         
-import org.codehaus.groovy.runtime.InvokerHelper;
+import org.springframework.orm.hibernate3.HibernateAccessor;
 
 
 /**
@@ -135,10 +134,10 @@ class HibernateGrailsPlugin {
 			assert application
 			assert manager
 			
-			if(GCU.isDomainClass(event.source)) { 				
+			if(application.isArtefactOfType(DomainClassArtefactHandler.TYPE, event.source)) { 				
 					// refresh whole application
-					application.refresh()  
-					
+					application.refresh()
+
 					application.domainClasses.each { dc ->
 							registry.removeMetaClass(dc.getClazz())
 					}

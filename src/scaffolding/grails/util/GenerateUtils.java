@@ -21,6 +21,7 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
+import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
 import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator;
 import org.codehaus.groovy.grails.scaffolding.GrailsTemplateGenerator;
 import org.springframework.binding.support.Assert;
@@ -105,9 +106,12 @@ public class GenerateUtils {
      * @return A GrailsDomainClass
      */
     private static GrailsDomainClass findInApplication(GrailsApplication application, String domainClassName) {
-        GrailsDomainClass domainClass = application.getGrailsDomainClass(domainClassName);
+        GrailsDomainClass domainClass = (GrailsDomainClass) application.getArtefact(
+            DomainClassArtefactHandler.TYPE, domainClassName);
         if(domainClass == null) {
-            domainClass = application.getGrailsDomainClass(domainClassName.substring(0,1).toUpperCase() + domainClassName.substring(1));
+            domainClass = (GrailsDomainClass) application.getArtefact(
+                DomainClassArtefactHandler.TYPE,
+                domainClassName.substring(0,1).toUpperCase() + domainClassName.substring(1));
         }
         return domainClass;
     }

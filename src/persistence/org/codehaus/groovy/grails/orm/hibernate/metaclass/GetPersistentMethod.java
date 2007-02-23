@@ -19,6 +19,7 @@ import ognl.DefaultTypeConverter;
 import ognl.Ognl;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
+import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
 import org.hibernate.SessionFactory;
 
 import java.io.Serializable;
@@ -61,7 +62,8 @@ public class GetPersistentMethod extends AbstractStaticPersistentMethod {
         if(arg == null)
             return null;
 
-        GrailsDomainClass domainClass = this.application.getGrailsDomainClass(clazz.getName());
+        GrailsDomainClass domainClass = (GrailsDomainClass) this.application.getArtefact(
+            DomainClassArtefactHandler.TYPE, clazz.getName());
 		if(domainClass != null) {
 			Class identityType = domainClass.getIdentifier().getType();
 			if(!identityType.isAssignableFrom(arg.getClass())) {

@@ -30,6 +30,7 @@ import javax.servlet.http.HttpSession;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsTagLibClass;
 import org.codehaus.groovy.grails.commons.GrailsResourceUtils;
+import org.codehaus.groovy.grails.commons.TagLibArtefactHandler;
 import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods;
 import org.codehaus.groovy.grails.web.metaclass.TagLibDynamicMethods;
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
@@ -167,8 +168,8 @@ public class DefaultGrailsApplicationAttributes implements GrailsApplicationAttr
 			return (GroovyObject)tagCache.get(tagName);
 		}
 		else {
-			GrailsTagLibClass tagLibClass = getGrailsApplication()
-												.getTagLibClassForTag(tagName);
+			GrailsTagLibClass tagLibClass = (GrailsTagLibClass) getGrailsApplication().getArtefactForFeature(
+                TagLibArtefactHandler.TYPE, tagName);
 			if(tagLibClass == null)return null;
 			
 			GroovyObject controller = getController(request);

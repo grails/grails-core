@@ -14,9 +14,7 @@
  */
 package org.codehaus.groovy.grails.scaffolding;
 
-import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.GrailsControllerClass;
-import org.codehaus.groovy.grails.commons.GrailsDomainClass;
+import org.codehaus.groovy.grails.commons.*;
 import org.springframework.context.ApplicationContext;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 
@@ -31,9 +29,9 @@ import org.springframework.beans.factory.NoSuchBeanDefinitionException;
  */
 public class GrailsScaffoldingUtil {
     public static void configureScaffolders(GrailsApplication application, ApplicationContext appContext) {
-        GrailsControllerClass[] controllerClasses = application.getControllers();
+        GrailsClass[] controllerClasses = application.getArtefacts(ControllerArtefactHandler.TYPE);
         for (int i = 0; i < controllerClasses.length; i++) {
-            GrailsControllerClass controllerClass = controllerClasses[i];
+            GrailsControllerClass controllerClass = (GrailsControllerClass) controllerClasses[i];
             if(controllerClass.isScaffolding()) {
                 try {
                     GrailsScaffolder gs = (GrailsScaffolder)appContext.getBean(controllerClass.getFullName() + "Scaffolder");
@@ -41,7 +39,8 @@ public class GrailsScaffoldingUtil {
                         ScaffoldDomain sd = gs.getScaffoldRequestHandler()
                                                 .getScaffoldDomain();
 
-                        GrailsDomainClass dc = application.getGrailsDomainClass(sd.getPersistentClass().getName());
+                        GrailsDomainClass dc = (GrailsDomainClass) application.getArtefact(DomainClassArtefactHandler.TYPE,
+                            sd.getPersistentClass().getName());
                         if(dc != null) {
                             sd.setIdentityPropertyName(dc.getIdentifier().getName());
                             sd.setValidator(dc.getValidator());

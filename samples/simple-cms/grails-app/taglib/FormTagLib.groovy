@@ -330,7 +330,7 @@ class FormTagLib {
                         keyValue = optionKey(el)
                          out << 'value="' << keyValue << '" '
                     }
-                    else if(el !=null && optionKey == 'id' && grailsApplication.getGrailsDomainClass(el.getClass().name)) {
+                    else if(el !=null && optionKey == 'id' && grailsApplication.getDomainClass(el.getClass().name)) {
                         keyValue = el.ident()
                         out << 'value="' << keyValue << '" '
                     }

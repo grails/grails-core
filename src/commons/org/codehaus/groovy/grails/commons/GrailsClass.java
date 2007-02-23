@@ -29,29 +29,30 @@ import groovy.lang.MetaClass;
 public interface GrailsClass {
 	
 	/**
-	 * Gets the initial value of the given property on the class
+	 * <p>Gets the initial value of the given property on the class</p>
 	 * @param name The name of the property
 	 * @return The initial value
 	 */
 	public Object getPropertyValue(String name);
 	
 	/**
-	 * Returns true if the class has the specified property
+	 * <p>Returns true if the class has the specified property</p>
 	 * @param name The name of the property
 	 * @return True if it does
 	 */
 	public boolean hasProperty(String name);
 
     /**
-     * <p>Creates a new instance of this class.
+     * <p>Creates a new instance of this class.</p>
      *
-     * <p>This method can be used as factory method in the Spring application context.
+     * <p>This method can be used as factory method in the Spring application context.</p>
+     * @return a new instance of this class
      */
     public Object newInstance();
 
     /**
      * <p>Returns the logical name of the class in the application without the trailing convention part if applicable
-     * and without the package name.
+     * and without the package name.</p>
      *
      * @return the logical name
      */
@@ -59,21 +60,21 @@ public interface GrailsClass {
 
 
     /**
-     * <p>Returns the short name of the class without package prefix
+     * <p>Returns the short name of the class without package prefix</p>
      *
      * @return The short name
      */
     public String getShortName();
     /**
      * <p>Returns the full name of the class in the application with the the trailing convention part and with
-     * the package name.
+     * the package name.</p>
      *
      * @return the full name
      */
     public String getFullName();
 
     /**
-     * <p>Returns the name of the class as a property name
+     * <p>Returns the name of the class as a property name</p>
      *
      * @return The property name representation
      */
@@ -81,7 +82,7 @@ public interface GrailsClass {
 
 
     /**
-     * <p>Returns the logical name of the class as a property name
+     * <p>Returns the logical name of the class as a property name</p>
      *
      * @return The logical property name
      */
@@ -89,19 +90,19 @@ public interface GrailsClass {
 
     /**
      * <p>Returns the name of the property in natural terms (eg. 'lastName' becomes 'Last Name')
-     * @return The natural property name
+     * @return The natural property name</p>
      */
     public String getNaturalName();
 
     /**
-     * <p>Returns the package name of the class.
+     * <p>Returns the package name of the class.</p>
      *
      * @return the package name
      */
     public String getPackageName();
 
     /**
-     * <p> Returns the actual clazz represented by the GrailsClass
+     * <p> Returns the actual clazz represented by the GrailsClass</p>
      *
      * @return the class
      */

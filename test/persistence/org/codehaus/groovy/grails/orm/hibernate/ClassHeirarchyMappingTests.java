@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
+import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.DefaultGrailsDomainConfiguration;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil;
 import org.hibernate.Session;
@@ -98,10 +99,14 @@ public class ClassHeirarchyMappingTests extends TestCase {
 
 	
 	public void testPolymorphicQuery() throws Exception {
-		GroovyObject car = (GroovyObject)BeanUtils.instantiateClass(grailsApplication.getGrailsDomainClass("Car").getClazz());
-		GroovyObject alpha = (GroovyObject)BeanUtils.instantiateClass(grailsApplication.getGrailsDomainClass("Alpha").getClazz());		
-		GroovyObject fiat = (GroovyObject)BeanUtils.instantiateClass(grailsApplication.getGrailsDomainClass("Fiat").getClazz());
-		GroovyObject ferrari = (GroovyObject)BeanUtils.instantiateClass(grailsApplication.getGrailsDomainClass("Ferrari").getClazz());
+		GroovyObject car = (GroovyObject)BeanUtils.instantiateClass(
+            grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE, "Car").getClazz());
+		GroovyObject alpha = (GroovyObject)BeanUtils.instantiateClass(
+            grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE, "Alpha").getClazz());
+		GroovyObject fiat = (GroovyObject)BeanUtils.instantiateClass(
+            grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE, "Fiat").getClazz());
+		GroovyObject ferrari = (GroovyObject)BeanUtils.instantiateClass(
+            grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE, "Ferrari").getClazz());
 		
 		fiat.setProperty("type", "cheap");
 		alpha.setProperty("type", "luxury");
