@@ -50,7 +50,7 @@ import java.util.regex.Pattern;
  * @author Steven Devijver
  * @author Graeme Rocher
  * @since 0.1
- *        <p/>
+ *
  *        Created: Jul 2, 2005
  */
 public class DefaultGrailsApplication extends GroovyObjectSupport implements GrailsApplication {
@@ -318,7 +318,6 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
         if (StringUtils.isBlank(environment)) {
             environment = GrailsApplication.ENV_PRODUCTION;
             String envPropName = GrailsClassUtils.getClassNameRepresentation(environment) + DataSourceArtefactHandler.TYPE;
-            System.out.println("envPropName = " + envPropName);
             GrailsDataSource devDataSource = (GrailsDataSource) getArtefact(DataSourceArtefactHandler.TYPE, envPropName);
             if (devDataSource == null) {
                 devDataSource = (GrailsDataSource) getArtefact(DataSourceArtefactHandler.TYPE,
@@ -430,8 +429,6 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
     }
 
     public GrailsClass addArtefact(String artefactType, Class artefactClass) {
-        System.out.println("addArtefact: "+artefactType+" - "+artefactClass);
-        
         // @todo should we filter abstracts here?
         if (Modifier.isAbstract(artefactClass.getModifiers())) {
             return null;
@@ -544,16 +541,12 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
      */
     public Object invokeMethod(String methodName, Object args) {
 
-        System.out.println("methodName = " + methodName);
-        System.out.println("args = " + args);
-
         Object[] argsv = (Object[]) args;
 
         Matcher match = GETCLASS_PATTERN.matcher( methodName );
         // look for getXXXXClass(y)
         match.find();
         if (match.matches()) {
-            System.out.println("get<"+match.group(2)+">Class");
             if (argsv.length > 0) {
                 if ((argsv.length != 1) || !(argsv[0] instanceof String)) {
                     throw new IllegalArgumentException("Dynamic method get<Artefact>Class(artefactName) requires a " +
@@ -603,15 +596,12 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
      * @return
      */
     public Object getProperty(String propertyName) {
-        System.out.println("in getprop: "+propertyName);
-
         // look for getXXXXClasses
         final Matcher match = GETCLASSESPROP_PATTERN.matcher( propertyName );
         // find match
         match.find();
         if (match.matches()) {
             String artefactName = GrailsClassUtils.getClassNameRepresentation(match.group(1));
-            System.out.println("matches getclasses: "+match.group(1)+ " / " + artefactName);
             if (artefactHandlersByName.containsKey(artefactName)) {
                 return getArtefacts(artefactName);
             }
