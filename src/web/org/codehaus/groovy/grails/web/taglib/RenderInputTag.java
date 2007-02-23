@@ -94,10 +94,7 @@ public class RenderInputTag extends RequestContextTag {
         Template t = null;
         try {
             String uri = findUriForType(pd.getPropertyType());
-            t = engine.createTemplate(uri,
-                                               servletContext,
-                                               (HttpServletRequest)request,
-                                               (HttpServletResponse)response);
+            t = engine.createTemplate(uri);
             if(t == null)
                 throw new GrailsTagException("Type ["+pd.getPropertyType()+"] is unsupported by tag [scaffold]. No template found.");
 
@@ -113,8 +110,6 @@ public class RenderInputTag extends RequestContextTag {
             Writable  w = t.make(binding);
             w.writeTo(out);
 
-        } catch (ServletException e) {
-            throw new GrailsTagException("Error creating template for type ["+pd.getPropertyType()+"] by tag [scaffold]: " + e.getMessage(),e);
         } catch (IOException e) {
             throw new GrailsTagException("I/O error writing tag ["+getName()+"] to writer: " + e.getMessage(),e);
         }

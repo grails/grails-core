@@ -45,8 +45,11 @@ public class GrailsHttpServletRequest extends HttpServletRequestWrapper implemen
 
     private static final String HTTP_METHOD_POST = "POST";
 	private static final String HTTP_METHOD_GET = "GET";
-	Map controllerParams = Collections.EMPTY_MAP;
+    private static final String DELEGATE = "delegate";
+
+    Map controllerParams = Collections.EMPTY_MAP;
     BeanWrapper requestBean;
+
 
     public GrailsHttpServletRequest(HttpServletRequest delegate) {
         super(delegate);
@@ -97,10 +100,14 @@ public class GrailsHttpServletRequest extends HttpServletRequestWrapper implemen
     }
 
     public Object get(Object key) {
-        if(key instanceof String)     {
-            Object result = getRequest().getAttribute(key.toString());
-            if(result == null && requestBean.isReadableProperty(key.toString()))
-                return requestBean.getPropertyValue(key.toString());
+        if(key != null)     {
+
+            String s = key.toString();
+            Object result = getRequest().getAttribute(s);
+            if(result == null && key.equals(DELEGATE))
+                return getDelegate();
+            if(result == null && requestBean.isReadableProperty(s))
+                return requestBean.getPropertyValue(s);
             else
                 return result;
         }

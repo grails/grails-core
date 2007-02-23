@@ -35,7 +35,6 @@ import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecution
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.servlet.ModelAndView;
 
-import javax.servlet.ServletException;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.Collection;
@@ -215,7 +214,7 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
                 // retrieve gsp engine
                 GroovyPagesTemplateEngine engine = attrs.getPagesTemplateEngine();
                 try {
-                    Template t = engine.createTemplate(templateUri,attrs.getServletContext(),request,response);
+                    Template t = engine.createTemplate(templateUri);
 
                     if(t == null) {
                         throw new ControllerExecutionException("Unable to load template for uri ["+templateUri+"]. Template not found.");
@@ -276,8 +275,6 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
                 }
                 catch(IOException ioex) {
                     throw new ControllerExecutionException("I/O error executing render method for arguments ["+argMap+"]: " + ioex.getMessage(),ioex);
-                } catch (ServletException e) {
-                    throw new ControllerExecutionException("Servlet exception executing render method for arguments ["+argMap+"]: " + e.getMessage(),e);
                 }
             }
             else {

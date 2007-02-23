@@ -18,7 +18,10 @@ import org.codehaus.groovy.grails.commons.spring.GrailsWebApplicationContext;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.mock.web.MockServletContext;
 import org.springframework.web.context.request.RequestContextHolder;
+
+import javax.servlet.ServletContext;
 
 /**
  * Utility methods for clients using the web framework
@@ -30,6 +33,7 @@ import org.springframework.web.context.request.RequestContextHolder;
  *        Time: 6:18:22 PM
  */
 public class GrailsWebUtil {
+    
     public static void bindMockWebRequest(GrailsWebApplicationContext ctx) {
         GrailsWebRequest webRequest = new GrailsWebRequest(
                                                 new MockHttpServletRequest(),
@@ -37,6 +41,16 @@ public class GrailsWebUtil {
                                                 ctx.getServletContext()
                                             );
         RequestContextHolder.setRequestAttributes(webRequest);
+    }
+
+    public static GrailsWebRequest bindMockWebRequest() {
+        GrailsWebRequest webRequest = new GrailsWebRequest(
+                                                new MockHttpServletRequest(),
+                                                new MockHttpServletResponse(),
+                                                new MockServletContext()
+                                            );
+        RequestContextHolder.setRequestAttributes(webRequest);
+        return webRequest;
     }
 
 }

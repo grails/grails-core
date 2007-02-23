@@ -154,7 +154,7 @@ public class GrailsReloadServletFilter extends OncePerRequestFilter {
 
             GroovyPagesTemplateEngine engine = attrs.getPagesTemplateEngine();
 
-            Template t = engine.createTemplate(GrailsApplicationAttributes.PATH_TO_VIEWS+"/error.gsp", getServletContext(), httpServletRequest, httpServletResponse);
+            Template t = engine.createTemplate(GrailsApplicationAttributes.PATH_TO_VIEWS+"/error.gsp");
 
             GrailsWrappedRuntimeException wrapped = new GrailsWrappedRuntimeException(getServletContext(), mce);
             Map model = new HashMap();

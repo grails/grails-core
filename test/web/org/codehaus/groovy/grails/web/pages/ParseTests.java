@@ -86,5 +86,5 @@ public class ParseTests extends TestCase {
             out.close();
             in.close();
         }
-    } // send()
+    } // writeInputStreamToResponse()
 }

@@ -28,6 +28,7 @@ import javax.servlet.ServletContext;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.control.MultipleCompilationErrorsException;
 import org.codehaus.groovy.control.messages.SyntaxErrorMessage;
 import org.codehaus.groovy.grails.commons.*;
@@ -153,21 +154,26 @@ public class GrailsWrappedRuntimeException extends GrailsException {
                     url = gspFile;
                     GrailsApplicationAttributes attrs = new DefaultGrailsApplicationAttributes(servletContext);
                     GroovyPagesTemplateEngine engine = attrs.getPagesTemplateEngine();
-                    int[] lineNumbers = engine.getLineNumbersForPage(servletContext,url);
+                    int[] lineNumbers = engine.calculateLineNumbersForPage(servletContext,url);
                     if(this.lineNumber < lineNumbers.length) {
                         this.lineNumber = lineNumbers[this.lineNumber - 1];
                     }
                 }
 
-                InputStream in = servletContext.getResourceAsStream(url);
-                LOG.debug("Attempting to display code snippet found in url " + url);
-                if(in == null) {
-                    try {
-                        Resource r = resolver.getResource("grails-app" + urlPrefix + fileName);
-                        in = r.getInputStream();
-                    } catch (Throwable e) {
-                        // ignore
+
+                InputStream in = null;
+                if(!StringUtils.isBlank(url)) {
+                    in = servletContext.getResourceAsStream(url);
+                    LOG.debug("Attempting to display code snippet found in url " + url);
+                    if(in == null) {
+                        try {
+                            Resource r = resolver.getResource("grails-app" + urlPrefix + fileName);
+                            in = r.getInputStream();
+                        } catch (Throwable e) {
+                            // ignore
+                        }
                     }
+
                 }
 
                 if(in != null) {

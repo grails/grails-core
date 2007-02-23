@@ -199,14 +199,7 @@ class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants 
         def uri = grailsAttributes.getTemplateUri(attrs.template,request)
         def var = attrs['var']
 
-        def url = servletContext.getResource(uri)
-        if(!url)
-            throwTagError("No template found for name [${attrs.template}] in tag [render]")
-
-        def t = engine.createTemplate(  uri,
-                                        servletContext,
-                                        request,
-                                        response)
+        def t = engine.createTemplate( uri )
 
         if(attrs.model instanceof Map) {
             t.make( attrs.model ).writeTo(out)
@@ -246,14 +239,7 @@ class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants 
 	        def engine = grailsAttributes.getPagesTemplateEngine()
 	        def uri = grailsAttributes.getTemplateUri(attrs.template,request)
 
-	        def url = servletContext.getResource(uri)
-	        if(!url)
-	            throwTagError("No template found for name [${attrs.template}] in tag [include]")
-
-	        def t = engine.createTemplate(  uri,
-	                                        servletContext,
-	                                        request,
-	                                        response)
+	        def t = engine.createTemplate(  uri )
 			
 			t.make().writeTo(out)
 		}
