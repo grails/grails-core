@@ -25,6 +25,7 @@ import org.springframework.orm.hibernate3.HibernateTransactionManager;
 import org.springmodules.beans.factory.config.MapToPropertiesFactoryBean;
 import org.springframework.orm.hibernate3.support.OpenSessionInViewInterceptor;
 import org.springframework.orm.hibernate3.HibernateAccessor;
+import org.codehaus.groovy.runtime.InvokerHelper;
 
 
 /**
