@@ -106,21 +106,22 @@
 		      <pathelement path="${grails.build}/web"/>			      
 		      <pathelement path="${grails.build}/gorm"/>			      						
 		      <pathelement path="${grails.build}/crud"/>			      									
-			</classpath>
-			<classpath location="${grails.test.build}"/>
-			<classpath location="${grails.test.src.web}"/>
-			<classpath location="${grails.test.src.commons}"/>
-			<classpath location="${grails.test.src.persistence}"/>
-			<classpath location="${grails.test.src.scaffolding}"/>
-			<classpath location="${grails.test.src.groovy}"/>			
-
-			<formatter type="xml" />
-			<batchtest todir="${grails.test.reports}" failureproperty="grails.test.failure">
-				<fileset dir="${grails.test.build}" includes="**/${test}Tests.class"
-                         excludes="**/Abstract*, **/ControllerScaffoldingTests.*,
-                         **/GrailsHibernateConfigurationTests*,
-                         **/ClassReloadingTests*"/>
-			</batchtest>
+		</classpath>
+                <classpath location="${grails.test.build}"/>
+                <classpath location="${grails.test.src.web}"/>
+                <classpath location="${grails.test.src.commons}"/>
+                <classpath location="${grails.test.src.persistence}"/>
+                <classpath location="${grails.test.src.scaffolding}"/>
+                <classpath location="${grails.test.src.groovy}"/>
+                <!-- needed to load codecs -->
+                <classpath location="${grails.src.codecs}"/>			
+                <formatter type="xml" />
+                <batchtest todir="${grails.test.reports}" failureproperty="grails.test.failure">
+                        <fileset dir="${grails.test.build}" includes="**/${test}Tests.class"
+                 excludes="**/Abstract*, **/ControllerScaffoldingTests.*,
+                 **/GrailsHibernateConfigurationTests*,
+                 **/ClassReloadingTests*"/>
+                </batchtest>
             <!-- GrailsHibernateConfigurationTests needs it's own VM -->
             <test todir="${grails.test.reports}" name="org.codehaus.groovy.grails.orm.hibernate.GrailsHibernateConfigurationTests" fork="true"/>
             <test todir="${grails.test.reports}" name="org.codehaus.groovy.grails.commons.ClassReloadingTests" fork="true"/>
