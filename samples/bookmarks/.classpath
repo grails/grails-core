@@ -16,7 +16,7 @@
 	<classpathentry kind="var" path="GRAILS_HOME/lib/dom4j-1.6.1.jar"/>
 	<classpathentry kind="var" path="GRAILS_HOME/lib/ehcache-1.1.jar"/>
 	<classpathentry kind="var" path="GRAILS_HOME/lib/ejb3-persistence.jar"/>
-	<classpathentry kind="var" path="GRAILS_HOME/lib/groovy-all-1.0-RC-01-SNAPSHOT.jar"/>
+	<classpathentry kind="var" path="GRAILS_HOME/lib/groovy-all-1.0.1-SNAPSHOT.jar"/>
 	<classpathentry sourcepath="/HIBERNATE_HOME/src" kind="var" path="GRAILS_HOME/lib/hibernate3.jar"/>
 	<classpathentry kind="var" path="GRAILS_HOME/lib/hibernate-annotations.jar"/>
 	<classpathentry kind="var" path="GRAILS_HOME/lib/jasper-compiler.jar"/>

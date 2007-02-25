@@ -35,7 +35,7 @@
 	<classpathentry kind="var" path="GRAILS_HOME/lib/hibernate-annotations.jar"/>
 	<classpathentry kind="var" path="GRAILS_HOME/lib/hibernate3.jar" sourcepath="/HIBERNATE_HOME/src"/>
 	<classpathentry kind="var" path="GRAILS_HOME/lib/groovy-starter.jar"/>
-	<classpathentry kind="var" path="GRAILS_HOME/lib/groovy-all-1.0-RC-01-SNAPSHOT.jar" sourcepath="/GROOVY_HOME/src/main"/>
+	<classpathentry kind="var" path="GRAILS_HOME/lib/groovy-all-1.0.1-SNAPSHOT.jar" sourcepath="/GROOVY_HOME/src/main"/>
 	<classpathentry kind="var" path="GRAILS_HOME/lib/gant-0.2.2-SNAPSHOT.jar"/>
 	<classpathentry kind="var" path="GRAILS_HOME/lib/ejb3-persistence.jar"/>
 	<classpathentry kind="var" path="GRAILS_HOME/lib/ehcache-1.1.jar"/>
