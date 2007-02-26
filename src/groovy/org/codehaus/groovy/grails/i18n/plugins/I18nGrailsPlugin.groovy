@@ -31,7 +31,7 @@ import org.springframework.context.support.ReloadableResourceBundleMessageSource
 class I18nGrailsPlugin {
 	
 	def version = GrailsPluginUtils.getGrailsVersion()
-	def watchedResources = "**/grails-app/i18n/*.properties"
+	def watchedResources = "file:./grails-app/i18n/*.properties"
 	
 	def doWithSpring = {
 		// find i18n resource bundles and resolve basenames
