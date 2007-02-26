@@ -92,7 +92,6 @@ class GroovyPageWritable implements Writable {
             // Set it to TEXT
             response.setContentType(GROOVY_SOURCE_CONTENT_TYPE); // must come before response.getOutputStream()
             writeInputStreamToResponse(metaInfo.getGroovySource(), out);
-            metaInfo.setGroovySource(null);
         } else {
             // Set it to HTML by default
             if(LOG.isDebugEnabled() && !response.isCommitted()) {
@@ -116,8 +115,10 @@ class GroovyPageWritable implements Writable {
      */
     protected void writeInputStreamToResponse(InputStream in, Writer out) throws IOException {
         try {
+            in.reset();
             Reader reader = new InputStreamReader(in);
             char[] buf = new char[8192];
+
             for (;;) {
                 int read = reader.read(buf);
                 if (read <= 0) break;
@@ -135,6 +136,7 @@ class GroovyPageWritable implements Writable {
      * @param response The HttpServletResponse instance
      * @param out The response out
      * @return the Bindings
+     * @throws java.io.IOException Thrown when an IO error occurs creating the binding
      */
     protected Binding formulateBinding(HttpServletRequest request, HttpServletResponse response, Writer out)
             throws IOException {

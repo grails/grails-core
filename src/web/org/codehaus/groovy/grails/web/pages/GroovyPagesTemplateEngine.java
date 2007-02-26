@@ -65,7 +65,6 @@ import grails.util.GrailsUtil;
  */
 public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine implements ApplicationContextAware {
 
-    private static final String GSP_TEMPLATE_RESOURCE = "org.codehaus.groovy.grails.GSP_TEMPLATE_RESOURCE";
 
     private static final Log LOG = LogFactory.getLog(GroovyPagesTemplateEngine.class);
     private static Map pageCache = Collections.synchronizedMap(new HashMap());
@@ -102,7 +101,7 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
         try {
             Resource r = getResourceForUri(url);
             if(r != null) {
-                GroovyPageMetaInfo metaInfo = buildPageMetaInfo(r.getInputStream());
+                GroovyPageMetaInfo metaInfo = buildPageMetaInfo(r.getInputStream(),r);
                 if(metaInfo!= null) {
                     return metaInfo.getLineNumbers();
                 }
@@ -129,8 +128,6 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
             GrailsWebRequest webRequest = getWebRequest();
             throw new GroovyPagesException("No Groovy page found for URI: " + getCurrentRequestUri(webRequest.getCurrentRequest()));
         }
-        //if(!resource.exists()) throw new GroovyPagesException("No Groovy page found for ["+resource.getDescription()+"]");
-
         String name = establishPageName(resource);
         if(pageCache.containsKey(name)) {
             GroovyPageMetaInfo meta = (GroovyPageMetaInfo)pageCache.get(name);
@@ -189,10 +186,29 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
         return createTemplate(uri);        
     }
 
+    /**
+     * Creates a Template for the given file
+     *
+     * @param file The File to use to construct the template with
+     * @return A Groovy Template instance
+     *
+     * @throws CompilationFailedException When an error occured compiling the Template
+     * @throws ClassNotFoundException When a Class cannot be found within the given Template
+     * @throws IOException When a I/O Exception occurs reading the Template
+     */
     public Template createTemplate(File file) throws CompilationFailedException, ClassNotFoundException, IOException {
         return createTemplate(new FileSystemResource(file));
     }
-
+    /**
+     * Creates a Template for the given URL
+     *
+     * @param url The URL to use to construct the template with
+     * @return A Groovy Template instance
+     *
+     * @throws CompilationFailedException When an error occured compiling the Template
+     * @throws ClassNotFoundException When a Class cannot be found within the given Template
+     * @throws IOException When a I/O Exception occurs reading the Template
+     */
     public Template createTemplate(URL url) throws CompilationFailedException, ClassNotFoundException, IOException {
         return createTemplate(new UrlResource(url));
     }
@@ -204,18 +220,54 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
      */
     public Template createTemplate(InputStream inputStream) {
 
-        GroovyPageMetaInfo metaInfo = buildPageMetaInfo(inputStream);
+        GroovyPageMetaInfo metaInfo = buildPageMetaInfo(inputStream, null);
 
         return new GroovyPageTemplate(metaInfo);
     }
-    
 
+    /**
+     * Creates a Template for the given Spring Resource instance
+     *
+     * @param resource The Spring resource instance
+     * @return A Groovy Template
+     */
+    private Template createTemplateWithResource(Resource resource) {
+        try {
+            return createTemplate(resource.getInputStream(), resource);
+        } catch (IOException e) {
+            throw new GroovyPagesException("I/O reading Groovy page ["+resource.getDescription()+"]: " + e.getMessage(),e);
+        }
+    }
 
+    /**
+     * Constructs a Groovy Template from the given InputStream and Spring Resource object
+     *
+     * @param inputStream The InputStream to use
+     * @param resource The Resource to use
+     * @return The Groovy Template
+     */
+    protected Template createTemplate(InputStream inputStream, Resource resource) {
+        GroovyPageMetaInfo metaInfo = buildPageMetaInfo(inputStream, resource);
+        return new GroovyPageTemplate(metaInfo);
+    }
+
+    /**
+     * Establishes whether a Groovy page is reloadable. A GSP is only reloadable in the development environment.
+     *
+     * @param resource The Resource to check.
+     * @param meta The current GroovyPageMetaInfo instance
+     * @return True if it is reloadable
+     */
     private boolean isGroovyPageReloadable(Resource resource, GroovyPageMetaInfo meta) {
         return GrailsUtil.isDevelopmentEnv() && (establishLastModified(resource) > meta.getLastModified());
     }
 
-
+    /**
+     * Attempts to retrieve a reference to a GSP as a Spring Resource instance for the given URI.
+     *
+     * @param uri The URI to check
+     * @return A Resource instance
+     */
     public Resource getResourceForUri(String uri) {
         Resource r;
         r = getResourceWithinContext(uri);
@@ -238,7 +290,15 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
     }
 
 
+    /**
+     * Attempts to establish what the last modified date of the given resource is. If the last modified date cannot
+     * be etablished -1 is returned
+     *
+     * @param resource The Resource to evaluate
+     * @return The last modified date or -1
+     */
     private long establishLastModified(Resource resource) {
+        if(resource ==null)return -1;
         long lastModified;
         try {
             URLConnection urlc = resource.getURL().openConnection();
@@ -254,18 +314,15 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
         return lastModified;
     }
 
-    private Template createTemplateWithResource(Resource resource) {
-        GrailsWebRequest request = getWebRequest();
-        request.setAttribute(GSP_TEMPLATE_RESOURCE, resource, GrailsWebRequest.SCOPE_REQUEST);
-        try {
-            return createTemplate(resource.getInputStream());
-        } catch (IOException e) {
-            throw new GroovyPagesException("I/O reading Groovy page ["+resource.getDescription()+"]: " + e.getMessage(),e);
-        }
-    }
 
-    private GroovyPageMetaInfo buildPageMetaInfo(InputStream inputStream) {
-        Resource res = optainResourceFromRequest();
+    /**
+     * Constructs a GroovyPageMetaInfo instance which holds the script class, modified date and so on
+     *
+     * @param inputStream The InputStream to construct the GroovyPageMetaInfo instance from
+     * @param res The Spring Resource to construct the MetaInfo from
+     * @return The GroovyPageMetaInfo instance
+     */
+    protected GroovyPageMetaInfo buildPageMetaInfo(InputStream inputStream, Resource res ) {
         String name = establishPageName(res);
 
         long lastModified = establishLastModified(res);
@@ -274,7 +331,7 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
         try {
             parse = new Parse(name, inputStream);
         } catch (IOException e) {
-            throw new GroovyPagesException("I/O parsing Groovy page ["+res.getDescription()+"]: " + e.getMessage(),e);
+            throw new GroovyPagesException("I/O parsing Groovy page ["+(res != null ? res.getDescription() : name)+"]: " + e.getMessage(),e);
         }
         InputStream in = parse.parse();
 
@@ -283,22 +340,39 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
         metaInfo.setPageClass( compileGroovyPage(in, name) );
 
         pageCache.put(name, metaInfo);
+
         return metaInfo;
     }
 
+    /**
+     * Attempts to compile the given InputStream into a Groovy script using the given name
+     * @param in The InputStream to read the Groovy code from
+     * @param name The name of the class to use
+     *
+     * @return The compiled java.lang.Class, which is an instance of groovy.lang.Script
+     */
     private Class compileGroovyPage(InputStream in, String name) {
         // Compile the script into an object
         Class scriptClass;
         try {
             scriptClass =
-                this.classLoader.parseClass(in, name.substring(1));
+                this.classLoader.parseClass(in, name);
         } catch (CompilationFailedException e) {
         	LOG.error("Compilation error compiling GSP ["+name+"]:" + e.getMessage(), e);
-            throw new GroovyPagesException("Could not parse script: " + name, e);
+            throw new GroovyPagesException("Could not parse script [" + name + "]: " + e.getMessage(), e);
         }
         return scriptClass;
     }
 
+    /**
+     * Creates a GroovyPageMetaInfo instance from the given Parse object, and initialises it with the the specified
+     * last modifed date and InputStream
+     *
+     * @param parse The Parse object
+     * @param lastModified The last modified date
+     * @param in The InputStream instance
+     * @return A GroovyPageMetaInfo instance
+     */
     private GroovyPageMetaInfo createPageMetaInfo(Parse parse, long lastModified, InputStream in) {
         GroovyPageMetaInfo pageMeta = new GroovyPageMetaInfo();
         pageMeta.setContentType(parse.getContentType());
@@ -312,25 +386,42 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
         return pageMeta;
     }
 
-    private Resource optainResourceFromRequest() {
-        GrailsWebRequest webRequest = getWebRequest();
-        return (Resource)webRequest.getAttribute(GSP_TEMPLATE_RESOURCE, GrailsWebRequest.SCOPE_REQUEST);
-    }
 
     private GrailsWebRequest getWebRequest() {
         return (GrailsWebRequest) RequestContextHolder.currentRequestAttributes();
     }
 
-    private String establishPageName(Resource res) {
+    /**
+     * Establishes the name to use for the given resource
+     *
+     * @param res The Resource to calculate the name for
+     * @return  The name as a String
+     */
+    protected String establishPageName(Resource res) {
+        if(res == null) {
+            return generateTemplateName();
+        }
         String name;
         try {
-            name = res.getFilename();
+            name = res.getURL().getPath();
+            // As the name take the first / off and then replace all characters that aren't
+            // a word character or a digit with an underscore
+            name = name.substring(1).replaceAll("[^\\w\\d]", "_");
+
         } catch (IllegalStateException e) {
+            name = generateTemplateName();
+        }
+        catch (IOException ioex) {
             name = generateTemplateName();
         }
         return name;
     }
 
+    /**
+     * Generates the template name to use if it cannot be established from the Resource
+     *
+     * @return The template name
+     */
     private String generateTemplateName() {
         return "gsp_script_"+ ++scriptNameCount;
     }

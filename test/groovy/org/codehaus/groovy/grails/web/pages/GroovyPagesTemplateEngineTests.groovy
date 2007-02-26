@@ -10,6 +10,42 @@ import grails.util.*
 
 class GroovyPagesTemplateEngineTests extends GroovyTestCase {
 
+    void testShowSourceParameter() {
+        try {
+            def webRequest = GrailsWebUtil.bindMockWebRequest()
+            def request = webRequest.request.delegate
+            request.addParameter("showSource", "true")
+
+            System.setProperty("grails.env", "development")
+            assert grails.util.GrailsUtil.isDevelopmentEnv()                                        
+
+            def gpte = new GroovyPagesTemplateEngine(new MockServletContext())
+
+            def t = gpte.createTemplate("<%='hello'%>", "hello_test")
+            def w = t.make()
+
+            def sw = new StringWriter()
+            def pw = new PrintWriter(sw)
+
+            w.writeTo(pw)
+
+            assertTrue(sw.toString().indexOf("out.print('hello')") > -1)
+
+        }
+        finally {
+            System.setProperty("grails.env", "")
+        }
+    }
+
+    void testEstablishNameForResource() {
+        def res = new UrlResource("http://grails.org/some.path/foo.gsp")
+
+        def gpte = new GroovyPagesTemplateEngine(new MockServletContext())
+
+        assertEquals "some_path_foo_gsp", gpte.establishPageName(res)                
+    }
+
+
     void testCreateTemplateFromCurrentRequest2() {
         def webRequest = GrailsWebUtil.bindMockWebRequest()
 
