@@ -15,7 +15,7 @@
  */ 
 package org.codehaus.groovy.grails.orm.hibernate.plugins;
                                               
-import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
+import org.codehaus.groovy.grails.commons.*
 import org.codehaus.groovy.grails.validation.*
 import org.codehaus.groovy.grails.plugins.support.GrailsPluginUtils
 import org.codehaus.groovy.grails.orm.hibernate.ConfigurableLocalSessionFactoryBean;
@@ -26,6 +26,7 @@ import org.springmodules.beans.factory.config.MapToPropertiesFactoryBean;
 import org.springframework.orm.hibernate3.support.OpenSessionInViewInterceptor;
 import org.springframework.orm.hibernate3.HibernateAccessor;
 import org.codehaus.groovy.runtime.InvokerHelper;
+
 
 
 /**
@@ -126,9 +127,7 @@ class HibernateGrailsPlugin {
 			def configurator = event.ctx.grailsConfigurator
  			def application = event.application
    		    def manager = event.manager
-			MetaClassRegistry registry = InvokerHelper
-											.getInstance()
-											.getMetaRegistry();
+			MetaClassRegistry registry = GrailsMetaClassUtils.registry
 
 
 			assert configurator
