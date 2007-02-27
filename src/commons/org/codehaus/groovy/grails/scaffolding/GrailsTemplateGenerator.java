@@ -17,30 +17,55 @@ package org.codehaus.groovy.grails.scaffolding;
 
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 
+import java.io.Writer;
+
 /**
  * An interface that defines methods for generating Grails artifacts from a domain class
  *
  * @author Graeme Rocher
- * @since 09-Feb-2006
+ * @since 0.1
+ *
+ * 09-Feb-2006
  */
 public interface GrailsTemplateGenerator {
 
      /**
      * Generates the necessary views for the supplied domain class
-     * @param domainClass
+     * @param domainClass The DomainClass to generate views for
+      * @param destDir The destination directory to generate views to
      */
     void generateViews(GrailsDomainClass domainClass, String destDir);
 
     /**
      * Generates a controller for the supplied domain class
-     * @param domainClass
+     * @param domainClass The DomainClass to generate views for
+     * @param destDir The destination directory to generate views to
      */
     void generateController(GrailsDomainClass domainClass, String destDir);
 
     /**
      * Whether the generator should overwrite existing files (defaults to false)
      *
-     * @param shouldOverwrite
+     * @param shouldOverwrite Whether views should be overwritten when generating
      */
     void setOverwrite(boolean shouldOverwrite);
+
+    /**
+     * Generates a view for the specified domain class and view name writing the result to the specified
+     * java.io.Writer instance
+     *
+     * @param viewName The name of the view
+     * @param out The writer to write to
+     * @param domainClass The domain class to generate views for
+     */
+    void generateView(GrailsDomainClass domainClass, String viewName, Writer out);
+
+    /**
+     * Generates a controller for the specified domain class, writing the result to the specified
+     * java.io.Writer instance
+     *
+     * @param domainClass The domain class to generate a controller for
+     * @param out The Writer to write to
+     */
+    void generateController(GrailsDomainClass domainClass, Writer out);
 }

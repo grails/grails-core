@@ -77,7 +77,7 @@ public class GroovyPagesServlet extends HttpServlet  {
      * The size of the buffer used when formulating the response
      */
     private static final int BUFFER_SIZE = 8192;
-    private static final String ERRORS_VIEW = GrailsApplicationAttributes.PATH_TO_VIEWS+"/error"+GrailsApplicationAttributes.GSP_FILE_EXTENSION;
+    private static final String ERRORS_VIEW = GrailsApplicationAttributes.PATH_TO_VIEWS+"/error"+GroovyPage.EXTENSION;
     public static final String EXCEPTION_MODEL_KEY = "exception";
 
 

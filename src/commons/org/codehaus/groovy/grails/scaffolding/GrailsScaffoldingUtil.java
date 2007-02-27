@@ -19,7 +19,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 
 /**
- * Class description here.
+ * Contains utility methods for configuration scaffolding
  *
  * @author Graeme Rocher
  * @since 0.4
@@ -28,6 +28,14 @@ import org.springframework.beans.factory.NoSuchBeanDefinitionException;
  *        Time: 6:31:47 PM
  */
 public class GrailsScaffoldingUtil {
+
+    /**
+     * Configures all the scaffolders registered within the ApplicationContext. Associating the name of the
+     * domain class identity property with the scaffold domain and setting a reference to the Validator
+     *
+     * @param application The GrailsApplication instance
+     * @param appContext The ApplicationContext
+     */
     public static void configureScaffolders(GrailsApplication application, ApplicationContext appContext) {
         GrailsClass[] controllerClasses = application.getArtefacts(ControllerArtefactHandler.TYPE);
         for (int i = 0; i < controllerClasses.length; i++) {

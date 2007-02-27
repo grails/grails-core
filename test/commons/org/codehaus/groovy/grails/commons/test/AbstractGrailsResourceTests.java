@@ -141,7 +141,6 @@ public abstract class AbstractGrailsResourceTests extends TestCase {
         
         
         HttpServletResponse response = new MockHttpServletResponse();
-        new ControllerDynamicMethods(mockController,helper,request,response);
     	
         mockController.setProperty("controllerUri", "/"+controllerClass.getLogicalPropertyName());
         return mockController;

@@ -32,77 +32,52 @@ class ScaffoldingGrailsPlugin {
 	def version = GrailsPluginUtils.getGrailsVersion()
 	def dependsOn = [hibernate:version, controllers:version]
 	def observe = ['hibernate']
-	def copyScript 
-	def templateGenerator
 	
-	ScaffoldingGrailsPlugin() {
-        copyScript = new GrailsResourceCopier()   
-		templateGenerator = new DefaultGrailsTemplateGenerator()
-		templateGenerator.overwrite = true
-	}
-	                 
 	def doWithSpring = {
 		application.controllerClasses.each { controller ->
 			log.debug("Checking controller ${controller.name} for scaffolding settings")
-			
-			def scaffoldClass = controller.scaffoldedClass
-			if(!scaffoldClass) {
-				scaffoldClass = application.getArtefact(DomainClassArtefactHandler.TYPE, controller.name)?.clazz
-			}
-			
-			if(scaffoldClass) {
-				log.debug("Configuring scaffolding for class [$scaffoldClass]")
-				// create the scaffold domain which is used to interact with persistence
-				"${scaffoldClass.name}Domain"(	GrailsScaffoldDomain, 
-												scaffoldClass.name,
-												sessionFactory)
-												
-				// setup the default view resolver that resolves views from a Grails app
-				scaffoldViewResolver(DefaultGrailsScaffoldViewResolver, ref("grailsApplication", true))
-				// setup the default response handler that simply delegates to a view
-				defaultScaffoldResponseHandler(ViewDelegatingScaffoldResponseHandler) { 
-					scaffoldViewResolver = scaffoldViewResolver 
+			  
+			if(controller.isScaffolding()) {
+				def scaffoldClass = controller.scaffoldedClass
+				if(!scaffoldClass) {
+					scaffoldClass = application.getArtefact(DomainClassArtefactHandler.TYPE, controller.name)?.clazz
 				}
-				// setup a response handler factory which can be used to output different 
-				// responses based on the model returned by the scaffold domain
-				
-				responseHandlerFactory(	DefaultGrailsResponseHandlerFactory,
-										ref("grailsApplication",true),
-										defaultScaffoldResponseHandler )										
-					
-				log.debug "Registering new scaffolder [${controller.fullName}Scaffolder]"
-				"${controller.fullName}Scaffolder" (DefaultGrailsScaffolder) {
-					scaffoldRequestHandler = { DefaultScaffoldRequestHandler dsrh ->
-						scaffoldDomain = ref("${scaffoldClass.name}Domain")
+
+				if(scaffoldClass) {
+					log.debug("Configuring scaffolding for class [$scaffoldClass]")
+					// create the scaffold domain which is used to interact with persistence
+					"${scaffoldClass.name}Domain"(	GrailsScaffoldDomain, 
+													scaffoldClass.name,
+													sessionFactory)
+
+					// setup the default response handler that simply delegates to a view
+					"${scaffoldClass.name}ResponseHandler"(TemplateGeneratingResponseHandler) { 
+						templateGenerator = {DefaultGrailsTemplateGenerator bean->}
+						templateEngine = groovyPagesTemplateEngine
+						viewResolver = jspViewResolver
+						grailsApplication = ref("grailsApplication", true)
+						scaffoldedClass = scaffoldClass
 					}
-					scaffoldResponseHandlerFactory = responseHandlerFactory
+					// setup a response handler factory which can be used to output different 
+					// responses based on the model returned by the scaffold domain
+
+					"${scaffoldClass.name}ResponseHandlerFactory"(	DefaultGrailsResponseHandlerFactory,
+											ref("grailsApplication",true),
+											ref("${scaffoldClass.name}ResponseHandler") )										
+
+					log.debug "Registering new scaffolder [${controller.fullName}Scaffolder]"
+					"${controller.fullName}Scaffolder" (DefaultGrailsScaffolder) {
+						scaffoldRequestHandler = { DefaultScaffoldRequestHandler dsrh ->
+							scaffoldDomain = ref("${scaffoldClass.name}Domain")
+						}
+						scaffoldResponseHandlerFactory = ref( "${scaffoldClass.name}ResponseHandlerFactory")
+					}
 				}
+				
 			}
 		}
 	}
 	    
-	/**
-	 * Performs initial generation of views at runtime
-	 */
-	def doWithApplicationContext = { ctx ->
-		
-		application.controllerClasses.each { controller ->
-			if(controller.scaffolding) {
-			     def clazz = controller.scaffoldedClass
-			 	 def domainClass
-			     if(clazz) domainClass = application.getDomainClass(clazz.name)
-			     else {
-				  	domainClass = application.getDomainClass(controller.name)
-				 } 
-				
-				 if(domainClass) {
-				     templateGenerator.generateViews(domainClass, ctx.servletContext.getRealPath("/WEB-INF"))
-				 }
-			}
-		} 
-		// overwrite with user defined views
-		copyScript?.copyViews(true)
-	 }
 	/**
 	 * Handles registration of dynamic scaffolded methods
 	 */
@@ -115,10 +90,7 @@ class ScaffoldingGrailsPlugin {
 	def onChange = { event ->		
 	    if(event.source) {
 			def domainClass = application.getDomainClass(event.source.name)
-			def path = event.ctx?.servletContext?.getRealPath("/WEB-INF")
-			if(domainClass && path) {
-				 templateGenerator.generateViews(domainClass, path)				
-			}                                        
+			
 			registerScaffoldedActions(application, event.ctx)   
              // configure scaffolders
 	        GrailsScaffoldingUtil.configureScaffolders(application, event.ctx);			

@@ -23,7 +23,6 @@ import javax.servlet.http.HttpServletResponse;
  */
 public interface GrailsApplicationAttributes extends ApplicationAttributes {
 
-	String GSP_FILE_EXTENSION = ".gsp";
 	String PATH_TO_VIEWS = "/WEB-INF/grails-app/views";
     String GSP_TEMPLATE_ENGINE = "org.codehaus.groovy.grails.GSP_TEMPLATE_ENGINE";
     String FLASH_SCOPE = "org.codehaus.groovy.grails.FLASH_SCOPE";
@@ -35,6 +34,7 @@ public interface GrailsApplicationAttributes extends ApplicationAttributes {
     String TAG_CACHE = "org.codehaus.groovy.grails.TAG_CACHE";
     String ID_PARAM = "id";
     String GSP_TO_RENDER = "org.codehaus.groovy.grails.GSP_TO_RENDER";
+
 
 
     /**
@@ -80,13 +80,6 @@ public interface GrailsApplicationAttributes extends ApplicationAttributes {
      */
     FlashScope getFlashScope(ServletRequest request);
     
-    /**
-     * Returns the params object instance for the request
-     * 
-     * @param request The request
-     * @return The params object
-     */
-    GrailsParameterMap getParamsMap(ServletRequest request);
     /**
      *
      * @param templateName

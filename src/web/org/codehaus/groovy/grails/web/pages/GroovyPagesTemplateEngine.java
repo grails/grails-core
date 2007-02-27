@@ -39,10 +39,8 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.support.ServletContextResourceLoader;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.UrlResource;
-import org.springframework.core.io.FileSystemResource;
-import org.springframework.core.io.ByteArrayResource;
+import org.springframework.web.context.ServletContextAware;
+import org.springframework.core.io.*;
 import org.springframework.beans.BeansException;
 import grails.util.GrailsUtil;
 
@@ -63,16 +61,21 @@ import grails.util.GrailsUtil;
  * 
  * Created: 12-Jan-2006
  */
-public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine implements ApplicationContextAware {
+public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine implements ApplicationContextAware, ServletContextAware {
 
 
     private static final Log LOG = LogFactory.getLog(GroovyPagesTemplateEngine.class);
     private static Map pageCache = Collections.synchronizedMap(new HashMap());
     private GroovyClassLoader classLoader = new GroovyClassLoader();
     private int scriptNameCount;
-    private ApplicationContext applicationContext;
-    private ServletContextResourceLoader resourceLoader;
+    private ResourceLoader resourceLoader;
+    
+    public static final String BEAN_ID = "groovyPagesTemplateEngine";
+    public static final String RESOURCE_LOADER_BEAN_ID = "groovyPagesResourceLoader";
 
+
+    public GroovyPagesTemplateEngine() {
+    }
 
     public GroovyPagesTemplateEngine(ServletContext servletContext) {
         if(servletContext == null) throw new IllegalArgumentException("Argument [servletContext] cannot be null");
@@ -87,6 +90,14 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
         this.classLoader = classLoader;
     }
 
+    /**
+     * Sets a custom ResourceLoader that will be used to load GSPs for URIs
+     * 
+     * @param resourceLoader The ResourceLoader instance
+     */
+    public void setResourceLoader(ResourceLoader resourceLoader) {
+        this.resourceLoader = resourceLoader;
+    }
 
     /**
      * Retrieves a line number matrix for the specified page that can be used
@@ -101,7 +112,7 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
         try {
             Resource r = getResourceForUri(url);
             if(r != null) {
-                GroovyPageMetaInfo metaInfo = buildPageMetaInfo(r.getInputStream(),r);
+                GroovyPageMetaInfo metaInfo = buildPageMetaInfo(r.getInputStream(),r, null);
                 if(metaInfo!= null) {
                     return metaInfo.getLineNumbers();
                 }
@@ -128,7 +139,7 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
             GrailsWebRequest webRequest = getWebRequest();
             throw new GroovyPagesException("No Groovy page found for URI: " + getCurrentRequestUri(webRequest.getCurrentRequest()));
         }
-        String name = establishPageName(resource);
+        String name = establishPageName(resource, null);
         if(pageCache.containsKey(name)) {
             GroovyPageMetaInfo meta = (GroovyPageMetaInfo)pageCache.get(name);
 
@@ -164,14 +175,20 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
      *
      * @return The Template instance
      * @throws CompilationFailedException
+     * @throws java.io.IOException Thrown if an IO exception occurs creating the Template
 
      */
-    public Template createTemplate(String txt, String pageName)  {
+    public Template createTemplate(String txt, String pageName) throws IOException {
         if(StringUtils.isBlank(txt)) throw new IllegalArgumentException("Argument [txt] cannot be null or blank");
         if(StringUtils.isBlank(pageName)) throw new IllegalArgumentException("Argument [pageName] cannot be null or blank");
         
-        return createTemplate(new ByteArrayResource(txt.getBytes(), pageName));
+        return createTemplate(new ByteArrayResource(txt.getBytes(), pageName), pageName);
     }
+
+    private Template createTemplate(Resource resource, String pageName) throws IOException {
+        return createTemplate(resource.getInputStream(), resource, pageName);
+    }
+
     /**
      * Creates a Template for the currently executing Request
      *
@@ -220,7 +237,7 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
      */
     public Template createTemplate(InputStream inputStream) {
 
-        GroovyPageMetaInfo metaInfo = buildPageMetaInfo(inputStream, null);
+        GroovyPageMetaInfo metaInfo = buildPageMetaInfo(inputStream, null, null);
 
         return new GroovyPageTemplate(metaInfo);
     }
@@ -233,7 +250,7 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
      */
     private Template createTemplateWithResource(Resource resource) {
         try {
-            return createTemplate(resource.getInputStream(), resource);
+            return createTemplate(resource.getInputStream(), resource, null);
         } catch (IOException e) {
             throw new GroovyPagesException("I/O reading Groovy page ["+resource.getDescription()+"]: " + e.getMessage(),e);
         }
@@ -244,10 +261,11 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
      *
      * @param inputStream The InputStream to use
      * @param resource The Resource to use
+     * @param pageName The name of the page
      * @return The Groovy Template
      */
-    protected Template createTemplate(InputStream inputStream, Resource resource) {
-        GroovyPageMetaInfo metaInfo = buildPageMetaInfo(inputStream, resource);
+    protected Template createTemplate(InputStream inputStream, Resource resource, String pageName) {
+        GroovyPageMetaInfo metaInfo = buildPageMetaInfo(inputStream, resource, pageName);
         return new GroovyPageTemplate(metaInfo);
     }
 
@@ -279,14 +297,9 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
     }
 
     private Resource getResourceWithinContext(String uri) {
-        Resource r;
-        if(this.applicationContext != null) {
-            r = this.applicationContext.getResource(uri);
-        }
-        else {
-            r = resourceLoader.getResource(uri);
-        }
-        return r;
+        if(resourceLoader == null) throw new IllegalStateException("TemplateEngine not initialised correctly, no [resourceLoader] specified!");
+        
+        return resourceLoader.getResource(uri);
     }
 
 
@@ -320,10 +333,11 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
      *
      * @param inputStream The InputStream to construct the GroovyPageMetaInfo instance from
      * @param res The Spring Resource to construct the MetaInfo from
+     * @param pageName The name of the page (can be null, in which case method responsible for calculating appropriate alternative)
      * @return The GroovyPageMetaInfo instance
      */
-    protected GroovyPageMetaInfo buildPageMetaInfo(InputStream inputStream, Resource res ) {
-        String name = establishPageName(res);
+    protected GroovyPageMetaInfo buildPageMetaInfo(InputStream inputStream, Resource res, String pageName) {
+        String name = establishPageName(res, pageName);
 
         long lastModified = establishLastModified(res);
 
@@ -395,15 +409,17 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
      * Establishes the name to use for the given resource
      *
      * @param res The Resource to calculate the name for
+     * @param pageName The name of the page, can be null, in which case method responsible for calculation
+     * 
      * @return  The name as a String
      */
-    protected String establishPageName(Resource res) {
+    protected String establishPageName(Resource res, String pageName) {
         if(res == null) {
             return generateTemplateName();
         }
         String name;
         try {
-            name = res.getURL().getPath();
+            name = pageName != null ? pageName : res.getURL().getPath();
             // As the name take the first / off and then replace all characters that aren't
             // a word character or a digit with an underscore
             name = name.substring(1).replaceAll("[^\\w\\d]", "_");
@@ -428,7 +444,6 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
 
 
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        this.applicationContext = applicationContext;
     }
 
     /**
@@ -471,8 +486,20 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
             buf.append('/').append(token);
 
         }
-        buf.append(GrailsApplicationAttributes.GSP_FILE_EXTENSION);
+        if(!relativeUri.endsWith(GroovyPage.EXTENSION))
+            buf.append(GroovyPage.EXTENSION);
         return buf.toString();
     }
 
+    public void setServletContext(ServletContext servletContext) {
+        if(this.resourceLoader == null)
+            this.resourceLoader = new ServletContextResourceLoader(servletContext);
+    }
+
+    /**
+     * Clears the page cache. Views will be re-compiled.
+     */
+    public void clearPageCache() {
+        pageCache.clear();
+    }
 }

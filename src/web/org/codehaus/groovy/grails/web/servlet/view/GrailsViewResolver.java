@@ -18,9 +18,16 @@ import org.springframework.web.servlet.View;
 import org.springframework.web.servlet.view.AbstractUrlBasedView;
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
 import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.support.ServletContextResourceLoader;
 import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
+import org.springframework.core.io.DefaultResourceLoader;
+import org.springframework.context.ResourceLoaderAware;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.ApplicationContext;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.servlet.GrailsHttpServletRequest;
+import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsResourceUtils;
 import org.apache.commons.logging.Log;
@@ -40,12 +47,18 @@ import groovy.lang.GroovyObject;
  * one to delegate to.
  *
  * @author Graeme Rocher
- * @since 11-Jan-2006
+ * @since 0.1
+ *
+ * Created: 11-Jan-2006
  */
-public class GrailsViewResolver extends InternalResourceViewResolver {
+public class GrailsViewResolver extends InternalResourceViewResolver implements ResourceLoaderAware, ApplicationContextAware {
     private String localPrefix;
     private static final Log LOG = LogFactory.getLog(GrailsViewResolver.class);
     private static final String GSP_SUFFIX = ".gsp";
+    private ResourceLoader resourceLoader;
+    private GroovyPagesTemplateEngine templateEngine;
+    
+    private static final String GROOVY_PAGE_RESOURCE_LOADER = "groovyPageResourceLoader";
 
 
     public GrailsViewResolver() {
@@ -61,12 +74,21 @@ public class GrailsViewResolver extends InternalResourceViewResolver {
         super.setSuffix(suffix);
     }
 
+    public void setResourceLoader(ResourceLoader resourceLoader) {
+         this.resourceLoader = resourceLoader;
+    }
+
+
+    public void setTemplateEngine(GroovyPagesTemplateEngine templateEngine) {
+        this.templateEngine = templateEngine;
+    }
+
     protected View loadView(String viewName, Locale locale) throws Exception {
+        if(this.templateEngine == null) throw new IllegalStateException("Property [templateEngine] cannot be null");
+        
+        ResourceLoader resourceLoader = establishResourceLoader();
 
-        AbstractUrlBasedView view = buildView(viewName);
 
-        ServletContext context = getServletContext();
-        URL res = context.getResource(view.getUrl());
         // try GSP if res is null
 
         GrailsWebRequest webRequest = (GrailsWebRequest)RequestContextHolder.currentRequestAttributes();
@@ -81,9 +103,37 @@ public class GrailsViewResolver extends InternalResourceViewResolver {
                                             .getGrailsApplication();
 
 
-        String gspView;
-        String pluginContextPath = "";
-        // try to resolve the view relative to the controller first, this allows us to support
+        String gspView = resolveViewForController(controller, application, viewName, resourceLoader);
+        Resource res = resourceLoader.getResource(gspView);
+        
+        if(res.exists()) {
+            if(LOG.isDebugEnabled()) {
+                LOG.debug("Resolved GSP view at URI ["+gspView+"]");
+            }
+            GroovyPageView gspSpringView = new GroovyPageView();
+            gspSpringView.setUrl(gspView);
+            gspSpringView.setTemplateEngine(templateEngine);
+            return gspSpringView;
+        }
+        else {
+            AbstractUrlBasedView view = buildView(viewName);
+            view.setApplicationContext(getApplicationContext());
+            view.afterPropertiesSet();
+            return view;
+        }
+    }
+
+    /**
+     * Attempst to resolve a view relative to a controller
+     *
+     * @param controller The controller to resolve the view relative to
+     * @param application The GrailsApplication instance
+     * @param viewName The views name
+     * @param resourceLoader The ResourceLoader to use
+     * @return The URI of the view
+     */
+    protected String resolveViewForController(GroovyObject controller, GrailsApplication application, String viewName, ResourceLoader resourceLoader) {
+        String gspView;// try to resolve the view relative to the controller first, this allows us to support
         // views provided by plugins
         if(controller != null && application != null) {
             Resource controllerResource = application.getResourceForClass(controller.getClass());
@@ -91,25 +141,27 @@ public class GrailsViewResolver extends InternalResourceViewResolver {
                 Resource viewsDir = GrailsResourceUtils.getViewsDir(controllerResource);
                 String pathToView = GrailsResourceUtils.getRelativeInsideWebInf(viewsDir);
                 gspView = pathToView + viewName + GSP_SUFFIX;
-            	
+
             }
             else {
-                gspView = localPrefix + viewName + GSP_SUFFIX;            	
+                gspView = localPrefix + viewName + GSP_SUFFIX;
             }
         }
         else {
             gspView = localPrefix + viewName + GSP_SUFFIX;
         }
         if(LOG.isDebugEnabled()) {
-            LOG.debug("Attempting to resolve view for URI ["+gspView+"]");
+            LOG.debug("Attempting to resolve view for URI ["+gspView+"] using ResourceLoader ["+resourceLoader.getClass()+"]");
         }
-        res = context.getResource(gspView);
-        if(res != null) {
-            view.setUrl(gspView);
-        }
-
-        view.setApplicationContext(getApplicationContext());
-        view.afterPropertiesSet();
-        return view;
+        return gspView;
     }
+
+    private ResourceLoader establishResourceLoader() {
+        ApplicationContext ctx = getApplicationContext();
+        if(ctx.containsBean(GROOVY_PAGE_RESOURCE_LOADER) && GrailsUtil.isDevelopmentEnv()) {
+            return (ResourceLoader)ctx.getBean(GROOVY_PAGE_RESOURCE_LOADER);
+        }
+        return this.resourceLoader;
+    }
+
 }

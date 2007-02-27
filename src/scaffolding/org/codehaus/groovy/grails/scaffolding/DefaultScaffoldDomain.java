@@ -41,10 +41,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 /**
- * The default implementation of a Scaffolding application that uses Hibernate as the persistence mechanism
+ * The default implementation of a Scaffolding application that uses Hibernate as the persistence mechanism.
+ * Provides simple CRUD facilities onto a Hibernate domain model.
+ *
  * 
  * @author Graeme Rocher
- * @since 30 Nov 2005
+ * @since 0.1
+ *
+ * Created 30 Nov 2005
  */
 public class DefaultScaffoldDomain implements ScaffoldDomain {
 
@@ -52,9 +56,8 @@ public class DefaultScaffoldDomain implements ScaffoldDomain {
 	private static final String LIST_SUFFIX = "List";
 	private Class persistentClass;
 	private HibernateTemplate template;
-	private SessionFactory sessionFactory;
-	
-	private Map context = Ognl.createDefaultContext(this);
+
+    private Map context = Ognl.createDefaultContext(this);
 	private DefaultTypeConverter converter = new DefaultTypeConverter();
 	private BeanWrapper bean;
 	private Class identityClass;
@@ -87,8 +90,7 @@ public class DefaultScaffoldDomain implements ScaffoldDomain {
 	 * @param sessionFactory The sessionFactory to set.
 	 */
 	protected void setSessionFactory(SessionFactory sessionFactory) {
-		this.sessionFactory = sessionFactory;
-		this.template = new HibernateTemplate(this.sessionFactory);
+        this.template = new HibernateTemplate(sessionFactory);
 		this.template.setFlushMode(HibernateTemplate.FLUSH_AUTO);
 	}
 

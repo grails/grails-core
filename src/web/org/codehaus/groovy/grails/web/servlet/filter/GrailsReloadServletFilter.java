@@ -74,12 +74,6 @@ public class GrailsReloadServletFilter extends OncePerRequestFilter {
     public GrailsReloadServletFilter() {
     }
 
-    class ResourceMeta {
-        long lastModified;
-        String className;
-        Class clazz;
-        URL url;
-    }
 
     protected void doFilterInternal(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, FilterChain filterChain) throws ServletException, IOException {
       GrailsApplicationAttributes attrs = new DefaultGrailsApplicationAttributes(getServletContext());
@@ -111,7 +105,6 @@ public class GrailsReloadServletFilter extends OncePerRequestFilter {
           try {
               groovyClass = gcl.parseClass(gcl.getResource("org/codehaus/groovy/grails/web/servlet/filter/GrailsResourceCopier.groovy").openStream());
               copyScript = (ResourceCopier)groovyClass.newInstance();
-              copyScript.copyViews(true);
           } catch (IllegalAccessException e) {
               LOG.error("Illegal access creating resource copier. Save/reload disabled: " + e.getMessage(), e);
           } catch (InstantiationException e) {
@@ -126,7 +119,6 @@ public class GrailsReloadServletFilter extends OncePerRequestFilter {
 	      LOG.debug("Running copy script...");
 	}	
         if(copyScript != null) {
-            copyScript.copyViews();
             copyScript.copyResourceBundles();
         } 
 

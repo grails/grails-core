@@ -70,10 +70,10 @@ public abstract class GroovyPage extends Script {
     public static final String PARAMS = "params";
     public static final String FLASH = "flash";
     public static final String PLUGIN_CONTEXT_PATH = "pluginContextPath";
+    public static final String EXTENSION = ".gsp";
 
     private GrailsApplication application;
     private GrailsApplicationAttributes grailsAttributes;
-
 
     /**
      * Convert from HTML to Unicode text.  This function converts many of the encoded HTML

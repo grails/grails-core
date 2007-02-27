@@ -33,10 +33,22 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 /**
- * The default implementation of scaffolding for Grails domain class and controller
+ * The default implementation of scaffolding for Grails domain class and controller. Implements the
+ * GrailsScaffolder interface.
+ *
+ * Requires a ScaffoldRequestHandler and ScaffoldResponseHandlerFactory. The ScaffoldRequestHandler is
+ * responsible for handling requests to CRUD operations, whilst the ScaffoldResponseHandlerFactory
+ * creates ScaffoldResponseHandler instances that are responsible for delivering the response
+ * to the user in whatever format is required.
+ *
+ * @see org.codehaus.groovy.grails.scaffolding.GrailsScaffolder
+ * @see org.codehaus.groovy.grails.scaffolding.ScaffoldRequestHandler
+ * @see org.codehaus.groovy.grails.scaffolding.ScaffoldResponseHandlerFactory
  * 
  * @author Graeme Rocher
- * @since 30 Nov 2005
+ * @since 0.1
+ * 
+ * Created 30 Nov 2005
  */
 public class DefaultGrailsScaffolder implements GrailsScaffolder {
 
@@ -357,10 +369,8 @@ public class DefaultGrailsScaffolder implements GrailsScaffolder {
 	}
 	
 	public boolean supportsAction(String actionName) {
-		if(actions.containsKey(actionName))
-			return true;
-		return false;
-	}
+        return actions.containsKey(actionName);
+    }
 
 	public Closure getAction(GroovyObject controller,String actionName) {
 		Constructor c = (Constructor)actions.get(actionName);

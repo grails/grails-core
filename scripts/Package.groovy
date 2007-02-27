@@ -46,12 +46,8 @@ task( packageApp : "Implementation of package task") {
 	depends(createStructure,compile)
 	copyDependencies()
     Ant.delete(dir:"${basedir}/web-app/WEB-INF/grails-app", failonerror:true)	
-	Ant.mkdir(dir:"${basedir}/web-app/WEB-INF/grails-app/views")
 	Ant.mkdir(dir:"${basedir}/web-app/WEB-INF/grails-app/i18n")
 		
-	Ant.copy(todir:"${basedir}/web-app/WEB-INF/grails-app/views") {
-		fileset(dir:"${basedir}/grails-app/views", includes:"**") 
-	} 
 	Ant.native2ascii(src:"${basedir}/grails-app/i18n",
 					 dest:"${basedir}/web-app/WEB-INF/grails-app/i18n",
 					 includes:"*.properties",

@@ -14,7 +14,8 @@
  * limitations under the License.
  */ 
 package org.codehaus.groovy.grails.web.plugins;
-
+                                                 
+import org.codehaus.groovy.grails.support.*
 import org.codehaus.groovy.grails.plugins.support.GrailsPluginUtils
 import org.codehaus.groovy.grails.web.errors.GrailsExceptionResolver;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
@@ -63,7 +64,7 @@ class ControllersGrailsPlugin {
 	                        "file:./grails-app/taglib/*TagLib.groovy"]
 
 	def version = GrailsPluginUtils.getGrailsVersion()
-	def dependsOn = [i18n:version]
+	def dependsOn = [core:version,i18n:version]
 
 	def doWithSpring = {
 		exceptionHandler(GrailsExceptionResolver) {
@@ -78,12 +79,30 @@ class ControllersGrailsPlugin {
 			grailsApplication = ref("grailsApplication", true)
 		}
 
+        if(grails.util.GrailsUtil.isDevelopmentEnv()) {
+	    	groovyPageResourceLoader(org.codehaus.groovy.grails.web.pages.DevelopmentGroovyPageResourceLoader) {
+					baseResource = "file:./"		
+			}
+		}
 
+		groovyPagesTemplateEngine(org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine) {
+			classLoader = ref("classLoader")
+			if(grails.util.GrailsUtil.isDevelopmentEnv()) {
+				resourceLoader = groovyPageResourceLoader
+			}
+		}   
+		
 		jspViewResolver(GrailsViewResolver) {
 			viewClass = org.springframework.web.servlet.view.JstlView.class
 			prefix = GrailsApplicationAttributes.PATH_TO_VIEWS
 		    suffix = ".jsp"
-		}
+		    templateEngine = groovyPagesTemplateEngine
+			if(grails.util.GrailsUtil.isDevelopmentEnv()) {
+				resourceLoader = groovyPageResourceLoader
+			}		
+		}                        
+
+		
 		if(application.controllerClasses) {
 			def handlerInterceptors = []
 

@@ -69,7 +69,7 @@ public class GrailsApplicationAttributesTests extends TestCase {
 		MockHttpServletResponse response = new MockHttpServletResponse();
 		GroovyObject controller = (GroovyObject)attrs.getApplicationContext().getBean("TestController");
 		SimpleGrailsControllerHelper helper = new SimpleGrailsControllerHelper(attrs.getGrailsApplication(),attrs.getApplicationContext(),attrs.getServletContext());
-		new ControllerDynamicMethods(controller,helper,request,null);
+
 		
 		request.setAttribute(GrailsApplicationAttributes.CONTROLLER,controller );
 		GroovyObject tagLib1 = attrs.getTagLibraryForTag(request,response,"firstTag");
@@ -92,7 +92,7 @@ public class GrailsApplicationAttributesTests extends TestCase {
 
         GrailsClass[] controllers = app.getArtefacts(ControllerArtefactHandler.TYPE);
         for (int i = 0; i < controllers.length; i++) {
-			context.registerMockBean(((GrailsControllerClass)controllers[i]).getFullName(),
+			context.registerMockBean(controllers[i].getFullName(),
                 controllers[i].newInstance());
 		}
 		

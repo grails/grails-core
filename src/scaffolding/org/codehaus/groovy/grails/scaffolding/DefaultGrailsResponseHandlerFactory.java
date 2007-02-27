@@ -22,14 +22,15 @@ import org.codehaus.groovy.grails.commons.GrailsApplication;
  * an appropriate response handler. If none exists for the uri suffix it returns the default response handler
  * 
  * @author Graeme Rocher
- * @since 30 Nov 2005
+ * @since 0.1
+ *
+ * Created: 30 Nov 2005
  */
 
 public class DefaultGrailsResponseHandlerFactory implements
 		ScaffoldResponseHandlerFactory {
 
-	private GrailsApplication application;
-	private ScaffoldResponseHandler defaultResponseHandler;
+    private ScaffoldResponseHandler defaultResponseHandler;
 	
 	
 	public DefaultGrailsResponseHandlerFactory(GrailsApplication application, ScaffoldResponseHandler defaultResponseHandler) {
@@ -37,10 +38,9 @@ public class DefaultGrailsResponseHandlerFactory implements
 		if(defaultResponseHandler == null)
 			throw new IllegalStateException("Argument 'defaultResponseHandler' is required");
 		if(application == null)
-			throw new IllegalStateException("Argument 'application' is required");		
-		
-		this.application = application;
-		this.defaultResponseHandler = defaultResponseHandler;
+			throw new IllegalStateException("Argument 'application' is required");
+
+        this.defaultResponseHandler = defaultResponseHandler;
 	}
 
 	public ScaffoldResponseHandler getScaffoldResponseHandler(String uri) {

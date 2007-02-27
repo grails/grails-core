@@ -146,7 +146,7 @@ public class GSPResonseWriter extends PrintWriter {
 	 * @param max
 	 * @return  A GSPResonseWriter instance
 	 */
-	static GSPResonseWriter getInstance(ServletResponse response, int max) {
+	public static GSPResonseWriter getInstance(ServletResponse response, int max) {
 		return new GSPResonseWriter(response, new CharArrayWriter(max), max);
 	} // getInstance()
 

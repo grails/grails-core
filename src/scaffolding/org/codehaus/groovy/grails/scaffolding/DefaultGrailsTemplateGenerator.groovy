@@ -110,18 +110,8 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator  {
             }
             destFile.parentFile.mkdirs()
 
-            def templateText = getTemplateText("Controller.groovy")
-
-            def binding = [ packageName:domainClass.packageName,
-                            domainClass:domainClass, 
-                            className:domainClass.shortName,
-                            propertyName:domainClass.propertyName,
-                            comparator:org.codehaus.groovy.grails.scaffolding.DomainClassPropertyComparator.class]
-                            
-            def t = engine.createTemplate(templateText)
-
             destFile.withWriter { w ->
-                t.make(binding).writeTo(w)
+                generateController(domainClass, w)
             }
 
             LOG.info("Controller generated at ${destFile}")
@@ -277,18 +267,8 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator  {
             }
         }
         if(localOverwrite || overwrite) {
-            def templateText = getTemplateText("list.gsp")
-
-            def t = engine.createTemplate(templateText)
-            def packageName  = domainClass.packageName ? "<%@ page import=\"${domainClass.fullName}\" %>" : ""
-            def binding = [ packageName:packageName,
-                            domainClass: domainClass, 
-                            className:domainClass.shortName,
-                            propertyName:domainClass.propertyName,
-                            comparator:org.codehaus.groovy.grails.scaffolding.DomainClassPropertyComparator.class]
-
             listFile.withWriter { w ->
-                t.make(binding).writeTo(w)
+                generateView(domainClass, "list", w)
             }
             LOG.info("list view generated at ${listFile.absolutePath}")
         }
@@ -309,18 +289,8 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator  {
 
         }
         if(localOverwrite || overwrite) {
-            def templateText = getTemplateText("show.gsp")
-
-            def t = engine.createTemplate(templateText)
-            def packageName  = domainClass.packageName ? "<%@ page import=\"${domainClass.fullName}\" %>" : ""
-            def binding = [ packageName:packageName,
-                            domainClass: domainClass, 
-                            className:domainClass.shortName,
-                            propertyName:domainClass.propertyName, 
-                            comparator:org.codehaus.groovy.grails.scaffolding.DomainClassPropertyComparator.class ]
-
             showFile.withWriter { w ->
-                t.make(binding).writeTo(w)
+                generateView(domainClass, "show", w)
             }
             LOG.info("Show view generated at ${showFile.absolutePath}")
         }
@@ -341,21 +311,8 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator  {
             
         }
         if(localOverwrite || overwrite) {
-            def templateText = getTemplateText("edit.gsp")
-
-            def t = engine.createTemplate(templateText)
-            def multiPart = domainClass.properties.find{it.type==([] as Byte[]).class || it.type==([] as byte[]).class}
-            def packageName  = domainClass.packageName ? "<%@ page import=\"${domainClass.fullName}\" %>" : ""
-                def binding = [ packageName:packageName,
-                                domainClass: domainClass, 
-                            multiPart:multiPart,
-                            className:domainClass.shortName,
-                            propertyName:domainClass.propertyName,
-                            renderEditor:renderEditor,
-                            comparator:org.codehaus.groovy.grails.scaffolding.DomainClassPropertyComparator.class]
-
             editFile.withWriter { w ->
-                t.make(binding).writeTo(w)
+                generateView(domainClass, "edit", w)
             }
             LOG.info("Edit view generated at ${editFile.absolutePath}")
         }
@@ -376,25 +333,43 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator  {
             
         }
         if(localOverwrite || overwrite) {
-            def templateText = getTemplateText("create.gsp")
+
+            createFile.withWriter { w ->
+                   generateView(domainClass, "create", w)
+            }
+            LOG.info("Create view generated at ${createFile.absolutePath}")
+        }
+    }
+
+    void generateView(GrailsDomainClass domainClass, String viewName, Writer out) {
+            def templateText = getTemplateText("${viewName}.gsp")
 
             def t = engine.createTemplate(templateText)
             def multiPart = domainClass.properties.find{it.type==([] as Byte[]).class || it.type==([] as byte[]).class}
-            
+
             def packageName  = domainClass.packageName ? "<%@ page import=\"${domainClass.fullName}\" %>" : ""
                 def binding = [ packageName:packageName,
-                                domainClass: domainClass, 
+                                domainClass: domainClass,
                             multiPart:multiPart,
                             className:domainClass.shortName,
                             propertyName:domainClass.propertyName,
                             renderEditor:renderEditor,
                             comparator:org.codehaus.groovy.grails.scaffolding.DomainClassPropertyComparator.class]
 
-            createFile.withWriter { w ->
-                t.make(binding).writeTo(w)
-            }
-            LOG.info("Create view generated at ${createFile.absolutePath}")
-        }
+            t.make(binding).writeTo(out)
+    }
+
+    void generateController(GrailsDomainClass domainClass, Writer out) {
+            def templateText = getTemplateText("Controller.groovy")
+
+            def binding = [ packageName:domainClass.packageName,
+                            domainClass:domainClass,
+                            className:domainClass.shortName,
+                            propertyName:domainClass.propertyName,
+                            comparator:org.codehaus.groovy.grails.scaffolding.DomainClassPropertyComparator.class]
+
+            def t = engine.createTemplate(templateText)
+            t.make(binding).writeTo(out)
     }
     
     private getTemplateText(String template) {

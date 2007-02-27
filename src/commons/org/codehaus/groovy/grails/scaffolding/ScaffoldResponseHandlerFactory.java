@@ -15,18 +15,22 @@
  */ 
 package org.codehaus.groovy.grails.scaffolding;
 /**
- * An interface that defines factory methds for creating ScaffoldResponse instances
+ * An interface that defines factory methods for creating ScaffoldResponseHandler instances.
+ *
+ * @see org.codehaus.groovy.grails.scaffolding.ScaffoldResponseHandler
  * 
  * @author Graeme Rocher
- * @since 30 Nov 2005
+ * @since 0.1
+ *
+ * 30 Nov 2005
  */
 public interface ScaffoldResponseHandlerFactory {
 
 	/**
 	 * Retrieves a scaffold response handler for the specified uri
 	 * 
-	 * @param uri
-	 * @return
+	 * @param uri The URI of the ScaffoldResponseHandler to look-up
+	 * @return A ScaffoldResponseHandler instance
 	 */
 	ScaffoldResponseHandler getScaffoldResponseHandler(String uri);
 	

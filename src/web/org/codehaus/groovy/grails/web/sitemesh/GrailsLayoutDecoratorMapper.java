@@ -31,6 +31,12 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
+import org.codehaus.groovy.grails.web.pages.DevelopmentGroovyPageResourceLoader;
+import org.springframework.core.io.ResourceLoader;
+import org.springframework.core.io.Resource;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.context.ApplicationContext;
 
 import com.opensymphony.module.sitemesh.Config;
 import com.opensymphony.module.sitemesh.Decorator;
@@ -38,6 +44,8 @@ import com.opensymphony.module.sitemesh.DecoratorMapper;
 import com.opensymphony.module.sitemesh.Page;
 import com.opensymphony.module.sitemesh.mapper.AbstractDecoratorMapper;
 import com.opensymphony.module.sitemesh.mapper.DefaultDecorator;
+import grails.util.GrailsUtil;
+
 /**
  * Implements the SiteMesh decorator mapper interface and allows grails views to map to grails layouts
  *  
@@ -124,27 +132,39 @@ public class GrailsLayoutDecoratorMapper extends AbstractDecoratorMapper impleme
 				name += DEFAULT_VIEW_TYPE;
 			}
 			String decoratorPage = DEFAULT_DECORATOR_PATH + '/' + name;
-			
-			try {
-				if(servletContext.getResource(decoratorPage) == null) {
-					if(LOG.isDebugEnabled()) 
-						LOG.debug("No decorator found at " + decoratorPage);
-					
-					return null;
-				}
-				else {
-					if(LOG.isDebugEnabled()) 
-						LOG.debug("Using decorator " + decoratorPage);
-					
-					Decorator d = new DefaultDecorator(decoratorName,request.getRequestURI(),decoratorPage, Collections.EMPTY_MAP);
-					decoratorMap.put(decoratorName,d);
-					return d;				
-				}
-			} catch (MalformedURLException e) {
-				LOG.error("Invalid URL retrieving decorator ["+decoratorPage+"]",e);
-				return null;
-			}
-		}	
+
+            ResourceLoader resourceLoader = establishResourceLoader();
+
+            Resource res = resourceLoader.getResource(decoratorPage);
+            if(!res.exists()) {
+                if(LOG.isDebugEnabled())
+                    LOG.debug("No decorator found at " + decoratorPage);
+
+                return null;
+            }
+            else {
+                if(LOG.isDebugEnabled())
+                    LOG.debug("Using decorator " + decoratorPage);
+
+                Decorator d = new DefaultDecorator(decoratorName,request.getRequestURI(),decoratorPage, Collections.EMPTY_MAP);
+                decoratorMap.put(decoratorName,d);
+                return d;
+            }
+		}
 	}
+
+    private ResourceLoader establishResourceLoader() {
+        ResourceLoader resourceLoader;
+        GrailsWebRequest webRequest = (GrailsWebRequest) RequestContextHolder.currentRequestAttributes();
+        ApplicationContext ctx = webRequest.getAttributes().getApplicationContext();
+
+        if(ctx.containsBean(DevelopmentGroovyPageResourceLoader.BEAN_ID) && GrailsUtil.isDevelopmentEnv()) {
+            resourceLoader = (ResourceLoader)ctx.getBean(DevelopmentGroovyPageResourceLoader.BEAN_ID);
+        }
+        else {
+            resourceLoader = ctx;
+        }
+        return resourceLoader;
+    }
 
 }

@@ -30,10 +30,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Default implementation of the ScaffoldRequestHandler interface
+ * Default implementation of the ScaffoldRequestHandler interface. Uses a ScaffoldDomain to handle
+ * basic CRUD operations.
  * 
  * @author Graeme Rocher
- * @since 30 Nov 2005
+ * @since 0.1
+ *
+ * 30 Nov 2005
  */
 public class DefaultScaffoldRequestHandler implements ScaffoldRequestHandler {
 

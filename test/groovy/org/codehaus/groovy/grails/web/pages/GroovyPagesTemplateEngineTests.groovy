@@ -10,6 +10,7 @@ import grails.util.*
 
 class GroovyPagesTemplateEngineTests extends GroovyTestCase {
 
+
     void testShowSourceParameter() {
         try {
             def webRequest = GrailsWebUtil.bindMockWebRequest()
@@ -42,7 +43,7 @@ class GroovyPagesTemplateEngineTests extends GroovyTestCase {
 
         def gpte = new GroovyPagesTemplateEngine(new MockServletContext())
 
-        assertEquals "some_path_foo_gsp", gpte.establishPageName(res)                
+        assertEquals "some_path_foo_gsp", gpte.establishPageName(res, null)                
     }
 
 

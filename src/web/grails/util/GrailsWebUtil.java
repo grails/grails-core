@@ -22,6 +22,7 @@ import org.springframework.mock.web.MockServletContext;
 import org.springframework.web.context.request.RequestContextHolder;
 
 import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * Utility methods for clients using the web framework
@@ -53,4 +54,20 @@ public class GrailsWebUtil {
         return webRequest;
     }
 
+    /**
+     * Retrieves the URI from the request from either the include attribute or the request.getRequestURI() method
+     *
+     * @param request The HttpServletRequest instance
+     * @return The String URI
+     */
+    public static String getUriFromRequest(HttpServletRequest request) {
+        Object includeUri = request.getAttribute("javax.servlet.include.request_uri");
+        String uri;
+        if (includeUri != null) {
+        	uri = (String) includeUri;
+        } else {
+        	uri = request.getRequestURI();
+        }
+        return uri;
+    }
 }

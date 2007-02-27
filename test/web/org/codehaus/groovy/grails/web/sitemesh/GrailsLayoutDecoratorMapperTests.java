@@ -8,19 +8,40 @@ import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyObject;
 import junit.framework.TestCase;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
+import org.codehaus.groovy.grails.support.MockApplicationContext;
+import org.codehaus.groovy.grails.commons.spring.GrailsWebApplicationContext;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockServletConfig;
 import org.springframework.mock.web.MockServletContext;
+import org.springframework.web.context.request.RequestContextHolder;
 
 import java.io.StringReader;
 
+import grails.util.GrailsWebUtil;
+
 public class GrailsLayoutDecoratorMapperTests extends TestCase {
 
-	/*
+
+    protected void setUp() throws Exception {
+        GrailsWebRequest webRequest = GrailsWebUtil.bindMockWebRequest();
+
+        MockApplicationContext appCtx = new MockApplicationContext();
+        appCtx.registerMockResource("/WEB-INF/grails-app/views/layouts/test.gsp");
+        webRequest.getServletContext().setAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT, appCtx);
+    }/*
 	 * Test method for 'org.codehaus.groovy.grails.web.sitemesh.GrailsLayoutDecoratorMapper.getDecorator(HttpServletRequest, Page)'
 	 */
 	public void testGetDecoratorHttpServletRequestPage() throws Exception {
-		MockHttpServletRequest request = new MockHttpServletRequest("GET", "orders/list");
+
+        GrailsWebRequest webRequest = GrailsWebUtil.bindMockWebRequest();
+
+        MockApplicationContext appCtx = new MockApplicationContext();
+        appCtx.registerMockResource("WEB-INF/grails-app/views/layouts/test.gsp", "<html><body><g:layoutBody /></body></html>");
+        webRequest.getServletContext().setAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT, appCtx);
+        
+
+        MockHttpServletRequest request = new MockHttpServletRequest("GET", "orders/list");
 		MockServletContext context = new MockServletContext();
 		GrailsLayoutDecoratorMapper m = new GrailsLayoutDecoratorMapper();
 		Config c = new Config(new MockServletConfig(context));
@@ -38,7 +59,15 @@ public class GrailsLayoutDecoratorMapperTests extends TestCase {
 	}
 	
 	public void testDecoratedByControllerConvention() throws Exception {
-		MockHttpServletRequest request = new MockHttpServletRequest("GET", "orders/list");
+
+        GrailsWebRequest webRequest = GrailsWebUtil.bindMockWebRequest();
+
+        MockApplicationContext appCtx = new MockApplicationContext();
+        appCtx.registerMockResource("WEB-INF/grails-app/views/layouts/test.gsp", "<html><body><g:layoutBody /></body></html>");
+        webRequest.getServletContext().setAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT, appCtx);
+
+        
+        MockHttpServletRequest request = new MockHttpServletRequest("GET", "orders/list");
 		MockServletContext context = new MockServletContext();
 		GroovyClassLoader gcl = new GroovyClassLoader();
 		
@@ -64,7 +93,15 @@ public class GrailsLayoutDecoratorMapperTests extends TestCase {
 	}
 
 	public void testDecoratedByActionConvention() throws Exception {
-		MockHttpServletRequest request = new MockHttpServletRequest("GET", "orders/list");
+
+        GrailsWebRequest webRequest = GrailsWebUtil.bindMockWebRequest();
+
+        MockApplicationContext appCtx = new MockApplicationContext();
+        appCtx.registerMockResource("WEB-INF/grails-app/views/layouts/test2/testAction.gsp", "<html><body><g:layoutBody /></body></html>");
+        webRequest.getServletContext().setAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT, appCtx);
+
+
+        MockHttpServletRequest request = new MockHttpServletRequest("GET", "orders/list");
 		MockServletContext context = new MockServletContext();
 		GroovyClassLoader gcl = new GroovyClassLoader();
 		
@@ -86,5 +123,10 @@ public class GrailsLayoutDecoratorMapperTests extends TestCase {
 		assertNotNull(d);
 		assertEquals("/WEB-INF/grails-app/views/layouts/test2/testAction.gsp", d.getURIPath());
 		assertEquals("test2/testAction", d.getName());		
-	}	
+	}
+
+
+    protected void tearDown() throws Exception {
+        RequestContextHolder.setRequestAttributes(null);
+    }
 }

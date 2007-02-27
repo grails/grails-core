@@ -1,6 +1,8 @@
 package org.codehaus.groovy.grails.support;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -24,6 +26,7 @@ import org.springframework.context.MessageSourceResolvable;
 import org.springframework.context.NoSuchMessageException;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
+import org.springframework.core.io.AbstractResource;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.mock.web.MockServletContext;
 import org.springframework.util.PathMatcher;
@@ -48,10 +51,18 @@ public class MockApplicationContext extends GroovyObjectSupport implements WebAp
 	 * @param location the location of the resource. Example: /WEB-INF/grails-app/i18n/messages.properties
 	 */
 	public void registerMockResource(String location) {
-		resources.add(location);
+		resources.add(new ClassPathResource(location));
 	}
 
-	public ApplicationContext getParent() {
+	/**
+	 * Registers a mock resource. Path separator: "/"
+	 * @param location the location of the resource. Example: /WEB-INF/grails-app/i18n/messages.properties
+	 */
+	public void registerMockResource(String location, String contents) {
+		resources.add(new MockResource(location, contents));
+	}
+
+    public ApplicationContext getParent() {
 		throw new UnsupportedOperationException("Method not supported by implementation");
 	}
 
@@ -195,16 +206,23 @@ public class MockApplicationContext extends GroovyObjectSupport implements WebAp
 		locationPattern = StringUtils.removeStart(locationPattern, "/"); // starting with "**/" is OK
 		List result = new ArrayList();
 		for (Iterator i = resources.iterator(); i.hasNext();) {
-			String location = (String)i.next();
-			if (pathMatcher.match(locationPattern, StringUtils.removeStart(location, "/"))) {
-				result.add(new ClassPathResource(location));
+			Resource res = (Resource)i.next();
+			if (pathMatcher.match(res.getDescription(), StringUtils.removeStart(res.getDescription(), "/"))) {
+				result.add(res);
 			}
 		}
 		return (Resource[])result.toArray(new Resource[0]);
 	}
 
 	public Resource getResource(String location) {
-		return new ClassPathResource(location);
+        for (Iterator i = resources.iterator(); i.hasNext();) {
+            Resource mockResource = (Resource) i.next();
+            if (pathMatcher.match(mockResource.getDescription(), StringUtils.removeStart(location, "/"))) {
+                return mockResource;
+            }
+
+        }
+        return new ClassPathResource(location);
 	}
 	public boolean containsLocalBean(String arg0) {
 		throw new UnsupportedOperationException("Method not supported by implementation");
@@ -218,5 +236,34 @@ public class MockApplicationContext extends GroovyObjectSupport implements WebAp
 
     public ServletContext getServletContext() {
         return new MockServletContext();
+    }
+
+    public class MockResource extends AbstractResource {
+
+        private String contents = "";
+        private String location;
+
+
+        public MockResource(String location) {
+            this.location = location;
+        }
+
+        public MockResource(String location, String contents) {
+            this(location);
+            this.contents = contents;
+        }
+
+        public boolean exists() {
+            return true;
+        }
+
+        public String getDescription() {
+            return location;
+        }
+
+        public InputStream getInputStream() throws IOException {
+            return new ByteArrayInputStream(contents.getBytes());
+        }
+
     }
 }

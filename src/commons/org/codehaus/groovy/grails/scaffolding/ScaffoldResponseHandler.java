@@ -21,30 +21,37 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.ViewResolver;
+
 /**
  * An interface defining methods to handle responses. Implementors of this interface are responsible 
  * for transforming the model into an appropriate ModelAndView instance or writing directly to the
  * response
  * 
  * @author Graeme Rocher
- * @since 30 Nov 2005
+ * @since 0.1
+ *
+ * Created: 30 Nov 2005
  */
 public interface ScaffoldResponseHandler {
 
 	/**
 	 * Creates the response for a Scaffolded model and optionally returns a ModelAndView instance
 	 * 
-	 * @param request 
-	 * @param response
-	 * @param model
-	 * @return
+	 * @param request The HttpServletRequest instance
+	 * @param response The HttpServletResponse instance
+	 * @param model The model to render
+     * @param actionName The name of the action be handled
+     *
+	 * @return A ModelAndView or null if writing directly to the response
 	 */
 	ModelAndView handleResponse(HttpServletRequest request,HttpServletResponse response, String actionName, Map model);
 	
 	/**
-	 * The view resolver to use for resovling views for the response
-	 * @param resolver
+	 * An optional ViewResolver instance for resolving views if not writing directly to the response
+     *
+	 * @param resolver The ViewResolver instance
 	 */
-	void setScaffoldViewResolver(ScaffoldViewResolver resolver);
+	void setViewResolver(ViewResolver resolver);
 
 }

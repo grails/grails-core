@@ -44,11 +44,26 @@ public class GrailsResourceUtils {
 
     //private static final String FS = File.separator;
 
+    /**
+     * The relative path to the WEB-INF directory
+     */
+    public static final String WEB_INF = "/WEB-INF";
+
+    /**
+     * The name of the Grails application directory
+     */
+    public static final String GRAILS_APP_DIR = "grails-app";
+
+    /**
+     * The name of the Web app dir within Grails
+     */
+    public static final String WEB_APP_DIR = "web-app";
+
     /*
     Domain path is always matched against the normalized File representation of an URL and
     can therefore work with slashes as separators.
     */
-    public static Pattern DOMAIN_PATH_PATTERN = Pattern.compile(".+/grails-app/domain/(.+)\\.groovy");
+    public static Pattern DOMAIN_PATH_PATTERN = Pattern.compile(".+/"+GRAILS_APP_DIR+"/domain/(.+)\\.groovy");
 
     /*
     Resources are resolved against the platform specific path and must therefore obey the
@@ -58,19 +73,23 @@ public class GrailsResourceUtils {
     public static final Pattern GRAILS_RESOURCE_PATTERN_SECOND_MATCH;
     public static final Pattern GRAILS_RESOURCE_PATTERN_THIRD_MATCH;
     public static final Pattern GRAILS_RESOURCE_PATTERN_FOURTH_MATCH;
+
+
     static {
         String fs = File.separator;
         if (fs.equals("\\")) fs = "\\\\"; // backslashes need escaping in regexes
             
-        GRAILS_RESOURCE_PATTERN_FIRST_MATCH = Pattern.compile(createGrailsResourcePattern(fs, "grails-app"+fs +"\\w+"));
+        GRAILS_RESOURCE_PATTERN_FIRST_MATCH = Pattern.compile(createGrailsResourcePattern(fs, GRAILS_APP_DIR +fs +"\\w+"));
         GRAILS_RESOURCE_PATTERN_THIRD_MATCH = Pattern.compile(createGrailsResourcePattern(fs, "grails-tests"));
         fs = "/";
-        GRAILS_RESOURCE_PATTERN_SECOND_MATCH = Pattern.compile(createGrailsResourcePattern(fs, "grails-app"+fs +"\\w+"));
+        GRAILS_RESOURCE_PATTERN_SECOND_MATCH = Pattern.compile(createGrailsResourcePattern(fs, GRAILS_APP_DIR +fs +"\\w+"));
         GRAILS_RESOURCE_PATTERN_FOURTH_MATCH = Pattern.compile(createGrailsResourcePattern(fs, "grails-tests"));
     }
 
     public static final Pattern[] patterns = new Pattern[]{ GRAILS_RESOURCE_PATTERN_FIRST_MATCH, GRAILS_RESOURCE_PATTERN_SECOND_MATCH, GRAILS_RESOURCE_PATTERN_THIRD_MATCH, GRAILS_RESOURCE_PATTERN_FOURTH_MATCH};
     private static final Log LOG = LogFactory.getLog(GrailsResourceUtils.class);
+    ;
+
 
     private static String createGrailsResourcePattern(String separator, String base) {
 		return ".+"+separator +base+separator +"(.+)\\.groovy";
@@ -167,7 +186,7 @@ public class GrailsResourceUtils {
         try {
             String url = resource.getURL().toString();
 
-            int i = url.lastIndexOf("grails-app");
+            int i = url.lastIndexOf(GRAILS_APP_DIR);
             if(i > -1) {
                 url = url.substring(0, i+10);
                 return new UrlResource(url);
@@ -186,7 +205,7 @@ public class GrailsResourceUtils {
     }
 
 
-    private static final Pattern PLUGIN_PATTERN = Pattern.compile(".+?(/plugins/.+?/grails-app/.+)");
+    private static final Pattern PLUGIN_PATTERN = Pattern.compile(".+?(/plugins/.+?/"+GRAILS_APP_DIR+"/.+)");
 
     /**
      * This method will take a Grails resource (one located inside the grails-app dir) and get its relative path inside the WEB-INF directory
@@ -200,19 +219,19 @@ public class GrailsResourceUtils {
 
         try {
             String url = resource.getURL().toString();
-            int i = url.indexOf("/WEB-INF");
+            int i = url.indexOf(WEB_INF);
             if(i > -1) {
                 return url.substring(i);
             }
             else {
                 Matcher m = PLUGIN_PATTERN.matcher(url);
                 if(m.find()) {
-                    return "/WEB-INF"+m.group(1);
+                    return WEB_INF +m.group(1);
                 }
                 else {
-                    i = url.lastIndexOf("grails-app");
+                    i = url.lastIndexOf(GRAILS_APP_DIR);
                     if(i > -1) {
-                        return "/WEB-INF/" + url.substring(i);
+                        return WEB_INF+"/" + url.substring(i);
                     }
                 }
             }
@@ -228,7 +247,7 @@ public class GrailsResourceUtils {
         
     }
 
-    private static final Pattern PLUGIN_RESOURCE_PATTERN = Pattern.compile(".+?/(plugins/.+?)/grails-app/.+");
+    private static final Pattern PLUGIN_RESOURCE_PATTERN = Pattern.compile(".+?/(plugins/.+?)/"+GRAILS_APP_DIR+"/.+");
     
     /**
      * Retrieves the static resource path for the given Grails resource artifact (controller/taglib etc.)

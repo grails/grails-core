@@ -15,38 +15,13 @@
  */
 package org.codehaus.groovy.grails.web.metaclass;
 
-import groovy.lang.GroovyObject;
-import groovy.lang.MissingMethodException;
-import org.codehaus.groovy.grails.commons.GrailsControllerClass;
-import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.metaclass.AbstractDynamicMethodInvocation;
-import org.codehaus.groovy.grails.commons.metaclass.GenericDynamicProperty;
-import org.codehaus.groovy.grails.commons.metaclass.GroovyDynamicMethodsInterceptor;
-import org.codehaus.groovy.grails.commons.metaclass.FunctionCallback;
-import org.codehaus.groovy.grails.scaffolding.GrailsScaffolder;
-import org.codehaus.groovy.grails.web.servlet.GrailsHttpServletRequest;
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
-import org.codehaus.groovy.grails.web.servlet.FlashScope;
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsControllerHelper;
-import org.springframework.validation.Errors;
-import org.springframework.web.servlet.ModelAndView;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.beans.IntrospectionException;
-import java.util.regex.Pattern;
-
 /**
- * Adds dynamic methods and properties for Grails Controllers
+ * Holds constants that refer to the names of dynamic methods and properties within controllers
  * 
  * @author Graeme Rocher
  * @since Oct 24, 2005
  */
-public class ControllerDynamicMethods extends
-    GroovyDynamicMethodsInterceptor {
+public class ControllerDynamicMethods{
 
     public static final String REQUEST_PROPERTY = "request";
     public static final String SERVLET_CONTEXT = "servletContext";
@@ -64,115 +39,5 @@ public class ControllerDynamicMethods extends
     public static final String CONTROLLER_NAME_PROPERTY = "controllerName";
     public static final String GET_VIEW_URI = "getViewUri";
     public static final String GET_TEMPLATE_URI = "getTemplateUri";
-
-    public static final Pattern GET_VIEW_URI_PATTERN = Pattern.compile('^'+GET_VIEW_URI+'$');
-    public static final Pattern GET_TEMPLATE_URI_PATTERN = Pattern.compile('^'+GET_TEMPLATE_URI+'$');
-    public static final Pattern HAS_ERRORS_METHOD_PATTERN = Pattern.compile('^'+HAS_ERRORS_METHOD+'$');
-
-    public static final String LOG_PROPERTY = "log";
-
-
-    protected GrailsControllerClass controllerClass;
-    protected GrailsScaffolder scaffolder;
-    private boolean scaffolding;
-    private GrailsApplicationAttributes grailsAttributes;
-
-    public ControllerDynamicMethods( GroovyObject controller,GrailsControllerHelper helper,final HttpServletRequest request, HttpServletResponse response) throws IntrospectionException {
-        super(controller);
-
-        this.controllerClass = helper.getControllerClassByName(controller.getClass().getName());
-        this.grailsAttributes = helper.getGrailsAttributes();
-
-        // add dynamic properties
-        addDynamicProperty(new GetParamsDynamicProperty(request,response));
-        addDynamicProperty(new GetSessionDynamicProperty(request,response));
-        addDynamicProperty(new GenericDynamicProperty(REQUEST_PROPERTY, HttpServletRequest.class,new GrailsHttpServletRequest( request,controller),true) );
-        addDynamicProperty(new GenericDynamicProperty(RESPONSE_PROPERTY, HttpServletResponse.class,response,true) );
-        addDynamicProperty(new GenericDynamicProperty(SERVLET_CONTEXT, ServletContext.class,helper.getServletContext(),true) );
-        addDynamicProperty(new GenericDynamicProperty(FLASH_SCOPE_PROPERTY, FlashScope.class,grailsAttributes.getFlashScope(request),false) );
-        addDynamicProperty(new GenericDynamicProperty(ERRORS_PROPERTY, Errors.class, null, false));
-        addDynamicProperty(new GenericDynamicProperty(MODEL_AND_VIEW_PROPERTY, ModelAndView.class,null,false));
-        addDynamicProperty(new GenericDynamicProperty(GRAILS_ATTRIBUTES, GrailsApplicationAttributes.class,grailsAttributes,true));
-        addDynamicProperty(new GenericDynamicProperty(GRAILS_APPLICATION, GrailsApplication.class,grailsAttributes.getGrailsApplication(),true));
-        addDynamicProperty(new GenericDynamicProperty(ACTION_URI_PROPERTY,String.class,null,false));
-        addDynamicProperty(new GenericDynamicProperty(CONTROLLER_URI_PROPERTY,String.class,null,false));
-        addDynamicProperty(new GenericDynamicProperty(ACTION_NAME_PROPERTY,String.class,null,false));
-        addDynamicProperty(new GenericDynamicProperty(CONTROLLER_NAME_PROPERTY,String.class,null,false));
-        addDynamicProperty(new GenericDynamicProperty(RENDER_VIEW_PROPERTY,Boolean.class, Boolean.TRUE,false));
-
-        // @todo Check that LOG4J is not creating a new log for every request!
-        /*
-
-         addDynamicProperty(new GenericDynamicProperty(LOG_PROPERTY, Log.class, new FunctionCallback() {
-            public Object execute(Object object) {
-                return LogFactory.getLog(controllerClass.getFullName());
-            }
-        }, true));
-        */
-        
-        // add dynamic methods
-        //addDynamicMethodInvocation( new RedirectDynamicMethod(helper,request,response) );
-        //addDynamicMethodInvocation( new ChainDynamicMethod(helper, request, response ) );
-        //addDynamicMethodInvocation( new RenderDynamicMethod(helper,request,response));
-        //addDynamicMethodInvocation( new BindDynamicMethod(request,response));
-
-        // the getViewUri(name,request) method that retrieves the name of a view for current controller
-        addDynamicMethodInvocation( new AbstractDynamicMethodInvocation(GET_VIEW_URI_PATTERN){
-
-            public Object invoke(Object target, String methodName, Object[] arguments) {
-                if(arguments.length==0)
-                    throw new MissingMethodException(GET_VIEW_URI,target.getClass(),arguments);
-                if(arguments[0] == null)
-                    throw new IllegalArgumentException("Argument [viewName] of method [" + GET_VIEW_URI + "] cannot be null");
-
-                return grailsAttributes.getViewUri(arguments[0].toString(), request);
-            }
-
-        });
-
-        // the getTemplateUri(name,request) method that retrieves the name of a template for current controller        
-        addDynamicMethodInvocation( new AbstractDynamicMethodInvocation(GET_TEMPLATE_URI_PATTERN){
-
-            public Object invoke(Object target, String methodName, Object[] arguments) {
-                if(arguments.length==0)
-                    throw new MissingMethodException(GET_TEMPLATE_URI,target.getClass(),arguments);
-                if(arguments[0] == null)
-                    throw new IllegalArgumentException("Argument [templateName] of method [" + GET_TEMPLATE_URI + "] cannot be null");
-
-                return grailsAttributes.getTemplateUri(arguments[0].toString(),request);
-            }
-
-        });
-
-        // the hasErrors() dynamic method that checks of there are any errors in the controller
-        addDynamicMethodInvocation( new AbstractDynamicMethodInvocation(HAS_ERRORS_METHOD_PATTERN) {
-            public Object invoke(Object target, String methodName, Object[] arguments) {
-                GroovyObject controller = (GroovyObject)target;
-                Errors errors = (Errors)controller.getProperty(ERRORS_PROPERTY);
-                return Boolean.valueOf(errors.hasErrors());
-            }
-        });
-
-        this.scaffolding = this.controllerClass.isScaffolding();
-
-        // if the controller is scaffolding get the scaffolder, then loop through all the
-        // support actions by the scaffolder and register dynamic properties for those that don't exist
-        /*if(this.scaffolding) {
-            this.scaffolder = helper.getScaffolderForController(controllerClass.getFullName());
-            if(this.scaffolder == null) {
-                throw new IllegalStateException("Scaffolder is null when controller scaffold property is set to 'true'");
-            }
-            String[] scaffoldActions = this.scaffolder.getSupportedActionNames();
-            for (int i = 0; i < scaffoldActions.length; i++) {
-            	Map properties = DefaultGroovyMethods.getProperties(controller);
-            	if(!properties.containsKey(scaffoldActions[i])) {
-                    addDynamicProperty(new GenericDynamicProperty(	scaffoldActions[i],
-                                                                    Closure.class,
-                                                                    scaffolder.getAction(controller,scaffoldActions[i]),
-                                                                    true));
-                }
-            }
-        }*/
-    }
 
 }

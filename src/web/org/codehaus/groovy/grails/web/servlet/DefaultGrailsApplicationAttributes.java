@@ -15,35 +15,36 @@
 package org.codehaus.groovy.grails.web.servlet;
 
 import groovy.lang.GroovyObject;
-
-import java.beans.IntrospectionException;
-import java.io.Writer;
-import java.util.HashMap;
-import java.util.Map;
+import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.commons.GrailsResourceUtils;
+import org.codehaus.groovy.grails.commons.GrailsTagLibClass;
+import org.codehaus.groovy.grails.commons.TagLibArtefactHandler;
+import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods;
+import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
+import org.springframework.context.ApplicationContext;
+import org.springframework.core.io.Resource;
+import org.springframework.validation.Errors;
+import org.springframework.web.util.UrlPathHelper;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-
-import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.GrailsTagLibClass;
-import org.codehaus.groovy.grails.commons.GrailsResourceUtils;
-import org.codehaus.groovy.grails.commons.TagLibArtefactHandler;
-import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods;
-import org.codehaus.groovy.grails.web.metaclass.TagLibDynamicMethods;
-import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap;
-import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
-import org.springframework.context.ApplicationContext;
-import org.springframework.validation.Errors;
-import org.springframework.web.util.UrlPathHelper;
-import org.springframework.core.io.Resource;
+import java.io.Writer;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
+ * Implementation of the GrailsApplicationAttributes interface that holds knowledge about how to obtain
+ * certain attributes from either the ServletContext or the HttpServletRequest instance.
+ *
+ * @see org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
+ *
  * @author Graeme Rocher
- * @since 17-Jan-2006
+ * @since 0.3
+ *
+ * Created: 17-Jan-2006
  */
 public class DefaultGrailsApplicationAttributes implements GrailsApplicationAttributes {
 
@@ -144,12 +145,20 @@ public class DefaultGrailsApplicationAttributes implements GrailsApplicationAttr
     }
 
     public GroovyPagesTemplateEngine getPagesTemplateEngine() {
-       GroovyPagesTemplateEngine engine = (GroovyPagesTemplateEngine)this.context.getAttribute(GSP_TEMPLATE_ENGINE);
-       if(engine == null) {
-           engine = new GroovyPagesTemplateEngine(getServletContext());
-           engine.setApplicationContext(getApplicationContext());
-           engine.setClassLoader(getGrailsApplication().getClassLoader());
-           this.context.setAttribute(GSP_TEMPLATE_ENGINE,engine);
+       ApplicationContext appCtx = getApplicationContext();
+       GroovyPagesTemplateEngine engine;
+       if(appCtx.containsBean(GroovyPagesTemplateEngine.BEAN_ID)) {
+            return (GroovyPagesTemplateEngine)appCtx.getBean(GroovyPagesTemplateEngine.BEAN_ID);
+       }
+       else {
+           engine = (GroovyPagesTemplateEngine)this.context.getAttribute(GSP_TEMPLATE_ENGINE);
+           if(engine == null) {
+               engine = new GroovyPagesTemplateEngine(getServletContext());
+               engine.setApplicationContext(getApplicationContext());
+               engine.setClassLoader(getGrailsApplication().getClassLoader());
+               this.context.setAttribute(GSP_TEMPLATE_ENGINE,engine);
+           }
+
        }
        return engine;
     }
@@ -209,17 +218,6 @@ public class DefaultGrailsApplicationAttributes implements GrailsApplicationAttr
 	       			.toString();
 	}
 
-	public GrailsParameterMap getParamsMap(ServletRequest request) {
-		if(request instanceof HttpServletRequest) {
-			GrailsParameterMap params = (GrailsParameterMap)request.getAttribute(PARAMS_OBJECT);
-			if(params == null) {
-				params = new GrailsParameterMap((HttpServletRequest)request);
-				request.setAttribute(PARAMS_OBJECT,params);
-			}
-			return params;
-		}
-		return null;
-	}
 
 	public Writer getOut(HttpServletRequest request) {
 		return (Writer)request.getAttribute(OUT);

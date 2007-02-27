@@ -43,7 +43,7 @@ class I18nGrailsPluginTests extends AbstractGrailsMockTests {
 		assert !StringUtils.contains(messageSource, "messages.properties")
 		assert !StringUtils.contains(messageSource, "project.properties")
 		assert !StringUtils.contains(messageSource, "project_nl.properties")
-		assert !StringUtils.contains(messageSource, "nobundle")
+		//assert !StringUtils.contains(messageSource, "nobundle")
 		assert !StringUtils.contains(messageSource, "nobundle.txt")
 		assert !StringUtils.contains(messageSource, "nobundle.xml")
 	}	
