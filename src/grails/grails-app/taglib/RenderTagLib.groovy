@@ -19,12 +19,16 @@
  * @author Graeme Rocher
  * @since 17-Jan-2006
  */
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.validation.Errors;
 import org.springframework.context.NoSuchMessageException;
 import org.springframework.web.servlet.support.RequestContextUtils as RCU;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU;
 
 class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants {
+
+	static final Log log = LogFactory.getLog(RenderTagLib.class)
 
     protected getPage() {
     	return request[PAGE]
@@ -133,53 +137,97 @@ class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants 
 	def paginate = { attrs ->
         if(attrs.total == null)
             throwTagError("Tag [paginate] is missing required attribute [total]")
-		
-		def mkp = new groovy.xml.MarkupBuilder(out)
+        
 		def total = attrs.total.toInteger()
-		def max = params.max?.toInteger()
-		def offset = params.offset?.toInteger() 
 		def action = (attrs.action? attrs.action : 'list')
-		def breadcrumb = true
-		if(attrs.breadcrumb) breadcrumb = Boolean.valueOf(attrs.breadcrumb)
-			
+		def offset = params.offset?.toInteger()
+		def max = params.max?.toInteger()
+		def maxsteps = params.maxsteps?.toInteger()
+
+        if(attrs.breadcrumb) {
+			log.warn("Tag [paginate] includes the [breadcrumb] attribute. This attribute is deprecated and will be removed in the future. Please update your code to use the [maxsteps] attribute instead.")
+			maxsteps = 0
+		}
+
+		if(!offset) offset = (attrs.offset ? attrs.offset.toInteger() : 0)			
 		if(!max) max = (attrs.max ? attrs.max.toInteger() : 10)
-		if(!offset) offset = (attrs.offset ? attrs.offset.toInteger() : 0)
+		if(!maxsteps) maxsteps = (attrs.maxsteps ? attrs.maxsteps.toInteger() : 10)
 		
-		def linkParams = [offset:offset-max,max:max]
-		def linkTagAttrs = ['class':'prevLink',action:action]
+		def linkParams = [offset:offset - max, max:max, maxsteps:maxsteps]
+		if(attrs.params) linkParams.putAll(attrs.params)
+		
+		def linkTagAttrs = [action:action]
 		if(attrs.controller) {
 			linkTagAttrs.controller = attrs.controller	
 		}
 		if(attrs.id) {
 			linkTagAttrs.id = attrs.id	
 		}
-		if(attrs.params)linkParams.putAll(attrs.params)
 		linkTagAttrs.params = linkParams
-	
-		def combined = max + offset
-		if(offset > 0) {			
-			link(linkTagAttrs.clone(),{out<< (attrs.prev? attrs.prev : 'Previous' ) })
+		
+		// determine paging variables
+		def steps = maxsteps > 0
+		int currentstep = (offset / max) + 1
+		int firststep = 1
+		int laststep = Math.round(Math.ceil(total / max))
+			
+		// display previous link when not on firststep
+		if(currentstep > firststep) {
+			linkTagAttrs.class = 'prevLink'		
+			link(linkTagAttrs.clone(), {out << (attrs.prev ? attrs.prev : 'Previous')})
 		}
 		
-		if(total > max) {
-			linkTagAttrs.'class' = 'step'
-			if(breadcrumb) {
-				def j = 0
-				0.step(total,max) { i ->
-					if(offset == i) {
-						mkp.a('class':'step',"${++j}")	
-					}
-					else {
-						linkParams.offset=i
-						link(linkTagAttrs.clone(),{out<<++j})	
-					}
-				}			
-			}			
+		// display steps when steps are enabled and laststep is not firststep
+		if(steps && laststep > firststep) {
+			linkTagAttrs.class = 'step'
+
+			// determine begin and endstep paging variables
+			int beginstep = currentstep - Math.round(maxsteps / 2) + (maxsteps % 2)
+			int endstep = currentstep + Math.round(maxsteps / 2) - 1
+			
+			if(beginstep < firststep) {
+				beginstep = firststep
+				endstep = maxsteps
+			}
+			if(endstep > laststep) {
+				beginstep = laststep - maxsteps + 1
+				if(beginstep < firststep) {
+					beginstep = firststep
+				}
+				endstep = laststep
+			}
+
+			// display firststep link when beginstep is not firststep
+			if(beginstep > firststep) {
+				linkParams.offset = 0
+				link(linkTagAttrs.clone(), {out << firststep})
+				out << '<span class="step">..</span>'
+			}
+
+			// display paginate steps
+			(beginstep..endstep).each { i ->
+				if(currentstep == i) {
+					out << "<span class=\"currentStep\">${i}</span>"
+				}
+				else {
+					linkParams.offset = (i - 1) * max
+					link(linkTagAttrs.clone(), {out << i})
+				}
+			}	
+			
+			// display laststep link when endstep is not laststep
+			if(endstep < laststep) {
+				out << '<span class="step">..</span>'
+				linkParams.offset = (laststep -1) * max
+				link(linkTagAttrs.clone(), {out << laststep})
+			}		
 		}
-		linkParams.offset = offset+max
-		if(combined < total) {	
-			linkTagAttrs.'class'='nextLink'			
-			link(linkTagAttrs,{out<< (attrs.'next'? attrs.'next' : 'Next' )})			
+		
+		// display next link when not on laststep
+		if(currentstep < laststep) {	
+			linkTagAttrs.class = 'nextLink'			
+			linkParams.offset = offset + max
+			link(linkTagAttrs.clone(), {out << (attrs.next ? attrs.next : 'Next')})			
 		}
 
 	}

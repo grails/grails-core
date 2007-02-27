@@ -125,3 +125,10 @@ td .errors {
 	text-align:left;
 	width:80%;
 }
+
+.prevLink, .step, .currentStep, .nextLink {
+	padding-right: 5px;
+}
+.currentStep {
+	font-weight:bold;
+}
