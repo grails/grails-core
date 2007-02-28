@@ -35,6 +35,7 @@ grailsVersion =  Ant.antProject.properties.'grails.version'
 grailsEnv = System.getProperty("grails.env") 
 defaultEnv = System.getProperty("grails.default.env") == "true" ? true : false 
 serverPort = System.getProperty('server.port') ? System.getProperty('server.port').toInteger() : 8080   
+serverHost = System.getProperty('server.host') ? System.getProperty('server.host') : null
 basedir = System.getProperty("base.dir")    
 baseFile = new File(basedir)
 baseName = baseFile.name      
