@@ -28,7 +28,7 @@
     <import file="ant/build/unit-test.xml" />
     <import file="ant/build/bundle.xml"    />
     <import file="ant/build/javadoc.xml"   />
-    <import file="ant/build/checkstyle.xml"   />
+    <!--<import file="ant/build/checkstyle.xml"   />-->
     <import file="ant/build/release.xml"   />
 
     <target name="cruise"
