@@ -46,7 +46,9 @@ task ( runApp : "Main implementation that executes a Grails application") {
     grailsServer = server
     try {
         def listener = new SocketListener()
-        listener.setPort(serverPort)
+        listener.setPort(serverPort)    
+		if(serverHost)
+			listener.setHost(serverHost) 
         server.addListener(listener)                          
 
         server.addWebApplication("/${grailsAppName}", "${basedir}/web-app")
