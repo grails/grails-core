@@ -1,0 +1,32 @@
+<project name="grails-checkstyle">
+    <taskdef resource="checkstyletask.properties"
+             classpath="cruise/checkstyle/lib/checkstyle-all-4.3.jar"/>
+    <target name="checkstyle" description="Generate checkstyle output.">
+        <delete dir="${grails.checkstyle.output}"/>
+        <mkdir dir="${grails.checkstyle.output}"/>
+        <checkstyle config="cruise/checkstyle/sun_checks.xml"
+                    failureProperty="checkstyle.failure"
+                    failOnViolation="false">
+                    
+            <formatter type="xml" tofile="${grails.checkstyle.output}/checkstyle_report.xml"/>
+            
+            <fileset dir="${grails.src.commons}" includes="**/*.java"/>
+            <fileset dir="${grails.src.web}" includes="**/*.java"/>
+            <fileset dir="${grails.src.war}" includes="**/*.java"/>
+            <fileset dir="${grails.src.persistence}" includes="**/*.java"/>
+            <fileset dir="${grails.src.scaffolding}" includes="**/*.java"/>
+            <fileset dir="${grails.src.tiger}" includes="**/*.java"/>
+
+            <fileset dir="${grails.test.src.web}" includes="**/*.java"/>
+            <fileset dir="${grails.test.src.persistence}" includes="**/*.java"/>
+            <fileset dir="${grails.test.src.scaffolding}" includes="**/*.java"/>
+            <fileset dir="${grails.test.src.commons}" includes="**/*.java"/>
+            <fileset dir="${grails.test.src.web}" includes="**/*.java"/>
+
+        </checkstyle>
+        <style in="${grails.checkstyle.output}/checkstyle_report.xml"
+               out="${grails.checkstyle.output}/checkstyle_report.html"
+               style="cruise/checkstyle/checkstyle-noframes.xsl"/>
+    </target>
+
+</project>
