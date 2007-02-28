@@ -21,7 +21,7 @@ class TemplateGeneratingResponseHandlerTests extends GroovyTestCase {
     }
     void testCreateScaffoldedListResponse() {
         def webRequest = GrailsWebUtil.bindMockWebRequest()
-
+        webRequest.actionName = "list"
 
         def url = "/test/list"
         def handler = new TemplateGeneratingResponseHandler()
@@ -39,7 +39,7 @@ class TemplateGeneratingResponseHandlerTests extends GroovyTestCase {
 
     void testCreateScaffoldedShowResponse() {
         def webRequest = GrailsWebUtil.bindMockWebRequest()
-
+        webRequest.actionName = "show"
 
         def url = "/test/show"
         def handler = new TemplateGeneratingResponseHandler()
@@ -57,7 +57,7 @@ class TemplateGeneratingResponseHandlerTests extends GroovyTestCase {
 
     void testCreateScaffoldedEditResponse() {
         def webRequest = GrailsWebUtil.bindMockWebRequest()
-
+        webRequest.actionName = "edit"
 
         def url = "/test/edit"
         def handler = new TemplateGeneratingResponseHandler()
@@ -75,7 +75,7 @@ class TemplateGeneratingResponseHandlerTests extends GroovyTestCase {
 
     void testCreateScaffoldedCreateResponse() {
         def webRequest = GrailsWebUtil.bindMockWebRequest()
-
+        webRequest.actionName = "create"
 
         def url = "/test/create"
         def handler = new TemplateGeneratingResponseHandler()

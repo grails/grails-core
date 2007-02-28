@@ -442,8 +442,16 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
         return "gsp_script_"+ ++scriptNameCount;
     }
 
-
+    /**
+     * Sets the ResourceLoader from the ApplicationContext
+     *
+     * @param applicationContext The ApplicationContext
+     * @throws BeansException Thrown when an error occurs with the ApplicationContext
+     */
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        if(this.resourceLoader == null) {
+            this.resourceLoader = applicationContext;
+        }
     }
 
     /**

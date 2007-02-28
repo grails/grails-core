@@ -21,6 +21,7 @@ import org.codehaus.groovy.grails.commons.GrailsTagLibClass;
 import org.codehaus.groovy.grails.commons.TagLibArtefactHandler;
 import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods;
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
+import org.codehaus.groovy.grails.web.pages.exceptions.GroovyPagesException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.Resource;
 import org.springframework.validation.Errors;
@@ -146,21 +147,12 @@ public class DefaultGrailsApplicationAttributes implements GrailsApplicationAttr
 
     public GroovyPagesTemplateEngine getPagesTemplateEngine() {
        ApplicationContext appCtx = getApplicationContext();
-       GroovyPagesTemplateEngine engine;
        if(appCtx.containsBean(GroovyPagesTemplateEngine.BEAN_ID)) {
             return (GroovyPagesTemplateEngine)appCtx.getBean(GroovyPagesTemplateEngine.BEAN_ID);
        }
        else {
-           engine = (GroovyPagesTemplateEngine)this.context.getAttribute(GSP_TEMPLATE_ENGINE);
-           if(engine == null) {
-               engine = new GroovyPagesTemplateEngine(getServletContext());
-               engine.setApplicationContext(getApplicationContext());
-               engine.setClassLoader(getGrailsApplication().getClassLoader());
-               this.context.setAttribute(GSP_TEMPLATE_ENGINE,engine);
-           }
-
+           throw new GroovyPagesException("No bean named ["+GroovyPagesTemplateEngine.BEAN_ID+"] defined in Spring application context!");
        }
-       return engine;
     }
 
     public GrailsApplication getGrailsApplication() {

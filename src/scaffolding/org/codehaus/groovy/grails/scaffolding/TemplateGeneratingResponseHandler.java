@@ -21,12 +21,14 @@ import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
 import org.codehaus.groovy.grails.scaffolding.exceptions.ScaffoldingException;
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
 import org.codehaus.groovy.grails.web.pages.GroovyPage;
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.springframework.core.io.Resource;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.View;
 import org.springframework.web.servlet.ViewResolver;
 import org.springframework.web.servlet.support.RequestContextUtils;
 import org.springframework.web.servlet.view.AbstractUrlBasedView;
+import org.springframework.web.context.request.RequestContextHolder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -131,9 +133,9 @@ public class TemplateGeneratingResponseHandler implements ScaffoldResponseHandle
         else {
             StringWriter sw = new StringWriter();
             PrintWriter pw = new PrintWriter(sw);
-            String viewName = uri.substring(uri.lastIndexOf("/"));
-            int i = viewName.lastIndexOf(".");
-            if(i>-1) viewName = viewName.substring(0,i);
+
+            GrailsWebRequest webRequest = (GrailsWebRequest) RequestContextHolder.currentRequestAttributes();
+            String viewName = webRequest.getActionName();
 
             if(grailsApplication == null) throw new IllegalStateException("Property [grailsApplication] must be set!");
 
