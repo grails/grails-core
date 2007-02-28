@@ -17,7 +17,8 @@ package org.codehaus.groovy.grails.web.servlet.mvc;
 
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
+//import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -27,19 +28,24 @@ import javax.servlet.http.HttpServletRequest;
  * parameter is set with the same name as a request parameter the controller parameter value is retrieved.
  * 
  * @author Graeme Rocher
+ * @author Kate Rhodes
+ * 
  * @since Oct 24, 2005
  */
 public class GrailsParameterMap implements Map {
 
 	private Map parameterMap;
-	private Map controllerParamsMap = new HashMap();
 	private HttpServletRequest request;
 		
 	public GrailsParameterMap(HttpServletRequest request) {
 		super();
 
 		this.request = request;
-		this.parameterMap = request.getParameterMap();
+		this.parameterMap = new HashMap();
+		for (Iterator it = request.getParameterMap().keySet().iterator(); it.hasNext(); ){
+			Object key = it.next();
+			parameterMap.put(key, request.getParameterMap().get(key));
+		}
 	}
 
 	/**
@@ -50,80 +56,64 @@ public class GrailsParameterMap implements Map {
 	}
 
 	public int size() {
-		return parameterMap.size() + controllerParamsMap.size();
+		return parameterMap.size();
 	}
 
 	public boolean isEmpty() {			
-		return (parameterMap.isEmpty() && controllerParamsMap.isEmpty());
+		return parameterMap.isEmpty();
 	}
 
 	public boolean containsKey(Object key) {
-		return (parameterMap.containsKey(key) || controllerParamsMap.containsKey(key));
+		return parameterMap.containsKey(key);
 	}
 
 	public boolean containsValue(Object value) {
-		return (parameterMap.containsValue(value) || controllerParamsMap.containsValue(value));
+		return parameterMap.containsValue(value);
 	}
 
 	public Object get(Object key) {
-		if(!(key instanceof String))
-				throw new IllegalArgumentException("Parameter key '"+key+"' must be a string value");
-		
-		if(controllerParamsMap.containsKey(key)) {
-			return controllerParamsMap.get(key);
-		}
-		else {
+		// removed test for String key because there 
+		// should be no limitations on what you shove in or take out
+		if (parameterMap.get(key) instanceof String []){
 			String[] valueArray = (String[])parameterMap.get(key);
-			if(valueArray == null)
+			if(valueArray == null){
 				return null;
+			}
 			
 			if(valueArray.length == 1) {
 				return valueArray[0];
 			}
-	
-			return parameterMap.get(key);
 		}
+		return parameterMap.get(key);
+		
 	}
 
 	public Object put(Object key, Object value) {
-		if(!(key instanceof String))
-			throw new IllegalArgumentException("Parameter key '"+key+"' must be a string value");
-		
-		controllerParamsMap.put(key,value);
-		return value;
+		return parameterMap.put(key, value);
 	}
 
 	public Object remove(Object key) {
-		if(!(key instanceof String))
-			throw new IllegalArgumentException("Parameter key '"+key+"' must be a string value");
-
-		return controllerParamsMap.remove(key);
+		return parameterMap.remove(key);
 	}
 
 	public void putAll(Map map) {
-		controllerParamsMap.putAll(map);
+		parameterMap.putAll(map);
 	}
 
 	public void clear() {
-		controllerParamsMap.clear();
+		parameterMap.clear();
 	}
 
 	public Set keySet() {
-		Set keys = new HashSet(controllerParamsMap.keySet());
-		keys.addAll( parameterMap.keySet() );
-		return keys;
+		return parameterMap.keySet();
 	}
 
 	public Collection values() {
-		Set values = new HashSet(parameterMap.values());
-		values.addAll( controllerParamsMap.values() );
-		return values;
+		return parameterMap.values();
 	}
 
 	public Set entrySet() {
-		Set entries = new HashSet(parameterMap.entrySet());
-		entries.addAll( controllerParamsMap.entrySet() );
-		return entries;
+		return parameterMap.entrySet();
 	}		
 
 }
