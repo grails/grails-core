@@ -32,7 +32,7 @@ includeTargets << new File ( "${grailsHome}/scripts/Init.groovy" )
 includeTargets << new File ( "${grailsHome}/scripts/Package.groovy" )
 
 task ('default': "Generates a CRUD interface (contoroller + views) for a domain class") {
-	depends( packageApp )
+	depends( checkVersion, packageApp )
 	typeName = "Domain Class"
 	promptForName()
 	generateAll()

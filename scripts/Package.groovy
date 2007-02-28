@@ -37,7 +37,9 @@ includeTargets << new File ( "${grailsHome}/scripts/Init.groovy" )
 includeTargets << new File ( "${grailsHome}/scripts/Compile.groovy" )  
 includeTargets << new File ( "${grailsHome}/scripts/PackagePlugins.groovy" )      
 
-task ('default': "Packages a Grails application. Note: To create WAR use 'grails war'") {	 
+task ('default': "Packages a Grails application. Note: To create WAR use 'grails war'") {
+     depends( checkVersion)
+
 	 packagePlugins()	 
      packageApp()     
 }                     

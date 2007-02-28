@@ -36,7 +36,7 @@ includeTargets << new File ( "${grailsHome}/scripts/Package.groovy" )
 includeTargets << new File ( "${grailsHome}/scripts/PackagePlugins.groovy" )  
 
 task ('default': "Run's a Grails application in Jetty") { 
-	depends( packagePlugins, packageApp )
+	depends( checkVersion, packagePlugins, packageApp )
 	runApp()
 	watchContext()
 }                 
@@ -49,7 +49,7 @@ task ( runApp : "Main implementation that executes a Grails application") {
         listener.setPort(serverPort)
         server.addListener(listener)                          
 
-        server.addWebApplication("/${baseName}", "${basedir}/web-app")
+        server.addWebApplication("/${grailsAppName}", "${basedir}/web-app")
         server.start()
     } catch(Throwable t) {
         t.printStackTrace()
@@ -62,9 +62,9 @@ task( watchContext : "Watches the Jetty web.xml for changes and reloads of neces
 		if(lastModified < f.lastModified()) {
 			println 'Web Context changed. Reloading...'
         	lastModified = f.lastModified()
-			def ctx = grailsServer.getContext("/${baseName}")
+			def ctx = grailsServer.getContext("/${grailsAppName}")
 			if(ctx) {
-				println 'New Controller added. Restarting Grails context: /' + baseName
+				println 'New Controller added. Restarting Grails context: /' + grailsAppName
 				ctx.stop(true)
 				ctx.start()
 			}

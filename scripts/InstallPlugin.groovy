@@ -40,7 +40,8 @@ grailsHome = Ant.antProject.properties."env.GRAILS_HOME"
 includeTargets << new File ( "${grailsHome}/scripts/Init.groovy" )
 
 task ( "default" : "Installs a plug-in for the given URL or name and version") {
-   installPlugin()                                                      
+   depends(checkVersion)
+   installPlugin()
 }     
                 
 task(installPlugin:"Implementation task") {   

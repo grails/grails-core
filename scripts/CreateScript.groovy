@@ -30,6 +30,7 @@ grailsHome = Ant.antProject.properties."env.GRAILS_HOME"
 includeTargets << new File ( "${grailsHome}/scripts/Init.groovy" )  
 
 task ('default': "Creates a Grails Gant Script") {
+    depends(checkVersion)
 
 	typeName = "" 
 	artifactName = "Script" 	

@@ -30,6 +30,8 @@ includeTargets << new File ( "${grailsHome}/scripts/Init.groovy" )
 
 
 task ('default': "Generates a Canoo WebTest (functional test) from a Grails domain class") {
+    depends(checkVersion)
+
 	if(!args) {
 		Ant.input(addProperty:"artifact.name", message:"Domain class name not specified. Please enter:")
 		args = Ant.antProject.properties."artifact.name"

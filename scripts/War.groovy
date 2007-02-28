@@ -29,6 +29,8 @@ includeTargets << new File ( "${grailsHome}/scripts/Clean.groovy" )
 includeTargets << new File ( "${grailsHome}/scripts/Package.groovy" )
 
 task ('default': "Creates a WAR archive") {
+    depends( checkVersion)
+
 	war()
 } 
 
@@ -54,7 +56,7 @@ task (war: "The implementation task") {
 		Ant.replace(file:appCtxFile, 
 				token:"classpath*:", value:"" ) 
 
-		def fileName = new File(basedir).name
+		def fileName = grailsAppName
 		warName = "${basedir}/${fileName}.war"
 
 		warPlugins()		

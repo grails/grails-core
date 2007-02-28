@@ -31,6 +31,7 @@ includeTargets << new File ( "${grailsHome}/scripts/Init.groovy" )
 includeTargets << new File( "${grailsHome}/scripts/CreateTestSuite.groovy")
 
 task ('default': "Creates a new service class") {
+    depends(checkVersion)
 
 	typeName = "Service"
 	artifactName = "Service" 	

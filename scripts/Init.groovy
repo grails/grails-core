@@ -43,6 +43,23 @@ grailsTmp = "${userHome}/.grails/tmp"
 
 resolver = new PathMatchingResourcePatternResolver()
 grailsAppName = null
+appGrailsVersion = null
+
+// Get App's metadata if there is any
+if (new File("${basedir}/application.properties").exists()) {
+    // We know we have an app
+    Ant.property(file:"${basedir}/application.properties")
+
+    grailsAppName = Ant.antProject.properties.'app.name'
+    // If no app name property (upgraded/new/edited project) default to basedir
+    if (!grailsAppName) {
+        grailsAppName = baseName
+    }
+
+    appGrailsVersion = Ant.antProject.properties.'app.grails.version'
+
+}
+
 // a resolver that doesn't throw exceptions when resolving resources
 resolveResources = { String pattern ->
 	try {
@@ -89,8 +106,6 @@ task ( createStructure: "Creates the application directory structure") {
 	    mkdir(dir:"${basedir}/grails-tests")
 	    mkdir(dir:"${basedir}/scripts") 
 	    mkdir(dir:"${basedir}/web-app")
-	    mkdir(dir:"${basedir}/web-app")
-	    mkdir(dir:"${basedir}/web-app")
 	    mkdir(dir:"${basedir}/web-app/js")
 	    mkdir(dir:"${basedir}/web-app/css")
 	    mkdir(dir:"${basedir}/web-app/images")
@@ -101,6 +116,21 @@ task ( createStructure: "Creates the application directory structure") {
 	    mkdir(dir:"${basedir}/hibernate") 
 	}
 }  
+
+task (checkVersion: "Stops build if app expects different Grails version") {
+    if (new File("${basedir}/application.properties").exists()) {
+        if (appGrailsVersion != grailsVersion) {
+            println "Application expects grails version [$appGrailsVersion], but GRAILS_HOME is version " +
+                "[$grailsVersion] - use the correct Grails version or run 'grails upgrade' if this Grails "+
+                "version is newer than the version your application expects."
+            System.exit(1)
+        }
+    } else {
+        // We know this is pre-0.5 application
+	    println "Application is pre-Grails 0.5, please run: grails upgrade"
+	    System.exit(1)
+    }
+}
 
 task ( copyBasics: "Copies the basic resources required for a Grails app to function") {
     def libs = getGrailsLibs()
@@ -140,6 +170,7 @@ task ( copyBasics: "Copies the basic resources required for a Grails app to func
 }
 task( init: "main init task") {
 	depends( createStructure, copyBasics )
+
 	Ant.sequential {
 		copy(todir:"${basedir}/web-app") {
 			fileset(dir:"${grailsHome}/src/war") {
@@ -160,11 +191,6 @@ task( init: "main init task") {
 		
 		createCorePlugin()   	                                                                                  
 					
-		if(servletVersion != "2.3") {
-			replace(file:"${basedir}/web-app/index.jsp", token:"http://java.sun.com/jstl/core",
-					value:"http://java.sun.com/jsp/jstl/core")
-		}  
-			 
 		copy(todir:"${basedir}/spring") {
 			fileset(dir:"${grailsHome}/src/war/WEB-INF/spring") {
 				include(name:"*.xml")
@@ -190,7 +216,7 @@ task("default": "Initializes a Grails application. Warning: This task will overw
 }  
 
 task ('createArtifact': "Creates a specific Grails artifact") {
-	depends(promptForName)
+	depends( promptForName)
 	
 	Ant.mkdir(dir:"${basedir}/${artifactPath}")
 	

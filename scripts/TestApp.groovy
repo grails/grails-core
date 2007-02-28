@@ -41,7 +41,7 @@ grailsHome = Ant.antProject.properties."env.GRAILS_HOME"
 includeTargets << new File ( "${grailsHome}/scripts/Package.groovy" )
 
 task ('default': "Run a Grails applications unit tests") {      
-	depends( classpath )
+	depends( classpath, checkVersion )
 	grailsEnv = "test"
 	packageApp()
 	testApp()

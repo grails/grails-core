@@ -31,16 +31,25 @@ includeTargets << new File ( "${grailsHome}/scripts/Clean.groovy" )
 includeTargets << new File ( "${grailsHome}/scripts/Init.groovy" )
 
 task ( "default" : "Creates a Grails project, including the necessary directory structure and commons files") {
-   createApp()                                                      
+   createApp()
 }     
 
 task( createApp: "The implementation task")  {
-   depends( appName, createStructure, init )   
+    depends( appName, createStructure, updateAppProperties, init )
 	
 	createIDESupportFiles()
 	
 	println "Created Grails Application at $basedir"	
 }                         
+
+task( updateAppProperties: "Updates default application.properties")  {
+    Ant.propertyfile(file:"${basedir}/application.properties",
+        comment:"Do not edit app.grails.* properties, they may change automatically. "+
+            "DO NOT put application configuration in here, it is not the right place!") {
+        entry(key:"app.name", value:"$grailsAppName")
+        entry(key:"app.grails.version", value:"$grailsVersion")
+    }
+}
 
 task( createIDESupportFiles: "Creates the IDE suppot files (Eclipse, TextMate etc.) project files") {
 	Ant.copy(todir:"${basedir}") {

@@ -30,7 +30,7 @@ grailsHome = Ant.antProject.properties."env.GRAILS_HOME"
 includeTargets << new File ( "${grailsHome}/scripts/Init.groovy" )
 task ('default': "Creates a new Grails test suite") {
 	typeName =""
-	depends( createTestSuite )
+	depends( checkVersion, createTestSuite )
 }                            
 
 task (createTestSuite: "Implementation of create-test-suite") {

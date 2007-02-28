@@ -29,9 +29,16 @@ grailsHome = Ant.antProject.properties."env.GRAILS_HOME"
 includeTargets << new File ( "${grailsHome}/scripts/Init.groovy" )
 
 task( upgrade: "main upgrade task") {
-	depends( createStructure )    
+
+	depends( createStructure )
    
-	 Ant.input(message: """
+    if (appGrailsVersion != grailsVersion) {
+        def gv = appGrailsVersion == null ? "pre-0.5" : appGrailsVersion
+	    println "NOTE: Your application currently expects grails version [$gv], "+
+	        "this task will upgrade it to Grails ${grailsVersion}"
+    }
+
+    Ant.input(message: """
 	WARNING: This task will upgrade an older Grails application to ${grailsVersion}.
 	However, tag libraries provided by earlier versions of Grails found in grails-app/taglib will be removed. 
 	The task will not, however, delete tag libraries developed by yourself.
@@ -99,18 +106,21 @@ task( upgrade: "main upgrade task") {
 		    		token:"@grails.project.key@", value:"${appKey}" )				
 
 
-		if(servletVersion != "2.3") {
-			replace(file:"${basedir}/web-app/index.jsp", token:"http://java.sun.com/jstl/core",
-					value:"http://java.sun.com/jsp/jstl/core")
-		}  
-		
 		copy(todir:"${basedir}/web-app/WEB-INF/tld", overwrite:true) {
 			fileset(dir:"${grailsHome}/src/war/WEB-INF/tld/${servletVersion}")	
 			fileset(dir:"${grailsHome}/src/war/WEB-INF/tld", includes:"spring.tld")
 			fileset(dir:"${grailsHome}/src/war/WEB-INF/tld", includes:"grails.tld")			
 		}	 
 		touch(file:"${basedir}/grails-app/i18n/messages.properties") 
+
+        propertyfile(file:"${basedir}/application.properties",
+            comment:"Do not edit app.grails.* properties, they may change automatically. "+
+                "DO NOT put application configuration in here, it is not the right place!") {
+            entry(key:"app.name", value:"$grailsAppName")
+            entry(key:"app.grails.version", value:"$grailsVersion")
+        }
 	}
+    
 }
 
 task("default": "Upgrades a Grails application from a previous version of Grails") {

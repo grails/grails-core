@@ -33,7 +33,7 @@ grailsHome = Ant.antProject.properties."env.GRAILS_HOME"
 includeTargets << new File ( "${grailsHome}/scripts/RunApp.groovy" )  
 
 task ('default': "Run's all of the Web tests against a Grails application") { 
-	depends( classpath )
+	depends( classpath, checkVersion )
 	println "Running WebTest!"
 	try {
 	    runWebTest()
