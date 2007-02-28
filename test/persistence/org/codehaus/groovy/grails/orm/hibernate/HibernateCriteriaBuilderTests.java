@@ -283,6 +283,7 @@ public class HibernateCriteriaBuilderTests extends
         assertEquals(1 , results.size());
 	}
 
+
     public void testJunctions() throws Exception {
         GrailsDomainClass domainClass =  (GrailsDomainClass) this.grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE,
             "CriteriaBuilderTestClass");

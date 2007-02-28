@@ -114,6 +114,7 @@ public class HibernateCriteriaBuilder extends BuilderSupport {
 
     private static final String ROOT_CALL = "doCall";
     private static final String LIST_CALL = "list";
+    private static final String LIST_DISTINCT_CALL = "listDistinct";
     private static final String COUNT_CALL = "count";
     private static final String GET_CALL = "get";
     private static final String SCROLL_CALL = "scroll";
@@ -843,6 +844,7 @@ public class HibernateCriteriaBuilder extends BuilderSupport {
     protected Object createNode(Object name, Map attributes) {
         if(name.equals(ROOT_CALL) ||
                 name.equals(LIST_CALL) ||
+                name.equals(LIST_DISTINCT_CALL) ||
                 name.equals(GET_CALL) ||
                 name.equals(COUNT_CALL) ||
                 name.equals(SCROLL_CALL)) {
@@ -850,13 +852,17 @@ public class HibernateCriteriaBuilder extends BuilderSupport {
             if(this.criteria != null)
                 throwRuntimeException( new IllegalArgumentException("call to [" + name + "] not supported here"));
 
-            if(name.equals(GET_CALL))
+            if (name.equals(GET_CALL)) {
                 this.uniqueResult = true;
-            if(name.equals(SCROLL_CALL)) {
+            }
+            else if (name.equals(SCROLL_CALL)) {
                 this.scroll = true;
             }
-            else if(name.equals(COUNT_CALL)) {
+            else if (name.equals(COUNT_CALL)) {
                 this.count = true;
+            }
+            else if (name.equals(LIST_DISTINCT_CALL)) {
+	            this.resultTransformer = CriteriaSpecification.DISTINCT_ROOT_ENTITY;
             }
 
             if(TransactionSynchronizationManager.hasResource(sessionFactory)) {
