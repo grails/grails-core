@@ -350,6 +350,18 @@ public class HibernateCriteriaBuilder extends BuilderSupport {
             criteria.setFetchMode(associationPath, fetchMode);
         }
     }
+
+    /**
+     * Sets the resultTransformer.  
+     * @param resultTransformer The result transformer to use.
+     */
+    public void resultTransformer(ResultTransformer resultTransformer) {
+		if (criteria == null) {
+            throwRuntimeException( new IllegalArgumentException("Call to [resultTransformer] not supported here"));
+		}
+        this.resultTransformer = resultTransformer;
+    }
+
     /**
      * Creates a Criterion that compares to class properties for equality
      * @param propertyName The first property name
