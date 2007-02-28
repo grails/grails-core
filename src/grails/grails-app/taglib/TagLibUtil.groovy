@@ -23,14 +23,14 @@ class TagLibUtil {
 	/**
 	 * Helper method for writing the output to a string instead of the response writer
 	 */	
-	static def outToString(tag,attrs) {
+	static outToString(tag,attrs, body={}) {
 		def sw = new StringWriter()
 		def result = null
 		def saveOut = tag.delegate.out		
 		try {
 			tag.delegate.out = new PrintWriter(sw)
 			if(tag) {
-				tag(attrs)
+				tag(attrs,body)
 			}
 		}
 		finally {
