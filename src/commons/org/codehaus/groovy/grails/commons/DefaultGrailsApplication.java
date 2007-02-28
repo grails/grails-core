@@ -660,6 +660,10 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
         artefactHandlersByName.put(handler.getType(), handler);
     }
 
+    public ArtefactHandler[] getArtefactHandlers() {
+        return artefactHandlers;
+    }
+
     /**
      * <p>Re-initialize the artefacts of the specified type. This gives handlers a chance to update caches etc</p>
      * @param artefactType The type of artefact to init

@@ -172,12 +172,10 @@ task ( copyBasics: "Copies the basic resources required for a Grails app to func
 			fileset(dir:"${grailsHome}/src/war/WEB-INF") {
 				include(name:"applicationContext.xml")
 				exclude(name:"log4j.properties")
-				include(name:"sitemesh.xml")								
+				include(name:"sitemesh.xml")
 			}			
 		}	
-		copy(file:"${grailsHome}/src/war/WEB-INF/log4j.properties",
-				 tofile:"${basedir}/web-app/WEB-INF/log4j.properties")
-		copy(file:"${grailsHome}/src/war/WEB-INF/web${servletVersion}.template.xml", 
+		copy(file:"${grailsHome}/src/war/WEB-INF/web${servletVersion}.template.xml",
 				 tofile:"${basedir}/web-app/WEB-INF/web.template.xml") 
 				 
 		copy(todir:"${basedir}/web-app/WEB-INF/tld") {

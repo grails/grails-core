@@ -215,4 +215,12 @@ public interface GrailsApplication extends ApplicationContextAware {
      * @param handler The new handler to add
      */
     public void registerArtefactHandler(ArtefactHandler handler);
+
+    /**
+     * <p>Obtain a list of all the artefact handlers</p>
+     * @return The list, possible empty but not null, of all currently registered handlers
+     */
+    public ArtefactHandler[] getArtefactHandlers();
+
+
 }

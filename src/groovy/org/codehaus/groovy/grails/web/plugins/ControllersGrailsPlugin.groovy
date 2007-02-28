@@ -336,8 +336,6 @@ class ControllersGrailsPlugin {
 				RCH.currentRequestAttributes().controllerName
 			}
 
-		    metaClass.log = LogFactory.getLog(controller.fullName)
-
 			metaClass.setErrors = { Errors errors ->
 				RCH.currentRequestAttributes().setAttribute( GrailsApplicationAttributes.ERRORS, errors, 0)
 			}
