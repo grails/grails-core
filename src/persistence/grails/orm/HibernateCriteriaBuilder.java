@@ -29,6 +29,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Stack;
 
 import org.hibernate.Criteria;
 import org.hibernate.FetchMode;
@@ -129,8 +130,7 @@ public class HibernateCriteriaBuilder extends BuilderSupport {
     private Proxy resultProxy = new ExtendProxy();
     private Proxy criteriaProxy;
     private Object parent;
-    private List logicalExpressions = new ArrayList();
-    private List logicalExpressionArgs = new ArrayList();
+    private Stack logicalExpressionStack = new Stack();
     private boolean participate;
     private boolean scroll;
     private boolean count;
@@ -375,14 +375,7 @@ public class HibernateCriteriaBuilder extends BuilderSupport {
         }
         propertyName = calculatePropertyName(propertyName);
         otherPropertyName = calculatePropertyName(otherPropertyName);
-        Criterion c = Restrictions.eqProperty( propertyName, otherPropertyName );
-
-        if(isInsideLogicalExpression()) {
-            this.logicalExpressionArgs.add(c);
-        }else {
-           addToCriteria(c);
-        }
-        return c;
+        return addToCriteria(Restrictions.eqProperty( propertyName, otherPropertyName ));
     }
 
 
@@ -398,15 +391,7 @@ public class HibernateCriteriaBuilder extends BuilderSupport {
         }
         propertyName = calculatePropertyName(propertyName);
         otherPropertyName = calculatePropertyName(otherPropertyName);
-
-        Criterion c = Restrictions.neProperty( propertyName, otherPropertyName );
-
-        if(isInsideLogicalExpression()) {
-            this.logicalExpressionArgs.add(c);
-        }else {
-            addToCriteria(c);
-        }
-        return c;
+        return addToCriteria(Restrictions.neProperty( propertyName, otherPropertyName ));
     }
     /**
      * Creates a Criterion that tests if the first property is greater than the second property
@@ -420,15 +405,7 @@ public class HibernateCriteriaBuilder extends BuilderSupport {
         }
         propertyName = calculatePropertyName(propertyName);
         otherPropertyName = calculatePropertyName(otherPropertyName);
-
-        Criterion c = Restrictions.gtProperty( propertyName, otherPropertyName );
-
-        if(isInsideLogicalExpression()) {
-            this.logicalExpressionArgs.add(c);
-        }else {
-            addToCriteria(c);
-        }
-        return c;
+        return addToCriteria(Restrictions.gtProperty( propertyName, otherPropertyName ));
     }
     /**
      * Creates a Criterion that tests if the first property is greater than or equal to the second property
@@ -442,15 +419,7 @@ public class HibernateCriteriaBuilder extends BuilderSupport {
         }
         propertyName = calculatePropertyName(propertyName);
         otherPropertyName = calculatePropertyName(otherPropertyName);
-
-        Criterion c = Restrictions.geProperty( propertyName, otherPropertyName );
-
-        if(isInsideLogicalExpression()) {
-            this.logicalExpressionArgs.add(c);
-        }else {
-            addToCriteria(c);
-        }
-        return c;
+        return addToCriteria(Restrictions.geProperty( propertyName, otherPropertyName ));
     }
     /**
      * Creates a Criterion that tests if the first property is less than the second property
@@ -464,15 +433,7 @@ public class HibernateCriteriaBuilder extends BuilderSupport {
         }
         propertyName = calculatePropertyName(propertyName);
         otherPropertyName = calculatePropertyName(otherPropertyName);
-
-        Criterion c = Restrictions.ltProperty( propertyName, otherPropertyName );
-
-        if(isInsideLogicalExpression()) {
-            this.logicalExpressionArgs.add(c);
-        }else {
-            addToCriteria(c);
-        }
-        return c;
+        return addToCriteria(Restrictions.ltProperty( propertyName, otherPropertyName ));
     }
     /**
      * Creates a Criterion that tests if the first property is less than or equal to the second property
@@ -486,15 +447,7 @@ public class HibernateCriteriaBuilder extends BuilderSupport {
         }
         propertyName = calculatePropertyName(propertyName);
         otherPropertyName = calculatePropertyName(otherPropertyName);
-
-        Criterion c = Restrictions.leProperty( propertyName, otherPropertyName );
-
-        if(isInsideLogicalExpression()) {
-            this.logicalExpressionArgs.add(c);
-        }else {
-            addToCriteria(c);
-        }
-        return c;
+        return addToCriteria(Restrictions.leProperty(propertyName, otherPropertyName));
     }
     /**
      * Creates a "greater than" Criterion based on the specified property name and value
@@ -508,15 +461,7 @@ public class HibernateCriteriaBuilder extends BuilderSupport {
         }
         propertyName = calculatePropertyName(propertyName);
         propertyValue = calculatePropertyValue(propertyValue);
-
-        Criterion c = Restrictions.gt( propertyName, propertyValue );
-
-        if(isInsideLogicalExpression()) {
-            this.logicalExpressionArgs.add(c);
-        }else {
-            addToCriteria(c);
-        }
-        return c;
+        return addToCriteria(Restrictions.gt(propertyName, propertyValue));
     }
 
 
@@ -533,14 +478,7 @@ public class HibernateCriteriaBuilder extends BuilderSupport {
         }
         propertyName = calculatePropertyName(propertyName);
         propertyValue = calculatePropertyValue(propertyValue);
-        Criterion c = Restrictions.ge( propertyName, propertyValue );
-
-        if(isInsideLogicalExpression()) {
-            this.logicalExpressionArgs.add(c);
-        }else {
-            addToCriteria(c);
-        }
-        return c;
+        return addToCriteria(Restrictions.ge(propertyName, propertyValue));
     }
     /**
      * Creates a "less than" Criterion based on the specified property name and value
@@ -554,14 +492,7 @@ public class HibernateCriteriaBuilder extends BuilderSupport {
         }
         propertyName = calculatePropertyName(propertyName);
         propertyValue = calculatePropertyValue(propertyValue);
-        Criterion c = Restrictions.lt( propertyName, propertyValue );
-
-        if(isInsideLogicalExpression()) {
-            this.logicalExpressionArgs.add(c);
-        }else {
-            addToCriteria(c);
-        }
-        return c;
+        return addToCriteria(Restrictions.lt(propertyName, propertyValue));
     }
     /**
      * Creates a "less than or equal to" Criterion based on the specified property name and value
@@ -575,14 +506,7 @@ public class HibernateCriteriaBuilder extends BuilderSupport {
         }
         propertyName = calculatePropertyName(propertyName);
         propertyValue = calculatePropertyValue(propertyValue);
-        Criterion c = Restrictions.le( propertyName, propertyValue );
-
-        if(isInsideLogicalExpression()) {
-            this.logicalExpressionArgs.add(c);
-        }else {
-            addToCriteria(c);
-        }
-        return c;
+        return addToCriteria(Restrictions.le(propertyName, propertyValue));
     }
     /**
      * Creates an "equals" Criterion based on the specified property name and value
@@ -597,14 +521,7 @@ public class HibernateCriteriaBuilder extends BuilderSupport {
         }
         propertyName = calculatePropertyName(propertyName);
         propertyValue = calculatePropertyValue(propertyValue);
-        Criterion c = Restrictions.eq( propertyName, propertyValue );
-
-        if(isInsideLogicalExpression()) {
-            this.logicalExpressionArgs.add(c);
-        }else {
-            addToCriteria(c);
-        }
-        return c;
+        return addToCriteria(Restrictions.eq(propertyName, propertyValue));
     }
     /**
      * Creates a Criterion with from the specified property name and "like" expression
@@ -619,14 +536,7 @@ public class HibernateCriteriaBuilder extends BuilderSupport {
         }
         propertyName = calculatePropertyName(propertyName);
         propertyValue = calculatePropertyValue(propertyValue);
-        Criterion c = Restrictions.like( propertyName, propertyValue );
-
-        if(isInsideLogicalExpression()) {
-            this.logicalExpressionArgs.add(c);
-        }else {
-            addToCriteria(c);
-        }
-        return c;
+        return addToCriteria(Restrictions.like(propertyName, propertyValue));
     }
     /**
      * Creates a Criterion with from the specified property name and "ilike" (a case sensitive version of "like") expression
@@ -641,14 +551,7 @@ public class HibernateCriteriaBuilder extends BuilderSupport {
         }
         propertyName = calculatePropertyName(propertyName);
         propertyValue = calculatePropertyValue(propertyValue);
-        Criterion c = Restrictions.ilike( propertyName, propertyValue );
-
-        if(isInsideLogicalExpression()) {
-            this.logicalExpressionArgs.add(c);
-        }else {
-            addToCriteria(c);
-        }
-        return c;
+        return addToCriteria(Restrictions.ilike(propertyName, propertyValue));
     }
     /**
      * Applys a "in" contrain on the specified property
@@ -662,14 +565,7 @@ public class HibernateCriteriaBuilder extends BuilderSupport {
             throwRuntimeException( new IllegalArgumentException("Call to [in] with propertyName ["+propertyName+"] and values ["+values+"] not allowed here."));
         }
         propertyName = calculatePropertyName(propertyName);
-        Criterion c = Restrictions.in( propertyName, values );
-
-        if(isInsideLogicalExpression()) {
-            this.logicalExpressionArgs.add(c);
-        }else {
-            addToCriteria(c);
-        }
-        return c;
+        return addToCriteria(Restrictions.in(propertyName, values));
     }
 
 	/**
@@ -698,14 +594,7 @@ public class HibernateCriteriaBuilder extends BuilderSupport {
             throwRuntimeException( new IllegalArgumentException("Call to [in] with propertyName ["+propertyName+"] and values ["+values+"] not allowed here."));
         }
         propertyName = calculatePropertyName(propertyName);
-        Criterion c = Restrictions.in( propertyName, values );
-
-        if(isInsideLogicalExpression()) {
-            this.logicalExpressionArgs.add(c);
-        }else {
-            addToCriteria(c);
-        }
-        return c;
+        return addToCriteria(Restrictions.in(propertyName, values));
     }
 
     /**
@@ -760,14 +649,7 @@ public class HibernateCriteriaBuilder extends BuilderSupport {
             throwRuntimeException( new IllegalArgumentException("Call to [sizeEq] with propertyName ["+propertyName+"] and size ["+size+"] not allowed here."));
         }
         propertyName = calculatePropertyName(propertyName);
-        Criterion c = Restrictions.sizeEq( propertyName, size );
-
-        if(isInsideLogicalExpression()) {
-            this.logicalExpressionArgs.add(c);
-        }else {
-            addToCriteria(c);
-        }
-        return c;
+        return addToCriteria(Restrictions.sizeEq(propertyName, size));
     }
 
     /**
@@ -782,13 +664,7 @@ public class HibernateCriteriaBuilder extends BuilderSupport {
         }
         propertyName = calculatePropertyName(propertyName);
         propertyValue = calculatePropertyValue(propertyValue);
-        Criterion c = Restrictions.ne( propertyName, propertyValue );
-        if(isInsideLogicalExpression()) {
-            this.logicalExpressionArgs.add(c);
-        }else {
-            addToCriteria(c);
-        }
-        return c;
+        return addToCriteria(Restrictions.ne(propertyName, propertyValue));
     }
 
 	public Object notEqual(String propertyName, Object propertyValue) {
@@ -806,13 +682,7 @@ public class HibernateCriteriaBuilder extends BuilderSupport {
             throwRuntimeException( new IllegalArgumentException("Call to [between] with propertyName ["+propertyName+"]  not allowed here."));
         }
         propertyName = calculatePropertyName(propertyName);
-        Criterion c = Restrictions.between( propertyName, lo,hi);
-        if(isInsideLogicalExpression()) {
-            this.logicalExpressionArgs.add(c);
-        }else {
-            addToCriteria(c);
-        }
-        return c;
+        return addToCriteria(Restrictions.between(propertyName, lo, hi));
     }
 
     protected Object createNode(Object name) {
@@ -831,14 +701,7 @@ public class HibernateCriteriaBuilder extends BuilderSupport {
     }
 
     private boolean isInsideLogicalExpression() {
-        if(this.logicalExpressions.size() > 0) {
-            String currentLogicalExpression = (String)this.logicalExpressions.get( this.logicalExpressions.size() - 1 );
-            if(currentLogicalExpression.equals( AND ) ||
-               currentLogicalExpression.equals( OR ) ||
-               currentLogicalExpression.equals( NOT ))
-                    return true;
-        }
-        return false;
+		return !logicalExpressionStack.isEmpty();
     }
 
     protected Object createNode(Object name, Map attributes) {
@@ -885,7 +748,7 @@ public class HibernateCriteriaBuilder extends BuilderSupport {
             if(this.criteria == null)
                 throwRuntimeException( new IllegalArgumentException("call to [" + name + "] not supported here"));
 
-            this.logicalExpressions.add(name);
+            this.logicalExpressionStack.add(new LogicalExpression(name));
             return name;
         } else if(name.equals( PROJECTIONS )) {
             if(this.criteria == null)
@@ -898,8 +761,9 @@ public class HibernateCriteriaBuilder extends BuilderSupport {
         else if(targetBean.isReadableProperty(name.toString())) {
             this.criteria.createAlias(name.toString(), name.toString()+ALIAS,CriteriaSpecification.LEFT_JOIN);
             this.aliasStack.add(name.toString()+ALIAS);
+            // the criteria within an association node are grouped with an implicit AND
+            logicalExpressionStack.push(new LogicalExpression(AND));
             return name;
-
         }
 
         closeSessionFollowingException();
@@ -941,62 +805,10 @@ public class HibernateCriteriaBuilder extends BuilderSupport {
             }
         }
         else if(node.equals( AND ) ||
-                node.equals( OR )) {
-            Criterion c = null;
-            if(logicalExpressionArgs.size() == 1 && node.equals(AND)) {
-                  c =(Criterion)logicalExpressionArgs.remove(0);
-            }
-            else if(logicalExpressionArgs.size() == 2) {
-                Criterion lhs = (Criterion)logicalExpressionArgs.remove(0);
-                Criterion rhs = (Criterion)logicalExpressionArgs.remove(0);
-                if(node.equals(OR))  {
-                    c = Restrictions.or(lhs,rhs);
-                }
-                else {
-                    c = Restrictions.and(lhs,rhs);
-                }
-            }
-            else if(logicalExpressionArgs.size() > 2) {
-                if(node.equals(OR)) {
-                    c = Restrictions.disjunction();
-                }
-                else {
-                    c = Restrictions.conjunction();
-                }
-                for (Iterator i = logicalExpressionArgs.iterator(); i.hasNext();) {
-                    Criterion criterion = (Criterion) i.next();
-                    ((Junction)c).add(criterion);
-                }
-
-            }
-            if(c!=null) {
-                if(parent instanceof Proxy) {
-                    addToCriteria( c );
-                }
-                else if(parent.equals( AND ) ||
-                        parent.equals( OR )) {
-
-                    this.logicalExpressionArgs.add(c );
-                    this.logicalExpressions.remove(this.logicalExpressions.size() - 1);
-                }
-
-            }
-        }
-        else if(node.equals(NOT)) {
-            if(this.logicalExpressionArgs.size() < 1)
-                throwRuntimeException( new IllegalArgumentException("Logical expression [" + node +"] must contain at least 1 expression"));
-
-            Criterion c = (Criterion)this.logicalExpressionArgs.remove(this.logicalExpressionArgs.size() - 1);
-
-            if(parent instanceof Proxy) {
-                addToCriteria( Restrictions.not( c ) );
-            }
-            else if(parent.equals( AND ) ||
-                    parent.equals( OR ) ||
-                    parent.equals( NOT )) {
-                this.logicalExpressionArgs.add( Restrictions.not( c ) );
-                this.logicalExpressions.remove(this.logicalExpressions.size() - 1);
-            }
+                node.equals( OR ) ||
+                node.equals( NOT )) {
+            LogicalExpression logicalExpression = (LogicalExpression) logicalExpressionStack.pop();
+            addToCriteria(logicalExpression.toCriterion());
         }
         else if(node.equals(PROJECTIONS)) {
             if(this.projectionList != null && this.projectionList.getLength() > 0) {
@@ -1005,6 +817,10 @@ public class HibernateCriteriaBuilder extends BuilderSupport {
         }
         else if(targetBean.isReadableProperty(node.toString()) && aliasStack.size() > 0) {
             aliasStack.remove(aliasStack.size()-1);
+            LogicalExpression logicalExpression = (LogicalExpression) logicalExpressionStack.pop();
+            if (!logicalExpression.args.isEmpty()) {
+                addToCriteria(logicalExpression.toCriterion());
+            }
         }
         super.nodeCompleted(parent, node);
     }
@@ -1067,13 +883,7 @@ public class HibernateCriteriaBuilder extends BuilderSupport {
             }
         }
         if(c != null) {
-            if(isInsideLogicalExpression()) {
-                this.logicalExpressionArgs.add(c);
-            }
-            else {
-                addToCriteria( c );
-            }
-            return c;
+            return addToCriteria(c);
         }
         else {
             String nameString = name.toString();
@@ -1081,6 +891,8 @@ public class HibernateCriteriaBuilder extends BuilderSupport {
                 if(targetBean.isReadableProperty(nameString)) {
                     this.criteria.createAlias(nameString, nameString+ALIAS,CriteriaSpecification.LEFT_JOIN);
                     this.aliasStack.add(nameString+ALIAS);
+                    // the criteria within an association node are grouped with an implicit AND
+                    logicalExpressionStack.push(new LogicalExpression(AND));
                     return name;
                 }
             }
@@ -1099,8 +911,68 @@ public class HibernateCriteriaBuilder extends BuilderSupport {
         return c;
     }
 
-    private void addToCriteria(Criterion c) {
-        this.criteria.add(c);
+    /**
+     * adds and returns the given criterion to the currently active criteria set.
+     * this might be either the root criteria or a currently open
+     * LogicalExpression.
+     */
+    private Criterion addToCriteria(Criterion c) {
+        if (!logicalExpressionStack.isEmpty()) {
+            ((LogicalExpression) logicalExpressionStack.peek()).args.add(c);
+        }
+        else {
+            this.criteria.add(c);
+        }
+        return c;
+    }
+
+	/**
+	 * instances of this class are pushed onto the logicalExpressionStack
+	 * to represent all the unfinished "and", "or", and "not" expressions.
+	 */
+    private class LogicalExpression {
+        final Object name;
+        final ArrayList args = new ArrayList();
+        
+        LogicalExpression(Object name) {
+            this.name = name;
+        }
+        
+        Criterion toCriterion() {
+            if (name.equals(NOT)) {
+                switch (args.size()) {
+                    case 0:
+                        throwRuntimeException(new IllegalArgumentException("Logical expression [not] must contain at least 1 expression"));
+		                return null;
+                    
+                    case 1:
+                        return Restrictions.not((Criterion) args.get(0));
+                        
+                    default:
+                        // treat multiple sub-criteria as an implicit "OR"
+                        return Restrictions.not(buildJunction(Restrictions.disjunction(), args));
+                }
+            }
+            else if (name.equals(AND)) {
+                return buildJunction(Restrictions.conjunction(), args);
+            }
+            else if (name.equals(OR)) {
+                return buildJunction(Restrictions.disjunction(), args);
+            }
+            else {
+                throwRuntimeException(new IllegalStateException("Logical expression [" + name + "] not handled!"));
+                return null;
+            }
+        }
+        
+        // add the Criterion objects in the given list to the given junction.
+        Junction buildJunction(Junction junction, List criteria) {
+            for (Iterator i = criteria.iterator(); i.hasNext();) {
+                junction.add((Criterion) i.next());
+            }
+            
+            return junction;
+        }
     }
 
 }

@@ -312,6 +312,13 @@ public class HibernateCriteriaBuilderTests extends
         obj3.setProperty( "age", new Integer(12));
         obj3.invokeMethod("save", null);
 
+        GroovyObject obj4 = (GroovyObject)domainClass.newInstance();
+        //obj2.setProperty( "id", new Long(4) );
+        obj4.setProperty( "firstName", "barney" );
+        obj4.setProperty( "lastName", "rubble" );
+        obj4.setProperty( "age", new Integer(45));
+        obj4.invokeMethod("save", null);
+
         Proxy p = null;
         p = parse(	"{ " +
                     "or { " +
@@ -323,6 +330,25 @@ public class HibernateCriteriaBuilderTests extends
         List results = (List)p.getAdaptee();
         assertEquals(3, results.size());
 
+        p = parse(	"{ " +
+                    "or { " +
+                        "eq('lastName', 'flintstone');" +
+                    "}" +
+                "}", "Test1");
+        results = (List)p.getAdaptee();
+        assertEquals(2, results.size());
+
+        p = parse(	"{ " +
+                    "and { " +
+                        "eq('age', 45);" +
+                        "or { " +
+                            "eq('firstName','fred');" +
+                            "eq('lastName', 'flintstone');" +
+                        "}" +
+                    "}" +
+                "}", "Test1");
+        results = (List)p.getAdaptee();
+        assertEquals(1, results.size());
     }
 
     public void testDistinct() throws Exception {
