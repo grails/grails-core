@@ -8,7 +8,9 @@ class InstallTemplatesTests extends AbstractCliTests {
 	void testInstallTemplatesCreatesTemplates() {				
 		Gant.main(["-f", "scripts/CreateApp.groovy"] as String[])
 
-		def templatesDirectory = "${appBase}/src/templates/"
+        def appDir = appBase + File.separatorChar + System.getProperty("grails.cli.args")
+		System.setProperty("base.dir", appDir)
+		def templatesDirectory = "${appDir}/src/templates/"
         
 		assertFalse "${templatesDirectory} exists, but should not", new File(templatesDirectory).exists()
 

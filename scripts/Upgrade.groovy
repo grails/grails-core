@@ -49,7 +49,7 @@ task( upgrade: "main upgrade task") {
 
        def answer = Ant.antProject.properties."grails.upgrade.warning"        
 
-	if(answer == "n") System.exit(0)
+	if(answer == "n") exit(0)
 	createCorePlugin()
 	
 	def coreTaglibs = new File("${basedir}/plugins/core/grails-app/taglib")

@@ -5,12 +5,20 @@ import gant.Gant
 class CreateControllerTests extends AbstractCliTests {
 	
 	
-	void testCreateControllerCreatesViewDirectory() {				
+	void testCreateControllerCreatesViewDirectory() {
+	    println "CREATE APP"
+
 		Gant.main(["-f", "scripts/CreateApp.groovy"] as String[])
 
-        def bookViewDirectory = "${appBase}/grails-app/views/book/"
+        // Correct the base dir now
+        def appDir = appBase + File.separatorChar + System.getProperty("grails.cli.args")
+		System.setProperty("base.dir", appDir)
+
+        def bookViewDirectory = "${appDir}/grails-app/views/book/"
         
 		assertFalse "${bookViewDirectory} exists, but should not", new File(bookViewDirectory).exists()
+
+	    println "CREATE CONTROLLER"
 
 		System.setProperty("grails.cli.args", "Book")
 		Gant.main(["-f", "scripts/CreateController.groovy"] as String[])

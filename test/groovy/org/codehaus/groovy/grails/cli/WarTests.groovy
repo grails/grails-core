@@ -8,7 +8,7 @@ class WarTests  extends AbstractCliTests {
 		Gant.main(["-f", "scripts/CreateApp.groovy"] as String[])
 		
 		
-		System.setProperty("base.dir", "${appBase}/testapp")
+		System.setProperty("base.dir", appBase + File.separatorChar + System.getProperty("grails.cli.args"))
 		Gant.main(["-f", "scripts/War.groovy"] as String[])
 		
 		assert new File("${appBase}/testapp/testapp.war").exists()

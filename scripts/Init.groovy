@@ -45,6 +45,14 @@ resolver = new PathMatchingResourcePatternResolver()
 grailsAppName = null
 appGrailsVersion = null
 
+exit = {
+    if (System.getProperty("grails.cli.testing")) {
+        throw new RuntimeException("Gant script exited")
+    } else {
+        System.exit(it)
+    }
+}
+
 // Get App's metadata if there is any
 if (new File("${basedir}/application.properties").exists()) {
     // We know we have an app
@@ -85,7 +93,7 @@ getGrailsJar =  { args ->
    result
 }
 
-args = System.getProperty("grails.cli.args")     
+args = System.getProperty("grails.cli.args")
 
 task ( createStructure: "Creates the application directory structure") {
 	Ant.sequential {
@@ -123,13 +131,24 @@ task (checkVersion: "Stops build if app expects different Grails version") {
             println "Application expects grails version [$appGrailsVersion], but GRAILS_HOME is version " +
                 "[$grailsVersion] - use the correct Grails version or run 'grails upgrade' if this Grails "+
                 "version is newer than the version your application expects."
-            System.exit(1)
+            exit(1)
         }
     } else {
         // We know this is pre-0.5 application
 	    println "Application is pre-Grails 0.5, please run: grails upgrade"
-	    System.exit(1)
+	    exit(1)
     }
+}
+
+task( updateAppProperties: "Updates default application.properties")  {
+    Ant.propertyfile(file:"${basedir}/application.properties",
+        comment:"Do not edit app.grails.* properties, they may change automatically. "+
+            "DO NOT put application configuration in here, it is not the right place!") {
+        entry(key:"app.name", value:"$grailsAppName")
+        entry(key:"app.grails.version", value:"$grailsVersion")
+    }
+    // Make sure if this is a new project that we update the var to include version
+    appGrailsVersion = grailsVersion
 }
 
 task ( copyBasics: "Copies the basic resources required for a Grails app to function") {

@@ -78,7 +78,7 @@ task(runGrailsTests:"Runs Grails' tests under the grails-test directory") {
 		def testFiles = resolveResources("grails-tests/*.groovy")
 		if(testFiles.size() == 0) {
 			println "No tests found in grails-test to execute"
-			System.exit(0)
+			exit(0)
 		}
 				
 		def ctx = GU.bootstrapGrailsFromClassPath()
@@ -116,21 +116,21 @@ task(runGrailsTests:"Runs Grails' tests under the grails-test directory") {
 		println "Error executing tests ${e.message}"
 		e.printStackTrace(System.out)   
 		println "Tests failed with exception!!"
-		System.exit(1)
+		exit(1)
 	}
 	finally {
 		if(result) { 
 			if(result.errorCount() > 0 || result.failureCount() > 0) {
 				println "Test Failures!!!"
-				System.exit(1)				
+				exit(1)
 			}
 			else {
-				System.exit(0)
+				exit(0)
 			}			       
 
 		}  
 		else {
-			System.exit(0)
+			exit(0)
 		}
 	}	
 	
