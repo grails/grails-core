@@ -49,7 +49,8 @@ class TestController {
 		
 		plugin.doWithRuntimeConfiguration(springConfig)
 		
-		def appCtx = springConfig.getApplicationContext()
+		def appCtx = springConfig.getApplicationContext() 
+        mockManager.getGrailsPlugin("hibernate").doWithDynamicMethods(appCtx)		
 		assert appCtx.containsBean("dataSource")
 		assert appCtx.containsBean("sessionFactory")
 		assert appCtx.containsBean("openSessionInViewInterceptor")

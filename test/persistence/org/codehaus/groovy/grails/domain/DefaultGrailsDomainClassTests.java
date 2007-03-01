@@ -41,21 +41,11 @@ public class DefaultGrailsDomainClassTests extends TestCase {
 		Thread.currentThread().setContextClassLoader(cl);
 		
 		relClass = cl.loadClass( "org.codehaus.groovy.grails.domain.RelationshipsTest" );
-		
-		Class[] loadedClasses = cl.getLoadedClasses();
-		
-		for (int i = 0; i < loadedClasses.length; i++) {
-			if(loadedClasses[i].getName().equals("org.codehaus.groovy.grails.domain.ManyToManyTest") ) {
-				manyToManyClass = loadedClasses[i];
-			}
-			else if(loadedClasses[i].getName().equals("org.codehaus.groovy.grails.domain.OneToManyTest2") ) {
-				oneToManyClass = loadedClasses[i];
-			}
-			else if(loadedClasses[i].getName().equals("org.codehaus.groovy.grails.domain.OneToOneTest") ) {
-				oneToOneClass = loadedClasses[i];
-			}			
-		}
-		
+        manyToManyClass = cl.loadClass( "org.codehaus.groovy.grails.domain.ManyToManyTest" );
+        oneToManyClass = cl.loadClass( "org.codehaus.groovy.grails.domain.OneToManyTest2" );
+        oneToOneClass = cl.loadClass( "org.codehaus.groovy.grails.domain.OneToOneTest" );
+
+				
 		super.setUp();
 	}
 

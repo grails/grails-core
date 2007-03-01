@@ -125,7 +125,9 @@ class HibernateGrailsPlugin {
 	}   
 	
 	def doWithDynamicMethods = { ctx->                                                             		
+	    if(ctx.containsBean('sessionFactory')) {
         	GrailsHibernateUtil.configureDynamicMethods(ctx, ctx.grailsApplication);		
+		}
 	}
 	
 	def onChange = {  event ->

@@ -42,6 +42,7 @@ class Test {
 		plugin.manager = mockManager
 		
 		plugin.doWithRuntimeConfiguration(springConfig)
+
 		
 		def appCtx = springConfig.getApplicationContext()
 		assert appCtx.containsBean("dataSource")
@@ -49,6 +50,8 @@ class Test {
 		assert appCtx.containsBean("openSessionInViewInterceptor")
 		assert appCtx.containsBean("TestValidator")
 		assert appCtx.containsBean("persistenceInterceptor")
+		plugin.doWithDynamicMethods(appCtx)
+
 		def testClass = ga.getDomainClass("Test").clazz
 		
 		def testObj = testClass.newInstance()
