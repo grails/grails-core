@@ -19,16 +19,12 @@
  * @author Graeme Rocher
  * @since 17-Jan-2006
  */
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.validation.Errors;
 import org.springframework.context.NoSuchMessageException;
 import org.springframework.web.servlet.support.RequestContextUtils as RCU;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU;
 
 class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants {
-
-	static final Log log = LogFactory.getLog(RenderTagLib.class)
 
     protected getPage() {
     	return request[PAGE]
@@ -146,7 +142,6 @@ class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants 
 
         if(attrs.breadcrumb) {
 			log.warn("Tag [paginate] includes the [breadcrumb] attribute. This attribute is deprecated and will be removed in the future. Please update your code to use the [maxsteps] attribute instead.")
-			maxsteps = 0
 		}
 
 		if(!offset) offset = (attrs.offset ? attrs.offset.toInteger() : 0)			
