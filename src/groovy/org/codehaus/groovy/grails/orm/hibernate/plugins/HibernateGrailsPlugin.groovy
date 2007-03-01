@@ -17,7 +17,8 @@ package org.codehaus.groovy.grails.orm.hibernate.plugins;
                                               
 import org.codehaus.groovy.grails.commons.*
 import org.codehaus.groovy.grails.validation.*
-import org.codehaus.groovy.grails.plugins.support.GrailsPluginUtils
+import org.codehaus.groovy.grails.plugins.support.GrailsPluginUtils 
+import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil
 import org.codehaus.groovy.grails.orm.hibernate.ConfigurableLocalSessionFactoryBean;
 import org.codehaus.groovy.grails.orm.hibernate.support.*
 import org.codehaus.groovy.grails.orm.hibernate.validation.*
@@ -121,6 +122,10 @@ class HibernateGrailsPlugin {
             def factory = new PersistentConstraintFactory(ctx.sessionFactory, UniqueConstraint.class)
             ConstrainedProperty.registerNewConstraint(UniqueConstraint.UNIQUE_CONSTRAINT, factory);
         }
+	}   
+	
+	def doWithDynamicMethods = { ctx->                                                             		
+        	GrailsHibernateUtil.configureDynamicMethods(ctx, ctx.grailsApplication);		
 	}
 	
 	def onChange = {  event ->

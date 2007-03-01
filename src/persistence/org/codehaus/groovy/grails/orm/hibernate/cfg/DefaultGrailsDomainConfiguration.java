@@ -26,7 +26,7 @@ import org.hibernate.MappingException;
 import org.hibernate.cfg.Configuration;
 
 /**
- * Creates runtime configuration mappings for the Grails domain classes
+ * Creates runtime configuration mapping for the Grails domain classes
  * based on the work done in the Hibernate Annotations project
  * 
  * @author Graeme Rocher

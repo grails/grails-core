@@ -82,20 +82,7 @@ public class ConfigurableLocalSessionFactoryBean extends
 	}
 	
 	public void afterPropertiesSet() throws Exception {
-		ClassLoader originalClassLoader = null;
-		if (this.classLoader != null) {
-			originalClassLoader = Thread.currentThread().getContextClassLoader();
-			Thread.currentThread().setContextClassLoader(this.classLoader);
-		}
         super.afterPropertiesSet();
-
-        if(this.applicationContext!= null) {
-        	GrailsHibernateUtil.configureDynamicMethods(applicationContext,this.grailsApplication);
-        }
-                
-        if (originalClassLoader != null) {
-			Thread.currentThread().setContextClassLoader(originalClassLoader);
-		}
 	}
 
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
