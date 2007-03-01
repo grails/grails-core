@@ -16,9 +16,6 @@
 package org.codehaus.groovy.grails.web.metaclass;
 
 import groovy.lang.MissingPropertyException;
-import ognl.NoSuchPropertyException;
-import ognl.Ognl;
-import ognl.OgnlException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.metaclass.AbstractDynamicProperty;
@@ -26,6 +23,10 @@ import org.codehaus.groovy.grails.web.binding.GrailsDataBinder;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.springframework.web.bind.ServletRequestDataBinder;
+import org.springframework.beans.TypeConverter;
+import org.springframework.beans.SimpleTypeConverter;
+import org.springframework.beans.MutablePropertyValues;
+
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Iterator;
@@ -42,9 +43,9 @@ public class SetPropertiesDynamicProperty extends AbstractDynamicProperty {
 	private static final Log LOG = LogFactory.getLog( SetPropertiesDynamicProperty.class );
 	
 	private static final String PROPERTY_NAME = "properties";
-	
+    private TypeConverter converter = new SimpleTypeConverter();
 
-	public SetPropertiesDynamicProperty() {
+    public SetPropertiesDynamicProperty() {
 		super(PROPERTY_NAME);
 	}
 
@@ -76,28 +77,8 @@ public class SetPropertiesDynamicProperty extends AbstractDynamicProperty {
 		else if(newValue instanceof Map) {
 			
 			Map propertyMap = (Map)newValue;
-
-			for (Iterator i = propertyMap.keySet().iterator(); i.hasNext();) {
-				String propertyName = (String) i.next();
-				Object propertyValue = propertyMap.get(propertyName);				
-				// if null skip
-				if(propertyValue == null)
-					continue;
-				
-				if(LOG.isDebugEnabled())
-					LOG.debug("Attempting to set property '"+propertyName+"' to value '"+propertyValue+"' on instance '"+object+"'");
-				
-				try {
-					Ognl.setValue(propertyName,object,propertyValue);
-				} catch (NoSuchPropertyException nspe) {
-					if(LOG.isDebugEnabled())
-						LOG.debug("Unable to set property '"+propertyName+"' to value '"+propertyValue+"' for object '"+object+"' property doesn't exist." + nspe.getMessage());					
-				}catch (OgnlException e) {
-					if(LOG.isDebugEnabled())
-						LOG.debug("OGNL error attempt to set '"+propertyName+"' to value '"+propertyValue+"' for object '"+object+"':" + e.getMessage(),e);
-				} 
-			}
-			
+            GrailsDataBinder binder = GrailsDataBinder.createBinder(object, object.getClass().getName());
+            binder.bind(new MutablePropertyValues(propertyMap));			
 		}
 		else {
 			throw new MissingPropertyException(PROPERTY_NAME,object.getClass());
