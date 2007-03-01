@@ -830,9 +830,6 @@ public class GrailsClassUtils {
 		else if(mc instanceof AdapterMetaClass) {
 			return ((AdapterMetaClass)mc).getAdaptee();
 		}
-		else if(mc instanceof ProxyMetaClass) {
-			return ((ProxyMetaClass)mc).getAdaptee();
-		}
         else if(MetaClassImpl.class == mc.getClass()) {
             // removes cached version
             registry.removeMetaClass(clazz);
