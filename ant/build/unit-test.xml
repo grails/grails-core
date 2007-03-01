@@ -120,11 +120,13 @@
                         <fileset dir="${grails.test.build}" includes="**/${test}Tests.class"
                  excludes="**/Abstract*, **/ControllerScaffoldingTests.*,
                  **/GrailsHibernateConfigurationTests*,
-                 **/ClassReloadingTests*"/>
+                 **/ClassReloadingTests*,
+				 **/MessageTagTests*"/>
                 </batchtest>
             <!-- GrailsHibernateConfigurationTests needs it's own VM -->
             <test todir="${grails.test.reports}" name="org.codehaus.groovy.grails.orm.hibernate.GrailsHibernateConfigurationTests" fork="true"/>
             <test todir="${grails.test.reports}" name="org.codehaus.groovy.grails.commons.ClassReloadingTests" fork="true"/>
+            <test todir="${grails.test.reports}" name="org.codehaus.groovy.grails.web.taglib.MessageTagTests" fork="true"/>
         </junit>
     </target>
 
