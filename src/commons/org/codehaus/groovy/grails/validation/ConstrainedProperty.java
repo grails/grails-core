@@ -191,8 +191,13 @@ public class ConstrainedProperty   {
     protected MessageSource messageSource;
 
 
-
-
+    /**
+     * Constructs a new ConstrainedProperty for the given arguments
+     *
+     * @param clazz The owning class
+     * @param propertyName The name of the property
+     * @param propertyType The property type
+     */
     public ConstrainedProperty(Class clazz,String propertyName, Class propertyType) {
         super();
         this.owningClass = clazz;
@@ -650,7 +655,7 @@ public class ConstrainedProperty   {
      * @param regex The matches to set.
      */
     public void setMatches(String regex) {
-        if(!String.class.isInstance( propertyType )) {
+        if(!String.class.isInstance( regex )) {
             throw new MissingPropertyException("Matches constraint can only be applied to a String property",MATCHES_CONSTRAINT,owningClass);
         }
 
