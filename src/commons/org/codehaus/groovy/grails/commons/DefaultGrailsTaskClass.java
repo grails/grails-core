@@ -14,38 +14,42 @@
  */
 package org.codehaus.groovy.grails.commons;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 import groovy.lang.Closure;
 
 /** 
  * @author Micha?? K??ujszo
+ * @author Marcel Overdijk
+ * 
  * @since 20-Apr-2006
  */
-public class DefaultGrailsTaskClass extends AbstractInjectableGrailsClass 
-	implements GrailsTaskClass, GrailsTaskClassProperty {
+public class DefaultGrailsTaskClass extends AbstractInjectableGrailsClass implements GrailsTaskClass, GrailsTaskClassProperty {
+	
+	public static final String JOB = "Job";
+	
+	public static final long DEFAULT_TIMEOUT = 60000l;	// one minute
+	public static final long DEFAULT_START_DELAY = 0l;	
+	public static final String DEFAULT_CRON_EXPRESSION = "0 0 6 * * ?";
+	public static final String DEFAULT_GROUP = "GRAILS_JOBS";
+	public static final boolean DEFAULT_CONCURRENT = true;
 	
 	public DefaultGrailsTaskClass(Class clazz) {
 		super(clazz, JOB);
-		Log LOG = LogFactory.getLog(DefaultGrailsTaskClass.class);
-		LOG.debug("instantiating: " + this.getClazz());
 	}
 
 	public void execute() {
 		((Closure)getPropertyOrStaticPropertyOrFieldValue(EXECUTE, Closure.class)).call();
 	}
 
-	public String getTimeout() {
-		String timeOut = (String)getPropertyOrStaticPropertyOrFieldValue(TIMEOUT, String.class);
-		if( timeOut == null || "".equals(timeOut) ) return DEFAULT_TIMEOUT;
-		return timeOut;
+	public long getTimeout() {
+		Long timeOut = (Long)getPropertyOrStaticPropertyOrFieldValue(TIMEOUT, Long.class);
+		if( timeOut == null ) return DEFAULT_TIMEOUT;
+		return timeOut.longValue();
 	}
 
-	public String getStartDelay() {
-		String startDelay = (String)getPropertyOrStaticPropertyOrFieldValue(START_DELAY, String.class);
-		if( startDelay == null || "".equals(startDelay) ) return DEFAULT_START_DELAY;
-		return startDelay;	
+	public long getStartDelay() {
+		Long startDelay = (Long)getPropertyOrStaticPropertyOrFieldValue(START_DELAY, Long.class);
+		if( startDelay == null ) return DEFAULT_START_DELAY;
+		return startDelay.longValue();	
 	}
 
 	public String getCronExpression() {
@@ -60,12 +64,6 @@ public class DefaultGrailsTaskClass extends AbstractInjectableGrailsClass
 		return group;	
 	}
 
-	public String getType() {
-		String type = (String)getPropertyOrStaticPropertyOrFieldValue(TYPE, String.class);
-		if( type == null || "".equals(type) ) return DEFAULT_TYPE;
-		return type;	
-	}
-
 	// not certain about this... feels messy
 	public boolean isCronExpressionConfigured() {
 		String cronExpression = (String)getPropertyOrStaticPropertyOrFieldValue(CRON_EXPRESSION, String.class);
@@ -74,8 +72,8 @@ public class DefaultGrailsTaskClass extends AbstractInjectableGrailsClass
 	}
 
 	public boolean isConcurrent() {
-		String concurrent = (String)getPropertyValue(CONCURRENT, String.class);
-		if ( concurrent == null || "".equals(concurrent) ) return DEFAULT_CONCURRENT.equals("true");
-		return concurrent.equals("true");
+		Boolean concurrent = (Boolean)getPropertyValue(CONCURRENT, Boolean.class);
+		if ( concurrent == null ) return DEFAULT_CONCURRENT;
+		return concurrent.booleanValue();
 	}	
 }

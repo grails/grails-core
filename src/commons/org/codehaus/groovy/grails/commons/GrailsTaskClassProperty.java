@@ -20,6 +20,7 @@ package org.codehaus.groovy.grails.commons;
  * @see GrailsTaskClass
  * @author Micha?? K??ujszo
  * @author Graeme Rocher
+ * @author Marcel Overdijk
  * 
  * @since 0.2
  * 
@@ -34,8 +35,6 @@ public interface GrailsTaskClassProperty {
 	public static final String START_DELAY = "startDelay";
 	
 	public static final String CRON_EXPRESSION = "cronExpression";
-	
-	public static final String TYPE = "type";
 	
 	public static final String GROUP = "group";		
 	

@@ -26,7 +26,7 @@
 	<classpathentry kind="lib" path="lib/log4j-1.2.8.jar"/>
 	<classpathentry kind="lib" path="lib/ognl-2.7.jar"/>
 	<classpathentry kind="lib" path="lib/org.mortbay.jetty.jar"/>
-	<classpathentry kind="lib" path="lib/quartz-1.5.2.jar"/>
+	<classpathentry kind="lib" path="lib/quartz-1.6.0.jar"/>
 	<classpathentry kind="lib" path="lib/sitemesh-2.3.jar"/>
 	<classpathentry kind="lib" path="lib/spring-binding.jar"/>
 	<classpathentry kind="lib" path="lib/spring-mock.jar" sourcepath="/SPRING2_HOME/mock"/>

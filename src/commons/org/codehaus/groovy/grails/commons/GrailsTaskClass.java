@@ -15,10 +15,11 @@
 package org.codehaus.groovy.grails.commons;
 
 /**
- * <p>Represents a task class in Grails, provides default task configuration</p> 
+ * <p>Represents a task class in Grails</p> 
  * 
  * @author Micha?? K??ujszo
  * @author Graeme Rocher
+ * @author Marcel Overdijk
  * 
  * @since 0.2
  * 20-Apr-2006
@@ -31,29 +32,24 @@ public interface GrailsTaskClass extends InjectableGrailsClass {
 	public void execute();
 	
 	/**
-	 * @return task timeout between executions, defaults to 1 minute
+	 * @return task timeout between executions
 	 */
-	public String getTimeout();
+	public long getTimeout();
 	
 	/**
-	 * @return start delay before first execution after starting scheduler, defaults to 0
+	 * @return start delay before first execution after starting scheduler
 	 */
-	public String getStartDelay();
+	public long getStartDelay();
 	
 	/** 
-	 * @return cron expression used for configuring scheduler, defaults to "0 0 6 * * ?"
+	 * @return cron expression used for configuring scheduler
 	 */
 	public String getCronExpression();
 	
 	/**
-	 * @return group name used for configuring scheduler, defaults to "GRAILS_TASKS"
+	 * @return group name used for configuring scheduler
 	 */
 	public String getGroup();
-	
-	/**
-	 * @return task type, can be memory ( tasks stored in server memory ), jdbc or jdctx
-	 */
-	public String getType();
 	
 	/**
 	 * <p>If cronExpression property is set returns true</p>
@@ -68,12 +64,4 @@ public interface GrailsTaskClass extends InjectableGrailsClass {
 	 */
 	public boolean isConcurrent();
 
-	public static final String JOB = "Job";
-	
-	public static final String DEFAULT_TIMEOUT = "60000";	// one minute
-	public static final String DEFAULT_START_DELAY = "0";	
-	public static final String DEFAULT_GROUP = "GRAILS_JOBS";
-	public static final String DEFAULT_CRON_EXPRESSION = "0 0 6 * * ?";
-	public static final String DEFAULT_TYPE = "memory";	/* memory | jdbc | jdbctx */
-	public static final String DEFAULT_CONCURRENT = "true";
 }
