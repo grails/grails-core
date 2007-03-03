@@ -959,7 +959,7 @@ w	 * Binds a simple value to the Hibernate metamodel. A simple value is
             // the column's length, precision, and scale
             ConstrainedProperty constrainedProperty = getConstrainedProperty(grailsProp);
             if (constrainedProperty != null) {
-                if (String.class.isAssignableFrom(grailsProp.getType())) {
+                if (String.class.isAssignableFrom(grailsProp.getType()) || byte[].class.isAssignableFrom(grailsProp.getType())) {
                     bindStringColumnConstraints(column, constrainedProperty);
                 }
 
