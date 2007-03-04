@@ -45,7 +45,6 @@ class SizeConstraint extends AbstractConstraint {
     }
 
 
-
     /* (non-Javadoc)
      * @see org.codehaus.groovy.grails.validation.Constraint#supports(java.lang.Class)
      */
@@ -77,54 +76,62 @@ class SizeConstraint extends AbstractConstraint {
 
     protected void processValidate(Object target, Object propertyValue, Errors errors) {
 
-        Object[] args = new Object[] { constraintPropertyName, constraintOwningClass, propertyValue,  range.getFrom(), range.getTo()  };
+        Object[] args = new Object[] { constraintPropertyName, constraintOwningClass, propertyValue, range.getFrom(), range.getTo() };
 
         if(propertyValue == null) {
             return; // A null is not a value we should even check
         }
 
-        if(propertyValue.getClass().isArray()) {
-            Integer length = new Integer(Array.getLength( propertyValue ));
-            if(!range.contains(length)) {
-
-                if(range.getFrom().compareTo( length ) == 1) {
-                    super.rejectValue(errors,ConstrainedProperty.LENGTH_CONSTRAINT + ConstrainedProperty.TOOSHORT_SUFFIX,args,getDefaultMessage(ConstrainedProperty.DEFAULT_INVALID_LENGTH_MESSAGE_CODE, args));
-                }
-                else if(range.getTo().compareTo(length) == -1) {
-                    super.rejectValue(errors,ConstrainedProperty.LENGTH_CONSTRAINT + ConstrainedProperty.TOOLONG_SUFFIX,args,getDefaultMessage(ConstrainedProperty.DEFAULT_INVALID_LENGTH_MESSAGE_CODE, args));
-                }
-                return;
-            }
-        }
-        if(propertyValue instanceof Collection) {
-            Integer collectionSize = new Integer(((Collection)propertyValue).size());
-            if(!range.contains( collectionSize )) {
-                if(range.getFrom().compareTo( collectionSize ) == 1) {
-                    super.rejectValue(errors,ConstrainedProperty.SIZE_CONSTRAINT + ConstrainedProperty.TOOSMALL_SUFFIX,args,getDefaultMessage(ConstrainedProperty.DEFAULT_INVALID_SIZE_MESSAGE_CODE, args));
-                }
-                else if(range.getTo().compareTo(collectionSize) == -1) {
-                    super.rejectValue(errors,ConstrainedProperty.SIZE_CONSTRAINT + ConstrainedProperty.TOOBIG_SUFFIX,args,getDefaultMessage(ConstrainedProperty.DEFAULT_INVALID_SIZE_MESSAGE_CODE, args));
-                }
-            }
-        }
-        else if(propertyValue instanceof Number) {
-            if(range.getFrom().compareTo( propertyValue ) == 1) {
-                super.rejectValue(errors,ConstrainedProperty.SIZE_CONSTRAINT + ConstrainedProperty.TOOSMALL_SUFFIX,args,getDefaultMessage(ConstrainedProperty.DEFAULT_INVALID_SIZE_MESSAGE_CODE, args));
+        if(propertyValue instanceof Number) {
+            if(range.getFrom().compareTo(propertyValue ) == 1) {
+                rejectValueTooSmall(args, errors, target, propertyValue);
             }
             else if(range.getTo().compareTo(propertyValue) == -1) {
-                super.rejectValue(errors,ConstrainedProperty.SIZE_CONSTRAINT + ConstrainedProperty.TOOBIG_SUFFIX,args,getDefaultMessage(ConstrainedProperty.DEFAULT_INVALID_SIZE_MESSAGE_CODE, args));
+                rejectValueTooBig(args, errors, target, propertyValue);
             }
+            return;
+        }
+        
+        // size of the property (e.g. String length(), Collection size(), etc.) 
+        Integer size = null;
+
+        // determine the value of size based on the property's type
+        if(propertyValue.getClass().isArray()) {
+            size = new Integer(Array.getLength( propertyValue ));
+        }
+        else if(propertyValue instanceof Collection) {
+            size = new Integer(((Collection)propertyValue).size());
         }
         else if(propertyValue instanceof String) {
-            Integer stringLength =  new Integer(((String)propertyValue ).length());
-            if(!range.contains(stringLength)) {
-                if(range.getFrom().compareTo( stringLength ) == 1) {
-                    super.rejectValue(errors,ConstrainedProperty.LENGTH_CONSTRAINT + ConstrainedProperty.TOOSHORT_SUFFIX,args,getDefaultMessage(ConstrainedProperty.DEFAULT_INVALID_LENGTH_MESSAGE_CODE, args));
-                }
-                else if(range.getTo().compareTo(stringLength) == -1) {
-                    super.rejectValue(errors,ConstrainedProperty.LENGTH_CONSTRAINT + ConstrainedProperty.TOOLONG_SUFFIX,args,getDefaultMessage(ConstrainedProperty.DEFAULT_INVALID_LENGTH_MESSAGE_CODE, args));
-                }
+            size =  new Integer(((String)propertyValue).length());
+        }
+        
+        if(!range.contains(size)) {
+            if(range.getFrom().compareTo(size) == 1) {
+                rejectValueTooSmall(args, errors, target, propertyValue);
+            }
+            else if(range.getTo().compareTo(size) == -1) {
+                rejectValueTooBig(args, errors, target, propertyValue);
             }
         }
+    }
+    
+    private void rejectValueTooSmall(Object[] args, Errors errors, Object target, Object propertyValue){
+        rejectValue(args, errors, target, propertyValue, false);
+    }
+    
+    private void rejectValueTooBig(Object[] args, Errors errors, Object target, Object propertyValue){
+        rejectValue(args, errors, target, propertyValue, true);
+    }
+    
+    private void rejectValue(Object[] args, Errors errors, Object target, Object propertyValue, boolean tooBig) {
+        String suffix = null;
+        if (tooBig) {
+            suffix = ConstrainedProperty.TOOBIG_SUFFIX;
+        } else {
+            suffix = ConstrainedProperty.TOOSMALL_SUFFIX;
+        }
+        String message = getDefaultMessage(ConstrainedProperty.DEFAULT_INVALID_SIZE_MESSAGE_CODE, args);
+        super.rejectValue(errors, ConstrainedProperty.SIZE_CONSTRAINT + suffix , args, message);
     }
 }

@@ -597,6 +597,83 @@ public class ConstrainedPropertyTests extends TestCase {
         }
     }     
 
+    public void testSizeConstraintOnInteger() { 
+        ConstraintTester constraintTester = new ConstraintTester(new TestClass(), "testInteger", ConstrainedProperty.SIZE_CONSTRAINT, new IntRange(5,10));
+
+        // validate that values within the range don't return errors
+        constraintTester.testConstraint(new Integer(5), false);
+        constraintTester.testConstraint(new Integer(7), false);
+        constraintTester.testConstraint(new Integer(10), false);
+        
+        // validate that values outside of the range return errors
+        constraintTester.testConstraint(new Integer(2), true);
+        constraintTester.testConstraint(new Integer(12), true);
+    }
+
+    public void testSizeConstraintOnString() { 
+        ConstraintTester constraintTester = new ConstraintTester(new TestClass(), "testEmail", ConstrainedProperty.SIZE_CONSTRAINT, new IntRange(5,7));
+
+        // validate that values within the range don't return errors
+        constraintTester.testConstraint("12345", false);
+        constraintTester.testConstraint("123456", false);
+        constraintTester.testConstraint("1234567", false);
+
+        // validate that values outside of the range return errors
+        constraintTester.testConstraint("1234", true);
+        constraintTester.testConstraint("12345678", true);
+    }
+
+    public void testSizeConstraintOnArray() { 
+        ConstraintTester constraintTester = new ConstraintTester(new TestClass(), "testArray", ConstrainedProperty.SIZE_CONSTRAINT, new IntRange(2,3));
+
+        String[] one = {"1"};
+        String[] two = {"1","2"};
+        String[] three = {"1","2","3"};
+        String[] four = {"1","2","3","4"};
+        
+        // validate that values within the range don't return errors
+        constraintTester.testConstraint(two, false);
+        constraintTester.testConstraint(three, false);
+        
+        // validate that values outside of the range return errors
+        constraintTester.testConstraint(one, true);
+        constraintTester.testConstraint(four, true);  
+    }     
+
+    public void testSizeConstraintOnCollection() { 
+        ConstraintTester constraintTester = new ConstraintTester(new TestClass(), "testCollection", ConstrainedProperty.SIZE_CONSTRAINT, new IntRange(2,3));
+
+        String one = "1";
+        String two = "2";
+        String three = "3";
+        String four = "4";
+        
+        Collection uno = new ArrayList();
+        uno.add(one);
+        
+        Collection dos = new ArrayList();
+        dos.add(one);
+        dos.add(two);
+        
+        Collection tres = new ArrayList();
+        tres.add(one);
+        tres.add(two);
+        tres.add(three);
+        
+        Collection cuatro = new ArrayList();
+        cuatro.add(one);
+        cuatro.add(two);
+        cuatro.add(three);
+        cuatro.add(four);
+        
+        // validate that values within the range don't return errors
+        constraintTester.testConstraint(dos, false);
+        constraintTester.testConstraint(tres, false);
+        
+        constraintTester.testConstraint(uno, true);
+        constraintTester.testConstraint(cuatro, true);  
+    }     
+
     public void testScaleConstraintIgnoresNulls() {
         // create a constraint tester for a domain class with a Float property and a scale constraint
         TestClass testObject = new TestClass();
