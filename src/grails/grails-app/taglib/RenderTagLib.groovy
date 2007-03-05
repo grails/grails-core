@@ -133,7 +133,10 @@ class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants 
 	def paginate = { attrs ->
         if(attrs.total == null)
             throwTagError("Tag [paginate] is missing required attribute [total]")
-        
+		
+		def messageSource = grailsAttributes.getApplicationContext().getBean("messageSource")
+		def locale = RCU.getLocale(request) 
+		
 		def total = attrs.total.toInteger()
 		def action = (attrs.action? attrs.action : 'list')
 		def offset = params.offset?.toInteger()
@@ -168,8 +171,8 @@ class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants 
 			
 		// display previous link when not on firststep
 		if(currentstep > firststep) {
-			linkTagAttrs.class = 'prevLink'		
-			link(linkTagAttrs.clone(), {out << (attrs.prev ? attrs.prev : 'Previous')})
+			linkTagAttrs.class = 'prevLink'
+			link(linkTagAttrs.clone(), {out << (attrs.prev ? attrs.prev : messageSource.getMessage('default.paginate.prev', null, 'Previous', locale))})
 		}
 		
 		// display steps when steps are enabled and laststep is not firststep
@@ -222,7 +225,7 @@ class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants 
 		if(currentstep < laststep) {	
 			linkTagAttrs.class = 'nextLink'			
 			linkParams.offset = offset + max
-			link(linkTagAttrs.clone(), {out << (attrs.next ? attrs.next : 'Next')})			
+			link(linkTagAttrs.clone(), {out << (attrs.next ? attrs.next : messageSource.getMessage('default.paginate.next', null, 'Next', locale))})			
 		}
 
 	}
