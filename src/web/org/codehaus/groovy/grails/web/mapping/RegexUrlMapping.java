@@ -30,7 +30,19 @@ import java.util.Map;
 import java.util.HashMap;
 
 /**
- * A URL mapping that uses a regular expression in combination with TODO: complete javadoc
+ * <p>A UrlMapping implementation that takes a Grails URL pattern and turns it into a regex matcher so that
+ * URLs can be matched and information captured from the match.</p>
+ *
+ * <p>A Grails URL pattern is not a regex, but is an extension to the form defined by Apache Ant and used by
+ * Spring AntPathMatcher. Unlike regular Ant paths Grails URL patterns allow for capturing groups in the form:</p>
+ *
+ * <code>/blog/(*)/**</code>
+ *
+ * <p>The parenthesis define a capturing group. This implementation transforms regular Ant paths into regular expressions
+ * that are able to use capturing groups</p>
+ * 
+ *
+ * @see org.springframework.util.AntPathMatcher
  *
  * @author Graeme Rocher
  * @since 0.5
@@ -41,46 +53,76 @@ import java.util.HashMap;
  */
 public class RegexUrlMapping implements UrlMapping {
 
-    private Pattern pattern;
+    private Pattern[] patterns;
     private ConstrainedProperty[] constraints = new ConstrainedProperty[0];
-    private boolean[] optionalTokens;
     private String controllerName;
     private String actionName;
+    private UrlMappingData urlData;
+    
+    private static final String WILDCARD = "*";
+    private static final String CAPTURED_WILDCARD = "(*)";
 
     /*
     /*
      * @see #RegexUrlMapping(String, String, String, java.util.List)
      */
 
-    public RegexUrlMapping(String pattern, String controllerName, ConstrainedProperty[] constraints) {
-        this(pattern,controllerName, null, constraints);
+    public RegexUrlMapping(UrlMappingData data, String controllerName, ConstrainedProperty[] constraints) {
+        this(data,controllerName, null, constraints);
     }
 
     /**
      * Constructs a new RegexUrlMapping for the given pattern, controller name, action name and constraints.
      *
-     * @param pattern The regex
+     * @param data An instance of the UrlMappingData class that holds necessary information of the URL mapping
      * @param controllerName The name of the controller the URL maps to (required)
      * @param actionName The name of the action the URL maps to
      * @param constraints A list of ConstrainedProperty instances that relate to tokens in the URL
      *
      * @see org.codehaus.groovy.grails.validation.ConstrainedProperty
      */
-    public RegexUrlMapping(String pattern, String controllerName, String actionName, ConstrainedProperty[] constraints) {
-        if(StringUtils.isBlank(pattern)) throw new IllegalArgumentException("Argument [pattern] cannot be null or blank");
+    public RegexUrlMapping(UrlMappingData data, String controllerName, String actionName, ConstrainedProperty[] constraints) {
+        if(data == null) throw new IllegalArgumentException("Argument [pattern] cannot be null");
         if(StringUtils.isBlank(controllerName)) throw new IllegalArgumentException("Argument [controllerName] cannot be null or blank");
 
         this.controllerName = controllerName;
         this.actionName = actionName;
-        try {
-            this.pattern = Pattern.compile(pattern);
-        } catch (PatternSyntaxException pse) {
-            throw new UrlMappingException("Error evaluating mapping for pattern ["+pattern+"] from Grails URL mappings: " + pse.getMessage(), pse);
+        String[] urls = data.getLogicalUrls();
+        this.urlData = data;
+        this.patterns = new Pattern[urls.length];
+
+        for (int i = 0; i < urls.length; i++) {
+            String url = urls[i];
+            Pattern pattern = convertToRegex(url);
+
+            if(pattern == null) throw new IllegalStateException("Cannot use null pattern in regular expression mapping for url ["+data.getUrlPattern()+"]");
+            this.patterns[i] = pattern;
+
         }
         if(constraints != null) {
             this.constraints = constraints;
         }
 
+    }
+
+    /**
+     * Converst a Grails URL provides via the UrlMappingData interface to a regular expression
+     *
+     * @param url The URL to convert
+     * @return A regex Pattern objet
+     */
+    protected Pattern convertToRegex(String url) {
+        Pattern regex;
+        String pattern = null;
+        try {
+            pattern = url.replaceAll("\\*", "[^/]+?");
+            regex = Pattern.compile(pattern);
+
+        } catch (PatternSyntaxException pse) {
+            throw new UrlMappingException("Error evaluating mapping for pattern ["+pattern+"] from Grails URL mappings: " + pse.getMessage(), pse);
+        }
+
+        return regex;
     }
 
     /**
@@ -93,47 +135,94 @@ public class RegexUrlMapping implements UrlMapping {
      * @see org.codehaus.groovy.grails.web.mapping.UrlMappingInfo
      */
     public UrlMappingInfo match(String uri) {
-        Matcher m = this.pattern.matcher(uri);
-        if(m.find()) {
-              UrlMappingInfo urlInfo = null;
-              if(constraints.length > 0) {
-                  Map params = new HashMap();
-                  Errors errors = new MapBindingResult(params, "urlMapping");
 
-                  for (int i = 0; i < constraints.length; i++) {
-                      ConstrainedProperty constraint = constraints[i];
-                      String name = constraint.getPropertyName();
-                      int groupIndex = i+1;
-                      // if the there is no matching group for the constraint then
-                      // check if it is allowed to be nullable or blank if it is we can break here
-                      // otherwise this URL doesn't match
-                      if(m.groupCount() < groupIndex) {
-                          if(constraint.isNullable() || !constraint.isBlank()) {
-                              break;
-                          }
-                          else {
-                            return null;
-                          }
-                      }
-                      else {
-                          String value = m.group(groupIndex);
-                          constraint.validate(this, value,errors);
-                          if(errors.hasErrors()) {
-                              return null;
-                          }
-                          else {
-                              params.put(name, value);
-                          }
-                      }
+        for (int i = 0; i < patterns.length; i++) {
+            Pattern pattern = patterns[i];
+            Matcher m = pattern.matcher(uri);
+            if(m.find()) {
+                  UrlMappingInfo urlInfo = createUrlMappingInfo(m);
+                  if(urlInfo!=null) {
+                      return urlInfo;
                   }
-                  urlInfo = new DefaultUrlMappingInfo(this.controllerName, this.actionName, params); 
-              }
-            else {
-                urlInfo = new DefaultUrlMappingInfo(this.controllerName, this.actionName, Collections.EMPTY_MAP);
             }
 
-            return urlInfo;
         }
         return null;
+    }
+
+    public UrlMappingData getUrlData() {
+        return this.urlData;
+    }
+
+    private UrlMappingInfo createUrlMappingInfo(Matcher m) {
+        Map params = new HashMap();
+        Errors errors = new MapBindingResult(params, "urlMapping");
+        for (int i = 0; i < m.groupCount(); i++) {
+            String group = m.group(i+1);
+            if(constraints.length > i) {
+                ConstrainedProperty cp = constraints[i];
+                cp.validate(this,group, errors);
+
+                if(errors.hasErrors()) return null;
+                else {
+                    params.put(cp.getPropertyName(), group);    
+                }
+            }
+        }
+        return new DefaultUrlMappingInfo(this.controllerName, this.actionName, params);
+    }
+
+    public String[] getLogicalMappings() {
+        return this.urlData.getLogicalUrls(); 
+    }
+
+    /**
+     * Compares this UrlMapping instance with the specified UrlMapping instance and deals with URL mapping precedence rules.
+     *
+     * @param o An instance of the UrlMapping interface
+     * @return 1 if this UrlMapping should match before the specified UrlMapping. 0 if they are equal or -1 if this UrlMapping should match after the given UrlMapping
+     */
+    public int compareTo(Object o) {
+        if(!(o instanceof UrlMapping)) throw new IllegalArgumentException("Cannot compare with Object ["+o+"]. It is not an instance of UrlMapping!");
+
+        UrlMapping other = (UrlMapping)o;
+
+        String[] otherTokens = other
+                                   .getUrlData()
+                                   .getTokens();
+
+
+        String[] tokens = getUrlData().getTokens();
+        
+        if(tokens.length < otherTokens.length) {
+            return -1;
+        }
+        else if(tokens.length > otherTokens.length) {
+            return 1;
+        }
+
+        int result = 0;
+        for (int i = 0; i < tokens.length; i++) {
+            String token = tokens[i];
+            if(otherTokens.length > i) {
+                String otherToken = otherTokens[i];
+                if(isWildcard(token) && !isWildcard(otherToken)) {
+                    result = -1;
+                    break;
+                }
+                else if(!isWildcard(token) && isWildcard(otherToken)) {
+                    result = 1;
+                    break;
+                }                
+            }
+            else {
+                break;
+            }
+        }
+        return result;
+    }
+
+    private boolean isWildcard(String token) {
+        return WILDCARD.equals(token) || CAPTURED_WILDCARD.equals(token);
     }
 }

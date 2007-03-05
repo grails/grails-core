@@ -4,13 +4,64 @@ import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 
 class RegexUrlMappingTests extends GroovyTestCase {
 
+    void testComparable() {
+        def parser = new DefaultUrlMappingParser()
+        def m1 = new RegexUrlMapping(parser.parse("/foo"), "test", null)
+        def m2 = new RegexUrlMapping(parser.parse("/foo/(*)"), "test", null)
+        def m3 = new RegexUrlMapping(parser.parse("/foo/(*)/bar"), "test", null)
+        def m4 = new RegexUrlMapping(parser.parse("/(*)/foo/bar"), "test", null)
+        def m5 = new RegexUrlMapping(parser.parse("/foo/bar/(*)"), "test", null)
+        def m6 = new RegexUrlMapping(parser.parse("/(*)/(*)/bar"), "test", null)
+        def m7 = new RegexUrlMapping(parser.parse("/foo/(*)/(*)"), "test", null)
+        def m8 = new RegexUrlMapping(parser.parse("/(*)/(*)/(*)"), "test", null)
+
+        // url 1
+        assertEquals( -1, m1.compareTo(m2) )
+        assertEquals( -1, m1.compareTo(m3))
+        assertEquals( -1, m1.compareTo(m4))
+        assertEquals( -1, m1.compareTo(m5))
+        assertEquals( -1, m1.compareTo(m6))
+        assertEquals( -1, m1.compareTo(m6))
+
+        // url 2
+        assertEquals( 1, m2.compareTo(m1))
+        assertEquals( -1, m2.compareTo(m3))
+        assertEquals( -1, m2.compareTo(m4))
+        assertEquals( -1, m2.compareTo(m5))
+        assertEquals( -1, m2.compareTo(m6))
+        assertEquals( -1, m2.compareTo(m7))
+        assertEquals( -1, m2.compareTo(m8))
+
+
+        // url 3
+        assertEquals 1, m3.compareTo(m1)
+        assertEquals 1, m3.compareTo(m2)
+        assertEquals 1, m3.compareTo(m4)
+        assertEquals 1, m3.compareTo(m6)
+        assertEquals 1, m3.compareTo(m8)
+        assertEquals(-1, m3.compareTo(m5))
+        assertEquals(1, m3.compareTo(m7))
+        
+
+        // url 4
+        assertEquals( 1, m4.compareTo(m1))
+        assertEquals( 1, m4.compareTo(m2))
+        assertEquals( -1, m4.compareTo(m3))
+        assertEquals( -1, m4.compareTo(m5))
+        assertEquals( 1, m4.compareTo(m6))
+        assertEquals( -1, m4.compareTo(m7))
+        assertEquals( 1, m4.compareTo(m8))
+    }
+
     void testMatchUriWithConstraints() {
 
         def cp = new ConstrainedProperty(RegexUrlMappingTests.class, "hello", String.class)
         cp.nullable = false
 
         // mapping would be "/foo/$hello/bar
-        def m = new RegexUrlMapping("/foo/([^/]+?)/bar", "test", "action", [cp] as ConstrainedProperty[])
+        def parser = new DefaultUrlMappingParser()
+
+        def m = new RegexUrlMapping(parser.parse('/foo/(*)/bar'), "test", "action", [cp] as ConstrainedProperty[])
 
         def info = m.match("/foo/world/bar")
         assert info
@@ -27,7 +78,8 @@ class RegexUrlMappingTests extends GroovyTestCase {
         cp.matches = /\d{4}/
 
         // mapping would be "/foo/$hello/bar
-        def m = new RegexUrlMapping("/foo/([^/]+?)/bar", "test", "action", [cp] as ConstrainedProperty[])
+        def parser = new DefaultUrlMappingParser()
+        def m = new RegexUrlMapping(parser.parse('/foo/(*)/bar'), "test", "action", [cp] as ConstrainedProperty[])
 
         def info = m.match("/foo/2007/bar")
         assert info
@@ -42,18 +94,20 @@ class RegexUrlMappingTests extends GroovyTestCase {
 
 
     void testInit() {
-        def m = new RegexUrlMapping("/(\\w+)/hello", "test", [] as ConstrainedProperty[])
+        def parser = new DefaultUrlMappingParser()
+        def m = new RegexUrlMapping(parser.parse("/(*)/hello"), "test", [] as ConstrainedProperty[])
 
         shouldFail {
            m = new RegexUrlMapping(null, "test", [] as ConstrainedProperty[])
         }
         shouldFail {
-           m = new RegexUrlMapping("/(\\w+)/hello/", null, [] as ConstrainedProperty[])
+           m = new RegexUrlMapping(parser.parse("/(*)/hello"), null, [] as ConstrainedProperty[])
         }
     }
 
     void testMatchUriNoConstraints() {
-        def m = new RegexUrlMapping("/foo/(\\w+?)/bar", "test", [] as ConstrainedProperty[])
+        def parser = new DefaultUrlMappingParser()  
+        def m = new RegexUrlMapping(parser.parse("/foo/(*)/bar"), "test", [] as ConstrainedProperty[])
 
         def info = m.match("/foo/test/bar")
         assert info
@@ -62,6 +116,7 @@ class RegexUrlMappingTests extends GroovyTestCase {
         info = m.match("/foo/bar/test")
         assertNull info
     }
+
 
 }
 

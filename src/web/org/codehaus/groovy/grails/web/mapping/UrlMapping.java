@@ -16,8 +16,14 @@
 package org.codehaus.groovy.grails.web.mapping;
 
 /**
- * An interface that defines a URL mapping. A URL mapping is a mapping between a URI such as /book/list and
- * a controller, action and/or id
+ * <p>An interface that defines a URL mapping. A URL mapping is a mapping between a URI such as /book/list and
+ * a controller, action and/or id</p>
+ * 
+ * <p>A UrlMapping should implement Comparable so that UrlMapping instances can be ordered to allow for precendence rules.
+ * In other words the URL /book/list should be matched before /book/* as the wildcard is of lesser precedence. By implementing
+ * Comparable this can be allowed for.
+ * </p>
+
  *
  * @author Graeme Rocher
  * @since 0.5
@@ -26,7 +32,7 @@ package org.codehaus.groovy.grails.web.mapping;
  *        Created: Feb 28, 2007
  *        Time: 5:49:41 PM
  */
-public interface UrlMapping {
+public interface UrlMapping extends Comparable {
 
     /**
      * Matches the given URI and returns an instance of the UrlMappingInfo interface or null
@@ -36,4 +42,12 @@ public interface UrlMapping {
      * @return An instance of UrlMappingInfo or null if the URI doesn't match
      */
     UrlMappingInfo match(String uri);
+
+
+    /**
+     * Retrieves the UrlMappingData instance that describes this UrlMapping
+     *
+     * @return The UrlMappingData instance
+     */
+    UrlMappingData getUrlData();
 }
