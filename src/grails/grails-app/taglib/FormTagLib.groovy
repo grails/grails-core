@@ -141,19 +141,26 @@ class FormTagLib {
     }
     /**
      * Creates a submit button that submits to an action in the controller specified by the form action
-     * The value of the action attribute is translated into the action name, for example "Edit" becomes
-     * "edit" or "List People" becomes "listPeople"
+     * The name of the action attribute is translated into the action name, for example "Edit" becomes
+     * "_action_edit" or "List People" becomes "_action_listPeople"
+     * If the action attribute is not specified, the value attribute will be used as part of the action name
      *
      *  <g:actionSubmit value="Edit" />
+     *  <g:actionSubmit action="Edit" value="Some label for editing" />
      *
      */
     def actionSubmit = { attrs ->
-        out << '<input type="submit" name="_action" '
-        def value = attrs.remove('value')
-        if(value) {
-             out << "value=\"${value}\" "
+    	if(!attrs.value) {
+            throwTagError("Tag [$tagName] is missing required attribute [value]")
         }
-        // process remaining attributes
+
+		// add action and value
+		def value = attrs.remove('value')
+		def action = attrs.action ? attrs.remove('action') : value
+    	
+    	out << "<input type=\"submit\" name=\"_action_${action}\" value=\"${value}\" "
+    	
+    	// process remaining attributes
         outputAttributes(attrs)
 
         // close tag
@@ -162,22 +169,30 @@ class FormTagLib {
     }
     /**
      * Creates a an image submit button that submits to an action in the controller specified by the form action
-     * The value of the action attribute is translated into the action name, for example "Edit" becomes
-     * "edit" or "List People" becomes "listPeople"
+     * The name of the action attribute is translated into the action name, for example "Edit" becomes
+     * "_action_edit" or "List People" becomes "_action_listPeople"
+     * If the action attribute is not specified, the value attribute will be used as part of the action name
      *
      *  <g:actionSubmitImage src="/images/submitButton.gif" action="Edit" />
      *
      */
     def actionSubmitImage = { attrs ->
-        out << '<input type="image" name="_action" '
-        def value = attrs.remove('value')
-        if(value) {
-             out << "value=\"${value}\" "
+        if(!attrs.value) {
+            throwTagError("Tag [$tagName] is missing required attribute [value]")
         }
+        
+        // add action and value
+        def value = attrs.remove('value')
+		def action = attrs.action ? attrs.remove('action') : value
+    
+        out << "<input type=\"image\" name=\"_action_${action}\" value=\"${value}\" "
+
+		// add image src        
         def src = attrs.remove('src')
         if(src) {
              out << "src=\"${src}\" "
         }
+
         // process remaining attributes
         outputAttributes(attrs)
 

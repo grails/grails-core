@@ -65,7 +65,6 @@ class SimpleGrailsControllerHelperTests extends AbstractGrailsControllerTests {
 		assertTrue helper.@extraParams.containsKey("london")
 
     }
-    
 
 	void testConfigureStateForUri() {
 		def helper = new SimpleGrailsControllerHelper(null, null, null)
@@ -74,5 +73,44 @@ class SimpleGrailsControllerHelperTests extends AbstractGrailsControllerTests {
 		assertEquals "controller", helper.@controllerName
 		assertEquals "action", helper.@actionName
 		assertEquals "id", helper.@id	
+	}
+
+	void testCheckDispatchAction() {
+		runTest { 
+			request.addParameter("_action_Edit", "Some label for editing")
+			
+			def helper = new SimpleGrailsControllerHelper(null, null, null)
+			helper.@controllerName = "controller"
+			
+			def uri = helper.checkDispatchAction(request, "/controller/book")
+			
+			assertEquals "edit", helper.@actionName
+			assertEquals "/controller/edit", uri
+		}
+	}
+	
+	// in case of submit image, .x is automatically appended by browser
+	void testCheckDispatchActionX() {
+		runTest { 
+			request.addParameter("_action_Edit.x", "Some label for editing")
+			
+			def helper = new SimpleGrailsControllerHelper(null, null, null)
+			helper.@controllerName = "controller"
+			
+			def uri = helper.checkDispatchAction(request, "/controller/book")
+			
+			assertEquals "edit", helper.@actionName
+			assertEquals "/controller/edit", uri
+		}
+	}
+	
+	void testCheckDispatchActionWithoutActionParamater() {
+		runTest { 
+			def helper = new SimpleGrailsControllerHelper(null, null, null)
+			def uri = helper.checkDispatchAction(request, "/controller/book")
+			
+			assertNull helper.@actionName
+			assertEquals "/controller/book", uri
+		}
 	}
 }

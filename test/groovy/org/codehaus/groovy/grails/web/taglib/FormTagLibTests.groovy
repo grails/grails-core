@@ -50,27 +50,75 @@ public class FormTagLibTests extends AbstractGrailsTagTests {
     	}
     }
 
-    void testActionSubmitWhitespace() {
+    void testActionSubmitWithoutAction() {
     	final StringWriter sw = new StringWriter();
     	final PrintWriter pw = new PrintWriter(sw);
 
     	withTag("actionSubmit", pw) { tag ->
     	    // use sorted map to be able to predict the order in which tag attributes are generated
-	    	def attributes = new TreeMap([value:'Go'])
+	    	def attributes = new TreeMap([value:'Edit'])
     	    tag.call(attributes)
-    	    assertEquals '<input type="submit" name="_action" value="Go" />', sw.toString() // NO TRIM, TEST WS!
+    	    assertEquals '<input type="submit" name="_action_Edit" value="Edit" />', sw.toString() // NO TRIM, TEST WS!
+    	}
+    }
+    
+    void testActionSubmitWithAction() {
+    	final StringWriter sw = new StringWriter();
+    	final PrintWriter pw = new PrintWriter(sw);
+
+    	withTag("actionSubmit", pw) { tag ->
+    	    // use sorted map to be able to predict the order in which tag attributes are generated
+	    	def attributes = new TreeMap([action:'Edit', value:'Some label for editing'])
+    	    tag.call(attributes)
+    	    assertEquals '<input type="submit" name="_action_Edit" value="Some label for editing" />', sw.toString() // NO TRIM, TEST WS!
+    	}
+    }
+    
+    void testActionSubmitWithAdditionalAttributes() {
+    	final StringWriter sw = new StringWriter();
+    	final PrintWriter pw = new PrintWriter(sw);
+
+    	withTag("actionSubmit", pw) { tag ->
+    	    // use sorted map to be able to predict the order in which tag attributes are generated
+	    	def attributes = new TreeMap([action:'Edit', value:'Some label for editing', style:'width: 200px;'])
+    	    tag.call(attributes)
+    	    assertEquals '<input type="submit" name="_action_Edit" value="Some label for editing" style="width: 200px;" />', sw.toString() // NO TRIM, TEST WS!
     	}
     }
 
-    void testActionSubmitImageWhitespace() {
+    void testActionSubmitImageWithoutAction() {
     	final StringWriter sw = new StringWriter();
     	final PrintWriter pw = new PrintWriter(sw);
 
     	withTag("actionSubmitImage", pw) { tag ->
     	    // use sorted map to be able to predict the order in which tag attributes are generated
-	    	def attributes = new TreeMap([src:'button.gif', value:'Go'])
+	    	def attributes = new TreeMap([src:'edit.gif', value:'Edit'])
     	    tag.call(attributes)
-    	    assertEquals '<input type="image" name="_action" value="Go" src="button.gif" />', sw.toString() // NO TRIM, TEST WS!
+    	    assertEquals '<input type="image" name="_action_Edit" value="Edit" src="edit.gif" />', sw.toString() // NO TRIM, TEST WS!
+    	}
+    }
+
+    void testActionSubmitImageWithAction() {
+    	final StringWriter sw = new StringWriter();
+    	final PrintWriter pw = new PrintWriter(sw);
+
+    	withTag("actionSubmitImage", pw) { tag ->
+    	    // use sorted map to be able to predict the order in which tag attributes are generated
+	    	def attributes = new TreeMap([src:'edit.gif', action:'Edit', value:'Some label for editing'])
+    	    tag.call(attributes)
+    	    assertEquals '<input type="image" name="_action_Edit" value="Some label for editing" src="edit.gif" />', sw.toString() // NO TRIM, TEST WS!
+    	}
+    }
+    
+    void testActionSubmitImageWithAdditionalAttributes() {
+    	final StringWriter sw = new StringWriter();
+    	final PrintWriter pw = new PrintWriter(sw);
+
+    	withTag("actionSubmitImage", pw) { tag ->
+    	    // use sorted map to be able to predict the order in which tag attributes are generated
+	    	def attributes = new TreeMap([src:'edit.gif', action:'Edit', value:'Some label for editing', style:'border-line: 0px;'])
+    	    tag.call(attributes)
+    	    assertEquals '<input type="image" name="_action_Edit" value="Some label for editing" src="edit.gif" style="border-line: 0px;" />', sw.toString() // NO TRIM, TEST WS!
     	}
     }
 

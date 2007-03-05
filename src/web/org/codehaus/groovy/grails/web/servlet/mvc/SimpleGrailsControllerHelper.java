@@ -19,38 +19,45 @@ import groovy.lang.Closure;
 import groovy.lang.GroovyObject;
 import groovy.lang.MissingPropertyException;
 import groovy.util.Proxy;
+
+import java.io.IOException;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.apache.commons.beanutils.BeanMap;
 import org.apache.commons.collections.map.CompositeMap;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.WordUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.GrailsControllerClass;
-import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
+import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.commons.GrailsClassUtils;
+import org.codehaus.groovy.grails.commons.GrailsControllerClass;
 import org.codehaus.groovy.grails.scaffolding.GrailsScaffolder;
 import org.codehaus.groovy.grails.web.metaclass.ChainDynamicMethod;
 import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods;
 import org.codehaus.groovy.grails.web.metaclass.GetParamsDynamicProperty;
-import org.codehaus.groovy.grails.web.servlet.*;
+import org.codehaus.groovy.grails.web.servlet.DefaultGrailsApplicationAttributes;
+import org.codehaus.groovy.grails.web.servlet.FlashScope;
+import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
+import org.codehaus.groovy.grails.web.servlet.GrailsHttpServletRequest;
+import org.codehaus.groovy.grails.web.servlet.GrailsHttpServletResponse;
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.NoClosurePropertyForURIException;
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.NoViewNameDefinedException;
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.UnknownControllerException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.servlet.ModelAndView;
-
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * A helper class for handling controller requests
@@ -76,7 +83,7 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
 	private GrailsWebRequest webRequest;
     
     private static final Log LOG = LogFactory.getLog(SimpleGrailsControllerHelper.class);
-    private static final String DISPATCH_ACTION_PARAMETER = "_action";
+    private static final String DISPATCH_ACTION_PARAMETER = "_action_";
     private static final String ID_PARAMETER = "id";
 
 
@@ -163,16 +170,14 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
         this.webRequest = webRequest;
 
         uri = configureStateForUri(uri);
-        
+       
         GrailsHttpServletRequest request = webRequest.getCurrentRequest();
         GrailsHttpServletResponse response = webRequest.getCurrentResponse();
-        
-        
+
         // if the action name is blank check its included as dispatch parameter
-        if(StringUtils.isBlank(actionName) && request.getParameter(DISPATCH_ACTION_PARAMETER) != null) {
-            actionName = GrailsClassUtils.getPropertyNameRepresentation(request.getParameter(DISPATCH_ACTION_PARAMETER));
-            uri = '/' + controllerName + '/' + actionName;
-        }
+        if(StringUtils.isBlank(actionName))
+        	uri = checkDispatchAction(request, uri);
+
         if(uri.endsWith("/"))
             uri = uri.substring(0,uri.length() - 1);
 
@@ -356,6 +361,20 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
             }
         }
 		return uri;
+	}
+	
+	private String checkDispatchAction(HttpServletRequest request, String uri) {
+    	for(Enumeration e = request.getParameterNames(); e.hasMoreElements();) {
+            String name = (String)e.nextElement();
+            if(name.startsWith(DISPATCH_ACTION_PARAMETER)) {
+            	// remove .x suffix in case of submit image
+            	name = StringUtils.removeEnd(name, ".x");
+            	actionName = GrailsClassUtils.getPropertyNameRepresentation(name.substring((DISPATCH_ACTION_PARAMETER).length()));
+            	uri = '/' + controllerName + '/' + actionName;
+            	break;
+            }
+        }
+        return uri;
 	}
 
     public GrailsApplicationAttributes getGrailsAttributes() {
