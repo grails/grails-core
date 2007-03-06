@@ -80,7 +80,6 @@ public class ConstrainedProperty   {
     private static final String DEFAULT_DOESNT_MATCH_MESSAGE = bundle.getString( DEFAULT_DOESNT_MATCH_MESSAGE_CODE );
     private static final String DEFAULT_INVALID_URL_MESSAGE = bundle.getString( DEFAULT_INVALID_URL_MESSAGE_CODE );
     private static final String DEFAULT_INVALID_CREDIT_CARD_MESSAGE = bundle.getString( DEFAULT_INVALID_CREDIT_CARD_MESSAGE_CODE );
-    //private static final String DEFAULT_INVALID_MESSAGE = bundle.getString( "default.invalid.message" );
     private static final String DEFAULT_INVALID_EMAIL_MESSAGE  = bundle.getString( DEFAULT_INVALID_EMAIL_MESSAGE_CODE );
     private static final String DEFAULT_INVALID_RANGE_MESSAGE = bundle.getString( DEFAULT_INVALID_RANGE_MESSAGE_CODE );
     private static final String DEFAULT_NOT_IN_LIST_MESSAGE = bundle.getString( DEFAULT_NOT_INLIST_MESSAGE_CODE );
