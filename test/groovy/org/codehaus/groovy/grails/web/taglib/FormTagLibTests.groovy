@@ -190,7 +190,7 @@ public class FormTagLibTests extends AbstractGrailsTagTests {
     		def attributes = new TreeMap([name: "testRadio", checked: "true", value: "1"])
     		tag.call(attributes)
 
-	    	assertEquals "<input type=\"radio\" name=\"testRadio\" checked=\"checked\" value=\"1\"  ></input>", sw.toString()
+	    	assertEquals "<input type=\"radio\" name=\"testRadio\" checked=\"checked\" value=\"1\"  />", sw.toString()
     	}
 
     	sw = new StringWriter();
@@ -201,7 +201,7 @@ public class FormTagLibTests extends AbstractGrailsTagTests {
     		def attributes = new TreeMap([name: "testRadio", value: "2"])
     		tag.call(attributes)
 
-    		assertEquals "<input type=\"radio\" name=\"testRadio\" value=\"2\"  ></input>", sw.toString()
+    		assertEquals "<input type=\"radio\" name=\"testRadio\" value=\"2\"  />", sw.toString()
     	}
     }
 

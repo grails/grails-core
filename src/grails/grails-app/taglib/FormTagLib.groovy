@@ -570,6 +570,6 @@ class FormTagLib {
         outputAttributes(attrs)
 
         // close the tag, with no body
-        out << ' ></input>'
+        out << ' />'
      }
 }

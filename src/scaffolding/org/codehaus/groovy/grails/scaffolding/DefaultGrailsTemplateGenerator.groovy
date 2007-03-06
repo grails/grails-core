@@ -139,7 +139,7 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator  {
                     cp.password ? sb << 'type="password" ' : sb << 'type="text" '
                     if(!cp.editable) sb << 'readonly="readonly" '
                     if(cp.maxSize) sb << "maxlength='${cp.maxSize}' "
-                    sb << "name='${property.name}' value=\"\${${domainClass.propertyName}?.${property.name}?.encodeAsHTML()}\"></input>"
+                    sb << "name='${property.name}' value=\"\${${domainClass.propertyName}?.${property.name}?.encodeAsHTML()}\"/>"
                     return sb.toString()
                 }
             }
@@ -147,7 +147,7 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator  {
     }
 
     private renderByteArrayEditor(domainClass,property) {
-        return "<input type='file' name='${property.name}'></input>"
+        return "<input type='file' name='${property.name}' />"
     }
 
     private renderManyToOne(domainClass,property) {
@@ -175,7 +175,7 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator  {
                 return "<g:select from='\${-128..127}' name='${property.name}' value=\"\${${domainClass.propertyName}?.${property.name}}\"></g:select>"
             }
             else {
-                return "<input type='text' name='${property.name}' value=\"\${${domainClass.propertyName}?.${property.name}}\"></input>"
+                return "<input type='text' name='${property.name}' value=\"\${${domainClass.propertyName}?.${property.name}}\" />"
             }
         }
         else {
@@ -186,7 +186,7 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator  {
                 return "<g:select from='\${${cp.size.from}..${cp.size.to}}' name='${property.name}' value=\"\${${domainClass.propertyName}?.${property.name}}\"></g:select>"
             }
             else {
-                return "<input type='text' name='${property.name}' value=\"\${${domainClass.propertyName}?.${property.name}}\"></input>"
+                return "<input type='text' name='${property.name}' value=\"\${${domainClass.propertyName}?.${property.name}}\" />"
             }
         }
     }
