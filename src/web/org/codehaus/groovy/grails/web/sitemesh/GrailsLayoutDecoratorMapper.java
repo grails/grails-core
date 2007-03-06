@@ -17,7 +17,6 @@ package org.codehaus.groovy.grails.web.sitemesh;
 
 import groovy.lang.GroovyObject;
 
-import java.net.MalformedURLException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;

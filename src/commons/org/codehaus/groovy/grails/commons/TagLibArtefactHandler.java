@@ -3,7 +3,6 @@ package org.codehaus.groovy.grails.commons;
 import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException;
 
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Iterator;
 
 /**

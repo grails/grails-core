@@ -20,11 +20,9 @@ import groovy.text.Template;
 
 import java.io.IOException;
 import java.io.Writer;
-import java.net.URL;
 import java.util.Map;
 import java.util.HashMap;
 
-import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;

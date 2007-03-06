@@ -10,13 +10,11 @@ import junit.framework.TestCase;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.support.MockApplicationContext;
-import org.codehaus.groovy.grails.commons.spring.GrailsWebApplicationContext;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockServletConfig;
 import org.springframework.mock.web.MockServletContext;
 import org.springframework.web.context.request.RequestContextHolder;
 
-import java.io.StringReader;
 
 import grails.util.GrailsWebUtil;
 

@@ -3,10 +3,7 @@ package org.codehaus.groovy.grails.web.servlet;
 import java.io.Writer;
 
 import org.springframework.validation.Errors;
-import org.springframework.context.ApplicationContext;
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap;
-import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.ApplicationAttributes;
 import groovy.lang.GroovyObject;
 

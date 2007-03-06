@@ -15,8 +15,6 @@
  */ 
 package org.codehaus.groovy.grails.plugins;
 
-import java.math.BigDecimal;
-
 import org.codehaus.groovy.grails.commons.spring.DefaultRuntimeSpringConfiguration;
 import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration;
 import org.codehaus.groovy.grails.commons.test.AbstractGrailsMockTests;

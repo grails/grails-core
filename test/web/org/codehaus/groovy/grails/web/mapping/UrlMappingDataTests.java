@@ -15,7 +15,6 @@
 package org.codehaus.groovy.grails.web.mapping;
 
 import junit.framework.TestCase;
-import org.apache.commons.lang.ArrayUtils;
 
 /**
  * Tests for the UrlMappingData class

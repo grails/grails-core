@@ -15,7 +15,6 @@
 package org.codehaus.groovy.grails.support;
 
 import org.springframework.core.io.ByteArrayResource;
-import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.Resource;
 
 import java.util.HashMap;

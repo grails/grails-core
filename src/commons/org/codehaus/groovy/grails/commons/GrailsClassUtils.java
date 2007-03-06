@@ -36,7 +36,6 @@ import java.util.TreeSet;
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.grails.commons.metaclass.AdapterMetaClass;
 import org.codehaus.groovy.grails.commons.metaclass.DynamicMethodsMetaClass;
-import org.codehaus.groovy.grails.commons.metaclass.ProxyMetaClass;
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeanWrapper;

@@ -17,7 +17,6 @@ package org.codehaus.groovy.grails.commons.metaclass;
 
 import groovy.lang.MetaClass;
 import groovy.lang.MetaClassImpl;
-import groovy.lang.GroovyObject;
 
 import java.beans.IntrospectionException;
 

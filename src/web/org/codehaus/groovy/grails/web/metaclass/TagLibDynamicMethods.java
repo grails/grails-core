@@ -16,25 +16,14 @@
 package org.codehaus.groovy.grails.web.metaclass;
 
 import groovy.lang.GroovyObject;
-import groovy.lang.MissingMethodException;
 
 import java.beans.IntrospectionException;
-import java.io.Writer;
 import java.util.regex.Pattern;
 
-import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.metaclass.AbstractDynamicMethodInvocation;
 import org.codehaus.groovy.grails.commons.metaclass.AbstractDynamicMethodsInterceptor;
-import org.codehaus.groovy.grails.commons.metaclass.GenericDynamicProperty;
-import org.codehaus.groovy.grails.commons.metaclass.ProxyMetaClass;
-import org.codehaus.groovy.grails.web.servlet.FlashScope;
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
-import org.codehaus.groovy.grails.web.servlet.GrailsHttpServletRequest;
-import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
 
 /**
  * <p>Represents a controller class in Grails.

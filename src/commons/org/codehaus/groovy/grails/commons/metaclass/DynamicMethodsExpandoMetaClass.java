@@ -14,7 +14,6 @@
  */
 package org.codehaus.groovy.grails.commons.metaclass;
 
-import groovy.lang.MetaClass;
 import groovy.lang.Closure;
 
 import java.beans.IntrospectionException;

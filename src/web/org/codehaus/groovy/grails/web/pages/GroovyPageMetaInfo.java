@@ -14,8 +14,6 @@
  */
 package org.codehaus.groovy.grails.web.pages;
 
-import org.springframework.core.io.Resource;
-
 import java.io.InputStream;
 
 /**

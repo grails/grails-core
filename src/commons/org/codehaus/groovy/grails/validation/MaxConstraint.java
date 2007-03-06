@@ -14,8 +14,6 @@
  */
 package org.codehaus.groovy.grails.validation;
 
-import java.util.Map;
-
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.springframework.validation.Errors;
 

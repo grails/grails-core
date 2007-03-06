@@ -15,7 +15,6 @@
  */
 package org.codehaus.groovy.grails.web.servlet.mvc;
 
-import groovy.lang.GroovyObjectSupport;
 
 import java.util.Collection;
 import java.util.Enumeration;

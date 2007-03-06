@@ -16,8 +16,6 @@ package org.codehaus.groovy.grails.web.mapping.exceptions;
 
 import org.codehaus.groovy.grails.exceptions.GrailsException;
 
-import java.util.regex.PatternSyntaxException;
-
 /**
  * An exception thrown when an error occurs evaluating an URL mapping
  *

@@ -21,7 +21,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.codehaus.groovy.grails.commons.*;
 import org.codehaus.groovy.grails.commons.GrailsControllerClass;
 import org.codehaus.groovy.grails.commons.spring.GrailsWebApplicationContext;
-import org.codehaus.groovy.grails.scaffolding.GrailsScaffoldingUtil;
 import org.codehaus.groovy.grails.web.servlet.mvc.SimpleGrailsController;
 import org.springframework.beans.BeansException;
 import org.springframework.web.context.WebApplicationContext;
@@ -32,9 +31,6 @@ import org.springframework.web.servlet.HandlerExecutionChain;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.handler.WebRequestHandlerInterceptorAdapter;
 import org.springframework.web.util.UrlPathHelper;
-
-import java.util.Map;
-import java.util.Iterator;
 
 import grails.util.GrailsUtil;
 

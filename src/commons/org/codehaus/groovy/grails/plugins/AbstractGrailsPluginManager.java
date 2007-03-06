@@ -6,7 +6,6 @@ package org.codehaus.groovy.grails.plugins;
 import groovy.lang.MetaClass;
 import groovy.lang.MetaClassRegistry;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;

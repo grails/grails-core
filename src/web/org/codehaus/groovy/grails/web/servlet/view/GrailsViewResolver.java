@@ -18,10 +18,8 @@ import org.springframework.web.servlet.View;
 import org.springframework.web.servlet.view.AbstractUrlBasedView;
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
 import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.support.ServletContextResourceLoader;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
-import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.context.ResourceLoaderAware;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationContext;
@@ -33,11 +31,7 @@ import org.codehaus.groovy.grails.commons.GrailsResourceUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import javax.servlet.ServletContext;
 import java.util.Locale;
-import java.util.Map;
-import java.util.HashMap;
-import java.net.URL;
 
 import grails.util.GrailsUtil;
 import groovy.lang.GroovyObject;

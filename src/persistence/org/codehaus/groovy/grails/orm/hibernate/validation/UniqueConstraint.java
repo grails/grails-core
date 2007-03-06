@@ -18,7 +18,6 @@ import org.springframework.validation.Errors;
 import org.springframework.orm.hibernate3.HibernateCallback;
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.codehaus.groovy.grails.metaclass.IdentDynamicMethod;
-import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 import org.hibernate.Session;
 import org.hibernate.HibernateException;
 import org.hibernate.FlushMode;

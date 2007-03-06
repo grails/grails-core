@@ -14,7 +14,6 @@
  */
 package org.codehaus.groovy.grails.commons;
 
-import groovy.lang.GroovyClassLoader;
 import junit.framework.TestCase;
 
 import javax.servlet.http.HttpServletRequest;

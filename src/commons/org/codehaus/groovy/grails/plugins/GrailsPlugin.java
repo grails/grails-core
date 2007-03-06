@@ -17,7 +17,6 @@ package org.codehaus.groovy.grails.plugins;
 
 import groovy.util.slurpersupport.GPathResult;
 
-import java.math.BigDecimal;
 import java.util.Map;
 
 import org.codehaus.groovy.grails.commons.GrailsApplication;

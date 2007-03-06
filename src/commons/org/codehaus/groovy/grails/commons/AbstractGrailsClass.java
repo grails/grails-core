@@ -15,7 +15,6 @@
  */ 
 package org.codehaus.groovy.grails.commons;
 
-import groovy.lang.DelegatingMetaClass;
 import groovy.lang.GroovyObject;
 import groovy.lang.MetaClass;
 

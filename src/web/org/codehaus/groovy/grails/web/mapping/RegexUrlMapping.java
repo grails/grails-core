@@ -17,15 +17,12 @@ package org.codehaus.groovy.grails.web.mapping;
 import org.codehaus.groovy.grails.web.mapping.exceptions.UrlMappingException;
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 import org.apache.commons.lang.StringUtils;
-import org.springframework.validation.BindException;
 import org.springframework.validation.Errors;
 import org.springframework.validation.MapBindingResult;
 
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 import java.util.regex.PatternSyntaxException;
-import java.util.List;
-import java.util.Collections;
 import java.util.Map;
 import java.util.HashMap;
 
