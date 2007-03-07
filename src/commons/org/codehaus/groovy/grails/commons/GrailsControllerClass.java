@@ -17,7 +17,7 @@ package org.codehaus.groovy.grails.commons;
 
 import groovy.lang.Closure;
 import groovy.lang.GroovyObject;
-
+import org.apache.commons.lang.StringUtils;
 
 
 /**
@@ -39,8 +39,18 @@ public interface GrailsControllerClass extends InjectableGrailsClass {
     /**
      * The name of the after interceptor property
      */
-    public String AFTER_INTERCEPTOR = "afterInterceptor";   
-    
+    public String AFTER_INTERCEPTOR = "afterInterceptor";
+
+    /**
+     * The general name to use when referring to controller artefacts
+     */
+    public String CONTROLLER = "controller";
+
+    /**
+     * The general name to use when referring to action artefacts
+     */
+    public String ACTION = "action";
+
     /**
      * Checks to see if an action is accessible via a particular
      * http method
