@@ -16,7 +16,7 @@
 package org.codehaus.groovy.grails.web.mapping;
 
 /**
- * A simple holder class to be registered in the ApplicationContext that should hold a reference to all
+ * A simple holder interface to be registered in the ApplicationContext that should hold a reference to all
  * UrlMappings.
  *
  * @author Graeme Rocher
@@ -30,5 +30,10 @@ public interface UrlMappingsHolder {
     
     String BEAN_ID = "grailsUrlMappingsHolder";
 
+    /**
+     * Retrieves the held UrlMapping instances as an array
+     *
+     * @return An array of UrlMapping instances
+     */
     UrlMapping[] getUrlMappings();
 }

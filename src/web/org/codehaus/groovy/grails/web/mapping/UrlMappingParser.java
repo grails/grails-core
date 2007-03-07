@@ -35,5 +35,11 @@ package org.codehaus.groovy.grails.web.mapping;
  */
 public interface UrlMappingParser {
 
+    /**
+     * Parses the given URI pattern into a UrlMappingData instance
+     *
+     * @param url The URL pattern to parse
+     * @return The UrlMappingData instance
+     */
     UrlMappingData parse(String url);
 }

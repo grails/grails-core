@@ -26,7 +26,7 @@ import java.util.List;
  * @see org.codehaus.groovy.grails.web.mapping.UrlMappingInfo
  *
  * @author Graeme Rocher
- * @since 0.4
+ * @since 0.5
  * 
  *        <p/>
  *        Created: Feb 28, 2007

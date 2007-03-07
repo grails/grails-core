@@ -23,7 +23,8 @@ import java.util.Map;
  * @see org.codehaus.groovy.grails.web.mapping.UrlMapping
  *
  * @author Graeme Rocher
- * @since 0.4
+ * @since 0.5
+ *
  *        <p/>
  *        Created: Feb 28, 2007
  *        Time: 5:56:38 PM

@@ -16,12 +16,14 @@
 package org.codehaus.groovy.grails.web.mapping;
 
 /**
- * <p>Holds information about a parsed URL including such as the tokens that make up the URL, The URLs (plural)
+ * <p>Holds information about a parsed URL such as the tokens that make up the URL, The URLs (plural)
  * that the UrLMapping logically maps to and so forth</p>
  *
  *
  * @author Graeme Rocher
- * @since 0.4
+ * @since 0.5
+ *
+ * 
  *        <p/>
  *        Created: Mar 5, 2007
  *        Time: 7:44:51 AM
