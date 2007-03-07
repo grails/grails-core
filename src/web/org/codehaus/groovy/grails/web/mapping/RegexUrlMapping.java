@@ -58,6 +58,7 @@ public class RegexUrlMapping implements UrlMapping {
     
     private static final String WILDCARD = "*";
     private static final String CAPTURED_WILDCARD = "(*)";
+    private static final String SLASH = "/";
 
     /*
     /*
@@ -112,7 +113,7 @@ public class RegexUrlMapping implements UrlMapping {
         Pattern regex;
         String pattern = null;
         try {
-            pattern = url.replaceAll("\\*", "[^/]+?");
+            pattern = url.replaceAll("\\*", "[^/]+");
             regex = Pattern.compile(pattern);
 
         } catch (PatternSyntaxException pse) {
@@ -137,7 +138,7 @@ public class RegexUrlMapping implements UrlMapping {
             Pattern pattern = patterns[i];
             Matcher m = pattern.matcher(uri);
             if(m.find()) {
-                  UrlMappingInfo urlInfo = createUrlMappingInfo(m);
+                  UrlMappingInfo urlInfo = createUrlMappingInfo(uri,m);
                   if(urlInfo!=null) {
                       return urlInfo;
                   }
@@ -151,21 +152,38 @@ public class RegexUrlMapping implements UrlMapping {
         return this.urlData;
     }
 
-    private UrlMappingInfo createUrlMappingInfo(Matcher m) {
+    private UrlMappingInfo createUrlMappingInfo(String uri, Matcher m) {
         Map params = new HashMap();
         Errors errors = new MapBindingResult(params, "urlMapping");
+        String lastGroup = null;
         for (int i = 0; i < m.groupCount(); i++) {
-            String group = m.group(i+1);
+            lastGroup = m.group(i+1);
             if(constraints.length > i) {
                 ConstrainedProperty cp = constraints[i];
-                cp.validate(this,group, errors);
+                cp.validate(this,lastGroup, errors);
 
                 if(errors.hasErrors()) return null;
                 else {
-                    params.put(cp.getPropertyName(), group);    
+                    params.put(cp.getPropertyName(), lastGroup);
                 }
             }
         }
+
+        if(lastGroup!= null) {
+            String remainingUri = uri.substring(uri.lastIndexOf(lastGroup)+lastGroup.length());
+            if(remainingUri.length() > 0) {
+                if(remainingUri.startsWith(SLASH))remainingUri = remainingUri.substring(1);
+                String[] tokens = remainingUri.split(SLASH);
+                for (int i = 0; i < tokens.length; i=i+2) {
+                    String token = tokens[i];
+                    if((i+1) < tokens.length) {
+                        params.put(token, tokens[i+1]);
+                    }
+
+                }
+            }
+        }
+
         return new DefaultUrlMappingInfo(this.controllerName, this.actionName, params);
     }
 
