@@ -76,17 +76,13 @@ public class SimpleGrailsController implements Controller, ServletContextAware {
 
         
         RequestAttributes ra = RequestContextHolder.getRequestAttributes();
-        GrailsWebRequest webRequest;
+
         if(!(ra instanceof GrailsWebRequest)) {
-            webRequest = new GrailsWebRequest(	request,
-            									response, 
-            									servletContext);
-            RequestContextHolder.setRequestAttributes(webRequest);        	
+            throw new IllegalStateException("Bound RequestContext is not an instance of GrailsWebRequest");
         }
-        else {
-        	webRequest = (GrailsWebRequest)ra;
-        }
-        
+        GrailsWebRequest webRequest = (GrailsWebRequest)ra;
+
+
         ApplicationContext context = webRequest.getAttributes().getApplicationContext();
         this.helper = new SimpleGrailsControllerHelper(this.application,context,this.servletContext);
         ModelAndView mv = helper.handleURI(uri,webRequest);

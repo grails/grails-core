@@ -24,6 +24,7 @@ import org.codehaus.groovy.grails.web.mapping.UrlMapping;
 import org.codehaus.groovy.grails.web.mapping.UrlMappingInfo;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap;
+import org.codehaus.groovy.grails.web.servlet.WrappedResponseHolder;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -36,6 +37,8 @@ import javax.servlet.RequestDispatcher;
 import java.io.IOException;
 import java.util.Map;
 import java.util.Iterator;
+
+import com.opensymphony.module.sitemesh.filter.RequestDispatcherWrapper;
 
 /**
  * <p>A Servlet filter that uses the Grails UrlMappings to match and forward requests to a relevant controller
@@ -65,10 +68,20 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
         
         UrlMapping[] mappings = holder.getUrlMappings();
         String uri = urlHelper.getPathWithinApplication(request);
+        // filter doesn't apply to URLs with extensions for the moment, might add support
+        // later to include certain extensions
+        if(uri.substring(uri.lastIndexOf(SLASH)).indexOf(".") >-1) {
+            filterChain.doFilter(request, response);
+            return;
+        }
 
         UrlMappingInfo info = null;
         for (int i = 0; i < mappings.length; i++) {
+
             UrlMapping mapping = mappings[i];
+            if(LOG.isDebugEnabled())
+                LOG.debug("Attempting to match URI ["+uri+"] with pattern ["+mapping.getUrlData().getUrlPattern()+"]");
+            
             info = mapping.match(uri);
 
             if(info!=null) {
@@ -79,12 +92,14 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
         if(info!=null) {
             String forwardUrl = buildDispatchUrlForMapping(request, info);
             if(LOG.isDebugEnabled()) {
-                LOG.debug("Matched URI ["+uri+"] to URL mapping, forwarding to ["+forwardUrl+"]");
+                LOG.debug("Matched URI ["+uri+"] to URL mapping, forwarding to ["+forwardUrl+"] with response ["+response.getClass()+"]");
             }
             populateParamsForMapping(info);
             RequestDispatcher dispatcher = request.getRequestDispatcher(forwardUrl);
-            filterChain.doFilter(request, response);
-            dispatcher.include(request, response);
+            RequestDispatcherWrapper wrapper = new RequestDispatcherWrapper(dispatcher);
+            WrappedResponseHolder.setWrappedResponse(response);
+
+            wrapper.include(request, response);
         }
         else {
             if(filterChain!=null)

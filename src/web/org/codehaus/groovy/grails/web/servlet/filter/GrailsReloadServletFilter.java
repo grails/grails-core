@@ -33,6 +33,7 @@ import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
 import org.codehaus.groovy.grails.web.errors.GrailsWrappedRuntimeException;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.web.util.UrlPathHelper;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -59,12 +60,15 @@ public class GrailsReloadServletFilter extends OncePerRequestFilter {
     private GrailsRuntimeConfigurator config;
 
 	private GrailsPluginManager manager;
+    private UrlPathHelper urlHelper = new UrlPathHelper();
 
     public GrailsReloadServletFilter() {
     }
 
 
     protected void doFilterInternal(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, FilterChain filterChain) throws ServletException, IOException {
+
+
       GrailsApplicationAttributes attrs = new DefaultGrailsApplicationAttributes(getServletContext());
       context = (GrailsWebApplicationContext)attrs.getApplicationContext();
 
@@ -85,7 +89,12 @@ public class GrailsReloadServletFilter extends OncePerRequestFilter {
     	  config = new GrailsRuntimeConfigurator(application,parent);  
       }
       
-      
+      String uri = urlHelper.getPathWithinApplication(httpServletRequest);
+      String lastPart = uri.substring(uri.lastIndexOf("/"));
+      if(lastPart.indexOf('.') > -1) {
+          filterChain.doFilter(httpServletRequest, httpServletResponse);
+          return;
+      }
 
       if(copyScript == null) {
           GroovyClassLoader gcl = new GroovyClassLoader(getClass().getClassLoader());

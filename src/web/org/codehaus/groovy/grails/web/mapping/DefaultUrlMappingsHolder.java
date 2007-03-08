@@ -41,6 +41,8 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
 
     private void initialize() {
         Collections.sort(this.urlMappings);
+        Collections.reverse(this.urlMappings);
+        
         this.mappings = (UrlMapping[])this.urlMappings.toArray(new UrlMapping[this.urlMappings.size()]);
     }
 

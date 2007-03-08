@@ -191,12 +191,16 @@ class ControllersGrailsPlugin {
 		lastFilter + {
 			filter {
 				'filter-name'('grailsWebRequest')
-				'filter-class'('org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequestFilter')
-			}
+				'filter-class'(org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequestFilter.getName())
+			}     
+			filter {
+				'filter-name'('urlMapping')
+				'filter-class'(org.codehaus.groovy.grails.web.mapping.filter.UrlMappingsFilter.getName())
+			}               			
 			if(grailsEnv == "development") {
 				filter {
 					'filter-name'('reloadFilter')
-					'filter-class'('org.codehaus.groovy.grails.web.servlet.filter.GrailsReloadServletFilter')
+					'filter-class'(org.codehaus.groovy.grails.web.servlet.filter.GrailsReloadServletFilter.getName())
 				}
 			}
 		}
@@ -204,6 +208,12 @@ class ControllersGrailsPlugin {
 			'filter-mapping' {
 				'filter-name'('grailsWebRequest')
 				'url-pattern'("/*")
+			}   
+			if(grailsEnv == "development") {
+                'filter-mapping' {
+                    'filter-name'('reloadFilter')
+                    'url-pattern'("/*")
+                }				
 			}
 		}
 		if(charEncodingFilter) {
@@ -211,20 +221,19 @@ class ControllersGrailsPlugin {
 		}
 		else {
 			lastFilterMapping + grailsWebRequestFilter
-		}
+		}    
+		filterMappings = webXml.'filter-mapping'   
+		lastFilterMapping = filterMappings[filterMappings.size()-1]
+		
+	    lastFilterMapping + {   
+			'filter-mapping' {
+				'filter-name'('urlMapping')
+				'url-pattern'("/*")						
+			}
+		} 
 		// if we're in development environment first add a the reload filter
 		// to the web.xml by finding the last filter and appending it after
 		if(grailsEnv == "development") {
-
-			// now map each controller request to the filter
-			controllers.each { c ->
-				lastFilterMapping + {
-					'filter-mapping' {
-						'filter-name'('reloadFilter')
-						'url-pattern'("/${c}/*")
-					}
-				}
-			}
 			// now find the GSP servlet and allow viewing generated source in
 			// development mode
 			def gspServlet = webXml.servlet.find { it.'servlet-name'?.text() == 'gsp' }

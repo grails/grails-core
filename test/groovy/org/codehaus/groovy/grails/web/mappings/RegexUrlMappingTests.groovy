@@ -14,6 +14,28 @@ class RegexUrlMappingTests extends GroovyTestCase {
         def m6 = new RegexUrlMapping(parser.parse("/(*)/(*)/bar"), "test", null)
         def m7 = new RegexUrlMapping(parser.parse("/foo/(*)/(*)"), "test", null)
         def m8 = new RegexUrlMapping(parser.parse("/(*)/(*)/(*)"), "test", null)
+        def m9 = new RegexUrlMapping(parser.parse("/"), "test", null)
+
+        // root url
+        assertEquals( -1, m9.compareTo(m2) )
+        assertEquals( -1, m9.compareTo(m3))
+        assertEquals( -1, m9.compareTo(m4))
+        assertEquals( -1, m9.compareTo(m5))
+        assertEquals( -1, m9.compareTo(m6))
+        assertEquals( -1, m9.compareTo(m7))
+
+        assertEquals( 1, m2.compareTo(m9) )
+        assertEquals( 1, m3.compareTo(m9))
+        assertEquals( 1, m4.compareTo(m9))
+        assertEquals( 1, m5.compareTo(m9))
+        assertEquals( 1, m6.compareTo(m9))
+        assertEquals( 1, m7.compareTo(m9))
+
+        def urls = [m9,m2,m5,m7,m3,m4,m8]
+        Collections.sort(urls)
+        Collections.reverse(urls)
+        println urls.inspect()
+        assertEquals m9, urls[-1]
 
         // url 1
         assertEquals( -1, m1.compareTo(m2) )

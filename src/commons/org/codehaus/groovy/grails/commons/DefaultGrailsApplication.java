@@ -214,6 +214,7 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
         registerArtefactHandler( new BootstrapArtefactHandler());
         registerArtefactHandler( new CodecArtefactHandler());
         registerArtefactHandler( new DataSourceArtefactHandler());
+        registerArtefactHandler( new UrlMappingsArtefactHandler());
 
         // Cache the list as an array
         this.artefactHandlers = ((ArtefactHandler[]) this.artefactHandlersByName.values().toArray(

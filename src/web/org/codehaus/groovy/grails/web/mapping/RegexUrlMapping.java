@@ -208,7 +208,7 @@ public class RegexUrlMapping implements UrlMapping {
 
 
         String[] tokens = getUrlData().getTokens();
-        
+
         if(tokens.length < otherTokens.length) {
             return -1;
         }
@@ -239,5 +239,10 @@ public class RegexUrlMapping implements UrlMapping {
 
     private boolean isWildcard(String token) {
         return WILDCARD.equals(token) || CAPTURED_WILDCARD.equals(token);
+    }
+
+
+    public String toString() {
+        return this.urlData.getUrlPattern();
     }
 }
