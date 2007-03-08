@@ -34,13 +34,14 @@ import javax.servlet.http.HttpServletRequest;
  */
 public class GrailsWebUtil {
     
-    public static void bindMockWebRequest(GrailsWebApplicationContext ctx) {
+    public static GrailsWebRequest bindMockWebRequest(GrailsWebApplicationContext ctx) {
         GrailsWebRequest webRequest = new GrailsWebRequest(
                                                 new MockHttpServletRequest(),
                                                 new MockHttpServletResponse(),
                                                 ctx.getServletContext()
                                             );
         RequestContextHolder.setRequestAttributes(webRequest);
+        return webRequest;
     }
 
     public static GrailsWebRequest bindMockWebRequest() {

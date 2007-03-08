@@ -72,9 +72,11 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
 
     protected void initFrameworkServlet() throws ServletException, BeansException {
         super.initFrameworkServlet();
-        this.multipartResolver = (MultipartResolver)
-                getWebApplicationContext().getBean(MULTIPART_RESOLVER_BEAN_NAME, MultipartResolver.class);
+        if(getWebApplicationContext().containsBean(MULTIPART_RESOLVER_BEAN_NAME)) {
+            this.multipartResolver = (MultipartResolver)
+                    getWebApplicationContext().getBean(MULTIPART_RESOLVER_BEAN_NAME, MultipartResolver.class);
 
+        }
     }
 
     protected WebApplicationContext createWebApplicationContext(WebApplicationContext parent) throws BeansException {
@@ -261,7 +263,8 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
         finally {
             // Clean up any resources used by a multipart request.
             if (processedRequest instanceof MultipartHttpServletRequest && processedRequest != request) {
-                this.multipartResolver.cleanupMultipart((MultipartHttpServletRequest) processedRequest);
+                if(multipartResolver != null)
+                    this.multipartResolver.cleanupMultipart((MultipartHttpServletRequest) processedRequest);
             }
 
             // Reset thread-bound RequestAttributes.
