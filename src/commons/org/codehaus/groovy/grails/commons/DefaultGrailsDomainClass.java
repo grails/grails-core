@@ -207,25 +207,23 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
     private void evaluateConstraints() {
         Closure constraintsClosure = (Closure)getPropertyOrStaticPropertyOrFieldValue(
                 GrailsDomainClassProperty.CONSTRAINTS, Closure.class );
-        if(constraintsClosure != null) {
-            BeanWrapper reference = getReference();
+        BeanWrapper reference = getReference();
 
-            if (!GrailsClassUtils.isStaticProperty(getClazz(), GrailsDomainClassProperty.CONSTRAINTS))
-            {
-                throw new GrailsConfigurationException(
-                    "Domain class ["+getFullName()+"] has non-static constraints. Constraints must be " +
-                    "declared static.");
-            }
+        if (constraintsClosure != null && !GrailsClassUtils.isStaticProperty(getClazz(), GrailsDomainClassProperty.CONSTRAINTS))
+        {
+            throw new GrailsConfigurationException(
+                "Domain class ["+getFullName()+"] has non-static constraints. Constraints must be " +
+                "declared static.");
+        }
 
-            GroovyObject instance = (GroovyObject)reference.getWrappedInstance();
-            try {
-                DynamicMethods interceptor = new GroovyDynamicMethodsInterceptor(instance);
-                interceptor.addDynamicProperty( new ConstraintsEvaluatingDynamicProperty(this.persistantProperties) );
+        GroovyObject instance = (GroovyObject)reference.getWrappedInstance();
+        try {
+            DynamicMethods interceptor = new GroovyDynamicMethodsInterceptor(instance);
+            interceptor.addDynamicProperty( new ConstraintsEvaluatingDynamicProperty(this.persistantProperties) );
 
-                this.constraints = (Map)instance.getProperty(GrailsDomainClassProperty.CONSTRAINTS);
-            } catch (IntrospectionException e) {
-                LOG.error("Introspection error reading domain class ["+getFullName()+"] constraints: " + e.getMessage(), e);
-            }
+            this.constraints = (Map)instance.getProperty(GrailsDomainClassProperty.CONSTRAINTS);
+        } catch (IntrospectionException e) {
+            LOG.error("Introspection error reading domain class ["+getFullName()+"] constraints: " + e.getMessage(), e);
         }
     }
 
