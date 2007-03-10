@@ -281,6 +281,7 @@ task(classpath:"Sets the Grails classpath") {
 		pathelement(location:"${basedir}/web-app")
 		pathelement(location:"${basedir}/web-app/WEB-INF")
 		pathelement(location:"${basedir}/web-app/WEB-INF/classes")				
+		fileset(dir:"${basedir}/web-app/WEB-INF/lib")		
 		fileset(dir:"${grailsHome}/lib")
 		fileset(dir:"${grailsHome}/dist")
 		fileset(dir:"lib") 
