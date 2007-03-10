@@ -71,6 +71,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
     public static final String[] GROOVY_DISALLOWED = new String[] { "metaClass", "properties" };
     public static final String[] DOMAINCLASS_DISALLOWED = new String[] { "id", "version" };
     public static final String[] GROOVY_DOMAINCLASS_DISALLOWED = new String[] { "metaClass", "properties", "id", "version" };
+    public static final String   NULL_ASSOCIATION = "null";
 
     /**
      * Create a new GrailsDataBinder instance.
@@ -212,24 +213,29 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
             if (index > -1) {
                 propertyName = propertyName.substring(0, index);
                 if (bean.isReadableProperty(propertyName) && bean.isWritableProperty(propertyName)) {
-                    Class type = bean.getPropertyType(propertyName);
-
-                    // In order to load the association instance using InvokerHelper below, we need to 
-                    // temporarily change this thread's ClassLoader to use the Grails ClassLoader.
-                    // (Otherwise, we'll get a ClassNotFoundException.)
-                    ClassLoader currentClassLoader = getClass().getClassLoader();
-                    ClassLoader grailsClassLoader = getTarget().getClass().getClassLoader();
-                    try {
-                        Thread.currentThread().setContextClassLoader(grailsClassLoader);
-						Object persisted;
-                        	
-                       	persisted = InvokerHelper.invokeStaticMethod(type, "get", pv.getValue());
-                        
-                        if (persisted != null) {
-                            bean.setPropertyValue(propertyName, persisted);
-                        }
-                    } finally {
-                        Thread.currentThread().setContextClassLoader(currentClassLoader);
+                    if( NULL_ASSOCIATION.equals(pv.getValue())) {
+                        bean.setPropertyValue(propertyName, null);
+                        mpvs.removePropertyValue(pv);
+                    } else {
+	                    Class type = bean.getPropertyType(propertyName);
+	
+	                    // In order to load the association instance using InvokerHelper below, we need to 
+	                    // temporarily change this thread's ClassLoader to use the Grails ClassLoader.
+	                    // (Otherwise, we'll get a ClassNotFoundException.)
+	                    ClassLoader currentClassLoader = getClass().getClassLoader();
+	                    ClassLoader grailsClassLoader = getTarget().getClass().getClassLoader();
+	                    try {
+	                        Thread.currentThread().setContextClassLoader(grailsClassLoader);
+							Object persisted;
+	                        	
+	                       	persisted = InvokerHelper.invokeStaticMethod(type, "get", pv.getValue());
+	                        
+	                        if (persisted != null) {
+	                            bean.setPropertyValue(propertyName, persisted);
+	                        }
+	                    } finally {
+	                        Thread.currentThread().setContextClassLoader(currentClassLoader);
+	                    }
                     }
                 }
             }
