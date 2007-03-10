@@ -36,6 +36,7 @@ import java.util.Map;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.grails.commons.ArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.commons.GrailsMetaClassUtils;
@@ -552,7 +553,7 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
     }
 
 
-    public Object getInstance() {
+    public GroovyObject getInstance() {
         return this.plugin;
     }
 
@@ -581,4 +582,34 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
         onChangeListener.setDelegate(this);
         onChangeListener.call(new Object[]{event});
     }
+	
+	public void doArtefactConfiguration() {
+		if(this.pluginBean.isReadableProperty(ARTEFACTS)) {
+			List l = (List)this.plugin.getProperty(ARTEFACTS);
+			for (Iterator iter = l.iterator(); iter.hasNext();) {
+				Object artefact = iter.next();
+				if(artefact instanceof Class) {
+					Class artefactClass = (Class)artefact;
+					if(ArtefactHandler.class.isAssignableFrom(artefactClass)) {
+						try {
+							this.application.registerArtefactHandler((ArtefactHandler)artefactClass.newInstance());
+						} catch (InstantiationException e) {
+				            LOG.error("Cannot instantiate an Artefact Handler:" + e.getMessage(),e);
+						} catch (IllegalAccessException e) {
+				            LOG.error("The constructor of the Artefact Handler is not accessible:" + e.getMessage(),e);
+						}
+					} else {
+			            LOG.error("This class is not an ArtefactHandler:" + artefactClass.getName());
+					}
+				} else {
+					if(artefact instanceof ArtefactHandler) {
+						this.application.registerArtefactHandler((ArtefactHandler)artefact);
+					} else {
+						LOG.error("This object is not an ArtefactHandler:" + artefact + "[" + artefact.getClass().getName()+"]");
+					}
+				}
+			}
+		}
+	}
+
 }
