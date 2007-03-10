@@ -60,14 +60,14 @@ if (new File("${basedir}/application.properties").exists()) {
     Ant.property(file:"${basedir}/application.properties")
 
     grailsAppName = Ant.antProject.properties.'app.name'
-    // If no app name property (upgraded/new/edited project) default to basedir
-    if (!grailsAppName) {
-        grailsAppName = baseName
-    }
-
     appGrailsVersion = Ant.antProject.properties.'app.grails.version'
-
 }
+
+// If no app name property (upgraded/new/edited project) default to basedir
+if (!grailsAppName) {
+    grailsAppName = baseName
+}
+
 
 // a resolver that doesn't throw exceptions when resolving resources
 resolveResources = { String pattern ->
