@@ -10,6 +10,254 @@
     <uri>http://grails.codehaus.org/tags</uri>
 
     <tag>
+        <description>
+        	Enables the storing of a value into the given ${var}
+        </description>
+        <name>set</name>
+        <tag-class>org.codehaus.groovy.grails.web.taglib.GroovySetTag</tag-class>
+        <body-content>JSP</body-content>
+        <attribute>
+            <description>The value to store</description>
+            <name>value</name>
+            <required>true</required>
+            <rtexprvalue>true</rtexprvalue>
+        </attribute>
+        <attribute>
+            <description>The name of the variable to store the value in</description>
+            <name>var</name>
+            <required>true</required>
+            <rtexprvalue>true</rtexprvalue>
+        </attribute>
+        <dynamic-attributes>false</dynamic-attributes>
+    </tag>
+
+    <tag>
+        <description>
+        	Enables the storing of a value into the given ${var} into the page context
+        </description>
+        <name>def</name>
+        <tag-class>org.codehaus.groovy.grails.web.taglib.GroovyDefTag</tag-class>
+        <body-content>JSP</body-content>
+        <attribute>
+            <description>The value to store</description>
+            <name>value</name>
+            <required>true</required>
+            <rtexprvalue>true</rtexprvalue>
+        </attribute>
+        <attribute>
+            <description>The name of the variable to store the value in</description>
+            <name>var</name>
+            <required>true</required>
+            <rtexprvalue>true</rtexprvalue>
+        </attribute>
+        <dynamic-attributes>false</dynamic-attributes>
+    </tag>
+
+    <tag>
+        <description>
+        	Logical if tag to test whether the given condition is true
+        </description>
+        <name>if</name>
+        <tag-class>org.codehaus.groovy.grails.web.taglib.GroovyIfTag</tag-class>
+        <body-content>JSP</body-content>
+        <attribute>
+            <description>The condition to test</description>
+            <name>test</name>
+            <required>true</required>
+            <rtexprvalue>true</rtexprvalue>
+        </attribute>
+        <dynamic-attributes>false</dynamic-attributes>
+    </tag>
+
+    <tag>
+        <description>
+        	Logical else tag as fallback if the if condition fails
+        </description>
+        <name>else</name>
+        <tag-class>org.codehaus.groovy.grails.web.taglib.GroovyElseTag</tag-class>
+        <body-content>JSP</body-content>
+        <dynamic-attributes>false</dynamic-attributes>
+    </tag>
+
+    <tag>
+        <description>
+        	Logical elseif tag to test whether the given condition is true
+        </description>
+        <name>elseif</name>
+        <tag-class>org.codehaus.groovy.grails.web.taglib.GroovyElseIfTag</tag-class>
+        <body-content>JSP</body-content>
+        <attribute>
+            <description>The condition to test</description>
+            <name>test</name>
+            <required>true</required>
+            <rtexprvalue>true</rtexprvalue>
+        </attribute>
+        <dynamic-attributes>false</dynamic-attributes>
+    </tag>
+
+	<tag>
+        <description>
+        	Tag to loop over a collection while the test expression returns true
+        </description>
+        <name>while</name>
+        <tag-class>org.codehaus.groovy.grails.web.taglib.GroovyWhileTag</tag-class>
+        <body-content>JSP</body-content>
+        <attribute>
+            <description>The condition to test</description>
+            <name>test</name>
+            <required>true</required>
+            <rtexprvalue>true</rtexprvalue>
+        </attribute>
+        <dynamic-attributes>false</dynamic-attributes>
+    </tag>
+
+    <tag>
+        <description>Iterates over the given collection</description>
+        <name>each</name>
+        <tag-class>org.codehaus.groovy.grails.web.taglib.GroovyEachTag</tag-class>
+        <body-content>JSP</body-content>
+        <attribute>
+        	<description>The collection to iterate over</description>
+            <name>in</name>
+            <required>true</required>
+            <rtexprvalue>true</rtexprvalue>
+        </attribute>
+        <attribute>
+        	<description>An optional var-name to reference onto the elements</description>
+            <name>var</name>
+            <required>false</required>
+            <rtexprvalue>true</rtexprvalue>
+        </attribute>
+        <attribute>
+            <name>status</name>
+            <required>false</required>
+            <rtexprvalue>true</rtexprvalue>
+        </attribute>
+        <dynamic-attributes>true</dynamic-attributes>
+    </tag>
+
+    <tag>
+        <description>Iterates over the given collection</description>
+        <name>findAll</name>
+        <tag-class>org.codehaus.groovy.grails.web.taglib.GroovyFindAllTag</tag-class>
+        <body-content>JSP</body-content>
+        <attribute>
+        	<description>The collection to iterate over</description>
+            <name>in</name>
+            <required>true</required>
+            <rtexprvalue>true</rtexprvalue>
+        </attribute>
+        <attribute>
+        	<description>An optional var-name to reference onto the elements</description>
+            <name>var</name>
+            <required>false</required>
+            <rtexprvalue>true</rtexprvalue>
+        </attribute>
+        <attribute>
+        	<description>The expression to filter the elements to iterate over</description>
+            <name>expr</name>
+            <required>true</required>
+            <rtexprvalue>true</rtexprvalue>
+        </attribute>
+        <attribute>
+            <name>status</name>
+            <required>false</required>
+            <rtexprvalue>true</rtexprvalue>
+        </attribute>
+        <dynamic-attributes>true</dynamic-attributes>
+    </tag>
+
+	<tag>
+        <description>Iterates over the given collection and collects the elements
+        	you want to work with</description>
+        <name>collect</name>
+        <tag-class>org.codehaus.groovy.grails.web.taglib.GroovyCollectTag</tag-class>
+        <body-content>JSP</body-content>
+        <attribute>
+        	<description>The collection to iterate over</description>
+            <name>in</name>
+            <required>true</required>
+            <rtexprvalue>true</rtexprvalue>
+        </attribute>
+        <attribute>
+        	<description>An optional var-name to reference onto the elements</description>
+            <name>var</name>
+            <required>false</required>
+            <rtexprvalue>true</rtexprvalue>
+        </attribute>
+        <attribute>
+        	<description>The expression to use to collect the elements. The
+        	expression must retur true to add the element to the
+        	collection</description>
+            <name>expr</name>
+            <required>true</required>
+            <rtexprvalue>true</rtexprvalue>
+        </attribute>
+        <attribute>
+            <name>status</name>
+            <required>false</required>
+            <rtexprvalue>true</rtexprvalue>
+        </attribute>
+        <dynamic-attributes>false</dynamic-attributes>
+    </tag>
+
+    <tag>
+        <description>Iterates over the given collection and filters the elements
+        with a regular expression</description>
+        <name>grep</name>
+        <tag-class>org.codehaus.groovy.grails.web.taglib.GroovyGrepTag</tag-class>
+        <body-content>JSP</body-content>
+        <attribute>
+        	<description>The collection to iterate over</description>
+            <name>in</name>
+            <required>true</required>
+            <rtexprvalue>true</rtexprvalue>
+        </attribute>
+        <attribute>
+        	<description>An optional var-name to reference onto the elements</description>
+            <name>var</name>
+            <required>false</required>
+            <rtexprvalue>true</rtexprvalue>
+        </attribute>
+        <attribute>
+        	<description>The regular expression to filter the element with. The
+        	filter is a simple Groovy Regex</description>
+            <name>filter</name>
+            <required>true</required>
+            <rtexprvalue>true</rtexprvalue>
+        </attribute>
+        <attribute>
+            <name>status</name>
+            <required>false</required>
+            <rtexprvalue>true</rtexprvalue>
+        </attribute>
+        <dynamic-attributes>false</dynamic-attributes>
+    </tag>
+
+    <tag>
+        <description>A tag that attempts to render an input for a bean property
+        into an appropriate component based on the type. It uses the templates
+        defined in "grails-app/views/scaffolding" to achieve this by looking up
+		the template by type.</description>
+        <name>renderInput</name>
+        <tag-class>org.codehaus.groovy.grails.web.taglib.GroovyRenderInputTag</tag-class>
+        <body-content>JSP</body-content>
+        <attribute>
+        	<description>The Bean to render the input for</description>
+            <name>bean</name>
+            <required>true</required>
+            <rtexprvalue>true</rtexprvalue>
+        </attribute>
+        <attribute>
+        	<description>The property of the bean to render input for</description>
+            <name>property</name>
+            <required>true</required>
+            <rtexprvalue>true</rtexprvalue>
+        </attribute>
+        <dynamic-attributes>false</dynamic-attributes>
+    </tag>
+
+    <tag>
         <name>link</name>
         <tag-class>org.codehaus.groovy.grails.web.taglib.jsp.JspLinkTag</tag-class>
         <body-content>JSP</body-content>
