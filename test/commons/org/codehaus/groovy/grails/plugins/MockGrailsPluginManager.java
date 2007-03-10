@@ -108,4 +108,8 @@ public class MockGrailsPluginManager extends AbstractGrailsPluginManager {
     public void setServletContext(ServletContext servletContext) {
         this.servletContext = servletContext;
     }
+
+	public void doArtefactConfiguration() {
+		// do nothing		
+	}
 }

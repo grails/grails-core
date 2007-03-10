@@ -190,16 +190,8 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
             }
         }
 
-        // get all the classes that were loaded
-        if (log.isDebugEnabled()) {
-            log.debug("loaded classes: [" + loadedClasses + "]");
-        }
-
-        Class[] classes = populateAllClasses();
-
-        configureLoadedClasses(classes);
     }
-
+    
     /**
      * Initialises the default set of ArtefactHandler instances
      *
@@ -795,4 +787,14 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
         }
         return super.getProperty(propertyName);    
     }
+
+    public void initialise() {
+        // get all the classes that were loaded
+        if (log.isDebugEnabled()) {
+            log.debug("loaded classes: [" + loadedClasses + "]");
+        }    	
+        Class[] classes = populateAllClasses();
+        configureLoadedClasses(classes);    	
+    }
+
 }

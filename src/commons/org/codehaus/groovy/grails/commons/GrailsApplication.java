@@ -222,5 +222,6 @@ public interface GrailsApplication extends ApplicationContextAware {
      */
     public ArtefactHandler[] getArtefactHandlers();
 
+	public void initialise();
 
 }

@@ -8,6 +8,8 @@ import org.springframework.context.support.GenericApplicationContext;
 
 import java.util.Map;
 
+import groovy.lang.GroovyObject;
+
 /**
  * <p>Grails plugin that registers <code>*Aware</code> {@link org.springframework.beans.factory.config.BeanPostProcessor}s.</p>
  *
@@ -48,7 +50,7 @@ public class AwarePlugin extends AbstractGrailsPlugin {
 		
 	}
 
-    public Object getInstance() {
+    public GroovyObject getInstance() {
         throw new UnsupportedOperationException("Method [getInstance] not supported on AwarePlugin");
     }
 
@@ -67,5 +69,9 @@ public class AwarePlugin extends AbstractGrailsPlugin {
     public void notifyOfEvent(Map event) {
         // do nothing
     }
+
+	public void doArtefactConfiguration() {
+		// do nothing		
+	}
 
 }

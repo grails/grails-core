@@ -662,4 +662,12 @@ public class DefaultGrailsPluginManager implements GrailsPluginManager {
   public ServletContext getServletContext() {
       return servletContext;
   }
+    
+  public void doArtefactConfiguration() {
+      checkInitialised();
+      for (Iterator i = pluginList.iterator(); i.hasNext();) {
+          GrailsPlugin plugin = (GrailsPlugin) i.next();
+          plugin.doArtefactConfiguration();
+      }	  	  
+  }  
 }

@@ -72,11 +72,13 @@ public abstract class AbstractGrailsPlugin extends GroovyObjectSupport implement
 		this.application = application;
 		this.pluginClass = pluginClass;
 	}
+	
 	public abstract void doWithApplicationContext(ApplicationContext applicationContext);
 	
 
 	public abstract void doWithRuntimeConfiguration(RuntimeSpringConfiguration springConfig);
 	
+	public abstract void doArtefactConfiguration();	
 	
 	public void checkForChanges() {
 		// do nothing		

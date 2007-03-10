@@ -16,6 +16,7 @@
 package org.codehaus.groovy.grails.plugins;
 
 import groovy.util.slurpersupport.GPathResult;
+import groovy.lang.GroovyObject;
 
 import java.util.Map;
 
@@ -105,8 +106,10 @@ public interface GrailsPlugin extends ApplicationContextAware {
 	 */
 	String DEPENDS_ON = "dependsOn";
 
-
-
+	/**
+	 * Define the list of ArtefactHandlers supporting by the plugin
+	 */
+	String ARTEFACTS = "artefacts";
 
     /**
      * <p>This method is called to allow the plugin to add {@link org.springframework.beans.factory.config.BeanDefinition}s
@@ -201,7 +204,7 @@ public interface GrailsPlugin extends ApplicationContextAware {
      * Retrieves the wrapped plugin instance for this plugin
      * @return The plugin instance
      */
-    Object getInstance();
+    GroovyObject getInstance();
 
     /**
 	 * Sets the plugin manager for this plugin
@@ -239,4 +242,6 @@ public interface GrailsPlugin extends ApplicationContextAware {
      * @param event The event to listen for
      */
     void notifyOfEvent(Map event);
+
+	void doArtefactConfiguration();
 }

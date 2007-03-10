@@ -184,4 +184,7 @@ public interface GrailsPluginManager extends ApplicationContextAware, ServletCon
      * @param event The event
      */
     public void informObservers(String pluginName, Map event);
+    
+    public void doArtefactConfiguration();
+    
 }
