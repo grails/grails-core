@@ -103,18 +103,15 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator  {
 
         if(domainClass) {
             def destFile = new File("${destdir}/grails-app/controllers/${domainClass.shortName}Controller.groovy")
-            if(destFile.exists()) {
-				ant.input(message: "Controller ${destFile.name} already exists. Overwrite?","y,n", addproperty:"overwrite.controller")
-                def overwrite = (ant.antProject.properties."overwrite.controller" == "y") ? true : false        
-                if(!overwrite)return
-            }
-            destFile.parentFile.mkdirs()
+			if(canWrite(destFile)) {				
+	            destFile.parentFile.mkdirs()
 
-            destFile.withWriter { w ->
-                generateController(domainClass, w)
-            }
+	            destFile.withWriter { w ->
+	                generateController(domainClass, w)
+	            }
 
-            LOG.info("Controller generated at ${destFile}")
+	            LOG.info("Controller generated at ${destFile}")
+			}
         }
     }
 
@@ -255,18 +252,7 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator  {
 
     private generateListView(domainClass, destDir) {
         def listFile = new File("${destDir}/list.gsp")
-        def localOverwrite = false
-        if(!overwrite) {
-            if(listFile.exists()) {
-				ant.input(message: "View ${listFile} already exists. Overwrite?","y,n", addproperty:"overwrite.listview")
-                localOverwrite = (ant.antProject.properties."overwrite.listview" == "y") ? true : false        
-                if(!localOverwrite)return
-            }    
-            else {
-            	localOverwrite = true
-            }
-        }
-        if(localOverwrite || overwrite) {
+        if(canWrite(listFile)) {
             listFile.withWriter { w ->
                 generateView(domainClass, "list", w)
             }
@@ -276,19 +262,7 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator  {
 
     private generateShowView(domainClass,destDir) {
         def showFile = new File("${destDir}/show.gsp")
-        def localOverwrite = false
-        if(!overwrite) {
-            if(showFile.exists()) {
-				ant.input(message: "View ${showFile} already exists. Overwrite?","y,n", addproperty:"overwrite.showview")
-                localOverwrite = (ant.antProject.properties."overwrite.showview" == "y") ? true : false        
-                if(!localOverwrite)return
-            }   
-            else {
-            	localOverwrite = true
-            }
-
-        }
-        if(localOverwrite || overwrite) {
+        if(canWrite(showFile)) {
             showFile.withWriter { w ->
                 generateView(domainClass, "show", w)
             }
@@ -298,19 +272,7 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator  {
 
     private generateEditView(domainClass,destDir) {
         def editFile = new File("${destDir}/edit.gsp")
-        def localOverwrite = false
-        if(!overwrite) {
-            if(editFile.exists()) {
-				ant.input(message: "View ${editFile} already exists. Overwrite?","y,n", addproperty:"overwrite.editview")
-                localOverwrite = (ant.antProject.properties."overwrite.editview" == "y") ? true : false        
-                if(!localOverwrite)return
-            } 
-            else {
-            	localOverwrite = true
-            }
-            
-        }
-        if(localOverwrite || overwrite) {
+        if(canWrite(editFile)) {
             editFile.withWriter { w ->
                 generateView(domainClass, "edit", w)
             }
@@ -320,19 +282,7 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator  {
 
     private generateCreateView(domainClass,destDir) {
         def createFile = new File("${destDir}/create.gsp")
-        def localOverwrite = false
-        if(!overwrite) {
-            if(createFile.exists()) {
-				ant.input(message: "View ${createFile} already exists. Overwrite?","y,n", addproperty:"overwrite.createview")
-                localOverwrite = (ant.antProject.properties."overwrite.createview" == "y") ? true : false        
-                if(!localOverwrite)return
-            }
-            else {
-            	localOverwrite = true
-            }
-            
-        }
-        if(localOverwrite || overwrite) {
+        if(canWrite(createFile)) {
 
             createFile.withWriter { w ->
                    generateView(domainClass, "create", w)
@@ -370,6 +320,15 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator  {
 
             def t = engine.createTemplate(templateText)
             t.make(binding).writeTo(out)
+    }
+    
+    private canWrite(testFile) {
+        if(!overwrite && testFile.exists()) {
+			ant.input(message: "File ${testFile} already exists. Overwrite?","y,n,a", addproperty:"overwrite.${testFile.name}")
+			overwrite = (ant.antProject.properties."overwrite.${testFile.name}" == "a") ? true : overwrite
+			return overwrite || ((ant.antProject.properties."overwrite.${testFile.name}" == "y") ? true : false) 
+        }
+        return true
     }
     
     private getTemplateText(String template) {
