@@ -36,8 +36,8 @@ class Site {
     String toString() { "${name}" }
 
     static constraints = {
-		name(blank:false,length:1..50)
-		domain(blank:false,length:1..50)
+		name(blank:false,size:1..50)
+		domain(blank:false,size:1..50)
 	}
 
     boolean equals(other) {

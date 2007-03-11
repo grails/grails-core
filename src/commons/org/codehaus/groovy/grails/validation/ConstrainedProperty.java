@@ -14,8 +14,6 @@
  */
 package org.codehaus.groovy.grails.validation;
 
-
-import groovy.lang.IntRange;
 import groovy.lang.MissingPropertyException;
 import groovy.lang.Range;
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -57,13 +55,10 @@ public class ConstrainedProperty   {
 
     static final String DEFAULT_NULL_MESSAGE_CODE = "default.null.message";
     static final String DEFAULT_INVALID_MIN_SIZE_MESSAGE_CODE = "default.invalid.min.size.message";
-    static final String DEFAULT_INVALID_MIN_LENGTH_MESSAGE_CODE = "default.invalid.min.length.message";
     static final String DEFAULT_INVALID_MAX_SIZE_MESSAGE_CODE = "default.invalid.max.size.message";
-    static final String DEFAULT_INVALID_MAX_LENGTH_MESSAGE_CODE = "default.invalid.max.length.message";
     static final String DEFAULT_NOT_EQUAL_MESSAGE_CODE = "default.not.equal.message";
     static final String DEFAULT_INVALID_MIN_MESSAGE_CODE = "default.invalid.min.message";
     static final String DEFAULT_INVALID_MAX_MESSAGE_CODE = "default.invalid.max.message";
-    static final String DEFAULT_INVALID_LENGTH_MESSAGE_CODE = "default.invalid.length.message";
     static final String DEFAULT_INVALID_SIZE_MESSAGE_CODE = "default.invalid.size.message";
     static final String DEFAULT_NOT_INLIST_MESSAGE_CODE = "default.not.inlist.message";
     static final String DEFAULT_INVALID_RANGE_MESSAGE_CODE = "default.invalid.range.message";
@@ -84,13 +79,10 @@ public class ConstrainedProperty   {
     private static final String DEFAULT_INVALID_RANGE_MESSAGE = bundle.getString( DEFAULT_INVALID_RANGE_MESSAGE_CODE );
     private static final String DEFAULT_NOT_IN_LIST_MESSAGE = bundle.getString( DEFAULT_NOT_INLIST_MESSAGE_CODE );
     private static final String DEFAULT_INVALID_SIZE_MESSAGE = bundle.getString( DEFAULT_INVALID_SIZE_MESSAGE_CODE );
-    private static final String DEFAULT_INVALID_LENGTH_MESSAGE = bundle.getString( DEFAULT_INVALID_LENGTH_MESSAGE_CODE );
     private static final String DEFAULT_INVALID_MAX_MESSAGE = bundle.getString( DEFAULT_INVALID_MAX_MESSAGE_CODE );
     private static final String DEFAULT_INVALID_MIN_MESSAGE = bundle.getString( DEFAULT_INVALID_MIN_MESSAGE_CODE );
     private static final String DEFAULT_NOT_EQUAL_MESSAGE = bundle.getString( DEFAULT_NOT_EQUAL_MESSAGE_CODE );
-    private static final String DEFAULT_INVALID_MAX_LENGTH_MESSAGE = bundle.getString( DEFAULT_INVALID_MAX_LENGTH_MESSAGE_CODE );
     private static final String DEFAULT_INVALID_MAX_SIZE_MESSAGE = bundle.getString( DEFAULT_INVALID_MAX_SIZE_MESSAGE_CODE );
-    private static final String DEFAULT_INVALID_MIN_LENGTH_MESSAGE = bundle.getString( DEFAULT_INVALID_MIN_LENGTH_MESSAGE_CODE );
     private static final String DEFAULT_INVALID_MIN_SIZE_MESSAGE = bundle.getString( DEFAULT_INVALID_MIN_SIZE_MESSAGE_CODE );
     private static final String DEFAULT_NULL_MESSAGE = bundle.getString( DEFAULT_NULL_MESSAGE_CODE );
 
@@ -101,14 +93,11 @@ public class ConstrainedProperty   {
     public static final String IN_LIST_CONSTRAINT = "inList";
     public static final String URL_CONSTRAINT = "url";
     public static final String MATCHES_CONSTRAINT = "matches";
-    public static final String LENGTH_CONSTRAINT = "length";
     public static final String SIZE_CONSTRAINT = "size";
     public static final String MIN_CONSTRAINT = "min";
     public static final String MAX_CONSTRAINT = "max";
     public static final String MAX_SIZE_CONSTRAINT = "maxSize";
     public static final String MIN_SIZE_CONSTRAINT = "minSize";
-    public static final String MAX_LENGTH_CONSTRAINT = "maxLength";
-    public static final String MIN_LENGTH_CONSTRAINT = "minLength";
     public static final String SCALE_CONSTRAINT = "scale";
     public static final String NOT_EQUAL_CONSTRAINT = "notEqual";
     public static final String NULLABLE_CONSTRAINT = "nullable";
@@ -131,11 +120,8 @@ public class ConstrainedProperty   {
         DEFAULT_MESSAGES.put(DEFAULT_DOESNT_MATCH_MESSAGE_CODE,DEFAULT_DOESNT_MATCH_MESSAGE);
         DEFAULT_MESSAGES.put(DEFAULT_INVALID_CREDIT_CARD_MESSAGE_CODE,DEFAULT_INVALID_CREDIT_CARD_MESSAGE);
         DEFAULT_MESSAGES.put(DEFAULT_INVALID_EMAIL_MESSAGE_CODE,DEFAULT_INVALID_EMAIL_MESSAGE);
-        DEFAULT_MESSAGES.put(DEFAULT_INVALID_LENGTH_MESSAGE_CODE,DEFAULT_INVALID_LENGTH_MESSAGE);
-        DEFAULT_MESSAGES.put(DEFAULT_INVALID_MAX_LENGTH_MESSAGE_CODE,DEFAULT_INVALID_MAX_LENGTH_MESSAGE);
         DEFAULT_MESSAGES.put(DEFAULT_INVALID_MAX_MESSAGE_CODE,DEFAULT_INVALID_MAX_MESSAGE);
         DEFAULT_MESSAGES.put(DEFAULT_INVALID_MAX_SIZE_MESSAGE_CODE,DEFAULT_INVALID_MAX_SIZE_MESSAGE);
-        DEFAULT_MESSAGES.put(DEFAULT_INVALID_MIN_LENGTH_MESSAGE_CODE,DEFAULT_INVALID_MIN_LENGTH_MESSAGE);
         DEFAULT_MESSAGES.put(DEFAULT_INVALID_MIN_MESSAGE_CODE,DEFAULT_INVALID_MIN_MESSAGE);
         DEFAULT_MESSAGES.put(DEFAULT_INVALID_MIN_SIZE_MESSAGE_CODE,DEFAULT_INVALID_MIN_SIZE_MESSAGE);
         DEFAULT_MESSAGES.put(DEFAULT_INVALID_RANGE_MESSAGE_CODE,DEFAULT_INVALID_RANGE_MESSAGE);
@@ -151,15 +137,12 @@ public class ConstrainedProperty   {
         constraints.put( RANGE_CONSTRAINT, RangeConstraint.class );
         constraints.put( IN_LIST_CONSTRAINT, InListConstraint.class );
         constraints.put( URL_CONSTRAINT, UrlConstraint.class );
-        constraints.put( LENGTH_CONSTRAINT, SizeConstraint.class );
         constraints.put( SIZE_CONSTRAINT, SizeConstraint.class );
         constraints.put( MATCHES_CONSTRAINT, MatchesConstraint.class );
         constraints.put( MIN_CONSTRAINT, MinConstraint.class );
         constraints.put( MAX_CONSTRAINT, MaxConstraint.class );
         constraints.put( MAX_SIZE_CONSTRAINT, MaxSizeConstraint.class );
-        constraints.put( MAX_LENGTH_CONSTRAINT, MaxSizeConstraint.class );
         constraints.put( MIN_SIZE_CONSTRAINT, MinSizeConstraint.class );
-        constraints.put( MIN_LENGTH_CONSTRAINT, MinSizeConstraint.class );
         constraints.put( SCALE_CONSTRAINT, ScaleConstraint.class );
         constraints.put( NULLABLE_CONSTRAINT, NullableConstraint.class );
         constraints.put( NOT_EQUAL_CONSTRAINT, NotEqualConstraint.class );
@@ -440,32 +423,6 @@ public class ConstrainedProperty   {
     }
 
     /**
-     * @return Returns the length.
-     * 
-     * @deprecated Use <code>getSize()</code>instead
-     */
-    public IntRange getLength() {
-        if(!(String.class == propertyType) && !propertyType.isArray()) {
-            throw new MissingPropertyException("Length constraint only applies to a String or Array property",LENGTH_CONSTRAINT,owningClass);
-        }
-        SizeConstraint c = (SizeConstraint)this.appliedConstraints.get(SIZE_CONSTRAINT);
-        if(c == null)
-            return null;
-
-        return c.getRange();
-    }
-
-    /**
-     * @param length The length to set.
-     * 
-     * @deprecated Use <code>setSize()</code>instead
-     */
-    public void setLength(IntRange length) {
-        setSize(length);
-    }
-
-
-    /**
      * @return The scale, if defined for this property; null, otherwise
      */
     public Integer getScale() {
@@ -674,44 +631,6 @@ public class ConstrainedProperty   {
                 this.appliedConstraints.put( MATCHES_CONSTRAINT,c );
             }
         }
-    }
-
-
-    /**
-     * @return Returns the maxLength.
-     * 
-     * @deprecated Use <code>getMaxSize()</code>instead
-     */
-    public Integer getMaxLength() {
-        return getMaxSize();
-    }
-
-    /**
-     * @param maxLength The maxLength to set.
-     * 
-     * @deprecated Use <code>setMaxSize()</code> instead.
-     */
-    public void setMaxLength(Integer maxLength) {
-        setMaxSize(maxLength);
-    }
-
-    /**
-     * @return Returns the minLength.
-     * 
-     * @deprecated Use <code>getMinSize()</code>instead
-     */
-    public Integer getMinLength() {
-        return getMinSize();
-    }
-
-
-    /**
-     * @param minLength The minLength to set.
-     * 
-     * @deprecated Use <code>setMinSize()</code> instead.
-     */
-    public void setMinLength(Integer minLength) {
-        setMinSize(minLength);
     }
 
     /**
@@ -1034,21 +953,6 @@ public class ConstrainedProperty   {
 
         if(constraints.containsKey(constraintName)) {
 
-            // Emit warnings for deprecated contraints, and use the replacement constraint instead (internally).
-            // TODO -- For Grails 0.5, remove the deprecated constraints and throw exceptions for any domain classes using them.
-            if (MAX_LENGTH_CONSTRAINT.equals(constraintName)) {
-                emitDeprecationWarnings(MAX_LENGTH_CONSTRAINT, MAX_SIZE_CONSTRAINT);
-                constraintName = MAX_SIZE_CONSTRAINT;
-            }
-            else if (MIN_LENGTH_CONSTRAINT.equals(constraintName)) {
-                emitDeprecationWarnings(MIN_LENGTH_CONSTRAINT, MIN_SIZE_CONSTRAINT);
-                constraintName = MIN_SIZE_CONSTRAINT;
-            }
-            else if (LENGTH_CONSTRAINT.equals(constraintName)) {
-                emitDeprecationWarnings(LENGTH_CONSTRAINT, SIZE_CONSTRAINT);
-                constraintName = SIZE_CONSTRAINT;
-            }
-            
             if(constrainingValue == null) {
                 this.appliedConstraints.remove(constraintName);
             }
@@ -1097,11 +1001,6 @@ public class ConstrainedProperty   {
                         .append( this.propertyType )
                         .append( this.appliedConstraints )
                         .toString();
-    }
-
-    private void emitDeprecationWarnings(String deprecatedConstraintName, String replacementConstraintName) {
-        LOG.warn("Domain class [" + this.owningClass + "] includes the " + deprecatedConstraintName + " constraint for the " + getPropertyName() + " property.  This constraint is deprecated and will be removed in the future.  " +
-                "Please update your code to use the " + replacementConstraintName + " constraint instead.");
     }
 }
 

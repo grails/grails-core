@@ -30,7 +30,7 @@ class Message {
 	 Date datePosted = new Date()
 	
 	 static constraints = {
-		title(length:1..50)
+		title(size:1..50)
 		message(blank:false)
 		topic(nullable:false)
 		by(nullable:false)

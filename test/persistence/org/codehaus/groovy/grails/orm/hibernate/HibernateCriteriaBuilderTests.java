@@ -60,7 +60,7 @@ public class HibernateCriteriaBuilderTests extends
 
                  "\t\n" +
                 "\tstatic constraints = {\n" +
-                "\t\tfirstName(length:4..15)\n" +
+                "\t\tfirstName(size:4..15)\n" +
                 "\t}\n" +
                 "}");
         grailsApplication = new DefaultGrailsApplication(new Class[]{groovyClass},cl);

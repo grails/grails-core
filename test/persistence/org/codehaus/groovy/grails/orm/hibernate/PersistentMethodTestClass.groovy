@@ -13,6 +13,6 @@ public class PersistentMethodTestClass {
 	 boolean active = true
 
 	 static constraints = {
-	    firstName(length:4..15)
+	    firstName(size:4..15)
      }
 }

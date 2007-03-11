@@ -76,7 +76,7 @@ class Page implements Comparable {
     String toString() { title }
 
 	 static constraints = {
-		title(blank:false,length:1..150)
+		title(blank:false,size:1..150)
 		site(nullable:false)
 		type(inList:[STANDARD,FORUM,QUESTIONNAIRE,LINK])
 		revisions(minSize:1)

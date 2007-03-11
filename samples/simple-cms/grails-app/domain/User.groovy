@@ -39,7 +39,7 @@ class User {
     String toString() { "$firstName $lastName" }
 
      static constraints = {
-        title(length:1..10)
+        title(size:1..10)
         firstName(blank:false)
         lastName(blank:false)
         email(email:true)

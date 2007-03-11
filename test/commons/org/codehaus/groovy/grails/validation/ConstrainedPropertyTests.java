@@ -43,9 +43,6 @@ public class ConstrainedPropertyTests extends TestCase {
         assertTrue(cp.supportsContraint( ConstrainedProperty.EMAIL_CONSTRAINT ));
         assertTrue(cp.supportsContraint( ConstrainedProperty.MATCHES_CONSTRAINT ));
         assertTrue(cp.supportsContraint( ConstrainedProperty.IN_LIST_CONSTRAINT ));
-        assertTrue(cp.supportsContraint( ConstrainedProperty.LENGTH_CONSTRAINT ));
-        assertTrue(cp.supportsContraint( ConstrainedProperty.MAX_LENGTH_CONSTRAINT ));
-        assertTrue(cp.supportsContraint( ConstrainedProperty.MIN_LENGTH_CONSTRAINT ));
         assertTrue(cp.supportsContraint( ConstrainedProperty.MAX_CONSTRAINT ));
         assertTrue(cp.supportsContraint( ConstrainedProperty.MIN_CONSTRAINT ));
         assertTrue(cp.supportsContraint( ConstrainedProperty.NOT_EQUAL_CONSTRAINT ));
@@ -124,9 +121,6 @@ public class ConstrainedPropertyTests extends TestCase {
         assertFalse(cp.supportsContraint( ConstrainedProperty.BLANK_CONSTRAINT ));
         assertFalse(cp.supportsContraint( ConstrainedProperty.EMAIL_CONSTRAINT ));
         assertFalse(cp.supportsContraint( ConstrainedProperty.MATCHES_CONSTRAINT ));
-        assertFalse(cp.supportsContraint( ConstrainedProperty.LENGTH_CONSTRAINT ));
-        assertFalse(cp.supportsContraint( ConstrainedProperty.MAX_LENGTH_CONSTRAINT ));
-        assertFalse(cp.supportsContraint( ConstrainedProperty.MIN_LENGTH_CONSTRAINT ));
         assertFalse(cp.supportsContraint( ConstrainedProperty.URL_CONSTRAINT ));
         assertFalse(cp.supportsContraint( ConstrainedProperty.MAX_SIZE_CONSTRAINT ));
         assertFalse(cp.supportsContraint( ConstrainedProperty.MIN_SIZE_CONSTRAINT ));
@@ -328,29 +322,6 @@ public class ConstrainedPropertyTests extends TestCase {
         constraintTester.testConstraint(null, false);
     }
 
-    public void testLengthConstraint() {
-        // create a constraint tester for a domain class with a String property and a length constraint with a range of 5 to 15 characters
-        ConstraintTester constraintTester = new ConstraintTester(new TestClass(), "testURL", ConstrainedProperty.LENGTH_CONSTRAINT, new IntRange(5, 15));
-
-        // validate that a value *less than* the minimum length yields an error
-        constraintTester.testConstraint("tiny", true);
-
-        // validate that a value *equal to* the minimum length does *not* yield an error
-        constraintTester.testConstraint("12345", false);
-
-        // validate that a value *between* the minimum and maximum lengths does *not* yield an error
-        constraintTester.testConstraint("1234567890", false);
-        
-        // validate that a value *equal to* the maximum length does *not* yield an error
-        constraintTester.testConstraint("123456789012345", false);
-        
-        // validate that a value *greater than* the minimum value does *not* yield an error
-        constraintTester.testConstraint("absolutelytotallytoolong", true);
-
-        // validate that a null does not yield an error
-        constraintTester.testConstraint(null, false);
-    }
-    
     public void testMatchesConstraint() {
         // create a constraint tester for a domain class with a String property and a matches (i.e., regex) constraint limiting the values to alpha-characters only
         ConstraintTester constraintTester = new ConstraintTester(new TestClass(), "testURL", ConstrainedProperty.MATCHES_CONSTRAINT, "[a-zA-Z]");
@@ -910,7 +881,7 @@ public class ConstrainedPropertyTests extends TestCase {
                         "String login\n" +
                         "String email\n" +
                         "static constraints = {\n" +
-                            "login(length:5..15,nullable:false,blank:false)\n" +
+                            "login(size:5..15,nullable:false,blank:false)\n" +
                             "email(email:true)\n" +
                         "}\n" +
                         "}" );

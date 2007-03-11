@@ -82,7 +82,7 @@ public class ConstraintsEvaluatingPropertyTests extends TestCase {
         String descendentSource = "package org.codehaus.groovy.grails.validation\n" +
                 "class TestB extends Test {\n" +
                 "   static constraints = {\n" +
-                "      name( length:5..20)\n" +
+                "      name( size:5..20)\n" +
                 "   }" +
                 "}";
         ensureConstraintsPresent(new String[] { classSource, descendentSource}, 1, 3); // Must have nullable and validator

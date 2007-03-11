@@ -39,7 +39,7 @@ public class DomainClassPropertyComparatorTests extends TestCase {
                                         "\nString zip" +
                                         "\nString dob" +
                                         "\nstatic constraints = {" +
-                                        "\n  name(length:5..15)" +
+                                        "\n  name(size:5..15)" +
                                         "\n  age()" +
                                         "}  }");
         GrailsDomainClass domainClass = new DefaultGrailsDomainClass(dc);

@@ -9,7 +9,7 @@ class Entry {
 	@Property Set comments = new HashSet()
 	
 	@Property constraints = {
-		title(blank:false,length:1..50)
+		title(blank:false,size:1..50)
 		date(nullable:false)
 		body(blank:false)
 	}

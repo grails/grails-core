@@ -49,6 +49,6 @@ class AccessKey {
 		endDate(nullable:false)
 		expiryDate(nullable:false)
 		usages(minSize:0)
-		code(blank:false,maxLength:16)
+		code(blank:false,maxSize:16)
 	}
 }	

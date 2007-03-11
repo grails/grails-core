@@ -48,7 +48,7 @@ public class PersistentMethodTests extends AbstractDependencyInjectionSpringCont
               "boolean active = true" +
             "\t\n" +
             "\tstatic constraints = {\n" +
-            "\t\tfirstName(length:4..15)\n" +
+            "\t\tfirstName(size:4..15)\n" +
             "\t\tlastName(nullable:false)\n" +
             "\t}\n" +
             "}");

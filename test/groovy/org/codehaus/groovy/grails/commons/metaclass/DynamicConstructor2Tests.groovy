@@ -9,7 +9,7 @@ class DynamicConstructor2Tests extends AbstractGrailsHibernateTests {
 class Test {
   String name
   static constraints = {
-	  name(length:5..15)
+	  name(size:5..15)
   }
 }    
 class ApplicationDataSource {
