@@ -141,7 +141,7 @@ class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants 
 		def action = (attrs.action? attrs.action : 'list')
 		def offset = params.offset?.toInteger()
 		def max = params.max?.toInteger()
-		def maxsteps = params.maxsteps?.toInteger()
+		def maxsteps = (attrs.maxsteps ? attrs.maxsteps.toInteger() : 10)
 
         if(attrs.breadcrumb) {
 			log.warn("Tag [paginate] includes the [breadcrumb] attribute. This attribute is deprecated and will be removed in the future. Please update your code to use the [maxsteps] attribute instead.")
@@ -149,9 +149,8 @@ class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants 
 
 		if(!offset) offset = (attrs.offset ? attrs.offset.toInteger() : 0)			
 		if(!max) max = (attrs.max ? attrs.max.toInteger() : 10)
-		if(!maxsteps) maxsteps = (attrs.maxsteps ? attrs.maxsteps.toInteger() : 10)
 		
-		def linkParams = [offset:offset - max, max:max, maxsteps:maxsteps]
+		def linkParams = [offset:offset - max, max:max]
 		if(attrs.params) linkParams.putAll(attrs.params)
 		
 		def linkTagAttrs = [action:action]
