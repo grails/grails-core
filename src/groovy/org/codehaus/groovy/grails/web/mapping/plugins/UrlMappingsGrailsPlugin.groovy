@@ -31,23 +31,20 @@ class UrlMappingsGrailsPlugin {
 	def version = GrailsUtil.getGrailsVersion()
 	def dependsOn = [controllers:version]
 
-	def doWithSpring = {
-        grailsUrlMappingsHolder(UrlMappingsHolderFactoryBean) {
-            grailsApplication = ref("grailsApplication", true)
+
+    def doWithApplicationContext = { ctx ->
+        def beans = beans {
+            grailsUrlMappingsHolder(UrlMappingsHolderFactoryBean) {
+                grailsApplication = ref("grailsApplication", true)
+            }
         }
+        ctx.registerBeanDefinition(UrlMappingsHolder.BEAN_ID, beans.getBeanDefinition(UrlMappingsHolder.BEAN_ID))	
 	}
-
-
+	
 	def onChange = { event ->
 	    if(application.isUrlMappingsClass(event.source)) {
-	        application.addArtefact( UrlMappingsArtefactHandler.TYPE, event.source )
-	        
-            def beans = beans {
-                grailsUrlMappingsHolder(UrlMappingsHolderFactoryBean) {
-                    grailsApplication = ref("grailsApplication", true)
-                }
-            }
-            event.ctx.registerBeanDefinition(UrlMappingsHolder.BEAN_ID, beans.getBeanDefinition(UrlMappingsHolder.BEAN_ID))
+	        application.addArtefact( UrlMappingsArtefactHandler.TYPE, event.source )	        
+			doWithApplicationContext(event.ctx)
         }
 	}
 }
