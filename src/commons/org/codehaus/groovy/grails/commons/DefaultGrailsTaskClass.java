@@ -19,6 +19,7 @@ import groovy.lang.Closure;
 /** 
  * @author Micha?? K??ujszo
  * @author Marcel Overdijk
+ * @author Sergey Nebolsin
  * 
  * @since 20-Apr-2006
  */
@@ -27,13 +28,22 @@ public class DefaultGrailsTaskClass extends AbstractInjectableGrailsClass implem
 	public static final String JOB = "Job";
 	
 	public static final long DEFAULT_TIMEOUT = 60000l;	// one minute
-	public static final long DEFAULT_START_DELAY = 0l;	
+	public static final long DEFAULT_START_DELAY = 30000l; // let grails application to startup	
 	public static final String DEFAULT_CRON_EXPRESSION = "0 0 6 * * ?";
 	public static final String DEFAULT_GROUP = "GRAILS_JOBS";
 	public static final boolean DEFAULT_CONCURRENT = true;
 	
 	public DefaultGrailsTaskClass(Class clazz) {
 		super(clazz, JOB);
+		// Validate startDelay and timeout property types
+		Object obj = getPropertyValue(TIMEOUT);
+		if( obj != null && !(obj instanceof Integer || obj instanceof Long)) {
+			throw new IllegalArgumentException("Timeout property for job class " + getClazz().getName() + " must be Integer or Long");
+		}
+		obj = getPropertyValue(START_DELAY);
+		if( obj != null && !(obj instanceof Integer || obj instanceof Long)) {
+			throw new IllegalArgumentException("Start delay property for job class " + getClazz().getName() + " must be Integer or Long");
+		}
 	}
 
 	public void execute() {
@@ -41,15 +51,15 @@ public class DefaultGrailsTaskClass extends AbstractInjectableGrailsClass implem
 	}
 
 	public long getTimeout() {
-		Long timeOut = (Long)getPropertyOrStaticPropertyOrFieldValue(TIMEOUT, Long.class);
-		if( timeOut == null ) return DEFAULT_TIMEOUT;
-		return timeOut.longValue();
+		Object obj = getPropertyValue(TIMEOUT);
+		if( obj == null ) return DEFAULT_TIMEOUT;
+		return ((Number)obj).longValue();
 	}
 
 	public long getStartDelay() {
-		Long startDelay = (Long)getPropertyOrStaticPropertyOrFieldValue(START_DELAY, Long.class);
-		if( startDelay == null ) return DEFAULT_START_DELAY;
-		return startDelay.longValue();	
+		Object obj = getPropertyValue(START_DELAY);
+		if( obj == null ) return DEFAULT_START_DELAY;
+		return ((Number)obj).longValue();
 	}
 
 	public String getCronExpression() {

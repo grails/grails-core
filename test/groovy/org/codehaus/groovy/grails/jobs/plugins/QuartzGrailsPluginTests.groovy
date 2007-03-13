@@ -82,6 +82,68 @@ class CronDefaultJob  {
 		
 		CronTriggerBean cronDefaultJobTrigger = (CronTriggerBean)appCtx.getBean("CronDefaultJobTrigger")
 		assertEquals(DefaultGrailsTaskClass.DEFAULT_CRON_EXPRESSION, cronDefaultJobTrigger.getCronExpression())
-	}	
+	}
+	
+	void testIntegerAndLongParameters() {
+		Class jobClass = gcl.parseClass('''
+	            class TestJob {
+					def startDelay = 100
+					def timeout = 1000
+					def execute() {
+						println "TestJob executed!"
+					}
+				}		
+		''')
+		GrailsTaskClass taskClass = new DefaultGrailsTaskClass(jobClass)
+		assertEquals( 100, taskClass.startDelay )
+		assertEquals( 1000, taskClass.timeout )
+
+		jobClass = gcl.parseClass('''
+            class TestJob1 {
+				def startDelay = 10L
+				def timeout = 100L
+				def execute() {
+					println "TestJob executed!"
+				}
+			}		
+		''')
+		taskClass = new DefaultGrailsTaskClass(jobClass)
+		assertEquals( 10, taskClass.startDelay )
+		assertEquals( 100, taskClass.timeout )
+	}
+	
+	void testInvalidParameterTypes() {
+		Class jobClass = gcl.parseClass('''
+            class TestJob {
+				def startDelay = "0"
+				def timeout = 1000
+				def execute() {
+					println "TestJob executed!"
+				}
+			}		
+		''')
+		try {
+			new DefaultGrailsTaskClass(jobClass)
+			fail()
+		} catch( IllegalArgumentException iae ) {
+			// Greate
+		}
+
+		jobClass = gcl.parseClass('''
+            class TestJob1 {
+				def startDelay = 0
+				def timeout = "1000"
+				def execute() {
+					println "TestJob executed!"
+				}
+			}		
+		''')
+		try {
+			new DefaultGrailsTaskClass(jobClass)
+			fail()
+		} catch( IllegalArgumentException iae ) {
+			// Greate
+		}
+	}
 
 }
