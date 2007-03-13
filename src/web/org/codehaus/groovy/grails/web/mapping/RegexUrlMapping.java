@@ -14,17 +14,21 @@
  */
 package org.codehaus.groovy.grails.web.mapping;
 
-import org.codehaus.groovy.grails.web.mapping.exceptions.UrlMappingException;
+import groovy.lang.Closure;
+import groovy.lang.GroovyObject;
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
-import org.apache.commons.lang.StringUtils;
+import org.codehaus.groovy.grails.web.mapping.exceptions.UrlMappingException;
+import org.codehaus.groovy.grails.plugins.PluginManagerHolder;
+import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
+import org.codehaus.groovy.grails.plugins.GrailsPlugin;
 import org.springframework.validation.Errors;
 import org.springframework.validation.MapBindingResult;
 
-import java.util.regex.Pattern;
-import java.util.regex.Matcher;
-import java.util.regex.PatternSyntaxException;
-import java.util.Map;
 import java.util.HashMap;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 /**
  * <p>A UrlMapping implementation that takes a Grails URL pattern and turns it into a regex matcher so that
@@ -52,22 +56,14 @@ public class RegexUrlMapping implements UrlMapping {
 
     private Pattern[] patterns;
     private ConstrainedProperty[] constraints = new ConstrainedProperty[0];
-    private String controllerName;
-    private String actionName;
+    private Object controllerName;
+    private Object actionName;
     private UrlMappingData urlData;
     
     private static final String WILDCARD = "*";
     private static final String CAPTURED_WILDCARD = "(*)";
     private static final String SLASH = "/";
 
-    /*
-    /*
-     * @see #RegexUrlMapping(String, String, String, java.util.List)
-     */
-
-    public RegexUrlMapping(UrlMappingData data, String controllerName, ConstrainedProperty[] constraints) {
-        this(data,controllerName, null, constraints);
-    }
 
     /**
      * Constructs a new RegexUrlMapping for the given pattern, controller name, action name and constraints.
@@ -79,12 +75,13 @@ public class RegexUrlMapping implements UrlMapping {
      *
      * @see org.codehaus.groovy.grails.validation.ConstrainedProperty
      */
-    public RegexUrlMapping(UrlMappingData data, String controllerName, String actionName, ConstrainedProperty[] constraints) {
+    public RegexUrlMapping(UrlMappingData data, Object controllerName, Object actionName, ConstrainedProperty[] constraints) {
         if(data == null) throw new IllegalArgumentException("Argument [pattern] cannot be null");
-        if(StringUtils.isBlank(controllerName)) throw new IllegalArgumentException("Argument [controllerName] cannot be null or blank");
+        if(controllerName == null) throw new IllegalArgumentException("Argument [controllerName] cannot be null or blank");
 
         this.controllerName = controllerName;
         this.actionName = actionName;
+
         String[] urls = data.getLogicalUrls();
         this.urlData = data;
         this.patterns = new Pattern[urls.length];
@@ -103,6 +100,8 @@ public class RegexUrlMapping implements UrlMapping {
 
     }
 
+
+
     /**
      * Converst a Grails URL provides via the UrlMappingData interface to a regular expression
      *
@@ -114,6 +113,9 @@ public class RegexUrlMapping implements UrlMapping {
         String pattern = null;
         try {
             pattern = url.replaceAll("\\*", "[^/]+");
+            pattern += "/??$";
+
+            System.out.println("pattern = " + pattern);
             regex = Pattern.compile(pattern);
 
         } catch (PatternSyntaxException pse) {
@@ -184,8 +186,10 @@ public class RegexUrlMapping implements UrlMapping {
             }
         }
 
+
         return new DefaultUrlMappingInfo(this.controllerName, this.actionName, params);
     }
+
 
     public String[] getLogicalMappings() {
         return this.urlData.getLogicalUrls(); 

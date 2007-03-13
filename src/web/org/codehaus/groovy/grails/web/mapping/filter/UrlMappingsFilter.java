@@ -94,7 +94,7 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
             if(LOG.isDebugEnabled()) {
                 LOG.debug("Matched URI ["+uri+"] to URL mapping, forwarding to ["+forwardUrl+"] with response ["+response.getClass()+"]");
             }
-            populateParamsForMapping(info);
+            //populateParamsForMapping(info);
             RequestDispatcher dispatcher = request.getRequestDispatcher(forwardUrl);
             RequestDispatcherWrapper wrapper = new RequestDispatcherWrapper(dispatcher);
             WrappedResponseHolder.setWrappedResponse(response);
@@ -107,24 +107,6 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
         }
     }
 
-    /**
-     * Populates request parameters for the given UrlMappingInfo instance using the GrailsWebRequest
-     *
-     * @see org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
-     *
-     * @param info The UrlMappingInfo instance
-     */
-    protected void populateParamsForMapping(UrlMappingInfo info) {
-        GrailsWebRequest webRequest = (GrailsWebRequest) RequestContextHolder.currentRequestAttributes();
-
-        GrailsParameterMap params = webRequest.getParams();
-        Map dispatchParams = info.getParameters();
-
-        for (Iterator j = dispatchParams.keySet().iterator(); j.hasNext();) {
-            String name = (String) j.next();
-            params.put(name, dispatchParams.get(name));
-        }
-    }
 
     /**
      * Constructs the URI to forward to using the given request and UrlMappingInfo instance

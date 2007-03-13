@@ -19,8 +19,12 @@ mappings {
         controller = "product"
         action = "show"
   }
+  "/book/$author/$title/$test" {
+      controller = "book"
+  }
 }
 '''
+    
     void testEvaluateMappings() {
          def res = new ByteArrayResource(mappingScript.bytes)
 
@@ -28,20 +32,14 @@ mappings {
          def mappings = evaluator.evaluateMappings(res)
 
          assert mappings
-         assertEquals 2, mappings.size()
+         assertEquals 3, mappings.size()
 
          def m1 = mappings[0]
          assertEquals "/(*)/(*)?/(*)?/(*)?", m1.urlData.urlPattern
          assertEquals 4, m1.urlData.tokens.size()
 
-        // this should match, but will not match /$id/$year/$month/$day but just /$id (ie year, month and day will be blank)
-         def info = m1.match("/myentry/20/04/28")
-         
-         assertEquals "myentry", info.id
-         assert !info.parameters.year
-         assertEquals "04", info.parameters."20"
 
-         info = m1.match("/myentry/2007/04/28")
+         def info = m1.match("/myentry/2007/04/28")
 
          assertEquals "myentry", info.id
          assertEquals "2007", info.parameters.year
@@ -65,7 +63,7 @@ mappings {
 
          assert !m2.match("/product")
          assert !m2.match("/foo/bar")
-
+         assert !m2.match("/product/MacBook/foo")         
     }
 
 

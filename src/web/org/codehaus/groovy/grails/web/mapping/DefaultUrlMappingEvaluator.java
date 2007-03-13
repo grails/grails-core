@@ -17,6 +17,9 @@ package org.codehaus.groovy.grails.web.mapping;
 import org.springframework.core.io.Resource;
 import org.springframework.beans.BeanUtils;
 import org.codehaus.groovy.grails.plugins.support.aware.ClassLoaderAware;
+import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
+import org.codehaus.groovy.grails.plugins.PluginManagerHolder;
+import org.codehaus.groovy.grails.plugins.GrailsPlugin;
 import org.codehaus.groovy.grails.web.mapping.exceptions.UrlMappingException;
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 import org.codehaus.groovy.grails.validation.ConstrainedPropertyBuilder;
@@ -74,6 +77,7 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
         if(obj instanceof Script) {
             Script script = (Script)obj;
             Binding b = new Binding();
+            
             MappingCapturingClosure closure = new MappingCapturingClosure(script);
             b.setVariable("mappings", closure);
             script.setBinding(b);
@@ -83,12 +87,27 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
             Closure mappings = closure.getMappings();
 
             UrlMappingBuilder builder = new UrlMappingBuilder(script.getBinding());
-            mappings.setDelegate(builder);
+            mappings.setDelegate(builder);            
             mappings.call();
+            builder.urlDefiningMode = false;
+
+            configureUrlMappingDynamicObjects(script);
+
             return builder.getUrlMappings();
         }
         else {
             throw new UrlMappingException("Unable to configure URL mappings for class ["+theClass+"]. A URL mapping must be an instance of groovy.lang.Script.");
+        }
+    }
+
+    private void configureUrlMappingDynamicObjects(Script script) {
+        GrailsPluginManager manager = PluginManagerHolder.getPluginManager();
+        if(manager != null) {
+            GrailsPlugin controllerPlugin = manager.getGrailsPlugin("controllers");
+            GroovyObject pluginInstance = controllerPlugin.getInstance();
+
+            pluginInstance.invokeMethod("registerCommonObjects", script.getMetaClass());
+
         }
     }
 
@@ -165,11 +184,11 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
                     urlDefiningMode = false;
                     if(args.length > 0 && (args[0] instanceof Closure)) {
                         UrlMappingData urlData = urlParser.parse(methodName);
-                        Closure callable = (Closure)args[0];
+                        Closure callable = (Closure)args[0];                        
                         callable.call();
 
-                        String controllerName = (String)binding.getVariable(GrailsControllerClass.CONTROLLER);
-                        String actionName = (String)binding.getVariable(GrailsControllerClass.ACTION);
+                        Object controllerName = binding.getVariables().get(GrailsControllerClass.CONTROLLER);
+                        Object actionName = binding.getVariables().get(GrailsControllerClass.ACTION);
                         if(controllerName == null) {
                             throw new UrlMappingException("No controller defined for URL mapping ["+ methodName +"]");
                         }
@@ -184,8 +203,8 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
                     }
                 }
                 finally {
-                    binding.setVariable(GrailsControllerClass.CONTROLLER, null);
-                    binding.setVariable(GrailsControllerClass.ACTION, null);
+                    binding.getVariables().remove(GrailsControllerClass.CONTROLLER);
+                     binding.getVariables().remove(GrailsControllerClass.ACTION);
                     previousConstraints.clear();
                     urlDefiningMode = true;
                 }
