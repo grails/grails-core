@@ -126,4 +126,25 @@ public class GrailsMetaClassUtils {
         }
 
     }
+
+    public static ExpandoMetaClass getExpandoMetaClass(Class aClass) {
+        MetaClassRegistry registry = getRegistry();
+
+        MetaClass mc = registry.getMetaClass(aClass);
+        if(mc instanceof ExpandoMetaClass) {
+            return (ExpandoMetaClass)mc;
+        }
+        else {
+            registry.removeMetaClass(aClass);
+            mc = registry.getMetaClass(aClass);
+            if(mc instanceof ExpandoMetaClass) {
+                return (ExpandoMetaClass)mc;
+            }
+            else {
+                ExpandoMetaClass emc = new ExpandoMetaClass(aClass, true);
+                registry.setMetaClass(aClass, emc);
+                return emc;
+            }
+        }
+    }
 }
