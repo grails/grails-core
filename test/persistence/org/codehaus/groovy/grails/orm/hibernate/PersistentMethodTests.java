@@ -24,7 +24,7 @@ public class PersistentMethodTests extends AbstractDependencyInjectionSpringCont
     protected GrailsApplication grailsApplication = null;
     private GroovyClassLoader cl = new GroovyClassLoader();
     private SessionFactory sessionFactory;
-	private org.hibernate.classic.Session hibSession;
+    private org.hibernate.classic.Session hibSession;
 
 
     /**
@@ -277,7 +277,7 @@ public class PersistentMethodTests extends AbstractDependencyInjectionSpringCont
         /*returnValue = obj.getMetaClass().invokeStaticMethod(obj, "findByFirstNameOrLastName", new Object[] { "fred", "flintstone" });
           assertNotNull(returnValue);
           assertTrue(returnValue instanceof List);
-		
+        
           returnList = (List)returnValue;
           assertEquals(2, returnList.size());*/
 
@@ -360,6 +360,73 @@ public class PersistentMethodTests extends AbstractDependencyInjectionSpringCont
         Object returnValue = obj.getMetaClass().invokeStaticMethod(obj, "get", new Object[] { new Long(2) });
         assertNotNull(returnValue);
         assertEquals(returnValue.getClass(),domainClass.getClazz());
+    }
+
+    public void testGetAllPersistentMethod() {
+        GrailsDomainClass domainClass = (GrailsDomainClass) this.grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE,
+        	"PersistentMethodTests");
+
+        GroovyObject obj = (GroovyObject)domainClass.newInstance();
+        obj.setProperty( "id", new Long(1) );
+        obj.setProperty( "firstName", "fred" );
+        obj.setProperty( "lastName", "flintstone" );
+
+        obj.invokeMethod("save", null);
+
+        GroovyObject obj2 = (GroovyObject)domainClass.newInstance();
+        obj2.setProperty( "id", new Long(2) );
+        obj2.setProperty( "firstName", "wilma" );
+        obj2.setProperty( "lastName", "flintstone" );
+
+        obj2.invokeMethod("save", null);
+
+        GroovyObject obj3 = (GroovyObject)domainClass.newInstance();
+        obj3.setProperty( "id", new Long(3) );
+        obj3.setProperty( "firstName", "john" );
+        obj3.setProperty( "lastName", "smith" );
+
+        obj3.invokeMethod("save", null);
+
+        // get wilma and fred by ids passed as method arguments
+        Object returnValue = obj.getMetaClass().invokeStaticMethod(obj, "getAll", new Object[] { new Long(2), new Long(1) });
+        assertNotNull(returnValue);
+        assertEquals(ArrayList.class,returnValue.getClass());
+        List returnList = (List)returnValue;
+        assertEquals(2, returnList.size());
+        GroovyObject result = (GroovyObject)returnList.get(0);
+        GroovyObject result1 = (GroovyObject)returnList.get(1);
+        assertEquals(new Long(2), result.getProperty("id"));
+        assertEquals(new Long(1), result1.getProperty("id"));                            
+        
+        // get john and fred by ids passed in list
+        List param = new ArrayList();
+        param.add( new Long(3) );
+        param.add( new Long(1) );
+        returnValue = obj.getMetaClass().invokeStaticMethod(obj, "getAll", new Object[] { param });
+        assertNotNull(returnValue);
+        assertEquals(ArrayList.class,returnValue.getClass());
+        returnList = (List)returnValue;
+        assertEquals(2, returnList.size());
+        result = (GroovyObject)returnList.get(0);
+        result1 = (GroovyObject)returnList.get(1);
+        assertEquals(new Long(3), result.getProperty("id"));
+        assertEquals(new Long(1), result1.getProperty("id"));                            
+
+        // when called without arguments should return a list of all objects
+        returnValue = obj.getMetaClass().invokeStaticMethod(obj, "getAll", new Object[] {});
+        assertNotNull(returnValue);
+        assertEquals(ArrayList.class,returnValue.getClass());
+        returnList = (List)returnValue;
+        assertEquals(3, returnList.size());
+
+        // if there are no object with specified id - should return null on corresponding places
+        returnValue = obj.getMetaClass().invokeStaticMethod(obj, "getAll", new Object[] {new Long(5),new Long(2), new Long(7),new Long(1)});
+        assertNotNull(returnValue);
+        assertEquals(ArrayList.class,returnValue.getClass());
+        returnList = (List)returnValue;
+        assertEquals(4, returnList.size());
+        assertNull(returnList.get(0));
+        assertNull(returnList.get(2));
     }
 
     public void testDiscardMethod() {

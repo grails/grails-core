@@ -78,6 +78,7 @@ public class DomainClassMethods extends AbstractDynamicMethods implements Transa
         addStaticMethodInvocation(new FindWherePersistentMethod(sessionFactory, classLoader));
         addStaticMethodInvocation(new FindAllWherePersistentMethod(sessionFactory, classLoader));
         addStaticMethodInvocation(new GetPersistentMethod(application,sessionFactory, classLoader));
+        addStaticMethodInvocation(new GetAllPersistentMethod(application,sessionFactory, classLoader));
         addStaticMethodInvocation(new ExistsPersistentMethod(application,sessionFactory, classLoader));
         addStaticMethodInvocation(new CountPersistentMethod(sessionFactory, classLoader));
         addStaticMethodInvocation(new CreateCriteriaPersistentMethod(sessionFactory, classLoader));
@@ -93,13 +94,13 @@ public class DomainClassMethods extends AbstractDynamicMethods implements Transa
 
     }
 
-	public void setTransactionManager(PlatformTransactionManager transactionManager) {
-		for (Iterator i = staticMethodInvocations.iterator(); i.hasNext();) {
-			Object method = i.next();
-			if(method instanceof TransactionManagerAware) {
-				((TransactionManagerAware)method).setTransactionManager(transactionManager);
-			}
-		}
-	}
+    public void setTransactionManager(PlatformTransactionManager transactionManager) {
+        for (Iterator i = staticMethodInvocations.iterator(); i.hasNext();) {
+            Object method = i.next();
+            if(method instanceof TransactionManagerAware) {
+                ((TransactionManagerAware)method).setTransactionManager(transactionManager);
+            }
+        }
+    }
 
 }
