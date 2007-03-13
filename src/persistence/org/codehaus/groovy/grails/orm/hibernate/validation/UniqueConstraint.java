@@ -89,6 +89,15 @@ public class UniqueConstraint extends AbstractPersistentConstraint {
         } else {
         	this.unique = ((Boolean)constraintParameter).booleanValue();
         }
+    	if( uniquenessGroup.size() > 0 ) {
+    		for( Iterator it = uniquenessGroup.iterator(); it.hasNext(); ) {
+    			String propertyName = (String) it.next();
+    			if( GrailsClassUtils.getProperyType(constraintOwningClass, propertyName) == null ) {
+    				throw new IllegalArgumentException("Scope for constraint ["+UNIQUE_CONSTRAINT+"] of property ["+constraintPropertyName+"] of class ["+constraintOwningClass+"] must be a valid property name of same class"); 
+    			}
+    		}
+    	} 
+
         super.setParameter(constraintParameter);
     }
 
@@ -142,13 +151,6 @@ public class UniqueConstraint extends AbstractPersistentConstraint {
     }
     
     public boolean supports(Class type) {
-		boolean result = true;
-    	if( uniquenessGroup.size() > 0 ) {
-    		for( Iterator it = uniquenessGroup.iterator(); it.hasNext(); ) {
-    			String propertyName = (String) it.next();
-    			result = result && GrailsClassUtils.getProperyType(type, propertyName) != null; 
-    		}
-    	} 
-   		return result;
+   		return true;
     }
 }

@@ -68,8 +68,9 @@ class UniqueConstraintTests extends AbstractGrailsHibernateTests {
 	void testWrongUniqueParams() {
 		// Test argument with wrong type (Long)
 		GroovyClassLoader gcl = new GroovyClassLoader();
+		Class userClass
 		try {
-			gcl.parseClass('''
+			userClass = gcl.parseClass('''
 			class User {
 			    Long id
 			    Long version
@@ -84,15 +85,15 @@ class UniqueConstraintTests extends AbstractGrailsHibernateTests {
 			    }
 			}
 			''')
-        	new DefaultGrailsApplication(gcl.getLoadedClasses(),gcl);
+			new DefaultGrailsDomainClass(userClass);
+			fail("Exception expected")
 		} catch( Exception e ) {
 			// Greate
 		}
 
 		// Test list argument with wrong type (Long)
-		gcl = new GroovyClassLoader();
 		try {
-			gcl.parseClass('''
+			userClass = gcl.parseClass('''
 			class User {
 			    Long id
 			    Long version
@@ -107,15 +108,15 @@ class UniqueConstraintTests extends AbstractGrailsHibernateTests {
 			    }
 			}
 			''')
-        	new DefaultGrailsApplication(gcl.getLoadedClasses(),gcl);
+			new DefaultGrailsDomainClass(userClass);
+			fail("Exception expected")
 		} catch( Exception e ) {
 			// Greate
 		}
 
 		// Test argument with non-existent property value
-		gcl = new GroovyClassLoader();
 		try {
-			gcl.parseClass('''
+			userClass = gcl.parseClass('''
 				class User {
 				    Long id
 				    Long version
@@ -130,15 +131,15 @@ class UniqueConstraintTests extends AbstractGrailsHibernateTests {
 				    }
 				}
 				''')
-        	new DefaultGrailsApplication(gcl.getLoadedClasses(),gcl);
+			new DefaultGrailsDomainClass(userClass);
+			fail("Exception expected")
 		} catch( Exception e ) {
 			// Greate
 		}
 
 		// Test list argument with non-existent property value
-		gcl = new GroovyClassLoader();
 		try {
-			gcl.parseClass('''
+			userClass = gcl.parseClass('''
 				class User {
 				    Long id
 				    Long version
@@ -153,9 +154,32 @@ class UniqueConstraintTests extends AbstractGrailsHibernateTests {
 				    }
 				}
 				''')
-	    	new DefaultGrailsApplication(gcl.getLoadedClasses(),gcl);
+			new DefaultGrailsDomainClass(userClass);
+			fail("Exception expected")
 		} catch( Exception e ) {
 			// Greate
+		}
+
+		// Test that right syntax doesn't throws exception
+		try {
+			userClass = gcl.parseClass('''
+				class User {
+				    Long id
+				    Long version
+				
+				    String login
+				    String grp
+				    String department
+				    String code
+				
+				    static constraints = {
+				        login(unique:['grp'])
+				    }
+				}
+				''')
+				new DefaultGrailsDomainClass(userClass);
+		} catch( Exception e ) {
+			fail("Exception isn't expected")
 		}
 	}
 
