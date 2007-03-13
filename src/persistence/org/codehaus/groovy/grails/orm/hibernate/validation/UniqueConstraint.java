@@ -17,12 +17,15 @@ package org.codehaus.groovy.grails.orm.hibernate.validation;
 import org.springframework.validation.Errors;
 import org.springframework.orm.hibernate3.HibernateCallback;
 import org.codehaus.groovy.runtime.InvokerHelper;
+import org.codehaus.groovy.grails.commons.*;
 import org.codehaus.groovy.grails.metaclass.IdentDynamicMethod;
-import org.hibernate.Session;
-import org.hibernate.HibernateException;
-import org.hibernate.FlushMode;
+import org.hibernate.*;
 import org.hibernate.criterion.Restrictions;
 
+import groovy.lang.GString;
+
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -47,6 +50,7 @@ public class UniqueConstraint extends AbstractPersistentConstraint {
     
 
     private boolean unique;
+    private List uniquenessGroup = new ArrayList();
 
 
     /**
@@ -60,10 +64,31 @@ public class UniqueConstraint extends AbstractPersistentConstraint {
      * @see org.codehaus.groovy.grails.validation.ConstrainedProperty.AbstractConstraint#setParameter(java.lang.Object)
      */
     public void setParameter(Object constraintParameter) {
-        if(!(constraintParameter instanceof Boolean))
-            throw new IllegalArgumentException("Parameter for constraint ["+UNIQUE_CONSTRAINT+"] of property ["+constraintPropertyName+"] of class ["+constraintOwningClass+"] must be a boolean value");
+        if(!(constraintParameter instanceof Boolean || 
+        		constraintParameter instanceof String || 
+        		constraintParameter instanceof GString ||
+        		constraintParameter instanceof List)) {
+            throw new IllegalArgumentException("Parameter for constraint ["+UNIQUE_CONSTRAINT+"] of property ["+constraintPropertyName+"] of class ["+constraintOwningClass+"] must be a boolean or string value");
+        }
 
-        this.unique = ((Boolean)constraintParameter).booleanValue();
+        if( constraintParameter instanceof List ) {
+        	for( Iterator it = ((List)constraintParameter).iterator(); it.hasNext(); ) {
+        		Object parameter = it.next();
+                if(!(parameter instanceof String || parameter instanceof GString) ) {
+                    throw new IllegalArgumentException("Parameter for constraint ["+UNIQUE_CONSTRAINT+"] of property ["+constraintPropertyName+"] of class ["+constraintOwningClass+"] must be a boolean or string value");
+                } else {
+                	this.uniquenessGroup.add(parameter.toString());
+                }
+        	}
+        } else if( constraintParameter instanceof String ) {
+        	this.uniquenessGroup.add((String) constraintParameter);
+        	this.unique = true;
+        } else if( constraintParameter instanceof GString ){
+        	this.uniquenessGroup.add(constraintParameter.toString());
+        	this.unique = true;
+        } else {
+        	this.unique = ((Boolean)constraintParameter).booleanValue();
+        }
         super.setParameter(constraintParameter);
     }
 
@@ -71,25 +96,29 @@ public class UniqueConstraint extends AbstractPersistentConstraint {
         return UNIQUE_CONSTRAINT;
     }
 
-    protected void processValidate(Object target, final Object propertyValue, Errors errors) {
+    protected void processValidate(final Object target, final Object propertyValue, Errors errors) {
 
         if(unique) {
-            final Object id = InvokerHelper.invokeMethod(target, IdentDynamicMethod.METHOD_SIGNATURE,null);
+        	final Object id = InvokerHelper.invokeMethod(target, IdentDynamicMethod.METHOD_SIGNATURE,null);
             List results = this.constraintHibernateTemplate.executeFind( new HibernateCallback() {
-
                 public Object doInHibernate(Session session) throws HibernateException {
                     session.setFlushMode(FlushMode.MANUAL);
 
                     try {
-                        return session.createCriteria( constraintOwningClass )
-                                .add( Restrictions.eq( constraintPropertyName, propertyValue ) )
-                                .list();
+                    	Criteria criteria = session.createCriteria( constraintOwningClass )
+                    		.add( Restrictions.eq( constraintPropertyName, propertyValue ) );
+                    	if( uniquenessGroup != null ) {
+                    		for( Iterator it = uniquenessGroup.iterator(); it.hasNext(); ) {
+                    			String propertyName = (String) it.next();
+                    			criteria.add(Restrictions.eq( propertyName, 
+                    					GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(target, propertyName)));
+                    		}
+                    	}
+                        return criteria.list();
                     } finally {
                         session.setFlushMode(FlushMode.AUTO);
                     }
-
                 }
-
             });
 
             if(results.size() > 0) {
@@ -111,9 +140,15 @@ public class UniqueConstraint extends AbstractPersistentConstraint {
             }
         }
     }
-
+    
     public boolean supports(Class type) {
-        return true;
+		boolean result = true;
+    	if( uniquenessGroup.size() > 0 ) {
+    		for( Iterator it = uniquenessGroup.iterator(); it.hasNext(); ) {
+    			String propertyName = (String) it.next();
+    			result = result && GrailsClassUtils.getProperyType(type, propertyName) != null; 
+    		}
+    	} 
+   		return result;
     }
-
 }

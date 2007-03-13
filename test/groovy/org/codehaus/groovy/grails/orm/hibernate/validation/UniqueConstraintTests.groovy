@@ -12,32 +12,151 @@ class UniqueConstraintTests extends AbstractGrailsHibernateTests {
 	    def validator = applicationContext.getBean("UserValidator")
 	    assertNotNull(validator.domainClass)
 	    
-	    
+	    // login should be unique against group and code should be unique at all 
 		def userClass = ga.getDomainClass("User").clazz
 
         def user = userClass.newInstance()
-
+        user.code = "123"
         user.login = "grails"
-        user.email = "info@grails.org"
+        user.grp = "some-group"
+        user.department = "department1"
+        user.validate()
+        assertFalse user.hasErrors()
         user.save(true)
 
-
+        user = userClass.newInstance()
+        user.code = "123"
+        user.login = "another"
+        user.grp = "another-group"
+        user.department = "department2"
+        user.validate()
+        // code should fire unique constraint
+        assertTrue user.hasErrors()
+        
+        user.code = "321"
+        user.login = "grails"
+        user.grp = "some-group"
+        user.department = "department1"
+        user.validate()
+        // login should fire unique constraint since it is in the same grp and same department
+        assertTrue user.hasErrors()
+        
+        user.grp = "another-group"
+        user.validate()
+        // login shouldn't fire unique constraint since it is in the same department but not in the same grp
         assertFalse user.hasErrors()
 
-        user.discard()
+        user.grp = "some-group"
+        user.department = "department2"
+        user.validate()
+        // login shouldn't fire unique constraint since it is in the same grp but not in the same department
+        assertFalse user.hasErrors()
 
-        user =  userClass.get(1)
-
-        user.email = "rubbishemail"
-        user.save(true)
-
+        user.login = "another-login"
+        user.grp = "some-group"
+        user.department = "department1"
+        user.validate()
+        // grp should fire unique constraint since it is in the same department
         assertTrue user.hasErrors()
 
-        user.discard()
-        user =  userClass.get(1)
+        user.department = "department2"
+        user.validate()
+        // grp shouldn't fire unique constraint since it isn't in same department as first object
+        assertFalse user.hasErrors()
+	}
+	
+	void testWrongUniqueParams() {
+		// Test argument with wrong type (Long)
+		GroovyClassLoader gcl = new GroovyClassLoader();
+		try {
+			gcl.parseClass('''
+			class User {
+			    Long id
+			    Long version
+			
+			    String login
+			    String grp
+			    String department
+			    String code
+			
+			    static constraints = {
+			        login(unique:1L)
+			    }
+			}
+			''')
+        	new DefaultGrailsApplication(gcl.getLoadedClasses(),gcl);
+		} catch( Exception e ) {
+			// Greate
+		}
 
-        assertEquals "info@grails.org", user.email
+		// Test list argument with wrong type (Long)
+		gcl = new GroovyClassLoader();
+		try {
+			gcl.parseClass('''
+			class User {
+			    Long id
+			    Long version
+			
+			    String login
+			    String grp
+			    String department
+			    String code
+			
+			    static constraints = {
+			        login(unique:['grp',new Long(1)])
+			    }
+			}
+			''')
+        	new DefaultGrailsApplication(gcl.getLoadedClasses(),gcl);
+		} catch( Exception e ) {
+			// Greate
+		}
 
+		// Test argument with non-existent property value
+		gcl = new GroovyClassLoader();
+		try {
+			gcl.parseClass('''
+				class User {
+				    Long id
+				    Long version
+				
+				    String login
+				    String grp
+				    String department
+				    String code
+				
+				    static constraints = {
+				        login(unique:'test')
+				    }
+				}
+				''')
+        	new DefaultGrailsApplication(gcl.getLoadedClasses(),gcl);
+		} catch( Exception e ) {
+			// Greate
+		}
+
+		// Test list argument with non-existent property value
+		gcl = new GroovyClassLoader();
+		try {
+			gcl.parseClass('''
+				class User {
+				    Long id
+				    Long version
+				
+				    String login
+				    String grp
+				    String department
+				    String code
+				
+				    static constraints = {
+				        login(unique:['grp','test'])
+				    }
+				}
+				''')
+	    	new DefaultGrailsApplication(gcl.getLoadedClasses(),gcl);
+		} catch( Exception e ) {
+			// Greate
+		}
 	}
 
 
@@ -47,11 +166,16 @@ class UniqueConstraintTests extends AbstractGrailsHibernateTests {
 class User {
     Long id
     Long version
+
     String login
-    String email
+    String grp
+    String department
+    String code
+
     static constraints = {
-        login(unique:true)
-        email(email:true)
+        login(unique:['grp','department'])
+        grp(unique:"department")
+        code(unique:true)
     }
 }
 '''
