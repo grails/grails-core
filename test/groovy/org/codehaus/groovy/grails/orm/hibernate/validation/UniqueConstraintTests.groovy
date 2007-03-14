@@ -6,16 +6,30 @@ import org.codehaus.groovy.grails.orm.hibernate.*
 
 class UniqueConstraintTests extends AbstractGrailsHibernateTests {
 
-	void testUniqueConstraint() {
-
+	void testApplying() {
 	    assertTrue applicationContext.containsBean("UserValidator")
 	    def validator = applicationContext.getBean("UserValidator")
 	    assertNotNull(validator.domainClass)
 	    
-	    // login should be unique against group and code should be unique at all 
+		def userClass = ga.getDomainClass("User")
+		ga.getDomainClass("User").constrainedProperties.each { key, value ->
+	    	if( key == 'code') {
+	    		value.appliedConstraints.each {
+		    		if( it.name == UniqueConstraint.UNIQUE_CONSTRAINT ) assertTrue it.unique
+		    	}
+	    	} else if( key == 'department') {
+	    		value.appliedConstraints.each {
+		    		if( it.name == UniqueConstraint.UNIQUE_CONSTRAINT ) assertFalse it.unique
+		    	}
+	    	}
+	    }
+	}
+	
+	void testValidation() {
 		def userClass = ga.getDomainClass("User").clazz
 
-        def user = userClass.newInstance()
+		// The first object shouldn't fire any unique constraints 
+	    def user = userClass.newInstance()
         user.code = "123"
         user.login = "grails"
         user.grp = "some-group"
@@ -24,44 +38,61 @@ class UniqueConstraintTests extends AbstractGrailsHibernateTests {
         assertFalse user.hasErrors()
         user.save(true)
 
+        def id = user.id
+        
+        // instance with same id shouldn't fire unique constraint 
+        user = userClass.newInstance()
+        user.id = id
+        user.code = "123"
+        user.login = "grails"
+        user.grp = "some-group"
+        user.department = "department1"
+        user.validate()
+        assertFalse user.hasErrors()
+
+        // but instance with different id should 
+        user.id = 123L
+        user.validate()
+        assertTrue user.hasErrors()
+
+        // 'code' should fire unique constraint
         user = userClass.newInstance()
         user.code = "123"
         user.login = "another"
         user.grp = "another-group"
         user.department = "department2"
         user.validate()
-        // code should fire unique constraint
         assertTrue user.hasErrors()
         
+        // 'login' should fire unique constraint since it is in the same grp and same department
         user.code = "321"
         user.login = "grails"
         user.grp = "some-group"
         user.department = "department1"
         user.validate()
-        // login should fire unique constraint since it is in the same grp and same department
         assertTrue user.hasErrors()
         
+        // 'login' shouldn't fire unique constraint since it is in the same department but not in the same grp
         user.grp = "another-group"
         user.validate()
-        // login shouldn't fire unique constraint since it is in the same department but not in the same grp
         assertFalse user.hasErrors()
 
+        // 'login' shouldn't fire unique constraint since it is in the same grp but not in the same department
         user.grp = "some-group"
         user.department = "department2"
         user.validate()
-        // login shouldn't fire unique constraint since it is in the same grp but not in the same department
         assertFalse user.hasErrors()
 
+        // 'grp' should fire unique constraint since it is in the same department
         user.login = "another-login"
         user.grp = "some-group"
         user.department = "department1"
         user.validate()
-        // grp should fire unique constraint since it is in the same department
         assertTrue user.hasErrors()
 
+        // 'grp' shouldn't fire unique constraint since it isn't in same department as first object
         user.department = "department2"
         user.validate()
-        // grp shouldn't fire unique constraint since it isn't in same department as first object
         assertFalse user.hasErrors()
 	}
 	

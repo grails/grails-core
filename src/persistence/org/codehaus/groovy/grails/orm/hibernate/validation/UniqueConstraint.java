@@ -29,17 +29,15 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * Class description here.
+ * A constraint that validates the uniqueness of a property (will query the 
+ * database during validation process).
  *
  * @author Graeme Rocher
+ * @author Sergey Nebolsin
  * @since 0.4
  *        <p/>
  *        Created: Jan 23, 2007
  *        Time: 2:00:55 PM
- */
-/**
- *
- * A constraint that validates the uniqueness of a property
  */
 public class UniqueConstraint extends AbstractPersistentConstraint {
 
@@ -80,10 +78,7 @@ public class UniqueConstraint extends AbstractPersistentConstraint {
                 	this.uniquenessGroup.add(parameter.toString());
                 }
         	}
-        } else if( constraintParameter instanceof String ) {
-        	this.uniquenessGroup.add((String) constraintParameter);
-        	this.unique = true;
-        } else if( constraintParameter instanceof GString ){
+        } else if( constraintParameter instanceof String || constraintParameter instanceof GString ) {
         	this.uniquenessGroup.add(constraintParameter.toString());
         	this.unique = true;
         } else {
