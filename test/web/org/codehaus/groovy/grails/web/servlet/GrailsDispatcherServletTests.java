@@ -95,4 +95,12 @@ public class GrailsDispatcherServletTests extends TestCase {
             System.setProperty("grails.env", "");
         }
     }
+
+    public void testGetPathWithinApplication() {
+        MockHttpServletRequest request = new MockHttpServletRequest("GET", "/grails/book/show/1.dispatch");
+        request.setServletPath("/grails");
+
+        GrailsUrlPathHelper pathHelper = new GrailsUrlPathHelper();
+        assertEquals("/book/show/1",pathHelper.getPathWithinApplication(request));
+    }
 }

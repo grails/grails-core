@@ -67,6 +67,7 @@ if (new File("${basedir}/application.properties").exists()) {
 if (!grailsAppName) {
     grailsAppName = baseName
 }
+appClassName = GCU.getClassNameRepresentation(grailsAppName)
 
 
 // a resolver that doesn't throw exceptions when resolving resources
@@ -201,7 +202,10 @@ task( init: "main init task") {
 		copy(file:"${grailsHome}/src/war/WEB-INF/log4j.properties",
 			 tofile:"${basedir}/grails-app/conf/log4j.test.properties")
 		copy(file:"${grailsHome}/src/war/WEB-INF/log4j.properties",
-			 tofile:"${basedir}/grails-app/conf/log4j.production.properties")	
+			 tofile:"${basedir}/grails-app/conf/log4j.production.properties")
+
+        copy(file:"${grailsHome}/src/grails/templates/artifacts/UrlMappings.groovy",
+             tofile:"${basedir}/grails-app/conf/${appClassName}UrlMappings.groovy")
 			
 		copy(todir:"${basedir}/grails-app") {
 			fileset(dir:"${grailsHome}/src/grails/grails-app", excludes:"**/taglib/**, **/utils/**")

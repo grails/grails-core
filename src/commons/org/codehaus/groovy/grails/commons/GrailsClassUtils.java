@@ -275,11 +275,18 @@ public class GrailsClassUtils {
      * @return The property name representation
      */
 	public static String getClassNameRepresentation(String name) {
-        String className = name.substring(0,1).toUpperCase(Locale.ENGLISH) + name.substring(1);
-        if(className.indexOf(' ') > -1) {
-            className = className.replaceAll("\\s", "");
+        String className;
+
+        String[] tokens = name.split("[^\\w\\d]");
+        StringBuffer buf = new StringBuffer();
+        for (int i = 0; i < tokens.length; i++) {
+            String token = tokens[i].trim();
+            buf.append(token.substring(0, 1).toUpperCase(Locale.ENGLISH))
+               .append(token.substring(1));
         }
-        return className;		
+        className = buf.toString();
+
+        return className;
 	}
     /**
      * Shorter version of getPropertyNameRepresentation

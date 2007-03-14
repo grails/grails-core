@@ -24,6 +24,10 @@ import javax.servlet.http.HttpServletRequest;
  */
 public class GrailsClassUtilsTests extends TestCase {
 
+    public void testGetClassNameRepresentation() {
+        assertEquals("MyClass", GrailsClassUtils.getClassNameRepresentation("my-class"));
+    }
+
     public void testGetNaturalName() throws Exception
     {
         assertEquals("First Name", GrailsClassUtils.getNaturalName("firstName"));

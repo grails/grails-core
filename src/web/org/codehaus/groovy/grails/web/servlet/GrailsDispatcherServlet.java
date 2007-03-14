@@ -22,7 +22,6 @@ import javax.servlet.ServletException;
 import org.codehaus.groovy.grails.commons.*;
 import org.codehaus.groovy.grails.commons.GrailsControllerClass;
 import org.codehaus.groovy.grails.commons.spring.GrailsWebApplicationContext;
-import org.codehaus.groovy.grails.scaffolding.GrailsScaffoldingUtil;
 import org.codehaus.groovy.grails.web.servlet.mvc.SimpleGrailsController;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.springframework.beans.BeansException;
@@ -59,7 +58,7 @@ import grails.util.GrailsUtil;
  */
 public class GrailsDispatcherServlet extends DispatcherServlet {
     private GrailsApplication application;
-    private UrlPathHelper urlHelper = new UrlPathHelper();
+    private UrlPathHelper urlHelper = new GrailsUrlPathHelper();
     private SimpleGrailsController grailsController;
     private HandlerInterceptor[] interceptors;
     private MultipartResolver multipartResolver;
@@ -338,6 +337,9 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
      */
     protected HandlerExecutionChain getHandler(HttpServletRequest request, boolean cache) throws Exception {
         String uri = urlHelper.getPathWithinApplication(request);
+        if(logger.isDebugEnabled()) {
+            logger.debug("Looking up Grails controller for URI ["+uri+"]");
+        }
         GrailsControllerClass controllerClass = (GrailsControllerClass) application.getArtefactForFeature(
             ControllerArtefactHandler.TYPE, uri);
         if(controllerClass!=null) {
@@ -359,6 +361,5 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
             return super.getHandler(request, cache);
         }
     }
-
 
 }

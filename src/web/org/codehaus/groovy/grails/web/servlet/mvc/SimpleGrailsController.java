@@ -18,6 +18,7 @@ package org.codehaus.groovy.grails.web.servlet.mvc;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.web.servlet.GrailsUrlPathHelper;
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.context.ServletContextAware;
 import org.springframework.web.context.request.RequestAttributes;
@@ -40,7 +41,7 @@ public class SimpleGrailsController implements Controller, ServletContextAware {
 
     public static final String APPLICATION_CONTEXT_ID = "simpleGrailsController";
     
-    private UrlPathHelper urlPathHelper = new UrlPathHelper();
+    private UrlPathHelper urlPathHelper = new GrailsUrlPathHelper();
     private GrailsApplication application = null;
     private ServletContext servletContext;
     private GrailsControllerHelper helper;

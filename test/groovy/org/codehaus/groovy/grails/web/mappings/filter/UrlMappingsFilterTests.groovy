@@ -79,7 +79,7 @@ mappings {
 
         filter.doFilterInternal(request, response,null);
 
-        assertEquals "/blog/show", response.includedUrl
+        assertEquals "/grails/blog/show.dispatch", response.includedUrl
         assertEquals "my_entry", webRequest.params.id
         assertEquals "2007", webRequest.params.year
         assertEquals "06", webRequest.params.month

@@ -18,6 +18,36 @@ mappings {
   }    
 }
 '''
+
+    def mappingScript2 = '''
+mappings {
+  "/$controller/$action?/$id?" {
+  }
+}
+'''
+
+    void testImplicitNamedAction() {
+        runTest {
+             def res = new ByteArrayResource(mappingScript2.bytes)
+
+             def evaluator = new DefaultUrlMappingEvaluator()
+             def mappings = evaluator.evaluateMappings(res)
+
+
+             def m = mappings[0]
+             assert m
+
+             def info = m.match("/book/show/1")
+             assert info
+
+             assertEquals "book", info.controllerName
+             assertEquals "show", info.actionName
+             assertEquals "1", info.id
+
+        }
+
+    }
+
     void testNamedParameterAction() {
         runTest {
              def res = new ByteArrayResource(mappingScript.bytes)

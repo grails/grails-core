@@ -15,14 +15,13 @@
 package org.codehaus.groovy.grails.web.mapping;
 
 import groovy.lang.Closure;
-import groovy.lang.GroovyObject;
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 import org.codehaus.groovy.grails.web.mapping.exceptions.UrlMappingException;
-import org.codehaus.groovy.grails.plugins.PluginManagerHolder;
-import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
-import org.codehaus.groovy.grails.plugins.GrailsPlugin;
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
+import org.codehaus.groovy.grails.commons.GrailsControllerClass;
 import org.springframework.validation.Errors;
 import org.springframework.validation.MapBindingResult;
+import org.springframework.web.context.request.RequestContextHolder;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -65,6 +64,7 @@ public class RegexUrlMapping implements UrlMapping {
     private static final String SLASH = "/";
 
 
+
     /**
      * Constructs a new RegexUrlMapping for the given pattern, controller name, action name and constraints.
      *
@@ -77,8 +77,6 @@ public class RegexUrlMapping implements UrlMapping {
      */
     public RegexUrlMapping(UrlMappingData data, Object controllerName, Object actionName, ConstrainedProperty[] constraints) {
         if(data == null) throw new IllegalArgumentException("Argument [pattern] cannot be null");
-        if(controllerName == null) throw new IllegalArgumentException("Argument [controllerName] cannot be null or blank");
-
         this.controllerName = controllerName;
         this.actionName = actionName;
 
@@ -114,8 +112,6 @@ public class RegexUrlMapping implements UrlMapping {
         try {
             pattern = url.replaceAll("\\*", "[^/]+");
             pattern += "/??$";
-
-            System.out.println("pattern = " + pattern);
             regex = Pattern.compile(pattern);
 
         } catch (PatternSyntaxException pse) {
@@ -186,8 +182,31 @@ public class RegexUrlMapping implements UrlMapping {
             }
         }
 
+        if(controllerName == null) {
+            this.controllerName = createRuntimeConstraintEvaluator(GrailsControllerClass.CONTROLLER, this.constraints);
+        }
+        if(actionName == null) {
+            this.actionName = createRuntimeConstraintEvaluator(GrailsControllerClass.ACTION, this.constraints);
+        }
 
         return new DefaultUrlMappingInfo(this.controllerName, this.actionName, params);
+    }
+
+    private Object createRuntimeConstraintEvaluator(final String name, ConstrainedProperty[] constraints) {
+        if(constraints == null)return null;
+
+        for (int i = 0; i < constraints.length; i++) {
+            ConstrainedProperty constraint = constraints[i];
+            if(constraint.getPropertyName().equals(name)) {
+                return new Closure(this) {
+                    public Object call(Object[] objects) {
+                        GrailsWebRequest webRequest = (GrailsWebRequest)RequestContextHolder.currentRequestAttributes();
+                        return webRequest.getParams().get(name);
+                    }
+                };
+            }
+        }
+        return null;  
     }
 
 

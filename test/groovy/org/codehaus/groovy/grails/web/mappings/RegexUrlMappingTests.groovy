@@ -119,12 +119,6 @@ class RegexUrlMappingTests extends GroovyTestCase {
         def parser = new DefaultUrlMappingParser()
         def m = new RegexUrlMapping(parser.parse("/(*)/hello"), "test", [] as ConstrainedProperty[])
 
-        shouldFail {
-           m = new RegexUrlMapping(null, "test", [] as ConstrainedProperty[])
-        }
-        shouldFail {
-           m = new RegexUrlMapping(parser.parse("/(*)/hello"), null, [] as ConstrainedProperty[])
-        }
     }
 
     void testMatchUriNoConstraints() {

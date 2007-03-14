@@ -95,7 +95,7 @@ public class DefaultUrlMappingInfo implements UrlMappingInfo {
         String name;
         if(value instanceof Closure) {
             Closure callable = (Closure)value;
-            Object result = callable.call();
+            Object result = ((Closure)callable.clone()).call();
             name = result != null ? result.toString() : null;
         }
         else {

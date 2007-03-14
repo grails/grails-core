@@ -25,6 +25,8 @@ import org.codehaus.groovy.grails.web.mapping.UrlMappingInfo;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap;
 import org.codehaus.groovy.grails.web.servlet.WrappedResponseHolder;
+import org.codehaus.groovy.grails.web.servlet.GrailsDispatcherServlet;
+import org.codehaus.groovy.grails.web.servlet.GrailsUrlPathHelper;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -116,7 +118,7 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
      * @return The URI to forward to
      */
     protected String buildDispatchUrlForMapping(HttpServletRequest request, UrlMappingInfo info) {
-        StringBuffer forwardUrl = new StringBuffer();
+        StringBuffer forwardUrl = new StringBuffer(GrailsUrlPathHelper.GRAILS_SERVLET_PATH);
         forwardUrl.append(SLASH)
                           .append(info.getControllerName());
 
@@ -124,6 +126,7 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
             forwardUrl.append(SLASH)
                       .append(info.getActionName());
         }
+        forwardUrl.append(GrailsUrlPathHelper.GRAILS_DISPATCH_EXTENSION);
         return forwardUrl.toString();
     }
 

@@ -171,12 +171,10 @@ class ControllersGrailsPlugin {
 	        }
 		}
 		def mappingElement = webXml.'servlet-mapping'
-		controllers.each { c ->
-			mappingElement + {
-				'servlet-mapping' {
-					'servlet-name'("grails")
-					'url-pattern'("/${c}/*")
-				}
+		mappingElement + {
+			'servlet-mapping' {
+				'servlet-name'("grails")
+				'url-pattern'("*.dispatch")
 			}
 		}
 

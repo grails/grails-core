@@ -21,6 +21,8 @@
  *
  * @since 0.4
  */
+         
+import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
 
 grailsAppName = ""
 
@@ -82,6 +84,7 @@ task ( appName : "Evaluates the application name") {
 		if(grailsAppName.indexOf('\n') > -1)
 			grailsAppName = grailsAppName.replaceAll(/\n/, " ")
 	}  
-	basedir = "${basedir}/${grailsAppName}"
+	basedir = "${basedir}/${grailsAppName}" 
+	appClassName = GCU.getClassNameRepresentation(grailsAppName)
 }                                    
     
