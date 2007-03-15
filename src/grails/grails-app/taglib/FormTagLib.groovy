@@ -452,11 +452,15 @@ class FormTagLib {
      * <g:select name="user.company.id" from="${Company.list()}" value="${user?.company.id}" optionKey="id" />
      */
     def select = { attrs ->
+	    def messageSource = grailsAttributes.getApplicationContext().getBean("messageSource")
+		def locale = RCU.getLocale(request)
+    
         def from = attrs.remove('from')
         def keys = attrs.remove('keys')
         def optionKey = attrs.remove('optionKey')
         def optionValue = attrs.remove('optionValue')
         def value = attrs.remove('value')
+        def valueMessagePrefix = attrs.remove('valueMessagePrefix')
 		def noSelection = attrs.remove('noSelection')
         if (noSelection != null) {
             noSelection = noSelection.entrySet().iterator().next()
@@ -477,18 +481,19 @@ class FormTagLib {
         // create options from list
         if(from) {
             from.eachWithIndex { el,i ->
+            	def keyValue = null
                 out << '<option '
                 if(keys) {
-                    out << 'value="' << keys[i] << '" '
-                    if(keys[i] == value) {
+                    keyValue = keys[i]
+                    out << 'value="' << keyValue << '" '
+                    if(keyValue == value) {
                         out << 'selected="selected" '
                     }
                 }
-               else if(optionKey) {
-                    def keyValue = null
+                else if(optionKey) {
                     if(optionKey instanceof Closure) {
                         keyValue = optionKey(el)
-                         out << 'value="' << keyValue << '" '
+                        out << 'value="' << keyValue << '" '
                     }
                     else if(el !=null && optionKey == 'id' && grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE, el.getClass().name)) {
                         keyValue = el.ident()
@@ -504,8 +509,9 @@ class FormTagLib {
                     }
                 }
                 else {
-                    out << "value=\"${el}\" "
-                    if(el == value) {
+                	keyValue = el
+                    out << "value=\"${keyValue}\" "
+                    if(keyValue == value) {
                         out << 'selected="selected" '
                     }
                 }
@@ -517,6 +523,19 @@ class FormTagLib {
                     else {
                         out << el.properties[optionValue].toString().encodeAsHTML()
                     }
+                }
+                else if(valueMessagePrefix) {
+                	def message = messageSource.getMessage("${valueMessagePrefix}.${keyValue}", null, null, locale)
+                	if(message) {
+                		out << message.encodeAsHTML()
+                	}
+                	else if (keyValue) {
+                		out << keyValue.encodeAsHTML()
+                	}
+					else {
+        	            def s = el.toString()
+    	                if(s) out << s.encodeAsHTML()
+	                }
                 }
                 else {
                     def s = el.toString()
