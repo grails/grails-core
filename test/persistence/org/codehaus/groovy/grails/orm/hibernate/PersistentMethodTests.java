@@ -197,41 +197,120 @@ public class PersistentMethodTests extends AbstractDependencyInjectionSpringCont
 
         obj.invokeMethod("save", null);  
         
+        // test query without a method
+        try {
+            obj.getMetaClass().invokeStaticMethod(obj, "find", new Object[] {} );
+            fail("Should have thrown an exception");
+        }
+        catch(Exception e) {
+            //expected
+        }
+
+        // test invalid query
+        try {
+            obj.getMetaClass().invokeStaticMethod(obj, "find", new Object[] {"from AnotherClass"} );
+            fail("Should have thrown grails query exception");
+        }
+        catch(GrailsQueryException gqe) {
+            //expected
+        }
+
         // test find with HQL query
         List params = new ArrayList();
         params.add("fre%");
         Object returnValue = obj.getMetaClass().invokeStaticMethod(obj, "find", new Object[] { "from PersistentMethodTests where firstName like ?", params });
         assertNotNull(returnValue);
 
+        // test find with HQL query
+        params.clear();
+        params.add("bre%");
+        returnValue = obj.getMetaClass().invokeStaticMethod(obj, "find", new Object[] { "from PersistentMethodTests where firstName like ?", params });
+        assertNull(returnValue);
+
+        // test find with HQL query and array of params
+        Object[] paramsArray = new Object[] {"fre%"};
+        returnValue = obj.getMetaClass().invokeStaticMethod(obj, "find", new Object[] { "from PersistentMethodTests where firstName like ?", paramsArray });
+        assertNotNull(returnValue);
+
         // test with a GString argument
         Binding b = new Binding();
         b.setVariable("test","fre%");
+        b.setVariable("test1", "flint%");
         GString gs = (GString)new GroovyShell(b).evaluate("\"$test\"");
+        GString gs1 = (GString)new GroovyShell(b).evaluate("\"$test1\"");
         params.clear();;
 
         params.add(gs);
-        returnValue = obj.getMetaClass().invokeStaticMethod(obj, "find", new Object[] { "from PersistentMethodTests where firstName like ?", params });
+        params.add(gs1);
+        returnValue = obj.getMetaClass().invokeStaticMethod(obj, "find", new Object[] { "from PersistentMethodTests where firstName like ? and lastName like ?", params });        
         assertNotNull(returnValue);
 
+        // test named params with GString parameters
+        Map namedArgs = new HashMap();
+        namedArgs.put("name", gs);
+        returnValue = obj.getMetaClass().invokeStaticMethod(obj, "find", new Object[] { "from PersistentMethodTests where firstName like :name", namedArgs });        
+        assertNotNull(returnValue);
         
-        returnValue = obj.getMetaClass().invokeStaticMethod(obj, "findAll", new Object[] { "from PersistentMethodTests where firstName like ?", params });
-        assertNotNull(returnValue);
-        assertTrue(returnValue instanceof List);
-        List returnList = (List)returnValue;
-        assertEquals(1, returnList.size());
-
-
         // test with a GString query
         b.setVariable("className","PersistentMethodTests");
-        gs = (GString)new GroovyShell(b).evaluate("\"from ${className} where firstName like ?\"");
-
+        gs = (GString)new GroovyShell(b).evaluate("\"from ${className} where firstName like ? and lastName like ?\"");
+        
         returnValue = obj.getMetaClass().invokeStaticMethod(obj, "find", new Object[] { gs, params });
         assertNotNull(returnValue);
 
-
-        returnValue = obj.getMetaClass().invokeStaticMethod(obj, "findAll", new Object[] { gs, params });
+        // test find with query and named params
+        namedArgs.clear();
+        namedArgs.put( "name", "fred" );
+        returnValue = obj.getMetaClass().invokeStaticMethod(obj, "find", new Object[] { "from PersistentMethodTests as p where p.firstName = :name", namedArgs });
         assertNotNull(returnValue);
 
+        // test find with query and named list params
+        namedArgs.clear();
+        List namesList = new ArrayList();
+        namesList.add("fred");
+        namesList.add("anothername");
+        namedArgs.put( "namesList", namesList );
+        returnValue = obj.getMetaClass().invokeStaticMethod(obj, "find", new Object[] { "from PersistentMethodTests as p where p.firstName in (:namesList)", namedArgs });
+        assertNotNull(returnValue);
+
+        // test find with query and named array params
+        namedArgs.clear();
+        namedArgs.put( "namesList", new Object[] {"fred","anothername"} );
+        returnValue = obj.getMetaClass().invokeStaticMethod(obj, "find", new Object[] { "from PersistentMethodTests as p where p.firstName in (:namesList)", namedArgs });
+        assertNotNull(returnValue);
+
+        // test query with wrong named parameter
+        try {
+        	namedArgs.clear();
+        	namedArgs.put(new Long(1), "fred");
+            returnValue = obj.getMetaClass().invokeStaticMethod(obj, "find", new Object[] { "from PersistentMethodTests as p where p.firstName = :name", namedArgs});
+            // new Long(1) is not valid name for named param, so exception should be thrown
+            fail("Should have thrown grails query exception");
+        }
+        catch(GrailsQueryException gqe) {
+            //expected
+        }
+        
+        // test find by example
+        GroovyObject example = (GroovyObject)domainClass.newInstance();
+        example.setProperty( "firstName", "fred" );
+        returnValue = obj.getMetaClass().invokeStaticMethod(obj, "find", new Object[] { example });
+        assertNotNull(returnValue);
+
+        // test find by wrong example
+        example = (GroovyObject)domainClass.newInstance();
+        example.setProperty( "firstName", "someone" );
+        returnValue = obj.getMetaClass().invokeStaticMethod(obj, "find", new Object[] { example });
+        assertNull(returnValue);
+
+        // test query with wrong argument type
+        try {
+            returnValue = obj.getMetaClass().invokeStaticMethod(obj, "find", new Object[] { new Date()});
+            fail("Should have thrown an exception");
+        }
+        catch(Exception e) {
+            //expected
+        }
     }
     
     public void testFindByPersistentMethods() {
@@ -463,12 +542,29 @@ public class PersistentMethodTests extends AbstractDependencyInjectionSpringCont
 
         obj2.invokeMethod("save", null);
 
+        // test invalid query
+        try {
+            obj.getMetaClass().invokeStaticMethod(obj, "findAll", new Object[] {"from AnotherClass"} );
+            fail("Should have thrown grails query exception");
+        }
+        catch(GrailsQueryException gqe) {
+            //expected
+        }
+
         // test find with a query
         Object returnValue = obj.getMetaClass().invokeStaticMethod(obj, "findAll", new Object[] { "from PersistentMethodTests" });
         assertNotNull(returnValue);
         assertEquals(ArrayList.class,returnValue.getClass());
         List listResult = (List)returnValue;
         assertEquals(2, listResult.size());
+
+        // test without a query (should return all instances)  
+        returnValue = obj.getMetaClass().invokeStaticMethod(obj, "findAll", new Object[] {} );
+        assertNotNull(returnValue);
+        assertEquals(ArrayList.class, returnValue.getClass());
+        listResult = (List)returnValue;
+        assertEquals(2, listResult.size());
+
 
         // test find with query and args
         List args = new ArrayList();
@@ -479,6 +575,155 @@ public class PersistentMethodTests extends AbstractDependencyInjectionSpringCont
         listResult = (List)returnValue;
         assertEquals(1, listResult.size());
 
+        // test find with query and array argument
+        returnValue = obj.getMetaClass().invokeStaticMethod(obj, "findAll", new Object[] { "from PersistentMethodTests as p where p.firstName = ?", new Object[] {"wilma"} });
+        assertNotNull(returnValue);
+        assertEquals(ArrayList.class,returnValue.getClass());
+        listResult = (List)returnValue;
+        assertEquals(1, listResult.size());
+
+        // test find with query and named params
+        Map namedArgs = new HashMap();
+        namedArgs.put( "name", "wilma" );
+        returnValue = obj.getMetaClass().invokeStaticMethod(obj, "findAll", new Object[] { "from PersistentMethodTests as p where p.firstName = :name", namedArgs });
+        assertNotNull(returnValue);
+        assertEquals(ArrayList.class,returnValue.getClass());
+        listResult = (List)returnValue;
+        assertEquals(1, listResult.size());
+
+        // test with a GString argument
+        Binding b = new Binding();
+        b.setVariable("test","fre%");
+        b.setVariable("test1", "flint%");
+        GString gs = (GString)new GroovyShell(b).evaluate("\"$test\"");
+        GString gs1 = (GString)new GroovyShell(b).evaluate("\"$test1\"");
+        args.clear();;
+        args.add(gs);
+        args.add(gs1);
+        returnValue = obj.getMetaClass().invokeStaticMethod(obj, "findAll", new Object[] { "from PersistentMethodTests where firstName like ? and lastName like ?", args });        
+        assertNotNull(returnValue);
+        assertTrue(returnValue instanceof List);
+        listResult = (List)returnValue;
+        assertEquals(1, listResult.size());
+
+        // GStrings in named params
+        namedArgs.clear();
+        namedArgs.put("firstName", gs);
+        namedArgs.put("lastName", gs1);
+        returnValue = obj.getMetaClass().invokeStaticMethod(obj, "findAll", new Object[] { "from PersistentMethodTests where firstName like :firstName and lastName like :lastName", namedArgs });        
+        assertNotNull(returnValue);
+        assertTrue(returnValue instanceof List);
+        listResult = (List)returnValue;
+        assertEquals(1, listResult.size());
+
+        // test with a GString query
+        b.setVariable("className","PersistentMethodTests");
+        gs = (GString)new GroovyShell(b).evaluate("\"from ${className} where firstName like ? and lastName like ?\"");
+        returnValue = obj.getMetaClass().invokeStaticMethod(obj, "findAll", new Object[] { gs, args });
+        assertNotNull(returnValue);
+
+
+        // test find with query and named list params
+        namedArgs.clear();
+        List namesList = new ArrayList();
+        namesList.add("wilma");
+        namesList.add("fred");
+        namedArgs.put( "namesList", namesList );
+        returnValue = obj.getMetaClass().invokeStaticMethod(obj, "findAll", new Object[] { "from PersistentMethodTests as p where p.firstName in (:namesList)", namedArgs });
+        assertNotNull(returnValue);
+        assertEquals(ArrayList.class,returnValue.getClass());
+        listResult = (List)returnValue;
+        assertEquals(2, listResult.size());
+
+        // test find with query and named array params
+        namedArgs.clear();
+        namedArgs.put( "namesList", new Object[] {"wilma","fred"} );
+        returnValue = obj.getMetaClass().invokeStaticMethod(obj, "findAll", new Object[] { "from PersistentMethodTests as p where p.firstName in (:namesList)", namedArgs });
+        assertNotNull(returnValue);
+        assertEquals(ArrayList.class,returnValue.getClass());
+        listResult = (List)returnValue;
+        assertEquals(2, listResult.size());
+
+        // test find with max result
+        namedArgs.clear();
+        namedArgs.put( "namesList", new Object[] {"wilma","fred"} );
+        returnValue = obj.getMetaClass().invokeStaticMethod(obj, "findAll", new Object[] { "from PersistentMethodTests as p where p.firstName in (:namesList)", namedArgs, new Integer(1) });
+        assertNotNull(returnValue);
+        assertEquals(ArrayList.class,returnValue.getClass());
+        listResult = (List)returnValue;
+        assertEquals(1, listResult.size());
+
+        // test find with max result without params
+        returnValue = obj.getMetaClass().invokeStaticMethod(obj, "findAll", new Object[] { "from PersistentMethodTests as p", new Integer(1) });
+        assertNotNull(returnValue);
+        assertEquals(ArrayList.class,returnValue.getClass());
+        listResult = (List)returnValue;
+        assertEquals(1, listResult.size());
+
+        // test with max result in Map
+        Map resultsMap = new HashMap();
+        resultsMap.put("max", new Integer(1));
+        returnValue = obj.getMetaClass().invokeStaticMethod(obj, "findAll", new Object[] { "from PersistentMethodTests as p where p.firstName in (:namesList)", namedArgs, resultsMap });
+        assertNotNull(returnValue);
+        assertEquals(ArrayList.class,returnValue.getClass());
+        listResult = (List)returnValue;
+        assertEquals(1, listResult.size());
+        // test with 'max' param in named parameter map - for backward compatibility 
+        namedArgs.put("max", new Integer(1));
+        returnValue = obj.getMetaClass().invokeStaticMethod(obj, "findAll", new Object[] { "from PersistentMethodTests as p where p.firstName in (:namesList)", namedArgs });
+        assertNotNull(returnValue);
+        assertEquals(ArrayList.class,returnValue.getClass());
+        listResult = (List)returnValue;
+        assertEquals(1, listResult.size());
+
+        // test find with offset
+        namedArgs.clear();
+        namedArgs.put( "namesList", new Object[] {"wilma","fred"} );
+        returnValue = obj.getMetaClass().invokeStaticMethod(obj, "findAll", new Object[] { "from PersistentMethodTests as p where p.firstName in (:namesList)", namedArgs, new Integer(2), new Integer(1) });
+        assertNotNull(returnValue);
+        assertEquals(ArrayList.class,returnValue.getClass());
+        listResult = (List)returnValue;
+        // max results = 2 and offset = 1 => 1 of 2 result expected
+        assertEquals(1, listResult.size());
+
+        // test find with offset without params
+        returnValue = obj.getMetaClass().invokeStaticMethod(obj, "findAll", new Object[] { "from PersistentMethodTests as p", new Integer(2), new Integer(1) });
+        assertNotNull(returnValue);
+        assertEquals(ArrayList.class,returnValue.getClass());
+        listResult = (List)returnValue;
+        // max results = 2 and offset = 1 => 1 of 2 result expected
+        assertEquals(1, listResult.size());
+
+        // test with offset in Map
+        resultsMap = new HashMap();
+        resultsMap.put("offset", new Integer(1));
+        returnValue = obj.getMetaClass().invokeStaticMethod(obj, "findAll", new Object[] { "from PersistentMethodTests as p where p.firstName in (:namesList)", namedArgs, resultsMap });
+        assertNotNull(returnValue);
+        assertEquals(ArrayList.class,returnValue.getClass());
+        listResult = (List)returnValue;
+        // max results not specified and offset = 1 => 1 of 2 result expected
+        assertEquals(1, listResult.size());
+
+        // test with 'offset' param in named parameter map - for backward compatibility 
+        namedArgs.put("offset", new Integer(1));
+        returnValue = obj.getMetaClass().invokeStaticMethod(obj, "findAll", new Object[] { "from PersistentMethodTests as p where p.firstName in (:namesList)", namedArgs });
+        assertNotNull(returnValue);
+        assertEquals(ArrayList.class,returnValue.getClass());
+        listResult = (List)returnValue;
+        assertEquals(1, listResult.size());
+        
+        // test query with wrong named parameter
+        try {
+        	namedArgs.clear();
+        	namedArgs.put(new Long(1), "wilma");
+            returnValue = obj.getMetaClass().invokeStaticMethod(obj, "findAll", new Object[] { "from PersistentMethodTests as p where p.firstName = :name", namedArgs});
+            // new Long(1) is not valid name for named param, so exception should be thrown
+            fail("Should have thrown grails query exception");
+        }
+        catch(GrailsQueryException gqe) {
+            //expected
+        }
+        
         // test find by example
         GroovyObject example = (GroovyObject)domainClass.newInstance();
         example.setProperty( "firstName", "fred" );
@@ -487,17 +732,15 @@ public class PersistentMethodTests extends AbstractDependencyInjectionSpringCont
         assertEquals(ArrayList.class,returnValue.getClass());
         listResult = (List)returnValue;
         assertEquals(1, listResult.size());
-
-        // test invalid query
+        
+        // test query with wrong argument type
         try {
-            returnValue = obj.getMetaClass().invokeStaticMethod(obj, "findAll", new Object[] { "from RubbishClass"});
-            fail("Should have thrown grails query exception");
+            returnValue = obj.getMetaClass().invokeStaticMethod(obj, "findAll", new Object[] { new Date()});
+            fail("Should have thrown an exception");
         }
-        catch(GrailsQueryException gqe) {
+        catch(Exception e) {
             //expected
         }
-
-        // test primitive boolean
     }
 
     public void testListPersistentMethods() {
@@ -562,7 +805,100 @@ public class PersistentMethodTests extends AbstractDependencyInjectionSpringCont
 
     }
 
+    
+    public void testExecuteQueryMethod() {
+        GrailsDomainClass domainClass = (GrailsDomainClass) this.grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE,
+        "PersistentMethodTests");
+     
+        GroovyObject obj = (GroovyObject)domainClass.newInstance();
+        obj.setProperty( "id", new Long(1) );
+        obj.setProperty( "firstName", "fred" );
+        obj.setProperty( "lastName", "flintstone" );
+     
+        obj.invokeMethod("save", null);
 
+        GroovyObject obj2 = (GroovyObject)domainClass.newInstance();
+        obj2.setProperty( "id", new Long(2) );
+        obj2.setProperty( "firstName", "wilma" );
+        obj2.setProperty( "lastName", "flintstone" );
+
+        obj2.invokeMethod("save", null);
+
+        // test query without a method
+        try {
+            obj.getMetaClass().invokeStaticMethod(obj, "executeQuery", new Object[] {} );
+            fail("Should have thrown an exception");
+        }
+        catch(Exception e) {
+            //expected
+        }
+
+        // test query with too many params
+        try {
+            obj.getMetaClass().invokeStaticMethod(obj, "executeQuery", new Object[] { "1", "2", "3"} );
+            fail("Should have thrown an exception");
+        }
+        catch(Exception e) {
+            //expected
+        }
+
+        // test find with a query
+        Object returnValue = obj.getMetaClass().invokeStaticMethod(obj, "executeQuery", new Object[] { "select distinct p from PersistentMethodTests as p" });
+        assertNotNull(returnValue);
+        assertEquals(ArrayList.class,returnValue.getClass());
+        List listResult = (List)returnValue;
+        assertEquals(2, listResult.size());
+
+        // test find with query and args
+        List args = new ArrayList();
+        args.add( "wilma" );
+        returnValue = obj.getMetaClass().invokeStaticMethod(obj, "executeQuery", new Object[] { "select distinct p from PersistentMethodTests as p where p.firstName = ?", args });
+        assertNotNull(returnValue);
+        assertEquals(ArrayList.class,returnValue.getClass());
+        listResult = (List)returnValue;
+        assertEquals(1, listResult.size());
+
+        // test find with query and arg
+        returnValue = obj.getMetaClass().invokeStaticMethod(obj, "executeQuery", new Object[] { "select distinct p from PersistentMethodTests as p where p.firstName = ?", "wilma" });
+        assertNotNull(returnValue);
+        assertEquals(ArrayList.class,returnValue.getClass());
+        listResult = (List)returnValue;
+        assertEquals(1, listResult.size());
+
+        // test find with query and named params
+        Map namedArgs = new HashMap();
+        namedArgs.put( "name", "wilma" );
+        returnValue = obj.getMetaClass().invokeStaticMethod(obj, "executeQuery", new Object[] { "select distinct p from PersistentMethodTests as p where p.firstName = :name", namedArgs });
+        assertNotNull(returnValue);
+        assertEquals(ArrayList.class,returnValue.getClass());
+        listResult = (List)returnValue;
+        assertEquals(1, listResult.size());
+
+        // test find with query and named list params
+        namedArgs.clear();
+        List namesList = new ArrayList();
+        namesList.add("wilma");
+        namesList.add("fred");
+        namedArgs.put( "namesList", namesList );
+        returnValue = obj.getMetaClass().invokeStaticMethod(obj, "executeQuery", new Object[] { "select distinct p from PersistentMethodTests as p where p.firstName in (:namesList)", namedArgs });
+        assertNotNull(returnValue);
+        assertEquals(ArrayList.class,returnValue.getClass());
+        listResult = (List)returnValue;
+        assertEquals(2, listResult.size());
+
+        // test query with wrong named parameter
+        try {
+        	namedArgs.clear();
+        	namedArgs.put(new Long(1), "wilma");
+            returnValue = obj.getMetaClass().invokeStaticMethod(obj, "executeQuery", new Object[] { "select distinct p from PersistentMethodTests as p where p.firstName = :name", namedArgs});
+            // new Long(1) is not valid name for named param, so exception should be thrown
+            fail("Should have thrown grails query exception");
+        }
+        catch(GrailsQueryException gqe) {
+            //expected
+        }
+    }
+    
     public void testDMLOperation() throws Exception {
         GrailsDomainClass domainClass = (GrailsDomainClass) this.grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE,
             "PersistentMethodTests");
