@@ -1021,59 +1021,52 @@ w	 * Binds a simple value to the Hibernate metamodel. A simple value is
      * @param constrainedProperty the property's constraints 
      */
     protected static void bindNumericColumnConstraints(Column column, ConstrainedProperty constrainedProperty) {
-        int scale = Column.DEFAULT_SCALE;
-        if (constrainedProperty.getScale() != null) {
-            scale = constrainedProperty.getScale().intValue();
-            column.setScale(scale);
-        }
+		int scale = Column.DEFAULT_SCALE;
+		int precision = Column.DEFAULT_PRECISION;
 
-        Integer minSizeConstraintValue = constrainedProperty.getMinSize();
-        Integer maxSizeConstraintValue = constrainedProperty.getMaxSize();
-        Comparable minConstraintValue = constrainedProperty.getMin();
-        Comparable maxConstraintValue = constrainedProperty.getMax();
+		if (constrainedProperty.getScale() != null) {
+			scale = constrainedProperty.getScale().intValue();
+			column.setScale(scale);
+		}
 
-        if ((minSizeConstraintValue != null) || (maxSizeConstraintValue != null) || (minConstraintValue != null) || (maxConstraintValue != null)) {
-            int minSizeConstraintValueLength = 0;
-            if (minSizeConstraintValue != null) {
-                minSizeConstraintValueLength = countDigits(minSizeConstraintValue);
-            }
+		Comparable minConstraintValue = constrainedProperty.getMin();
+		Comparable maxConstraintValue = constrainedProperty.getMax();
 
-            int maxSizeConstraintValueLength = 0;
-            if (maxSizeConstraintValue != null) {
-                maxSizeConstraintValueLength = countDigits(maxSizeConstraintValue);
-            }
+		int minConstraintValueLength = 0;
+		if ((minConstraintValue != null) && (minConstraintValue instanceof Number)) {
+			minConstraintValueLength = Math.max(
+					countDigits((Number) minConstraintValue), 
+					countDigits(new Long(((Number) minConstraintValue).longValue())) + scale
+			);
+		}
+		int maxConstraintValueLength = 0;
+		if ((maxConstraintValue != null) && (maxConstraintValue instanceof Number)) {
+			maxConstraintValueLength = Math.max(
+					countDigits((Number) maxConstraintValue), 
+					countDigits(new Long(((Number) maxConstraintValue).longValue())) + scale
+			);
+		}
 
-            int minConstraintValueLength = 0;
-            int minConstraintValueIntegerLength = 0;
-            if ((minConstraintValue != null) && (minConstraintValue instanceof Number)) {
-                minConstraintValueLength = countDigits((Number)minConstraintValue);
-                minConstraintValueIntegerLength = countDigits(new Long(((Number)minConstraintValue).longValue()));
-            }
+		if (minConstraintValueLength > 0 && maxConstraintValueLength > 0) {
+			// If both of min and max constraints are setted we could use
+			// maximum digits number in it as precision
+			precision = NumberUtils.max(new int[] { minConstraintValueLength, maxConstraintValueLength });
+		} else {
+			// Overwise we should also use default precision
+			precision = NumberUtils.max(new int[] { precision, minConstraintValueLength, maxConstraintValueLength });
+		}
 
-            int maxConstraintValueLength = 0;
-            int maxConstraintValueIntegerLength = 0;
-            if ((maxConstraintValue != null) && (maxConstraintValue instanceof Number)) {
-                maxConstraintValueLength = countDigits((Number)maxConstraintValue);
-                maxConstraintValueIntegerLength = countDigits(new Long(((Number)maxConstraintValue).longValue()));
-            }
-
-            // Set the most lenient precision possible based on the many constraints.  (In other words,
-            // determine the largest number of digits that this property can hold and use that value as
-            // the precision.)
-            int maxDigits = NumberUtils.max(new int[] { minSizeConstraintValueLength, maxSizeConstraintValueLength, minConstraintValueLength, (minConstraintValueIntegerLength + scale),
-                    maxConstraintValueLength, (maxConstraintValueIntegerLength + scale) });
-            column.setPrecision(maxDigits);
-        }
-    }
+		column.setPrecision(precision);
+	}
 
     /**
-     * @return a count of the digits in the specified number
-     */
+	 * @return a count of the digits in the specified number
+	 */
     private static int countDigits(Number number) {
         int numDigits = 0;
 
         if (number != null) {
-            // Remove everything that's not a digit (e.g., decimal points or signs) 
+            // Remove everything that's not a digit (e.g., decimal points or signs)
             String digitsOnly = number.toString().replaceAll("\\D", "");
             numDigits = digitsOnly.length();
         }

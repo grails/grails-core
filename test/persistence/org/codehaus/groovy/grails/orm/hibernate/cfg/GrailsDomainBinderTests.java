@@ -58,27 +58,11 @@ public class GrailsDomainBinderTests extends TestCase {
      * @see GrailsDomainBinder#bindNumericColumnConstraints(Column, ConstrainedProperty)
      */
     public void testBindNumericColumnConstraints() {
-        // Verify that the correct precision is set when the maxSize constraint has the number with the most digits
         ConstrainedProperty constrainedProperty = getConstrainedBigDecimalProperty();
+        // maxSize and minSize constraint has the number with the most digits
         constrainedProperty.applyConstraint(ConstrainedProperty.MAX_SIZE_CONSTRAINT, new Integer(123));
         constrainedProperty.applyConstraint(ConstrainedProperty.MIN_SIZE_CONSTRAINT, new Integer(0));
-        assertColumnPrecisionAndScale(constrainedProperty, 3, Column.DEFAULT_SCALE);
-
-        // Verify that the correct precision is set when the minSize constraint has the number with the most digits
-        constrainedProperty = getConstrainedBigDecimalProperty();
-        constrainedProperty.applyConstraint(ConstrainedProperty.MAX_SIZE_CONSTRAINT, new Integer(123));
-        constrainedProperty.applyConstraint(ConstrainedProperty.MIN_SIZE_CONSTRAINT, new Integer(-1234));
-        assertColumnPrecisionAndScale(constrainedProperty, 4, Column.DEFAULT_SCALE);
-
-        // Verify that the correct precision is set when the high value of a size constraint has the number with the most digits
-        constrainedProperty = getConstrainedBigDecimalProperty();
-        constrainedProperty.applyConstraint(ConstrainedProperty.SIZE_CONSTRAINT, new IntRange(0, 123));
-        assertColumnPrecisionAndScale(constrainedProperty, 3, Column.DEFAULT_SCALE);
-
-        // Verify that the correct precision is set when the low value of a size constraint has the number with the most digits
-        constrainedProperty = getConstrainedBigDecimalProperty();
-        constrainedProperty.applyConstraint(ConstrainedProperty.SIZE_CONSTRAINT, new IntRange(-1234, 123));
-        assertColumnPrecisionAndScale(constrainedProperty, 4, Column.DEFAULT_SCALE);
+        assertColumnPrecisionAndScale(constrainedProperty, Column.DEFAULT_PRECISION, Column.DEFAULT_SCALE);
 
         // Verify that the correct precision is set when the max constraint has the number with the most digits
         constrainedProperty = getConstrainedBigDecimalProperty();
@@ -111,14 +95,30 @@ public class GrailsDomainBinderTests extends TestCase {
         //  1) where the min/max constraint includes fewer decimal places than the scale constraint
         constrainedProperty = getConstrainedBigDecimalProperty();
         constrainedProperty.applyConstraint(ConstrainedProperty.MAX_CONSTRAINT, new BigDecimal("123.45"));
+        constrainedProperty.applyConstraint(ConstrainedProperty.MIN_CONSTRAINT, new BigDecimal("0"));
         constrainedProperty.applyConstraint(ConstrainedProperty.SCALE_CONSTRAINT, new Integer(3));
         assertColumnPrecisionAndScale(constrainedProperty, 6, 3); // precision (6) = number of integer digits in max constraint ("123.45") + scale (3)
 
         //  2) where the min/max constraint includes more decimal places than the scale constraint
         constrainedProperty = getConstrainedBigDecimalProperty();
         constrainedProperty.applyConstraint(ConstrainedProperty.MAX_CONSTRAINT, new BigDecimal("123.4567"));
+        constrainedProperty.applyConstraint(ConstrainedProperty.MIN_CONSTRAINT, new BigDecimal("0"));
         constrainedProperty.applyConstraint(ConstrainedProperty.SCALE_CONSTRAINT, new Integer(3));
         assertColumnPrecisionAndScale(constrainedProperty, 7, 3); // precision (7) = number of digits in max constraint ("123.4567") 
+
+        // Verify that the correct precision is set when the only one of 'min' and 'max' constraint specified
+        constrainedProperty = getConstrainedBigDecimalProperty();
+        constrainedProperty.applyConstraint(ConstrainedProperty.MAX_CONSTRAINT, new BigDecimal("123.4567"));
+        assertColumnPrecisionAndScale(constrainedProperty, Column.DEFAULT_PRECISION, Column.DEFAULT_SCALE);
+        constrainedProperty = getConstrainedBigDecimalProperty();
+        constrainedProperty.applyConstraint(ConstrainedProperty.MAX_CONSTRAINT, new BigDecimal("12345678901234567890.4567"));
+        assertColumnPrecisionAndScale(constrainedProperty, 24, Column.DEFAULT_SCALE);
+        constrainedProperty = getConstrainedBigDecimalProperty();
+        constrainedProperty.applyConstraint(ConstrainedProperty.MIN_CONSTRAINT, new BigDecimal("-123.4567"));
+        assertColumnPrecisionAndScale(constrainedProperty, Column.DEFAULT_PRECISION, Column.DEFAULT_SCALE);
+        constrainedProperty = getConstrainedBigDecimalProperty();
+        constrainedProperty.applyConstraint(ConstrainedProperty.MIN_CONSTRAINT, new BigDecimal("-12345678901234567890.4567"));
+        assertColumnPrecisionAndScale(constrainedProperty, 24, Column.DEFAULT_SCALE);
     }
 
     private void assertColumnLength(ConstrainedProperty constrainedProperty, int expectedLength) {
