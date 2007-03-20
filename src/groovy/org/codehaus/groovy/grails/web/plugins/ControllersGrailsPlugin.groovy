@@ -456,6 +456,6 @@ class ControllersGrailsPlugin {
 			}
 		}  
 		
-		event.manager.getGrailsPlugin("controllers").doWithDynamicMethods(event.ctx)
+		event.manager?.getGrailsPlugin("controllers")?.doWithDynamicMethods(event.ctx)
 	}
 }
