@@ -348,58 +348,6 @@ public class FormTagLibTests extends AbstractGrailsTagTests {
 
     }
 
-    public void testSelectTagWithValueMessagePrefixSet() {
-    	final StringWriter sw = new StringWriter();
-    	final PrintWriter pw = new PrintWriter(sw);
-
-        def categoryMap = ['M':'Mystery' , 'T':'Thriller', 'F':'Fantasy']
-        def categoryList = categoryMap.keySet()
-
-    	def valueMessagePrefix = "book.category"
-
-		// test without messages set; value will be used as text
-
-    	withTag("select", pw) { tag ->
-	    	// use sorted map to be able to predict the order in which tag attributes are generated
-    		def attributes = new TreeMap([name: SELECT_TAG_NAME, valueMessagePrefix: valueMessagePrefix, from: categoryList])
-    		tag.call(attributes)
-    	}
-
-        def doc = DocumentHelper.parseText( sw.toString() )
-        assertNotNull( doc )
-
-		// assert select field uses value for both the value as the text (as there is no text found within messages)
-        categoryMap.each() { value, text ->
-	        assertSelectFieldPresentWithValueAndText( doc, SELECT_TAG_NAME, value, value )
-        }
-
-
-        // test with messages set
-
-        categoryMap.each() { value, text ->
-        	messageSource.addMessage(valueMessagePrefix + "." + value, RCU.getLocale(request), text)
-        }
-
-        sw = new StringWriter();
-    	pw = new PrintWriter(sw);
-
-    	withTag("select", pw) { tag ->
-	    	// use sorted map to be able to predict the order in which tag attributes are generated
-    		def attributes = new TreeMap([name: SELECT_TAG_NAME, valueMessagePrefix: valueMessagePrefix, from: categoryList])
-    		tag.call(attributes)
-    	}
-
-        doc = DocumentHelper.parseText( sw.toString() )
-        assertNotNull( doc )
-
-		// assert select field uses value and text
-        categoryMap.each() { value, text ->
-            assertSelectFieldPresentWithValueAndText( doc, SELECT_TAG_NAME, value, text )
-        }
-
-
-    }
-
     public void testCheckboxTag() {
     	final StringWriter sw = new StringWriter();
     	final PrintWriter pw = new PrintWriter(sw);
