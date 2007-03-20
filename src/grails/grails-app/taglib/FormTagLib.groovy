@@ -217,6 +217,8 @@ class FormTagLib {
 
         def value = (attrs['value'] ? attrs['value'] : xdefault)
         def name = attrs['name']
+        def id = attrs['id'] ? attrs['id'] : name
+
 		def noSelection = attrs['noSelection']
 		if (noSelection != null)
 		{
@@ -269,7 +271,7 @@ class FormTagLib {
 
         // create day select
         if (precision >= PRECISION_RANKINGS["day"]) {
-            out.println "<select name=\"${name}_day\">"
+            out.println "<select name=\"${name}_day\" id=\"${id}_day\">"
 
             if (noSelection) {
 	    		renderNoSelectionOption( noSelection.key, noSelection.value, '')
@@ -288,7 +290,7 @@ class FormTagLib {
 
         // create month select
         if (precision >= PRECISION_RANKINGS["month"]) {
-            out.println "<select name=\"${name}_month\">"
+            out.println "<select name=\"${name}_month\" id=\"${id}_month\">"
 
             if (noSelection) {
 	    		renderNoSelectionOption( noSelection.key, noSelection.value, '')
@@ -310,7 +312,7 @@ class FormTagLib {
 
         // create year select
         if (precision >= PRECISION_RANKINGS["year"]) {
-            out.println "<select name=\"${name}_year\">"
+            out.println "<select name=\"${name}_year\" id=\"${id}_year\">"
 
             if (noSelection) {
     			renderNoSelectionOption( noSelection.key, noSelection.value, '')
@@ -329,7 +331,7 @@ class FormTagLib {
 
         // do hour select
         if (precision >= PRECISION_RANKINGS["hour"]) {
-            out.println "<select name=\"${name}_hour\">"
+            out.println "<select name=\"${name}_hour\" id=\"${id}_hour\">"
 
             if (noSelection) {
 	    		renderNoSelectionOption( noSelection.key, noSelection.value, '')
@@ -354,7 +356,7 @@ class FormTagLib {
 
         // do minute select
         if (precision >= PRECISION_RANKINGS["minute"]) {
-            out.println "<select name=\"${name}_minute\">"
+            out.println "<select name=\"${name}_minute\" id=\"${id}_minute\">"
 
             if (noSelection) {
 	    		renderNoSelectionOption( noSelection.key, noSelection.value, '')
@@ -454,7 +456,7 @@ class FormTagLib {
     def select = { attrs ->
 	    def messageSource = grailsAttributes.getApplicationContext().getBean("messageSource")
 		def locale = RCU.getLocale(request)
-    
+
         def from = attrs.remove('from')
         def keys = attrs.remove('keys')
         def optionKey = attrs.remove('optionKey')

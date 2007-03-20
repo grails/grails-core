@@ -348,6 +348,58 @@ public class FormTagLibTests extends AbstractGrailsTagTests {
 
     }
 
+    public void testSelectTagWithValueMessagePrefixSet() {
+    	final StringWriter sw = new StringWriter();
+    	final PrintWriter pw = new PrintWriter(sw);
+
+        def categoryMap = ['M':'Mystery' , 'T':'Thriller', 'F':'Fantasy']
+        def categoryList = categoryMap.keySet()
+
+    	def valueMessagePrefix = "book.category"
+
+		// test without messages set; value will be used as text
+
+    	withTag("select", pw) { tag ->
+	    	// use sorted map to be able to predict the order in which tag attributes are generated
+    		def attributes = new TreeMap([name: SELECT_TAG_NAME, valueMessagePrefix: valueMessagePrefix, from: categoryList])
+    		tag.call(attributes)
+    	}
+
+        def doc = DocumentHelper.parseText( sw.toString() )
+        assertNotNull( doc )
+
+		// assert select field uses value for both the value as the text (as there is no text found within messages)
+        categoryMap.each() { value, text ->
+	        assertSelectFieldPresentWithValueAndText( doc, SELECT_TAG_NAME, value, value )
+        }
+
+
+        // test with messages set
+
+        categoryMap.each() { value, text ->
+        	messageSource.addMessage(valueMessagePrefix + "." + value, RCU.getLocale(request), text)
+        }
+
+        sw = new StringWriter();
+    	pw = new PrintWriter(sw);
+
+    	withTag("select", pw) { tag ->
+	    	// use sorted map to be able to predict the order in which tag attributes are generated
+    		def attributes = new TreeMap([name: SELECT_TAG_NAME, valueMessagePrefix: valueMessagePrefix, from: categoryList])
+    		tag.call(attributes)
+    	}
+
+        doc = DocumentHelper.parseText( sw.toString() )
+        assertNotNull( doc )
+
+		// assert select field uses value and text
+        categoryMap.each() { value, text ->
+            assertSelectFieldPresentWithValueAndText( doc, SELECT_TAG_NAME, value, text )
+        }
+
+
+    }
+
     public void testCheckboxTag() {
     	final StringWriter sw = new StringWriter();
     	final PrintWriter pw = new PrintWriter(sw);
@@ -450,6 +502,34 @@ public class FormTagLibTests extends AbstractGrailsTagTests {
                 calendar.setTime(date);
         }
 
+        // validate id attributes
+        String xp
+        if (['day', 'hour', 'minute'].contains(precision)) {
+            xp = "//select[@name='" + DATE_PICKER_TAG_NAME + "_day' and @id='"+DATE_PICKER_TAG_NAME+"_day']";
+            xpath = new DefaultXPath(xp);
+            assertTrue(xpath.booleanValueOf(document));
+        }
+
+        if (['month', 'day', 'hour', 'minute'].contains(precision)) {
+            xpath = new DefaultXPath("//select[@name='" + DATE_PICKER_TAG_NAME + "_month' and @id='"+DATE_PICKER_TAG_NAME+"_month']");
+            assertTrue(xpath.booleanValueOf(document));
+        }
+
+        if (['minute', 'hour', 'day', 'month', 'year'].contains(precision)) {
+            xpath = new DefaultXPath("//select[@name='" + DATE_PICKER_TAG_NAME + "_year' and @id='"+DATE_PICKER_TAG_NAME+"_year']");
+            assertTrue(xpath.booleanValueOf(document));
+        }
+
+        if (['hour', 'minute'].contains(precision)) {
+            xpath = new DefaultXPath("//select[@name='" + DATE_PICKER_TAG_NAME + "_hour' and @id='"+DATE_PICKER_TAG_NAME+"_hour']");
+            assertTrue(xpath.booleanValueOf(document));
+        }
+
+        if ('minute' == precision) {
+            xpath = new DefaultXPath("//select[@name='" + DATE_PICKER_TAG_NAME + "_minute' and @id='"+DATE_PICKER_TAG_NAME+"_minute']");
+            assertTrue(xpath.booleanValueOf(document));
+        }
+
         // validate presence and value of selected date fields
         validateSelectedYearValue(document, calendar);
         validateSelectedMonthValue(document, calendar, precision);
@@ -520,7 +600,7 @@ public class FormTagLibTests extends AbstractGrailsTagTests {
 
     private void assertSelectFieldPresentWithSelectedValue(Document document, String fieldName, String value) {
         XPath xpath = new DefaultXPath("//select[@name='" + fieldName + "']/option[@selected='selected' and @value='" + value + "']");
-        assertTrue(xpath.booleanValueOf(document)); 
+        assertTrue(xpath.booleanValueOf(document));
     }
 
     private void assertSelectFieldPresentWithValue(Document document, String fieldName, String value) {
