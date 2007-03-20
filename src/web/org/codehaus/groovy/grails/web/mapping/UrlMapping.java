@@ -15,6 +15,10 @@
 */
 package org.codehaus.groovy.grails.web.mapping;
 
+import org.codehaus.groovy.grails.validation.ConstrainedProperty;
+
+import java.util.Map;
+
 /**
  * <p>An interface that defines a URL mapping. A URL mapping is a mapping between a URI such as /book/list and
  * a controller, action and/or id</p>
@@ -43,6 +47,16 @@ public interface UrlMapping extends Comparable {
      */
     UrlMappingInfo match(String uri);
 
+    /**
+     * Inspects this UrlMapping to discover whether it can be converted into a URL for the given parameter values.
+     * If it cannot this method will return null
+     *
+     * @param parameterValues The parameter values
+     * 
+     * @return Returns the reverse mapping URL for the given arguments or null if it cannot be reverse mapped
+     */
+    String createURL(Map parameterValues);
+
 
     /**
      * Retrieves the UrlMappingData instance that describes this UrlMapping
@@ -50,4 +64,36 @@ public interface UrlMapping extends Comparable {
      * @return The UrlMappingData instance
      */
     UrlMappingData getUrlData();
+
+    /**
+     * <p>The constraints the apply to this UrlMapping. Each constraint maps to a GString token in a
+     * URL mapping in order. For example consider the URL:
+     *
+     * <pre>
+     * <code>
+     *     /blog/$author/$title/$year?/$month?/$day?
+     * </code>
+     * </pre>
+     *
+     * <p>This results in 5 ConstrainedProperty instances called author, title, year, month and day
+     *
+     * @return
+     */
+    ConstrainedProperty[] getConstraints();
+
+    /**
+     * Retrieves the controller name which is either a groovy.lang.Closure that evaluates the controller
+     * name at runtime or a java.lang.String that represents the controller name
+     *
+     * @return The controller name as a Closure or String
+     */
+    Object getControllerName();
+
+    /**
+     * Retrieves the action name which is either a groovy.lang.Closure that evaluates the action
+     * name at runtime or a java.lang.String that represents the action name
+     *
+     * @return The action name as a Closure or String
+     */
+    Object getActionName();
 }

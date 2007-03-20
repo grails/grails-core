@@ -752,16 +752,15 @@ public class ConstrainedProperty   {
      * @param nullable The nullable to set.
      */
     public void setNullable(boolean nullable) {
-        if(nullable) {
-            this.appliedConstraints.remove(NULLABLE_CONSTRAINT);
+        NullableConstraint nc = (NullableConstraint)this.appliedConstraints.get(NULLABLE_CONSTRAINT);
+        if(nc == null) {
+            nc = new NullableConstraint();
+            nc.setOwningClass(owningClass);
+            nc.setPropertyName(propertyName);
+            this.appliedConstraints.put( NULLABLE_CONSTRAINT, nc );
         }
-        else {
-            Constraint c = new NullableConstraint();
-            c.setOwningClass(owningClass);
-            c.setPropertyName(propertyName);
-            c.setParameter(Boolean.valueOf(nullable));
-            this.appliedConstraints.put( NULLABLE_CONSTRAINT, c );
-        }
+
+         nc.setParameter(Boolean.valueOf(nullable));
     }
 
 

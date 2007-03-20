@@ -15,6 +15,8 @@
 */
 package org.codehaus.groovy.grails.web.mapping;
 
+import java.util.Map;
+
 /**
  * A simple holder interface to be registered in the ApplicationContext that should hold a reference to all
  * UrlMappings.
@@ -36,4 +38,15 @@ public interface UrlMappingsHolder {
      * @return An array of UrlMapping instances
      */
     UrlMapping[] getUrlMappings();
+
+
+    /**
+     * Retrieves the best guess of a URI for the given controller, action and parameters
+     *
+     * @param controller The name of the controller
+     * @param action The name of the action or null
+     * @param params The parameters or null
+     * @return A URI for the given arguments
+     */
+    UrlMapping getReverseMapping(String controller, String action, Map params);
 }

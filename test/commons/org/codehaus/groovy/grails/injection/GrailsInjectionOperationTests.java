@@ -27,7 +27,7 @@ public class GrailsInjectionOperationTests extends AbstractDependencyInjectionSp
 	
 	
 	/**
-	 * @param operation the operation to set
+	 * @param injectionOperation the operation to set
 	 */
 	public void setOperation(GrailsInjectionOperation injectionOperation) {
 		this.injectionOperation = injectionOperation;

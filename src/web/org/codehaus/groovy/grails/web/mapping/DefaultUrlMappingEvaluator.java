@@ -190,11 +190,6 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
 
                         Object controllerName = binding.getVariables().get(GrailsControllerClass.CONTROLLER);
                         Object actionName = binding.getVariables().get(GrailsControllerClass.ACTION);
-/*
-                        if(controllerName == null) {
-                            throw new UrlMappingException("No controller defined for URL mapping ["+ methodName +"]");
-                        }
-*/
 
                         ConstrainedProperty[] constraints = (ConstrainedProperty[])previousConstraints.toArray(new ConstrainedProperty[previousConstraints.size()]);
                         UrlMapping urlMapping = new RegexUrlMapping(urlData, controllerName, actionName, constraints);

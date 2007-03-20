@@ -50,6 +50,7 @@ import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+import org.springframework.util.Assert;
 
 /**
  * Implementation of the GrailsPlugin interface that wraps a Groovy plugin class
@@ -468,6 +469,8 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
         if(className != null) {
             Class oldClass = application.getClassForName(className);
             loadedClass = attemptClassReload(className);
+            Assert.isTrue(oldClass!=loadedClass, "Problem reloading class ["+oldClass+"]. The reload was not successful!");
+            
             replaceExpandoMetaClass(loadedClass, oldClass);
         }
 

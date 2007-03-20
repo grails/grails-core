@@ -23,6 +23,7 @@ import org.codehaus.groovy.grails.commons.metaclass.AdapterMetaClass;
 import org.codehaus.groovy.grails.commons.metaclass.ExpandoMetaClass;
 import org.codehaus.groovy.grails.commons.metaclass.ClosureInvokingMethod;
 import org.codehaus.groovy.grails.commons.metaclass.ThreadManagedMetaBeanProperty;
+import org.codehaus.groovy.grails.web.metaclass.TagLibMetaClass;
 import org.springframework.beans.BeanUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -72,11 +73,18 @@ public class GrailsMetaClassUtils {
         if(oldMetaClass instanceof AdapterMetaClass) {
             adapter = ((AdapterMetaClass)oldMetaClass);
             emc = (ExpandoMetaClass)adapter.getAdaptee();
+            if(LOG.isDebugEnabled()) {
+                LOG.debug("Obtained adapted MetaClass ["+emc+"] from AdapterMetaClass instance ["+adapter+"]");
+            }
+
             if(removeSource)
                 registry.removeMetaClass(fromClass);
         }
         else {
             emc = (ExpandoMetaClass)oldMetaClass;
+            if(LOG.isDebugEnabled()) {
+                LOG.debug("No adapter MetaClass found, using original ["+emc+"]");
+            }            
         }
 
         List metaMethods = emc.getExpandoMethods();
@@ -104,11 +112,19 @@ public class GrailsMetaClassUtils {
             }
         }
         replacement.initialize();
-        if(adapter == null) {
+        TagLibArtefactHandler handler = new TagLibArtefactHandler();
+        if(adapter == null && !handler.isArtefact(toClass)) {
             if(LOG.isDebugEnabled()) {
                 LOG.debug("Adding MetaClass for class ["+toClass+"] MetaClass ["+replacement+"]");
             }
             registry.setMetaClass(toClass, replacement);
+        }
+        else if(handler.isArtefact(toClass)) {
+            if(LOG.isDebugEnabled()) {
+                LOG.debug("Replacing tag library ["+toClass+"] MetaClass ["+replacement+"]");
+            }
+
+            registry.setMetaClass(toClass, new TagLibMetaClass(replacement));            
         }
         else {
             if(LOG.isDebugEnabled()) {
@@ -120,7 +136,9 @@ public class GrailsMetaClassUtils {
                 registry.setMetaClass(toClass,newAdapter);
 
             } catch (NoSuchMethodException e) {
-               // safe to ignore, plugin must take responsibility here
+                if(LOG.isDebugEnabled()) {
+                    LOG.debug("Exception thrown construction to MetaClass adapter when reloading: " + e.getMessage(),e);
+                }
             }
 
         }

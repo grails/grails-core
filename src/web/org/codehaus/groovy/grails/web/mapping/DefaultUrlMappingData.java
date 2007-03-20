@@ -16,9 +16,7 @@ package org.codehaus.groovy.grails.web.mapping;
 
 import org.apache.commons.lang.StringUtils;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Collections;
+import java.util.*;
 
 /**
  * Default implementating of the UrlMappingData interface.
@@ -33,6 +31,8 @@ public class DefaultUrlMappingData implements UrlMappingData {
     private String urlPattern;
     private String[] tokens;
     private String[] logicalUrls;
+    private static final String CAPTURED_WILDCARD = "(*)";
+    private List optionalTokens = new ArrayList();
 
     private static final String SLASH = "/";
 
@@ -52,6 +52,7 @@ public class DefaultUrlMappingData implements UrlMappingData {
 
     private void parseUrls(List urls) {
         StringBuffer buf = new StringBuffer();
+        int optionalIndex = 0;
         for (int i = 0; i < tokens.length; i++) {
             String token = tokens[i].trim();
 
@@ -64,6 +65,12 @@ public class DefaultUrlMappingData implements UrlMappingData {
             }
             else {
                buf.append(SLASH).append(token);
+            }
+            if(CAPTURED_WILDCARD.equals(tokens[i])) {
+                optionalTokens.add( Boolean.TRUE);
+            }
+            else {
+                optionalTokens.add( Boolean.FALSE);                
             }
         }
         urls.add(buf.toString());
@@ -80,5 +87,9 @@ public class DefaultUrlMappingData implements UrlMappingData {
 
     public String getUrlPattern() {
         return this.urlPattern;
+    }
+
+    public boolean isOptional(int index) {
+        return optionalTokens.get(index).equals(Boolean.TRUE);
     }
 }

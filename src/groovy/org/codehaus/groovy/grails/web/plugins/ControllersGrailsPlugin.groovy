@@ -105,7 +105,6 @@ class ControllersGrailsPlugin {
 		
 		if(application.controllerClasses) {
 			def handlerInterceptors = []
-
 			grailsUrlHandlerMapping(GrailsUrlHandlerMapping) {
 				interceptors = handlerInterceptors
 				mappings =  grailsUrlMappings
@@ -455,6 +454,8 @@ class ControllersGrailsPlugin {
 					}
 				}
 			}
-		}
+		}  
+		
+		event.manager.getGrailsPlugin("controllers").doWithDynamicMethods(event.ctx)
 	}
 }

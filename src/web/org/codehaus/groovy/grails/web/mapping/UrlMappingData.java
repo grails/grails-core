@@ -51,4 +51,14 @@ public interface UrlMappingData {
      * @return The URL pattern
      */
     String getUrlPattern();
+
+    /**
+     * Returns whether the given token in the URL is optional. The index takes into account matching groups
+     * so for example the URL /blog/(*)/(*) has two entries for the two (*) matching groups with the index 0
+     * relating to the the first entry
+     *
+     * @param index The index of the matching token
+     * @return  True if it is optional
+     */
+    boolean isOptional(int index);
 }
