@@ -169,6 +169,8 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
                     actualUriBuf.append('?');
                     for (Iterator i = params.keySet().iterator(); i.hasNext();) {
                         Object name = i.next();
+                        if(name.equals(GrailsControllerClass.CONTROLLER) || name.equals(GrailsControllerClass.ACTION))
+                            continue;
                         Object value = params.get(name);
                         if (value==null)
                             value = "";
