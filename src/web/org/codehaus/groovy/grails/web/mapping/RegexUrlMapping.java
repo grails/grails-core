@@ -22,6 +22,7 @@ import org.codehaus.groovy.grails.commons.GrailsControllerClass;
 import org.springframework.validation.Errors;
 import org.springframework.validation.MapBindingResult;
 import org.springframework.web.context.request.RequestContextHolder;
+import org.apache.commons.lang.StringUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -64,6 +65,17 @@ public class RegexUrlMapping implements UrlMapping {
     private static final String SLASH = "/";
 
 
+    public ConstrainedProperty[] getConstraints() {
+        return constraints;
+    }
+
+    public Object getControllerName() {
+        return controllerName;
+    }
+
+    public Object getActionName() {
+        return actionName;
+    }
 
     /**
      * Constructs a new RegexUrlMapping for the given pattern, controller name, action name and constraints.
@@ -94,6 +106,12 @@ public class RegexUrlMapping implements UrlMapping {
         }
         if(constraints != null) {
             this.constraints = constraints;
+            for (int i = 0; i < constraints.length; i++) {
+                ConstrainedProperty constraint = constraints[i];
+                if(data.isOptional(i)) {
+                    constraint.setNullable(true);
+                }
+            }
         }
 
     }
@@ -146,6 +164,34 @@ public class RegexUrlMapping implements UrlMapping {
         return null;
     }
 
+    /**
+     * @see org.codehaus.groovy.grails.web.mapping.UrlMapping
+     */
+    public String createURL(Map parameterValues) {
+    StringBuffer uri = new StringBuffer();
+
+        String[] tokens = urlData.getTokens();
+        int paramIndex = 0;
+        for (int i = 0; i < tokens.length; i++) {
+            String token = tokens[i];
+            if(CAPTURED_WILDCARD.equals(token)) {
+                ConstrainedProperty prop = this.constraints[paramIndex++];
+                Object value = parameterValues.get( prop.getPropertyName() );
+                if(value == null && !prop.isNullable())
+                    throw new UrlMappingException("Unable to create URL for mapping ["+this+"] and parameters ["+parameterValues+"]. Parameter ["+prop.getPropertyName()+"] is required, but was not specified!");
+                else if(value == null)
+                    break;
+
+                uri.append(SLASH).append(value);
+            }
+            else {
+                uri.append(SLASH).append(token);
+            }
+
+        }
+        return uri.toString();
+    }
+
     public UrlMappingData getUrlData() {
         return this.urlData;
     }
@@ -192,6 +238,14 @@ public class RegexUrlMapping implements UrlMapping {
         return new DefaultUrlMappingInfo(this.controllerName, this.actionName, params);
     }
 
+    /**
+     * This method will look for a constraint for the given name and return a closure that when executed will
+     * attempt to evaluate its value from the bound request parameters at runtime.
+     *
+     * @param name The name of the constrained property
+     * @param constraints The array of current ConstrainedProperty instances
+     * @return Either a Closure or null
+     */
     private Object createRuntimeConstraintEvaluator(final String name, ConstrainedProperty[] constraints) {
         if(constraints == null)return null;
 

@@ -1,8 +1,44 @@
 package org.codehaus.groovy.grails.web.mapping
 
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
+import org.springframework.core.io.*
 
 class RegexUrlMappingTests extends GroovyTestCase {
+
+    def mappingScript = '''
+mappings {
+  "/book/$author/$title/$test" {
+      controller = "book"
+      action = "show"
+  }
+  "/blog/$entry/$year?/$month?/$day?" {
+     controller = "blog"
+     action = "show"
+  }
+}
+'''
+
+    void testCreateUrlFromMapping() {
+             def res = new ByteArrayResource(mappingScript.bytes)
+
+             def evaluator = new DefaultUrlMappingEvaluator()
+             def mappings = evaluator.evaluateMappings(res)
+
+
+             def m = mappings[0]
+             assert m
+
+             assertEquals "/book/dierk/gina/foo", m.createURL(author:"dierk", title:"gina", test:"foo")
+
+             m = mappings[1]
+             assert m
+
+             assertEquals "/blog/foo/2007/10/24", m.createURL(entry:"foo", year:2007, month:10, day:24)
+             assertEquals "/blog/foo/2007/10", m.createURL(entry:"foo", year:2007, month:10)
+             assertEquals "/blog/foo/2007", m.createURL(entry:"foo", year:2007)
+             assertEquals "/blog/foo", m.createURL(entry:"foo")
+             shouldFail { m.createURL([:]) }
+    }
 
     void testComparable() {
         def parser = new DefaultUrlMappingParser()
