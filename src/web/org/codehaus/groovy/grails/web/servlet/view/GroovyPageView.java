@@ -18,11 +18,18 @@ import org.springframework.web.servlet.view.AbstractUrlBasedView;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
 import org.codehaus.groovy.grails.web.pages.GSPResonseWriter;
+import org.codehaus.groovy.grails.web.pages.GroovyPage;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
+import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
+import org.codehaus.groovy.grails.web.errors.GrailsWrappedRuntimeException;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.ServletException;
 import java.util.Map;
+import java.util.HashMap;
 import java.io.Writer;
 import java.io.IOException;
 
@@ -51,11 +58,16 @@ import groovy.lang.Writable;
  *        Time: 8:25:10 AM
  */
 public class GroovyPageView extends AbstractUrlBasedView {
+
+    private static final Log LOG = LogFactory.getLog(GroovyPageView.class);
     /**
      * The size of the buffer to use for the GSPReponseWriter
      */
     private static final int BUFFER_SIZE = 8024;
     private GroovyPagesTemplateEngine templateEngine;
+    private static final String ERRORS_VIEW = GrailsApplicationAttributes.PATH_TO_VIEWS+"/error"+ GroovyPage.EXTENSION;
+    public static final String EXCEPTION_MODEL_KEY = "exception";
+
 
 
     /**
@@ -93,8 +105,39 @@ public class GroovyPageView extends AbstractUrlBasedView {
         try {
             out = createResponseWriter(response);
             w.writeTo(out);
-        } finally {
+        }
+        catch(Exception e) {
+            // create fresh response writer
+            out = createResponseWriter(response);
+            handleException(e, out, templateEngine);
+        }
+        finally {
             if(out!=null)out.close();
+        }
+    }
+
+    /**
+     * Performs exception handling by attempting to render the Errors view
+     *
+     * @param exception The exception that occured
+     * @param out The Writer
+     * @param engine The GSP engine
+     */
+    protected void handleException(Exception exception,Writer out, GroovyPagesTemplateEngine engine)  {
+
+        LOG.error("Error processing GSP: " + exception.getMessage(), exception);
+
+        try {
+            Template t = engine.createTemplate(ERRORS_VIEW);
+
+            Map model = new HashMap();
+            model.put(EXCEPTION_MODEL_KEY,new GrailsWrappedRuntimeException(getServletContext(),exception));
+            Writable w = t.make(model);
+
+            w.writeTo(out);
+        } catch (Throwable t) {
+            LOG.error("Error attempting to render errors view : " + t.getMessage(), t);
+            LOG.error("Original exception : " + exception.getMessage(), exception);
         }
     }
 
