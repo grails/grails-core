@@ -38,10 +38,10 @@ import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
  */
 public class TagLibMetaClass extends DelegatingMetaClass implements AdapterMetaClass {
 	private MetaClass adaptee;
+    private static final Closure EMPTY_TAG_BODY = new Closure(DelegatingMetaClass.class){};
 
 
-
-	public TagLibMetaClass(MetaClass adaptee) {
+    public TagLibMetaClass(MetaClass adaptee) {
 		super(adaptee);
 		this.adaptee = adaptee;
 	}
@@ -56,7 +56,10 @@ public class TagLibMetaClass extends DelegatingMetaClass implements AdapterMetaC
 	public MetaClass getAdaptee() {
 		return adaptee;
 	}
-
+          
+    public void setAdaptee(MetaClass newAdaptee) {
+		this.adaptee = newAdaptee;
+	}
 	/* (non-Javadoc)
 	 * @see groovy.lang.ProxyMetaClass#invokeMethod(java.lang.Object, java.lang.String, java.lang.Object[])
 	 */
@@ -80,11 +83,27 @@ public class TagLibMetaClass extends DelegatingMetaClass implements AdapterMetaC
 			Closure tag = (Closure)original.clone();
 			
 			tagLibrary.setProperty(TagLibDynamicMethods.OUT_PROPERTY,taglib.getProperty(TagLibDynamicMethods.OUT_PROPERTY));
-			return tag.call(arguments);
-		}
+
+            switch(tag.getParameterTypes().length) {
+                case 1:
+                    switch(arguments.length) {
+                        case 1: return tag.call(arguments);
+                        case 2: return tag.call(new Object[]{arguments[0]});
+                    }
+                    break;
+                case 2:
+                    switch(arguments.length) {
+                        case 1: return tag.call(new Object[]{arguments[0], EMPTY_TAG_BODY});
+                        case 2: return tag.call(arguments);
+                    }
+            }
+            return null;
+        }
 	}
 
-	/* (non-Javadoc)
+
+
+    /* (non-Javadoc)
 	 * @see org.codehaus.groovy.grails.commons.metaclass.PropertyAccessProxyMetaClass#getProperty(java.lang.Object, java.lang.String)
 	 */
 	public Object getProperty(Object object, String property) {
@@ -106,7 +125,10 @@ public class TagLibMetaClass extends DelegatingMetaClass implements AdapterMetaC
 			return original.clone();
 				
 		}			
-	}	
-	
-	
+	}
+
+
+    public String toString() {
+        return "[TagLibMetaClass (Adapter): "+super.toString()+"]";    
+    }
 }
