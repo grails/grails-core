@@ -56,9 +56,22 @@ public abstract class AbstractGrailsMockTests extends TestCase {
         ctx.registerMockBean(GrailsApplication.APPLICATION_ID, ga);
     }
     
+    protected final void tearDown() throws Exception {
+        onTearDown();
 
-	protected void onSetUp() {
+        ga = null;
+        ctx = null;
+
+        super.tearDown();
+    }
+
+
+    protected void onSetUp() {
 	}
+
+    protected void onTearDown() {
+        
+    }
 
 	protected MockServletContext createMockServletContext() {
 		return new MockServletContext();

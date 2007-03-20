@@ -124,8 +124,7 @@ public abstract class AbstractGrailsHibernateTests extends TestCase {
 
 
     protected final void tearDown() throws Exception {
-        super.tearDown();
-        ApplicationHolder.setApplication(null);   
+        ApplicationHolder.setApplication(null);
         GrailsMetaClassUtils.getRegistry().setMetaClassCreationHandle( new MetaClassRegistry.MetaClassCreationHandle());
         if(TransactionSynchronizationManager.hasResource(this.sessionFactory)) {
 		    SessionHolder holder = (SessionHolder) TransactionSynchronizationManager.getResource(this.sessionFactory);
@@ -135,6 +134,13 @@ public abstract class AbstractGrailsHibernateTests extends TestCase {
 		    SessionFactoryUtils.releaseSession(s, this.sessionFactory);
 		}
         onTearDown();
+
+        gcl = null;
+        ga = null;
+        session = null;
+        sessionFactory = null;
+        applicationContext = null;
+        super.tearDown();
     }
 
     /**
