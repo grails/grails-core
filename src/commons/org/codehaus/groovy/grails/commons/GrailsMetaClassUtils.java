@@ -14,23 +14,22 @@
  */
 package org.codehaus.groovy.grails.commons;
 
-import groovy.lang.MetaClassRegistry;
-import groovy.lang.MetaClass;
 import groovy.lang.Closure;
 import groovy.lang.GroovyObject;
-import org.codehaus.groovy.runtime.InvokerHelper;
-import org.codehaus.groovy.grails.commons.metaclass.AdapterMetaClass;
-import org.codehaus.groovy.grails.commons.metaclass.ExpandoMetaClass;
-import org.codehaus.groovy.grails.commons.metaclass.ClosureInvokingMethod;
-import org.codehaus.groovy.grails.commons.metaclass.ThreadManagedMetaBeanProperty;
-import org.codehaus.groovy.grails.web.metaclass.TagLibMetaClass;
-import org.springframework.beans.BeanUtils;
+import groovy.lang.MetaClass;
+import groovy.lang.MetaClassRegistry;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.grails.commons.metaclass.AdapterMetaClass;
+import org.codehaus.groovy.grails.commons.metaclass.ClosureInvokingMethod;
+import org.codehaus.groovy.grails.commons.metaclass.ExpandoMetaClass;
+import org.codehaus.groovy.grails.commons.metaclass.ThreadManagedMetaBeanProperty;
+import org.codehaus.groovy.runtime.InvokerHelper;
+import org.springframework.beans.BeanUtils;
 
-import java.util.List;
-import java.util.Iterator;
 import java.lang.reflect.Constructor;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * A class that provides utility methods for working with the Groovy MetaClass API
@@ -112,19 +111,12 @@ public class GrailsMetaClassUtils {
             }
         }
         replacement.initialize();
-        TagLibArtefactHandler handler = new TagLibArtefactHandler();
-        if(adapter == null && !handler.isArtefact(toClass)) {
+
+        if(adapter == null) {
             if(LOG.isDebugEnabled()) {
                 LOG.debug("Adding MetaClass for class ["+toClass+"] MetaClass ["+replacement+"]");
             }
             registry.setMetaClass(toClass, replacement);
-        }
-        else if(handler.isArtefact(toClass)) {
-            if(LOG.isDebugEnabled()) {
-                LOG.debug("Replacing tag library ["+toClass+"] MetaClass ["+replacement+"]");
-            }
-
-            registry.setMetaClass(toClass, new TagLibMetaClass(replacement));            
         }
         else {
             if(LOG.isDebugEnabled()) {
