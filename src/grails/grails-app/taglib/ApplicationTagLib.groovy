@@ -112,7 +112,7 @@ class ApplicationTagLib {
 	            def i = 0
 	            params.each { k,v ->
 	                out << "${k.encodeAsURL()}=${v?.encodeAsURL()}"
-	                if(++i < pms.size())
+	                if(++i < params.size())
 	                   out << '&'
 	            }
 	        }			
