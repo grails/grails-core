@@ -23,6 +23,7 @@ class SimpleGrailsControllerHelperTests extends AbstractGrailsControllerTests {
 		""")
 	}
 	
+	
 	void testConstructHelper() {
 		runTest {
 			def webRequest = RequestContextHolder.currentRequestAttributes()
@@ -64,6 +65,34 @@ class SimpleGrailsControllerHelperTests extends AbstractGrailsControllerTests {
 
 		assertTrue helper.@extraParams.containsKey("london")
 
+    }
+
+	void testCommandObjectArg() {
+		runTest {
+		  Class commandObject = gcl.parseClass(
+				"""
+				class MyCommandObject {
+				   def someAttribute			
+				}
+				""")
+		  Class controllerClass = gcl.parseClass(
+				"""
+				class MyController {
+                   def errors
+                   def theCommandObj
+				   def list = { MyCommandObject cmo ->
+						theCommandObj = cmo
+                        theCommandObj.someAttribute = 'foo'                      
+                   }			
+				}
+				""")
+		  def helper = new SimpleGrailsControllerHelper(null, null, null)
+		  def controller = controllerClass.newInstance()
+          helper.handleAction(controller, controller.list, request, null, null)
+		  assertNotNull controller.theCommandObj
+		  assertEquals 'foo', controller.theCommandObj.someAttribute
+		  assertNull controller.errors
+		}
     }
 
 	void testConfigureStateForUri() {
