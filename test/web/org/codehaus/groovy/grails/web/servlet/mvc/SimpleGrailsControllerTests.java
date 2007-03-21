@@ -42,6 +42,7 @@ import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.mock.web.MockServletContext;
+import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.servlet.ModelAndView;
 import grails.util.GrailsWebUtil;
 
@@ -147,10 +148,10 @@ public class SimpleGrailsControllerTests extends TestCase {
 
 
 	private ModelAndView execute(String uri, Properties parameters) throws Exception {
-		return execute(uri, parameters, "GET", new MockHttpServletResponse());
+		return execute(uri, parameters, "GET");
 	}
 	
-	private ModelAndView execute(String uri, Properties parameters, String requestMethod, HttpServletResponse response) throws Exception {
+	private ModelAndView execute(String uri, Properties parameters, String requestMethod) throws Exception {
         GrailsWebRequest webRequest = GrailsWebUtil.bindMockWebRequest((GrailsWebApplicationContext)this.appCtx);
 
         MockHttpServletRequest request = (MockHttpServletRequest)((GrailsHttpServletRequest)webRequest.getCurrentRequest()).getRequest();
@@ -166,7 +167,7 @@ public class SimpleGrailsControllerTests extends TestCase {
 				request.addParameter(paramName, paramValue);
 			}
 		}
-		return controller.handleRequest(request, response);
+		return controller.handleRequest(request, null);
 	}
 	
 	public void testSimpleControllerSuccess() throws Exception {
@@ -174,9 +175,7 @@ public class SimpleGrailsControllerTests extends TestCase {
 		assertNotNull(modelAndView);
 	}
 	
-	/* TODO fix test case. Feature is definitely working. test case failing. Why?? Jeff to address.
-	 * 
-	 * public void testAllowedMethods() throws Exception {
+	public void testAllowedMethods() throws Exception {
 		assertResponseStatusCode("/restricted/action1", "GET", HttpServletResponse.SC_FORBIDDEN);
 		assertResponseStatusCode("/restricted/action1", "PUT", HttpServletResponse.SC_FORBIDDEN);
 		assertResponseStatusCode("/restricted/action1", "POST", HttpServletResponse.SC_OK);
@@ -191,11 +190,13 @@ public class SimpleGrailsControllerTests extends TestCase {
 		assertResponseStatusCode("/restricted/action3", "PUT", HttpServletResponse.SC_OK);
 		assertResponseStatusCode("/restricted/action3", "POST", HttpServletResponse.SC_FORBIDDEN);
 		assertResponseStatusCode("/restricted/action3", "DELETE", HttpServletResponse.SC_OK);
-	}*/
+	}
 	
 	private void assertResponseStatusCode(String uri, String httpMethod, int expectedStatusCode) throws Exception {
-		MockHttpServletResponse response = new MockHttpServletResponse();
-		execute(uri, null, httpMethod, response);
-		assertEquals(expectedStatusCode, response.getStatus());
+		execute(uri, null, httpMethod);
+		GrailsWebRequest gwr = (GrailsWebRequest) RequestContextHolder.getRequestAttributes();
+		MockHttpServletResponse res = (MockHttpServletResponse) gwr.getCurrentResponse().getDelegate();
+		
+		assertEquals(expectedStatusCode, res.getStatus());
 	}
 }
