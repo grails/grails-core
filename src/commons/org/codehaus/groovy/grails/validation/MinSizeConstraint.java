@@ -14,10 +14,10 @@
  */
 package org.codehaus.groovy.grails.validation;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.springframework.validation.Errors;
+
+import grails.util.GrailsUtil;
 
 import java.util.Collection;
 import java.lang.reflect.Array;
@@ -33,7 +33,6 @@ import java.lang.reflect.Array;
  *        Time: 8:30:39 AM
  */
 class MinSizeConstraint extends AbstractConstraint {
-	private static final transient Log log = LogFactory.getLog(MinSizeConstraint.class);
 
     private int minSize;
 
@@ -65,7 +64,7 @@ class MinSizeConstraint extends AbstractConstraint {
        */
     public boolean supports(Class type) {
     	if( GrailsClassUtils.isAssignableOrConvertibleFrom(Number.class, type) ) {
-        	log.warn("'minSize' constraint is deprecated for numeric properties and will be removed in 0.6, use 'min' constraint instead");
+        	GrailsUtil.deprecated("'minSize' constraint is deprecated for numeric properties and will be removed in 0.6, use 'min' constraint instead");
     	}
         return type != null && (Comparable.class.isAssignableFrom(type) ||
         		GrailsClassUtils.isAssignableOrConvertibleFrom(Number.class, type) ||

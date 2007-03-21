@@ -14,10 +14,10 @@
  */
 package org.codehaus.groovy.grails.validation;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.springframework.validation.Errors;
+
+import grails.util.GrailsUtil;
 
 import java.util.Collection;
 import java.lang.reflect.Array;
@@ -34,9 +34,8 @@ import java.lang.reflect.Array;
  *        Time: 8:29:02 AM
  */
 class MaxSizeConstraint extends AbstractConstraint {
-	private static final transient Log log = LogFactory.getLog(MaxSizeConstraint.class);
 
-    private int maxSize;
+	private int maxSize;
 
     /**
      * @return Returns the maxSize.
@@ -64,7 +63,7 @@ class MaxSizeConstraint extends AbstractConstraint {
        */
     public boolean supports(Class type) {
     	if(GrailsClassUtils.isAssignableOrConvertibleFrom(Number.class, type)) {
-        	log.warn("'maxSize' constraint is deprecated for numeric properties and will be removed in 0.6, use 'max' constraint instead");
+    		GrailsUtil.deprecated("'maxSize' constraint is deprecated for numeric properties and will be removed in 0.6, use 'max' constraint instead");
     	}
         return type != null && (Comparable.class.isAssignableFrom(type) ||
         		GrailsClassUtils.isAssignableOrConvertibleFrom(Number.class, type) ||

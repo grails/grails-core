@@ -144,4 +144,38 @@ public class GrailsUtil {
     public static String getGrailsVersion() {
         return GRAILS_VERSION;
     }
+    
+    /**
+     * Logs warning message about deprecation of specified property or method of some class.
+     * 
+     * @param clazz A class
+     * @param methodOrPropName Name of deprecated property or method
+     */
+    public static void deprecated(Class clazz, String methodOrPropName ) {
+    	deprecated(clazz, methodOrPropName, getGrailsVersion());
+    }
+
+    /**
+     * Logs warning message about deprecation of specified property or method of some class.
+     * 
+     * @param clazz A class
+     * @param methodOrPropName Name of deprecated property or method
+     * @param version Version of Grails release in which property or method were deprecated
+     */
+    public static void deprecated(Class clazz, String methodOrPropName, String version ) {
+    	deprecated("Property or method [" + methodOrPropName + "] of class [" + clazz.getName() + 
+    			"] is deprecated in [" + getGrailsVersion() + 
+    			"] and will be removed in future releases");
+    }
+
+    /**
+     * Logs warning message about some deprecation and code style related hints.
+     * 
+     * @param message Message to display
+     */
+    public static void deprecated(String message) {
+    	LOG.warn("[DEPRECATED] " + message);
+    }
+
+
 }

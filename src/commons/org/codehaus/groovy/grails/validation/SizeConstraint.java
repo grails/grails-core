@@ -14,13 +14,12 @@
  */
 package org.codehaus.groovy.grails.validation;
 
+import grails.util.GrailsUtil;
 import groovy.lang.IntRange;
 
 import java.util.Collection;
 import java.lang.reflect.Array;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.springframework.validation.Errors;
 
@@ -36,7 +35,6 @@ import org.springframework.validation.Errors;
  */
 
 class SizeConstraint extends AbstractConstraint {
-	private static final transient Log log = LogFactory.getLog(SizeConstraint.class);
 
     private IntRange range;
 
@@ -53,7 +51,7 @@ class SizeConstraint extends AbstractConstraint {
      */
     public boolean supports(Class type) {
     	if(GrailsClassUtils.isAssignableOrConvertibleFrom(Number.class, type)) {
-        	log.warn("'size' constraint is deprecated for numeric properties and will be removed in 0.6, use 'range' constraint instead");
+    		GrailsUtil.deprecated("'size' constraint is deprecated for numeric properties and will be removed in 0.6, use 'range' constraint instead");
     	}
         return type != null && (Comparable.class.isAssignableFrom(type) ||
         		GrailsClassUtils.isAssignableOrConvertibleFrom(Number.class, type) ||
