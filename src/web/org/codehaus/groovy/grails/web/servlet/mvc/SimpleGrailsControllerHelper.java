@@ -391,8 +391,27 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
             GrailsParameterMap paramsMap = (GrailsParameterMap)controller.getProperty("params"); 
             paramsMap.putAll( params );
         }
+        
         // Step 7: determine argument count and execute.
-        Object returnValue = action.call();
+        Class[] paramTypes = action.getParameterTypes();
+        Object commandObject = null;
+        if(paramTypes != null && paramTypes.length > 0 ) {
+        	Class c = paramTypes[0];
+        	if(c.getName().endsWith("CommandObject")) {
+        		try {
+        			commandObject = c.newInstance();
+        			// TODO need to populate command object, do validation and respond accordingly
+        		} catch (Exception e) {
+        			throw new ControllerExecutionException("Error occurred creating command object.", e);
+        		}
+        	}
+        }
+        Object returnValue = null;
+        if(commandObject == null) {
+        	returnValue = action.call();
+        } else {
+        	returnValue = action.call(commandObject);
+        }
 
         // Step 8: add any errors to the request
         request.setAttribute( GrailsApplicationAttributes.ERRORS, controller.getProperty(ControllerDynamicMethods.ERRORS_PROPERTY) );
