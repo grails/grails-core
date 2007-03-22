@@ -15,14 +15,22 @@
  */ 
 package org.codehaus.groovy.grails.jobs.plugins
 
+import org.codehaus.groovy.grails.jobs.*
 import org.codehaus.groovy.grails.commons.*
 import org.codehaus.groovy.grails.plugins.support.GrailsPluginUtils
 import org.springframework.beans.factory.config.MethodInvokingFactoryBean
-import org.springframework.scheduling.quartz.CronTriggerBean;
-import org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean;
-import org.springframework.scheduling.quartz.SchedulerFactoryBean;
-import org.springframework.scheduling.quartz.SimpleTriggerBean;
+import org.springframework.scheduling.quartz.CronTriggerBean
+import org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean
+import org.springframework.scheduling.quartz.SchedulerFactoryBean
+import org.springframework.scheduling.quartz.SimpleTriggerBean
+import org.springframework.util.MethodInvoker
 import org.codehaus.groovy.grails.commons.TaskArtefactHandler
+import org.hibernate.Session
+import org.hibernate.SessionFactory
+import org.springframework.orm.hibernate3.SessionFactoryUtils
+import org.springframework.orm.hibernate3.SessionHolder
+import org.springframework.transaction.support.TransactionSynchronizationManager
+import org.quartz.JobListener
 
 /**
  * A plug-in that configures Quartz job support in Grails 
@@ -33,7 +41,8 @@ import org.codehaus.groovy.grails.commons.TaskArtefactHandler
 class QuartzGrailsPlugin {
 	
 	def version = GrailsPluginUtils.getGrailsVersion()
-	
+	def dependsOn = [core:version,hibernate:version]
+
 	def doWithSpring = {
 		def schedulerReferences = []
 		application.taskClasses.each { jobClass ->
@@ -49,10 +58,13 @@ class QuartzGrailsPlugin {
 				bean.autowire = "byName"
 			}
 			"${fullName}JobDetail"(MethodInvokingJobDetailFactoryBean) {
-				targetObject = ref(fullName)
+				targetObject = ref("${fullName}")
 				targetMethod = GrailsTaskClassProperty.EXECUTE
 				concurrent = jobClass.concurrent
 				group = jobClass.group
+				if( jobClass.sessionRequired ) {
+					jobListenerNames = ["${SessionBinderJobListener.NAME}"] as String[]
+				}
 			}
 			if(!jobClass.cronExpressionConfigured) {
 				"${fullName}Trigger"(SimpleTriggerBean) {
@@ -70,8 +82,13 @@ class QuartzGrailsPlugin {
 		
 			schedulerReferences << ref("${fullName}Trigger")
 		}
+		// register SessionBinderJobListener to bind Hibernate Session to each Job's thread
+		"${SessionBinderJobListener.NAME}"(SessionBinderJobListener) { bean ->
+			bean.autowire = "byName"
+		}
         quartzScheduler(SchedulerFactoryBean) {
             triggers = schedulerReferences
+            jobListeners = [ref("${SessionBinderJobListener.NAME}")]
         }
 		
 	}

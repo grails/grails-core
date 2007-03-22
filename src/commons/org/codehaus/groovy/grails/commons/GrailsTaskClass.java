@@ -64,4 +64,8 @@ public interface GrailsTaskClass extends InjectableGrailsClass {
 	 */
 	public boolean isConcurrent();
 
+	/**
+	 * @return True task requires Hibernate Session bounded to thread
+	 */
+	public boolean isSessionRequired();
 }

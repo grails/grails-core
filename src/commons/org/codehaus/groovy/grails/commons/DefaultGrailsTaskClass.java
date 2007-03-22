@@ -32,6 +32,7 @@ public class DefaultGrailsTaskClass extends AbstractInjectableGrailsClass implem
 	public static final String DEFAULT_CRON_EXPRESSION = "0 0 6 * * ?";
 	public static final String DEFAULT_GROUP = "GRAILS_JOBS";
 	public static final boolean DEFAULT_CONCURRENT = true;
+	public static final boolean	DEFAULT_SESSION_REQUIRED = true;
 	
 	public DefaultGrailsTaskClass(Class clazz) {
 		super(clazz, JOB);
@@ -84,6 +85,12 @@ public class DefaultGrailsTaskClass extends AbstractInjectableGrailsClass implem
 	public boolean isConcurrent() {
 		Boolean concurrent = (Boolean)getPropertyValue(CONCURRENT, Boolean.class);
 		if ( concurrent == null ) return DEFAULT_CONCURRENT;
+		return concurrent.booleanValue();
+	}	
+
+	public boolean isSessionRequired() {
+		Boolean concurrent = (Boolean)getPropertyValue(SESSION_REQUIRED, Boolean.class);
+		if ( concurrent == null ) return DEFAULT_SESSION_REQUIRED;
 		return concurrent.booleanValue();
 	}	
 }

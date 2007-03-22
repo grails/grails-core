@@ -40,4 +40,5 @@ public interface GrailsTaskClassProperty {
 	
 	public static final String CONCURRENT = "concurrent";
 	
+	public static final String SESSION_REQUIRED = "sessionRequired";
 }
