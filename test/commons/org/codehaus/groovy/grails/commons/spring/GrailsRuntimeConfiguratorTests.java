@@ -16,6 +16,7 @@ import org.codehaus.groovy.grails.support.MockApplicationContext;
 import org.codehaus.groovy.grails.web.errors.GrailsExceptionResolver;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsUrlHandlerMapping;
 import org.codehaus.groovy.runtime.InvokerHelper;
+import org.quartz.impl.StdScheduler;
 import org.springframework.aop.target.HotSwappableTargetSource;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.MessageSource;
@@ -166,6 +167,8 @@ public class GrailsRuntimeConfiguratorTests extends TestCase {
         GrailsRuntimeConfigurator conf = new GrailsRuntimeConfigurator(app,parent);
         ApplicationContext ctx = conf.configure(new MockServletContext());
         assertNotNull(ctx);
+        
+        ((StdScheduler)ctx.getBean("quartzScheduler")).shutdown();
 
     }
 
