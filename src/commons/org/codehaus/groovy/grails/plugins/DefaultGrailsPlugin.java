@@ -172,11 +172,11 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
             }
             catch (IllegalArgumentException e) {
             	if(GrailsUtil.isDevelopmentEnv())
-            		LOG.warn("Cannot load plug-in resource watch list from ["+resourcesReference+"]. This means that the plugin "+this+", will not be able to auto-reload changes effectively. Try runnng grails upgrade.: " + e.getMessage(), e);
+            		LOG.warn("Cannot load plug-in resource watch list from ["+resourcesReference+"]. This means that the plugin "+this+", will not be able to auto-reload changes effectively. Try runnng grails upgrade.: " + e.getMessage());
             }
             catch (IOException e) {
             	if(GrailsUtil.isDevelopmentEnv())
-            		LOG.warn("Cannot load plug-in resource watch list from ["+resourcesReference+"]. This means that the plugin "+this+", will not be able to auto-reload changes effectively. Try runnng grails upgrade.: " + e.getMessage(), e);
+            		LOG.warn("Cannot load plug-in resource watch list from ["+resourcesReference+"]. This means that the plugin "+this+", will not be able to auto-reload changes effectively. Try runnng grails upgrade.: " + e.getMessage());
             }
             if(LOG.isDebugEnabled()) {
                 LOG.debug("Plugin "+this+" found ["+watchedResources.length+"] to watch");
@@ -354,11 +354,7 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
      */
     public void checkForChanges() {
         if(onChangeListener!=null) {
-                try {
-                    checkForNewResources(this);
-                } catch (IOException e) {
-                    LOG.error("Plugin "+this+"  was unable to check for new plugin resources: " + e.getMessage(),e);
-                }
+                checkForNewResources(this);
 
                 if(LOG.isDebugEnabled()) {
                     LOG.debug("Plugin "+this+" checking ["+watchedResources.length+"] resources for changes..");
@@ -437,27 +433,35 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
         return -1;
     }
 
-    private void checkForNewResources(final GrailsPlugin plugin) throws IOException {
+    private void checkForNewResources(final GrailsPlugin plugin) {
         if(resourcesReference != null) {
-            Resource[] tmp = resolver.getResources(resourcesReference);
-            if(watchedResources.length < tmp.length) {
-                Resource newResource = null;
-                for (int i = 0; i < watchedResources.length; i++) {
-                    if(!tmp[i].equals(watchedResources[i])) {
-                        newResource = tmp[i];
-                        break;
-                    }
-                }
-                if(newResource == null) {
-                    newResource = tmp[tmp.length-1];
-                }
-                watchedResources = tmp;
-                initializeModifiedTimes();
-
-                if(LOG.isDebugEnabled())
-                    LOG.debug("[GrailsPlugin] plugin resource ["+newResource+"] added, firing event if possible..");
-                fireModifiedEvent(newResource, plugin);
+        	try {
+	            Resource[] tmp = resolver.getResources(resourcesReference);
+	            if(watchedResources.length < tmp.length) {
+	                Resource newResource = null;
+	                for (int i = 0; i < watchedResources.length; i++) {
+	                    if(!tmp[i].equals(watchedResources[i])) {
+	                        newResource = tmp[i];
+	                        break;
+	                    }
+	                }
+	                if(newResource == null) {
+	                    newResource = tmp[tmp.length-1];
+	                }
+	                watchedResources = tmp;
+	                initializeModifiedTimes();
+	
+	                if(LOG.isDebugEnabled())
+	                    LOG.debug("[GrailsPlugin] plugin resource ["+newResource+"] added, firing event if possible..");
+	                fireModifiedEvent(newResource, plugin);
+	            }
             }
+        	catch (IllegalArgumentException e) {
+        		LOG.error("Plugin "+this+"  was unable to check for new plugin resources: " + e.getMessage());
+        	}
+        	catch (IOException e) {
+        		LOG.error("Plugin "+this+"  was unable to check for new plugin resources: " + e.getMessage());
+        	}
         }
     }
 
