@@ -71,8 +71,9 @@ class SimpleGrailsControllerHelperTests extends AbstractGrailsControllerTests {
 		runTest {
 		  Class commandObject = gcl.parseClass(
 				"""
-				class MyCommandObject {
-				   def someAttribute			
+				class MyFooObject {
+				   def someAttribute	
+                   static def validate = {}		
 				}
 				""")
 		  Class controllerClass = gcl.parseClass(
@@ -80,9 +81,8 @@ class SimpleGrailsControllerHelperTests extends AbstractGrailsControllerTests {
 				class MyController {
                    def errors
                    def theCommandObj
-				   def list = { MyCommandObject cmo ->
+				   def list = { MyFooObject cmo ->
 						theCommandObj = cmo
-                        theCommandObj.someAttribute = 'foo'                      
                    }			
 				}
 				""")
@@ -90,7 +90,6 @@ class SimpleGrailsControllerHelperTests extends AbstractGrailsControllerTests {
 		  def controller = controllerClass.newInstance()
           helper.handleAction(controller, controller.list, request, null, null)
 		  assertNotNull controller.theCommandObj
-		  assertEquals 'foo', controller.theCommandObj.someAttribute
 		  assertNull controller.errors
 		}
     }

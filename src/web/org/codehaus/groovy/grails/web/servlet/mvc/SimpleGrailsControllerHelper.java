@@ -397,7 +397,7 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
         Object commandObject = null;
         if(paramTypes != null && paramTypes.length > 0 ) {
         	Class c = paramTypes[0];
-        	if(c.getName().endsWith("CommandObject")) {
+        	if(isCommandObjectClass(c)) {
         		try {
         			commandObject = c.newInstance();
         			// TODO need to populate command object, do validation and respond accordingly
@@ -417,6 +417,11 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
         request.setAttribute( GrailsApplicationAttributes.ERRORS, controller.getProperty(ControllerDynamicMethods.ERRORS_PROPERTY) );
 
         return returnValue;
+    }
+
+    private boolean isCommandObjectClass(Class c) {
+        // TODO this needs to be refactored out...
+        return GrailsClassUtils.getStaticPropertyValue(c, "validate") != null;
     }
 
     /* (non-Javadoc)
