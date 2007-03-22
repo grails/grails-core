@@ -741,8 +741,7 @@ public class ConstrainedProperty   {
         if(this.appliedConstraints.containsKey(NULLABLE_CONSTRAINT)) {
             NullableConstraint nc = (NullableConstraint)this.appliedConstraints.get(NULLABLE_CONSTRAINT);
             return nc.isNullable();
-        }
-        else {
+        } else {
             return false;
         }
     }

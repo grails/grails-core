@@ -14,11 +14,14 @@
  */ 
 package org.codehaus.groovy.grails.commons;
 
+import grails.util.GrailsUtil;
+
 import java.beans.PropertyDescriptor;
 import java.util.*;
 
 import org.apache.commons.lang.ClassUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
+import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 
 /**
  * @author Graeme Rocher
@@ -64,13 +67,14 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
         if(!domainClass.isRoot()) {
         	this.inherited = GrailsClassUtils.isPropertyInherited(domainClass.getClazz(), this.name);
         }        
-        // get the not required descritor from the owner bean
-        List optionalProps  = (List)domainClass.getPropertyOrStaticPropertyOrFieldValue( OPTIONAL, List.class );
-        List transientProps = getTransients(domainClass);
 
         // establish of property is required
+        // TODO remove this in 0.6
+        List optionalProps  = (List)domainClass.getPropertyOrStaticPropertyOrFieldValue( OPTIONAL, List.class );
         checkIfOptional(optionalProps);
+
         // establish if property is persistant
+        List transientProps = getTransients(domainClass);
         checkIfTransient(transientProps);
 
         establishFetchMode();                
@@ -188,7 +192,10 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
 	 * @see org.codehaus.groovy.grails.domain.GrailsDomainClassProperty#isRequired()
 	 */
 	public boolean isOptional() {
-		return this.optional;
+		// TODO Remove this line and 'optional' property in 0.6 
+		if( optional ) return true;
+		ConstrainedProperty constrainedProperty = (ConstrainedProperty) domainClass.getConstrainedProperties().get(name);
+		return (constrainedProperty == null) ? false : constrainedProperty.isNullable();
 	}
 
 	/* (non-Javadoc)

@@ -15,6 +15,7 @@
  */
 package org.codehaus.groovy.grails.orm.hibernate.cfg;
 
+import groovy.lang.GroovyClassLoader;
 import groovy.lang.IntRange;
 import groovy.lang.ObjectRange;
 
@@ -22,20 +23,68 @@ import java.math.BigDecimal;
 
 import junit.framework.TestCase;
 
+import org.codehaus.groovy.grails.commons.*;
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
+import org.hibernate.cfg.Mappings;
 import org.hibernate.mapping.Column;
+import org.hibernate.mapping.PersistentClass;
+import org.hibernate.mapping.Property;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
 
 /**
  * @author Jason Rudolph
+ * @author Sergey Nebolsin
  * @since 0.4
  * 
  * Created: 06-Jan-2007
  */
 public class GrailsDomainBinderTests extends TestCase {
 
-    /**
+	public void testDomainClassBinding() {
+		GroovyClassLoader cl = new GroovyClassLoader();
+		GrailsDomainClass domainClass = new DefaultGrailsDomainClass(
+				cl.parseClass(
+						"public class BinderTestClass {\n" +
+			            "    Long id; \n" +
+			            "    Long version; \n" +
+			            "\n" +
+			            "    String firstName; \n" +
+			            "    String lastName; \n" +
+			            "    String comment; \n" +
+			            "    Integer age;\n" +
+			            "    boolean active = true" +
+			            "\n" +
+			            "    static constraints = {\n" +
+			            "        firstName(nullable:true,size:4..15)\n" +
+			            "        lastName(nullable:false)\n" +
+			            "    }\n" +
+			            "\n" +
+			            "    static optionals = ['age']" +
+			            "}")
+		);
+        GrailsApplication grailsApplication = new DefaultGrailsApplication(new Class[]{domainClass.getClazz()},cl);
+        DefaultGrailsDomainConfiguration config = new DefaultGrailsDomainConfiguration();
+        config.setGrailsApplication(grailsApplication);
+        config.buildMappings();
+        // Test database mappings
+        PersistentClass persistentClass = config.getClassMapping("BinderTestClass");
+        assertTrue("Property [firstName] must be optional in db mapping", persistentClass.getProperty("firstName").isOptional());
+        assertFalse("Property [lastName] must be required in db mapping", persistentClass.getProperty("lastName").isOptional());
+        // Property must be required by default
+        assertFalse("Property [comment] must be required in db mapping", persistentClass.getProperty("comment").isOptional());
+        // TODO added to test backward compatibility in 0.5, remove this in 0.6
+        assertTrue("Property [age] must be optional in db mapping", persistentClass.getProperty("age").isOptional());
+        
+        // Test properties
+        assertTrue("Property [firstName] must be optional", domainClass.getPropertyByName("firstName").isOptional());
+        assertFalse("Property [lastName] must be optional", domainClass.getPropertyByName("lastName").isOptional());
+        assertFalse("Property [comment] must be required", domainClass.getPropertyByName("comment").isOptional());
+        assertTrue("Property [age] must be optional", domainClass.getPropertyByName("age").isOptional());
+        
+	}
+	
+	/**
      * @see GrailsDomainBinder#bindStringColumnConstraints(Column, ConstrainedProperty)
      */
     public void testBindStringColumnConstraints() {

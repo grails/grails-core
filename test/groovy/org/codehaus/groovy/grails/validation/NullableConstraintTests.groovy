@@ -52,10 +52,10 @@ class ProjectVersion {
 
         assertTrue constraints.status?.hasAppliedConstraint("nullable")
         assertTrue constraints.info?.hasAppliedConstraint("nullable")
-        assertFalse constraints.number?.hasAppliedConstraint("nullable")
+        assertTrue constraints.number?.hasAppliedConstraint("nullable")
 
         assertTrue constraints.info.nullable
         assertFalse constraints.status.nullable
-        assertFalse constraints.number.nullable
+        assertTrue constraints.number.nullable
     }
 }

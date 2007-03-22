@@ -85,18 +85,15 @@ public class ConstraintsEvaluatingDynamicProperty extends AbstractDynamicPropert
         {
             clazz = (Class)it.next();
             Closure c = (Closure)GrailsClassUtils.getStaticPropertyValue(clazz, PROPERTY_NAME);
-            if (c == null)
-            {
-                LOG.warn("[constraints] property not found on class ["+clazz+"], constraints closure not found, trying script");
+            if (c == null) {
                 c = getConstraintsFromScript(object);
             }
 
-            if (c != null)
-            {
+            if (c != null) {
                 c.setDelegate(delegate);
                 c.call();
             } else {
-                LOG.warn("User-defined constraints not found on class ["+clazz+"], applying default constraints");
+                LOG.info("User-defined constraints not found on class ["+clazz+"], applying default constraints");
             }
         }
 
@@ -105,22 +102,16 @@ public class ConstraintsEvaluatingDynamicProperty extends AbstractDynamicPropert
         if(this.properties != null) {
             for (int i = 0; i < this.properties.length; i++) {
                 GrailsDomainClassProperty p = this.properties[i];
-                if(!p.isOptional()) {
-                    ConstrainedProperty cp = (ConstrainedProperty)constrainedProperties.get(p.getName());
-                    if(cp == null) {
-
-                        cp = new ConstrainedProperty(p.getDomainClass().getClazz(),
-                                                               p.getName(),
-                                                               p.getType());
-                        cp.setOrder(constrainedProperties.size()+1);
-                        constrainedProperties.put(p.getName(), cp);
-                    }
-
-                    // Make sure all fields are required by default, unless specified otherwise by the constraints
-                    if(!p.isAssociation() && !cp.hasAppliedConstraint(ConstrainedProperty.NULLABLE_CONSTRAINT))
-                    {
-                        cp.applyConstraint(ConstrainedProperty.NULLABLE_CONSTRAINT, Boolean.FALSE);
-                    }
+                ConstrainedProperty cp = (ConstrainedProperty)constrainedProperties.get(p.getName());
+                if(cp == null) {
+                    cp = new ConstrainedProperty(p.getDomainClass().getClazz(), p.getName(), p.getType());
+                    cp.setOrder(constrainedProperties.size()+1);
+                    constrainedProperties.put(p.getName(), cp);
+                }
+                // Make sure all fields are required by default, unless specified otherwise by the constraints
+                if(!cp.hasAppliedConstraint(ConstrainedProperty.NULLABLE_CONSTRAINT)) {
+                	// TODO remove "&& isOptional()" in 0.6
+                    cp.applyConstraint(ConstrainedProperty.NULLABLE_CONSTRAINT, Boolean.valueOf(p.isAssociation() || p.isOptional()));
                 }
             }
         }

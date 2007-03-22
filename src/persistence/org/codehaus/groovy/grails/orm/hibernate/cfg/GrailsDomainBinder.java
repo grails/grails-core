@@ -330,7 +330,7 @@ public final class GrailsDomainBinder {
 		Column mappingColumn = new Column();
 		mappingColumn.setName(column.getName());
 		mappingColumn.setLength(column.getLength());
-		mappingColumn.setNullable(!prop.isOptional());
+		mappingColumn.setNullable(prop.isOptional());
 		mappingColumn.setSqlType(column.getSqlType());		
 		
 		mappingColumn.setValue(key);
@@ -952,8 +952,8 @@ w	 * Binds a simple value to the Hibernate metamodel. A simple value is
 			
 		} 
 		else {
-			column.setNullable(grailsProp.isOptional());
 			column.setName(namingStrategy.propertyToColumnName(grailsProp.getName()));
+			column.setNullable(grailsProp.isOptional());
 
             // Use the constraints for this property to more accurately define
             // the column's length, precision, and scale
