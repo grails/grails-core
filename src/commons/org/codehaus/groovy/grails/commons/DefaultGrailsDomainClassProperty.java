@@ -301,7 +301,7 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
 	 * @see org.codehaus.groovy.grails.commons.GrailsDomainClassProperty#getReferencedPropertyType()
 	 */
 	public Class getReferencedPropertyType() {
-		if(Set.class.isAssignableFrom(this.type) && this.referencedPropertyType != null) {
+		if(Collection.class.isAssignableFrom(this.type) && this.referencedPropertyType != null) {
 			return this.referencedPropertyType;
 		}
 		else {

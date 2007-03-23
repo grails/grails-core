@@ -37,7 +37,7 @@ import org.hibernate.util.StringHelper;
 import java.util.*;
 import java.util.Map;
 import java.util.Set;
-
+import java.util.List;
 
 
 /**
@@ -54,7 +54,7 @@ public final class GrailsDomainBinder {
 	private static final String FOREIGN_KEY_SUFFIX = "_id";
 	private static final Log LOG = LogFactory.getLog( GrailsDomainBinder.class );
 	private static final NamingStrategy namingStrategy = ImprovedNamingStrategy.INSTANCE;
-	
+
 	/**
 	 * A Collection type, for the moment only Set is supported
 	 * 
@@ -86,13 +86,34 @@ public final class GrailsDomainBinder {
 			}
 			
 		};
-		
-		private static final Map INSTANCES = new HashMap();
+
+        private static CollectionType LIST = new CollectionType(List.class) {
+
+            public Collection create(GrailsDomainClassProperty property, PersistentClass owner, Mappings mappings) throws MappingException {
+                org.hibernate.mapping.List coll = new org.hibernate.mapping.List(owner);
+                coll.setCollectionTable(owner.getTable());
+                bindCollection( property, coll, owner, mappings );
+                return coll;
+            }
+        };
+
+        private static CollectionType MAP = new CollectionType(Map.class) {
+
+            public Collection create(GrailsDomainClassProperty property, PersistentClass owner, Mappings mappings) throws MappingException {
+                org.hibernate.mapping.Map map = new org.hibernate.mapping.Map(owner);
+                bindCollection(property, map, owner, mappings);
+                return map;
+            }
+        };
+
+        private static final Map INSTANCES = new HashMap();
 		
 		static {
 			INSTANCES.put( Set.class, SET );
 			INSTANCES.put( SortedSet.class, SET );
-		}
+            INSTANCES.put( List.class, LIST );
+            INSTANCES.put( Map.class, MAP );
+        }
 		public static CollectionType collectionTypeForClass(Class clazz) {
 			return (CollectionType)INSTANCES.get( clazz );
 		}
@@ -109,10 +130,10 @@ public final class GrailsDomainBinder {
 	 */
 	static class GrailsCollectionSecondPass implements SecondPass {
 
-		private static final long serialVersionUID = -5540526942092611348L;
-		private GrailsDomainClassProperty property;
-		private Mappings mappings;
-		private Collection collection;
+		protected static final long serialVersionUID = -5540526942092611348L;
+		protected GrailsDomainClassProperty property;
+		protected Mappings mappings;
+		protected Collection collection;
 
 		public GrailsCollectionSecondPass(GrailsDomainClassProperty property, Mappings mappings, Collection coll) {
 			this.property = property;
@@ -130,7 +151,77 @@ public final class GrailsDomainBinder {
 
 	}
 
-	private static void bindCollectionSecondPass(GrailsDomainClassProperty property, Mappings mappings, Map persistentClasses, Collection collection, Map inheritedMetas) {
+    static class ListSecondPass extends GrailsCollectionSecondPass {
+        public ListSecondPass(GrailsDomainClassProperty property, Mappings mappings, Collection coll) {
+            super(property, mappings, coll);
+        }
+
+
+        public void doSecondPass(Map persistentClasses, Map inheritedMetas) throws MappingException {
+            bindListSecondPass(this.property, mappings, persistentClasses, (org.hibernate.mapping.List)collection, inheritedMetas);
+        }
+
+        public void doSecondPass(Map persistentClasses) throws MappingException {
+            bindListSecondPass(this.property, mappings, persistentClasses, (org.hibernate.mapping.List)collection, Collections.EMPTY_MAP);
+        }
+    }
+
+    static class MapSecondPass extends GrailsCollectionSecondPass {
+
+        public MapSecondPass(GrailsDomainClassProperty property, Mappings mappings, Collection coll) {
+            super(property, mappings, coll);
+        }
+
+
+        public void doSecondPass(Map persistentClasses, Map inheritedMetas) throws MappingException {
+            bindMapSecondPass( this.property, mappings, persistentClasses, (org.hibernate.mapping.Map)collection, inheritedMetas);
+        }
+
+
+        public void doSecondPass(Map persistentClasses) throws MappingException {
+            bindMapSecondPass( this.property, mappings, persistentClasses, (org.hibernate.mapping.Map)collection, Collections.EMPTY_MAP);
+        }
+    }
+
+    private static void bindMapSecondPass(GrailsDomainClassProperty property, Mappings mappings, Map persistentClasses, org.hibernate.mapping.Map map, Map inheritedMetas) {
+        bindCollectionSecondPass(property, mappings, persistentClasses, map, inheritedMetas);
+
+        SimpleValue value = new SimpleValue( map.getCollectionTable() );
+
+        bindSimpleValue("string", value, false, property.getName() + IndexedCollection.DEFAULT_INDEX_COLUMN_NAME,mappings);
+        
+        if ( !value.isTypeSpecified() ) {
+            throw new MappingException( "map index element must specify a type: "
+                + map.getRole() );
+        }
+        map.setIndex( value );
+    }
+
+
+    private static void bindListSecondPass(GrailsDomainClassProperty property, Mappings mappings, Map persistentClasses, org.hibernate.mapping.List list, Map inheritedMetas) {
+        bindCollectionSecondPass( property, mappings, persistentClasses, list,inheritedMetas );
+
+        SimpleValue iv = new SimpleValue( list.getCollectionTable() );
+        bindSimpleValue("integer", iv, false,property.getName()+'_'+IndexedCollection.DEFAULT_INDEX_COLUMN_NAME, mappings);
+        iv.setTypeName( "integer" );
+        list.setIndex( iv );
+        String entityName = ( (OneToMany) list.getElement() ).getReferencedEntityName();
+        PersistentClass referenced = mappings.getClass( entityName );
+        IndexBackref ib = new IndexBackref();
+        ib.setName( '_' + property.getName() + "IndexBackref" );
+        ib.setUpdateable( false );
+        ib.setSelectable( false );
+        ib.setCollectionRole( list.getRole() );
+        ib.setEntityName( list.getOwner().getEntityName() );
+        ib.setValue( list.getIndex() );
+        // ( (Column) ( (SimpleValue) ic.getIndex() ).getColumnIterator().next()
+        // ).setNullable(false);
+        referenced.addProperty( ib );
+
+    }
+
+
+    private static void bindCollectionSecondPass(GrailsDomainClassProperty property, Mappings mappings, Map persistentClasses, Collection collection, Map inheritedMetas) {
 
 		PersistentClass associatedClass = null;
 		
@@ -347,44 +438,53 @@ public final class GrailsDomainBinder {
 	 * @param mappings The Hibernate mappings instance
 	 */
 	private static void bindCollection(GrailsDomainClassProperty property, Collection collection, PersistentClass owner, Mappings mappings) {
-		
-		// set role
-		collection.setRole( StringHelper.qualify( property.getDomainClass().getFullName() , property.getName() ) );
-		
-		// configure eager fetching
-		if(property.getFetchMode() == GrailsDomainClassProperty.FETCH_EAGER) {
-			collection.setFetchMode(FetchMode.JOIN);
-		}
-		else {
-			collection.setFetchMode( FetchMode.DEFAULT );
-		}		
-		
-		// if its a one-to-many mapping
-		if(property.isOneToMany()) {			
-			OneToMany oneToMany = new OneToMany( collection.getOwner() );
-			collection.setElement( oneToMany );			
-			bindOneToMany( property, oneToMany, mappings );			
-		}
-		else {
-			String tableName = calculateTableForMany(property);
-			Table t =  mappings.addTable(
-					mappings.getSchemaName(),
-					mappings.getCatalogName(),
-					tableName,
-					null,
-					false
-				);
-			collection.setCollectionTable(t);
-			
-			if(!property.isOwningSide()) {
-				collection.setInverse(true);
-			}
-		}
-		
+
+        if(!(collection instanceof org.hibernate.mapping.Map)) {
+            // set role
+            collection.setRole( StringHelper.qualify( property.getDomainClass().getFullName() , property.getName() ) );
+
+            // configure eager fetching
+            if(property.getFetchMode() == GrailsDomainClassProperty.FETCH_EAGER) {
+                collection.setFetchMode(FetchMode.JOIN);
+            }
+            else {
+                collection.setFetchMode( FetchMode.DEFAULT );
+            }
+
+            // if its a one-to-many mapping
+            if(property.isOneToMany()) {
+                OneToMany oneToMany = new OneToMany( collection.getOwner() );
+                collection.setElement( oneToMany );
+                bindOneToMany( property, oneToMany, mappings );
+            }
+            else {
+                String tableName = calculateTableForMany(property);
+                Table t =  mappings.addTable(
+                        mappings.getSchemaName(),
+                        mappings.getCatalogName(),
+                        tableName,
+                        null,
+                        false
+                    );
+                collection.setCollectionTable(t);
+
+                if(!property.isOwningSide()) {
+                    collection.setInverse(true);
+                }
+            }
+        }
+
 		// setup second pass
-		mappings.addSecondPass( new GrailsCollectionSecondPass(property, mappings, collection) );
-		
-	}
+        if(collection instanceof org.hibernate.mapping.Set)
+            mappings.addSecondPass( new GrailsCollectionSecondPass(property, mappings, collection) );
+        else if(collection instanceof org.hibernate.mapping.List) {
+            mappings.addSecondPass( new ListSecondPass(property, mappings, collection) );
+        }
+        else if(collection instanceof org.hibernate.mapping.Map) {                     
+            mappings.addSecondPass( new MapSecondPass(property, mappings, collection));
+        }
+
+    }
 	
 	/**
 	 * This method will calculate the mapping table for a many-to-many. One side of 
