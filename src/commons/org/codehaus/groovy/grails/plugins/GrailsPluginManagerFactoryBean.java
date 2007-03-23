@@ -67,6 +67,7 @@ public class GrailsPluginManagerFactoryBean implements FactoryBean, Initializing
 		if(pluginManager == null) {
 			pluginManager = new DefaultGrailsPluginManager(pluginFiles, application);
 			PluginManagerHolder.setPluginManager(pluginManager);
+			pluginManager.loadPlugins();
 		}
         this.pluginManager.setApplication(application);
         this.pluginManager.doArtefactConfiguration();
