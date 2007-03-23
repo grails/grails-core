@@ -21,6 +21,8 @@ import org.springframework.core.io.Resource;
 
 import groovy.lang.GroovyClassLoader;
 
+import java.util.Map;
+
 /**
  *  <p>Exposes all classes for a Grails application.
  * 
@@ -223,5 +225,13 @@ public interface GrailsApplication extends ApplicationContextAware {
     public ArtefactHandler[] getArtefactHandlers();
 
 	public void initialise();
+
+    /**
+     * <p>Get access to the project's metadata, specified in application.properties</p>
+     * <p>This provides access to information like required grails version, application name, version etc
+     * but <b>NOT</b> general application settings.</p>
+     * @return A read-only Map of data about the application, not environment specific
+     */
+    public Map getMetadata();
 
 }

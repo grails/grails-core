@@ -57,6 +57,9 @@ task( packageApp : "Implementation of package task") {
     Ant.copy(todir:"${basedir}/web-app/WEB-INF/spring") {
 		fileset(dir:"${basedir}/spring", includes:"**")
 	}					
+    Ant.copy(todir:"${basedir}/web-app/WEB-INF") {
+		fileset(dir:"${basedir}", includes:"application.properties")
+	}					
 	Ant.copy(todir:"${basedir}/web-app/WEB-INF/classes") {
 		fileset(dir:"${basedir}/grails-app/conf", includes:"**", excludes:"*.groovy, log4j*")		
 		fileset(dir:"${basedir}/hibernate", includes:"**")

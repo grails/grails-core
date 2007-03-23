@@ -20,7 +20,7 @@ import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
 import org.apache.commons.logging.LogFactory
 
 /**
- * A plug-in that provides a lazy initializaed commons logging log property
+ * A plug-in that provides a lazy initialized commons logging log property
  * for all classes
  *
  * @author Marc Palmer

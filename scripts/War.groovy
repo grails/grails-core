@@ -38,13 +38,15 @@ task (war: "The implementation task") {
 	depends( clean, packagePlugins, packageApp )
 	 
 	try {
-		Ant.copy(todir:"${basedir}/web-app/WEB-INF/grails-app", overwrite:true) {
-			fileset(dir:"${basedir}/grails-app", includes:"**") 
+		Ant.mkdir(dir:"${basedir}/staging")
+		Ant.copy(todir:"${basedir}/staging", overwrite:true) {
+			fileset(dir:"${basedir}/web-app", includes:"**") 
 		}       
-		appCtxFile = "${basedir}/web-app/WEB-INF/applicationContext.xml"
-		Ant.copy(file:appCtxFile, tofile:"${basedir}/.appctxbck",overwrite:true)
-		
-		Ant.copy(todir:"${basedir}/web-app/WEB-INF/lib") {
+		Ant.copy(todir:"${basedir}/staging/WEB-INF/grails-app", overwrite:true) {
+			fileset(dir:"${basedir}/grails-app", includes:"**")
+		}
+
+		Ant.copy(todir:"${basedir}/staging/WEB-INF/lib") {
 			fileset(dir:"${grailsHome}/dist") {
 					include(name:"grails-*.jar")
 			}
@@ -53,14 +55,18 @@ task (war: "The implementation task") {
 			}
 		}
 		
-		Ant.replace(file:appCtxFile, 
+		Ant.replace(file:"${basedir}/staging/WEB-INF/applicationContext.xml", 
 				token:"classpath*:", value:"" ) 
 
 		def fileName = grailsAppName
-		warName = "${basedir}/${fileName}.war"
+		def version = Ant.antProject.properties.'app.version'
+		if (version) {
+		    version = '-'+version
+		}
+		warName = "${basedir}/${fileName}${version}.war"
 
 		warPlugins()		
-		Ant.jar(destfile:warName, basedir:"${basedir}/web-app")		
+		Ant.jar(destfile:warName, basedir:"${basedir}/staging")
 		
 	}   
 	finally {
@@ -70,19 +76,13 @@ task (war: "The implementation task") {
 }                                                                    
    
 task(cleanUpAfterWar:"Cleans up after performing a WAR") {
- 	Ant.move(file:"${basedir}/.appctxbck", tofile:appCtxFile, overwrite:true)
-	Ant.delete(dir:"${basedir}/web-app/WEB-INF/grails-app", failonerror:true)
-	Ant.delete(dir:"${basedir}/web-app/WEB-INF/plugins") 
-	Ant.delete {
-		fileset(dir:"${basedir}/web-app/WEB-INF/lib") {
-				include(name:"grails-*.jar")
-		}
-	}	
+	Ant.delete(dir:"${basedir}/staging", failonerror:true)
 }
+
 task(warPlugins:"Includes the plugins in the WAR") {  
 	Ant.sequential {
-		mkdir(dir:"${basedir}/web-app/WEB-INF/plugins")
-		copy(todir:"${basedir}/web-app/WEB-INF/plugins", failonerror:false) {
+		mkdir(dir:"${basedir}/staging/WEB-INF/plugins")
+		copy(todir:"${basedir}/staging/WEB-INF/plugins", failonerror:false) {
 			fileset(dir:"${basedir}/plugins")  {
 				include(name:"**/grails-app/**")
 				exclude(name:"**/grails-app/i18n")				

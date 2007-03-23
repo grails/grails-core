@@ -11,9 +11,9 @@ class WarTests  extends AbstractCliTests {
 		System.setProperty("base.dir", appBase + File.separatorChar + System.getProperty("grails.cli.args"))
 		Gant.main(["-f", "scripts/War.groovy"] as String[])
 		
-		assert new File("${appBase}/testapp/testapp.war").exists()
+		assert new File("${appBase}/testapp/testapp-0.1.war").exists()
 		
-		ant.unzip(src:"${appBase}/testapp/testapp.war", dest:"${appBase}/unzipped")
+		ant.unzip(src:"${appBase}/testapp/testapp-0.1.war", dest:"${appBase}/unzipped")
 		
 		// test critical files
 		assert new File("${appBase}/unzipped/WEB-INF/applicationContext.xml").exists()

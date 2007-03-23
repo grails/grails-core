@@ -40,8 +40,13 @@ task( createApp: "The implementation task")  {
     depends( appName, createStructure, updateAppProperties, init )
 	
 	createIDESupportFiles()
-	
-	println "Created Grails Application at $basedir"	
+
+	// Set the default version number for the application
+    Ant.propertyfile(file:"${basedir}/application.properties") {
+        entry(key:"app.version", value:"0.1")
+    }
+
+	println "Created Grails Application at $basedir"
 }                         
 
 task( createIDESupportFiles: "Creates the IDE suppot files (Eclipse, TextMate etc.) project files") {

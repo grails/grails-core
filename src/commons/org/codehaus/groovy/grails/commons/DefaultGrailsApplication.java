@@ -31,9 +31,13 @@ import org.codehaus.groovy.grails.injection.GrailsInjectionOperation;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.Resource;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.util.Assert;
 
 import java.io.IOException;
+import java.io.File;
+import java.io.FileInputStream;
 import java.lang.reflect.Modifier;
 import java.security.CodeSource;
 import java.util.*;
@@ -71,6 +75,7 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
     private static final Pattern GETCLASSESMETH_PATTERN = Pattern.compile("(get)(\\w+)(Classes)");
     private static final Pattern ISCLASS_PATTERN = Pattern.compile("(is)(\\w+)(Class)");
     private static final Pattern GETCLASS_PATTERN = Pattern.compile("(get)(\\w+)Class");
+    private static final String PROJECT_META_FILE = "application.properties";
 
     private GroovyClassLoader cl = null;
 
@@ -86,6 +91,7 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
     private Map artefactInfo = new HashMap();
     private boolean suspectArtefactInit;
     private Class[] allArtefactClassesArray;
+    private Map applicationMeta;
 
     /**
      * Creates a new empty Grails application
@@ -139,6 +145,8 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
 
         log.debug("Loading Grails application.");
 
+        loadMetadata();
+
         this.resourceLoader = new GrailsResourceLoader(resources);
         GrailsResourceHolder resourceHolder = new GrailsResourceHolder();
 
@@ -191,7 +199,22 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
         }
 
     }
-    
+
+    private void loadMetadata()
+    {
+        final Properties meta = new Properties();
+        Resource r = new ClassPathResource(PROJECT_META_FILE);
+        try
+        {
+            meta.load( r.getInputStream());
+        }
+        catch (IOException e)
+        {
+            log.warn("No application metadata file found at "+r);
+        }
+        applicationMeta = Collections.unmodifiableMap(meta);
+    }
+
     /**
      * Initialises the default set of ArtefactHandler instances
      *
@@ -795,6 +818,11 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
         }    	
         Class[] classes = populateAllClasses();
         configureLoadedClasses(classes);    	
+    }
+
+    public Map getMetadata()
+    {
+        return applicationMeta;
     }
 
 }
