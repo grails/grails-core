@@ -1,4 +1,6 @@
-package org.codehaus.groovy.grails.commons;
+package org.codehaus.groovy.grails.validation;
+
+import org.codehaus.groovy.grails.commons.*;
 
 /**
  * Note there are more tests for DefaultGrailsDomainClass in test/persistence written in Java

@@ -1,4 +1,4 @@
-package org.codehaus.groovy.grails.servlet.mvc
+package org.codehaus.groovy.grails.web.servlet.mvc
 
 import org.codehaus.groovy.grails.commons.test.*
 import org.codehaus.groovy.grails.commons.*
