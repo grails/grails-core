@@ -1,4 +1,4 @@
-package org.codehaus.groovy.grails.plugins;
+package org.codehaus.groovy.grails.plugins.services;
 
 import org.codehaus.groovy.grails.commons.test.*
 import org.codehaus.groovy.grails.commons.*
@@ -37,9 +37,9 @@ class ApplicationDataSource {
 		
 		def corePluginClass = gcl.loadClass("org.codehaus.groovy.grails.plugins.CoreGrailsPlugin")
 		def corePlugin = new DefaultGrailsPlugin(corePluginClass,ga)
-		def dataSourcePluginClass = gcl.loadClass("org.codehaus.groovy.grails.plugins.DataSourceGrailsPlugin")
+		def dataSourcePluginClass = gcl.loadClass("org.codehaus.groovy.grails.plugins.datasource.DataSourceGrailsPlugin")
 		def dataSourcePlugin = new DefaultGrailsPlugin(dataSourcePluginClass, ga)
-		def hibernatePluginClass = gcl.loadClass("org.codehaus.groovy.grails.plugins.HibernateGrailsPlugin")
+		def hibernatePluginClass = gcl.loadClass("org.codehaus.groovy.grails.plugins.orm.hibernate.HibernateGrailsPlugin")
 		def hibernatePlugin = new DefaultGrailsPlugin(hibernatePluginClass, ga)
 		
 		def springConfig = new DefaultRuntimeSpringConfiguration(ctx)
@@ -49,7 +49,7 @@ class ApplicationDataSource {
 		dataSourcePlugin.doWithRuntimeConfiguration(springConfig)
 		hibernatePlugin.doWithRuntimeConfiguration(springConfig)
 		
-		def pluginClass = gcl.loadClass("org.codehaus.groovy.grails.plugins.ServicesGrailsPlugin")
+		def pluginClass = gcl.loadClass("org.codehaus.groovy.grails.plugins.services.ServicesGrailsPlugin")
 		def plugin = new DefaultGrailsPlugin(pluginClass, ga)	
 		plugin.doWithRuntimeConfiguration(springConfig)
 		

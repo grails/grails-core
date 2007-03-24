@@ -1,4 +1,4 @@
-package org.codehaus.groovy.grails.plugins;
+package org.codehaus.groovy.grails.plugins.orm.hibernate;
 
 import org.codehaus.groovy.grails.commons.test.*
 import org.codehaus.groovy.grails.commons.*
@@ -24,9 +24,9 @@ class Test {
 		
 		def dependantPluginClasses = []
 		dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.CoreGrailsPlugin")			
-		dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.DataSourceGrailsPlugin")
-		dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.ControllersGrailsPlugin")
-		dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.I18nGrailsPlugin")
+		dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.datasource.DataSourceGrailsPlugin")
+		dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.web.ControllersGrailsPlugin")
+		dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.i18n.I18nGrailsPlugin")
 		dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.DomainClassGrailsPlugin")
 		
 		def dependentPlugins = dependantPluginClasses.collect { new DefaultGrailsPlugin(it, ga)}
@@ -37,7 +37,7 @@ class Test {
 		dependentPlugins.each{ mockManager.registerMockPlugin(it); it.manager = mockManager }
 
 	
-		def pluginClass = gcl.loadClass("org.codehaus.groovy.grails.plugins.HibernateGrailsPlugin")		
+		def pluginClass = gcl.loadClass("org.codehaus.groovy.grails.plugins.orm.hibernate.HibernateGrailsPlugin")		
 		def plugin = new DefaultGrailsPlugin(pluginClass, ga)
 		plugin.manager = mockManager
 		

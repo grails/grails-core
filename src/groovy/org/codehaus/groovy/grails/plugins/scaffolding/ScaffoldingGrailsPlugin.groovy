@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */ 
-package org.codehaus.groovy.grails.scaffolding.plugins;
+package org.codehaus.groovy.grails.plugins.scaffolding;
 
 import org.codehaus.groovy.grails.plugins.support.GrailsPluginUtils
 import org.codehaus.groovy.grails.scaffolding.*;

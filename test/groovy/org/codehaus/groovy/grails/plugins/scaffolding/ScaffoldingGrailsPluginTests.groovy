@@ -1,4 +1,4 @@
-package org.codehaus.groovy.grails.scaffolding.plugins;
+package org.codehaus.groovy.grails.plugins.scaffolding;
 
 import org.codehaus.groovy.grails.commons.test.*
 import org.codehaus.groovy.grails.commons.*
@@ -27,11 +27,11 @@ class TestController {
 		
 		def dependantPluginClasses = []
 		dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.CoreGrailsPlugin")			
-		dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.DataSourceGrailsPlugin")
-		dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.ControllersGrailsPlugin")
-		dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.I18nGrailsPlugin")
+		dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.datasource.DataSourceGrailsPlugin")
+		dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.web.ControllersGrailsPlugin")
+		dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.i18n.I18nGrailsPlugin")
 		dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.DomainClassGrailsPlugin")
-		dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.HibernateGrailsPlugin")
+		dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.orm.hibernate.HibernateGrailsPlugin")
 		
 		def dependentPlugins = dependantPluginClasses.collect { new DefaultGrailsPlugin(it, ga)}
 		def springConfig = new DefaultRuntimeSpringConfiguration(ctx)
@@ -43,7 +43,7 @@ class TestController {
 		dependentPlugins*.doWithRuntimeConfiguration(springConfig)
 
 	
-		def pluginClass = gcl.loadClass("org.codehaus.groovy.grails.scaffolding.plugins.ScaffoldingGrailsPlugin")		
+		def pluginClass = gcl.loadClass("org.codehaus.groovy.grails.plugins.scaffolding.ScaffoldingGrailsPlugin")		
 		def plugin = new DefaultGrailsPlugin(pluginClass, ga)
 		plugin.manager = mockManager
 		

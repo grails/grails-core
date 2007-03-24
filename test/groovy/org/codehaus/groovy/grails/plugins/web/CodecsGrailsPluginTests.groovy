@@ -1,4 +1,4 @@
-package org.codehaus.groovy.grails.plugins
+package org.codehaus.groovy.grails.plugins.web
 
 import org.codehaus.groovy.grails.commons.test.*
 import org.codehaus.groovy.grails.commons.spring.*

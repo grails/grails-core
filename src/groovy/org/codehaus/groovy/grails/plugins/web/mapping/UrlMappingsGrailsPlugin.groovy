@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */ 
-package org.codehaus.groovy.grails.plugins;
+package org.codehaus.groovy.grails.plugins.web.mapping;
 
 import grails.util.GrailsUtil
 import org.codehaus.groovy.grails.web.mapping.*

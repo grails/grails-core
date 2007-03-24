@@ -3,7 +3,7 @@ package org.codehaus.groovy.grails.reload;
  import org.codehaus.groovy.grails.web.servlet.mvc.*
  import org.codehaus.groovy.grails.commons.*
  import org.apache.commons.logging.*
- import org.codehaus.groovy.grails.plugins.*
+ import org.codehaus.groovy.grails.plugins.web.*
 
 /**
  * Tests for auto-reloading of services
@@ -66,8 +66,8 @@ class NonTransactionalService {
 '''
         )
 
-       pluginsToLoad << gcl.loadClass("org.codehaus.groovy.grails.plugins.DataSourceGrailsPlugin")
-       pluginsToLoad << gcl.loadClass("org.codehaus.groovy.grails.plugins.ServicesGrailsPlugin")
+       pluginsToLoad << gcl.loadClass("org.codehaus.groovy.grails.plugins.datasource.DataSourceGrailsPlugin")
+       pluginsToLoad << gcl.loadClass("org.codehaus.groovy.grails.plugins.services.ServicesGrailsPlugin")
     }
 
 }

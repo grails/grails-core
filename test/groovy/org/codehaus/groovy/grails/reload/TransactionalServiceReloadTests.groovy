@@ -3,7 +3,7 @@ package org.codehaus.groovy.grails.reload;
  import org.codehaus.groovy.grails.web.servlet.mvc.*
  import org.codehaus.groovy.grails.commons.*
  import org.apache.commons.logging.*
- import org.codehaus.groovy.grails.plugins.*
+ import org.codehaus.groovy.grails.plugins.web.*
 
 /**
  * Tests for auto-reloading of transactional services
@@ -78,11 +78,11 @@ class ApplicationDataSource {
         )
 
        pluginsToLoad << gcl.loadClass("org.codehaus.groovy.grails.plugins.CoreGrailsPlugin")
-       pluginsToLoad << gcl.loadClass("org.codehaus.groovy.grails.plugins.I18nGrailsPlugin")
+       pluginsToLoad << gcl.loadClass("org.codehaus.groovy.grails.plugins.i18n.I18nGrailsPlugin")
        pluginsToLoad << gcl.loadClass("org.codehaus.groovy.grails.plugins.DomainClassGrailsPlugin")
-       pluginsToLoad << gcl.loadClass("org.codehaus.groovy.grails.plugins.DataSourceGrailsPlugin")
-       pluginsToLoad << gcl.loadClass("org.codehaus.groovy.grails.plugins.HibernateGrailsPlugin")
-       pluginsToLoad << gcl.loadClass("org.codehaus.groovy.grails.plugins.ServicesGrailsPlugin")
+       pluginsToLoad << gcl.loadClass("org.codehaus.groovy.grails.plugins.datasource.DataSourceGrailsPlugin")
+       pluginsToLoad << gcl.loadClass("org.codehaus.groovy.grails.plugins.orm.hibernate.HibernateGrailsPlugin")
+       pluginsToLoad << gcl.loadClass("org.codehaus.groovy.grails.plugins.services.ServicesGrailsPlugin")
     }
 
 }

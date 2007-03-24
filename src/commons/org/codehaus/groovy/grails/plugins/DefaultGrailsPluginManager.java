@@ -252,7 +252,7 @@ public class DefaultGrailsPluginManager implements GrailsPluginManager {
    */
   private void loadCorePlugins() {
       try {
-          Resource[] resources = resolver.getResources("classpath*:org/codehaus/groovy/grails/**/plugins/*GrailsPlugin.class");
+          Resource[] resources = resolver.getResources("classpath*:org/codehaus/groovy/grails/**/plugins/**/*GrailsPlugin.class");
           if(resources.length > 0) {
               loadCorePluginsFromResources(resources);
           }
@@ -271,14 +271,14 @@ public class DefaultGrailsPluginManager implements GrailsPluginManager {
       // This is a horrible hard coded hack, but there seems to be no way to resolve .class files dynamically
       // on OC4J. If anyones knows how to fix this shout
       loadCorePlugin("org.codehaus.groovy.grails.plugins.CoreGrailsPlugin");
-      loadCorePlugin("org.codehaus.groovy.grails.i18n.plugins.I18nGrailsPlugin");
-      loadCorePlugin("org.codehaus.groovy.grails.datasource.plugins.DataSourceGrailsPlugin");
+      loadCorePlugin("org.codehaus.groovy.grails.plugins.i18n.I18nGrailsPlugin");
+      loadCorePlugin("org.codehaus.groovy.grails.plugins.datasource.DataSourceGrailsPlugin");
       loadCorePlugin("org.codehaus.groovy.grails.plugins.DomainClassGrailsPlugin");
-      loadCorePlugin("org.codehaus.groovy.grails.web.plugins.ControllersGrailsPlugin");
-      loadCorePlugin("org.codehaus.groovy.grails.orm.hibernate.plugins.HibernateGrailsPlugin");
-      loadCorePlugin("org.codehaus.groovy.grails.services.plugins.ServicesGrailsPlugin");
-      loadCorePlugin("org.codehaus.groovy.grails.jobs.plugins.QuartzGrailsPlugin");
-      loadCorePlugin("org.codehaus.groovy.grails.scaffolding.plugins.ScaffoldingGrailsPlugin");
+      loadCorePlugin("org.codehaus.groovy.grails.plugins.web.ControllersGrailsPlugin");
+      loadCorePlugin("org.codehaus.groovy.grails.plugins.orm.hibernate.HibernateGrailsPlugin");
+      loadCorePlugin("org.codehaus.groovy.grails.plugins.services.ServicesGrailsPlugin");
+      loadCorePlugin("org.codehaus.groovy.grails.plugins.quartz.QuartzGrailsPlugin");
+      loadCorePlugin("org.codehaus.groovy.grails.plugins.scaffolding.ScaffoldingGrailsPlugin");
   }
 
   private void loadCorePluginsFromResources(Resource[] resources) throws IOException {

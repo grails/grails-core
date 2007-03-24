@@ -1,4 +1,4 @@
-package org.codehaus.groovy.grails.plugins;
+package org.codehaus.groovy.grails.plugins.quartz;
 
 import org.codehaus.groovy.grails.commons.test.*
 import org.codehaus.groovy.grails.commons.*
@@ -47,7 +47,7 @@ class CronDefaultJob  {
 	}
 
 	void testJobsPlugin() {
-		def pluginClass = gcl.loadClass("org.codehaus.groovy.grails.plugins.QuartzGrailsPlugin")
+		def pluginClass = gcl.loadClass("org.codehaus.groovy.grails.plugins.quartz.QuartzGrailsPlugin")
 		
 		def plugin = new DefaultGrailsPlugin(pluginClass, ga)
 		

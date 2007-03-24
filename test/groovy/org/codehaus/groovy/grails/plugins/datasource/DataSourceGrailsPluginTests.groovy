@@ -1,4 +1,4 @@
-package org.codehaus.groovy.grails.plugins;
+package org.codehaus.groovy.grails.plugins.datasource;
 
 import org.codehaus.groovy.grails.commons.test.*
 import org.codehaus.groovy.grails.commons.*
@@ -23,7 +23,7 @@ class TestDataSource {
 	
 	void testDataSourcePlugin() {
 		
-		def pluginClass = gcl.loadClass("org.codehaus.groovy.grails.plugins.DataSourceGrailsPlugin")
+		def pluginClass = gcl.loadClass("org.codehaus.groovy.grails.plugins.datasource.DataSourceGrailsPlugin")
 		
 		def plugin = new DefaultGrailsPlugin(pluginClass, ga)
 		

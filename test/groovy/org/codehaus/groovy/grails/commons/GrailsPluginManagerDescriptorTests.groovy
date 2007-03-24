@@ -4,8 +4,8 @@ import org.codehaus.groovy.grails.plugins.*
 class GrailsPluginManagerDescriptorTests extends AbstractGrailsMockTests {
 	
 	void testDoWithWebDescriptor() {
-		def i18nPlugin = gcl.loadClass("org.codehaus.groovy.grails.plugins.I18nGrailsPlugin")		
-		def controllersPlugin = gcl.loadClass("org.codehaus.groovy.grails.plugins.ControllersGrailsPlugin")
+		def i18nPlugin = gcl.loadClass("org.codehaus.groovy.grails.plugins.i18n.I18nGrailsPlugin")		
+		def controllersPlugin = gcl.loadClass("org.codehaus.groovy.grails.plugins.web.ControllersGrailsPlugin")
 		def manager = new DefaultGrailsPluginManager([i18nPlugin, controllersPlugin] as Class[],ga);
 		manager.loadPlugins()
 		def webxml = getResources("org/codehaus/groovy/grails/commons/test-web.xml")[0]
@@ -22,8 +22,8 @@ class GrailsPluginManagerDescriptorTests extends AbstractGrailsMockTests {
 	void testDevelopmentDescriptor() {
 		try {
 			System.setProperty("grails.env", "development")
-			def i18nPlugin = gcl.loadClass("org.codehaus.groovy.grails.plugins.I18nGrailsPlugin")		
-			def controllersPlugin = gcl.loadClass("org.codehaus.groovy.grails.plugins.ControllersGrailsPlugin")
+			def i18nPlugin = gcl.loadClass("org.codehaus.groovy.grails.plugins.i18n.I18nGrailsPlugin")		
+			def controllersPlugin = gcl.loadClass("org.codehaus.groovy.grails.plugins.web.ControllersGrailsPlugin")
 			def manager = new DefaultGrailsPluginManager([i18nPlugin, controllersPlugin] as Class[],ga);
 			manager.loadPlugins()
 			def webxml = getResources("org/codehaus/groovy/grails/commons/test-web.xml")[0]
