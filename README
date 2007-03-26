@@ -1,10 +1,6 @@
-                                                                     
-                                                                     
-                                                                     
-                                             
-GROOVY ON RAILS (GRAILS), release 0.1 (March 2006)
+Grails, release 0.5 (April 2007)
 --------------------------------------------------
-http://grails.codehaus.org
+http://grails.org
 
 
 1. INTRODUCTION
@@ -15,7 +11,7 @@ With Grails you can easily create web applications thanks to:
 
 - a complete development and deployment environment. All dependencies and configuration that is required to the run Grails applications in a web server are provided by Grails. The only thing you have to worry about is your application code.
 
-- inclusion of a web server for your convenience.
+- inclusion of an embedded Jetty web server
 
 - development mode that automatically reloads changes made to application code, without having to restart the web server.
 
@@ -55,7 +51,7 @@ You can now run the grails command, as follows:
 
 > grails
 
-When this command shows a help message you are ready to start using Grails and are invited to take a look at the Grails homepage and glance over the documentation:
+When this command shows a help message you are ready to start using Grails. For more info checkout the Grails homepage at:
 
 http://grails.codehaus.org
 
