@@ -24,6 +24,8 @@ import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 import org.hibernate.FetchMode;
 import org.hibernate.MappingException;
+import org.hibernate.type.TypeFactory;
+import org.hibernate.type.Type;
 import org.hibernate.cfg.ImprovedNamingStrategy;
 import org.hibernate.cfg.Mappings;
 import org.hibernate.cfg.NamingStrategy;
@@ -54,8 +56,9 @@ public final class GrailsDomainBinder {
 	private static final String FOREIGN_KEY_SUFFIX = "_id";
 	private static final Log LOG = LogFactory.getLog( GrailsDomainBinder.class );
 	private static final NamingStrategy namingStrategy = ImprovedNamingStrategy.INSTANCE;
+    private static final String STRING_TYPE = "string";
 
-	/**
+    /**
 	 * A Collection type, for the moment only Set is supported
 	 * 
 	 * @author Graeme
@@ -185,16 +188,27 @@ public final class GrailsDomainBinder {
 
     private static void bindMapSecondPass(GrailsDomainClassProperty property, Mappings mappings, Map persistentClasses, org.hibernate.mapping.Map map, Map inheritedMetas) {
         bindCollectionSecondPass(property, mappings, persistentClasses, map, inheritedMetas);
+        String columnName = namingStrategy.propertyToColumnName(property.getName());
 
         SimpleValue value = new SimpleValue( map.getCollectionTable() );
 
-        bindSimpleValue("string", value, false, property.getName() + IndexedCollection.DEFAULT_INDEX_COLUMN_NAME,mappings);
+        bindSimpleValue(STRING_TYPE, value, false, columnName + '_' + IndexedCollection.DEFAULT_INDEX_COLUMN_NAME,mappings);
         
         if ( !value.isTypeSpecified() ) {
             throw new MappingException( "map index element must specify a type: "
                 + map.getRole() );
         }
         map.setIndex( value );
+
+        if(!property.isOneToMany()) {
+
+            SimpleValue elt = new SimpleValue( map.getCollectionTable() );
+            map.setElement( elt );
+            map.setInverse(false);
+
+            bindSimpleValue(STRING_TYPE, elt, false, columnName + '_' + IndexedCollection.DEFAULT_ELEMENT_COLUMN_NAME,mappings);
+            elt.setTypeName(STRING_TYPE);
+        }
     }
 
 
@@ -439,40 +453,39 @@ public final class GrailsDomainBinder {
 	 */
 	private static void bindCollection(GrailsDomainClassProperty property, Collection collection, PersistentClass owner, Mappings mappings) {
 
-        if(!(collection instanceof org.hibernate.mapping.Map)) {
-            // set role
-            collection.setRole( StringHelper.qualify( property.getDomainClass().getFullName() , property.getName() ) );
+        // set role
+        collection.setRole( StringHelper.qualify( property.getDomainClass().getFullName() , property.getName() ) );
 
-            // configure eager fetching
-            if(property.getFetchMode() == GrailsDomainClassProperty.FETCH_EAGER) {
-                collection.setFetchMode(FetchMode.JOIN);
-            }
-            else {
-                collection.setFetchMode( FetchMode.DEFAULT );
-            }
+        // configure eager fetching
+        if(property.getFetchMode() == GrailsDomainClassProperty.FETCH_EAGER) {
+            collection.setFetchMode(FetchMode.JOIN);
+        }
+        else {
+            collection.setFetchMode( FetchMode.DEFAULT );
+        }
 
-            // if its a one-to-many mapping
-            if(property.isOneToMany()) {
-                OneToMany oneToMany = new OneToMany( collection.getOwner() );
-                collection.setElement( oneToMany );
-                bindOneToMany( property, oneToMany, mappings );
-            }
-            else {
-                String tableName = calculateTableForMany(property);
-                Table t =  mappings.addTable(
-                        mappings.getSchemaName(),
-                        mappings.getCatalogName(),
-                        tableName,
-                        null,
-                        false
-                    );
-                collection.setCollectionTable(t);
+        // if its a one-to-many mapping
+        if(property.isOneToMany()) {
+            OneToMany oneToMany = new OneToMany( collection.getOwner() );
+            collection.setElement( oneToMany );
+            bindOneToMany( property, oneToMany, mappings );
+        }
+        else {
+            String tableName = calculateTableForMany(property);
+            Table t =  mappings.addTable(
+                    mappings.getSchemaName(),
+                    mappings.getCatalogName(),
+                    tableName,
+                    null,
+                    false
+                );
+            collection.setCollectionTable(t);
 
-                if(!property.isOwningSide()) {
-                    collection.setInverse(true);
-                }
+            if(!property.isOwningSide()) {
+                collection.setInverse(true);
             }
         }
+
 
 		// setup second pass
         if(collection instanceof org.hibernate.mapping.Set)
@@ -492,15 +505,22 @@ public final class GrailsDomainBinder {
 	 * where you have two mapping tables for left_right and right_left
 	 */
 	private static String calculateTableForMany(GrailsDomainClassProperty property) {
-		String left = getTableName(property.getDomainClass());
-		String right = getTableName(property.getReferencedDomainClass());
-		
-		if(property.isOwningSide()) {
-			return left+'_'+right;
-		}
-		else {
-			return right+'_'+left;
-		}
+        if(Map.class.isAssignableFrom(property.getType())) {
+            String tablePrefix = namingStrategy.classToTableName(property.getDomainClass().getFullName());
+            return tablePrefix + "_" + namingStrategy.propertyToColumnName(property.getName());
+           
+        }
+        else {
+            String left = getTableName(property.getDomainClass());
+            String right = getTableName(property.getReferencedDomainClass());
+
+            if(property.isOwningSide()) {
+                return left+'_'+right;
+            }
+            else {
+                return right+'_'+left;
+            }
+        }
 	}
 
 	/**
@@ -664,7 +684,7 @@ public final class GrailsDomainBinder {
 		entity.setDiscriminator( d );
 		entity.setDiscriminatorValue(entity.getClassName());
 		bindSimpleValue(
-				"string",
+                STRING_TYPE,
 				d,
 				false,
 				RootClass.DEFAULT_DISCRIMINATOR_COLUMN_NAME,
@@ -981,6 +1001,10 @@ public final class GrailsDomainBinder {
                 }
             }
         }
+        else if( Map.class.isAssignableFrom(grailsProperty.getType())) {
+            prop.setCascade("all");
+        }
+
 
         if(LOG.isTraceEnabled())
             LOG.trace( "[GrailsDomainBinder] Set cascading strategy on property ["+grailsProperty.getName()+"] to ["+prop.getCascade()+"]" );
