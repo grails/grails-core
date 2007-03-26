@@ -36,51 +36,21 @@ import org.quartz.JobListener
  * A plug-in that configures Quartz job support in Grails 
  * 
  * @author Graeme Rocher
+ * @author Marcel Overdijk
  * @since 0.4
  */
 class QuartzGrailsPlugin {
 	
 	def version = GrailsPluginUtils.getGrailsVersion()
 	def dependsOn = [core:version,hibernate:version]
+	def watchedResources = "file:./grails-app/jobs/*Job.groovy"
 
 	def doWithSpring = {
 		def schedulerReferences = []
 		application.taskClasses.each { jobClass ->
-			
-			def fullName = jobClass.fullName
-			"${fullName}JobClass"(MethodInvokingFactoryBean) {
-				targetObject = ref("grailsApplication", true)
-				targetMethod = "getArtefact"
-				arguments = [TaskArtefactHandler.TYPE, fullName]
-			}
-			"${fullName}"(ref("${fullName}JobClass")) { bean ->
-				bean.factoryMethod = "newInstance"
-				bean.autowire = "byName"
-			}
-			"${fullName}JobDetail"(MethodInvokingJobDetailFactoryBean) {
-				targetObject = ref("${fullName}")
-				targetMethod = GrailsTaskClassProperty.EXECUTE
-				concurrent = jobClass.concurrent
-				group = jobClass.group
-				if( jobClass.sessionRequired ) {
-					jobListenerNames = ["${SessionBinderJobListener.NAME}"] as String[]
-				}
-			}
-			if(!jobClass.cronExpressionConfigured) {
-				"${fullName}Trigger"(SimpleTriggerBean) {
-					jobDetail = ref("${fullName}JobDetail")
-					startDelay = jobClass.startDelay
-					repeatInterval = jobClass.timeout
-				}
-			}
-			else {
-				"${fullName}Trigger"(CronTriggerBean) {
-					jobDetail = ref("${fullName}JobDetail")
-					cronExpression = jobClass.cronExpression
-				}
-			}
-		
-			schedulerReferences << ref("${fullName}Trigger")
+			configureJobBeans.delegate = delegate
+			configureJobBeans(jobClass)
+			schedulerReferences << ref("${jobClass.fullName}Trigger")
 		}
 		// register SessionBinderJobListener to bind Hibernate Session to each Job's thread
 		"${SessionBinderJobListener.NAME}"(SessionBinderJobListener) { bean ->
@@ -90,6 +60,82 @@ class QuartzGrailsPlugin {
             triggers = schedulerReferences
             jobListeners = [ref("${SessionBinderJobListener.NAME}")]
         }
-		
+	}
+
+	def onChange = { event ->
+        if(application.isArtefactOfType(TaskArtefactHandler.TYPE, event.source)) {
+			log.debug("Job ${event.source} changed. Reloading...")
+			def context = event.ctx
+			if(!context) {
+				log.debug("Application context not found. Can't reload")
+				return
+			}
+			
+			// get quartz scheduler
+			def scheduler = context.getBean("quartzScheduler")
+			if(scheduler) {
+
+				// if job already exists, delete it from scheduler
+				def jobClass = application.getTaskClass(event.source?.name)
+				if(jobClass) {
+					scheduler.deleteJob(jobClass.fullName, jobClass.group)
+					log.debug("Job ${jobClass.fullName} deleted from scheduler")
+				}
+	
+				// add job artefact to application
+				jobClass = application.addArtefact(TaskArtefactHandler.TYPE, event.source)
+	
+				// configure and register job beans
+				def fullName = jobClass.fullName
+				def beans = beans {
+					configureJobBeans.delegate = delegate
+					configureJobBeans(jobClass)
+				}
+				event.ctx.registerBeanDefinition("${fullName}JobClass", beans.getBeanDefinition("${fullName}JobClass"))
+				event.ctx.registerBeanDefinition("${fullName}", beans.getBeanDefinition("${fullName}"))
+				event.ctx.registerBeanDefinition("${fullName}JobDetail", beans.getBeanDefinition("${fullName}JobDetail"))
+				event.ctx.registerBeanDefinition("${fullName}Trigger", beans.getBeanDefinition("${fullName}Trigger"))
+				
+				// add job to scheduler, and associate trigger with it
+				scheduler.scheduleJob(event.ctx.getBean("${fullName}JobDetail"), event.ctx.getBean("${fullName}Trigger"))
+				log.debug("Job ${jobClass.fullName} scheduled")
+			}
+		}
+	}
+	
+	def configureJobBeans = { jobClass ->
+		def fullName = jobClass.fullName
+		"${fullName}JobClass"(MethodInvokingFactoryBean) {
+			targetObject = ref("grailsApplication", true)
+			targetMethod = "getArtefact"
+			arguments = [TaskArtefactHandler.TYPE, fullName]
+		}
+		"${fullName}"(ref("${fullName}JobClass")) { bean ->
+			bean.factoryMethod = "newInstance"
+			bean.autowire = "byName"
+		}
+		"${fullName}JobDetail"(MethodInvokingJobDetailFactoryBean) {
+			targetObject = ref(fullName)
+			targetMethod = GrailsTaskClassProperty.EXECUTE
+			concurrent = jobClass.concurrent
+			group = jobClass.group
+			name = fullName
+			if( jobClass.sessionRequired ) {
+				jobListenerNames = ["${SessionBinderJobListener.NAME}"] as String[]
+			}
+		}
+		if(!jobClass.cronExpressionConfigured) {
+			"${fullName}Trigger"(SimpleTriggerBean) {
+				jobDetail = ref("${fullName}JobDetail")
+				startDelay = jobClass.startDelay
+				repeatInterval = jobClass.timeout
+			}
+		}
+		else {
+			"${fullName}Trigger"(CronTriggerBean) {
+				jobDetail = ref("${fullName}JobDetail")
+				cronExpression = jobClass.cronExpression
+			}
+		}
 	}
 }
