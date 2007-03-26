@@ -401,6 +401,7 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
         Class[] paramTypes = action.getParameterTypes();
         GroovyObject commandObject = null;
         if(paramTypes != null && paramTypes.length > 0 ) {
+            // TODO clearly incomplete, work in progress
         	Class c = paramTypes[0];
         	if(isCommandObjectClass(c)) {
         		try {
