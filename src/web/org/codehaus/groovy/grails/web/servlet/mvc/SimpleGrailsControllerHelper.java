@@ -26,6 +26,8 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
+import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -44,6 +46,8 @@ import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.commons.GrailsControllerClass;
 import org.codehaus.groovy.grails.scaffolding.GrailsScaffolder;
+import org.codehaus.groovy.grails.validation.ConstrainedPropertyBuilder;
+import org.codehaus.groovy.grails.web.binding.GrailsDataBinder;
 import org.codehaus.groovy.grails.web.metaclass.ChainDynamicMethod;
 import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods;
 import org.codehaus.groovy.grails.web.metaclass.GetParamsDynamicProperty;
@@ -56,6 +60,7 @@ import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecution
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.NoClosurePropertyForURIException;
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.NoViewNameDefinedException;
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.UnknownControllerException;
+import org.springframework.beans.MutablePropertyValues;
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -394,13 +399,19 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
         
         // Step 7: determine argument count and execute.
         Class[] paramTypes = action.getParameterTypes();
-        Object commandObject = null;
+        GroovyObject commandObject = null;
         if(paramTypes != null && paramTypes.length > 0 ) {
         	Class c = paramTypes[0];
         	if(isCommandObjectClass(c)) {
         		try {
-        			commandObject = c.newInstance();
-        			// TODO need to populate command object, do validation and respond accordingly
+        			commandObject = (GroovyObject) c.newInstance();
+                    GrailsDataBinder binder = GrailsDataBinder.createBinder(commandObject, commandObject.getClass().getName());
+                    binder.bind(new MutablePropertyValues((GrailsParameterMap)controller.getProperty("params")));
+                    ConstrainedPropertyBuilder delegate = new ConstrainedPropertyBuilder(commandObject);
+                    Closure validationClosure = (Closure)GrailsClassUtils.getStaticPropertyValue(c, "validate");
+                    validationClosure.setDelegate(delegate);
+                    validationClosure.call();
+                    
         		} catch (Exception e) {
         			throw new ControllerExecutionException("Error occurred creating command object.", e);
         		}
