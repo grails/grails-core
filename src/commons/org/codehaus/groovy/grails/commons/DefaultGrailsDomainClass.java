@@ -243,7 +243,10 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
             if(	Collection.class.isAssignableFrom(currentPropType) &&
                 currentProp.isPersistent() ) {
 
-                establishRelationshipForSet( currentProp);
+                establishRelationshipForCollection( currentProp);
+            }
+            else if( Map.class.isAssignableFrom(currentPropType) && currentProp.isPersistent()) {
+                establishRelationshipForCollection( currentProp );
             }
             // otherwise if the type is a domain class establish relationship
             else if(DomainClassArtefactHandler.isDomainClass(currentPropType) &&
@@ -265,7 +268,7 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
      *
      * @param property
      */
-    private void establishRelationshipForSet(DefaultGrailsDomainClassProperty property) {
+    private void establishRelationshipForCollection(DefaultGrailsDomainClassProperty property) {
         // is it a relationship
         Class relatedClassType = getRelatedClassType( property.getName() );
 
@@ -353,7 +356,7 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
                 property.setPersistant(false);
             }
         }
-        else {
+        else if(!Map.class.isAssignableFrom(property.getType())) {
             // no relationship defined for set.
             // set not persistent
             property.setPersistant(false);

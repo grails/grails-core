@@ -4,6 +4,46 @@ import org.codehaus.groovy.grails.commons.*
 
 class MapMappingTests extends AbstractGrailsHibernateTests {
 
+    void testAssociationMapMapping() {
+		def bookClass = ga.getDomainClass("Book")
+        def authorClass = ga.getDomainClass("Author")
+
+        def a1 = authorClass.newInstance()
+        a1.name = "Stephen King"
+        def a2 = authorClass.newInstance()
+        a2.name = "James Patterson"
+        def a3 = authorClass.newInstance()
+        a3.name = "Joe Bloggs"
+
+        def map = [Stephen:a1,
+                   James:a2,
+                   Joe:a3]
+
+        def book = bookClass.newInstance()
+
+        book.authors = map
+        book.authorNameSurname = [:]
+        book.save()
+
+
+        assert !book.hasErrors()
+        
+        session.flush()
+
+        assert book.id
+        
+        session.clear()
+
+        book = null
+
+        book = bookClass.clazz.get(1)
+
+        assert book
+        assertEquals 3, book.authors.size()
+        assertEquals "Stephen King", book.authors.Stephen.name
+
+    }
+
 	void testBasicMapMapping() {
 		def bookClass = ga.getDomainClass("Book")
 
@@ -26,26 +66,24 @@ class MapMappingTests extends AbstractGrailsHibernateTests {
         assertEquals "King", book.authorNameSurname.Stephen
         assertEquals "Patterson", book.authorNameSurname.James
         assertEquals "Bloggs", book.authorNameSurname.Joe
-    }
+    }   
+
+
 
 	void onSetUp() {
 		this.gcl.parseClass('''
 class Book {
 	Long id
 	Long version
-	Map authorNameSurname 
-}
-/*class Book2 {
-	Long id
-	Long version
+	Map authorNameSurname
 	Map authors
-
 	static hasMany = [authors:Author]
 }
 class Author {
     Long id
     Long version
-}*/
+    String name
+}
 class ApplicationDataSource {
 	   boolean pooling = true
 	   boolean logSql = true

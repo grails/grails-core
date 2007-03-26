@@ -105,6 +105,7 @@ public final class GrailsDomainBinder {
             public Collection create(GrailsDomainClassProperty property, PersistentClass owner, Mappings mappings) throws MappingException {
                 org.hibernate.mapping.Map map = new org.hibernate.mapping.Map(owner);
                 bindCollection(property, map, owner, mappings);
+
                 return map;
             }
         };
@@ -208,6 +209,20 @@ public final class GrailsDomainBinder {
 
             bindSimpleValue(STRING_TYPE, elt, false, columnName + '_' + IndexedCollection.DEFAULT_ELEMENT_COLUMN_NAME,mappings);
             elt.setTypeName(STRING_TYPE);
+        }
+        else {
+		  String entityName = ( (OneToMany) map.getElement() ).getReferencedEntityName();
+			PersistentClass referenced = mappings.getClass( entityName );
+			IndexBackref ib = new IndexBackref();
+			ib.setName( '_' + property.getName() + "IndexBackref" );
+			ib.setUpdateable( false );
+			ib.setSelectable( false );
+			ib.setCollectionRole( map.getRole() );
+			ib.setEntityName( map.getOwner().getEntityName() );
+			ib.setValue( map.getIndex() );
+			// ( (Column) ( (SimpleValue) ic.getIndex() ).getColumnIterator().next()
+			// ).setNullable(false);
+			referenced.addProperty( ib );
         }
     }
 
@@ -471,15 +486,7 @@ public final class GrailsDomainBinder {
             bindOneToMany( property, oneToMany, mappings );
         }
         else {
-            String tableName = calculateTableForMany(property);
-            Table t =  mappings.addTable(
-                    mappings.getSchemaName(),
-                    mappings.getCatalogName(),
-                    tableName,
-                    null,
-                    false
-                );
-            collection.setCollectionTable(t);
+            bindCollectionTable(property, mappings, collection);
 
             if(!property.isOwningSide()) {
                 collection.setInverse(true);
@@ -498,8 +505,20 @@ public final class GrailsDomainBinder {
         }
 
     }
-	
-	/**
+
+    private static void bindCollectionTable(GrailsDomainClassProperty property, Mappings mappings, Collection collection) {
+        String tableName = calculateTableForMany(property);
+        Table t =  mappings.addTable(
+                mappings.getSchemaName(),
+                mappings.getCatalogName(),
+                tableName,
+                null,
+                false
+            );
+        collection.setCollectionTable(t);
+    }
+
+    /**
 	 * This method will calculate the mapping table for a many-to-many. One side of 
 	 * the relationship has to "own" the relationship so that there is not a situation
 	 * where you have two mapping tables for left_right and right_left

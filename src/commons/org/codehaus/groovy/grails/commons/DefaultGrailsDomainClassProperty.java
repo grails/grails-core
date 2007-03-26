@@ -301,7 +301,7 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
 	 * @see org.codehaus.groovy.grails.commons.GrailsDomainClassProperty#getReferencedPropertyType()
 	 */
 	public Class getReferencedPropertyType() {
-		if(Collection.class.isAssignableFrom(this.type) && this.referencedPropertyType != null) {
+		if(isDomainAssociation()) {
 			return this.referencedPropertyType;
 		}
 		else {
@@ -309,9 +309,13 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.codehaus.groovy.grails.commons.GrailsDomainClassProperty#isBidirectional()
-	 */
+    private boolean isDomainAssociation() {
+        return (Collection.class.isAssignableFrom(this.type) || Map.class.isAssignableFrom(this.type)) && this.referencedPropertyType != null;
+    }
+
+    /* (non-Javadoc)
+      * @see org.codehaus.groovy.grails.commons.GrailsDomainClassProperty#isBidirectional()
+      */
 	public boolean isBidirectional() {
 		return this.bidirectional;
 	}
