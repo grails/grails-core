@@ -93,7 +93,11 @@ class ValidatorConstraint extends AbstractConstraint {
                     args[i++] = constraintPropertyName;
                     args[i++] = constraintOwningClass;
                     args[i++] = propertyValue;
-                    System.arraycopy( args, i, values, 1, values.length-1 );
+                    System.arraycopy( values, 1, args, i, values.length-1 );
+                } else {
+                    throw new IllegalArgumentException("Return value from validation closure ["
+                        +ConstrainedProperty.VALIDATOR_CONSTRAINT+"] of property ["+constraintPropertyName+"] of class ["
+                        +constraintOwningClass+"] must be a boolean, a string, an array or a collection");
                 }
             }
             if( bad ) {
