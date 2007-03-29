@@ -29,7 +29,7 @@ class UrlMappingsGrailsPlugin {
 	def watchedResources = ["file:./grails-app/conf/*UrlMappings.groovy"]
 
 	def version = GrailsUtil.getGrailsVersion()
-	def dependsOn = [controllers:version]
+	def dependsOn = [core:version]
 
 
     def doWithApplicationContext = { ctx ->

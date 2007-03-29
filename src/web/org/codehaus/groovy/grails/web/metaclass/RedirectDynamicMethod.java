@@ -25,9 +25,11 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Collections;
 import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -38,10 +40,14 @@ import org.codehaus.groovy.grails.commons.metaclass.AbstractDynamicMethodInvocat
 import org.codehaus.groovy.grails.scaffolding.GrailsScaffolder;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.GrailsHttpServletResponse;
+import org.codehaus.groovy.grails.web.servlet.WrappedResponseHolder;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
+import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder;
+import org.codehaus.groovy.grails.web.mapping.UrlMapping;
 import org.springframework.validation.Errors;
 import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.context.ApplicationContext;
 
 /**
  * Implements the "redirect" Controller method for action redirection
@@ -65,43 +71,34 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
     public static final String ARGUMENT_ERRORS = "errors";
 
     private static final Log LOG = LogFactory.getLog(RedirectDynamicMethod.class);
+    private static final char SLASH = '/';
+    private UrlMappingsHolder urlMappingsHolder;
 
-    public RedirectDynamicMethod() {
+    public RedirectDynamicMethod(ApplicationContext applicationContext) {
         super(METHOD_PATTERN);
+        if(applicationContext.containsBean(UrlMappingsHolder.BEAN_ID))
+            this.urlMappingsHolder = (UrlMappingsHolder)applicationContext.getBean(UrlMappingsHolder.BEAN_ID);
     }
 
     public Object invoke(Object target, String methodName, Object[] arguments) {
         if(arguments.length == 0)
             throw new MissingMethodException(METHOD_SIGNATURE,target.getClass(),arguments);
 
-        Object actionRef = null;
-        String controllerName = null;
-        Object id = null;
-        Object uri = null;
-        String url = null;
-        Map params;
-        Errors errors;
-        GroovyObject controller = (GroovyObject)target;
-
-        if(arguments[0] instanceof Map) {
-            Map argMap = (Map)arguments[0];
-            if(argMap.containsKey(ARGUMENT_URI)) {
-                 uri = argMap.get(ARGUMENT_URI);
-            }
-            else if(argMap.containsKey(ARGUMENT_URL)) {
-                url = argMap.get(ARGUMENT_URL).toString();
-            }
-            else {
-                actionRef = argMap.get(ARGUMENT_ACTION);
-                controllerName = (String)argMap.get(ARGUMENT_CONTROLLER);
-                id =  argMap.get(ARGUMENT_ID);
-            }
-            params = (Map)argMap.get(ARGUMENT_PARAMS);
-            errors = (Errors)argMap.get(ARGUMENT_ERRORS);
-        }
-        else {
+        Map argMap = arguments[0] instanceof Map ? (Map)arguments[0] : Collections.EMPTY_MAP;
+        if(argMap.size() == 0){
             throw new MissingMethodException(METHOD_SIGNATURE,target.getClass(),arguments);
         }
+
+
+        Object actionRef = argMap.get(ARGUMENT_ACTION);
+        String controllerName = argMap.containsKey(ARGUMENT_CONTROLLER) ? argMap.get(ARGUMENT_CONTROLLER).toString() : null;
+        Object id = argMap.get(ARGUMENT_ID);
+        Object uri = argMap.get(ARGUMENT_URI);
+        String url = argMap.containsKey(ARGUMENT_URL) ? argMap.get(ARGUMENT_URL).toString() : null;
+        Map params = (Map)argMap.get(ARGUMENT_PARAMS);
+        Errors errors = (Errors)argMap.get(ARGUMENT_ERRORS);
+        GroovyObject controller = (GroovyObject)target;
+
         // if there are errors add it to the list of errors
         Errors controllerErrors = (Errors)controller.getProperty( ControllerDynamicMethods.ERRORS_PROPERTY );
         if(controllerErrors != null) {
@@ -117,94 +114,138 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
         GrailsApplicationAttributes attrs = webRequest.getAttributes();
         HttpServletRequest request = webRequest.getCurrentRequest();
         GrailsHttpServletResponse response = webRequest.getCurrentResponse();
-        
+        StringBuffer actualUriBuf = new StringBuffer(attrs.getApplicationUri(request));
         if(uri != null) {
             actualUri = attrs.getApplicationUri(request) + uri.toString();
         }
         else if(url != null) {
             actualUri = url;
         }
-        else {
-            String actionName = null;
-            if(actionRef instanceof String) {
-               actionName = (String)actionRef;
-            }
-            else if(actionRef instanceof Closure) {
-                Closure c = (Closure)actionRef;
-                PropertyDescriptor prop = GrailsClassUtils.getPropertyDescriptorForValue(target,c);
-                if(prop != null) {
-                    actionName = prop.getName();
-                }
-                else {
-                    GrailsScaffolder scaffolder = getScaffolderForController(target.getClass().getName(), webRequest);
-                    if(scaffolder != null) {
-                            actionName = scaffolder.getActionName(c);
-                    }
-                }
+        else {            
+            String actionName = establishActionName(actionRef, target, webRequest);
+
+            UrlMapping urlMapping = null;
+            if(urlMappingsHolder!=null)
+                urlMapping = urlMappingsHolder.getReverseMapping(controllerName, actionName, params);
+            
+            if(urlMapping != null) {
+               String mappedUrl = urlMapping.createURL(params);
+               actualUriBuf.append(mappedUrl);
             }
             else {
-                actionName = ""; // default action
-            }
-            if(actionName != null) {
-                StringBuffer actualUriBuf = new StringBuffer(attrs.getApplicationUri(request));
-                if(actionName.indexOf('/') > -1) {
-                      actualUriBuf.append(actionName);
-                }
-                else {
-                    if(controllerName != null) {
-                        actualUriBuf.append('/')
-                                 .append(controllerName);
+                if(actionName != null) {
+
+                    if(actionName.indexOf(SLASH) > -1) {
+                          actualUriBuf.append(actionName);
                     }
                     else {
-                        actualUriBuf.append(attrs.getControllerUri(request));
+                        if(controllerName != null) {
+                            appendUrlToken(actualUriBuf, controllerName);
+                        }
+                        else {
+                            actualUriBuf.append(attrs.getControllerUri(request));
+                        }
                     }
+                    appendUrlToken(actualUriBuf, actionName);
                 }
-                actualUriBuf.append('/')
-                         .append(actionName);
+                else {
+                    throw new ControllerExecutionException("Action not found in redirect for name ["+actionName+"]");
+                }
                 if(id != null) {
-                    actualUriBuf.append('/')
-                             .append(id);
+                    appendUrlToken(actualUriBuf, id);
                 }
                 if(params != null) {
-                    actualUriBuf.append('?');
-                    for (Iterator i = params.keySet().iterator(); i.hasNext();) {
-                        Object name = i.next();
-                        if(name.equals(GrailsControllerClass.CONTROLLER) || name.equals(GrailsControllerClass.ACTION))
-                            continue;
-                        Object value = params.get(name);
-                        if (value==null)
-                            value = "";
-                        try {
-                            actualUriBuf.append(URLEncoder.encode(name.toString(),request.getCharacterEncoding()))
-                                     .append('=')
-                                     .append(URLEncoder.encode(value.toString(),request.getCharacterEncoding()));
-                        } catch (UnsupportedEncodingException ex) {
-                            throw new ControllerExecutionException("Error redirecting request for url ["+name+":"+value +"]: " + ex.getMessage(),ex);
-                        }
-                        if(i.hasNext())
-                            actualUriBuf.append('&');
-                    }
+                    appendRequestParams(actualUriBuf, params, request);
                 }
-                actualUri = actualUriBuf.toString();
             }
-            else {
-                throw new ControllerExecutionException("Action not found in redirect for name ["+actionName+"]");
-            }
+            actualUri = actualUriBuf.toString();
         }
 
+        return redirectResponse(actualUri, response);
+    }
 
+    /*
+     * Appends all the requeset parameters to the URI buffer
+     */
+    private void appendRequestParams(StringBuffer actualUriBuf, Map params, HttpServletRequest request) {
+        actualUriBuf.append('?');
+        for (Iterator i = params.keySet().iterator(); i.hasNext();) {
+            Object name = i.next();
+            if(name.equals(GrailsControllerClass.CONTROLLER) || name.equals(GrailsControllerClass.ACTION))
+                continue;
+            Object value = params.get(name);
+            appendRequestParam(actualUriBuf, name, value,request);
+            if(i.hasNext())
+                actualUriBuf.append('&');
+        }
+    }
+
+    /*
+     * Redirects the response the the given URI
+     */
+    private Object redirectResponse(String actualUri, HttpServletResponse response) {
         if(LOG.isDebugEnabled()) {
             LOG.debug("Dynamic method [redirect] forwarding request to ["+actualUri +"]");
         }
 
         try {
+            HttpServletResponse wrappedResponse =  WrappedResponseHolder.getWrappedResponse();
+            if(wrappedResponse != null ) response = wrappedResponse;
+
             response.sendRedirect(response.encodeRedirectURL(actualUri));
+            
         } catch (IOException e) {
             throw new ControllerExecutionException("Error redirecting request for url ["+actualUri +"]: " + e.getMessage(),e);
         }
         return null;
     }
-    
+
+    /*
+     * Appends a request parameters for the given aname and value
+     */
+    private void appendRequestParam(StringBuffer actualUriBuf, Object name, Object value,HttpServletRequest request) {
+        if (value==null)
+            value = "";
+        
+        try {
+            actualUriBuf.append(URLEncoder.encode(name.toString(),request.getCharacterEncoding()))
+                     .append('=')
+                     .append(URLEncoder.encode(value.toString(),request.getCharacterEncoding()));
+        } catch (UnsupportedEncodingException ex) {
+            throw new ControllerExecutionException("Error redirecting request for url ["+name+":"+value +"]: " + ex.getMessage(),ex);
+        }
+    }
+
+    /*
+     * Appends a URL token to the buffer
+     */
+    private void appendUrlToken(StringBuffer actualUriBuf, Object token) {
+        actualUriBuf.append(SLASH).append(token);
+    }
+    /*
+     * Figures out the action name from the specified action reference (either a string or closure)
+     */
+    private String establishActionName(Object actionRef, Object target, GrailsWebRequest webRequest) {
+        String actionName = "";
+        if(actionRef instanceof String) {
+           actionName = (String)actionRef;
+        }
+        else if(actionRef instanceof Closure) {
+            Closure c = (Closure)actionRef;
+            PropertyDescriptor prop = GrailsClassUtils.getPropertyDescriptorForValue(target,c);
+            if(prop != null) {
+                actionName = prop.getName();
+            }
+            else {
+                GrailsScaffolder scaffolder = getScaffolderForController(target.getClass().getName(), webRequest);
+                if(scaffolder != null) {
+                        actionName = scaffolder.getActionName(c);
+                }
+            }
+        }
+        return actionName;
+    }
+
     public GrailsScaffolder getScaffolderForController(String controllerName, GrailsWebRequest webRequest) {
     	GrailsApplicationAttributes attributes = webRequest.getAttributes();
 		GrailsControllerClass controllerClass = (GrailsControllerClass) attributes.getGrailsApplication().getArtefact(
