@@ -62,6 +62,7 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
     private boolean root = true;
     private Set subClasses = new HashSet();
     private String tableName = null;
+    private Collection embedded;
 
     public DefaultGrailsDomainClass(Class clazz) {
         super(clazz, "");
@@ -74,6 +75,7 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
         }
         this.propertyMap = new HashMap();
         this.relationshipMap = getAssociationMap();
+        this.embedded = getEmbeddedList();
         this.tableName = (String)getPropertyOrStaticPropertyOrFieldValue(GrailsDomainClassProperty.WITH_TABLE, String.class);
 
         // get mapping strategy by setting
@@ -107,13 +109,16 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
 
         // establish relationships
         establishRelationships();
+
         // set persistant properties
         establishPersistentProperties();
         // process the constraints
         evaluateConstraints();
     }
 
-	/**
+
+
+    /**
 	 * calculates the persistent properties from the evaluated properties
 	 */
 	private void establishPersistentProperties() {
@@ -183,6 +188,20 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
         }
         return this.relationshipMap;
     }
+
+    /**
+     * Retrieves the list of known embedded component types
+     *
+     * @return A list of embedded components
+     */
+    private Collection getEmbeddedList() {
+        Object potentialList = GrailsClassUtils.getStaticPropertyValue(getClazz(), GrailsDomainClassProperty.EMBEDDED);
+        if(potentialList instanceof Collection) {
+            return (Collection)potentialList;
+        }
+        return Collections.EMPTY_LIST;
+    }
+
 
     /**
      * Checks whether is property is configurational
@@ -459,9 +478,15 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
      */
     private void establishDomainClassRelationship(DefaultGrailsDomainClassProperty property) {
         Class propType = property.getType();
+        if(embedded.contains(property.getName())) {
+            property.setEmbedded(true);
+            return;
+        }
+
         // establish relationship to type
         Map relatedClassRelationships = GrailsDomainConfigurationUtil.getAssociationMap(propType);
         Map mappedBy = GrailsDomainConfigurationUtil.getMappedByMap(propType);
+
         
         Class relatedClassPropertyType = null;
 

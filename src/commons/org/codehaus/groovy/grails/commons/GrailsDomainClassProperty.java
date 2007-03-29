@@ -37,10 +37,13 @@ public interface GrailsDomainClassProperty {
 	String HAS_MANY = "hasMany";
 	String FETCH_MODE = "fetchMode";
 	String WITH_TABLE = "withTable";
-	int FETCH_EAGER = 1;
+    String EMBEDDED = "embedded";
+    
+    int FETCH_EAGER = 1;
 	int FETCH_LAZY = 0;
-	
-	/**
+
+
+    /**
 	 * Returns the configured fetch mode for the property
 	 */
 	public int getFetchMode();
@@ -190,4 +193,11 @@ public interface GrailsDomainClassProperty {
 	 * @return The name of the prop
 	 */
 	public String getReferencedPropertyName();
+
+    /**
+     * Returns true if this propert is an embedded component
+     *
+     * @return True if it is, false otherwise
+     */
+    boolean isEmbedded();
 }

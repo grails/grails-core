@@ -14,8 +14,6 @@
  */ 
 package org.codehaus.groovy.grails.commons;
 
-import grails.util.GrailsUtil;
-
 import java.beans.PropertyDescriptor;
 import java.util.*;
 
@@ -24,8 +22,13 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 
 /**
+ *
+ * A class that represents a property of a domain class and contains meta information about the properties relationships, naming conventions and type
+ *
  * @author Graeme Rocher
- * @since 05-Jul-2005
+ * @since 0.1
+ *
+ * Created: 05-Jul-2005
  */
 public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProperty {
 
@@ -51,6 +54,7 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
 	private int fetchMode = FETCH_LAZY;
 	private boolean owningSide;
 	private String referencePropertyName;
+    private boolean embedded;
 
 
     public DefaultGrailsDomainClassProperty(DefaultGrailsDomainClass domainClass, PropertyDescriptor descriptor)  {
@@ -353,7 +357,8 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
         return isOneToMany() ||
                 isOneToOne() ||
                 isManyToOne() ||
-                isManyToMany();
+                isManyToMany() ||
+                isEmbedded();
 	}
 
     public String getNaturalName() {
@@ -377,6 +382,9 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
         }
         else if(isManyToOne()) {
             assType = "many-to-one";
+        }
+        else if(isEmbedded()) {
+            assType = "embedded";
         }
         return new ToStringBuilder(this)
                         .append("name", this.name)
@@ -434,6 +442,13 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
 	public String getReferencedPropertyName() {
 		return this.referencePropertyName;
 	}
-	
-	
+
+
+    public boolean isEmbedded() {
+        return embedded;
+    }
+
+    public void setEmbedded(boolean isEmbedded) {
+        this.embedded = isEmbedded;
+    }
 }

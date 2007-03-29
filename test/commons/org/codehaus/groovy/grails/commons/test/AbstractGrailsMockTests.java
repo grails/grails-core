@@ -53,6 +53,7 @@ public abstract class AbstractGrailsMockTests extends TestCase {
         ga = new DefaultGrailsApplication(gcl.getLoadedClasses(),gcl);
         
         ga.setApplicationContext(ctx);
+        ga.initialise();
         ctx.registerMockBean(GrailsApplication.APPLICATION_ID, ga);
     }
     
