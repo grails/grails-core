@@ -361,7 +361,7 @@ class ControllersGrailsPlugin {
 				errors?.hasErrors() ? true : false
 			}
 
-			def redirect = new RedirectDynamicMethod()
+			def redirect = new RedirectDynamicMethod(ctx)
 			def chain = new ChainDynamicMethod()
 			def render = new RenderDynamicMethod()
 			def bind = new BindDynamicMethod()
