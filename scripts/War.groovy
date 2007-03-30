@@ -62,6 +62,8 @@ task (war: "The implementation task") {
 		def version = Ant.antProject.properties.'app.version'
 		if (version) {
 		    version = '-'+version
+		} else {
+		    version = ''
 		}
 		warName = "${basedir}/${fileName}${version}.war"
 
