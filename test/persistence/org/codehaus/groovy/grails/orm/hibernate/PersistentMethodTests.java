@@ -36,20 +36,18 @@ public class PersistentMethodTests extends AbstractDependencyInjectionSpringCont
 
     protected void onSetUp() throws Exception {
         Class groovyClass = cl.parseClass("public class PersistentMethodTests {\n" +
-            "\n" +
-            "\t List optionals = [ \"age\" ];\n" +
+            "\t Long id \n" +
+            "\t Long version \n" +
             "\t\n" +
-            "\t Long id; \n" +
-            "\t Long version; \n" +
-            "\t\n" +
-            "\t String firstName; \n" +
-            "\t String lastName; \n" +
-            "\t Integer age;\n" +
-              "boolean active = true" +
+            "\t String firstName \n" +
+            "\t String lastName \n" +
+            "\t Integer age\n" +
+            "\t boolean active = true\n" +
             "\t\n" +
             "\tstatic constraints = {\n" +
             "\t\tfirstName(size:4..15)\n" +
             "\t\tlastName(nullable:false)\n" +
+            "\t\tage(nullable:true)\n" +
             "\t}\n" +
             "}");
 
@@ -238,7 +236,7 @@ public class PersistentMethodTests extends AbstractDependencyInjectionSpringCont
         b.setVariable("test1", "flint%");
         GString gs = (GString)new GroovyShell(b).evaluate("\"$test\"");
         GString gs1 = (GString)new GroovyShell(b).evaluate("\"$test1\"");
-        params.clear();;
+        params.clear();
 
         params.add(gs);
         params.add(gs1);
@@ -283,7 +281,7 @@ public class PersistentMethodTests extends AbstractDependencyInjectionSpringCont
         try {
         	namedArgs.clear();
         	namedArgs.put(new Long(1), "fred");
-            returnValue = obj.getMetaClass().invokeStaticMethod(obj, "find", new Object[] { "from PersistentMethodTests as p where p.firstName = :name", namedArgs});
+            obj.getMetaClass().invokeStaticMethod(obj, "find", new Object[] { "from PersistentMethodTests as p where p.firstName = :name", namedArgs});
             // new Long(1) is not valid name for named param, so exception should be thrown
             fail("Should have thrown grails query exception");
         }
@@ -305,7 +303,7 @@ public class PersistentMethodTests extends AbstractDependencyInjectionSpringCont
 
         // test query with wrong argument type
         try {
-            returnValue = obj.getMetaClass().invokeStaticMethod(obj, "find", new Object[] { new Date()});
+            obj.getMetaClass().invokeStaticMethod(obj, "find", new Object[] { new Date()});
             fail("Should have thrown an exception");
         }
         catch(Exception e) {
@@ -372,6 +370,12 @@ public class PersistentMethodTests extends AbstractDependencyInjectionSpringCont
         obj = (GroovyObject)returnList.get(0);
         assertEquals("dino", obj.getProperty("firstName"));
 
+        returnList = (List)obj.getMetaClass().invokeStaticMethod(obj, "findAllByAgeGreaterThanOrEqual", new Object[] { new Integer(42) });
+        assertEquals(2, returnList.size());
+
+        returnList = (List)obj.getMetaClass().invokeStaticMethod(obj, "findAllByAgeLessThanOrEqual", new Object[] { new Integer(45) });
+        assertEquals(3, returnList.size());
+
         returnList = (List)obj.getMetaClass().invokeStaticMethod(obj, "findAllByAgeGreaterThan", new Object[] { new Integer(20) });
         assertEquals(2, returnList.size());
 
@@ -379,6 +383,9 @@ public class PersistentMethodTests extends AbstractDependencyInjectionSpringCont
         assertEquals(2, returnList.size());
 
         returnList = (List)obj.getMetaClass().invokeStaticMethod(obj, "findAllByLastNameLike", new Object[] { "flint%" });
+        assertEquals(2, returnList.size());
+
+        returnList = (List)obj.getMetaClass().invokeStaticMethod(obj, "findAllByLastNameIlike", new Object[] { "FLINT%" });
         assertEquals(2, returnList.size());
 
         returnList = (List)obj.getMetaClass().invokeStaticMethod(obj, "findAllByAgeBetween", new Object[] { new Integer(10), new Integer(43) });
@@ -401,7 +408,7 @@ public class PersistentMethodTests extends AbstractDependencyInjectionSpringCont
 
         // now lets test out some junk and make sure we get errors!
         try {
-            returnList = (List)obj.getMetaClass().invokeStaticMethod(obj, "findAllByLastNameLike", new Object[] { new Boolean(false) });
+            obj.getMetaClass().invokeStaticMethod(obj, "findAllByLastNameLike", new Object[] {Boolean.FALSE});
             fail("Should have thrown an exception for invalid arguments");
         }
         catch(MissingMethodException mme) {
@@ -409,7 +416,7 @@ public class PersistentMethodTests extends AbstractDependencyInjectionSpringCont
         }
         // and the wrong number of arguments!
         try {
-            returnList = (List)obj.getMetaClass().invokeStaticMethod(obj, "findAllByAgeBetween", new Object[] { new Integer(10) });
+            obj.getMetaClass().invokeStaticMethod(obj, "findAllByAgeBetween", new Object[] { new Integer(10) });
             fail("Should have thrown an exception for invalid argument count");
         }
         catch(MissingMethodException mme) {
@@ -597,7 +604,7 @@ public class PersistentMethodTests extends AbstractDependencyInjectionSpringCont
         b.setVariable("test1", "flint%");
         GString gs = (GString)new GroovyShell(b).evaluate("\"$test\"");
         GString gs1 = (GString)new GroovyShell(b).evaluate("\"$test1\"");
-        args.clear();;
+        args.clear();
         args.add(gs);
         args.add(gs1);
         returnValue = obj.getMetaClass().invokeStaticMethod(obj, "findAll", new Object[] { "from PersistentMethodTests where firstName like ? and lastName like ?", args });        
@@ -716,7 +723,7 @@ public class PersistentMethodTests extends AbstractDependencyInjectionSpringCont
         try {
         	namedArgs.clear();
         	namedArgs.put(new Long(1), "wilma");
-            returnValue = obj.getMetaClass().invokeStaticMethod(obj, "findAll", new Object[] { "from PersistentMethodTests as p where p.firstName = :name", namedArgs});
+            obj.getMetaClass().invokeStaticMethod(obj, "findAll", new Object[] { "from PersistentMethodTests as p where p.firstName = :name", namedArgs});
             // new Long(1) is not valid name for named param, so exception should be thrown
             fail("Should have thrown grails query exception");
         }
@@ -735,7 +742,7 @@ public class PersistentMethodTests extends AbstractDependencyInjectionSpringCont
         
         // test query with wrong argument type
         try {
-            returnValue = obj.getMetaClass().invokeStaticMethod(obj, "findAll", new Object[] { new Date()});
+            obj.getMetaClass().invokeStaticMethod(obj, "findAll", new Object[] { new Date()});
             fail("Should have thrown an exception");
         }
         catch(Exception e) {
@@ -890,7 +897,7 @@ public class PersistentMethodTests extends AbstractDependencyInjectionSpringCont
         try {
         	namedArgs.clear();
         	namedArgs.put(new Long(1), "wilma");
-            returnValue = obj.getMetaClass().invokeStaticMethod(obj, "executeQuery", new Object[] { "select distinct p from PersistentMethodTests as p where p.firstName = :name", namedArgs});
+            obj.getMetaClass().invokeStaticMethod(obj, "executeQuery", new Object[] { "select distinct p from PersistentMethodTests as p where p.firstName = :name", namedArgs});
             // new Long(1) is not valid name for named param, so exception should be thrown
             fail("Should have thrown grails query exception");
         }

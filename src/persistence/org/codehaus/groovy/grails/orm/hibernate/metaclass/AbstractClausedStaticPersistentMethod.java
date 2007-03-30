@@ -16,19 +16,18 @@ package org.codehaus.groovy.grails.orm.hibernate.metaclass;
 
 import groovy.lang.GString;
 import groovy.lang.MissingMethodException;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.*;
 import org.hibernate.SessionFactory;
 import org.hibernate.criterion.Criterion;
 import org.hibernate.criterion.Expression;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @author Graeme Rocher
@@ -50,6 +49,7 @@ public abstract class AbstractClausedStaticPersistentMethod extends
 		private static final String GREATER_THAN = "GreaterThan";
 		private static final String GREATER_THAN_OR_EQUAL = "GreaterThanOrEqual";
 		private static final String LIKE = "Like";
+        private static final String ILIKE = "Ilike";
 		private static final String BETWEEN = "Between";
 		private static final String IS_NOT_NULL = "IsNotNull";
 		private static final String IS_NULL = "IsNull";
@@ -197,6 +197,20 @@ public abstract class AbstractClausedStaticPersistentMethod extends
 
 				};
 			}
+            else if(queryParameter.endsWith( ILIKE )) {
+                return new GrailsMethodExpression(
+                        application,
+                        clazz,
+                        calcPropertyName(queryParameter, ILIKE),
+                        ILIKE,
+                        1,
+                        isNegation(queryParameter, ILIKE) ) {
+                    Criterion createCriterion() {
+                        return Expression.ilike( this.propertyName, arguments[0] );
+                    }
+
+                };
+            }
 			else if(queryParameter.endsWith( IS_NOT_NULL )) {
 				return new GrailsMethodExpression(
 						application,
