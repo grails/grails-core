@@ -21,41 +21,56 @@ import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
 
 import java.util.Arrays;
+import java.util.List;
+import java.util.ArrayList;
 
 /**
  * @author Graeme Rocher
+ * @author Sergey Nebolsin
  * @since 10-Feb-2006
  */
 public class DomainClassPropertyComparatorTests extends TestCase {
 
     public void testPropertyComparator() throws Exception {
-        GroovyClassLoader gcl = new GroovyClassLoader(Thread.currentThread().getContextClassLoader());
+        GroovyClassLoader gcl = new GroovyClassLoader( Thread.currentThread().getContextClassLoader() );
 
-        Class dc = gcl.parseClass("class Test { " +
-                                        "\n Long id;" +
-                                        "\n Long version;" +
-                                        "\nString name;" +
-                                        "\nDate age" +
-                                        "\nString zip" +
-                                        "\nString dob" +
-                                        "\nstatic constraints = {" +
-                                        "\n  name(size:5..15)" +
-                                        "\n  age()" +
-                                        "}  }");
-        GrailsDomainClass domainClass = new DefaultGrailsDomainClass(dc);
+        Class dc = gcl.parseClass(
+                "class Test { \n" +
+                "    Long id\n" +
+                "    Long version\n" +
+                "    String zip\n" +
+                "    String dob\n" +
+                "    Date age\n" +
+                "    String name\n" +
+                "    static constraints = {\n" +
+                "        name(size:5..15)\n" +
+                "        age()\n" +
+                "    }\n" +
+                "}\n" );
 
-        DomainClassPropertyComparator comp = new DomainClassPropertyComparator(domainClass);
+        GrailsDomainClass domainClass = new DefaultGrailsDomainClass( dc );
 
-        GrailsDomainClassProperty[] props =domainClass.getProperties();
-        Arrays.sort(props,comp);
-        for (int i = 0; i < props.length; i++) {
-			System.out.println(props[i].getName());
-		}
-        assertEquals("id",props[0].getName());
-        assertEquals("name",props[1].getName());
-        assertEquals("age",props[2].getName());
-        assertEquals("dob",props[3].getName());       
-        assertEquals("zip",props[4].getName());
-        assertEquals("version",props[5].getName());
+        DomainClassPropertyComparator comp = new DomainClassPropertyComparator( domainClass );
+
+        GrailsDomainClassProperty[] props = domainClass.getProperties();
+        Arrays.sort( props, comp );
+        for( int i = 0; i < props.length; i++ ) {
+            System.out.println( props[i].getName() );
+        }
+
+        List nonConstrainedProps = new ArrayList();
+        nonConstrainedProps.add("zip");
+        nonConstrainedProps.add("dob");
+        nonConstrainedProps.add("version");
+
+        // all we need to test is that the first properties will be 'id' after that constrained properties
+        // will appear in the same order as in 'constraints' closure, and all other properties will be
+        // putted at the end
+        assertEquals( "id", props[0].getName() );
+        assertEquals( "name", props[1].getName() );
+        assertEquals( "age", props[2].getName() );
+        assertTrue( nonConstrainedProps.contains( props[3].getName() ) );
+        assertTrue( nonConstrainedProps.contains( props[4].getName() ) );
+        assertTrue( nonConstrainedProps.contains( props[5].getName() ) );
     }
 }
