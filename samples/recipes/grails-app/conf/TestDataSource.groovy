@@ -1,6 +1,6 @@
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsAnnotationConfiguration
 
-class ProductionDataSource {
+class TestDataSource {
    def configClass = GrailsAnnotationConfiguration.class   
    boolean pooling = true
    String dbCreate = "update" // one of 'create', 'create-drop','update'
