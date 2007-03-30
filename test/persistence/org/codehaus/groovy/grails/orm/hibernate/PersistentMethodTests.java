@@ -370,12 +370,6 @@ public class PersistentMethodTests extends AbstractDependencyInjectionSpringCont
         obj = (GroovyObject)returnList.get(0);
         assertEquals("dino", obj.getProperty("firstName"));
 
-        returnList = (List)obj.getMetaClass().invokeStaticMethod(obj, "findAllByAgeGreaterThanOrEqual", new Object[] { new Integer(42) });
-        assertEquals(2, returnList.size());
-
-        returnList = (List)obj.getMetaClass().invokeStaticMethod(obj, "findAllByAgeLessThanOrEqual", new Object[] { new Integer(45) });
-        assertEquals(3, returnList.size());
-
         returnList = (List)obj.getMetaClass().invokeStaticMethod(obj, "findAllByAgeGreaterThan", new Object[] { new Integer(20) });
         assertEquals(2, returnList.size());
 
