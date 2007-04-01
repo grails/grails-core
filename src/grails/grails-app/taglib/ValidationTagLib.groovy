@@ -162,11 +162,7 @@ class ValidationTagLib {
 
           if(attrs['error']) {
                 def error = attrs['error']
-                def defaultMessage = ( attrs['default'] ? attrs['default'] : error.defaultMessage )
-                def message = messageSource.getMessage( error.code,
-                                                        error.arguments,
-                                                        defaultMessage,
-                                                        locale )
+                def message = messageSource.getMessage( error, locale )
                 if(message) {
                     out << message
                 }

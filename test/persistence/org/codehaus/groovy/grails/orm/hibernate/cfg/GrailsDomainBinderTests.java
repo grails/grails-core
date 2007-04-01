@@ -18,19 +18,19 @@ package org.codehaus.groovy.grails.orm.hibernate.cfg;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.IntRange;
 import groovy.lang.ObjectRange;
-
-import java.math.BigDecimal;
-
 import junit.framework.TestCase;
-
-import org.codehaus.groovy.grails.commons.*;
+import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
+import org.codehaus.groovy.grails.commons.DefaultGrailsDomainClass;
+import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
-import org.hibernate.cfg.Mappings;
+import org.codehaus.groovy.grails.validation.TestClass;
 import org.hibernate.mapping.Column;
 import org.hibernate.mapping.PersistentClass;
-import org.hibernate.mapping.Property;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
+
+import java.math.BigDecimal;
 
 /**
  * @author Jason Rudolph
@@ -184,23 +184,15 @@ public class GrailsDomainBinderTests extends TestCase {
     }
 
     private ConstrainedProperty getConstrainedBigDecimalProperty() {
-        return getConstrainedProperty("bigDecimalProperty");
+        return getConstrainedProperty("testBigDecimal");
     }
 
     private ConstrainedProperty getConstrainedStringProperty() {
-        return getConstrainedProperty("stringProperty");
+        return getConstrainedProperty("testString");
     }
 
     private ConstrainedProperty getConstrainedProperty(String propertyName) {
         BeanWrapper constrainedBean = new BeanWrapperImpl(new TestClass());
-        return new ConstrainedProperty(constrainedBean.getClass(), propertyName, constrainedBean.getPropertyType(propertyName));
-    }
-
-    /**
-     * Simple bean whose instances serve as test objects for the various binding tests.
-     */
-    private class TestClass {
-        private BigDecimal bigDecimalProperty;
-        private String stringProperty;
+        return new ConstrainedProperty(constrainedBean.getWrappedClass(), propertyName, constrainedBean.getPropertyType(propertyName));
     }
 }

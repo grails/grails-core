@@ -70,14 +70,11 @@ class RangeConstraint extends AbstractConstraint {
         if(!this.range.contains(propertyValue)) {
             Object[] args = new Object[] { constraintPropertyName, constraintOwningClass, propertyValue, range.getFrom(), range.getTo()  };
 
-            if(propertyValue == null) {
-                super.rejectValue(errors,ConstrainedProperty.RANGE_CONSTRAINT + ConstrainedProperty.INVALID_SUFFIX,args,getDefaultMessage(ConstrainedProperty.DEFAULT_INVALID_RANGE_MESSAGE_CODE, args));
-            }
-            else if(range.getFrom().compareTo( propertyValue ) == 1) {
-                super.rejectValue(errors,ConstrainedProperty.SIZE_CONSTRAINT + ConstrainedProperty.TOOSMALL_SUFFIX,args,getDefaultMessage(ConstrainedProperty.DEFAULT_INVALID_SIZE_MESSAGE_CODE, args));
+            if(range.getFrom().compareTo( propertyValue ) == 1) {
+                super.rejectValue(errors,ConstrainedProperty.SIZE_CONSTRAINT + ConstrainedProperty.TOOSMALL_SUFFIX,args,getDefaultMessage(ConstrainedProperty.DEFAULT_INVALID_RANGE_MESSAGE_CODE, args));
             }
             else if(range.getTo().compareTo(propertyValue) == -1) {
-                super.rejectValue(errors,ConstrainedProperty.SIZE_CONSTRAINT + ConstrainedProperty.TOOBIG_SUFFIX,args,getDefaultMessage(ConstrainedProperty.DEFAULT_INVALID_SIZE_MESSAGE_CODE, args));
+                super.rejectValue(errors,ConstrainedProperty.SIZE_CONSTRAINT + ConstrainedProperty.TOOBIG_SUFFIX,args,getDefaultMessage(ConstrainedProperty.DEFAULT_INVALID_RANGE_MESSAGE_CODE, args));
             }
 
 

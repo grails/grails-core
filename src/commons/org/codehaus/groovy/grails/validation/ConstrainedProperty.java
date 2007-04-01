@@ -85,6 +85,7 @@ public class ConstrainedProperty   {
     private static final String DEFAULT_INVALID_MAX_SIZE_MESSAGE = bundle.getString( DEFAULT_INVALID_MAX_SIZE_MESSAGE_CODE );
     private static final String DEFAULT_INVALID_MIN_SIZE_MESSAGE = bundle.getString( DEFAULT_INVALID_MIN_SIZE_MESSAGE_CODE );
     private static final String DEFAULT_NULL_MESSAGE = bundle.getString( DEFAULT_NULL_MESSAGE_CODE );
+    private static final String DEFAULT_INVALID_VALIDATOR_MESSAGE = bundle.getString( DEFAULT_INVALID_VALIDATOR_MESSAGE_CODE );
 
     public static final String CREDIT_CARD_CONSTRAINT = "creditCard";
     public static final String EMAIL_CONSTRAINT = "email";
@@ -130,6 +131,7 @@ public class ConstrainedProperty   {
         DEFAULT_MESSAGES.put(DEFAULT_NOT_EQUAL_MESSAGE_CODE,DEFAULT_NOT_EQUAL_MESSAGE);
         DEFAULT_MESSAGES.put(DEFAULT_NOT_INLIST_MESSAGE_CODE,DEFAULT_NOT_IN_LIST_MESSAGE);
         DEFAULT_MESSAGES.put(DEFAULT_NULL_MESSAGE_CODE,DEFAULT_NULL_MESSAGE);
+        DEFAULT_MESSAGES.put(DEFAULT_INVALID_VALIDATOR_MESSAGE_CODE, DEFAULT_INVALID_VALIDATOR_MESSAGE );
 
         constraints.put( CREDIT_CARD_CONSTRAINT, CreditCardConstraint.class );
         constraints.put( EMAIL_CONSTRAINT, EmailConstraint.class );
@@ -650,7 +652,7 @@ public class ConstrainedProperty   {
     public Integer getMaxSize() {
         Integer maxSize = null;
         
-        MaxSizeConstraint maxSizeConstraint = (MaxSizeConstraint)this.appliedConstraints.get(MAX_SIZE_CONSTRAINT);
+        MaxSizeConstraint maxSizeConstraint = ( MaxSizeConstraint )this.appliedConstraints.get(MAX_SIZE_CONSTRAINT);
         SizeConstraint sizeConstraint = (SizeConstraint)this.appliedConstraints.get(SIZE_CONSTRAINT);
 
         if ((maxSizeConstraint != null) || (sizeConstraint != null)) {
@@ -667,7 +669,7 @@ public class ConstrainedProperty   {
      * @param maxSize The maxSize to set.
      */
     public void setMaxSize(Integer maxSize) {
-        Constraint c = (MaxSizeConstraint)this.appliedConstraints.get( MAX_SIZE_CONSTRAINT );
+        Constraint c = ( MaxSizeConstraint )this.appliedConstraints.get( MAX_SIZE_CONSTRAINT );
         if( c != null) {
             c.setParameter(maxSize);
         }
@@ -964,7 +966,7 @@ public class ConstrainedProperty   {
                     c.setParameter( constrainingValue );
                     this.appliedConstraints.put( constraintName, c );
                 } catch (Exception e) {
-                    LOG.error("Exception thrown applying constraint ["+constraintName+"] to class ["+owningClass+"] for value ["+constrainingValue+"]: " + e.getMessage(), e);
+                    LOG.error("Exception thrown applying constraint ["+constraintName+"] to class ["+owningClass+"] for value ["+constrainingValue+"]: " + e.getMessage());
                     throw new ConstraintException("Exception thrown applying constraint ["+constraintName+"] to class ["+owningClass+"] for value ["+constrainingValue+"]: " + e.getMessage());
                 }
             }

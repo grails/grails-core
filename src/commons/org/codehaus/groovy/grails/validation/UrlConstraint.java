@@ -62,7 +62,7 @@ class UrlConstraint extends AbstractConstraint {
         if(url) {
             UrlValidator urlValidator = new UrlValidator(UrlValidator.ALLOW_ALL_SCHEMES + UrlValidator.ALLOW_2_SLASHES);
 
-            if((propertyValue == null) || !urlValidator.isValid(propertyValue.toString())) {
+            if( !urlValidator.isValid(propertyValue.toString())) {
                 Object[] args = new Object[] { constraintPropertyName, constraintOwningClass, propertyValue };
                 super.rejectValue(errors,ConstrainedProperty.URL_CONSTRAINT + ConstrainedProperty.INVALID_SUFFIX,args,getDefaultMessage(ConstrainedProperty.DEFAULT_INVALID_URL_MESSAGE_CODE, args));
             }
