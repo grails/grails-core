@@ -14,14 +14,19 @@
  */
 package org.codehaus.groovy.grails.validation;
 
-import org.springframework.context.MessageSource;
-import org.springframework.context.NoSuchMessageException;
-import org.springframework.validation.Errors;
-import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
+import org.codehaus.groovy.grails.commons.GrailsClassUtils;
+import org.springframework.context.MessageSource;
+import org.springframework.context.NoSuchMessageException;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.Errors;
+import org.springframework.validation.FieldError;
 
 import java.util.Locale;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Arrays;
 
 /**
  * @author Graeme Rocher
@@ -77,10 +82,66 @@ public abstract class AbstractConstraint implements Constraint {
 
         processValidate(target, propertyValue, errors);
     }
-    public void rejectValue(Errors errors, String code,String defaultMessage) {
 
-        errors.rejectValue(constraintPropertyName,classShortName + '.'  + constraintPropertyName + '.' + code, defaultMessage);
+    public void rejectValue(Errors errors, String defaultMessageCode, Object[] args) {
+        this.rejectValue( errors, defaultMessageCode, new String[] {}, args );
     }
+
+    public void rejectValue(Errors errors, String defaultMessageCode, String code, Object[] args) {
+        this.rejectValue( errors, defaultMessageCode, new String[] {code}, args );
+    }
+
+    public void rejectValue(Errors errors, String defaultMessageCode, String[] codes, Object[] args) {
+        this.rejectValueWithDefaultMessage(
+                errors,
+                getDefaultMessage( defaultMessageCode, args),
+                codes,
+                args
+        );
+    }
+
+    public void rejectValueWithDefaultMessage(Errors errors, String defaultMessage, String[] codes, Object[] args) {
+        BindingResult result = (BindingResult) errors;
+        List newCodes = new ArrayList();
+        String[] resolved = result.resolveMessageCodes( classShortName + '.'  + constraintPropertyName + '.' + getName() + ".error", constraintPropertyName);
+        newCodes.addAll( Arrays.asList( resolved ) );
+        for( int i = 0; i < codes.length; i++ ) {
+            newCodes.addAll( Arrays.asList( result.resolveMessageCodes( classShortName + '.'  + constraintPropertyName + '.' + codes[i], constraintPropertyName)));
+        }
+//        for( int i = 0; i < newCodes.size(); i++ )
+//            System.out.println( "Reject: " + newCodes.get(i));
+        FieldError error = new FieldError(
+                errors.getObjectName(),
+                constraintPropertyName,
+                errors.getFieldValue( constraintPropertyName ),
+                false,
+                (String[]) newCodes.toArray(new String[newCodes.size()]),
+                args,
+                defaultMessage
+        );
+        (( BindingResult ) errors).addError( error );
+    }
+
+    // For backward compatibility
+    public void rejectValue(Errors errors, String code, String defaultMessage) {
+        this.rejectValueWithDefaultMessage(
+                errors,
+                defaultMessage,
+                new String[] {code},
+                null
+        );
+    }
+
+    // For backward compatibility
+    public void rejectValue(Errors errors, String code,Object[] args,String defaultMessage) {
+        this.rejectValueWithDefaultMessage(
+                errors,
+                defaultMessage,
+                new String[] {code},
+                args
+        );
+    }
+
     protected String getDefaultMessage(String code, Object[] args) {
         String defaultMessage;
         try {
@@ -94,9 +155,7 @@ public abstract class AbstractConstraint implements Constraint {
         }
         return defaultMessage;
     }
-    public void rejectValue(Errors errors, String code,Object[] args,String defaultMessage) {
-        errors.rejectValue(constraintPropertyName,classShortName + '.'  + constraintPropertyName + '.' + code, args,defaultMessage);
-    }
+
     protected abstract void processValidate(Object target, Object propertyValue, Errors errors);
 
     /* (non-Javadoc)
