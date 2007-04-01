@@ -132,3 +132,7 @@ td .errors {
 .currentStep {
 	font-weight:bold;
 }
+
+th.sorted a, th.sorted a:link, th.sorted a:visited, th.sorted a:hover, th.sortable a, th.sortable a:link, th.sortable a:visited, th.sortable a:hover {
+	color: white;
+}

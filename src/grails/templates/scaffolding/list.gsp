@@ -20,15 +20,16 @@
            <table>
              <thead>
                <tr>
-                   <%
-                        props = domainClass.properties.findAll { it.name != 'version' && it.type != Set.class }
-                   Collections.sort(props, comparator.constructors[0].newInstance([domainClass] as Object[]))
-                   %>
-                   <%props.eachWithIndex { p,i ->
-                   	if(i < 6) {%>                   
-                        <th>${p.naturalName}</th>
-                   <%}}%>
-                   <th></th>
+               <% props = domainClass.properties.findAll { it.name != 'version' && it.type != Set.class }
+                  Collections.sort(props, comparator.constructors[0].newInstance([domainClass] as Object[]))
+                  props.eachWithIndex { p,i ->
+                   	if(i < 6) {
+                   	  if(p.isAssociation()) {%>
+                   	    <th>${p.naturalName}</th>
+                   	<%} else {%>
+                   	    <g:sortableColumn property="${p.name}" title="${p.naturalName}" />
+                  <%}}}%>
+                        <th></th>
                </tr>
              </thead>
              <tbody>
