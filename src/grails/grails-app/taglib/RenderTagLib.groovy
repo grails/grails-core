@@ -237,7 +237,7 @@ class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants 
 	 *
 	 * Attributes:
 	 *
-	 * property - name of the property relating to the field, including dotted notation for nested properties
+	 * property - name of the property relating to the field
 	 * defaultOrder (optional) - default order for the property; choose between asc (default if not provided) and desc
 	 * title (optional*) - title caption for the column
 	 * titleKey (optional*) - title key to use for the column, resolved against the message source
