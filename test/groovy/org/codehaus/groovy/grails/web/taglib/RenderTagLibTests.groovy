@@ -34,7 +34,8 @@ class RenderTagLibTests extends AbstractGrailsTagTests {
 			// use sorted map to be able to predict the order in which tag attributes are generated
 			def attrs = new TreeMap([property:"title", title:"Title"])
 			tag.call(attrs)
-			assertEquals '<th class="sortable" ><a href="/book/list?sort=title&order=asc" >Title</a></th>', sw.toString()
+			
+			checkTagOutput(sw.toString(), 'sortable', 'asc', 'Title')
     	}
 	}
 	
@@ -50,7 +51,8 @@ class RenderTagLibTests extends AbstractGrailsTagTests {
 			// use sorted map to be able to predict the order in which tag attributes are generated
 			def attrs = new TreeMap([property:"title", titleKey:"book.title"])
 			tag.call(attrs)
-			assertEquals '<th class="sortable" ><a href="/book/list?sort=title&order=asc" >book.title</a></th>', sw.toString()
+			
+			checkTagOutput(sw.toString(), 'sortable', 'asc', 'book.title')
     	}
 
         sw = new StringWriter();
@@ -62,7 +64,8 @@ class RenderTagLibTests extends AbstractGrailsTagTests {
 			// use sorted map to be able to predict the order in which tag attributes are generated
 			def attrs = new TreeMap([property:"title", title:"Title", titleKey:"book.title"])
 			tag.call(attrs)
-			assertEquals '<th class="sortable" ><a href="/book/list?sort=title&order=asc" >Title</a></th>', sw.toString()
+			
+			checkTagOutput(sw.toString(), 'sortable', 'asc', 'Title')
     	}
 		
 		// test message resolved 
@@ -77,7 +80,8 @@ class RenderTagLibTests extends AbstractGrailsTagTests {
 			// use sorted map to be able to predict the order in which tag attributes are generated
 			def attrs = new TreeMap([property:"title", title:"Title", titleKey:"book.title"])
 			tag.call(attrs)
-			assertEquals '<th class="sortable" ><a href="/book/list?sort=title&order=asc" >Book Title</a></th>', sw.toString()
+			
+			checkTagOutput(sw.toString(), 'sortable', 'asc', 'Book Title')
     	}
 	}
 
@@ -90,7 +94,8 @@ class RenderTagLibTests extends AbstractGrailsTagTests {
 			// use sorted map to be able to predict the order in which tag attributes are generated
 			def attrs = new TreeMap([action:"list2", property:"title", title:"Title"])
 			tag.call(attrs)
-			assertEquals '<th class="sortable" ><a href="/book/list2?sort=title&order=asc" >Title</a></th>', sw.toString()
+			
+			checkTagOutput(sw.toString(), 'sortable', 'asc', 'Title')
     	}
 	}
 	
@@ -105,7 +110,8 @@ class RenderTagLibTests extends AbstractGrailsTagTests {
 			// use sorted map to be able to predict the order in which tag attributes are generated
 			def attrs = new TreeMap([property:"title", defaultOrder:"desc", title:"Title"])
 			tag.call(attrs)
-			assertEquals '<th class="sortable" ><a href="/book/list?sort=title&order=desc" >Title</a></th>', sw.toString()
+			
+			checkTagOutput(sw.toString(), 'sortable', 'desc', 'Title')
     	}
     	
 		// default order: asc
@@ -118,7 +124,8 @@ class RenderTagLibTests extends AbstractGrailsTagTests {
 			// use sorted map to be able to predict the order in which tag attributes are generated
 			def attrs = new TreeMap([property:"title", defaultOrder:"asc", title:"Title"])
 			tag.call(attrs)
-			assertEquals '<th class="sortable" ><a href="/book/list?sort=title&order=asc" >Title</a></th>', sw.toString()
+			
+			checkTagOutput(sw.toString(), 'sortable', 'asc', 'Title')
     	}
     	
     	// invalid default order
@@ -131,7 +138,8 @@ class RenderTagLibTests extends AbstractGrailsTagTests {
 			// use sorted map to be able to predict the order in which tag attributes are generated
 			def attrs = new TreeMap([property:"title", defaultOrder:"invalid", title:"Title"])
 			tag.call(attrs)
-			assertEquals '<th class="sortable" ><a href="/book/list?sort=title&order=asc" >Title</a></th>', sw.toString()
+			
+			checkTagOutput(sw.toString(), 'sortable', 'asc', 'Title')
     	}
 	}
 	
@@ -145,7 +153,8 @@ class RenderTagLibTests extends AbstractGrailsTagTests {
 			// adding the class property is a dirty hack to predict the order; it will be overridden in the tag anyway
 			def attrs = new TreeMap([property:"title", title:"Title", class:"will be overridden", style:"width: 200px;"])
 			tag.call(attrs)
-			assertEquals '<th class="sortable" style="width: 200px;" ><a href="/book/list?sort=title&order=asc" >Title</a></th>', sw.toString()
+			
+			checkTagOutput(sw.toString(), 'sortable', 'asc', 'Title', ' style="width: 200px;"')
     	}
 	}
 	
@@ -163,7 +172,8 @@ class RenderTagLibTests extends AbstractGrailsTagTests {
 			// use sorted map to be able to predict the order in which tag attributes are generated
 			def attrs = new TreeMap([property:"title", title:"Title"])
 			tag.call(attrs)
-			assertEquals '<th class="sortable sorted asc" ><a href="/book/list?sort=title&order=desc" >Title</a></th>', sw.toString()
+			
+			checkTagOutput(sw.toString(), 'sortable sorted asc', 'desc', 'Title')
     	}
     	
 		// column sorted desc
@@ -179,7 +189,8 @@ class RenderTagLibTests extends AbstractGrailsTagTests {
 			// use sorted map to be able to predict the order in which tag attributes are generated
 			def attrs = new TreeMap([property:"title", title:"Title"])
 			tag.call(attrs)
-			assertEquals '<th class="sortable sorted desc" ><a href="/book/list?sort=title&order=asc" >Title</a></th>', sw.toString()
+			
+			checkTagOutput(sw.toString(), 'sortable sorted desc', 'asc', 'Title')
     	}
     	
     	// other column sorted
@@ -195,7 +206,85 @@ class RenderTagLibTests extends AbstractGrailsTagTests {
 			// use sorted map to be able to predict the order in which tag attributes are generated
 			def attrs = new TreeMap([property:"title", title:"Title"])
 			tag.call(attrs)
-			assertEquals '<th class="sortable" ><a href="/book/list?sort=title&order=asc" >Title</a></th>', sw.toString()
+			
+			checkTagOutput(sw.toString(), 'sortable', 'asc', 'Title')
     	}
+	}
+
+	/**
+	 * Checks that the given output matches what is expected from the
+	 * tag, based on the given parameters. It ensures that the order
+	 * of the query parameters in the generated anchor's 'href' attribute
+	 * is not significant. If the output does not match the expected
+	 * text, an assertion is thrown.
+	 * @param output The output to check (String).
+	 * @param expectedClassValue The expected contents of the 'class'
+	 * attribute in the tag's output (String).
+	 * @param expectedOrder The expected sort order generated by the
+	 * tag (either 'asc' or 'desc').
+	 * @param expectedContent The expected content of the generated
+	 * anchor tag (String).
+	 */
+	void checkTagOutput(output, expectedClassValue, expectedOrder, expectedContent) {	
+		// Check the output of the tag. The query parameters are not
+		// guaranteed to be in any particular order, so we extract
+		// them with a regular expression.
+		def p = ~"<th class=\"${expectedClassValue}\" ><a href=\"\\S+?(\\w+=\\w+)&(\\w+=\\w+)\" >${expectedContent}</a></th>"
+		def m = p.matcher(output)
+		
+		// First step: check the output as a whole matches what we
+		// expect.
+		assert m.matches()
+		
+		// Now make sure the expected query parameters are there,
+		// regardless of their order.
+		if (m.group(1) == 'sort=title') {
+		    assertEquals m.group(2), "order=${expectedOrder}"
+		}
+		else {
+		    assertEquals m.group(1), "order=${expectedOrder}"
+			assertEquals m.group(2), 'sort=title'
+		}
+	}
+
+	/**
+	 * Checks that the given output matches what is expected from the
+	 * tag, based on the given parameters. It ensures that the order
+	 * of the query parameters in the generated anchor's 'href' attribute
+	 * is not significant. If the output does not match the expected
+	 * text, an assertion is thrown.
+	 * @param output The output to check (String).
+	 * @param expectedClassValue The expected contents of the 'class'
+	 * attribute in the tag's output (String).
+	 * @param expectedOrder The expected sort order generated by the
+	 * tag (either 'asc' or 'desc').
+	 * @param expectedContent The expected content of the generated
+	 * anchor tag (String).
+	 * @param otherAttrs Any additional attributes that will be passed
+	 * through by the tag. This string takes the form of the literal
+	 * text that will appear in the generated HTML (e.g.
+	 * ' style="width: 100%"'). Note that the string should normally
+	 * begin with a space (' ').
+	 */
+	void checkTagOutput(output, expectedClassValue, expectedOrder, expectedContent, otherAttrs) {
+		// Check the output of the tag. The query parameters are not
+		// guaranteed to be in any particular order, so we extract
+		// them with a regular expression.
+		def p = ~"<th class=\"${expectedClassValue}\"${otherAttrs} ><a href=\"\\S+?(\\w+=\\w+)&(\\w+=\\w+)\" >${expectedContent}</a></th>"
+		def m = p.matcher(output)
+		
+		// First step: check the output as a whole matches what we
+		// expect.
+		assert m.matches()
+		
+		// Now make sure the expected query parameters are there,
+		// regardless of their order.
+		if (m.group(1) == 'sort=title') {
+		    assertEquals m.group(2), "order=${expectedOrder}"
+		}
+		else {
+		    assertEquals m.group(1), "order=${expectedOrder}"
+			assertEquals m.group(2), 'sort=title'
+		}
 	}
 }
