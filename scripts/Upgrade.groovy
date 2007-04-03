@@ -96,9 +96,15 @@ task( upgrade: "main upgrade task") {
             }
         }
 			
-		copy(file:"${grailsHome}/src/war/WEB-INF/web${servletVersion}.template.xml", 
-				 tofile:"${basedir}/web-app/WEB-INF/web.template.xml",
-				 overwrite:"true") 
+        copy(tofile:"${basedir}/grails-app/conf/${appClassName}UrlMappings.groovy") {
+            fileset(file:"${grailsHome}/src/grails/templates/artifacts/UrlMappings.groovy") {
+                present(present:"srconly", targetdir:"${basedir}/grails-app/conf")
+            }
+        }
+
+        copy(file:"${grailsHome}/src/war/WEB-INF/web${servletVersion}.template.xml",
+             tofile:"${basedir}/web-app/WEB-INF/web.template.xml",
+             overwrite:"true")
 
 	    def appKey = baseName.replaceAll( /\s/, '.' ).toLowerCase()
 
