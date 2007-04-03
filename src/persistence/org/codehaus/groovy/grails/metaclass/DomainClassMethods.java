@@ -26,6 +26,7 @@ import org.codehaus.groovy.grails.validation.metaclass.ConstraintsDynamicPropert
 import org.hibernate.SessionFactory;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.validation.Errors;
+import org.springframework.validation.BindException;
 
 import java.beans.IntrospectionException;
 import java.util.Iterator;
@@ -90,7 +91,7 @@ public class DomainClassMethods extends AbstractDynamicMethods implements Transa
 
         // add dynamic properties
         addDynamicProperty( new ConstraintsDynamicProperty(application) );
-        addDynamicProperty( new WeakGenericDynamicProperty(ERRORS_PROPERTY, Errors.class,null,false) );
+        addDynamicProperty( new WeakGenericDynamicProperty(ERRORS_PROPERTY, Errors.class,new BindException(theClass, theClass.getName() ),false) );
 
     }
 
