@@ -84,6 +84,7 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
     private static Log log = LogFactory.getLog(DefaultGrailsApplication.class);
     private ApplicationContext parentContext;
     private Set loadedClasses = new HashSet();
+
     private GrailsResourceLoader resourceLoader;
     private ArtefactHandler[] artefactHandlers;
     private Map artefactHandlersByName = new HashMap();
@@ -385,6 +386,10 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
             }
         }
         return null;
+    }
+
+    public GrailsResourceLoader getResourceLoader() {
+        return resourceLoader;
     }
 
     public GroovyClassLoader getClassLoader() {
