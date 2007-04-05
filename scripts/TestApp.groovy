@@ -85,7 +85,11 @@ task(runGrailsTests:"Runs Grails' tests under the grails-test directory") {
 		
 		def app = ctx.getBean(GrailsApplication.APPLICATION_ID)
 		def classLoader = app.classLoader
-		
+
+        def resources = app.resourceLoader.resources as ArrayList
+        testFiles.each() { resources << it }
+		app.resourceLoader.resources = resources
+        		
 		def suite = new TestSuite()
 		
 		GWU.bindMockWebRequest(ctx)
@@ -102,7 +106,7 @@ task(runGrailsTests:"Runs Grails' tests under the grails-test directory") {
 		def interceptor = null
 		if(beanNames.size() > 0)interceptor = ctx.getBean(beanNames[0])
 							
-		
+
 		try {
 			interceptor?.init()      
 			result = TestRunner.run(suite)
@@ -112,7 +116,7 @@ task(runGrailsTests:"Runs Grails' tests under the grails-test directory") {
 		} 							
 		
 	}   
-	catch(Exception e) {
+	catch(Throwable e) {
 		println "Error executing tests ${e.message}"
 		e.printStackTrace(System.out)   
 		println "Tests failed with exception!!"

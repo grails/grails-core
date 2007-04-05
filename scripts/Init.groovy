@@ -277,7 +277,7 @@ task(promptForName:"Prompts the user for the name of the Artifact if it isn't sp
 }
 
 task(classpath:"Sets the Grails classpath") {    
-	def grailsDir = resolveResources("${basedir}/grails-app/*")
+	def grailsDir = resolveResources("file:${basedir}/grails-app/*")
 	
 	Ant.path(id:"grails.classpath")  {
 		pathelement(location:"${basedir}") 		
@@ -288,9 +288,10 @@ task(classpath:"Sets the Grails classpath") {
 		fileset(dir:"${basedir}/web-app/WEB-INF/lib")		
 		fileset(dir:"${grailsHome}/lib")
 		fileset(dir:"${grailsHome}/dist")
-		fileset(dir:"lib") 
+		fileset(dir:"lib")
 		for(d in grailsDir) {
-			pathelement(location:"%{d.file.absolutePath}")
+		    println "adding path elem: $d"
+			pathelement(location:"${d.file.absolutePath}")
 		}  	
 	}
     StringBuffer cpath = new StringBuffer("")
