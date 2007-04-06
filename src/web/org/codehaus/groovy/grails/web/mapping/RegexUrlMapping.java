@@ -15,14 +15,13 @@
 package org.codehaus.groovy.grails.web.mapping;
 
 import groovy.lang.Closure;
+import org.codehaus.groovy.grails.commons.GrailsControllerClass;
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 import org.codehaus.groovy.grails.web.mapping.exceptions.UrlMappingException;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
-import org.codehaus.groovy.grails.commons.GrailsControllerClass;
 import org.springframework.validation.Errors;
 import org.springframework.validation.MapBindingResult;
 import org.springframework.web.context.request.RequestContextHolder;
-import org.apache.commons.lang.StringUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -286,6 +285,9 @@ public class RegexUrlMapping implements UrlMapping {
 
         String[] tokens = getUrlData().getTokens();
 
+        if( isWildcard(this) && !isWildcard( other ) ) return -1;
+        if( !isWildcard(this) && isWildcard( other ) ) return 1;
+        
         if(tokens.length < otherTokens.length) {
             return -1;
         }
@@ -312,6 +314,14 @@ public class RegexUrlMapping implements UrlMapping {
             }
         }
         return result;
+    }
+
+    private boolean isWildcard(UrlMapping mapping) {
+        String[] tokens = mapping.getUrlData().getTokens();
+        for( int i = 0; i < tokens.length; i++ ) {
+            if( isWildcard( tokens[i] )) return true;
+        }
+        return false;
     }
 
     private boolean isWildcard(String token) {

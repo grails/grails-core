@@ -42,7 +42,7 @@ mappings {
 
     void testComparable() {
         def parser = new DefaultUrlMappingParser()
-        def m1 = new RegexUrlMapping(parser.parse("/foo"), "test", null)
+        def m1 = new RegexUrlMapping(parser.parse("/foo/"), "test", null)
         def m2 = new RegexUrlMapping(parser.parse("/foo/(*)"), "test", null)
         def m3 = new RegexUrlMapping(parser.parse("/foo/(*)/bar"), "test", null)
         def m4 = new RegexUrlMapping(parser.parse("/(*)/foo/bar"), "test", null)
@@ -53,36 +53,39 @@ mappings {
         def m9 = new RegexUrlMapping(parser.parse("/"), "test", null)
 
         // root url
-        assertEquals( -1, m9.compareTo(m2) )
-        assertEquals( -1, m9.compareTo(m3))
-        assertEquals( -1, m9.compareTo(m4))
-        assertEquals( -1, m9.compareTo(m5))
-        assertEquals( -1, m9.compareTo(m6))
-        assertEquals( -1, m9.compareTo(m7))
+        assertEquals( 0, m9.compareTo(m1) )
+        assertEquals( 1, m9.compareTo(m2) )
+        assertEquals( 1, m9.compareTo(m3))
+        assertEquals( 1, m9.compareTo(m4))
+        assertEquals( 1, m9.compareTo(m5))
+        assertEquals( 1, m9.compareTo(m6))
+        assertEquals( 1, m9.compareTo(m7))
 
-        assertEquals( 1, m2.compareTo(m9) )
-        assertEquals( 1, m3.compareTo(m9))
-        assertEquals( 1, m4.compareTo(m9))
-        assertEquals( 1, m5.compareTo(m9))
-        assertEquals( 1, m6.compareTo(m9))
-        assertEquals( 1, m7.compareTo(m9))
+        assertEquals( 0, m1.compareTo(m9) )
+        assertEquals( -1, m2.compareTo(m9) )
+        assertEquals( -1, m3.compareTo(m9))
+        assertEquals( -1, m4.compareTo(m9))
+        assertEquals( -1, m5.compareTo(m9))
+        assertEquals( -1, m6.compareTo(m9))
+        assertEquals( -1, m7.compareTo(m9))
 
-        def urls = [m9,m2,m5,m7,m3,m4,m8]
+        def urls = [m9,m2,m5,m7,m3,m4,m8,m1]
         Collections.sort(urls)
         Collections.reverse(urls)
         println urls.inspect()
-        assertEquals m9, urls[-1]
+        // direct mappings before all wildcard mappings
+        assertTrue( m1.equals(urls[0]) || m9.equals(urls[0]) )
+        assertTrue( m1.equals(urls[1]) || m9.equals(urls[1]) )
 
         // url 1
-        assertEquals( -1, m1.compareTo(m2) )
-        assertEquals( -1, m1.compareTo(m3))
-        assertEquals( -1, m1.compareTo(m4))
-        assertEquals( -1, m1.compareTo(m5))
-        assertEquals( -1, m1.compareTo(m6))
-        assertEquals( -1, m1.compareTo(m6))
+        assertEquals( 1, m1.compareTo(m2) )
+        assertEquals( 1, m1.compareTo(m3))
+        assertEquals( 1, m1.compareTo(m4))
+        assertEquals( 1, m1.compareTo(m5))
+        assertEquals( 1, m1.compareTo(m6))
 
         // url 2
-        assertEquals( 1, m2.compareTo(m1))
+        assertEquals( -1, m2.compareTo(m1))
         assertEquals( -1, m2.compareTo(m3))
         assertEquals( -1, m2.compareTo(m4))
         assertEquals( -1, m2.compareTo(m5))
@@ -92,17 +95,17 @@ mappings {
 
 
         // url 3
-        assertEquals 1, m3.compareTo(m1)
-        assertEquals 1, m3.compareTo(m2)
-        assertEquals 1, m3.compareTo(m4)
-        assertEquals 1, m3.compareTo(m6)
-        assertEquals 1, m3.compareTo(m8)
+        assertEquals(-1, m3.compareTo(m1))
+        assertEquals( 1, m3.compareTo(m2))
+        assertEquals( 1, m3.compareTo(m4))
+        assertEquals( 1, m3.compareTo(m6))
+        assertEquals( 1, m3.compareTo(m8))
         assertEquals(-1, m3.compareTo(m5))
         assertEquals(1, m3.compareTo(m7))
         
 
         // url 4
-        assertEquals( 1, m4.compareTo(m1))
+        assertEquals( -1, m4.compareTo(m1))
         assertEquals( 1, m4.compareTo(m2))
         assertEquals( -1, m4.compareTo(m3))
         assertEquals( -1, m4.compareTo(m5))
