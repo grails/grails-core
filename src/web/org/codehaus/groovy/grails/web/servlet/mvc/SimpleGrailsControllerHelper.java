@@ -21,13 +21,12 @@ import groovy.lang.MissingPropertyException;
 import groovy.util.Proxy;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
-import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -46,6 +45,7 @@ import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.commons.GrailsControllerClass;
 import org.codehaus.groovy.grails.scaffolding.GrailsScaffolder;
+import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 import org.codehaus.groovy.grails.validation.ConstrainedPropertyBuilder;
 import org.codehaus.groovy.grails.web.binding.GrailsDataBinder;
 import org.codehaus.groovy.grails.web.metaclass.ChainDynamicMethod;
@@ -60,8 +60,12 @@ import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecution
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.NoClosurePropertyForURIException;
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.NoViewNameDefinedException;
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.UnknownControllerException;
+import org.springframework.beans.BeanWrapper;
+import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.context.ApplicationContext;
+import org.springframework.validation.BindException;
+import org.springframework.validation.Errors;
 import org.springframework.web.servlet.ModelAndView;
 
 /**
@@ -402,17 +406,27 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
         GroovyObject commandObject = null;
         if(paramTypes != null && paramTypes.length > 0 ) {
             // TODO clearly incomplete, work in progress
-        	Class c = paramTypes[0];
-        	if(isCommandObjectClass(c)) {
+        	Class paramType = paramTypes[0];
+        	if(isCommandObjectClass(paramType)) {
         		try {
-        			commandObject = (GroovyObject) c.newInstance();
+                    
+                    // some of this needs to be moved out so it doesn't happen on each request, still a
+                    // work in progress...
+        			commandObject = (GroovyObject) paramType.newInstance();
                     GrailsDataBinder binder = GrailsDataBinder.createBinder(commandObject, commandObject.getClass().getName());
                     binder.bind(new MutablePropertyValues((GrailsParameterMap)controller.getProperty("params")));
                     ConstrainedPropertyBuilder delegate = new ConstrainedPropertyBuilder(commandObject);
-                    Closure validationClosure = (Closure)GrailsClassUtils.getStaticPropertyValue(c, "validate");
+                    Closure validationClosure = (Closure)GrailsClassUtils.getStaticPropertyValue(paramType, "validate");
                     validationClosure.setDelegate(delegate);
                     validationClosure.call();
-                    
+
+                    BeanWrapper beanWrapper = new BeanWrapperImpl(commandObject);
+                    Errors errors = new BindException(commandObject, paramType.getName());
+                    Collection constrainedProperties = delegate.getConstrainedProperties().values();
+                    for (Iterator i = constrainedProperties.iterator(); i.hasNext();) {
+                        ConstrainedProperty constrainedProperty = (ConstrainedProperty)i.next();
+                        constrainedProperty.validate(commandObject, beanWrapper.getPropertyValue( constrainedProperty.getPropertyName() ),errors);
+                    }
         		} catch (Exception e) {
         			throw new ControllerExecutionException("Error occurred creating command object.", e);
         		}
