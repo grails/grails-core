@@ -127,10 +127,9 @@ public class RegexUrlMapping implements UrlMapping {
         Pattern regex;
         String pattern = null;
         try {
-            pattern = url.replaceAll("\\*", "[^/]+");
+            pattern = "^" + url.replaceAll("\\*", "[^/]+");
             pattern += "/??$";
             regex = Pattern.compile(pattern);
-
         } catch (PatternSyntaxException pse) {
             throw new UrlMappingException("Error evaluating mapping for pattern ["+pattern+"] from Grails URL mappings: " + pse.getMessage(), pse);
         }
