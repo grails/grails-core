@@ -53,9 +53,11 @@ task ( runApp : "Main implementation that executes a Grails application") {
 
         server.addWebApplication("/${grailsAppName}", "${basedir}/web-app")
         server.start()
+        event("StatusFinal", ["Server running on port $serverPort"])
     } catch(Throwable t) {
         t.printStackTrace()
-    }	
+        event("StatusFinal", ["Server failed to start: $t"])
+    }
 }    
 task( watchContext : "Watches the Jetty web.xml for changes and reloads of necessary") {
 	def f = new File("${basedir}/web-app/WEB-INF/web.xml")
@@ -85,4 +87,5 @@ task( stopServer : "Stops the Grails Jetty server") {
 		 def svr = HttpServer.httpServers.iterator().next()
 		 svr.stop()
 	}
+    event("StatusFinal", ["Server stopped"])
 }

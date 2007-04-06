@@ -69,7 +69,8 @@ task(runCompiledTests:"Runs the tests located under src/test which are compiled 
 			include(name:"TEST-*.xml")
 			report(format:"frames", todir:"${basedir}/target/test-reports/html")
 		}
-	} 
+	}
+	event("StatusFinal", ["Compiled tests complete"])
 }
 
 task(runGrailsTests:"Runs Grails' tests under the grails-test directory") {
@@ -119,23 +120,25 @@ task(runGrailsTests:"Runs Grails' tests under the grails-test directory") {
 	catch(Throwable e) {
 		println "Error executing tests ${e.message}"
 		e.printStackTrace(System.out)   
-		println "Tests failed with exception!!"
+        event("StatusFinal", ["Error running tests: ${e.toString()}"])
 		exit(1)
 	}
 	finally {
 		if(result) { 
 			if(result.errorCount() > 0 || result.failureCount() > 0) {
 				println "Test Failures!!!"
+            	event("StatusFinal", ["Tests failed: ${result.errorCount()} errors, ${result.failureCount()} failures"])
 				exit(1)
 			}
 			else {
+            	event("StatusFinal", ["Tests passed"])
 				exit(0)
 			}			       
 
 		}  
 		else {
+            event("StatusFinal", ["Tests passed"])
 			exit(0)
 		}
-	}	
-	
+	}
 }

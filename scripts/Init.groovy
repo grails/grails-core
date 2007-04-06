@@ -45,8 +45,72 @@ grailsTmp = "${userHome}/.grails/tmp"
 resolver = new PathMatchingResourcePatternResolver()
 grailsAppName = null
 appGrailsVersion = null
+hookScripts = [this]
+
+loadEventHooks()
+
+// Send a scripting event notification to any and all event hooks in plugins/user scripts
+event = { String name, def args ->
+    hookScripts.each() {
+        try {
+            def handler = it."event$name"
+            handler(*args)
+        } catch (MissingPropertyException e) {
+        }
+
+    }
+}
+
+eventStatusFinal = { message ->
+    println message
+}
+
+eventStatusUpdate = { message ->
+    println message
+}
+
+eventCreatedArtefact = { artefactType, artefactName ->
+    println "Created $artefactType for $artefactName"
+}
+
+/* Standard handlers not handled by Init
+eventCreatedFile = { fileName ->
+    // Called when any file is created in the project tree, that is to be part of the project source (not regenerated)
+}
+eventPluginInstalled = { pluginName ->
+    // Called when a plugin is installed
+}
+eventExiting = { returnCode ->
+    // Called when the Gant scripting is about to end
+}
+*/
+
+void loadEventHooks() {
+    // Look for user script
+    def f = new File( userHome, ".grails/scripts/Events.groovy")
+    if (f.exists()) {
+        println "Found user events script"
+        def script = getClass().classLoader.parseClass( f ).newInstance().run()
+        hookScripts << script
+    }
+
+    // Look for plugin-supplied scripts
+    def pluginsDir = new File( basedir, "plugins")
+    if (pluginsDir.exists()) {
+        pluginsDir.eachDir() {
+            f = new File( it, "scripts/Events.groovy")
+            if (f.exists()) {
+                println "Found events script in plugin ${it.name}"
+                hookScripts << getClass().classLoader.parseClass( f).newInstance().run()
+            }
+        }
+    }
+}
+
 
 exit = {
+    event("Exiting", [it])
+    // Prevent system.exit during unit/integration testing
     if (System.getProperty("grails.cli.testing")) {
         throw new RuntimeException("Gant script exited")
     } else {
@@ -130,14 +194,14 @@ task ( createStructure: "Creates the application directory structure") {
 task (checkVersion: "Stops build if app expects different Grails version") {
     if (new File("${basedir}/application.properties").exists()) {
         if (appGrailsVersion != grailsVersion) {
-            println "Application expects grails version [$appGrailsVersion], but GRAILS_HOME is version " +
+            event("StatusFinal", ["Application expects grails version [$appGrailsVersion], but GRAILS_HOME is version " +
                 "[$grailsVersion] - use the correct Grails version or run 'grails upgrade' if this Grails "+
-                "version is newer than the version your application expects."
+                "version is newer than the version your application expects."])
             exit(1)
         }
     } else {
         // We know this is pre-0.5 application
-	    println "Application is pre-Grails 0.5, please run: grails upgrade"
+	    event("StatusFinal", ["Application is pre-Grails 0.5, please run: grails upgrade"])
 	    exit(1)
     }
 }
@@ -266,7 +330,8 @@ task ('createArtifact': "Creates a specific Grails artifact") {
 	Ant.replace(file:artifactFile, 
 				token:"@artifact.name@", value:"${className}${typeName}" )
 				
-	println "Created ${typeName} at ${artifactFile}"
+	event("CreatedFile", [artifactFile])
+	event("CreatedArtefact", [typeName, className])
 }  
 
 task(promptForName:"Prompts the user for the name of the Artifact if it isn't specified as an argument") {
@@ -290,7 +355,6 @@ task(classpath:"Sets the Grails classpath") {
 		fileset(dir:"${grailsHome}/dist")
 		fileset(dir:"lib")
 		for(d in grailsDir) {
-		    println "adding path elem: $d"
 			pathelement(location:"${d.file.absolutePath}")
 		}  	
 	}
