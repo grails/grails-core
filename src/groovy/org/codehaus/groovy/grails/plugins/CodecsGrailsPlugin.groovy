@@ -56,7 +56,10 @@ class CodecsGrailsPlugin {
                     if(encodeMethod) {
                         return encodeMethod(delegate)
                     } else {
-                        throw new MissingMethodException(encodeMethodName, String, [] as Object[])
+                        // note the call to delegate.getClass() instead of the more groovy delegate.class.
+                        // this is because the delegate might be a Map, in which case delegate.class doesn't
+                        // do what we want here...
+                        throw new MissingMethodException(encodeMethodName, delegate.getClass(), [] as Object[])
                     }
                 }
                 decoder = {->
@@ -65,7 +68,10 @@ class CodecsGrailsPlugin {
                     if(decodeMethod) {
                         return decodeMethod(delegate)
                     } else {
-                        throw new MissingMethodException(decodeMethodName, String, [] as Object[])
+                        // note the call to delegate.getClass() instead of the more groovy delegate.class.
+                        // this is because the delegate might be a Map, in which case delegate.class doesn't
+                        // do what we want here...
+                        throw new MissingMethodException(decodeMethodName, delegate.getClass(), [] as Object[])
                     }
                 }
             } else {
@@ -76,12 +82,18 @@ class CodecsGrailsPlugin {
                 if(encodeMethod) {
                     encoder = {-> encodeMethod(delegate) }
                 } else {
-                    encoder = {-> throw new MissingMethodException(encodeMethodName, String, [] as Object[]) }
+                    // note the call to delegate.getClass() instead of the more groovy delegate.class.
+                    // this is because the delegate might be a Map, in which case delegate.class doesn't
+                    // do what we want here...
+                    encoder = {-> throw new MissingMethodException(encodeMethodName, delegate.getClass(), [] as Object[]) }
                 }
                 if(decodeMethod) {
                     decoder = {-> decodeMethod(delegate) }
                 } else {
-                    decoder = {-> throw new MissingMethodException(decodeMethodName, String, [] as Object[]) }
+                    // note the call to delegate.getClass() instead of the more groovy delegate.class.
+                    // this is because the delegate might be a Map, in which case delegate.class doesn't
+                    // do what we want here...
+                    decoder = {-> throw new MissingMethodException(decodeMethodName, delegate.getClass(), [] as Object[]) }
                 }
             }
 
