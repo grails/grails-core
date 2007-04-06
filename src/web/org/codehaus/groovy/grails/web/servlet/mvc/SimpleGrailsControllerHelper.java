@@ -78,7 +78,7 @@ import org.springframework.web.servlet.ModelAndView;
  */
 public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
 
-	private static final String SCAFFOLDER = "Scaffolder";
+    private static final String SCAFFOLDER = "Scaffolder";
     
 
     private GrailsApplication application;
@@ -426,6 +426,9 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
                     for (Iterator i = constrainedProperties.iterator(); i.hasNext();) {
                         ConstrainedProperty constrainedProperty = (ConstrainedProperty)i.next();
                         constrainedProperty.validate(commandObject, beanWrapper.getPropertyValue( constrainedProperty.getPropertyName() ),errors);
+                    }
+                    if(errors.hasErrors()) {
+                        LOG.warn("Command Object " + paramType.getName() + " Failed Validation");
                     }
         		} catch (Exception e) {
         			throw new ControllerExecutionException("Error occurred creating command object.", e);
