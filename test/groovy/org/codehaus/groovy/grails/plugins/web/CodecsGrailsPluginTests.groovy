@@ -44,9 +44,10 @@ class CodecsGrailsPluginTests extends AbstractGrailsPluginTests {
 		assert someString.encodeAsSecond() == 'found second encode method for string: some string'
 		assert someString.decodeThird() == 'found third decode method for string: some string'
 			
-		shouldFail(MissingMethodException) {
-			someString.decodeSecond()
+		def message = shouldFail(MissingMethodException) {
+			42.decodeSecond()
 		}
+        assertEquals "No signature of method: java.lang.Integer.decodeSecond() is applicable for argument types: () values: {}", message
 		
 		shouldFail(MissingMethodException) {
 			someString.encodeAsThird()
