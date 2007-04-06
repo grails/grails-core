@@ -17,6 +17,7 @@ package org.codehaus.groovy.grails.plugins
 
 import org.codehaus.groovy.grails.plugins.support.GrailsPluginUtils
 import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
+import grails.util.GrailsUtil
 
 /**
  * A plug-in that configures pluggable codecs 
@@ -43,28 +44,49 @@ class CodecsGrailsPlugin {
 
 
 			def encodeMethodName = "encodeAs${codecName}"
+			def decodeMethodName = "decode${codecName}"
 
-			Object.metaClass."${encodeMethodName}" << {->
-				def codecClass = application.getCodecClass(codecClassName)
-				def encodeMethod = codecClass.encodeMethod
-				if(encodeMethod) {
-					return encodeMethod(delegate)
-				} else {
-					throw new MissingMethodException(encodeMethodName, String, [] as Object[])
-				}
+            def encoder
+            def decoder
+            if (GrailsUtil.isDevelopmentEnv()) {
+                // Resolve codecs in every call in case of a codec reload
+                encoder = {->
+                    def codecClass = application.getCodecClass(codecClassName)
+                    def encodeMethod = codecClass.encodeMethod
+                    if(encodeMethod) {
+                        return encodeMethod(delegate)
+                    } else {
+                        throw new MissingMethodException(encodeMethodName, String, [] as Object[])
+                    }
+                }
+                decoder = {->
+                    def codecClass = application.getCodecClass(codecClassName)
+                    def decodeMethod = codecClass.decodeMethod
+                    if(decodeMethod) {
+                        return decodeMethod(delegate)
+                    } else {
+                        throw new MissingMethodException(decodeMethodName, String, [] as Object[])
+                    }
+                }
+            } else {
+                // Resolve codec methods once only at startup
+                def codecClass = application.getCodecClass(codecClassName)
+                def encodeMethod = codecClass.encodeMethod
+                def decodeMethod = codecClass.decodeMethod
+                if(encodeMethod) {
+                    encoder = {-> encodeMethod(delegate) }
+                } else {
+                    encoder = {-> throw new MissingMethodException(encodeMethodName, String, [] as Object[]) }
+                }
+                if(decodeMethod) {
+                    decoder = {-> decodeMethod(delegate) }
+                } else {
+                    decoder = {-> throw new MissingMethodException(decodeMethodName, String, [] as Object[]) }
+                }
             }
 
-
-			def decodeMethodName = "decode${codecName}" 
-			Object.metaClass."${decodeMethodName}" << {->
-				def codecClass = application.getCodecClass(codecClassName)
-				def decodeMethod = codecClass.decodeMethod
-				if(decodeMethod) {
-					return decodeMethod(delegate)
-				} else {
-					throw new MissingMethodException(decodeMethodName, String, [] as Object[])
-				}
-			}
+			Object.metaClass."${encodeMethodName}" << encoder
+			Object.metaClass."${decodeMethodName}" << decoder
 		}
 	}
 }
