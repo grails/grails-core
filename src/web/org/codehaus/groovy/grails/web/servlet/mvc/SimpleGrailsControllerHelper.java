@@ -415,14 +415,14 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
         			commandObject = (GroovyObject) paramType.newInstance();
                     GrailsDataBinder binder = GrailsDataBinder.createBinder(commandObject, commandObject.getClass().getName());
                     binder.bind(new MutablePropertyValues((GrailsParameterMap)controller.getProperty("params")));
-                    ConstrainedPropertyBuilder delegate = new ConstrainedPropertyBuilder(commandObject);
+                    ConstrainedPropertyBuilder constrainedPropertyBuilder = new ConstrainedPropertyBuilder(commandObject);
                     Closure validationClosure = (Closure)GrailsClassUtils.getStaticPropertyValue(paramType, "validate");
-                    validationClosure.setDelegate(delegate);
+                    validationClosure.setDelegate(constrainedPropertyBuilder);
                     validationClosure.call();
 
                     BeanWrapper beanWrapper = new BeanWrapperImpl(commandObject);
                     Errors errors = new BindException(commandObject, paramType.getName());
-                    Collection constrainedProperties = delegate.getConstrainedProperties().values();
+                    Collection constrainedProperties = constrainedPropertyBuilder.getConstrainedProperties().values();
                     for (Iterator i = constrainedProperties.iterator(); i.hasNext();) {
                         ConstrainedProperty constrainedProperty = (ConstrainedProperty)i.next();
                         constrainedProperty.validate(commandObject, beanWrapper.getPropertyValue( constrainedProperty.getPropertyName() ),errors);
