@@ -8,7 +8,7 @@ class URLCodec {
     }
 
     static decode = { obj ->
-        URLEncoder.decode(obj.toString(), URLCodec.getEncoding())
+        URLDecoder.decode(obj.toString(), URLCodec.getEncoding())
     }
 
 	private static def getEncoding() {
