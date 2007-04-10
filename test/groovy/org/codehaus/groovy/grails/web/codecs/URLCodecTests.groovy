@@ -22,12 +22,15 @@ class URLCodecTests extends GroovyTestCase {
     }
 
 	void testEncode() {
+	    println codec.encode('The @string \"foo-bar\"')
 	    assertEquals("My+test+string",codec.encode('My test string'))
-	    assertEquals("%D0%A0%D1%9E%D0%A0%C2%B5%D0%A1%D0%83%D0%A1%E2%80%9A",codec.encode('Тест'))
+	    // Some unsafe characters
+	    assertEquals("The+%40string+%22foo-bar%22",codec.encode('The @string \"foo-bar\"'))
 	}
 
 	void testDecode() {
 	    assertEquals('My test string',codec.decode("My+test+string"))
-	    assertEquals('Тест',codec.decode("%D0%A0%D1%9E%D0%A0%C2%B5%D0%A1%D0%83%D0%A1%E2%80%9A"))
+	    // Some unsafe characters
+	    assertEquals('The @string \"foo-bar\"',codec.decode("The+%40string+%22foo-bar%22"))
 	}
 }
