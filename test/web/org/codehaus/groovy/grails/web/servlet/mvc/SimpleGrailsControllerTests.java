@@ -76,11 +76,11 @@ public class SimpleGrailsControllerTests extends TestCase {
 					.setMetaClassCreationHandle(new ExpandoMetaClassCreationHandle());
 		GroovyClassLoader cl = new GroovyClassLoader();
 		Class commandObjectClass = cl.parseClass("class MyCommandObject {\n" +
-                "def firstName\n" +
-                "def lastName\n" +
+                "String firstName\n" +
+                "String lastName\n" +
                 "static constraints = {\n" +
-                "  firstName(maxLength:10)\n" +
-                "  lastName(maxLength:10)" +
+                "  firstName(maxSize:10)\n" +
+                "  lastName(maxSize:10)" +
                 "}\n" +
                 "}");
 		Class testControllerClass = cl.parseClass("class TestController {\n"+
@@ -188,7 +188,7 @@ public class SimpleGrailsControllerTests extends TestCase {
 		assertNotNull(modelAndView);
 	}
 	
-    public void testCommandObjectSuccess() throws Exception {
+    public void testCommandObjectValidationSuccess() throws Exception {
         ModelAndView modelAndView = execute("/test/doit/1/firstName/James/lastName/Gosling", null);
         assertNotNull("null modelAndView", modelAndView);
         Map model = modelAndView.getModelMap();
@@ -196,6 +196,16 @@ public class SimpleGrailsControllerTests extends TestCase {
         assertEquals("wrong lastName", "Gosling", model.get("theLastName"));
         Errors validationErrors = (Errors) model.get("validationErrors");
         assertEquals("wrong number of errors", 0, validationErrors.getErrorCount());
+    }
+    
+    public void testCommandObjectValidationFailure() throws Exception {
+        ModelAndView modelAndView = execute("/test/doit/1/firstName/ThisFirstNameIsTooLong/lastName/ThisLastNameIsTooLong", null);
+        assertNotNull("null modelAndView", modelAndView);
+        Map model = modelAndView.getModelMap();
+        assertEquals("wrong firstName", "ThisFirstNameIsTooLong", model.get("theFirstName"));
+        assertEquals("wrong lastName", "ThisLastNameIsTooLong", model.get("theLastName"));
+        Errors validationErrors = (Errors) model.get("validationErrors");
+        assertEquals("wrong number of errors", 2, validationErrors.getErrorCount());
     }
     
 	public void testAllowedMethods() throws Exception {
