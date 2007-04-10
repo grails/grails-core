@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.io.IOException;
+import java.io.InputStream;
 
 import groovy.lang.*;
 
@@ -65,10 +66,21 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
     private UrlMappingParser urlParser = new DefaultUrlMappingParser();
 
     public List evaluateMappings(Resource resource) {
+        InputStream inputStream = null;
         try {
-            return evaluateMappings(classLoader.parseClass(resource.getInputStream()));
+            inputStream = resource.getInputStream();
+            return evaluateMappings(classLoader.parseClass(inputStream));
         } catch (IOException e) {
             throw new UrlMappingException("Unable to read mapping file ["+resource.getFilename()+"]: " + e.getMessage(), e);
+        }
+        finally {
+            if(inputStream!= null) {
+                try {
+                    inputStream.close();
+                } catch (IOException e) {
+                    // ignore
+                }
+            }
         }
     }
 
