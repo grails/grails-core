@@ -112,9 +112,14 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
         try {
             Resource r = getResourceForUri(url);
             if(r != null) {
-                GroovyPageMetaInfo metaInfo = buildPageMetaInfo(r.getInputStream(),r, null);
-                if(metaInfo!= null) {
-                    return metaInfo.getLineNumbers();
+                InputStream inputStream = r.getInputStream();
+                try {
+                    GroovyPageMetaInfo metaInfo = buildPageMetaInfo(inputStream,r, null);
+                    if(metaInfo!= null) {
+                        return metaInfo.getLineNumbers();
+                    }
+                } finally {
+                    inputStream.close();
                 }
             }
 
@@ -144,14 +149,22 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
             GroovyPageMetaInfo meta = (GroovyPageMetaInfo)pageCache.get(name);
 
             if(isGroovyPageReloadable(resource, meta)) {
-                return createTemplateWithResource(resource);
+                try {
+                    return createTemplateWithResource(resource);
+                } catch (IOException e) {
+                    throw new GroovyPagesException("I/O error reading stream for resource ["+resource+"]: " + e.getMessage(),e);
+                }
             }
             else {
                 return new GroovyPageTemplate(meta);
             }
         }
         else {
-            return createTemplateWithResource(resource);
+            try {
+                return createTemplateWithResource(resource);
+            } catch (IOException e) {
+                throw new GroovyPagesException("I/O error reading stream for resource ["+resource+"]: " + e.getMessage(),e);
+            }
         }
     }
 
@@ -186,7 +199,13 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
     }
 
     private Template createTemplate(Resource resource, String pageName) throws IOException {
-        return createTemplate(resource.getInputStream(), resource, pageName);
+        InputStream in = resource.getInputStream();
+        try {
+            return createTemplate(in, resource, pageName);
+        }
+        finally {
+           in.close();
+        }
     }
 
     /**
@@ -247,12 +266,15 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
      *
      * @param resource The Spring resource instance
      * @return A Groovy Template
+     * @throws java.io.IOException Thrown when an error occurs reading the template
      */
-    private Template createTemplateWithResource(Resource resource) {
+    private Template createTemplateWithResource(Resource resource) throws IOException {
+        InputStream in = resource.getInputStream();
         try {
-            return createTemplate(resource.getInputStream(), resource, null);
-        } catch (IOException e) {
-            throw new GroovyPagesException("I/O reading Groovy page ["+resource.getDescription()+"]: " + e.getMessage(),e);
+            return createTemplate(in, resource, null);
+        }
+        finally {
+            in.close();
         }
     }
 
