@@ -133,7 +133,13 @@ class ControllersGrailsPlugin {
 			commandObjectClasses.each { commandObjectClass ->
 	            def commandObject = commandObjectClass.newInstance()
             	def commandObjectMetaClass = commandObject.metaClass
-            	commandObjectMetaClass.errors = null
+            	commandObjectMetaClass.setErrors = { Errors errors ->
+					RCH.currentRequestAttributes().setAttribute( "${commandObjectClass.name}_errors", errors, 0)
+				}
+	            commandObjectMetaClass.getErrors = {->
+			   		RCH.currentRequestAttributes().getAttribute( "${commandObjectClass.name}_errors", 0)
+		   		}
+
             	commandObjectMetaClass.hasErrors = {->
 					errors?.hasErrors() ? true : false
 		    	}
