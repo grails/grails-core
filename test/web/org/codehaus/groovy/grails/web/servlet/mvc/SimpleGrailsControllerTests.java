@@ -44,6 +44,7 @@ import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.mock.web.MockServletContext;
+import org.springframework.validation.Errors;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.servlet.ModelAndView;
 import grails.util.GrailsWebUtil;
@@ -78,7 +79,8 @@ public class SimpleGrailsControllerTests extends TestCase {
                 "def firstName\n" +
                 "def lastName\n" +
                 "static constraints = {\n" +
-                "  firstName(maxLength:30)\n" +
+                "  firstName(maxLength:10)\n" +
+                "  lastName(maxLength:10)" +
                 "}\n" +
                 "}");
 		Class testControllerClass = cl.parseClass("class TestController {\n"+
@@ -86,7 +88,7 @@ public class SimpleGrailsControllerTests extends TestCase {
 								"return [ \"test\" : \"123\" ]\n"+
 						     "}\n" +
                              "def doit = { MyCommandObject mco ->\n" +
-                             "[theFirstName:mco.firstName, theLastName:mco.lastName]\n" +
+                             "[theFirstName:mco.firstName, theLastName:mco.lastName, validationErrors:mco.errors]\n" +
                              "}\n" +
 						"}");	
 		
@@ -186,12 +188,14 @@ public class SimpleGrailsControllerTests extends TestCase {
 		assertNotNull(modelAndView);
 	}
 	
-    public void testCommandObject() throws Exception {
+    public void testCommandObjectSuccess() throws Exception {
         ModelAndView modelAndView = execute("/test/doit/1/firstName/James/lastName/Gosling", null);
         assertNotNull("null modelAndView", modelAndView);
         Map model = modelAndView.getModelMap();
         assertEquals("wrong firstName", "James", model.get("theFirstName"));
         assertEquals("wrong lastName", "Gosling", model.get("theLastName"));
+        Errors validationErrors = (Errors) model.get("validationErrors");
+        assertEquals("wrong number of errors", 0, validationErrors.getErrorCount());
     }
     
 	public void testAllowedMethods() throws Exception {
