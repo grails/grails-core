@@ -60,6 +60,8 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass
     private boolean scaffolding;
     private Class scaffoldedClass;
 
+    private final Set commandObjectClasses = new HashSet();
+
 
     public DefaultGrailsControllerClass(Class clazz) {
         super(clazz, CONTROLLER);
@@ -116,6 +118,17 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass
             PropertyDescriptor propertyDescriptor = propertyDescriptors[i];
             Closure closure = (Closure)getPropertyOrStaticPropertyOrFieldValue(propertyDescriptor.getName(), Closure.class);
             if (closure != null) {
+                
+                // TODO this is here temporarily, probably will move soon...
+                Class[] parameterTypes = closure.getParameterTypes();
+                if(parameterTypes != null && parameterTypes.length > 0) {
+                    for(int j = 0; j < parameterTypes.length; j++) {
+                        Class parameterType = parameterTypes[j];
+                        if(GrailsClassUtils.getStaticPropertyValue(parameterType, "constraints") != null) {
+                            commandObjectClasses.add(parameterType);
+                        }
+                    }
+                }
                 closureNames.add(propertyDescriptor.getName());
                 String closureName = propertyDescriptor.getName();
                 String viewName = (String)getPropertyOrStaticPropertyOrFieldValue(propertyDescriptor.getName() + VIEW, String.class);
@@ -155,8 +168,8 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass
 
         this.uris  = (String[])this.uri2closureMap.keySet().toArray(new String[this.uri2closureMap.keySet().size()]);
     }
-
-	public String[] getURIs() {
+    
+    public String[] getURIs() {
 		return this.uris;
 	}
 
@@ -288,4 +301,8 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass
 		}
 		return null;
 	}
+
+    public Set getCommandObjectClasses() {
+        return Collections.unmodifiableSet(commandObjectClasses);
+    }
 }

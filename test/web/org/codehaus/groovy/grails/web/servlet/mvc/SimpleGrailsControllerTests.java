@@ -19,12 +19,14 @@ import groovy.lang.GroovyClassLoader;
 import groovy.lang.MetaClassRegistry;
 
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Properties;
 
 import javax.servlet.http.HttpServletResponse;
 
 import junit.framework.TestCase;
 
+import org.codehaus.groovy.grails.commons.ApplicationHolder;
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.metaclass.ExpandoMetaClassCreationHandle;
@@ -72,19 +74,28 @@ public class SimpleGrailsControllerTests extends TestCase {
 					.getMetaRegistry()
 					.setMetaClassCreationHandle(new ExpandoMetaClassCreationHandle());
 		GroovyClassLoader cl = new GroovyClassLoader();
-		
-		Class c1 = cl.parseClass("class TestController {\n"+
+		Class commandObjectClass = cl.parseClass("class MyCommandObject {\n" +
+                "def firstName\n" +
+                "def lastName\n" +
+                "static constraints = {\n" +
+                "  firstName(maxLength:30)\n" +
+                "}\n" +
+                "}");
+		Class testControllerClass = cl.parseClass("class TestController {\n"+
 							" Closure test = {\n"+
 								"return [ \"test\" : \"123\" ]\n"+
 						     "}\n" +
+                             "def doit = { MyCommandObject mco ->\n" +
+                             "[theFirstName:mco.firstName, theLastName:mco.lastName]\n" +
+                             "}\n" +
 						"}");	
 		
-		Class c2 = cl.parseClass("class SimpleController {\n"+
+		Class simpleControllerClass = cl.parseClass("class SimpleController {\n"+
 				" Closure test = {\n"+
 			     "}\n" +
 			"}");
 		
-		Class c3 = cl.parseClass("class NoViewController {\n"+
+		Class noViewControllerClass = cl.parseClass("class NoViewController {\n"+
 				" Closure test = {\n"+
 			      "request, response ->\n" +
 			      "new grails.util.OpenRicoBuilder(response).ajax { element(id:\"test\") { } };\n" +
@@ -92,7 +103,7 @@ public class SimpleGrailsControllerTests extends TestCase {
 			     "}\n" +
 			"}");		
 		
-		Class c4 = cl.parseClass("class RestrictedController {\n"+
+		Class restrictedControllerClass = cl.parseClass("class RestrictedController {\n"+
 				"def allowedMethods=[action1:'POST', action3:['PUT', 'DELETE']]\n" +
 				"def action1 = {}\n" +
 				"def action2 = {}\n" +
@@ -109,7 +120,7 @@ public class SimpleGrailsControllerTests extends TestCase {
 		this.localContext = new GenericApplicationContext();
 		
 		ConstructorArgumentValues args = new ConstructorArgumentValues();
-		args.addGenericArgumentValue(new Class[]{c1,c2,c3,c4});
+		args.addGenericArgumentValue(new Class[]{commandObjectClass,testControllerClass,simpleControllerClass,noViewControllerClass,restrictedControllerClass});
 		args.addGenericArgumentValue(cl);
 		MutablePropertyValues propValues = new MutablePropertyValues();
 		
@@ -118,7 +129,7 @@ public class SimpleGrailsControllerTests extends TestCase {
 		this.localContext.refresh();
 		
 		this.grailsApplication = (GrailsApplication)localContext.getBean("grailsApplication");
-		
+        ApplicationHolder.setApplication(grailsApplication);
 		/*BeanDefinition applicationEventMulticaster = new RootBeanDefinition(SimpleApplicationEventMulticaster.class);
 		context.registerBeanDefinition( "applicationEventMulticaster ", applicationEventMulticaster);*/
 		GrailsRuntimeConfigurator rConfig = new GrailsRuntimeConfigurator(grailsApplication, localContext);
@@ -175,6 +186,14 @@ public class SimpleGrailsControllerTests extends TestCase {
 		assertNotNull(modelAndView);
 	}
 	
+    public void testCommandObject() throws Exception {
+        ModelAndView modelAndView = execute("/test/doit/1/firstName/James/lastName/Gosling", null);
+        assertNotNull("null modelAndView", modelAndView);
+        Map model = modelAndView.getModelMap();
+        assertEquals("wrong firstName", "James", model.get("theFirstName"));
+        assertEquals("wrong lastName", "Gosling", model.get("theLastName"));
+    }
+    
 	public void testAllowedMethods() throws Exception {
 		assertResponseStatusCode("/restricted/action1", "GET", HttpServletResponse.SC_FORBIDDEN);
 		assertResponseStatusCode("/restricted/action1", "PUT", HttpServletResponse.SC_FORBIDDEN);

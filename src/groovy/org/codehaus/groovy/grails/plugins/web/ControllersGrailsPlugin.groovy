@@ -25,6 +25,7 @@ import org.codehaus.groovy.grails.web.servlet.view.GrailsViewResolver;
 import org.codehaus.groovy.grails.beans.factory.UrlMappingFactoryBean;
 import org.springframework.aop.target.HotSwappableTargetSource;
 import org.springframework.aop.framework.ProxyFactoryBean;
+import org.codehaus.groovy.grails.validation.ConstrainedPropertyBuilder
 
 import org.springframework.web.multipart.commons.CommonsMultipartResolver;
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
@@ -117,13 +118,30 @@ class ControllersGrailsPlugin {
 
 		}
 
-		// Go through all the controllers and configure them in spring with AOP proxies for auto-updates and
-		// mappings in the urlMappings bean
 		application.controllerClasses.each { controller ->
 			log.debug "Configuring controller $controller.fullName"
 			if(controller.available) {
+				// configure the controller with AOP proxies for auto-updates and
+				// mappings in the urlMappings bean
 				configureAOPProxyBean.delegate = delegate
                 configureAOPProxyBean(controller, ControllerArtefactHandler.TYPE, org.codehaus.groovy.grails.commons.GrailsControllerClass.class, false)
+			}
+			
+			// look for actions that accept command objects and configure
+			// each of the command object types
+			def commandObjectClasses = controller.commandObjectClasses
+			commandObjectClasses.each { commandObjectClass ->
+	            def commandObject = commandObjectClass.newInstance()
+            	def commandObjectMetaClass = commandObject.metaClass
+            	commandObjectMetaClass.errors = null
+            	commandObjectMetaClass.hasErrors = {->
+					errors?.hasErrors() ? true : false
+		    	}
+            	def constrainedPropertyBuilder = new ConstrainedPropertyBuilder(commandObject)
+            	def validationClosure = GCU.getStaticPropertyValue(commandObjectClass, 'constraints')
+            	validationClosure.setDelegate(constrainedPropertyBuilder)
+            	validationClosure()
+            	commandObjectMetaClass.constrainedProperties = constrainedPropertyBuilder.constrainedProperties
 			}
 		}
 

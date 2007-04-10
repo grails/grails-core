@@ -17,7 +17,8 @@ package org.codehaus.groovy.grails.commons;
 
 import groovy.lang.Closure;
 import groovy.lang.GroovyObject;
-import org.apache.commons.lang.StringUtils;
+
+import java.util.Set;
 
 
 /**
@@ -146,4 +147,10 @@ public interface GrailsControllerClass extends InjectableGrailsClass {
      * @return The class that is being scaffolded by this controller
      */
     public Class getScaffoldedClass();
+    
+    /**
+     * 
+     * @return A Set of command object classes used by this controller
+     */
+    public Set getCommandObjectClasses();
 }
