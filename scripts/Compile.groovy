@@ -90,8 +90,8 @@ task(deleteAppClasses: "Delete application classes compiled by groovyc") {
     Ant.delete() {
         fileset( dir: "$basedir/web-app/WEB-INF/classes") {
             grailsDir.each() {
-                include(name: it.file.name.replace( '.groovy', ".class"))
-                include(name: it.file.name.replace( '.groovy', "\$*.class"))
+                include(name: (it.file.name - '.groovy') + '.class' )
+                include(name: (it.file.name - '.groovy') + '$*.class')
             }
         }
     }
