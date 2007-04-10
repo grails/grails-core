@@ -54,6 +54,7 @@ event = { String name, def args ->
     hookScripts.each() {
         try {
             def handler = it."event$name"
+            handler.delegate = binding
             handler(*args)
         } catch (MissingPropertyException e) {
         }
@@ -90,7 +91,9 @@ void loadEventHooks() {
     def f = new File( userHome, ".grails/scripts/Events.groovy")
     if (f.exists()) {
         println "Found user events script"
-        def script = getClass().classLoader.parseClass( f ).newInstance().run()
+        def script = getClass().classLoader.parseClass( f ).newInstance()
+        script.delegate = binding
+        script.run()
         hookScripts << script
     }
 
@@ -101,7 +104,10 @@ void loadEventHooks() {
             f = new File( it, "scripts/Events.groovy")
             if (f.exists()) {
                 println "Found events script in plugin ${it.name}"
-                hookScripts << getClass().classLoader.parseClass( f).newInstance().run()
+                def script = getClass().classLoader.parseClass( f).newInstance()
+                script.delegate = binding
+                script.run()
+                hookScripts << script
             }
         }
     }
