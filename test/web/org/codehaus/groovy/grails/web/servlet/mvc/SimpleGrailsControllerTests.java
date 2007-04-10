@@ -75,12 +75,18 @@ public class SimpleGrailsControllerTests extends TestCase {
 					.getMetaRegistry()
 					.setMetaClassCreationHandle(new ExpandoMetaClassCreationHandle());
 		GroovyClassLoader cl = new GroovyClassLoader();
-		Class commandObjectClass = cl.parseClass("class MyCommandObject {\n" +
+        cl.parseClass("class MyCommandObject {\n" +
                 "String firstName\n" +
                 "String lastName\n" +
                 "static constraints = {\n" +
                 "  firstName(maxSize:10)\n" +
                 "  lastName(maxSize:10)" +
+                "}\n" +
+                "}");
+        cl.parseClass("class AnotherCommandObject {\n" +
+                "Integer age\n" +
+                "static constraints = {\n" +
+                "  age(max:99)" +
                 "}\n" +
                 "}");
 		Class testControllerClass = cl.parseClass("class TestController {\n"+
@@ -89,6 +95,9 @@ public class SimpleGrailsControllerTests extends TestCase {
 						     "}\n" +
                              "def doit = { MyCommandObject mco ->\n" +
                              "[theFirstName:mco.firstName, theLastName:mco.lastName, validationErrors:mco.errors]\n" +
+                             "}\n" +
+                             "def doitagain = {MyCommandObject mco, AnotherCommandObject aco ->\n" +
+                             "[theFirstName:mco.firstName, theLastName:mco.lastName, theAge:aco.age, validationErrors:mco.errors]\n" +
                              "}\n" +
 						"}");	
 		
@@ -122,7 +131,7 @@ public class SimpleGrailsControllerTests extends TestCase {
 		this.localContext = new GenericApplicationContext();
 		
 		ConstructorArgumentValues args = new ConstructorArgumentValues();
-		args.addGenericArgumentValue(new Class[]{commandObjectClass,testControllerClass,simpleControllerClass,noViewControllerClass,restrictedControllerClass});
+		args.addGenericArgumentValue(new Class[]{testControllerClass,simpleControllerClass,noViewControllerClass,restrictedControllerClass});
 		args.addGenericArgumentValue(cl);
 		MutablePropertyValues propValues = new MutablePropertyValues();
 		
@@ -188,7 +197,7 @@ public class SimpleGrailsControllerTests extends TestCase {
 		assertNotNull(modelAndView);
 	}
 	
-    public void testCommandObjectValidationSuccess() throws Exception {
+    public void testSingleCommandObjectValidationSuccess() throws Exception {
         ModelAndView modelAndView = execute("/test/doit/1/firstName/James/lastName/Gosling", null);
         assertNotNull("null modelAndView", modelAndView);
         Map model = modelAndView.getModelMap();
@@ -198,7 +207,18 @@ public class SimpleGrailsControllerTests extends TestCase {
         assertEquals("wrong number of errors", 0, validationErrors.getErrorCount());
     }
     
-    public void testCommandObjectValidationFailure() throws Exception {
+    public void testMultipleCommandObjectValidationSuccess() throws Exception {
+        ModelAndView modelAndView = execute("/test/doitagain/1/firstName/James/age/30/lastName/Gosling", null);
+        assertNotNull("null modelAndView", modelAndView);
+        Map model = modelAndView.getModelMap();
+        assertEquals("wrong firstName", "James", model.get("theFirstName"));
+        assertEquals("wrong lastName", "Gosling", model.get("theLastName"));
+        assertEquals("wrong age", new Integer(30), model.get("theAge"));
+        Errors validationErrors = (Errors) model.get("validationErrors");
+        assertEquals("wrong number of errors", 0, validationErrors.getErrorCount());
+    }
+    
+    public void testSingleCommandObjectValidationFailure() throws Exception {
         ModelAndView modelAndView = execute("/test/doit/1/firstName/ThisFirstNameIsTooLong/lastName/ThisLastNameIsTooLong", null);
         assertNotNull("null modelAndView", modelAndView);
         Map model = modelAndView.getModelMap();

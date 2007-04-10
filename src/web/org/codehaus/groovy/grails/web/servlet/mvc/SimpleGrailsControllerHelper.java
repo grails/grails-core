@@ -21,14 +21,14 @@ import groovy.lang.MissingPropertyException;
 import groovy.util.Proxy;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -401,38 +401,35 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
         }
         // Step 7: determine argument count and execute.
         Class[] paramTypes = action.getParameterTypes();
-        GroovyObject commandObject = null;
-        if(paramTypes != null && paramTypes.length > 0 ) {
+        List commandObjects = new ArrayList();
+        if(paramTypes != null) {
             // TODO clearly incomplete, work in progress
-        	Class paramType = paramTypes[0];
-        	if(GrailsClassUtils.getStaticPropertyValue(paramType, "constraints") != null) {
-        		try {
-                   
-        			commandObject = (GroovyObject) paramType.newInstance();
-                    GrailsDataBinder binder = GrailsDataBinder.createBinder(commandObject, commandObject.getClass().getName());
-                    binder.bind(new MutablePropertyValues(paramsMap));
+            for(int j = 0; j < paramTypes.length; j++) {
+                Class paramType = paramTypes[j];
+                if(GrailsClassUtils.getStaticPropertyValue(paramType, "constraints") != null) {
+                    try {
+                        GroovyObject commandObject = (GroovyObject) paramType.newInstance();
+                        GrailsDataBinder binder = GrailsDataBinder.createBinder(commandObject, commandObject.getClass().getName());
+                        binder.bind(new MutablePropertyValues(paramsMap));
 
-                    Errors errors = new BindException(commandObject, paramType.getName());
-                    Collection constrainedProperties = ((Map)commandObject.getProperty("constrainedProperties")).values();
-                    for (Iterator i = constrainedProperties.iterator(); i.hasNext();) {
-                        ConstrainedProperty constrainedProperty = (ConstrainedProperty)i.next();
-                        constrainedProperty.validate(commandObject, commandObject.getProperty( constrainedProperty.getPropertyName() ),errors);
+                        Errors errors = new BindException(commandObject, paramType.getName());
+                        Collection constrainedProperties = ((Map)commandObject.getProperty("constrainedProperties")).values();
+                        for (Iterator i = constrainedProperties.iterator(); i.hasNext();) {
+                            ConstrainedProperty constrainedProperty = (ConstrainedProperty)i.next();
+                            constrainedProperty.validate(commandObject, commandObject.getProperty( constrainedProperty.getPropertyName() ),errors);
+                        }
+                        commandObject.setProperty("errors", errors);
+                        if(errors.hasErrors()) {
+                            LOG.warn("Command Object " + paramType.getName() + " Failed Validation");
+                        }
+                        commandObjects.add(commandObject);
+                    } catch (Exception e) {
+                        throw new ControllerExecutionException("Error occurred creating command object.", e);
                     }
-                    commandObject.setProperty("errors", errors);
-                    if(errors.hasErrors()) {
-                        LOG.warn("Command Object " + paramType.getName() + " Failed Validation");
-                    }
-        		} catch (Exception e) {
-        			throw new ControllerExecutionException("Error occurred creating command object.", e);
-        		}
-        	}
+                }
+            }
         }
-        Object returnValue = null;
-        if(commandObject == null) {
-        	returnValue = action.call();
-        } else {
-        	returnValue = action.call(commandObject);
-        }
+        Object returnValue = action.call(commandObjects.toArray());
 
         // Step 8: add any errors to the request
         request.setAttribute( GrailsApplicationAttributes.ERRORS, controller.getProperty(ControllerDynamicMethods.ERRORS_PROPERTY) );
