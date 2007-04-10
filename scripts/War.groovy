@@ -85,7 +85,8 @@ task(warPlugins:"Includes the plugins in the WAR") {
 	Ant.sequential {
 		mkdir(dir:"${basedir}/staging/WEB-INF/plugins")
 		copy(todir:"${basedir}/staging/WEB-INF/plugins", failonerror:false) {
-			fileset(dir:"${basedir}/plugins")  {
+			fileset(dir:"${basedir}/plugins")  {    
+				include(name:"**/*GrailsPlugin.groovy")
 				include(name:"**/grails-app/**")
 				exclude(name:"**/grails-app/i18n")				
 			}
