@@ -86,7 +86,7 @@ public class SimpleGrailsControllerTests extends TestCase {
         cl.parseClass("class AnotherCommandObject {\n" +
                 "Integer age\n" +
                 "static constraints = {\n" +
-                "  age(max:99)" +
+                "  age(max:99)\n" +
                 "}\n" +
                 "}");
 		Class testControllerClass = cl.parseClass("class TestController {\n"+
@@ -97,7 +97,7 @@ public class SimpleGrailsControllerTests extends TestCase {
                              "[theFirstName:mco.firstName, theLastName:mco.lastName, validationErrors:mco.errors]\n" +
                              "}\n" +
                              "def doitagain = {MyCommandObject mco, AnotherCommandObject aco ->\n" +
-                             "[theFirstName:mco.firstName, theLastName:mco.lastName, theAge:aco.age, validationErrors:mco.errors]\n" +
+                             "[theFirstName:mco.firstName, theLastName:mco.lastName, theAge:aco.age, acoErrors:aco.errors, mcoErrors:mco.errors]\n" +
                              "}\n" +
 						"}");	
 		
@@ -214,8 +214,10 @@ public class SimpleGrailsControllerTests extends TestCase {
         assertEquals("wrong firstName", "James", model.get("theFirstName"));
         assertEquals("wrong lastName", "Gosling", model.get("theLastName"));
         assertEquals("wrong age", new Integer(30), model.get("theAge"));
-        Errors validationErrors = (Errors) model.get("validationErrors");
-        assertEquals("wrong number of errors", 0, validationErrors.getErrorCount());
+        Errors mcoErrors = (Errors) model.get("mcoErrors");
+        assertEquals("wrong number of mco errors", 0, mcoErrors.getErrorCount());
+        Errors acoErrors = (Errors) model.get("acoErrors");
+        assertEquals("wrong number of aco errors", 0, acoErrors.getErrorCount());
     }
     
     public void testSingleCommandObjectValidationFailure() throws Exception {
@@ -225,7 +227,21 @@ public class SimpleGrailsControllerTests extends TestCase {
         assertEquals("wrong firstName", "ThisFirstNameIsTooLong", model.get("theFirstName"));
         assertEquals("wrong lastName", "ThisLastNameIsTooLong", model.get("theLastName"));
         Errors validationErrors = (Errors) model.get("validationErrors");
-        assertEquals("wrong number of errors", 2, validationErrors.getErrorCount());
+        assertEquals("wrong number of mcoErrors", 2, validationErrors.getErrorCount());
+    }
+    
+    public void testMultipleCommandObjectValidationFailure() throws Exception {
+        ModelAndView modelAndView = execute("/test/doitagain/1/firstName/ThisFirstNameIsTooLong/age/300/lastName/Gosling", null);
+        assertNotNull("null modelAndView", modelAndView);
+        Map model = modelAndView.getModelMap();
+        assertEquals("wrong firstName", "ThisFirstNameIsTooLong", model.get("theFirstName"));
+        assertEquals("wrong lastName", "Gosling", model.get("theLastName"));
+        assertEquals("wrong age", new Integer(300), model.get("theAge"));
+        Errors mcoErrors = (Errors) model.get("mcoErrors");
+        assertEquals("wrong number of mco errors", 1, mcoErrors.getErrorCount());
+        Errors acoErrors = (Errors) model.get("acoErrors");
+        assertEquals("wrong number of aco errors", 1, acoErrors.getErrorCount());
+
     }
     
 	public void testAllowedMethods() throws Exception {
