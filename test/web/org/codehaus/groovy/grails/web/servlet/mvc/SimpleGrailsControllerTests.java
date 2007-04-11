@@ -89,15 +89,21 @@ public class SimpleGrailsControllerTests extends TestCase {
                 "  age(max:99)\n" +
                 "}\n" +
                 "}");
+        cl.parseClass("class UnconstrainedCommandObject {\n" +
+                "String firstName\n" +
+                "}");
 		Class testControllerClass = cl.parseClass("class TestController {\n"+
 							" Closure test = {\n"+
 								"return [ \"test\" : \"123\" ]\n"+
 						     "}\n" +
-                             "def doit = { MyCommandObject mco ->\n" +
+                             "def singlecommandobject = { MyCommandObject mco ->\n" +
                              "[theFirstName:mco.firstName, theLastName:mco.lastName, validationErrors:mco.errors]\n" +
                              "}\n" +
-                             "def doitagain = {MyCommandObject mco, AnotherCommandObject aco ->\n" +
+                             "def multiplecommandobjects = {MyCommandObject mco, AnotherCommandObject aco ->\n" +
                              "[theFirstName:mco.firstName, theLastName:mco.lastName, theAge:aco.age, acoErrors:aco.errors, mcoErrors:mco.errors]\n" +
+                             "}\n" +
+                             "def unconstrainedcommandobject = { UnconstrainedCommandObject uco ->" +
+                             "[theFirstName:uco.firstName, validationErrors:uco.errors]\n" +
                              "}\n" +
 						"}");	
 		
@@ -197,8 +203,17 @@ public class SimpleGrailsControllerTests extends TestCase {
 		assertNotNull(modelAndView);
 	}
 	
+    public void testUnconstrainedCommandObject() throws Exception {
+        ModelAndView modelAndView = execute("/test/unconstrainedcommandobject/1/firstName/James", null);
+        assertNotNull("null modelAndView", modelAndView);
+        Map model = modelAndView.getModelMap();
+        assertEquals("wrong firstName", "James", model.get("theFirstName"));
+        Errors validationErrors = (Errors) model.get("validationErrors");
+        assertEquals("wrong number of errors", 0, validationErrors.getErrorCount());
+    }
+    
     public void testSingleCommandObjectValidationSuccess() throws Exception {
-        ModelAndView modelAndView = execute("/test/doit/1/firstName/James/lastName/Gosling", null);
+        ModelAndView modelAndView = execute("/test/singlecommandobject/1/firstName/James/lastName/Gosling", null);
         assertNotNull("null modelAndView", modelAndView);
         Map model = modelAndView.getModelMap();
         assertEquals("wrong firstName", "James", model.get("theFirstName"));
@@ -208,7 +223,7 @@ public class SimpleGrailsControllerTests extends TestCase {
     }
     
     public void testMultipleCommandObjectValidationSuccess() throws Exception {
-        ModelAndView modelAndView = execute("/test/doitagain/1/firstName/James/age/30/lastName/Gosling", null);
+        ModelAndView modelAndView = execute("/test/multiplecommandobjects/1/firstName/James/age/30/lastName/Gosling", null);
         assertNotNull("null modelAndView", modelAndView);
         Map model = modelAndView.getModelMap();
         assertEquals("wrong firstName", "James", model.get("theFirstName"));
@@ -221,7 +236,7 @@ public class SimpleGrailsControllerTests extends TestCase {
     }
     
     public void testSingleCommandObjectValidationFailure() throws Exception {
-        ModelAndView modelAndView = execute("/test/doit/1/firstName/ThisFirstNameIsTooLong/lastName/ThisLastNameIsTooLong", null);
+        ModelAndView modelAndView = execute("/test/singlecommandobject/1/firstName/ThisFirstNameIsTooLong/lastName/ThisLastNameIsTooLong", null);
         assertNotNull("null modelAndView", modelAndView);
         Map model = modelAndView.getModelMap();
         assertEquals("wrong firstName", "ThisFirstNameIsTooLong", model.get("theFirstName"));
@@ -231,7 +246,7 @@ public class SimpleGrailsControllerTests extends TestCase {
     }
     
     public void testMultipleCommandObjectValidationFailure() throws Exception {
-        ModelAndView modelAndView = execute("/test/doitagain/1/firstName/ThisFirstNameIsTooLong/age/300/lastName/Gosling", null);
+        ModelAndView modelAndView = execute("/test/multiplecommandobjects/1/firstName/ThisFirstNameIsTooLong/age/300/lastName/Gosling", null);
         assertNotNull("null modelAndView", modelAndView);
         Map model = modelAndView.getModelMap();
         assertEquals("wrong firstName", "ThisFirstNameIsTooLong", model.get("theFirstName"));

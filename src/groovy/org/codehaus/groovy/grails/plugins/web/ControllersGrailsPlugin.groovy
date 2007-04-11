@@ -143,11 +143,15 @@ class ControllersGrailsPlugin {
             	commandObjectMetaClass.hasErrors = {->
 					errors?.hasErrors() ? true : false
 		    	}
-            	def constrainedPropertyBuilder = new ConstrainedPropertyBuilder(commandObject)
             	def validationClosure = GCU.getStaticPropertyValue(commandObjectClass, 'constraints')
-            	validationClosure.setDelegate(constrainedPropertyBuilder)
-            	validationClosure()
-            	commandObjectMetaClass.constrainedProperties = constrainedPropertyBuilder.constrainedProperties
+            	if(validationClosure) {
+            		def constrainedPropertyBuilder = new ConstrainedPropertyBuilder(commandObject)
+            		validationClosure.setDelegate(constrainedPropertyBuilder)
+            		validationClosure()
+            		commandObjectMetaClass.constrainedProperties = constrainedPropertyBuilder.constrainedProperties
+            	} else {
+            	    commandObjectMetaClass.constrainedProperties = [:]
+            	}
 			}
 		}
 

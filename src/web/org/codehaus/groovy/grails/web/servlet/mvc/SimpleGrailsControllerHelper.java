@@ -403,10 +403,9 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
         Class[] paramTypes = action.getParameterTypes();
         List commandObjects = new ArrayList();
         if(paramTypes != null) {
-            // TODO clearly incomplete, work in progress
             for(int j = 0; j < paramTypes.length; j++) {
                 Class paramType = paramTypes[j];
-                if(GrailsClassUtils.getStaticPropertyValue(paramType, "constraints") != null) {
+                if(GroovyObject.class.isAssignableFrom(paramType)) {
                     try {
                         GroovyObject commandObject = (GroovyObject) paramType.newInstance();
                         GrailsDataBinder binder = GrailsDataBinder.createBinder(commandObject, commandObject.getClass().getName());

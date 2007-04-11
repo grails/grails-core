@@ -119,12 +119,11 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass
             Closure closure = (Closure)getPropertyOrStaticPropertyOrFieldValue(propertyDescriptor.getName(), Closure.class);
             if (closure != null) {
                 
-                // TODO this is here temporarily, probably will move soon...
                 Class[] parameterTypes = closure.getParameterTypes();
                 if(parameterTypes != null && parameterTypes.length > 0) {
                     for(int j = 0; j < parameterTypes.length; j++) {
                         Class parameterType = parameterTypes[j];
-                        if(GrailsClassUtils.getStaticPropertyValue(parameterType, "constraints") != null) {
+                        if(GroovyObject.class.isAssignableFrom(parameterType)) {
                             commandObjectClasses.add(parameterType);
                         }
                     }
