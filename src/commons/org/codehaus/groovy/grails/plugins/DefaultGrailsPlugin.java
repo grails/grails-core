@@ -26,12 +26,7 @@ import groovy.util.slurpersupport.GPathResult;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.logging.Log;
@@ -80,7 +75,7 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
     private long[] modifiedTimes = new long[0];
     private PathMatchingResourcePatternResolver resolver;
 
-    private String resourcesReference;
+    private String[] resourcesReferences;
     private String[] loadAfterNames = new String[0];
     private String[] influencedPluginNames = new String[0];
     private MetaClassRegistry registry;
@@ -141,20 +136,25 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
 
 
             try {
+                List resourceList = null;
                 if(referencedResources instanceof String) {
                     if(LOG.isDebugEnabled()) {
                         LOG.debug("Configuring plugin "+this+" to watch resources with pattern: " + referencedResources);
                     }
-
-                     this.resourcesReference = referencedResources.toString();
-                     watchedResources  = resolver.getResources(resourcesReference);
-                     if(watchedResources.length == 0) {
-                         watchedResources = resolver.getResources("classpath*:" + resourcesReference);
-                     }
+                    resourceList = new ArrayList();
+                    resourceList.add(referencedResources.toString());
                 }
                 else if(referencedResources instanceof List) {
-                    List resourceList = (List)referencedResources;
+                    resourceList = (List)referencedResources;
+                }
 
+                if(resourceList!=null) {
+
+                    this.resourcesReferences = new String[resourceList.size()];
+                    for (int i = 0; i < resourcesReferences.length; i++) {
+                        String resRef = resourceList.get(i).toString();
+                        resourcesReferences[i]=resRef;
+                    }
                     for (int i = 0; i < resourceList.size(); i++) {
                         String res = resourceList.get(i).toString();
                         Resource[] tmp = resolver.getResources(res);
@@ -169,14 +169,15 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
                         }
                     }
                 }
+
             }
             catch (IllegalArgumentException e) {
             	if(GrailsUtil.isDevelopmentEnv())
-            		LOG.warn("Cannot load plug-in resource watch list from ["+resourcesReference+"]. This means that the plugin "+this+", will not be able to auto-reload changes effectively. Try runnng grails upgrade.: " + e.getMessage());
+            		LOG.warn("Cannot load plug-in resource watch list from ["+ ArrayUtils.toString(resourcesReferences) +"]. This means that the plugin "+this+", will not be able to auto-reload changes effectively. Try runnng grails upgrade.: " + e.getMessage());
             }
             catch (IOException e) {
             	if(GrailsUtil.isDevelopmentEnv())
-            		LOG.warn("Cannot load plug-in resource watch list from ["+resourcesReference+"]. This means that the plugin "+this+", will not be able to auto-reload changes effectively. Try runnng grails upgrade.: " + e.getMessage());
+            		LOG.warn("Cannot load plug-in resource watch list from ["+ ArrayUtils.toString(resourcesReferences) +"]. This means that the plugin "+this+", will not be able to auto-reload changes effectively. Try runnng grails upgrade.: " + e.getMessage());
             }
             if(LOG.isDebugEnabled()) {
                 LOG.debug("Plugin "+this+" found ["+watchedResources.length+"] to watch");
@@ -434,34 +435,38 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
     }
 
     private void checkForNewResources(final GrailsPlugin plugin) {
-        if(resourcesReference != null) {
-        	try {
-	            Resource[] tmp = resolver.getResources(resourcesReference);
-	            if(watchedResources.length < tmp.length) {
-	                Resource newResource = null;
-	                for (int i = 0; i < watchedResources.length; i++) {
-	                    if(!tmp[i].equals(watchedResources[i])) {
-	                        newResource = tmp[i];
-	                        break;
-	                    }
-	                }
-	                if(newResource == null) {
-	                    newResource = tmp[tmp.length-1];
-	                }
-	                watchedResources = tmp;
-	                initializeModifiedTimes();
-	
-	                if(LOG.isDebugEnabled())
-	                    LOG.debug("[GrailsPlugin] plugin resource ["+newResource+"] added, firing event if possible..");
-	                fireModifiedEvent(newResource, plugin);
-	            }
+        if(resourcesReferences != null) {
+            for (int i = 0; i < resourcesReferences.length; i++) {
+                String resourcesReference = resourcesReferences[i];
+                try {
+                    Resource[] tmp = resolver.getResources(resourcesReference);
+                    if(watchedResources.length < tmp.length) {
+                        Resource newResource = null;
+                        for (int j = 0; j < watchedResources.length; j++) {
+                            if(!tmp[j].equals(watchedResources[j])) {
+                                newResource = tmp[j];
+                                break;
+                            }
+                        }
+                        if(newResource == null) {
+                            newResource = tmp[tmp.length-1];
+                        }
+                        watchedResources = tmp;
+                        initializeModifiedTimes();
+
+                        if(LOG.isDebugEnabled())
+                            LOG.debug("[GrailsPlugin] plugin resource ["+newResource+"] added, firing event if possible..");
+                        fireModifiedEvent(newResource, plugin);
+                    }
+                }
+                catch (IllegalArgumentException e) {
+                    LOG.error("Plugin "+this+"  was unable to check for new plugin resources: " + e.getMessage());
+                }
+                catch (IOException e) {
+                    LOG.error("Plugin "+this+"  was unable to check for new plugin resources: " + e.getMessage());
+                }
+
             }
-        	catch (IllegalArgumentException e) {
-        		LOG.error("Plugin "+this+"  was unable to check for new plugin resources: " + e.getMessage());
-        	}
-        	catch (IOException e) {
-        		LOG.error("Plugin "+this+"  was unable to check for new plugin resources: " + e.getMessage());
-        	}
         }
     }
 
