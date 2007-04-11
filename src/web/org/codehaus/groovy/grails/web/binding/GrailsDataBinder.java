@@ -24,6 +24,7 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.ApplicationHolder;
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
 import org.codehaus.groovy.grails.commons.metaclass.CreateDynamicMethod;
+import org.codehaus.groovy.grails.web.servlet.GrailsHttpServletRequest;
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.springframework.beans.ConfigurablePropertyAccessor;
 import org.springframework.beans.InvalidPropertyException;
@@ -81,9 +82,9 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
      */
     public GrailsDataBinder(Object target, String objectName) {
         super(target, objectName);
-        
-        bean = ((BeanPropertyBindingResult)super.getBindingResult()).getPropertyAccessor();
 
+         bean = ((BeanPropertyBindingResult)super.getBindingResult()).getPropertyAccessor();
+        
         String[] disallowed = null;
         if (ApplicationHolder.getApplication().isArtefactOfType(DomainClassArtefactHandler.TYPE, target.getClass())) {
             if (target instanceof GroovyObject) {
@@ -142,8 +143,13 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
         if(request instanceof HttpServletRequestWrapper) {
             request = ((HttpServletRequestWrapper)request).getRequest();
         }
-        
-		if (request instanceof MultipartHttpServletRequest) {
+        else if(request instanceof GrailsHttpServletRequest) {
+            if(((GrailsHttpServletRequest)request).isMultiPart()) {
+                MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
+                bindMultipartFiles(multipartRequest.getFileMap(), mpvs);
+            }            
+        }
+        else if (request instanceof MultipartHttpServletRequest) {
 			MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
 			bindMultipartFiles(multipartRequest.getFileMap(), mpvs);
 		}

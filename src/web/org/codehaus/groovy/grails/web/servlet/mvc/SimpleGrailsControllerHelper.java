@@ -296,17 +296,22 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
             // Step 8: determine return value type and handle accordingly
             initChainModel(controller);
             if(response.isRedirected()) {
-            		return null;
+                if(LOG.isDebugEnabled()) {
+                    LOG.debug("Response has been redirected, returning null model and view");
+                }
+                invokeAfterInterceptor(controllerClass, controller, null);
+                return null;
             }
-            
-            ModelAndView mv = handleActionResponse(controller,returnValue,actionName,viewName);
-            // Step 9: Check if there is after interceptor
-            if(controllerClass.isInterceptedAfter(controller,actionName)) {
-            	Closure afterInterceptor = controllerClass.getAfterInterceptor(controller);
-                Map model = mv.getModel() != null ? mv.getModel() : Collections.EMPTY_MAP;
-                afterInterceptor.call(new Object[]{ model });
+            else {
+
+                ModelAndView mv = handleActionResponse(controller,returnValue,actionName,viewName);
+                if(LOG.isDebugEnabled()) {
+                    LOG.debug("Action ["+actionName+"] executed, return model and view ["+mv+"]");
+                }
+                invokeAfterInterceptor(controllerClass, controller, mv);
+                return mv;
             }
-            return mv;
+
         }
         catch(MissingPropertyException mpe) {
             if(controllerClass.isScaffolding())
@@ -323,7 +328,16 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
 
     }
 
-	private String configureStateForUri(String uri) {
+    private void invokeAfterInterceptor(GrailsControllerClass controllerClass, GroovyObject controller, ModelAndView mv) {
+        // Step 9: Check if there is after interceptor
+        if(controllerClass.isInterceptedAfter(controller,actionName)) {
+            Closure afterInterceptor = controllerClass.getAfterInterceptor(controller);
+            Map model = mv.getModel() != null ? mv.getModel() : Collections.EMPTY_MAP;
+            afterInterceptor.call(new Object[]{ model });
+        }
+    }
+
+    private String configureStateForUri(String uri) {
 		// step 1: process the uri
         if (uri.indexOf("?") > -1) {
             uri = uri.substring(0, uri.indexOf("?"));

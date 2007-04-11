@@ -44,13 +44,13 @@ public class GrailsWebRequestFilter extends OncePerRequestFilter {
 			throws ServletException, IOException {
 
 		LocaleContextHolder.setLocale(request.getLocale());
-		ServletRequestAttributes requestAttributes = new GrailsWebRequest(request, response, getServletContext());
+		GrailsWebRequest requestAttributes = new GrailsWebRequest(request, response, getServletContext());
 		RequestContextHolder.setRequestAttributes(requestAttributes);
 		if (logger.isDebugEnabled()) {
 			logger.debug("Bound Grails request context to thread: " + request);
 		}
 		try {
-			filterChain.doFilter(request, response);
+			filterChain.doFilter(requestAttributes.getCurrentRequest(), requestAttributes.getCurrentResponse());
 		}
 		finally {
 			requestAttributes.requestCompleted();

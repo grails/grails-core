@@ -99,9 +99,16 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
             //populateParamsForMapping(info);
             RequestDispatcher dispatcher = request.getRequestDispatcher(forwardUrl);
             RequestDispatcherWrapper wrapper = new RequestDispatcherWrapper(dispatcher);
-            WrappedResponseHolder.setWrappedResponse(response);
+            try {
+                WrappedResponseHolder.setWrappedResponse(response);
+                wrapper.forward(request, response);                
+            }
+            finally {
+                WrappedResponseHolder.setWrappedResponse(null);
+            }
 
-            wrapper.include(request, response);
+
+
         }
         else {
             if(filterChain!=null)

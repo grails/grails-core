@@ -15,12 +15,14 @@
  */ 
 package org.codehaus.groovy.grails.web.servlet;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import javax.servlet.ServletOutputStream;
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpServletResponseWrapper;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.Locale;
 
 /**
  * <p>Wrapper class for HttpServletResponse that allows setting the content type while getting the writer.
@@ -32,21 +34,19 @@ import java.util.Locale;
  * 
  * Created - Jul 5, 2005
  */
-public class GrailsHttpServletResponse implements HttpServletResponse {
+public class GrailsHttpServletResponse extends HttpServletResponseWrapper {
 
-	private HttpServletResponse delegate = null;
+    private static final Log LOG = LogFactory.getLog(GrailsHttpServletResponse.class);
+
+
 	private boolean contentTypeSet;
 	private boolean redirected;
 	
-	public GrailsHttpServletResponse(HttpServletResponse delegate) {
-		super();
-		this.delegate = delegate;
-	}
 
-	public HttpServletResponse getDelegate() {
-		return delegate;		
-	}
-	
+    public GrailsHttpServletResponse(HttpServletResponse httpServletResponse) {
+        super(httpServletResponse);
+    }
+
 	/**
 	 * Returns whether the request has been redirected
 	 * 
@@ -57,154 +57,50 @@ public class GrailsHttpServletResponse implements HttpServletResponse {
 	}
 
 
-	public void addCookie(Cookie cookie) {
-		this.delegate.addCookie(cookie);
-	}
+    public HttpServletResponse getDelegate() {
+        return (HttpServletResponse)getResponse();
+    }
 
-	public boolean containsHeader(String headerName) {
-		return this.delegate.containsHeader(headerName);
-	}
-
-	public String encodeURL(String url) {
-		return this.delegate.encodeURL(url);
-	}
-
-	public String encodeRedirectURL(String url) {
-		return this.delegate.encodeURL(url);
-	}
-
-    /** @deprecated */
-	public String encodeUrl(String url) {
-		return this.delegate.encodeUrl(url);
-	}
-
-    /** @deprecated */
-    public String encodeRedirectUrl(String url) {
-		return this.delegate.encodeRedirectUrl(url);
-	}
-
-	public void sendError(int error, String message) throws IOException {
-		this.delegate.sendError(error, message);
+    public void sendError(int error, String message) throws IOException {
+        this.redirected = true;
+        super.sendError(error, message);
 	}
 
 	public void sendError(int error) throws IOException {
-		this.delegate.sendError(error);
+        this.redirected = true;
+        super.sendError(error);
 	}
 
 	public void sendRedirect(String url) throws IOException {
 		this.redirected = true;
-		this.delegate.sendRedirect(url);
-	}
+        if(LOG.isDebugEnabled()) {
+            LOG.debug("Executing redirect with response ["+getResponse()+"] to location ["+url+"]");
+        }
 
-	public void setDateHeader(String headerName, long value) {
-		this.delegate.setDateHeader(headerName, value);
-	}
-
-	public void addDateHeader(String headerName, long value) {
-		this.delegate.addDateHeader(headerName, value);
-	}
-
-	public void setHeader(String headerName, String value) {
-		this.delegate.setHeader(headerName, value);
-	}
-
-	public void addHeader(String headerName, String value) {
-		this.delegate.addHeader(headerName, value);
-	}
-
-	public void setIntHeader(String headerName, int value) {
-		this.delegate.setIntHeader(headerName, value);
-	}
-
-	public void addIntHeader(String headerName, int value) {
-		this.delegate.addIntHeader(headerName, value);
-	}
-
-	public void setStatus(int status) {
-		this.delegate.setStatus(status);
-	}
-
-    /** @deprecated */
-	public void setStatus(int status, String message) {
-		this.delegate.setStatus(status, message);
-	}
-
-	public String getCharacterEncoding() {
-		return this.delegate.getCharacterEncoding();
-	}
-
-	public String getContentType() {
-		return this.delegate.getContentType();
-	}
-
-	public ServletOutputStream getOutputStream() throws IOException {
-		return this.delegate.getOutputStream() ;
+        super.sendRedirect(url);
 	}
 
 	public ServletOutputStream getOutputStream(String contentType, String characterEncoding) throws IOException {
 		setContentType(contentType + ";charset=" + characterEncoding);
-		return this.delegate.getOutputStream();
+		return super.getOutputStream();
 	}
-	
-	public PrintWriter getWriter() throws IOException {
-		return this.delegate.getWriter();
-	}
+
 
 	public PrintWriter getWriter(String contentType, String characterEncoding) throws IOException {
 		setContentType(contentType + ";charset=" + characterEncoding);
-		return this.delegate.getWriter();
+		return super.getWriter();
 	}
 
 	public PrintWriter getWriter(String contentType) throws IOException {
 		setContentType(contentType);
-		return this.delegate.getWriter();
+		return super.getWriter();
 	}
 
-    public void setCharacterEncoding(String characterEncoding) {
-		this.delegate.setCharacterEncoding(characterEncoding);
-	}
-
-	public void setContentLength(int contentLength) {
-		this.delegate.setContentLength(contentLength);
-	}
 
 	public void setContentType(String contentType) {
 		if(!contentTypeSet) {
 			this.contentTypeSet = true;
-			this.delegate.setContentType(contentType);
+			super.setContentType(contentType);
 		}
 	}
-
-	public void setBufferSize(int bufferSize) {
-		this.delegate.setBufferSize(bufferSize);
-	}
-
-	public int getBufferSize() {
-		return this.delegate.getBufferSize();
-	}
-
-	public void flushBuffer() throws IOException {
-		this.delegate.flushBuffer();
-	}
-
-	public void resetBuffer() {
-		this.delegate.resetBuffer();
-	}
-
-	public boolean isCommitted() {
-		return this.delegate.isCommitted();
-	}
-
-	public void reset() {
-		this.delegate.reset();
-	}
-
-	public void setLocale(Locale locale) {
-		this.delegate.setLocale(locale);
-	}
-
-	public Locale getLocale() {
-		return this.delegate.getLocale();
-	}
-
 }

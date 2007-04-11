@@ -62,8 +62,8 @@ public class GrailsHttpServletRequest extends HttpServletRequestWrapper implemen
         controllerParams = (Map)controller.getProperty(GetParamsDynamicProperty.PROPERTY_NAME);        
     }
     
-    public ServletRequest getDelegate() {
-    	return getRequest();
+    public HttpServletRequest getDelegate() {
+    	return (HttpServletRequest)getRequest();
     }
 
     /* (non-Javadoc)
@@ -176,7 +176,11 @@ public class GrailsHttpServletRequest extends HttpServletRequestWrapper implemen
 		}
 	}
 
-	public Map getFileMap() {
+    public boolean isMultiPart() {
+        return getRequest() instanceof MultipartHttpServletRequest;
+    }
+
+    public Map getFileMap() {
 		ServletRequest r = getRequest();
 		if(r instanceof MultipartHttpServletRequest) {
 			return ((MultipartHttpServletRequest)r).getFileMap();

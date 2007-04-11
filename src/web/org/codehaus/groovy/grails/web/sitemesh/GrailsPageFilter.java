@@ -27,6 +27,8 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
+import org.codehaus.groovy.grails.web.servlet.GrailsHttpServletResponse;
+import org.codehaus.groovy.grails.web.servlet.GrailsHttpServletRequest;
 
 import com.opensymphony.module.sitemesh.Decorator;
 import com.opensymphony.module.sitemesh.Page;
@@ -71,8 +73,14 @@ public class GrailsPageFilter extends PageFilter {
             if(!response.isCommitted()) {
                 if(LOG.isDebugEnabled()) {
                 	LOG.debug("Rendering layout using forward: " + decorator.getURIPath());
-                }            	            	
-            	rd.forward(request, response);
+                }
+                if(response instanceof GrailsHttpServletResponse) {
+                    response = ((GrailsHttpServletResponse)response).getDelegate();
+                }
+                if(request instanceof GrailsHttpServletRequest)  {
+                    request = ((GrailsHttpServletRequest)request).getDelegate();
+                }
+                rd.forward(request, response);
             } 
             else {
                 if(LOG.isDebugEnabled()) {

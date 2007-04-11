@@ -30,6 +30,8 @@ import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpServletResponseWrapper;
+import javax.servlet.ServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -47,6 +49,7 @@ import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder;
 import org.codehaus.groovy.grails.web.mapping.UrlMapping;
 import org.springframework.validation.Errors;
 import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.util.WebUtils;
 import org.springframework.context.ApplicationContext;
 
 /**
@@ -168,7 +171,9 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
      * Appends all the requeset parameters to the URI buffer
      */
     private void appendRequestParams(StringBuffer actualUriBuf, Map params, HttpServletRequest request) {
-        actualUriBuf.append('?');
+        if(params.size() > 0)
+            actualUriBuf.append('?');
+        
         for (Iterator i = params.keySet().iterator(); i.hasNext();) {
             Object name = i.next();
             if(name.equals(GrailsControllerClass.CONTROLLER) || name.equals(GrailsControllerClass.ACTION))
@@ -189,15 +194,31 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
         }
 
         try {
-            HttpServletResponse wrappedResponse =  WrappedResponseHolder.getWrappedResponse();
-            if(wrappedResponse != null ) response = wrappedResponse;
 
-            response.sendRedirect(response.encodeRedirectURL(actualUri));
-            
+            if(response instanceof HttpServletResponseWrapper) {
+                response = unwrapHttpServletResponse(response);
+            }
+
+            if(LOG.isDebugEnabled()) {
+                LOG.debug("Executing redirect with response ["+response+"]");
+            }
+            String redirectUrl = response.encodeRedirectURL(actualUri);
+            response.sendRedirect(redirectUrl);
+
         } catch (IOException e) {
             throw new ControllerExecutionException("Error redirecting request for url ["+actualUri +"]: " + e.getMessage(),e);
         }
         return null;
+    }
+
+    private HttpServletResponse unwrapHttpServletResponse(HttpServletResponse response) {
+
+        ServletResponse original = response;
+        while(original instanceof HttpServletResponseWrapper) {
+            original = ((HttpServletResponseWrapper)original).getResponse();
+        }
+
+        return original != null ? (HttpServletResponse)original : response;  
     }
 
     /*
