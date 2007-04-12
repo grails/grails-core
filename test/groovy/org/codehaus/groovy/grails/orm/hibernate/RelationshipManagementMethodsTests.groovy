@@ -14,7 +14,8 @@ class RelationshipManagementMethodsTests extends org.codehaus.groovy.grails.plug
 		p.name = "Homer Simpson"
 
 
-        def address = p.addToAddresses(number:"22")
+        p.addToAddresses(number:"22")
+        def address = p.addresses.iterator().next()
         assert address
         assertEquals "22", address.number
         assertEquals p, address.person
@@ -38,8 +39,8 @@ class RelationshipManagementMethodsTests extends org.codehaus.groovy.grails.plug
         def address = addressClass.newInstance()
         address.number = "22"
 
-        address = p.addToAddresses(address)
-        assert address
+        p.addToAddresses(address)
+        
         assertTrue p.addresses.contains(address)
 
         assert address
