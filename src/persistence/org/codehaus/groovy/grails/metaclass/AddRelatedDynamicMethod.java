@@ -21,6 +21,7 @@ import java.util.regex.Pattern;
 
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
+import grails.util.GrailsUtil;
 
 /**
  * Implements the relationships management method add*. For example an Author with many Books
@@ -57,6 +58,9 @@ public class AddRelatedDynamicMethod extends AbstractAddRelatedDynamicMethod {
         if(arguments[0] == null) {
         	throw new IllegalArgumentException("Argument to ["+ this.methodName +"] cannot be null");
         }
+
+        GrailsUtil.deprecated(target.getClass(), methodName);
+        
         if(!property.getReferencedPropertyType().isAssignableFrom(arguments[0].getClass())) {
            throw new MissingMethodException(this.methodName,target.getClass(),arguments);
         }

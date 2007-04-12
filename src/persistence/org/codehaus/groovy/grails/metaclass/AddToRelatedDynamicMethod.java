@@ -22,6 +22,7 @@ import java.util.regex.Pattern;
 
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
+import grails.util.GrailsUtil;
 
 /**
  * Implements the relationship management method for explicitly adding elements to a named
@@ -54,9 +55,10 @@ public class AddToRelatedDynamicMethod extends AbstractAddRelatedDynamicMethod {
         if(arguments[1] == null) {
         	throw new IllegalArgumentException("Argument to method [add] cannot be null");
         }
-         
-		
-		String collectionName;
+
+        GrailsUtil.deprecated(target.getClass(), methodName);
+
+        String collectionName;
 		if(arguments[0] instanceof Map) {
 			collectionName = (String)((Map)arguments[0]).get(TO_ARGUMENT);
 			GrailsDomainClassProperty property = getDomainClassProperty(collectionName);
