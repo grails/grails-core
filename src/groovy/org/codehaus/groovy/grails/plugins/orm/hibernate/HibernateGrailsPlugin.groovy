@@ -127,6 +127,51 @@ class HibernateGrailsPlugin {
 	def doWithDynamicMethods = { ctx->                                                             		
 	    if(ctx.containsBean('sessionFactory')) {
         	GrailsHibernateUtil.configureDynamicMethods(ctx, ctx.grailsApplication);		
+		}     
+		
+		application.domainClasses.each { dc -> 
+			dc.persistantProperties.each { prop ->   
+				if(prop.oneToMany || prop.manyToMany) {  
+                                       
+					def collectionName = "${prop.name[0].toUpperCase()}${prop.name[1..-1]}"
+					def otherDomainClass = prop.referencedDomainClass					
+					
+					dc.metaClass."addTo${collectionName}" = { Object arg ->
+						Object obj  
+						if(delegate[prop.name] == null) {
+							delegate[prop.name] = GrailsClassUtils.createConcreteCollection(prop.type)
+						} 
+						if(arg instanceof Map) {    							  
+							  obj = otherDomainClass.newInstance()
+							  obj.properties = arg 
+							  delegate[prop.name].add(obj)
+						} 
+						else if(otherDomainClass.clazz.isInstance(arg)) {
+							  obj = arg
+							  delegate[prop.name].add(obj)
+						} 
+						else {
+							throw new MissingMethodException(dc.clazz, "addTo${collectionName}", [arg] as Object[])
+						} 
+					    if(prop.bidirectional) {
+					      	obj[prop.otherSide.name] = delegate  
+					    }						    
+						obj						
+					}   
+					dc.metaClass."removeFrom${collectionName}" = { Object arg ->
+                         if(otherDomainClass.clazz.isInstance(arg)) {
+	                     	delegate[prop.name]?.remove(arg)
+	                        if(prop.bidirectional) {
+		                         arg[prop.otherSide.name] = null
+							}
+						 } 
+						else {
+						   throw new MissingMethodException(dc.clazz, "removeFrom${collectionName}", [arg] as Object[]) 
+						} 
+						arg
+					}
+				}
+		    }
 		}
 	}
 	

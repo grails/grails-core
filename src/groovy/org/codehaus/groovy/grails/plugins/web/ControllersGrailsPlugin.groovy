@@ -33,6 +33,7 @@ import org.codehaus.groovy.grails.commons.spring.*
 import org.springframework.beans.factory.config.RuntimeBeanReference;
 import org.springframework.beans.factory.config.MethodInvokingFactoryBean;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
+import org.codehaus.groovy.grails.commons.GrailsMetaClassUtils as GMCU     
 import org.springframework.web.context.request.WebRequestInterceptor;
 import org.springframework.web.servlet.*
 import org.springframework.web.servlet.handler.WebRequestHandlerInterceptorAdapter;
@@ -424,11 +425,9 @@ class ControllersGrailsPlugin {
 	}
 
 	def doWithApplicationContext = { ctx ->
-        def registry = InvokerHelper.getInstance().getMetaRegistry()
-
         application.domainClasses.each { domainClass ->
-            def metaClass = registry.getMetaClass(domainClass.getClazz())
-
+            def metaClass = GMCU.registry.getMetaClass(domainClass.getClazz())
+			println "meta class of ${domainClass.clazz} is ${metaClass.getClass()}"
             if(metaClass instanceof DynamicMethodsMetaClass) {
                    metaClass.dynamicMethods.addDynamicConstructor(new DataBindingDynamicConstructor())
                    metaClass.dynamicMethods.addDynamicProperty(new SetPropertiesDynamicProperty())

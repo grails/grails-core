@@ -47,7 +47,7 @@ abstract class AbstractGrailsPluginTests extends GroovyTestCase {
         ctx = new MockApplicationContext();
         onSetUp();
         ga = new DefaultGrailsApplication(gcl.getLoadedClasses(),gcl);
-        
+        ApplicationHolder.application = ga
         ga.setApplicationContext(ctx);
         ctx.registerMockBean(GrailsApplication.APPLICATION_ID, ga);
 
@@ -70,11 +70,12 @@ abstract class AbstractGrailsPluginTests extends GroovyTestCase {
 		appCtx = springConfig.getApplicationContext()
 		mockManager.applicationContext = appCtx
 		servletContext.setAttribute( GrailsApplicationAttributes.APPLICATION_CONTEXT, appCtx)
+		dependentPlugins*.doWithDynamicMethods(appCtx)
 		dependentPlugins*.doWithApplicationContext(appCtx)
-		dependentPlugins*.doWithDynamicMethods(appCtx)		
+
 	}
 	
-	void tearDown() {
+	final void tearDown() {
 		servletContext = null
 		webRequest = null
 		request = null
