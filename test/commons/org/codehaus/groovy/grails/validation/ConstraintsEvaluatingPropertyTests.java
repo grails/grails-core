@@ -69,6 +69,59 @@ public class ConstraintsEvaluatingPropertyTests extends TestCase {
     /**
      * Test that static constraints work
      */
+    public void testNullableConstraint() throws Exception {
+        String bookClassSource =
+                "package org.codehaus.groovy.grails.validation\n" +
+                "class Book {\n" +
+                "   Long id\n" +
+                "   Long version\n" +
+                "   String title\n" +
+                "   String description\n" +
+                "   Author author\n" +
+                "   Author assistent\n" +
+                "   Set chapters\n" +
+                "   Map remarks\n" +
+                "   static hasMany = [chapters:Chapter]\n" +
+                "   static constraints = {\n" +
+                "      description( nullable: true)\n" +
+                "      assistent( nullable: true)\n" +
+                "   }\n" +
+                "}\n" +
+                "class Author {\n" +
+                "   Long id\n" +
+                "   Long version\n" +
+                "   String name\n" +
+                "}\n" +
+                "class Chapter {\n" +
+                "   Long id\n" +
+                "   Long version\n" +
+                "   String text\n" +
+                "}";
+
+        GroovyClassLoader gcl = new GroovyClassLoader();
+
+        DefaultGrailsDomainClass bookClass = new DefaultGrailsDomainClass(gcl.parseClass( bookClassSource, "Book" ));
+
+        Map constraints = bookClass.getConstrainedProperties();
+        ConstrainedProperty p = (ConstrainedProperty)constraints.get("title");
+        assertFalse("Title property should be required", p.isNullable());
+        p = (ConstrainedProperty)constraints.get("description");
+        assertTrue("Description property should be optional", p.isNullable() );
+        p = (ConstrainedProperty)constraints.get("author");
+        assertFalse("Author property should be required", p.isNullable());
+        p = (ConstrainedProperty)constraints.get("assistent");
+        assertTrue("Assistent property should be optional", p.isNullable() );
+        // Test that Collections and Maps are nullable by default
+        p = (ConstrainedProperty)constraints.get("chapters");
+        assertTrue("Chapters property should be optional", p.isNullable());
+        p = (ConstrainedProperty)constraints.get("remarks");
+        assertTrue("Remarks property should be optional", p.isNullable() );
+    }
+
+
+    /**
+     * Test that static constraints work
+     */
     public void testInheritedConstraints() throws Exception {
         String classSource = "package org.codehaus.groovy.grails.validation\n" +
                 "class Test {\n" +

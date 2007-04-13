@@ -44,11 +44,14 @@ class Book {
   def belongsTo = Author
   Author author
   String title
-  def optionals = ['author']
   boolean equals(obj) { title == obj?.title }
   int hashCode() { title ? title.hashCode() : super.hashCode() }
   String toString() { title }
- }
+
+  static constraints = {
+      author(nullable:true)
+  }
+}
 class Author {
   Long id
   Long version

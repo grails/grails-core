@@ -26,15 +26,14 @@ import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 import org.codehaus.groovy.grails.validation.ConstrainedPropertyBuilder;
 
 import java.io.InputStream;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.Map;
+import java.util.*;
 
 /**
  * This is a dynamic property that instead of returning the closure sets a new proxy meta class for the scope 
  * of the call and invokes the closure itself which builds up a list of ConstrainedProperty instances
  * 
  * @author Graeme Rocher
+ * @author Sergey Nebolsin
  * @since 07-Nov-2005
  */
 public class ConstraintsEvaluatingDynamicProperty extends AbstractDynamicProperty {
@@ -110,8 +109,13 @@ public class ConstraintsEvaluatingDynamicProperty extends AbstractDynamicPropert
                 }
                 // Make sure all fields are required by default, unless specified otherwise by the constraints
                 if(!cp.hasAppliedConstraint(ConstrainedProperty.NULLABLE_CONSTRAINT)) {
-                	// TODO remove "&& isOptional()" in 0.6
-                    cp.applyConstraint(ConstrainedProperty.NULLABLE_CONSTRAINT, Boolean.valueOf(p.isAssociation() || p.isOptional()));
+                	// TODO remove "p.isOptional()" in 0.6
+//                    cp.applyConstraint(ConstrainedProperty.NULLABLE_CONSTRAINT, Boolean.valueOf(p.isAssociation() || p.isOptional()));
+                    cp.applyConstraint(ConstrainedProperty.NULLABLE_CONSTRAINT, Boolean.valueOf(
+                            p.isOptional() ||
+                            Collection.class.isAssignableFrom( p.getType() ) ||
+                            Map.class.isAssignableFrom( p.getType() ))
+                    );
                 }
             }
         }
