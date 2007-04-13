@@ -4,7 +4,7 @@
 		<delete dir="${grails.javadoc}"/>
 		<mkdir dir="${grails.javadoc}"/>
 
-		<javadoc sourcepath="${grails.src.commons},${grails.src.web}" destdir="${grails.javadoc}" windowtitle="Grails ${grails.version}" source="1.3" access="package" author="true" version="true" use="true" defaultexcludes="true" breakiterator="true">
+		<javadoc sourcepath="${grails.src.commons},${grails.src.web}" destdir="${grails.javadoc}" windowtitle="Grails ${grails.version}" source="1.4" encoding="UTF-8" access="package" author="true" version="true" use="true" defaultexcludes="true" breakiterator="true">
 			<doctitle><![CDATA[<h1>Grails</h1>]]></doctitle>
 			<bottom><![CDATA[<i>Copyright (c) 2005-2006 The Grails project</i>]]></bottom>
 			<classpath refid="classpath"/>

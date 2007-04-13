@@ -14,25 +14,25 @@
 	</target>
 
 	<target name="build" depends="build-init" description="compile Java and Groovy sources" >
-		<javac debug="on" deprecation="on" destdir="${grails.build}/core" source="1.3" target="1.3">
+		<javac debug="on" deprecation="on" destdir="${grails.build}/core" source="1.4" target="1.4" encoding="UTF-8">
 			<src path="${grails.src.commons}"/>			
 			<classpath refid="classpath"/>
 		</javac>
-		<javac debug="on" deprecation="on" destdir="${grails.build}/web" source="1.3" target="1.3">
+		<javac debug="on" deprecation="on" destdir="${grails.build}/web" source="1.4" target="1.4" encoding="UTF-8">
 			<src path="${grails.src.web}"/>
 			<classpath>
 			      <pathelement path="${grails.build}/core"/>			      
 		    </classpath>                                       			
 			<classpath refid="classpath"/>  
 		</javac>
-		<javac debug="on" deprecation="on" destdir="${grails.build}/gorm" source="1.3" target="1.3">
+		<javac debug="on" deprecation="on" destdir="${grails.build}/gorm" source="1.4" target="1.4" encoding="UTF-8">
 			<src path="${grails.src.persistence}"/>
 			<classpath>
 			      <pathelement path="${grails.build}/core"/>			      
 		    </classpath>						
 			<classpath refid="classpath"/>  
 		</javac>                                   
-		<javac debug="on" deprecation="on" destdir="${grails.build}/crud" source="1.3" target="1.3">
+		<javac debug="on" deprecation="on" destdir="${grails.build}/crud" source="1.4" target="1.4" encoding="UTF-8">
 			<src path="${grails.src.scaffolding}"/>	
 			<classpath>
 			      <pathelement path="${grails.build}/core"/>			      
@@ -41,14 +41,14 @@
 		    </classpath>				   
 			<classpath refid="classpath"/>  
 		</javac>
-        <groovyc destdir="${grails.build}/core" >
+        <groovyc destdir="${grails.build}/core" encoding="UTF-8">
 			<src path="${grails.src.commons}"/>
 		    <classpath>
 		      <pathelement path="${grails.build}/core"/>
 		    </classpath>  
 			<classpath refid="classpath"/>    
 		</groovyc> 
-        <groovyc destdir="${grails.build}/core" srcdir="${grails.src.groovy}">
+        <groovyc destdir="${grails.build}/core" srcdir="${grails.src.groovy}" encoding="UTF-8">
              <exclude name="**/orm/**" />
              <exclude name="**/web/**" />
              <exclude name="**/scaffolding/**" />	
@@ -63,7 +63,7 @@
 
 
 	
-        <groovyc destdir="${grails.build}/web" includes="**/web/**" >
+        <groovyc destdir="${grails.build}/web" includes="**/web/**" encoding="UTF-8">
    			<src path="${grails.src.groovy}"/>
    		    <classpath>
 		      <pathelement path="${grails.build}/core"/>			      
@@ -74,7 +74,7 @@
    			<classpath refid="classpath"/>    
    		</groovyc>	
 
-        <groovyc destdir="${grails.build}/gorm" includes="**/hibernate/**" >
+        <groovyc destdir="${grails.build}/gorm" includes="**/hibernate/**" encoding="UTF-8">
    			<src path="${grails.src.groovy}"/>
    		    <classpath>
 		      <pathelement path="${grails.build}/core"/>			      
@@ -85,7 +85,7 @@
    			<classpath refid="classpath"/>    
    		</groovyc> 
 
-        <groovyc destdir="${grails.build}/crud" includes="**/scaffolding/**" >
+        <groovyc destdir="${grails.build}/crud" includes="**/scaffolding/**" encoding="UTF-8">
    			<src path="${grails.src.groovy}"/>
    		    <classpath>
 		      <pathelement path="${grails.build}/core"/>			      
