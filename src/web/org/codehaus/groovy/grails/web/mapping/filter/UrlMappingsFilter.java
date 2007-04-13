@@ -98,10 +98,10 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
             }
             //populateParamsForMapping(info);
             RequestDispatcher dispatcher = request.getRequestDispatcher(forwardUrl);
-            RequestDispatcherWrapper wrapper = new RequestDispatcherWrapper(dispatcher);
+
             try {
                 WrappedResponseHolder.setWrappedResponse(response);
-                wrapper.forward(request, response);                
+                dispatcher.forward(request, response);                
             }
             finally {
                 WrappedResponseHolder.setWrappedResponse(null);

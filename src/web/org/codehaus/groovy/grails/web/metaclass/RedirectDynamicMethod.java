@@ -195,10 +195,6 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
 
         try {
 
-            if(response instanceof HttpServletResponseWrapper) {
-                response = unwrapHttpServletResponse(response);
-            }
-
             if(LOG.isDebugEnabled()) {
                 LOG.debug("Executing redirect with response ["+response+"]");
             }
@@ -209,16 +205,6 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
             throw new ControllerExecutionException("Error redirecting request for url ["+actualUri +"]: " + e.getMessage(),e);
         }
         return null;
-    }
-
-    private HttpServletResponse unwrapHttpServletResponse(HttpServletResponse response) {
-
-        ServletResponse original = response;
-        while(original instanceof HttpServletResponseWrapper) {
-            original = ((HttpServletResponseWrapper)original).getResponse();
-        }
-
-        return original != null ? (HttpServletResponse)original : response;  
     }
 
     /*

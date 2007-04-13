@@ -83,54 +83,6 @@ public class GrailsHttpServletResponse extends HttpServletResponseWrapper {
         super.sendRedirect(url);
 	}
 
-    public void setLocale(Locale locale) {
-        getResponse().setLocale(locale);
-    }
-
-    public void setBufferSize(int i) {
-        getResponse().setBufferSize(i);
-    }
-
-    public String getCharacterEncoding() {
-        return super.getCharacterEncoding();
-    }
-
-    public void setStatus(int i) {
-        ((HttpServletResponse)getResponse()).setStatus(i);
-    }
-
-    public void addCookie(Cookie cookie) {
-        ((HttpServletResponse)getResponse()).addCookie(cookie);
-    }
-
-    public boolean containsHeader(String s) {
-        return ((HttpServletResponse)getResponse()).containsHeader(s);
-    }
-
-    public void setDateHeader(String s, long l) {
-        ((HttpServletResponse)getResponse()).setDateHeader(s, l);
-    }
-
-    public void addDateHeader(String s, long l) {
-        ((HttpServletResponse)getResponse()).addDateHeader(s, l);
-    }
-
-    public void setHeader(String s, String s1) {
-        ((HttpServletResponse)getResponse()).setHeader(s, s1);
-    }
-
-    public void addHeader(String s, String s1) {
-        ((HttpServletResponse)getResponse()).addHeader(s, s1);
-    }
-
-    public void setIntHeader(String s, int i) {
-        ((HttpServletResponse)getResponse()).setIntHeader(s, i);
-    }
-
-    public void addIntHeader(String s, int i) {
-        ((HttpServletResponse)getResponse()).addIntHeader(s, i);
-    }
-
     public ServletOutputStream getOutputStream(String contentType, String characterEncoding) throws IOException {
 		setContentType(contentType + ";charset=" + characterEncoding);
 		return super.getOutputStream();
@@ -155,11 +107,4 @@ public class GrailsHttpServletResponse extends HttpServletResponseWrapper {
 		}
 	}
 
-    public ServletResponse getResponse() {
-        ServletResponse original = super.getResponse();
-        while(original instanceof HttpServletResponseWrapper) {
-            original = ((HttpServletResponseWrapper)original).getResponse();
-        }
-        return original != null ? (HttpServletResponse)original : this;         
-    }
 }
