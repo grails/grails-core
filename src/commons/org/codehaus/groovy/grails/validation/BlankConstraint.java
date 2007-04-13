@@ -69,7 +69,7 @@ class BlankConstraint extends AbstractConstraint {
             if(propertyValue instanceof String) {
                 if(StringUtils.isBlank((String)propertyValue)) {
                     Object[] args = new Object[] { constraintPropertyName, constraintOwningClass };
-                    super.rejectValue( errors, ConstrainedProperty.BLANK_CONSTRAINT,args, getDefaultMessage(ConstrainedProperty.DEFAULT_BLANK_MESSAGE_CODE, args) );
+                    super.rejectValue( target,errors, ConstrainedProperty.BLANK_CONSTRAINT,args, getDefaultMessage(ConstrainedProperty.DEFAULT_BLANK_MESSAGE_CODE, args) );
                 }
             }
         }

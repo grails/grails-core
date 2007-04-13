@@ -287,7 +287,7 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
      *
      * @param property
      */
-    private void establishRelationshipForCollection(DefaultGrailsDomainClassProperty property) {
+    private void  establishRelationshipForCollection(DefaultGrailsDomainClassProperty property) {
         // is it a relationship
         Class relatedClassType = getRelatedClassType( property.getName() );
 

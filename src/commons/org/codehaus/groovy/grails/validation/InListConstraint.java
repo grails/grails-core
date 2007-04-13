@@ -67,7 +67,7 @@ class InListConstraint extends AbstractConstraint {
 
         if(!this.list.contains(propertyValue)) {
             Object[] args = new Object[] { constraintPropertyName, constraintOwningClass, propertyValue, list  };
-            super.rejectValue(errors,ConstrainedProperty.NOT_PREFIX + ConstrainedProperty.IN_LIST_CONSTRAINT,args,getDefaultMessage(ConstrainedProperty.DEFAULT_NOT_INLIST_MESSAGE_CODE, args));
+            super.rejectValue(target,errors,ConstrainedProperty.NOT_PREFIX + ConstrainedProperty.IN_LIST_CONSTRAINT,args,getDefaultMessage(ConstrainedProperty.DEFAULT_NOT_INLIST_MESSAGE_CODE, args));
         }
     }
 

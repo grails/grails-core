@@ -82,23 +82,23 @@ class MinSizeConstraint extends AbstractConstraint {
         else if(propertyValue.getClass().isArray()) {
             int length = Array.getLength( propertyValue );
             if(length < minSize) {
-                super.rejectValue(errors,ConstrainedProperty.MIN_SIZE_CONSTRAINT + ConstrainedProperty.NOTMET_SUFFIX,args,getDefaultMessage(ConstrainedProperty.DEFAULT_INVALID_MIN_SIZE_MESSAGE_CODE, args));
+                super.rejectValue(target,errors,ConstrainedProperty.MIN_SIZE_CONSTRAINT + ConstrainedProperty.NOTMET_SUFFIX,args,getDefaultMessage(ConstrainedProperty.DEFAULT_INVALID_MIN_SIZE_MESSAGE_CODE, args));
             }
         }
         else if(propertyValue instanceof Collection) {
             if( ((Collection)propertyValue).size() < minSize ) {
-                super.rejectValue(errors,ConstrainedProperty.MIN_SIZE_CONSTRAINT + ConstrainedProperty.NOTMET_SUFFIX,args,getDefaultMessage(ConstrainedProperty.DEFAULT_INVALID_MIN_SIZE_MESSAGE_CODE, args));
+                super.rejectValue(target,errors,ConstrainedProperty.MIN_SIZE_CONSTRAINT + ConstrainedProperty.NOTMET_SUFFIX,args,getDefaultMessage(ConstrainedProperty.DEFAULT_INVALID_MIN_SIZE_MESSAGE_CODE, args));
             }
         }
         else if(propertyValue instanceof Number) {
             int numberSize = ((Number)propertyValue).intValue();
             if( numberSize < minSize ) {
-                super.rejectValue(errors,ConstrainedProperty.MIN_SIZE_CONSTRAINT + ConstrainedProperty.NOTMET_SUFFIX,args,getDefaultMessage(ConstrainedProperty.DEFAULT_INVALID_MIN_SIZE_MESSAGE_CODE, args));
+                super.rejectValue(target,errors,ConstrainedProperty.MIN_SIZE_CONSTRAINT + ConstrainedProperty.NOTMET_SUFFIX,args,getDefaultMessage(ConstrainedProperty.DEFAULT_INVALID_MIN_SIZE_MESSAGE_CODE, args));
             }
         }
         else if(propertyValue instanceof String) {
             if(((String)propertyValue ).length() < minSize) {
-                super.rejectValue(errors,ConstrainedProperty.MIN_SIZE_CONSTRAINT + ConstrainedProperty.NOTMET_SUFFIX,args,getDefaultMessage(ConstrainedProperty.DEFAULT_INVALID_MIN_SIZE_MESSAGE_CODE, args));
+                super.rejectValue(target,errors,ConstrainedProperty.MIN_SIZE_CONSTRAINT + ConstrainedProperty.NOTMET_SUFFIX,args,getDefaultMessage(ConstrainedProperty.DEFAULT_INVALID_MIN_SIZE_MESSAGE_CODE, args));
             }
         }
     }

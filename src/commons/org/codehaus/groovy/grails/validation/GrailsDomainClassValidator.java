@@ -16,23 +16,30 @@ package org.codehaus.groovy.grails.validation;
 
 import groovy.lang.GroovyObject;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
+import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.context.MessageSource;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
+import org.apache.commons.lang.StringUtils;
 
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.Map;
 
 /**
- * A validator that validates a domain class based on the applied constraints 
+ * A specialised Spring validator that validates a domain class instance using the constraints defined in the
+ * static constraints closure.
+ *  
  * 
  * @author Graeme Rocher
- * @since 07-Nov-2005
+ * @since 0.1
+ *
+ * Created: 07-Nov-2005
  */
-public class GrailsDomainClassValidator implements Validator {
+public class GrailsDomainClassValidator implements Validator, CascadingValidator {
 
     private Class targetClass;
     private GrailsDomainClass domainClass;
@@ -65,19 +72,29 @@ public class GrailsDomainClassValidator implements Validator {
 		this.messageSource = messageSource;
 	}
 
-
-	public void validate(Object obj, Errors errors) {
+    /**
+     * @see org.codehaus.groovy.grails.validation.CascadingValidator#validate(Object, org.springframework.validation.Errors, boolean)
+     */
+    public void validate(Object obj, Errors errors, boolean cascade) {
         if(!domainClass.getClazz().isInstance(obj))
             throw new IllegalArgumentException("Argument ["+obj+"] is not an instance of ["+domainClass.getClazz()+"] which this validator is configured for");
 
         BeanWrapper bean = new BeanWrapperImpl(obj);
 
-        Collection constrainedProperties = domainClass.getConstrainedProperties().values();
-        for (Iterator i = constrainedProperties.iterator(); i.hasNext();) {
+        Map constrainedProperties = domainClass.getConstrainedProperties();
 
-            ConstrainedProperty c = (ConstrainedProperty)i.next();
-            c.setMessageSource(this.messageSource);
-            c.validate(obj, bean.getPropertyValue( c.getPropertyName() ),errors);
+        GrailsDomainClassProperty[] persistentProperties = domainClass.getPersistantProperties();
+
+        for (int i = 0; i < persistentProperties.length; i++) {
+            GrailsDomainClassProperty persistentProperty = persistentProperties[i];
+            String propertyName = persistentProperty.getName();
+            if(constrainedProperties.containsKey(propertyName)) {
+                validatePropertyWithConstraint(propertyName, obj, errors, bean, constrainedProperties);
+            }
+
+            if(persistentProperty.isAssociation() && cascade) {
+                cascadeToAssociativeProperty(errors, bean, persistentProperty);
+            }
         }
 
          if(obj instanceof GroovyObject) {
@@ -86,6 +103,116 @@ public class GrailsDomainClassValidator implements Validator {
          else {
             InvokerHelper.setProperty(obj,ERRORS_PROPERTY,errors);
          }
+
+    }
+
+    /**
+     * @see org.springframework.validation.Validator#validate(Object, org.springframework.validation.Errors)
+     */
+	public void validate(Object obj, Errors errors) {
+        validate(obj,errors,false);
+    }
+
+    /**
+     * Cascades validation onto an associative property maybe a one-to-many, one-to-one or many-to-one relationship
+     *
+     * @param errors The Errors instnace
+     * @param bean The original bean
+     * @param persistentProperty The associative property
+     */
+    protected void cascadeToAssociativeProperty(Errors errors, BeanWrapper bean, GrailsDomainClassProperty persistentProperty) {
+        String propertyName = persistentProperty.getName();
+        if(errors.hasFieldErrors(propertyName)) return;
+        if(persistentProperty.isManyToOne() || persistentProperty.isOneToOne() ) {
+            Object associatedObject = bean.getPropertyValue(propertyName);
+            cascadeValidationToOne(errors, bean,associatedObject, persistentProperty, propertyName);
+        }
+        else if(persistentProperty.isOneToMany()) {
+            cascadeValidationToMany(errors, bean, persistentProperty, propertyName);
+        }
+    }
+
+    /**
+     * Cascades validation to a one-to-many type relationship. Normally a collection such as a List or Set each element
+     * in the association will also be validated
+     *
+     * @param errors The Errors instance
+     * @param bean The original BeanWrapper
+     * @param persistentProperty An association whose isOneToMeny() method returns true
+     * @param propertyName The name of the property
+     */
+    protected void cascadeValidationToMany(Errors errors, BeanWrapper bean, GrailsDomainClassProperty persistentProperty, String propertyName) {
+        Object collection = bean.getPropertyValue(propertyName);
+        if(collection instanceof Collection) {
+            for (Iterator i = ((Collection) collection).iterator(); i.hasNext();) {
+                Object associatedObject = i.next();
+                cascadeValidationToOne(errors, bean,associatedObject, persistentProperty, propertyName);
+            }
+        }
+    }
+
+    private void validatePropertyWithConstraint(String propertyName, Object obj, Errors errors, BeanWrapper bean, Map constrainedProperties) {
+        int i = propertyName.lastIndexOf(".");
+        String constrainedPropertyName;
+        if(i > -1){
+            constrainedPropertyName = propertyName.substring(i+1,propertyName.length());
+        }
+        else {
+            constrainedPropertyName = propertyName;
+        }
+        ConstrainedProperty c = (ConstrainedProperty)constrainedProperties.get(constrainedPropertyName);
+        c.setMessageSource(this.messageSource);
+        c.validate(obj, bean.getPropertyValue(constrainedPropertyName), errors);
+    }
+
+    /**
+     * Cascades validation to a one-to-one or many-to-one property
+     *
+     * @param errors The Errors instance
+     * @param bean The original BeanWrapper
+     * @param associatedObject The associated object's current value
+     * @param persistentProperty The GrailsDomainClassProperty instance
+     * @param propertyName The name of the property
+     */
+    protected void cascadeValidationToOne(Errors errors, BeanWrapper bean, Object associatedObject, GrailsDomainClassProperty persistentProperty, String propertyName) {
+
+        if(associatedObject != null) {
+            GrailsDomainClass associatedDomainClass = persistentProperty.getReferencedDomainClass();
+            GrailsDomainClassProperty otherSide = null;
+            if(persistentProperty.isBidirectional()) {
+                otherSide = persistentProperty.getOtherSide();
+            }
+
+            Map associatedConstraintedProperties = associatedDomainClass.getConstrainedProperties();
+
+            GrailsDomainClassProperty[] associatedPersistentProperties = associatedDomainClass.getPersistantProperties();
+            String nestedPath = errors.getNestedPath();
+            try {
+                errors.setNestedPath(nestedPath+propertyName);
+
+
+                for (int i = 0; i < associatedPersistentProperties.length; i++) {
+                    GrailsDomainClassProperty associatedPersistentProperty = associatedPersistentProperties[i];
+                    if(associatedPersistentProperty.equals(otherSide)) continue;
+
+
+                    String associatedPropertyName = associatedPersistentProperty.getName();
+                    if(associatedConstraintedProperties.containsKey(associatedPropertyName)) {
+
+                        validatePropertyWithConstraint(errors.getNestedPath() + associatedPropertyName, associatedObject, errors, new BeanWrapperImpl(associatedObject), associatedConstraintedProperties);
+                    }
+
+                    if(associatedPersistentProperty.isAssociation()) {
+                        cascadeToAssociativeProperty(errors, new BeanWrapperImpl(associatedObject), associatedPersistentProperty);
+                    }
+
+                }
+            }
+            finally {
+                errors.setNestedPath(nestedPath);
+            }
+
+        }
     }
 
 }

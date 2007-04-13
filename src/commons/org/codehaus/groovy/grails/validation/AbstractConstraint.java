@@ -22,6 +22,9 @@ import org.springframework.context.NoSuchMessageException;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.Errors;
 import org.springframework.validation.FieldError;
+import org.springframework.beans.NotReadablePropertyException;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.BeanWrapperImpl;
 
 import java.util.Locale;
 import java.util.ArrayList;
@@ -83,16 +86,17 @@ public abstract class AbstractConstraint implements Constraint {
         processValidate(target, propertyValue, errors);
     }
 
-    public void rejectValue(Errors errors, String defaultMessageCode, Object[] args) {
-        this.rejectValue( errors, defaultMessageCode, new String[] {}, args );
+    public void rejectValue(Object target,Errors errors, String defaultMessageCode, Object[] args) {
+        this.rejectValue(target, errors, defaultMessageCode, new String[] {}, args );
     }
 
-    public void rejectValue(Errors errors, String defaultMessageCode, String code, Object[] args) {
-        this.rejectValue( errors, defaultMessageCode, new String[] {code}, args );
+    public void rejectValue(Object target,Errors errors, String defaultMessageCode, String code, Object[] args) {
+        this.rejectValue( target,errors, defaultMessageCode, new String[] {code}, args );
     }
 
-    public void rejectValue(Errors errors, String defaultMessageCode, String[] codes, Object[] args) {
+    public void rejectValue(Object target,Errors errors, String defaultMessageCode, String[] codes, Object[] args) {
         this.rejectValueWithDefaultMessage(
+                target,
                 errors,
                 getDefaultMessage( defaultMessageCode, args),
                 codes,
@@ -100,7 +104,7 @@ public abstract class AbstractConstraint implements Constraint {
         );
     }
 
-    public void rejectValueWithDefaultMessage(Errors errors, String defaultMessage, String[] codes, Object[] args) {
+    public void rejectValueWithDefaultMessage(Object target, Errors errors, String defaultMessage, String[] codes, Object[] args) {
         BindingResult result = (BindingResult) errors;
         List newCodes = new ArrayList();
         String[] resolved = result.resolveMessageCodes( classShortName + '.'  + constraintPropertyName + '.' + getName() + ".error", constraintPropertyName);
@@ -113,7 +117,7 @@ public abstract class AbstractConstraint implements Constraint {
         FieldError error = new FieldError(
                 errors.getObjectName(),
                 constraintPropertyName,
-                errors.getFieldValue( constraintPropertyName ),
+                getPropertyValue(errors, target),
                 false,
                 (String[]) newCodes.toArray(new String[newCodes.size()]),
                 args,
@@ -122,10 +126,26 @@ public abstract class AbstractConstraint implements Constraint {
         (( BindingResult ) errors).addError( error );
     }
 
+    private Object getPropertyValue(Errors errors, Object target) {
+        try {
+            return errors.getFieldValue( constraintPropertyName );
+        } catch (NotReadablePropertyException nre) {
+            int i = constraintPropertyName.lastIndexOf(".");
+            String propertyName;
+            if(i > -1) {
+                propertyName = constraintPropertyName.substring(i, constraintPropertyName.length());
+            }
+            else {
+                propertyName = constraintPropertyName;
+            }
+            return new BeanWrapperImpl(target).getPropertyValue(propertyName);
+        }
+    }
+
     // For backward compatibility
-    public void rejectValue(Errors errors, String code, String defaultMessage) {
+    public void rejectValue(Object target,Errors errors, String code, String defaultMessage) {
         this.rejectValueWithDefaultMessage(
-                errors,
+                target, errors,
                 defaultMessage,
                 new String[] {code},
                 null
@@ -133,9 +153,9 @@ public abstract class AbstractConstraint implements Constraint {
     }
 
     // For backward compatibility
-    public void rejectValue(Errors errors, String code,Object[] args,String defaultMessage) {
+    public void rejectValue(Object target,Errors errors, String code,Object[] args,String defaultMessage) {
         this.rejectValueWithDefaultMessage(
-                errors,
+                target, errors,
                 defaultMessage,
                 new String[] {code},
                 args

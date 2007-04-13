@@ -60,7 +60,7 @@ class NullableConstraint extends AbstractConstraint {
     protected void processValidate(Object target, Object propertyValue, Errors errors) {
         if(!nullable && propertyValue == null) {
             Object[] args = new Object[] { constraintPropertyName, constraintOwningClass};
-            super.rejectValue( errors, ConstrainedProperty.NULLABLE_CONSTRAINT,args, getDefaultMessage(ConstrainedProperty.DEFAULT_NULL_MESSAGE_CODE, args) );
+            super.rejectValue(target, errors, ConstrainedProperty.NULLABLE_CONSTRAINT,args, getDefaultMessage(ConstrainedProperty.DEFAULT_NULL_MESSAGE_CODE, args) );
         }
     }
 

@@ -104,7 +104,7 @@ class ValidatorConstraint extends AbstractConstraint {
                 if (args == null) {
                     args = new Object[] { constraintPropertyName, constraintOwningClass, propertyValue };
                 }
-                super.rejectValue(errors,ConstrainedProperty.DEFAULT_INVALID_VALIDATOR_MESSAGE_CODE,errmsg == null ? ConstrainedProperty.VALIDATOR_CONSTRAINT + ConstrainedProperty.INVALID_SUFFIX : errmsg, args );
+                super.rejectValue(target,errors,ConstrainedProperty.DEFAULT_INVALID_VALIDATOR_MESSAGE_CODE,errmsg == null ? ConstrainedProperty.VALIDATOR_CONSTRAINT + ConstrainedProperty.INVALID_SUFFIX : errmsg, args );
             }
         }
     }

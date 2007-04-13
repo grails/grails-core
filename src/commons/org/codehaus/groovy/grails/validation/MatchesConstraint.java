@@ -67,7 +67,7 @@ class MatchesConstraint extends AbstractConstraint {
 
         if(!propertyValue.toString().matches( regex )) {
             Object[] args = new Object[] { constraintPropertyName, constraintOwningClass, propertyValue, regex  };
-            super.rejectValue(errors,ConstrainedProperty.MATCHES_CONSTRAINT + ConstrainedProperty.INVALID_SUFFIX,args,getDefaultMessage(ConstrainedProperty.DEFAULT_DOESNT_MATCH_MESSAGE_CODE, args));
+            super.rejectValue(target,errors,ConstrainedProperty.MATCHES_CONSTRAINT + ConstrainedProperty.INVALID_SUFFIX,args,getDefaultMessage(ConstrainedProperty.DEFAULT_DOESNT_MATCH_MESSAGE_CODE, args));
         }
 
     }

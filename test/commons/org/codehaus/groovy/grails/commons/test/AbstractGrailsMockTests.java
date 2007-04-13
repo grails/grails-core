@@ -26,6 +26,9 @@ import org.codehaus.groovy.grails.support.MockApplicationContext;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.mock.web.MockServletContext;
+import org.springframework.context.MessageSource;
+import org.springframework.context.support.StaticMessageSource;
+
 /**
  * Abstract simple test harness for testing Grails Applications that just loads
  * the parsed classes into the GrailsApplication instance
@@ -85,4 +88,8 @@ public abstract class AbstractGrailsMockTests extends TestCase {
 	protected Resource[] getResources(String pattern) throws IOException {
 		return new PathMatchingResourcePatternResolver().getResources(pattern);		
 	}
+
+    protected MessageSource createMessageSource() {
+        return new StaticMessageSource();        
+    }
 }

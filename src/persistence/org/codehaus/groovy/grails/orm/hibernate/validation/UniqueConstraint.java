@@ -139,7 +139,7 @@ public class UniqueConstraint extends AbstractPersistentConstraint {
                 }
                 if(reject) {
                     Object[] args = new Object[] { constraintPropertyName, constraintOwningClass, propertyValue };
-                    super.rejectValue(errors,UNIQUE_CONSTRAINT,args,getDefaultMessage( DEFAULT_NOT_UNIQUE_MESSAGE_CODE, args ));
+                    super.rejectValue(target,errors,UNIQUE_CONSTRAINT,args,getDefaultMessage( DEFAULT_NOT_UNIQUE_MESSAGE_CODE, args ));
                 }
             }
         }

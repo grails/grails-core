@@ -136,6 +136,6 @@ class SizeConstraint extends AbstractConstraint {
             suffix = ConstrainedProperty.TOOSMALL_SUFFIX;
         }
         String message = getDefaultMessage(ConstrainedProperty.DEFAULT_INVALID_SIZE_MESSAGE_CODE, args);
-        super.rejectValue(errors, ConstrainedProperty.SIZE_CONSTRAINT + suffix , args, message);
+        super.rejectValue(target,errors, ConstrainedProperty.SIZE_CONSTRAINT + suffix , args, message);
     }
 }
