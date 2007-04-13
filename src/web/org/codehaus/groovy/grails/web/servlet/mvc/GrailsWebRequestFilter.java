@@ -29,7 +29,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 /**
  * A filter that binds a GrailsWebRequest to the currently executing thread
- * 
+ *
  * @author Graeme Rocher
  * @since 0.4
  *
@@ -44,13 +44,13 @@ public class GrailsWebRequestFilter extends OncePerRequestFilter {
 			throws ServletException, IOException {
 
 		LocaleContextHolder.setLocale(request.getLocale());
-		GrailsWebRequest requestAttributes = new GrailsWebRequest(request, response, getServletContext());
+		ServletRequestAttributes requestAttributes = new GrailsWebRequest(request, response, getServletContext());
 		RequestContextHolder.setRequestAttributes(requestAttributes);
 		if (logger.isDebugEnabled()) {
 			logger.debug("Bound Grails request context to thread: " + request);
 		}
 		try {
-			filterChain.doFilter(requestAttributes.getCurrentRequest(), requestAttributes.getCurrentResponse());
+			filterChain.doFilter(request, response);
 		}
 		finally {
 			requestAttributes.requestCompleted();
