@@ -32,9 +32,7 @@ class ValidationTagLib {
         def model = attrs['model']
         def checkList = []
         if(model) {
-            checkList = model.findAll { k,v ->
-                return ((v.errors != null) && (v.errors instanceof Errors))
-            }
+            checkList = model.findAll { it.value?.errors instanceof Errors }.collect { it.value }
         }
         if(attrs['bean']) {
             checkList << attrs['bean']
@@ -45,7 +43,7 @@ class ValidationTagLib {
 					if(ra) {
                         if(ra instanceof Errors)
                             checkList << ra
-	                    else if ((ra.properties.errors) && (ra.errors instanceof Errors)) {
+	                    else if (ra.properties?.errors instanceof Errors) {
                             checkList << ra
 						}
 					}
@@ -55,7 +53,7 @@ class ValidationTagLib {
 
         for(i in checkList) {
             def errors = null
-            if(i instanceof Errors) {
+            if (i instanceof Errors) {
                errors = i
             }
             else {
@@ -84,9 +82,7 @@ class ValidationTagLib {
         def model = attrs['model']
         def errorList = []
         if(model) {
-            errorList = model.findAll { k,v ->
-                return ((v.errors != null) && (v.errors instanceof Errors)) 
-            }
+            errorList = model.findAll { it.value?.errors instanceof Errors }.collect { it.value }
         }
         if(attrs['bean']) {
             errorList << attrs['bean']
@@ -95,9 +91,9 @@ class ValidationTagLib {
             request.attributeNames.each {
                 def ra = request[it]
                 if(ra) {
-                    if(ra instanceof Errors)
+                    if (ra instanceof Errors)
                         errorList << ra
-                    else if ((ra.errors != null) && (ra.errors instanceof Errors)) {
+                    else if (ra.properties?.errors instanceof Errors) {
                         errorList << ra
 					}
                 }
@@ -162,7 +158,11 @@ class ValidationTagLib {
 
           if(attrs['error']) {
                 def error = attrs['error']
-                def message = messageSource.getMessage( error, locale )
+                def defaultMessage = ( attrs['default'] ? attrs['default'] : error.defaultMessage )
+                def message = messageSource.getMessage( error.code,
+                                                        error.arguments,
+                                                        defaultMessage,
+                                                        locale )
                 if(message) {
                     out << message
                 }
