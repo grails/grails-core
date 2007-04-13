@@ -16,10 +16,7 @@
 package org.codehaus.groovy.grails.metaclass;
 
 import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.metaclass.AbstractDynamicMethodInvocation;
-import org.codehaus.groovy.grails.commons.metaclass.AbstractDynamicMethods;
-import org.codehaus.groovy.grails.commons.metaclass.CreateDynamicMethod;
-import org.codehaus.groovy.grails.commons.metaclass.WeakGenericDynamicProperty;
+import org.codehaus.groovy.grails.commons.metaclass.*;
 import org.codehaus.groovy.grails.orm.hibernate.metaclass.*;
 import org.codehaus.groovy.grails.orm.support.TransactionManagerAware;
 import org.codehaus.groovy.grails.validation.metaclass.ConstraintsDynamicProperty;
@@ -91,7 +88,16 @@ public class DomainClassMethods extends AbstractDynamicMethods implements Transa
 
         // add dynamic properties
         addDynamicProperty( new ConstraintsDynamicProperty(application) );
-        addDynamicProperty( new WeakGenericDynamicProperty(ERRORS_PROPERTY, Errors.class,new BindException(theClass, theClass.getName() ),false) );
+        addDynamicProperty( new WeakGenericDynamicProperty(
+                ERRORS_PROPERTY,
+                Errors.class,
+                new FunctionCallback() {
+                    public Object execute( Object object ) {
+                        return new BindException( object, object.getClass().getName() );
+                    }
+                },
+                false)
+        );
 
     }
 
