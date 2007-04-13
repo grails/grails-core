@@ -45,9 +45,9 @@ public abstract class AbstractClausedStaticPersistentMethod extends
 	 */
 	protected abstract static class GrailsMethodExpression {
 		private static final String LESS_THAN = "LessThan";
-		private static final String LESS_THAN_OR_EQUAL = "LessThanOrEqual";
+		private static final String LESS_THAN_OR_EQUAL = "LessThanEquals";
 		private static final String GREATER_THAN = "GreaterThan";
-		private static final String GREATER_THAN_OR_EQUAL = "GreaterThanOrEqual";
+		private static final String GREATER_THAN_OR_EQUAL = "GreaterThanEquals";
 		private static final String LIKE = "Like";
         private static final String ILIKE = "Ilike";
 		private static final String BETWEEN = "Between";
