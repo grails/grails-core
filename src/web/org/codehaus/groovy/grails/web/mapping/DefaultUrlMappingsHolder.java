@@ -14,8 +14,6 @@
  */
 package org.codehaus.groovy.grails.web.mapping;
 
-import org.apache.commons.lang.StringUtils;
-import org.codehaus.groovy.grails.web.mapping.exceptions.UrlMappingException;
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 
 import java.util.*;

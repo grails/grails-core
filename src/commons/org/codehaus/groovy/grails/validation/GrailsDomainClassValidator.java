@@ -23,7 +23,6 @@ import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.context.MessageSource;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
-import org.apache.commons.lang.StringUtils;
 
 import java.util.Collection;
 import java.util.Iterator;

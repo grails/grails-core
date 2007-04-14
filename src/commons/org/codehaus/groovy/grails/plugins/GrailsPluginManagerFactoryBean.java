@@ -15,7 +15,6 @@
  */ 
 package org.codehaus.groovy.grails.plugins;
 
-import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;

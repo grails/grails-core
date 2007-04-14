@@ -27,7 +27,6 @@ import org.apache.commons.logging.LogFactory;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.ServletException;
 import java.util.Map;
 import java.util.HashMap;
 import java.io.Writer;

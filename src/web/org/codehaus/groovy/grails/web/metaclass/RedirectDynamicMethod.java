@@ -30,8 +30,6 @@ import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpServletResponseWrapper;
-import javax.servlet.ServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -42,14 +40,12 @@ import org.codehaus.groovy.grails.commons.metaclass.AbstractDynamicMethodInvocat
 import org.codehaus.groovy.grails.scaffolding.GrailsScaffolder;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.GrailsHttpServletResponse;
-import org.codehaus.groovy.grails.web.servlet.WrappedResponseHolder;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
 import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder;
 import org.codehaus.groovy.grails.web.mapping.UrlMapping;
 import org.springframework.validation.Errors;
 import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.util.WebUtils;
 import org.springframework.context.ApplicationContext;
 
 /**

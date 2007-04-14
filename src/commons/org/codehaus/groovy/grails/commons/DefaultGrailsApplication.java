@@ -31,13 +31,10 @@ import org.codehaus.groovy.grails.injection.GrailsInjectionOperation;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.Resource;
-import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.util.Assert;
 
 import java.io.IOException;
-import java.io.File;
-import java.io.FileInputStream;
 import java.lang.reflect.Modifier;
 import java.security.CodeSource;
 import java.util.*;

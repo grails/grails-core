@@ -19,13 +19,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import javax.servlet.ServletOutputStream;
-import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletResponseWrapper;
-import javax.servlet.http.Cookie;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.Locale;
 
 /**
  * <p>Wrapper class for HttpServletResponse that allows setting the content type while getting the writer.

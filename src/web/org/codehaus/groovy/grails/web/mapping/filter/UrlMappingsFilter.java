@@ -17,15 +17,11 @@ package org.codehaus.groovy.grails.web.mapping.filter;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.util.UrlPathHelper;
 import org.springframework.web.context.WebApplicationContext;
-import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder;
 import org.codehaus.groovy.grails.web.mapping.UrlMapping;
 import org.codehaus.groovy.grails.web.mapping.UrlMappingInfo;
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap;
 import org.codehaus.groovy.grails.web.servlet.WrappedResponseHolder;
-import org.codehaus.groovy.grails.web.servlet.GrailsDispatcherServlet;
 import org.codehaus.groovy.grails.web.servlet.GrailsUrlPathHelper;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -37,10 +33,6 @@ import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.RequestDispatcher;
 import java.io.IOException;
-import java.util.Map;
-import java.util.Iterator;
-
-import com.opensymphony.module.sitemesh.filter.RequestDispatcherWrapper;
 
 /**
  * <p>A Servlet filter that uses the Grails UrlMappings to match and forward requests to a relevant controller
