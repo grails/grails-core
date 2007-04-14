@@ -67,33 +67,6 @@ class SimpleGrailsControllerHelperTests extends AbstractGrailsControllerTests {
 
     }
 
-	void testCommandObjectArg() {
-/*		runTest {
-		  Class commandObject = gcl.parseClass(
-				"""
-				class MyFooObject {
-				   def someAttribute	
-                   static def validate = {}		
-				}
-				""")
-		  Class controllerClass = gcl.parseClass(
-				"""
-				class MyController {
-                   def errors
-                   def theCommandObj
-				   def list = { MyFooObject cmo ->
-						theCommandObj = cmo
-                   }			
-				}
-				""")
-		  def helper = new SimpleGrailsControllerHelper(null, null, null)
-		  def controller = controllerClass.newInstance()
-          helper.handleAction(controller, controller.list, request, null, null)
-		  assertNotNull controller.theCommandObj
-		  assertNull controller.errors
-		} */
-    }
-
 	void testConfigureStateForUri() {
 		def helper = new SimpleGrailsControllerHelper(null, null, null)
 		helper.configureStateForUri("/controller/action/id")
