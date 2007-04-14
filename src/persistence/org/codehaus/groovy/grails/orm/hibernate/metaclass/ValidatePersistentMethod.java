@@ -19,8 +19,10 @@ package org.codehaus.groovy.grails.orm.hibernate.metaclass;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
+import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.commons.metaclass.DynamicMethodsMetaClass;
 import org.codehaus.groovy.grails.metaclass.DomainClassMethods;
+import org.codehaus.groovy.grails.validation.CascadingValidator;
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.hibernate.SessionFactory;
 import org.springframework.validation.BindException;
@@ -28,6 +30,7 @@ import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
 
 import java.util.regex.Pattern;
+import java.util.Map;
 
 /**
  * A method that validates an instance of a domain class against its constraints 
@@ -40,8 +43,8 @@ public class ValidatePersistentMethod extends AbstractDynamicPersistentMethod {
     public static final String METHOD_SIGNATURE = "validate";
     public static final Pattern METHOD_PATTERN = Pattern.compile('^'+METHOD_SIGNATURE+'$');
     private GrailsApplication application;
-
-
+    private static final String ARGUMENT_DEEP_VALIDATE = "deepValidate";
+    private static final String ARGUMENT_EVICT = "evict";
 
 
     public ValidatePersistentMethod(SessionFactory sessionFactory, ClassLoader classLoader, GrailsApplication application) {
@@ -65,12 +68,27 @@ public class ValidatePersistentMethod extends AbstractDynamicPersistentMethod {
         if(validator != null) {
             // should evict?
             boolean evict = false;
+            boolean deepValidate = true;
             if(arguments.length > 0) {
                 if(arguments[0] instanceof Boolean) {
                     evict = ((Boolean)arguments[0]).booleanValue();
                 }
+                if(arguments[0] instanceof Map) {
+                    Map argsMap = (Map)arguments[0];
+
+                    if(argsMap.containsKey(ARGUMENT_DEEP_VALIDATE))
+                        deepValidate = GrailsClassUtils.getBooleanFromMap(ARGUMENT_DEEP_VALIDATE, argsMap);
+                    
+                    evict = GrailsClassUtils.getBooleanFromMap(ARGUMENT_EVICT, argsMap);
+                }
             }
-            validator.validate(target,errors);
+            if(deepValidate && (validator instanceof CascadingValidator)) {
+                ((CascadingValidator)validator).validate(target, errors, deepValidate);
+            }
+            else {
+                validator.validate(target,errors);
+            }
+
 
             if(errors.hasErrors()) {
                 valid = Boolean.valueOf(false);

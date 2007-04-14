@@ -19,14 +19,13 @@ import groovy.lang.GroovyObject;
 
 import java.io.Serializable;
 import java.util.regex.Pattern;
+import java.util.Map;
 import java.sql.SQLException;
 
-import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.GrailsDomainClass;
-import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
-import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
+import org.codehaus.groovy.grails.commons.*;
 import org.codehaus.groovy.grails.commons.metaclass.DynamicMethodsMetaClass;
 import org.codehaus.groovy.grails.metaclass.DomainClassMethods;
+import org.codehaus.groovy.grails.validation.CascadingValidator;
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.hibernate.SessionFactory;
 import org.hibernate.Session;
@@ -51,8 +50,11 @@ public abstract class AbstractSavePersistentMethod extends
 		AbstractDynamicPersistentMethod {
 
 	private GrailsApplication application;
+    private static final String ARGUMENT_VALIDATE = "validate";
+    private static final String ARGUMENT_DEEP_VALIDATE = "deepValidate";
+    private static final String ARGUMENT_FLUSH = "flush";
 
-	public AbstractSavePersistentMethod(Pattern pattern, SessionFactory sessionFactory, ClassLoader classLoader, GrailsApplication application) {
+    public AbstractSavePersistentMethod(Pattern pattern, SessionFactory sessionFactory, ClassLoader classLoader, GrailsApplication application) {
 		super(pattern, sessionFactory, classLoader);
         if(application == null)
             throw new IllegalArgumentException("Constructor argument 'application' cannot be null");
@@ -71,7 +73,22 @@ public abstract class AbstractSavePersistentMethod extends
         	Validator validator = domainClass.getValidator();
         	Errors errors = new BindException(target, target.getClass().getName());
             if(validator != null) {
-                validator.validate(target,errors);
+                boolean deepValidate = true;
+                if(arguments.length > 0) {
+                    if(arguments[0] instanceof Map) {
+                        Map argsMap = (Map)arguments[0];
+
+                        if(argsMap.containsKey(ARGUMENT_DEEP_VALIDATE))
+                            deepValidate = GrailsClassUtils.getBooleanFromMap(ARGUMENT_DEEP_VALIDATE, argsMap);
+
+                    }
+                }
+                if(deepValidate && (validator instanceof CascadingValidator)) {
+                    ((CascadingValidator)validator).validate(target, errors, deepValidate);
+                }
+                else {
+                    validator.validate(target,errors);
+                }
 
                 if(errors.hasErrors()) {
                     return handleValidationError(target,errors);
@@ -95,6 +112,12 @@ public abstract class AbstractSavePersistentMethod extends
         if(arguments.length > 0) {
             if(arguments[0] instanceof Boolean) {
                 return ((Boolean)arguments[0]).booleanValue();
+            }
+            else if(arguments[0] instanceof Map) {
+                Map argsMap = (Map)arguments[0];
+                if(argsMap.containsKey(ARGUMENT_FLUSH)) {
+                    return GrailsClassUtils.getBooleanFromMap(ARGUMENT_FLUSH, argsMap);
+                }
             }
             else {
             	return false;
@@ -185,6 +208,15 @@ public abstract class AbstractSavePersistentMethod extends
             if(arguments.length > 0) {
                 if(arguments[0] instanceof Boolean) {
                     return ((Boolean)arguments[0]).booleanValue();
+                }
+                else if(arguments[0] instanceof Map) {
+                     Map argsMap = (Map)arguments[0];
+                    if(argsMap.containsKey(ARGUMENT_VALIDATE)) {
+                        return GrailsClassUtils.getBooleanFromMap(ARGUMENT_VALIDATE,argsMap);
+                    }
+                    else {
+                        return true;
+                    }
                 }
                 else {
                 	return true;

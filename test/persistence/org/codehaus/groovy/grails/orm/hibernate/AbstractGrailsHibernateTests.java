@@ -68,6 +68,7 @@ public abstract class AbstractGrailsHibernateTests extends TestCase {
     protected Session session;
     protected WebApplicationContext applicationContext;
 
+
     protected final void setUp() throws Exception {
         super.setUp();
         
@@ -129,7 +130,7 @@ public abstract class AbstractGrailsHibernateTests extends TestCase {
         if(TransactionSynchronizationManager.hasResource(this.sessionFactory)) {
 		    SessionHolder holder = (SessionHolder) TransactionSynchronizationManager.getResource(this.sessionFactory);
 		    org.hibernate.Session s = holder.getSession();
-		    s.flush();
+		    //s.flush();
 		    TransactionSynchronizationManager.unbindResource(this.sessionFactory);
 		    SessionFactoryUtils.releaseSession(s, this.sessionFactory);
 		}
