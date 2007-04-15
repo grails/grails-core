@@ -50,6 +50,12 @@ class HibernateGrailsPlugin {
 	def watchedResources = "file:./grails-app/domain/*.groovy"
 
 	def doWithSpring = {
+	        application.domainClasses.each { dc ->
+                "${dc.fullName}Validator"(HibernateDomainClassValidator) {
+                    messageSource = ref("messageSource")
+                    domainClass = ref("${dc.fullName}DomainClass")
+                }
+	        }
 			def vendorToDialect = new Properties()
 			def hibernateDialects = application.classLoader.getResource("hibernate-dialects.properties")
 			if(hibernateDialects) {
