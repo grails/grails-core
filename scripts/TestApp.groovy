@@ -75,8 +75,14 @@ task(runCompiledTests:"Runs the tests located under src/test which are compiled 
 
 task(runGrailsTests:"Runs Grails' tests under the grails-test directory") {
 	def result = null
-	try {        
-		def testFiles = resolveResources("grails-tests/*.groovy")
+	try {
+	    // allow user to specify test to run like this...
+	    // grails test-app -Dtest=AuthorTests
+	    def testsToRun = '*'
+	    if (Ant.antProject.properties.test) {
+	        testsToRun = Ant.antProject.properties.test
+	    }
+		def testFiles = resolveResources("grails-tests/${testsToRun}.groovy")
 		if(testFiles.size() == 0) {
 			println "No tests found in grails-test to execute"
 			exit(0)
