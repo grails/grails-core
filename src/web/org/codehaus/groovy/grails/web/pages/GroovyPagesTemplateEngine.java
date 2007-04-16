@@ -337,6 +337,7 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
         long lastModified;
         try {
             URLConnection urlc = resource.getURL().openConnection();
+
             urlc.setDoInput(false);
             urlc.setDoOutput(false);
 

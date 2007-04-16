@@ -123,6 +123,12 @@ public interface GrailsApplication extends ApplicationContextAware {
     public void refresh();
 
     /**
+     * Rebuilds this Application throwing away the class loader and re-constructing it from the loaded resources again.
+     * This method can only be called in development mode and an error will be thrown if called in a different enivronment
+     */
+    public void rebuild();
+
+    /**
      * Retrieves a Resource instance for the given Grails class or null it doesn't exist
      *
      * @param theClazz The Grails class

@@ -148,7 +148,8 @@ public class TemplateGeneratingResponseHandler implements ScaffoldResponseHandle
                                                                 pw);
 
             ScaffoldedGroovyPageView scaffoldedView = new ScaffoldedGroovyPageView(uri,sw.toString());
-            scaffoldedView.setTemplateEngine(this.templateEngine);
+            scaffoldedView.setApplicationContext(webRequest.getAttributes().getApplicationContext());
+            
             v = scaffoldedView;
             generatedViewCache.put(uri, v);
         }

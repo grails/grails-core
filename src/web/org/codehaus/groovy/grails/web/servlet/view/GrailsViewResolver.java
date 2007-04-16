@@ -107,7 +107,7 @@ public class GrailsViewResolver extends InternalResourceViewResolver implements 
             GroovyPageView gspSpringView = new GroovyPageView();
             gspSpringView.setServletContext(webRequest.getServletContext());
             gspSpringView.setUrl(gspView);
-            gspSpringView.setTemplateEngine(templateEngine);
+            gspSpringView.setApplicationContext(this.getApplicationContext());
             return gspSpringView;
         }
         else {

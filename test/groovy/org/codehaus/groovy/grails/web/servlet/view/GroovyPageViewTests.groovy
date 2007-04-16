@@ -25,9 +25,13 @@ class GroovyPageViewTests extends GroovyTestCase {
 
         def gpte = new GroovyPagesTemplateEngine(new MockServletContext(rl))
 
+        def ctx = new MockApplicationContext()
+        ctx.registerMockBean(GroovyPagesTemplateEngine.BEAN_ID, gpte)
+
+
         def view = new GroovyPageView()
         view.url = url
-        view.templateEngine = gpte
+        view.applicationContext = ctx
 
         def model = [foo:"bar"]
         view.render(model, webRequest.currentRequest, webRequest.currentResponse)

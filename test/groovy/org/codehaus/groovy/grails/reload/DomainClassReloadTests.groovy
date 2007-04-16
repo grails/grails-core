@@ -39,7 +39,17 @@ class Book {
 
             def eventHandler = plugin.instance.onChange
             eventHandler.delegate = plugin
-            eventHandler.call(event)
+            shouldFail(IllegalStateException) {
+                eventHandler.call(event)
+            }
+            System.setProperty("grails.env", "development")
+            try {
+                eventHandler.call(event)                            
+            }
+            finally {
+                System.setProperty("grails.env", "")
+            }
+
     }
 
 	void onSetUp() {

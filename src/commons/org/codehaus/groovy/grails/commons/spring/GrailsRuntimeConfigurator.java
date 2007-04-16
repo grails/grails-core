@@ -279,8 +279,12 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
               LOG.debug("Re-creating bean definition ["+name+"]");
           }
           current.registerBeanDefinition(name, springConfig.createBeanDefinition(name));
+          // force initialisation
+          current.getBean(name);
       }
       this.pluginManager.doDynamicMethods();
+
+      this.pluginManager.doPostProcessing(current);
 
       if(loadExternalBeans)
           doPostResourceConfiguration(springConfig);

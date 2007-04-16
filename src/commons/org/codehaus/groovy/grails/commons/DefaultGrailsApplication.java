@@ -90,6 +90,8 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
     private boolean suspectArtefactInit;
     private Class[] allArtefactClassesArray;
     private Map applicationMeta;
+    private GrailsInjectionOperation injectionOperation;
+    private Resource[] resources;
 
     /**
      * Creates a new empty Grails application
@@ -145,9 +147,16 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
 
         loadMetadata();
 
-        this.resourceLoader = new GrailsResourceLoader(resources);
-        GrailsResourceHolder resourceHolder = new GrailsResourceHolder();
+        this.resources = resources;
+        this.injectionOperation = injectionOperation;
 
+        loadGrailsApplicationFromResources(resources, injectionOperation);
+
+    }
+
+    private void loadGrailsApplicationFromResources(Resource[] resources, GrailsInjectionOperation injectionOperation) throws IOException {
+        GrailsResourceHolder resourceHolder = new GrailsResourceHolder();
+        this.resourceLoader = new GrailsResourceLoader(resources);
         this.cl = configureClassLoader(injectionOperation, resourceLoader);
 
         Collection loadedResources = new ArrayList();
@@ -195,7 +204,6 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
                 throw e;
             }
         }
-
     }
 
     private void loadMetadata()
@@ -506,6 +514,24 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
      */
     public void refresh() {
         configureLoadedClasses(this.cl.getLoadedClasses());
+    }
+
+    public void rebuild() {
+        this.loadedClasses.clear();
+        initArtefactHandlers();
+
+        if(GrailsUtil.isDevelopmentEnv()) {
+            try {
+                loadGrailsApplicationFromResources(this.resources, injectionOperation);
+                initialise();
+            } catch (IOException e) {
+                throw new GrailsConfigurationException("I/O error rebuilding GrailsApplication: " + e.getMessage(),e);
+            }
+        }
+        else {
+            throw new IllegalStateException("Cannot rebuild GrailsApplication when not in development mode!");
+        }
+
     }
 
     /**

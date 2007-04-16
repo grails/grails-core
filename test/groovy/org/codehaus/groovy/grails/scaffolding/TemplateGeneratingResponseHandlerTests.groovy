@@ -21,12 +21,17 @@ class TemplateGeneratingResponseHandlerTests extends GroovyTestCase {
     }
     void testCreateScaffoldedListResponse() {
         def webRequest = GrailsWebUtil.bindMockWebRequest()
+        def ctx = new MockApplicationContext()
+        def gpte  = new GroovyPagesTemplateEngine(webRequest.servletContext)
+        ctx.registerMockBean(GroovyPagesTemplateEngine.BEAN_ID, gpte)
+
+        webRequest.servletContext.setAttribute(ApplicationAttributes.APPLICATION_CONTEXT, ctx)
         webRequest.actionName = "list"
 
         def url = "/test/list"
         def handler = new TemplateGeneratingResponseHandler()
         handler.templateGenerator = new DefaultGrailsTemplateGenerator()
-        handler.templateEngine = new GroovyPagesTemplateEngine(webRequest.servletContext)
+        handler.templateEngine = gpte
         handler.scaffoldedClass = Test.class
         handler.grailsApplication = application
 
@@ -39,12 +44,18 @@ class TemplateGeneratingResponseHandlerTests extends GroovyTestCase {
 
     void testCreateScaffoldedShowResponse() {
         def webRequest = GrailsWebUtil.bindMockWebRequest()
+        def ctx = new MockApplicationContext()
+        def gpte  = new GroovyPagesTemplateEngine(webRequest.servletContext)
+        ctx.registerMockBean(GroovyPagesTemplateEngine.BEAN_ID, gpte)
+
+        webRequest.servletContext.setAttribute(ApplicationAttributes.APPLICATION_CONTEXT, ctx)
+
         webRequest.actionName = "show"
 
         def url = "/test/show"
         def handler = new TemplateGeneratingResponseHandler()
         handler.templateGenerator = new DefaultGrailsTemplateGenerator()
-        handler.templateEngine = new GroovyPagesTemplateEngine(webRequest.servletContext)
+        handler.templateEngine = gpte
         handler.scaffoldedClass = Test.class
         handler.grailsApplication = application
 
@@ -57,12 +68,18 @@ class TemplateGeneratingResponseHandlerTests extends GroovyTestCase {
 
     void testCreateScaffoldedEditResponse() {
         def webRequest = GrailsWebUtil.bindMockWebRequest()
+        def ctx = new MockApplicationContext()
+        def gpte  = new GroovyPagesTemplateEngine(webRequest.servletContext)
+        ctx.registerMockBean(GroovyPagesTemplateEngine.BEAN_ID, gpte)
+
+        webRequest.servletContext.setAttribute(ApplicationAttributes.APPLICATION_CONTEXT, ctx)
+
         webRequest.actionName = "edit"
 
         def url = "/test/edit"
         def handler = new TemplateGeneratingResponseHandler()
         handler.templateGenerator = new DefaultGrailsTemplateGenerator()
-        handler.templateEngine = new GroovyPagesTemplateEngine(webRequest.servletContext)
+        handler.templateEngine = gpte
         handler.scaffoldedClass = Test.class
         handler.grailsApplication = application
 
@@ -75,12 +92,18 @@ class TemplateGeneratingResponseHandlerTests extends GroovyTestCase {
 
     void testCreateScaffoldedCreateResponse() {
         def webRequest = GrailsWebUtil.bindMockWebRequest()
+        def ctx = new MockApplicationContext()
+        def gpte  = new GroovyPagesTemplateEngine(webRequest.servletContext)
+        ctx.registerMockBean(GroovyPagesTemplateEngine.BEAN_ID, gpte)
+
+        webRequest.servletContext.setAttribute(ApplicationAttributes.APPLICATION_CONTEXT, ctx)
+
         webRequest.actionName = "create"
 
         def url = "/test/create"
         def handler = new TemplateGeneratingResponseHandler()
         handler.templateGenerator = new DefaultGrailsTemplateGenerator()
-        handler.templateEngine = new GroovyPagesTemplateEngine(webRequest.servletContext)
+        handler.templateEngine = gpte
         handler.scaffoldedClass = Test.class
         handler.grailsApplication = application
 

@@ -56,14 +56,13 @@ import groovy.lang.Writable;
  *        Created: Feb 27, 2007
  *        Time: 8:25:10 AM
  */
-public class GroovyPageView extends AbstractUrlBasedView {
+public class GroovyPageView extends AbstractUrlBasedView  {
 
     private static final Log LOG = LogFactory.getLog(GroovyPageView.class);
     /**
      * The size of the buffer to use for the GSPReponseWriter
      */
     private static final int BUFFER_SIZE = 8024;
-    private GroovyPagesTemplateEngine templateEngine;
     private static final String ERRORS_VIEW = GrailsApplicationAttributes.PATH_TO_VIEWS+"/error"+ GroovyPage.EXTENSION;
     public static final String EXCEPTION_MODEL_KEY = "exception";
 
@@ -81,9 +80,10 @@ public class GroovyPageView extends AbstractUrlBasedView {
      */
     protected final void renderMergedOutputModel(Map model, HttpServletRequest request, HttpServletResponse response) throws Exception {
         super.exposeModelAsRequestAttributes(model, request);
-
-        if(templateEngine == null) throw new IllegalStateException("Property [templateEngine] must be set!");
-
+        // we retrieve the template engine from the context every time so that application reloading works
+        // and we don't end up with cached references
+        GroovyPagesTemplateEngine templateEngine = (GroovyPagesTemplateEngine) getApplicationContext().getBean(GroovyPagesTemplateEngine.BEAN_ID);
+        if(templateEngine == null) throw new IllegalStateException("No GroovyPagesTemplateEngine found in ApplicationContext!");
         renderWithTemplateEngine(templateEngine,model, response);
     }
 
@@ -140,16 +140,6 @@ public class GroovyPageView extends AbstractUrlBasedView {
         }
     }
 
-
-    /**
-     * Sets the GroovyPageTemplateEngine to use during rendering
-     *
-     * @param templateEngine The GroovyPagesTemplateEngine instance
-     */
-    public void setTemplateEngine(GroovyPagesTemplateEngine templateEngine) {
-        if(templateEngine == null) throw new IllegalArgumentException("Argument [templateEngine] cannot be null");
-        this.templateEngine = templateEngine;
-    }
 
     /**
      * Creates the Response Writer for the specified HttpServletResponse instance

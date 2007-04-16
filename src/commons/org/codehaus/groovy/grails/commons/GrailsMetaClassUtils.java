@@ -129,7 +129,7 @@ public class GrailsMetaClassUtils {
 
             } catch (NoSuchMethodException e) {
                 if(LOG.isDebugEnabled()) {
-                    LOG.debug("Exception thrown construction to MetaClass adapter when reloading: " + e.getMessage(),e);
+                    LOG.debug("Exception thrown constructing new MetaClass adapter when reloading: " + e.getMessage(),e);
                 }
             }
 

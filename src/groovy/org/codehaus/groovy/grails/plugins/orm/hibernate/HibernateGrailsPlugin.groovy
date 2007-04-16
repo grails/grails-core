@@ -102,7 +102,6 @@ class HibernateGrailsPlugin {
                     }
                     hibernateProperties = hibernateProperties
                     grailsApplication = ref("grailsApplication", true)
-                    classLoader = classLoader
                 }
                 transactionManager(HibernateTransactionManager) {
                     sessionFactory = sessionFactory
@@ -195,16 +194,20 @@ class HibernateGrailsPlugin {
 			assert manager
 			
 			if(application.isArtefactOfType(DomainClassArtefactHandler.TYPE, event.source)) { 				
-					// refresh whole application
-					application.refresh()
-
 					application.domainClasses.each { dc ->
 							registry.removeMetaClass(dc.getClazz())
 					}
+				
+					// refresh whole application
+					application.rebuild()
+
 					// rebuild context
 					configurator.reconfigure(event.ctx, manager.servletContext, false)					
 					// refresh constraints
-					application.refreshConstraints()
+					application.refreshConstraints()    
+					if(event.ctx.containsBean("groovyPagesTemplateEngine")) {
+						event.ctx.groovyPagesTemplateEngine.clearPageCache()
+					}
 			}
 
 	}
