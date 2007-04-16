@@ -48,9 +48,7 @@ public class ExpandoMetaClassCreationHandle extends MetaClassCreationHandle {
 	 * @see groovy.lang.MetaClassRegistry.MetaClassCreationHandle#create(java.lang.Class, groovy.lang.MetaClassRegistry)
 	 */
 	public MetaClass create(Class theClass, MetaClassRegistry registry) {
-		
-		MetaClass mc = super.create(theClass, registry);
-		if((mc instanceof MetaClassImpl) && theClass != ExpandoMetaClass.class) {
+		if(theClass != ExpandoMetaClass.class) {
 			ExpandoMetaClass emc = new ExpandoMetaClass(theClass);
 			emc.setAllowChangesAfterInit(true);
 			List modifiedSuperExpandos = retrieveModifiedSuperExpandos(emc);
@@ -58,8 +56,10 @@ public class ExpandoMetaClassCreationHandle extends MetaClassCreationHandle {
 			
 			registerTrackedExpando(theClass, emc);
 			return emc;
+		}  
+		else {
+			return super.create(theClass, registry);
 		}
-		return mc;
 	}
 
 	private void registerTrackedExpando(Class theClass, ExpandoMetaClass emc) {

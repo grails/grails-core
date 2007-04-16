@@ -27,7 +27,7 @@ class ExpandoMetaClassCreationHandleTests extends GroovyTestCase {
 	def registry
 	def original
 	void setUp() {
-		registry = InvokerHelper.getInstance().metaRegistry
+		registry = GroovySystem.metaClassRegistry
 		def handle = new ExpandoMetaClassCreationHandle()
 		original = registry.metaClassCreationHandle
 		registry.setMetaClassCreationHandle(handle);

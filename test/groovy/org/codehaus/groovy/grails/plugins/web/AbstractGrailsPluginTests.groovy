@@ -35,13 +35,7 @@ abstract class AbstractGrailsPluginTests extends GroovyTestCase {
 		
         super.setUp();
         
-        originalHandler = InvokerHelper.getInstance()
-								.getMetaRegistry()
-								.metaClassCreationHandle
-
-		InvokerHelper.getInstance()
-						.getMetaRegistry()
-						.metaClassCreationHandle = new ExpandoMetaClassCreationHandle();
+		GroovySystem.metaClassRegistry.metaClassCreationHandle = new ExpandoMetaClassCreationHandle();
         
 
         ctx = new MockApplicationContext();
@@ -87,8 +81,6 @@ abstract class AbstractGrailsPluginTests extends GroovyTestCase {
 		pluginsToLoad = []
 		appCtx = null
 		
-		InvokerHelper.getInstance()
-		.getMetaRegistry()
-		.setMetaClassCreationHandle(originalHandler);
+		GroovySystem.metaClassRegistry.metaClassCreationHandle = MetaClassRegistry.MetaClassCreationHandle.newInstance()
 	}
 }

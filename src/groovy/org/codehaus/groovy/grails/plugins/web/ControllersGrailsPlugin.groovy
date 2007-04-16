@@ -105,20 +105,17 @@ class ControllersGrailsPlugin {
 		}                        
 
 		
-		if(application.controllerClasses) {
-			def handlerInterceptors = []
-			grailsUrlHandlerMapping(GrailsUrlHandlerMapping) {
-				interceptors = handlerInterceptors
-				mappings =  grailsUrlMappings
-			}
-			handlerMappingTargetSource(HotSwappableTargetSource, grailsUrlHandlerMapping)
-			handlerMapping(ProxyFactoryBean) {
-				targetSource = handlerMappingTargetSource
-				proxyInterfaces = [org.springframework.web.servlet.HandlerMapping]
-			}
-
+		def handlerInterceptors = []
+		grailsUrlHandlerMapping(GrailsUrlHandlerMapping) {
+			interceptors = handlerInterceptors
+			mappings =  grailsUrlMappings
 		}
-
+		handlerMappingTargetSource(HotSwappableTargetSource, grailsUrlHandlerMapping)
+		handlerMapping(ProxyFactoryBean) {
+			targetSource = handlerMappingTargetSource
+			proxyInterfaces = [org.springframework.web.servlet.HandlerMapping]
+		}
+		
 		application.controllerClasses.each { controller ->
 			log.debug "Configuring controller $controller.fullName"
 			if(controller.available) {
