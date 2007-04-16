@@ -28,7 +28,8 @@ import groovy.text.SimpleTemplateEngine
 Ant.property(environment:"env")                             
 grailsHome = Ant.antProject.properties."env.GRAILS_HOME"    
 
-includeTargets << new File ( "${grailsHome}/scripts/Init.groovy" )     
+includeTargets << new File ( "${grailsHome}/scripts/Init.groovy" ) 
+includeTargets << new File ( "${grailsHome}/scripts/GetDependencies.groovy" )    
        
 if(!Ant.antProject.properties."groovyJarSet") {
 	Ant.path ( id : 'groovyJarSet' ) { 
@@ -46,7 +47,7 @@ task ('default': "Performs compilation on any source files (Java or Groovy) in t
 }            
 
 task(compile : "Implementation of compilation phase") {    
-	depends(classpath)
+	depends(dependencies, classpath)           
 	
 	println "Compiling sources..."
 	Ant.sequential {
