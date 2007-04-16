@@ -32,7 +32,7 @@ class ServicesGrailsPlugin {
 	
 	def version = GrailsPluginUtils.getGrailsVersion()
 	def loadAfter = ['hibernate']
-	def influences = ['controllers']
+	def influences = ['controllers', 'quartz']
 	                 
     def watchedResources = ["file:./grails-app/services/*Service.groovy",
 							"file:./plugins/*/grails-app/services/*Service.groovy"]
