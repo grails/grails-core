@@ -79,20 +79,20 @@ public class DefaultGrailsDomainClassTests extends TestCase {
         assertTrue("topString property was not persistent in middleDomainClass", topStringProperty.isPersistent());
         
         GrailsDomainClassProperty middleStringProperty = middleDomainClass.getPropertyByName("middleString");
-        assertNotNull("topString property not found in middleDomainClass", middleStringProperty);
-        assertTrue("topString property was not persistent in middleDomainClass", middleStringProperty.isPersistent());
+        assertNotNull("middleString property not found in middleDomainClass", middleStringProperty);
+        assertTrue("middleString property was not persistent in middleDomainClass", middleStringProperty.isPersistent());
         
         topStringProperty = bottomDomainClass.getPropertyByName("topString");
         assertNotNull("topString property not found in bottomDomainClass", topStringProperty);
         assertTrue("topString property was not persistent in bottomDomainClass", topStringProperty.isPersistent());
         
         middleStringProperty = bottomDomainClass.getPropertyByName("middleString");
-        assertNotNull("topString property not found in bottomDomainClass", middleStringProperty);
-        assertTrue("topString property was not persistent in bottomDomainClass", middleStringProperty.isPersistent());
+        assertNotNull("middleString property not found in bottomDomainClass", middleStringProperty);
+        assertTrue("middleString property was not persistent in bottomDomainClass", middleStringProperty.isPersistent());
         
         GrailsDomainClassProperty bottomStringProperty = bottomDomainClass.getPropertyByName("bottomString");
-        assertNotNull("topString property not found in bottomDomainClass", bottomStringProperty);
-        assertTrue("topString property was not persistent in bottomDomainClass", bottomStringProperty.isPersistent());
+        assertNotNull("bottomString property not found in bottomDomainClass", bottomStringProperty);
+        assertTrue("bottomString property was not persistent in bottomDomainClass", bottomStringProperty.isPersistent());
     }
     
 	public void testDefaultGrailsDomainClass()
