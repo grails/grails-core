@@ -36,7 +36,7 @@ class LoggingGrailsPlugin {
 
 	def doWithWebDescriptor = { xml ->
 	    def log4j = xml.'context-param'.find { it.'param-name'.text() == 'log4jConfigLocation' }
-	    println "CONFIGURATION LOG4J $log4j"
+	   
 	    if(GrailsUtil.isDevelopmentEnv() && log4j) {
             log4j + {
             	'context-param' {
