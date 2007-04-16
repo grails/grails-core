@@ -49,6 +49,52 @@ public class DefaultGrailsDomainClassTests extends TestCase {
 		super.setUp();
 	}
 
+    public void testPersistantPropertyInheritance() {
+        Class topClass = cl.parseClass("class Top {\n" +
+                "int id\n" +
+                "int version\n" +
+                "String topString\n" +
+                "}");
+        Class middleClass = cl.parseClass("class Middle extends Top {\n" +
+                "String middleString\n" +
+        "}");
+        Class bottomClass = cl.parseClass("class Bottom extends Middle {\n" +
+                "String bottomString\n" +
+        "}");
+        
+        DefaultGrailsDomainClass topDomainClass = new DefaultGrailsDomainClass(topClass);
+        DefaultGrailsDomainClass middleDomainClass = new DefaultGrailsDomainClass(middleClass);
+        DefaultGrailsDomainClass bottomDomainClass = new DefaultGrailsDomainClass(bottomClass);
+        
+        assertEquals("bottom class had wrong number of persistent properties", 3, bottomDomainClass.getPersistantProperties().length);
+        assertEquals("middle class had wrong number of persistent properties", 2, middleDomainClass.getPersistantProperties().length);
+        assertEquals("top class had wrong number of persistent properties", 1, topDomainClass.getPersistantProperties().length);
+        
+        GrailsDomainClassProperty topStringProperty = topDomainClass.getPropertyByName("topString");
+        assertNotNull("topString property not found in topDomainClass", topStringProperty);
+        assertTrue("topString property was not persistent in topDomainClass", topStringProperty.isPersistent());
+        
+        topStringProperty = middleDomainClass.getPropertyByName("topString");
+        assertNotNull("topString property not found in middleDomainClass", topStringProperty);
+        assertTrue("topString property was not persistent in middleDomainClass", topStringProperty.isPersistent());
+        
+        GrailsDomainClassProperty middleStringProperty = middleDomainClass.getPropertyByName("middleString");
+        assertNotNull("topString property not found in middleDomainClass", middleStringProperty);
+        assertTrue("topString property was not persistent in middleDomainClass", middleStringProperty.isPersistent());
+        
+        topStringProperty = bottomDomainClass.getPropertyByName("topString");
+        assertNotNull("topString property not found in bottomDomainClass", topStringProperty);
+        assertTrue("topString property was not persistent in bottomDomainClass", topStringProperty.isPersistent());
+        
+        middleStringProperty = bottomDomainClass.getPropertyByName("middleString");
+        assertNotNull("topString property not found in bottomDomainClass", middleStringProperty);
+        assertTrue("topString property was not persistent in bottomDomainClass", middleStringProperty.isPersistent());
+        
+        GrailsDomainClassProperty bottomStringProperty = bottomDomainClass.getPropertyByName("bottomString");
+        assertNotNull("topString property not found in bottomDomainClass", bottomStringProperty);
+        assertTrue("topString property was not persistent in bottomDomainClass", bottomStringProperty.isPersistent());
+    }
+    
 	public void testDefaultGrailsDomainClass()
 		throws Exception {
 	
