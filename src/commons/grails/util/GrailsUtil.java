@@ -88,10 +88,15 @@ public class GrailsUtil {
 
 
     }
+
+    private static final String PRODUCTION_ENV_SHORT_NAME = "prod";
+    private static final String DEVELOPMENT_ENVIRONMENT_SHORT_NAME = "dev";
+    private static final String TEST_ENVIRONMENT_SHORT_NAME = "test";
+    
     private static Map envNameMappings = new HashMap() {{
-        put("dev", GrailsApplication.ENV_DEVELOPMENT);
-        put("prod", GrailsApplication.ENV_PRODUCTION);
-        put("test", GrailsApplication.ENV_TEST);
+        put(DEVELOPMENT_ENVIRONMENT_SHORT_NAME, GrailsApplication.ENV_DEVELOPMENT);
+        put(PRODUCTION_ENV_SHORT_NAME, GrailsApplication.ENV_PRODUCTION);
+        put(TEST_ENVIRONMENT_SHORT_NAME, GrailsApplication.ENV_TEST);
     }};
 
 

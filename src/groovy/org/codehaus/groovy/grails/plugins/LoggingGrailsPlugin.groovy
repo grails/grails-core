@@ -18,6 +18,7 @@ package org.codehaus.groovy.grails.plugins
 import org.codehaus.groovy.grails.plugins.support.GrailsPluginUtils
 import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
 import org.apache.commons.logging.LogFactory
+import grails.util.GrailsUtil
 
 /**
  * A plug-in that provides a lazy initialized commons logging log property
@@ -31,6 +32,21 @@ class LoggingGrailsPlugin {
 	def version = GrailsPluginUtils.getGrailsVersion()
 	def dependsOn = [core:version]
 
+	def watchedResources = "file:./grails-app/conf/log4j.*.properties"
+
+	def doWithWebDescriptor = { xml ->
+	    def log4j = xml.'context-param'.find { it.'param-name'.text() == 'log4jConfigLocation' }
+	    println "CONFIGURATION LOG4J $log4j"
+	    if(GrailsUtil.isDevelopmentEnv() && log4j) {
+            log4j + {
+            	'context-param' {
+            	    'param-name'('log4jRefreshInterval')
+            	    'param-value'(1000)
+                }
+            }
+        }
+	}
+
 	def doWithDynamicMethods = { applicationContext ->
         application.artefactHandlers.each() { handler ->
             application."${handler.type}Classes".each() {
@@ -43,6 +59,14 @@ class LoggingGrailsPlugin {
 
                 it.clazz.metaClass.getLog << { -> log }
             }
+        }
+	}
+
+	def onChange = { event ->
+	    def env = GrailsUtil.getEnvironment()
+	    if(event.source.filename == "log4j.${env}.properties") {
+	        new AntBuilder().copy(  file:event.source.file,
+	                                tofile:new File("./web-app/WEB-INF/classes/log4j.properties"))
         }
 	}
 }
