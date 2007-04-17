@@ -77,10 +77,11 @@ task(runGrailsTests:"Runs Grails' tests under the grails-test directory") {
 	def result = null
 	try {
 	    // allow user to specify test to run like this...
-	    // grails test-app -Dtest=AuthorTests
+	    // grails test-app Author
+	    // grails test-app AuthorController
 	    def testCaseToRun = '*'
-	    if (Ant.antProject.properties.test) {
-	        testCaseToRun = Ant.antProject.properties.test
+	    if (args) {
+	        testCaseToRun = "${args}Tests"
 	    }
 		def testFiles = resolveResources("grails-tests/${testCaseToRun}.groovy")
 		if(testFiles.size() == 0) {
