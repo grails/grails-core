@@ -127,7 +127,9 @@ public class GrailsUtil {
 
         String envName = null;
         if(app!=null) {
-            envName = (String)app.getMetadata().get(GrailsApplication.ENVIRONMENT);
+            Map metadata = app.getMetadata();
+            if(metadata!=null)
+                envName = (String)metadata.get(GrailsApplication.ENVIRONMENT);
         }
         if(StringUtils.isBlank(envName))
             envName = System.getProperty(GrailsApplication.ENVIRONMENT);
