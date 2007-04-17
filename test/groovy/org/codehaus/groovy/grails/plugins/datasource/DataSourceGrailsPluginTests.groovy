@@ -22,18 +22,24 @@ class TestDataSource {
 	}
 	
 	void testDataSourcePlugin() {
-		
-		def pluginClass = gcl.loadClass("org.codehaus.groovy.grails.plugins.datasource.DataSourceGrailsPlugin")
-		
-		def plugin = new DefaultGrailsPlugin(pluginClass, ga)
-		
-		def springConfig = new DefaultRuntimeSpringConfiguration(ctx)
-		springConfig.servletContext = createMockServletContext()
-		
-		plugin.doWithRuntimeConfiguration(springConfig)
-		
-		def appCtx = springConfig.getApplicationContext()
-		
-		assert appCtx.containsBean("dataSource")
-	}	
+		try {
+		    System.setProperty("grails.env", "test")
+            def pluginClass = gcl.loadClass("org.codehaus.groovy.grails.plugins.datasource.DataSourceGrailsPlugin")
+
+            def plugin = new DefaultGrailsPlugin(pluginClass, ga)
+
+            def springConfig = new DefaultRuntimeSpringConfiguration(ctx)
+            springConfig.servletContext = createMockServletContext()
+
+            plugin.doWithRuntimeConfiguration(springConfig)
+
+            def appCtx = springConfig.getApplicationContext()
+
+
+            assert appCtx.containsBean("dataSource")
+        }
+        finally {
+            System.setProperty("grails.env", "")
+        }
+	}
 }

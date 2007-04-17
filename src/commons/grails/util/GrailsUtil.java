@@ -39,12 +39,12 @@ import java.util.jar.Attributes;
 import java.io.IOException;
 
 /**
- * 
+ *
  * Grails utility methods for command line and GUI applications
  *
  * @author Graeme Rocher
  * @since 0.2
- * 
+ *
  * @version $Revision$
  * First Created: 02-Jun-2006
  * Last Updated: $Date$
@@ -93,7 +93,7 @@ public class GrailsUtil {
     private static final String PRODUCTION_ENV_SHORT_NAME = "prod";
     private static final String DEVELOPMENT_ENVIRONMENT_SHORT_NAME = "dev";
     private static final String TEST_ENVIRONMENT_SHORT_NAME = "test";
-    
+
     private static Map envNameMappings = new HashMap() {{
         put(DEVELOPMENT_ENVIRONMENT_SHORT_NAME, GrailsApplication.ENV_DEVELOPMENT);
         put(PRODUCTION_ENV_SHORT_NAME, GrailsApplication.ENV_PRODUCTION);
@@ -105,7 +105,7 @@ public class GrailsUtil {
 		LOG.info("Loading Grails environment");
 		ApplicationContext parent = new ClassPathXmlApplicationContext("applicationContext.xml");
 		DefaultGrailsApplication application = (DefaultGrailsApplication)parent.getBean("grailsApplication", DefaultGrailsApplication.class);
-		
+
 		GrailsRuntimeConfigurator config = new GrailsRuntimeConfigurator(application,parent);
 		MockServletContext servletContext = new MockServletContext(new MockResourceLoader());
 		ConfigurableApplicationContext appCtx = (ConfigurableApplicationContext)config.configure(servletContext);
@@ -133,10 +133,10 @@ public class GrailsUtil {
         }
         if(StringUtils.isBlank(envName))
             envName = System.getProperty(GrailsApplication.ENVIRONMENT);
-        
+
         if(StringUtils.isBlank(envName)) {
             // for now if no environment specified default to production
-            return GrailsApplication.ENV_PRODUCTION;                
+            return GrailsApplication.ENV_APPLICATION;                
         }
         else {
             if(envNameMappings.containsKey(envName)) {

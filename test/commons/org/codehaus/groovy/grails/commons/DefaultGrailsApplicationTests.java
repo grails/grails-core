@@ -27,8 +27,6 @@ public class DefaultGrailsApplicationTests extends TestCase {
 
         GrailsApplication ga = new DefaultGrailsApplication(new Class[]{devDS,prodDS}, gcl);
 
-        assertEquals(prodDS,ga.getGrailsDataSource().getClazz());
-        
         System.setProperty(GrailsApplication.ENVIRONMENT,"development");
         
         assertEquals(devDS,ga.getGrailsDataSource().getClazz());

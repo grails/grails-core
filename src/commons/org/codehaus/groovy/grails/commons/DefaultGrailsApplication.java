@@ -403,6 +403,7 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
 
     public GrailsDataSource getGrailsDataSource() {
         String environment = GrailsUtil.getEnvironment();
+
         if (log.isDebugEnabled()) {
             log.debug("[GrailsApplication] Retrieving data source for environment: " + environment);
         }
