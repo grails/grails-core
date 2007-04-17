@@ -173,10 +173,10 @@ class UITagLib {
 			}
 			// add width support
 			if(attrs.width)			
-				out.println "oFCKeditor.Width	= ${attrs.width};"
+				out.println "oFCKeditor.Width	= '${attrs.width}';"
 			
 			if(attrs.height)			
-				out.println "oFCKeditor.Height	= ${attrs.height};"
+				out.println "oFCKeditor.Height	= '${attrs.height}';"
 			
 			// add skin support, values to choose: "default", "office2003", "silver"
 			if(attrs.skin)
