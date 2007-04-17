@@ -51,13 +51,13 @@
 	<classpathentry kind="lib" path="lib/ant-nodeps.jar"/>
 	<classpathentry kind="lib" path="lib/jasper-runtime.jar"/>
 	<classpathentry kind="lib" path="lib/jasper-compiler.jar"/>
-	<classpathentry kind="lib" path="lib/gant-0.2.2-SNAPSHOT.jar"/>
 	<classpathentry kind="lib" path="lib/spring-2.0.jar" sourcepath="/SPRING2_HOME/src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/3.8.1"/>
 	<classpathentry kind="lib" path="lib/commons-beanutils-1.7.0.jar"/>
-	<classpathentry kind="lib" path="lib/groovy-all-1.0.1-SNAPSHOT.jar"/>
 	<classpathentry kind="lib" path="lib/xerces-2.6.2.jar"/>
 	<classpathentry kind="lib" path="lib/ehcache-1.2.4.jar"/>
 	<classpathentry kind="lib" path="lib/antlr-2.7.6.jar"/>
+	<classpathentry kind="lib" path="lib/groovy-all-1.1-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="lib/gant-0.2.5-SNAPSHOT.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>
