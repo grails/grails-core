@@ -20,6 +20,7 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.ApplicationAttributes;
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.commons.ApplicationHolder;
 import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator;
 import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException;
 import org.codehaus.groovy.grails.support.MockResourceLoader;
@@ -121,7 +122,16 @@ public class GrailsUtil {
      * @return The environment Grails is executing under
      */
     public static String getEnvironment() {
-        String envName = System.getProperty(GrailsApplication.ENVIRONMENT);
+        GrailsApplication app = ApplicationHolder.getApplication();
+
+
+        String envName = null;
+        if(app!=null) {
+            envName = (String)app.getMetadata().get(GrailsApplication.ENVIRONMENT);
+        }
+        if(StringUtils.isBlank(envName))
+            envName = System.getProperty(GrailsApplication.ENVIRONMENT);
+        
         if(StringUtils.isBlank(envName)) {
             // for now if no environment specified default to production
             return GrailsApplication.ENV_PRODUCTION;                

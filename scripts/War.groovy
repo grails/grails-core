@@ -24,8 +24,10 @@
 
 Ant.property(environment:"env")                             
 grailsHome = Ant.antProject.properties."env.GRAILS_HOME"    
+                              
 
 includeTargets << new File ( "${grailsHome}/scripts/Clean.groovy" ) 
+println "Including script ${grailsHome}/scripts/Package.groovy"
 includeTargets << new File ( "${grailsHome}/scripts/Package.groovy" )
 
 task ('default': "Creates a WAR archive") {
@@ -53,7 +55,11 @@ task (war: "The implementation task") {
 			fileset(dir:"${basedir}/lib") {
 					include(name:"*.jar")
 			}
-		}
+		}              
+		
+	    Ant.propertyfile(file:"${basedir}/staging/WEB-INF/classes/application.properties") {
+	        entry(key:"grails.env", value:grailsEnv)
+	    }		
 		
 		Ant.replace(file:"${basedir}/staging/WEB-INF/applicationContext.xml", 
 				token:"classpath*:", value:"" ) 
