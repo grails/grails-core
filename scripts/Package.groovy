@@ -27,7 +27,8 @@ import groovy.text.SimpleTemplateEngine
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver
 import org.codehaus.groovy.grails.plugins.*
 import org.codehaus.groovy.grails.commons.*
-import org.codehaus.groovy.control.*
+import org.codehaus.groovy.control.*    
+import grails.util.*
 
 
 Ant.property(environment:"env")                             
@@ -49,7 +50,13 @@ task( packageApp : "Implementation of package task") {
 	copyDependencies()
     Ant.delete(dir:"${basedir}/web-app/WEB-INF/grails-app", failonerror:true)	
 	Ant.mkdir(dir:"${basedir}/web-app/WEB-INF/grails-app/i18n")
-		
+	
+	if(!GrailsUtil.isDevelopmentEnv()) {
+		Ant.mkdir(dir:"${basedir}/web-app/WEB-INF/grails-app/views")		
+	    Ant.copy(todir:"${basedir}/web-app/WEB-INF/grails-apps/views") {
+			fileset(dir:"${basedir}/grails-app/views", includes:"**")
+		}							
+	}	
 	Ant.native2ascii(src:"${basedir}/grails-app/i18n",
 					 dest:"${basedir}/web-app/WEB-INF/grails-app/i18n",
 					 includes:"*.properties",
