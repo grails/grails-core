@@ -86,7 +86,7 @@ DEPENDENCIES = [
 "hibernate3.jar",
 "jdbc2_0-stdext.jar",
 "jta.jar",
-"groovy-all-1.0.1-SNAPSHOT.jar",
+"groovy-all-1.1-SNAPSHOT.jar",
 "springmodules-sandbox.jar",
 "spring-webflow.jar",
 "spring-binding.jar",
