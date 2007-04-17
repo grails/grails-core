@@ -31,7 +31,7 @@ public class GrailsUtilTests extends TestCase {
     public void testEnvironment() {
 
         System.setProperty(GrailsApplication.ENVIRONMENT, "");
-        assertEquals(GrailsApplication.ENV_PRODUCTION, GrailsUtil.getEnvironment());
+        assertEquals(GrailsApplication.ENV_APPLICATION, GrailsUtil.getEnvironment());
 
         System.setProperty(GrailsApplication.ENVIRONMENT, "prod");
         assertEquals(GrailsApplication.ENV_PRODUCTION, GrailsUtil.getEnvironment());
