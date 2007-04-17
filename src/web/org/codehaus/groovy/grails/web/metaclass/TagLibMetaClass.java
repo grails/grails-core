@@ -15,20 +15,16 @@
  */
 package org.codehaus.groovy.grails.web.metaclass;
 
-import groovy.lang.Closure;
-import groovy.lang.DelegatingMetaClass;
-import groovy.lang.GroovyObject;
-import groovy.lang.MetaClass;
-import groovy.lang.MissingMethodException;
-import groovy.lang.MissingPropertyException;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
+import groovy.lang.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.metaclass.AdapterMetaClass;
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
+import org.codehaus.groovy.grails.commons.metaclass.CachingMetaClass;
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
+import org.springframework.web.context.request.RequestContextHolder;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 /**
  * <p>Special meta class for tag libraries that allows tag libraries to call
  * tags within other libraries without the need for inheritance
@@ -36,99 +32,104 @@ import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
  * @author Graeme Rocher
  * @since Apr 3, 20056
  */
-public class TagLibMetaClass extends DelegatingMetaClass implements AdapterMetaClass {
+public class TagLibMetaClass extends CachingMetaClass implements AdapterMetaClass {
 	private MetaClass adaptee;
-    private static final Closure EMPTY_TAG_BODY = new Closure(DelegatingMetaClass.class){};
 
 
-    public TagLibMetaClass(MetaClass adaptee) {
+
+	public TagLibMetaClass(MetaClass adaptee) {
 		super(adaptee);
 		this.adaptee = adaptee;
 	}
 
-	
+
 	private static final Log LOG = LogFactory.getLog(TagLibMetaClass.class);
-	
-	
+
+
 	/**
 	 * @return the adaptee
 	 */
 	public MetaClass getAdaptee() {
 		return adaptee;
 	}
-          
-    public void setAdaptee(MetaClass newAdaptee) {
-		this.adaptee = newAdaptee;
-	}
-	/* (non-Javadoc)
+
+    /**
+     * Override this to only return true if we have the closure on THIS taglib, else getProperty resolves
+     * to other taglibs and things get nasty
+     * @param object
+     * @param name
+     * @return
+     */
+    protected boolean hasClosure(Object object, String name)
+    {
+        if(LOG.isDebugEnabled())
+            LOG.debug("Closure ["+name+"] being resolved against ["+object.getClass().getName()+"]");
+
+        boolean found = false;
+        try
+        {
+            Object value = super.getProperty(object, name);
+            found = value instanceof Closure;
+        }
+        catch (MissingPropertyException e)
+        {
+        }
+        return found;
+    }
+
+    /* (non-Javadoc)
 	 * @see groovy.lang.ProxyMetaClass#invokeMethod(java.lang.Object, java.lang.String, java.lang.Object[])
 	 */
 	public Object invokeMethod(Object object, String methodName, Object[] arguments) {
-		try {			
+		if (hasMethod(object, methodName, arguments)) {
 			return super.invokeMethod(object, methodName, arguments);
-		}
-		catch(MissingMethodException mme) {
+		} else {
 			GroovyObject taglib = (GroovyObject)object;
-			GrailsApplicationAttributes applicationAttributes = (GrailsApplicationAttributes)taglib.getProperty(ControllerDynamicMethods.GRAILS_ATTRIBUTES);
-			HttpServletRequest request = (HttpServletRequest)taglib.getProperty(ControllerDynamicMethods.REQUEST_PROPERTY);
-			HttpServletResponse response = (HttpServletResponse)taglib.getProperty(ControllerDynamicMethods.RESPONSE_PROPERTY);
-			GroovyObject tagLibrary = applicationAttributes.getTagLibraryForTag(request,response,methodName);
-			if(tagLibrary == null) throw mme;
-			if(tagLibrary.getClass().equals(object.getClass())) throw mme;
-			
+            GroovyObject tagLibrary = lookupTagLibrary(methodName);
+
+            if(tagLibrary == null) throw new MissingMethodException(methodName, object.getClass(), arguments);
+			if(tagLibrary.getClass().equals(object.getClass())) throw new MissingMethodException(methodName, object.getClass(), arguments);
+
 			if(LOG.isDebugEnabled())
 				LOG.debug("Tag ["+methodName+"] not found in existing library, found in ["+tagLibrary.getClass().getName()+"]. Invoking..");
-			
+
 			Closure original = (Closure)tagLibrary.getProperty(methodName);
 			Closure tag = (Closure)original.clone();
-			
-			tagLibrary.setProperty(TagLibDynamicMethods.OUT_PROPERTY,taglib.getProperty(TagLibDynamicMethods.OUT_PROPERTY));
 
-            switch(tag.getParameterTypes().length) {
-                case 1:
-                    switch(arguments.length) {
-                        case 1: return tag.call(arguments);
-                        case 2: return tag.call(new Object[]{arguments[0]});
-                    }
-                    break;
-                case 2:
-                    switch(arguments.length) {
-                        case 1: return tag.call(new Object[]{arguments[0], EMPTY_TAG_BODY});
-                        case 2: return tag.call(arguments);
-                    }
-            }
-            return null;
-        }
+			tagLibrary.setProperty(TagLibDynamicMethods.OUT_PROPERTY,taglib.getProperty(TagLibDynamicMethods.OUT_PROPERTY));
+			return tag.call(arguments);
+		}
 	}
 
+    private GroovyObject lookupTagLibrary(String methodName) {
+        GrailsWebRequest webRequest = (GrailsWebRequest) RequestContextHolder.currentRequestAttributes();
 
+        HttpServletRequest request = webRequest.getCurrentRequest();
+        HttpServletResponse response = webRequest.getCurrentResponse();
+        return webRequest
+                    .getAttributes()
+                    .getTagLibraryForTag(request,response,methodName);
+    }
 
     /* (non-Javadoc)
-	 * @see org.codehaus.groovy.grails.commons.metaclass.PropertyAccessProxyMetaClass#getProperty(java.lang.Object, java.lang.String)
-	 */
+      * @see org.codehaus.groovy.grails.commons.metaclass.PropertyAccessProxyMetaClass#getProperty(java.lang.Object, java.lang.String)
+      */
 	public Object getProperty(Object object, String property) {
-		
-		try {
+        if (hasProperty(object, property)) {
 			return super.getProperty(object, property);
-		}
-		catch(MissingPropertyException mpe){
-			GroovyObject taglib = (GroovyObject)object;
-			GrailsApplicationAttributes applicationAttributes = (GrailsApplicationAttributes)taglib.getProperty(ControllerDynamicMethods.GRAILS_ATTRIBUTES);
-			HttpServletRequest request = (HttpServletRequest)taglib.getProperty(ControllerDynamicMethods.REQUEST_PROPERTY);
-			HttpServletResponse response = (HttpServletResponse)taglib.getProperty(ControllerDynamicMethods.RESPONSE_PROPERTY);
-			GroovyObject tagLibrary = applicationAttributes.getTagLibraryForTag(request,response,property);
-			if(tagLibrary == null) throw mpe;
+		} else {
 			
+            GroovyObject tagLibrary = lookupTagLibrary(property);
+
+            if(tagLibrary == null) throw new MissingPropertyException(property, object.getClass());
+
 			if(LOG.isDebugEnabled())
 				LOG.debug("Tag ["+property+"] not found in existing library, found in ["+tagLibrary.getClass().getName()+"]. Retrieving");
 			Closure original = (Closure)tagLibrary.getProperty(property);
 			return original.clone();
-				
-		}			
+
+		}
 	}
 
 
-    public String toString() {
-        return "[TagLibMetaClass (Adapter): "+super.toString()+"]";    
-    }
 }
