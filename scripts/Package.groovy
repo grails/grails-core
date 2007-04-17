@@ -53,7 +53,7 @@ task( packageApp : "Implementation of package task") {
 	
 	if(!GrailsUtil.isDevelopmentEnv()) {
 		Ant.mkdir(dir:"${basedir}/web-app/WEB-INF/grails-app/views")		
-	    Ant.copy(todir:"${basedir}/web-app/WEB-INF/grails-apps/views") {
+	    Ant.copy(todir:"${basedir}/web-app/WEB-INF/grails-app/views") {
 			fileset(dir:"${basedir}/grails-app/views", includes:"**")
 		}							
 	}	
