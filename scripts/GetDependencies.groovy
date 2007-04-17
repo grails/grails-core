@@ -3,7 +3,7 @@ Ant.property(environment:"env")
 grailsHome = Ant.antProject.properties."env.GRAILS_HOME"
 
 includeTargets << new File ( "${grailsHome}/scripts/Init.groovy" )
-includeTargets << new File ( "${grailsHome}/scripts/InstallIvyTask.groovy" )
+includeTargets << new File ( "${grailsHome}/scripts/InstallIvy.groovy" )
 
 task ("default": "Default task") {
 	dependencies()
