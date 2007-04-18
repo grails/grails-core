@@ -14,8 +14,10 @@
  */
 package grails.util;
 
+import groovy.lang.GroovyObject;
 import org.codehaus.groovy.grails.commons.spring.GrailsWebApplicationContext;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
+import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.mock.web.MockServletContext;
@@ -69,5 +71,9 @@ public class GrailsWebUtil {
         	uri = request.getRequestURI();
         }
         return uri;
+    }
+
+    public static GroovyObject getControllerFromRequest(HttpServletRequest request) {
+        return (GroovyObject)request.getAttribute(GrailsApplicationAttributes.CONTROLLER);
     }
 }

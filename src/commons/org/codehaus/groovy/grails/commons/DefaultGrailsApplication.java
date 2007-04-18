@@ -374,10 +374,10 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
         }
 
         ArtefactInfo info = getArtefactInfo(ControllerArtefactHandler.TYPE, true);
-        GrailsControllerClass[] controllerClasses = (GrailsControllerClass[]) info.getGrailsClasses();
+        GrailsClass[] controllerClasses = info.getGrailsClasses();
 
         for (int i = 0; i < controllerClasses.length; i++) {
-            GrailsControllerClass controllerClass = controllerClasses[i];
+            GrailsControllerClass controllerClass = (GrailsControllerClass)controllerClasses[i];
             if (controllerClass.isScaffolding()) {
                 Class scaffoldedClass = controllerClass.getScaffoldedClass();
                 if (scaffoldedClass != null) {

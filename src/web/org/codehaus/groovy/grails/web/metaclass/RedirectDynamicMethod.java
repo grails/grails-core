@@ -18,35 +18,33 @@ package org.codehaus.groovy.grails.web.metaclass;
 import groovy.lang.Closure;
 import groovy.lang.GroovyObject;
 import groovy.lang.MissingMethodException;
-
-import java.beans.PropertyDescriptor;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Collections;
-import java.util.regex.Pattern;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.commons.GrailsControllerClass;
-import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
 import org.codehaus.groovy.grails.commons.metaclass.AbstractDynamicMethodInvocation;
 import org.codehaus.groovy.grails.scaffolding.GrailsScaffolder;
+import org.codehaus.groovy.grails.web.mapping.UrlMapping;
+import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.GrailsHttpServletResponse;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
-import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder;
-import org.codehaus.groovy.grails.web.mapping.UrlMapping;
+import org.springframework.context.ApplicationContext;
 import org.springframework.validation.Errors;
 import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.context.ApplicationContext;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.beans.PropertyDescriptor;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.regex.Pattern;
 
 /**
  * Implements the "redirect" Controller method for action redirection
@@ -158,6 +156,7 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
                 }
             }
             actualUri = actualUriBuf.toString();
+
         }
 
         return redirectResponse(actualUri, response);

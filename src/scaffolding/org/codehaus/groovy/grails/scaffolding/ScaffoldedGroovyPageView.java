@@ -17,6 +17,8 @@ package org.codehaus.groovy.grails.scaffolding;
 import groovy.text.Template;
 import groovy.lang.Writable;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
 import org.codehaus.groovy.grails.web.servlet.view.GroovyPageView;
 
@@ -37,6 +39,7 @@ import java.util.Map;
  */
 public class ScaffoldedGroovyPageView extends GroovyPageView {
     private String contents;
+    private static final Log LOG = LogFactory.getLog(ScaffoldedGroovyPageView.class);
 
     public ScaffoldedGroovyPageView(String uri, String contents) {
         if(StringUtils.isBlank(contents)) throw new IllegalArgumentException("Argument [contents] cannot be blank or null");
@@ -67,6 +70,9 @@ public class ScaffoldedGroovyPageView extends GroovyPageView {
      * @throws IOException Thrown if there was an IO error rendering the view
      */
     protected void renderWithTemplateEngine(GroovyPagesTemplateEngine templateEngine, Map model, HttpServletResponse response) throws IOException {
+        if(LOG.isDebugEnabled()) {
+            LOG.debug("Rendering scaffolded view ["+getUrl()+"] with model ["+model+"]");
+        }
         Template t = templateEngine.createTemplate(contents, getUrl());
         Writable w = t.make(model);
 

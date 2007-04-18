@@ -14,23 +14,24 @@
  */
 package org.codehaus.groovy.grails.scaffolding;
 
-import grails.util.GrailsWebUtil;
-import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.GrailsDomainClass;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
+import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.commons.GrailsControllerClass;
+import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.scaffolding.exceptions.ScaffoldingException;
-import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
 import org.codehaus.groovy.grails.web.pages.GroovyPage;
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
+import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.io.Resource;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.View;
 import org.springframework.web.servlet.ViewResolver;
 import org.springframework.web.servlet.support.RequestContextUtils;
 import org.springframework.web.servlet.view.AbstractUrlBasedView;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -55,7 +56,7 @@ import java.util.Map;
  *        Created: Feb 27, 2007
  *        Time: 7:45:46 AM
  */
-public class TemplateGeneratingResponseHandler implements ScaffoldResponseHandler {
+public class TemplateGeneratingResponseHandler implements ScaffoldResponseHandler, ApplicationContextAware {
     private ViewResolver resolver;
     private GrailsTemplateGenerator templateGenerator;
     private GroovyPagesTemplateEngine templateEngine;
@@ -64,6 +65,7 @@ public class TemplateGeneratingResponseHandler implements ScaffoldResponseHandle
     private GrailsApplication grailsApplication;
     
     private static final Log LOG = LogFactory.getLog(TemplateGeneratingResponseHandler.class);
+    private ApplicationContext applicationContext;
 
     /**
      * Clears the cache of generated views. Scaffolded views will subsequently be re-generated
@@ -89,7 +91,15 @@ public class TemplateGeneratingResponseHandler implements ScaffoldResponseHandle
         if(scaffoldedClass == null) throw new IllegalStateException("Property [scaffoldedClass] must be set!");
         if(grailsApplication == null) throw new IllegalStateException("Property [grailsApplication] must be set!");
 
-        String uri = GrailsWebUtil.getUriFromRequest(request);
+
+        GrailsDomainClass domainClass = (GrailsDomainClass)grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE,scaffoldedClass.getName());
+        GrailsControllerClass controllerClass = grailsApplication.getScaffoldingController(domainClass);
+        String uri = controllerClass.getViewByName(actionName);
+
+        if(LOG.isDebugEnabled()) {
+            LOG.debug("Scaffolding response for view URI: " + uri);
+        }
+        
         try {
             // if the view exists physically then fall back to delegating to the physical view
             View v = resolver.resolveViewName(uri, RequestContextUtils.getLocale(request));
@@ -105,11 +115,11 @@ public class TemplateGeneratingResponseHandler implements ScaffoldResponseHandle
                     return new ModelAndView(v, model);
                 }
                 else {
-                    return createScaffoldedResponse(uri, model);
+                    return createScaffoldedResponse(uri, model, actionName);
                 }
             }
             else {
-                return createScaffoldedResponse(uri, model);
+                return createScaffoldedResponse(uri, model, actionName);
             }
 
         } catch (Exception e) {
@@ -123,9 +133,10 @@ public class TemplateGeneratingResponseHandler implements ScaffoldResponseHandle
      *
      * @param uri The URI of the view
      * @param model The model of the view
+     * @param actionName
      * @return A Spring ModelAndView instance
      */
-    protected ModelAndView createScaffoldedResponse(String uri, Map model) {
+    protected ModelAndView createScaffoldedResponse(String uri, Map model, String actionName) {
         View v;
         if(generatedViewCache.containsKey(uri)) {
             v = (View)generatedViewCache.get(uri);
@@ -134,9 +145,6 @@ public class TemplateGeneratingResponseHandler implements ScaffoldResponseHandle
             StringWriter sw = new StringWriter();
             PrintWriter pw = new PrintWriter(sw);
 
-            GrailsWebRequest webRequest = (GrailsWebRequest) RequestContextHolder.currentRequestAttributes();
-            String viewName = webRequest.getActionName();
-
             if(grailsApplication == null) throw new IllegalStateException("Property [grailsApplication] must be set!");
 
             if(LOG.isDebugEnabled()) {
@@ -144,11 +152,12 @@ public class TemplateGeneratingResponseHandler implements ScaffoldResponseHandle
             }
             templateGenerator.generateView((GrailsDomainClass)grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE,
                                                                 scaffoldedClass.getName()),
-                                                                viewName,
+                                                                actionName,
                                                                 pw);
 
             ScaffoldedGroovyPageView scaffoldedView = new ScaffoldedGroovyPageView(uri,sw.toString());
-            scaffoldedView.setApplicationContext(webRequest.getAttributes().getApplicationContext());
+            
+            scaffoldedView.setApplicationContext(applicationContext);
             
             v = scaffoldedView;
             generatedViewCache.put(uri, v);
@@ -189,5 +198,9 @@ public class TemplateGeneratingResponseHandler implements ScaffoldResponseHandle
 
     public void setGrailsApplication(GrailsApplication grailsApplication) {
         this.grailsApplication = grailsApplication;
+    }
+
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        this.applicationContext = applicationContext;
     }
 }

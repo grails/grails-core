@@ -19,23 +19,6 @@ import groovy.lang.Closure;
 import groovy.lang.GroovyObject;
 import groovy.lang.MissingPropertyException;
 import groovy.util.Proxy;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.apache.commons.beanutils.BeanMap;
 import org.apache.commons.collections.map.CompositeMap;
 import org.apache.commons.lang.StringUtils;
@@ -52,11 +35,7 @@ import org.codehaus.groovy.grails.web.binding.GrailsDataBinder;
 import org.codehaus.groovy.grails.web.metaclass.ChainDynamicMethod;
 import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods;
 import org.codehaus.groovy.grails.web.metaclass.GetParamsDynamicProperty;
-import org.codehaus.groovy.grails.web.servlet.DefaultGrailsApplicationAttributes;
-import org.codehaus.groovy.grails.web.servlet.FlashScope;
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
-import org.codehaus.groovy.grails.web.servlet.GrailsHttpServletRequest;
-import org.codehaus.groovy.grails.web.servlet.GrailsHttpServletResponse;
+import org.codehaus.groovy.grails.web.servlet.*;
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.NoClosurePropertyForURIException;
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.NoViewNameDefinedException;
@@ -66,6 +45,14 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.validation.BindException;
 import org.springframework.validation.Errors;
 import org.springframework.web.servlet.ModelAndView;
+
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * A helper class for handling controller requests
@@ -304,9 +291,12 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
             }
             else {
 
+                if(LOG.isDebugEnabled()) {
+                    LOG.debug("Action ["+actionName+"] executed with result ["+returnValue+"] and view name ["+viewName+"]");
+                }
                 ModelAndView mv = handleActionResponse(controller,returnValue,actionName,viewName);
                 if(LOG.isDebugEnabled()) {
-                    LOG.debug("Action ["+actionName+"] executed, return model and view ["+mv+"]");
+                    LOG.debug("Action ["+actionName+"] handled, created Spring model and view ["+mv+"]");
                 }
                 invokeAfterInterceptor(controllerClass, controller, mv);
                 return mv;

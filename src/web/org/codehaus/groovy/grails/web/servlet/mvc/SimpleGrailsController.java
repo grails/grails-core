@@ -90,7 +90,7 @@ public class SimpleGrailsController implements Controller, ServletContextAware {
 
         if(LOG.isDebugEnabled()) {
             if(mv != null) {
-                LOG.debug("[SimpleGrailsController] Forwarding to view ["+mv.getViewName()+"] with model ["+mv.getModel()+"]");    
+                LOG.debug("[SimpleGrailsController] Forwarding model and view ["+mv+"] with class ["+(mv.getView() != null ? mv.getView().getClass().getName() : mv.getViewName())+"]");    
             }
         }
         return mv;

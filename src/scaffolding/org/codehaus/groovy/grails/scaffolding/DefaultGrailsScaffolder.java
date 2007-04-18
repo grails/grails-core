@@ -23,6 +23,7 @@ import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods;
 import org.codehaus.groovy.grails.web.metaclass.RedirectDynamicMethod;
 import org.codehaus.groovy.grails.web.metaclass.RenderDynamicMethod;
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
+import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -284,11 +285,17 @@ public class DefaultGrailsScaffolder implements GrailsScaffolder {
 				return controller.invokeMethod(RedirectDynamicMethod.METHOD_SIGNATURE,new Object[]{ arguments });
 			}
 			else {
-				Map arguments = new HashMap();
+
+                Map arguments = new HashMap();
 				arguments.put( RenderDynamicMethod.ARGUMENT_VIEW, CREATE_ACTION );
 				arguments.put( RenderDynamicMethod.ARGUMENT_MODEL,model );
-				return controller.invokeMethod(RenderDynamicMethod.METHOD_SIGNATURE,new Object[]{ arguments });
-			}
+				controller.invokeMethod(RenderDynamicMethod.METHOD_SIGNATURE,new Object[]{ arguments });
+
+
+                ModelAndView mv = this.scaffoldResponseHandler.handleResponse(request, response,CREATE_ACTION,model);
+                controller.setProperty(ControllerDynamicMethods.MODEL_AND_VIEW_PROPERTY, mv);
+                return mv;
+            }
 			
 		}
 		
@@ -332,8 +339,10 @@ public class DefaultGrailsScaffolder implements GrailsScaffolder {
 				Map arguments = new HashMap();
 				arguments.put( RenderDynamicMethod.ARGUMENT_VIEW, EDIT_ACTION );
 				arguments.put( RenderDynamicMethod.ARGUMENT_MODEL,model );
-				return controller.invokeMethod(RenderDynamicMethod.METHOD_SIGNATURE,new Object[]{ arguments });
-			}
+                ModelAndView mv = this.scaffoldResponseHandler.handleResponse(request, response,EDIT_ACTION,model);
+                controller.setProperty(ControllerDynamicMethods.MODEL_AND_VIEW_PROPERTY, mv);
+                return mv;
+            }
 			
 		}
 		
