@@ -34,8 +34,9 @@ class TemplateGeneratingResponseHandlerTests extends GroovyTestCase {
         handler.templateEngine = gpte
         handler.scaffoldedClass = Test.class
         handler.grailsApplication = application
+        handler.applicationContext = ctx;
 
-        def mv = handler.createScaffoldedResponse(url, [tests:[Test.newInstance()]])
+        def mv = handler.createScaffoldedResponse(url, [tests:[Test.newInstance()]], "list")
 
         assert mv
         assert mv.model.tests
@@ -58,8 +59,9 @@ class TemplateGeneratingResponseHandlerTests extends GroovyTestCase {
         handler.templateEngine = gpte
         handler.scaffoldedClass = Test.class
         handler.grailsApplication = application
+        handler.applicationContext = ctx;
 
-        def mv = handler.createScaffoldedResponse(url, [test:[Test.newInstance()]])
+        def mv = handler.createScaffoldedResponse(url, [test:[Test.newInstance()]], "show")
 
         assert mv
         assert mv.model.test
@@ -82,8 +84,9 @@ class TemplateGeneratingResponseHandlerTests extends GroovyTestCase {
         handler.templateEngine = gpte
         handler.scaffoldedClass = Test.class
         handler.grailsApplication = application
+        handler.applicationContext = ctx;
 
-        def mv = handler.createScaffoldedResponse(url, [test:[Test.newInstance()]])
+        def mv = handler.createScaffoldedResponse(url, [test:[Test.newInstance()]], "edit")
 
         assert mv
         assert mv.model.test
@@ -106,8 +109,9 @@ class TemplateGeneratingResponseHandlerTests extends GroovyTestCase {
         handler.templateEngine = gpte
         handler.scaffoldedClass = Test.class
         handler.grailsApplication = application
+        handler.applicationContext = ctx;
 
-        def mv = handler.createScaffoldedResponse(url, [test:[Test.newInstance()]])
+        def mv = handler.createScaffoldedResponse(url, [test:[Test.newInstance()]], "create")
 
         assert mv
         assert mv.model.test
