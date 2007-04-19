@@ -65,11 +65,11 @@ class ValidationTagLib {
             if(errors) {
                 if(attrs['field']) {
                     if(errors.hasFieldErrors(attrs['field'])) {
-                        body()
+                        out << body()
                     }
                 }
                 else {
-                    body()
+                    out << body()
                 }
             }
         }

@@ -67,6 +67,7 @@ public abstract class GroovyPage extends Script {
 
     private GrailsApplication application;
     private GrailsApplicationAttributes grailsAttributes;
+    private static final String BLANK_STRING = "";
 
 
     /**
@@ -289,7 +290,7 @@ public abstract class GroovyPage extends Script {
         return grailsClass.getReference();
     }
 
-    public static Object captureTagOutput(GroovyObject tagLib, String methodName, Map attrs, Object body, GrailsWebRequest webRequest, BeanWrapper bean) {
+    public static String captureTagOutput(GroovyObject tagLib, String methodName, Map attrs, Object body, GrailsWebRequest webRequest, BeanWrapper bean) {
         Object tagLibProp;// retrieve tag lib and create wrapper writer
         StringWriter capturedOut = new StringWriter();
         final Writer out = new PrintWriter(capturedOut);
@@ -346,15 +347,15 @@ public abstract class GroovyPage extends Script {
 						bodyResponse = body1;
 					}
 
-					if(bodyResponse != null) {
+					if(bodyResponse != null && !(bodyResponse instanceof Writer) ){
 						try {
-							out.write(bodyResponse.toString());
+                            out.write(bodyResponse.toString());
 						} catch (IOException e) {
 							throw new GrailsTagException("I/O error invoking tag library closure ["+methodName+"] as method");
 						}
 					}
 				}
-				return null;
+				return BLANK_STRING;
 			}
 		};
 	}

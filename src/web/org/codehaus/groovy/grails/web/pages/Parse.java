@@ -374,7 +374,7 @@ public class Parse implements Tokens {
                         out.println(']');
                 }
             }
-            out.println("body"+tagIndex+" = {" );
+            out.println("body"+tagIndex+" = new GroovyPageTagBody(this,binding.webRequest) {" );
         }
     }
 

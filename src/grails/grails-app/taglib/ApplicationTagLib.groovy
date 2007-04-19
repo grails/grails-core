@@ -62,7 +62,7 @@ class ApplicationTagLib {
         }
         out << ">"
         // output the body
-        body()
+        out << body()
 
         // close tag
         out << "</a>"
@@ -144,7 +144,7 @@ class ApplicationTagLib {
 			}
 		}
 		out << '>'
-		body()
+		out << body()
 		out << "</${attrs.name}>"			
 	}	
 }

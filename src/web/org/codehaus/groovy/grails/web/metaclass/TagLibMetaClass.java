@@ -88,16 +88,18 @@ public class TagLibMetaClass extends CachingMetaClass implements AdapterMetaClas
 	public Object invokeMethod(Object object, String methodName, Object[] arguments) {
 		if (hasClosure(object, methodName) && (arguments.length == 1 || arguments.length == 2 )) {
             GrailsWebRequest webRequest = getWebRequestFromObject(object);
-            return captureTagOutputForLibrary((GroovyObject)object, methodName, arguments, webRequest);
-		} else if(hasMethod(object, methodName, arguments)) {
+            String output = captureTagOutputForLibrary((GroovyObject)object, methodName, arguments, webRequest);
+            return output;
+        } else if(hasMethod(object, methodName, arguments)) {
             return super.invokeMethod(object, methodName, arguments);
         }
         else {
-            return captureTagOutput(object, methodName, arguments);
+            String output = captureTagOutput(object, methodName, arguments);
+            return output;
         }
 	}
 
-    private Object captureTagOutput(Object object, String methodName, Object[] arguments) {
+    private String captureTagOutput(Object object, String methodName, Object[] arguments) {
         GrailsWebRequest webRequest = getWebRequestFromObject(object);
 
         GroovyObject tagLibrary = lookupTagLibrary(methodName,webRequest);
@@ -108,7 +110,7 @@ public class TagLibMetaClass extends CachingMetaClass implements AdapterMetaClas
         return captureTagOutputForLibrary(tagLibrary,methodName, arguments, webRequest);
     }
 
-    private Object captureTagOutputForLibrary(GroovyObject tagLibrary, String methodName, Object[] arguments, GrailsWebRequest webRequest) {
+    private String captureTagOutputForLibrary(GroovyObject tagLibrary, String methodName, Object[] arguments, GrailsWebRequest webRequest) {
         if(LOG.isDebugEnabled())
 				LOG.debug("Tag ["+methodName+"] not found in existing library, found in ["+tagLibrary.getClass().getName()+"]. Invoking..");
 

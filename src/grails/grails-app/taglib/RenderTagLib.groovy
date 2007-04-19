@@ -92,7 +92,7 @@ class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants 
 				}
 			}
 			if(invokeBody) {
-				body();	
+				out << body()
 			}
 		}
 	}

@@ -70,7 +70,7 @@ public class FormTagLibTests extends AbstractGrailsTagTests {
     	withTag("form", pw) { tag ->
     	    // use sorted map to be able to predict the order in which tag attributes are generated
 	    	def attributes = new TreeMap([url:[controller:'con', action:'action'], id:'formElementId'])
-    	    tag.call(attributes, { })
+    	    tag.call(attributes, { "" })
     	    assertEquals '<form action="/con/action" method="post" id="formElementId" ></form>', sw.toString().trim()
     	}
     }

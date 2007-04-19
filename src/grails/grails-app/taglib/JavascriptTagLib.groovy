@@ -95,7 +95,7 @@ class JavascriptTagLib  {
 		}
 		else {
 			out.println '<script type="text/javascript">'
-				body()
+				out << body()
 			out.println '</script>'
 		}
 	}
@@ -154,7 +154,7 @@ class JavascriptTagLib  {
         }
         out << ">"
         // output the body
-        body()
+        out << body()
 
         // close tag
         out << "</a>"
@@ -217,7 +217,7 @@ class JavascriptTagLib  {
 		if(params.name && !params.id)
 			params.id = params.name
 	    withTag(name:'form',attrs:params) {
-			body()   
+			out <<body()   
 	    }		
     }
 
@@ -239,7 +239,7 @@ class JavascriptTagLib  {
 		             ]
 		             
 		withTag(name:'input', attrs:params) {
-			body()	
+			out << body()	
 		}
     }
 	
@@ -275,7 +275,7 @@ class JavascriptTagLib  {
 			def sw = new StringWriter()
 			out = new PrintWriter(out)
 			// invoke body
-			body()
+			out << body()
 			// restore out
 			out = tmp
 			js = sw.toString()
