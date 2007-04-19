@@ -14,14 +14,13 @@
  */
 package org.codehaus.groovy.grails.web.taglib;
 
-import groovy.lang.Closure;
 import groovy.lang.Binding;
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
+import groovy.lang.Closure;
 import org.codehaus.groovy.grails.web.pages.GroovyPage;
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 
 import java.io.StringWriter;
 import java.io.Writer;
-import java.io.PrintWriter;
 
 /**
  * A closure that represents the body of a tag and captures its output returning the result when invoked
@@ -58,12 +57,7 @@ public class GroovyPageTagBody extends Closure {
         Writer originalOut = webRequest.getOut();
 
         try {
-            final StringWriter capturedOut = new StringWriter();
-            final Writer out = new PrintWriter(capturedOut);
-            if(binding!=null) {
-                binding.setVariable(GroovyPage.OUT, out);
-            }
-            webRequest.setOut(out);
+            final GroovyPageTagWriter capturedOut = createWriter();
 
             if(args!=null) {
                 bodyClosure.call(args);                
@@ -71,7 +65,7 @@ public class GroovyPageTagBody extends Closure {
             else {
                 bodyClosure.call();
             }
-            String output = capturedOut.toString();
+            String output = capturedOut.getValue();
             if(output == null) return BLANK_STRING;
 
             return output;
@@ -81,6 +75,18 @@ public class GroovyPageTagBody extends Closure {
             }
             webRequest.setOut(originalOut);
         }
+    }
+
+    private GroovyPageTagWriter createWriter() {
+
+        StringWriter capturedOut = new StringWriter();
+        GroovyPageTagWriter out = new GroovyPageTagWriter(capturedOut);
+        if(binding!=null) {
+            binding.setVariable(GroovyPage.OUT, out);
+        }
+        webRequest.setOut(out);
+
+        return out;
     }
 
     public Object doCall() {

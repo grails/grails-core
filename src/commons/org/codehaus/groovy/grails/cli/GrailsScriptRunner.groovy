@@ -20,7 +20,9 @@ import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
 import org.codehaus.groovy.grails.commons.metaclass.*
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver  
 import org.codehaus.groovy.runtime.InvokerHelper;
-import gant.Gant
+import gant.Gant        
+import grails.util.GrailsUtil
+
 /**
  * Class that handles Grails command line interface for running scripts
  * 
@@ -34,7 +36,9 @@ class GrailsScriptRunner {
 	static final RESOLVER  = new PathMatchingResourcePatternResolver()
 	    
 	static grailsHome
-	static baseDir
+	static baseDir 
+	static userHome = System.properties.'user.home'       
+	static version = GrailsUtil.getGrailsVersion()
 	
 	static main(args) {
 		MetaClassRegistry registry = InvokerHelper
@@ -149,7 +153,8 @@ Grails home is set to: ${grailsHome}
 			potentialScripts = potentialScripts.unique()
             if(potentialScripts.size() == 1) {
 				println "Running script ${potentialScripts[0].absolutePath}"
-				Gant.main(["-c","-f", potentialScripts[0].absolutePath] as String[])																		
+                                                               
+				Gant.main(["-c","-d","${userHome}/.grails/${version}/scriptCache","-f", potentialScripts[0].absolutePath] as String[])																		
 			}                                      
 			else {
 				println "Multiple options please select:"  

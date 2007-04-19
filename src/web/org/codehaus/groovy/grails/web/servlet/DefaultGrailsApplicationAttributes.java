@@ -107,17 +107,17 @@ public class DefaultGrailsApplicationAttributes implements GrailsApplicationAttr
         return null;
     }
 
-    public String getTemplateUri(String templateName, ServletRequest request) {
-       	
-       StringBuffer buf = new StringBuffer(PATH_TO_VIEWS);
+    public String getTemplateUri(String templateName, ServletRequest request) {       	
+       StringBuffer buf = new StringBuffer();
        
        if(templateName.startsWith("/")) {
     	   String tmp = templateName.substring(1,templateName.length());
     	   if(tmp.indexOf('/') > -1) {
     		   buf.append('/');
-    		   buf.append(tmp.substring(0,tmp.lastIndexOf('/')));
+               int i = tmp.lastIndexOf('/');
+               buf.append(tmp.substring(0, i));
     		   buf.append("/_");
-    		   buf.append(tmp.substring(tmp.lastIndexOf('/') + 1,tmp.length()));
+    		   buf.append(tmp.substring(i + 1,tmp.length()));
     	   }
     	   else {
     		   buf.append("/_");
