@@ -34,7 +34,10 @@ class FormTagLib {
 	def textField = { attrs ->
 		attrs.type = "text"  
 		attrs.tagName = "textField" 
-		field(attrs)
+		def result = field(attrs)
+		if(result) {     
+			out << result
+		}
 	}
 	/**
 	 * Creates a hidden field
@@ -42,7 +45,7 @@ class FormTagLib {
 	def hiddenField = { attrs ->
 		attrs.type = "hidden"
 		attrs.tagName = "hiddenField"
-		field(attrs)
+		out << field(attrs)
 	}
 	/**
 	 * Creates a submit button
@@ -50,7 +53,7 @@ class FormTagLib {
 	def submitButton = { attrs ->
 		attrs.type = "submit"
 		attrs.tagName = "submitButton"
-		field(attrs)
+		out << field(attrs)
 	}
 	/**
 	 * A general tag for creating fields
@@ -122,7 +125,7 @@ class FormTagLib {
     def form = { attrs, body ->
         out << "<form action=\""
         // create the link
-        createLink(attrs)
+        out << createLink(attrs)
 
         out << '\" '
         // default to post
@@ -406,7 +409,7 @@ class FormTagLib {
         }
 
         // use generic select
-        select( attrs )
+        out << select( attrs )
     }
 
     /**
@@ -423,7 +426,7 @@ class FormTagLib {
         attrs['optionValue'] = { "${it.language}, ${it.country},  ${it.displayName}" }
 
         // use generic select
-        select( attrs )
+        out << select( attrs )
     }
 
     /**
@@ -443,7 +446,7 @@ class FormTagLib {
 		   	attrs.value = null
 		}
         // invoke generic select
-        select( attrs )
+        out << select( attrs )
     }
 
     /**

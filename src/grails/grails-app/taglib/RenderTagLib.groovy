@@ -174,7 +174,9 @@ class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants 
 		// display previous link when not on firststep
 		if(currentstep > firststep) {
 			linkTagAttrs.class = 'prevLink'
-			link(linkTagAttrs.clone(), {out << (attrs.prev ? attrs.prev : messageSource.getMessage('default.paginate.prev', null, 'Previous', locale))})
+			out << link(linkTagAttrs.clone()) {
+				(attrs.prev ? attrs.prev : messageSource.getMessage('default.paginate.prev', null, 'Previous', locale))
+			 }
 		}
 		
 		// display steps when steps are enabled and laststep is not firststep
@@ -200,7 +202,7 @@ class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants 
 			// display firststep link when beginstep is not firststep
 			if(beginstep > firststep) {
 				linkParams.offset = 0
-				link(linkTagAttrs.clone(), {out << firststep})
+				out << link(linkTagAttrs.clone()) {firststep.toString()}
 				out << '<span class="step">..</span>'
 			}
 
@@ -211,7 +213,7 @@ class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants 
 				}
 				else {
 					linkParams.offset = (i - 1) * max
-					link(linkTagAttrs.clone(), {out << i})
+					out << link(linkTagAttrs.clone()) {i.toString()}
 				}
 			}	
 			
@@ -219,7 +221,7 @@ class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants 
 			if(endstep < laststep) {
 				out << '<span class="step">..</span>'
 				linkParams.offset = (laststep -1) * max
-				link(linkTagAttrs.clone(), {out << laststep})
+				out << link(linkTagAttrs.clone()) { laststep.toString() }
 			}		
 		}
 		
@@ -227,7 +229,9 @@ class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants 
 		if(currentstep < laststep) {	
 			linkTagAttrs.class = 'nextLink'			
 			linkParams.offset = offset + max
-			link(linkTagAttrs.clone(), {out << (attrs.next ? attrs.next : messageSource.getMessage('default.paginate.next', null, 'Next', locale))})			
+			out << link(linkTagAttrs.clone()) {
+				(attrs.next ? attrs.next : messageSource.getMessage('default.paginate.next', null, 'Next', locale))
+			}			
 		}
 
 	}
@@ -305,14 +309,9 @@ class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants 
 		out << "<th "
 		// process remaining attributes
 		attrs.each { k, v ->
-			out << k << "=\"" << v.encodeAsHTML() << "\" "
+			out << "${k}=\"${v.encodeAsHTML()}\" "
 		}
-		out << ">"
-
-		// output link
-		link([action:action, params:linkParams], { out << title })
-
-		out << "</th>"
+		out << ">${link(action:action, params:linkParams) { title }}</th>"
 	}
 
     /**

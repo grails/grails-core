@@ -1,4 +1,4 @@
-package org.codehaus.groovy.grails.servlet.mvc
+package org.codehaus.groovy.grails.web.pages
 
 import org.codehaus.groovy.grails.commons.test.*
 import org.codehaus.groovy.grails.commons.*
@@ -21,16 +21,16 @@ class TestController {
 }
 class Test1TagLib {
 	def tag1 = { attrs, body ->
-		assert owner.metaClass instanceof org.codehaus.groovy.grails.web.metaclass.TagLibMetaClass
-
+	   
 		out << "print"
  
-		tag2(test:'blah') {}
+		def result = tag2(test:'blah')
+		out << result
 		body() 
 	}
 }
 class Test2TagLib {
-	def tag2 = { attrs, body -> out << attrs.test; body() }
+	def tag2 = { attrs, body -> println "foo";out << attrs.test; body() }
 }
 class MyPage extends org.codehaus.groovy.grails.web.pages.GroovyPage {
 	def run() {
@@ -52,7 +52,8 @@ class MyPage extends org.codehaus.groovy.grails.web.pages.GroovyPage {
 								request:controller.request,
 								response:controller.response,
 								flash:controller.flash,
-								out: webRequest.out)			
+								out: webRequest.out ,
+								webRequest:webRequest)			
 			script.binding = b
 			script.run()
 			

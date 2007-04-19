@@ -15,24 +15,9 @@
 package org.codehaus.groovy.grails.commons;
 
 
-import groovy.lang.*;
-
-import java.beans.PropertyDescriptor;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
-
+import groovy.lang.MetaClass;
+import groovy.lang.MetaClassImpl;
+import groovy.lang.MetaClassRegistry;
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.grails.commons.metaclass.AdapterMetaClass;
 import org.codehaus.groovy.grails.commons.metaclass.DynamicMethodsMetaClass;
@@ -41,6 +26,12 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.beans.BeansException;
+
+import java.beans.PropertyDescriptor;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.*;
 
 /**
  * @author Graeme Rocher
@@ -90,7 +81,7 @@ public class GrailsClassUtils {
     public static boolean isPropertyOfType( Class clazz, String propertyName, Class type ) {
         try {
 
-            Class propType = getProperyType( clazz, propertyName );
+            Class propType = getPropertyType( clazz, propertyName );
             return propType != null && propType.equals(type);
         }
         catch(Exception e) {
@@ -148,14 +139,18 @@ public class GrailsClassUtils {
      *
      * @return The property type or null if none exists
      */
-    public static Class getProperyType(Class clazz, String propertyName) {
+    public static Class getPropertyType(Class clazz, String propertyName) {
         if(clazz == null || StringUtils.isBlank(propertyName))
             return null;
 
         try {
-            BeanWrapper wrapper = new BeanWrapperImpl(clazz.newInstance());
-            return wrapper.getPropertyType(propertyName);
-
+            BeanWrapper wrapper = new BeanWrapperImpl(clazz);
+            if(wrapper.isReadableProperty(propertyName)) {
+                return wrapper.getPropertyType(propertyName);
+            }
+            else {
+                return null;
+            }
         } catch (Exception e) {
             // if there are any errors in instantiating just return null for the moment
             return null;

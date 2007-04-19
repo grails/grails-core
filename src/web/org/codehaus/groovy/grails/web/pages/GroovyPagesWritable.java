@@ -179,8 +179,8 @@ class GroovyPageWritable implements Writable {
 
     private void formulateBindingFromWebRequest(Binding binding, HttpServletRequest request, HttpServletResponse response, Writer out) {
         // if there is no controller in the request configure using existing attributes, creating objects where necessary
-        GrailsWebRequest webRequest = (GrailsWebRequest) RequestContextHolder.currentRequestAttributes();
-
+        GrailsWebRequest webRequest = (GrailsWebRequest)request.getAttribute(GrailsApplicationAttributes.WEB_REQUEST);
+        binding.setVariable(GroovyPage.WEB_REQUEST, webRequest);
         binding.setVariable(GroovyPage.REQUEST, request);
         binding.setVariable(GroovyPage.RESPONSE, response);
         binding.setVariable(GroovyPage.FLASH, webRequest.getFlashScope());
@@ -196,6 +196,8 @@ class GroovyPageWritable implements Writable {
     }
 
     private void formulateBindingFromController(Binding binding, GroovyObject controller, Writer out) {
+        GrailsWebRequest webRequest = (GrailsWebRequest)request.getAttribute(GrailsApplicationAttributes.WEB_REQUEST);
+        binding.setVariable(GroovyPage.WEB_REQUEST, webRequest);        
         binding.setVariable(GroovyPage.REQUEST, controller.getProperty(ControllerDynamicMethods.REQUEST_PROPERTY));
         binding.setVariable(GroovyPage.RESPONSE, controller.getProperty(ControllerDynamicMethods.RESPONSE_PROPERTY));
         binding.setVariable(GroovyPage.FLASH, controller.getProperty(ControllerDynamicMethods.FLASH_SCOPE_PROPERTY));

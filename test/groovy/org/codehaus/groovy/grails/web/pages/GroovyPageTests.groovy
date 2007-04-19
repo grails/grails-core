@@ -136,22 +136,7 @@ public class GroovyPageTests extends AbstractGrailsControllerTests {
 		assertEquals(expectedOutput,result);
 	}
 	
-	
-	public void testEncodeAsHtmlMethod() throws Exception {
-		String pageCode = "import org.codehaus.groovy.grails.web.pages.GroovyPage\n" +
-        		"\n"+
-        		"class test_index_gsp extends GroovyPage {\n"+
-        		"public Object run() {\n"+
-        		"out.print(encodeAsHtml('<b></someTag></b>'))\n"+
-        		"out.print(encodeAsHTML('<b></someOtherTag></b>'))\n"+
-        		"}\n"+
-        		"}" ;
-    	String expectedOutput = "&lt;b&gt;&lt;/someTag&gt;&lt;/b&gt;&lt;b&gt;&lt;/someOtherTag&gt;&lt;/b&gt;";
-		def result = runPageCode(pageCode)
-		assertEquals(expectedOutput,result);
-
-	}
-	
+		
 	
 	def getBinding(out) {
     	// if there is no controller in the request configure using existing attributes, creating objects where necessary
@@ -166,7 +151,8 @@ public class GroovyPageTests extends AbstractGrailsControllerTests {
         binding.setVariable(GrailsApplication.APPLICATION_ID, appContext.getBean(GrailsApplication.APPLICATION_ID));	            
         binding.setVariable(GroovyPage.SESSION, request.getSession());
         binding.setVariable(GroovyPage.PARAMS, new GrailsParameterMap(request));
-        binding.setVariable(GroovyPage.OUT, out); 	
+        binding.setVariable(GroovyPage.OUT, out);
+        binding.setVariable(GroovyPage.WEB_REQUEST, RequestContextHolder.currentRequestAttributes())
 
         return binding
 	}

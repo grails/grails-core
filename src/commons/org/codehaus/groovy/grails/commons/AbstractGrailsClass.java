@@ -17,15 +17,15 @@ package org.codehaus.groovy.grails.commons;
 
 import groovy.lang.GroovyObject;
 import groovy.lang.MetaClass;
-
-import java.lang.reflect.InvocationTargetException;
-import java.util.Map;
-
+import groovy.lang.GroovySystem;
 import org.apache.commons.lang.ClassUtils;
 import org.codehaus.groovy.grails.exceptions.NewInstanceCreationException;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
+
+import java.lang.reflect.InvocationTargetException;
+import java.util.Map;
 
 /**
  * Abstract base class for Grails types that provides common functionality for
@@ -134,7 +134,11 @@ public abstract class AbstractGrailsClass implements GrailsClass {
      *
      * @return BeanWrapper instance that holds reference
      */
-    protected BeanWrapper getReference() {
+    public BeanWrapper getReference() {
+        Object obj = this.reference.getWrappedInstance();
+        if(obj instanceof GroovyObject) {
+            ((GroovyObject)obj).setMetaClass(GroovySystem.getMetaClassRegistry().getMetaClass(getClazz()));
+        }
         return this.reference;
     }
 

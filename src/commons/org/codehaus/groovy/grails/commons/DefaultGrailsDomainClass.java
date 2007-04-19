@@ -323,7 +323,7 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
 
                     // if there is one defined get the type
                     if(relatedClassPropertyName != null) {
-                        relatedClassPropertyType = GrailsClassUtils.getProperyType( relatedClassType, relatedClassPropertyName);
+                        relatedClassPropertyType = GrailsClassUtils.getPropertyType( relatedClassType, relatedClassPropertyName);
                     }
                 }
                 // otherwise figure out if there is a one-to-many relationship by retrieving any properties that are of the related type
@@ -505,7 +505,7 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
                 if(!StringUtils.isBlank(relatedClassPropertyName)) {
                     property.setReferencePropertyName(relatedClassPropertyName);
                     // get the type of the property
-                    relatedClassPropertyType = GrailsClassUtils.getProperyType( propType, relatedClassPropertyName );            	                	
+                    relatedClassPropertyType = GrailsClassUtils.getPropertyType( propType, relatedClassPropertyName );
                 }
             }
             // if there is more than one property on the many-to-one side then we need to either
@@ -516,14 +516,14 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
             		for (Iterator i = mappedBy.keySet().iterator(); i.hasNext();) {
 						String key = (String) i.next();
 						if(property.getName().equals(mappedBy.get(key))) {
-							relatedClassPropertyType = GrailsClassUtils.getProperyType( propType, key );
+							relatedClassPropertyType = GrailsClassUtils.getPropertyType( propType, key );
 						}						
 					}
             	}
             	else {
             		String classNameAsProperty = GrailsClassUtils.getPropertyName(propType);
             		if(property.getName().equals(classNameAsProperty) && !mappedBy.containsKey(relatedClassPropertyName)) {
-            			relatedClassPropertyType = GrailsClassUtils.getProperyType( propType, relatedClassPropertyName );            			
+            			relatedClassPropertyType = GrailsClassUtils.getPropertyType( propType, relatedClassPropertyName );
             		}
             	}
             }

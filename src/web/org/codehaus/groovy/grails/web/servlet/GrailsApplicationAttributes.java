@@ -1,16 +1,15 @@
 package org.codehaus.groovy.grails.web.servlet;
 
-import java.io.Writer;
-
-import org.springframework.validation.Errors;
-import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
-import org.codehaus.groovy.grails.commons.ApplicationAttributes;
 import groovy.lang.GroovyObject;
+import org.codehaus.groovy.grails.commons.ApplicationAttributes;
+import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
+import org.springframework.validation.Errors;
 
-import javax.servlet.ServletRequest;
 import javax.servlet.ServletContext;
+import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.Writer;
 
 /**
  * An interface defining the names of and methods to retrieve Grails specific request and servlet attributes
@@ -31,7 +30,7 @@ public interface GrailsApplicationAttributes extends ApplicationAttributes {
     String TAG_CACHE = "org.codehaus.groovy.grails.TAG_CACHE";
     String ID_PARAM = "id";
     String GSP_TO_RENDER = "org.codehaus.groovy.grails.GSP_TO_RENDER";
-
+    String WEB_REQUEST = "org.codehaus.groovy.grails.WEB_REQUEST";
 
 
     /**

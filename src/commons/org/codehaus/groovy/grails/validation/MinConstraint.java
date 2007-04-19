@@ -56,7 +56,7 @@ class MinConstraint extends AbstractConstraint {
         if(!(constraintParameter instanceof Comparable))
             throw new IllegalArgumentException("Parameter for constraint ["+ConstrainedProperty.MIN_CONSTRAINT+"] of property ["+constraintPropertyName+"] of class ["+constraintOwningClass+"] must implement the interface [java.lang.Comparable]");
 
-        Class propertyClass = GrailsClassUtils.getProperyType( constraintOwningClass, constraintPropertyName );
+        Class propertyClass = GrailsClassUtils.getPropertyType( constraintOwningClass, constraintPropertyName );
         if(!GrailsClassUtils.isAssignableOrConvertibleFrom( propertyClass, constraintParameter.getClass() ))
             throw new IllegalArgumentException("Parameter for constraint ["+ConstrainedProperty.MAX_CONSTRAINT+"] of property ["+constraintPropertyName+"] of class ["+constraintOwningClass+"] must be the same type as property: [" + propertyClass.getName() + "]");
 

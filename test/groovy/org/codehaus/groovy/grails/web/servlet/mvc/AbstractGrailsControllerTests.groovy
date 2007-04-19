@@ -15,6 +15,7 @@ import org.codehaus.groovy.grails.support.MockApplicationContext;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.codehaus.groovy.runtime.InvokerHelper;
+import grails.util.*
 
 abstract class AbstractGrailsControllerTests extends GroovyTestCase {
 		
@@ -64,13 +65,19 @@ abstract class AbstractGrailsControllerTests extends GroovyTestCase {
 		
 		def dependentPlugins = dependantPluginClasses.collect { new DefaultGrailsPlugin(it, ga)}
 		def springConfig = new DefaultRuntimeSpringConfiguration(ctx)
-		servletContext =  createMockServletContext()
-		springConfig.servletContext = servletContext		
+        webRequest = GrailsWebUtil.bindMockWebRequest()
+        request = webRequest.currentRequest
+        response = webRequest.currentResponse
+
+		servletContext =  webRequest.servletContext
+		springConfig.servletContext = servletContext
+
 		
 		dependentPlugins*.doWithRuntimeConfiguration(springConfig)
 		dependentPlugins.each{ mockManager.registerMockPlugin(it); it.manager = mockManager }
 			
 		appCtx = springConfig.getApplicationContext()
+
 		mockManager.applicationContext = appCtx
 		servletContext.setAttribute( GrailsApplicationAttributes.APPLICATION_CONTEXT, appCtx)
 		mockManager.doDynamicMethods()		
@@ -86,32 +93,15 @@ abstract class AbstractGrailsControllerTests extends GroovyTestCase {
 		ga = null
 		mockManager = null
 		ctx = null
-		
-		InvokerHelper.getInstance()
-		.getMetaRegistry()
-		.setMetaClassCreationHandle(originalHandler);
+
+		RequestContextHolder.setRequestAttributes(null)
+        GroovySystem.metaClassRegistry.setMetaClassCreationHandle(originalHandler);
 		
 	}
 	
 	
 	void runTest(Closure callable) {
-		
-		try {
-			request = new MockHttpServletRequest()
-			response =new MockHttpServletResponse()
-			
-			webRequest = new GrailsWebRequest(
-					request,
-					response,
-					servletContext
-			)			
-			RequestContextHolder.setRequestAttributes( webRequest )		
-			callable()
-		}
-		finally {
-			RequestContextHolder.setRequestAttributes(null)	
-		}
-		
+        callable.call()		
 	}
 	
 	protected MockServletContext createMockServletContext() {

@@ -15,17 +15,17 @@
  */
 package org.codehaus.groovy.grails.web.servlet.mvc;
 
-import java.io.IOException;
+import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
+import org.springframework.web.filter.OncePerRequestFilter;
+import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import org.springframework.context.i18n.LocaleContextHolder;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
-import org.springframework.web.filter.OncePerRequestFilter;
+import java.io.IOException;
 
 /**
  * A filter that binds a GrailsWebRequest to the currently executing thread
@@ -50,11 +50,13 @@ public class GrailsWebRequestFilter extends OncePerRequestFilter {
 			logger.debug("Bound Grails request context to thread: " + request);
 		}
 		try {
-			filterChain.doFilter(request, response);
+            request.setAttribute(GrailsApplicationAttributes.WEB_REQUEST, requestAttributes);
+            filterChain.doFilter(request, response);
 		}
 		finally {
 			requestAttributes.requestCompleted();
-			RequestContextHolder.setRequestAttributes(null);
+            request.removeAttribute(GrailsApplicationAttributes.WEB_REQUEST);
+            RequestContextHolder.setRequestAttributes(null);
 			LocaleContextHolder.setLocale(null);
 			if (logger.isDebugEnabled()) {
 				logger.debug("Cleared Grails thread-bound request context: " + request);

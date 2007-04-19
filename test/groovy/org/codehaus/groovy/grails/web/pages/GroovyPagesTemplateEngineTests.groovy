@@ -1,4 +1,4 @@
-package org.codehaus.groovy.grails.web.pages
+    package org.codehaus.groovy.grails.web.pages
 
 import org.springframework.mock.web.*
 import org.springframework.core.io.*

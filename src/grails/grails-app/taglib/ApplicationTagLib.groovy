@@ -53,7 +53,7 @@ class ApplicationTagLib {
     def link = { attrs, body ->
         out << "<a href=\""
         // create the link
-        createLink(attrs)
+        out << createLink(attrs)
 
         out << '\" '
         // process remaining attributes

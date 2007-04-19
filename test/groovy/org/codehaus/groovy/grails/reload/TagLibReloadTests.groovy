@@ -18,6 +18,8 @@ class TagLibReloadTests extends AbstractGrailsTagTests {
         def sw = new StringWriter()
         def pw = new PrintWriter(sw)
         Class oldClass = ga.getTagLibClass("TestTagLib").getClazz()
+        def result
+        println "trying myTag"
 		withTag("myTag",pw) { tag ->
             tag.call([foo:"bar"],null)
         }
@@ -40,6 +42,7 @@ class TestTagLib {
         eventHandler.call(event)
         GrailsMetaClassUtils.copyExpandoMetaClass(oldClass, event.source, true)
 
+        
 		withTag("myTag",pw) { tag ->
             tag.call([bar:"foo"], null)
         }

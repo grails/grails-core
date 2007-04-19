@@ -18,25 +18,24 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.ApplicationAttributes;
+import org.codehaus.groovy.grails.commons.ApplicationHolder;
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.ApplicationHolder;
 import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator;
-import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException;
 import org.codehaus.groovy.grails.support.MockResourceLoader;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.mock.web.MockServletContext;
 import org.springframework.util.Assert;
-import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
-import org.springframework.core.io.Resource;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.jar.Manifest;
 import java.util.jar.Attributes;
-import java.io.IOException;
+import java.util.jar.Manifest;
 
 /**
  *
@@ -58,7 +57,7 @@ public class GrailsUtil {
 
     static {
         PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
-
+        String version = null;
         try {
             Resource[] manifests = resolver.getResources("classpath*:META-INF/GRAILS-MANIFEST.MF");
             Manifest grailsManifest = null;
@@ -71,23 +70,21 @@ public class GrailsUtil {
                     break;
                 }
             }
-            String version = null;
+
             if(grailsManifest != null) {
                 version = grailsManifest.getMainAttributes().getValue(Attributes.Name.IMPLEMENTATION_VERSION);
             }
 
-            if(!StringUtils.isBlank(version)) {
-                GRAILS_VERSION = version;
-            }
-            else {
-                GRAILS_VERSION = null;
-                throw new GrailsConfigurationException("Unable to read Grails version from MANIFEST.MF. Are you sure it the grails-core jar is on the classpath? " );
+            if(StringUtils.isBlank(version)) {
+                LOG.error("Unable to read Grails version from MANIFEST.MF. Are you sure it the grails-core jar is on the classpath? " );
+                version = "Unknown";
             }
         } catch (IOException e) {
-            throw new GrailsConfigurationException("Unable to read Grails version from MANIFEST.MF. Are you sure it the grails-core jar is on the classpath? " + e.getMessage(), e);
+            version = "Unknown";
+            LOG.error("Unable to read Grails version from MANIFEST.MF. Are you sure it the grails-core jar is on the classpath? " + e.getMessage(), e);
         }
 
-
+        GRAILS_VERSION = version;
     }
 
     private static final String PRODUCTION_ENV_SHORT_NAME = "prod";

@@ -15,34 +15,27 @@
  */
 package org.codehaus.groovy.grails.web.pages;
 
-import groovy.lang.Binding;
-import groovy.lang.Closure;
-import groovy.lang.GroovyObject;
-import groovy.lang.MissingMethodException;
-import groovy.lang.MissingPropertyException;
-import groovy.lang.Script;
+import groovy.lang.*;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.commons.GrailsClass;
+import org.codehaus.groovy.grails.commons.TagLibArtefactHandler;
+import org.codehaus.groovy.grails.web.servlet.DefaultGrailsApplicationAttributes;
+import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
+import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
+import org.springframework.beans.BeanWrapper;
 
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.HashMap;
 import java.util.Map;
-
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.web.servlet.DefaultGrailsApplicationAttributes;
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
-import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
-import org.codehaus.groovy.runtime.DefaultGroovyMethods;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.util.HtmlUtils;
 
 /**
  * NOTE: Based on work done by on the GSP standalone project (https://gsp.dev.java.net/)
@@ -70,9 +63,11 @@ public abstract class GroovyPage extends Script {
     public static final String FLASH = "flash";
     public static final String PLUGIN_CONTEXT_PATH = "pluginContextPath";
     public static final String EXTENSION = ".gsp";
+    public static final String WEB_REQUEST = "webRequest";
 
     private GrailsApplication application;
     private GrailsApplicationAttributes grailsAttributes;
+
 
     /**
      * Convert from HTML to Unicode text.  This function converts many of the encoded HTML
@@ -172,9 +167,8 @@ public abstract class GroovyPage extends Script {
      * @param body  The body of the tag as a closure
      */
     public void invokeTag(String tagName, Map attrs, Closure body) {
-        Binding binding = getBinding();
 
-        final Writer out = (Writer)binding.getVariable(GroovyPage.OUT);
+        final GrailsWebRequest webRequest = (GrailsWebRequest)getBinding().getVariable(WEB_REQUEST);
 
         if(this.application == null)
             initPageState();
@@ -183,15 +177,15 @@ public abstract class GroovyPage extends Script {
 
         if(tagLib != null) {
             Object tagLibProp;
-            Map properties = DefaultGroovyMethods.getProperties(tagLib);
-			if(properties.containsKey(tagName)) {
-                tagLibProp = properties.get(tagName);
+            BeanWrapper bean = getTagLibraryBean(tagLib, webRequest);
+			if(bean.isWritableProperty(tagName)) {
+                tagLibProp = bean.getPropertyValue(tagName);
             } else {
                 throw new GrailsTagException("Tag ["+tagName+"] does not exist in tag library ["+tagLib.getClass().getName()+"]");
             }
-            if(tagLibProp instanceof Closure) {               
-                Closure tag = setupTagClosure(out, tagLibProp);
-                
+            if(tagLibProp instanceof Closure) {
+                Closure tag = setupTagClosure(tagLibProp);
+
                 if(tag.getParameterTypes().length == 1) {
                     tag.call( new Object[]{ attrs });
                     if(body != null) {
@@ -237,28 +231,18 @@ public abstract class GroovyPage extends Script {
      * @return The result of the invocation
      */
     public Object invokeMethod(final String methodName, Object args) {
+        if(methodName.equals("invokeTag"))  return super.invokeMethod(methodName, args);
+        if(methodName.equals("fromHtml"))  return super.invokeMethod(methodName, args);
 
-    	try {
-    		return super.invokeMethod(methodName, args);
-    	}
-    	catch(MissingMethodException mme) {
-			if(LOG.isDebugEnabled()) {
-				LOG.debug("No method ["+methodName+"] found");
-			}
-    		Map attrs = null;
+        Map attrs = null;
     		Object body = null;
-    		// retrieve tag lib and create wrapper writer
-    		StringWriter capturedOut = new StringWriter();
-    		final Writer out = new PrintWriter(capturedOut);
     		GroovyObject tagLib = getTagLib(methodName);
 
-    		GrailsWebRequest webRequest = (GrailsWebRequest)RequestContextHolder.currentRequestAttributes();
-    		Writer originalOut = webRequest.getOut();
+    		GrailsWebRequest webRequest = (GrailsWebRequest)getBinding().getVariable(WEB_REQUEST);
+
+            Writer originalOut = webRequest.getOut();
     		try {
-    			webRequest.setOut(out);
         		if(tagLib != null) {
-
-
         			// get attributes and body closure
         			if (args instanceof Object[]) {
         				Object[] argArray = (Object[])args;
@@ -276,76 +260,73 @@ public abstract class GroovyPage extends Script {
         				attrs = new HashMap();
         			}
 
-        			// in a direct invocation the body is expected to return a string
-        			// invoke the body closure and create a new closure that outputs
-        			// to the response writer on each body invokation
-        			final Object body1 = body;
-        			Closure actualBody = createTagOutputCapturingClosure(methodName, out, body1);
 
-        			
-        			Object tagLibProp;
-        			Map properties = DefaultGroovyMethods.getProperties(tagLib);
-        			if(LOG.isDebugEnabled()) {
+                    BeanWrapper bean = getTagLibraryBean(tagLib, webRequest);
+
+                    if(LOG.isDebugEnabled()) {
         				LOG.debug("Attempting to invoke ["+methodName+"] on tag library ["+tagLib.getClass()+"] with MetaClass ["+tagLib.getMetaClass()+"]");
-        			}        			
-        			if(properties.containsKey(methodName)) {
-        				tagLibProp = properties.get(methodName);
-        				if(tagLibProp instanceof Closure) {
-        					Closure tag = setupTagClosure(out, tagLibProp);
-        					
-        					if(tag.getParameterTypes().length == 1) {
-        						tag.call( new Object[]{ attrs });
-        						if(actualBody != null) {
-        							actualBody.call();
-        						}
-        					}else if(tag.getParameterTypes().length == 2) {
-        						tag.call( new Object[] { attrs, actualBody });
-        					}else {
-        						throw new GrailsTagException("Tag ["+methodName+"] does not specify expected number of params in tag library ["+tagLib.getClass().getName()+"]");
-        					}
-        					return capturedOut.toString();
-        				}else {
-        					throw new GrailsTagException("Tag ["+methodName+"] does not exist in tag library ["+tagLib.getClass().getName()+"]");
-        				}
-        			} else {
+        			}
+        			if(bean.isReadableProperty(methodName)) {
+                        return captureTagOutput(tagLib,methodName, attrs, body, webRequest, bean);
+                    } else {
         				if(args instanceof Object[])
-        					throw new MissingMethodException(methodName,tagLib.getClass(), (Object[])args);
+                            return super.invokeMethod(methodName, args);
         				else
-        					throw new MissingMethodException(methodName,tagLib.getClass(), new Object[]{ args });
+        					return super.invokeMethod(methodName, args);
         			}
 
-        		} else if(methodName.startsWith("encodeAs")) {
-        			if(LOG.isDebugEnabled()) {
-        				LOG.debug("Invoking as dynamic encoder");
-        			}
-        			final String codec = methodName.substring("encodeAs".length()).toLowerCase();
-        			
-        			// TODO temporary code here...
-        			if("html".equals(codec)) {
-        				return HtmlUtils.htmlEscape(((Object[])args)[0].toString());
-        			} else {
-            			if(LOG.isDebugEnabled()) {
-            				LOG.debug("No encoder found for " + codec);
-            			}
-        			}
         		}
-    			
     		}
     		finally {
     			webRequest.setOut(originalOut);
     		}
-    		
-       		throw new MissingMethodException(methodName,GroovyPage.class, new Object[]{ args });
-    	}
+            return super.invokeMethod(methodName, args);
     }
 
-	private Closure setupTagClosure(final Writer out, Object tagLibProp) {
+    private BeanWrapper getTagLibraryBean(GroovyObject tagLib, GrailsWebRequest webRequest) {
+        GrailsApplication application = webRequest.getAttributes().getGrailsApplication();
+        GrailsClass grailsClass = application.getArtefact(TagLibArtefactHandler.TYPE, tagLib.getClass().getName());
+        return grailsClass.getReference();
+    }
+
+    public static Object captureTagOutput(GroovyObject tagLib, String methodName, Map attrs, Object body, GrailsWebRequest webRequest, BeanWrapper bean) {
+        Object tagLibProp;// retrieve tag lib and create wrapper writer
+        StringWriter capturedOut = new StringWriter();
+        final Writer out = new PrintWriter(capturedOut);
+        webRequest.setOut(out);
+
+        // in a direct invocation the body is expected to return a string
+        // invoke the body closure and create a new closure that outputs
+        // to the response writer on each body invokation
+        Closure actualBody = createTagOutputCapturingClosure(tagLib,methodName, out, body);
+
+        tagLibProp = bean.getPropertyValue(methodName);
+        if(tagLibProp instanceof Closure) {
+            Closure tag = setupTagClosure(tagLibProp);
+
+            if(tag.getParameterTypes().length == 1) {
+                tag.call( new Object[]{ attrs });
+                if(actualBody != null) {
+                    actualBody.call();
+                }
+            }else if(tag.getParameterTypes().length == 2) {
+                tag.call( new Object[] { attrs, actualBody });
+            }else {
+                throw new GrailsTagException("Tag ["+methodName+"] does not specify expected number of params in tag library ["+bean.getWrappedClass().getName()+"]");
+            }
+            return capturedOut.toString();
+        }else {
+            throw new GrailsTagException("Tag ["+methodName+"] does not exist in tag library ["+bean.getWrappedClass().getName()+"]");
+        }
+    }
+
+    private static Closure setupTagClosure(final Object tagLibProp) {
 		Closure original = (Closure)tagLibProp;
 		return (Closure)original.clone();
 	}
 
-	private Closure createTagOutputCapturingClosure(final String methodName, final Writer out, final Object body1) {
-		return new Closure(this) {
+	private static Closure createTagOutputCapturingClosure(Object wrappedInstance, final String methodName, final Writer out, final Object body1) {
+		return new Closure(wrappedInstance) {
 			public Object doCall(Object obj) {
 				return call(new Object[] {obj} );
 			}

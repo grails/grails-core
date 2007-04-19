@@ -16,6 +16,7 @@
 package org.codehaus.groovy.grails.commons;
 
 import groovy.lang.MetaClass;
+import org.springframework.beans.BeanWrapper;
 
 /**
  * <p>This interface represents any class in a Grails application.
@@ -113,4 +114,6 @@ public interface GrailsClass {
      * @return The MetaClass for this Grails class
      */
     public MetaClass getMetaClass();
+
+    BeanWrapper getReference();
 }

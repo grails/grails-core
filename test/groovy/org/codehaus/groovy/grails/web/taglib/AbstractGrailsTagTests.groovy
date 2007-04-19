@@ -22,6 +22,7 @@ import org.springframework.context.support.StaticMessageSource;
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler
 import org.codehaus.groovy.grails.commons.TagLibArtefactHandler
+import grails.util.*
 
 abstract class AbstractGrailsTagTests extends
 AbstractDependencyInjectionSpringContextTests {
@@ -58,7 +59,6 @@ AbstractDependencyInjectionSpringContextTests {
 
 	        request.setAttribute(GrailsApplicationAttributes.CONTROLLER, mockController);
 	        request.setAttribute(DispatcherServlet.LOCALE_RESOLVER_ATTRIBUTE, new AcceptHeaderLocaleResolver());
-	        request.setAttribute(GrailsApplicationAttributes.CONTROLLER, mockController);
 
 	        def tagLibrary = grailsApplication.getArtefactForFeature(TagLibArtefactHandler.TYPE, tagName)
             if(!tagLibrary) {
@@ -67,6 +67,7 @@ AbstractDependencyInjectionSpringContextTests {
 	        def go = tagLibrary.newInstance()
 	        def webRequest = RequestContextHolder.currentRequestAttributes()
 	        webRequest.out = out
+	        println "calling tag"
 	        result = callable.call(go.getProperty(tagName))
 		}
 		return result
@@ -113,9 +114,14 @@ AbstractDependencyInjectionSpringContextTests {
 		
 		def dependentPlugins = dependantPluginClasses.collect { new DefaultGrailsPlugin(it, grailsApplication)}
 		def springConfig = new DefaultRuntimeSpringConfiguration(ctx)
-		servletContext =  createMockServletContext()
-		springConfig.servletContext = servletContext		
-		
+        webRequest = GrailsWebUtil.bindMockWebRequest()
+        request = webRequest.currentRequest
+        response = webRequest.currentResponse
+
+        servletContext =  webRequest.servletContext
+
+		springConfig.servletContext = servletContext
+
 		dependentPlugins*.doWithRuntimeConfiguration(springConfig)
 		dependentPlugins.each{ mockManager.registerMockPlugin(it); it.manager = mockManager }
 			
@@ -127,6 +133,7 @@ AbstractDependencyInjectionSpringContextTests {
     }
     
     protected final void onTearDown() {
+        RequestContextHolder.setRequestAttributes(null)
 		InvokerHelper.getInstance()
 		.getMetaRegistry()
 		.setMetaClassCreationHandle(originalHandler);
@@ -155,23 +162,7 @@ AbstractDependencyInjectionSpringContextTests {
 	}
 	
 	void runTest(Closure callable) {
-		
-		try {
-			request = new MockHttpServletRequest()
-			response =new MockHttpServletResponse()
-			
-			webRequest = new GrailsWebRequest(
-					request,
-					response,
-					servletContext
-			)			
-			RequestContextHolder.setRequestAttributes( webRequest )		
-			callable()
-		}
-		finally {
-			RequestContextHolder.setRequestAttributes(null)	
-		}
-		
+		  callable.call()
 	}
 	
 }

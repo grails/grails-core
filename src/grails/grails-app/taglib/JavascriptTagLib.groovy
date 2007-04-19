@@ -141,7 +141,7 @@ class JavascriptTagLib  {
        out << "<a href=\""    
 
        def cloned = deepClone(attrs)
-	   createLink(cloned)               
+	   out << createLink(cloned)               
 
 	   out << "\" onclick=\""
         // create remote function
@@ -208,9 +208,9 @@ class JavascriptTagLib  {
 		// prepare form settings
 		prepareAjaxForm(p,attrs)
         
-        def params = [  onsubmit:TagLibUtil.outToString(remoteFunction,attrs) + 'return false',
+        def params = [  onsubmit:remoteFunction(attrs) + 'return false',
 					    method: (attrs.method? attrs.method : 'POST' ),
-					    action: (attrs.action? attrs.action : TagLibUtil.outToString(createLink,url))		                 
+					    action: (attrs.action? attrs.action : createLink(url))		                 
 		             ]
 		attrs.remove('url')		             
 	    params.putAll(attrs)
@@ -230,7 +230,7 @@ class JavascriptTagLib  {
 		// prepare form settings 
 		attrs.forSubmitTag = ".form"
 		prepareAjaxForm(p,attrs)    
-        def params = [  onclick:TagLibUtil.outToString(remoteFunction,attrs) + 'return false',
+        def params = [  onclick:remoteFunction(attrs) + 'return false',
 					    type: 'button',
 					    name: attrs.remove('name'),
 					    value: attrs.remove('value'), 
@@ -357,10 +357,10 @@ class PrototypeProvider implements JavascriptProvider {
 		
 		def pms = attrs.remove('params')   
 		if(attrs.url) {
-			taglib.createLink(attrs.url)			
+			out << taglib.createLink(attrs.url)			
 		}                              
 		else {
-			taglib.createLink(attrs)			
+			out << taglib.createLink(attrs)			
 		}
 
 		
@@ -441,10 +441,10 @@ class YahooProvider implements JavascriptProvider {
 		out << "YAHOO.util.Connect.asyncRequest('${method}','"
 				
 		if(attrs.url) {
-			taglib.createLink(attrs.url)
+			out << taglib.createLink(attrs.url)
 		}
 		else {
-			taglib.createLink(attrs)
+			out << taglib.createLink(attrs)
 		}		
 		attrs.remove('url')
 		out << "',"
@@ -504,7 +504,7 @@ class DojoProvider implements JavascriptProvider {
 		}		
 		 out << 'dojo.io.bind({url:\''
 
-		 taglib.createLink(attrs) 
+		 out << taglib.createLink(attrs) 
 		attrs.remove('params')
 		 out << '\',load:function(type,data,evt) {'
 	    if(attrs.onLoaded) {

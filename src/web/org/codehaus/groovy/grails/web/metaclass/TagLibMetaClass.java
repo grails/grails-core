@@ -21,10 +21,15 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.metaclass.AdapterMetaClass;
 import org.codehaus.groovy.grails.commons.metaclass.CachingMetaClass;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
-import org.springframework.web.context.request.RequestContextHolder;
+import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
+import org.codehaus.groovy.grails.web.pages.GroovyPage;
+import org.springframework.beans.BeanWrapperImpl;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import java.util.Map;
+import java.util.Collections;
+import java.io.Writer;
+
 /**
  * <p>Special meta class for tag libraries that allows tag libraries to call
  * tags within other libraries without the need for inheritance
@@ -81,34 +86,52 @@ public class TagLibMetaClass extends CachingMetaClass implements AdapterMetaClas
 	 * @see groovy.lang.ProxyMetaClass#invokeMethod(java.lang.Object, java.lang.String, java.lang.Object[])
 	 */
 	public Object invokeMethod(Object object, String methodName, Object[] arguments) {
-		if (hasMethod(object, methodName, arguments)) {
-			return super.invokeMethod(object, methodName, arguments);
-		} else {
-			GroovyObject taglib = (GroovyObject)object;
-            GroovyObject tagLibrary = lookupTagLibrary(methodName);
-
-            if(tagLibrary == null) throw new MissingMethodException(methodName, object.getClass(), arguments);
-			if(tagLibrary.getClass().equals(object.getClass())) throw new MissingMethodException(methodName, object.getClass(), arguments);
-
-			if(LOG.isDebugEnabled())
-				LOG.debug("Tag ["+methodName+"] not found in existing library, found in ["+tagLibrary.getClass().getName()+"]. Invoking..");
-
-			Closure original = (Closure)tagLibrary.getProperty(methodName);
-			Closure tag = (Closure)original.clone();
-
-			tagLibrary.setProperty(TagLibDynamicMethods.OUT_PROPERTY,taglib.getProperty(TagLibDynamicMethods.OUT_PROPERTY));
-			return tag.call(arguments);
-		}
+		if (hasClosure(object, methodName) && (arguments.length == 1 || arguments.length == 2 )) {
+            GrailsWebRequest webRequest = getWebRequestFromObject(object);
+            return captureTagOutputForLibrary((GroovyObject)object, methodName, arguments, webRequest);
+		} else if(hasMethod(object, methodName, arguments)) {
+            return super.invokeMethod(object, methodName, arguments);
+        }
+        else {
+            return captureTagOutput(object, methodName, arguments);
+        }
 	}
 
-    private GroovyObject lookupTagLibrary(String methodName) {
-        GrailsWebRequest webRequest = (GrailsWebRequest) RequestContextHolder.currentRequestAttributes();
+    private Object captureTagOutput(Object object, String methodName, Object[] arguments) {
+        GrailsWebRequest webRequest = getWebRequestFromObject(object);
 
-        HttpServletRequest request = webRequest.getCurrentRequest();
-        HttpServletResponse response = webRequest.getCurrentResponse();
+        GroovyObject tagLibrary = lookupTagLibrary(methodName,webRequest);
+
+        if(tagLibrary == null) throw new MissingMethodException(methodName, object.getClass(), arguments);
+        if(tagLibrary.getClass().equals(object.getClass())) throw new MissingMethodException(methodName, object.getClass(), arguments);
+
+        return captureTagOutputForLibrary(tagLibrary,methodName, arguments, webRequest);
+    }
+
+    private Object captureTagOutputForLibrary(GroovyObject tagLibrary, String methodName, Object[] arguments, GrailsWebRequest webRequest) {
+        if(LOG.isDebugEnabled())
+				LOG.debug("Tag ["+methodName+"] not found in existing library, found in ["+tagLibrary.getClass().getName()+"]. Invoking..");
+
+        Map attrs = Collections.EMPTY_MAP;
+        Object body = null;
+        if(arguments.length > 0 && arguments[0] instanceof Map)
+        attrs = (Map)arguments[0];
+        if(arguments.length > 1) {
+            body = arguments[1];
+        }
+
+        Writer originalOut = webRequest.getOut();
+        try {
+        return GroovyPage.captureTagOutput(tagLibrary, methodName,attrs,body,webRequest, new BeanWrapperImpl(tagLibrary));
+    } finally {
+        webRequest.setOut(originalOut);
+    }
+    }
+
+    private GroovyObject lookupTagLibrary(String methodName, GrailsWebRequest webRequest) {
         return webRequest
                     .getAttributes()
-                    .getTagLibraryForTag(request,response,methodName);
+                    .getTagLibraryForTag(webRequest.getCurrentRequest(),webRequest.getCurrentResponse(),methodName);
     }
 
     /* (non-Javadoc)
@@ -118,8 +141,10 @@ public class TagLibMetaClass extends CachingMetaClass implements AdapterMetaClas
         if (hasProperty(object, property)) {
 			return super.getProperty(object, property);
 		} else {
-			
-            GroovyObject tagLibrary = lookupTagLibrary(property);
+
+            GrailsWebRequest webRequest = getWebRequestFromObject(object);
+
+            GroovyObject tagLibrary = lookupTagLibrary(property, webRequest);
 
             if(tagLibrary == null) throw new MissingPropertyException(property, object.getClass());
 
@@ -130,6 +155,12 @@ public class TagLibMetaClass extends CachingMetaClass implements AdapterMetaClas
 
 		}
 	}
+
+    private GrailsWebRequest getWebRequestFromObject(Object object) {
+        GroovyObject taglib = (GroovyObject)object;
+        HttpServletRequest request = (HttpServletRequest)taglib.getProperty(ControllerDynamicMethods.REQUEST_PROPERTY);
+        return (GrailsWebRequest)request.getAttribute(GrailsApplicationAttributes.WEB_REQUEST);
+    }
 
 
 }

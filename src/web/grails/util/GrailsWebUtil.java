@@ -37,21 +37,25 @@ import javax.servlet.http.HttpServletRequest;
 public class GrailsWebUtil {
     
     public static GrailsWebRequest bindMockWebRequest(GrailsWebApplicationContext ctx) {
+        MockHttpServletRequest request = new MockHttpServletRequest();
         GrailsWebRequest webRequest = new GrailsWebRequest(
-                                                new MockHttpServletRequest(),
+                                                request,
                                                 new MockHttpServletResponse(),
                                                 ctx.getServletContext()
                                             );
+        request.setAttribute(GrailsApplicationAttributes.WEB_REQUEST, webRequest);
         RequestContextHolder.setRequestAttributes(webRequest);
         return webRequest;
     }
 
     public static GrailsWebRequest bindMockWebRequest() {
+        MockHttpServletRequest request = new MockHttpServletRequest();
         GrailsWebRequest webRequest = new GrailsWebRequest(
-                                                new MockHttpServletRequest(),
+                                                request,
                                                 new MockHttpServletResponse(),
                                                 new MockServletContext()
                                             );
+        request.setAttribute(GrailsApplicationAttributes.WEB_REQUEST, webRequest);
         RequestContextHolder.setRequestAttributes(webRequest);
         return webRequest;
     }

@@ -139,7 +139,7 @@ class ValidationTagLib {
             out << "<ul>"
             eachError(attrs, {
                 out << "<li>"
-                message(error:it)
+                out << message(error:it)
                 out << "</li>"
               }
             )
