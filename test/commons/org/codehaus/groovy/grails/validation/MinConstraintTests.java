@@ -55,6 +55,9 @@ public class MinConstraintTests extends AbstractConstraintTests {
         MinConstraint constraint = new MinConstraint();
         assertEquals( ConstrainedProperty.MIN_CONSTRAINT, constraint.getName() );
         assertTrue( constraint.supports( Integer.class ));
+        assertTrue( constraint.supports( int.class ));
+        assertTrue( constraint.supports( float.class ));
+        assertTrue( constraint.supports( Integer.class ));
         assertTrue( constraint.supports( Float.class ));
         assertTrue( constraint.supports( BigDecimal.class ));
         assertFalse( constraint.supports( List.class ));

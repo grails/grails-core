@@ -53,11 +53,14 @@ class MinConstraint extends AbstractConstraint {
      * @see org.codehaus.groovy.grails.validation.ConstrainedProperty.AbstractConstraint#setParameter(java.lang.Object)
      */
     public void setParameter(Object constraintParameter) {
-        if(!(constraintParameter instanceof Comparable))
+        if(constraintParameter == null) {
+            throw new IllegalArgumentException("Parameter for constraint ["+ConstrainedProperty.MIN_CONSTRAINT+"] of property ["+constraintPropertyName+"] of class ["+constraintOwningClass+"] cannot be null");
+        }
+        if(!(constraintParameter instanceof Comparable) && (!constraintParameter.getClass().isPrimitive()))
             throw new IllegalArgumentException("Parameter for constraint ["+ConstrainedProperty.MIN_CONSTRAINT+"] of property ["+constraintPropertyName+"] of class ["+constraintOwningClass+"] must implement the interface [java.lang.Comparable]");
 
         Class propertyClass = GrailsClassUtils.getPropertyType( constraintOwningClass, constraintPropertyName );
-        if(!GrailsClassUtils.isAssignableOrConvertibleFrom( propertyClass, constraintParameter.getClass() ))
+        if(!GrailsClassUtils.isAssignableOrConvertibleFrom( constraintParameter.getClass(),propertyClass ))
             throw new IllegalArgumentException("Parameter for constraint ["+ConstrainedProperty.MAX_CONSTRAINT+"] of property ["+constraintPropertyName+"] of class ["+constraintOwningClass+"] must be the same type as property: [" + propertyClass.getName() + "]");
 
         this.minValue = (Comparable)constraintParameter;
