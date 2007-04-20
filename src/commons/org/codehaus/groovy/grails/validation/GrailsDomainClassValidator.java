@@ -176,42 +176,46 @@ public class GrailsDomainClassValidator implements Validator, CascadingValidator
     protected void cascadeValidationToOne(Errors errors, BeanWrapper bean, Object associatedObject, GrailsDomainClassProperty persistentProperty, String propertyName) {
 
         if(associatedObject != null) {
+
             GrailsDomainClass associatedDomainClass = persistentProperty.getReferencedDomainClass();
-            GrailsDomainClassProperty otherSide = null;
-            if(persistentProperty.isBidirectional()) {
-                otherSide = persistentProperty.getOtherSide();
-            }
-
-            Map associatedConstraintedProperties = associatedDomainClass.getConstrainedProperties();
-
-            GrailsDomainClassProperty[] associatedPersistentProperties = associatedDomainClass.getPersistantProperties();
-            String nestedPath = errors.getNestedPath();
-            try {
-                errors.setNestedPath(nestedPath+propertyName);
-
-
-                for (int i = 0; i < associatedPersistentProperties.length; i++) {
-                    GrailsDomainClassProperty associatedPersistentProperty = associatedPersistentProperties[i];
-                    if(associatedPersistentProperty.equals(otherSide)) continue;
-
-
-                    String associatedPropertyName = associatedPersistentProperty.getName();
-                    if(associatedConstraintedProperties.containsKey(associatedPropertyName)) {
-
-                        validatePropertyWithConstraint(errors.getNestedPath() + associatedPropertyName, associatedObject, errors, new BeanWrapperImpl(associatedObject), associatedConstraintedProperties);
-                    }
-
-                    if(associatedPersistentProperty.isAssociation()) {
-                        cascadeToAssociativeProperty(errors, new BeanWrapperImpl(associatedObject), associatedPersistentProperty);
-                    }
-
+            if(associatedDomainClass != null && associatedDomainClass.isOwningClass(bean.getWrappedClass())) {
+                GrailsDomainClassProperty otherSide = null;
+                if(persistentProperty.isBidirectional()) {
+                    otherSide = persistentProperty.getOtherSide();
                 }
-            }
-            finally {
-                errors.setNestedPath(nestedPath);
+
+                Map associatedConstraintedProperties = associatedDomainClass.getConstrainedProperties();
+
+                GrailsDomainClassProperty[] associatedPersistentProperties = associatedDomainClass.getPersistantProperties();
+                String nestedPath = errors.getNestedPath();
+                try {
+                    errors.setNestedPath(nestedPath+propertyName);
+
+
+                    for (int i = 0; i < associatedPersistentProperties.length; i++) {
+                        GrailsDomainClassProperty associatedPersistentProperty = associatedPersistentProperties[i];
+                        if(associatedPersistentProperty.equals(otherSide)) continue;
+
+
+                        String associatedPropertyName = associatedPersistentProperty.getName();
+                        if(associatedConstraintedProperties.containsKey(associatedPropertyName)) {
+
+                            validatePropertyWithConstraint(errors.getNestedPath() + associatedPropertyName, associatedObject, errors, new BeanWrapperImpl(associatedObject), associatedConstraintedProperties);
+                        }
+
+                        if(associatedPersistentProperty.isAssociation()) {
+                            cascadeToAssociativeProperty(errors, new BeanWrapperImpl(associatedObject), associatedPersistentProperty);
+                        }
+
+                    }
+                }
+                finally {
+                    errors.setNestedPath(nestedPath);
+                }
+
             }
 
-        }
+            }
     }
 
 }

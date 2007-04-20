@@ -50,16 +50,17 @@ class GrailsDomainClassValidatorTests extends AbstractGrailsMockTests {
         errors = new BindException(book, book.class.name)
         bookValidator.validate(book, errors, true)
 
-        // validation should still fail as author name and address not set
+        // it should validate here because even though the author properties are not set, validation doesn't cascade
+        // because a Book belongs to an Author and the same way persistence doesn't cascade so too validation doesn't
 
-        assert errors.hasErrors()
+        assert !errors.hasErrors()
 
         book.author.name = "Bar"
         book.author.address = addressClass.newInstance()
         errors = new BindException(book, book.class.name)
         bookValidator.validate(book, errors, true)
 
-        assert errors.hasErrors()
+        assert !errors.hasErrors()
 
         book.author.address.location = "UK"
         book.author.address.author = book.author
@@ -93,6 +94,7 @@ class Book {
     Long version
     String title
     Author author
+    static belongsTo = Author
     static constraints = {
        title(blank:false, size:1..255)
        author(nullable:false)
