@@ -135,8 +135,7 @@ set JAVA_OPTS=%JAVA_OPTS% -Dgroovy.starter.conf="%STARTER_CONF%"
 if exist "%USERPROFILE%/.groovy/postinit.bat" call "%USERPROFILE%/.groovy/postinit.bat"
 
 @rem Execute Groovy
-"%JAVA_EXE%" %JAVA_OPTS% %SERVER_PORT% -classpath "%STARTER_CLASSPATH%" %STARTER_MAIN_CLASS% --main %CLASS% --conf "%STARTER_CONF%" --classpath "%CP%" "%CMD_LINE_ARGS%"
-
+CALL "%JAVA_EXE%" %JAVA_OPTS% %SERVER_PORT% -classpath "%STARTER_CLASSPATH%" %STARTER_MAIN_CLASS% --main %CLASS% --conf "%STARTER_CONF%" --classpath "%CP%" "%CMD_LINE_ARGS%"
 :end
 @rem End local scope for the variables with windows NT shell
 if "%OS%"=="Windows_NT" endlocal

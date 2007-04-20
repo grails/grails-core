@@ -12,7 +12,5 @@ if "%OS%"=="Windows_NT" setlocal
 set DIRNAME=%~dp0
 if "%DIRNAME%" == "" set DIRNAME=.\
 
-"%DIRNAME%\startGrails.bat" "%DIRNAME%" org.codehaus.groovy.grails.cli.GrailsScriptRunner %*
+CALL "%DIRNAME%\startGrails.bat" "%DIRNAME%" org.codehaus.groovy.grails.cli.GrailsScriptRunner %*
 
-@rem End local scope for the variables with windows NT shell
-if "%OS%"=="Windows_NT" endlocal
