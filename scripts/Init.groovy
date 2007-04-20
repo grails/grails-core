@@ -275,11 +275,15 @@ task( init: "main init task") {
 			 tofile:"${basedir}/grails-app/conf/log4j.production.properties")
 
         copy(file:"${grailsHome}/src/grails/templates/artifacts/UrlMappings.groovy",
-             tofile:"${basedir}/grails-app/conf/${appClassName}UrlMappings.groovy")
+             tofile:"${basedir}/grails-app/conf/${appClassName}UrlMappings.groovy")    
+
+		replace(file:"${basedir}/grails-app/conf/${appClassName}UrlMappings.groovy", 
+					token:"@artifact.name@", value:"${appClassName}UrlMappings" )
 			
 		copy(todir:"${basedir}/grails-app") {
 			fileset(dir:"${grailsHome}/src/grails/grails-app", excludes:"**/taglib/**, **/utils/**")
-		} 
+		}                                                                              
+		
 		
 		createCorePlugin()   	                                                                                  
 					
@@ -307,7 +311,7 @@ task("default": "Initializes a Grails application. Warning: This task will overw
 	depends( init )
 }  
 
-task ('createArtifact': "Creates a specific Grails artifact") {
+task (createArtifact: "Creates a specific Grails artifact") {
 	depends( promptForName)
 	
 	Ant.mkdir(dir:"${basedir}/${artifactPath}")

@@ -95,12 +95,15 @@ task( upgrade: "main upgrade task") {
                 present(present:"srconly", targetdir:"${basedir}/grails-app/conf")
             }
         }
-			
+		 
         copy(tofile:"${basedir}/grails-app/conf/${appClassName}UrlMappings.groovy") {
             fileset(file:"${grailsHome}/src/grails/templates/artifacts/UrlMappings.groovy") {
                 present(present:"srconly", targetdir:"${basedir}/grails-app/conf")
             }
         }
+		replace(file:"${basedir}/grails-app/conf/${appClassName}UrlMappings.groovy", 
+					token:"@artifact.name@", value:"${appClassName}UrlMappings" )
+
 
         copy(file:"${grailsHome}/src/war/WEB-INF/web${servletVersion}.template.xml",
              tofile:"${basedir}/web-app/WEB-INF/web.template.xml",

@@ -1,7 +1,9 @@
-mappings {
-  "/$controller/$action?/$id?"{
-      constraints {
-	     id(matches:/\d+/)
+class @artifact.name@ {
+	static mappings = {
+	  "/$controller/$action?/$id?"{
+	      constraints {
+			 // apply constraints here
+		  }
 	  }
-  }
+	}	
 }
