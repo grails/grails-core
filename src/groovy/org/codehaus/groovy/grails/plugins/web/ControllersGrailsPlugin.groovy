@@ -105,7 +105,7 @@ class ControllersGrailsPlugin {
 		}                        
 
 		
-		def handlerInterceptors = []
+		def handlerInterceptors = [ref("localeChangeInterceptor")]
 		grailsUrlHandlerMapping(GrailsUrlHandlerMapping) {
 			interceptors = handlerInterceptors
 			mappings =  grailsUrlMappings
