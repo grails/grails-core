@@ -23,24 +23,27 @@ class ValidatePersistentMethodTests extends AbstractGrailsHibernateTests {
         def author = authorClass.newInstance()
         book.author = author
 
-        assert !book.validate()
+        assert book.validate()
         assert book.validate(deepValidate:false)
 
         author.name = "Bar"
 
-        assert !book.validate()
+        assert book.validate()
+        assert !author.validate()
         assert book.validate(deepValidate:false)
 
         def address = addressClass.newInstance()
 
         author.address = address
 
-        assert !book.validate()
+        assert book.validate()
+        assert !author.validate()
         assert book.validate(deepValidate:false)
 
         address.location = "Foo Bar"
 
         assert book.validate()
+        assert author.validate()
         assert book.validate(deepValidate:false)
 	}
 
@@ -86,6 +89,7 @@ class Book {
     Long version
     String title
     Author author
+    static belongsTo = Author
     static constraints = {
        title(blank:false, size:1..255)
        author(nullable:false)
@@ -108,6 +112,7 @@ class Address {
     Long version
     Author author
     String location
+    static belongsTo = Author
     static constraints = {
        author(nullable:false)
        location(blank:false)

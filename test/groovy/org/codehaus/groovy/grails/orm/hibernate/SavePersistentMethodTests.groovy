@@ -40,25 +40,26 @@ class SavePersistentMethodTests extends AbstractGrailsHibernateTests {
         def author = authorClass.newInstance()
         book.author = author
 
-        assert !book.save()
+        // will validate book is owned by author
+        assert book.save()
         assert book.save(deepValidate:false)
 
         author.name = "Bar"
 
-        assert !book.save()
+        assert book.save()
         assert book.save(deepValidate:false)
 
         def address = addressClass.newInstance()
 
         author.address = address
 
-        assert !book.save()
-        assert book.save(deepValidate:false)
+        assert !author.save()
+        
 
         address.location = "Foo Bar"
 
-        assert book.save()
-        assert book.save(deepValidate:false)
+        assert author.save()
+        assert author.save(deepValidate:false)
 	}
 
 	void testToManyCascadingValidation() {
@@ -102,6 +103,7 @@ class Book {
     Long version
     String title
     Author author
+    static belongsTo = Author
     static constraints = {
        title(blank:false, size:1..255)
        author(nullable:false)
@@ -124,6 +126,7 @@ class Address {
     Long version
     Author author
     String location
+    static belongsTo = Author
     static constraints = {
        author(nullable:false)
        location(blank:false)
