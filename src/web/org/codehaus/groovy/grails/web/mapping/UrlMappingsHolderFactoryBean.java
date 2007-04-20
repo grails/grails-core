@@ -14,13 +14,14 @@
  */
 package org.codehaus.groovy.grails.web.mapping;
 
+import groovy.lang.Script;
+import org.codehaus.groovy.grails.commons.*;
+import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
-import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware;
-import org.codehaus.groovy.grails.commons.*;
 
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A FactoryBean for constructing the UrlMappingsHolder from the registered UrlMappings class within a
@@ -56,12 +57,19 @@ public class UrlMappingsHolderFactoryBean implements FactoryBean, InitializingBe
         if(grailsApplication == null) throw new IllegalStateException("Property [grailsApplication] must be set!");
 
         List urlMappings = new ArrayList();
-
+        
         GrailsClass[] mappings = grailsApplication.getArtefacts(UrlMappingsArtefactHandler.TYPE);
-
+        
         for (int i = 0; i < mappings.length; i++) {
-            GrailsClass mappingClass = mappings[i];
-            List grailsClassMappings = mappingEvaluator.evaluateMappings(mappingClass.getClazz());
+            GrailsUrlMappingsClass mappingClass = (GrailsUrlMappingsClass) mappings[i];
+            List grailsClassMappings;
+            if(Script.class.isAssignableFrom(mappingClass.getClass())) {
+                grailsClassMappings = mappingEvaluator.evaluateMappings(mappingClass.getClazz());
+            }
+            else {
+                grailsClassMappings = mappingEvaluator.evaluateMappings(mappingClass.getMappingsClosure());
+            }
+
             urlMappings.addAll(grailsClassMappings);
         }
 

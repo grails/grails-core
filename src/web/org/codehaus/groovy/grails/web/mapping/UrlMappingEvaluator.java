@@ -15,6 +15,7 @@
 */
 package org.codehaus.groovy.grails.web.mapping;
 
+import groovy.lang.Closure;
 import org.springframework.core.io.Resource;
 
 import java.util.List;
@@ -50,4 +51,12 @@ public interface UrlMappingEvaluator {
      * @return A list of UrlMapping instances
      */
     List evaluateMappings(Class theClass);
+    
+    /**
+     * Evaluates mapping from the given closure if possible
+     *
+     * @param closure The closure to evaluate mapping from
+     * @return A list of UrlMapping instances
+     */
+    List evaluateMappings(Closure closure);
 }

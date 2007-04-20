@@ -14,12 +14,6 @@
  */
 package org.codehaus.groovy.grails.commons;
 
-import groovy.lang.Script;
-
-import java.lang.reflect.Constructor;
-
-import org.springframework.beans.BeanUtils;
-import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException;
 
 /**
  * A handler for UrlMappings
@@ -36,19 +30,7 @@ public class UrlMappingsArtefactHandler extends ArtefactHandlerAdapter {
     public static final String TYPE = "UrlMappings";
 
     public UrlMappingsArtefactHandler() {
-        super(TYPE, GrailsClass.class,DefaultGrailsClass.class,TYPE);
-
+        super(TYPE, GrailsUrlMappingsClass.class, DefaultGrailsUrlMappingsClass.class, DefaultGrailsUrlMappingsClass.URL_MAPPINGS);
     }
-    public GrailsClass newArtefactClass(Class artefactClass) {
-        try {
-            Constructor c = DefaultGrailsClass.class.getDeclaredConstructor(new Class[] { Class.class, String.class } );
-            return (GrailsClass)BeanUtils.instantiateClass(c, new Object[]{ artefactClass, TYPE});
-        } catch (NoSuchMethodException e) {
-            throw new GrailsConfigurationException("Unable to create new instance of Grails artefact ["+TYPE+"] for class ["+artefactClass+"]:" + e.getMessage(), e);
-        }
-    }
-
-    public boolean isArtefactClass(Class clazz) {
-        return clazz != null && (super.isArtefactClass(clazz) && Script.class.isAssignableFrom(clazz));
-    }
+    
 }

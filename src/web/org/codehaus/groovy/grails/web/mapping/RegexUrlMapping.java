@@ -15,6 +15,7 @@
 package org.codehaus.groovy.grails.web.mapping;
 
 import groovy.lang.Closure;
+
 import org.codehaus.groovy.grails.commons.GrailsControllerClass;
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 import org.codehaus.groovy.grails.web.mapping.exceptions.UrlMappingException;
@@ -97,8 +98,8 @@ public class RegexUrlMapping implements UrlMapping {
 
         for (int i = 0; i < urls.length; i++) {
             String url = urls[i];
-            Pattern pattern = convertToRegex(url);
 
+            Pattern pattern = convertToRegex(url);
             if(pattern == null) throw new IllegalStateException("Cannot use null pattern in regular expression mapping for url ["+data.getUrlPattern()+"]");
             this.patterns[i] = pattern;
 
@@ -147,8 +148,7 @@ public class RegexUrlMapping implements UrlMapping {
      * @see org.codehaus.groovy.grails.web.mapping.UrlMappingInfo
      */
     public UrlMappingInfo match(String uri) {
-
-        for (int i = 0; i < patterns.length; i++) {
+    	for (int i = 0; i < patterns.length; i++) {
             Pattern pattern = patterns[i];
             Matcher m = pattern.matcher(uri);
             if(m.find()) {
