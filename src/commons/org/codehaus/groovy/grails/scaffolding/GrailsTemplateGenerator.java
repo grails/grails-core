@@ -16,6 +16,7 @@
 package org.codehaus.groovy.grails.scaffolding;
 
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
+import org.springframework.core.io.ResourceLoader;
 
 import java.io.Writer;
 
@@ -28,6 +29,13 @@ import java.io.Writer;
  * 09-Feb-2006
  */
 public interface GrailsTemplateGenerator {
+
+    /**
+     * The resource loader to use to load templates from
+     *
+     * @param resourceLoader The ResourceLoader instance
+     */
+    void setResourceLoader(ResourceLoader resourceLoader);
 
      /**
      * Generates the necessary views for the supplied domain class

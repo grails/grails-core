@@ -128,7 +128,7 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
             GrailsPlugin controllerPlugin = manager.getGrailsPlugin("controllers");
             GroovyObject pluginInstance = controllerPlugin.getInstance();
 
-            pluginInstance.invokeMethod("registerCommonObjects", GrailsMetaClassUtils.getExpandoMetaClass(script.getClass()));
+            pluginInstance.invokeMethod("registerCommonObjects", new Object[]{GrailsMetaClassUtils.getExpandoMetaClass(script.getClass()), null});
 
         }
     }
@@ -139,7 +139,7 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
             GrailsPlugin controllerPlugin = manager.getGrailsPlugin("controllers");
             GroovyObject pluginInstance = controllerPlugin.getInstance();
 
-            pluginInstance.invokeMethod("registerCommonObjects", GrailsMetaClassUtils.getExpandoMetaClass(object.getClass()));
+            pluginInstance.invokeMethod("registerCommonObjects", new Object[]{GrailsMetaClassUtils.getExpandoMetaClass(object.getClass()), null});
 
         }
     }

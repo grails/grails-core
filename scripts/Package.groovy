@@ -36,7 +36,9 @@ grailsHome = Ant.antProject.properties."env.GRAILS_HOME"
 
 includeTargets << new File ( "${grailsHome}/scripts/Init.groovy" )  
 includeTargets << new File ( "${grailsHome}/scripts/Compile.groovy" )  
-includeTargets << new File ( "${grailsHome}/scripts/PackagePlugins.groovy" )      
+includeTargets << new File ( "${grailsHome}/scripts/PackagePlugins.groovy" ) 
+
+scaffoldDir = "${basedir}/web-app/WEB-INF/templates/scaffolding"     
 
 task ('default': "Packages a Grails application. Note: To create WAR use 'grails war'") {
      depends( checkVersion)
@@ -55,7 +57,8 @@ task( packageApp : "Implementation of package task") {
 		Ant.mkdir(dir:"${basedir}/web-app/WEB-INF/grails-app/views")		
 	    Ant.copy(todir:"${basedir}/web-app/WEB-INF/grails-app/views") {
 			fileset(dir:"${basedir}/grails-app/views", includes:"**")
-		}							
+		} 
+		packageTemplates()   						
 	}	
 	Ant.native2ascii(src:"${basedir}/grails-app/i18n",
 					 dest:"${basedir}/web-app/WEB-INF/grails-app/i18n",
@@ -168,5 +171,20 @@ task( generateWebXml : "Generates the web.xml file") {
 			e.printStackTrace(System.out)
 		}
     }
-}  
+}      
+
+task(packageTemplates: "Packages templates into the app") {  
+	Ant.mkdir(dir:scaffoldDir)
+	if(new File("${basedir}/src/templates/scaffolding").exists()) {
+		Ant.copy(todir:scaffoldDir, overwrite:true) {
+			fileset(dir:"${basedir}/src/templates/scaffolding", includes:"**")
+		}			
+	}   
+	else {   
+		Ant.copy(todir:scaffoldDir, overwrite:true) {
+			fileset(dir:"${grailsHome}/src/grails/templates/scaffolding", includes:"**")
+		}			
+	}
+	
+}
 

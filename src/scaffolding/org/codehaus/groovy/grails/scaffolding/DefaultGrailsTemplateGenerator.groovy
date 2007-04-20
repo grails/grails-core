@@ -16,6 +16,7 @@
 package org.codehaus.groovy.grails.scaffolding;
 
 import org.apache.commons.logging.Log;
+import org.springframework.core.io.*
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
@@ -35,7 +36,12 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator  {
     String basedir = "."
     boolean overwrite = false
     def engine = new groovy.text.SimpleTemplateEngine()
-    def ant = new AntBuilder()
+    def ant = new AntBuilder()  
+	ResourceLoader resourceLoader
+	
+	void setResourceLoader(ResourceLoader rl) {
+		this.resourceLoader = rl
+	}
 
     // a closure that uses the type to render the appropriate editor
     def renderEditor = { property ->
@@ -333,15 +339,23 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator  {
     
     private getTemplateText(String template) {
         // first check for presence of template in application               
-        def templateFile = "${basedir}/src/templates/scaffolding/${template}"
-        if (!new File(templateFile).exists()) {
-            // template not found in application, use default template
-            def ant = new AntBuilder()
-            ant.property(environment:"env")   
-            def grailsHome = ant.antProject.properties."env.GRAILS_HOME" 
-            templateFile = "${grailsHome}/src/grails/templates/scaffolding/${template}"
-        }
-        return new File(templateFile).getText()
+		if(resourceLoader) {
+			return resourceLoader
+					.getResource("/WEB-INF/templates/scaffolding/${template}")
+					.inputStream
+					.text
+		}   
+		else {
+	        def templateFile = "${basedir}/src/templates/scaffolding/${template}"
+	        if (!new File(templateFile).exists()) {
+	            // template not found in application, use default template
+	            def ant = new AntBuilder()
+	            ant.property(environment:"env")   
+	            def grailsHome = ant.antProject.properties."env.GRAILS_HOME" 
+	            templateFile = "${grailsHome}/src/grails/templates/scaffolding/${template}"
+	        }
+	        return new File(templateFile).getText()			
+		}
     }
     
 }

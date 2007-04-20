@@ -14,27 +14,26 @@
  */
 package org.codehaus.groovy.grails.web.servlet.view;
 
+import grails.util.GrailsUtil;
+import groovy.lang.GroovyObject;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.commons.GrailsResourceUtils;
+import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
+import org.codehaus.groovy.grails.web.servlet.GrailsHttpServletRequest;
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.ResourceLoaderAware;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
+import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.servlet.View;
 import org.springframework.web.servlet.view.AbstractUrlBasedView;
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.ResourceLoader;
-import org.springframework.context.ResourceLoaderAware;
-import org.springframework.context.ApplicationContextAware;
-import org.springframework.context.ApplicationContext;
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
-import org.codehaus.groovy.grails.web.servlet.GrailsHttpServletRequest;
-import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
-import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.GrailsResourceUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 import java.util.Locale;
-
-import grails.util.GrailsUtil;
-import groovy.lang.GroovyObject;
 
 /**
  * A Grails view resolver which evaluates the existance of a view for different extensions choosing which
@@ -97,8 +96,14 @@ public class GrailsViewResolver extends InternalResourceViewResolver implements 
                                             .getGrailsApplication();
 
 
-        String gspView = resolveViewForController(controller, application, viewName, resourceLoader);
+        String gspView = localPrefix + viewName + GSP_SUFFIX;
+
+
         Resource res = resourceLoader.getResource(gspView);
+        if(!res.exists()) {
+            gspView = resolveViewForController(controller, application, viewName, resourceLoader);
+            res = resourceLoader.getResource(gspView);
+        }
         
         if(res.exists()) {
             if(LOG.isDebugEnabled()) {

@@ -14,6 +14,7 @@
  */
 package org.codehaus.groovy.grails.scaffolding;
 
+import grails.util.GrailsUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
@@ -24,6 +25,7 @@ import org.codehaus.groovy.grails.scaffolding.exceptions.ScaffoldingException;
 import org.codehaus.groovy.grails.web.pages.GroovyPage;
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.io.Resource;
@@ -56,7 +58,7 @@ import java.util.Map;
  *        Created: Feb 27, 2007
  *        Time: 7:45:46 AM
  */
-public class TemplateGeneratingResponseHandler implements ScaffoldResponseHandler, ApplicationContextAware {
+public class TemplateGeneratingResponseHandler implements ScaffoldResponseHandler, ApplicationContextAware, InitializingBean {
     private ViewResolver resolver;
     private GrailsTemplateGenerator templateGenerator;
     private GroovyPagesTemplateEngine templateEngine;
@@ -202,5 +204,11 @@ public class TemplateGeneratingResponseHandler implements ScaffoldResponseHandle
 
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
+    }
+
+    public void afterPropertiesSet() throws Exception {
+        if(!GrailsUtil.isDevelopmentEnv()) {
+            this.templateEngine.setResourceLoader(this.applicationContext);
+        }
     }
 }

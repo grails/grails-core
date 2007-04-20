@@ -33,6 +33,7 @@ import org.codehaus.groovy.grails.commons.spring.*
 import org.springframework.beans.factory.config.RuntimeBeanReference;
 import org.springframework.beans.factory.config.MethodInvokingFactoryBean;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
+import org.codehaus.groovy.grails.commons.GrailsResourceUtils as GRU
 import org.codehaus.groovy.grails.commons.GrailsMetaClassUtils as GMCU     
 import org.springframework.web.context.request.WebRequestInterceptor;
 import org.springframework.web.servlet.*
@@ -279,7 +280,7 @@ class ControllersGrailsPlugin {
 	 * are implemented by looking up the current request from the RequestContextHolder (RCH)
 	 */
 
-	def registerCommonObjects(metaClass) {
+	def registerCommonObjects(metaClass, application) {
 	   	def paramsObject = {->
 			RCH.currentRequestAttributes().params
 		}
@@ -319,7 +320,10 @@ class ControllersGrailsPlugin {
 		   // The GrailsApplication object
 		   metaClass.getGrailsApplication = {-> RCH.currentRequestAttributes().attributes.grailsApplication }
 
-		   metaClass.getPluginContextPath = {-> RCH.currentRequestAttributes().attributes.getPluginContextPath( request ) }
+		   metaClass.getPluginContextPath = {-> 
+				def resource = application.getResourceForClass(delegate.class) 
+				GRU.getStaticResourcePathForResource(resource, request.contextPath)
+		   }
 	}
 
 
@@ -329,7 +333,7 @@ class ControllersGrailsPlugin {
 		def registry = InvokerHelper.getInstance().getMetaRegistry()
 	   	application.tagLibClasses.each { taglib ->
 	   		def metaClass = taglib.metaClass
-	   		registerCommonObjects(metaClass)
+	   		registerCommonObjects(metaClass, application)
 
 	   		metaClass.throwTagError = { String message ->
 	   			throw new org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException(message)
@@ -349,7 +353,7 @@ class ControllersGrailsPlugin {
 		// add commons objects and dynamic methods like render and redirect to controllers
 		application.controllerClasses.each { controller ->
 		   def metaClass = controller.metaClass
-			registerCommonObjects(metaClass)
+			registerCommonObjects(metaClass, application)
 
 			metaClass.getActionUri = {-> "/$controllerName/$actionName".toString()	}
 			metaClass.getControllerUri = {-> "/$controllerName".toString()	}

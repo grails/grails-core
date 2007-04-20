@@ -180,7 +180,7 @@ public abstract class GroovyPage extends Script {
             Object tagLibProp;
             BeanWrapper bean = getTagLibraryBean(tagLib, webRequest);
 			if(bean.isWritableProperty(tagName)) {
-                tagLibProp = bean.getPropertyValue(tagName);
+                tagLibProp = tagLib.getProperty(tagName);
             } else {
                 throw new GrailsTagException("Tag ["+tagName+"] does not exist in tag library ["+tagLib.getClass().getName()+"]");
             }
@@ -301,7 +301,7 @@ public abstract class GroovyPage extends Script {
         // to the response writer on each body invokation
         Closure actualBody = createTagOutputCapturingClosure(tagLib,methodName, out, body);
 
-        tagLibProp = bean.getPropertyValue(methodName);
+        tagLibProp = tagLib.getProperty(methodName);
         if(tagLibProp instanceof Closure) {
             Closure tag = setupTagClosure(tagLibProp);
 

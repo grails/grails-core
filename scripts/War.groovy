@@ -27,7 +27,6 @@ grailsHome = Ant.antProject.properties."env.GRAILS_HOME"
                               
 
 includeTargets << new File ( "${grailsHome}/scripts/Clean.groovy" ) 
-println "Including script ${grailsHome}/scripts/Package.groovy"
 includeTargets << new File ( "${grailsHome}/scripts/Package.groovy" )
 
 task ('default': "Creates a WAR archive") {
@@ -47,6 +46,10 @@ task (war: "The implementation task") {
 		Ant.copy(todir:"${basedir}/staging/WEB-INF/grails-app", overwrite:true) {
 			fileset(dir:"${basedir}/grails-app", includes:"**")
 		}
+		              
+		scaffoldDir = "${basedir}/staging/WEB-INF/templates/scaffolding"
+		packageTemplates()
+		
 
 		Ant.copy(todir:"${basedir}/staging/WEB-INF/lib") {
 			fileset(dir:"${grailsHome}/dist") {
