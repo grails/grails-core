@@ -2,18 +2,16 @@ package org.codehaus.groovy.grails.web.servlet;
 
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyObject;
-
-import java.util.Map;
-
 import junit.framework.TestCase;
-
-import org.codehaus.groovy.grails.support.MockApplicationContext;
 import org.codehaus.groovy.grails.commons.*;
+import org.codehaus.groovy.grails.support.MockApplicationContext;
 import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods;
 import org.codehaus.groovy.grails.web.servlet.mvc.SimpleGrailsControllerHelper;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.mock.web.MockServletContext;
+
+import java.util.Map;
 
 public class GrailsApplicationAttributesTests extends TestCase {
 
@@ -23,8 +21,8 @@ public class GrailsApplicationAttributesTests extends TestCase {
 	public void testGetTemplateUri() {
 		 GrailsApplicationAttributes attrs = new DefaultGrailsApplicationAttributes(new MockServletContext());
 		 
-		 assertEquals("/WEB-INF/grails-app/views/_test.gsp",attrs.getTemplateUri("/test", new MockHttpServletRequest()));
-		 assertEquals("/WEB-INF/grails-app/views/shared/_test.gsp",attrs.getTemplateUri("/shared/test", new MockHttpServletRequest()));
+		 assertEquals("/_test.gsp",attrs.getTemplateUri("/test", new MockHttpServletRequest()));
+		 assertEquals("/shared/_test.gsp",attrs.getTemplateUri("/shared/test", new MockHttpServletRequest()));
 	}
 
 	/*

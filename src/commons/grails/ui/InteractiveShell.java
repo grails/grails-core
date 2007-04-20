@@ -16,9 +16,15 @@ package grails.ui;
 
 import grails.util.GrailsUtil;
 import groovy.lang.Binding;
+import groovy.lang.Closure;
 
 import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.support.PersistenceContextInterceptor;
 import org.springframework.context.ApplicationContext;
+
+import java.util.Map;
+import java.util.Iterator;
+
 /**
  * 
  * Extends regular Groovy interactive shell and bootstraps Grails environment before launch
@@ -37,7 +43,7 @@ import org.springframework.context.ApplicationContext;
 public class InteractiveShell {
 	
 	public static void main(String[] args) throws Exception {		
-		ApplicationContext ctx = GrailsUtil.bootstrapGrailsFromClassPath();
+		final ApplicationContext ctx = GrailsUtil.bootstrapGrailsFromClassPath();
 		GrailsApplication app = (GrailsApplication)ctx.getBean(GrailsApplication.APPLICATION_ID);
 
 		
@@ -45,6 +51,29 @@ public class InteractiveShell {
 		b.setVariable(GrailsApplication.APPLICATION_ID, app);
 		b.setVariable("ctx", ctx);
 		final groovy.ui.InteractiveShell shell = new groovy.ui.InteractiveShell(app.getClassLoader(),b, System.in,System.out,System.err);
-		shell.run(args);
+        shell.setBeforeExecution(new Closure(shell) {
+            public Object doCall() {
+                Map beans = ctx.getBeansOfType(PersistenceContextInterceptor.class);
+                for (Iterator i = beans.values().iterator(); i.hasNext();) {
+                    PersistenceContextInterceptor interceptor = (PersistenceContextInterceptor) i.next();
+                    interceptor.init();
+                }
+                return null;
+            }
+        });
+        shell.setAfterExecution(new Closure(shell) {
+            public Object doCall() {
+                Map beans = ctx.getBeansOfType(PersistenceContextInterceptor.class);
+                for (Iterator i = beans.values().iterator(); i.hasNext();) {
+                    PersistenceContextInterceptor interceptor = (PersistenceContextInterceptor) i.next();
+                    interceptor.flush();
+                    interceptor.destroy();
+                }
+                return null;
+            }
+
+        });
+
+        shell.run(args);
 	}
 }
