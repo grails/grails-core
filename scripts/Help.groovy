@@ -71,20 +71,18 @@ task ( 'default' : "Prints out the help for each script") {
         
 	def helpText = ""
       
-	println """
-Usage (optionals marked with *): 
-grails [environment]* [target] [arguments]*
-
-Examples: 
-grails dev run-app	
-grails create-app books
-
-Available Targets:"""
-		  
-	def gcl = new GroovyClassLoader()    		
-
-	use(HelpEvaluatingCategory.class) {    
-		scripts.each { file ->
+	
+	if(args) {  
+		def fileName = GCU.getNameFromScript(args) + ".groovy"
+		def file = scripts.find { it.name == fileName }
+		
+		
+		println """
+Usage (optionals marked with *): 		
+grails [environment]*		
+		"""         
+		def gcl = new GroovyClassLoader()    				
+		use(HelpEvaluatingCategory.class) {    
 			if (shouldGenerateHelp(file)) {
 				try {
 					def script = gcl.parseClass(file).newInstance()			
@@ -103,8 +101,49 @@ Available Targets:"""
 			} else {
 				helpText = getHelpFile(file).text
 			}
-			println helpText
-		}        
+			println helpText  
+		}		
+	}	
+	else {
+			println """
+		Usage (optionals marked with *): 
+		grails [environment]* [target] [arguments]*
+
+		Examples: 
+		grails dev run-app	
+		grails create-app books
+
+		Available Targets (type grails help 'target-name' for more info):"""
+		
+	    scripts.each { file ->
+			def scriptName = GCU.getScriptName(file.name)  
+			println "grails ${scriptName}"   
+		}		
+	}  
+}                                               
+
+task( showHelp: "Show help for a particular command") {
+	def gcl = new GroovyClassLoader()    				
+	use(HelpEvaluatingCategory.class) {    
+		if (shouldGenerateHelp(file)) {
+			try {
+				def script = gcl.parseClass(file).newInstance()			
+				script.binding = binding
+				script.run()
+
+				def scriptName = GCU.getScriptName(file.name)
+
+				helpText = "grails ${scriptName} -- ${getDefaultTask()}"					
+				getHelpFile(file).write(helpText) 		  		
+			}                                                      
+			catch(Throwable t) {
+				println "Error creating help for ${file}: ${t.message}"
+				t.printStackTrace(System.out)
+			}
+		} else {
+			helpText = getHelpFile(file).text
+		}
+		println helpText  
 	}	   		
 	
-} 
+}
