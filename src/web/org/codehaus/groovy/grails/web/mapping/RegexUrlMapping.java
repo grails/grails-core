@@ -15,7 +15,8 @@
 package org.codehaus.groovy.grails.web.mapping;
 
 import groovy.lang.Closure;
-
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsControllerClass;
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 import org.codehaus.groovy.grails.web.mapping.exceptions.UrlMappingException;
@@ -24,6 +25,7 @@ import org.springframework.validation.Errors;
 import org.springframework.validation.MapBindingResult;
 import org.springframework.web.context.request.RequestContextHolder;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -63,6 +65,7 @@ public class RegexUrlMapping implements UrlMapping {
     private static final String WILDCARD = "*";
     private static final String CAPTURED_WILDCARD = "(*)";
     private static final String SLASH = "/";
+    private static final Log LOG = LogFactory.getLog(RegexUrlMapping.class);
 
 
     public ConstrainedProperty[] getConstraints() {
@@ -166,7 +169,8 @@ public class RegexUrlMapping implements UrlMapping {
      * @see org.codehaus.groovy.grails.web.mapping.UrlMapping
      */
     public String createURL(Map parameterValues) {
-    StringBuffer uri = new StringBuffer();
+		if(parameterValues==null)parameterValues=Collections.EMPTY_MAP;
+    	StringBuffer uri = new StringBuffer();
 
         String[] tokens = urlData.getTokens();
         int paramIndex = 0;
@@ -186,6 +190,9 @@ public class RegexUrlMapping implements UrlMapping {
                 uri.append(SLASH).append(token);
             }
 
+        }
+        if(LOG.isDebugEnabled()) {
+            LOG.debug("Created reverse URL mapping ["+uri.toString()+"] for parameters ["+parameterValues+"]");
         }
         return uri.toString();
     }

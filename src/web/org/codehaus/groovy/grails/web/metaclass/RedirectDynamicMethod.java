@@ -90,6 +90,7 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
 
         Object actionRef = argMap.get(ARGUMENT_ACTION);
         String controllerName = argMap.containsKey(ARGUMENT_CONTROLLER) ? argMap.get(ARGUMENT_CONTROLLER).toString() : null;
+
         Object id = argMap.get(ARGUMENT_ID);
         Object uri = argMap.get(ARGUMENT_URI);
         String url = argMap.containsKey(ARGUMENT_URL) ? argMap.get(ARGUMENT_URL).toString() : null;
@@ -122,17 +123,32 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
         }
         else {            
             String actionName = establishActionName(actionRef, target, webRequest);
+            controllerName = controllerName != null ? controllerName : webRequest.getControllerName();
+
+            if(LOG.isDebugEnabled()) {
+                LOG.debug("Dynamic method [redirect] looking up URL mapping for controller ["+controllerName+"] and action ["+actionName+"] and params ["+params+"] with ["+urlMappingsHolder+"]");
+            }
 
             UrlMapping urlMapping = null;
             if(urlMappingsHolder!=null)
                 urlMapping = urlMappingsHolder.getReverseMapping(controllerName, actionName, params);
-            
+
+            if(LOG.isDebugEnabled() && urlMapping == null) {
+                LOG.debug("Dynamic method [redirect] no URL mapping found for params ["+params +"]");
+            }
+
+
             if(urlMapping != null) {
 
                try {
                    params.put(ARGUMENT_CONTROLLER, controllerName);
-                   params.put(ARGUMENT_ACTION, actionName);
+                   params.put(ARGUMENT_ACTION, actionName != null ? actionName : webRequest.getActionName());
                    String mappedUrl = urlMapping.createURL(params);
+
+                   if(LOG.isDebugEnabled()) {
+                       LOG.debug("Dynamic method [redirect] mapped to URL ["+mappedUrl +"]");
+                   }
+
                    actualUriBuf.append(mappedUrl);
                }
                finally {

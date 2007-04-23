@@ -31,7 +31,13 @@ class UrlMappingsGrailsPlugin {
 	def version = GrailsUtil.getGrailsVersion()
 	def dependsOn = [core:version]
 
-
+                                
+	def doWithSpring = {
+		grailsUrlMappingsHolder(UrlMappingsHolderFactoryBean) {
+            grailsApplication = ref("grailsApplication", true)
+        }		
+	}   
+	
     def doWithApplicationContext = { ctx ->
         def beans = beans {
             grailsUrlMappingsHolder(UrlMappingsHolderFactoryBean) {

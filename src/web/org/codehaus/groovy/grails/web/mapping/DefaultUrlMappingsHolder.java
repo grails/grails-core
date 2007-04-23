@@ -36,6 +36,13 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
     private List urlMappings = new ArrayList();
     private UrlMapping[] mappings;
     private Map mappingsLookup = new HashMap();
+    private UrlMappingKey DEFAULT_CONTROLLER_KEY = new UrlMappingKey(null, null, new HashSet() {{
+           add(UrlMapping.CONTROLLER);
+           add(UrlMapping.ACTION);
+    }});
+    private UrlMappingKey DEFAULT_ACTION_KEY = new UrlMappingKey(null, null, new HashSet() {{
+           add(UrlMapping.ACTION);
+    }});
 
 
     public DefaultUrlMappingsHolder(List mappings) {
@@ -92,18 +99,9 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
         UrlMappingKey key = new UrlMappingKey(controller, action, params.keySet());
         UrlMapping mapping = (UrlMapping)mappingsLookup.get(key);
         if(mapping == null) {
-            Map lookup = new HashMap() {{
-                put(UrlMapping.CONTROLLER,controller);
-                put(UrlMapping.ACTION,action);
-            }};
-
-            key = new UrlMappingKey(null,null,lookup.keySet());
-            mapping = (UrlMapping)mappingsLookup.get(key);
-
+            mapping = (UrlMapping)mappingsLookup.get(DEFAULT_CONTROLLER_KEY);
             if(mapping == null) {
-                lookup.remove(UrlMapping.ACTION);
-                key = new UrlMappingKey(null,null,lookup.keySet());
-                return (UrlMapping)mappingsLookup.get(key);
+                return (UrlMapping)mappingsLookup.get(DEFAULT_ACTION_KEY);
             }
         }
         return mapping;
