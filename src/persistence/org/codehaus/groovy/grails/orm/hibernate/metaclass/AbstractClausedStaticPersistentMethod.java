@@ -22,6 +22,9 @@ import org.codehaus.groovy.grails.commons.*;
 import org.hibernate.SessionFactory;
 import org.hibernate.criterion.Criterion;
 import org.hibernate.criterion.Expression;
+import org.springframework.beans.SimpleTypeConverter;
+import org.springframework.beans.TypeConverter;
+import org.springframework.beans.TypeMismatchException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -65,6 +68,8 @@ public abstract class AbstractClausedStaticPersistentMethod extends
 		protected String type;
 		protected Class targetClass;
 		private GrailsApplication application;
+		private TypeConverter converter = new SimpleTypeConverter();
+
 
 		GrailsMethodExpression(GrailsApplication application,Class targetClass,String propertyName, String type,int argumentsRequired,boolean negation) {
 			this.application = application;
@@ -109,8 +114,23 @@ public abstract class AbstractClausedStaticPersistentMethod extends
 				if(prop.getType() == String.class && (args[i] instanceof GString)) {
 					args[i] = args[i].toString();
 				}
-				else if(!prop.getType().isAssignableFrom( args[i].getClass() ) && !(GrailsClassUtils.isMatchBetweenPrimativeAndWrapperTypes(prop.getType(), args[i].getClass())))
-					throw new IllegalArgumentException("Argument " + args[0] + " does not match property '"+propertyName+"' of type " + prop.getType());
+				else if(!prop.getType().isAssignableFrom( args[i].getClass() ) && !(GrailsClassUtils.isMatchBetweenPrimativeAndWrapperTypes(prop.getType(), args[i].getClass()))) {
+					try {
+						args[i] = converter.convertIfNecessary( args[i], prop.getType());
+					} catch ( TypeMismatchException tme ) {
+						// if we cannot perform direct conversion and argument is subclass of Number
+						// we can try to convert it through it's String representation
+						if(Number.class.isAssignableFrom(args[i].getClass())) {
+							try {
+								args[i] = converter.convertIfNecessary( args[i].toString(), prop.getType());
+							} catch( TypeMismatchException tme1 ) {
+								throw new IllegalArgumentException("Cannot convert value " + args[i] + " of property '"+propertyName+"' to required type " + prop.getType(), tme1);
+							}
+						} else {
+							throw new IllegalArgumentException("Cannot convert value " + args[i] + " of property '"+propertyName+"' to required type " + prop.getType());
+						}
+					}
+				}
 			}
 
 			this.arguments = args;

@@ -406,6 +406,19 @@ public class PersistentMethodTests extends AbstractDependencyInjectionSpringCont
         returnList = (List)obj.getMetaClass().invokeStaticMethod(obj, "findAllWhere", new Object[] { queryMap });
         assertEquals(2, returnList.size());
 
+        // now lets test several automatic type conversions
+        returnList = (List)obj.getMetaClass().invokeStaticMethod(obj, "findAllById", new Object[] { "1" });
+        assertEquals(1, returnList.size());
+
+        returnList = (List)obj.getMetaClass().invokeStaticMethod(obj, "findAllById", new Object[] { new Integer("1") });
+        assertEquals(1, returnList.size());
+
+        // and case when automatic conversion cannot be applied
+         try {
+            returnList = (List)obj.getMetaClass().invokeStaticMethod(obj, "findAllById", new Object[] { "1.1" });
+        } catch(MissingMethodException iae) {
+        	// great!
+         }
         // now lets test out some junk and make sure we get errors!
         try {
             obj.getMetaClass().invokeStaticMethod(obj, "findAllByLastNameLike", new Object[] {Boolean.FALSE});
