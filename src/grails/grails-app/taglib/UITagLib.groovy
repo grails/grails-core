@@ -152,7 +152,7 @@ class UITagLib {
 	 * <g:richTextEditor name="editor" height="400" />
 	 */
 	def richTextEditor = { attrs ->
-		withTag(name:'script',attributes:[type:'text/javascript']) {
+		out << withTag(name:'script',attributes:[type:'text/javascript']) {
 			if(attrs.onComplete) {
 				out.println "function FCKeditor_OnComplete( editorInstance ) {"
 					out.println "${attrs.onComplete}(editorInstance);"					
@@ -162,10 +162,10 @@ class UITagLib {
 			var oFCKeditor = new FCKeditor( '${attrs.name}' ) ;
 			oFCKeditor.BasePath	 = \""""
 			if(attrs.basepath) {
-				createLinkTo(dir:attrs.basepath)
+				out << createLinkTo(dir:attrs.basepath)
 			}
 			else {
-				createLinkTo(dir:"fckeditor/")
+			    out << createLinkTo(dir:"fckeditor/")
 			}
 			out.println '";'
 			if(attrs.toolbar) {
@@ -203,7 +203,7 @@ class UITagLib {
 
 			if(attrs.value) {
 				out << "oFCKeditor.Value	= \""
-				escapeJavascript(Collections.EMPTY_MAP,attrs.value)
+			    out << escapeJavascript(Collections.EMPTY_MAP,attrs.value)
 				out.println "\" ;"
 			}
 			
