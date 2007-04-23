@@ -95,7 +95,7 @@ class JavascriptTagLib  {
 		}
 		else {
 			out.println '<script type="text/javascript">'
-				body()
+				out << body()
 			out.println '</script>'
 		}
 	}
@@ -137,15 +137,15 @@ class JavascriptTagLib  {
     /**
      * A link to a remote uri that used the prototype library to invoke the link via ajax
      */
-    def remoteLink = { attrs, body ->
+    def remoteLink = { attrs, body ->  
        out << "<a href=\""    
 
        def cloned = deepClone(attrs)
-	   createLink(cloned)               
+	   out << createLink(cloned)               
 
 	   out << "\" onclick=\""
         // create remote function
-        remoteFunction(attrs)   
+        out << remoteFunction(attrs)   
 		attrs.remove('url')
         out << "return false;\" "
         // process remaining attributes
@@ -154,7 +154,7 @@ class JavascriptTagLib  {
         }
         out << ">"
         // output the body
-        body()
+        out << body()
 
         // close tag
         out << "</a>"
@@ -208,16 +208,16 @@ class JavascriptTagLib  {
 		// prepare form settings
 		prepareAjaxForm(p,attrs)
         
-        def params = [  onsubmit:TagLibUtil.outToString(remoteFunction,attrs) + 'return false',
+        def params = [  onsubmit:remoteFunction(attrs) + 'return false',
 					    method: (attrs.method? attrs.method : 'POST' ),
-					    action: (attrs.action? attrs.action : TagLibUtil.outToString(createLink,url))		                 
+					    action: (attrs.action? attrs.action : createLink(url))		                 
 		             ]
 		attrs.remove('url')		             
 	    params.putAll(attrs)
 		if(params.name && !params.id)
 			params.id = params.name
-	    withTag(name:'form',attrs:params) {
-			body()   
+	    out << withTag(name:'form',attrs:params) {
+			out << body()   
 	    }		
     }
 
@@ -230,7 +230,7 @@ class JavascriptTagLib  {
 		// prepare form settings 
 		attrs.forSubmitTag = ".form"
 		prepareAjaxForm(p,attrs)    
-        def params = [  onclick:TagLibUtil.outToString(remoteFunction,attrs) + 'return false',
+        def params = [  onclick:remoteFunction(attrs) + 'return false',
 					    type: 'button',
 					    name: attrs.remove('name'),
 					    value: attrs.remove('value'), 
@@ -238,8 +238,8 @@ class JavascriptTagLib  {
 					    'class':attrs.remove('class')
 		             ]
 		             
-		withTag(name:'input', attrs:params) {
-			body()	
+		out << withTag(name:'input', attrs:params) {
+			out << body()	
 		}
     }
 	
@@ -275,7 +275,7 @@ class JavascriptTagLib  {
 			def sw = new StringWriter()
 			out = new PrintWriter(out)
 			// invoke body
-			body()
+			out << body()
 			// restore out
 			out = tmp
 			js = sw.toString()
@@ -357,10 +357,10 @@ class PrototypeProvider implements JavascriptProvider {
 		
 		def pms = attrs.remove('params')   
 		if(attrs.url) {
-			taglib.createLink(attrs.url)			
+			out << taglib.createLink(attrs.url)			
 		}                              
 		else {
-			taglib.createLink(attrs)			
+			out << taglib.createLink(attrs)			
 		}
 
 		
@@ -441,10 +441,10 @@ class YahooProvider implements JavascriptProvider {
 		out << "YAHOO.util.Connect.asyncRequest('${method}','"
 				
 		if(attrs.url) {
-			taglib.createLink(attrs.url)
+			out << taglib.createLink(attrs.url)
 		}
 		else {
-			taglib.createLink(attrs)
+			out << taglib.createLink(attrs)
 		}		
 		attrs.remove('url')
 		out << "',"
@@ -504,7 +504,7 @@ class DojoProvider implements JavascriptProvider {
 		}		
 		 out << 'dojo.io.bind({url:\''
 
-		 taglib.createLink(attrs) 
+		 out << taglib.createLink(attrs) 
 		attrs.remove('params')
 		 out << '\',load:function(type,data,evt) {'
 	    if(attrs.onLoaded) {

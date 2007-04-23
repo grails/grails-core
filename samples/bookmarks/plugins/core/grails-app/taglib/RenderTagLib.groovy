@@ -25,6 +25,7 @@ import org.springframework.web.servlet.support.RequestContextUtils as RCU;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU;
 
 class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants {
+	def out // to facilitate testing
 
     protected getPage() {
     	return request[PAGE]
@@ -91,7 +92,7 @@ class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants 
 				}
 			}
 			if(invokeBody) {
-				body();	
+				out << body()
 			}
 		}
 	}
@@ -134,54 +135,183 @@ class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants 
         if(attrs.total == null)
             throwTagError("Tag [paginate] is missing required attribute [total]")
 		
-		def mkp = new groovy.xml.MarkupBuilder(out)
-		def total = attrs.total.toInteger()
-		def max = params.max?.toInteger()
-		def offset = params.offset?.toInteger() 
-		def action = (attrs.action? attrs.action : 'list')
-		def breadcrumb = true
-		if(attrs.breadcrumb) breadcrumb = Boolean.valueOf(attrs.breadcrumb)
-			
-		if(!max) max = (attrs.max ? attrs.max.toInteger() : 10)
-		if(!offset) offset = (attrs.offset ? attrs.offset.toInteger() : 0)
+		def messageSource = grailsAttributes.getApplicationContext().getBean("messageSource")
+		def locale = RCU.getLocale(request) 
 		
-		def linkParams = [offset:offset-max,max:max]
-		def linkTagAttrs = ['class':'prevLink',action:action]
+		def total = attrs.total.toInteger()
+		def action = (attrs.action? attrs.action : 'list')
+		def offset = params.offset?.toInteger()
+		def max = params.max?.toInteger()
+		def maxsteps = (attrs.maxsteps ? attrs.maxsteps.toInteger() : 10)
+
+        if(attrs.breadcrumb) {
+			log.warn("Tag [paginate] includes the [breadcrumb] attribute. This attribute is deprecated and will be removed in the future. Please update your code to use the [maxsteps] attribute instead.")
+		}
+
+		if(!offset) offset = (attrs.offset ? attrs.offset.toInteger() : 0)			
+		if(!max) max = (attrs.max ? attrs.max.toInteger() : 10)
+		
+		def linkParams = [offset:offset - max, max:max]
+		if(params.sort) linkParams.sort = params.sort
+		if(params.order) linkParams.order = params.order
+		if(attrs.params) linkParams.putAll(attrs.params)
+		
+		def linkTagAttrs = [action:action]
 		if(attrs.controller) {
 			linkTagAttrs.controller = attrs.controller	
 		}
 		if(attrs.id) {
 			linkTagAttrs.id = attrs.id	
 		}
-		if(attrs.params)linkParams.putAll(attrs.params)
 		linkTagAttrs.params = linkParams
-	
-		def combined = max + offset
-		if(offset > 0) {			
-			link(linkTagAttrs.clone(),{out<< (attrs.prev? attrs.prev : 'Previous' ) })
+		
+		// determine paging variables
+		def steps = maxsteps > 0
+		int currentstep = (offset / max) + 1
+		int firststep = 1
+		int laststep = Math.round(Math.ceil(total / max))
+			
+		// display previous link when not on firststep
+		if(currentstep > firststep) {
+			linkTagAttrs.class = 'prevLink'
+			out << link(linkTagAttrs.clone()) {
+				(attrs.prev ? attrs.prev : messageSource.getMessage('default.paginate.prev', null, 'Previous', locale))
+			 }
 		}
 		
-		if(total > max) {
-			linkTagAttrs.'class' = 'step'
-			if(breadcrumb) {
-				def j = 0
-				0.step(total,max) { i ->
-					if(offset == i) {
-						mkp.a('class':'step',"${++j}")	
-					}
-					else {
-						linkParams.offset=i
-						link(linkTagAttrs.clone(),{out<<++j})	
-					}
-				}			
+		// display steps when steps are enabled and laststep is not firststep
+		if(steps && laststep > firststep) {
+			linkTagAttrs.class = 'step'
+
+			// determine begin and endstep paging variables
+			int beginstep = currentstep - Math.round(maxsteps / 2) + (maxsteps % 2)
+			int endstep = currentstep + Math.round(maxsteps / 2) - 1
+			
+			if(beginstep < firststep) {
+				beginstep = firststep
+				endstep = maxsteps
+			}
+			if(endstep > laststep) {
+				beginstep = laststep - maxsteps + 1
+				if(beginstep < firststep) {
+					beginstep = firststep
+				}
+				endstep = laststep
+			}
+
+			// display firststep link when beginstep is not firststep
+			if(beginstep > firststep) {
+				linkParams.offset = 0
+				out << link(linkTagAttrs.clone()) {firststep.toString()}
+				out << '<span class="step">..</span>'
+			}
+
+			// display paginate steps
+			(beginstep..endstep).each { i ->
+				if(currentstep == i) {
+					out << "<span class=\"currentStep\">${i}</span>"
+				}
+				else {
+					linkParams.offset = (i - 1) * max
+					out << link(linkTagAttrs.clone()) {i.toString()}
+				}
+			}	
+			
+			// display laststep link when endstep is not laststep
+			if(endstep < laststep) {
+				out << '<span class="step">..</span>'
+				linkParams.offset = (laststep -1) * max
+				out << link(linkTagAttrs.clone()) { laststep.toString() }
+			}		
+		}
+		
+		// display next link when not on laststep
+		if(currentstep < laststep) {	
+			linkTagAttrs.class = 'nextLink'			
+			linkParams.offset = offset + max
+			out << link(linkTagAttrs.clone()) {
+				(attrs.next ? attrs.next : messageSource.getMessage('default.paginate.next', null, 'Next', locale))
 			}			
 		}
-		linkParams.offset = offset+max
-		if(combined < total) {	
-			linkTagAttrs.'class'='nextLink'			
-			link(linkTagAttrs,{out<< (attrs.'next'? attrs.'next' : 'Next' )})			
+
+	}
+
+	/**
+	 * Renders a sortable column to support sorting in list views
+	 *
+	 * Attributes:
+	 *
+	 * property - name of the property relating to the field
+	 * defaultOrder (optional) - default order for the property; choose between asc (default if not provided) and desc
+	 * title (optional*) - title caption for the column
+	 * titleKey (optional*) - title key to use for the column, resolved against the message source
+	 * params (optional) - a map containing request parameters
+	 *
+	 * Attribute title or titleKey is required. When both attributes are specified then titleKey takes precedence,
+	 * resulting in the title caption to be resolved against the message source. In case when the message could
+	 * not be resolved, the title will be used as title caption. 
+	 *
+	 * Examples:
+	 *
+	 * <g:sortableColumn property="title" title="Title" />
+	 * <g:sortableColumn property="title" title="Title" style="width: 200px" />
+	 * <g:sortableColumn property="title" titleKey="book.title" />	 
+	 * <g:sortableColumn property="releaseDate" defaultOrder="desc" title="Release Date" />
+	 * <g:sortableColumn property="releaseDate" defaultOrder="desc" title="Release Date" titleKey="book.releaseDate" />
+	 */
+	def sortableColumn = { attrs ->
+
+		if(!attrs.property)
+			throwTagError("Tag [sortableColumn] is missing required attribute [property]") 
+		
+		if(!attrs.title && !attrs.titleKey)
+			throwTagError("Tag [sortableColumn] is missing required attribute [title] or [titleKey]")
+
+		def property = attrs.remove("property")
+		def action = attrs.action ? attrs.remove("action") : "list"
+		
+		def defaultOrder = attrs.remove("defaultOrder")
+		if(defaultOrder != "desc") defaultOrder = "asc"
+
+		// current sorting property and order
+		def sort = params.sort
+		def order = params.order
+
+		// add sorting property and params to link params
+		def linkParams = [sort:property]
+		if(attrs.params) linkParams.putAll(attrs.params)
+		
+		// determine and add sorting order for this column to link params
+		attrs.class = "sortable"
+		if(property == sort) {
+			attrs.class = attrs.class + " sorted " + order
+			if(order == "asc") {
+				linkParams.order = "desc"
+			}
+			else {
+				linkParams.order = "asc"
+			}
+		}
+		else {
+			linkParams.order = defaultOrder
 		}
 
+		// determine column title
+		def title = attrs.remove("title")
+		def titleKey = attrs.remove("titleKey")
+		if(titleKey) {
+			if(!title) title = titleKey
+			def messageSource = grailsAttributes.getApplicationContext().getBean("messageSource")
+			def locale = RCU.getLocale(request)
+			title = messageSource.getMessage(titleKey, null, title, locale)
+		}
+
+		out << "<th "
+		// process remaining attributes
+		attrs.each { k, v ->
+			out << "${k}=\"${v.encodeAsHTML()}\" "
+		}
+		out << ">${link(action:action, params:linkParams) { title }}</th>"
 	}
 
     /**
@@ -199,14 +329,7 @@ class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants 
         def uri = grailsAttributes.getTemplateUri(attrs.template,request)
         def var = attrs['var']
 
-        def url = servletContext.getResource(uri)
-        if(!url)
-            throwTagError("No template found for name [${attrs.template}] in tag [render]")
-
-        def t = engine.createTemplate(  uri,
-                                        servletContext,
-                                        request,
-                                        response)
+        def t = engine.createTemplate( uri )
 
         if(attrs.model instanceof Map) {
             t.make( attrs.model ).writeTo(out)
@@ -246,14 +369,7 @@ class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants 
 	        def engine = grailsAttributes.getPagesTemplateEngine()
 	        def uri = grailsAttributes.getTemplateUri(attrs.template,request)
 
-	        def url = servletContext.getResource(uri)
-	        if(!url)
-	            throwTagError("No template found for name [${attrs.template}] in tag [include]")
-
-	        def t = engine.createTemplate(  uri,
-	                                        servletContext,
-	                                        request,
-	                                        response)
+	        def t = engine.createTemplate(  uri )
 			
 			t.make().writeTo(out)
 		}

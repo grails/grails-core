@@ -25,7 +25,10 @@ import org.springframework.context.NoSuchMessageException;
 import org.springframework.web.servlet.support.RequestContextUtils as RCU;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU;
 
-class ApplicationTagLib {
+class ApplicationTagLib { 
+	
+	def grailsUrlMappingsHolder
+	
     /**
      * Creates a link to a resource, generally used as a method rather than a tag.
      *
@@ -50,7 +53,7 @@ class ApplicationTagLib {
     def link = { attrs, body ->
         out << "<a href=\""
         // create the link
-        createLink(attrs)
+        out << createLink(attrs)
 
         out << '\" '
         // process remaining attributes
@@ -59,7 +62,7 @@ class ApplicationTagLib {
         }
         out << ">"
         // output the body
-        body()
+        out << body()
 
         // close tag
         out << "</a>"
@@ -79,29 +82,42 @@ class ApplicationTagLib {
         if(attrs['url']) {
              attrs = attrs.remove('url')
         }
-        // if the current attribute null set the controller uri to the current controller
-        if(attrs["controller"]) {
-            out << '/' << attrs.remove("controller")
-        }
-        else {
-           out << grailsAttributes.getControllerUri(request)
-        }
-        if(attrs["action"]) {
-            out << '/' << attrs.remove("action")
-        }
-        if(attrs["id"]) {
-            out << '/' << attrs.remove("id")
-        }
-        if(attrs['params']) {
-            def pms = attrs.remove('params')
-            out << '?'
-            def i = 0
-            pms.each { k,v ->
-                out << "${k.encodeAsURL()}=${v?.encodeAsURL()}"
-                if(++i < pms.size())
-                   out << '&'
-            }
-        }
+                                                     
+		def controller = attrs.remove("controller")
+		def action = attrs.remove("action")
+		def params = attrs.remove("params")
+		def mapping = grailsUrlMappingsHolder?.getReverseMapping(controller, 
+																 action, 
+																 params)
+        def url = mapping?.createURL(params)
+		if(url) {
+			out << url
+		}             
+		else {
+	        // if the current attribute null set the controller uri to the current controller
+	        if(controller) {
+	            out << '/' << controller
+	        }
+	        else {
+	           out << grailsAttributes.getControllerUri(request)
+	        }
+	        if(action) {
+	            out << '/' << action
+	        }
+	        if(attrs["id"]) {
+	            out << '/' << attrs.remove("id")
+	        }
+	        if(params) {
+	            out << '?'
+	            def i = 0
+	            params.each { k,v ->
+	                out << "${k.encodeAsURL()}=${v?.encodeAsURL()}"
+	                if(++i < params.size())
+	                   out << '&'
+	            }
+	        }			
+		}
+															
     }
 
 	/**
@@ -127,8 +143,8 @@ class ApplicationTagLib {
 				} 				
 			}
 		}
-		out << '>'
-		body()
+		out << '>'  
+		out << body()
 		out << "</${attrs.name}>"			
 	}	
 }

@@ -16,6 +16,7 @@ import org.springframework.validation.Errors;
 import org.springframework.context.NoSuchMessageException;
 import org.springframework.web.servlet.support.RequestContextUtils as RCU;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU;
+import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
 
  /**
  *  A  tag lib that provides tags for working with form controls
@@ -33,7 +34,10 @@ class FormTagLib {
 	def textField = { attrs ->
 		attrs.type = "text"  
 		attrs.tagName = "textField" 
-		field(attrs)
+		def result = field(attrs)
+		if(result) {     
+			out << result
+		}
 	}
 	/**
 	 * Creates a hidden field
@@ -41,7 +45,7 @@ class FormTagLib {
 	def hiddenField = { attrs ->
 		attrs.type = "hidden"
 		attrs.tagName = "hiddenField"
-		field(attrs)
+		out << field(attrs)
 	}
 	/**
 	 * Creates a submit button
@@ -49,7 +53,7 @@ class FormTagLib {
 	def submitButton = { attrs ->
 		attrs.type = "submit"
 		attrs.tagName = "submitButton"
-		field(attrs)
+		out << field(attrs)
 	}
 	/**
 	 * A general tag for creating fields
@@ -121,7 +125,7 @@ class FormTagLib {
     def form = { attrs, body ->
         out << "<form action=\""
         // create the link
-        createLink(attrs)
+        out << createLink(attrs)
 
         out << '\" '
         // default to post
@@ -132,27 +136,37 @@ class FormTagLib {
         outputAttributes(attrs)
 
         out << ">"
-        // output the body
-        body()
+        // output the body       
+		println "BODY TAG = ${body.getClass()}"
+        def bodyContent = body()
+		println "BODY CONTENT = ${bodyContent.getClass()}"
+		out << bodyContent
 
         // close tag
         out << "</form>"
     }
     /**
      * Creates a submit button that submits to an action in the controller specified by the form action
-     * The value of the action attribute is translated into the action name, for example "Edit" becomes
-     * "edit" or "List People" becomes "listPeople"
+     * The name of the action attribute is translated into the action name, for example "Edit" becomes
+     * "_action_edit" or "List People" becomes "_action_listPeople"
+     * If the action attribute is not specified, the value attribute will be used as part of the action name
      *
      *  <g:actionSubmit value="Edit" />
+     *  <g:actionSubmit action="Edit" value="Some label for editing" />
      *
      */
     def actionSubmit = { attrs ->
-        out << '<input type="submit" name="_action" '
-        def value = attrs.remove('value')
-        if(value) {
-             out << "value=\"${value}\" "
+    	if(!attrs.value) {
+            throwTagError("Tag [$tagName] is missing required attribute [value]")
         }
-        // process remaining attributes
+
+		// add action and value
+		def value = attrs.remove('value')
+		def action = attrs.action ? attrs.remove('action') : value
+    	
+    	out << "<input type=\"submit\" name=\"_action_${action}\" value=\"${value}\" "
+    	
+    	// process remaining attributes
         outputAttributes(attrs)
 
         // close tag
@@ -161,22 +175,30 @@ class FormTagLib {
     }
     /**
      * Creates a an image submit button that submits to an action in the controller specified by the form action
-     * The value of the action attribute is translated into the action name, for example "Edit" becomes
-     * "edit" or "List People" becomes "listPeople"
+     * The name of the action attribute is translated into the action name, for example "Edit" becomes
+     * "_action_edit" or "List People" becomes "_action_listPeople"
+     * If the action attribute is not specified, the value attribute will be used as part of the action name
      *
      *  <g:actionSubmitImage src="/images/submitButton.gif" action="Edit" />
      *
      */
     def actionSubmitImage = { attrs ->
-        out << '<input type="image" name="_action" '
-        def value = attrs.remove('value')
-        if(value) {
-             out << "value=\"${value}\" "
+        if(!attrs.value) {
+            throwTagError("Tag [$tagName] is missing required attribute [value]")
         }
+        
+        // add action and value
+        def value = attrs.remove('value')
+		def action = attrs.action ? attrs.remove('action') : value
+    
+        out << "<input type=\"image\" name=\"_action_${action}\" value=\"${value}\" "
+
+		// add image src        
         def src = attrs.remove('src')
         if(src) {
              out << "src=\"${src}\" "
         }
+
         // process remaining attributes
         outputAttributes(attrs)
 
@@ -201,6 +223,8 @@ class FormTagLib {
 
         def value = (attrs['value'] ? attrs['value'] : xdefault)
         def name = attrs['name']
+        def id = attrs['id'] ? attrs['id'] : name
+
 		def noSelection = attrs['noSelection']
 		if (noSelection != null)
 		{
@@ -253,7 +277,7 @@ class FormTagLib {
 
         // create day select
         if (precision >= PRECISION_RANKINGS["day"]) {
-            out.println "<select name=\"${name}_day\">"
+            out.println "<select name=\"${name}_day\" id=\"${id}_day\">"
 
             if (noSelection) {
 	    		renderNoSelectionOption( noSelection.key, noSelection.value, '')
@@ -272,7 +296,7 @@ class FormTagLib {
 
         // create month select
         if (precision >= PRECISION_RANKINGS["month"]) {
-            out.println "<select name=\"${name}_month\">"
+            out.println "<select name=\"${name}_month\" id=\"${id}_month\">"
 
             if (noSelection) {
 	    		renderNoSelectionOption( noSelection.key, noSelection.value, '')
@@ -294,7 +318,7 @@ class FormTagLib {
 
         // create year select
         if (precision >= PRECISION_RANKINGS["year"]) {
-            out.println "<select name=\"${name}_year\">"
+            out.println "<select name=\"${name}_year\" id=\"${id}_year\">"
 
             if (noSelection) {
     			renderNoSelectionOption( noSelection.key, noSelection.value, '')
@@ -313,7 +337,7 @@ class FormTagLib {
 
         // do hour select
         if (precision >= PRECISION_RANKINGS["hour"]) {
-            out.println "<select name=\"${name}_hour\">"
+            out.println "<select name=\"${name}_hour\" id=\"${id}_hour\">"
 
             if (noSelection) {
 	    		renderNoSelectionOption( noSelection.key, noSelection.value, '')
@@ -338,7 +362,7 @@ class FormTagLib {
 
         // do minute select
         if (precision >= PRECISION_RANKINGS["minute"]) {
-            out.println "<select name=\"${name}_minute\">"
+            out.println "<select name=\"${name}_minute\" id=\"${id}_minute\">"
 
             if (noSelection) {
 	    		renderNoSelectionOption( noSelection.key, noSelection.value, '')
@@ -388,7 +412,7 @@ class FormTagLib {
         }
 
         // use generic select
-        select( attrs )
+        out << select( attrs )
     }
 
     /**
@@ -405,7 +429,7 @@ class FormTagLib {
         attrs['optionValue'] = { "${it.language}, ${it.country},  ${it.displayName}" }
 
         // use generic select
-        select( attrs )
+        out << select( attrs )
     }
 
     /**
@@ -425,7 +449,7 @@ class FormTagLib {
 		   	attrs.value = null
 		}
         // invoke generic select
-        select( attrs )
+        out << select( attrs )
     }
 
     /**
@@ -436,11 +460,15 @@ class FormTagLib {
      * <g:select name="user.company.id" from="${Company.list()}" value="${user?.company.id}" optionKey="id" />
      */
     def select = { attrs ->
+	    def messageSource = grailsAttributes.getApplicationContext().getBean("messageSource")
+		def locale = RCU.getLocale(request)
+
         def from = attrs.remove('from')
         def keys = attrs.remove('keys')
         def optionKey = attrs.remove('optionKey')
         def optionValue = attrs.remove('optionValue')
         def value = attrs.remove('value')
+        def valueMessagePrefix = attrs.remove('valueMessagePrefix')
 		def noSelection = attrs.remove('noSelection')
         if (noSelection != null) {
             noSelection = noSelection.entrySet().iterator().next()
@@ -461,20 +489,21 @@ class FormTagLib {
         // create options from list
         if(from) {
             from.eachWithIndex { el,i ->
+            	def keyValue = null
                 out << '<option '
                 if(keys) {
-                    out << 'value="' << keys[i] << '" '
-                    if(keys[i] == value) {
+                    keyValue = keys[i]
+                    out << 'value="' << keyValue << '" '
+                    if(keyValue == value) {
                         out << 'selected="selected" '
                     }
                 }
-               else if(optionKey) {
-                    def keyValue = null
+                else if(optionKey) {
                     if(optionKey instanceof Closure) {
                         keyValue = optionKey(el)
-                         out << 'value="' << keyValue << '" '
+                        out << 'value="' << keyValue << '" '
                     }
-                    else if(el !=null && optionKey == 'id' && grailsApplication.getGrailsDomainClass(el.getClass().name)) {
+                    else if(el !=null && optionKey == 'id' && grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE, el.getClass().name)) {
                         keyValue = el.ident()
                         out << 'value="' << keyValue << '" '
                     }
@@ -488,8 +517,9 @@ class FormTagLib {
                     }
                 }
                 else {
-                    out << "value=\"${el}\" "
-                    if(el == value) {
+                	keyValue = el
+                    out << "value=\"${keyValue}\" "
+                    if(keyValue == value) {
                         out << 'selected="selected" '
                     }
                 }
@@ -501,6 +531,19 @@ class FormTagLib {
                     else {
                         out << el.properties[optionValue].toString().encodeAsHTML()
                     }
+                }
+                else if(valueMessagePrefix) {
+                	def message = messageSource.getMessage("${valueMessagePrefix}.${keyValue}", null, null, locale)
+                	if(message) {
+                		out << message.encodeAsHTML()
+                	}
+                	else if (keyValue) {
+                		out << keyValue.encodeAsHTML()
+                	}
+					else {
+        	            def s = el.toString()
+    	                if(s) out << s.encodeAsHTML()
+	                }
                 }
                 else {
                     def s = el.toString()
@@ -554,6 +597,6 @@ class FormTagLib {
         outputAttributes(attrs)
 
         // close the tag, with no body
-        out << ' ></input>'
+        out << ' />'
      }
 }
