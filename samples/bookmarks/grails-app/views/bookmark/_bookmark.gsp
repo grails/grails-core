@@ -12,7 +12,6 @@
                          onmouseout="Effect.Fade('preview${bookmark.id}');">preview</a>
 		</g:if>
 	</div>     
-	<g:if test="${edit == false}">
 		<div id="notes">
 			<g:editInPlace id="notes${bookmark.id}" 
 			               url="[action:'updateNotes',id:bookmark.id]" 
@@ -21,7 +20,6 @@
 			               paramName="notes">${bookmark.notes}</g:editInPlace>
 		
 		</div>	
-	</g:if>
 	<div id="preview${bookmark.id}">
 	</div>	
 </div>
