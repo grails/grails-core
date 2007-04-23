@@ -123,7 +123,7 @@ task(runGrailsTests:"Runs Grails' tests under the grails-test directory") {
 				print "Running test ${test.name}..."
 				suite.runTest(test, thisTest)
 				if(thisTest.errorCount() > 0 || thisTest.failureCount() > 0) {
-					println "FAILED" 
+					println "FAILURE" 
 					thisTest.errors().each { result.addError(test, it)  }
 					thisTest.failures().each { result.addFailure(test, it.thrownException()) }
 				}   
