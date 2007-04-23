@@ -124,7 +124,8 @@ public abstract class AbstractClausedStaticPersistentMethod extends
 							try {
 								args[i] = converter.convertIfNecessary( args[i].toString(), prop.getType());
 							} catch( TypeMismatchException tme1 ) {
-								throw new IllegalArgumentException("Cannot convert value " + args[i] + " of property '"+propertyName+"' to required type " + prop.getType(), tme1);
+
+                                throw new IllegalArgumentException("Cannot convert value " + args[i] + " of property '"+propertyName+"' to required type " + prop.getType() + ": " + tme1.getMessage());
 							}
 						} else {
 							throw new IllegalArgumentException("Cannot convert value " + args[i] + " of property '"+propertyName+"' to required type " + prop.getType());
