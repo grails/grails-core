@@ -27,6 +27,7 @@ import org.codehaus.groovy.grails.commons.GrailsControllerClass;
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
 import org.codehaus.groovy.grails.commons.metaclass.AbstractDynamicMethodInvocation;
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
+import org.codehaus.groovy.grails.web.pages.GSPResponseWriter;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.GrailsHttpServletRequest;
 import org.codehaus.groovy.grails.web.servlet.GrailsHttpServletResponse;
@@ -70,6 +71,7 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
     private static final String BUILDER_TYPE_JSON = "json";
 
     private static final String ARGUMENT_TO = "to";
+    private static final int BUFFER_SIZE = 8192;
 
 
     public RenderDynamicMethod() {
@@ -110,24 +112,26 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
         else if(arguments[0] instanceof Map) {
             Map argMap = (Map)arguments[0];
            Writer out;
-           try {
-               if(argMap.containsKey(ARGUMENT_TO)) {
-                   out = (Writer)argMap.get(ARGUMENT_TO);
-               }
-               else if(argMap.containsKey(ARGUMENT_CONTENT_TYPE) && argMap.containsKey(ARGUMENT_ENCODING)) {
-                   out = response.getWriter(argMap.get(ARGUMENT_CONTENT_TYPE).toString(),
-                                            argMap.get(ARGUMENT_ENCODING).toString());
-               }
-               else if(argMap.containsKey(ARGUMENT_CONTENT_TYPE)) {
-                   out = response.getWriter(argMap.get(ARGUMENT_CONTENT_TYPE).toString());
-               }
-               else {
-                   out = response.getWriter();
-               }
-           }
-           catch(IOException ioe) {
-                throw new ControllerExecutionException("I/O creating write in method [render] on class ["+target.getClass()+"]: " + ioe.getMessage(),ioe);
-           }
+            if(argMap.containsKey(ARGUMENT_TO)) {
+                out = (Writer)argMap.get(ARGUMENT_TO);
+            }
+            else if(argMap.containsKey(ARGUMENT_CONTENT_TYPE) && argMap.containsKey(ARGUMENT_ENCODING)) {
+
+                String contentType = argMap.get(ARGUMENT_CONTENT_TYPE).toString();
+                String encoding = argMap.get(ARGUMENT_ENCODING).toString();
+                response.setContentType(contentType + ";charset=" + encoding);
+                out = GSPResponseWriter.getInstance(response,BUFFER_SIZE);
+            }
+            else if(argMap.containsKey(ARGUMENT_CONTENT_TYPE)) {
+                response.setContentType(argMap.get(ARGUMENT_CONTENT_TYPE).toString());
+                out = GSPResponseWriter.getInstance(response,BUFFER_SIZE);
+            }
+            else {
+               out = GSPResponseWriter.getInstance(response,BUFFER_SIZE);
+            }
+
+            webRequest.setOut(out);
+
 
             if(arguments[arguments.length - 1] instanceof Closure) {
                 if(BUILDER_TYPE_RICO.equals(argMap.get(ARGUMENT_BUILDER))) {
@@ -268,6 +272,7 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
                             Writable w = t.make(new BeanMap(target));
                             w.writeTo(out);
                     }
+                    out.flush();
                     renderView = false;
                 }
                 catch(GroovyRuntimeException gre) {
