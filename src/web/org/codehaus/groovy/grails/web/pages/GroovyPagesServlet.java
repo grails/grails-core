@@ -17,11 +17,15 @@ package org.codehaus.groovy.grails.web.pages;
 
 import groovy.lang.Writable;
 import groovy.text.Template;
-
-import java.io.IOException;
-import java.io.Writer;
-import java.util.Map;
-import java.util.HashMap;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.grails.web.errors.GrailsWrappedRuntimeException;
+import org.codehaus.groovy.grails.web.servlet.DefaultGrailsApplicationAttributes;
+import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
+import org.springframework.core.io.Resource;
+import org.springframework.web.context.request.RequestContextHolder;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
@@ -29,16 +33,10 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.commons.lang.StringUtils;
-import org.codehaus.groovy.grails.web.errors.GrailsWrappedRuntimeException;
-import org.codehaus.groovy.grails.web.servlet.DefaultGrailsApplicationAttributes;
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.core.io.Resource;
+import java.io.IOException;
+import java.io.Writer;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * NOTE: Based on work done by on the GSP standalone project (https://gsp.dev.java.net/)
@@ -199,7 +197,7 @@ public class GroovyPagesServlet extends HttpServlet  {
      * @return The created java.io.Writer
      */
     protected Writer createResponseWriter(HttpServletResponse response) {
-        Writer out = GSPResonseWriter.getInstance(response, BUFFER_SIZE);
+        Writer out = GSPResponseWriter.getInstance(response, BUFFER_SIZE);
         GrailsWebRequest webRequest =  (GrailsWebRequest) RequestContextHolder.currentRequestAttributes();
         webRequest.setOut(out);
         return out;

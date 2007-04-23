@@ -14,26 +14,25 @@
  */
 package org.codehaus.groovy.grails.web.servlet.view;
 
-import org.springframework.web.servlet.view.AbstractUrlBasedView;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
-import org.codehaus.groovy.grails.web.pages.GSPResonseWriter;
-import org.codehaus.groovy.grails.web.pages.GroovyPage;
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
-import org.codehaus.groovy.grails.web.errors.GrailsWrappedRuntimeException;
+import groovy.lang.Writable;
+import groovy.text.Template;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.grails.web.errors.GrailsWrappedRuntimeException;
+import org.codehaus.groovy.grails.web.pages.GSPResponseWriter;
+import org.codehaus.groovy.grails.web.pages.GroovyPage;
+import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
+import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.servlet.view.AbstractUrlBasedView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.Map;
-import java.util.HashMap;
-import java.io.Writer;
 import java.io.IOException;
-
-import groovy.text.Template;
-import groovy.lang.Writable;
+import java.io.Writer;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * A Spring View that renders Groovy Server Pages to the reponse. It requires an instance
@@ -148,7 +147,7 @@ public class GroovyPageView extends AbstractUrlBasedView  {
      * @return A response Writer
      */
     protected Writer createResponseWriter(HttpServletResponse response) {
-        Writer out = GSPResonseWriter.getInstance(response, BUFFER_SIZE);
+        Writer out = GSPResponseWriter.getInstance(response, BUFFER_SIZE);
         GrailsWebRequest webRequest =  (GrailsWebRequest) RequestContextHolder.currentRequestAttributes();
         webRequest.setOut(out);
         return out;
