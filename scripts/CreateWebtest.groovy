@@ -26,14 +26,14 @@ import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
 Ant.property(environment:"env")                             
 grailsHome = Ant.antProject.properties."env.GRAILS_HOME"    
 
-includeTargets << new File ( "${grailsHome}/scripts/CreateWebtest.groovy" )
+includeTargets << new File ( "${grailsHome}/scripts/Init.groovy" )
 
 
-task ('default': "Generates a Canoo WebTest (functional test) from a Grails domain class") {
+task ('default': "Creates a skelenton of a Canoo WebTest (functional test) for a given name") {
     depends(checkVersion, downloadWebtest)
 
 	if(!args) {
-		Ant.input(addProperty:"artifact.name", message:"Domain class name not specified. Please enter:")
+		Ant.input(addProperty:"artifact.name", message:"WebTest name not specified. Please enter:")
 		args = Ant.antProject.properties."artifact.name"
 	}
 		      
@@ -41,10 +41,10 @@ task ('default': "Generates a Canoo WebTest (functional test) from a Grails doma
 	propertyName = GCU.getPropertyNameRepresentation(args)  
 	fileName = "webtest/tests/${className}Test.groovy"
 		
-	Ant.sequential {
+	Ant.sequential {  
 		copy(todir:"${basedir}", overwrite:false) {
 			fileset(dir:"${grailsHome}/src/grails/templates", includes:"webtest/**/*")
-		}
+		}			
 		copy(file:"${grailsHome}/src/grails/templates/artifacts/WebTest.groovy", 
 			 tofile:fileName) 
 		replace(file:fileName, 
@@ -53,4 +53,17 @@ task ('default': "Generates a Canoo WebTest (functional test) from a Grails doma
 				token:"@webtest.name.lower@", value:"${propertyName}" )								
 	}	                                                                            
 	println "Web Test generated at $fileName"  
+}
+
+task(downloadWebtest:"Downloads the WebTest distro") {
+	Ant.sequential {
+		mkdir(dir:"${grailsHome}/downloads")
+		get(dest:"${grailsHome}/downloads/webtest.zip",
+			src: "http://webtest.canoo.com/webtest/build.zip",
+			verbose:true,
+			usetimestamp:true)
+		unzip(dest:"${grailsHome}/downloads/webtest",
+			  src:"${grailsHome}/downloads/webtest.zip",
+			  overwrite:false)
+	}
 }
