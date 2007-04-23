@@ -137,7 +137,7 @@ class JavascriptTagLib  {
     /**
      * A link to a remote uri that used the prototype library to invoke the link via ajax
      */
-    def remoteLink = { attrs, body ->
+    def remoteLink = { attrs, body ->  
        out << "<a href=\""    
 
        def cloned = deepClone(attrs)
@@ -145,7 +145,7 @@ class JavascriptTagLib  {
 
 	   out << "\" onclick=\""
         // create remote function
-        remoteFunction(attrs)   
+        out << remoteFunction(attrs)   
 		attrs.remove('url')
         out << "return false;\" "
         // process remaining attributes
@@ -216,8 +216,8 @@ class JavascriptTagLib  {
 	    params.putAll(attrs)
 		if(params.name && !params.id)
 			params.id = params.name
-	    withTag(name:'form',attrs:params) {
-			out <<body()   
+	    out << withTag(name:'form',attrs:params) {
+			out << body()   
 	    }		
     }
 
@@ -238,7 +238,7 @@ class JavascriptTagLib  {
 					    'class':attrs.remove('class')
 		             ]
 		             
-		withTag(name:'input', attrs:params) {
+		out << withTag(name:'input', attrs:params) {
 			out << body()	
 		}
     }
