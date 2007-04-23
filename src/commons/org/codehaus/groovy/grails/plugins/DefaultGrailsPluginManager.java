@@ -199,7 +199,7 @@ public class DefaultGrailsPluginManager implements GrailsPluginManager {
           // load core plugins first
           loadCorePlugins();
 
-          LOG.info("Attempting to load ["+pluginResources.length+"] user defined plugins");
+          LOG.debug("Attempting to load ["+pluginResources.length+"] user defined plugins");
           for (int i = 0; i < pluginResources.length; i++) {
               Resource r = pluginResources[i];
 
@@ -282,7 +282,7 @@ public class DefaultGrailsPluginManager implements GrailsPluginManager {
   }
 
   private void loadCorePluginsFromResources(Resource[] resources) throws IOException {
-      LOG.info("Attempting to load ["+resources.length+"] core plugins");
+      LOG.debug("Attempting to load ["+resources.length+"] core plugins");
       for (int i = 0; i < resources.length; i++) {
           Resource resource = resources[i];
           String url = resource.getURL().toString();
@@ -449,8 +449,8 @@ public class DefaultGrailsPluginManager implements GrailsPluginManager {
 
   private void registerPlugin(GrailsPlugin plugin) {
       if(plugin.isEnabled()) {
-          if(LOG.isInfoEnabled()) {
-              LOG.info("Grails plug-in ["+plugin.getName()+"] with version ["+plugin.getVersion()+"] loaded successfully");
+          if(LOG.isDebugEnabled()) {
+              LOG.debug("Grails plug-in ["+plugin.getName()+"] with version ["+plugin.getVersion()+"] loaded successfully");
           }
 
           if(plugin instanceof ParentApplicationContextAware) {

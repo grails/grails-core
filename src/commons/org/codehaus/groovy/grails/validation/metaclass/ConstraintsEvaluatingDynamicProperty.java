@@ -92,7 +92,7 @@ public class ConstraintsEvaluatingDynamicProperty extends AbstractDynamicPropert
                 c.setDelegate(delegate);
                 c.call();
             } else {
-                LOG.info("User-defined constraints not found on class ["+clazz+"], applying default constraints");
+                LOG.debug("User-defined constraints not found on class ["+clazz+"], applying default constraints");
             }
         }
 
