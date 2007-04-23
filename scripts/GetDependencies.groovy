@@ -20,7 +20,7 @@ task ( ivyDeps : "Gets dependencies from remote repository") {
 	try {
 		Ant.taskdef(name:"ivyretrieve", classname:"fr.jayasoft.ivy.ant.IvyRetrieve")
 	} catch (Exception e) {
-		throw new Exception("Ivy task not installed: Run 'grails install-ivy-task'")
+		throw new Exception("Ivy task not installed: Run 'grails install-ivy'")
 	}
 
     event("StatusUpdate", ["Getting Ivy dependencies"])
