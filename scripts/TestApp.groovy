@@ -114,10 +114,25 @@ task(runGrailsTests:"Runs Grails' tests under the grails-test directory") {
 		def interceptor = null
 		if(beanNames.size() > 0)interceptor = ctx.getBean(beanNames[0])
 							
-
+        result = new TestResult()
 		try {
-			interceptor?.init()      
-			result = TestRunner.run(suite)
+			interceptor?.init()       
+			
+			suite.tests().each { test ->
+				def thisTest = new TestResult()
+				print "Running test ${test.name}..."
+				suite.runTest(test, thisTest)
+				if(thisTest.errorCount() > 0 || thisTest.failureCount() > 0) {
+					println "FAILED" 
+					thisTest.errors().each { result.addError(test, it)  }
+					thisTest.failures().each { result.addFailure(test, it.thrownException()) }
+				}   
+				else { println "SUCCESS"}
+				app.domainClasses.each { dc ->
+					dc.clazz.executeUpdate("delete from ${dc.clazz.name}")
+				}
+				interceptor?.flush()
+			}
 		}   
 		finally {
 			interceptor?.destroy()
