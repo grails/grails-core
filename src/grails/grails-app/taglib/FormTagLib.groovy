@@ -136,10 +136,8 @@ class FormTagLib {
         outputAttributes(attrs)
 
         out << ">"
-        // output the body       
-		println "BODY TAG = ${body.getClass()}"
+        // output the body
         def bodyContent = body()
-		println "BODY CONTENT = ${bodyContent.getClass()}"
 		out << bodyContent
 
         // close tag
