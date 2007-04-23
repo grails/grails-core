@@ -38,6 +38,9 @@ import java.util.Map;
  */
 public interface UrlMapping extends Comparable {
 
+    String CONTROLLER = "controller";
+    String ACTION = "action";
+
     /**
      * Matches the given URI and returns an instance of the UrlMappingInfo interface or null
      * if a match couldn't be established

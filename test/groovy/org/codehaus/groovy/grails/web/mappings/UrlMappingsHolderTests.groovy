@@ -25,6 +25,16 @@ mappings {
 }
 '''
 
+   def mappingScript2 = '''
+mappings  {
+    "/admin/$controller/$action?/$id?" {
+        constraints {
+            id(matches:/\\d+/)
+        }
+    }
+}
+   '''
+
     /**
       TODO: This test is currently failing, whether we actually need the ability to specify excess arguments
       that aren't part of the URL mapping definition is up for debate.
@@ -48,6 +58,21 @@ mappings {
         }
 
     }*/
+
+    void testGetReverseMappingWithVariables() {
+             def res = new ByteArrayResource(mappingScript2.bytes)
+             def evaluator = new DefaultUrlMappingEvaluator()
+             def mappings = evaluator.evaluateMappings(res)
+
+             def holder = new DefaultUrlMappingsHolder(mappings)
+
+            // test with fewer arguments
+            def m = holder.getReverseMapping("test", "list",null)
+            assert m
+
+            assertEquals "/admin/test/list/1", m.createURL(controller:"test", action:"list",id:1)
+                 
+    }
 
     void testGetReverseMappingWithFewerArgs() {
         runTest {

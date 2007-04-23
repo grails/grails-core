@@ -85,12 +85,28 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
         return this.mappings;
     }
 
-    public UrlMapping getReverseMapping(String controller, String action, Map params) {       
+    public UrlMapping getReverseMapping(final String controller, final String action, Map params) {
         if(params == null) params = Collections.EMPTY_MAP;
 
         
         UrlMappingKey key = new UrlMappingKey(controller, action, params.keySet());
-        return (UrlMapping)mappingsLookup.get(key);
+        UrlMapping mapping = (UrlMapping)mappingsLookup.get(key);
+        if(mapping == null) {
+            Map lookup = new HashMap() {{
+                put(UrlMapping.CONTROLLER,controller);
+                put(UrlMapping.ACTION,action);
+            }};
+
+            key = new UrlMappingKey(null,null,lookup.keySet());
+            mapping = (UrlMapping)mappingsLookup.get(key);
+
+            if(mapping == null) {
+                lookup.remove(UrlMapping.ACTION);
+                key = new UrlMappingKey(null,null,lookup.keySet());
+                return (UrlMapping)mappingsLookup.get(key);
+            }
+        }
+        return mapping;
     }
 
 
@@ -116,8 +132,8 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
 
             UrlMappingKey that = (UrlMappingKey) o;
 
-            if (action != null ? !action.equals(that.action) : that.action != null) return false;
-            if (controller != null ? !controller.equals(that.controller) : that.controller != null) return false;           
+            if (action != null && !action.equals(that.action)) return false;
+            if (controller != null && !controller.equals(that.controller)) return false;           
             if (!paramNames.equals(that.paramNames)) return false;
 
             return true;

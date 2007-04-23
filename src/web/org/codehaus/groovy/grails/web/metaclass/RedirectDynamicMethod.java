@@ -44,6 +44,7 @@ import java.net.URLEncoder;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.HashMap;
 import java.util.regex.Pattern;
 
 /**
@@ -93,6 +94,7 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
         Object uri = argMap.get(ARGUMENT_URI);
         String url = argMap.containsKey(ARGUMENT_URL) ? argMap.get(ARGUMENT_URL).toString() : null;
         Map params = (Map)argMap.get(ARGUMENT_PARAMS);
+        if(params==null)params = new HashMap();
         Errors errors = (Errors)argMap.get(ARGUMENT_ERRORS);
         GroovyObject controller = (GroovyObject)target;
 
@@ -126,8 +128,17 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
                 urlMapping = urlMappingsHolder.getReverseMapping(controllerName, actionName, params);
             
             if(urlMapping != null) {
-               String mappedUrl = urlMapping.createURL(params);
-               actualUriBuf.append(mappedUrl);
+
+               try {
+                   params.put(ARGUMENT_CONTROLLER, controllerName);
+                   params.put(ARGUMENT_ACTION, actionName);
+                   String mappedUrl = urlMapping.createURL(params);
+                   actualUriBuf.append(mappedUrl);
+               }
+               finally {
+                   params.remove(ARGUMENT_CONTROLLER);
+                   params.remove(ARGUMENT_ACTION);
+               }
             }
             else {
                 if(actionName != null) {
