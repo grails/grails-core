@@ -35,7 +35,8 @@ task ( "default" : "Performs packaging of Grails plugins for when they are distr
 }     
                 
 task( packagePlugins : "Packages any Grails plugins that are installed for this project") {
-	depends( classpath )
+	depends( classpath )   
+	Ant.mkdir(dir:"${basedir}/web-app/WEB-INF/lib")
 	try {
 	   	def plugins = resolveResources("**GrailsPlugin.groovy").toList()
 		plugins += resolveResources("plugins/*/*GrailsPlugin.groovy").toList()
