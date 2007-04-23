@@ -85,11 +85,20 @@ class ApplicationTagLib {
                                                      
 		def controller = attrs.remove("controller")
 		def action = attrs.remove("action")
-		def params = attrs.remove("params")
+		def params = attrs.params ? attrs.remove('params') : [:]
 		def mapping = grailsUrlMappingsHolder?.getReverseMapping(controller, 
 																 action, 
 																 params)
-        def url = mapping?.createURL(params)
+        def url
+		try {       
+			params.controller = controller
+			if(action) params.action = action
+			url = mapping?.createURL(params)
+		}        
+		finally {
+			params.remove('controller')
+			params.remove('action')
+		}
 		if(url) {
 			out << url
 		}             
@@ -143,7 +152,7 @@ class ApplicationTagLib {
 				} 				
 			}
 		}
-		out << '>'
+		out << '>'  
 		out << body()
 		out << "</${attrs.name}>"			
 	}	
