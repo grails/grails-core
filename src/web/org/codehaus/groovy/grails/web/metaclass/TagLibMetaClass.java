@@ -124,10 +124,10 @@ public class TagLibMetaClass extends CachingMetaClass implements AdapterMetaClas
 
         Writer originalOut = webRequest.getOut();
         try {
-        return GroovyPage.captureTagOutput(tagLibrary, methodName,attrs,body,webRequest, new BeanWrapperImpl(tagLibrary));
-    } finally {
-        webRequest.setOut(originalOut);
-    }
+        	return GroovyPage.captureTagOutput(tagLibrary, methodName,attrs,body,webRequest, new BeanWrapperImpl(tagLibrary));
+	    } finally {
+	        webRequest.setOut(originalOut);
+	    }
     }
 
     private GroovyObject lookupTagLibrary(String methodName, GrailsWebRequest webRequest) {
