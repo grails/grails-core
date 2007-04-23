@@ -13,7 +13,7 @@ The domain class in question can be found in "src/java/com/recipes/Recipe.java" 
 
 In order for this to work the Grails data source has been configured to use a special GrailsAnnotationConfiguration instance at the line:
 
-   @Property configClass = GrailsAnnotationConfiguration.class
+   def configClass = GrailsAnnotationConfiguration.class
 
 This is only necessary if you use Hibernate annotations, with normal XML Hibernate mapping no extra configuration is needed.
 
@@ -29,7 +29,7 @@ The only remaining thing to be done is the "hibernate.cfg.xml" file is placed wi
 
 To run the example after installing Grails type:
 
-grails init
+grails upgrade
 grails run-app
 
 And then in your browser go to:
