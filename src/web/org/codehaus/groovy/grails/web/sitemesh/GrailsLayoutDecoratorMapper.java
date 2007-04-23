@@ -15,28 +15,6 @@
  */ 
 package org.codehaus.groovy.grails.web.sitemesh;
 
-import groovy.lang.GroovyObject;
-
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
-
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods;
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
-import org.codehaus.groovy.grails.web.pages.DevelopmentGroovyPageResourceLoader;
-import org.springframework.core.io.ResourceLoader;
-import org.springframework.core.io.Resource;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.context.ApplicationContext;
-
 import com.opensymphony.module.sitemesh.Config;
 import com.opensymphony.module.sitemesh.Decorator;
 import com.opensymphony.module.sitemesh.DecoratorMapper;
@@ -44,6 +22,29 @@ import com.opensymphony.module.sitemesh.Page;
 import com.opensymphony.module.sitemesh.mapper.AbstractDecoratorMapper;
 import com.opensymphony.module.sitemesh.mapper.DefaultDecorator;
 import grails.util.GrailsUtil;
+import groovy.lang.GroovyObject;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods;
+import org.codehaus.groovy.grails.web.pages.DevelopmentGroovyPageResourceLoader;
+import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
+import org.codehaus.groovy.grails.commons.GrailsResourceUtils;
+import org.springframework.context.ApplicationContext;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+import org.springframework.web.context.request.RequestContextHolder;
+
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
+import java.io.IOException;
 
 /**
  * Implements the SiteMesh decorator mapper interface and allows grails views to map to grails layouts
@@ -134,11 +135,31 @@ public class GrailsLayoutDecoratorMapper extends AbstractDecoratorMapper impleme
 
             ResourceLoader resourceLoader = establishResourceLoader();
 
+
             Resource res = resourceLoader.getResource(decoratorPage);
             if(!res.exists()) {
-                if(LOG.isDebugEnabled())
-                    LOG.debug("No decorator found at " + decoratorPage);
 
+                PathMatchingResourcePatternResolver matcher = new PathMatchingResourcePatternResolver(resourceLoader);
+                String pattern = GrailsResourceUtils.WEB_INF + "/plugins/*/grails-app/views/layouts/" + name;
+
+                if(LOG.isDebugEnabled())
+                    LOG.debug("No decorator found at " + decoratorPage+". Trying plug-ins with pattern: " + pattern);
+
+                try {
+                    Resource[] layouts = matcher.getResources(pattern);
+                    if(layouts.length>0) {
+                        if(layouts.length>1) {
+                            LOG.warn("Multiple matching layouts found in plug-ins for name ["+name+"] using first from ["+ ArrayUtils.toString(layouts) +"]");
+                        }
+                        String url = layouts[0].getURL().toString();
+                        url = GrailsResourceUtils.WEB_INF + url.substring(url.indexOf("/plugins"),url.length());
+                        Decorator d = new DefaultDecorator(name, request.getRequestURI(), url, Collections.EMPTY_MAP);
+                        decoratorMap.put(decoratorName, d);
+                        return d;
+                    }
+                } catch (IOException e) {
+                    // ignore, if there was a problem here its going to be a FNFE which is ok
+                }
                 return null;
             }
             else {

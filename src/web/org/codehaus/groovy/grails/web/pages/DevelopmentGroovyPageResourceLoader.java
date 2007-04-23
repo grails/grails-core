@@ -43,7 +43,6 @@ public class DevelopmentGroovyPageResourceLoader extends StaticResourceLoader {
 
     public Resource getResource(String location) {
         if(StringUtils.isBlank(location)) throw new IllegalArgumentException("Argument [location] cannot be null or blank");
-        if(!location.endsWith(GroovyPage.EXTENSION)) throw new IllegalArgumentException("Argument [location] is not a reference to a GSP. It does not end with .gsp");
 
         location = getRealLocationInProject(location);
 
