@@ -83,10 +83,11 @@ class ApplicationTagLib {
              attrs = attrs.remove('url')
         }
                                                      
-		def controller = attrs.remove("controller")
+		def controller = attrs.contains("controller") ? attrs.remove("controller") : grailsAttributes.getController(request).controllerName
 		def action = attrs.remove("action")
 		def params = attrs.params ? attrs.remove('params') : [:]
-		def mapping = grailsUrlMappingsHolder?.getReverseMapping(controller, 
+
+		def mapping = grailsUrlMappingsHolder?.getReverseMapping(controller,
 																 action, 
 																 params)
         def url
@@ -103,13 +104,7 @@ class ApplicationTagLib {
 			out << url
 		}             
 		else {
-	        // if the current attribute null set the controller uri to the current controller
-	        if(controller) {
-	            out << '/' << controller
-	        }
-	        else {
-	           out << grailsAttributes.getControllerUri(request)
-	        }
+            out << '/' << controller
 	        if(action) {
 	            out << '/' << action
 	        }
