@@ -251,7 +251,7 @@ class PageController {
 		
 		// create template for uri
         def t = null		
-		if(!servletContext.getAttribute("${p.site.domain}-template")) {
+		if(!servletContext.getAttribute("${p.site.domain}-template") && servletContext.getResource(uri)) {
 			t = engine.createTemplate(  servletContext.getResource(uri) )
 			servletContext.setAttribute("${p.site.domain}-template",t)
 		}

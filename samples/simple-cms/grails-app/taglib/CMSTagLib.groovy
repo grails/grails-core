@@ -29,7 +29,7 @@ class CMSTagLib {
 		if(session.user) {
 			def u = session.user
 			if(u.role.isSysAdmin()) {
-				body()	
+				out << body()	
 			}
 		}
 	}
@@ -41,7 +41,7 @@ class CMSTagLib {
 		if(session.user) {
 			def u = session.user
 			if(u.role.isContentEditor()) {
-				body()	
+				out << body()	
 			}
 		}
 	}
@@ -53,7 +53,7 @@ class CMSTagLib {
 		if(session.user) {
 			def u = session.user
 			if(u.role.isContentApprover()) {
-				body()	
+			   out << body()	
 			}
 		}
 	}
@@ -75,7 +75,7 @@ class CMSTagLib {
 			if(attrs.title) {
 				div('class':'title',attrs.title)
 			}
-			body()
+			out << body()
 		}
 	}
 	

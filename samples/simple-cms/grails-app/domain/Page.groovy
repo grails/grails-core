@@ -79,6 +79,7 @@ class Page implements Comparable {
 		title(blank:false,size:1..150)
 		site(nullable:false)
 		type(inList:[STANDARD,FORUM,QUESTIONNAIRE,LINK])
-		revisions(minSize:1)
+		revisions(minSize:1)    
+		parent(nullable:true)
 	}
 }	

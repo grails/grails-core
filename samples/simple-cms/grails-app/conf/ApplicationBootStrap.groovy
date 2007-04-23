@@ -7,14 +7,16 @@ class ApplicationBootStrap {
 		def defaultSite = Site.findByName(Site.DEFAULT)
 		def homePage = null 
         if(!defaultSite) {
-            defaultSite = new Site(name:Site.DEFAULT,domain:ApplicationConfig.DEFAULT_SITE_DOMAIN)
+            defaultSite = new Site(name:Site.DEFAULT,domain:ApplicationConfig.DEFAULT_SITE_DOMAIN).save()
             homePage = new Page(title:'Home Page',
                                     template:'default',
                                     site:defaultSite,
-                                    content:'Welcome to the HomePage!')									
-            defaultSite.homePage = homePage
-            defaultSite.save()
+                                    content:'Welcome to the HomePage!'
+									)   
+            defaultSite.homePage = homePage									
+
         }
+
 
         // create system roles
         def sa = Role.findByName(Role.SYSTEM_ADMINISTRATOR)
@@ -43,6 +45,11 @@ class ApplicationBootStrap {
                               ).save()
 
         }	
+
+
+        defaultSite.homePage.createdBy = defaultUser
+        defaultSite.save()
+        
 		if(homePage) {
 			 homePage.addRevision(new Revision(	updatedBy:defaultUser,
 			 										page:homePage,
