@@ -40,7 +40,7 @@ artifactNames = [
 ]
 
 task ('default': "Creates a ZIP containing source artifacts for reporting bugs") {
-    depends( checkVersion, init)
+    depends( checkVersion )
     
 	def fileName = new File(basedir).name
 	def date = new java.text.SimpleDateFormat("ddMMyyyy").format(new Date())
