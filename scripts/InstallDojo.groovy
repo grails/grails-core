@@ -36,8 +36,9 @@ task ('default': "Installs the Dojo toolkit. An advanced Javascript library.") {
 	
 	Ant.sequential {
 		mkdir(dir:"${grailsHome}/downloads")
-		println "Downloading Dojo ${dojoVersion}..."
-		
+
+	    event("StatusUpdate", ["Downloading Dojo ${dojoVersion}"])
+
 		get(dest:"${grailsHome}/downloads/dojo-${dojoVersion}-ajax.zip",
 			src:"http://download.dojotoolkit.org/release-${dojoVersion}/dojo-${dojoVersion}-ajax.zip",
 			verbose:true,
@@ -57,5 +58,5 @@ task ('default': "Installs the Dojo toolkit. An advanced Javascript library.") {
 			fileset(dir:"${grailsHome}/downloads/dojo-${dojoVersion}-ajax/src", includes:"**/**")
 		}		 
 	}            
-	println "Dojo ${dojoVersion} installed successfully"   
+	event("StatusFinal", ["Dojo ${dojoVersion} installed successfully"])
 }

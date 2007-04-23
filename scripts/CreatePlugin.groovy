@@ -62,4 +62,5 @@ class ${pluginName}GrailsPlugin {
 	}
 }
 """
+    event("StatusFinal", [ "Created plugin ${pluginName}"])
 }

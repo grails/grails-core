@@ -46,7 +46,7 @@ task( createApp: "The implementation task")  {
         entry(key:"app.version", value:"0.1")
     }
 
-	println "Created Grails Application at $basedir"
+    event("StatusFinal", ["Created Grails Application at $basedir"])
 }                         
 
 task( createIDESupportFiles: "Creates the IDE suppot files (Eclipse, TextMate etc.) project files") {

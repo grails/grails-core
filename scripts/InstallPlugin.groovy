@@ -67,7 +67,7 @@ task(installPlugin:"Implementation task") {
 			Ant.delete(dir:dirName, failonerror:false)
 			Ant.mkdir(dir:dirName)
 			Ant.unzip(dest:dirName, src:file)
-		}  
+		}
 		else if(pluginFile.exists()) {
 
 			def pluginDir = new File("${pluginsBase}/${pluginFile.name[7..-5]}") 
@@ -75,7 +75,7 @@ task(installPlugin:"Implementation task") {
 			Ant.delete(dir:pluginDir, failonerror:false)			
 			Ant.mkdir(dir:pluginDir)
 			Ant.unzip(dest:pluginDir, src:pluginFile)
-		} 
+		}
 		else if(args.indexOf("\n") > -1) {
 			def tokens = args.split("\n") 
 			def name = tokens[0].trim()
@@ -97,11 +97,11 @@ task(installPlugin:"Implementation task") {
 			
 		}                             
 		else {
-			println ERROR_MESSAGE
+    	    event("StatusError", [ ERROR_MESSAGE])
 		}
 	}   
 	else {
-		println ERROR_MESSAGE
+        event("StatusError", [ ERROR_MESSAGE])
 	}
 }    
 

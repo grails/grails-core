@@ -37,5 +37,5 @@ task ('default': "Sets the current application version") {
         entry(key:"app.version", value: newVersion)
     }
 
-    println "Application version updated to $newVersion"
+    event("StatusFinal", [ "Application version updated to $newVersion"])
 }

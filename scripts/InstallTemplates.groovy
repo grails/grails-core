@@ -50,5 +50,5 @@ task ('default': "Installs the artifact and scaffolding templates") {
 		fileset(dir: "${grailsHome}/src/grails/templates", includes: "artifacts/*, scaffolding/*")
 	}
 	
-	println "Templates installed successfully"   
+    event("StatusUpdate", [ "Templates installed successfully"])
 }

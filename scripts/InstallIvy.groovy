@@ -14,7 +14,7 @@ task (installIvy : "Install Ivy tasks") {
 	def ivyJar = "ivy-${ivyVersion}.jar";
 	def remoteFile = "http://www.jaya.free.fr/downloads/ivy/${ivyVersion}/${ivyJar}"
 	if (!new File("%{grailsHome}/lib/${ivyJar}").exists()) {
-		println "Installing Ivy..."
+	    event("StatusUpdate", ["Installing Ivy"])
 		Ant.get(dest: "${grailsHome}/lib/${ivyJar}",
 				src:"${remoteFile}",
 				verbose:false,
@@ -31,7 +31,7 @@ task (installIvy : "Install Ivy tasks") {
     </dependencies>
 </ivy-module>		
 		'''    
-		println "Created ${basedir}/ivy.xml..."
+	    event("StatusUpdate", ["Created ${basedir}/ivy.xml"])
 	}        
 	
 	def ivyConf = new File("${basedir}/ivyconf.xml")
@@ -56,7 +56,7 @@ task (installIvy : "Install Ivy tasks") {
 		</resolvers>     	   	
 </ivy-conf>                     		
 		'''   
-		println "Created ${basedir}/ivyconf.xml..."
-	}       
-	println "Done." 	
+	    event("StatusUpdate", [ "Created ${basedir}/ivyconf.xml"])
+	}
+    event("StatusFinal", [ "Ivy installed"])
 }

@@ -67,7 +67,11 @@ eventStatusFinal = { message ->
 }
 
 eventStatusUpdate = { message ->
-    println message
+    println message + ' ...'
+}
+
+eventStatusError = { message ->
+    System.err.println message
 }
 
 eventCreatedArtefact = { artefactType, artefactName ->
@@ -319,10 +323,6 @@ task (createArtifact: "Creates a specific Grails artifact") {
 	className = GCU.getClassNameRepresentation(args)   
 	propertyName = GCU.getPropertyNameRepresentation(args)            
 	artifactFile = "${basedir}/${artifactPath}/${className}${typeName}.groovy"
-	 
-	if("Controller" == artifactName) {
-	    Ant.mkdir(dir:"${basedir}/grails-app/views/${propertyName}")
-	}
 	
 	if(new File(artifactFile).exists()) {
 		Ant.input(addProperty:"${args}.${typeName}.overwrite", message:"${artifactName} ${className}${typeName}.groovy already exists. Overwrite? [y/n]")

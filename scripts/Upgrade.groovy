@@ -34,8 +34,8 @@ task( upgrade: "main upgrade task") {
    
     if (appGrailsVersion != grailsVersion) {
         def gv = appGrailsVersion == null ? "pre-0.5" : appGrailsVersion
-	    println "NOTE: Your application currently expects grails version [$gv], "+
-	        "this task will upgrade it to Grails ${grailsVersion}"
+        event("StatusUpdate", [ "NOTE: Your application currently expects grails version [$gv], "+
+	        "this task will upgrade it to Grails ${grailsVersion}"])
     }
 
     Ant.input(message: """
@@ -130,6 +130,7 @@ task( upgrade: "main upgrade task") {
         }
 	}
     
+    event("StatusFinal", [ "Project upgraded"])
 }
 
 task("default": "Upgrades a Grails application from a previous version of Grails") {

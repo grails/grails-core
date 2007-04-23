@@ -64,16 +64,16 @@ task( watchContext : "Watches the Jetty web.xml for changes and reloads of neces
 	long lastModified = f.lastModified()
     while(true) {
 		if(lastModified < f.lastModified()) {
-			println 'Web Context changed. Reloading...'
+    	    event("StatusUpdate", [ "Web Context changed, reloading"])
         	lastModified = f.lastModified()
 			def ctx = grailsServer.getContext("/${grailsAppName}")
 			if(ctx) {
-				println 'New Controller added. Restarting Grails context: /' + grailsAppName
+        	    event("StatusUpdate", [ 'New Controller added. Restarting Grails context: /' + grailsAppName])
 				ctx.stop(true)
 				ctx.start()
 			}
 			else {
-				println 'WARNING: Cannot get server context, new Controller not added'
+        	    event("StatusError", [ 'Cannot get server context, new Controller not added'])
 			}
     	}
         sleep(2000)

@@ -49,7 +49,7 @@ task ('default': "Performs compilation on any source files (Java or Groovy) in t
 task(compile : "Implementation of compilation phase") {    
 	depends(dependencies, classpath)           
 	
-	println "Compiling sources..."
+    event("StatusUpdate", ["Compiling sources"])
 	Ant.sequential {
 		mkdir(dir:"${basedir}/web-app/WEB-INF/classes") 
 		
@@ -66,7 +66,7 @@ task(compile : "Implementation of compilation phase") {
 task(compileTests: "Compiles test cases located in src/test") {
 
 	if(new File("${basedir}/src/test").exists()) {
-		println "Compiling test cases.."
+	    event("StatusUpdate", ["Compiling test cases"])
 		depends(classpath)
 
 		Ant.sequential {

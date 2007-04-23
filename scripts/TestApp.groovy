@@ -85,7 +85,7 @@ task(runGrailsTests:"Runs Grails' tests under the grails-test directory") {
 	    }
 		def testFiles = resolveResources("grails-tests/${testCaseToRun}.groovy")
 		if(testFiles.size() == 0) {
-			println "No tests found in grails-test to execute"
+            event("StatusFinal", [ "No tests found in grails-test to execute"])
 			exit(0)
 		}
 				
@@ -140,7 +140,7 @@ task(runGrailsTests:"Runs Grails' tests under the grails-test directory") {
 		
 	}   
 	catch(Throwable e) {
-		println "Error executing tests ${e.message}"
+        event("StatusUpdate", [ "Error executing tests ${e.message}"])
 		e.printStackTrace(System.out)   
         event("StatusFinal", ["Error running tests: ${e.toString()}"])
 		exit(1)
@@ -148,7 +148,6 @@ task(runGrailsTests:"Runs Grails' tests under the grails-test directory") {
 	finally {
 		if(result) { 
 			if(result.errorCount() > 0 || result.failureCount() > 0) {
-				println "Test Failures!!!"
             	event("StatusFinal", ["Tests failed: ${result.errorCount()} errors, ${result.failureCount()} failures"])
 				exit(1)
 			}

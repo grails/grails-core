@@ -68,7 +68,7 @@ task(packagePlugin:"Implementation task") {
 				excludes:"plugins/**,**/WEB-INF/lib/**, **/WEB-INF/classes/**, **/WEB-INF/grails-app/**, **/WEB-INF/spring/**, **/WEB-INF/tld/**,**/WEB-INF/applicationContext.xml, **/WEB-INF/sitemesh.xml, **/WEB-INF/web*.xml")
    }
    catch(Throwable t) {
-     println "Throwable: ${t.message}"
-     t.printStackTrace(System.out)
+        event("StatusError", [ t.message])
+        t.printStackTrace(System.out)
    }
 }

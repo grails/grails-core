@@ -52,5 +52,6 @@ task ('default': "Generates a Canoo WebTest (functional test) from a Grails doma
 		replace(file:fileName, 
 				token:"@webtest.name.lower@", value:"${propertyName}" )								
 	}	                                                                            
-	println "Web Test generated at $fileName"  
+
+    event("StatusFinal", ["Web Test generated at $fileName"])
 }

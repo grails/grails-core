@@ -83,7 +83,7 @@ task (war: "The implementation task") {
 	finally {
 		cleanUpAfterWar()
 	}
-	println "Created WAR at ${warName}"	
+    event("StatusFinal", ["Created WAR ${warName}"])
 }                                                                    
    
 task(cleanUpAfterWar:"Cleans up after performing a WAR") {

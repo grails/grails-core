@@ -54,7 +54,6 @@ task ('default': "Creates a ZIP containing source artifacts for reporting bugs")
 	    fileset(dir: "${basedir}", includes: "src/**/*")
 	}
 
-	println "Created bug-report ZIP at ${zipName}, excluding lib/, hibernate/, plugins/, scripts/ and web-app/"
-	println "Please attach this ZIP to your Jira issue."
+    event("StatusFinal", ["Created bug-report ZIP at ${zipName}"])
 }
 

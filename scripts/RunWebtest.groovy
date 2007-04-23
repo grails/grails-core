@@ -34,9 +34,14 @@ includeTargets << new File ( "${grailsHome}/scripts/RunApp.groovy" )
 
 task ('default': "Run's all of the Web tests against a Grails application") { 
 	depends( classpath, checkVersion )
-	println "Running WebTest!"
+    event("StatusUpdate", [ "Running WebTest"])
 	try {
 	    runWebTest()
+        event("StatusFinal", [ "WebTest complete"])
+    } catch (Throwable t) {
+        event("StatusError", [ t.message])
+        event("StatusFinal", [ "WebTest error occurred"])
+        throw t
     }
     finally {
         stopServer()

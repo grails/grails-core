@@ -37,5 +37,10 @@ task ('default': "Creates a new controller") {
 	artifactName = "Controller" 	
 	artifactPath = "grails-app/controllers"
 	createArtifact()
-	createTestSuite() 
+
+    def viewsDir = "${basedir}/grails-app/views/${propertyName}"
+    Ant.mkdir(dir:viewsDir)
+	event("CreatedFile", [viewsDir])
+
+	createTestSuite()
 }

@@ -167,7 +167,7 @@ task( generateWebXml : "Generates the web.xml file") {
 	    	pluginManager.doWebDescriptor(webXml, w)			
 		}   
 		catch(Exception e) {
-			println e.message
+            event("StatusError", [ e.message ])
 			e.printStackTrace(System.out)
 		}
     }

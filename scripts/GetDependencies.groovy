@@ -22,8 +22,9 @@ task ( ivyDeps : "Gets dependencies from remote repository") {
 	} catch (Exception e) {
 		throw new Exception("Ivy task not installed: Run 'grails install-ivy-task'")
 	}
-	println "Getting Ivy dependencies."
-	
+
+    event("StatusUpdate", ["Getting Ivy dependencies"])
 	Ant.ivyretrieve()
+    event("StatusFinal", ["Retrieved Ivy dependencies"])
 }
 
