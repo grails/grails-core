@@ -93,6 +93,10 @@ public class GroovyPageTagBody extends Closure {
         return captureClosureOutput(null);
     }
 
+    public Object doCall(Object arguments) {
+        return captureClosureOutput(arguments);
+    }
+
     public Object call() {
         return captureClosureOutput(null);
     }
