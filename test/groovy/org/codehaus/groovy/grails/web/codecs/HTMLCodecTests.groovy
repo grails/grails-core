@@ -8,6 +8,11 @@ class HTMLCodecTests extends GroovyTestCase{
         Class clazz = gcl.parseClass(gcl.getResource('HTMLCodec.groovy').text);
         codec = (GroovyObject)clazz.newInstance()
     }
+
+    void tearDown() {
+        codec = null
+    }
+
 	void testEncode() {
         assertEquals('&lt;tag&gt;', codec.encode('<tag>'))
         assertEquals('&quot;quoted&quot;', codec.encode('"quoted"'))

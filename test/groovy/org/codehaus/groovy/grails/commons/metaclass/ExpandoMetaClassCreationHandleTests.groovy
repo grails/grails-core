@@ -35,7 +35,10 @@ class ExpandoMetaClassCreationHandleTests extends GroovyTestCase {
 	
 	void tearDown() {
 		registry.metaClassCreationHandle = original
+		original = null
+		registry = null
 	}
+
 	void testExpandoCreationHandle() {
 		def metaClass = registry.getMetaClass(URL.class)
 		if(!(metaClass instanceof ExpandoMetaClass)) {

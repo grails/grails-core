@@ -50,6 +50,10 @@ public class DynamicMethodsMetaClassTests extends TestCase {
         this.groovyObject = (GroovyObject)groovyClass.newInstance();
     }
 
+    protected void tearDown() {
+        groovyObject = null;
+    }
+
     public void testInvokeExistingJavaMethod() {
         assertNotNull(groovyObject.invokeMethod("toString", new Object[0]));
     }

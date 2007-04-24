@@ -14,6 +14,12 @@ class LoggingGrailsPluginTests extends AbstractGrailsPluginTests {
     def serviceClass
     def taglibClass
 
+    void onTearDown() {
+        controllerClass = null
+        serviceClass = null
+        taglibClass = null
+    }
+
 	void onSetUp() {
 		controllerClass = gcl.parseClass(
 				"""

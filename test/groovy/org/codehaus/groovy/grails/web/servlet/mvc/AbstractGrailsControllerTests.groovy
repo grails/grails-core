@@ -93,10 +93,12 @@ abstract class AbstractGrailsControllerTests extends GroovyTestCase {
 		ga = null
 		mockManager = null
 		ctx = null
+		appCtx = null
 
 		RequestContextHolder.setRequestAttributes(null)
         GroovySystem.metaClassRegistry.setMetaClassCreationHandle(originalHandler);
-		
+
+    	originalHandler = null
 	}
 	
 	

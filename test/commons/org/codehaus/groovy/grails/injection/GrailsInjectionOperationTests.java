@@ -34,7 +34,15 @@ public class GrailsInjectionOperationTests extends AbstractDependencyInjectionSp
 	}
 
 
-	protected void onSetUp() throws Exception {
+    protected void onTearDown() throws Exception
+    {
+        resources = null;
+        injectionOperation = null;
+        ga = null;
+	    super.onTearDown();
+    }
+
+    protected void onSetUp() throws Exception {
 		super.onSetUp();
 		
 		resources = new PathMatchingResourcePatternResolver().getResources("classpath:org/codehaus/groovy/grails/injection/grails-app/domain/*.groovy");

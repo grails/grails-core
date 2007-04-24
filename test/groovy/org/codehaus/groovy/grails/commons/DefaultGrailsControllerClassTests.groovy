@@ -11,6 +11,10 @@ class DefaultGrailsControllerClassTests extends GroovyTestCase {
 		gcl = new GroovyClassLoader()
 	}
 
+    void tearDown() {
+        gcl = null
+    }
+
     void testInterceptorInheritance() {
         gcl.parseClass("""
 abstract class ParentController {

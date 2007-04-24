@@ -96,7 +96,6 @@ AbstractDependencyInjectionSpringContextTests {
         ctx.registerMockBean(GrailsApplication.APPLICATION_ID, grailsApplication);
 		mockManager = new MockGrailsPluginManager(grailsApplication)
 
-		grailsApplication.initialise()
         grailsApplication.addArtefact(ControllerArtefactHandler.TYPE, mockControllerClass)
 
 		
@@ -138,7 +137,22 @@ AbstractDependencyInjectionSpringContextTests {
 		.getMetaRegistry()
 		.setMetaClassCreationHandle(originalHandler);
     	
-		onDestroy()
+        onDestroy()
+
+        servletContext = null
+        webRequest = null
+        request = null
+        response = null
+        ctx = null
+        originalHandler = null
+        appCtx = null
+        ga = null
+        mockManager = null
+
+        grailsApplication = null
+        messageSource = null
+
+        gcl = null
     }
 
 	protected void onInit() {

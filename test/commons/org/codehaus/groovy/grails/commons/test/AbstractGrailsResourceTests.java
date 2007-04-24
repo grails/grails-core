@@ -175,8 +175,20 @@ public abstract class AbstractGrailsResourceTests extends TestCase {
 		    SessionFactoryUtils.releaseSession(s, this.sessionFactory);
 		}
         onTearDown();
-    }	
 
+        gcl = null;
+        ga = null;
+        messageSource = null;
+        parentContext = null;
+        applicationContext = null;
+        servletContext = null;
+        sessionFactory = null;
+        session = null;
+        resourcePattern = null;
+        resolver = null;
+        resources = null;
+    }
+    
     /**
      * Called directly before destruction of the TestCase in the junit.framework.TestCase#tearDown() method
      */

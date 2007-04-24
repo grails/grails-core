@@ -22,6 +22,11 @@ class ControllersDynamicMethodsTests extends AbstractGrailsMockTests {
 		}
 		""")
 	}
+
+	void onTearDown() {
+		request = null
+	    response = null
+	}
 	
 	def request
 	def response

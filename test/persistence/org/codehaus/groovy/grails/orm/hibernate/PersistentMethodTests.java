@@ -34,6 +34,16 @@ public class PersistentMethodTests extends AbstractDependencyInjectionSpringCont
         this.grailsApplication = grailsApplication;
     }
 
+
+    protected void onTearDown() throws Exception
+    {
+        grailsApplication = null;
+        cl = null;
+        sessionFactory = null;
+        hibSession = null;
+        super.onTearDown();
+    }
+
     protected void onSetUp() throws Exception {
         Class groovyClass = cl.parseClass("public class PersistentMethodTests {\n" +
             "\t Long id \n" +

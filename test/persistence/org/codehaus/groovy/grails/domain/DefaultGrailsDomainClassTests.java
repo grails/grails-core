@@ -33,11 +33,19 @@ public class DefaultGrailsDomainClassTests extends TestCase {
 	private Class manyToManyClass;
 	private Class oneToManyClass;
 	private Class oneToOneClass;
-	
-	
 
-	
-	protected void setUp() throws Exception {
+
+    protected void tearDown() throws Exception
+    {
+        cl = null;
+        relClass = null;
+        manyToManyClass = null;
+        oneToManyClass = null;
+        oneToOneClass = null;
+        super.tearDown();  
+    }
+
+    protected void setUp() throws Exception {
 		Thread.currentThread().setContextClassLoader(cl);
 		
 		relClass = cl.loadClass( "org.codehaus.groovy.grails.domain.RelationshipsTest" );

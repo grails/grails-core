@@ -8,6 +8,11 @@ class JavaScriptCodecTests extends GroovyTestCase{
         Class clazz = gcl.parseClass(gcl.getResource('JavaScriptCodec.groovy').text);
         codec = (GroovyObject)clazz.newInstance()
     }
+
+    void tearDown() {
+        codec = null
+    }
+
 	void testEncode() {
         assertEquals('\\"\\"', codec.encode('""'))
         assertEquals("\\'\\'", codec.encode("''"))

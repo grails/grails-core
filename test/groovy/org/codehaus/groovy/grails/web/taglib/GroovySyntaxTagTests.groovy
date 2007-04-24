@@ -28,6 +28,11 @@ public class GroovySyntaxTagTests extends TestCase {
 		tag = new MyGroovySyntaxTag();
 	}
 
+
+    protected void tearDown() {
+        tag = null
+    }
+
 	/**
 	 * Test method for {@link org.codehaus.groovy.grails.web.taglib.GroovySyntaxTag#init(java.util.Map)}.
 	 */

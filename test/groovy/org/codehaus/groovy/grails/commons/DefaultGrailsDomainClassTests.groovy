@@ -10,7 +10,11 @@ class DefaultGrailsDomainClassTests extends GroovyTestCase {
 	void setUp() {
 		gcl = new GroovyClassLoader()
 	}
-	 
+
+    void tearDown() {
+        gcl = null
+    }
+
 	void testFetchMode() {
 		gcl.parseClass(
 				"""

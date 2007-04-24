@@ -36,6 +36,17 @@ public class DefaultGrailsPluginTests extends AbstractGrailsMockTests {
     private Class disabled;
     private Class observed;
 
+    protected void onTearDown()
+    {
+        versioned = null;
+        notVersion = null;
+        notPluginClass = null;
+        disabled = null;
+        observed = null;
+        super.onTearDown();
+        //To change body of overridden methods use File | Settings | File Templates.
+    }
+
     protected void onSetUp() {
 		versioned = gcl.parseClass("class MyGrailsPlugin {\n" +
 						"def version = 1.1;" +

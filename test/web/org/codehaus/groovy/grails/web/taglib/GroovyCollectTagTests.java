@@ -31,7 +31,15 @@ public class GroovyCollectTagTests extends TestCase {
 		tag.setWriter(new PrintWriter(sw));
 	}
 
-	/**
+
+    protected void tearDown() throws Exception
+    {
+        tag = null;
+        sw = null;
+        super.tearDown();
+    }
+
+    /**
 	 * Test method for {@link org.codehaus.groovy.grails.web.taglib.GroovyCollectTag#isBufferWhiteSpace()}.
 	 */
 	public void testIsBufferWhiteSpace() {

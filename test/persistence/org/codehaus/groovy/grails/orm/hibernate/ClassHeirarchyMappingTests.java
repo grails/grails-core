@@ -95,7 +95,12 @@ public class ClassHeirarchyMappingTests extends TestCase {
 		    TransactionSynchronizationManager.unbindResource(this.sessionFactory);
 		    SessionFactoryUtils.releaseSession(s, this.sessionFactory);				
 		}
-	}
+
+        grailsApplication = null;
+        sessionFactory = null;
+        hibSession = null;
+        gcl = null;
+    }
 
 	
 	public void testPolymorphicQuery() throws Exception {

@@ -44,6 +44,14 @@ public class HibernateCriteriaBuilderTests extends
         this.sessionFactory = sessionFactory;
     }
 
+    protected void onTearDown() throws Exception
+    {
+        grailsApplication = null;
+        sessionFactory = null;
+        cl = null;
+        super.onTearDown();
+    }
+
     protected void onSetUp() throws Exception {
         Class groovyClass = cl.parseClass("public class CriteriaBuilderTestClass {\n" +
                 "\n" +

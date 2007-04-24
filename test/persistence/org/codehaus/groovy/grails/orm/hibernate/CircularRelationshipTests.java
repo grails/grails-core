@@ -93,7 +93,11 @@ public class CircularRelationshipTests extends AbstractDependencyInjectionSpring
 		    TransactionSynchronizationManager.unbindResource(this.sessionFactory);
 		    SessionFactoryUtils.releaseSession(s, this.sessionFactory);				
 		}
-	}
+
+        cl = null;
+        grailsApplication = null;
+        sessionFactory = null;
+    }
 
 	
 	public void testHibernateConfiguration() throws Exception {		

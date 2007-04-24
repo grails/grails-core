@@ -80,7 +80,12 @@ abstract class AbstractGrailsPluginTests extends GroovyTestCase {
 		ctx = null
 		pluginsToLoad = []
 		appCtx = null
+    	springConfig = null
+    	resolver = null
 		
 		GroovySystem.metaClassRegistry.metaClassCreationHandle = MetaClassRegistry.MetaClassCreationHandle.newInstance()
+
+    	originalHandler = null
+
 	}
 }

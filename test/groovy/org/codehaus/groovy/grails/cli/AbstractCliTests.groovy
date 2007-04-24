@@ -16,6 +16,7 @@ abstract class AbstractCliTests extends GroovyTestCase {
 	
 	void tearDown() {
 		ant.delete(dir:appBase, failonerror:false)
+		ant = null
 	}
 
 }

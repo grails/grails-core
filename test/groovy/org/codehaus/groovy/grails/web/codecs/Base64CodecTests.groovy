@@ -11,6 +11,12 @@ class Base64CodecTests extends GroovyTestCase{
         Class clazz = gcl.parseClass(resourceLoader.getResource('file:./src/grails/grails-app/utils/Base64Codec.groovy').inputStream);
         codec = (GroovyObject)clazz.newInstance()
     }
+
+    void tearDown() {
+        codec = null
+        resourceLoader = null
+    }
+
 	void testEncode() {
         // this test was taken from Dierk Konig's Groovy in action book
         byte[] data = new byte[256]

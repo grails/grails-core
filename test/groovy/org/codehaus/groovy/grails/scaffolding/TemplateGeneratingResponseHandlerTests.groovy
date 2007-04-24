@@ -120,6 +120,7 @@ class TemplateGeneratingResponseHandlerTests extends GroovyTestCase {
 
     void tearDown() {
          RequestContextHolder.setRequestAttributes(null)
+         application = null
     }
 }
 class Test {

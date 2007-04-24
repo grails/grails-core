@@ -98,7 +98,11 @@ public class GrailsHibernateConfigurationTests extends AbstractDependencyInjecti
 		    TransactionSynchronizationManager.unbindResource(this.sessionFactory);
 		    SessionFactoryUtils.releaseSession(s, this.sessionFactory);				
 		}
-	}
+
+        cl = null;
+        grailsApplication = null;
+        sessionFactory = null;
+    }
 
 	
 	public void testHibernateConfiguration() throws Exception {		

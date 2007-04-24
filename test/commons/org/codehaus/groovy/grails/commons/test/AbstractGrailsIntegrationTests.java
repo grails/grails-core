@@ -163,7 +163,6 @@ public abstract class AbstractGrailsIntegrationTests extends TestCase {
 	protected abstract void onSetUp();
 	
     protected final void tearDown() throws Exception {
-        super.tearDown();
 		if(TransactionSynchronizationManager.hasResource(this.sessionFactory)) {
 		    SessionHolder holder = (SessionHolder) TransactionSynchronizationManager.getResource(this.sessionFactory);
 		    org.hibernate.Session s = holder.getSession();
@@ -172,7 +171,18 @@ public abstract class AbstractGrailsIntegrationTests extends TestCase {
 		    SessionFactoryUtils.releaseSession(s, this.sessionFactory);
 		}
         onTearDown();
-    }	
+
+        gcl = null;
+        ga = null;
+        messageSource = null;
+        parentContext = null;
+        applicationContext = null;
+        servletContext = null;
+        sessionFactory = null;
+        session = null;
+
+        super.tearDown();
+    }
 
     /**
      * Called directly before destruction of the TestCase in the junit.framework.TestCase#tearDown() method

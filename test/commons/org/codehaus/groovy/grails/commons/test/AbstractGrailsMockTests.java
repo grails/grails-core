@@ -65,6 +65,7 @@ public abstract class AbstractGrailsMockTests extends TestCase {
 
         ga = null;
         ctx = null;
+        gcl = null;
 
         super.tearDown();
     }

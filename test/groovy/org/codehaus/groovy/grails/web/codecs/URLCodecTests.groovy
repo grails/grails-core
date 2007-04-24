@@ -19,6 +19,7 @@ class URLCodecTests extends GroovyTestCase {
 
     void tearDown() {
         codec = null
+        resourceLoader = null
     }
 
 	void testEncode() {

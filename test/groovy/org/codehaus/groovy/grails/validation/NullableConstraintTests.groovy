@@ -13,6 +13,10 @@ class NullableConstraintTests extends GroovyTestCase {
 		gcl = new GroovyClassLoader()
 	}
 
+    void tearDown() {
+        gcl = null
+    }
+
     void testNullableConstraint() {
         gcl.parseClass("""
 class Project {
