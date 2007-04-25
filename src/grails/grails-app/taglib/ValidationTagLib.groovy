@@ -115,13 +115,13 @@ class ValidationTagLib {
                 if(attrs['field']) {
                     if(errors.hasFieldErrors(attrs['field'])) {
                         errors.getFieldErrors( attrs["field"] ).each {
-                            body(it)
+                            out << body(it)
                         }
                     }
                 }
                 else {
                     errors.allErrors.each {
-                        body( it )
+                        out << body( it )
                     }
                 }
             }
@@ -137,7 +137,7 @@ class ValidationTagLib {
 
         if(renderAs == 'list') {
             out << "<ul>"
-            eachError(attrs, {
+            out << eachError(attrs, {
                 out << "<li>"
                 out << message(error:it)
                 out << "</li>"
