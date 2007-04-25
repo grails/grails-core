@@ -356,7 +356,12 @@ public abstract class GroovyPage extends Script {
 				if(body1 != null) {
 					Object bodyResponse;
 					if(body1 instanceof Closure) {
-						bodyResponse = ((Closure)body1).call();
+                           if(args!=null && args.length>0){
+                                   bodyResponse = ((Closure)body1).call(args);
+                           }
+                           else {
+                                   bodyResponse = ((Closure)body1).call();
+                           }
 					}
 					else {
 						bodyResponse = body1;
