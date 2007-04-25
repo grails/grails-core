@@ -80,8 +80,8 @@ public abstract class AbstractGrailsPlugin extends GroovyObjectSupport implement
 	
 	public abstract void doArtefactConfiguration();	
 	
-	public void checkForChanges() {
-		// do nothing		
+	public boolean checkForChanges() {
+	    return false;		
 	}
 
 	public void doWithWebDescriptor(GPathResult webXml) {

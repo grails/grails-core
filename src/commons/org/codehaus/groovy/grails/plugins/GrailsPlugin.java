@@ -15,16 +15,15 @@
  */ 
 package org.codehaus.groovy.grails.plugins;
 
-import groovy.util.slurpersupport.GPathResult;
 import groovy.lang.GroovyObject;
-
-import java.util.Map;
-
+import groovy.util.slurpersupport.GPathResult;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+
+import java.util.Map;
 
 /**
  * <p>Plugin interface that adds Spring {@link org.springframework.beans.factory.config.BeanDefinition}s
@@ -184,9 +183,11 @@ public interface GrailsPlugin extends ApplicationContextAware {
 	/**
 	 * When called this method checks for any changes to the plug-ins watched resources
 	 * and reloads appropriately
+     *
+     * @return Returns true when the plug-in itself changes in some way, as oppose to plug-in resources 
 	 *
 	 */
-	void checkForChanges();
+	boolean checkForChanges();
 	
 	/**
 	 * Refreshes this Grails plugin reloading any watched resources as necessary

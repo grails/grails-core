@@ -92,6 +92,7 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
     private Map applicationMeta;
     private GrailsInjectionOperation injectionOperation;
     private Resource[] resources;
+    private boolean initialised = false;
 
     /**
      * Creates a new empty Grails application
@@ -518,6 +519,7 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
     }
 
     public void rebuild() {
+        this.initialised = false;
         this.loadedClasses.clear();
         initArtefactHandlers();
 
@@ -846,7 +848,12 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
             log.debug("loaded classes: [" + loadedClasses + "]");
         }    	
         Class[] classes = populateAllClasses();
-        configureLoadedClasses(classes);    	
+        configureLoadedClasses(classes);
+        this.initialised = true;        
+    }
+
+    public boolean isInitialised() {
+        return this.initialised;
     }
 
     public Map getMetadata()

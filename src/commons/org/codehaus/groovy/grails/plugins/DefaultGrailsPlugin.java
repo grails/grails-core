@@ -17,35 +17,26 @@ package org.codehaus.groovy.grails.plugins;
 
 import grails.spring.BeanBuilder;
 import grails.util.GrailsUtil;
-import groovy.lang.Binding;
-import groovy.lang.Closure;
-import groovy.lang.GroovyObject;
-import groovy.lang.MetaClassRegistry;
+import groovy.lang.*;
 import groovy.util.slurpersupport.GPathResult;
-
-import java.io.IOException;
-import java.net.URL;
-import java.net.URLConnection;
-import java.util.*;
-
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.commons.ArtefactHandler;
-import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.GrailsClassUtils;
-import org.codehaus.groovy.grails.commons.GrailsMetaClassUtils;
-import org.codehaus.groovy.grails.commons.GrailsResourceUtils;
+import org.codehaus.groovy.grails.commons.*;
 import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration;
 import org.codehaus.groovy.grails.plugins.exceptions.PluginException;
 import org.codehaus.groovy.grails.support.ParentApplicationContextAware;
-import org.codehaus.groovy.runtime.InvokerHelper;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.util.Assert;
+
+import java.io.IOException;
+import java.net.URL;
+import java.net.URLConnection;
+import java.util.*;
 
 /**
  * Implementation of the GrailsPlugin interface that wraps a Groovy plugin class
@@ -78,20 +69,36 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
     private String[] resourcesReferences;
     private String[] loadAfterNames = new String[0];
     private String[] influencedPluginNames = new String[0];
-    private MetaClassRegistry registry;
     private String status = STATUS_ENABLED;
     private String[] observedPlugins;
+    private long pluginLastModified = Long.MAX_VALUE;
+    private URL pluginUrl;
 
 
-    public DefaultGrailsPlugin(Class pluginClass, GrailsApplication application) {
+    public DefaultGrailsPlugin(Class pluginClass, Resource resource, GrailsApplication application) {
         super(pluginClass, application);
         // create properties
-        this.registry = InvokerHelper.getInstance().getMetaRegistry();
+        this.dependencies = Collections.EMPTY_MAP;
+        this.resolver = new PathMatchingResourcePatternResolver();
+        if(resource != null) {
+            try {
+                pluginUrl = resource.getURL();
+                this.pluginLastModified = pluginUrl
+                                            .openConnection()
+                                            .getLastModified();
+            } catch (IOException e) {
+                LOG.warn("I/O error reading last modified date of plug-in ["+pluginClass+"], you won't be able to reload changes: " + e.getMessage(),e);
+            }
+        }
+
+
+        initialisePlugin(pluginClass);
+    }
+
+    private void initialisePlugin(Class pluginClass) {
         this.pluginGrailsClass = new GrailsPluginClass(pluginClass);
         this.plugin = (GroovyObject)this.pluginGrailsClass.newInstance();
         this.pluginBean = new BeanWrapperImpl(this.plugin);
-        this.dependencies = Collections.EMPTY_MAP;
-        this.resolver = new PathMatchingResourcePatternResolver();
 
         // configure plugin
         evaluatePluginVersion();
@@ -102,6 +109,10 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
         evaluateOnChangeListener();
         evaluateObservedPlugins();
         evaluatePluginStatus();
+    }
+
+    public DefaultGrailsPlugin(Class pluginClass, GrailsApplication application) {
+        this(pluginClass, null,application);
     }
 
     private void evaluateObservedPlugins() {
@@ -353,7 +364,22 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
      * Monitors the plugin resources defined in the watchResources property for changes and
      * fires onChange events by calling an onChange closure defined in the plugin (if it exists)
      */
-    public void checkForChanges() {
+    public boolean checkForChanges() {
+        if(pluginUrl != null) {
+            long currentModified = -1;
+            try {
+                currentModified = pluginUrl
+                                        .openConnection()
+                                        .getLastModified();
+            } catch (IOException e) {
+                LOG.warn("Error reading plugin ["+pluginClass+"] last modified date, cannot reload following change: " + e.getMessage());
+            }
+
+            if(currentModified > pluginLastModified) {
+                initialisePlugin(attemptClassReload(this.pluginClass.getName()));
+                return true;
+            }
+        }
         if(onChangeListener!=null) {
                 checkForNewResources(this);
 
@@ -367,13 +393,14 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
                         if(LOG.isDebugEnabled())
                             LOG.debug("[GrailsPlugin] plugin resource ["+r+"] changed, firing event if possible..");
 
-                        fireModifiedEvent(r, this);
-                        refreshInfluencedPlugins();
                         modifiedTimes[i] = modifiedFlag;
+                        fireModifiedEvent(r, this);
+                        refreshInfluencedPlugins();                        
                     }
                 }
 
         }
+        return false;
     }
 
     /**

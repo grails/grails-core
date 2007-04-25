@@ -61,6 +61,7 @@ public class GrailsReloadServletFilter extends OncePerRequestFilter {
 
 	private GrailsPluginManager manager;
     private UrlPathHelper urlHelper = new UrlPathHelper();
+    private WebApplicationContext parent;
 
     public GrailsReloadServletFilter() {
     }
@@ -85,10 +86,11 @@ public class GrailsReloadServletFilter extends OncePerRequestFilter {
           return;
       }      
       if(config == null) {
-    	  WebApplicationContext parent = (WebApplicationContext)getServletContext().getAttribute(GrailsApplicationAttributes.PARENT_APPLICATION_CONTEXT);
+    	  this.parent = (WebApplicationContext)getServletContext().getAttribute(GrailsApplicationAttributes.PARENT_APPLICATION_CONTEXT);
     	  config = new GrailsRuntimeConfigurator(application,parent);  
       }
-      
+
+
       String uri = urlHelper.getPathWithinApplication(httpServletRequest);
       String lastPart = uri.substring(uri.lastIndexOf("/"));
       if(lastPart.indexOf('.') > -1) {
@@ -129,6 +131,12 @@ public class GrailsReloadServletFilter extends OncePerRequestFilter {
                 if(LOG.isDebugEnabled())
                     LOG.debug("Checking Plugin manager for changes..");
                 manager.checkForChanges();
+                if(!application.isInitialised()) {
+                    application.rebuild();
+                    config = new GrailsRuntimeConfigurator(application,parent);
+                    config.reconfigure(context, getServletContext(), true);
+                }
+                
             }
             else if(LOG.isDebugEnabled()) {
                 LOG.debug("Plugin manager not found, skipping change check");

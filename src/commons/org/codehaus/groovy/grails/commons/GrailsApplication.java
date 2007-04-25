@@ -230,7 +230,16 @@ public interface GrailsApplication extends ApplicationContextAware {
      */
     public ArtefactHandler[] getArtefactHandlers();
 
-	public void initialise();
+    /**
+     * Initialise this GrailsApplication
+     */
+    public void initialise();
+
+    /**
+     * Returns whether this GrailsApplication has been initialised or not
+     * @return True if it has been initialised
+     */
+    public boolean isInitialised();
 
     /**
      * <p>Get access to the project's metadata, specified in application.properties</p>

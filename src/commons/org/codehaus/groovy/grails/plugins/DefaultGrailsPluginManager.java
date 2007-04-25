@@ -27,11 +27,13 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration;
+import org.codehaus.groovy.grails.commons.spring.DefaultRuntimeSpringConfiguration;
 import org.codehaus.groovy.grails.plugins.exceptions.PluginException;
 import org.codehaus.groovy.grails.support.ParentApplicationContextAware;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.support.StaticApplicationContext;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.xml.sax.SAXException;
@@ -204,7 +206,7 @@ public class DefaultGrailsPluginManager implements GrailsPluginManager {
               Resource r = pluginResources[i];
 
               Class pluginClass = loadPluginClass(gcl, r);
-              GrailsPlugin plugin = new DefaultGrailsPlugin(pluginClass, application);
+              GrailsPlugin plugin = new DefaultGrailsPlugin(pluginClass, r, application);
               attemptPluginLoad(plugin);
           }
           for (int i = 0; i < pluginClasses.length; i++) {
@@ -590,11 +592,26 @@ public class DefaultGrailsPluginManager implements GrailsPluginManager {
   public void checkForChanges() {
       for (Iterator i = pluginList.iterator(); i.hasNext();) {
           GrailsPlugin plugin = (GrailsPlugin) i.next();
-          plugin.checkForChanges();
+          if(plugin.checkForChanges()) {
+              LOG.info("Plugin "+plugin+" changed, re-registering beans...");
+              reloadPlugin(plugin);
+          }
       }
   }
 
-  public void doWebDescriptor(Resource descriptor, Writer target) {
+    private void reloadPlugin(GrailsPlugin plugin) {
+        plugin.doArtefactConfiguration();
+
+        RuntimeSpringConfiguration springConfig = new DefaultRuntimeSpringConfiguration(this.parentCtx);
+
+        this.doRuntimeConfiguration(plugin.getName(), springConfig);
+        springConfig.registerBeansWithContext((StaticApplicationContext)this.applicationContext);
+
+        plugin.doWithApplicationContext(this.applicationContext);
+        plugin.doWithDynamicMethods(this.applicationContext);
+    }
+
+    public void doWebDescriptor(Resource descriptor, Writer target) {
       try {
           doWebDescriptor( descriptor.getInputStream(), target);
       } catch (IOException e) {

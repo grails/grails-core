@@ -15,16 +15,16 @@
                      */
 package org.codehaus.groovy.grails.commons.spring;
 
-import java.util.Collection;
-import java.util.List;
-
-import javax.servlet.ServletContext;
-
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
-import org.springframework.web.context.WebApplicationContext;
+import org.springframework.context.support.StaticApplicationContext;
 import org.springframework.web.context.ServletContextAware;
+import org.springframework.web.context.WebApplicationContext;
+
+import javax.servlet.ServletContext;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * A programmable runtime Spring configuration that allows a spring ApplicationContext
@@ -184,4 +184,11 @@ public interface RuntimeSpringConfiguration extends ServletContextAware {
     public void registerPostProcessor(BeanFactoryPostProcessor processor);
 
     List getBeanNames();
+
+    /**
+     * Registers the beans held within this RuntimeSpringConfiguration instance with the given ApplicationContext
+     *
+     * @param applicationContext The ApplicationContext instance
+     */
+    void registerBeansWithContext(StaticApplicationContext applicationContext);
 }
