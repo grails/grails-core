@@ -31,7 +31,6 @@ class TemplateGeneratingResponseHandlerTests extends GroovyTestCase {
         def url = "/test/list"
         def handler = new TemplateGeneratingResponseHandler()
         handler.templateGenerator = new DefaultGrailsTemplateGenerator()
-        handler.templateEngine = gpte
         handler.scaffoldedClass = Test.class
         handler.grailsApplication = application
         handler.applicationContext = ctx;
@@ -56,7 +55,6 @@ class TemplateGeneratingResponseHandlerTests extends GroovyTestCase {
         def url = "/test/show"
         def handler = new TemplateGeneratingResponseHandler()
         handler.templateGenerator = new DefaultGrailsTemplateGenerator()
-        handler.templateEngine = gpte
         handler.scaffoldedClass = Test.class
         handler.grailsApplication = application
         handler.applicationContext = ctx;
@@ -81,7 +79,6 @@ class TemplateGeneratingResponseHandlerTests extends GroovyTestCase {
         def url = "/test/edit"
         def handler = new TemplateGeneratingResponseHandler()
         handler.templateGenerator = new DefaultGrailsTemplateGenerator()
-        handler.templateEngine = gpte
         handler.scaffoldedClass = Test.class
         handler.grailsApplication = application
         handler.applicationContext = ctx;
@@ -106,7 +103,6 @@ class TemplateGeneratingResponseHandlerTests extends GroovyTestCase {
         def url = "/test/create"
         def handler = new TemplateGeneratingResponseHandler()
         handler.templateGenerator = new DefaultGrailsTemplateGenerator()
-        handler.templateEngine = gpte
         handler.scaffoldedClass = Test.class
         handler.grailsApplication = application
         handler.applicationContext = ctx;
