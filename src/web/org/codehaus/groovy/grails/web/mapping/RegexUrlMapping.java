@@ -25,9 +25,7 @@ import org.springframework.validation.Errors;
 import org.springframework.validation.MapBindingResult;
 import org.springframework.web.context.request.RequestContextHolder;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -171,6 +169,7 @@ public class RegexUrlMapping implements UrlMapping {
     public String createURL(Map parameterValues) {
 		if(parameterValues==null)parameterValues=Collections.EMPTY_MAP;
     	StringBuffer uri = new StringBuffer();
+        Set usedParams = new HashSet();
 
         String[] tokens = urlData.getTokens();
         int paramIndex = 0;
@@ -178,7 +177,9 @@ public class RegexUrlMapping implements UrlMapping {
             String token = tokens[i];
             if(CAPTURED_WILDCARD.equals(token)) {
                 ConstrainedProperty prop = this.constraints[paramIndex++];
-                Object value = parameterValues.get( prop.getPropertyName() );
+                String propName = prop.getPropertyName();
+                Object value = parameterValues.get(propName);
+                usedParams.add(propName);
                 if(value == null && !prop.isNullable())
                     throw new UrlMappingException("Unable to create URL for mapping ["+this+"] and parameters ["+parameterValues+"]. Parameter ["+prop.getPropertyName()+"] is required, but was not specified!");
                 else if(value == null)
@@ -191,10 +192,26 @@ public class RegexUrlMapping implements UrlMapping {
             }
 
         }
+        boolean addedParams = false;
+
+        for (Iterator i = parameterValues.keySet().iterator(); i.hasNext();) {
+            String name = i.next().toString();
+            if(!usedParams.contains(name)) {
+                if(!addedParams) {
+                    uri.append('?');
+                    addedParams = true;
+                }
+                else {
+                    uri.append('&');
+                }
+                uri.append(name).append('=').append(parameterValues.get(name));
+            }
+
+        }
         if(LOG.isDebugEnabled()) {
             LOG.debug("Created reverse URL mapping ["+uri.toString()+"] for parameters ["+parameterValues+"]");
-        }
-        return uri.toString();
+        }        
+        return  uri.toString();
     }
 
     public UrlMappingData getUrlData() {

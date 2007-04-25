@@ -71,6 +71,8 @@ mappings  {
             assert m
 
             assertEquals "/admin/test/list/1", m.createURL(controller:"test", action:"list",id:1)
+
+            assertEquals "/admin/test/list/1?foo=bar", m.createURL(controller:"test", action:"list",id:1, foo:"bar")
                  
     }
 
