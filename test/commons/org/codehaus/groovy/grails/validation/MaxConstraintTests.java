@@ -59,6 +59,8 @@ public class MaxConstraintTests extends AbstractConstraintTests{
     public void testCreation() {
         MaxConstraint constraint = new MaxConstraint();
         assertEquals( ConstrainedProperty.MAX_CONSTRAINT, constraint.getName() );
+        assertTrue( constraint.supports( int.class ));
+        assertTrue( constraint.supports( float.class ));
         assertTrue( constraint.supports( Integer.class ));
         assertTrue( constraint.supports( Float.class ));
         assertTrue( constraint.supports( BigDecimal.class ));
