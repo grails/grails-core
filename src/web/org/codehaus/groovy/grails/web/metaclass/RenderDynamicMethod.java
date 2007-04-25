@@ -272,7 +272,6 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
                             Writable w = t.make(new BeanMap(target));
                             w.writeTo(out);
                     }
-                    out.flush();
                     renderView = false;
                 }
                 catch(GroovyRuntimeException gre) {
@@ -285,6 +284,11 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
             else {
                 throw new MissingMethodException(METHOD_SIGNATURE,target.getClass(),arguments);
             }
+            try {
+                out.flush();
+            } catch (IOException e) {
+                throw new ControllerExecutionException("I/O error executing render method for arguments ["+argMap+"]: " + e.getMessage(),e);
+            }            
         }
         else {
             throw new MissingMethodException(METHOD_SIGNATURE,target.getClass(),arguments);
