@@ -129,34 +129,39 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
                 LOG.debug("Dynamic method [redirect] looking up URL mapping for controller ["+controllerName+"] and action ["+actionName+"] and params ["+params+"] with ["+urlMappingsHolder+"]");
             }
 
-            UrlMapping urlMapping = null;
-            if(urlMappingsHolder!=null)
-                urlMapping = urlMappingsHolder.getReverseMapping(controllerName, actionName, params);
+            boolean found = false;
 
-            if(LOG.isDebugEnabled() && urlMapping == null) {
-                LOG.debug("Dynamic method [redirect] no URL mapping found for params ["+params +"]");
+            try {
+                UrlMapping urlMapping = null;
+
+                if( id != null ) params.put( ARGUMENT_ID, id );
+
+                if( urlMappingsHolder != null ) {
+                    urlMapping = urlMappingsHolder.getReverseMapping( controllerName, actionName, params );
+                }
+
+                if( LOG.isDebugEnabled() && urlMapping == null ) {
+                    LOG.debug( "Dynamic method [redirect] no URL mapping found for params [" + params + "]" );
+                }
+                if( urlMapping != null ) {
+                    found = true;
+                    params.put( ARGUMENT_CONTROLLER, controllerName );
+                    params.put( ARGUMENT_ACTION, actionName != null ? actionName : webRequest.getActionName() );
+                    String mappedUrl = urlMapping.createURL( params );
+
+                    if( LOG.isDebugEnabled() ) {
+                        LOG.debug( "Dynamic method [redirect] mapped to URL [" + mappedUrl + "]" );
+                    }
+
+                    actualUriBuf.append( mappedUrl );
+                }
+            } finally {
+                if( id != null ) params.remove( ARGUMENT_ID );
+                params.remove( ARGUMENT_CONTROLLER );
+                params.remove( ARGUMENT_ACTION );
             }
 
-
-            if(urlMapping != null) {
-
-               try {
-                   params.put(ARGUMENT_CONTROLLER, controllerName);
-                   params.put(ARGUMENT_ACTION, actionName != null ? actionName : webRequest.getActionName());
-                   String mappedUrl = urlMapping.createURL(params);
-
-                   if(LOG.isDebugEnabled()) {
-                       LOG.debug("Dynamic method [redirect] mapped to URL ["+mappedUrl +"]");
-                   }
-
-                   actualUriBuf.append(mappedUrl);
-               }
-               finally {
-                   params.remove(ARGUMENT_CONTROLLER);
-                   params.remove(ARGUMENT_ACTION);
-               }
-            }
-            else {
+            if( !found ) {
                 if(actionName != null) {
 
                     if(actionName.indexOf(SLASH) > -1) {
