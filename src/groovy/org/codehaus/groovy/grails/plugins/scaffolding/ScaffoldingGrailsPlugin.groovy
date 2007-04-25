@@ -42,18 +42,22 @@ class ScaffoldingGrailsPlugin {
 				if(!scaffoldClass) {
 					scaffoldClass = application.getArtefact(DomainClassArtefactHandler.TYPE, controller.name)?.clazz
 				}
-
+                   
+				
+				
 				if(scaffoldClass) {
+					
+					assert scaffoldClass == application.getArtefact(DomainClassArtefactHandler.TYPE, scaffoldClass.name)?.clazz
+					
 					log.debug("Configuring scaffolding for class [$scaffoldClass]")
 					// create the scaffold domain which is used to interact with persistence
 					"${scaffoldClass.name}Domain"(	GrailsScaffoldDomain, 
-													scaffoldClass.name,
+													scaffoldClass,
 													sessionFactory)
 
 					// setup the default response handler that simply delegates to a view
 					"${scaffoldClass.name}ResponseHandler"(TemplateGeneratingResponseHandler) { 
 						templateGenerator = {DefaultGrailsTemplateGenerator bean->}
-						templateEngine = groovyPagesTemplateEngine
 						viewResolver = jspViewResolver
 						grailsApplication = ref("grailsApplication", true)
 						scaffoldedClass = scaffoldClass

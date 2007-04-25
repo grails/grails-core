@@ -58,10 +58,9 @@ import java.util.Map;
  *        Created: Feb 27, 2007
  *        Time: 7:45:46 AM
  */
-public class TemplateGeneratingResponseHandler implements ScaffoldResponseHandler, ApplicationContextAware, InitializingBean {
+public class TemplateGeneratingResponseHandler implements ScaffoldResponseHandler, ApplicationContextAware {
     private ViewResolver resolver;
     private GrailsTemplateGenerator templateGenerator;
-    private GroovyPagesTemplateEngine templateEngine;
     private Map generatedViewCache = new HashMap();
     private Class scaffoldedClass;
     private GrailsApplication grailsApplication;
@@ -74,7 +73,15 @@ public class TemplateGeneratingResponseHandler implements ScaffoldResponseHandle
      */
     public void clearViewCache() {
         generatedViewCache.clear();
-        templateEngine.clearPageCache();
+        getTemplateEngine().clearPageCache();
+    }
+
+    private GroovyPagesTemplateEngine getTemplateEngine() {
+        GroovyPagesTemplateEngine templateEngine = (GroovyPagesTemplateEngine)applicationContext.getBean(GroovyPagesTemplateEngine.BEAN_ID);
+        if(!GrailsUtil.isDevelopmentEnv()) {
+            templateEngine.setResourceLoader(this.applicationContext);
+        }
+        return templateEngine;
     }
 
     /**
@@ -87,7 +94,7 @@ public class TemplateGeneratingResponseHandler implements ScaffoldResponseHandle
      * @return A Spring ModelAndView instance
      */
     public ModelAndView handleResponse(HttpServletRequest request, HttpServletResponse response, String actionName, Map model) {
-        if(templateEngine == null) throw new IllegalStateException("Property [templateEngine] must be set!");
+
         if(templateGenerator == null) throw new IllegalStateException("Property [templateGenerator] must be set!");
         if(resolver == null) throw new IllegalStateException("Property [resolver] must be set!");
         if(scaffoldedClass == null) throw new IllegalStateException("Property [scaffoldedClass] must be set!");
@@ -110,6 +117,7 @@ public class TemplateGeneratingResponseHandler implements ScaffoldResponseHandle
                 uri = ((AbstractUrlBasedView)v).getUrl();
                 Resource r = null;
                 if(uri.endsWith(GroovyPage.EXTENSION)) {
+                    GroovyPagesTemplateEngine templateEngine = getTemplateEngine();
                     r = templateEngine.getResourceForUri(uri);
                 }
                 
@@ -184,15 +192,6 @@ public class TemplateGeneratingResponseHandler implements ScaffoldResponseHandle
         this.templateGenerator = templateGenerator;
     }
 
-    /**
-     * Sets the GroovyPagesTemplateEngine to use to handle views
-     *
-     * @param templateEngine The TemplateEngine to use
-     */
-    public void setTemplateEngine(GroovyPagesTemplateEngine templateEngine) {
-        this.templateEngine = templateEngine;
-    }
-
 
     public void setScaffoldedClass(Class scaffoldedClass) {
         this.scaffoldedClass = scaffoldedClass;
@@ -206,9 +205,4 @@ public class TemplateGeneratingResponseHandler implements ScaffoldResponseHandle
         this.applicationContext = applicationContext;
     }
 
-    public void afterPropertiesSet() throws Exception {
-        if(!GrailsUtil.isDevelopmentEnv()) {
-            this.templateEngine.setResourceLoader(this.applicationContext);
-        }
-    }
 }

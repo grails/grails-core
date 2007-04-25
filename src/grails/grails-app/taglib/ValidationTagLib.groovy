@@ -56,11 +56,17 @@ class ValidationTagLib {
             if (i instanceof Errors) {
                errors = i
             }
-            else {
-				if ((i.errors != null) && (i.errors instanceof Errors)) {
-	                if (i.hasErrors())
-	                    errors = i.errors
-	            }
+            else {       
+				try {
+					if ((i.errors != null) && (i.errors instanceof Errors)) {
+		                if (i.hasErrors())
+		                    errors = i.errors
+		            }
+					
+				}   
+				catch(MissingPropertyException mpe) {
+					// ignore
+				}
 			}
             if(errors) {
                 if(attrs['field']) {
