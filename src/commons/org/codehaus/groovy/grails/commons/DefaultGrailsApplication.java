@@ -652,9 +652,8 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
 
             addToLoaded(artefactClass);
 
-            if (!suspectArtefactInit) {
-                initializeArtefacts(artefactType);
-            }
+            initializeArtefacts(artefactType);
+
 
             return artefactGrailsClass;
         }
@@ -688,6 +687,8 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
             DefaultArtefactInfo info = getArtefactInfo(artefactType, true);
             info.addGrailsClass( artefactGrailsClass);
             info.updateComplete();
+
+            initializeArtefacts(artefactType);
 
             return artefactGrailsClass;
         }

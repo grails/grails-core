@@ -17,7 +17,9 @@ package org.codehaus.groovy.grails.plugins;
 
 import grails.spring.BeanBuilder;
 import grails.util.GrailsUtil;
-import groovy.lang.*;
+import groovy.lang.Binding;
+import groovy.lang.Closure;
+import groovy.lang.GroovyObject;
 import groovy.util.slurpersupport.GPathResult;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.logging.Log;
@@ -31,7 +33,6 @@ import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
-import org.springframework.util.Assert;
 
 import java.io.IOException;
 import java.net.URL;
@@ -505,7 +506,7 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
         if(className != null) {
             Class oldClass = application.getClassForName(className);
             loadedClass = attemptClassReload(className);
-            Assert.isTrue(oldClass!=loadedClass, "Problem reloading class ["+oldClass+"]. The reload was not successful!");
+            //Assert.isTrue(oldClass!=loadedClass, "Problem reloading class ["+oldClass+"]. The reload was not successful!");
             
             replaceExpandoMetaClass(loadedClass, oldClass);
         }

@@ -45,9 +45,7 @@ class ScaffoldingGrailsPlugin {
                    
 				
 				
-				if(scaffoldClass) {
-					
-					assert scaffoldClass == application.getArtefact(DomainClassArtefactHandler.TYPE, scaffoldClass.name)?.clazz
+				if(scaffoldClass) {				   
 					
 					log.debug("Configuring scaffolding for class [$scaffoldClass]")
 					// create the scaffold domain which is used to interact with persistence

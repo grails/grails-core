@@ -16,14 +16,6 @@ package org.codehaus.groovy.grails.orm.hibernate;
 
 import groovy.lang.MetaClass;
 import groovy.lang.MetaClassRegistry;
-
-import java.beans.IntrospectionException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.AbstractGrailsClass;
@@ -44,6 +36,9 @@ import org.hibernate.type.AssociationType;
 import org.hibernate.type.Type;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.validation.Validator;
+
+import java.beans.IntrospectionException;
+import java.util.*;
 
 /**
  * An implementation of the GrailsDomainClass interface that allows Classes mapped in
@@ -164,7 +159,7 @@ public class GrailsHibernateDomainClass extends AbstractGrailsClass implements E
 	}
     
     public boolean isOwningClass(Class domainClass) {
-        throw new UnsupportedOperationException("Method 'isOwningClass' is not supported by implementation");
+        return false;
     }
 
     public GrailsDomainClassProperty[] getProperties() {

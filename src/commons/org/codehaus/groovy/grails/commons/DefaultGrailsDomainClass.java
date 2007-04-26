@@ -27,7 +27,6 @@ import org.codehaus.groovy.grails.commons.metaclass.GroovyDynamicMethodsIntercep
 import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException;
 import org.codehaus.groovy.grails.exceptions.GrailsDomainException;
 import org.codehaus.groovy.grails.exceptions.InvalidPropertyException;
-import org.codehaus.groovy.grails.commons.GrailsDomainConfigurationUtil;
 import org.codehaus.groovy.grails.validation.metaclass.ConstraintsEvaluatingDynamicProperty;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeanWrapper;
@@ -273,11 +272,10 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
 
                 establishDomainClassRelationship( currentProp );
             }
-/*
             else if(!GrailsDomainConfigurationUtil.isBasicType(currentProp)) {
             	establishDomainClassRelationship( currentProp );
             }
-*/
+
         }
 
     }
