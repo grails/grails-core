@@ -457,7 +457,7 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
                 return lastModified;
             }
         } catch (IOException e) {
-            LOG.warn("Unable to read last modified date of plugin resource" +e.getMessage(),e);
+            LOG.debug("Unable to read last modified date of plugin resource" +e.getMessage(),e);
         }
         return -1;
     }
