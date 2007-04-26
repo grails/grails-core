@@ -179,6 +179,7 @@ task ( createStructure: "Creates the application directory structure") {
 	    mkdir(dir:"${basedir}/src/test")  
 	    mkdir(dir:"${basedir}/grails-app")
 	    mkdir(dir:"${basedir}/grails-app/controllers")
+	    mkdir(dir:"${basedir}/grails-app/jobs")
 	    mkdir(dir:"${basedir}/grails-app/services")
 	    mkdir(dir:"${basedir}/grails-app/domain")
 	    mkdir(dir:"${basedir}/grails-app/taglib")

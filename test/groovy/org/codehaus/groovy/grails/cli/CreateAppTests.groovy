@@ -23,6 +23,7 @@ class CreateAppTests extends AbstractCliTests {
 		
 		assert new File("${appBase}/testapp/grails-app/controllers").exists()
 		assert new File("${appBase}/testapp/grails-app/domain").exists()
+		assert new File("${appBase}/testapp/grails-app/jobs").exists()
 		assert new File("${appBase}/testapp/grails-app/conf").exists()
 		assert new File("${appBase}/testapp/grails-app/services").exists()
 		assert new File("${appBase}/testapp/grails-app/views").exists()
