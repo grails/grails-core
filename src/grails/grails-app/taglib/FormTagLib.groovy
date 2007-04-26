@@ -88,7 +88,7 @@ class FormTagLib {
     void resolveAttributes(attrs)
     {
         if(!attrs.name && !attrs.field) {
-            throwTagError("Tag [$tagName] is missing required attribute [name] or [field]")
+            throwTagError("Tag [${attrs.tagName}] is missing required attribute [name] or [field]")
         }
         attrs.remove('tagName')
 
