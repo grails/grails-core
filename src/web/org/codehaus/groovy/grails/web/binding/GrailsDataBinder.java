@@ -23,6 +23,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.ApplicationHolder;
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
+import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.metaclass.CreateDynamicMethod;
 import org.codehaus.groovy.grails.web.servlet.GrailsHttpServletRequest;
 import org.codehaus.groovy.runtime.InvokerHelper;
@@ -86,7 +87,8 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
          bean = ((BeanPropertyBindingResult)super.getBindingResult()).getPropertyAccessor();
         
         String[] disallowed = null;
-        if (ApplicationHolder.getApplication().isArtefactOfType(DomainClassArtefactHandler.TYPE, target.getClass())) {
+        GrailsApplication grailsApplication = ApplicationHolder.getApplication();
+        if (grailsApplication!=null && grailsApplication.isArtefactOfType(DomainClassArtefactHandler.TYPE, target.getClass())) {
             if (target instanceof GroovyObject) {
                 disallowed = GROOVY_DOMAINCLASS_DISALLOWED;
             } else {
@@ -139,7 +141,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
 
         checkStructuredDateDefinitions(request,mpvs);
         autoCreateIfPossible(mpvs);
-        bindAssociations(mpvs); 
+        bindAssociations(mpvs);
         if(request instanceof HttpServletRequestWrapper) {
             request = ((HttpServletRequestWrapper)request).getRequest();
         }
@@ -147,13 +149,18 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
             if(((GrailsHttpServletRequest)request).isMultiPart()) {
                 MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
                 bindMultipartFiles(multipartRequest.getFileMap(), mpvs);
-            }            
+            }
         }
         else if (request instanceof MultipartHttpServletRequest) {
 			MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
 			bindMultipartFiles(multipartRequest.getFileMap(), mpvs);
 		}
 
+        super.doBind(mpvs);
+    }
+
+    protected void doBind(MutablePropertyValues mpvs) {
+        autoCreateIfPossible(mpvs);
         super.doBind(mpvs);
     }
 
