@@ -193,6 +193,8 @@ public class RegexUrlMapping implements UrlMapping {
 
         }
         boolean addedParams = false;
+        usedParams.add( "controller" );
+        usedParams.add( "action" );
 
         for (Iterator i = parameterValues.keySet().iterator(); i.hasNext();) {
             String name = i.next().toString();

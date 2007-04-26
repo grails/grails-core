@@ -110,6 +110,7 @@ mappings  {
              assert m
              assertEquals "blog", m.controllerName
              assertEquals "show", m.actionName
+             assertEquals("/blog/foo/2007/3/17?test=test", m.createURL([controller:"blog",action:"show",entry:"foo",year:2007,month:3,day:17,test:'test']))
 
             // test with fewer arguments
             m = holder.getReverseMapping("blog", "show", [entry:"foo", year:2007])
