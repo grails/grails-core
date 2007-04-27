@@ -258,62 +258,68 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
         String viewName = controllerClass.getViewByURI(uri);
 
         // Step 5a: Check if there is a before interceptor if there is execute it
-        boolean executeAction = true;
-        if(controllerClass.isInterceptedBefore(controller,actionName)) {
-        	Closure beforeInterceptor = controllerClass.getBeforeInterceptor(controller);
-        	if(beforeInterceptor!= null) {
-        		Object interceptorResult = beforeInterceptor.call();
-        		if(interceptorResult instanceof Boolean) {
-        			executeAction = ((Boolean)interceptorResult).booleanValue();
-        		}
-        	}
-        }
-        // if the interceptor returned false don't execute the action
-        if(!executeAction)
-        	return null;
-        
-        // Step 6: get closure from closure property
-        Closure action;
+        ClassLoader cl = Thread.currentThread().getContextClassLoader();
         try {
-        	action = (Closure)controller.getProperty(actionName);
-            // Step 7: process the action
-            Object returnValue = handleAction( controller,action,request,response,params );
-
-
-            // Step 8: determine return value type and handle accordingly
-            initChainModel(controller);
-            if(response.isRedirected()) {
-                if(LOG.isDebugEnabled()) {
-                    LOG.debug("Response has been redirected, returning null model and view");
+            Thread.currentThread().setContextClassLoader(application.getClassLoader());
+            boolean executeAction = true;
+            if(controllerClass.isInterceptedBefore(controller,actionName)) {
+                Closure beforeInterceptor = controllerClass.getBeforeInterceptor(controller);
+                if(beforeInterceptor!= null) {
+                    Object interceptorResult = beforeInterceptor.call();
+                    if(interceptorResult instanceof Boolean) {
+                        executeAction = ((Boolean)interceptorResult).booleanValue();
+                    }
                 }
-                invokeAfterInterceptor(controllerClass, controller, null);
-                return null;
             }
-            else {
+            // if the interceptor returned false don't execute the action
+            if(!executeAction)
+        	return null;
 
-                if(LOG.isDebugEnabled()) {
-                    LOG.debug("Action ["+actionName+"] executed with result ["+returnValue+"] and view name ["+viewName+"]");
-                }
-                ModelAndView mv = handleActionResponse(controller,returnValue,actionName,viewName);
-                if(LOG.isDebugEnabled()) {
-                    LOG.debug("Action ["+actionName+"] handled, created Spring model and view ["+mv+"]");
-                }
-                invokeAfterInterceptor(controllerClass, controller, mv);
-                return mv;
-            }
+            // Step 6: get closure from closure property
+            Closure action;
+            try {
+                action = (Closure)controller.getProperty(actionName);
+                // Step 7: process the action
+                Object returnValue = handleAction( controller,action,request,response,params );
 
-        }
-        catch(MissingPropertyException mpe) {
-            if(controllerClass.isScaffolding())
-                throw new IllegalStateException("Scaffolder supports action ["+actionName +"] for controller ["+controllerClass.getFullName()+"] but getAction returned null!");
-            else {
-            	try {
-					response.sendError(HttpServletResponse.SC_NOT_FOUND);
-					return null;
-				} catch (IOException e) {
-						throw new ControllerExecutionException("I/O error sending 404 error",e);
-				}
+
+                // Step 8: determine return value type and handle accordingly
+                initChainModel(controller);
+                if(response.isRedirected()) {
+                    if(LOG.isDebugEnabled()) {
+                        LOG.debug("Response has been redirected, returning null model and view");
+                    }
+                    invokeAfterInterceptor(controllerClass, controller, null);
+                    return null;
+                }
+                else {
+
+                    if(LOG.isDebugEnabled()) {
+                        LOG.debug("Action ["+actionName+"] executed with result ["+returnValue+"] and view name ["+viewName+"]");
+                    }
+                    ModelAndView mv = handleActionResponse(controller,returnValue,actionName,viewName);
+                    if(LOG.isDebugEnabled()) {
+                        LOG.debug("Action ["+actionName+"] handled, created Spring model and view ["+mv+"]");
+                    }
+                    invokeAfterInterceptor(controllerClass, controller, mv);
+                    return mv;
+                }
+
             }
+            catch(MissingPropertyException mpe) {
+                if(controllerClass.isScaffolding())
+                    throw new IllegalStateException("Scaffolder supports action ["+actionName +"] for controller ["+controllerClass.getFullName()+"] but getAction returned null!");
+                else {
+                    try {
+                        response.sendError(HttpServletResponse.SC_NOT_FOUND);
+                        return null;
+                    } catch (IOException e) {
+                            throw new ControllerExecutionException("I/O error sending 404 error",e);
+                    }
+                }
+            }
+        } finally {
+            Thread.currentThread().setContextClassLoader(cl);
         }
 
     }
