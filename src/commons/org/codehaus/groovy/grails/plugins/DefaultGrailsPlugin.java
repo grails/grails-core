@@ -185,11 +185,11 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
             }
             catch (IllegalArgumentException e) {
             	if(GrailsUtil.isDevelopmentEnv())
-            		LOG.warn("Cannot load plug-in resource watch list from ["+ ArrayUtils.toString(resourcesReferences) +"]. This means that the plugin "+this+", will not be able to auto-reload changes effectively. Try runnng grails upgrade.: " + e.getMessage());
+            		LOG.debug("Cannot load plug-in resource watch list from ["+ ArrayUtils.toString(resourcesReferences) +"]. This means that the plugin "+this+", will not be able to auto-reload changes effectively. Try runnng grails upgrade.: " + e.getMessage());
             }
             catch (IOException e) {
             	if(GrailsUtil.isDevelopmentEnv())
-            		LOG.warn("Cannot load plug-in resource watch list from ["+ ArrayUtils.toString(resourcesReferences) +"]. This means that the plugin "+this+", will not be able to auto-reload changes effectively. Try runnng grails upgrade.: " + e.getMessage());
+            		LOG.debug("Cannot load plug-in resource watch list from ["+ ArrayUtils.toString(resourcesReferences) +"]. This means that the plugin "+this+", will not be able to auto-reload changes effectively. Try runnng grails upgrade.: " + e.getMessage());
             }
             if(LOG.isDebugEnabled()) {
                 LOG.debug("Plugin "+this+" found ["+watchedResources.length+"] to watch");
