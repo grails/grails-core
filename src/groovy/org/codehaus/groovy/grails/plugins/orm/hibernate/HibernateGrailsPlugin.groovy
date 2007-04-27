@@ -159,16 +159,31 @@ class HibernateGrailsPlugin {
 							else {
 								throw new MissingMethodException(dc.clazz, "addTo${collectionName}", [arg] as Object[])
 							} 
-						    if(prop.bidirectional) {
-						      	obj[prop.otherSide.name] = delegate  
+						    if(prop.bidirectional) {							   
+								if(prop.manyToMany) {                    
+									String name = prop.otherSide.name
+									if(!obj[name]) {
+										obj[name] = GrailsClassUtils.createConcreteCollection(prop.otherSide.type)
+									}
+									obj[prop.otherSide.name].add(delegate)									
+								}   
+								else {
+							      	obj[prop.otherSide.name] = delegate  
+								}
 						    }						    
 							delegate						
 						}   
 						dc.metaClass."removeFrom${collectionName}" = { Object arg ->
 	                         if(otherDomainClass.clazz.isInstance(arg)) {
 		                     	delegate[prop.name]?.remove(arg)
-		                        if(prop.bidirectional) {
-			                         arg[prop.otherSide.name] = null
+		                        if(prop.bidirectional) { 
+									 if(prop.manyToMany) {
+										String name = prop.otherSide.name
+                                       	arg[name]?.remove(delegate)										
+									 }
+									 else {
+										arg[prop.otherSide.name] = null
+									 }			                         
 								}
 							 } 
 							else {

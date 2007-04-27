@@ -54,6 +54,27 @@ class RelationshipManagementMethodsTests extends org.codehaus.groovy.grails.plug
 
 	}
 
+	void testWithManyToManyRelationship() {
+	    def bookmarkClass = ga.getDomainClass("Bookmark")
+	    def tagClass = ga.getDomainClass("Tag")
+
+        def bookmark = bookmarkClass.newInstance()
+        bookmark.url='http://www.ru'
+
+        def tag = tagClass.newInstance()
+        tag.name = "foo"
+
+        bookmark.addToTags(tag)
+
+        assert bookmark.tags.contains(tag)
+        assert tag.bookmarks.contains(bookmark)
+
+        bookmark.removeFromTags(tag)
+        assert !bookmark.tags.contains(tag)
+        assert !tag.bookmarks.contains(bookmark)
+
+    }
+
 
 	void onSetUp() {
 
@@ -77,6 +98,23 @@ class Address {
 	Long version
 	String number
 	Person person
+}
+class Bookmark {
+	Long id
+	Long version
+
+    String url
+    Set tags = new HashSet()
+    static hasMany = [tags:Tag]
+    static belongsTo = [Tag]
+}
+class Tag {
+	Long id
+	Long version
+
+    String name
+    Set bookmarks = new HashSet()
+    static hasMany = [bookmarks:Bookmark]
 }
 '''
 		)
