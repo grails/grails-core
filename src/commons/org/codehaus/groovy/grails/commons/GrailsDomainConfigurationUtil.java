@@ -16,12 +16,17 @@ package org.codehaus.groovy.grails.commons;
 
 import groovy.lang.GroovyObject;
 import org.apache.commons.lang.StringUtils;
-import org.hibernate.type.TypeFactory;
 
+import java.io.Serializable;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.net.URI;
 import java.net.URL;
-import java.util.Collections;
-import java.util.Map;
+import java.sql.Blob;
+import java.sql.Clob;
+import java.sql.Time;
+import java.sql.Timestamp;
+import java.util.*;
 
 /**
  * Utility methods used in configuring the Grails Hibernate integration
@@ -110,7 +115,7 @@ public class GrailsDomainConfigurationUtil {
     /**
      * Returns the ORM frameworks mapping file name for the specified class name
      * 
-     * @param className
+     * @param className The class name of the mapped file
      * @return The mapping file name
      */
 	public static String getMappingFileName(String className) {
@@ -154,11 +159,62 @@ public class GrailsDomainConfigurationUtil {
 	public static boolean isBasicType(GrailsDomainClassProperty prop) {
 		if(prop == null)return false;
 		Class propType = prop.getType();
-		return TypeFactory.basic(propType.getName()) != null || 
-										propType == URL.class || 
-										propType == URI.class;
+        return isBasicType(propType);
+    }
+
+    private static final Set BASIC_TYPES;
+
+    static {
+		Set basics = new HashSet();
+		basics.add( boolean.class.getName());
+		basics.add( long.class.getName());
+		basics.add( short.class.getName());
+		basics.add( int.class.getName());
+		basics.add( byte.class.getName());
+		basics.add( float.class.getName());
+		basics.add( double.class.getName());
+		basics.add( char.class.getName());
+		basics.add( Boolean.class.getName());
+		basics.add( Long.class.getName());
+		basics.add( Short.class.getName());
+		basics.add( Integer.class.getName());
+		basics.add( Byte.class.getName());
+		basics.add( Float.class.getName());
+		basics.add( Double.class.getName());
+		basics.add( Character.class.getName());
+		basics.add( String.class.getName());
+		basics.add( java.util.Date.class.getName());
+		basics.add( Time.class.getName());
+		basics.add( Timestamp.class.getName());
+		basics.add( java.sql.Date.class.getName());
+		basics.add( BigDecimal.class.getName());
+		basics.add( BigInteger.class.getName());
+		basics.add( Locale.class.getName());
+		basics.add( Calendar.class.getName());
+		basics.add( GregorianCalendar.class.getName());
+		basics.add( java.util.Currency.class.getName());
+		basics.add( TimeZone.class.getName());
+		basics.add( Object.class.getName());
+		basics.add( Class.class.getName());
+		basics.add( byte[].class.getName());
+		basics.add( Byte[].class.getName());
+		basics.add( char[].class.getName());
+		basics.add( Character[].class.getName());
+		basics.add( Blob.class.getName());
+		basics.add( Clob.class.getName());
+		basics.add( Serializable.class.getName() );
+        basics.add( URI.class.getName() );
+        basics.add( URL.class.getName() );
+
+        BASIC_TYPES = Collections.unmodifiableSet( basics );
 	}
 
-	
-	
+    public static boolean isBasicType(Class propType) {
+        if(propType.isArray()) {
+            return isBasicType(propType.getComponentType());
+        }
+        return BASIC_TYPES.contains(propType.getName());
+    }
+
+
 }
