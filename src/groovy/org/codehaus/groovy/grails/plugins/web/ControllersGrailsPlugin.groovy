@@ -418,9 +418,9 @@ class ControllersGrailsPlugin {
            			def constrainedPropertyBuilder = new ConstrainedPropertyBuilder(commandObject)
            			validationClosure.setDelegate(constrainedPropertyBuilder)
     	       		validationClosure()
-	           		commandObjectMetaClass.constrainedProperties = constrainedPropertyBuilder.constrainedProperties
+	           		commandObjectMetaClass.constraints = constrainedPropertyBuilder.constrainedProperties
            		} else {
-           		    commandObjectMetaClass.constrainedProperties = [:]
+           		    commandObjectMetaClass.constraints = [:]
         	   	}
 			}
 		}

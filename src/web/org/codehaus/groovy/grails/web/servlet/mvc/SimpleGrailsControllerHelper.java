@@ -425,7 +425,7 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
                         binder.bind(new MutablePropertyValues(paramsMap));
 
                         Errors errors = new BindException(commandObject, paramType.getName());
-                        Collection constrainedProperties = ((Map)commandObject.getProperty("constrainedProperties")).values();
+                        Collection constrainedProperties = ((Map)commandObject.getProperty("constraints")).values();
                         for (Iterator i = constrainedProperties.iterator(); i.hasNext();) {
                             ConstrainedProperty constrainedProperty = (ConstrainedProperty)i.next();
                             constrainedProperty.validate(commandObject, commandObject.getProperty( constrainedProperty.getPropertyName() ),errors);
