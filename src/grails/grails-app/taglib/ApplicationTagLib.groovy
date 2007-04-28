@@ -36,7 +36,7 @@ class ApplicationTagLib {
      */
     def createLinkTo = { attrs ->
          out << grailsAttributes.getApplicationUri(request)
-         if(attrs['dir']) {
+         if(attrs['dir'] || attrs['dir'] == '') {
             out << "/${attrs['dir']}"
          }
          if(attrs['file']) {
