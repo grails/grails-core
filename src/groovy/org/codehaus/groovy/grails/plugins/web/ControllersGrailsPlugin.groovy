@@ -125,33 +125,7 @@ class ControllersGrailsPlugin {
 				configureAOPProxyBean.delegate = delegate
                 configureAOPProxyBean(controller, ControllerArtefactHandler.TYPE, org.codehaus.groovy.grails.commons.GrailsControllerClass.class, false)
 			}
-			
-			// look for actions that accept command objects and configure
-			// each of the command object types
-			def commandObjectClasses = controller.commandObjectClasses
-			commandObjectClasses.each { commandObjectClass ->
-	            def commandObject = commandObjectClass.newInstance()
-            	def commandObjectMetaClass = commandObject.metaClass
-            	commandObjectMetaClass.setErrors = { Errors errors ->
-					RCH.currentRequestAttributes().setAttribute( "${commandObjectClass.name}_errors", errors, 0)
-				}
-	            commandObjectMetaClass.getErrors = {->
-			   		RCH.currentRequestAttributes().getAttribute( "${commandObjectClass.name}_errors", 0)
-		   		}
 
-            	commandObjectMetaClass.hasErrors = {->
-					errors?.hasErrors() ? true : false
-		    	}
-            	def validationClosure = GCU.getStaticPropertyValue(commandObjectClass, 'constraints')
-            	if(validationClosure) {
-            		def constrainedPropertyBuilder = new ConstrainedPropertyBuilder(commandObject)
-            		validationClosure.setDelegate(constrainedPropertyBuilder)
-            		validationClosure()
-            		commandObjectMetaClass.constrainedProperties = constrainedPropertyBuilder.constrainedProperties
-            	} else {
-            	    commandObjectMetaClass.constrainedProperties = [:]
-            	}
-			}
 		}
 
 		// Now go through tag libraries and configure them in spring too. With AOP proxies and so on
@@ -422,6 +396,33 @@ class ControllersGrailsPlugin {
 		    metaClass.bindData = { Object target, Object args, List disallowed ->
 		    	bind.invoke(delegate, "bindData", [target, args, disallowed] as Object[])
 		    }
+			
+			// look for actions that accept command objects and configure
+			// each of the command object types
+			def commandObjectClasses = controller.commandObjectClasses
+			commandObjectClasses.each { commandObjectClass ->
+	            def commandObject = commandObjectClass.newInstance()
+           		def commandObjectMetaClass = commandObject.metaClass
+           		commandObjectMetaClass.setErrors = { Errors errors ->
+					RCH.currentRequestAttributes().setAttribute( "${commandObjectClass.name}_errors", errors, 0)
+				}
+	            commandObjectMetaClass.getErrors = {->
+			   		RCH.currentRequestAttributes().getAttribute( "${commandObjectClass.name}_errors", 0)
+		   		}
+
+           		commandObjectMetaClass.hasErrors = {->
+					errors?.hasErrors() ? true : false
+		    	}
+           		def validationClosure = GCU.getStaticPropertyValue(commandObjectClass, 'constraints')
+           		if(validationClosure) {
+           			def constrainedPropertyBuilder = new ConstrainedPropertyBuilder(commandObject)
+           			validationClosure.setDelegate(constrainedPropertyBuilder)
+    	       		validationClosure()
+	           		commandObjectMetaClass.constrainedProperties = constrainedPropertyBuilder.constrainedProperties
+           		} else {
+           		    commandObjectMetaClass.constrainedProperties = [:]
+        	   	}
+			}
 		}
 	}
 
