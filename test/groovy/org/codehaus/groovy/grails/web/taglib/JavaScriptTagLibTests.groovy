@@ -12,109 +12,64 @@ import org.codehaus.groovy.grails.web.servlet.GrailsHttpServletRequest;
 public class JavaScriptTagLibTests extends AbstractGrailsTagTests {
 
 	public void testPrototypeRemoteFunction() throws Exception {
-		StringWriter sw = new StringWriter();
-		PrintWriter pw = new PrintWriter(sw);
+		StringWriter sw = new StringWriter()
+		PrintWriter pw = new PrintWriter(sw)
 		
 		withTag("remoteFunction",pw) { tag ->
-			GroovyObject tagLibrary = (GroovyObject)tag.getOwner();
+			GroovyObject tagLibrary = (GroovyObject)tag.getOwner()
+			GrailsHttpServletRequest request = (GrailsHttpServletRequest)tagLibrary.getProperty("request")
+			def includedLibrary = ['prototype']
+			request.setAttribute("org.codehaus.grails.INCLUDED_JS_LIBRARIES", includedLibrary)
 			
-			GrailsHttpServletRequest request = (GrailsHttpServletRequest)tagLibrary.getProperty("request");
-			List includedLibrary = new ArrayList();
-			includedLibrary.add("prototype");
-			request.setAttribute("org.codehaus.grails.INCLUDED_JS_LIBRARIES", includedLibrary);
+			def attrs = [action:'action',controller:'test']
+			tag.call(attrs)
+			assertEquals("new Ajax.Request('/test/action',{asynchronous:true,evalScripts:true});",sw.toString())
 			
-			Map attrs = new HashMap();
-			attrs.put("action","action");
-			attrs.put("controller","test");
-			
-			tag.call(attrs);
-
-			assertEquals("new Ajax.Request('/test/action',{asynchronous:true,evalScripts:true});",sw.toString());
-			
-			attrs.put("action","action");
-			attrs.put("controller","test");
-			Map update = new HashMap();
-			update.put("success", "updateMe");
-			attrs.put("update",update);
-			
-			sw.getBuffer().delete(0,sw.getBuffer().length());
-			
-			tag.call(attrs);
-			
-			System.out.println(sw.toString());
-			
-			assertEquals("new Ajax.Updater({success:'updateMe'},'/test/action',{asynchronous:true,evalScripts:true});",sw.toString());			
+			sw.getBuffer().delete(0,sw.getBuffer().length())
+			attrs = [action:'action',controller:'test',update:[success:'updateMe'],options:[insertion:'Insertion.Bottom']]
+			tag.call(attrs)
+			assertEquals("new Ajax.Updater({success:'updateMe'},'/test/action',{asynchronous:true,evalScripts:true,insertion:Insertion.Bottom});",sw.toString())
 		}
 	}
 	
 	public void testDojoRemoteFunction() throws Exception {
-		StringWriter sw = new StringWriter();
-		PrintWriter pw = new PrintWriter(sw);
+		StringWriter sw = new StringWriter()
+		PrintWriter pw = new PrintWriter(sw)
 		
 		withTag("remoteFunction",pw) { tag ->
-			GroovyObject tagLibrary = (GroovyObject)tag.getOwner();
+			GroovyObject tagLibrary = (GroovyObject)tag.getOwner()
+			GrailsHttpServletRequest request = (GrailsHttpServletRequest)tagLibrary.getProperty("request")
+			def includedLibrary = ['dojo']
+			request.setAttribute("org.codehaus.grails.INCLUDED_JS_LIBRARIES", includedLibrary)
 			
-			GrailsHttpServletRequest request = (GrailsHttpServletRequest)tagLibrary.getProperty("request");
-			List includedLibrary = new ArrayList();
-			includedLibrary.add("dojo");
-			request.setAttribute("org.codehaus.grails.INCLUDED_JS_LIBRARIES", includedLibrary);
-			
-			Map attrs = new HashMap();
-			attrs.put("action","action");
-			attrs.put("controller","test");
-			
-			tag.call(attrs);
-			System.out.println(sw.toString());
+			def attrs = [action:'action',controller:'test']
+			tag.call(attrs)
 			assertEquals("dojo.io.bind({url:'/test/action',load:function(type,data,evt) {},error:function(type,error) { }});",sw.toString());
 			
-			attrs.put("action","action");
-			attrs.put("controller","test");
-			Map update = new HashMap();
-			update.put("success", "updateMe");
-			attrs.put("update",update);
-			
-			sw.getBuffer().delete(0,sw.getBuffer().length());
-			
-			tag.call(attrs);
-			
-			System.out.println(sw.toString());
-			
-			assertEquals("dojo.io.bind({url:'/test/action',load:function(type,data,evt) {dojo.html.textContent( dojo.byId('updateMe'),data);},error:function(type,error) { }});",sw.toString());
+			sw.getBuffer().delete(0,sw.getBuffer().length())
+			attrs = [action:'action',controller:'test',update:[success:'updateMe']]
+			tag.call(attrs)
+			assertEquals("dojo.io.bind({url:'/test/action',load:function(type,data,evt) {dojo.html.textContent( dojo.byId('updateMe'),data);},error:function(type,error) { }});",sw.toString())
 		}
 	}	
 	
 	public void testYahooRemoteFunction() throws Exception {
-		StringWriter sw = new StringWriter();
-		PrintWriter pw = new PrintWriter(sw);
+		StringWriter sw = new StringWriter()
+		PrintWriter pw = new PrintWriter(sw)
 		
 		withTag("remoteFunction",pw) { tag ->
-			GroovyObject tagLibrary = (GroovyObject)tag.getOwner();
+			GroovyObject tagLibrary = (GroovyObject)tag.getOwner()
+			GrailsHttpServletRequest request = (GrailsHttpServletRequest)tagLibrary.getProperty("request")
+			def includedLibrary = ['yahoo']
+			request.setAttribute("org.codehaus.grails.INCLUDED_JS_LIBRARIES", includedLibrary)
 			
-			GrailsHttpServletRequest request = (GrailsHttpServletRequest)tagLibrary.getProperty("request");
-			List includedLibrary = new ArrayList();
-			includedLibrary.add("yahoo");
-			request.setAttribute("org.codehaus.grails.INCLUDED_JS_LIBRARIES", includedLibrary);
-			
-			Map attrs = new HashMap();
-			attrs.put("action","action");
-			attrs.put("controller","test");
-			
-			tag.call(attrs);
-			System.out.println(sw.toString());
+			def attrs = [action:'action',controller:'test']
+			tag.call(attrs)
 			assertEquals("YAHOO.util.Connect.asyncRequest('GET','/test/action',{ success: function(o) {  }, failure: function(o) {}},null);",sw.toString());
 			
-			attrs.put("action","action");
-			attrs.put("controller","test");
-			Map update = new HashMap();
-			update.put("success", "updateMe");
-			attrs.put("update",update);
-			
 			sw.getBuffer().delete(0,sw.getBuffer().length());
-			
+			attrs = [action:'action',controller:'test',update:[success:'updateMe']]
 			tag.call(attrs);
-			
-			System.out.println(sw.toString());
-			
 			assertEquals("YAHOO.util.Connect.asyncRequest('GET','/test/action',{ success: function(o) { YAHOO.util.Dom.get('updateMe').innerHTML = o.responseText; }, failure: function(o) {}},null);",sw.toString());
 		}
 	}

@@ -415,6 +415,7 @@ class PrototypeProvider implements JavascriptProvider {
 	                    case 'true': ajaxOptions << "${k}:${v}"; break;
 	                    case 'false': ajaxOptions << "${k}:${v}"; break;
 	                    case ~/\s*function(\w*)\s*/: ajaxOptions << "${k}:${v}"; break;
+	                    case ~/Insertion\..*/: ajaxOptions << "${k}:${v}"; break;
 	                    default:ajaxOptions << "${k}:'${v}'"; break;
 	                 }            	
             	}
