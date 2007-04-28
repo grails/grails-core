@@ -88,12 +88,14 @@ task(deleteAppClasses: "Delete application classes compiled by groovyc") {
     // Remove classes that were compiled by groovyc but are part of app, so compile time injection can still work
     def grailsDir = resolveResources("file:${basedir}/grails-app/**/*.groovy")
 
-    Ant.delete() {
-        fileset( dir: "$basedir/web-app/WEB-INF/classes") {
-            grailsDir.each() {
-                include(name: (it.file.name - '.groovy') + '.class' )
-                include(name: (it.file.name - '.groovy') + '$*.class')
-            }
-        }
+    if (grailsDir.size() > 0) {
+	    Ant.delete() {
+	        fileset( dir: "$basedir/web-app/WEB-INF/classes") {
+	            grailsDir.each() {
+	                include(name: (it.file.name - '.groovy') + '.class' )
+	                include(name: (it.file.name - '.groovy') + '$*.class')
+	            }
+	        }
+	    }
     }
 }
