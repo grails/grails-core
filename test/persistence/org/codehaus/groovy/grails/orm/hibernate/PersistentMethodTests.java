@@ -844,19 +844,19 @@ public class PersistentMethodTests extends AbstractDependencyInjectionSpringCont
         obj.setProperty( "id", new Long(1) );
         obj.setProperty( "firstName", "fred" );
         obj.setProperty( "lastName", "flintstone" );
-     
         obj.invokeMethod("save", null);
 
-        GroovyObject obj2 = (GroovyObject)domainClass.newInstance();
-        obj2.setProperty( "id", new Long(2) );
-        obj2.setProperty( "firstName", "wilma" );
-        obj2.setProperty( "lastName", "flintstone" );
+        obj = (GroovyObject)domainClass.newInstance();
+        obj.setProperty( "id", new Long(2) );
+        obj.setProperty( "firstName", "wilma" );
+        obj.setProperty( "lastName", "flintstone" );
+        obj.invokeMethod("save", null);
 
-        obj2.invokeMethod("save", null);
+        MetaClass domain = obj.getMetaClass();
 
         // test query without a method
         try {
-            obj.getMetaClass().invokeStaticMethod(obj, "executeQuery", new Object[] {} );
+            domain.invokeStaticMethod(obj, "executeQuery", new Object[] {} );
             fail("Should have thrown an exception");
         }
         catch(Exception e) {
@@ -865,7 +865,16 @@ public class PersistentMethodTests extends AbstractDependencyInjectionSpringCont
 
         // test query with too many params
         try {
-            obj.getMetaClass().invokeStaticMethod(obj, "executeQuery", new Object[] { "1", "2", "3"} );
+            domain.invokeStaticMethod(obj, "executeQuery", new Object[] { "query", "param", new HashMap(), "4" } );
+            fail("Should have thrown an exception");
+        }
+        catch(Exception e) {
+            //expected
+        }
+
+        // test query with wrong third param type (must be Map)
+        try {
+            domain.invokeStaticMethod(obj, "executeQuery", new Object[] { "query", "param", "wrong third param" } );
             fail("Should have thrown an exception");
         }
         catch(Exception e) {
@@ -873,35 +882,37 @@ public class PersistentMethodTests extends AbstractDependencyInjectionSpringCont
         }
 
         // test find with a query
-        Object returnValue = obj.getMetaClass().invokeStaticMethod(obj, "executeQuery", new Object[] { "select distinct p from PersistentMethodTests as p" });
-        assertNotNull(returnValue);
-        assertEquals(ArrayList.class,returnValue.getClass());
+        Object returnValue = domain.invokeStaticMethod(obj, "executeQuery", new Object[] { "select distinct p from PersistentMethodTests as p" });
+        assertNotNull( returnValue );
+        assertEquals( ArrayList.class, returnValue.getClass() );
         List listResult = (List)returnValue;
         assertEquals(2, listResult.size());
+
+        // test find with a query and paginate params
+        Map paginateParams = new HashMap();
+        paginateParams.put( "max", new Integer(1) );
+        listResult = (List)obj.getMetaClass().invokeStaticMethod(obj, "executeQuery", new Object[] { "select distinct p from PersistentMethodTests as p order by p.firstName", paginateParams });
+        assertEquals(1, listResult.size());
+        assertEquals("fred", ((GroovyObject)listResult.get(0)).getProperty("firstName"));
+        paginateParams.put( "offset", new Integer(1) );
+        listResult = (List)obj.getMetaClass().invokeStaticMethod(obj, "executeQuery", new Object[] { "select distinct p from PersistentMethodTests as p order by p.firstName", paginateParams });
+        assertEquals(1, listResult.size());
+        assertEquals("wilma", ((GroovyObject)listResult.get(0)).getProperty("firstName"));
 
         // test find with query and args
         List args = new ArrayList();
         args.add( "wilma" );
-        returnValue = obj.getMetaClass().invokeStaticMethod(obj, "executeQuery", new Object[] { "select distinct p from PersistentMethodTests as p where p.firstName = ?", args });
-        assertNotNull(returnValue);
-        assertEquals(ArrayList.class,returnValue.getClass());
-        listResult = (List)returnValue;
+        listResult = (List) domain.invokeStaticMethod(obj, "executeQuery", new Object[] { "select distinct p from PersistentMethodTests as p where p.firstName = ?", args });
         assertEquals(1, listResult.size());
 
         // test find with query and arg
-        returnValue = obj.getMetaClass().invokeStaticMethod(obj, "executeQuery", new Object[] { "select distinct p from PersistentMethodTests as p where p.firstName = ?", "wilma" });
-        assertNotNull(returnValue);
-        assertEquals(ArrayList.class,returnValue.getClass());
-        listResult = (List)returnValue;
+        listResult = (List)domain.invokeStaticMethod(obj, "executeQuery", new Object[] { "select distinct p from PersistentMethodTests as p where p.firstName = ?", "wilma" });
         assertEquals(1, listResult.size());
 
         // test find with query and named params
         Map namedArgs = new HashMap();
         namedArgs.put( "name", "wilma" );
-        returnValue = obj.getMetaClass().invokeStaticMethod(obj, "executeQuery", new Object[] { "select distinct p from PersistentMethodTests as p where p.firstName = :name", namedArgs });
-        assertNotNull(returnValue);
-        assertEquals(ArrayList.class,returnValue.getClass());
-        listResult = (List)returnValue;
+        listResult = (List)domain.invokeStaticMethod(obj, "executeQuery", new Object[] { "select distinct p from PersistentMethodTests as p where p.firstName = :name", namedArgs });
         assertEquals(1, listResult.size());
 
         // test find with query and named list params
@@ -910,17 +921,24 @@ public class PersistentMethodTests extends AbstractDependencyInjectionSpringCont
         namesList.add("wilma");
         namesList.add("fred");
         namedArgs.put( "namesList", namesList );
-        returnValue = obj.getMetaClass().invokeStaticMethod(obj, "executeQuery", new Object[] { "select distinct p from PersistentMethodTests as p where p.firstName in (:namesList)", namedArgs });
-        assertNotNull(returnValue);
-        assertEquals(ArrayList.class,returnValue.getClass());
-        listResult = (List)returnValue;
+        listResult = (List)domain.invokeStaticMethod(obj, "executeQuery", new Object[] { "select distinct p from PersistentMethodTests as p where p.firstName in (:namesList) order by p.firstName", namedArgs });
         assertEquals(2, listResult.size());
+        // test find with a query and named list params and paginate params
+        paginateParams.clear();
+        paginateParams.put( "max", new Integer(1) );
+        listResult = (List)domain.invokeStaticMethod(obj, "executeQuery", new Object[] { "select distinct p from PersistentMethodTests as p where p.firstName in (:namesList) order by p.firstName", namedArgs, paginateParams });
+        assertEquals(1, listResult.size());
+        assertEquals("fred", ((GroovyObject)listResult.get(0)).getProperty("firstName"));
+        paginateParams.put( "offset", new Integer(1) );
+        listResult = (List)domain.invokeStaticMethod(obj, "executeQuery", new Object[] { "select distinct p from PersistentMethodTests as p where p.firstName in (:namesList) order by p.firstName", namedArgs, paginateParams });
+        assertEquals(1, listResult.size());
+        assertEquals("wilma", ((GroovyObject)listResult.get(0)).getProperty("firstName"));
 
         // test query with wrong named parameter
         try {
         	namedArgs.clear();
         	namedArgs.put(new Long(1), "wilma");
-            obj.getMetaClass().invokeStaticMethod(obj, "executeQuery", new Object[] { "select distinct p from PersistentMethodTests as p where p.firstName = :name", namedArgs});
+            domain.invokeStaticMethod(obj, "executeQuery", new Object[] { "select distinct p from PersistentMethodTests as p where p.firstName = :name", namedArgs});
             // new Long(1) is not valid name for named param, so exception should be thrown
             fail("Should have thrown grails query exception");
         }
