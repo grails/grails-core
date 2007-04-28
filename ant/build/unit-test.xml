@@ -125,7 +125,6 @@
 				<fileset dir="${grails.test.build}">
 					<include name="**/${test}Tests.class" />
 					<exclude name="**/Abstract*" />
-					<exclude name="**/ControllerScaffoldingTests.*" />
 					<exclude name="**/GrailsHibernateConfigurationTests*" />
 					<exclude name="**/ClassReloadingTests*" />
 					<exclude name="**/MessageTagTests*" />
