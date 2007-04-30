@@ -18,10 +18,12 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 
 /**
- * A temporary writer used by GSP to write to a StringWriter and later retrieve the value
+ * A temporary writer used by GSP to write to a StringWriter and later retrieve the value. It also converts
+ * nulls into blank strings.
  *
  * @author Graeme Rocher
- * @since 0.4
+ * @since 0.5
+ *
  *        <p/>
  *        Created: Apr 19, 2007
  *        Time: 5:49:46 PM
@@ -50,6 +52,20 @@ public class GroovyPageTagWriter extends PrintWriter {
         super.print(o);
     }
 
+    public void write(String s) {
+        if(s == null) s = BLANK_STRING;
+        super.write(s);
+    }
+
+    public void println(String s) {
+        if(s == null) s = BLANK_STRING;
+        super.println(s);
+    }
+
+    public void println(Object o) {
+        if(o==null)o = BLANK_STRING;
+        super.println(o);    
+    }
     public String getValue() {
         return stringWriter.toString();
     }
