@@ -4,6 +4,8 @@ http://grails.org
 
 
 1. INTRODUCTION
+=============================================================================
+
 
 Grails is a web based application framework based on the Groovy language that endorses the DRY (don't repeat yourself) and coding-by-convention philosophies. Grails runs on the Java Virtual Machine and thus has access to the entire Java Platform.
 
@@ -21,7 +23,10 @@ With Grails you can easily create web applications thanks to:
 
 - powerful web framework with dynamic tag libraries and support for Groovy Server Pages (GSP)
 
+
 2. GETTING STARTED
+=============================================================================
+
 
 To get started takes these steps: 
 
@@ -49,12 +54,43 @@ On a Unix-like computer these steps are done as follows:
 
 You can now run the grails command, as follows:
 
-> grails
+> grails create-app YourProject
 
-When this command shows a help message you are ready to start using Grails. For more info checkout the Grails homepage at:
+For more info checkout the Grails homepage at http://grails.org
 
-http://grails.codehaus.org
 
+3. UPGRADING / KNOWN ISSUES
+=============================================================================
+
+
+To upgrade your existing Grails projects you must run "grails upgrade" for each project.
+
+There are some unavoidable issues that may affect you when upgrading to 0.5 from a previous version:
+
+1. Your custom taglibs that call other tags will need to be changed. Tags called from within a tag now return a string containing the content instead of writing to out, so you must do something like:
+
+   out << theOtherTag(attrs)
+
+2. Your taglibs, if they call their own closures as if they are methods, will not function correctly if the closure has less than 3 arguments. Change such code to:
+
+   yourClosureName.call(args)
+
+3. Tag bodies return strings instead of writing to out, so you must change code that calls body() to:
+
+   out << body()
+
+4. View loading mechanisms have changed, so if you need to load a view directly or check for its existence, you must now use a resource loader:
+
+   def resourceLoader = ctx.containsBean('groovyPageResourceLoader') ?
+   ctx.groovyPageResourceLoader : ctx
+
+   if(resourceLoader.getResource(uri)) {
+      ...
+   }
+
+5. Note the deprecation warnings you see in your console, these need to be tackled prior to 0.6 where these old features will be removed.
+
+=============================================================================
 Enjoy working with Grails.
 
 The Grails team
