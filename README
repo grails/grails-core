@@ -67,28 +67,31 @@ To upgrade your existing Grails projects you must run "grails upgrade" for each 
 
 There are some unavoidable issues that may affect you when upgrading to 0.5 from a previous version:
 
-1. Your custom taglibs that call other tags will need to be changed. Tags called from within a tag now return a string containing the content instead of writing to out, so you must do something like:
+1. If you have an old default index.jsp, it will not function correctly due to a change in a property name. Remove the file if you have not customized it, or change the reference to the "controllers" property to "controllerClasses"
+
+2. Your custom taglibs that call other tags will need to be changed. Tags called from within a tag now return a string containing the content instead of writing to out, so you must do something like:
 
    out << theOtherTag(attrs)
 
-2. Your taglibs, if they call their own closures as if they are methods, will not function correctly if the closure has less than 3 arguments. Change such code to:
+3. Your taglibs, if they call their own non-tag closures as if they are methods, will not function correctly if the closure has less than 3 arguments. Change such code to:
 
    yourClosureName.call(args)
 
-3. Tag bodies return strings instead of writing to out, so you must change code that calls body() to:
+4. Tag bodies return strings instead of writing to out, so you must change code that calls body() to:
 
    out << body()
 
-4. View loading mechanisms have changed, so if you need to load a view directly or check for its existence, you must now use a resource loader:
+5. View loading mechanisms have changed, so if you need to load a view directly or check for its existence, you must now use a resource loader:
 
    def resourceLoader = ctx.containsBean('groovyPageResourceLoader') ?
-   ctx.groovyPageResourceLoader : ctx
+        ctx.groovyPageResourceLoader : ctx
+   def resource = resourceLoader.getResource(uri)
 
-   if(resourceLoader.getResource(uri)) {
-      ...
+   if(resource && resource.file && resource.file.exists()) {
+      ...    
    }
 
-5. Note the deprecation warnings you see in your console, these need to be tackled prior to 0.6 where these old features will be removed.
+6. Note the deprecation warnings you see in your console, these need to be tackled prior to 0.6 where these old features will be removed.
 
 =============================================================================
 Enjoy working with Grails.
