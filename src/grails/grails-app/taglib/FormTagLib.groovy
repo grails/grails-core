@@ -382,7 +382,7 @@ class FormTagLib {
 	def renderNoSelectionOption = { noSelectionKey, noSelectionValue, value ->
 		// If a label for the '--Please choose--' first item is supplied, write it out
         out << '<option value="' << (noSelectionKey == null ? "" : noSelectionKey) << '"'
-        if(noSelectionKey == value) {
+        if(noSelectionKey.equals(value)) {
             out << ' selected="selected" '
         }
         out << '>' << noSelectionValue.encodeAsHTML() << '</option>'
