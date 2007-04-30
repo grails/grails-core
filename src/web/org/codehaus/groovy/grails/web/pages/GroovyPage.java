@@ -24,6 +24,7 @@ import org.codehaus.groovy.grails.commons.TagLibArtefactHandler;
 import org.codehaus.groovy.grails.web.servlet.DefaultGrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
+import org.codehaus.groovy.grails.web.taglib.GroovyPageTagWriter;
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
 import org.springframework.beans.BeanWrapper;
 
@@ -31,7 +32,6 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.HashMap;
@@ -302,8 +302,7 @@ public abstract class GroovyPage extends Script {
         Object tagLibProp;// retrieve tag lib and create wrapper writer
 		Writer originalOut = webRequest.getOut();
 		try {
-	        StringWriter capturedOut = new StringWriter();
-	        final Writer out = new PrintWriter(capturedOut);
+	        final GroovyPageTagWriter out = new GroovyPageTagWriter(new StringWriter());
 	        webRequest.setOut(out);
 
 	        // in a direct invocation the body is expected to return a string
@@ -325,7 +324,7 @@ public abstract class GroovyPage extends Script {
 	            }else {
 	                throw new GrailsTagException("Tag ["+methodName+"] does not specify expected number of params in tag library ["+bean.getWrappedClass().getName()+"]");
 	            }
-	            return capturedOut.toString();
+	            return out.getValue();
 	        }else {
 	            throw new GrailsTagException("Tag ["+methodName+"] does not exist in tag library ["+bean.getWrappedClass().getName()+"]");
 	        }

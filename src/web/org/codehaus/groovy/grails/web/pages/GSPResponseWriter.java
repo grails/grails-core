@@ -17,6 +17,7 @@ package org.codehaus.groovy.grails.web.pages;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.runtime.InvokerHelper;
 
 import javax.servlet.ServletResponse;
 import java.io.*;
@@ -41,8 +42,9 @@ public class GSPResponseWriter extends PrintWriter {
 	private int max;
 	private boolean trouble = false;
 	private int totalLength;
+    private static final String BLANK_STRING = "";
 
-	/**
+    /**
 	 * Private constructor.  Use getInstance() instead.
 	 * @param response
 	 * @param out
@@ -170,9 +172,9 @@ public class GSPResponseWriter extends PrintWriter {
 	 * @see        java.lang.Object#toString()
 	 */
 	public void print(Object obj) {
-		if (obj == null) obj = "";
+		if (obj == null) obj = BLANK_STRING;
 		String out = String.valueOf(obj);
-		if(out == null)out = "";
+		if(out == null)out = BLANK_STRING;
 		write(out);
 	}
 
@@ -186,11 +188,24 @@ public class GSPResponseWriter extends PrintWriter {
 	 * @param      s   The <code>String</code> to be printed
 	 */
 	public void print(String s) {
-		if (s == null) s = "";
+		if (s == null) s = BLANK_STRING;
 		write(s);
 	} // print()
 
 	/**
+	 * Writes a string.  If the argument is <code>null</code> then the string
+	 * <code>""</code> is printed.
+     *
+	 * @param      s   The <code>String</code> to be printed
+	 */
+    public void write(String s) {
+        if(s == null) s = BLANK_STRING;
+        super.write(s);
+    }
+
+    
+
+    /**
 	 * Write a single character.
 	 * @param c int specifying a character to be written.
 	 */
@@ -229,5 +244,19 @@ public class GSPResponseWriter extends PrintWriter {
 			flush();
 		}
 	} // write()
+
+    /**
+     * Provides Groovy << left shift operator, but intercepts call to make sure nulls are converted
+     * to "" strings
+     *
+     * @param value The value
+     * @return Returns this object
+     * @throws IOException
+     */
+    public GSPResponseWriter leftShift(Object value) throws IOException {
+        if(value==null) value = BLANK_STRING;
+        InvokerHelper.write(this, value);
+        return this;
+    }
 
 } // GSPResponseWriter
