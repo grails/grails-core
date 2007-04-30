@@ -74,6 +74,24 @@ public class JavaScriptTagLibTests extends AbstractGrailsTagTests {
 		}
 	}
 
+    void testRemoteField() {
+        // <g:remoteField action="changeTitle" update="titleDiv"  name="title" value="${book?.title}"/>
+        StringWriter sw = new StringWriter()
+        PrintWriter pw = new PrintWriter(sw)
+
+        withTag("remoteField",pw) { tag ->
+            GroovyObject tagLibrary = (GroovyObject)tag.getOwner()
+            GrailsHttpServletRequest request = (GrailsHttpServletRequest)tagLibrary.getProperty("request")
+            def includedLibrary = ['prototype']
+            request.setAttribute("org.codehaus.grails.INCLUDED_JS_LIBRARIES", includedLibrary)
+
+            def attrs = [controller:'test',action:'changeTitle',update:'titleDiv',name:'title',value:'testValue']
+            tag.call(attrs) { "body" }
+            assertEquals("<input type=\"text\" name=\"title\" value=\"testValue\" onkeyup=\"new Ajax.Updater('titleDiv','/test/changeTitle',{asynchronous:true,evalScripts:true,parameters:'value='+this.value});\" />",sw.toString())
+        }
+
+    }
+
 
     public void testEscapeJavascript() throws Exception {
 		StringWriter sw = new StringWriter();

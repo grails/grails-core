@@ -180,7 +180,7 @@ class JavascriptTagLib  {
 		else {
     		attrs.params = "'${paramName}='+this.value"			
 		}
-		remoteFunction(attrs)
+		out << remoteFunction(attrs)
 		attrs.remove('params')
 		out << "\""   
 		attrs.remove('url')
