@@ -63,7 +63,12 @@ For more info checkout the Grails homepage at http://grails.org
 =============================================================================
 
 
-To upgrade your existing Grails projects you must run "grails upgrade" for each project.
+To upgrade your existing Grails projects you must run:
+
+grails clean
+grails upgrade
+
+...for each project.
 
 There are some unavoidable issues that may affect you when upgrading to 0.5 from a previous version:
 
