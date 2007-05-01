@@ -130,6 +130,8 @@ task( upgrade: "main upgrade task") {
         }
 	}
     
+    event("StatusUpdate", [ "Please make sure you view the README for important information about changes to your source code."])
+
     event("StatusFinal", [ "Project upgraded"])
 }
 
