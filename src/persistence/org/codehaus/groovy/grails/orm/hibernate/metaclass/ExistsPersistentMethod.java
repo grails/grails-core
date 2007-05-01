@@ -15,15 +15,13 @@
 package org.codehaus.groovy.grails.orm.hibernate.metaclass;
 
 import groovy.lang.MissingMethodException;
-import ognl.DefaultTypeConverter;
-import ognl.Ognl;
+import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
-import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
 import org.hibernate.SessionFactory;
+import org.springframework.beans.SimpleTypeConverter;
 
 import java.io.Serializable;
-import java.util.Map;
 import java.util.regex.Pattern;
 
 /**
@@ -40,8 +38,7 @@ public class ExistsPersistentMethod extends AbstractStaticPersistentMethod {
     private static final String METHOD_SIGNATURE = "exists";
 
     private GrailsApplication application;
-    private Map context = Ognl.createDefaultContext(this);
-    private DefaultTypeConverter typeConverter = new DefaultTypeConverter();
+    private SimpleTypeConverter typeConverter = new SimpleTypeConverter();
 
     public ExistsPersistentMethod(GrailsApplication application, SessionFactory sessionFactory, ClassLoader classLoader) {
         super(sessionFactory, classLoader,METHOD_PATTERN);
@@ -64,7 +61,7 @@ public class ExistsPersistentMethod extends AbstractStaticPersistentMethod {
         if(domainClass != null) {
             Class identityType = domainClass.getIdentifier().getType();
             if(!identityType.isAssignableFrom(arg.getClass())) {
-                arg = typeConverter.convertValue(context,arg, identityType);
+                arg = typeConverter.convertIfNecessary(arg, identityType);
             }
         }
 

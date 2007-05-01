@@ -15,8 +15,6 @@
  */ 
 package org.codehaus.groovy.grails.scaffolding;
 
-import ognl.DefaultTypeConverter;
-import ognl.Ognl;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -27,6 +25,7 @@ import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
+import org.springframework.beans.SimpleTypeConverter;
 import org.springframework.orm.hibernate3.HibernateCallback;
 import org.springframework.orm.hibernate3.HibernateTemplate;
 import org.springframework.validation.BindException;
@@ -57,14 +56,13 @@ public class DefaultScaffoldDomain implements ScaffoldDomain {
 	private Class persistentClass;
 	private HibernateTemplate template;
 
-    private Map context = Ognl.createDefaultContext(this);
-	private DefaultTypeConverter converter = new DefaultTypeConverter();
 	private BeanWrapper bean;
 	private Class identityClass;
 	private Validator validator;
 	private String identityPropertyName;
-	
-	public DefaultScaffoldDomain(Class persistentClass,
+    private SimpleTypeConverter typeConverter = new SimpleTypeConverter();
+
+    public DefaultScaffoldDomain(Class persistentClass,
 			SessionFactory sessionFactory) {
 		
 		setPersistentClass(persistentClass);
@@ -156,7 +154,7 @@ public class DefaultScaffoldDomain implements ScaffoldDomain {
 		if(this.bean.isReadableProperty(by)) {
 			Class propertyType = this.bean.getPropertyType(by);
 			if(!propertyType.isAssignableFrom( q.getClass() )) {
-				q = converter.convertValue(context, q, propertyType);
+				q = typeConverter.convertIfNecessary( q, propertyType);
 			}
 			
 			final Object query = q;
@@ -198,7 +196,7 @@ public class DefaultScaffoldDomain implements ScaffoldDomain {
 			if(this.bean.isReadableProperty(by[i]) && i < q.length) {
 				Class propertyType = this.bean.getPropertyType(by[i]);
 				if(!propertyType.isAssignableFrom( q[i].getClass() )) {
-					q[i] = converter.convertValue(context, q[i], propertyType);
+					q[i] = typeConverter.convertIfNecessary(q[i], propertyType);
 				}
 				if(q[i] == null) {
 					ignoreList.add(by[i]);
@@ -285,7 +283,7 @@ public class DefaultScaffoldDomain implements ScaffoldDomain {
 		if(id == null)
 			throw new IllegalArgumentException("Argument 'id' cannot be null");
 		
-		id = (Serializable)converter.convertValue(context,id,identityClass);
+		id = (Serializable)typeConverter.convertIfNecessary(id,identityClass);
 		
 		Object instance = template.get(persistentClass,id);
 		if(instance != null) {
@@ -314,7 +312,7 @@ public class DefaultScaffoldDomain implements ScaffoldDomain {
 		if(id == null)
 			throw new IllegalArgumentException("Argument 'id' cannot be null");
 		if(identityClass != null)
-		    id = (Serializable)converter.convertValue(context,id,identityClass);
+		    id = (Serializable)typeConverter.convertIfNecessary(id,identityClass);
 
         return template.get(persistentClass,id);
 	}

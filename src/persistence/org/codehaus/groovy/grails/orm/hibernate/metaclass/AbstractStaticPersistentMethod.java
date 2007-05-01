@@ -15,20 +15,18 @@
  */ 
 package org.codehaus.groovy.grails.orm.hibernate.metaclass;
 
-import java.util.Iterator;
-import java.util.Map;
-import java.util.regex.Pattern;
-
-import ognl.DefaultTypeConverter;
-import ognl.Ognl;
-
 import org.codehaus.groovy.grails.commons.metaclass.AbstractStaticMethodInvocation;
 import org.hibernate.Criteria;
 import org.hibernate.FetchMode;
 import org.hibernate.SessionFactory;
 import org.hibernate.criterion.Order;
+import org.springframework.beans.SimpleTypeConverter;
 import org.springframework.orm.hibernate3.HibernateTemplate;
 import org.springframework.util.Assert;
+
+import java.util.Iterator;
+import java.util.Map;
+import java.util.regex.Pattern;
 
 /**
  * Abstract base class for static persistent methods
@@ -43,10 +41,9 @@ public abstract class AbstractStaticPersistentMethod extends
 
 	private SessionFactory sessionFactory = null;
 	private ClassLoader classLoader = null;
-	private DefaultTypeConverter converter = new DefaultTypeConverter();
-	private Map context = Ognl.createDefaultContext(this);
-	
-	protected static final String ARGUMENT_MAX = "max";
+    private SimpleTypeConverter converter = new SimpleTypeConverter();
+
+    protected static final String ARGUMENT_MAX = "max";
 	protected static final String ARGUMENT_OFFSET = "offset";
 	protected static final String ARGUMENT_ORDER = "order";
 	protected static final String ARGUMENT_SORT = "sort";
@@ -84,10 +81,10 @@ public abstract class AbstractStaticPersistentMethod extends
 		Integer maxParam = null;
 		Integer offsetParam = null;
 		if(argMap.containsKey(ARGUMENT_MAX)) {			
-			maxParam = (Integer)converter.convertValue(context,argMap.get(ARGUMENT_MAX),Integer.class);
+			maxParam = (Integer)converter.convertIfNecessary(argMap.get(ARGUMENT_MAX),Integer.class);
 		}
 		if(argMap.containsKey(ARGUMENT_OFFSET)) {
-			offsetParam = (Integer)converter.convertValue(context,argMap.get(ARGUMENT_OFFSET),Integer.class);
+			offsetParam = (Integer)converter.convertIfNecessary(argMap.get(ARGUMENT_OFFSET),Integer.class);
 		}
 		String orderParam = (String)argMap.get(ARGUMENT_ORDER);
 		Object fetchObj = argMap.get(ARGUMENT_FETCH);

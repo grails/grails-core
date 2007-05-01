@@ -14,8 +14,6 @@
  */
 package org.codehaus.groovy.grails.orm.hibernate.metaclass;
 
-import ognl.DefaultTypeConverter;
-import ognl.Ognl;
 
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
@@ -23,6 +21,7 @@ import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.hibernate.*;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.orm.hibernate3.HibernateCallback;
+import org.springframework.beans.SimpleTypeConverter;
 
 import groovy.lang.GroovyObject;
 
@@ -48,10 +47,9 @@ public class GetAllPersistentMethod
 	private static final Pattern	METHOD_PATTERN		= Pattern.compile("^getAll$");
 	public static final String		METHOD_SIGNATURE	= "getAll";
 	private GrailsApplication		application;
-	private Map						context				= Ognl.createDefaultContext(this);
-	private DefaultTypeConverter	typeConverter		= new DefaultTypeConverter();
+    private SimpleTypeConverter typeConverter = new SimpleTypeConverter();
 
-	public GetAllPersistentMethod(GrailsApplication application,
+    public GetAllPersistentMethod(GrailsApplication application,
 			SessionFactory sessionFactory, ClassLoader classLoader) {
 		super(sessionFactory, classLoader, METHOD_PATTERN);
 		this.application = application;
@@ -80,7 +78,7 @@ public class GetAllPersistentMethod
 			// convert arguments to required identifier type
 			for (int i = 0; i < arguments.length; i++) {
 				if (!identityType.isAssignableFrom(arguments[i].getClass())) {
-					args.add(typeConverter.convertValue(context, arguments[i], identityType));
+					args.add(typeConverter.convertIfNecessary(arguments[i], identityType));
 				} else {
 					args.add(arguments[i]);
 				}
