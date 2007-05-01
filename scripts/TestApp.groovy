@@ -51,31 +51,45 @@ task ('default': "Run a Grails applications unit tests") {
 testDir = "${basedir}/target/test-reports"
 
 task(testApp:"The test app implementation task") {
-	//runCompiledTests()
+
 	Ant.mkdir(dir:testDir)
 	Ant.mkdir(dir:"${testDir}/html")
 	Ant.mkdir(dir:"${testDir}/plain")
 
+	//runCompiledTests()  
 	runGrailsTests()
+	produceReports()
 }
 
 task(runCompiledTests:"Runs the tests located under src/test which are compiled then executed") {
 	compileTests()
-	Ant.junit(fork:true, forkmode:"once") {
-		jvmarg(value:"-Xmx256M")
+	Ant.sequential {
+		junit(fork:true, forkmode:"once", failureproperty:"grails.test.failures") {
+	        classpath(refid:"grails.classpath")		
+			jvmarg(value:"-Xmx256M")        
 
-		formatter(type:"xml")
-		batchtest(todir:"${basedir}/target/test-reports") {
-			fileset(dir:"${basedir}/target/test-classes", includes:"**/*Tests.class")
-		}
+			formatter(type:"xml")
+			batchtest(todir:testDir) {
+				fileset(dir:"${basedir}/target/test-classes", includes:"**/*Tests.class")
+			}
+		}	   
 	}
-	Ant.junitreport(tofile:"${testDir}/TEST-results.xml") {
-		fileset(dir:"${basedir}/target/test-reports") {
-			include(name:"TEST-*.xml")
-			report(format:"frames", todir:"${basedir}/target/test-reports/html")
-		}
-	}
+	def result = Ant.antProject.properties["grails.test.failures"]
+	if(result == "true")  {
+    	event("StatusFinal", ["Compiled tests failed"])
+		exit(1)		
+	}   
 	event("StatusFinal", ["Compiled tests complete"])
+}     
+
+
+task(produceReports:"Outputs aggregated xml and html reports") {
+	Ant.junitreport {
+		fileset(dir:testDir) {
+			include(name:"TEST-*.xml")
+		}
+		report(format:"frames", todir:"${basedir}/target/test-reports/html")
+	}	
 }
 
 task(runGrailsTests:"Runs Grails' tests under the grails-test directory") {
@@ -155,16 +169,7 @@ task(runGrailsTests:"Runs Grails' tests under the grails-test directory") {
 		}
 		finally {
 			interceptor?.destroy()
-		}
-		
-		Ant.junitreport {
-			fileset(dir:testDir) {
-				include(name:"TEST-*.xml")
-			}
-			report(format:"frames", todir:"${basedir}/target/test-reports/html")
-		}
-
-
+		}	   
 	}
 	catch(Throwable e) {
         event("StatusUpdate", [ "Error executing tests ${e.message}"])
