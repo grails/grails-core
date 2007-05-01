@@ -34,28 +34,33 @@ import junit.framework.TestSuite;
 import junit.textui.TestRunner;        
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator as GRC;
+import org.apache.tools.ant.taskdefs.optional.junit.*
 
-Ant.property(environment:"env")                             
-grailsHome = Ant.antProject.properties."env.GRAILS_HOME"    
+Ant.property(environment:"env")
+grailsHome = Ant.antProject.properties."env.GRAILS_HOME"
 
 includeTargets << new File ( "${grailsHome}/scripts/Package.groovy" )
 
-task ('default': "Run a Grails applications unit tests") {      
+task ('default': "Run a Grails applications unit tests") {
 	depends( classpath, checkVersion )
 	grailsEnv = "test"
 	packageApp()
 	testApp()
-}            
+}
 
-task(testApp:"The test app implementation task") {               
-	//runCompiledTests()	
+testDir = "${basedir}/target/test-reports"
+
+task(testApp:"The test app implementation task") {
+	//runCompiledTests()
+	Ant.mkdir(dir:testDir)
+	Ant.mkdir(dir:"${testDir}/html")
+	Ant.mkdir(dir:"${testDir}/plain")
+
 	runGrailsTests()
-}                     
+}
 
 task(runCompiledTests:"Runs the tests located under src/test which are compiled then executed") {
 	compileTests()
-	Ant.mkdir(dir:"${basedir}/target/test-reports")
-	Ant.mkdir(dir:"${basedir}/target/test-reports/html")	
 	Ant.junit(fork:true, forkmode:"once") {
 		jvmarg(value:"-Xmx256M")
 
@@ -63,8 +68,8 @@ task(runCompiledTests:"Runs the tests located under src/test which are compiled 
 		batchtest(todir:"${basedir}/target/test-reports") {
 			fileset(dir:"${basedir}/target/test-classes", includes:"**/*Tests.class")
 		}
-	} 
-	Ant.junitreport {
+	}
+	Ant.junitreport(tofile:"${testDir}/TEST-results.xml") {
 		fileset(dir:"${basedir}/target/test-reports") {
 			include(name:"TEST-*.xml")
 			report(format:"frames", todir:"${basedir}/target/test-reports/html")
@@ -88,57 +93,79 @@ task(runGrailsTests:"Runs Grails' tests under the grails-test directory") {
             event("StatusFinal", [ "No tests found in grails-test to execute"])
 			exit(0)
 		}
-				
+
 		def ctx = GU.bootstrapGrailsFromClassPath()
-		
+
 		def app = ctx.getBean(GrailsApplication.APPLICATION_ID)
 		def classLoader = app.classLoader
 
         def resources = app.resourceLoader.resources as ArrayList
         testFiles.each() { resources << it }
 		app.resourceLoader.resources = resources
-        		
+
 		def suite = new TestSuite()
-		
+
 		GWU.bindMockWebRequest(ctx)
-		                   
+
 
 		testFiles.each { r ->
 			def c = classLoader.parseClass(r.file)
 			if(TestCase.isAssignableFrom(c) && !Modifier.isAbstract(c.modifiers)) {
 				suite.addTest(new GrailsTestSuite(ctx.beanFactory, c))
-			}			
+			}
 		}
-		
+
 		def beanNames = ctx.getBeanNamesForType(PersistenceContextInterceptor)
 		def interceptor = null
 		if(beanNames.size() > 0)interceptor = ctx.getBean(beanNames[0])
-							
+
         result = new TestResult()
 		try {
-			interceptor?.init()       
-			
+			interceptor?.init()
+
 			suite.tests().each { test ->
 				def thisTest = new TestResult()
-				print "Running test ${test.name}..."
-				suite.runTest(test, thisTest)
-				if(thisTest.errorCount() > 0 || thisTest.failureCount() > 0) {
-					println "FAILURE" 
-					thisTest.errors().each { result.addError(test, it.thrownException()); println it  }
-					thisTest.failures().each { result.addFailure(test, it.thrownException()); println it }
-				}   
-				else { println "SUCCESS"}
-				app.domainClasses.each { dc ->
-					dc.clazz.executeUpdate("delete from ${dc.clazz.name}")
+				new File("${testDir}/TEST-${test.name}.xml").withOutputStream { xmlOut ->
+					new File("${testDir}/plain/TEST-${test.name}.txt").withOutputStream { plainOut ->
+						def xmlOutput = new XMLJUnitResultFormatter(output:xmlOut)
+						def plainOutput = new PlainJUnitResultFormatter(output:plainOut)
+						def junitTest = new JUnitTest(test.name)
+						thisTest.addListener(xmlOutput)
+						thisTest.addListener(plainOutput)
+
+						plainOutput.startTestSuite(junitTest)
+						xmlOutput.startTestSuite(junitTest)
+						print "Running test ${test.name}..."
+						suite.runTest(test, thisTest)
+						plainOutput.endTestSuite(junitTest)
+						xmlOutput.endTestSuite(junitTest)
+						if(thisTest.errorCount() > 0 || thisTest.failureCount() > 0) {
+							println "FAILURE"
+							thisTest.errors().each { result.addError(test, it.thrownException())  }
+							thisTest.failures().each { result.addFailure(test, it.thrownException()) }
+						}
+						else { println "SUCCESS"}
+						app.domainClasses.each { dc ->
+							dc.clazz.executeUpdate("delete from ${dc.clazz.name}")
+						}
+					}
 				}
 				interceptor?.flush()
 			}
-		}   
+		}
 		finally {
 			interceptor?.destroy()
-		} 							
+		}
 		
-	}   
+		Ant.junitreport {
+			fileset(dir:testDir) {
+				include(name:"TEST-*.xml")
+			}
+			report(format:"frames", todir:"${basedir}/target/test-reports/html")
+		}
+
+
+	}
 	catch(Throwable e) {
         event("StatusUpdate", [ "Error executing tests ${e.message}"])
 		e.printStackTrace(System.out)   
