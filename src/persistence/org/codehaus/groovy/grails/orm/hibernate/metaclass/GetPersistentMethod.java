@@ -18,6 +18,7 @@ import groovy.lang.MissingMethodException;
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
+import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.hibernate.SessionFactory;
 import org.springframework.beans.SimpleTypeConverter;
 
@@ -63,8 +64,14 @@ public class GetPersistentMethod extends AbstractStaticPersistentMethod {
             DomainClassArtefactHandler.TYPE, clazz.getName());
 		if(domainClass != null) {
 			Class identityType = domainClass.getIdentifier().getType();
-			if(!identityType.isAssignableFrom(arg.getClass())) {
-				arg = typeConverter.convertIfNecessary(arg, identityType);
+
+            if(!identityType.isAssignableFrom(arg.getClass())) {
+                if(arg instanceof Number && Long.class.equals(identityType)) {
+                    arg = DefaultGroovyMethods.toLong((Number)arg);
+                }
+                else {
+                    arg = typeConverter.convertIfNecessary(arg, identityType);
+                }                
 			}
 		}
 

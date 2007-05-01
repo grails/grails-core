@@ -18,6 +18,7 @@ package org.codehaus.groovy.grails.orm.hibernate.metaclass;
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
+import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.hibernate.*;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.orm.hibernate3.HibernateCallback;
@@ -78,7 +79,12 @@ public class GetAllPersistentMethod
 			// convert arguments to required identifier type
 			for (int i = 0; i < arguments.length; i++) {
 				if (!identityType.isAssignableFrom(arguments[i].getClass())) {
-					args.add(typeConverter.convertIfNecessary(arguments[i], identityType));
+                    if(arguments[i] instanceof Number && Long.class.equals(identityType)) {
+                        args.add(DefaultGroovyMethods.toLong((Number)arguments[i]));
+                    }
+                    else {
+                        args.add(typeConverter.convertIfNecessary(arguments[i], identityType));
+                    }
 				} else {
 					args.add(arguments[i]);
 				}
