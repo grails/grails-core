@@ -24,7 +24,6 @@
 	<classpathentry kind="lib" path="lib/jstl-2.4.jar"/>
 	<classpathentry kind="lib" path="lib/jta.jar"/>
 	<classpathentry kind="lib" path="lib/log4j-1.2.8.jar"/>
-	<classpathentry kind="lib" path="lib/ognl-2.7.jar"/>
 	<classpathentry kind="lib" path="lib/org.mortbay.jetty.jar"/>
 	<classpathentry kind="lib" path="lib/quartz-1.6.0.jar"/>
 	<classpathentry kind="lib" path="lib/sitemesh-2.3.jar"/>
@@ -57,7 +56,7 @@
 	<classpathentry kind="lib" path="lib/xerces-2.6.2.jar"/>
 	<classpathentry kind="lib" path="lib/ehcache-1.2.4.jar"/>
 	<classpathentry kind="lib" path="lib/antlr-2.7.6.jar"/>
-	<classpathentry kind="lib" path="lib/groovy-all-1.1-SNAPSHOT.jar"/>
 	<classpathentry kind="lib" path="lib/gant-0.2.5-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="lib/groovy-all-1.1-BETA-1.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>
