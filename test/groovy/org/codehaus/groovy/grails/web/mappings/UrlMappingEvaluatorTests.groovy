@@ -79,15 +79,15 @@ mappings {
          assertEquals "Jeff", info.parameters.firstName
          assertEquals "show", info.actionName
          assertEquals "author", info.controllerName
+         
          // first name too long
-         info = m4.match("/author/Lang/Johnny")
-         assertNull info
+         assert !m4.match("/author/Lang/Johnny")
+         
          // both names too long
-         info = m4.match("/author/Winter/Johnny")
-         assertNull info
+         assert !m4.match("/author/Winter/Johnny")
+         
          // last name too long
-         info = m4.match("/author/Winter/Edgar")
-         assertNull info
+         assert !m4.match("/author/Winter/Edgar")
     }
 
 
