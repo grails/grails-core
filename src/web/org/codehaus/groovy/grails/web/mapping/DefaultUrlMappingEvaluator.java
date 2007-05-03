@@ -32,6 +32,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 /**
  * <p>A UrlMapping evaluator that evaluates Groovy scripts that are in the form:</p>
@@ -239,22 +240,43 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
             if(methodName.startsWith(SLASH)) {
                 try {
                     urlDefiningMode = false;
-                    if(args.length > 0 && (args[0] instanceof Closure)) {
-                        UrlMappingData urlData = urlParser.parse(methodName);
-                        Closure callable = (Closure)args[0];                        
-                        callable.call();
+                    if(args.length > 0) {
+                        if(args[0] instanceof Closure) {
+                            UrlMappingData urlData = urlParser.parse(methodName);
+                            Closure callable = (Closure)args[0];                        
+                            callable.call();
 
-                        Object controllerName = binding.getVariables().get(GrailsControllerClass.CONTROLLER);
-                        Object actionName = binding.getVariables().get(GrailsControllerClass.ACTION);
+                            Object controllerName = binding.getVariables().get(GrailsControllerClass.CONTROLLER);
+                            Object actionName = binding.getVariables().get(GrailsControllerClass.ACTION);
 
-                        ConstrainedProperty[] constraints = (ConstrainedProperty[])previousConstraints.toArray(new ConstrainedProperty[previousConstraints.size()]);
-                        UrlMapping urlMapping = new RegexUrlMapping(urlData, controllerName, actionName, constraints);
-                        urlMappings.add(urlMapping);
-                        return urlMapping;
+                            ConstrainedProperty[] constraints = (ConstrainedProperty[])previousConstraints.toArray(new ConstrainedProperty[previousConstraints.size()]);
+                            UrlMapping urlMapping = new RegexUrlMapping(urlData, controllerName, actionName, constraints);
+                            urlMappings.add(urlMapping);
+                            return urlMapping;
+                        } if(args[0] instanceof Map) {
+                            Map namedArguments = (Map) args[0];
+                            UrlMappingData urlData = urlParser.parse(methodName);
+                            if(args.length > 1 && args[1] instanceof Closure) {
+                                Closure callable = (Closure)args[1];
+                                callable.call();
+                            }
+
+                            Object controllerName = namedArguments.get(GrailsControllerClass.CONTROLLER);
+                            if(controllerName == null) {
+                                controllerName = binding.getVariables().get(GrailsControllerClass.CONTROLLER);
+                            }
+                            Object actionName = namedArguments.get(GrailsControllerClass.ACTION);
+                            if(actionName == null) {
+                                actionName = binding.getVariables().get(GrailsControllerClass.ACTION);
+                            }
+
+                            ConstrainedProperty[] constraints = (ConstrainedProperty[])previousConstraints.toArray(new ConstrainedProperty[previousConstraints.size()]);
+                            UrlMapping urlMapping = new RegexUrlMapping(urlData, controllerName, actionName, constraints);
+                            urlMappings.add(urlMapping);
+                            return urlMapping;
+                        }
                     }
-                    else {
-                        throw new UrlMappingException("No controller or action defined for URL mapping ["+ methodName +"]");
-                    }
+                    throw new UrlMappingException("No controller or action defined for URL mapping ["+ methodName +"]");
                 }
                 finally {
                     binding.getVariables().remove(GrailsControllerClass.CONTROLLER);

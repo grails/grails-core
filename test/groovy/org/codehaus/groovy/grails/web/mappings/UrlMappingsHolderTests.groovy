@@ -35,6 +35,55 @@ mappings  {
 }
    '''
 
+   def mappingWithNamedArgs = '''
+mappings {
+    "/author/$lastName/$firstName" (controller:'product', action:'show')
+}
+'''
+   def mappingWithNamedArgsAndClosure = '''
+mappings {
+    "/author/$lastName/$firstName" (controller:'product') {
+         action = 'show'
+    }
+}
+'''
+
+	void testGetReverseMappingWithNamedArgsAndClosure() {
+       runTest {
+           def res = new ByteArrayResource(mappingWithNamedArgsAndClosure.bytes)
+
+           def evaluator = new DefaultUrlMappingEvaluator()
+           def mappings = evaluator.evaluateMappings(res)
+
+           def holder = new DefaultUrlMappingsHolder(mappings)
+
+           def params = [lastName:'Winter', firstName:'Johnny']
+           def m = holder.getReverseMapping("product", "show", params)
+           assertNotNull "getReverseMapping returned null", m
+           
+           assertEquals "/author/Winter/Johnny", m.createURL(params)
+           
+      }
+                 
+    }
+
+	void testGetReverseMappingWithNamedArgs() {
+       runTest {
+           def res = new ByteArrayResource(mappingWithNamedArgs.bytes)
+
+           def evaluator = new DefaultUrlMappingEvaluator()
+           def mappings = evaluator.evaluateMappings(res)
+
+           def holder = new DefaultUrlMappingsHolder(mappings)
+
+           def params = [lastName:'Winter', firstName:'Johnny']
+           def m = holder.getReverseMapping("product", "show", params)
+           assertNotNull "getReverseMapping returned null", m
+           
+           assertEquals "/author/Winter/Johnny", m.createURL(params)
+      }
+                 
+    }
     /**
       TODO: This test is currently failing, whether we actually need the ability to specify excess arguments
       that aren't part of the URL mapping definition is up for debate.
