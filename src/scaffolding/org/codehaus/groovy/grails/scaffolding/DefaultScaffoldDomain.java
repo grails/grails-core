@@ -38,7 +38,6 @@ import java.lang.InstantiationException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 /**
  * The default implementation of a Scaffolding application that uses Hibernate as the persistence mechanism.
  * Provides simple CRUD facilities onto a Hibernate domain model.

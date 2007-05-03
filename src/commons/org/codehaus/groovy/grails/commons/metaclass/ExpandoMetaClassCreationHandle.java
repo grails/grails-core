@@ -27,7 +27,6 @@ import java.util.Set;
 import org.apache.commons.collections.map.ReferenceMap;
 
 import groovy.lang.MetaClass;
-import groovy.lang.MetaClassImpl;
 import groovy.lang.MetaClassRegistry;
 import groovy.lang.MetaClassRegistry.MetaClassCreationHandle;
 

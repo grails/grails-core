@@ -23,7 +23,6 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.Errors;
 import org.springframework.validation.FieldError;
 import org.springframework.beans.NotReadablePropertyException;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeanWrapperImpl;
 
 import java.util.Locale;
