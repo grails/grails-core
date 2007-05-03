@@ -243,8 +243,8 @@ public final class GrailsDomainBinder {
         ib.setCollectionRole( list.getRole() );
         ib.setEntityName( list.getOwner().getEntityName() );
         ib.setValue( list.getIndex() );
-        // ( (Column) ( (SimpleValue) ic.getIndex() ).getColumnIterator().next()
-        // ).setNullable(false);
+         ( (Column) ( (SimpleValue) list.getIndex() ).getColumnIterator().next()
+         ).setNullable(true);
         referenced.addProperty( ib );
 
     }
