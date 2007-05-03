@@ -14,7 +14,10 @@
  */
 package org.codehaus.groovy.grails.web.mapping;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
+import org.springframework.core.style.ToStringCreator;
 
 import java.util.*;
 
@@ -32,17 +35,18 @@ import java.util.*;
  *        Time: 8:21:00 AM
  */
 public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
+    private static final transient Log LOG = LogFactory.getLog(DefaultUrlMappingsHolder.class);
 
     private List urlMappings = new ArrayList();
     private UrlMapping[] mappings;
     private Map mappingsLookup = new HashMap();
-    private UrlMappingKey DEFAULT_CONTROLLER_KEY = new UrlMappingKey(null, null, new HashSet() {{
+    private Set DEFAULT_CONTROLLER_PARAMS = new HashSet() {{
            add(UrlMapping.CONTROLLER);
            add(UrlMapping.ACTION);
-    }});
-    private UrlMappingKey DEFAULT_ACTION_KEY = new UrlMappingKey(null, null, new HashSet() {{
+    }};
+    private Set DEFAULT_ACTION_PARAMS = new HashSet() {{
            add(UrlMapping.ACTION);
-    }});
+    }};
 
 
     public DefaultUrlMappingsHolder(List mappings) {
@@ -74,15 +78,21 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
                     break;
                 }
             }
-            this.mappingsLookup.put(new UrlMappingKey(controllerName, actionName, requiredParams), mapping);
-
+            UrlMappingKey key = new UrlMappingKey(controllerName, actionName, requiredParams);
+            this.mappingsLookup.put(key, mapping);
+            if( LOG.isDebugEnabled() ) {
+                LOG.debug( "Reverse mapping: " + key + " -> " + mapping );
+            }
             Set requiredParamsAndOptionals = new HashSet(requiredParams);
             if(optionalIndex > -1) {
                 for (int j = optionalIndex; j < params.length; j++) {
                     ConstrainedProperty param = params[j];
                     requiredParamsAndOptionals.add(param.getPropertyName());
-                    UrlMappingKey key = new UrlMappingKey(controllerName, actionName, new HashSet(requiredParamsAndOptionals));
+                    key = new UrlMappingKey(controllerName, actionName, new HashSet(requiredParamsAndOptionals));
                     mappingsLookup.put(key, mapping);                    
+                    if( LOG.isDebugEnabled() ) {
+                        LOG.debug( "Reverse mapping: " + key + " -> " + mapping );
+                    }
                 }
             }
         }
@@ -95,13 +105,11 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
     public UrlMapping getReverseMapping(final String controller, final String action, Map params) {
         if(params == null) params = Collections.EMPTY_MAP;
 
-        
-        UrlMappingKey key = new UrlMappingKey(controller, action, params.keySet());
-        UrlMapping mapping = (UrlMapping)mappingsLookup.get(key);
+        UrlMapping mapping = (UrlMapping)mappingsLookup.get(new UrlMappingKey(controller, action, params.keySet()));
         if(mapping == null) {
-            mapping = (UrlMapping)mappingsLookup.get(DEFAULT_CONTROLLER_KEY);
+            mapping = (UrlMapping)mappingsLookup.get(new UrlMappingKey(controller, null, DEFAULT_ACTION_PARAMS));
             if(mapping == null) {
-                return (UrlMapping)mappingsLookup.get(DEFAULT_ACTION_KEY);
+                return (UrlMapping)mappingsLookup.get(new UrlMappingKey(null, null, DEFAULT_CONTROLLER_PARAMS));
             }
         }
         return mapping;
@@ -143,6 +151,10 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
             result = 31 * result + (action != null ? action.hashCode() : 0);
             result = 31 * result + paramNames.hashCode();
             return result;
+        }
+
+        public String toString() {
+            return new ToStringCreator(this).append( "controller", controller ).append("action",action ).append( "params", paramNames ).toString();
         }
     }
 }

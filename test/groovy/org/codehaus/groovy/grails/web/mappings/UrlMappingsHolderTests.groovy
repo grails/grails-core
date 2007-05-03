@@ -27,6 +27,10 @@ mappings {
 
    def mappingScript2 = '''
 mappings  {
+    "/specific/$action?" {
+        controller = "someController"
+    }
+
     "/admin/$controller/$action?/$id?" {
         constraints {
             id(matches:/\\d+/)
@@ -122,7 +126,10 @@ mappings {
             assertEquals "/admin/test/list/1", m.createURL(controller:"test", action:"list",id:1)
 
             assertEquals "/admin/test/list/1?foo=bar", m.createURL(controller:"test", action:"list",id:1, foo:"bar")
-                 
+
+            m = holder.getReverseMapping("someController", "test", null)
+            assert m
+            assertEquals "/specific/test", m.createURL(controller:"someController", action:"test")
     }
 
     void testGetReverseMappingWithFewerArgs() {
