@@ -22,6 +22,13 @@ mappings {
   "/book/$author/$title/$test" {
       controller = "book"
   }
+
+  "/author/$lastName/$firstName" (controller:'author', action:'show') {
+     constraints {
+        lastName(maxSize:5)
+        firstName(maxSize:5)
+     }
+  }
 }
 '''
     
@@ -32,7 +39,7 @@ mappings {
          def mappings = evaluator.evaluateMappings(res)
 
          assert mappings
-         assertEquals 3, mappings.size()
+         assertEquals 4, mappings.size()
 
          def m1 = mappings[0]
          assertEquals "/(*)/(*)?/(*)?/(*)?", m1.urlData.urlPattern
@@ -63,7 +70,24 @@ mappings {
 
          assert !m2.match("/product")
          assert !m2.match("/foo/bar")
-         assert !m2.match("/product/MacBook/foo")         
+         assert !m2.match("/product/MacBook/foo")      
+         
+         def m3 = mappings[3]
+         info = m3.match("/author/Brown/Jeff")
+         assert info
+         assertEquals "Brown", info.parameters.lastName
+         assertEquals "Jeff", info.parameters.firstName
+         assertEquals "show", info.actionName
+         assertEquals "author", info.controllerName
+         // first name too long
+         info = m3.match("/author/Lang/Johnny")
+         assertNull info
+         // both names too long
+         info = m3.match("/author/Winter/Johnny")
+         assertNull info
+         // last name too long
+         info = m3.match("/author/Winter/Edgar")
+         assertNull info
     }
 
 
