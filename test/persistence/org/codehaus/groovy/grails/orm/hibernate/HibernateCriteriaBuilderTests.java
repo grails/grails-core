@@ -1295,6 +1295,11 @@ public class HibernateCriteriaBuilderTests extends
                 "}", "Test1");
         results = (List)p.getAdaptee();
         assertEquals(1, results.size());
+        p = parse("{ " +
+                "notNull('age');" +
+                "}", "Test1");
+        results = (List)p.getAdaptee();
+        assertEquals(1, results.size());
     }
 
 }
