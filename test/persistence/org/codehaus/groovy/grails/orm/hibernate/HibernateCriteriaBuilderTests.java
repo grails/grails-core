@@ -55,8 +55,6 @@ public class HibernateCriteriaBuilderTests extends
     protected void onSetUp() throws Exception {
         Class groovyClass = cl.parseClass("public class CriteriaBuilderTestClass {\n" +
                 "\n" +
-                "\tList optionals = [ \"age\",'parent' ];\n" +
-                "\t\n" +
                 "\tLong id; \n" +
                 "\tLong version; \n" +
                 "\tdef relatesToMany = [children:CriteriaBuilderTestClass]; \n" +
@@ -70,6 +68,8 @@ public class HibernateCriteriaBuilderTests extends
                  "\t\n" +
                 "\tstatic constraints = {\n" +
                 "\t\tfirstName(size:4..15)\n" +
+                "\t\tage(nullable:true)\n" +
+                "\t\tparent(nullable:true)\n" +
                 "\t}\n" +
                 "}");
         grailsApplication = new DefaultGrailsApplication(new Class[]{groovyClass},cl);
@@ -1261,6 +1261,40 @@ public class HibernateCriteriaBuilderTests extends
             // success!
             assertEquals( IllegalArgumentException.class, iie.getCause().getClass() );
         }
+    }
+
+    public void testIsNullAndIsNotNull() throws Exception {
+        GrailsDomainClass domainClass =  (GrailsDomainClass) this.grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE, "CriteriaBuilderTestClass");
+
+        assertNotNull(domainClass);
+
+        GroovyObject obj = (GroovyObject)domainClass.newInstance();
+        obj.setProperty( "firstName", "fred" );
+        obj.setProperty( "lastName", "flintstone" );
+        obj.setProperty( "age", new Integer(45));
+        obj.invokeMethod("save", null);
+
+        obj = (GroovyObject)domainClass.newInstance();
+        obj.setProperty( "firstName", "wilma" );
+        obj.setProperty( "lastName", "flintstone" );
+        obj.invokeMethod("save", null);
+
+        obj = (GroovyObject)domainClass.newInstance();
+        obj.setProperty( "firstName", "jonh" );
+        obj.setProperty( "lastName", "smith" );
+        obj.invokeMethod("save", null);
+
+        Proxy p = null;
+        p = parse("{ " +
+                "isNull('age');" +
+                "}", "Test1");
+        List results = (List)p.getAdaptee();
+        assertEquals(2, results.size());
+        p = parse("{ " +
+                "isNotNull('age');" +
+                "}", "Test1");
+        results = (List)p.getAdaptee();
+        assertEquals(1, results.size());
     }
 
 }

@@ -84,7 +84,7 @@ public class HibernateCriteriaBuilder extends BuilderSupport {
 
     public static final String AND = "and"; // builder
     public static final String IS_NULL = "isNull"; // builder
-    public static final String IS_NOT_NULL = "notNull"; // builder
+    public static final String IS_NOT_NULL = "isNotNull"; // builder
     public static final String NOT = "not";// builder
     public static final String OR = "or"; // builder
     public static final String ID_EQUALS = "idEq"; // builder
