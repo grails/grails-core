@@ -78,28 +78,32 @@ Grails home is set to: ${grailsHome}
 					rootLoader?.addURL(dir.toURL()) 
 				}				
 			}
-			def scriptName
-			def allArgs = args[0].trim() 
-			      
-			allArgs = processSystemArguments(allArgs)
-			
-			if(allArgs.indexOf(' ') > -1) {                                                                  				
-				def tokens = allArgs.trim().split(" ")    
-				calculateEnvironment(tokens[0])  
-				scriptName = GCU.getNameFromScript(isEnvironmentArgs(tokens[0]) ? tokens[1] : tokens[0])
-				if(isEnvironmentArgs(tokens[0]) && tokens.size() > 2) {
-					System.setProperty("grails.cli.args", tokens[2..-1].join("\n"))
-				}
-				else if(!isEnvironmentArgs(tokens[0]) && tokens.size() -1) {
-				   System.setProperty("grails.cli.args", tokens[1..-1].join("\n")) 
-				}
-				
-			}   
-			else {   
-				setDefaultEnvironment(allArgs)
-				scriptName = GCU.getNameFromScript(allArgs.trim())
-			}
-            
+
+			def allArgs = args[0].trim()
+
+            allArgs = processSystemArguments(allArgs).trim().split(" ")
+            def currentParamIndex = 0
+            if( isEnvironmentArgs(allArgs[currentParamIndex]) ) {
+                // use first argument as environment name and step further
+                calculateEnvironment(allArgs[currentParamIndex++])
+            } else {
+                // first argument is a script name so check for default environment
+                setDefaultEnvironment(allArgs[currentParamIndex])
+            }
+
+            if( currentParamIndex >= allArgs.size() ) {
+                println "You should specify a script to run. Run 'grails help' for a complete list of available scripts."
+                System.exit(0)
+            }
+
+            // use current argument as script name and step further
+            def scriptName = GCU.getNameFromScript(allArgs[currentParamIndex++])
+
+            if( currentParamIndex < allArgs.size() ) {
+                // if we have additional params provided - store it in system property
+                System.setProperty("grails.cli.args", allArgs[currentParamIndex..-1].join("\n"))
+            }
+
             if(!new File(baseDir.absolutePath, "grails-app").exists() && (!['CreateApp', 'CreatePlugin', 'PackagePlugin', 'Help'].contains(scriptName))) {
             	println "${baseDir.absolutePath} does not appear to be part of a Grails application.  Exiting."
             	System.exit(-1)
@@ -124,11 +128,28 @@ Grails home is set to: ${grailsHome}
 		}
 	}  
 	    
-	static ENV_ARGS = ["dev", "prod", "test"] 
-	private static isEnvironmentArgs(env) {
-		ENV_ARGS.contains(env)
-	}     
-	 
+	static ENV_ARGS = [dev:"development",prod:"production",test:"test"]
+    // this map contains default environments for several scripts in form 'script-name':'env-code'
+    static DEFAULT_ENVS = ['war': 'prod','test-app':'test','run-webtest':'test']
+    private static isEnvironmentArgs(env) {
+		ENV_ARGS.keySet().contains(env)
+	}
+    private static setDefaultEnvironment(args) {
+        if(!System.properties."grails.env") {
+            def environment = DEFAULT_ENVS[args.toLowerCase()]
+            System.setProperty("grails.env", environment ? ENV_ARGS[environment] : ENV_ARGS['dev'] )
+        }
+    }
+    private static calculateEnvironment(env) {
+        def environment = ENV_ARGS[env]
+        if( environment ) {
+            System.setProperty("grails.env", environment)
+        } else {
+            System.setProperty("grails.env.default", "true")
+            System.setProperty("grails.env", ENV_ARGS['prod'] )
+        }
+    }
+
 	private static callPluginOrGrailsScript(scriptName) {
 		def potentialScripts = [] 
 
@@ -179,7 +200,7 @@ Grails home is set to: ${grailsHome}
 		def lastMatch = null
 		allArgs.eachMatch( /-D(.+?)=(.+?)\s+?/ ) { match ->
 		   System.setProperty(match[1].trim(),match[2].trim())
-		   lastMatch = match[0]
+           lastMatch = match[0]
 		}
 		
 		if(lastMatch) {
@@ -212,40 +233,5 @@ Grails home is set to: ${grailsHome}
         }
 		return baseDir
 	}      
-	private static setDefaultEnvironment(args) {
-	    if(!System.properties."grails.env") {
-            switch(args.toLowerCase()) {
-                case "war":
-                    System.setProperty("grails.env", "production")
-                break
-                case "test-app":
-                    System.setProperty("grails.env", "test")
-                break
-                case "run-webtest":
-                    System.setProperty("grails.env", "test")
-                break
-                default:
-                    System.setProperty("grails.env", "development")
-                break
-            }        			    
-        }
-	}
-	private static calculateEnvironment(env) { 	
-		switch(env) {
-			case "dev":
-				System.setProperty("grails.env", "development")
-			break
-			case "prod":
-				System.setProperty("grails.env", "production")
-			break
-			case "test":
-				System.setProperty("grails.env", "test")
-			break	
-			default:        
-			    System.setProperty("grails.env.default", "true")
-				System.setProperty("grails.env", "production")			
-			break					
-		}
-	}   
-	
+
 }
