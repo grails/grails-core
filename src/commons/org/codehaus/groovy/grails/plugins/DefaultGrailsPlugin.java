@@ -20,6 +20,7 @@ import grails.util.GrailsUtil;
 import groovy.lang.Binding;
 import groovy.lang.Closure;
 import groovy.lang.GroovyObject;
+import groovy.lang.GroovyClassLoader;
 import groovy.util.slurpersupport.GPathResult;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.logging.Log;
@@ -68,6 +69,7 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
     private PathMatchingResourcePatternResolver resolver;
 
     private String[] resourcesReferences;
+    private int[] resourceCount;
     private String[] loadAfterNames = new String[0];
     private String[] influencedPluginNames = new String[0];
     private String status = STATUS_ENABLED;
@@ -163,13 +165,16 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
                 if(resourceList!=null) {
 
                     this.resourcesReferences = new String[resourceList.size()];
+                    this.resourceCount = new int[resourceList.size()];
                     for (int i = 0; i < resourcesReferences.length; i++) {
                         String resRef = resourceList.get(i).toString();
                         resourcesReferences[i]=resRef;
                     }
-                    for (int i = 0; i < resourceList.size(); i++) {
-                        String res = resourceList.get(i).toString();
+                    for (int i = 0; i < resourcesReferences.length; i++) {
+                        String res = resourcesReferences[i];
                         Resource[] tmp = resolver.getResources(res);
+                        resourceCount[i] = tmp.length;
+                        
                         if(LOG.isDebugEnabled()) {
                             LOG.debug("Watching resource set ["+(i+1)+"]: " + ArrayUtils.toString(tmp));
                         }
@@ -368,18 +373,34 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
     public boolean checkForChanges() {
         if(pluginUrl != null) {
             long currentModified = -1;
+            URLConnection conn = null;
             try {
-                currentModified = pluginUrl
-                                        .openConnection()
-                                        .getLastModified();
+                conn = pluginUrl
+                             .openConnection();
+
+                currentModified = conn
+                                    .getLastModified();
+                if(currentModified > pluginLastModified) {
+
+                    GroovyClassLoader gcl = new GroovyClassLoader(application.getClassLoader());
+                    initialisePlugin(gcl.parseClass(conn.getInputStream()));
+                    pluginLastModified = currentModified;
+                    return true;
+                }
             } catch (IOException e) {
                 LOG.warn("Error reading plugin ["+pluginClass+"] last modified date, cannot reload following change: " + e.getMessage());
             }
+            finally {
+                if(conn!=null) {
+                    try {
+                        conn.getInputStream().close();
+                    } catch (IOException e) {
+                        LOG.warn("Error closing URL connection to plugin resource ["+pluginUrl+"]: " + e.getMessage(), e);
+                    }
+                }
 
-            if(currentModified > pluginLastModified) {
-                initialisePlugin(attemptClassReload(this.pluginClass.getName()));
-                return true;
             }
+
         }
         if(onChangeListener!=null) {
                 checkForNewResources(this);
@@ -463,28 +484,52 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
     }
 
     private void checkForNewResources(final GrailsPlugin plugin) {
+
+
         if(resourcesReferences != null) {
+            if(LOG.isDebugEnabled()) {
+                LOG.debug("Plugin "+plugin+" checking ["+ArrayUtils.toString(resourcesReferences)+"] resource references new resources that have been added..");
+            }
+            
             for (int i = 0; i < resourcesReferences.length; i++) {
                 String resourcesReference = resourcesReferences[i];
                 try {
                     Resource[] tmp = resolver.getResources(resourcesReference);
-                    if(watchedResources.length < tmp.length) {
+                    if(resourceCount[i] < tmp.length) {
                         Resource newResource = null;
-                        for (int j = 0; j < watchedResources.length; j++) {
-                            if(!tmp[j].equals(watchedResources[j])) {
-                                newResource = tmp[j];
+                        resourceCount[i] = tmp.length;
+
+                        for (int j = 0; j < tmp.length; j++) {
+                            Resource resource = tmp[j];
+                            if(!ArrayUtils.contains(watchedResources, resource)) {
+                                newResource = resource;
                                 break;
                             }
                         }
-                        if(newResource == null) {
-                            newResource = tmp[tmp.length-1];
-                        }
-                        watchedResources = tmp;
-                        initializeModifiedTimes();
 
-                        if(LOG.isDebugEnabled())
-                            LOG.debug("[GrailsPlugin] plugin resource ["+newResource+"] added, firing event if possible..");
-                        fireModifiedEvent(newResource, plugin);
+                        if(newResource!=null) {
+                            watchedResources = (Resource[])ArrayUtils.add(watchedResources, newResource);
+
+                            if(newResource.getFilename().endsWith(".groovy")) {
+                                if(LOG.isDebugEnabled())
+                                    LOG.debug("[GrailsPlugin] plugin resource ["+newResource+"] added, registering resource with class loader...");
+
+                                GroovyClassLoader classLoader = this.application.getClassLoader();
+
+                                GrailsResourceLoader resourceLoader = (GrailsResourceLoader) classLoader
+                                                                                                .getResourceLoader();
+
+                                Resource[] classLoaderResources = resourceLoader.getResources();
+                                classLoaderResources = (Resource[])ArrayUtils.add(classLoaderResources, newResource);
+                                resourceLoader.setResources(classLoaderResources);
+                            }
+
+                            initializeModifiedTimes();
+
+                            if(LOG.isDebugEnabled())
+                                LOG.debug("[GrailsPlugin] plugin resource ["+newResource+"] added, firing event if possible..");
+                            fireModifiedEvent(newResource, plugin);
+                        }
                     }
                 }
                 catch (IllegalArgumentException e) {
@@ -507,8 +552,10 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
             Class oldClass = application.getClassForName(className);
             loadedClass = attemptClassReload(className);
             //Assert.isTrue(oldClass!=loadedClass, "Problem reloading class ["+oldClass+"]. The reload was not successful!");
-            
-            replaceExpandoMetaClass(loadedClass, oldClass);
+
+            if(oldClass != null) {
+                replaceExpandoMetaClass(loadedClass, oldClass);
+            }            
         }
 
         final Class resourceClass = loadedClass;
@@ -522,6 +569,10 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
             put(PLUGIN_CHANGE_EVENT_MANAGER, getManager());
             put(PLUGIN_CHANGE_EVENT_CTX, applicationContext);
         }};
+
+        if(LOG.isDebugEnabled()) {
+            LOG.debug("Firing onChange event listener with event object ["+event+"]");
+        }
         invokeOnChangeListener(event);
         getManager().informObservers(getName(), event);
     }

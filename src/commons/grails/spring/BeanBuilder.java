@@ -15,23 +15,7 @@
  */ 
 package grails.spring;
 
-import groovy.lang.Binding;
-import groovy.lang.Closure;
-import groovy.lang.GString;
-import groovy.lang.GroovyObject;
-import groovy.lang.GroovyObjectSupport;
-import groovy.lang.GroovyShell;
-import groovy.lang.MetaClass;
-import groovy.lang.MissingMethodException;
-
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
+import groovy.lang.*;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -44,8 +28,12 @@ import org.springframework.beans.factory.config.RuntimeBeanReference;
 import org.springframework.beans.factory.support.ManagedList;
 import org.springframework.beans.factory.support.ManagedMap;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.StaticApplicationContext;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+
+import java.io.IOException;
+import java.util.*;
 
 /**
  * <p>Runtime bean configuration wrapper. Like a Groovy builder, but more of a DSL for
@@ -86,15 +74,17 @@ import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 public class BeanBuilder extends GroovyObjectSupport {
 	private static final Log LOG = LogFactory.getLog(BeanBuilder.class);
 	private static final String CREATE_APPCTX = "createApplicationContext";
-	private static final String REF = "ref";
+    private static final String REGISTER_BEANS = "registerBeans";
+    private static final String REF = "ref";
 	private RuntimeSpringConfiguration springConfig = new DefaultRuntimeSpringConfiguration();
 	private BeanConfiguration currentBeanConfig;
 	private Map deferredProperties = new HashMap();
 	private ApplicationContext parentCtx;
 	private Map binding = Collections.EMPTY_MAP;
 
-	
-	public BeanBuilder() {
+
+
+    public BeanBuilder() {
 		super();
 	}
 	
@@ -338,12 +328,21 @@ public class BeanBuilder extends GroovyObjectSupport {
 	 * takes a class argument
 	 */
 	public Object invokeMethod(String name, Object arg) {
-		if(CREATE_APPCTX.equals(name)) {
+        Object[] args = (Object[])arg;
+        
+        if(CREATE_APPCTX.equals(name)) {
 			finalizeDeferredProperties();
 			return springConfig.getApplicationContext();
 		}
+        else if(REGISTER_BEANS.equals(name) && args.length == 1 && args[0] instanceof StaticApplicationContext) {
+            finalizeDeferredProperties();
+
+            StaticApplicationContext ctx = (StaticApplicationContext)args[0];
+            springConfig.registerBeansWithContext(ctx);
+            return null;
+        }
 		
-		Object[] args = (Object[])arg;
+
 		if(args.length == 0) 
 			throw new MissingMethodException(name, getClass(),args);
 		

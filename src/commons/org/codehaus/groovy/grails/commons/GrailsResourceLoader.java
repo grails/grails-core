@@ -17,6 +17,8 @@ package org.codehaus.groovy.grails.commons;
 import groovy.lang.GroovyResourceLoader;
 import org.springframework.core.io.Resource;
 import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -36,6 +38,7 @@ public class GrailsResourceLoader implements GroovyResourceLoader {
     private Resource[] resources;
     private List loadedResources = new ArrayList();
     private Map classToResource = new HashMap();
+    private static final Log LOG = LogFactory.getLog(GrailsResourceLoader.class);
 
     public GrailsResourceLoader(Resource[] resources) {
          this.resources = resources;
@@ -49,14 +52,21 @@ public class GrailsResourceLoader implements GroovyResourceLoader {
         this.resources = resources;
     }
 
+    public Resource[] getResources() {
+        return resources;
+    }
+
     public URL loadGroovySource(String className) throws MalformedURLException {
     	if(className == null) return null;
         String groovyFile = className.replace('.', '/') + ".groovy";
+        
+ //       LOG.trace("Loading groovy file :[" + className + "] using file name ["+groovyFile+"]");
         Resource foundResource = null;
         for (int i = 0; resources != null && i < resources.length; i++) {
             if (resources[i].getFilename().equals(groovyFile)) {
                 if (foundResource == null) {
                     foundResource = resources[i];
+   //                 LOG.trace("Found resource for :[" + className + "] using file name ["+groovyFile+"] at location ["+foundResource+"]");
                 } else {
                     try {
                         throw new IllegalArgumentException("Found two identical classes at [" + resources[i].getFile().getAbsolutePath()+ "] and [" + foundResource.getFile().getAbsolutePath() + "] whilst attempting to load [" + className + "]. Please remove one to avoid duplicates.");

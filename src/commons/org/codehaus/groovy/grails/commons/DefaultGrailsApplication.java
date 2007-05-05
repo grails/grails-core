@@ -570,7 +570,10 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
      * @see org.codehaus.groovy.grails.commons.ArtefactHandler
      */
     public boolean isArtefactOfType(String artefactType, Class theClazz) {
-        return isArtefactOfType(artefactType, theClazz.getName());
+        ArtefactHandler handler = (ArtefactHandler) artefactHandlersByName.get(artefactType);
+        if(handler == null) throw new GrailsConfigurationException("Unable to locate arefact handler for specified type: " + artefactType);
+                
+        return handler.isArtefact(theClazz);
     }
 
    /**

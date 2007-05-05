@@ -437,10 +437,8 @@ class ControllersGrailsPlugin {
         }
 	}
 
-	def onChange = { event ->
+	def onChange = { event -> 
         if(application.isArtefactOfType(ControllerArtefactHandler.TYPE, event.source)) {
-			if(log.isDebugEnabled())
-				log.debug("Controller ${event.source} changed. Reloading...")
 			def context = event.ctx
 			if(!context) {
 				if(log.isDebugEnabled())
@@ -448,18 +446,32 @@ class ControllersGrailsPlugin {
 				return
 			}
 			boolean isNew = application.getControllerClass(event.source?.name) ? false : true
-
+            println "Is class new ? ${isNew}"
 			def controllerClass = application.addArtefact(ControllerArtefactHandler.TYPE, event.source)
-			def controllerTargetSource = context.getBean("${controllerClass.fullName}TargetSource")
-			controllerTargetSource.swap(controllerClass)
+			
+			
 
 			if(isNew) {
-				log.info "Re-generating web.xml file. This may require a second refresh..."
-				def webTemplateXml = resolver.getResource("/WEB-INF/web.template.xml")
-				def webXml = resolver.getResource("/WEB-INF/web.xml")?.getFile()
-				webXml?.withWriter { w ->
-					manager.doWebDescriptor(webTemplateXml, w)
-				}
+				log.info "Controller ${event.source} added. Configuring.."
+				// we can create the bean definitions from the oroginal configureAOPProxyBean closure
+				// by currying it, which populates the values within the curried closure
+				// once that is done we pass it to the "beans" method which will return a BeanBuilder
+				def beanConfigs = 	  configureAOPProxyBean.curry(controllerClass, 
+																  ControllerArtefactHandler.TYPE, 				
+																  org.codehaus.groovy.grails.commons.GrailsControllerClass.class,
+																  false)
+               	def beanDefinitions = beans(beanConfigs) 
+				// now that we have a BeanBuilder calling registerBeans and passing the app ctx will
+				// register the necessary beans with the given app ctx
+                beanDefinitions.registerBeans(event.ctx)   														
+				
+			}
+			else {
+				if(log.isDebugEnabled())
+					log.debug("Controller ${event.source} changed. Reloading...")
+				
+				def controllerTargetSource = context.getBean("${controllerClass.fullName}TargetSource")
+				controllerTargetSource.swap(controllerClass)				
 			}
 
 		}
@@ -467,20 +479,15 @@ class ControllersGrailsPlugin {
 			boolean isNew = application.getTagLibClass(event.source?.name) ? false : true
 			def taglibClass = application.addArtefact(TagLibArtefactHandler.TYPE, event.source)
 			if(taglibClass) {
-				if(isNew) {
-					GrailsRuntimeConfigurator.registerTagLibrary(taglibClass, source.ctx)
+				// replace tag library bean
+				def beanName = taglibClass.fullName
+				def beans = beans {
+					"$beanName"(taglibClass.getClazz()) { bean ->
+						bean.autowire =  true
+					}					
 				}
-				else {
-					// replace tag library bean
-					def beanName = taglibClass.fullName
-					def beans = beans {
-						"$beanName"(taglibClass.getClazz()) { bean ->
-							bean.autowire =  true
-						}					
-					}
-					if(event.ctx) {
-						event.ctx.registerBeanDefinition(beanName, beans.getBeanDefinition(beanName))
-					}
+				if(event.ctx) {
+					event.ctx.registerBeanDefinition(beanName, beans.getBeanDefinition(beanName))
 				}
 			}
 		}  

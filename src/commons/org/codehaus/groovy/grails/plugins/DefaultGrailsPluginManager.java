@@ -201,7 +201,7 @@ public class DefaultGrailsPluginManager implements GrailsPluginManager {
           // load core plugins first
           loadCorePlugins();
 
-          LOG.debug("Attempting to load ["+pluginResources.length+"] user defined plugins");
+          LOG.info("Attempting to load ["+pluginResources.length+"] user defined plugins");
           for (int i = 0; i < pluginResources.length; i++) {
               Resource r = pluginResources[i];
 
