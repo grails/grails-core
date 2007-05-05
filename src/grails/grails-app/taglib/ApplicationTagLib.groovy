@@ -90,7 +90,7 @@ class ApplicationTagLib {
 
         def url
 		try {
-            if(id) params.id = id
+            if(id != null) params.id = id
             def mapping = grailsUrlMappingsHolder?.getReverseMapping(controller,action,params)
 			params.controller = controller
 			if(action) params.action = action  
@@ -109,7 +109,7 @@ class ApplicationTagLib {
 	        if(action) {
 	            out << '/' << action
 	        }
-	        if(id) {
+	        if(id != null) {
 	            out << '/' << id
 	        }
 	        if(params) {

@@ -24,8 +24,19 @@ class ApplicationTagLibTests extends AbstractGrailsTagTests {
 			println sw.toString()
 			assertEquals '/', sw.toString()
 		}
-
 	}
+
+    void testCreateLinkWithZeroId() {
+        // test case for GRAILS-1123
+        InvokerHelper.getInstance().getMetaRegistry().removeMetaClass(String.class)
+        StringWriter sw = new StringWriter();
+        withTag("createLink", sw) { tag ->
+            def attrs = [action:'testAction', controller: 'testController', id:0]
+            tag.call( attrs )
+            assertEquals '/testController/testAction/0', sw.toString()
+        }
+
+    }
 
 	void testCreateLinkURLEncoding() {
         InvokerHelper.getInstance().getMetaRegistry().removeMetaClass(String.class)
