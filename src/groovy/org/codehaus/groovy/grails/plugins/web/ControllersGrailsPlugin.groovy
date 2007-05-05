@@ -446,7 +446,6 @@ class ControllersGrailsPlugin {
 				return
 			}
 			boolean isNew = application.getControllerClass(event.source?.name) ? false : true
-            println "Is class new ? ${isNew}"
 			def controllerClass = application.addArtefact(ControllerArtefactHandler.TYPE, event.source)
 			
 			
