@@ -324,7 +324,8 @@ task (createArtifact: "Creates a specific Grails artifact") {
 	className = GCU.getClassNameRepresentation(args)   
 	propertyName = GCU.getPropertyNameRepresentation(args)            
 	artifactFile = "${basedir}/${artifactPath}/${className}${typeName}.groovy"
-	
+
+
 	if(new File(artifactFile).exists()) {
 		Ant.input(addProperty:"${args}.${typeName}.overwrite", message:"${artifactName} ${className}${typeName}.groovy already exists. Overwrite? [y/n]")
 		if(Ant.antProject.properties."${args}.${typeName}.overwrite" == "n")
@@ -334,9 +335,15 @@ task (createArtifact: "Creates a specific Grails artifact") {
 	// first check for presence of template in application
 	templateFile = "${basedir}/src/templates/artifacts/${artifactName}.groovy"
 	if (!new File(templateFile).exists()) {
-		// template not found in application, use default template
-		templateFile = "${grailsHome}/src/grails/templates/artifacts/${artifactName}.groovy"
-	}
+        // now check for template provided by plugins
+        def pluginTemplateFiles = resolveResources("plugins/*/src/templates/artifacts/${artifactName}.groovy")
+        if ( pluginTemplateFiles ) {
+            templateFile = pluginTemplateFiles[0].path
+        } else {
+            // template not found in application, use default template
+            templateFile = "${grailsHome}/src/grails/templates/artifacts/${artifactName}.groovy"
+        }
+    }
 	Ant.copy(file: templateFile, tofile: artifactFile, overwrite:true)
 	Ant.replace(file:artifactFile, 
 				token:"@artifact.name@", value:"${className}${typeName}" )
