@@ -45,8 +45,9 @@ task ( "default" : "Installs a plug-in for the given URL or name and version") {
    installPlugin()
 }     
                 
-task(installPlugin:"Implementation task") {   
-	def pluginsBase = "${basedir}/plugins"
+task(installPlugin:"Implementation task") {
+    // fix for Windows-style path with backslashes
+    def pluginsBase = "${basedir}/plugins".toString().replaceAll(/\\/,'/')
 	if(args) {      
 		def pluginFile = new File(args.trim())
         def pluginName
@@ -88,10 +89,12 @@ task(installPlugin:"Implementation task") {
 
             // proceed _Install.groovy plugin script if exists
             def installScript = new File ( "${pluginsBase}/${pluginName}/scripts/_Install.groovy" )
-            if( installScript ) {
+            if( installScript.exists() ) {
                 event("StatusUpdate", [ "Executing ${pluginName} plugin post-install script"])
-                // we are using text here to prevent Gant caching
-                includeTargets << installScript.text
+                // instrumenting plugin scripts adding 'pluginBasedir' variable
+                def instrumentedInstallScript = "def pluginBasedir = '${pluginsBase}/${pluginName}'\n" + installScript.text
+                // we are using text form of script here to prevent Gant caching
+                includeTargets << instrumentedInstallScript
             }
             event("StatusFinal", [ "Plugin ${pluginName} installed"])
         }

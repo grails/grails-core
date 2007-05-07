@@ -131,15 +131,20 @@ task( upgrade: "main upgrade task") {
         }
 	}
 
+    // proceed plugin-specific upgrade logic contained in 'scripts/_Upgrade.groovy' under plugin's root
     def plugins = new File("${basedir}/plugins/")
     plugins.eachFile { f ->
         if(f.isDirectory() && f.name != 'core' ) {
+            // fix for Windows-style path with backslashes
+            def pluginBase = "${basedir}/plugins/${f.name}".toString().replaceAll(/\\/,'/')
             // proceed _Upgrade.groovy plugin script if exists
-            def upgradeScript = new File ( "${basedir}/plugins/${f.name}/scripts/_Upgrade.groovy" )
+            def upgradeScript = new File ( "${pluginBase}/scripts/_Upgrade.groovy" )
             if( upgradeScript.exists() ) {
                 event("StatusUpdate", [ "Executing ${f.name} plugin upgrade script"])
-                // we are using text here to prevent Gant caching
-                includeTargets << upgradeScript.text
+                // instrumenting plugin scripts adding 'pluginBasedir' variable
+                def instrumentedUpgradeScript = "def pluginBasedir = '${pluginsBase}/${pluginName}'\n" + upgradeScript.text
+                // we are using text form of script here to prevent Gant caching
+                includeTargets << instrumentedUpgradeScript
             }
         }
     }
