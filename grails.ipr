@@ -317,7 +317,7 @@
     <library name="Groovy">
       <CLASSES>
         <root url="jar://$PROJECT_DIR$/lib/gant-0.2.5-SNAPSHOT.jar!/" />
-        <root url="jar://$PROJECT_DIR$/lib/groovy-all-1.1-SNAPSHOT.jar!/" />
+        <root url="jar://$PROJECT_DIR$/lib/groovy-all-1.1-BETA-1.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES />
@@ -379,23 +379,9 @@
       <JAVADOC />
       <SOURCES />
     </library>
-    <library name="OGNL">
-      <CLASSES>
-        <root url="jar://$PROJECT_DIR$/lib/ognl-2.7.jar!/" />
-      </CLASSES>
-      <JAVADOC />
-      <SOURCES />
-    </library>
     <library name="JUnit">
       <CLASSES>
         <root url="jar://$PROJECT_DIR$/lib/junit-3.8.1.jar!/" />
-      </CLASSES>
-      <JAVADOC />
-      <SOURCES />
-    </library>
-    <library name="Quartz">
-      <CLASSES>
-        <root url="jar://$PROJECT_DIR$/lib/quartz-1.6.0.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES />

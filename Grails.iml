@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<module version="4" relativePaths="true" type="JAVA_MODULE">
+<module relativePaths="true" type="JAVA_MODULE" version="4">
   <component name="ModuleRootManager" />
   <component name="NewModuleRootManager" inherit-compiler-output="false">
     <output url="file://$MODULE_DIR$/target/classes" />
@@ -32,10 +32,8 @@
     <orderEntry type="library" name="javax.servlet" level="project" />
     <orderEntry type="library" name="Jetty" level="project" />
     <orderEntry type="library" name="JUnit" level="project" />
-    <orderEntry type="library" name="OGNL" level="project" />
     <orderEntry type="library" name="SiteMesh" level="project" />
     <orderEntry type="library" name="Spring" level="project" />
-    <orderEntry type="library" name="Quartz" level="project" />
     <orderEntry type="library" name="Apache Commons" level="project" />
     <orderEntry type="library" name="Apache Ant" level="project" />
     <orderEntry type="library" name="Apache Commons" level="project" />
