@@ -18,6 +18,7 @@
  * Gant script that handles the creation of Grails plugins
  * 
  * @author Graeme Rocher
+ * @author Sergey Nebolsin
  *
  * @since 0.4
  */
@@ -61,6 +62,38 @@ class ${pluginName}GrailsPlugin {
 		// the event contain: event.source, event.application and event.applicationContext objects
 	}
 }
+"""
+    new File("${basedir}/scripts/_Install.groovy") <<
+"""
+//
+// This script is executed by Grails after plugin was installed to project.
+// This script is a Gant script so you can use all special variables provided
+// by Gant (such as 'baseDir' which points on project base dir). You can
+// use 'Ant' to access a global instance of AntBuilder
+//
+// For example you can create directory under project tree:
+// Ant.mkdir(dir:"${basedir}/grails-app/jobs")
+//
+
+Ant.property(environment:"env")
+grailsHome = Ant.antProject.properties."env.GRAILS_HOME"
+
+"""
+    new File("${basedir}/scripts/_Upgrade.groovy") <<
+"""
+//
+// This script is executed by Grails during application upgrade ('grails upgrade' command).
+// This script is a Gant script so you can use all special variables
+// provided by Gant (such as 'baseDir' which points on project base dir).
+// You can use 'Ant' to access a global instance of AntBuilder
+//
+// For example you can create directory under project tree:
+// Ant.mkdir(dir:"${basedir}/grails-app/jobs")
+//
+
+Ant.property(environment:"env")
+grailsHome = Ant.antProject.properties."env.GRAILS_HOME"
+
 """
     event("StatusFinal", [ "Created plugin ${pluginName}"])
 }

@@ -18,6 +18,7 @@
  * Gant script that handles upgrading of a Grails applications
  * 
  * @author Graeme Rocher
+ * @author Sergey Nebolsin
  *
  * @since 0.4
  */    
@@ -129,7 +130,20 @@ task( upgrade: "main upgrade task") {
             entry(key:"app.grails.version", value:"$grailsVersion")
         }
 	}
-    
+
+    def plugins = new File("${basedir}/plugins/")
+    plugins.eachFile { f ->
+        if(f.isDirectory() && f.name != 'core' ) {
+            // proceed _Upgrade.groovy plugin script if exists
+            def upgradeScript = new File ( "${basedir}/plugins/${f.name}/scripts/_Upgrade.groovy" )
+            if( upgradeScript.exists() ) {
+                event("StatusUpdate", [ "Executing ${f.name} plugin upgrade script"])
+                // we are using text here to prevent Gant caching
+                includeTargets << upgradeScript.text
+            }
+        }
+    }
+
     event("StatusUpdate", [ "Please make sure you view the README for important information about changes to your source code."])
 
     event("StatusFinal", [ "Project upgraded"])
