@@ -142,7 +142,7 @@ task( upgrade: "main upgrade task") {
             if( upgradeScript.exists() ) {
                 event("StatusUpdate", [ "Executing ${f.name} plugin upgrade script"])
                 // instrumenting plugin scripts adding 'pluginBasedir' variable
-                def instrumentedUpgradeScript = "def pluginBasedir = '${pluginsBase}/${pluginName}'\n" + upgradeScript.text
+                def instrumentedUpgradeScript = "def pluginBasedir = '${pluginBase}'\n" + upgradeScript.text
                 // we are using text form of script here to prevent Gant caching
                 includeTargets << instrumentedUpgradeScript
             }
