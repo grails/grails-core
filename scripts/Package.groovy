@@ -123,7 +123,6 @@ DEPENDENCIES = [
 "commons-fileupload-*.jar",
 "commons-io-*.jar", 
 "*oro-*.jar",
-"quartz-*.jar",            	            	
 ]    
 JAVA_5_DEPENDENCIES = [        
 "hibernate-annotations.jar",

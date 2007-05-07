@@ -3,11 +3,7 @@ package org.codehaus.groovy.grails.commons.spring;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyObject;
 import groovy.lang.MetaClassRegistry;
-
-import java.util.Properties;
-
 import junit.framework.TestCase;
-
 import org.codehaus.groovy.grails.commons.*;
 import org.codehaus.groovy.grails.commons.metaclass.ExpandoMetaClassCreationHandle;
 import org.codehaus.groovy.grails.plugins.DefaultGrailsPluginManager;
@@ -16,7 +12,6 @@ import org.codehaus.groovy.grails.support.MockApplicationContext;
 import org.codehaus.groovy.grails.web.errors.GrailsExceptionResolver;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsUrlHandlerMapping;
 import org.codehaus.groovy.runtime.InvokerHelper;
-import org.quartz.impl.StdScheduler;
 import org.springframework.aop.target.HotSwappableTargetSource;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.MessageSource;
@@ -25,6 +20,8 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.mock.web.MockServletContext;
 import org.springframework.web.multipart.commons.CommonsMultipartResolver;
 import org.springframework.web.servlet.ModelAndView;
+
+import java.util.Properties;
 
 public class GrailsRuntimeConfiguratorTests extends TestCase {
 
@@ -144,32 +141,6 @@ public class GrailsRuntimeConfiguratorTests extends TestCase {
         GrailsControllerClass gcc = (GrailsControllerClass)ts.getTarget();
 
         assertTrue(gcc.isScaffolding());
-    }
-
-    public void testConfigureScheduledJobs() throws Exception {
-        GroovyClassLoader gcl = new GroovyClassLoader();
-        Class c = gcl.parseClass(
-        "class MyJob {\n " +
-        " def startDelay = 100\n" +
-        " def timeout = 1000\n" +
-        " def name = 'MyJob'\n" +
-        " def group = 'MyGroup'\n" +
-        " def concurrent = true\n" +
-        " def execute(){\n" +
-        "    print 'Job run!'\n" +
-        "  }\n" +
-        "}" );
-
-        GrailsApplication app = new DefaultGrailsApplication(new Class[]{c}, gcl );
-        MockApplicationContext parent = new MockApplicationContext();
-        parent.registerMockBean(GrailsApplication.APPLICATION_ID, app);
-
-        GrailsRuntimeConfigurator conf = new GrailsRuntimeConfigurator(app,parent);
-        ApplicationContext ctx = conf.configure(new MockServletContext());
-        assertNotNull(ctx);
-        
-        ((StdScheduler)ctx.getBean("quartzScheduler")).shutdown();
-
     }
 
     public void testRegisterAdditionalBean() throws Exception {

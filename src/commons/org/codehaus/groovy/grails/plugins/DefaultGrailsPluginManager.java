@@ -15,6 +15,7 @@
 */
 package org.codehaus.groovy.grails.plugins;
 
+import grails.util.GrailsUtil;
 import groovy.lang.Binding;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyShell;
@@ -26,8 +27,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration;
 import org.codehaus.groovy.grails.commons.spring.DefaultRuntimeSpringConfiguration;
+import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration;
 import org.codehaus.groovy.grails.plugins.exceptions.PluginException;
 import org.codehaus.groovy.grails.support.ParentApplicationContextAware;
 import org.springframework.beans.BeansException;
@@ -38,8 +39,8 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.xml.sax.SAXException;
 
-import javax.xml.parsers.ParserConfigurationException;
 import javax.servlet.ServletContext;
+import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
 import java.lang.reflect.Modifier;
 import java.util.*;
@@ -221,6 +222,14 @@ public class DefaultGrailsPluginManager implements GrailsPluginManager {
           if(!delayedEvictions.isEmpty()) {
               processDelayedEvictions();
           }
+
+          // TODO: Remove this message in further releases
+          if( new File("./grails-app/jobs").exists() && plugins.get("quartz") == null ) {
+              GrailsUtil.deprecated( "Job scheduling with Quartz was moved from Grails core " +
+                      "to Quartz plugin. Please, install this plugin with " +
+                      "'grails install-plugin Quartz 0.1'. If you don't want use scheduling " +
+                      "just remove 'jobs' folder under 'grails-app'" );
+          }
           initializePlugins();
           initialised = true;
       }
@@ -279,7 +288,6 @@ public class DefaultGrailsPluginManager implements GrailsPluginManager {
       loadCorePlugin("org.codehaus.groovy.grails.plugins.web.ControllersGrailsPlugin");
       loadCorePlugin("org.codehaus.groovy.grails.plugins.orm.hibernate.HibernateGrailsPlugin");
       loadCorePlugin("org.codehaus.groovy.grails.plugins.services.ServicesGrailsPlugin");
-      loadCorePlugin("org.codehaus.groovy.grails.plugins.quartz.QuartzGrailsPlugin");
       loadCorePlugin("org.codehaus.groovy.grails.plugins.scaffolding.ScaffoldingGrailsPlugin");
   }
 

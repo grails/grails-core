@@ -24,7 +24,6 @@ class InstallTemplatesTests extends AbstractCliTests {
 		  "/artifacts/Controller.groovy",
 		  "/artifacts/DataSource.groovy",
 		  "/artifacts/DomainClass.groovy",
-		  "/artifacts/Job.groovy",
 		  "/artifacts/Service.groovy",
 		  "/artifacts/TagLib.groovy",
 		  "/artifacts/Tests.groovy",

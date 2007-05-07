@@ -20,7 +20,6 @@
         <dependency org="log4j" name="log4j" rev="1.2.8"/>	  
         <!--<dependency org="ognl" name="ognl" rev="2.6.9"/>
         <dependency org="org.mortbay.jetty" name="org.mortbay.jetty" rev="5.1.5"/> -->
-		<dependency org="opensymphony" name="quartz" rev="1.5.2"/>			
 		<dependency org="opensymphony" name="sitemesh" rev="2.2.1"/>					
 		<dependency org="servletapi" name="servletapi" rev="2.4"/>			
 		<dependency org="jspapi" name="jsp-api" rev="2.0"/>	 		

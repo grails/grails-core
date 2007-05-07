@@ -56,7 +56,6 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
   public static final String GRAILS_URL_MAPPINGS = "grailsUrlMappings";
   public static final String SPRING_RESOURCES_XML = "/WEB-INF/spring/resources.xml";
   public static final String SPRING_RESOURCES_GROOVY = "/WEB-INF/spring/resources.groovy";
-  public static final String QUARTZ_SCHEDULER_BEAN = "quartzScheduler";
   public static final String OPEN_SESSION_IN_VIEW_INTERCEPTOR_BEAN = "openSessionInViewInterceptor";
   public static final String TRANSACTION_MANAGER_BEAN = "transactionManager";
   public static final String HIBERNATE_PROPERTIES_BEAN = "hibernateProperties";

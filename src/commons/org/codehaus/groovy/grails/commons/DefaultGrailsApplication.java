@@ -232,7 +232,6 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
         registerArtefactHandler( new ControllerArtefactHandler());
         registerArtefactHandler( new ServiceArtefactHandler());
         registerArtefactHandler( new TagLibArtefactHandler());
-        registerArtefactHandler( new TaskArtefactHandler());
         registerArtefactHandler( new BootstrapArtefactHandler());
         registerArtefactHandler( new CodecArtefactHandler());
         registerArtefactHandler( new DataSourceArtefactHandler());

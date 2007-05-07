@@ -183,7 +183,7 @@ public interface GrailsApplication extends ApplicationContextAware {
 
     /**
      * <p>Get an array of all the GrailsClass instances relating to artefacts of the specified type.</p>
-     * @param artefactType The type of artefact to retrieve, i.e. "Task"
+     * @param artefactType The type of artefact to retrieve, i.e. "Controller"
      * @return An array of GrailsClasses which may empty by not null
      * @since 0.5
      */
