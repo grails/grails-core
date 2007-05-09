@@ -130,11 +130,16 @@ task( upgrade: "main upgrade task") {
             entry(key:"app.grails.version", value:"$grailsVersion")
         }
 
-        replaceregexp(file:"${basedir}/.classpath", match:"^.*GRAILS_HOME.*\$", replace:"", flags:"gm")
-        replace(file:"${basedir}/.classpath",
+        replaceregexp(match:"^.*GRAILS_HOME.*\$", replace:"", flags:"gm") {
+            fileset(dir:"${basedir}", includes:".classpath")
+        }
+        replace(dir:"${basedir}",
+                includes:".classpath",
                 token:"</classpath>",
                 value:"<classpathentry kind=\"var\" path=\"GRAILS_HOME/ant/lib/ant.jar\"/>\n${getGrailsLibs()}${getGrailsJar()}\n</classpath>")
-        replaceregexp(file:"${basedir}/.classpath", match:"^\\s*", replace:"", flags:"gm")
+        replaceregexp(match:"^\\s*", replace:"", flags:"gm") {
+            fileset(dir:"${basedir}", includes:".classpath")
+        }
 
     }
 
