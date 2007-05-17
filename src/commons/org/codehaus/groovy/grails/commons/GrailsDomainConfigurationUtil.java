@@ -60,7 +60,7 @@ public class GrailsDomainConfigurationUtil {
             		superClass = superClass.getSuperclass();
         		}
         	}        	
-            GrailsDomainClassProperty[] props = domainClass.getPersistantProperties();
+            GrailsDomainClassProperty[] props = domainClass.getPersistentProperties();
 
             for (int j = 0; j < props.length; j++) {
                 if(props[j].isAssociation()) {
@@ -76,7 +76,7 @@ public class GrailsDomainConfigurationUtil {
         // now configure so that the 'other side' of a property can be resolved by the property itself
         for (int i = 0; i < domainClasses.length; i++) {
             GrailsDomainClass domainClass = (GrailsDomainClass) domainClasses[i];
-            GrailsDomainClassProperty[] props = domainClass.getPersistantProperties();
+            GrailsDomainClassProperty[] props = domainClass.getPersistentProperties();
 
             for (int j = 0; j < props.length; j++) {
                 if(props[j].isAssociation()) {
@@ -93,7 +93,7 @@ public class GrailsDomainConfigurationUtil {
                     		prop.setOtherSide(referenced.getPropertyByName(refPropertyName));
                     	}
                     	else {
-                            GrailsDomainClassProperty[] referencedProperties =  referenced.getPersistantProperties();
+                            GrailsDomainClassProperty[] referencedProperties =  referenced.getPersistentProperties();
                             for (int k = 0; k < referencedProperties.length; k++) {
                             	// for bi-directional circular dependencies we don't want the other side 
                             	// to be equal to self 

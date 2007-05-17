@@ -14,10 +14,10 @@
  */ 
 package org.codehaus.groovy.grails.commons;
 
+import org.springframework.validation.Validator;
+
 import java.util.Map;
 import java.util.Set;
-
-import org.springframework.validation.Validator;
 
 
 /**
@@ -46,9 +46,16 @@ public interface GrailsDomainClass extends GrailsClass {
 	/**
 	 * Returns all of the persistant properties of the domain class
 	 * @return The domain class' persistant properties
+     * @deprecated Use #getPersistentProperties instead
 	 */
 	public GrailsDomainClassProperty[] getPersistantProperties();
+
 	/**
+	 * Returns all of the persistant properties of the domain class
+	 * @return The domain class' persistant properties
+	 */
+	public GrailsDomainClassProperty[] getPersistentProperties();
+    /**
 	 * Returns the identifier property
 	 * @return The identifier property
 	 */

@@ -170,6 +170,10 @@ public class GrailsHibernateDomainClass extends AbstractGrailsClass implements E
         return this.properties;
     }
 
+    public GrailsDomainClassProperty[] getPersistentProperties() {
+        return this.properties;
+    }
+
     public GrailsDomainClassProperty getIdentifier() {
         return this.identifier;
     }

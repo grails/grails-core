@@ -609,9 +609,14 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
     public GrailsDomainClassProperty[] getPersistantProperties() {
         return this.persistantProperties;
     }
+
+    public GrailsDomainClassProperty[] getPersistentProperties() {
+        return this.persistantProperties;
+    }
+
     /* (non-Javadoc)
-      * @see org.codehaus.groovy.grails.domain.GrailsDomainClass#getPropertyByName(java.lang.String)
-      */
+    * @see org.codehaus.groovy.grails.domain.GrailsDomainClass#getPropertyByName(java.lang.String)
+    */
     public GrailsDomainClassProperty getPropertyByName(String name) {
         if(this.propertyMap.containsKey(name)) {
             return (GrailsDomainClassProperty)this.propertyMap.get(name);

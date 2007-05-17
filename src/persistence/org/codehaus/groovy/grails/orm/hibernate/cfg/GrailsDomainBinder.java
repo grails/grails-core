@@ -645,39 +645,46 @@ public final class GrailsDomainBinder {
 	 * Binds the sub classes of a root class using table-per-heirarchy inheritance mapping 
 	 * 
 	 * @param domainClass The root domain class to bind
-	 * @param root The root instance
+	 * @param parent The parent class instance
 	 * @param mappings The mappings instance
 	 */
-	private static void bindSubClasses(GrailsDomainClass domainClass, RootClass root, Mappings mappings) {
+	private static void bindSubClasses(GrailsDomainClass domainClass, PersistentClass parent, Mappings mappings) {
 		Set subClasses = domainClass.getSubClasses();
 		
 		for (Iterator i = subClasses.iterator(); i.hasNext();) {
 			GrailsDomainClass sub = (GrailsDomainClass) i.next();
-			
-			bindSubClass(domainClass,sub,root,mappings);
-		}
+            Set subSubs = sub.getSubClasses();
+            if(sub.getClazz().getSuperclass().equals(domainClass.getClazz())) {
+                bindSubClass(sub,parent,mappings);
+            }
+        }
 	}
 
 	/**
 	 * Binds a sub class
 	 * 
-	 * @param domainClass The root domain class instance
 	 * @param sub The sub domain class instance
-	 * @param root The root persistent class instance
-	 * @param mappings The mappings instance
-	 */
-	private static void bindSubClass(GrailsDomainClass domainClass, GrailsDomainClass sub, RootClass root, Mappings mappings) {
-		Subclass subClass = new SingleTableSubclass( root );
-		
-		bindSubClass(sub,subClass,mappings);
+     * @param parent The parent persistent class instance
+     * @param mappings The mappings instance
+     */
+	private static void bindSubClass(GrailsDomainClass sub, PersistentClass parent, Mappings mappings) {
+		Subclass subClass = new SingleTableSubclass(parent);
+
+
+        bindSubClass(sub,subClass,mappings);
 		// set the descriminator value as the name of the class. This is the 
 		// value used by Hibernate to decide what the type of the class is
 		// to perform polymorphic queries
 		subClass.setDiscriminatorValue(sub.getFullName());
 		                                                  
-		root.addSubclass( subClass );
+		parent.addSubclass( subClass );
 		mappings.addClass( subClass );
-	}
+
+        if(!sub.getSubClasses().isEmpty()) {
+            // bind the sub classes
+            bindSubClasses(sub,subClass,mappings);
+        }
+    }
 
 	/**
 	 * Binds a sub-class using table-per-heirarchy in heritance mapping
