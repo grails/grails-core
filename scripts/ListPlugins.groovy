@@ -31,7 +31,7 @@ grailsHome = Ant.antProject.properties."env.GRAILS_HOME"
 includeTargets << new File ( "${grailsHome}/scripts/Init.groovy" )
 
 task ( "default" : "Lists plug-ins that are hosted by the Grails server") {
-   depends(checkVersion)
+   depends(checkVersion,configureProxy)
    listPlugins()
 }     
                 
