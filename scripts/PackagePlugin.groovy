@@ -61,8 +61,8 @@ task(packagePlugin:"Implementation task") {
    try {
     	pluginClass = gcl.parseClass(pluginFile)   
         def plugin = pluginClass.newInstance()    
-		def pluginName = GCU.getLogicalName(pluginClass, "GrailsPlugin")         
-		def pluginZip = "${basedir}/grails-${pluginName}-${plugin.version}.zip"
+		def pluginName = GCU.getScriptName(GCU.getLogicalName(pluginClass, "GrailsPlugin"))
+        def pluginZip = "${basedir}/grails-${pluginName}-${plugin.version}.zip"
 		Ant.delete(file:pluginZip)
         Ant.zip(basedir:"${basedir}", destfile:pluginZip, 
 				excludes:"plugins/**,**/WEB-INF/lib/**, **/WEB-INF/classes/**, **/WEB-INF/grails-app/**, **/WEB-INF/spring/**, **/WEB-INF/tld/**,**/WEB-INF/applicationContext.xml, **/WEB-INF/sitemesh.xml, **/WEB-INF/web*.xml")
