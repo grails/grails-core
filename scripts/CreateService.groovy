@@ -28,7 +28,7 @@ Ant.property(environment:"env")
 grailsHome = Ant.antProject.properties."env.GRAILS_HOME"    
 
 includeTargets << new File ( "${grailsHome}/scripts/Init.groovy" )  
-includeTargets << new File( "${grailsHome}/scripts/CreateTestSuite.groovy")
+includeTargets << new File( "${grailsHome}/scripts/CreateIntegrationTest.groovy")
 
 task ('default': "Creates a new service class") {
     depends(checkVersion)

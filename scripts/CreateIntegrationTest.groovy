@@ -15,7 +15,7 @@
  */
 
 /**
- * Gant script that creates a Grails domain class
+ * Gant script that creates a new test suite
  * 
  * @author Graeme Rocher
  *
@@ -27,15 +27,15 @@ import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
 Ant.property(environment:"env")                             
 grailsHome = Ant.antProject.properties."env.GRAILS_HOME"    
 
-includeTargets << new File ( "${grailsHome}/scripts/Init.groovy" )  
-includeTargets << new File( "${grailsHome}/scripts/CreateIntegrationTest.groovy")
+includeTargets << new File ( "${grailsHome}/scripts/Init.groovy" )
+task ('default': "Creates a new Grails integration test which loads the whole Grails environment when run") {
+	typeName =""
+	depends( checkVersion, createTestSuite )
+}                            
 
-task ('default': "Creates a new domain class") {
-    depends(checkVersion)
-
-	typeName = ""
-	artifactName = "DomainClass"
-	artifactPath = "grails-app/domain"
-	createArtifact()
-	createTestSuite() 
+task (createTestSuite: "Implementation of create-test-suite") {
+	typeName <<= "Tests"   
+	artifactName = "Tests" 		
+	artifactPath = "test/integration"
+	createArtifact()   
 }
