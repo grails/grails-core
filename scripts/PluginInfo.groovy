@@ -43,11 +43,6 @@ Information about Grails plugin
 '''
 }
 
-def clarify = { element, prop ->
-    if( element."${prop}" ) return element."${prop}".text()
-    else '<no info available>'
-}
-
 def displayPluginInfo = { pluginName, version ->
     use(DOMCategory) {
         def plugin = pluginsList.'plugin'.find{ it.'@name' == pluginName }
@@ -59,7 +54,15 @@ def displayPluginInfo = { pluginName, version ->
             def releaseVersion = null
             if( !version ) {
                 releaseVersion = plugin.'@latest-release'
-                line += "\t| Latest release: ${releaseVersion ? releaseVersion : '<no info available>'}"
+                def naturalVersion = releaseVersion
+                if( ! releaseVersion ) {
+                    plugin.'release'.each {
+                        if( !releaseVersion || (!"${it.'@version'}".endsWith("SNAPSHOT") && "${it.'@version'}" > releaseVersion )) releaseVersion = "${it.'@version'}"
+                    }
+                    if( releaseVersion ) naturalVersion = "${releaseVersion} (?)"
+                    else naturalVersion = '<no info available>'
+                }
+                line += "\t| Latest release: ${naturalVersion}"
             } else {
                 releaseVersion = version
                 line += "\t| Release: ${releaseVersion}"
@@ -69,14 +72,28 @@ def displayPluginInfo = { pluginName, version ->
             if( releaseVersion ) {
                 def release = plugin.'release'.find{ rel -> rel.'@version' == releaseVersion }
                 if( release ) {
-                    println "${clarify(release,'title')}"
+                    if( release.'title'.text() ) {
+                        println "${release.'title'.text()}"
+                    } else {
+                        println "No info about this plugin available"
+                    }
                     println '--------------------------------------------------------------------------'
-                    println "Author: ${clarify(release,'author')}"
-                    println '--------------------------------------------------------------------------'
-                    println "Author e-mail: ${clarify(release,'authorEmail')}"
-                    println '--------------------------------------------------------------------------'
-                    println "${clarify(release,'description')}"
-                    println '--------------------------------------------------------------------------'
+                    if( release.'author'.text() ) {
+                        println "Author: ${release.'author'.text()}"
+                        println '--------------------------------------------------------------------------'
+                    }
+                    if( release.'authorEmail'.text() ) {
+                        println "Author's e-mail: ${release.'authorEmail'.text()}"
+                        println '--------------------------------------------------------------------------'
+                    }
+                    if( release.'documentation'.text() ) {
+                        println "Find more info here: ${release.'documentation'.text()}"
+                        println '--------------------------------------------------------------------------'
+                    }
+                    if( release.'description'.text() ) {
+                        println "${release.'description'.text()}"
+                        println '--------------------------------------------------------------------------'
+                    }
                 } else {
                     println "<release ${releaseVersion} not found for this plugin>"
                     println '--------------------------------------------------------------------------'
