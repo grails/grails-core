@@ -34,6 +34,7 @@ grailsHome = Ant.antProject.properties."env.GRAILS_HOME"
 pluginIncludes = [
 	"application.properties",
 	"*GrailsPlugin.groovy",
+    "plugin.xml",
 	"grails-app/**",
 	"lib/**",
 	"web-app/**",
