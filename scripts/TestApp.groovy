@@ -40,7 +40,8 @@ import org.springframework.web.context.request.RequestContextHolder;
 
 Ant.property(environment:"env")
 grailsHome = Ant.antProject.properties."env.GRAILS_HOME"  
-grailsApp = null 
+grailsApp = null   
+appCtx = null
 result = new TestResult()
 
 includeTargets << new File ( "${grailsHome}/scripts/Package.groovy" )
@@ -175,7 +176,8 @@ task(runUnitTests:"Run Grails' unit tests under the test/unit directory") {
 			grailsApplication(org.codehaus.groovy.grails.commons.DefaultGrailsApplication.class, appResources, ref("injectionOperation") )
 		}
 	                                                    
-		def ctx = beans.createApplicationContext()
+		appCtx = beans.createApplicationContext()
+		def ctx = appCtx
 		ctx.servletContext = new MockServletContext()
 		grailsApp = ctx.grailsApplication  
 		grailsApp.initialise()
@@ -198,7 +200,7 @@ task(runUnitTests:"Run Grails' unit tests under the test/unit directory") {
 		println "Running Unit Tests..."
 	                                     
 		def start = new Date()
-		runTests(suite,result) { invocation -> 
+		runTests(suite,result) { name, invocation -> 
 				invocation()           
 		} 
 		def end = new Date()		
@@ -229,8 +231,8 @@ task(runIntegrationTests:"Runs Grails' tests under the test/integration director
 		}
 
 		def ctx 
-		if(grailsApp) {
-			ctx = GU.bootstrapGrailsFromApplication(grailsApp)
+		if(appCtx) {
+			ctx = GU.bootstrapGrailsFromParentContext(appCtx)
 		}                                            
 		else {
 			ctx = GU.bootstrapGrailsFromClassPath()			
