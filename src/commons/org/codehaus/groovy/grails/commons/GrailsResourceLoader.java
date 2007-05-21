@@ -61,22 +61,23 @@ public class GrailsResourceLoader implements GroovyResourceLoader {
         String groovyFile = className.replace('.', '/') + ".groovy";
         
  //       LOG.trace("Loading groovy file :[" + className + "] using file name ["+groovyFile+"]");
-        Resource foundResource = null;
-        for (int i = 0; resources != null && i < resources.length; i++) {
-            if (resources[i].getFilename().equals(groovyFile)) {
-                if (foundResource == null) {
-                    foundResource = resources[i];
-   //                 LOG.trace("Found resource for :[" + className + "] using file name ["+groovyFile+"] at location ["+foundResource+"]");
-                } else {
-                    try {
-                        throw new IllegalArgumentException("Found two identical classes at [" + resources[i].getFile().getAbsolutePath()+ "] and [" + foundResource.getFile().getAbsolutePath() + "] whilst attempting to load [" + className + "]. Please remove one to avoid duplicates.");
-                    } catch (IOException e) {
-                        throw new GrailsConfigurationException("I/O error whilst attempting to load class " + className, e);
+        try {
+
+            Resource foundResource = null;
+            for (int i = 0; resources != null && i < resources.length; i++) {
+                if (resources[i].getURL().toString().endsWith(groovyFile)) {
+                    if (foundResource == null) {
+                        foundResource = resources[i];
+       //                 LOG.trace("Found resource for :[" + className + "] using file name ["+groovyFile+"] at location ["+foundResource+"]");
+                    } else {
+                        try {
+                            throw new IllegalArgumentException("Found two identical classes at [" + resources[i].getFile().getAbsolutePath()+ "] and [" + foundResource.getFile().getAbsolutePath() + "] whilst attempting to load [" + className + "]. Please remove one to avoid duplicates.");
+                        } catch (IOException e) {
+                            throw new GrailsConfigurationException("I/O error whilst attempting to load class " + className, e);
+                        }
                     }
                 }
             }
-        }
-        try {
             if (foundResource != null) {
                 loadedResources.add(foundResource);
                 classToResource.put(className, foundResource);
@@ -85,7 +86,7 @@ public class GrailsResourceLoader implements GroovyResourceLoader {
                 return null;
             }
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new GrailsConfigurationException("I/O exception loaded resource:" + e.getMessage(),e);
         }
     }
 

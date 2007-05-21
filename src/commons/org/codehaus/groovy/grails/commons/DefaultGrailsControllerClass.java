@@ -65,7 +65,8 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass
 
     public DefaultGrailsControllerClass(Class clazz) {
         super(clazz, CONTROLLER);
-        this.uri = SLASH + (StringUtils.isNotBlank(getPackageName()) ? getPackageName().replace('.', '/')  + SLASH : "" ) + WordUtils.uncapitalize(getName());
+        //this.uri = SLASH + (StringUtils.isNotBlank(getPackageName()) ? getPackageName().replace('.', '/')  + SLASH : "" ) + WordUtils.uncapitalize(getName());
+        this.uri = SLASH + WordUtils.uncapitalize(getName());
         String defaultActionName = (String)getPropertyOrStaticPropertyOrFieldValue(DEFAULT_CLOSURE_PROPERTY, String.class);
         if(defaultActionName == null) {
             defaultActionName = INDEX_ACTION;

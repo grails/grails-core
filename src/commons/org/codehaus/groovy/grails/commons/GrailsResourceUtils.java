@@ -16,18 +16,18 @@
 package org.codehaus.groovy.grails.commons;
 
 //import java.io.File;
-import java.io.File;
-import java.io.IOException;
-import java.net.URL;
-import java.net.MalformedURLException;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+
+import java.io.File;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Utility methods for working with Grails resources and URLs that represent artifacts
@@ -131,7 +131,7 @@ public class GrailsResourceUtils {
 		for (int i = 0; i < patterns.length; i++) {
 			Matcher m = patterns[i].matcher(path);
 	        if(m.find()) {
-	            return m.group(1);
+	            return m.group(1).replaceAll("[/\\\\]", ".");
 	        }			
 		}
         return null;
