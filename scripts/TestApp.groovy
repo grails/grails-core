@@ -35,7 +35,8 @@ import junit.textui.TestRunner;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator as GRC;
 import org.apache.tools.ant.taskdefs.optional.junit.*                        
-import org.springframework.mock.web.*
+import org.springframework.mock.web.*       
+import org.springframework.web.context.request.RequestContextHolder;
 
 Ant.property(environment:"env")
 grailsHome = Ant.antProject.properties."env.GRAILS_HOME"  
@@ -142,17 +143,24 @@ def runTests = { suite, TestResult result, Closure callback  ->
 
 				plainOutput.startTestSuite(junitTest)
 				xmlOutput.startTestSuite(junitTest)
-				print "Running test ${test.name}..."
-				suite.runTest(test, thisTest)
-				plainOutput.endTestSuite(junitTest)
-				xmlOutput.endTestSuite(junitTest)
-				if(thisTest.errorCount() > 0 || thisTest.failureCount() > 0) {
-					println "FAILURE"
-					thisTest.errors().each { result.addError(test, it.thrownException())  }
-					thisTest.failures().each { result.addFailure(test, it.thrownException()) }
+                println "Running test ${test.name}..." 
+				for(i in 0..<test.testCount()) {   
+					def t = test.testAt(i)
+					callback(test.name, {
+
+                        print "                    ${t.name}..."
+						suite.runTest(t, thisTest)					
+					})
+					if(thisTest.errorCount() > 0 || thisTest.failureCount() > 0) {
+						println "FAILURE"
+						thisTest.errors().each { result.addError(t, it.thrownException())  }
+						thisTest.failures().each { result.addFailure(t, it.thrownException()) }
+					}
+					else { println "SUCCESS"}				
+					
 				}
-				else { println "SUCCESS"}				
- 				callback?.call()
+				plainOutput.endTestSuite(junitTest)
+				xmlOutput.endTestSuite(junitTest)				
 			}
 		}
 	}
@@ -190,7 +198,9 @@ task(runUnitTests:"Run Grails' unit tests under the test/unit directory") {
 		println "Running Unit Tests..."
 	                                     
 		def start = new Date()
-		runTests(suite,result,null) 
+		runTests(suite,result) { invocation -> 
+				invocation()           
+		} 
 		def end = new Date()		
 
 		event("StatusUpdate", [ "Unit Tests Completed in ${end.time-start.time}ms" ])  		
@@ -236,7 +246,6 @@ task(runIntegrationTests:"Runs Grails' tests under the test/integration director
 
 		def suite = new TestSuite()
 
-		GWU.bindMockWebRequest(ctx)
    		populateTestSuite(suite, testFiles, classLoader, ctx)
 
 		def beanNames = ctx.getBeanNamesForType(PersistenceContextInterceptor)
@@ -245,12 +254,22 @@ task(runIntegrationTests:"Runs Grails' tests under the test/integration director
            		
 
 		try {
-			interceptor?.init()           
+			interceptor?.init()           	
 			println "-------------------------------------------------------"
 			println "Running Integration Tests..."
 			   
 			def start = new Date()			
-            runTests(suite, result) {
+            runTests(suite, result) { name, invocation ->
+                name = name[0..-6]
+				def webRequest = GWU.bindMockWebRequest(ctx)	  
+				
+				// @todo this is horrible and dirty, should find a better way  		
+				if(name.endsWith("Controller")) {
+					webRequest.controllerName = GCU.getLogicalPropertyName(name, "Controller")
+				}                                                                           
+				
+				invocation()
+ 				RequestContextHolder.setRequestAttributes(null); 								
 				app.domainClasses.each { dc ->
 					dc.clazz.executeUpdate("delete from ${dc.clazz.name}")
 				}
