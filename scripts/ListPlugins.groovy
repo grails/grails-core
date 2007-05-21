@@ -49,7 +49,7 @@ try {
     recreateCache = true
 }
 if( recreateCache ) {
-    println "Plugins list cache is not exists or broken, recreating..."
+    println "Plugins list cache does not exists or is broken, recreating..."
     document = DOMBuilder.newInstance().createDocument()
     def root = document.createElement('plugins')
     root.setAttribute('revision','0')
