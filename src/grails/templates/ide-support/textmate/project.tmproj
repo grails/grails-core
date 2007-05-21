@@ -28,7 +28,7 @@
 		</dict>
 		<dict>
 			<key>name</key>
-			<string>grails-tests</string>
+			<string>test</string>
 			<key>regexFolderFilter</key>
 			<string>!.*/(\.[^/]*|CVS|_darcs|_MTN|\{arch\}|blib|.*~\.nib|.*\.(framework|app|pbproj|pbxproj|xcode(proj)?|bundle))$</string>
 			<key>selected</key>
