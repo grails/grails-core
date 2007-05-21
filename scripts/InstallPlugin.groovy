@@ -23,11 +23,12 @@
  * @since 0.4
  */
 import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU  
+import groovy.xml.dom.DOMCategory
  
 DEFAULT_PLUGIN_DIST = "http://dist.codehaus.org/grails-plugins/"            
 ERROR_MESSAGE = """
 You need to specify either the direct URL of the plugin or the name and version of a distributed Grails plugin found
-at $DEFAULT_PLUGIN_DIST. 
+at ${DEFAULT_PLUGIN_DIST}
 For example: 
 'grails install-plugin acegi 0.1' 
 or 
@@ -39,64 +40,91 @@ Ant.property(environment:"env")
 grailsHome = Ant.antProject.properties."env.GRAILS_HOME"    
 
 includeTargets << new File ( "${grailsHome}/scripts/Init.groovy" )
+includeTargets << new File ( "${grailsHome}/scripts/ListPlugins.groovy" )
 
 task ( "default" : "Installs a plug-in for the given URL or name and version") {
    depends(checkVersion)
    installPlugin()
 }     
                 
+task(cachePlugin:"Implementation task") {
+    depends(updatePluginsList)
+    def pluginDistName
+    use( DOMCategory ) {
+        def plugin = pluginsList.'plugin'.find{ it.'@name' == pluginName }
+        def release = null
+        if( plugin ) {
+            pluginRelease = pluginRelease ? pluginRelease : plugin.'@latest-release'
+            if( pluginRelease ) {
+                release = plugin.'release'.find{ rel -> rel.'@version' == pluginRelease }
+                if( release ) {
+                    pluginDistName = release.'file'.text()
+                } else {
+                    event("StatusError", ["Release ${pluginRelease} was not found for this plugin. Type 'grails plugin-info ${pluginName}'"])
+                    System.exit(1)
+                }
+            } else {
+                event("StatusError", ["Latest release information is not available for plugin '${pluginName}', specify concrete release to install"])
+                System.exit(1)
+            }
+        } else {
+            event("StatusError", ["Plugin '${pluginName}' not found in repository, type 'grails list-plugins'"])
+            System.exit(1)
+        }
+    }
+    def pluginCacheFileName = "${pluginsHome}/${pluginName}/grails-${pluginName}-${pluginRelease}.zip"
+    if( !new File(pluginCacheFileName).exists() ) {
+        Ant.mkdir(dir:"${pluginsHome}/${pluginName}")
+        Ant.get(dest:pluginCacheFileName,
+            src:"${pluginDistName}",
+            verbose:true)
+    }
+}
+
 task(installPlugin:"Implementation task") {
     // fix for Windows-style path with backslashes
     def pluginsBase = "${basedir}/plugins".toString().replaceAll(/\\/,'/')
 	if(args) {      
 		def pluginFile = new File(args.trim())
-        def pluginName
         Ant.mkdir(dir:pluginsBase)
 		
 		if(args.trim().startsWith("http://")) {
 			def url = new URL(args.trim())			
 			def slash = url.file.lastIndexOf('/')
-            pluginName = "${url.file[slash+8..-5]}"
-            def file = "${pluginsBase}/${pluginName}.zip"
-			println file
-			Ant.get(dest:file,
+            fullPluginName = "${url.file[slash+8..-5]}"
+			Ant.get(dest:"${pluginsBase}/${fullPluginName}.zip",
 				src:"${url}",
 				verbose:true,
 				usetimestamp:true)			
 		}
-        else if(args.indexOf("\n") > -1) {
+        else if( new File(args.trim()).exists()) {
+            fullPluginName = "${pluginFile.name[7..-5]}"
+            Ant.copy(file:args.trim(),tofile:"${pluginsBase}/grails-${fullPluginName}.zip")
+        }
+        else {
             def tokens = args.split("\n")
-            pluginName = tokens[0].trim() + "-" + tokens[1].trim()
-
-            pluginZipName = "grails-${pluginName}"
-            Ant.get(dest:"${basedir}/plugins/${pluginZipName}.zip",
-                src:"${DEFAULT_PLUGIN_DIST}/${pluginZipName}.zip",
-                verbose:true,
-                usetimestamp:true)
+            pluginName = tokens[0].trim() 
+            pluginRelease = tokens.size() > 1 ? tokens[1].trim() : null
+            cachePlugin()
+            fullPluginName = "${pluginName}-${pluginRelease}"
+            Ant.copy(file:"${pluginsHome}/${pluginName}/grails-${fullPluginName}.zip",tofile:"${pluginsBase}/grails-${fullPluginName}.zip")
         }
-		else if( new File(args.trim()).exists()) {
-            pluginName = "${pluginFile.name[7..-5]}"
-            Ant.copy(file:args.trim(),tofile:"${pluginsBase}/grails-${pluginName}.zip")
-        }
-		else {
-    	    event("StatusError", [ ERROR_MESSAGE])
-		}
 
-        if( pluginName ) {
-            Ant.delete(dir:"${pluginsBase}/${pluginName}", failonerror:false)
-            Ant.mkdir(dir:"${pluginsBase}/${pluginName}")
-            Ant.unzip(dest:"${pluginsBase}/${pluginName}", src:"${pluginsBase}/grails-${pluginName}.zip")
+        if( fullPluginName ) {
+            Ant.delete(dir:"${pluginsBase}/${fullPluginName}", failonerror:false)
+            Ant.mkdir(dir:"${pluginsBase}/${fullPluginName}")
+            Ant.unzip(dest:"${pluginsBase}/${fullPluginName}", src:"${pluginsBase}/grails-${fullPluginName}.zip")
 
             // proceed _Install.groovy plugin script if exists
-            def installScript = new File ( "${pluginsBase}/${pluginName}/scripts/_Install.groovy" )
+            def installScript = new File ( "${pluginsBase}/${fullPluginName}/scripts/_Install.groovy" )
             if( installScript.exists() ) {
-                event("StatusUpdate", [ "Executing ${pluginName} plugin post-install script"])
+                event("StatusUpdate", [ "Executing ${fullPluginName} plugin post-install script"])
                 // instrumenting plugin scripts adding 'pluginBasedir' variable
-                def instrumentedInstallScript = "def pluginBasedir = '${pluginsBase}/${pluginName}'\n" + installScript.text
+                def instrumentedInstallScript = "def pluginBasedir = '${pluginsBase}/${fullPluginName}'\n" + installScript.text
                 // we are using text form of script here to prevent Gant caching
                 includeTargets << instrumentedInstallScript
             }
-            event("StatusFinal", [ "Plugin ${pluginName} installed"])
+            event("StatusFinal", [ "Plugin ${fullPluginName} installed"])
         }
     }
 	else {

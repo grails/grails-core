@@ -23,6 +23,8 @@
  */
 import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU  
 import org.codehaus.groovy.control.*
+import groovy.xml.MarkupBuilder
+
 
 appName = ""
 
@@ -40,35 +42,50 @@ task ( "default" : "Packages a Grails plugin into a zip for distribution") {
 }     
                 
 task(packagePlugin:"Implementation task") {
-   depends (compile)
+    depends (compile)
 
-   def pluginFile
-   new File("${basedir}").eachFile {
-     if(it.name.endsWith("GrailsPlugin.groovy")) {
-		pluginFile = it
-	 }
-   }                   
+    def pluginFile
+    new File("${basedir}").eachFile {
+        if(it.name.endsWith("GrailsPlugin.groovy")) {
+            pluginFile = it
+        }
+    }
 
-   if(!pluginFile) Ant.fail("Plugin file not found for plugin project")
+    if(!pluginFile) Ant.fail("Plugin file not found for plugin project")
 
-   def cl = Thread.currentThread().getContextClassLoader()
-   def compConfig = new CompilerConfiguration()
-   compConfig.setClasspath("${basedir}/web-app/WEB-INF/classes");
+    def cl = Thread.currentThread().getContextClassLoader()
+    def compConfig = new CompilerConfiguration()
+    compConfig.setClasspath("${basedir}/web-app/WEB-INF/classes");
 
-   def gcl = new GroovyClassLoader(cl,compConfig,true)
+    def gcl = new GroovyClassLoader(cl,compConfig,true)
 
-   Class pluginClass
-   try {
-    	pluginClass = gcl.parseClass(pluginFile)   
-        def plugin = pluginClass.newInstance()    
-		def pluginName = GCU.getScriptName(GCU.getLogicalName(pluginClass, "GrailsPlugin"))
-        def pluginZip = "${basedir}/grails-${pluginName}-${plugin.version}.zip"
-		Ant.delete(file:pluginZip)
-        Ant.zip(basedir:"${basedir}", destfile:pluginZip, 
-				excludes:"plugins/**,**/WEB-INF/lib/**, **/WEB-INF/classes/**, **/WEB-INF/grails-app/**, **/WEB-INF/spring/**, **/WEB-INF/tld/**,**/WEB-INF/applicationContext.xml, **/WEB-INF/sitemesh.xml, **/WEB-INF/web*.xml")
-   }
-   catch(Throwable t) {
+    Class pluginClass
+    def plugin
+    try {
+        pluginClass = gcl.parseClass(pluginFile)
+        plugin = pluginClass.newInstance()
+    }
+    catch(Throwable t) {
         event("StatusError", [ t.message])
         t.printStackTrace(System.out)
-   }
+        Ant.fail("Cannot instantiate plugin file")
+    }
+    def pluginName = GCU.getScriptName(GCU.getLogicalName(pluginClass, "GrailsPlugin"))
+
+    // Generate plugin.xml descriptor from info in *GrailsPlugin.groovy
+    new File("${basedir}/plugin.xml").delete()
+    def writer = new IndentPrinter( new PrintWriter( new FileWriter("${basedir}/plugin.xml")))
+    def xml = new MarkupBuilder(writer)
+    def props = ['author','authorEmail','title','description','documentation']
+    xml.plugin(name:"${pluginName}",version:"${plugin.version}") {
+        props.each {
+            if( plugin.properties[it] ) "${it}"(plugin.properties[it])
+        }
+    }
+
+    // Package plugin's zip distribution
+    def pluginZip = "${basedir}/grails-${pluginName}-${plugin.version}.zip"
+    Ant.delete(file:pluginZip)
+    Ant.zip(basedir:"${basedir}", destfile:pluginZip,
+            excludes:"plugins/**,**/WEB-INF/lib/**, **/WEB-INF/classes/**, **/WEB-INF/grails-app/**, **/WEB-INF/spring/**, **/WEB-INF/tld/**,**/WEB-INF/applicationContext.xml, **/WEB-INF/sitemesh.xml, **/WEB-INF/web*.xml")
 }

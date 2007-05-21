@@ -104,7 +104,7 @@ Grails home is set to: ${grailsHome}
                 System.setProperty("grails.cli.args", allArgs[currentParamIndex..-1].join("\n"))
             }
 
-            if(!new File(baseDir.absolutePath, "grails-app").exists() && (!['CreateApp', 'CreatePlugin', 'PackagePlugin', 'Help'].contains(scriptName))) {
+            if(!new File(baseDir.absolutePath, "grails-app").exists() && (!['CreateApp','CreatePlugin','PackagePlugin','Help','ListPlugins','PluginInfo','SetProxy'].contains(scriptName))) {
             	println "${baseDir.absolutePath} does not appear to be part of a Grails application.  Exiting."
             	System.exit(-1)
             }
