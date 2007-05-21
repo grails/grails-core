@@ -36,7 +36,7 @@ grailsEnv = System.getProperty("grails.env")
 defaultEnv = System.getProperty("grails.default.env") == "true" ? true : false 
 serverPort = System.getProperty('server.port') ? System.getProperty('server.port').toInteger() : 8080   
 serverHost = System.getProperty('server.host') ? System.getProperty('server.host') : null
-basedir = System.getProperty("base.dir")    
+basedir = System.getProperty("base.dir") 
 baseFile = new File(basedir)
 baseName = baseFile.name      
 userHome = Ant.antProject.properties."user.home"                     
@@ -187,7 +187,9 @@ task ( createStructure: "Creates the application directory structure") {
 	    mkdir(dir:"${basedir}/grails-app/views/layouts")
 	    mkdir(dir:"${basedir}/grails-app/i18n")
 	    mkdir(dir:"${basedir}/grails-app/conf")
-	    mkdir(dir:"${basedir}/grails-tests")
+	    mkdir(dir:"${basedir}/test")
+	    mkdir(dir:"${basedir}/test/unit")	
+	    mkdir(dir:"${basedir}/test/integration")	
 	    mkdir(dir:"${basedir}/scripts") 
 	    mkdir(dir:"${basedir}/web-app")
 	    mkdir(dir:"${basedir}/web-app/js")

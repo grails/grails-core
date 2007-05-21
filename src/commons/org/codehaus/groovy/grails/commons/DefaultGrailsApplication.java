@@ -124,7 +124,7 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
      * @throws IOException Thrown when an error occurs reading a Groovy source
      */
     public DefaultGrailsApplication(final Resource[] resources) throws IOException {
-        this(resources, null);
+        this(resources, new GrailsInjectionOperation());
     }
 
     /**

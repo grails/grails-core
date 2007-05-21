@@ -34,10 +34,13 @@ import junit.framework.TestSuite;
 import junit.textui.TestRunner;        
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator as GRC;
-import org.apache.tools.ant.taskdefs.optional.junit.*
+import org.apache.tools.ant.taskdefs.optional.junit.*                        
+import org.springframework.mock.web.*
 
 Ant.property(environment:"env")
-grailsHome = Ant.antProject.properties."env.GRAILS_HOME"
+grailsHome = Ant.antProject.properties."env.GRAILS_HOME"  
+grailsApp = null 
+result = new TestResult()
 
 includeTargets << new File ( "${grailsHome}/scripts/Package.groovy" )
 
@@ -48,17 +51,42 @@ task ('default': "Run a Grails applications unit tests") {
 	testApp()
 }
 
-testDir = "${basedir}/target/test-reports"
+testDir = "${basedir}/test/reports"    
+
+def processResults = { 
+	if(result) { 
+		if(result.errorCount() > 0 || result.failureCount() > 0) {
+        	event("StatusFinal", ["Tests failed: ${result.errorCount()} errors, ${result.failureCount()} failures"])
+			exit(1)
+		}
+		else {
+        	event("StatusFinal", ["Tests passed"])
+			exit(0)
+		}			       
+
+	}  
+	else {
+        event("StatusFinal", ["Tests passed"])
+		exit(0)
+	}	
+}
 
 task(testApp:"The test app implementation task") {
 
 	Ant.mkdir(dir:testDir)
 	Ant.mkdir(dir:"${testDir}/html")
-	Ant.mkdir(dir:"${testDir}/plain")
+	Ant.mkdir(dir:"${testDir}/plain")  
+	
 
-	//runCompiledTests()  
-	runGrailsTests()
-	produceReports()
+	//runCompiledTests()      
+	try {
+		runUnitTests() 
+		runIntegrationTests()
+		produceReports()		
+	}   
+	finally {
+		processResults()
+	}
 }
 
 task(runCompiledTests:"Runs the tests located under src/test which are compiled then executed") {
@@ -88,11 +116,93 @@ task(produceReports:"Outputs aggregated xml and html reports") {
 		fileset(dir:testDir) {
 			include(name:"TEST-*.xml")
 		}
-		report(format:"frames", todir:"${basedir}/target/test-reports/html")
+		report(format:"frames", todir:"${testDir}/html")
 	}	
 }
+    
+ 
+def populateTestSuite = { suite, testFiles, classLoader, ctx ->
+	testFiles.each { r ->
+		def c = classLoader.parseClass(r.file)
+		if(TestCase.isAssignableFrom(c) && !Modifier.isAbstract(c.modifiers)) {
+			suite.addTest(new GrailsTestSuite(ctx.beanFactory, c))
+		}
+	}	
+}   
+def runTests = { suite, result, callback  ->
+	suite.tests().each { test ->
+		def thisTest = new TestResult()
+		new File("${testDir}/TEST-${test.name}.xml").withOutputStream { xmlOut ->
+			new File("${testDir}/plain/TEST-${test.name}.txt").withOutputStream { plainOut ->
+				def xmlOutput = new XMLJUnitResultFormatter(output:xmlOut)
+				def plainOutput = new PlainJUnitResultFormatter(output:plainOut)
+				def junitTest = new JUnitTest(test.name)
+				thisTest.addListener(xmlOutput)
+				thisTest.addListener(plainOutput)
 
-task(runGrailsTests:"Runs Grails' tests under the grails-test directory") {
+				plainOutput.startTestSuite(junitTest)
+				xmlOutput.startTestSuite(junitTest)
+				print "Running test ${test.name}..."
+				suite.runTest(test, thisTest)
+				plainOutput.endTestSuite(junitTest)
+				xmlOutput.endTestSuite(junitTest)
+				if(thisTest.errorCount() > 0 || thisTest.failureCount() > 0) {
+					println "FAILURE"
+					thisTest.errors().each { result.addError(test, it.thrownException())  }
+					thisTest.failures().each { result.addFailure(test, it.thrownException()) }
+				}
+				else { println "SUCCESS"}				
+ 				callback?.call()
+			}
+		}
+	}
+	
+}   
+task(runUnitTests:"Run Grails' unit tests under the test/unit directory") {         
+   try {     
+	 def beans = new grails.spring.BeanBuilder().beans {
+			domainInjector(org.codehaus.groovy.grails.injection.DefaultGrailsDomainClassInjector.class)
+			injectionOperation(org.codehaus.groovy.grails.injection.GrailsInjectionOperation.class)
+			def appResources = resolveResources("grails-app/**/*.groovy")
+			grailsApplication(org.codehaus.groovy.grails.commons.DefaultGrailsApplication.class, appResources, ref("injectionOperation") )
+		}
+	                                                    
+		def ctx = beans.createApplicationContext()
+		ctx.servletContext = new MockServletContext()
+		grailsApp = ctx.grailsApplication  
+		grailsApp.initialise()
+	                   
+	    def testCaseToRun = '*'
+	    if (args) {
+	        testCaseToRun = "${args}Tests"
+	    }	
+	    def testFiles = resolveResources("test/unit/${testCaseToRun}.groovy")
+		testFiles = testFiles.findAll { it.exists() } 
+		if(testFiles.size() == 0) {
+            event("StatusUpdate", [ "No tests found in test/integration to execute"])
+			return
+		}	
+	    def classLoader = grailsApp.classLoader
+	    classLoader.rootLoader.addURL(new File("test/unit").toURL())	 
+	    def suite = new TestSuite()
+	    populateTestSuite(suite, testFiles, classLoader, ctx)  
+		println "-------------------------------------------------------"
+		println "Running Unit Tests..."
+	                                     
+		def start = new Date()
+		runTests(suite,result,null) 
+		def end = new Date()		
+
+		event("StatusUpdate", [ "Unit Tests Completed in ${end.time-start.time}ms" ])  		
+		println "-------------------------------------------------------"		
+	}                      
+	catch(Exception e) {
+        event("StatusFinal", ["Error running unit tests: ${e.toString()}"])
+		e.printStackTrace()
+	}	  
+}
+
+task(runIntegrationTests:"Runs Grails' tests under the test/integration directory") {
 	def result = null
 	try {
 	    // allow user to specify test to run like this...
@@ -102,13 +212,21 @@ task(runGrailsTests:"Runs Grails' tests under the grails-test directory") {
 	    if (args) {
 	        testCaseToRun = "${args}Tests"
 	    }
-		def testFiles = resolveResources("grails-tests/${testCaseToRun}.groovy")
+		def testFiles = resolveResources("test/integration/${testCaseToRun}.groovy")   
+		testFiles = testFiles.findAll { it.exists() } 
 		if(testFiles.size() == 0) {
-            event("StatusFinal", [ "No tests found in grails-test to execute"])
-			exit(0)
+            event("StatusUpdate", [ "No tests found in test/integration to execute"])
+			return
 		}
 
-		def ctx = GU.bootstrapGrailsFromClassPath()
+		def ctx 
+		if(grailsApp) {
+			ctx = GU.bootstrapGrailsFromApplication(grailsApp)
+		}                                            
+		else {
+			ctx = GU.bootstrapGrailsFromClassPath()			
+		}
+
 
 		def app = ctx.getBean(GrailsApplication.APPLICATION_ID)
 		def classLoader = app.classLoader
@@ -120,53 +238,30 @@ task(runGrailsTests:"Runs Grails' tests under the grails-test directory") {
 		def suite = new TestSuite()
 
 		GWU.bindMockWebRequest(ctx)
-
-
-		testFiles.each { r ->
-			def c = classLoader.parseClass(r.file)
-			if(TestCase.isAssignableFrom(c) && !Modifier.isAbstract(c.modifiers)) {
-				suite.addTest(new GrailsTestSuite(ctx.beanFactory, c))
-			}
-		}
+   		populateTestSuite(suite, testFiles, classLoader, ctx)
 
 		def beanNames = ctx.getBeanNamesForType(PersistenceContextInterceptor)
 		def interceptor = null
 		if(beanNames.size() > 0)interceptor = ctx.getBean(beanNames[0])
+           		
 
-        result = new TestResult()
 		try {
-			interceptor?.init()
-
-			suite.tests().each { test ->
-				def thisTest = new TestResult()
-				new File("${testDir}/TEST-${test.name}.xml").withOutputStream { xmlOut ->
-					new File("${testDir}/plain/TEST-${test.name}.txt").withOutputStream { plainOut ->
-						def xmlOutput = new XMLJUnitResultFormatter(output:xmlOut)
-						def plainOutput = new PlainJUnitResultFormatter(output:plainOut)
-						def junitTest = new JUnitTest(test.name)
-						thisTest.addListener(xmlOutput)
-						thisTest.addListener(plainOutput)
-
-						plainOutput.startTestSuite(junitTest)
-						xmlOutput.startTestSuite(junitTest)
-						print "Running test ${test.name}..."
-						suite.runTest(test, thisTest)
-						plainOutput.endTestSuite(junitTest)
-						xmlOutput.endTestSuite(junitTest)
-						if(thisTest.errorCount() > 0 || thisTest.failureCount() > 0) {
-							println "FAILURE"
-							thisTest.errors().each { result.addError(test, it.thrownException())  }
-							thisTest.failures().each { result.addFailure(test, it.thrownException()) }
-						}
-						else { println "SUCCESS"}
-						app.domainClasses.each { dc ->
-							dc.clazz.executeUpdate("delete from ${dc.clazz.name}")
-						}
-					}
+			interceptor?.init()           
+			println "-------------------------------------------------------"
+			println "Running Integration Tests..."
+			   
+			def start = new Date()			
+            runTests(suite, result) {
+				app.domainClasses.each { dc ->
+					dc.clazz.executeUpdate("delete from ${dc.clazz.name}")
 				}
-				interceptor?.flush()
-			}
-		}
+				interceptor?.flush()	
+			}                     
+			def end = new Date()
+			println "Integration Tests Completed in ${end.time-start.time}ms"  		
+			println "-------------------------------------------------------"		
+			
+		}                         		
 		finally {
 			interceptor?.destroy()
 		}	   
@@ -176,22 +271,5 @@ task(runGrailsTests:"Runs Grails' tests under the grails-test directory") {
 		e.printStackTrace(System.out)   
         event("StatusFinal", ["Error running tests: ${e.toString()}"])
 		exit(1)
-	}
-	finally {
-		if(result) { 
-			if(result.errorCount() > 0 || result.failureCount() > 0) {
-            	event("StatusFinal", ["Tests failed: ${result.errorCount()} errors, ${result.failureCount()} failures"])
-				exit(1)
-			}
-			else {
-            	event("StatusFinal", ["Tests passed"])
-				exit(0)
-			}			       
-
-		}  
-		else {
-            event("StatusFinal", ["Tests passed"])
-			exit(0)
-		}
 	}
 }

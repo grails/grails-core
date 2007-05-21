@@ -44,7 +44,8 @@ task ('default': "Packages a Grails application. Note: To create WAR use 'grails
      depends( checkVersion)
 
 	 packagePlugins()	 
-     packageApp()     
+     packageApp()                   
+	 generateWebXml()        
 }                     
       
 task( packageApp : "Implementation of package task") {
@@ -85,9 +86,7 @@ task( packageApp : "Implementation of package task") {
 	}
 	else {
 		Ant.copy(file:"${grailsHome}/src/war/WEB-INF/log4j.properties", tofile:logDest)
-	}
-	
-	generateWebXml()
+	}	
 }   
 
 DEPENDENCIES = [

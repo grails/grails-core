@@ -36,7 +36,7 @@ includeTargets << new File ( "${grailsHome}/scripts/Package.groovy" )
 includeTargets << new File ( "${grailsHome}/scripts/PackagePlugins.groovy" )  
 
 task ('default': "Run's a Grails application in Jetty") { 
-	depends( checkVersion, packagePlugins, packageApp )
+	depends( checkVersion, packagePlugins, packageApp, generateWebXml )
 	runApp()
 	watchContext()
 }                 
