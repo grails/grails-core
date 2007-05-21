@@ -28,6 +28,7 @@ import org.apache.xml.serialize.XMLSerializer
 import org.apache.xml.serialize.OutputFormat
 
 DEFAULT_PLUGIN_DIST = "http://plugins.grails.org"
+BINARY_PLUGIN_DIST = "http://plugins.grails.org/dist"
 
 Ant.property(environment:"env")   
 grailsHome = Ant.antProject.properties."env.GRAILS_HOME"    
@@ -49,7 +50,7 @@ try {
     recreateCache = true
 }
 if( recreateCache ) {
-    println "Plugins list cache does not exists or is broken, recreating..."
+    event("StatusUpdate", ["Plugins list cache does not exist or is broken, recreating"])
     document = DOMBuilder.newInstance().createDocument()
     def root = document.createElement('plugins')
     root.setAttribute('revision','0')
@@ -73,7 +74,7 @@ def parseRemoteXML = { url ->
 task ( "default" : "Lists plug-ins that are hosted by the Grails server") {
     listPlugins()
 }
-                
+
 task(listPlugins:"Implementation task") {
     depends(updatePluginsList)
     println '''
@@ -116,7 +117,7 @@ def buildReleaseInfo = { root, pluginName, releaseTag ->
         def properties = ['title','author','authorEmail','description']
         def releaseDescriptor = parseRemoteXML("${DEFAULT_PLUGIN_DIST}/grails-${pluginName}/tags/${releaseTag}/plugin.xml").documentElement
         def version = releaseDescriptor.'@version'
-        def releaseNode = builder.createNode('release',[tag:releaseTag,version:version])
+        def releaseNode = builder.createNode('release',[tag:releaseTag,version:version,type:'svn'])
         root.appendChild(releaseNode)
         properties.each {
             if( releaseDescriptor."${it}") {
@@ -157,6 +158,27 @@ def buildPluginInfo = {root, pluginName ->
     }
 }
 
+def buildBinaryPluginInfo = {root, pluginName ->
+    def matcher = (pluginName =~ /^([^\d]+)-(.++)/)
+    def name = GCU.getScriptName( matcher[0][1] )
+    def release = matcher[0][2]
+    use( DOMCategory ) {
+        def pluginNode = root.'plugin'.find { it.'@name' == name }
+        if( !pluginNode ) {
+            pluginNode = builder.'plugin'(name:name)
+            root.appendChild(pluginNode)
+        }
+        def releaseNode = pluginNode.'release'.find { it.'@version' == release }
+        if( !releaseNode ) {
+            releaseNode = builder.'release'(type:'zip',version:release) {
+                title("This is a zip release, no info available for it")
+                file("${BINARY_PLUGIN_DIST}/grails-${pluginName}.zip")
+            }
+            pluginNode.appendChild(releaseNode)
+        }
+    }
+}
+
 task(updatePluginsList:"Implementation tast. Updates list of plugins hosted at Grails site if needed") {
     depends(configureProxy)
     try {
@@ -168,14 +190,18 @@ task(updatePluginsList:"Implementation tast. Updates list of plugins hosted at G
         }
         if( remoteRevision > localRevision ) {
             // Plugins list cache is expired, update needed
-            event("StatusUpdate", ["Plugins list cache is expired, updating..."])
+            event("StatusUpdate", ["Plugins list cache is expired, updating"])
             pluginsList.setAttribute('revision',remoteRevision as String)
             remotePluginsList.eachMatch( /<li><a href="grails-(.+?)">/ ) {
                 def pluginName = it[1][0..-2]
                 buildPluginInfo(pluginsList, pluginName)
             }
-            writePluginsFile()
         }
+        def binaryPluginsList = new URL(BINARY_PLUGIN_DIST).text
+        binaryPluginsList.eachMatch(/<a href="grails-(.+?).zip">/) {
+            buildBinaryPluginInfo(pluginsList, it[1])
+        }
+        writePluginsFile()
     } catch (Exception e) {
         event("StatusError", ["Unable to list plug-ins, please check you have a valid internet connection"])
     }

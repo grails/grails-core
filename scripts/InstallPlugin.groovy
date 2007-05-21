@@ -25,15 +25,6 @@
 import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU  
 import groovy.xml.dom.DOMCategory
  
-DEFAULT_PLUGIN_DIST = "http://dist.codehaus.org/grails-plugins/"            
-ERROR_MESSAGE = """
-You need to specify either the direct URL of the plugin or the name and version of a distributed Grails plugin found
-at ${DEFAULT_PLUGIN_DIST}
-For example: 
-'grails install-plugin acegi 0.1' 
-or 
-'grails install-plugin $DEFAULT_PLUGIN_DIST/grails-acegi-0.1.zip"""
-
 appName = ""
 
 Ant.property(environment:"env")   
@@ -41,6 +32,14 @@ grailsHome = Ant.antProject.properties."env.GRAILS_HOME"
 
 includeTargets << new File ( "${grailsHome}/scripts/Init.groovy" )
 includeTargets << new File ( "${grailsHome}/scripts/ListPlugins.groovy" )
+
+ERROR_MESSAGE = """
+You need to specify either the direct URL of the plugin or the name and version
+of a distributed Grails plugin found at ${DEFAULT_PLUGIN_DIST}
+For example:
+'grails install-plugin acegi 0.1'
+or
+'grails install-plugin ${BINARY_PLUGIN_DIST}/grails-acegi-0.1.zip"""
 
 task ( "default" : "Installs a plug-in for the given URL or name and version") {
    depends(checkVersion)
