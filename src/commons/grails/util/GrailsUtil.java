@@ -135,7 +135,17 @@ public class GrailsUtil {
         parent.registerMockBean(GrailsApplication.APPLICATION_ID, application);
 
         return createGrailsApplicationContext(parent, application);
-    }
+    }      
+    
+	/**
+	 * Bootstraps Grails from the given parent ApplicationContext which should contain a bean definition called "grailsApplication"
+	 * of type GrailsApplication
+	 */
+	public static ApplicationContext bootstrapGrailsFromParentContext(ApplicationContext parent) {
+		DefaultGrailsApplication application = (DefaultGrailsApplication)parent.getBean("grailsApplication", DefaultGrailsApplication.class);
+
+        return createGrailsApplicationContext(parent, application);		
+	}
 
 
     /**
