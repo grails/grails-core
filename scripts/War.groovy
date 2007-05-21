@@ -36,7 +36,7 @@ task ('default': "Creates a WAR archive") {
 } 
 
 task (war: "The implementation task") {
-	depends( clean, packagePlugins, packageApp )
+	depends( clean, packagePlugins, packageApp, generateWebXml )
 	 
 	try {
 		Ant.mkdir(dir:"${basedir}/staging")
