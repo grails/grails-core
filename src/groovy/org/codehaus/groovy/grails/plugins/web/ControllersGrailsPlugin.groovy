@@ -431,7 +431,7 @@ class ControllersGrailsPlugin {
             def metaClass = GMCU.registry.getMetaClass(domainClass.getClazz())
 			log.debug("meta class of ${domainClass.clazz} is ${metaClass.getClass()}")
             if(metaClass instanceof DynamicMethodsMetaClass) {
-                   metaClass.dynamicMethods.addDynamicConstructor(new DataBindingDynamicConstructor())
+                   metaClass.dynamicMethods.addDynamicConstructor(new DataBindingDynamicConstructor(ctx))
                    metaClass.dynamicMethods.addDynamicProperty(new SetPropertiesDynamicProperty())
             }
         }

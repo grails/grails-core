@@ -124,7 +124,7 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
 		Collection tempList = new ArrayList();
         for(Iterator i = this.propertyMap.values().iterator();i.hasNext();) {
             GrailsDomainClassProperty currentProp = (GrailsDomainClassProperty)i.next();
-            if(currentProp.isPersistent() && !currentProp.isIdentity() && !currentProp.getName().equals( GrailsDomainClassProperty.VERSION )) {
+            if(currentProp.getType() != Object.class && currentProp.isPersistent() && !currentProp.isIdentity() && !currentProp.getName().equals( GrailsDomainClassProperty.VERSION )) {
                 tempList.add(currentProp);
             }
         }

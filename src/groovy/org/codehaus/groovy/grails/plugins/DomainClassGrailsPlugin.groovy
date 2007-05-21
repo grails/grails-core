@@ -36,7 +36,10 @@ class DomainClassGrailsPlugin {
 	def doWithSpring = {
 		application.domainClasses.each { dc ->
 		    // Note the use of Groovy's ability to use dynamic strings in method names!
-		    
+		    "${dc.fullName}"(dc.getClazz()) { bean ->
+				bean.singleton = false
+				bean.autowire = "byName"						
+			}
 			"${dc.fullName}DomainClass"(MethodInvokingFactoryBean) {
 				targetObject = ref("grailsApplication", true)
 				targetMethod = "getArtefact"
