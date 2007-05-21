@@ -129,7 +129,7 @@ def populateTestSuite = { suite, testFiles, classLoader, ctx ->
 		}
 	}	
 }   
-def runTests = { suite, result, callback  ->
+def runTests = { suite, TestResult result, Closure callback  ->
 	suite.tests().each { test ->
 		def thisTest = new TestResult()
 		new File("${testDir}/TEST-${test.name}.xml").withOutputStream { xmlOut ->
@@ -203,7 +203,6 @@ task(runUnitTests:"Run Grails' unit tests under the test/unit directory") {
 }
 
 task(runIntegrationTests:"Runs Grails' tests under the test/integration directory") {
-	def result = null
 	try {
 	    // allow user to specify test to run like this...
 	    // grails test-app Author
