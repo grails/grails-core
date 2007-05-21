@@ -28,19 +28,36 @@ import groovy.xml.MarkupBuilder
 
 appName = ""
 
-Ant.property(environment:"env")   
-grailsHome = Ant.antProject.properties."env.GRAILS_HOME"    
-       
-includeTargets << new File ( "${grailsHome}/scripts/Init.groovy" )  
+Ant.property(environment:"env")
+grailsHome = Ant.antProject.properties."env.GRAILS_HOME"
+
+pluginIncludes = [
+	"application.properties",
+	"*GrailsPlugin.groovy",
+	"grails-app/**",
+	"lib/**",
+	"web-app/**",
+	"src/**",
+]
+
+pluginExcludes = [
+	"web-app/WEB-INF/**",
+	"grails-app/conf/*DataSource.groovy",
+	"grails-app/conf/log4j.*.properties",
+	"**/.svn/**",
+	"**/CVS/**"
+]
+
+includeTargets << new File ( "${grailsHome}/scripts/Init.groovy" )
 includeTargets << new File ( "${grailsHome}/scripts/Compile.groovy" )
 includeTargets << new File ( "${grailsHome}/scripts/CreateApp.groovy" )
-includeTargets << new File ( "${grailsHome}/scripts/Package.groovy" )  
+includeTargets << new File ( "${grailsHome}/scripts/Package.groovy" )
 
 task ( "default" : "Packages a Grails plugin into a zip for distribution") {
    depends(packageApp)
-   packagePlugin()                                                      
-}     
-                
+   packagePlugin()
+}
+
 task(packagePlugin:"Implementation task") {
     depends (compile)
 
@@ -86,6 +103,7 @@ task(packagePlugin:"Implementation task") {
     // Package plugin's zip distribution
     def pluginZip = "${basedir}/grails-${pluginName}-${plugin.version}.zip"
     Ant.delete(file:pluginZip)
-    Ant.zip(basedir:"${basedir}", destfile:pluginZip,
-            excludes:"plugins/**,**/WEB-INF/lib/**, **/WEB-INF/classes/**, **/WEB-INF/grails-app/**, **/WEB-INF/spring/**, **/WEB-INF/tld/**,**/WEB-INF/applicationContext.xml, **/WEB-INF/sitemesh.xml, **/WEB-INF/web*.xml")
+    def includesList = pluginIncludes.join(",")
+	def excludesList = pluginExcludes.join(",")
+    Ant.zip(basedir:"${basedir}", destfile:pluginZip, includes:includesList, excludes:excludesList)
 }

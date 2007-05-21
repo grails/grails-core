@@ -58,7 +58,6 @@ event = { String name, def args ->
             handler(*args)
         } catch (MissingPropertyException e) {
         }
-
     }
 }
 
@@ -95,10 +94,7 @@ void loadEventHooks() {
     def f = new File( userHome, ".grails/scripts/Events.groovy")
     if (f.exists()) {
         println "Found user events script"
-        def script = getClass().classLoader.parseClass( f ).newInstance()
-        script.delegate = binding
-        script.run()
-        hookScripts << script
+        loadEventScript(f)
     }
 
     // Look for plugin-supplied scripts
@@ -108,15 +104,22 @@ void loadEventHooks() {
             f = new File( it, "scripts/Events.groovy")
             if (f.exists()) {
                 println "Found events script in plugin ${it.name}"
-                def script = getClass().classLoader.parseClass( f).newInstance()
-                script.delegate = binding
-                script.run()
-                hookScripts << script
+                loadEventScript(f)
             }
         }
     }
 }
 
+void loadEventScript(theFile) {
+    try {
+        def script = getClass().classLoader.parseClass( theFile).newInstance()
+        script.delegate = binding
+        script.run()
+        hookScripts << script
+    } catch (Throwable t) {
+        println "Unable to load event script $theFile: ${t.message}"
+    }
+}
 
 exit = {
     event("Exiting", [it])
@@ -369,7 +372,9 @@ task(classpath:"Sets the Grails classpath") {
 		pathelement(location:"${basedir}/web-app")
 		pathelement(location:"${basedir}/web-app/WEB-INF")
 		pathelement(location:"${basedir}/web-app/WEB-INF/classes")				
-		fileset(dir:"${basedir}/web-app/WEB-INF/lib")		
+		if (new File("${basedir}/web-app/WEB-INF/lib").exists()) {
+		    fileset(dir:"${basedir}/web-app/WEB-INF/lib")
+		}
 		fileset(dir:"${grailsHome}/lib")
 		fileset(dir:"${grailsHome}/dist")
 		fileset(dir:"lib")
