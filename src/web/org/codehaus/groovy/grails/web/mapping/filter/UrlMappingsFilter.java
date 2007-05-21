@@ -23,6 +23,9 @@ import org.codehaus.groovy.grails.web.mapping.UrlMapping;
 import org.codehaus.groovy.grails.web.mapping.UrlMappingInfo;
 import org.codehaus.groovy.grails.web.servlet.WrappedResponseHolder;
 import org.codehaus.groovy.grails.web.servlet.GrailsUrlPathHelper;
+import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.commons.GrailsClass;
+import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -55,6 +58,13 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
 
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         UrlMappingsHolder holder = lookupUrlMappings();
+        GrailsApplication application = lookupApplication();
+
+        GrailsClass[] controllers = application.getArtefacts(ControllerArtefactHandler.TYPE);
+        if(controllers == null || controllers.length == 0) {
+            filterChain.doFilter(request,response);
+            return;
+        }
 
         if(LOG.isTraceEnabled()) {
             LOG.trace("Executing URL mapping filter");
@@ -109,6 +119,7 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
     }
 
 
+
     /**
      * Constructs the URI to forward to using the given request and UrlMappingInfo instance
      *
@@ -140,4 +151,18 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
 
         return (UrlMappingsHolder)wac.getBean(UrlMappingsHolder.BEAN_ID);
     }
+
+    /**
+     * Looks up the GrailsApplication instance
+     *
+     * @return The GrailsApplication instance
+     */
+    protected GrailsApplication lookupApplication() {
+        WebApplicationContext wac =
+                WebApplicationContextUtils.getRequiredWebApplicationContext(getServletContext());
+
+        return (GrailsApplication)wac.getBean(GrailsApplication.APPLICATION_ID);
+
+    }
+
 }
