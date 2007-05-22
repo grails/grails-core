@@ -64,7 +64,7 @@ class HibernateGrailsPlugin {
 				def p = new Properties()
 				p.load(hibernateDialects.openStream())
 				p.each { entry ->
-					vendorNameDialectMappings[entry.value] = "org.hibernate.dialect.${e.key}".toString() 
+					vendorNameDialectMappings[entry.value] = "org.hibernate.dialect.${entry.key}".toString() 
 				}
 			}
 			def ds = application.grailsDataSource
