@@ -15,31 +15,19 @@
  */
 package org.codehaus.groovy.grails.injection;
 
-import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.ast.ClassNode;
-import org.codehaus.groovy.ast.MethodNode;
-import org.codehaus.groovy.ast.Parameter;
-import org.codehaus.groovy.ast.PropertyNode;
-import org.codehaus.groovy.ast.expr.ConstantExpression;
-import org.codehaus.groovy.ast.expr.Expression;
-import org.codehaus.groovy.ast.expr.GStringExpression;
-import org.codehaus.groovy.ast.expr.MapEntryExpression;
-import org.codehaus.groovy.ast.expr.MapExpression;
-import org.codehaus.groovy.ast.expr.VariableExpression;
+import org.codehaus.groovy.ast.*;
+import org.codehaus.groovy.ast.expr.*;
 import org.codehaus.groovy.ast.stmt.ReturnStatement;
 import org.codehaus.groovy.ast.stmt.Statement;
 import org.codehaus.groovy.classgen.GeneratorContext;
 import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
 import org.codehaus.groovy.grails.commons.GrailsDomainConfigurationUtil;
+
+import java.lang.reflect.Modifier;
+import java.util.*;
 
 /**
  * Default implementation of domain class injector interface that adds the 'id'
@@ -66,8 +54,9 @@ public class DefaultGrailsDomainClassInjector implements
 			
 			injectToStringMethod(classNode);
 			
-			injectAssociations(classNode);			
-		}		
+			injectAssociations(classNode);
+
+        }
 	}
 
 	private boolean shouldInject(ClassNode classNode) {
@@ -86,19 +75,43 @@ public class DefaultGrailsDomainClassInjector implements
 	private void injectAssociations(ClassNode classNode) {
 		
 		List properties = classNode.getProperties();
-		List propertiesToAdd = Collections.EMPTY_LIST;
+		List propertiesToAdd = new ArrayList();
 		for (Iterator p = properties.iterator(); p.hasNext();) {
 			PropertyNode pn = (PropertyNode) p.next();
 			final boolean isHasManyProperty = pn.getName().equals(GrailsDomainClassProperty.RELATES_TO_MANY) || pn.getName().equals(GrailsDomainClassProperty.HAS_MANY);
 			if(isHasManyProperty) {
 				Expression e = pn.getInitialExpression();
-				propertiesToAdd = createPropertiesForAssociationExpression(e,classNode);
+				propertiesToAdd.addAll(createPropertiesForHasManyExpression(e,classNode));
 			}
-		}
+            final boolean isBelongsTo = pn.getName().equals(GrailsDomainClassProperty.BELONGS_TO);
+            if(isBelongsTo) {
+                Expression e = pn.getInitialExpression();
+                propertiesToAdd.addAll(createPropertiesForBelongsToExpression(e,classNode));
+            }
+        }
 		injectAssociationProperties(classNode,propertiesToAdd);
 	}
 
-	private void injectAssociationProperties(ClassNode classNode, List propertiesToAdd) {
+    private Collection createPropertiesForBelongsToExpression(Expression e, ClassNode classNode)
+    {
+        List properties = new ArrayList();
+        if(e instanceof MapExpression) {
+            MapExpression me = (MapExpression)e;
+            List mapEntries = me.getMapEntryExpressions();
+            for (Iterator i = mapEntries.iterator(); i.hasNext();) {
+                MapEntryExpression mme = (MapEntryExpression) i.next();
+                String key = mme.getKeyExpression().getText();
+
+                String type = mme.getValueExpression().getText();
+
+                properties.add(new PropertyNode(key,Modifier.PUBLIC, ClassHelper.make(type) , classNode, null,null,null));
+            }
+        }
+
+        return properties;
+    }
+
+    private void injectAssociationProperties(ClassNode classNode, List propertiesToAdd) {
 		for (Iterator i = propertiesToAdd.iterator(); i.hasNext();) {
 			PropertyNode pn = (PropertyNode) i.next();
 			if(!GrailsASTUtils.hasProperty(classNode, pn.getName())) {
@@ -110,7 +123,7 @@ public class DefaultGrailsDomainClassInjector implements
 		}
 	}
 
-	private List createPropertiesForAssociationExpression(Expression e, ClassNode classNode) {
+	private List createPropertiesForHasManyExpression(Expression e, ClassNode classNode) {
 		List properties = new ArrayList();
 		if(e instanceof MapExpression) {
 			MapExpression me = (MapExpression)e;

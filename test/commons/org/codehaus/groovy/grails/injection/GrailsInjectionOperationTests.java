@@ -2,11 +2,7 @@ package org.codehaus.groovy.grails.injection;
 
 //import groovy.lang.GroovyClassLoader;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import groovy.lang.GroovyObject;
-
 import org.codehaus.groovy.control.MultipleCompilationErrorsException;
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
@@ -17,6 +13,9 @@ import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
+
+import java.util.HashSet;
+import java.util.Set;
 
 public class GrailsInjectionOperationTests extends AbstractDependencyInjectionSpringContextTests {
 
@@ -125,8 +124,28 @@ public class GrailsInjectionOperationTests extends AbstractDependencyInjectionSp
 		assertTrue(bean.isReadableProperty(GrailsDomainClassProperty.IDENTITY));
 		assertTrue(bean.isWritableProperty(GrailsDomainClassProperty.IDENTITY));
 	}
-	
-	protected String[] getConfigLocations() {
+
+    public void testBelongsToInjection() throws Exception {
+        GroovyObject testObject = (GroovyObject)ga.getClassLoader()
+        .loadClass("Belonging")
+        .newInstance();
+
+        BeanWrapper bean = new BeanWrapperImpl(testObject);
+
+        assertTrue(bean.isReadableProperty("owner"));
+        assertTrue(bean.isWritableProperty("owner"));
+
+        assertEquals(ga.getClassLoader().loadClass("TestInjection"),bean.getPropertyType("owner"));
+
+        assertTrue(bean.isReadableProperty("two"));
+        assertTrue(bean.isWritableProperty("two"));
+
+        assertEquals(ga.getClassLoader().loadClass("PresetIdObject"),bean.getPropertyType("two"));
+
+
+    }
+
+    protected String[] getConfigLocations() {
 		return new String[] { "org/codehaus/groovy/grails/injection/injection-resources-tests.xml" };
 	}
 

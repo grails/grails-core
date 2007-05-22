@@ -141,6 +141,12 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
             if(ownersProp != null) {
                 this.owners = ownersProp;
             }
+            else {
+                Map ownersMap = (Map)getPropertyOrStaticPropertyOrFieldValue(GrailsDomainClassProperty.BELONGS_TO, Map.class);
+                if(ownersMap!=null) {
+                    this.owners = new ArrayList(ownersMap.values());
+                }
+            }
         }
         else {
             this.owners = new ArrayList();
