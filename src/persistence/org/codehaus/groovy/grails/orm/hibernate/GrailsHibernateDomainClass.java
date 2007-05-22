@@ -29,6 +29,7 @@ import org.codehaus.groovy.grails.validation.GrailsDomainClassValidator;
 import org.codehaus.groovy.grails.validation.metaclass.ConstraintsEvaluatingDynamicProperty;
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.hibernate.EntityMode;
+import org.hibernate.MappingException;
 import org.hibernate.SessionFactory;
 import org.hibernate.engine.SessionFactoryImplementor;
 import org.hibernate.metadata.ClassMetadata;
@@ -41,133 +42,149 @@ import java.beans.IntrospectionException;
 import java.util.*;
 
 /**
- * An implementation of the GrailsDomainClass interface that allows Classes mapped in
- * Hibernate to integrate with Grails' validation, dynamic methods etc. seamlessly
- *
+ * An implementation of the GrailsDomainClass interface that allows Classes
+ * mapped in Hibernate to integrate with Grails' validation, dynamic methods
+ * etc. seamlessly
+ * 
  * @author Graeme Rocher
  * @since 0.1
  * 
  * Created - 18-Feb-2006
  */
 public class GrailsHibernateDomainClass extends AbstractGrailsClass implements ExternalGrailsDomainClass {
-	
-	private static final Log LOG  = LogFactory.getLog(GrailsHibernateDomainClass.class);
-	
+
+    private static final Log LOG = LogFactory.getLog(GrailsHibernateDomainClass.class);
+
     private static final String HIBERNATE = "hibernate";
+
     private GrailsHibernateDomainClassProperty identifier;
+
     private GrailsDomainClassProperty[] properties;
+
     private Map propertyMap = new HashMap();
+
     private Validator validator;
+
     private Set subClasses = new HashSet();
-	private Map constraints = Collections.EMPTY_MAP;
+
+    private Map constraints = Collections.EMPTY_MAP;
 
     /**
-     * <p>Contructor to be used by all child classes to create a
-     * new instance and get the name right.
-     *
-     * @param clazz        the Grails class
-     * @param sessionFactory The Hibernate SessionFactory instance
-     * @param metaData The ClassMetaData for this class retrieved from the SF
-     */
-    public GrailsHibernateDomainClass(Class clazz, SessionFactory sessionFactory,ClassMetadata metaData) {
-        super(clazz, "");
+         * <p>
+         * Contructor to be used by all child classes to create a new instance
+         * and get the name right.
+         * 
+         * @param clazz
+         *                the Grails class
+         * @param sessionFactory
+         *                The Hibernate SessionFactory instance
+         * @param metaData
+         *                The ClassMetaData for this class retrieved from the SF
+         */
+    public GrailsHibernateDomainClass(Class clazz, SessionFactory sessionFactory, ClassMetadata metaData) {
+	super(clazz, "");
 
-        BeanWrapper bean = getReference();
-        // configure identity property
-        String ident = metaData.getIdentifierPropertyName();
+	BeanWrapper bean = getReference();
+	// configure identity property
+	String ident = metaData.getIdentifierPropertyName();
 
-        if(ident != null) {
-            Class identType = bean.getPropertyType(ident);
-            this.identifier = new GrailsHibernateDomainClassProperty(this,ident);
-            this.identifier.setIdentity(true);
-            this.identifier.setType(identType);
-        }
+	if (ident != null) {
+	    Class identType = bean.getPropertyType(ident);
+	    this.identifier = new GrailsHibernateDomainClassProperty(this, ident);
+	    this.identifier.setIdentity(true);
+	    this.identifier.setType(identType);
+	}
 
-        propertyMap.put(ident,identifier);
+	propertyMap.put(ident, identifier);
 
-        // configure remaining properties
-        String[] propertyNames = metaData.getPropertyNames();
-        for (int i = 0; i < propertyNames.length; i++) {
-            String propertyName = propertyNames[i];
-            if(!propertyName.equals(ident)) {
-                GrailsHibernateDomainClassProperty prop = new GrailsHibernateDomainClassProperty(this,propertyName);
-                prop.setType(bean.getPropertyType(propertyName));
-                Type hibernateType = metaData.getPropertyType(propertyName);
-                // if its an association type
-                if(hibernateType.isAssociationType()) {
-                    prop.setAssociation(true);
-                    // get the associated type from the session factory
-                    // and set it on the property
-                    AssociationType assType = (AssociationType)hibernateType;
-					if (assType instanceof org.hibernate.type.AnyType) continue;
-					
-                    String associatedEntity = assType.getAssociatedEntityName((SessionFactoryImplementor)sessionFactory);
-                    ClassMetadata associatedMetaData = sessionFactory.getClassMetadata(associatedEntity);
-                    prop.setRelatedClassType(associatedMetaData.getMappedClass(EntityMode.POJO));
-                    // configure type of relationship
-                    if(hibernateType.isCollectionType()) {
-                        prop.setOneToMany(true);
-                    }
-                    else if(hibernateType.isEntityType()) {
-                        prop.setManyToOne(true);
-                        // might not really be true, but for our purposes this is ok
-                        prop.setOneToOne(true);
-                    }
-                }
-                propertyMap.put(propertyName,prop);
-            }
-        }
+	// configure remaining properties
+	String[] propertyNames = metaData.getPropertyNames();
+	for (int i = 0; i < propertyNames.length; i++) {
+	    String propertyName = propertyNames[i];
+	    if (!propertyName.equals(ident)) {
+		GrailsHibernateDomainClassProperty prop = new GrailsHibernateDomainClassProperty(this, propertyName);
+		prop.setType(bean.getPropertyType(propertyName));
+		Type hibernateType = metaData.getPropertyType(propertyName);
+		// if its an association type
+		if (hibernateType.isAssociationType()) {
+		    prop.setAssociation(true);
+		    // get the associated type from the session factory
+		    // and set it on the property
+		    AssociationType assType = (AssociationType) hibernateType;
+		    if (assType instanceof org.hibernate.type.AnyType)
+			continue;
+		    try {
+			String associatedEntity = assType.getAssociatedEntityName((SessionFactoryImplementor) sessionFactory);
+			ClassMetadata associatedMetaData = sessionFactory.getClassMetadata(associatedEntity);
+			prop.setRelatedClassType(associatedMetaData.getMappedClass(EntityMode.POJO));
+		    } catch (MappingException me) {
+			// other side must be a value object
+			if (hibernateType.isCollectionType()) {
+			    prop.setRelatedClassType(Collection.class);
+			}
+		    }
+		    // configure type of relationship
+		    if (hibernateType.isCollectionType()) {
+			prop.setOneToMany(true);
+		    } else if (hibernateType.isEntityType()) {
+			prop.setManyToOne(true);
+			// might not really be true, but for our
+			// purposes this is ok
+			prop.setOneToOne(true);
+		    }
+		}
+		propertyMap.put(propertyName, prop);
+	    }
+	}
 
-        this.properties = (GrailsDomainClassProperty[])propertyMap.values().toArray(new GrailsDomainClassProperty[propertyMap.size()]);
-		// process the constraints
-		evaluateConstraints();        
+	this.properties = (GrailsDomainClassProperty[]) propertyMap.values().toArray(new GrailsDomainClassProperty[propertyMap.size()]);
+	// process the constraints
+	evaluateConstraints();
     }
 
-	
-	/**
-	 * Evaluates the constraints closure to build the list of constraints
-	 *
-	 */
-	private void evaluateConstraints() {
-		Map existing = (Map)getPropertyOrStaticPropertyOrFieldValue( GrailsDomainClassProperty.CONSTRAINTS, Map.class );
-		if(existing == null) {
-			Object instance = getReference().getWrappedInstance();
-			try {
-				DynamicMethods interceptor = new AbstractDynamicMethodsInterceptor() {};
-				
-				interceptor.addDynamicProperty( new ConstraintsEvaluatingDynamicProperty() );
-		        MetaClassRegistry metaRegistry = InvokerHelper.getInstance().getMetaRegistry();
-		        MetaClass meta = metaRegistry.getMetaClass(instance.getClass());
-		        
-				try {
-					ProxyMetaClass pmc = new ProxyMetaClass(metaRegistry, instance.getClass(), meta);
-					pmc.setInterceptor((Interceptor)interceptor);
-					
-					this.constraints = (Map)pmc.getProperty(getClazz(),instance,GrailsDomainClassProperty.CONSTRAINTS, false, false);
-				}
-				finally {
-					metaRegistry.setMetaClass(instance.getClass(),meta);
-				}				
-				
-			} catch (IntrospectionException e) {
-				LOG.error("Introspection error reading domain class ["+getFullName()+"] constraints: " + e.getMessage(), e);
-			}
-		}		
-		else {
-			this.constraints = existing;
+    /**
+         * Evaluates the constraints closure to build the list of constraints
+         * 
+         */
+    private void evaluateConstraints() {
+	Map existing = (Map) getPropertyOrStaticPropertyOrFieldValue(GrailsDomainClassProperty.CONSTRAINTS, Map.class);
+	if (existing == null) {
+	    Object instance = getReference().getWrappedInstance();
+	    try {
+		DynamicMethods interceptor = new AbstractDynamicMethodsInterceptor() {
+		};
+
+		interceptor.addDynamicProperty(new ConstraintsEvaluatingDynamicProperty());
+		MetaClassRegistry metaRegistry = InvokerHelper.getInstance().getMetaRegistry();
+		MetaClass meta = metaRegistry.getMetaClass(instance.getClass());
+
+		try {
+		    ProxyMetaClass pmc = new ProxyMetaClass(metaRegistry, instance.getClass(), meta);
+		    pmc.setInterceptor((Interceptor) interceptor);
+
+		    this.constraints = (Map) pmc.getProperty(getClazz(), instance, GrailsDomainClassProperty.CONSTRAINTS, false, false);
+		} finally {
+		    metaRegistry.setMetaClass(instance.getClass(), meta);
 		}
+
+	    } catch (IntrospectionException e) {
+		LOG.error("Introspection error reading domain class [" + getFullName() + "] constraints: " + e.getMessage(), e);
+	    }
+	} else {
+	    this.constraints = existing;
 	}
-    
+    }
+
     public boolean isOwningClass(Class domainClass) {
-        return false;
+	return false;
     }
 
     public GrailsDomainClassProperty[] getProperties() {
-        return this.properties;
+	return this.properties;
     }
 
     public GrailsDomainClassProperty[] getPersistantProperties() {
-        return this.properties;
+	return this.properties;
     }
 
     public GrailsDomainClassProperty[] getPersistentProperties() {
@@ -175,85 +192,82 @@ public class GrailsHibernateDomainClass extends AbstractGrailsClass implements E
     }
 
     public GrailsDomainClassProperty getIdentifier() {
-        return this.identifier;
+	return this.identifier;
     }
 
     public GrailsDomainClassProperty getVersion() {
-        throw new UnsupportedOperationException("Method 'getVersion' is not supported by implementation");
+	throw new UnsupportedOperationException("Method 'getVersion' is not supported by implementation");
     }
 
     public GrailsDomainClassProperty getPropertyByName(String name) {
-        return (GrailsDomainClassProperty)propertyMap.get(name);
+	return (GrailsDomainClassProperty) propertyMap.get(name);
     }
 
     public String getFieldName(String propertyName) {
-        throw new UnsupportedOperationException("Method 'getFieldName' is not supported by implementation");
+	throw new UnsupportedOperationException("Method 'getFieldName' is not supported by implementation");
     }
 
     public String getTableName() {
-        throw new UnsupportedOperationException("Method 'getTableName' is not supported by implementation");
+	throw new UnsupportedOperationException("Method 'getTableName' is not supported by implementation");
     }
 
     public boolean isOneToMany(String propertyName) {
-        GrailsDomainClassProperty prop = getPropertyByName(propertyName);
-        return prop != null && prop.isOneToMany();
+	GrailsDomainClassProperty prop = getPropertyByName(propertyName);
+	return prop != null && prop.isOneToMany();
     }
 
     public boolean isManyToOne(String propertyName) {
-        GrailsDomainClassProperty prop = getPropertyByName(propertyName);
-        return prop != null && prop.isManyToOne();
+	GrailsDomainClassProperty prop = getPropertyByName(propertyName);
+	return prop != null && prop.isManyToOne();
     }
 
     public boolean isBidirectional(String propertyName) {
-        throw new UnsupportedOperationException("Method 'isBidirectional' is not supported by implementation");
+	throw new UnsupportedOperationException("Method 'isBidirectional' is not supported by implementation");
     }
 
     public Class getRelatedClassType(String propertyName) {
-        GrailsDomainClassProperty prop = getPropertyByName(propertyName);
-        if(prop == null)
-            return null;
-        else {
-            return prop.getReferencedPropertyType();
-        }
+	GrailsDomainClassProperty prop = getPropertyByName(propertyName);
+	if (prop == null)
+	    return null;
+	else {
+	    return prop.getReferencedPropertyType();
+	}
     }
 
     public Map getConstrainedProperties() {
-    	return this.constraints;
+	return this.constraints;
     }
 
     public Validator getValidator() {
-        if(this.validator == null) {
-            org.codehaus.groovy.grails.validation.GrailsDomainClassValidator gdcv = new GrailsDomainClassValidator();
-            gdcv.setDomainClass(this);
-            this.validator = gdcv;
-        }
-        return this.validator;
+	if (this.validator == null) {
+	    org.codehaus.groovy.grails.validation.GrailsDomainClassValidator gdcv = new GrailsDomainClassValidator();
+	    gdcv.setDomainClass(this);
+	    this.validator = gdcv;
+	}
+	return this.validator;
     }
 
     public void setValidator(Validator validator) {
-        this.validator = validator;
+	this.validator = validator;
     }
 
     public String getMappingStrategy() {
-        return HIBERNATE;
+	return HIBERNATE;
     }
 
-
-	public Set getSubClasses() {
-		return this.subClasses;
-	}
+    public Set getSubClasses() {
+	return this.subClasses;
+    }
 
     public void refreshConstraints() {
-        this.evaluateConstraints();
+	this.evaluateConstraints();
     }
 
-
     public boolean isRoot() {
-		return getClazz().getSuperclass().equals(Object.class);
-	}
+	return getClazz().getSuperclass().equals(Object.class);
+    }
 
-
-	public Map getAssociationMap() {
-		return Collections.EMPTY_MAP;
-	}
+    public Map getAssociationMap() {
+	return Collections.EMPTY_MAP;
+    }
 }
