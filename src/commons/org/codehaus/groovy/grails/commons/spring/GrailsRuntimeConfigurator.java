@@ -323,6 +323,12 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
               String[] beanNames = xmlBf.getBeanDefinitionNames();
               LOG.debug("[RuntimeConfiguration] Found ["+beanNames.length+"] beans to configure");
               for (int k = 0; k < beanNames.length; k++) {
+                if(SESSION_FACTORY_BEAN.equals(beanNames[k])) {
+                    LOG.warn("[RuntimeConfiguration] Found custom Hibernate SessionFactory bean defined in " + springResources.getURL() +
+                            ". The bean will not be configured as Grails needs to use its own specialized Hibernate SessionFactoryBean " +
+                            " internally in order to inject dynamic bahavior into domain classes");
+                    continue;
+                }
                   BeanDefinition bd = xmlBf.getBeanDefinition(beanNames[k]);
 
                   springConfig.addBeanDefinition(beanNames[k], bd);

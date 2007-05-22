@@ -326,6 +326,9 @@ public class GrailsRuntimeConfiguratorTests extends TestCase {
         
         GrailsMockDependantObject gdo = (GrailsMockDependantObject)ctx.getBean("grailsDependent");
         assertNotNull(gdo.getApplication());
+
+      //Make sure that the definition of the custom SessionFactory is not allowed.
+        assertFalse(ctx.containsBean("sessionFactory"));
     	
     }
 }
