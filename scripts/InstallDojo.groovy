@@ -32,7 +32,7 @@ includeTargets << new File ( "${grailsHome}/scripts/Init.groovy" )
 task ('default': "Installs the Dojo toolkit. An advanced Javascript library.") {
     depends(checkVersion)
 
-	dojoVersion = "0.3.1"
+	dojoVersion = "0.4.1"
 	
 	Ant.sequential {
 		mkdir(dir:"${grailsHome}/downloads")
