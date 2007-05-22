@@ -20,6 +20,7 @@ import org.springframework.web.context.WebApplicationContext;
 import org.springframework.core.io.ByteArrayResource;
 import org.codehaus.groovy.grails.support.MockApplicationContext;
 import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder;
+import org.codehaus.groovy.grails.commons.*
 import org.codehaus.groovy.grails.web.mapping.UrlMappingEvaluator;
 import org.codehaus.groovy.grails.web.mapping.DefaultUrlMappingEvaluator;
 import org.codehaus.groovy.grails.web.mapping.DefaultUrlMappingsHolder;
@@ -55,6 +56,12 @@ mappings {
 }
 '''
 
+def testController = '''
+class TestController {
+  def index = {}
+}
+'''
+
     void testUrlMappingFilter() {
 
         def webRequest = grails.util.GrailsWebUtil.bindMockWebRequest()
@@ -66,6 +73,10 @@ mappings {
 
         def mappings = evaluator.evaluateMappings(new ByteArrayResource(mappingScript.getBytes()));
         appCtx.registerMockBean(UrlMappingsHolder.BEAN_ID, new DefaultUrlMappingsHolder(mappings));
+        def gcl = new GroovyClassLoader()
+        gcl.parseClass(testController)
+
+        appCtx.registerMockBean("grailsApplication", new DefaultGrailsApplication(gcl.loadedClasses,gcl))
 
         servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE,appCtx);
 
