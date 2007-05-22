@@ -99,10 +99,10 @@ public class ValidatorConstraintTests extends AbstractConstraintTests {
         }
 
         try {
-            getConstraint( "{ param1, param2, param3 -> return true}" );
-            fail("ValidatorConstraint must throw exception about closure with more that 2 params");
+            getConstraint( "{ param1, param2, param3, param4 -> return true}" );
+            fail("ValidatorConstraint must throw exception about closure with more that 3 params");
         } catch ( IllegalArgumentException iae ) {
-            // Great since validator constraint only applicable for Closure's with 1 or 2 params
+            // Great since validator constraint only applicable for Closure's with 1, 2 or 3 params
         }
 
         try {

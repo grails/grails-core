@@ -55,11 +55,24 @@ class ValidatorConstraint extends AbstractConstraint {
     protected void processValidate(Object target, Object propertyValue, Errors errors) {
         if(validator != null) {
 
-            Object[] params = numValidatorParams == 2
-                    ? new Object[] { propertyValue, target }
-                    : new Object[] { propertyValue };
+            Object[] params = new Object[numValidatorParams];
+            params[0] = propertyValue;
+            if(numValidatorParams >= 2) {
+                params[1] = target;
+            }
+            if(numValidatorParams == 3) {
+                params[2] = errors;
+            }
+            
+            
 
             final Object result = validator.call(params);
+            
+            if(numValidatorParams == 3) {
+            	// If the closure has been passed the errors
+            	// object no further action has to be taken.
+            	return;
+            }
 
             boolean bad = false;
             String errmsg = null;
@@ -120,9 +133,9 @@ class ValidatorConstraint extends AbstractConstraint {
         if (params.length == 0)
         {
             throw new IllegalArgumentException("Parameter for constraint ["+ConstrainedProperty.VALIDATOR_CONSTRAINT+"] of property ["+constraintPropertyName+"] of class ["+constraintOwningClass+"] must be a Closure taking at least 1 parameter (value, [object])");
-        } else if (params.length > 2)
+        } else if (params.length > 3)
         {
-            throw new IllegalArgumentException("Parameter for constraint ["+ConstrainedProperty.VALIDATOR_CONSTRAINT+"] of property ["+constraintPropertyName+"] of class ["+constraintOwningClass+"] must be a Closure taking no more than 2 parameters (value, [object])");
+            throw new IllegalArgumentException("Parameter for constraint ["+ConstrainedProperty.VALIDATOR_CONSTRAINT+"] of property ["+constraintPropertyName+"] of class ["+constraintOwningClass+"] must be a Closure taking no more than 3 parameters (value, [object, [errors]])");
         }
 
         numValidatorParams = params.length;
@@ -145,6 +158,16 @@ class ValidatorConstraint extends AbstractConstraint {
                     "property ["+constraintPropertyName+"] of class ["+constraintOwningClass+"] must be a Closure " +
                     "taking with the second parameter (object) compatible with the type of the object being " +
                     "constrained ["+constraintOwningClass+"], but the parameter is of type ["+params[1]+"]");
+            }
+        }
+        if (params.length > 2)
+        {
+            if (!GrailsClassUtils.isGroovyAssignableFrom(params[2], Errors.class))
+            {
+                throw new IllegalArgumentException("Parameter for constraint ["+ConstrainedProperty.VALIDATOR_CONSTRAINT+"] of " +
+                    "property ["+constraintPropertyName+"] of class ["+constraintOwningClass+"] must be a Closure " +
+                    "taking with the third parameter (object) compatible with the type of the spring " +
+                    "org.springframework.validation.Errors interface, but the parameter is of type ["+params[2]+"]");
             }
         }
 
