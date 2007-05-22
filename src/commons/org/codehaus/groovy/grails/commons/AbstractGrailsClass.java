@@ -24,6 +24,7 @@ import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 
@@ -89,7 +90,9 @@ public abstract class AbstractGrailsClass implements GrailsClass {
 
     public Object newInstance() {
         try {
-            return getClazz().newInstance();
+            Constructor defaultConstructor = getClazz().getDeclaredConstructor(new Class[]{});
+            if(!defaultConstructor.isAccessible()) defaultConstructor.setAccessible(true);
+            return defaultConstructor.newInstance(new Object[]{});
         } catch (Exception e) {
             Throwable targetException = null;
             if (e instanceof InvocationTargetException) {
