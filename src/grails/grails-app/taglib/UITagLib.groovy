@@ -201,10 +201,12 @@ class UITagLib {
 				}
 			}
 
+			
 			if(attrs.value) {
-				out << "oFCKeditor.Value	= \""
+							// replace " with '   original implementation: out << "oFCKeditor.Value	= \""
+				out << "oFCKeditor.Value	= \'"
 			    out << escapeJavascript(Collections.EMPTY_MAP,attrs.value)
-				out.println "\" ;"
+				out.println "\' ;"
 			}
 			
 			out.println "oFCKeditor.Create();"	
