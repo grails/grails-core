@@ -90,7 +90,7 @@ class ScaffoldingGrailsPlugin {
 	}  
 	
 	def onChange = { event ->		
-	    if(event.source) {
+	    if(event.source instanceof Class) {
 			def domainClass = application.getDomainClass(event.source.name)
 			
 			registerScaffoldedActions(application, event.ctx)   

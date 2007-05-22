@@ -31,6 +31,8 @@ import org.codehaus.groovy.runtime.InvokerHelper;
 class CoreGrailsPlugin {
 	
 	def version = GrailsPluginUtils.getGrailsVersion()
+    def watchedResources = "file:./spring/resources.xml"
+	
 	
 	def doWithSpring = {
 		classLoader(MethodInvokingFactoryBean) {
@@ -66,5 +68,15 @@ class CoreGrailsPlugin {
 				return registry.getMetaClass(delegate)
 			}
 		}
+	}    
+	
+	def onChange = { event -> 
+		if(event.source) {
+			def xmlBeans = new org.springframework.beans.factory.xml.XmlBeanFactory(event.source);
+            xmlBeans.beanDefinitionNames.each { name ->                         
+	        	event.ctx.registerBeanDefinition(name, xmlBeans.getBeanDefinition(name))
+			}
+            
+		}		
 	}
 }

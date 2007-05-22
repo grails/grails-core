@@ -47,7 +47,9 @@ class HibernateGrailsPlugin {
 	                 
 	def loadAfter = ['controllers']	                 
 	
-	def watchedResources = "file:./grails-app/domain/*.groovy"
+	def watchedResources = ["file:./grails-app/domain/*.groovy", "file:./hibernate/**.xml"]
+	def hibProps = [:]  
+	def hibConfigClass
 
 	def doWithSpring = {
 	        application.domainClasses.each { dc ->
@@ -66,8 +68,9 @@ class HibernateGrailsPlugin {
 				}
 			}
 			def ds = application.grailsDataSource
-			if(ds || application.domainClasses.size() > 0) {
-                def hibProps = [:]
+			if(ds || application.domainClasses.size() > 0) {  
+				hibConfigClass = ds?.configClass
+				
                 if(ds && ds.loggingSql) {
                     hibProps."hibernate.show_sql" = "true"
                     hibProps."hibernate.format_sql" = "true"
@@ -97,7 +100,7 @@ class HibernateGrailsPlugin {
                     if(application.classLoader.getResource("hibernate.cfg.xml")) {
                         configLocation = "classpath:hibernate.cfg.xml"
                     }
-                    if(ds?.configClass) {
+                    if(hibConfigClass) {
                         configClass = ds.configClass
                     }
                     hibernateProperties = hibernateProperties
@@ -197,7 +200,8 @@ class HibernateGrailsPlugin {
 		}
 	}
 	
-	def onChange = {  event ->
+	def onChange = {  event -> 
+		if(event.source instanceof Class) {
 			def configurator = event.ctx.grailsConfigurator
  			def application = event.application
    		    def manager = event.manager
@@ -223,8 +227,36 @@ class HibernateGrailsPlugin {
 					if(event.ctx.containsBean("groovyPagesTemplateEngine")) {
 						event.ctx.groovyPagesTemplateEngine.clearPageCache()
 					}
-			}
+			}			
+		}   
+		else {         
+			println "copying new hibernate configs"
+			 new AntBuilder().copy(todir:"./web-app/WEB-INF/classes") { 
+				 fileset(dir:"./hibernate", includes:"**")				
+			 }     
+			 def beanDefs = beans {
+                sessionFactory(ConfigurableLocalSessionFactoryBean) {
+                    dataSource = ref("dataSource")
+                    configLocation = "classpath:hibernate.cfg.xml"
 
+                    if(hibConfigClass) {
+                        configClass = hibConfigClass
+                    }
+                    hibernateProperties = ref("hibernateProperties")
+                    grailsApplication = ref("grailsApplication", true)
+                }
+                transactionManager(HibernateTransactionManager) {
+                    sessionFactory = sessionFactory
+                }
+                persistenceInterceptor(HibernatePersistenceContextInterceptor) {
+                    sessionFactory = sessionFactory
+                }				
+			} 
+			println "re-registering session factory beans" 
+			event.ctx.registerBeanDefinition("sessionFactory", beanDefs.getBeanDefinition("sessionFactory")) 
+			event.ctx.registerBeanDefinition("transactionManager", beanDefs.getBeanDefinition("transactionManager")) 			
+			event.ctx.registerBeanDefinition("persistenceInterceptor", beanDefs.getBeanDefinition("persistenceInterceptor")) 									
+		}
 	}
 
 }

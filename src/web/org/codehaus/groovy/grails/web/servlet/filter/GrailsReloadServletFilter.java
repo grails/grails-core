@@ -21,16 +21,15 @@ import groovy.text.Template;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.control.CompilationFailedException;
-import org.codehaus.groovy.control.MultipleCompilationErrorsException;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator;
 import org.codehaus.groovy.grails.commons.spring.GrailsWebApplicationContext;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.codehaus.groovy.grails.plugins.PluginManagerHolder;
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
-import org.codehaus.groovy.grails.web.servlet.DefaultGrailsApplicationAttributes;
-import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
 import org.codehaus.groovy.grails.web.errors.GrailsWrappedRuntimeException;
+import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
+import org.codehaus.groovy.grails.web.servlet.DefaultGrailsApplicationAttributes;
+import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.util.UrlPathHelper;
@@ -40,8 +39,8 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.Map;
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * A servlet filter that copies resources from the source on content change and manages reloading if necessary
@@ -141,12 +140,8 @@ public class GrailsReloadServletFilter extends OncePerRequestFilter {
             else if(LOG.isDebugEnabled()) {
                 LOG.debug("Plugin manager not found, skipping change check");
             }
-
-            filterChain.doFilter(httpServletRequest,httpServletResponse);
-        } catch (MultipleCompilationErrorsException mce) {
-            if(LOG.isDebugEnabled())
-                LOG.debug("Compilation error occured reloading application: " + mce.getMessage(),mce);
-
+        } catch (Exception e) {
+            LOG.error("Error occured reloading application: " + e.getMessage(),e);
 
             httpServletResponse.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 
@@ -154,7 +149,7 @@ public class GrailsReloadServletFilter extends OncePerRequestFilter {
 
             Template t = engine.createTemplate(GrailsApplicationAttributes.PATH_TO_VIEWS+"/error.gsp");
 
-            GrailsWrappedRuntimeException wrapped = new GrailsWrappedRuntimeException(getServletContext(), mce);
+            GrailsWrappedRuntimeException wrapped = new GrailsWrappedRuntimeException(getServletContext(), e);
             Map model = new HashMap();
             model.put("exception", wrapped);
 
@@ -163,6 +158,7 @@ public class GrailsReloadServletFilter extends OncePerRequestFilter {
             w.writeTo(httpServletResponse.getWriter());
             
         }
+        filterChain.doFilter(httpServletRequest,httpServletResponse);
     }
 
 }
