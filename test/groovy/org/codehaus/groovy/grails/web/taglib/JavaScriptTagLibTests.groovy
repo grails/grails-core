@@ -7,7 +7,6 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.*;
 
-import org.codehaus.groovy.grails.web.servlet.GrailsHttpServletRequest;
 
 public class JavaScriptTagLibTests extends AbstractGrailsTagTests {
 
@@ -17,7 +16,7 @@ public class JavaScriptTagLibTests extends AbstractGrailsTagTests {
 		
 		withTag("remoteFunction",pw) { tag ->
 			GroovyObject tagLibrary = (GroovyObject)tag.getOwner()
-			GrailsHttpServletRequest request = (GrailsHttpServletRequest)tagLibrary.getProperty("request")
+			def request = tagLibrary.getProperty("request")
 			def includedLibrary = ['prototype']
 			request.setAttribute("org.codehaus.grails.INCLUDED_JS_LIBRARIES", includedLibrary)
 			
@@ -38,7 +37,7 @@ public class JavaScriptTagLibTests extends AbstractGrailsTagTests {
 		
 		withTag("remoteFunction",pw) { tag ->
 			GroovyObject tagLibrary = (GroovyObject)tag.getOwner()
-			GrailsHttpServletRequest request = (GrailsHttpServletRequest)tagLibrary.getProperty("request")
+			def request = tagLibrary.getProperty("request")
 			def includedLibrary = ['dojo']
 			request.setAttribute("org.codehaus.grails.INCLUDED_JS_LIBRARIES", includedLibrary)
 			
@@ -59,7 +58,7 @@ public class JavaScriptTagLibTests extends AbstractGrailsTagTests {
 		
 		withTag("remoteFunction",pw) { tag ->
 			GroovyObject tagLibrary = (GroovyObject)tag.getOwner()
-			GrailsHttpServletRequest request = (GrailsHttpServletRequest)tagLibrary.getProperty("request")
+			def request = tagLibrary.getProperty("request")
 			def includedLibrary = ['yahoo']
 			request.setAttribute("org.codehaus.grails.INCLUDED_JS_LIBRARIES", includedLibrary)
 			
@@ -81,7 +80,7 @@ public class JavaScriptTagLibTests extends AbstractGrailsTagTests {
 
         withTag("remoteField",pw) { tag ->
             GroovyObject tagLibrary = (GroovyObject)tag.getOwner()
-            GrailsHttpServletRequest request = (GrailsHttpServletRequest)tagLibrary.getProperty("request")
+            def request = tagLibrary.getProperty("request")
             def includedLibrary = ['prototype']
             request.setAttribute("org.codehaus.grails.INCLUDED_JS_LIBRARIES", includedLibrary)
 

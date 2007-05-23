@@ -22,20 +22,20 @@ import groovy.text.Template;
 import groovy.xml.StreamingMarkupBuilder;
 import org.apache.commons.beanutils.BeanMap;
 import org.apache.commons.lang.StringUtils;
+import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsControllerClass;
-import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
 import org.codehaus.groovy.grails.commons.metaclass.AbstractDynamicMethodInvocation;
-import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
 import org.codehaus.groovy.grails.web.pages.GSPResponseWriter;
+import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
-import org.codehaus.groovy.grails.web.servlet.GrailsHttpServletRequest;
 import org.codehaus.groovy.grails.web.servlet.GrailsHttpServletResponse;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.servlet.ModelAndView;
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.Collection;
@@ -85,7 +85,7 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
 
         GrailsWebRequest webRequest = (GrailsWebRequest)RequestContextHolder.currentRequestAttributes();
         GrailsApplication application = webRequest.getAttributes().getGrailsApplication();
-        GrailsHttpServletRequest request = webRequest.getCurrentRequest();
+        HttpServletRequest request = webRequest.getCurrentRequest();
         GrailsHttpServletResponse response = webRequest.getCurrentResponse();
 
 

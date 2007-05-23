@@ -44,7 +44,6 @@ public class SimpleGrailsController implements Controller, ServletContextAware {
     private UrlPathHelper urlPathHelper = new GrailsUrlPathHelper();
     private GrailsApplication application = null;
     private ServletContext servletContext;
-    private GrailsControllerHelper helper;
 
     private static final Log LOG = LogFactory.getLog(SimpleGrailsController.class);
 
@@ -85,7 +84,7 @@ public class SimpleGrailsController implements Controller, ServletContextAware {
 
 
         ApplicationContext context = webRequest.getAttributes().getApplicationContext();
-        this.helper = new SimpleGrailsControllerHelper(this.application,context,this.servletContext);
+        SimpleGrailsControllerHelper helper = new SimpleGrailsControllerHelper(this.application,context,this.servletContext);
         ModelAndView mv = helper.handleURI(uri,webRequest);
 
         if(LOG.isDebugEnabled()) {

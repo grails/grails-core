@@ -75,7 +75,7 @@ public class GrailsApplicationAttributesTests extends TestCase {
 		assertNotNull(request.getAttribute(GrailsApplicationAttributes.TAG_CACHE));
 		Map tagCache = (Map)request.getAttribute(GrailsApplicationAttributes.TAG_CACHE);
 		
-		assertNotNull(tagCache.get("firstTag"));
+		assertNotNull(tagCache.get("g:firstTag"));
 		
 		
 	}

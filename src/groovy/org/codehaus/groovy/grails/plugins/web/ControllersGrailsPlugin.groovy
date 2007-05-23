@@ -51,7 +51,8 @@ import org.codehaus.groovy.grails.web.pages.GroovyPage
 import org.codehaus.groovy.grails.web.metaclass.TagLibMetaClass
 import org.codehaus.groovy.runtime.InvokerHelper
 import org.codehaus.groovy.grails.commons.TagLibArtefactHandler
-import org.codehaus.groovy.grails.commons.ControllerArtefactHandler
+import org.codehaus.groovy.grails.commons.ControllerArtefactHandler     
+import javax.servlet.http.HttpServletRequest
 
 /**
  * A plug-in that handles the configuration of controllers for Grails

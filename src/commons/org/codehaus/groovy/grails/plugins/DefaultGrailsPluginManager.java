@@ -285,6 +285,7 @@ public class DefaultGrailsPluginManager implements GrailsPluginManager {
       loadCorePlugin("org.codehaus.groovy.grails.plugins.i18n.I18nGrailsPlugin");
       loadCorePlugin("org.codehaus.groovy.grails.plugins.datasource.DataSourceGrailsPlugin");
       loadCorePlugin("org.codehaus.groovy.grails.plugins.DomainClassGrailsPlugin");
+      loadCorePlugin("org.codehaus.groovy.grails.plugins.web.ServletsGrailsPlugin");
       loadCorePlugin("org.codehaus.groovy.grails.plugins.web.ControllersGrailsPlugin");
       loadCorePlugin("org.codehaus.groovy.grails.plugins.orm.hibernate.HibernateGrailsPlugin");
       loadCorePlugin("org.codehaus.groovy.grails.plugins.services.ServicesGrailsPlugin");

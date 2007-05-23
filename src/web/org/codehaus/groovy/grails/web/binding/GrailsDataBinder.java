@@ -25,7 +25,6 @@ import org.codehaus.groovy.grails.commons.ApplicationHolder;
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.metaclass.CreateDynamicMethod;
-import org.codehaus.groovy.grails.web.servlet.GrailsHttpServletRequest;
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.springframework.beans.ConfigurablePropertyAccessor;
 import org.springframework.beans.InvalidPropertyException;
@@ -43,7 +42,6 @@ import org.springframework.web.servlet.support.RequestContextUtils;
 
 import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletRequestWrapper;
 import java.net.URI;
 import java.text.DateFormat;
 import java.util.*;
@@ -142,16 +140,8 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
         checkStructuredDateDefinitions(request,mpvs);
         autoCreateIfPossible(mpvs);
         bindAssociations(mpvs);
-        if(request instanceof HttpServletRequestWrapper) {
-            request = ((HttpServletRequestWrapper)request).getRequest();
-        }
-        else if(request instanceof GrailsHttpServletRequest) {
-            if(((GrailsHttpServletRequest)request).isMultiPart()) {
-                MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
-                bindMultipartFiles(multipartRequest.getFileMap(), mpvs);
-            }
-        }
-        else if (request instanceof MultipartHttpServletRequest) {
+        
+        if (request instanceof MultipartHttpServletRequest) {
 			MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
 			bindMultipartFiles(multipartRequest.getFileMap(), mpvs);
 		}

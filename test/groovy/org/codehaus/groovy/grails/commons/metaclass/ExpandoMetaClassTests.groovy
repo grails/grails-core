@@ -22,21 +22,20 @@ import org.springframework.beans.BeanUtils
  */
 
 class ExpandoMetaClassTests extends GroovyTestCase {
-	
-	/* TODO Broken! Wait for Groovy core to provide support
-	void testInheritInjectedMethodWithPlainChild() {
-		 def metaClass = new ExpandoMetaClass(Test.class, true)
-		 metaClass.allowChangesAfterInit = true
-		 
-		 metaClass.testMe << {->
-			 "testme"
-		 }
-		 metaClass.initialize()
 
-		 def c = new Child()		 
-		 assertEquals "testme", c.testMe()
+	void testBooleanGetterWithClosure() {
+	   	def metaClass = new ExpandoMetaClass(Test.class)
+        metaClass.initialize()
+        metaClass.allowChangesAfterInit = true
+		metaClass.isValid = {-> true }
 
-	}*/
+		def t = new Test()
+	   	t.metaClass = metaClass
+
+        assert t.isValid()
+        assert t.valid
+    }
+
 	
 	void testInheritedInjectedMethods() {
 		 def metaClass = new ExpandoMetaClass(Test.class)
@@ -128,7 +127,8 @@ class ExpandoMetaClassTests extends GroovyTestCase {
 		 catch(RuntimeException e) {
 			 // expected
 		 }			 
-	}	
+	}
+
 	
 	void testPropertyGetterWithClosure() {
 	   	 def metaClass = new ExpandoMetaClass(Test.class)
@@ -217,8 +217,9 @@ class ExpandoMetaClassTests extends GroovyTestCase {
 	     assertEquals "test", t.doSomething("test")
 	   	 assertEquals 11, t.doSomething(10)
 		
-	}	
-	
+	}
+
+
 	void testNewPropertyMethod() {
 	   	 def metaClass = new ExpandoMetaClass(Test.class)
 		 

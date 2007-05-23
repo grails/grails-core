@@ -34,7 +34,6 @@ import org.codehaus.groovy.grails.commons.metaclass.ExpandoMetaClassCreationHand
 import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator;
 import org.codehaus.groovy.grails.commons.spring.GrailsWebApplicationContext;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
-import org.codehaus.groovy.grails.web.servlet.GrailsHttpServletRequest;
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -50,8 +49,8 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.servlet.ModelAndView;
 
 /**
- * 
- * 
+ *
+ *
  * @author Steven Devijver
  * @since Jul 2, 2005
  */
@@ -65,8 +64,8 @@ public class SimpleGrailsControllerTests extends TestCase {
 	protected SimpleGrailsController controller = null;
 	private GenericApplicationContext localContext;
 	private ConfigurableApplicationContext appCtx;
-	
-	
+
+
 	/* (non-Javadoc)
 	 * @see junit.framework.TestCase#setUp()
 	 */
@@ -187,7 +186,7 @@ public class SimpleGrailsControllerTests extends TestCase {
 	private ModelAndView execute(String uri, Properties parameters, String requestMethod) throws Exception {
         GrailsWebRequest webRequest = GrailsWebUtil.bindMockWebRequest((GrailsWebApplicationContext)this.appCtx);
 
-        MockHttpServletRequest request = (MockHttpServletRequest)((GrailsHttpServletRequest)webRequest.getCurrentRequest()).getRequest();
+        MockHttpServletRequest request = (MockHttpServletRequest)webRequest.getCurrentRequest();
         request.setRequestURI(uri);
         request.setMethod(requestMethod);
 

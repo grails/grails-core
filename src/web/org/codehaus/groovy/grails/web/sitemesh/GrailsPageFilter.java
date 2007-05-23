@@ -15,7 +15,13 @@
  */ 
 package org.codehaus.groovy.grails.web.sitemesh;
 
-import java.io.IOException;
+import com.opensymphony.module.sitemesh.Decorator;
+import com.opensymphony.module.sitemesh.Page;
+import com.opensymphony.module.sitemesh.filter.PageFilter;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
+import org.codehaus.groovy.grails.web.servlet.GrailsHttpServletResponse;
 
 import javax.servlet.FilterConfig;
 import javax.servlet.RequestDispatcher;
@@ -23,16 +29,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
-import org.codehaus.groovy.grails.web.servlet.GrailsHttpServletResponse;
-import org.codehaus.groovy.grails.web.servlet.GrailsHttpServletRequest;
-
-import com.opensymphony.module.sitemesh.Decorator;
-import com.opensymphony.module.sitemesh.Page;
-import com.opensymphony.module.sitemesh.filter.PageFilter;
+import java.io.IOException;
 
 /**
  * Extends the default page filter to overide the apply decorator behaviour
@@ -76,9 +73,6 @@ public class GrailsPageFilter extends PageFilter {
                 }
                 if(response instanceof GrailsHttpServletResponse) {
                     response = ((GrailsHttpServletResponse)response).getDelegate();
-                }
-                if(request instanceof GrailsHttpServletRequest)  {
-                    request = ((GrailsHttpServletRequest)request).getDelegate();
                 }
                 rd.forward(request, response);
             } 

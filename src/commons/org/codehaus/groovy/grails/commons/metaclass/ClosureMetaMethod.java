@@ -16,10 +16,9 @@
 package org.codehaus.groovy.grails.commons.metaclass;
 
 import groovy.lang.Closure;
+import org.codehaus.groovy.runtime.NewInstanceMetaMethod;
 
 import java.lang.reflect.Modifier;
-
-import org.codehaus.groovy.runtime.NewInstanceMetaMethod;
 
 /**
  * 
@@ -75,4 +74,28 @@ public class ClosureMetaMethod extends NewInstanceMetaMethod implements ClosureI
 	public Closure getClosure() {
 		return callable;
 	}
+
+    public boolean equals(Object o) {
+        if(this == o)return true;
+        if(o instanceof ClosureMetaMethod) {
+            ClosureMetaMethod method = (ClosureMetaMethod)o;
+            return getName().equals(method.getName())
+                && compatibleModifiers(getModifiers(), method.getModifiers())
+                && getReturnType().equals(method.getReturnType())
+                && equal(getParameterTypes(), method.getParameterTypes());
+
+        }
+        else {
+            return false;
+        }
+    }
+
+    public int hashCode() {
+        int result;
+        result = getName().hashCode();
+        result = 31 * result + getModifiers();
+        result = 31 * result + getReturnType().hashCode();
+        result = 31 * result + (paramTypes != null ? paramTypes.hashCode() : 0);
+        return result;
+    }
 }

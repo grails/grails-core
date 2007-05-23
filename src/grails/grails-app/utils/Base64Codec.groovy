@@ -19,6 +19,9 @@
   *
   * @author Drew Varner
   */
+
+import org.codehaus.groovy.runtime.DefaultGroovyMethods
+
 class Base64Codec {
     static encode = { theTarget ->
        if (theTarget == null) {
@@ -34,7 +37,7 @@ class Base64Codec {
         if (theTarget == null) {
             return null
         } else {
-            return theTarget.toString().decodeBase64()
+            return DefaultGroovyMethods.decodeBase64(theTarget.toString())
         }
     }
 }

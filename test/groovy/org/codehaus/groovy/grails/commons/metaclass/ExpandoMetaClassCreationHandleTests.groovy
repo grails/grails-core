@@ -28,9 +28,8 @@ class ExpandoMetaClassCreationHandleTests extends GroovyTestCase {
 	def original
 	void setUp() {
 		registry = GroovySystem.metaClassRegistry
-		def handle = new ExpandoMetaClassCreationHandle()
 		original = registry.metaClassCreationHandle
-		registry.setMetaClassCreationHandle(handle);
+		ExpandoMetaClassCreationHandle.enable()
 	}
 	
 	void tearDown() {
@@ -38,6 +37,58 @@ class ExpandoMetaClassCreationHandleTests extends GroovyTestCase {
 		original = null
 		registry = null
 	}
+
+    void testExpandoInterfaceInheritanceWithOverrideDGM() {
+	    registry.removeMetaClass(Foo.class)
+	    registry.removeMetaClass(Test1.class)
+
+	    def metaClass = registry.getMetaClass(Foo.class)
+	    assertTrue(metaClass instanceof ExpandoMetaClass)
+
+        def map = [:]
+	    metaClass.getAt = { Integer i -> map[i] }
+	    metaClass.putAt = { Integer i, val -> map[i] = val }
+
+	    def t = new Test1()
+	    //assertEquals 2, t.metaClass.getExpandoMethods().size()
+	    //assert t.metaClass.getExpandoMethods().find { it.name == 'putAt' }
+	    
+        t[0] = "foo"
+
+        assert map.size() == 1
+
+	    assertEquals "foo", t[0]
+    }	
+
+	void testInterfaceMethodInheritance() {
+
+	    registry.removeMetaClass(List.class)
+	    registry.removeMetaClass(ArrayList.class)
+
+
+	    def metaClass = registry.getMetaClass(List.class)
+	    assertTrue(metaClass instanceof ExpandoMetaClass)
+
+	    metaClass.sizeDoubled = {-> delegate.size()*2 }
+	    metaClass.isFull = {-> false }
+
+	    def list = new ArrayList()
+
+	    list << 1
+	    list << 2
+
+	    assertEquals 4, list.sizeDoubled()
+
+
+
+	    list = new ArrayList()
+
+	    assert !list.isFull()
+	    assert !list.full
+    }	
+
+
+
 
 	void testExpandoCreationHandle() {
 		def metaClass = registry.getMetaClass(URL.class)
@@ -77,4 +128,17 @@ class ExpandoMetaClassCreationHandleTests extends GroovyTestCase {
 		assertEquals "bar", uri.toBar()
 		assertEquals "bar", s.toBar()
 	}
+
+
+
+
+
+
+}
+
+interface Foo {
+
+}
+class Test1 implements Foo {
+
 }

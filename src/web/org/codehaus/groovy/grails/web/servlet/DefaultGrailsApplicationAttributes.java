@@ -15,11 +15,15 @@
 package org.codehaus.groovy.grails.web.servlet;
 
 import groovy.lang.GroovyObject;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsResourceUtils;
 import org.codehaus.groovy.grails.commons.GrailsTagLibClass;
 import org.codehaus.groovy.grails.commons.TagLibArtefactHandler;
 import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods;
+import org.codehaus.groovy.grails.web.pages.GroovyPage;
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
 import org.codehaus.groovy.grails.web.pages.exceptions.GroovyPagesException;
 import org.springframework.context.ApplicationContext;
@@ -48,6 +52,8 @@ import java.util.Map;
  * Created: 17-Jan-2006
  */
 public class DefaultGrailsApplicationAttributes implements GrailsApplicationAttributes {
+	
+	private static Log LOG = LogFactory.getLog(DefaultGrailsApplicationAttributes.class);
 
     private UrlPathHelper urlHelper = new UrlPathHelper();
     
@@ -160,25 +166,35 @@ public class DefaultGrailsApplicationAttributes implements GrailsApplicationAttr
                                     .getBean(GrailsApplication.APPLICATION_ID);
     }
 
-	public GroovyObject getTagLibraryForTag(HttpServletRequest request, HttpServletResponse response,String tagName) {
+    
+    public GroovyObject getTagLibraryForTag(HttpServletRequest request, HttpServletResponse response,String tagName) {
+    	return getTagLibraryForTag(request, response, tagName, GroovyPage.DEFAULT_NAMESPACE);
+    }
+    
+	public GroovyObject getTagLibraryForTag(HttpServletRequest request, HttpServletResponse response,String tagName, String namespace) {
 		Map tagCache = (Map)request.getAttribute(TAG_CACHE);
+		String nonNullNamesapce = namespace == null ? GroovyPage.DEFAULT_NAMESPACE : namespace;
+		String fullTagName = nonNullNamesapce + ":" + tagName;
 		if(tagCache == null) {
 			tagCache = new HashMap();
 			request.setAttribute(TAG_CACHE,tagCache);
 		}
-		if(tagCache.containsKey(tagName)) {
-			return (GroovyObject)tagCache.get(tagName);
+		if(tagCache.containsKey(fullTagName)) {
+			return (GroovyObject)tagCache.get(fullTagName);
 		}
 		else {
 			GrailsTagLibClass tagLibClass = (GrailsTagLibClass) getGrailsApplication().getArtefactForFeature(
-                TagLibArtefactHandler.TYPE, tagName);
+	                TagLibArtefactHandler.TYPE, fullTagName);
 			if(tagLibClass == null)return null;
-			
-			GroovyObject controller = getController(request);
+
+			//GroovyObject controller = getController(request);
 			
 			GroovyObject tagLib = (GroovyObject)getApplicationContext()
 													.getBean(tagLibClass.getFullName());
-			tagCache.put(tagName,tagLib);
+			
+			LOG.debug("Tag lib of the class was retrieved:" + tagLib.getClass().getName());
+			
+			tagCache.put(fullTagName,tagLib);
 			return tagLib;
 		}
 	}
@@ -215,7 +231,7 @@ public class DefaultGrailsApplicationAttributes implements GrailsApplicationAttr
 		return (Writer)request.getAttribute(OUT);
 	}
 
-	public void setOut(GrailsHttpServletRequest request, Writer out2) {
+	public void setOut(HttpServletRequest request, Writer out2) {
 		request.setAttribute(OUT, out2);
 	}
 }

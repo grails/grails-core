@@ -65,6 +65,11 @@ public class GrailsResourceUtils {
     public static Pattern DOMAIN_PATH_PATTERN = Pattern.compile(".+/"+GRAILS_APP_DIR+"/domain/(.+)\\.groovy");
 
     /*
+    This pattern will match any resource within a given directory inside grails-app
+    */
+    public static Pattern RESOURCE_PATH_PATTERN = Pattern.compile(".+?/"+GRAILS_APP_DIR+"/(.+?)/(.+?\\.groovy)");
+
+    /*
     Resources are resolved against the platform specific path and must therefore obey the
     specific File.separator.
     */ 
@@ -87,7 +92,7 @@ public class GrailsResourceUtils {
 
     public static final Pattern[] patterns = new Pattern[]{ GRAILS_RESOURCE_PATTERN_FIRST_MATCH, GRAILS_RESOURCE_PATTERN_SECOND_MATCH, GRAILS_RESOURCE_PATTERN_THIRD_MATCH, GRAILS_RESOURCE_PATTERN_FOURTH_MATCH};
     private static final Log LOG = LogFactory.getLog(GrailsResourceUtils.class);
-    ;
+
 
 
     private static String createGrailsResourcePattern(String separator, String base) {
@@ -276,5 +281,13 @@ public class GrailsResourceUtils {
         }
 
         return contextPath; 
+    }
+
+    public static String getPathFromRoot(String path) {
+        Matcher m = RESOURCE_PATH_PATTERN.matcher(path);
+        if(m.find()) {
+            return m.group(2);            
+        }
+        return null;
     }
 }

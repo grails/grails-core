@@ -18,28 +18,27 @@ package org.codehaus.groovy.grails.web.metaclass;
 import groovy.lang.Closure;
 import groovy.lang.GroovyObject;
 import groovy.lang.MissingMethodException;
-
-import java.beans.PropertyDescriptor;
-import java.io.IOException;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.regex.Pattern;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.commons.GrailsControllerClass;
-import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
 import org.codehaus.groovy.grails.commons.metaclass.AbstractDynamicMethodInvocation;
 import org.codehaus.groovy.grails.scaffolding.GrailsScaffolder;
 import org.codehaus.groovy.grails.web.servlet.FlashScope;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
-import org.codehaus.groovy.grails.web.servlet.GrailsHttpServletRequest;
 import org.codehaus.groovy.grails.web.servlet.GrailsHttpServletResponse;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
 import org.springframework.validation.Errors;
 import org.springframework.web.context.request.RequestContextHolder;
+
+import javax.servlet.http.HttpServletRequest;
+import java.beans.PropertyDescriptor;
+import java.io.IOException;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.regex.Pattern;
 
 /**
  * Implements the "chain" Controller method for action chaining
@@ -135,7 +134,7 @@ public class ChainDynamicMethod extends AbstractDynamicMethodInvocation {
 
         if(actionName != null) {
         	GrailsApplicationAttributes attrs = webRequest.getAttributes();
-        	GrailsHttpServletRequest request = webRequest.getCurrentRequest();
+        	HttpServletRequest request = webRequest.getCurrentRequest();
             StringBuffer actualUri = new StringBuffer(attrs.getApplicationUri(request));
             if(controllerName != null) {
                 actualUri.append('/')

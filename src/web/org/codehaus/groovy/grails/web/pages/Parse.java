@@ -72,6 +72,7 @@ public class Parse implements Tokens {
 
     class TagMeta  {
         String name;
+        String namespace;
         Object instance;
         boolean isDynamic;
         boolean hasAttributes;
@@ -250,21 +251,25 @@ public class Parse implements Tokens {
         if (!finalPass) return;
 
        String tagName = scan.getToken().trim();
+       String ns = scan.getNamespace();
+       
        if(tagMetaStack.isEmpty())
              throw new GrailsTagException("Found closing Grails tag with no opening ["+tagName+"]");
 
        TagMeta tm = (TagMeta)tagMetaStack.remove(this.tagMetaStack.size() - 1);
        String lastInStack = tm.name;
+       String lastNamespaceInStack = tm.namespace;
 
        // if the tag name is blank then it has been closed by the start tag ie <tag />
        if(StringUtils.isBlank(tagName))
                tagName = lastInStack;
 
-       if(!lastInStack.equals(tagName)) {
-           throw new GrailsTagException("Grails tag ["+tagName+"] was not closed");
+       if(!lastInStack.equals(tagName) ||
+    	  !lastNamespaceInStack.equals(ns)) {
+           throw new GrailsTagException("Grails tag ["+lastNamespaceInStack+":"+lastInStack+"] was not closed");
        }
 
-       if(tagRegistry.isSyntaxTag(tagName)) {
+       if(GroovyPage.DEFAULT_NAMESPACE.equals(ns) && tagRegistry.isSyntaxTag(tagName)) {
            if(tm.instance instanceof GroovySyntaxTag) {
                GroovySyntaxTag tag = (GroovySyntaxTag)tm.instance;
                if(tag.isBufferWhiteSpace())
@@ -278,10 +283,10 @@ public class Parse implements Tokens {
        else {
           out.println("}");
           if(tm.hasAttributes) {
-               out.println("invokeTag('"+tagName+"',attrs"+tagIndex+",body"+tagIndex+")");
+               out.println("invokeTag('"+tagName+"','"+ns+"',attrs"+tagIndex+",body"+tagIndex+")");
           }
           else {
-               out.println("invokeTag('"+tagName+"',[:],body"+tagIndex+")");
+               out.println("invokeTag('"+tagName+"','"+ns+"',[:],body"+tagIndex+")");
           }
        }
        tagIndex--;
@@ -293,7 +298,8 @@ public class Parse implements Tokens {
 
         String text;
         StringBuffer buf = new StringBuffer( scan.getToken().trim() );
-
+        String ns = scan.getNamespace();
+        
         state = scan.nextToken();
         while(state != HTML && state != GEND_TAG) {
             if(state == GTAG_EXPR) {
@@ -333,10 +339,11 @@ public class Parse implements Tokens {
         }
         TagMeta tm = new TagMeta();
         tm.name = tagName;
+        tm.namespace = ns;
         tm.hasAttributes = !attrs.isEmpty();
         tagMetaStack.add(tm);
 
-        if (tagRegistry.isSyntaxTag(tagName)) {
+        if (GroovyPage.DEFAULT_NAMESPACE.equals(ns) && tagRegistry.isSyntaxTag(tagName)) {
             if(this.tagContext == null) {
                 this.tagContext = new HashMap();
                 this.tagContext.put(GroovyPage.OUT,out);

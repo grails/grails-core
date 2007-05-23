@@ -115,7 +115,9 @@ public interface GrailsApplicationAttributes extends ApplicationAttributes {
     GroovyPagesTemplateEngine getPagesTemplateEngine();
 
     /**
-     * Retrieves a Grails tag library from the request for the named tag
+     * Retrieves a Grails tag library from the request for the named tag in 
+     * the default namespace GroovyPage.DEFAULT_NAMESPACE
+     * 
      * @param request the request instance
      * @param response the response instancte
      * @param tagName The name of the tag that contains the tag library
@@ -123,6 +125,20 @@ public interface GrailsApplicationAttributes extends ApplicationAttributes {
      * @return An instance of the tag library or null if not found
      */
 	GroovyObject getTagLibraryForTag(HttpServletRequest request, HttpServletResponse response,String tagName);
+
+    /**
+     * Retrieves a Grails tag library from the request for the named tag in a 
+     * given namespace.
+     * 
+     * @param request the request instance
+     * @param response the response instancte
+     * @param tagName The name of the tag that contains the tag library
+     * @param namespace The namespace of the tag
+     * 
+     * @return An instance of the tag library or null if not found
+     */
+	GroovyObject getTagLibraryForTag(HttpServletRequest request, HttpServletResponse response,String tagName, String namespace);
+		
 
 	/**
 	 * Holds the current response write for the request
@@ -135,7 +151,7 @@ public interface GrailsApplicationAttributes extends ApplicationAttributes {
 	 * @param currentRequest The request
 	 * @param out2 The writer
 	 */
-	void setOut(GrailsHttpServletRequest currentRequest, Writer out2);
+	void setOut(HttpServletRequest currentRequest, Writer out2);
 
 
 }

@@ -755,13 +755,17 @@ public class GrailsClassUtils {
 	 */
 	public static boolean isGetter(String name, Class[] args) {
 		if(StringUtils.isBlank(name) || args == null)return false;
-		
-		if(name.startsWith("get")) {
-			if(args.length != 0)return false;
+        if(args.length != 0)return false;
+
+        if(name.startsWith("get")) {
 			name = name.substring(3);
 			if(name.length() > 0 && Character.isUpperCase(name.charAt(0))) return true;			
 		}
-		return false;
+        else if(name.startsWith("is")) {
+            name = name.substring(2);
+            if(name.length() > 0 && Character.isUpperCase(name.charAt(0))) return true;
+        }
+        return false;
 	}
 
 	/**
@@ -777,7 +781,11 @@ public class GrailsClassUtils {
 			String prop = getterName.substring(3);
 			return convertPropertyName(prop);
 		}
-		return null;
+        else if(getterName.startsWith("is")) {
+            String prop = getterName.substring(2);
+            return convertPropertyName(prop);
+        }
+        return null;
 	}
 
 	private static String convertPropertyName(String prop) {

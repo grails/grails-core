@@ -60,7 +60,7 @@ AbstractDependencyInjectionSpringContextTests {
 	        request.setAttribute(GrailsApplicationAttributes.CONTROLLER, mockController);
 	        request.setAttribute(DispatcherServlet.LOCALE_RESOLVER_ATTRIBUTE, new AcceptHeaderLocaleResolver());
 
-	        def tagLibrary = grailsApplication.getArtefactForFeature(TagLibArtefactHandler.TYPE, tagName)
+	        def tagLibrary = grailsApplication.getArtefactForFeature(TagLibArtefactHandler.TYPE, "g:" + tagName)
             if(!tagLibrary) {
 	            fail("No tag library found for tag $tagName")
             }

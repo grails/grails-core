@@ -30,12 +30,14 @@ class Scan implements Tokens {
 	private String text;
 	private int end1, begin1, end2, begin2, state = HTML, len, level;
 	private boolean str1, str2;
+	private String lastNamespace;
 
 	Scan(String text) {
 		Strip strip = new Strip(text);
 		strip.strip(0);
 		this.text = strip.toString();
 		len = this.text.length();
+		this.lastNamespace = null;
 	} // Scan()
 
 	private int found(int newState, int skip) {
@@ -46,10 +48,24 @@ class Scan implements Tokens {
 		state = newState;
 		return lastState;
 	} // found()
+	
+	private int foundStartOrEndTag(int newState, int skip, String namespace) {
+		begin2 = begin1;
+		end2 = --end1;
+		begin1 = end1 += skip;
+		int lastState = state;
+		state = newState;
+		lastNamespace = namespace;
+		return lastState;
+	} // found()
 
 	String getToken() {
 		return text.substring(begin2, end2);
 	} // getToken()
+	
+	String getNamespace() {
+		return lastNamespace;
+	}
 
 	int nextToken() {
 		for (;;) {
@@ -101,12 +117,27 @@ class Scan implements Tokens {
 							}
 							return found(JSCRIPT, 2);
 						}
-                        else if(startTag.equals("<g:")) {
-                            return found(GSTART_TAG,3);
-                        }
-                        else if(endTag.equals("</g:")) {
-                            return found(GEND_TAG,4);
-                        }
+						else {
+							boolean bStartTag = true;
+							int fromIndex = end1; // we are expecting a start tag.
+							if (c1 == '/') { 
+								bStartTag = false;
+								fromIndex = end1 + 1; // well it should be an end tag.
+							}
+							
+							int foundColonIdx = text.indexOf(":", fromIndex);
+							if (foundColonIdx > -1) {
+								String tagNameSpace = text.substring(fromIndex,foundColonIdx);
+								if (tagNameSpace.matches("^\\p{Alpha}\\w*$")) {
+									if (bStartTag) {
+										return foundStartOrEndTag(GSTART_TAG,tagNameSpace.length() + 2,tagNameSpace);
+									}
+									else {
+										return foundStartOrEndTag(GEND_TAG,tagNameSpace.length() + 3,tagNameSpace);
+									}
+								}
+							}
+						}
                     } else if (c == '$' && c1 == '{') {
 						return found(GEXPR, 2);
 					} else if (c == '%' && c1 == '{') {
@@ -191,6 +222,7 @@ class Scan implements Tokens {
 	void reset() {
 		end1= begin1 = end2 = begin2 = level = 0;
 		state = HTML;
+		lastNamespace = null;
 	} // reset()
 
 } // Scan

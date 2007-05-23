@@ -32,7 +32,9 @@ import java.util.HashMap;
  * A GroovyResourceLoader that loads groovy files using Spring's IO abstraction
  * 
  * @author Graeme Rocher
- * @since 22-Feb-2006
+ * @since 0.1
+ *
+ * Created: 22-Feb-2006
  */
 public class GrailsResourceLoader implements GroovyResourceLoader {
     private Resource[] resources;
@@ -59,16 +61,17 @@ public class GrailsResourceLoader implements GroovyResourceLoader {
     public URL loadGroovySource(String className) throws MalformedURLException {
     	if(className == null) return null;
         String groovyFile = className.replace('.', '/') + ".groovy";
-        
- //       LOG.trace("Loading groovy file :[" + className + "] using file name ["+groovyFile+"]");
+
         try {
 
             Resource foundResource = null;
             for (int i = 0; resources != null && i < resources.length; i++) {
-                if (resources[i].getURL().toString().endsWith(groovyFile)) {
+                String resourceURL = resources[i].getURL().toString();
+                String pathWithinRoot = GrailsResourceUtils.getPathFromRoot(resourceURL);
+                if (pathWithinRoot != null && pathWithinRoot.equals(groovyFile)) {
                     if (foundResource == null) {
                         foundResource = resources[i];
-       //                 LOG.trace("Found resource for :[" + className + "] using file name ["+groovyFile+"] at location ["+foundResource+"]");
+
                     } else {
                         try {
                             throw new IllegalArgumentException("Found two identical classes at [" + resources[i].getFile().getAbsolutePath()+ "] and [" + foundResource.getFile().getAbsolutePath() + "] whilst attempting to load [" + className + "]. Please remove one to avoid duplicates.");

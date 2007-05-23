@@ -34,8 +34,10 @@ import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 import org.codehaus.groovy.grails.web.binding.GrailsDataBinder;
 import org.codehaus.groovy.grails.web.metaclass.ChainDynamicMethod;
 import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods;
-import org.codehaus.groovy.grails.web.metaclass.GetParamsDynamicProperty;
-import org.codehaus.groovy.grails.web.servlet.*;
+import org.codehaus.groovy.grails.web.servlet.DefaultGrailsApplicationAttributes;
+import org.codehaus.groovy.grails.web.servlet.FlashScope;
+import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
+import org.codehaus.groovy.grails.web.servlet.GrailsHttpServletResponse;
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.NoClosurePropertyForURIException;
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.NoViewNameDefinedException;
@@ -166,7 +168,7 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
 
         uri = configureStateForUri(uri);
        
-        GrailsHttpServletRequest request = webRequest.getCurrentRequest();
+        HttpServletRequest request = webRequest.getCurrentRequest();
         GrailsHttpServletResponse response = webRequest.getCurrentResponse();
 
         // if the action name is blank check its included as dispatch parameter
@@ -234,8 +236,7 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
         webRequest.setControllerName(controllerName);
         
         // populate additional params from url
-        Map controllerParams = (Map)controller.getProperty(GetParamsDynamicProperty.PROPERTY_NAME);
-        request.setControllerParams(controllerParams);
+        Map controllerParams = webRequest.getParameterMap();
         
         if(!StringUtils.isBlank(id)) {
             controllerParams.put(GrailsApplicationAttributes.ID_PARAM, id);

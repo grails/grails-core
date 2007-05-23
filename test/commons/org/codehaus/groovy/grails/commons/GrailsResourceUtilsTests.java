@@ -1,17 +1,17 @@
 package org.codehaus.groovy.grails.commons;
 
-import java.net.URL;
-
+import junit.framework.TestCase;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
-import org.springframework.mock.web.MockServletContext;
 import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockServletContext;
 
-import junit.framework.TestCase;
+import java.net.URL;
 
 public class GrailsResourceUtilsTests extends TestCase {
 
 	private static final String TEST_URL = "file:///test/grails/app/grails-app/domain/Test.groovy";
+    private static final String TEST_PACKAGE_URL = "file:///test/grails/app/grails-app/domain/mycompany/Test.groovy";
     private static final String TEST_CONTROLLER_URL = "file:///test/grails/app/grails-app/controllers/TestController.groovy";
     private static final String TEST_PLUGIN_CTRL = "file:///test/grails/app/plugins/myplugin/grails-app/controllers/TestController.groovy";
 
@@ -31,7 +31,12 @@ public class GrailsResourceUtilsTests extends TestCase {
 		assertTrue(GrailsResourceUtils.isDomainClass(testUrl));
 	}
 
-	public void testGetClassNameResource() throws Exception {
+    public void testGetPathFromRoot() throws Exception {
+        assertEquals("Test.groovy", GrailsResourceUtils.getPathFromRoot(TEST_URL));
+        assertEquals("mycompany/Test.groovy", GrailsResourceUtils.getPathFromRoot(TEST_PACKAGE_URL));
+    }
+
+    public void testGetClassNameResource() throws Exception {
 		Resource r = new UrlResource(new URL(TEST_URL));
 		
 		assertEquals("Test", GrailsResourceUtils.getClassName(r));

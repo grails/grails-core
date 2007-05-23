@@ -320,7 +320,9 @@
         <root url="jar://$PROJECT_DIR$/lib/groovy-all-1.1-BETA-1.jar!/" />
       </CLASSES>
       <JAVADOC />
-      <SOURCES />
+      <SOURCES>
+        <root url="file:///Developer/groovy/src/main" />
+      </SOURCES>
     </library>
     <library name="Hibernate 3">
       <CLASSES>
@@ -403,10 +405,6 @@
   </component>
   <component name="tapidea.ComponentsTreeModel" />
   <component name="tapidea.palette" />
-  <component name="uidesigner-configuration">
-    <option name="INSTRUMENT_CLASSES" value="true" />
-    <option name="COPY_FORMS_RUNTIME_TO_OUTPUT" value="true" />
-    <option name="DEFAULT_LAYOUT_MANAGER" value="GridLayoutManager" />
-  </component>
+  <component name="uidesigner-configuration" />
 </project>
 

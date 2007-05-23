@@ -64,6 +64,7 @@ public abstract class GroovyPage extends Script {
     public static final String PLUGIN_CONTEXT_PATH = "pluginContextPath";
     public static final String EXTENSION = ".gsp";
     public static final String WEB_REQUEST = "webRequest";
+	public static final String DEFAULT_NAMESPACE = "g";
 
     private GrailsApplication application;
     private GrailsApplicationAttributes grailsAttributes;
@@ -168,6 +169,18 @@ public abstract class GroovyPage extends Script {
      * @param body  The body of the tag as a closure
      */
     public void invokeTag(String tagName, Map attrs, Closure body) {
+    	invokeTag(tagName, GroovyPage.DEFAULT_NAMESPACE, attrs, body);
+    }
+    
+    /**
+     * Attempts to invokes a dynamic tag
+     *
+     * @param tagName The name of the tag
+     * @param tagNamespace The taglib's namespace
+     * @param attrs The tags attributes
+     * @param body  The body of the tag as a closure
+     */
+    public void invokeTag(String tagName, String tagNamespace, Map attrs, Closure body) {
 
         final GrailsWebRequest webRequest = (GrailsWebRequest)getBinding().getVariable(WEB_REQUEST);
         final Writer out = webRequest.getOut();
@@ -176,7 +189,7 @@ public abstract class GroovyPage extends Script {
 	        if(this.application == null)
 	            initPageState();
 
-	        GroovyObject tagLib = getTagLib(tagName);
+	        GroovyObject tagLib = getTagLib(tagName,tagNamespace);
 
 	        if(tagLib != null) {
 	            Object tagLibProp;
@@ -221,13 +234,17 @@ public abstract class GroovyPage extends Script {
     }
 
     private GroovyObject getTagLib(String tagName) {
+    	return getTagLib(tagName,DEFAULT_NAMESPACE);
+    }
+    
+    private GroovyObject getTagLib(String tagName, String namespace) {
         if(this.application == null)
             initPageState();
         Binding binding = getBinding();
         HttpServletRequest request = (HttpServletRequest)binding.getVariable(GroovyPage.REQUEST);
         HttpServletResponse response = (HttpServletResponse)binding.getVariable(GroovyPage.RESPONSE);
 
-        return grailsAttributes.getTagLibraryForTag(request,response,tagName);
+        return grailsAttributes.getTagLibraryForTag(request,response,tagName,namespace);
     }
 
     /**

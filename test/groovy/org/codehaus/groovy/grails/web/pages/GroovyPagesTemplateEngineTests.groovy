@@ -14,7 +14,7 @@ class GroovyPagesTemplateEngineTests extends GroovyTestCase {
     void testShowSourceParameter() {
         try {
             def webRequest = GrailsWebUtil.bindMockWebRequest()
-            def request = webRequest.request.delegate
+            def request = webRequest.request
             request.addParameter("showSource", "true")
 
             System.setProperty("grails.env", "development")
@@ -52,9 +52,9 @@ class GroovyPagesTemplateEngineTests extends GroovyTestCase {
 
 
         def uri1 = "/WEB-INF/grails-app/views/another.gsp"
-        assertNotNull(webRequest.request.delegate)
-        webRequest.request.delegate.requestURI = "/another"
-        webRequest.request.delegate.servletPath = "/another"
+        assertNotNull(webRequest.request)
+        webRequest.request.requestURI = "/another"
+        webRequest.request.servletPath = "/another"
 
 
 
@@ -80,9 +80,9 @@ class GroovyPagesTemplateEngineTests extends GroovyTestCase {
 
 
         def uri1 = "/somedir/myview"
-        assertNotNull(webRequest.request.delegate)
-        webRequest.request.delegate.requestURI = uri1
-        webRequest.request.delegate.servletPath = uri1
+        assertNotNull(webRequest.request)
+        webRequest.request.requestURI = uri1
+        webRequest.request.servletPath = uri1
 
         def uri2 = "/WEB-INF/grails-apps/views/another.gsp"
 

@@ -63,7 +63,7 @@ class TagLibDynamicMethodsTests extends AbstractGrailsControllerTests {
 			def testTagLib = ga.getTagLibClass("TestTagLib").newInstance()
 			
 			assertNotNull(testTagLib.request)
-			assertTrue(testTagLib.request instanceof GrailsHttpServletRequest)
+			
 			assertNotNull(testTagLib.response)
 			assertTrue(testTagLib.response instanceof GrailsHttpServletResponse)
 			assertNotNull(testTagLib.servletContext)

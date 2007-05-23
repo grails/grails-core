@@ -24,10 +24,14 @@ import java.util.Set;
  */
 public interface GrailsTagLibClass extends InjectableGrailsClass {
 
+	public static final String DEFAULT_NAMESPACE = "g";
+	
     /**
      * The name of the application (ie global) tag library appropriate for all controller classes
      */
     String SUPPORTS_CONTROLLER = "supportsController";
+    
+    String NAMESPACE_FIELD_NAME = "namespace";
 
     /**
      * Whether this tag library supports the specified controller
@@ -48,4 +52,10 @@ public interface GrailsTagLibClass extends InjectableGrailsClass {
      * @return The tag names in this library
      */
     Set getTagNames();
+    
+    /**
+     * 
+     * @return the namespace that this taglib occupies.
+     */
+    String getNamespace();
 }

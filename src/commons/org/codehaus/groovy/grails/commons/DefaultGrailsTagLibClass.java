@@ -34,6 +34,8 @@ public class DefaultGrailsTagLibClass extends AbstractInjectableGrailsClass impl
 
     private List supportedControllers;
     private Set tags = new HashSet();
+    private String namespace = GrailsTagLibClass.DEFAULT_NAMESPACE;
+    
     /**
      * <p>Default contructor
      *
@@ -61,6 +63,11 @@ public class DefaultGrailsTagLibClass extends AbstractInjectableGrailsClass impl
                 tags.add(prop.getName());
             }
         }
+        
+        String ns = (String) getPropertyOrStaticPropertyOrFieldValue(NAMESPACE_FIELD_NAME, String.class);
+        if (ns != null && !"".equals(ns.trim())) {
+        	namespace = ns.trim();
+        }
     }
 
     public boolean supportsController(GrailsControllerClass controllerClass) {
@@ -84,4 +91,8 @@ public class DefaultGrailsTagLibClass extends AbstractInjectableGrailsClass impl
     public Set getTagNames() {
         return tags;
     }
+
+	public String getNamespace() {
+		return namespace;
+	}
 }

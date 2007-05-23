@@ -15,20 +15,16 @@
  */
 package org.codehaus.groovy.grails.web.servlet.mvc;
 
-import java.io.IOException;
-import java.io.Writer;
+import org.codehaus.groovy.grails.web.servlet.*;
+import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
+import org.springframework.web.servlet.handler.DispatcherServletWebRequest;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import org.codehaus.groovy.grails.web.servlet.DefaultGrailsApplicationAttributes;
-import org.codehaus.groovy.grails.web.servlet.FlashScope;
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
-import org.codehaus.groovy.grails.web.servlet.GrailsHttpServletRequest;
-import org.codehaus.groovy.grails.web.servlet.GrailsHttpServletResponse;
-import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
-import org.springframework.web.servlet.handler.DispatcherServletWebRequest;
+import java.io.IOException;
+import java.io.Writer;
+import java.util.Map;
 
 /**
  * A class the encapsulates a Grails request. An instance of this class is bound to the current thread using
@@ -52,16 +48,23 @@ public class GrailsWebRequest extends DispatcherServletWebRequest {
 
 
     public GrailsWebRequest(HttpServletRequest request,  HttpServletResponse response, ServletContext servletContext) {
-		super(new GrailsHttpServletRequest(request));
+		super(request);
 		this.attributes = new DefaultGrailsApplicationAttributes(servletContext);
 		this.response = new GrailsHttpServletResponse(response);
 		this.params = new GrailsParameterMap(request);
 		
 	}
-	
-	
-	
-	/**
+
+    /**
+     * Overriden to return the GrailsParameterMap instance
+     *
+     * @return An instance of GrailsParameterMap
+     */
+    public Map getParameterMap() {
+        return this.params;
+    }
+
+    /**
 	 * @return the out
 	 */
 	public Writer getOut() {
@@ -103,8 +106,8 @@ public class GrailsWebRequest extends DispatcherServletWebRequest {
 	/**
 	 * @return The currently executing request
 	 */
-	public GrailsHttpServletRequest getCurrentRequest() {
-		return (GrailsHttpServletRequest)getRequest();
+	public HttpServletRequest getCurrentRequest() {
+		return getRequest();
 	}
 	
 	public GrailsHttpServletResponse getCurrentResponse() {
