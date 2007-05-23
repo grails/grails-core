@@ -15,11 +15,10 @@
  */ 
 package org.codehaus.groovy.grails.web.servlet.mvc;
 
+import grails.util.GrailsWebUtil;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.MetaClassRegistry;
 
-import java.util.Calendar;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
@@ -49,7 +48,6 @@ import org.springframework.mock.web.MockServletContext;
 import org.springframework.validation.Errors;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.servlet.ModelAndView;
-import grails.util.GrailsWebUtil;
 
 /**
  * 
@@ -85,25 +83,6 @@ public class SimpleGrailsControllerTests extends TestCase {
                 "  lastName(maxSize:10)" +
                 "}\n" +
                 "}");
-        cl.parseClass("class DateStructCommandObject {\n" +
-                "Date birthday\n" +
-                "Integer birthday_day\n" +
-                "Integer birthday_month\n" +
-                "Integer birthday_year\n" +
-                "static def constraints = {\n" +
-                "birthday(validator: { val, obj ->\n" +
-                "if(val == null) {\n" +
-                "try {\n" +
-                "obj.birthday = new java.text.SimpleDateFormat(\"dd.MM.yyyy\").parse(\"${obj.birthday_day}.${obj.birthday_month}.${obj.birthday_year}\")\n" +
-                "} catch(Exception e){ }\n" +
-                "}\n" +
-                "return obj.birthday != null\n" +
-                "})\n" +
-                "birthday_day(range: 1..31)\n" +
-                "birthday_month(range: 1..12)\n" +
-                "birthday_year(range: 1900..2000)\n" +
-                "}\n" +
-        "}");
         cl.parseClass("class AnotherCommandObject {\n" +
                 "Integer age\n" +
                 "static constraints = {\n" +
@@ -117,9 +96,6 @@ public class SimpleGrailsControllerTests extends TestCase {
 							" Closure test = {\n"+
 								"return [ \"test\" : \"123\" ]\n"+
 						     "}\n" +
-                             "def codatestruct = { DateStructCommandObject dsco ->\n" +
-                             "[theDate:dsco.birthday, validationErrors:dsco.errors]" +
-                             "}\n" +
                              "def singlecommandobject = { MyCommandObject mco ->\n" +
                              "[theFirstName:mco.firstName, theLastName:mco.lastName, validationErrors:mco.errors]\n" +
                              "}\n" +
@@ -231,23 +207,6 @@ public class SimpleGrailsControllerTests extends TestCase {
 		ModelAndView modelAndView = execute("/test/test", null);
 		assertNotNull(modelAndView);
 	}
-
-    public void testCommandObjectDateStruct() throws Exception {
-        ModelAndView modelAndView = execute("/test/codatestruct/1/birthday/struct/birthday_day/01/birthday_month/02/birthday_year/1970", null);
-        assertNotNull("null modelAndView", modelAndView);
-        Map model = modelAndView.getModelMap();
-        Errors validationErrors = (Errors) model.get("validationErrors");
-        assertEquals("wrong number of errors", 0, validationErrors.getErrorCount());
-        Date birthDate = (Date) model.get("theDate");
-        assertNotNull("null birthday", birthDate);
-        Calendar expectedCalendar = Calendar.getInstance();
-        expectedCalendar.clear();
-        expectedCalendar.set(Calendar.DAY_OF_MONTH, 1);
-        expectedCalendar.set(Calendar.MONTH, Calendar.FEBRUARY);
-        expectedCalendar.set(Calendar.YEAR, 1970);
-        Date expectedDate = expectedCalendar.getTime();
-        assertEquals("wrong date", expectedDate, birthDate);
-    }
 
     public void testUnconstrainedCommandObject() throws Exception {
         ModelAndView modelAndView = execute("/test/unconstrainedcommandobject/1/firstName/James", null);
