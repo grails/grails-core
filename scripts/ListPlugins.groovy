@@ -120,19 +120,28 @@ For further info visit http://grails.org/Plugins
 '''
 }
 
-def buildReleaseInfo = { root, pluginName, releaseTag ->
+def buildReleaseInfo = { root, pluginName, releasePath, releaseTag ->
+    if( releaseTag == '..' || releaseTag == 'LATEST_RELEASE' ) return
+    def releaseNode = root.'release'.find{ it.'@tag' == releaseTag }
+    if( releaseNode ) {
+        if( releaseTag != 'trunk' ) return
+        else root.removeChild(releaseNode)
+    }
     try {
         def properties = ['title','author','authorEmail','description','documentation']
-        def releaseDescriptor = parseRemoteXML("${DEFAULT_PLUGIN_DIST}/grails-${pluginName}/tags/${releaseTag}/plugin.xml").documentElement
+        def releaseDescriptor = parseRemoteXML("${releasePath}/${releaseTag}/plugin.xml").documentElement
         def version = releaseDescriptor.'@version'
-        def releaseNode = builder.createNode('release',[tag:releaseTag,version:version,type:'svn'])
+        String releaseContent = new URL("${releasePath}/${releaseTag}/").text
+        // we don't want to proceed release if zip distribution for this release is not published
+        if( releaseContent.indexOf( "grails-${pluginName}-${version}.zip" ) < 0 ) return
+        releaseNode = builder.createNode('release',[tag:releaseTag,version:version,type:'svn'])
         root.appendChild(releaseNode)
         properties.each {
             if( releaseDescriptor."${it}") {
                 releaseNode.appendChild(builder.createNode(it,releaseDescriptor."${it}".text()))
             }
         }
-        releaseNode.appendChild(builder.createNode('file',"${DEFAULT_PLUGIN_DIST}/grails-${pluginName}/tags/${releaseTag}/grails-${pluginName}-${version}.zip"))
+        releaseNode.appendChild(builder.createNode('file',"${releasePath}/${releaseTag}/grails-${pluginName}-${version}.zip"))
     } catch( Exception e ) {
         // no plugin release info available
     }
@@ -152,14 +161,21 @@ def buildPluginInfo = {root, pluginName ->
             // latest release version is not available
         }
         if( latestVersion ) pluginNode.setAttribute('latest-release',latestVersion as String)
+
+        // proceed tagged releases
         try {
             def releaseTagsList = new URL("${DEFAULT_PLUGIN_DIST}/grails-${pluginName}/tags/").text
             releaseTagsList.eachMatch( /<li><a href="(.+?)">/ ) {
                 def releaseTag = it[1][0..-2]
-                if( releaseTag != '..' && releaseTag != 'LATEST_RELEASE' && ! pluginNode.'release'.find{ it.'@tag' == releaseTag }) {
-                    buildReleaseInfo(pluginNode, pluginName, releaseTag)
-                }
+                buildReleaseInfo(pluginNode, pluginName, "${DEFAULT_PLUGIN_DIST}/grails-${pluginName}/tags", releaseTag)
             }
+        } catch( Exception e ) {
+            // no plugin release info available
+        }
+
+        // proceed trunk release
+        try {
+            buildReleaseInfo(pluginNode, pluginName,"${DEFAULT_PLUGIN_DIST}/grails-${pluginName}", "trunk" )
         } catch( Exception e ) {
             // no plugin release info available
         }
@@ -167,7 +183,9 @@ def buildPluginInfo = {root, pluginName ->
 }
 
 def buildBinaryPluginInfo = {root, pluginName ->
+    // split plugin name in form of 'plugin-name-0.1' to name ('plugin-name') and version ('0.1')
     def matcher = (pluginName =~ /^([^\d]+)-(.++)/)
+    // convert to new plugin naming convention (MyPlugin -> my-plugin)
     def name = GCU.getScriptName( matcher[0][1] )
     def release = matcher[0][2]
     use( DOMCategory ) {
@@ -192,23 +210,29 @@ task(updatePluginsList:"Implementation tast. Updates list of plugins hosted at G
     try {
         def localRevision = pluginsList ? new Integer(pluginsList.getAttribute('revision')) : -1
         def remotePluginsList = new URL(DEFAULT_PLUGIN_DIST).text
+        // extract plugins svn repository revision - used for determining cache up-to-date
         def remoteRevision = 0
         remotePluginsList.eachMatch( /Revision (.*):/ ) {
             remoteRevision = new Integer(it[1])
         }
         if( remoteRevision > localRevision ) {
-            // Plugins list cache is expired, update needed
+            // Plugins list cache is expired, need to update
             event("StatusUpdate", ["Plugins list cache is expired, updating"])
             pluginsList.setAttribute('revision',remoteRevision as String)
+            // for each plugin directory under Grails Plugins SVN in form of 'grails-*'
             remotePluginsList.eachMatch( /<li><a href="grails-(.+?)">/ ) {
+                // extract plugin name
                 def pluginName = it[1][0..-2]
+                // collect information about plugin
                 buildPluginInfo(pluginsList, pluginName)
             }
         }
+        // proceed binary distribution repository (http://plugins.grails.org/dist/
         def binaryPluginsList = new URL(BINARY_PLUGIN_DIST).text
         binaryPluginsList.eachMatch(/<a href="grails-(.+?).zip">/) {
             buildBinaryPluginInfo(pluginsList, it[1])
         }
+        // update plugins list cache file
         writePluginsFile()
     } catch (Exception e) {
         event("StatusError", ["Unable to list plug-ins, please check you have a valid internet connection"])
