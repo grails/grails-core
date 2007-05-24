@@ -37,6 +37,7 @@ pluginIncludes = [
     "plugin.xml",
 	"grails-app/**",
 	"lib/**",
+    "scripts/**",
 	"web-app/**",
 	"src/**",
 ]

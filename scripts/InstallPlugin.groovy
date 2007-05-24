@@ -72,7 +72,7 @@ task(cachePlugin:"Implementation task") {
         }
     }
     def pluginCacheFileName = "${pluginsHome}/${pluginName}/grails-${pluginName}-${pluginRelease}.zip"
-    if( !new File(pluginCacheFileName).exists() ) {
+    if( !new File(pluginCacheFileName).exists() || pluginRelease.endsWith("SNAPSHOT") ) {
         Ant.mkdir(dir:"${pluginsHome}/${pluginName}")
         Ant.get(dest:pluginCacheFileName,
             src:"${pluginDistName}",
