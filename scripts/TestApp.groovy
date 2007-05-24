@@ -189,7 +189,7 @@ task(runUnitTests:"Run Grails' unit tests under the test/unit directory") {
 	    def testFiles = resolveResources("test/unit/${testCaseToRun}.groovy")
 		testFiles = testFiles.findAll { it.exists() } 
 		if(testFiles.size() == 0) {
-            event("StatusUpdate", [ "No tests found in test/integration to execute"])
+            event("StatusUpdate", [ "No tests found in test/unit to execute"])
 			return
 		}	
 	    def classLoader = grailsApp.classLoader
