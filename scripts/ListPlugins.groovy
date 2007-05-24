@@ -92,6 +92,7 @@ Plug-ins available in the Grails repository are listed below:
                 version = plugin.'@latest-release'
                 pluginLine += "${spacesFormatter[pluginLine.length()..-1]}<${version}>"
             } else if( plugin.'release'.size() > 0) {
+                // determine latest release by comparing version names in lexicografic order
                 version = plugin.'release'[0].'@version'
                 plugin.'release'.each {
                     if( !"${it.'@version'}".endsWith("SNAPSHOT") && "${it.'@version'}" > version ) version = "${it.'@version'}"
@@ -131,7 +132,7 @@ def buildReleaseInfo = { root, pluginName, releasePath, releaseTag ->
         def properties = ['title','author','authorEmail','description','documentation']
         def releaseDescriptor = parseRemoteXML("${releasePath}/${releaseTag}/plugin.xml").documentElement
         def version = releaseDescriptor.'@version'
-        String releaseContent = new URL("${releasePath}/${releaseTag}/").text
+        def releaseContent = new URL("${releasePath}/${releaseTag}/").text
         // we don't want to proceed release if zip distribution for this release is not published
         if( releaseContent.indexOf( "grails-${pluginName}-${version}.zip" ) < 0 ) return
         releaseNode = builder.createNode('release',[tag:releaseTag,version:version,type:'svn'])
