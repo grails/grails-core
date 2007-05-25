@@ -115,7 +115,7 @@ grails [environment]*
 
 		Available Targets (type grails help 'target-name' for more info):"""
 		
-	    scripts.each { file ->
+	    scripts.sort{ it.name }.each { file ->
 			def scriptName = GCU.getScriptName(file.name)  
 			println "grails ${scriptName}"   
 		}		
