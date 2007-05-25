@@ -18,6 +18,19 @@ import groovy.lang.GroovyObject;
 import groovy.lang.GroovyRuntimeException;
 import groovy.lang.MetaClass;
 import groovy.lang.MissingMethodException;
+
+import java.net.URI;
+import java.text.DateFormat;
+import java.util.Calendar;
+import java.util.Currency;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.Locale;
+import java.util.TimeZone;
+
+import javax.servlet.ServletRequest;
+import javax.servlet.http.HttpServletRequest;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -25,26 +38,23 @@ import org.codehaus.groovy.grails.commons.ApplicationHolder;
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.metaclass.CreateDynamicMethod;
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.springframework.beans.ConfigurablePropertyAccessor;
 import org.springframework.beans.InvalidPropertyException;
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.PropertyValue;
+import org.springframework.beans.PropertyValues;
 import org.springframework.beans.propertyeditors.CustomDateEditor;
 import org.springframework.beans.propertyeditors.LocaleEditor;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.web.bind.ServletRequestDataBinder;
 import org.springframework.web.bind.ServletRequestParameterPropertyValues;
+import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.springframework.web.multipart.support.ByteArrayMultipartFileEditor;
 import org.springframework.web.multipart.support.StringMultipartFileEditor;
 import org.springframework.web.servlet.support.RequestContextUtils;
-
-import javax.servlet.ServletRequest;
-import javax.servlet.http.HttpServletRequest;
-import java.net.URI;
-import java.text.DateFormat;
-import java.util.*;
 
 /**
  * A data binder that handles binding dates that are specified with a "struct"-like syntax in request parameters.
@@ -134,6 +144,10 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
 		return binder;
     }
 
+    public void bind(MutablePropertyValues propertyValues) {
+        checkStructuredDateDefinitions(propertyValues);
+        super.bind(propertyValues);
+    }
     public void bind(ServletRequest request) {
         MutablePropertyValues mpvs = new ServletRequestParameterPropertyValues(request);
 
@@ -244,6 +258,68 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
             }
         }
     }    
+    
+    private int getIntegerPropertyValue(PropertyValues propertyValues, String propertyName, int defaultValue) {
+        int returnValue = defaultValue;
+        PropertyValue propertyValue = propertyValues.getPropertyValue(propertyName);
+        if(propertyValue != null) {
+            returnValue = Integer.parseInt((String)propertyValue.getValue());
+        }
+        
+        return returnValue;
+    }
+
+    private void checkStructuredDateDefinitions(MutablePropertyValues propertyValues) {
+        GrailsWebRequest webRequest = (GrailsWebRequest) RequestContextHolder.getRequestAttributes();
+        if(webRequest != null) {
+            ServletRequest request = webRequest.getCurrentRequest();
+            PropertyValue[] pvs = propertyValues.getPropertyValues();
+            for (int i = 0; i < pvs.length; i++) {
+                PropertyValue propertyValue = pvs[i];
+
+                try {
+                    String propertyName = propertyValue.getName();
+                    Class type = bean.getPropertyType(propertyName);
+                    // if its a date check that it hasn't got structured parameters in the request
+                    // this is used as an alternative to specifying the date format
+                    if(type == Date.class || type == Calendar.class) {
+                        try {
+                            PropertyValue yearProperty = propertyValues.getPropertyValue(propertyName + "_year");
+                            // The request will always include the year value
+                            String yearString = (String) yearProperty.getValue();
+                            int year;
+
+                            if(StringUtils.isBlank(yearString)) {
+                                Calendar now = Calendar.getInstance(RequestContextUtils.getLocale((HttpServletRequest) request));
+                                year = now.get(Calendar.YEAR);
+                            }
+                            else {
+                                year = Integer.parseInt(yearString);
+                            }
+
+                            int month = getIntegerPropertyValue(propertyValues, propertyName + "_month", 1);
+                            int day = getIntegerPropertyValue(propertyValues, propertyName + "_day", 1);
+                            int hour = getIntegerPropertyValue(propertyValues, propertyName + "_hour", 0);
+                            int minute = getIntegerPropertyValue(propertyValues, propertyName + "_minute", 0);
+
+                            Calendar c = new GregorianCalendar(year,month - 1,day,hour,minute);
+                            if(type == Date.class)
+                                propertyValues.setPropertyValueAt(new PropertyValue(propertyName,c.getTime()),i);
+                            else
+                                propertyValues.setPropertyValueAt(new PropertyValue(propertyName,c),i);
+                        }
+                        catch(NumberFormatException nfe) {
+                            LOG.warn("Unable to parse structured date from request for date ["+propertyName+"]",nfe);
+                        }
+                    }
+                }
+                catch(InvalidPropertyException ipe) {
+                    // ignore
+                }
+            }
+        }
+    }
+
 
     private void checkStructuredDateDefinitions(ServletRequest request, MutablePropertyValues mpvs) {
 

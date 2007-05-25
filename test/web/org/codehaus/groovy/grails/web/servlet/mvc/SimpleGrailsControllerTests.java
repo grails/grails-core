@@ -15,10 +15,11 @@
  */ 
 package org.codehaus.groovy.grails.web.servlet.mvc;
 
-import grails.util.GrailsWebUtil;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.MetaClassRegistry;
 
+import java.util.Calendar;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
@@ -47,6 +48,7 @@ import org.springframework.mock.web.MockServletContext;
 import org.springframework.validation.Errors;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.servlet.ModelAndView;
+import grails.util.GrailsWebUtil;
 
 /**
  *
@@ -82,6 +84,9 @@ public class SimpleGrailsControllerTests extends TestCase {
                 "  lastName(maxSize:10)" +
                 "}\n" +
                 "}");
+        cl.parseClass("class DateStructCommandObject {\n" +
+                "Date birthday\n" +
+        "}");
         cl.parseClass("class AnotherCommandObject {\n" +
                 "Integer age\n" +
                 "static constraints = {\n" +
@@ -95,6 +100,9 @@ public class SimpleGrailsControllerTests extends TestCase {
 							" Closure test = {\n"+
 								"return [ \"test\" : \"123\" ]\n"+
 						     "}\n" +
+                             "def codatestruct = { DateStructCommandObject dsco ->\n" +
+                             "[theDate:dsco.birthday, validationErrors:dsco.errors]" +
+                             "}\n" +
                              "def singlecommandobject = { MyCommandObject mco ->\n" +
                              "[theFirstName:mco.firstName, theLastName:mco.lastName, validationErrors:mco.errors]\n" +
                              "}\n" +
@@ -206,6 +214,23 @@ public class SimpleGrailsControllerTests extends TestCase {
 		ModelAndView modelAndView = execute("/test/test", null);
 		assertNotNull(modelAndView);
 	}
+
+    public void testCommandObjectDateStruct() throws Exception {
+        ModelAndView modelAndView = execute("/test/codatestruct/1/birthday/struct/birthday_day/03/birthday_month/05/birthday_year/1973", null);
+        assertNotNull("null modelAndView", modelAndView);
+        Map model = modelAndView.getModelMap();
+        Errors validationErrors = (Errors) model.get("validationErrors");
+        assertEquals("wrong number of errors", 0, validationErrors.getErrorCount());
+        Date birthDate = (Date) model.get("theDate");
+        assertNotNull("null birthday", birthDate);
+        Calendar expectedCalendar = Calendar.getInstance();
+        expectedCalendar.clear();
+        expectedCalendar.set(Calendar.DAY_OF_MONTH, 3);
+        expectedCalendar.set(Calendar.MONTH, Calendar.MAY);
+        expectedCalendar.set(Calendar.YEAR, 1973);
+        Date expectedDate = expectedCalendar.getTime();
+        assertEquals("wrong date", expectedDate, birthDate);
+    }
 
     public void testUnconstrainedCommandObject() throws Exception {
         ModelAndView modelAndView = execute("/test/unconstrainedcommandobject/1/firstName/James", null);
