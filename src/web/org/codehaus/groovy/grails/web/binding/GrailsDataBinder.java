@@ -144,14 +144,19 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
 		return binder;
     }
 
-    public void bind(MutablePropertyValues propertyValues) {
-        checkStructuredDateDefinitions(propertyValues);
+    public void bind(PropertyValues propertyValues) {
+        GrailsWebRequest webRequest = (GrailsWebRequest) RequestContextHolder.getRequestAttributes();
+        if(webRequest != null && propertyValues instanceof MutablePropertyValues) {
+            ServletRequest request = webRequest.getCurrentRequest();
+            checkStructuredDateDefinitions(request, (MutablePropertyValues) propertyValues);
+        }
         super.bind(propertyValues);
     }
+    
     public void bind(ServletRequest request) {
         MutablePropertyValues mpvs = new ServletRequestParameterPropertyValues(request);
 
-        checkStructuredDateDefinitions(request,mpvs);
+        checkStructuredDateDefinitions(request, mpvs);
         autoCreateIfPossible(mpvs);
         bindAssociations(mpvs);
         
@@ -269,99 +274,44 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
         return returnValue;
     }
 
-    private void checkStructuredDateDefinitions(MutablePropertyValues propertyValues) {
-        GrailsWebRequest webRequest = (GrailsWebRequest) RequestContextHolder.getRequestAttributes();
-        if(webRequest != null) {
-            ServletRequest request = webRequest.getCurrentRequest();
-            PropertyValue[] pvs = propertyValues.getPropertyValues();
-            for (int i = 0; i < pvs.length; i++) {
-                PropertyValue propertyValue = pvs[i];
-
-                try {
-                    String propertyName = propertyValue.getName();
-                    Class type = bean.getPropertyType(propertyName);
-                    // if its a date check that it hasn't got structured parameters in the request
-                    // this is used as an alternative to specifying the date format
-                    if(type == Date.class || type == Calendar.class) {
-                        try {
-                            PropertyValue yearProperty = propertyValues.getPropertyValue(propertyName + "_year");
-                            // The request will always include the year value
-                            String yearString = (String) yearProperty.getValue();
-                            int year;
-
-                            if(StringUtils.isBlank(yearString)) {
-                                Calendar now = Calendar.getInstance(RequestContextUtils.getLocale((HttpServletRequest) request));
-                                year = now.get(Calendar.YEAR);
-                            }
-                            else {
-                                year = Integer.parseInt(yearString);
-                            }
-
-                            int month = getIntegerPropertyValue(propertyValues, propertyName + "_month", 1);
-                            int day = getIntegerPropertyValue(propertyValues, propertyName + "_day", 1);
-                            int hour = getIntegerPropertyValue(propertyValues, propertyName + "_hour", 0);
-                            int minute = getIntegerPropertyValue(propertyValues, propertyName + "_minute", 0);
-
-                            Calendar c = new GregorianCalendar(year,month - 1,day,hour,minute);
-                            if(type == Date.class)
-                                propertyValues.setPropertyValueAt(new PropertyValue(propertyName,c.getTime()),i);
-                            else
-                                propertyValues.setPropertyValueAt(new PropertyValue(propertyName,c),i);
-                        }
-                        catch(NumberFormatException nfe) {
-                            LOG.warn("Unable to parse structured date from request for date ["+propertyName+"]",nfe);
-                        }
-                    }
-                }
-                catch(InvalidPropertyException ipe) {
-                    // ignore
-                }
-            }
-        }
-    }
-
-
-    private void checkStructuredDateDefinitions(ServletRequest request, MutablePropertyValues mpvs) {
-
-        PropertyValue[] pvs = mpvs.getPropertyValues();
+    private void checkStructuredDateDefinitions(ServletRequest request, MutablePropertyValues propertyValues) {
+        PropertyValue[] pvs = propertyValues.getPropertyValues();
         for (int i = 0; i < pvs.length; i++) {
-            PropertyValue pv = pvs[i];
+            PropertyValue propertyValue = pvs[i];
 
             try {
-                String propertyName = pv.getName();
+                String propertyName = propertyValue.getName();
                 Class type = bean.getPropertyType(propertyName);
                 // if its a date check that it hasn't got structured parameters in the request
                 // this is used as an alternative to specifying the date format
                 if(type == Date.class || type == Calendar.class) {
                     try {
-                           // The request will always include the year value
-                    	String yearString = request.getParameter(propertyName + "_year");
-                    	int year;
-                    	
-                    	if(StringUtils.isBlank(yearString)) {
+                        PropertyValue yearProperty = propertyValues.getPropertyValue(propertyName + "_year");
+                        // The request will always include the year value
+                        String yearString = (String) yearProperty.getValue();
+                        int year;
+
+                        if(StringUtils.isBlank(yearString)) {
                             Calendar now = Calendar.getInstance(RequestContextUtils.getLocale((HttpServletRequest) request));
                             year = now.get(Calendar.YEAR);
-                    	}
-                    	else {
-                    		year = Integer.parseInt(yearString);
-                    	}
+                        }
+                        else {
+                            year = Integer.parseInt(yearString);
+                        }
 
-                        // The request may not include the other date values, so be prepared to use the
-                        // default values.  Default values --> month = January; day = 1st day of the month;
-                        // hour = 00; minute = 00.
-                        int month = Integer.parseInt(getParameterValue(request, propertyName + "_month","1"));
-                        int day = Integer.parseInt(getParameterValue(request, propertyName + "_day","1"));
-                        int hour = Integer.parseInt(getParameterValue(request, propertyName + "_hour","0"));
-                        int minute = Integer.parseInt(getParameterValue(request, propertyName + "_minute","0"));
+                        int month = getIntegerPropertyValue(propertyValues, propertyName + "_month", 1);
+                        int day = getIntegerPropertyValue(propertyValues, propertyName + "_day", 1);
+                        int hour = getIntegerPropertyValue(propertyValues, propertyName + "_hour", 0);
+                        int minute = getIntegerPropertyValue(propertyValues, propertyName + "_minute", 0);
 
                         Calendar c = new GregorianCalendar(year,month - 1,day,hour,minute);
                         if(type == Date.class)
-                            mpvs.setPropertyValueAt(new PropertyValue(propertyName,c.getTime()),i);
+                            propertyValues.setPropertyValueAt(new PropertyValue(propertyName,c.getTime()),i);
                         else
-                            mpvs.setPropertyValueAt(new PropertyValue(propertyName,c),i);
+                            propertyValues.setPropertyValueAt(new PropertyValue(propertyName,c),i);
                     }
                     catch(NumberFormatException nfe) {
-                         LOG.warn("Unable to parse structured date from request for date ["+propertyName+"]",nfe);
+                        LOG.warn("Unable to parse structured date from request for date ["+propertyName+"]",nfe);
                     }
                 }
             }
@@ -369,19 +319,5 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
                 // ignore
             }
         }
-    }
-
-    /**
-     * Returns the value of the specified parameter from the specified request, or the specified default
-     * value (if the parameter is not in the request).
-     *
-     * @param request the request from which to extract the parameter
-     * @param propertyName the key used to fetch the parameter from the request
-     * @param defaultPropertyValue the value to return if the parameter is not in the request
-     * @return the requested value
-     */
-    private String getParameterValue(ServletRequest request, String propertyName, String defaultPropertyValue) {
-        String parameterValue = request.getParameter(propertyName);
-        return parameterValue != null ? parameterValue : defaultPropertyValue;
     }
 }
