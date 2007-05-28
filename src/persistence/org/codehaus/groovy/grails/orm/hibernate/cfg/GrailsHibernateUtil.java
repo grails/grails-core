@@ -109,8 +109,8 @@ public class GrailsHibernateUtil {
 		try {
 			dm = new DomainClassMethods(application,persistentClass,sessionFactory,application.getClassLoader());
 		    dm.addDynamicMethodInvocation(new AddToRelatedDynamicMethod(dc));
-		    for (int j = 0; j < dc.getPersistantProperties().length; j++) {
-		          GrailsDomainClassProperty p = dc.getPersistantProperties()[j];
+		    for (int j = 0; j < dc.getPersistentProperties().length; j++) {
+		          GrailsDomainClassProperty p = dc.getPersistentProperties()[j];
 		          if(p.isOneToMany() || p.isManyToMany()) {
 		              dm.addDynamicMethodInvocation(new AddRelatedDynamicMethod(p));
 		          }

@@ -134,7 +134,7 @@ public abstract class AbstractSavePersistentMethod extends
 	private void autoRetrieveAssocations(GrailsDomainClass domainClass, Object target) {
 		BeanWrapper bean = new BeanWrapperImpl(target);
 		HibernateTemplate t = getHibernateTemplate();
-		GrailsDomainClassProperty[] props = domainClass.getPersistantProperties();
+		GrailsDomainClassProperty[] props = domainClass.getPersistentProperties();
 		for (int i = 0; i < props.length; i++) {
 		    GrailsDomainClassProperty prop = props[i];
 		    if(prop.isManyToOne() || prop.isOneToOne()) {

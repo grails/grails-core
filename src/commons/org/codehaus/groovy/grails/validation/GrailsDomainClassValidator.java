@@ -82,7 +82,7 @@ public class GrailsDomainClassValidator implements Validator, CascadingValidator
 
         Map constrainedProperties = domainClass.getConstrainedProperties();
 
-        GrailsDomainClassProperty[] persistentProperties = domainClass.getPersistantProperties();
+        GrailsDomainClassProperty[] persistentProperties = domainClass.getPersistentProperties();
 
         for (int i = 0; i < persistentProperties.length; i++) {
             GrailsDomainClassProperty persistentProperty = persistentProperties[i];
@@ -186,7 +186,7 @@ public class GrailsDomainClassValidator implements Validator, CascadingValidator
 
                 Map associatedConstraintedProperties = associatedDomainClass.getConstrainedProperties();
 
-                GrailsDomainClassProperty[] associatedPersistentProperties = associatedDomainClass.getPersistantProperties();
+                GrailsDomainClassProperty[] associatedPersistentProperties = associatedDomainClass.getPersistentProperties();
                 String nestedPath = errors.getNestedPath();
                 try {
                     errors.setNestedPath(nestedPath+propertyName);

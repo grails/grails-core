@@ -779,7 +779,7 @@ public final class GrailsDomainBinder {
 	 */
 	protected static void createClassProperties(GrailsDomainClass domainClass, PersistentClass persistentClass, Mappings mappings) {
 		
-		GrailsDomainClassProperty[] persistantProperties = domainClass.getPersistantProperties();
+		GrailsDomainClassProperty[] persistantProperties = domainClass.getPersistentProperties();
 		Table table = persistentClass.getTable();
 		
 		for(int i = 0; i < persistantProperties.length;i++) {
@@ -862,7 +862,7 @@ public final class GrailsDomainBinder {
 
         GrailsDomainClass domainClass = property.getReferencedDomainClass();
 
-        GrailsDomainClassProperty[] properties = domainClass.getPersistantProperties();
+        GrailsDomainClassProperty[] properties = domainClass.getPersistentProperties();
         Table table = component.getOwner().getTable();
         PersistentClass persistentClass = component.getOwner();
 

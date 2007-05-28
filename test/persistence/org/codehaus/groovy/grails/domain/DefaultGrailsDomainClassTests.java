@@ -146,7 +146,7 @@ public class DefaultGrailsDomainClassTests extends TestCase {
 		assertTrue(firstName.isPersistent());
 		
 
-		GrailsDomainClassProperty[] persistantProperties = domainClass.getPersistantProperties();
+		GrailsDomainClassProperty[] persistantProperties = domainClass.getPersistentProperties();
 		for(int i = 0; i < persistantProperties.length;i++) {
 			assertTrue(persistantProperties[i].isPersistent());
 		}
