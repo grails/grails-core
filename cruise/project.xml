@@ -42,6 +42,7 @@ defaultmailhost
 				>
 				<!--propertiesmapper file="&basedir;/grails/cruisecontrol/checkout/cruise/emailmap.properties"/-->
 				<always address="scm@grails.codehaus.org"/>
+				<always address="build-support@canoo.com"/>
 			</htmlemail>
 			<XSLTLogPublisher
 				directory="&basedir;/grails/&hostname;/grails/"
