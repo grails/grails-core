@@ -39,6 +39,9 @@ task( packagePlugins : "Packages any Grails plugins that are installed for this 
 	Ant.mkdir(dir:"${basedir}/web-app/WEB-INF/lib")
 	try {
 	   	def plugins = resolveResources("**GrailsPlugin.groovy").toList()
+	    def basePlugin 
+	    if(plugins)basePlugin = plugins[0]
+	
 		plugins += resolveResources("plugins/*/*GrailsPlugin.groovy").toList()
 	   	plugins?.each { p ->  	   
 	   		def pluginBase = p.file.parentFile  
@@ -65,10 +68,12 @@ task( packagePlugins : "Packages any Grails plugins that are installed for this 
 	   				}
 	            }
 	            if(new File("${pluginPath}/web-app").exists()) {
-					Ant.mkdir(dir:"${basedir}/web-app/plugins/${pluginName}")
-		  			copy(todir:"${basedir}/web-app/plugins/${pluginName}") {
-		   				fileset(dir:"${pluginBase}/web-app", includes:"**", excludes:"**/WEB-INF/**, **/META-INF/**")
-		   			}  		                     	
+					Ant.mkdir(dir:"${basedir}/web-app/plugins/${pluginName}")                           
+					if(basePlugin != p) {
+			  			copy(todir:"${basedir}/web-app/plugins/${pluginName}") {
+			   				fileset(dir:"${pluginBase}/web-app", includes:"**", excludes:"**/WEB-INF/**, **/META-INF/**")
+			   			}  		                     							
+					}
 				}
 				path(id:"classpath") {
 					fileset(dir:"${basedir}/lib")
