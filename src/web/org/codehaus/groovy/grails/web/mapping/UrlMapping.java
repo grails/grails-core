@@ -17,8 +17,6 @@ package org.codehaus.groovy.grails.web.mapping;
 
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 
-import java.util.Map;
-
 /**
  * <p>An interface that defines a URL mapping. A URL mapping is a mapping between a URI such as /book/list and
  * a controller, action and/or id</p>
@@ -36,7 +34,7 @@ import java.util.Map;
  *        Created: Feb 28, 2007
  *        Time: 5:49:41 PM
  */
-public interface UrlMapping extends Comparable {
+public interface UrlMapping extends Comparable, UrlCreator {
 
     String CONTROLLER = "controller";
     String ACTION = "action";
@@ -49,16 +47,6 @@ public interface UrlMapping extends Comparable {
      * @return An instance of UrlMappingInfo or null if the URI doesn't match
      */
     UrlMappingInfo match(String uri);
-
-    /**
-     * Inspects this UrlMapping to discover whether it can be converted into a URL for the given parameter values.
-     * If it cannot this method will return null
-     *
-     * @param parameterValues The parameter values
-     * 
-     * @return Returns the reverse mapping URL for the given arguments or null if it cannot be reverse mapped
-     */
-    String createURL(Map parameterValues);
 
 
     /**

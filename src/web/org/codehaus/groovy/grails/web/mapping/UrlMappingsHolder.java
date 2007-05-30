@@ -48,5 +48,5 @@ public interface UrlMappingsHolder {
      * @param params The parameters or null
      * @return A URI for the given arguments
      */
-    UrlMapping getReverseMapping(String controller, String action, Map params);
+    UrlCreator getReverseMapping(String controller, String action, Map params);
 }

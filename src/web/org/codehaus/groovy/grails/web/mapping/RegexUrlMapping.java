@@ -52,12 +52,9 @@ import java.util.regex.PatternSyntaxException;
  *        Created: Feb 28, 2007
  *        Time: 6:12:52 PM
  */
-public class RegexUrlMapping implements UrlMapping {
+public class RegexUrlMapping extends AbstractUrlMapping implements UrlMapping {
 
     private Pattern[] patterns;
-    private ConstrainedProperty[] constraints = new ConstrainedProperty[0];
-    private Object controllerName;
-    private Object actionName;
     private UrlMappingData urlData;
     
     private static final String WILDCARD = "*";
@@ -65,18 +62,6 @@ public class RegexUrlMapping implements UrlMapping {
     private static final String SLASH = "/";
     private static final Log LOG = LogFactory.getLog(RegexUrlMapping.class);
 
-
-    public ConstrainedProperty[] getConstraints() {
-        return constraints;
-    }
-
-    public Object getControllerName() {
-        return controllerName;
-    }
-
-    public Object getActionName() {
-        return actionName;
-    }
 
     /**
      * Constructs a new RegexUrlMapping for the given pattern, controller name, action name and constraints.
@@ -89,9 +74,8 @@ public class RegexUrlMapping implements UrlMapping {
      * @see org.codehaus.groovy.grails.validation.ConstrainedProperty
      */
     public RegexUrlMapping(UrlMappingData data, Object controllerName, Object actionName, ConstrainedProperty[] constraints) {
+        super(controllerName, actionName, constraints != null ? constraints : new ConstrainedProperty[0]);
         if(data == null) throw new IllegalArgumentException("Argument [pattern] cannot be null");
-        this.controllerName = controllerName;
-        this.actionName = actionName;
 
         String[] urls = data.getLogicalUrls();
         this.urlData = data;
@@ -106,7 +90,6 @@ public class RegexUrlMapping implements UrlMapping {
 
         }
         if(constraints != null) {
-            this.constraints = constraints;
             for (int i = 0; i < constraints.length; i++) {
                 ConstrainedProperty constraint = constraints[i];
                 if(data.isOptional(i)) {
