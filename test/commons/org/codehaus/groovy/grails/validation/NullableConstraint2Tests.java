@@ -5,7 +5,7 @@ package org.codehaus.groovy.grails.validation;
  *
  * @author Sergey Nebolsin (<a href="mailto:nebolsin@gmail.com"/>)
  */
-public class NullableConstraintTests extends AbstractConstraintTests {
+public class NullableConstraint2Tests extends AbstractConstraintTests {
     protected Class getConstraintClass() {
         return NullableConstraint.class;
     }

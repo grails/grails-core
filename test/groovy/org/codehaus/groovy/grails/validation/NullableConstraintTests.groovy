@@ -62,6 +62,6 @@ class ProjectVersion {
 
         assertTrue constraints.info.nullable
         assertFalse constraints.status.nullable
-        assertTrue constraints.number.nullable
+        assertFalse constraints.number.nullable
     }
 }
