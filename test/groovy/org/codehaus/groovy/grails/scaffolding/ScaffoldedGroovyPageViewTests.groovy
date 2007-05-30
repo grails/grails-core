@@ -29,7 +29,7 @@ class ScaffoldedGroovyPageViewTests extends GroovyTestCase {
         def model = [foo:"bar"]
         view.render(model, webRequest.currentRequest, webRequest.currentResponse)
 
-        assertEquals "successbar", webRequest.currentResponse.delegate.contentAsString
+        assertEquals "successbar", webRequest.currentResponse.contentAsString
     }
 
     void tearDown() {

@@ -36,7 +36,7 @@ class RenderMethodTests extends AbstractGrailsControllerTests {
 			
 			assert response != null
 			
-			assertEquals "test render", response.delegate.contentAsString
+			assertEquals "test render", response.contentAsString
 			
 		}		
 	}
@@ -53,7 +53,7 @@ class RenderMethodTests extends AbstractGrailsControllerTests {
 			
 			assert response != null
 			
-			assertEquals "<hello>world</hello>", response.delegate.contentAsString
+			assertEquals "<hello>world</hello>", response.contentAsString
 			assertEquals "text/xml", response.contentType
 		}		
 	}
@@ -73,7 +73,7 @@ class RenderMethodTests extends AbstractGrailsControllerTests {
 			
 			def response = mockController.response
 			
-			assertEquals "hello world!", response.delegate.contentAsString
+			assertEquals "hello world!", response.contentAsString
 		}
 	}
 

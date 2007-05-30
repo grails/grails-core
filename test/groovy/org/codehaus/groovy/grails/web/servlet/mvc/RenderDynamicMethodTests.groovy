@@ -42,15 +42,15 @@ class RenderDynamicMethodTests extends AbstractGrailsControllerTests {
         def testCtrl = ga.getControllerClass("TestController").newInstance()
 
         testCtrl.renderText()
-        assertEquals "text", response.delegate.contentAsString
+        assertEquals "text", response.contentAsString
     }
 
     void testRenderTextWithContentType() {
         def testCtrl = ga.getControllerClass("TestController").newInstance()
 
         testCtrl.renderTextWithContentType()
-        assertEquals "text/xml", response.delegate.contentType
-        assertEquals "<foo>bar</foo>", response.delegate.contentAsString
+        assertEquals "text/xml", response.contentType
+        assertEquals "<foo>bar</foo>", response.contentAsString
 
     }
 
@@ -58,8 +58,8 @@ class RenderDynamicMethodTests extends AbstractGrailsControllerTests {
         def testCtrl = ga.getControllerClass("TestController").newInstance()
 
         testCtrl.renderXml()
-        assertEquals "text/xml", response.delegate.contentType
-        assertEquals "<foo><bar>hello</bar></foo>", response.delegate.contentAsString
+        assertEquals "text/xml", response.contentType
+        assertEquals "<foo><bar>hello</bar></foo>", response.contentAsString
 
     }
 }

@@ -27,13 +27,13 @@ import org.codehaus.groovy.grails.commons.metaclass.AbstractDynamicMethodInvocat
 import org.codehaus.groovy.grails.scaffolding.GrailsScaffolder;
 import org.codehaus.groovy.grails.web.servlet.FlashScope;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
-import org.codehaus.groovy.grails.web.servlet.GrailsHttpServletResponse;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
 import org.springframework.validation.Errors;
 import org.springframework.web.context.request.RequestContextHolder;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.beans.PropertyDescriptor;
 import java.io.IOException;
 import java.util.Iterator;
@@ -165,7 +165,7 @@ public class ChainDynamicMethod extends AbstractDynamicMethodInvocation {
             }
 
             try {
-            	GrailsHttpServletResponse response = webRequest.getCurrentResponse();
+            	HttpServletResponse response = webRequest.getCurrentResponse();
                 response.sendRedirect(response.encodeRedirectURL(actualUri.toString()));
             } catch (IOException e) {
                 throw new ControllerExecutionException("Error redirecting request for url ["+actualUri+"]: " + e.getMessage(),e);

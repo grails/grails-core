@@ -24,7 +24,7 @@ class TestController {
             def testController = ga.getControllerClass("TestController").newInstance()
             testController.testMe.call()
 
-            assertEquals "foo", testController.response.delegate.contentAsString
+            assertEquals "foo", testController.response.contentAsString
 
             def newGcl = new GroovyClassLoader()
             def event = [source:newGcl.parseClass(reloadedController),
@@ -41,7 +41,7 @@ class TestController {
 
             newController.testMe.call()
 
-            assertEquals "foobar", newController.response.delegate.contentAsString
+            assertEquals "foobar", newController.response.contentAsString
         }
     }
 

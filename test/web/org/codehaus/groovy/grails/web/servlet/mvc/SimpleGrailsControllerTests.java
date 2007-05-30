@@ -15,19 +15,10 @@
  */ 
 package org.codehaus.groovy.grails.web.servlet.mvc;
 
+import grails.util.GrailsWebUtil;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.MetaClassRegistry;
-
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Properties;
-
-import javax.servlet.http.HttpServletResponse;
-
 import junit.framework.TestCase;
-
 import org.codehaus.groovy.grails.commons.ApplicationHolder;
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
@@ -48,7 +39,9 @@ import org.springframework.mock.web.MockServletContext;
 import org.springframework.validation.Errors;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.servlet.ModelAndView;
-import grails.util.GrailsWebUtil;
+
+import javax.servlet.http.HttpServletResponse;
+import java.util.*;
 
 /**
  *
@@ -308,7 +301,7 @@ public class SimpleGrailsControllerTests extends TestCase {
 	private void assertResponseStatusCode(String uri, String httpMethod, int expectedStatusCode) throws Exception {
 		execute(uri, null, httpMethod);
 		GrailsWebRequest gwr = (GrailsWebRequest) RequestContextHolder.getRequestAttributes();
-		MockHttpServletResponse res = (MockHttpServletResponse) gwr.getCurrentResponse().getDelegate();
+		MockHttpServletResponse res = (MockHttpServletResponse) gwr.getCurrentResponse();
 
 		assertEquals(expectedStatusCode, res.getStatus());
 	}

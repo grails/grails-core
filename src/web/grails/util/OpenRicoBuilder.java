@@ -17,12 +17,10 @@ package grails.util;
 
 import groovy.xml.MarkupBuilder;
 
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Map;
 
-import javax.servlet.http.HttpServletResponse;
-
-import org.codehaus.groovy.grails.web.servlet.GrailsHttpServletResponse;
 
 /**
  * <p>OpenRicoBuilder provides support for creating OpenRico AJAX responses.
@@ -86,11 +84,8 @@ public class OpenRicoBuilder extends MarkupBuilder {
 	private boolean start = true;
 	
 	public OpenRicoBuilder(HttpServletResponse response) throws IOException {
-		this(new GrailsHttpServletResponse(response));
-	}
-	
-	public OpenRicoBuilder(GrailsHttpServletResponse response) throws IOException {
-		super(response.getWriter(TEXT_XML, UTF_8));
+        super(response.getWriter());
+        response.setContentType(GrailsWebUtil.getContentType(TEXT_XML, UTF_8));        
 		getPrinter().println(XML_HEADER);
 	}
 

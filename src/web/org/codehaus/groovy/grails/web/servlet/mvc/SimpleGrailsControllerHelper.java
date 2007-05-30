@@ -37,7 +37,6 @@ import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods;
 import org.codehaus.groovy.grails.web.servlet.DefaultGrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.FlashScope;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
-import org.codehaus.groovy.grails.web.servlet.GrailsHttpServletResponse;
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.NoClosurePropertyForURIException;
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.NoViewNameDefinedException;
@@ -169,7 +168,7 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
         uri = configureStateForUri(uri);
        
         HttpServletRequest request = webRequest.getCurrentRequest();
-        GrailsHttpServletResponse response = webRequest.getCurrentResponse();
+        HttpServletResponse response = webRequest.getCurrentResponse();
 
         // if the action name is blank check its included as dispatch parameter
         if(StringUtils.isBlank(actionName))
@@ -286,7 +285,7 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
 
                 // Step 8: determine return value type and handle accordingly
                 initChainModel(controller);
-                if(response.isRedirected()) {
+                if(response.isCommitted()) {
                     if(LOG.isDebugEnabled()) {
                         LOG.debug("Response has been redirected, returning null model and view");
                     }

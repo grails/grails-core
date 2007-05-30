@@ -49,7 +49,6 @@ import org.codehaus.groovy.grails.web.servlet.*
 import org.springframework.validation.Errors
 import org.codehaus.groovy.grails.web.pages.GroovyPage
 import org.codehaus.groovy.grails.web.metaclass.TagLibMetaClass
-import org.codehaus.groovy.runtime.InvokerHelper
 import org.codehaus.groovy.grails.commons.TagLibArtefactHandler
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler     
 import javax.servlet.http.HttpServletRequest
@@ -156,21 +155,10 @@ class ControllersGrailsPlugin {
 	}
 
 	def doWithWebDescriptor = { webXml ->
-		def controllers = [] as HashSet
-		def webflows = []
+
 		def basedir = System.getProperty("base.dir")
 		def grailsEnv = System.getProperty("grails.env")
 
-		// first for all the watched resources for this controller that are controllers
-		// create a servlet-mapping element that maps to the Grails dispatch servlet
-	    plugin.watchedResources.each {
-	        def match = it.filename =~ /(\w+)(Controller.groovy$)/
-	        if(match) {
-	            def controllerName = match[0][1]
-	            controllerName = GCU.getPropertyName(controllerName)
-	            controllers << controllerName
-	        }
-		}
 		def mappingElement = webXml.'servlet-mapping'
 		mappingElement + {
 			'servlet-mapping' {
@@ -305,7 +293,7 @@ class ControllersGrailsPlugin {
 	def doWithDynamicMethods = { ctx ->
 
 		// add common objects and out variable for tag libraries
-		def registry = InvokerHelper.getInstance().getMetaRegistry()
+		def registry = GroovySystem.getMetaClassRegistry()
 	   	application.tagLibClasses.each { taglib ->
 	   		def metaClass = taglib.metaClass
 	   		registerCommonObjects(metaClass, application)

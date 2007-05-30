@@ -15,7 +15,10 @@
 package grails.util;
 
 import groovy.util.BuilderSupport;
+import org.codehaus.groovy.grails.web.json.JSONException;
+import org.codehaus.groovy.grails.web.json.JSONWriter;
 
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Writer;
@@ -23,12 +26,6 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Stack;
-
-import javax.servlet.http.HttpServletResponse;
-
-import org.codehaus.groovy.grails.web.json.JSONException;
-import org.codehaus.groovy.grails.web.json.JSONWriter;
-import org.codehaus.groovy.grails.web.servlet.GrailsHttpServletResponse;
 
 /**
  * <p>JSonBuilder provides support for creating JSON responses</p>
@@ -69,12 +66,10 @@ public class JSonBuilder extends BuilderSupport {
 	private JSONWriter writer;
 
 	public JSonBuilder(HttpServletResponse response) throws IOException {
-		this(new GrailsHttpServletResponse(response));
-	}
-	
-	public JSonBuilder(GrailsHttpServletResponse response) throws IOException {
-		this(response.getWriter(TEXT_JSON, UTF_8));
-	}
+        this(response.getWriter());
+        response.setContentType(GrailsWebUtil.getContentType(TEXT_JSON,UTF_8));
+
+    }
 	
     public JSonBuilder(JSONWriter _writer) {
 		this.writer = _writer;

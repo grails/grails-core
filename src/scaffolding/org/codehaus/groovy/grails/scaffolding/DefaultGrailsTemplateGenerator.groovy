@@ -243,7 +243,7 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator  {
             return "<g:${type}Select name='${property.name}' value=\"\${${domainClass.propertyName}?.${property.name}}\"></g:${type}Select>"
         }
         else {
-            def buf = new StringBuffer('<g:${type}Select ')
+            def buf = new StringBuffer("<g:${type}Select ")
             if(cp.widget) buf << "widget='${cp.widget}' ";
             cp.attributes.each { k,v ->
                   buf << "${k}=\"${v}\" "

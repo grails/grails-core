@@ -25,10 +25,9 @@ import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.commons.GrailsControllerClass;
 import org.codehaus.groovy.grails.commons.metaclass.AbstractDynamicMethodInvocation;
 import org.codehaus.groovy.grails.scaffolding.GrailsScaffolder;
-import org.codehaus.groovy.grails.web.mapping.UrlMapping;
+import org.codehaus.groovy.grails.web.mapping.UrlCreator;
 import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
-import org.codehaus.groovy.grails.web.servlet.GrailsHttpServletResponse;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
 import org.springframework.context.ApplicationContext;
@@ -42,9 +41,9 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.HashMap;
 import java.util.regex.Pattern;
 
 /**
@@ -113,7 +112,7 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
         
         GrailsApplicationAttributes attrs = webRequest.getAttributes();
         HttpServletRequest request = webRequest.getCurrentRequest();
-        GrailsHttpServletResponse response = webRequest.getCurrentResponse();
+        HttpServletResponse response = webRequest.getCurrentResponse();
         StringBuffer actualUriBuf = new StringBuffer(attrs.getApplicationUri(request));
         if(uri != null) {
             actualUri = attrs.getApplicationUri(request) + uri.toString();
@@ -132,7 +131,7 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
             boolean found = false;
 
             try {
-                UrlMapping urlMapping = null;
+                UrlCreator urlMapping = null;
 
                 if( id != null ) params.put( ARGUMENT_ID, id );
 

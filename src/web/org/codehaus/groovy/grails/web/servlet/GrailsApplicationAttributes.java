@@ -32,6 +32,7 @@ public interface GrailsApplicationAttributes extends ApplicationAttributes {
     String GSP_TO_RENDER = "org.codehaus.groovy.grails.GSP_TO_RENDER";
     String WEB_REQUEST = "org.codehaus.groovy.grails.WEB_REQUEST";
     String GSP_TMP_WRITER = "org.codehaus.groovy.grails.GSP_TMP_WRITER";
+    String REQUEST_REDIRECTED_ATTRIBUTE = "org.codehaus.groovy.grails.request_redirected";
 
 
     /**

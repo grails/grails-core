@@ -22,6 +22,7 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.mock.web.MockServletContext;
 import org.springframework.web.context.request.RequestContextHolder;
+import org.apache.commons.lang.StringUtils;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -35,7 +36,9 @@ import javax.servlet.http.HttpServletRequest;
  *        Time: 6:18:22 PM
  */
 public class GrailsWebUtil {
-    
+    private static final String DEFAULT_ENCODING = "UTF-8";
+    private static final String CHARSET_ATTRIBUTE = ";charset=";
+
     public static GrailsWebRequest bindMockWebRequest(GrailsWebApplicationContext ctx) {
         MockHttpServletRequest request = new MockHttpServletRequest();
         GrailsWebRequest webRequest = new GrailsWebRequest(
@@ -79,5 +82,10 @@ public class GrailsWebUtil {
 
     public static GroovyObject getControllerFromRequest(HttpServletRequest request) {
         return (GroovyObject)request.getAttribute(GrailsApplicationAttributes.CONTROLLER);
+    }
+
+    public static String getContentType(String name, String encoding) {
+        if(StringUtils.isBlank(encoding)) encoding = DEFAULT_ENCODING;
+        return name + CHARSET_ATTRIBUTE + encoding;
     }
 }

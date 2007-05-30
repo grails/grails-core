@@ -16,15 +16,10 @@
 package org.codehaus.groovy.grails.web.servlet.mvc;
 
 
-import java.util.Collection;
-import java.util.Enumeration;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
-
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpSessionContext;
+import java.util.*;
 
 /**
  * An adapter class that takes a regular HttpSession and allows you to access it like a Groovy map
@@ -35,7 +30,7 @@ import javax.servlet.http.HttpSessionContext;
 public class GrailsHttpSession implements
 		HttpSession, Map {
 
-	private HttpSession adaptee;
+	private final HttpSession adaptee;
 
 	public GrailsHttpSession(HttpSession session) {
 		this.adaptee = session;

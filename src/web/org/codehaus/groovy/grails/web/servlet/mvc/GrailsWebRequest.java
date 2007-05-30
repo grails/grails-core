@@ -40,7 +40,7 @@ public class GrailsWebRequest extends DispatcherServletWebRequest {
 
 	private GrailsApplicationAttributes attributes;
 	private GrailsParameterMap params;
-	private GrailsHttpServletResponse response;
+	private HttpServletResponse response;
 	private GrailsHttpSession session;
 	private boolean renderView = true;
     private static final String ACTION_NAME = "org.codehaus.groovy.grails.ACTION_NAME";
@@ -50,7 +50,7 @@ public class GrailsWebRequest extends DispatcherServletWebRequest {
     public GrailsWebRequest(HttpServletRequest request,  HttpServletResponse response, ServletContext servletContext) {
 		super(request);
 		this.attributes = new DefaultGrailsApplicationAttributes(servletContext);
-		this.response = new GrailsHttpServletResponse(response);
+		this.response = response;
 		this.params = new GrailsParameterMap(request);
 		
 	}
@@ -110,7 +110,7 @@ public class GrailsWebRequest extends DispatcherServletWebRequest {
 		return getRequest();
 	}
 	
-	public GrailsHttpServletResponse getCurrentResponse() {
+	public HttpServletResponse getCurrentResponse() {
 		return this.response;
 	}
 	

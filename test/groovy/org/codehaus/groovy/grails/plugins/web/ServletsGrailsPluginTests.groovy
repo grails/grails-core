@@ -5,6 +5,7 @@ import org.codehaus.groovy.grails.commons.metaclass.*
 import org.codehaus.groovy.grails.commons.spring.*
 import org.springframework.mock.web.*
 import javax.servlet.http.HttpServletRequest
+import org.springframework.web.util.*
 
 class ServletsGrailsPluginTests extends AbstractGrailsPluginTests {
 
@@ -14,6 +15,27 @@ class ServletsGrailsPluginTests extends AbstractGrailsPluginTests {
 		pluginsToLoad << gcl.loadClass("org.codehaus.groovy.grails.plugins.CoreGrailsPlugin")
 		pluginsToLoad << gcl.loadClass("org.codehaus.groovy.grails.plugins.web.ServletsGrailsPlugin")
 	}
+
+    void testResponseWrite() {
+        def response = new MockHttpServletResponse()
+
+        response << "foo"
+        response << 10
+
+        assertEquals "foo10", response.contentAsString    
+    }
+
+
+    void testGetForwardURI() {
+        def request = new MockHttpServletRequest()
+        request.requestURI = "/foo/bar"
+
+        assertEquals "/foo/bar", request.forwardURI
+
+        request[WebUtils.FORWARD_REQUEST_URI_ATTRIBUTE] = "/bar/foo"
+
+        assertEquals "/bar/foo", request.forwardURI            
+    }
 
 	void testHttpMethodMethods() {
         def request = new MockHttpServletRequest()

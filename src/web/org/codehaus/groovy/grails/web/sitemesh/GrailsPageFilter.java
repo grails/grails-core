@@ -21,7 +21,6 @@ import com.opensymphony.module.sitemesh.filter.PageFilter;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
-import org.codehaus.groovy.grails.web.servlet.GrailsHttpServletResponse;
 
 import javax.servlet.FilterConfig;
 import javax.servlet.RequestDispatcher;
@@ -70,9 +69,6 @@ public class GrailsPageFilter extends PageFilter {
             if(!response.isCommitted()) {
                 if(LOG.isDebugEnabled()) {
                 	LOG.debug("Rendering layout using forward: " + decorator.getURIPath());
-                }
-                if(response instanceof GrailsHttpServletResponse) {
-                    response = ((GrailsHttpServletResponse)response).getDelegate();
                 }
                 rd.forward(request, response);
             } 

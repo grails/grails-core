@@ -26,13 +26,13 @@ import junit.framework.TestCase;
  * @author Steven Devijver
  * @since Jul 2, 2005
  */
-public class DefaultGrailsControllerClassTests extends TestCase {
+public class DefaultGrailsControllerClass2Tests extends TestCase {
 
-	public DefaultGrailsControllerClassTests() {
+	public DefaultGrailsControllerClass2Tests() {
 		super();
 	}
 
-	public DefaultGrailsControllerClassTests(String arg0) {
+	public DefaultGrailsControllerClass2Tests(String arg0) {
 		super(arg0);
 	}
 	

@@ -103,9 +103,7 @@ class ControllersDynamicMethodsTests extends AbstractGrailsMockTests {
 			def testCtrl = ga.getControllerClass("TestController").newInstance()
 			
 			assertNotNull(testCtrl.request)
-
 			assertNotNull(testCtrl.response)
-			assertTrue(testCtrl.response instanceof GrailsHttpServletResponse)
 			assertNotNull(testCtrl.servletContext)
 		}
 	}

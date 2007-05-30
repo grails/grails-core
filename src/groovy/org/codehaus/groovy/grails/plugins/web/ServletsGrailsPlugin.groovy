@@ -17,14 +17,16 @@ package org.codehaus.groovy.grails.plugins.web;
                                                  
 import javax.servlet.http.HttpServletRequest
 import grails.util.GrailsUtil as GU
+import javax.servlet.http.HttpServletResponse
+import org.springframework.web.util.*
 
 /**
- * <p>This plug-in adds methods to the Servlet API interfaces to make them more Grailsy. For example all classes that implement
- * HttpServletRequest will get new methods that allow access to attributes via subscript operator 
- * 
- * @author Graeme Rocher
- * @since 0.5.5
- */
+* <p>This plug-in adds methods to the Servlet API interfaces to make them more Grailsy. For example all classes that implement
+* HttpServletRequest will get new methods that allow access to attributes via subscript operator
+*
+* @author Graeme Rocher
+* @since 0.5.5
+*/
 class ServletsGrailsPlugin {
 
 
@@ -32,7 +34,15 @@ class ServletsGrailsPlugin {
 	def dependsOn = [core:version]
 
 
-	def doWithDynamicMethods = { ctx -> 
+
+	def doWithDynamicMethods = { ctx ->
+
+	    HttpServletRequest.metaClass.getForwardURI = {->
+            def result = delegate.getAttribute(WebUtils.FORWARD_REQUEST_URI_ATTRIBUTE)
+            if(!result) result = delegate.requestURI
+            result
+	    }
+
 		// enables access to request attributes with request["foo"] syntax
 	    HttpServletRequest.metaClass.getAt = { String key ->
 	        delegate.getAttribute(key)
@@ -49,7 +59,7 @@ class ServletsGrailsPlugin {
         }   
 		// enables searching of request attributes with request.find { it.key == 'foo' }
 		HttpServletRequest.metaClass.find = { Closure c ->
-		   def request = delegate 
+		   def request = delegate
 		   def result = [:]
 		   for(name in request.attributeNames) {
 				def match = false
@@ -57,19 +67,19 @@ class ServletsGrailsPlugin {
 					case 0:
 					  match = c.call()
 					break
-					case 1: 
+					case 1:
 					   match = c.call(key:name, value:request.getAttribute(name))
 					break
 					default:
-				  	   match =  c.call(name, request.getAttribute(name))  										
-				}                                                                           
-				if(match) { 
-						result[name] = request.getAttribute(name) 
+				  	   match =  c.call(name, request.getAttribute(name))
+				}
+				if(match) {
+						result[name] = request.getAttribute(name)
 						break
 				}
-		   }                                                            
-		   result			
-		}  
+		   }
+		   result
+		}
 		// enables searching of for a number of request attributes using request.findAll { it.key.startsWith('foo') }  
 		HttpServletRequest.metaClass.findAll = { Closure c ->
 		   def request = delegate 
@@ -105,6 +115,10 @@ class ServletsGrailsPlugin {
 				  		c.call(name, request.getAttribute(name))  					
 				}				
 			}
+		}   
+		// allows the syntax response << "foo"		
+		HttpServletResponse.metaClass.leftShift = { Object o ->
+			delegate.writer << o
 		}
 	}
 }
