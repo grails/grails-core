@@ -136,7 +136,8 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
                 }
 
                 String action = actionName != null ? actionName : webRequest.getActionName();
-                actualUri = urlMapping.createURL( controllerName, action, params, request.getCharacterEncoding() );
+                actualUri = attrs.getApplicationUri(request) +
+                            urlMapping.createURL( controllerName, action, params, request.getCharacterEncoding() );
 
                 if( LOG.isDebugEnabled() ) {
                     LOG.debug( "Dynamic method [redirect] mapped to URL [" + actualUri + "]" );
