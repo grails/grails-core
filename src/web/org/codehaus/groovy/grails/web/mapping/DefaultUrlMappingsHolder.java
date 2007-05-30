@@ -102,7 +102,7 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
         return this.mappings;
     }
 
-    public UrlMapping getReverseMapping(final String controller, final String action, Map params) {
+    public UrlCreator getReverseMapping(final String controller, final String action, Map params) {
         if(params == null) params = Collections.EMPTY_MAP;
 
         UrlMapping mapping = (UrlMapping)mappingsLookup.get(new UrlMappingKey(controller, action, params.keySet()));
