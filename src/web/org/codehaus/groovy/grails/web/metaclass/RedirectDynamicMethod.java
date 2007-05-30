@@ -38,11 +38,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.beans.PropertyDescriptor;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -68,7 +65,7 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
     public static final String ARGUMENT_ERRORS = "errors";
 
     private static final Log LOG = LogFactory.getLog(RedirectDynamicMethod.class);
-    private static final char SLASH = '/';
+    
     private UrlMappingsHolder urlMappingsHolder;
 
     public RedirectDynamicMethod(ApplicationContext applicationContext) {
@@ -113,7 +110,7 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
         GrailsApplicationAttributes attrs = webRequest.getAttributes();
         HttpServletRequest request = webRequest.getCurrentRequest();
         HttpServletResponse response = webRequest.getCurrentResponse();
-        StringBuffer actualUriBuf = new StringBuffer(attrs.getApplicationUri(request));
+
         if(uri != null) {
             actualUri = attrs.getApplicationUri(request) + uri.toString();
         }
@@ -128,88 +125,32 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
                 LOG.debug("Dynamic method [redirect] looking up URL mapping for controller ["+controllerName+"] and action ["+actionName+"] and params ["+params+"] with ["+urlMappingsHolder+"]");
             }
 
-            boolean found = false;
+
 
             try {
-                UrlCreator urlMapping = null;
-
                 if( id != null ) params.put( ARGUMENT_ID, id );
 
-                if( urlMappingsHolder != null ) {
-                    urlMapping = urlMappingsHolder.getReverseMapping( controllerName, actionName, params );
-                }
-
+                UrlCreator urlMapping = urlMappingsHolder.getReverseMapping( controllerName, actionName, params );
                 if( LOG.isDebugEnabled() && urlMapping == null ) {
                     LOG.debug( "Dynamic method [redirect] no URL mapping found for params [" + params + "]" );
                 }
-                if( urlMapping != null ) {
-                    found = true;
-                    params.put( ARGUMENT_CONTROLLER, controllerName );
-                    params.put( ARGUMENT_ACTION, actionName != null ? actionName : webRequest.getActionName() );
-                    String mappedUrl = urlMapping.createURL( params );
 
-                    if( LOG.isDebugEnabled() ) {
-                        LOG.debug( "Dynamic method [redirect] mapped to URL [" + mappedUrl + "]" );
-                    }
+                String action = actionName != null ? actionName : webRequest.getActionName();
+                actualUri = urlMapping.createURL( controllerName, action, params, request.getCharacterEncoding() );
 
-                    actualUriBuf.append( mappedUrl );
+                if( LOG.isDebugEnabled() ) {
+                    LOG.debug( "Dynamic method [redirect] mapped to URL [" + actualUri + "]" );
                 }
+
             } finally {
                 if( id != null ) params.remove( ARGUMENT_ID );
-                params.remove( ARGUMENT_CONTROLLER );
-                params.remove( ARGUMENT_ACTION );
             }
-
-            if( !found ) {
-                if(actionName != null) {
-
-                    if(actionName.indexOf(SLASH) > -1) {
-                          actualUriBuf.append(actionName);
-                    }
-                    else {
-                        if(controllerName != null) {
-                            appendUrlToken(actualUriBuf, controllerName);
-                        }
-                        else {
-                            actualUriBuf.append(attrs.getControllerUri(request));
-                        }
-                    }
-                    appendUrlToken(actualUriBuf, actionName);
-                }
-                else {
-                    throw new ControllerExecutionException("Action not found in redirect for name ["+actionName+"]");
-                }
-                if(id != null) {
-                    appendUrlToken(actualUriBuf, id);
-                }
-                if(params != null) {
-                    appendRequestParams(actualUriBuf, params, request);
-                }
-            }
-            actualUri = actualUriBuf.toString();
 
         }
 
         return redirectResponse(actualUri, response);
     }
 
-    /*
-     * Appends all the requeset parameters to the URI buffer
-     */
-    private void appendRequestParams(StringBuffer actualUriBuf, Map params, HttpServletRequest request) {
-        if(params.size() > 0)
-            actualUriBuf.append('?');
-        
-        for (Iterator i = params.keySet().iterator(); i.hasNext();) {
-            Object name = i.next();
-            if(name.equals(GrailsControllerClass.CONTROLLER) || name.equals(GrailsControllerClass.ACTION))
-                continue;
-            Object value = params.get(name);
-            appendRequestParam(actualUriBuf, name, value,request);
-            if(i.hasNext())
-                actualUriBuf.append('&');
-        }
-    }
 
     /*
      * Redirects the response the the given URI
@@ -233,28 +174,6 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
         return null;
     }
 
-    /*
-     * Appends a request parameters for the given aname and value
-     */
-    private void appendRequestParam(StringBuffer actualUriBuf, Object name, Object value,HttpServletRequest request) {
-        if (value==null)
-            value = "";
-        
-        try {
-            actualUriBuf.append(URLEncoder.encode(name.toString(),request.getCharacterEncoding()))
-                     .append('=')
-                     .append(URLEncoder.encode(value.toString(),request.getCharacterEncoding()));
-        } catch (UnsupportedEncodingException ex) {
-            throw new ControllerExecutionException("Error redirecting request for url ["+name+":"+value +"]: " + ex.getMessage(),ex);
-        }
-    }
-
-    /*
-     * Appends a URL token to the buffer
-     */
-    private void appendUrlToken(StringBuffer actualUriBuf, Object token) {
-        actualUriBuf.append(SLASH).append(token);
-    }
     /*
      * Figures out the action name from the specified action reference (either a string or closure)
      */

@@ -91,38 +91,17 @@ class ApplicationTagLib {
         def url
 		try {
             if(id != null) params.id = id
-            def mapping = grailsUrlMappingsHolder?.getReverseMapping(controller,action,params)
+            def mapping = grailsUrlMappingsHolder.getReverseMapping(controller,action,params)
 			params.controller = controller
 			if(action) params.action = action  
-            url = mapping?.createURL(params)
+            url = mapping.createURL(params, request.characterEncoding)
 		}        
 		finally {
 			params.remove('controller')
 			params.remove('action')          
 			params.remove('id')
 		}
-		if(url) {
-			out << url
-		}             
-		else {
-            out << '/' << controller
-	        if(action) {
-	            out << '/' << action
-	        }
-	        if(id != null) {
-	            out << '/' << id
-	        }
-	        if(params) {
-	            out << '?'
-	            def i = 0
-	            params.each { k,v ->
-	                out << "${k.encodeAsURL()}=${v?.encodeAsURL()}"
-	                if(++i < params.size())
-	                   out << '&'
-	            }
-	        }			
-		}
-															
+        out << url
     }
 
 	/**

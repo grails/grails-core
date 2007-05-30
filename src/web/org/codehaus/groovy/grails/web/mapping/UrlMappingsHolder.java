@@ -49,4 +49,11 @@ public interface UrlMappingsHolder {
      * @return A URI for the given arguments
      */
     UrlCreator getReverseMapping(String controller, String action, Map params);
+
+    /**
+     * Match and return a UrlMappingInfo otherwise returns null
+     * @param uri The URI to match
+     * @return A UrlMappingInfo or null
+     */
+    UrlMappingInfo match(String uri);
 }

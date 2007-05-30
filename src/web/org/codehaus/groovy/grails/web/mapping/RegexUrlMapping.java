@@ -15,12 +15,14 @@
 package org.codehaus.groovy.grails.web.mapping;
 
 import groovy.lang.Closure;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsControllerClass;
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 import org.codehaus.groovy.grails.web.mapping.exceptions.UrlMappingException;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
+import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
 import org.springframework.validation.Errors;
 import org.springframework.validation.MapBindingResult;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -29,6 +31,8 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import java.net.URLEncoder;
+import java.io.UnsupportedEncodingException;
 
 /**
  * <p>A UrlMapping implementation that takes a Grails URL pattern and turns it into a regex matcher so that
@@ -149,8 +153,9 @@ public class RegexUrlMapping extends AbstractUrlMapping implements UrlMapping {
     /**
      * @see org.codehaus.groovy.grails.web.mapping.UrlMapping
      */
-    public String createURL(Map parameterValues) {
-		if(parameterValues==null)parameterValues=Collections.EMPTY_MAP;
+    public String createURL(Map parameterValues, String encoding) {
+
+        if(parameterValues==null)parameterValues=Collections.EMPTY_MAP;
     	StringBuffer uri = new StringBuffer();
         Set usedParams = new HashSet();
 
@@ -189,7 +194,13 @@ public class RegexUrlMapping extends AbstractUrlMapping implements UrlMapping {
                 else {
                     uri.append('&');
                 }
-                uri.append(name).append('=').append(parameterValues.get(name));
+                Object value = parameterValues.get(name);
+                try {
+                    uri.append(URLEncoder.encode(name,encoding)).append('=')
+                       .append(URLEncoder.encode(value != null ? value.toString() : "",encoding));
+                } catch (UnsupportedEncodingException e) {
+                    throw new ControllerExecutionException("Error redirecting request for url ["+name+":"+value +"]: " + e.getMessage(),e);
+                }
             }
 
         }
@@ -197,6 +208,29 @@ public class RegexUrlMapping extends AbstractUrlMapping implements UrlMapping {
             LOG.debug("Created reverse URL mapping ["+uri.toString()+"] for parameters ["+parameterValues+"]");
         }        
         return  uri.toString();
+    }
+
+    public String createURL(String controller, String action, Map parameterValues, String encoding) {
+        if(parameterValues == null) parameterValues = new HashMap();
+
+        boolean hasController = !StringUtils.isBlank(controller);
+        boolean hasAction = !StringUtils.isBlank(action);
+
+        try {
+
+            if(hasController)
+                parameterValues.put(CONTROLLER, controller);
+            if(hasAction)
+                parameterValues.put(ACTION, action);
+
+            return createURL(parameterValues, encoding);
+        } finally {
+            if(hasController)
+                parameterValues.remove(CONTROLLER);
+            if(hasAction)
+                parameterValues.remove(ACTION);
+
+        }
     }
 
     public UrlMappingData getUrlData() {

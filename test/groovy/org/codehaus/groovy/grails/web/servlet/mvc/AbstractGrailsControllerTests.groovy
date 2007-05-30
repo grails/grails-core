@@ -37,13 +37,9 @@ abstract class AbstractGrailsControllerTests extends GroovyTestCase {
 		
         super.setUp();
         
-        originalHandler = 	InvokerHelper.getInstance()
-								.getMetaRegistry()
-								.metaClassCreationHandle
+        originalHandler = 	GroovySystem.metaClassRegistry.metaClassCreationHandle
 
-		InvokerHelper.getInstance()
-						.getMetaRegistry()
-						.metaClassCreationHandle = new ExpandoMetaClassCreationHandle();
+		GroovySystem.metaClassRegistry.metaClassCreationHandle = new ExpandoMetaClassCreationHandle();
         
 
         ctx = new MockApplicationContext();
@@ -59,7 +55,10 @@ abstract class AbstractGrailsControllerTests extends GroovyTestCase {
 		
 		def dependantPluginClasses = []
 		dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.CoreGrailsPlugin")					
+		dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.CodecsGrailsPlugin")
 		dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.i18n.I18nGrailsPlugin")
+		dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.web.ServletsGrailsPlugin")
+	    dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.web.mapping.UrlMappingsGrailsPlugin")		
 		dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.web.ControllersGrailsPlugin")
 
 		
@@ -67,6 +66,7 @@ abstract class AbstractGrailsControllerTests extends GroovyTestCase {
 		def springConfig = new DefaultRuntimeSpringConfiguration(ctx)
         webRequest = GrailsWebUtil.bindMockWebRequest()
         request = webRequest.currentRequest
+        request.characterEncoding = "utf-8"
         response = webRequest.currentResponse
 
 		servletContext =  webRequest.servletContext

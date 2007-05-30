@@ -65,7 +65,11 @@ AbstractDependencyInjectionSpringContextTests {
 	            fail("No tag library found for tag $tagName")
             }
 	        def go = tagLibrary.newInstance()
+	        if(go.properties.containsKey("grailsUrlMappingsHolder"))   {
+	            go.grailsUrlMappingsHolder = appCtx.grailsUrlMappingsHolder
+            }
 	        def webRequest = RequestContextHolder.currentRequestAttributes()
+
 	        webRequest.out = out
 	        println "calling tag"
 	        result = callable.call(go.getProperty(tagName))
@@ -81,6 +85,8 @@ AbstractDependencyInjectionSpringContextTests {
 		InvokerHelper.getInstance()
 		.getMetaRegistry()
 		.metaClassCreationHandle = new ExpandoMetaClassCreationHandle();
+
+
 
         onInit() 
 		grailsApplication.initialise()
@@ -107,7 +113,8 @@ AbstractDependencyInjectionSpringContextTests {
 		dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.CoreGrailsPlugin")
 		dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.CodecsGrailsPlugin")
 		dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.i18n.I18nGrailsPlugin")
-		dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.web.ServletsGrailsPlugin")		
+		dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.web.ServletsGrailsPlugin")
+	    dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.web.mapping.UrlMappingsGrailsPlugin")		
 		dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.web.ControllersGrailsPlugin")
 
 
@@ -116,6 +123,7 @@ AbstractDependencyInjectionSpringContextTests {
 		def springConfig = new DefaultRuntimeSpringConfiguration(ctx)
         webRequest = GrailsWebUtil.bindMockWebRequest()
         request = webRequest.currentRequest
+        request.characterEncoding = "utf-8"
         response = webRequest.currentResponse
 
         servletContext =  webRequest.servletContext
@@ -129,7 +137,8 @@ AbstractDependencyInjectionSpringContextTests {
 		mockManager.applicationContext = appCtx
 		servletContext.setAttribute( GrailsApplicationAttributes.APPLICATION_CONTEXT, appCtx)
 		mockManager.doDynamicMethods()
-        
+
+		assert appCtx.grailsUrlMappingsHolder
     }
     
     protected final void onTearDown() {

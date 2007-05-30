@@ -79,19 +79,7 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
             return;
         }
 
-        UrlMappingInfo info = null;
-        for (int i = 0; i < mappings.length; i++) {
-
-            UrlMapping mapping = mappings[i];
-            if(LOG.isDebugEnabled())
-                LOG.debug("Attempting to match URI ["+uri+"] with pattern ["+mapping.getUrlData().getUrlPattern()+"]");
-            
-            info = mapping.match(uri);
-
-            if(info!=null) {
-                break;
-            }
-        }
+        UrlMappingInfo info = holder.match(uri);
 
         if(info!=null) {
             String forwardUrl = buildDispatchUrlForMapping(request, info);

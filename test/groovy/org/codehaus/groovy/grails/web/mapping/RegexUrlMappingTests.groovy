@@ -28,16 +28,16 @@ mappings {
              def m = mappings[0]
              assert m
 
-             assertEquals "/book/dierk/gina/foo", m.createURL(author:"dierk", title:"gina", test:"foo")
+             assertEquals "/book/dierk/gina/foo", m.createURL(author:"dierk", title:"gina", test:"foo", "utf-8")
 
              m = mappings[1]
              assert m
 
-             assertEquals "/blog/foo/2007/10/24", m.createURL(entry:"foo", year:2007, month:10, day:24)
-             assertEquals "/blog/foo/2007/10", m.createURL(entry:"foo", year:2007, month:10)
-             assertEquals "/blog/foo/2007", m.createURL(entry:"foo", year:2007)
-             assertEquals "/blog/foo", m.createURL(entry:"foo")
-             shouldFail { m.createURL([:]) }
+             assertEquals "/blog/foo/2007/10/24", m.createURL(entry:"foo", year:2007, month:10, day:24, "utf-8")
+             assertEquals "/blog/foo/2007/10", m.createURL(entry:"foo", year:2007, month:10, "utf-8")
+             assertEquals "/blog/foo/2007", m.createURL(entry:"foo", year:2007, "utf-8")
+             assertEquals "/blog/foo", m.createURL(entry:"foo", "utf-8")
+             shouldFail { m.createURL([:], "utf-8") }
     }
 
     void testComparable() {

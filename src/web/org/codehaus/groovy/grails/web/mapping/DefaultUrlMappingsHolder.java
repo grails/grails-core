@@ -102,6 +102,9 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
         return this.mappings;
     }
 
+    /**
+     * @see UrlMappingsHolder#getReverseMapping(String, String, java.util.Map)  
+     */
     public UrlCreator getReverseMapping(final String controller, final String action, Map params) {
         if(params == null) params = Collections.EMPTY_MAP;
 
@@ -109,10 +112,37 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
         if(mapping == null) {
             mapping = (UrlMapping)mappingsLookup.get(new UrlMappingKey(controller, null, DEFAULT_ACTION_PARAMS));
             if(mapping == null) {
-                return (UrlMapping)mappingsLookup.get(new UrlMappingKey(null, null, DEFAULT_CONTROLLER_PARAMS));
+                mapping = (UrlMapping)mappingsLookup.get(new UrlMappingKey(null, null, DEFAULT_CONTROLLER_PARAMS));
+                if(mapping == null) {
+                    return new DefaultUrlCreator(controller, action);
+                }
+                else {
+                    return mapping;
+                }
             }
         }
         return mapping;
+    }
+
+    /**
+     * @see org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder#match(String)
+     */
+    public UrlMappingInfo match(String uri) {
+        UrlMappingInfo info = null;
+        for (int i = 0; i < mappings.length; i++) {
+
+            UrlMapping mapping = mappings[i];
+            if(LOG.isDebugEnabled())
+                LOG.debug("Attempting to match URI ["+uri+"] with pattern ["+mapping.getUrlData().getUrlPattern()+"]");
+
+            info = mapping.match(uri);
+
+            if(info!=null) {
+                break;
+            }
+        }
+
+        return info;
     }
 
 

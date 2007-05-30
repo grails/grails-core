@@ -65,7 +65,7 @@ mappings {
            def m = holder.getReverseMapping("product", "show", params)
            assertNotNull "getReverseMapping returned null", m
            
-           assertEquals "/author/Winter/Johnny", m.createURL(params)
+           assertEquals "/author/Winter/Johnny", m.createURL(params, "utf-8")
            
       }
                  
@@ -84,7 +84,7 @@ mappings {
            def m = holder.getReverseMapping("product", "show", params)
            assertNotNull "getReverseMapping returned null", m
            
-           assertEquals "/author/Winter/Johnny", m.createURL(params)
+           assertEquals "/author/Winter/Johnny", m.createURL(params, "utf-8")
       }
                  
     }
@@ -123,13 +123,13 @@ mappings {
             def m = holder.getReverseMapping("test", "list",null)
             assert m
 
-            assertEquals "/admin/test/list/1", m.createURL(controller:"test", action:"list",id:1)
+            assertEquals "/admin/test/list/1", m.createURL(controller:"test", action:"list",id:1, "utf-8")
 
-            assertEquals "/admin/test/list/1?foo=bar", m.createURL(controller:"test", action:"list",id:1, foo:"bar")
+            assertEquals "/admin/test/list/1?foo=bar", m.createURL(controller:"test", action:"list",id:1, foo:"bar", "utf-8")
 
             m = holder.getReverseMapping("someController", "test", null)
             assert m
-            assertEquals "/specific/test", m.createURL(controller:"someController", action:"test")
+            assertEquals "/specific/test", m.createURL(controller:"someController", action:"test", "utf-8")
     }
 
     void testGetReverseMappingWithFewerArgs() {
@@ -166,7 +166,7 @@ mappings {
              assert m
              assertEquals "blog", m.controllerName
              assertEquals "show", m.actionName
-             assertEquals("/blog/foo/2007/3/17?test=test", m.createURL([controller:"blog",action:"show",entry:"foo",year:2007,month:3,day:17,test:'test']))
+             assertEquals("/blog/foo/2007/3/17?test=test", m.createURL([controller:"blog",action:"show",entry:"foo",year:2007,month:3,day:17,test:'test'], "utf-8"))
 
             // test with fewer arguments
             m = holder.getReverseMapping("blog", "show", [entry:"foo", year:2007])
