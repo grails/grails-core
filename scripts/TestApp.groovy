@@ -147,7 +147,7 @@ def runTests = { suite, TestResult result, Closure callback  ->
                 println "Running test ${test.name}..." 
 				for(i in 0..<test.testCount()) {   
 					def t = test.testAt(i)
-					callback(test.name, {
+					callback(test, {
 
                         print "                    ${t.name}..."
 						suite.runTest(t, thisTest)					
@@ -200,7 +200,7 @@ task(runUnitTests:"Run Grails' unit tests under the test/unit directory") {
 		println "Running Unit Tests..."
 	                                     
 		def start = new Date()
-		runTests(suite,result) { name, invocation -> 
+		runTests(suite,result) { test, invocation -> 
 				invocation()           
 		} 
 		def end = new Date()		
@@ -261,8 +261,8 @@ task(runIntegrationTests:"Runs Grails' tests under the test/integration director
 			println "Running Integration Tests..."
 			   
 			def start = new Date()			
-            runTests(suite, result) { name, invocation ->
-                name = name[0..-6]
+            runTests(suite, result) { test, invocation ->
+                name = test.name[0..-6]
 				def webRequest = GWU.bindMockWebRequest(ctx)	  
 				
 				// @todo this is horrible and dirty, should find a better way  		
@@ -271,11 +271,15 @@ task(runIntegrationTests:"Runs Grails' tests under the test/integration director
 				}                                                                           
 				
 				invocation()
- 				RequestContextHolder.setRequestAttributes(null); 								
-				app.domainClasses.each { dc ->
-					dc.clazz.executeUpdate("delete from ${dc.clazz.name}")
+ 				RequestContextHolder.setRequestAttributes(null);
+                def cleaningOrder = test.cleaningOrder
+                app.domainClasses.each { dc ->
+                    if ( !cleaningOrder.contains(dc.clazz) ) cleaningOrder << dc.clazz
 				}
-				interceptor?.flush()	
+                cleaningOrder.each { dc ->
+                    dc.executeUpdate("delete from ${dc.name}")
+                }
+				interceptor?.flush()
 			}                     
 			def end = new Date()
 			println "Integration Tests Completed in ${end.time-start.time}ms"  		

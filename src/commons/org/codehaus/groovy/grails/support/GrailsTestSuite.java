@@ -22,6 +22,10 @@ import junit.framework.TestSuite;
 
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.util.Assert;
+import org.codehaus.groovy.grails.commons.GrailsClassUtils;
+
+import java.util.List;
+import java.util.ArrayList;
 
 /**
  * IoC class to inject properties of Grails test case classes.
@@ -32,12 +36,19 @@ import org.springframework.util.Assert;
  */
 public class GrailsTestSuite extends TestSuite {
 
+    private static final String CLEANING_ORDER_PROPERTY = "cleaningOrder";
+
 	private AutowireCapableBeanFactory beanFactory = null;
-	
-	public GrailsTestSuite(AutowireCapableBeanFactory beanFactory, Class clazz) {
+    private List cleaningOrder;
+
+    public GrailsTestSuite(AutowireCapableBeanFactory beanFactory, Class clazz) {
 		super(clazz);
-		Assert.notNull(beanFactory, "Bean factory should not be null!");
+        Assert.notNull(beanFactory, "Bean factory should not be null!");
 		this.beanFactory = beanFactory;
+        Object order = GrailsClassUtils.getStaticPropertyValue( clazz, CLEANING_ORDER_PROPERTY );
+        if( order != null && List.class.isAssignableFrom( order.getClass())) {
+            cleaningOrder = (List) order;
+        } 
 	}
 
 	public void runTest(Test test, TestResult result) {
@@ -46,4 +57,8 @@ public class GrailsTestSuite extends TestSuite {
 		}
 		test.run(result);
 	}
+
+    public List getCleaningOrder() {
+        return (cleaningOrder != null) ? cleaningOrder : new ArrayList();
+    }
 }
