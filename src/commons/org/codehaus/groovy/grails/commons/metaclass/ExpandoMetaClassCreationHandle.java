@@ -41,8 +41,8 @@ import java.util.*;
  */
 public class ExpandoMetaClassCreationHandle extends MetaClassCreationHandle {
 
-	private static Map modifiedExpandos = Collections.synchronizedMap(new HashMap());	
-	private static Map parentClassToChildMap = Collections.synchronizedMap(new ReferenceMap(ReferenceMap.SOFT, ReferenceMap.SOFT));
+	private final Map modifiedExpandos = new HashMap();
+	private final Map parentClassToChildMap = new ReferenceMap(ReferenceMap.SOFT, ReferenceMap.SOFT);
 	
 	/* (non-Javadoc)
 	 * @see groovy.lang.MetaClassRegistry.MetaClassCreationHandle#create(java.lang.Class, groovy.lang.MetaClassRegistry)
@@ -79,12 +79,15 @@ public class ExpandoMetaClassCreationHandle extends MetaClassCreationHandle {
     }
 
     private void registerWithParentToChildMap(ExpandoMetaClass emc, Class c) {
-        Set children = (Set)parentClassToChildMap.get(c);
-        if(children == null) {
-            children = new HashSet();
-            parentClassToChildMap.put(c, children);
+        synchronized(this) {
+            Set children = (Set)parentClassToChildMap.get(c);
+            if(children == null) {
+                children = new HashSet();
+                    parentClassToChildMap.put(c, children);
+                }
+
+            children.add(emc);
         }
-        children.add(emc);
     }
 
     /**
@@ -129,7 +132,7 @@ public class ExpandoMetaClassCreationHandle extends MetaClassCreationHandle {
         }
     }
 
-    private static Set retrieveKnownSubclasses(ExpandoMetaClass changed) {
+    private Set retrieveKnownSubclasses(ExpandoMetaClass changed) {
 		return (Set)parentClassToChildMap.get(changed.getJavaClass());
 	}
 
@@ -139,7 +142,9 @@ public class ExpandoMetaClassCreationHandle extends MetaClassCreationHandle {
      * @param emc The EMC
      */
     public void registerModifiedMetaClass(ExpandoMetaClass emc) {
-		modifiedExpandos.put(emc.getJavaClass(), emc);
+        synchronized(this) {
+            modifiedExpandos.put(emc.getJavaClass(), emc);
+        }        
 	}
 
 	public boolean hasModifiedMetaClass(ExpandoMetaClass emc) {
