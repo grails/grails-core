@@ -64,7 +64,7 @@ class EmailConstraint extends AbstractConstraint {
             EmailValidator emailValidator = EmailValidator.getInstance();
             Object[] args = new Object[] { constraintPropertyName, constraintOwningClass, propertyValue };
             if(!emailValidator.isValid(propertyValue.toString())  ) {
-                super.rejectValue(target,errors,ConstrainedProperty.EMAIL_CONSTRAINT + ConstrainedProperty.INVALID_SUFFIX,args,getDefaultMessage(ConstrainedProperty.DEFAULT_INVALID_EMAIL_MESSAGE_CODE, args));
+                super.rejectValue(target,errors,ConstrainedProperty.DEFAULT_INVALID_EMAIL_MESSAGE_CODE,ConstrainedProperty.EMAIL_CONSTRAINT + ConstrainedProperty.INVALID_SUFFIX,args);
             }
         }
     }

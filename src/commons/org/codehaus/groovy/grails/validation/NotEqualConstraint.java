@@ -42,7 +42,7 @@ class NotEqualConstraint extends AbstractConstraint {
     protected void processValidate(Object target, Object propertyValue, Errors errors) {
         if(this.constraintParameter.equals( propertyValue )) {
             Object[] args = new Object[] { constraintPropertyName, constraintOwningClass, propertyValue, constraintParameter  };
-            super.rejectValue( target,errors, ConstrainedProperty.NOT_EQUAL_CONSTRAINT,args, getDefaultMessage(ConstrainedProperty.DEFAULT_NOT_EQUAL_MESSAGE_CODE, args));
+            super.rejectValue( target,errors,ConstrainedProperty.DEFAULT_NOT_EQUAL_MESSAGE_CODE, ConstrainedProperty.NOT_EQUAL_CONSTRAINT,args);
         }
     }
 

@@ -428,6 +428,7 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
                         Collection constrainedProperties = ((Map)commandObject.getProperty("constraints")).values();
                         for (Iterator i = constrainedProperties.iterator(); i.hasNext();) {
                             ConstrainedProperty constrainedProperty = (ConstrainedProperty)i.next();
+                            constrainedProperty.setMessageSource( applicationContext );
                             constrainedProperty.validate(commandObject, commandObject.getProperty( constrainedProperty.getPropertyName() ),errors);
                         }
                         commandObject.setProperty("errors", errors);

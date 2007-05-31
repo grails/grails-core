@@ -71,10 +71,10 @@ class RangeConstraint extends AbstractConstraint {
             Object[] args = new Object[] { constraintPropertyName, constraintOwningClass, propertyValue, range.getFrom(), range.getTo()  };
 
             if(range.getFrom().compareTo( propertyValue ) == 1) {
-                super.rejectValue(target,errors,ConstrainedProperty.SIZE_CONSTRAINT + ConstrainedProperty.TOOSMALL_SUFFIX,args,getDefaultMessage(ConstrainedProperty.DEFAULT_INVALID_RANGE_MESSAGE_CODE, args));
+                super.rejectValue(target,errors,ConstrainedProperty.DEFAULT_INVALID_RANGE_MESSAGE_CODE, ConstrainedProperty.SIZE_CONSTRAINT + ConstrainedProperty.TOOSMALL_SUFFIX,args );
             }
             else if(range.getTo().compareTo(propertyValue) == -1) {
-                super.rejectValue(target,errors,ConstrainedProperty.SIZE_CONSTRAINT + ConstrainedProperty.TOOBIG_SUFFIX,args,getDefaultMessage(ConstrainedProperty.DEFAULT_INVALID_RANGE_MESSAGE_CODE, args));
+                super.rejectValue(target,errors,ConstrainedProperty.DEFAULT_INVALID_RANGE_MESSAGE_CODE, ConstrainedProperty.SIZE_CONSTRAINT + ConstrainedProperty.TOOBIG_SUFFIX,args );
             }
 
 

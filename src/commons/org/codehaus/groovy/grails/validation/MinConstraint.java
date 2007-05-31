@@ -79,7 +79,7 @@ class MinConstraint extends AbstractConstraint {
 
         if(minValue.compareTo(propertyValue) > 0) {
             Object[] args = new Object[] { constraintPropertyName, constraintOwningClass, propertyValue, minValue  };
-            super.rejectValue(target,errors,ConstrainedProperty.MIN_CONSTRAINT + ConstrainedProperty.NOTMET_SUFFIX,args,getDefaultMessage(ConstrainedProperty.DEFAULT_INVALID_MIN_MESSAGE_CODE, args));
+            super.rejectValue(target,errors,ConstrainedProperty.DEFAULT_INVALID_MIN_MESSAGE_CODE, ConstrainedProperty.MIN_CONSTRAINT + ConstrainedProperty.NOTMET_SUFFIX,args);
         }
     }
 }

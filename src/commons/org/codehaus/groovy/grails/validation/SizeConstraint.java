@@ -16,12 +16,11 @@ package org.codehaus.groovy.grails.validation;
 
 import grails.util.GrailsUtil;
 import groovy.lang.IntRange;
-
-import java.util.Collection;
-import java.lang.reflect.Array;
-
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.springframework.validation.Errors;
+
+import java.lang.reflect.Array;
+import java.util.Collection;
 
 /**
  * A constraint that validates size of the property, for strings and arrays
@@ -135,7 +134,6 @@ class SizeConstraint extends AbstractConstraint {
         } else {
             suffix = ConstrainedProperty.TOOSMALL_SUFFIX;
         }
-        String message = getDefaultMessage(ConstrainedProperty.DEFAULT_INVALID_SIZE_MESSAGE_CODE, args);
-        super.rejectValue(target,errors, ConstrainedProperty.SIZE_CONSTRAINT + suffix , args, message);
+        super.rejectValue(target,errors, ConstrainedProperty.DEFAULT_INVALID_SIZE_MESSAGE_CODE, ConstrainedProperty.SIZE_CONSTRAINT + suffix , args );
     }
 }

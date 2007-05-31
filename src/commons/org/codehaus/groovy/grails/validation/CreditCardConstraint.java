@@ -40,7 +40,7 @@ class CreditCardConstraint extends AbstractConstraint {
 
             if(!validator.isValid(propertyValue.toString())  ) {
                 Object[] args = new Object[] { constraintPropertyName, constraintOwningClass, propertyValue };
-                super.rejectValue(target,errors,ConstrainedProperty.CREDIT_CARD_CONSTRAINT + ConstrainedProperty.INVALID_SUFFIX,args,getDefaultMessage(ConstrainedProperty.DEFAULT_INVALID_CREDIT_CARD_MESSAGE_CODE, args));
+                super.rejectValue(target,errors,ConstrainedProperty.DEFAULT_INVALID_CREDIT_CARD_MESSAGE_CODE,ConstrainedProperty.CREDIT_CARD_CONSTRAINT + ConstrainedProperty.INVALID_SUFFIX,args);
             }
         }
     }

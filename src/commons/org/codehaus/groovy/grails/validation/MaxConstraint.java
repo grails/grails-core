@@ -78,7 +78,7 @@ class MaxConstraint extends AbstractConstraint {
 
         if(maxValue.compareTo(propertyValue) < 0) {
             Object[] args = new Object[] { constraintPropertyName, constraintOwningClass, propertyValue, maxValue  };
-            super.rejectValue(target,errors,ConstrainedProperty.MAX_CONSTRAINT + ConstrainedProperty.EXCEEDED_SUFFIX,args,getDefaultMessage(ConstrainedProperty.DEFAULT_INVALID_MAX_MESSAGE_CODE, args));
+            super.rejectValue(target,errors,ConstrainedProperty.DEFAULT_INVALID_MAX_MESSAGE_CODE,ConstrainedProperty.MAX_CONSTRAINT + ConstrainedProperty.EXCEEDED_SUFFIX,args);
         }
     }
 }
