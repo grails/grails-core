@@ -23,11 +23,44 @@ class TestUrlMappings {
       "/surveys/$action?" {
           controller = "survey"
        }
+        "/searchable" {
+            controller = "searchable"
+            action = "index"
+        }
+        "/searchable/$action?" {
+            controller = "searchable"
+        }
 	}
 }
         ''')
 
         grailsApplication.addArtefact(UrlMappingsArtefactHandler.TYPE, mappingClass)
+    }
+
+    void testOverlappingReverseMappings() {
+        def template = '<g:link controller="searchable" action="index" >Search</g:link>'
+
+        assertOutputEquals('<a href="/searchable" >Search</a>', template)
+
+        template = '<g:link controller="searchable" >Search</g:link>'
+
+        assertOutputEquals('<a href="/searchable" >Search</a>', template)
+
+
+        template = '<g:link controller="searchable" action="other" >Search</g:link>'
+
+        assertOutputEquals('<a href="/searchable/other" >Search</a>', template)
+
+
+        template = '<g:form controller="searchable" action="index" >Search</g:form>'
+
+        assertOutputEquals('<form action="/searchable" method="post" >Search</form>', template)
+
+        template = '<g:form controller="searchable" >Search</g:form>'
+
+        assertOutputEquals('<form action="/searchable" method="post" >Search</form>', template)
+
+
     }
 
     void testRenderLinkWithReverseMapping() {
