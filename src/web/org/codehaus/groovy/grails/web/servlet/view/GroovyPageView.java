@@ -124,7 +124,8 @@ public class GroovyPageView extends AbstractUrlBasedView  {
     protected void handleException(Exception exception,Writer out, GroovyPagesTemplateEngine engine)  {
 
         LOG.error("Error processing GSP: " + exception.getMessage(), exception);
-
+        // TODO GRAILS-1190 we have no idea here what layout the returned page would have been going to use had the exception
+        //          not happened....
         try {
             Template t = engine.createTemplate(ERRORS_VIEW);
 

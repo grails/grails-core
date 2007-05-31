@@ -64,16 +64,12 @@ public class GrailsHibernateUtil {
             GrailsDomainClass dc = null;
             if(application != null && persistentClass != null) {
                 if (!Modifier.isAbstract(persistentClass.getModifiers())) {
-                        dc = configureDomainClass(sessionFactory, application, cmd, persistentClass, hibernateDomainClassMap);                  
-                    if(dc != null) {
-                        dynamicMethods.add( configureDynamicMethodsFor(sessionFactory, application, persistentClass, dc) );
-                    }
+                    dc = configureDomainClass(sessionFactory, application, cmd, persistentClass, hibernateDomainClassMap);
                 }
             }
             if(dc != null) {
-            	dynamicMethods.add( configureDynamicMethodsFor(sessionFactory, application, persistentClass, dc) );
+                dynamicMethods.add( configureDynamicMethodsFor(sessionFactory, application, persistentClass, dc) );
             }
-
         }
         configureInheritanceMappings(hibernateDomainClassMap);
 

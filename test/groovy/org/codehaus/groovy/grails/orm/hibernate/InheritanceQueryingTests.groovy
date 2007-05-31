@@ -34,12 +34,14 @@ class City extends Location {
 class Country extends Location {
     int population
 }	
-class Location {
-	Long id
-	Long version
+class Location extends Versioned{	
     String name
     String code
 }	
+abstract class Versioned {
+	Long id
+	Long version
+}
 class ApplicationDataSource {
    boolean pooling = true
    String dbCreate = "create-drop" // one of 'create', 'create-drop','update'

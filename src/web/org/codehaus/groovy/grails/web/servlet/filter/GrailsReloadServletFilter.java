@@ -146,8 +146,9 @@ public class GrailsReloadServletFilter extends OncePerRequestFilter {
             httpServletResponse.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 
             GroovyPagesTemplateEngine engine = attrs.getPagesTemplateEngine();
-
-            Template t = engine.createTemplate(GrailsApplicationAttributes.PATH_TO_VIEWS+"/error.gsp");
+            // TODO GRAILS-1190 we have no idea here what layout the returned page would have been going to use had the exception
+            //          not happened....
+            Template t = engine.createTemplate(GrailsApplicationAttributes.PATH_TO_VIEWS + "/error.gsp");
 
             GrailsWrappedRuntimeException wrapped = new GrailsWrappedRuntimeException(getServletContext(), e);
             Map model = new HashMap();
