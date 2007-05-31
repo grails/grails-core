@@ -83,7 +83,7 @@ class ApplicationTagLib {
              attrs = attrs.remove('url')
         }
                                                      
-		def controller = attrs.containsKey("controller") ? attrs.remove("controller") : grailsAttributes.getController(request).controllerName
+		def controller = attrs.containsKey("controller") ? attrs.remove("controller") : grailsAttributes.getController(request)?.controllerName
 		def action = attrs.remove("action")
         def id = attrs.remove("id")
         def params = attrs.params ? attrs.remove('params') : [:]
