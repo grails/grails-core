@@ -27,8 +27,15 @@ import junit.framework.TestCase;
  */
 public class UrlMappingDataTests extends TestCase {
 
+    public void testOptionals() {
+        UrlMappingData data = new DefaultUrlMappingData("/surveys/(*)?");
+
+        assertEquals(2, data.getTokens().length);
+        assertTrue(data.isOptional(0));
+    }
+
     public void testTokens() {
-        UrlMappingData data = new DefaultUrlMappingData("/blog/(*)?/2007/(*)?");
+        UrlMappingData data = new DefaultUrlMappingData("/blog/(*)/2007/(*)?");
 
         String[] tokens = data.getTokens();
 
@@ -37,7 +44,10 @@ public class UrlMappingDataTests extends TestCase {
         assertEquals("blog",tokens[0] );
         assertEquals("(*)",tokens[1] );
         assertEquals("2007",tokens[2] );
-        assertEquals("(*)",tokens[03] );
+        assertEquals("(*)",tokens[3] );
+
+        assertFalse(data.isOptional(0));
+        assertTrue(data.isOptional(1));
     }
 
     public void testLogicalUrls() {

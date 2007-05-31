@@ -64,6 +64,9 @@ public class RegexUrlMapping extends AbstractUrlMapping implements UrlMapping {
     private static final String WILDCARD = "*";
     private static final String CAPTURED_WILDCARD = "(*)";
     private static final String SLASH = "/";
+    private static final char QUESTION_MARK = '?';
+    private static final char AMPERSAND = '&';
+
     private static final Log LOG = LogFactory.getLog(RegexUrlMapping.class);
 
 
@@ -95,6 +98,7 @@ public class RegexUrlMapping extends AbstractUrlMapping implements UrlMapping {
         }
         if(constraints != null) {
             for (int i = 0; i < constraints.length; i++) {
+
                 ConstrainedProperty constraint = constraints[i];
                 if(data.isOptional(i)) {
                     constraint.setNullable(true);
@@ -188,11 +192,11 @@ public class RegexUrlMapping extends AbstractUrlMapping implements UrlMapping {
             String name = i.next().toString();
             if(!usedParams.contains(name)) {
                 if(!addedParams) {
-                    uri.append('?');
+                    uri.append(QUESTION_MARK);
                     addedParams = true;
                 }
                 else {
-                    uri.append('&');
+                    uri.append(AMPERSAND);
                 }
                 Object value = parameterValues.get(name);
                 try {

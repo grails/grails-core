@@ -28,13 +28,15 @@ import java.util.*;
  *        Time: 7:51:47 AM
  */
 public class DefaultUrlMappingData implements UrlMappingData {
-    private String urlPattern;
-    private String[] tokens;
-    private String[] logicalUrls;
     private static final String CAPTURED_WILDCARD = "(*)";
-    private List optionalTokens = new ArrayList();
-
+    private static final String QUESTION_MARK = "?";
     private static final String SLASH = "/";
+
+    private final String urlPattern;
+    private final String[] logicalUrls;
+    private String[] tokens;
+
+    private List optionalTokens = new ArrayList();
 
 
     public DefaultUrlMappingData(String urlPattern) {
@@ -52,25 +54,29 @@ public class DefaultUrlMappingData implements UrlMappingData {
 
     private void parseUrls(List urls) {
         StringBuffer buf = new StringBuffer();
-        int optionalIndex = 0;
+
         for (int i = 0; i < tokens.length; i++) {
             String token = tokens[i].trim();
 
-            if(tokens.equals(SLASH)) continue;
+            if(token.equals(SLASH)) continue;
 
-            if(token.endsWith("?")) {
+            boolean isOptional = false;
+            if(token.endsWith(QUESTION_MARK)) {
                 urls.add(buf.toString());
                 tokens[i] = token.substring(0, token.length()-1);
                 buf.append(SLASH).append(tokens[i]);
+                isOptional = true;
             }
             else {
                buf.append(SLASH).append(token);
             }
             if(CAPTURED_WILDCARD.equals(tokens[i])) {
-                optionalTokens.add( Boolean.TRUE);
-            }
-            else {
-                optionalTokens.add( Boolean.FALSE);                
+                if(isOptional) {
+                    optionalTokens.add( Boolean.TRUE);
+                }
+                else {
+                    optionalTokens.add( Boolean.FALSE);
+                }
             }
         }
         urls.add(buf.toString());

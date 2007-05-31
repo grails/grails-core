@@ -87,13 +87,15 @@ AbstractDependencyInjectionSpringContextTests {
 		.metaClassCreationHandle = new ExpandoMetaClassCreationHandle();
 
 
-
+        grailsApplication.initialise()
+        ga = grailsApplication
+        
         onInit() 
-		grailsApplication.initialise()
+
         gcl.loadedClasses.find { it.name.endsWith("TagLib") }.each {
             grailsApplication.addArtefact(TagLibArtefactHandler.TYPE, it)
         }
-        ga = grailsApplication
+
 		def mockControllerClass = gcl.parseClass("class MockController {  def index = {} } ")
         ctx = new MockApplicationContext();
 

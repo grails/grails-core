@@ -15,8 +15,27 @@ mappings {
      controller = "blog"
      action = "show"
   }
+  "/surveys/$action?" {
+      controller = "survey"
+   }
 }
 '''
+    void testNullableConstraintsInMapping() {
+             def res = new ByteArrayResource(mappingScript.bytes)
+
+             def evaluator = new DefaultUrlMappingEvaluator()
+             def mappings = evaluator.evaluateMappings(res)
+
+
+             def m = mappings[2]
+
+             assert m.urlData.isOptional(0)
+             
+
+             assertEquals 1, m.constraints.length
+             assertTrue m.constraints[0].nullable
+
+    }
 
     void testCreateUrlFromMapping() {
              def res = new ByteArrayResource(mappingScript.bytes)
