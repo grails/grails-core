@@ -85,7 +85,8 @@ public class UniqueConstraint extends AbstractPersistentConstraint {
         	this.unique = ((Boolean)constraintParameter).booleanValue();
         }
     	if( uniquenessGroup.size() > 0 ) {
-    		for( Iterator it = uniquenessGroup.iterator(); it.hasNext(); ) {
+            unique = true;
+            for( Iterator it = uniquenessGroup.iterator(); it.hasNext(); ) {
     			String propertyName = (String) it.next();
     			if( GrailsClassUtils.getPropertyType(constraintOwningClass, propertyName) == null ) {
     				throw new IllegalArgumentException("Scope for constraint ["+UNIQUE_CONSTRAINT+"] of property ["+constraintPropertyName+"] of class ["+constraintOwningClass+"] must be a valid property name of same class"); 

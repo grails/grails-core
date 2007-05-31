@@ -17,7 +17,15 @@ class UniqueConstraintTests extends AbstractGrailsHibernateTests {
 	    		value.appliedConstraints.each {
 		    		if( it.name == UniqueConstraint.UNIQUE_CONSTRAINT ) assertTrue it.unique
 		    	}
-	    	} else if( key == 'department') {
+            } else if( key == 'login') {
+                value.appliedConstraints.each {
+                    if( it.name == UniqueConstraint.UNIQUE_CONSTRAINT ) assertTrue it.unique
+                }
+            } else if( key == 'department') {
+                value.appliedConstraints.each {
+                    if( it.name == UniqueConstraint.UNIQUE_CONSTRAINT ) assertTrue it.unique
+                }
+	    	} else if( key == 'organization') {
 	    		value.appliedConstraints.each {
 		    		if( it.name == UniqueConstraint.UNIQUE_CONSTRAINT ) assertFalse it.unique
 		    	}
@@ -31,9 +39,10 @@ class UniqueConstraintTests extends AbstractGrailsHibernateTests {
 		// The first object shouldn't fire any unique constraints 
 	    def user = userClass.newInstance()
         user.code = "123"
-        user.login = "grails"
-        user.grp = "some-group"
+        user.login = "login1"
+        user.grp = "group1"
         user.department = "department1"
+        user.organization = "organization1"
         user.validate()
         assertFalse user.hasErrors()
         user.save(true)
@@ -44,9 +53,10 @@ class UniqueConstraintTests extends AbstractGrailsHibernateTests {
         user = userClass.newInstance()
         user.id = id
         user.code = "123"
-        user.login = "grails"
-        user.grp = "some-group"
+        user.login = "login1"
+        user.grp = "group1"
         user.department = "department1"
+        user.organization = "organization1"
         user.validate()
         assertFalse user.hasErrors()
 
@@ -58,40 +68,43 @@ class UniqueConstraintTests extends AbstractGrailsHibernateTests {
         // 'code' should fire unique constraint
         user = userClass.newInstance()
         user.code = "123"
-        user.login = "another"
-        user.grp = "another-group"
+        user.login = "login2"
+        user.grp = "group2"
         user.department = "department2"
+        user.organization = "organization2"
         user.validate()
         assertTrue user.hasErrors()
         
         // 'login' should fire unique constraint since it is in the same grp and same department
         user.code = "321"
-        user.login = "grails"
-        user.grp = "some-group"
+        user.login = "login1"
+        user.grp = "group1"
         user.department = "department1"
+        user.organization = "organization2"
         user.validate()
         assertTrue user.hasErrors()
         
         // 'login' shouldn't fire unique constraint since it is in the same department but not in the same grp
-        user.grp = "another-group"
+        user.grp = "group2"
         user.validate()
         assertFalse user.hasErrors()
 
         // 'login' shouldn't fire unique constraint since it is in the same grp but not in the same department
-        user.grp = "some-group"
+        user.grp = "group1"
         user.department = "department2"
         user.validate()
         assertFalse user.hasErrors()
 
-        // 'grp' should fire unique constraint since it is in the same department
-        user.login = "another-login"
-        user.grp = "some-group"
+        // 'department' should fire unique constraint since it is in the same organization
+        user.login = "login2"
+        user.grp = "group2"
         user.department = "department1"
+        user.organization = "organization1"
         user.validate()
         assertTrue user.hasErrors()
 
-        // 'grp' shouldn't fire unique constraint since it isn't in same department as first object
-        user.department = "department2"
+        // 'department' shouldn't fire unique constraint since it isn't in same organization as first object
+        user.organization = "organization2"
         user.validate()
         assertFalse user.hasErrors()
 	}
@@ -225,11 +238,12 @@ class User {
     String login
     String grp
     String department
+    String organization
     String code
 
     static constraints = {
         login(unique:['grp','department'])
-        grp(unique:"department")
+        department(unique:"organization")
         code(unique:true)
     }
 }
