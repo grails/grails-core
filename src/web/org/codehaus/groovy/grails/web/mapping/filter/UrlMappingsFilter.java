@@ -16,6 +16,7 @@ package org.codehaus.groovy.grails.web.mapping.filter;
 
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.util.UrlPathHelper;
+import org.springframework.web.util.WebUtils;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder;
@@ -91,7 +92,8 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
 
             try {
                 WrappedResponseHolder.setWrappedResponse(response);
-                dispatcher.forward(request, response);                
+                WebUtils.exposeForwardRequestAttributes(request);
+                dispatcher.forward(request, response);
             }
             finally {
                 WrappedResponseHolder.setWrappedResponse(null);
