@@ -36,6 +36,7 @@ import org.springframework.transaction.PlatformTransactionManager;
 
 import java.beans.IntrospectionException;
 import java.util.*;
+import java.lang.reflect.Modifier;
 
 /**
  * A class containing utility methods for configuring Hibernate inside Grails
@@ -62,7 +63,12 @@ public class GrailsHibernateUtil {
             Class persistentClass = cmd.getMappedClass(EntityMode.POJO);
             GrailsDomainClass dc = null;
             if(application != null && persistentClass != null) {
-                dc = configureDomainClass(sessionFactory, application, cmd, persistentClass, hibernateDomainClassMap);
+                if (!Modifier.isAbstract(persistentClass.getModifiers())) {
+                        dc = configureDomainClass(sessionFactory, application, cmd, persistentClass, hibernateDomainClassMap);                  
+                    if(dc != null) {
+                        dynamicMethods.add( configureDynamicMethodsFor(sessionFactory, application, persistentClass, dc) );
+                    }
+                }
             }
             if(dc != null) {
             	dynamicMethods.add( configureDynamicMethodsFor(sessionFactory, application, persistentClass, dc) );
