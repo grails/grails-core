@@ -96,6 +96,7 @@ public class ArtefactHandlerAdapter implements ArtefactHandler {
 
         try {
             Constructor c = grailsClassImpl.getDeclaredConstructor(new Class[] { Class.class } );
+            // TODO GRAILS-720 plugin class instance created here first
             return (GrailsClass) c.newInstance(new Object[] { artefactClass});
         }
         catch (NoSuchMethodException e) {
