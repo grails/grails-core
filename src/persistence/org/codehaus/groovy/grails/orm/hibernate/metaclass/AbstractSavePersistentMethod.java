@@ -33,6 +33,7 @@ import org.hibernate.HibernateException;
 import org.hibernate.FlushMode;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
+import org.springframework.beans.InvalidPropertyException;
 import org.springframework.orm.hibernate3.HibernateTemplate;
 import org.springframework.orm.hibernate3.HibernateCallback;
 import org.springframework.validation.BindException;
@@ -144,11 +145,14 @@ public abstract class AbstractSavePersistentMethod extends
                         prop.getType().getName());
 		            if(otherSide != null) {
 		                BeanWrapper propBean = new BeanWrapperImpl(propValue);
-
-		                Serializable id = (Serializable)propBean.getPropertyValue(otherSide.getIdentifier().getName());
-		                if(id != null) {
-		                    bean.setPropertyValue(prop.getName(),t.get(prop.getType(),id));
-		                }
+		                try {
+                            Serializable id = (Serializable) propBean.getPropertyValue(otherSide.getIdentifier().getName());
+                            if (id != null) {
+                                bean.setPropertyValue(prop.getName(), t.get(prop.getType(), id));
+                            }
+                        } catch (InvalidPropertyException ipe) {
+                            // property is not accessable
+                        }
 		            }
 		        }
 		    }
