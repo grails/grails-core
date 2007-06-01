@@ -30,6 +30,7 @@ import org.springframework.beans.BeanUtils;
 import java.lang.reflect.Constructor;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Collection;
 
 /**
  * A class that provides utility methods for working with the Groovy MetaClass API
@@ -102,7 +103,7 @@ public class GrailsMetaClassUtils {
                 }
             }
         }
-        List metaProperties = emc.getExpandoProperties();
+        Collection metaProperties = emc.getExpandoProperties();
         for (Iterator i = metaProperties.iterator(); i.hasNext();) {
             Object o = i.next();
             if(o instanceof ThreadManagedMetaBeanProperty) {

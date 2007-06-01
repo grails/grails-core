@@ -23,6 +23,53 @@ import org.springframework.beans.BeanUtils
 
 class ExpandoMetaClassTests extends GroovyTestCase {
 
+    void testOverrideInvokeMethod() {
+	   	def mc = new ExpandoMetaClass(TestInvokeMethod.class)
+        mc.initialize()
+        mc.allowChangesAfterInit = true
+
+        assert mc.hasMetaMethod("invokeMe", [String] as Class[])
+
+        mc.invokeMethod = { String name, args ->
+            println "invoking method!"
+            def mm = delegate.metaClass.getMetaMethod(name, args)
+
+            mm ? mm.invoke(delegate, args) : "bar!!"
+        }
+
+		def t = new TestInvokeMethod()
+	   	t.metaClass = mc
+
+
+        assertEquals "bar!!", t.doStuff()
+        assertEquals "Foo!! hello", t.invokeMe("hello")
+
+    }
+
+    void testOverrideGetProperty() {
+	   	def mc = new ExpandoMetaClass(TestGetProperty.class)
+        mc.initialize()
+        mc.allowChangesAfterInit = true
+
+        assert mc.hasMetaProperty("name")
+        
+        mc.getProperty = { String name ->
+            def mp = delegate.metaClass.getMetaProperty(name)
+
+            mp ? mp.getProperty(delegate) : "foo $name" 
+        }
+
+
+		def t = new TestGetProperty()
+	   	t.metaClass = mc
+
+	   	assertEquals "foo bar", t.getProperty("bar")
+	   	assertEquals "foo bar", t.bar
+	   	assertEquals "Fred", t.getProperty("name")
+	   	assertEquals "Fred", t.name
+
+    }
+
 	void testBooleanGetterWithClosure() {
 	   	def metaClass = new ExpandoMetaClass(Test.class)
         metaClass.initialize()
@@ -426,6 +473,12 @@ class ExpandoMetaClassTests extends GroovyTestCase {
 
 }
 
+class TestInvokeMethod {
+    def invokeMe(String boo) { "Foo!! $boo" }
+}
+class TestGetProperty {
+    String name = "Fred"
+}
 class Test {
 	String name
 	
