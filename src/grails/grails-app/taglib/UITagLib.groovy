@@ -204,8 +204,8 @@ class UITagLib {
 			
 			if(attrs.value) {
 							// replace " with '   original implementation: out << "oFCKeditor.Value	= \""
-				out << "oFCKeditor.Value	= \'"
-			    out << escapeJavascript(Collections.EMPTY_MAP,attrs.value)
+				out << "oFCKeditor.Value	= \'"			    
+				out << attrs.value.replaceAll(/\r\n|\n|\r/, '\\\\n').replaceAll('"','\\\\"').replaceAll("'","\\\\'")
 				out.println "\' ;"
 			}
 			
