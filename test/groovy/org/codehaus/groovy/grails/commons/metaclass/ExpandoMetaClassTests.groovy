@@ -48,6 +48,33 @@ class ExpandoMetaClassTests extends GroovyTestCase {
 
     }
 
+    void testOverrideSetProperty() {
+	   	def mc = new ExpandoMetaClass(TestGetProperty.class)
+        mc.initialize()
+        mc.allowChangesAfterInit = true
+
+        assert mc.hasMetaProperty("name")
+
+
+        def testValue = null
+        mc.setProperty = { String name, value ->
+            def mp = delegate.metaClass.getMetaProperty(name)
+
+            if(mp) { mp.setProperty(delegate, value) } else { testValue = value } 
+        }
+
+
+		def t = new TestGetProperty()
+	   	t.metaClass = mc
+
+        t.name = "Bob"
+        assertEquals "Bob", t.name
+
+        t.foo = "bar"
+        assertEquals "bar",testValue
+
+    }
+    
     void testOverrideGetProperty() {
 	   	def mc = new ExpandoMetaClass(TestGetProperty.class)
         mc.initialize()

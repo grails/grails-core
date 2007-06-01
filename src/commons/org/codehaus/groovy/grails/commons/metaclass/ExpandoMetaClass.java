@@ -82,19 +82,20 @@ public class  ExpandoMetaClass extends MetaClassImpl implements GroovyObject {
 	private static final Class[] ZERO_ARGUMENTS = new Class[0];
 	private static final String CONSTRUCTOR = "ctor";
     private static final String GET_PROPERTY_METHOD = "getProperty";
+    private static final String SET_PROPERTY_METHOD = "setProperty";
+
     private static final String INVOKE_METHOD_METHOD = "invokeMethod";
-
     private static final String META_CLASS_PROPERTY = "metaClass";
-    private static final String GROOVY_CONSTRUCTOR = "<init>";
 
+    private static final String GROOVY_CONSTRUCTOR = "<init>";
     // These two properties are used when no ExpandoMetaClassCreationHandle is present
     private static final Map classInheritanceMapping = Collections.synchronizedMap(new HashMap());
     private boolean hasCreationHandle = false;
     private MetaClass myMetaClass;
     private boolean allowChangesAfterInit = false;
     private boolean initialized;
-    private boolean initCalled = false;
 
+    private boolean initCalled = false;
     private boolean modified = false;
     private boolean inRegistry;
     private final Set inheritedMetaMethods = new HashSet();
@@ -103,6 +104,7 @@ public class  ExpandoMetaClass extends MetaClassImpl implements GroovyObject {
     private final Map expandoProperties = new LinkedHashMap();
     private ClosureMetaMethod getPropertyMethod = null;
     private ClosureMetaMethod invokeMethodMethod = null;
+    private ClosureMetaMethod setPropertyMethod = null;
 
     /**
      * For simulating closures in Java
@@ -210,12 +212,8 @@ public class  ExpandoMetaClass extends MetaClassImpl implements GroovyObject {
                     addMetaMethod(localMethod);
                     MethodKey key = new DefaultMethodKey(getJavaClass(),name, localMethod.getParameterTypes(),false );
                     cacheInstanceMethod(key, localMethod);
-                    if(isInvokeMethod(name, cloned)) {
-                        invokeMethodMethod = localMethod;                        
-                    }
-                    else if(isGetPropertyMethod(name)) {
-                        getPropertyMethod = localMethod;
-                    }
+
+                    checkIfGroovyObjectMethod(localMethod, name, cloned);
                     expandoMethods.add(localMethod);
 
                 }
@@ -510,12 +508,7 @@ public class  ExpandoMetaClass extends MetaClassImpl implements GroovyObject {
 			performOperationOnMetaClass(new Callable() {		
 				public void call() {
 					ClosureMetaMethod metaMethod = new ClosureMetaMethod(methodName, theClass,callable);
-                    if(isGetPropertyMethod(methodName)) {
-                        getPropertyMethod = metaMethod;
-                    }
-                    else if(isInvokeMethod(methodName, callable)) {
-                        invokeMethodMethod = metaMethod;
-                    }
+                    checkIfGroovyObjectMethod(metaMethod, methodName, callable);
                     MethodKey key = new DefaultMethodKey(theClass,methodName, metaMethod.getParameterTypes(),false );
 					
 					
@@ -542,12 +535,37 @@ public class  ExpandoMetaClass extends MetaClassImpl implements GroovyObject {
 			});
 	}
 
+    /**
+     * Checks if the metaMethod is a method from the GroovyObject interface such as setProperty, getProperty and invokeMethod
+     *
+     * @param metaMethod The metaMethod instance
+     * @param methodName The method name
+     * @param callable The closure from the meta method
+     *
+     * @see groovy.lang.GroovyObject
+     */
+    private void checkIfGroovyObjectMethod(ClosureMetaMethod metaMethod, String methodName, Closure callable) {
+        if(isGetPropertyMethod(methodName)) {
+            getPropertyMethod = metaMethod;
+        }
+        else if(isInvokeMethod(methodName, callable)) {
+            invokeMethodMethod = metaMethod;
+        }
+        else if(isSetPropertyMethod(methodName, metaMethod)) {
+            setPropertyMethod = metaMethod;
+        }
+    }
+
+    private boolean isSetPropertyMethod(String methodName, ClosureMetaMethod metaMethod) {
+        return SET_PROPERTY_METHOD.equals(methodName)  && metaMethod.getParameterTypes().length == 2;
+    }
+
     private boolean isGetPropertyMethod(String methodName) {
         return GET_PROPERTY_METHOD.equals(methodName);
     }
 
-    private boolean isInvokeMethod(String methodName, Closure callable) {
-        return INVOKE_METHOD_METHOD.equals(methodName) && callable.getParameterTypes().length == 2;
+    private boolean isInvokeMethod(String methodName, Closure metaMethod) {
+        return INVOKE_METHOD_METHOD.equals(methodName) && metaMethod.getParameterTypes().length == 2;
     }
 
 
@@ -733,6 +751,20 @@ public class  ExpandoMetaClass extends MetaClassImpl implements GroovyObject {
             return getPropertyMethod.invoke(object, new Object[]{name});
         }
         return super.getProperty(sender, object, name, useSuper, fromInsideClass);    
+    }
+
+    /**
+     * Overrides default implementation just in case setProperty method has been overriden by ExpandoMetaClass
+     *
+     * @see MetaClassImpl#setProperty(Class, Object, String, Object, boolean, boolean) 
+     */
+
+    public void setProperty(Class sender, Object object, String name, Object newValue, boolean useSuper, boolean fromInsideClass) {
+        if(setPropertyMethod!=null  && !name.equals(META_CLASS_PROPERTY)) {
+            setPropertyMethod.invoke(object, new Object[]{name, newValue});
+            return;
+        }
+        super.setProperty(sender, object, name, newValue, useSuper, fromInsideClass);
     }
 
     /**

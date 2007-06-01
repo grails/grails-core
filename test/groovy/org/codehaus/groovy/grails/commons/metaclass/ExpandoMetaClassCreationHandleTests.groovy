@@ -62,6 +62,29 @@ class ExpandoMetaClassCreationHandleTests extends GroovyTestCase {
 	    assertEquals "foo", t[0]
     }
 
+    void testOverrideSetPropertyViaInterface() {
+	    registry.removeMetaClass(Foo.class)
+	    registry.removeMetaClass(Test1.class)
+
+	    def metaClass = registry.getMetaClass(Foo.class)
+
+        def testValue = null
+	    metaClass.setProperty = { String name, value ->
+            def mp = delegate.metaClass.getMetaProperty(name)
+
+            if(mp) { mp.setProperty(delegate, value) } else { testValue = value }
+        }
+
+
+		def t = new Test1()
+
+        t.name = "Bob"
+        assertEquals "Bob", t.name
+
+        t.foo = "bar"
+        assertEquals "bar",testValue
+
+    }
     void testOverrideGetPropertyViaInterface() {
 	    registry.removeMetaClass(Foo.class)
 	    registry.removeMetaClass(Test1.class)
