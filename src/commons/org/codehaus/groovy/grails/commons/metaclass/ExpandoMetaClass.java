@@ -85,16 +85,17 @@ public class  ExpandoMetaClass extends MetaClassImpl implements GroovyObject {
     private static final String SET_PROPERTY_METHOD = "setProperty";
 
     private static final String INVOKE_METHOD_METHOD = "invokeMethod";
+    private static final String CLASS_PROPERTY = "class";
     private static final String META_CLASS_PROPERTY = "metaClass";
-
     private static final String GROOVY_CONSTRUCTOR = "<init>";
+    
     // These two properties are used when no ExpandoMetaClassCreationHandle is present
     private static final Map classInheritanceMapping = Collections.synchronizedMap(new HashMap());
     private boolean hasCreationHandle = false;
     private MetaClass myMetaClass;
     private boolean allowChangesAfterInit = false;
-    private boolean initialized;
 
+    private boolean initialized;
     private boolean initCalled = false;
     private boolean modified = false;
     private boolean inRegistry;
@@ -747,10 +748,14 @@ public class  ExpandoMetaClass extends MetaClassImpl implements GroovyObject {
      * @see MetaClassImpl#getProperty(Class, Object, String, boolean, boolean)
      */
     public Object getProperty(Class sender, Object object, String name, boolean useSuper, boolean fromInsideClass) {
-        if(getPropertyMethod != null && !name.equals(META_CLASS_PROPERTY)) {
+        if(hasOverrideGetProperty(name)) {
             return getPropertyMethod.invoke(object, new Object[]{name});
         }
         return super.getProperty(sender, object, name, useSuper, fromInsideClass);    
+    }
+
+    private boolean hasOverrideGetProperty(String name) {
+        return getPropertyMethod != null && !name.equals(META_CLASS_PROPERTY)&& !name.equals(CLASS_PROPERTY);
     }
 
     /**

@@ -28,7 +28,7 @@ import java.util.*;
  * @since 0.4
  */
 public class GrailsHttpSession implements
-		HttpSession, Map {
+		HttpSession {
 
 	private final HttpSession adaptee;
 
@@ -187,127 +187,5 @@ public class GrailsHttpSession implements
     		adaptee.setMaxInactiveInterval(arg0);
         }
     }
-
-	/* (non-Javadoc)
-	 * @see java.util.Map#clear()
-	 */
-	public void clear() {
-        synchronized (adaptee) {
-    		adaptee.invalidate();
-        }
-    }
-
-	/* (non-Javadoc)
-	 * @see java.util.Map#containsKey(java.lang.Object)
-	 */
-	public boolean containsKey(Object key) {
-		if(key == null)return false;
-        synchronized (adaptee) {
-    		return adaptee.getAttribute(key.toString()) != null;
-        }
-    }
-
-	/* (non-Javadoc)
-	 * @see java.util.Map#containsValue(java.lang.Object)
-	 */
-	public boolean containsValue(Object value) {
-        synchronized (adaptee) {
-            for (Enumeration e = getAttributeNames(); e.hasMoreElements();) {
-                if(getAttribute(e.nextElement().toString()).equals(value))
-                    return true;
-
-            }
-        }
-        return false;
-	}
-
-	/* (non-Javadoc)
-	 * @see java.util.Map#entrySet()
-	 */
-	public Set entrySet() {
-		throw new UnsupportedOperationException("Method 'entrySet()' is not support by session Map." );
-	}
-
-	/* (non-Javadoc)
-	 * @see java.util.Map#get(java.lang.Object)
-	 */
-	public Object get(Object key) {
-		if(key == null)return null;
-        synchronized (adaptee) {
-    		return getAttribute(key.toString());
-        }
-    }
-
-	/* (non-Javadoc)
-	 * @see java.util.Map#isEmpty()
-	 */
-	public boolean isEmpty() {
-        synchronized (adaptee) {
-    		return !getAttributeNames().hasMoreElements();
-        }
-    }
-
-	/* (non-Javadoc)
-	 * @see java.util.Map#keySet()
-	 */
-	public Set keySet() {
-		throw new UnsupportedOperationException("Method 'keySet()' is not support by session Map." );
-	}
-
-	/* (non-Javadoc)
-	 * @see java.util.Map#put(java.lang.Object, java.lang.Object)
-	 */
-	public Object put(Object key, Object value) {
-        synchronized (adaptee) {
-    		setAttribute(key.toString(), value);
-        }
-        return value;
-	}
-
-	/* (non-Javadoc)
-	 * @see java.util.Map#putAll(java.util.Map)
-	 */
-	public void putAll(Map t) {
-		if(t!=null) {
-            synchronized (adaptee) {
-                for (Iterator i = t.keySet().iterator(); i.hasNext();) {
-                    Object key = i.next();
-                    String name = key.toString();
-
-                    setAttribute(name, t.get(key));
-
-                }
-            }
-        }
-	}
-
-	/* (non-Javadoc)
-	 * @see java.util.Map#remove(java.lang.Object)
-	 */
-	public Object remove(Object key) {
-		if(key == null)return null;
-		
-        Object obj;
-        synchronized (adaptee) {
-    		obj = getAttribute(key.toString());
-	    	removeAttribute(key.toString());
-        }
-
-        return obj;
-	}
-
-	/* (non-Javadoc)
-	 * @see java.util.Map#size()
-	 */
-	public int size() {
-		throw new UnsupportedOperationException("Method 'size()' is not support by session Map." );
-	}
-
-	/* (non-Javadoc)
-	 * @see java.util.Map#values()
-	 */
-	public Collection values() {
-		throw new UnsupportedOperationException("Method 'values()' is not support by session Map." );
-	}
 
 }

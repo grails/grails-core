@@ -78,13 +78,9 @@ AbstractDependencyInjectionSpringContextTests {
 	}
 
     protected final void onSetUp() throws Exception {
-        originalHandler = 	InvokerHelper.getInstance()
-		.getMetaRegistry()
-		.metaClassCreationHandle
+        originalHandler = 	GroovySystem.metaClassRegistry.metaClassCreationHandle
 
-		InvokerHelper.getInstance()
-		.getMetaRegistry()
-		.metaClassCreationHandle = new ExpandoMetaClassCreationHandle();
+		GroovySystem.metaClassRegistry.metaClassCreationHandle = new ExpandoMetaClassCreationHandle();
 
 
         grailsApplication.initialise()
@@ -124,9 +120,6 @@ AbstractDependencyInjectionSpringContextTests {
 		def dependentPlugins = dependantPluginClasses.collect { new DefaultGrailsPlugin(it, grailsApplication)}
 		def springConfig = new DefaultRuntimeSpringConfiguration(ctx)
         webRequest = GrailsWebUtil.bindMockWebRequest()
-        request = webRequest.currentRequest
-        request.characterEncoding = "utf-8"
-        response = webRequest.currentResponse
 
         servletContext =  webRequest.servletContext
 
@@ -139,6 +132,10 @@ AbstractDependencyInjectionSpringContextTests {
 		mockManager.applicationContext = appCtx
 		servletContext.setAttribute( GrailsApplicationAttributes.APPLICATION_CONTEXT, appCtx)
 		mockManager.doDynamicMethods()
+        request = webRequest.currentRequest
+        request.characterEncoding = "utf-8"
+        response = webRequest.currentResponse
+		
 
 		assert appCtx.grailsUrlMappingsHolder
     }

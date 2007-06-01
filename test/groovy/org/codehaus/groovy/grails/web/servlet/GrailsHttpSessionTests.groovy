@@ -15,6 +15,14 @@
  */
 package org.codehaus.groovy.grails.web.servlet;
 
+import org.codehaus.groovy.grails.commons.test.*
+import org.codehaus.groovy.grails.commons.metaclass.*
+import org.codehaus.groovy.grails.commons.spring.*
+import org.springframework.mock.web.*
+import javax.servlet.http.HttpServletRequest
+import org.springframework.web.util.*
+import org.codehaus.groovy.grails.plugins.web.*
+
 import org.springframework.mock.web.*
 import org.codehaus.groovy.grails.web.servlet.mvc.*
 
@@ -24,7 +32,14 @@ import org.codehaus.groovy.grails.web.servlet.mvc.*
  * @author Graeme Rocher
  *
  */
-class GrailsHttpSessionTests extends GroovyTestCase {
+class GrailsHttpSessionTests extends AbstractGrailsPluginTests {
+
+	void onSetUp() {
+
+		pluginsToLoad << gcl.loadClass("org.codehaus.groovy.grails.plugins.CoreGrailsPlugin")
+		pluginsToLoad << gcl.loadClass("org.codehaus.groovy.grails.plugins.web.ServletsGrailsPlugin")
+	}
+
 
 	 void testSetAttribute() {
 		 def mock = new MockHttpSession()
@@ -44,8 +59,7 @@ class GrailsHttpSessionTests extends GroovyTestCase {
 	     assertEquals "blah", grailsSession.myAttribute
 		 
 	     grailsSession.removeAttribute("myAttribute")
-	     
-	     assert grailsSession.isEmpty()
+	     	     
 	     assertNull( grailsSession.myAttribute )
 	 }
 

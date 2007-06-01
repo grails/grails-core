@@ -48,16 +48,14 @@ class CoreGrailsPlugin {
 	}
 	
 	def doWithDynamicMethods = {
-		MetaClassRegistry registry = InvokerHelper
-										.getInstance()
-										.getMetaRegistry();
+		MetaClassRegistry registry = GroovySystem.metaClassRegistry
 
 		def metaClass = registry.getMetaClass(Class.class)
 		if(!(metaClass instanceof ExpandoMetaClass)) {
 			registry.removeMetaClass(Class.class)
 			metaClass = registry.getMetaClass(Class.class)
 		}
-		
+
 		metaClass.getMetaClass = {->
 			def mc = registry.getMetaClass(delegate)
 			if(mc instanceof ExpandoMetaClass) {
@@ -68,7 +66,7 @@ class CoreGrailsPlugin {
 				return registry.getMetaClass(delegate)
 			}
 		}
-	}    
+	}
 	
 	def onChange = { event -> 
 		if(event.source) {
