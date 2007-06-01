@@ -23,6 +23,8 @@ import org.springframework.beans.BeanUtils
 
 class ExpandoMetaClassTests extends GroovyTestCase {
 
+    
+
     void testOverrideInvokeMethod() {
 	   	def mc = new ExpandoMetaClass(TestInvokeMethod.class)
         mc.initialize()

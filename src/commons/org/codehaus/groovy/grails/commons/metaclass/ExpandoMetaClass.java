@@ -184,21 +184,17 @@ public class  ExpandoMetaClass extends MetaClassImpl implements GroovyObject {
 				MetaMethod existing = pickMethod(metaMethodFromSuper.getName(), metaMethodFromSuper.getParameterTypes());
 
 				if(existing == null) {
-                    synchronized(inheritedMetaMethods) {
                         addMethodWithKey(metaMethodFromSuper);
-                    }                    
 				}
 				else {
                     boolean isGroovyMethod = getMetaMethods().contains(existing);
-                    synchronized(inheritedMetaMethods) {                        
-                        if(isGroovyMethod) {
-                            addMethodWithKey(metaMethodFromSuper);
-                        }
-                        else if(inheritedMetaMethods.contains(existing)) {
-                            inheritedMetaMethods.remove(existing);
+                    if(isGroovyMethod) {
+                        addMethodWithKey(metaMethodFromSuper);
+                    }
+                    else if(inheritedMetaMethods.contains(existing)) {
+                        inheritedMetaMethods.remove(existing);
 
-                            addMethodWithKey(metaMethodFromSuper);
-                        }
+                        addMethodWithKey(metaMethodFromSuper);
                     }
 				}
 
@@ -209,13 +205,18 @@ public class  ExpandoMetaClass extends MetaClassImpl implements GroovyObject {
                 if(metaMethodFromSuper instanceof ClosureMetaMethod) {
                     ClosureMetaMethod closureMethod = (ClosureMetaMethod)metaMethodFromSuper;
                     Closure cloned = (Closure)closureMethod.getClosure().clone();
-                    ClosureMetaMethod localMethod = new ClosureMetaMethod(metaMethodFromSuper.getName(), getJavaClass(), cloned);
+                    String name = metaMethodFromSuper.getName();
+                    ClosureMetaMethod localMethod = new ClosureMetaMethod(name, getJavaClass(), cloned);
                     addMetaMethod(localMethod);
-                    MethodKey key = new DefaultMethodKey(getJavaClass(),metaMethodFromSuper.getName(), localMethod.getParameterTypes(),false );
+                    MethodKey key = new DefaultMethodKey(getJavaClass(),name, localMethod.getParameterTypes(),false );
                     cacheInstanceMethod(key, localMethod);
-                    synchronized(expandoMethods) {
-                        expandoMethods.add(localMethod);
+                    if(isInvokeMethod(name, cloned)) {
+                        invokeMethodMethod = localMethod;                        
                     }
+                    else if(isGetPropertyMethod(name)) {
+                        getPropertyMethod = localMethod;
+                    }
+                    expandoMethods.add(localMethod);
 
                 }
             }
@@ -509,10 +510,10 @@ public class  ExpandoMetaClass extends MetaClassImpl implements GroovyObject {
 			performOperationOnMetaClass(new Callable() {		
 				public void call() {
 					ClosureMetaMethod metaMethod = new ClosureMetaMethod(methodName, theClass,callable);
-                    if(GET_PROPERTY_METHOD.equals(methodName)) {
+                    if(isGetPropertyMethod(methodName)) {
                         getPropertyMethod = metaMethod;
                     }
-                    else if(INVOKE_METHOD_METHOD.equals(methodName)) {
+                    else if(isInvokeMethod(methodName, callable)) {
                         invokeMethodMethod = metaMethod;
                     }
                     MethodKey key = new DefaultMethodKey(theClass,methodName, metaMethod.getParameterTypes(),false );
@@ -541,8 +542,16 @@ public class  ExpandoMetaClass extends MetaClassImpl implements GroovyObject {
 			});
 	}
 
+    private boolean isGetPropertyMethod(String methodName) {
+        return GET_PROPERTY_METHOD.equals(methodName);
+    }
 
-	private void performRegistryCallbacks() {
+    private boolean isInvokeMethod(String methodName, Closure callable) {
+        return INVOKE_METHOD_METHOD.equals(methodName) && callable.getParameterTypes().length == 2;
+    }
+
+
+    private void performRegistryCallbacks() {
 		MetaClassRegistry registry =  InvokerHelper.getInstance().getMetaRegistry();
 		if(!modified && !inRegistry) {
 			modified = true;

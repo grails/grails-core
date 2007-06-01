@@ -38,6 +38,8 @@ class ExpandoMetaClassCreationHandleTests extends GroovyTestCase {
 		registry = null
 	}
 
+
+
     void testExpandoInterfaceInheritanceWithOverrideDGM() {
 	    registry.removeMetaClass(Foo.class)
 	    registry.removeMetaClass(Test1.class)
@@ -58,7 +60,47 @@ class ExpandoMetaClassCreationHandleTests extends GroovyTestCase {
         assert map.size() == 1
 
 	    assertEquals "foo", t[0]
-    }	
+    }
+
+    void testOverrideGetPropertyViaInterface() {
+	    registry.removeMetaClass(Foo.class)
+	    registry.removeMetaClass(Test1.class)
+
+	    def metaClass = registry.getMetaClass(Foo.class)
+
+	    metaClass.getProperty = { String name ->
+            def mp = delegate.metaClass.getMetaProperty(name)
+
+            mp ? mp.getProperty(delegate) : "foo $name"
+        }
+
+	    def t = new Test1()
+
+	   	assertEquals "Fred", t.getProperty("name")
+	   	assertEquals "Fred", t.name
+	   	assertEquals "foo bar", t.getProperty("bar")
+	   	assertEquals "foo bar", t.bar
+    }
+
+    void testOverrideInvokeMethodViaInterface() {
+	    registry.removeMetaClass(Foo.class)
+	    registry.removeMetaClass(Test1.class)
+
+	    def metaClass = registry.getMetaClass(Foo.class)
+
+	    metaClass.invokeMethod = { String name, args ->
+           def mm = delegate.metaClass.getMetaMethod(name, args)
+
+            mm ? mm.invoke(delegate, args) : "bar!!"
+	    }
+
+	    def t = new Test1()
+
+        assertEquals "bar!!", t.doStuff()
+        assertEquals "foo", t.invokeMe()
+
+
+    }
 
 	void testInterfaceMethodInheritance() {
 
@@ -140,5 +182,6 @@ interface Foo {
 
 }
 class Test1 implements Foo {
-
+    String name = "Fred"
+      def invokeMe() { "foo" }
 }
