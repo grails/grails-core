@@ -26,6 +26,7 @@ import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.servlet.view.AbstractUrlBasedView;
+import org.springframework.webflow.AnnotatedObject;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -83,7 +84,7 @@ public class GroovyPageView extends AbstractUrlBasedView  {
         // and we don't end up with cached references
         GroovyPagesTemplateEngine templateEngine = (GroovyPagesTemplateEngine) getApplicationContext().getBean(GroovyPagesTemplateEngine.BEAN_ID);
         if(templateEngine == null) throw new IllegalStateException("No GroovyPagesTemplateEngine found in ApplicationContext!");
-        renderWithTemplateEngine(templateEngine,model, response);
+        renderWithTemplateEngine(templateEngine,model, response, request);
     }
 
     /**
@@ -92,10 +93,12 @@ public class GroovyPageView extends AbstractUrlBasedView  {
      * @param templateEngine The TemplateEngine to use
      * @param model The model to use
      * @param response The HttpServletResponse instance
-     * 
-     * @throws IOException Thrown when an error occurs writing the response
+     * @param request The HttpServletRequest
+     *
+     * @throws java.io.IOException Thrown when an error occurs writing the response
      */
-    protected void renderWithTemplateEngine(GroovyPagesTemplateEngine templateEngine, Map model, HttpServletResponse response) throws IOException {
+    protected void renderWithTemplateEngine(GroovyPagesTemplateEngine templateEngine, Map model,
+                                            HttpServletResponse response, HttpServletRequest request) throws IOException {
         Template t = templateEngine.createTemplate(getUrl());
         Writable w = t.make(model);
 
@@ -107,7 +110,7 @@ public class GroovyPageView extends AbstractUrlBasedView  {
         catch(Exception e) {
             // create fresh response writer
             out = createResponseWriter(response);
-            handleException(e, out, templateEngine);
+            handleException(e, out, templateEngine, request);
         }
         finally {
             if(out!=null)out.close();
@@ -121,11 +124,12 @@ public class GroovyPageView extends AbstractUrlBasedView  {
      * @param out The Writer
      * @param engine The GSP engine
      */
-    protected void handleException(Exception exception,Writer out, GroovyPagesTemplateEngine engine)  {
+    protected void handleException(Exception exception, Writer out, GroovyPagesTemplateEngine engine, HttpServletRequest request)  {
 
-        LOG.error("Error processing GSP: " + exception.getMessage(), exception);
-        // TODO GRAILS-603 bread crumb
+        LOG.error("Error processing GroovyPageView: " + exception.getMessage(), exception);        
         try {
+            // GRAILS-603 null out controller to avoid default layout being applied to error page
+            request.setAttribute(GrailsApplicationAttributes.CONTROLLER, null);
             Template t = engine.createTemplate(ERRORS_VIEW);
 
             Map model = new HashMap();
@@ -146,6 +150,7 @@ public class GroovyPageView extends AbstractUrlBasedView  {
      * @param response The HttpServletResponse instance
      * @return A response Writer
      */
+    //TODO this method is dupe'd across GSP servlet, reload servlet and here...
     protected Writer createResponseWriter(HttpServletResponse response) {
         Writer out = GSPResponseWriter.getInstance(response, BUFFER_SIZE);
         GrailsWebRequest webRequest =  (GrailsWebRequest) RequestContextHolder.currentRequestAttributes();

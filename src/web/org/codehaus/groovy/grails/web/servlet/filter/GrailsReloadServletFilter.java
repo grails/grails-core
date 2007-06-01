@@ -28,9 +28,12 @@ import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.codehaus.groovy.grails.plugins.PluginManagerHolder;
 import org.codehaus.groovy.grails.web.errors.GrailsWrappedRuntimeException;
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
+import org.codehaus.groovy.grails.web.pages.GSPResponseWriter;
 import org.codehaus.groovy.grails.web.servlet.DefaultGrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.util.UrlPathHelper;
 
@@ -39,6 +42,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.Writer;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -49,8 +53,8 @@ import java.util.Map;
  * @since Jan 10, 2006
  */
 public class GrailsReloadServletFilter extends OncePerRequestFilter {
-
     public static final Log LOG = LogFactory.getLog(GrailsReloadServletFilter.class);
+    private static final int BUFFER_SIZE = 8024;
 
     ResourceCopier copyScript;
     GrailsWebApplicationContext context;
@@ -146,7 +150,7 @@ public class GrailsReloadServletFilter extends OncePerRequestFilter {
             httpServletResponse.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 
             GroovyPagesTemplateEngine engine = attrs.getPagesTemplateEngine();
-            // TODO GRAILS-603 bread crumb
+
             Template t = engine.createTemplate(GrailsApplicationAttributes.PATH_TO_VIEWS + "/error.gsp");
 
             GrailsWrappedRuntimeException wrapped = new GrailsWrappedRuntimeException(getServletContext(), e);
@@ -154,11 +158,19 @@ public class GrailsReloadServletFilter extends OncePerRequestFilter {
             model.put("exception", wrapped);
 
             Writable w = t.make(model);
+            Writer out = createResponseWriter(httpServletResponse);
+            w.writeTo(out);
 
-            w.writeTo(httpServletResponse.getWriter());
-            
+            return;
         }
         filterChain.doFilter(httpServletRequest,httpServletResponse);
+    }
+
+    protected Writer createResponseWriter(HttpServletResponse response) {
+        Writer out = GSPResponseWriter.getInstance(response, BUFFER_SIZE);
+        GrailsWebRequest webRequest =  (GrailsWebRequest) RequestContextHolder.currentRequestAttributes();
+        webRequest.setOut(out);
+        return out;
     }
 
 }

@@ -155,6 +155,7 @@ public class GroovyPagesServlet extends HttpServlet  {
             w.writeTo(out);
         }
         catch(Exception e) {
+            out = createResponseWriter(response);
             handleException(e, out,engine);
         }
         finally {
@@ -173,8 +174,6 @@ public class GroovyPagesServlet extends HttpServlet  {
      * @throws ServletException Thrown when an exception occurs in the servlet environment
      */
     protected void handleException(Exception exception,Writer out, GroovyPagesTemplateEngine engine) throws ServletException, IOException {
-        // TODO GRAILS-603 dupe with GroovyPageView??breadcrumb
-
         if(LOG.isDebugEnabled())
             LOG.debug("Error processing GSP: " + exception.getMessage(), exception);
 

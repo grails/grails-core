@@ -23,6 +23,7 @@ import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
 import org.codehaus.groovy.grails.web.servlet.view.GroovyPageView;
 
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.Map;
@@ -69,7 +70,8 @@ public class ScaffoldedGroovyPageView extends GroovyPageView {
      * 
      * @throws IOException Thrown if there was an IO error rendering the view
      */
-    protected void renderWithTemplateEngine(GroovyPagesTemplateEngine templateEngine, Map model, HttpServletResponse response) throws IOException {
+    protected void renderWithTemplateEngine(GroovyPagesTemplateEngine templateEngine, Map model,
+                                            HttpServletResponse response, HttpServletRequest request) throws IOException {
         if(LOG.isDebugEnabled()) {
             LOG.debug("Rendering scaffolded view ["+getUrl()+"] with model ["+model+"]");
         }
@@ -80,6 +82,10 @@ public class ScaffoldedGroovyPageView extends GroovyPageView {
         try {
             out = createResponseWriter(response);
             w.writeTo(out);
+        } catch(Exception e) {
+            // create fresh response writer
+            out = createResponseWriter(response);
+            handleException(e, out, templateEngine, request);
         } finally {
             if(out!=null)out.close();
         }
