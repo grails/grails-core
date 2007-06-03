@@ -15,6 +15,7 @@
 package org.codehaus.groovy.grails.validation;
 
 import org.springframework.validation.Errors;
+import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 
 /**
  * A Constraint that validates not equal to something
@@ -30,6 +31,20 @@ class NotEqualConstraint extends AbstractConstraint {
 
     public String getName() {
         return ConstrainedProperty.NOT_EQUAL_CONSTRAINT;
+    }
+
+    /* (non-Javadoc)
+     * @see org.codehaus.groovy.grails.validation.ConstrainedProperty.AbstractConstraint#setParameter(java.lang.Object)
+     */
+    public void setParameter(Object constraintParameter) {
+        if(constraintParameter == null) {
+            throw new IllegalArgumentException("Parameter for constraint ["+ConstrainedProperty.NOT_EQUAL_CONSTRAINT +"] of property ["+constraintPropertyName+"] of class ["+constraintOwningClass+"] cannot be null");
+        }
+
+        Class propertyClass = GrailsClassUtils.getPropertyType( constraintOwningClass, constraintPropertyName );
+        if(!GrailsClassUtils.isAssignableOrConvertibleFrom( constraintParameter.getClass(),propertyClass ))
+            throw new IllegalArgumentException("Parameter for constraint ["+ConstrainedProperty.NOT_EQUAL_CONSTRAINT +"] of property ["+constraintPropertyName+"] of class ["+constraintOwningClass+"] must be the same type as property: [" + propertyClass.getName() + "]");
+        super.setParameter(constraintParameter);
     }
 
     /**
