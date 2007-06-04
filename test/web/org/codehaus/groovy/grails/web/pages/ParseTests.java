@@ -1,6 +1,7 @@
 package org.codehaus.groovy.grails.web.pages;
 
 import junit.framework.TestCase;
+import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
 
 import java.io.*;
 
@@ -33,8 +34,19 @@ public class ParseTests extends TestCase {
 		System.out.println(output);
 		assertEquals(expected, trimAndRemoveCR(output));
 	}
-	
-	/**
+
+    public void testParseWithUnclosedGstringThrowsException() throws IOException {
+        try{
+            parseCode("myTest", "<g:message value=\"${boom\">");
+        }catch(GrailsTagException e){
+            assertEquals("Unexpected end of file encountered parsing Tag [message] for myTest. Are you missing a closing brace '}'?", e.getMessage());
+            return;
+        }
+		fail("Expected parse exception not thrown");
+
+    }
+
+    /**
 	 * Eliminate potential issues caused by operating system differences
 	 * and minor output differences that we don't care about.
 	 * 

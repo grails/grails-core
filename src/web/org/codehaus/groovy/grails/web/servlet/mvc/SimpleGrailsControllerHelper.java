@@ -181,12 +181,7 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
         if(StringUtils.isBlank(id) && request.getParameter(ID_PARAMETER) != null) {
             id = request.getParameter(ID_PARAMETER);
         }
-        if(LOG.isDebugEnabled()) {
-            LOG.debug("Processing request for controller ["+controllerName+"], action ["+actionName+"], and id ["+id+"]");
-        }
-        if(LOG.isTraceEnabled()) {
-            LOG.trace("Extra params from uri ["+extraParams+"] ");
-        }
+
         // Step 2: lookup the controller in the application.
         GrailsControllerClass controllerClass = getControllerClassByURI(uri);
 
@@ -196,6 +191,13 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
 
         // parse the uri in its individual tokens
         controllerName = WordUtils.uncapitalize(controllerClass.getName());
+
+        if(LOG.isDebugEnabled()) {
+            LOG.debug("Processing request for controller ["+controllerName+"], action ["+actionName+"], and id ["+id+"]");
+        }
+        if(LOG.isTraceEnabled()) {
+            LOG.trace("Extra params from uri ["+extraParams+"] ");
+        }
 
         // Step 3: load controller from application context.
         GroovyObject controller = getControllerInstance(controllerClass);

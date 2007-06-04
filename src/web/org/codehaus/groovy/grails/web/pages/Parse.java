@@ -301,7 +301,7 @@ public class Parse implements Tokens {
         String ns = scan.getNamespace();
         
         state = scan.nextToken();
-        while(state != HTML && state != GEND_TAG) {
+        while(state != HTML && state != GEND_TAG && state != EOF) {
             if(state == GTAG_EXPR) {
                 buf.append("${");
                 buf.append(scan.getToken().trim());
@@ -312,6 +312,7 @@ public class Parse implements Tokens {
             }
             state = scan.nextToken();
         }
+
         doNextScan = false;
 
         text = buf.toString();
@@ -337,6 +338,11 @@ public class Parse implements Tokens {
         else {
             tagName = text;
         }
+
+        if(state == EOF){
+            throw new GrailsTagException("Unexpected end of file encountered parsing Tag [" + tagName + "] for " + className + ". Are you missing a closing brace '}'?");
+        }
+
         TagMeta tm = new TagMeta();
         tm.name = tagName;
         tm.namespace = ns;
