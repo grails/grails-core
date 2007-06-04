@@ -59,7 +59,21 @@ public class GrailsInjectionOperationTests extends AbstractDependencyInjectionSp
 	}
 
 
-	public void testIsResourceDomainClass() throws Exception {
+    public void testToStringInheritance() throws Exception {
+        GroovyObject testObject = (GroovyObject)ga.getClassLoader()
+                                                    .loadClass("A")
+                                                    .newInstance();
+
+        assertEquals("original", testObject.invokeMethod("toString", new Object[0]));
+
+        GroovyObject testObject2 = (GroovyObject)ga.getClassLoader()
+                                                    .loadClass("B")
+                                                    .newInstance();
+
+        assertEquals("original", testObject2.invokeMethod("toString", new Object[0]));
+    }
+
+    public void testIsResourceDomainClass() throws Exception {
 		assertNotNull(resources);
 		assertTrue(GrailsResourceUtils.isDomainClass(resources[0].getURL()));
 	}

@@ -15,13 +15,13 @@
  */
 package org.codehaus.groovy.grails.injection;
 
-import java.util.Iterator;
-import java.util.List;
-
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.PropertyNode;
+
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * Helper methods for working with Groovy AST trees
@@ -74,15 +74,21 @@ public class GrailsASTUtils {
 	 * @return True if it implements the method
 	 */
 	private static boolean implementsMethod(ClassNode classNode, String methodName, Class[] argTypes) {
-		List methods = classNode.getMethods();
-		for (Iterator i = methods.iterator(); i.hasNext();) {
-			MethodNode mn = (MethodNode) i.next();
-			final boolean isZeroArg = (argTypes == null || argTypes.length ==0);
-			boolean methodMatch = mn.getName().equals(methodName) && isZeroArg;
-			if(methodMatch)return true;
-			// TODO Implement further parameter analysis
-		}
-		return false;
+        String name = classNode.getSuperClass().getName();
+        if(name.equals("java.lang.Object")) {
+            List methods = classNode.getMethods();
+            for (Iterator i = methods.iterator(); i.hasNext();) {
+                MethodNode mn = (MethodNode) i.next();
+                final boolean isZeroArg = (argTypes == null || argTypes.length ==0);
+                boolean methodMatch = mn.getName().equals(methodName) && isZeroArg;
+                if(methodMatch)return true;
+                // TODO Implement further parameter analysis
+            }
+        }
+        else {
+            return true;
+        }
+        return false;
 	}
 
 	/**
