@@ -66,6 +66,39 @@ public class GrailsDataBinderTests extends TestCase {
         testBindStructuredDate("2006", "6", "3", "1", "59"); // June 3rd, 2006 - 01:26
     }
 
+    public void testBindStructuredDateWithNoYear() throws Exception {
+        testBindInvalidStructuredDate("", "2", "1"); // February 1, ????
+        testBindInvalidStructuredDate(null, "2", "29"); // February 29, ????
+    }
+
+    private void testBindInvalidStructuredDate(String year, String month, String  day) throws Exception {
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.addParameter("myDate","struct");
+
+
+        if (year!= null) {
+            request.addParameter("myDate_year",year);
+        }
+
+        // If the month is null, we expect a default value of January
+        if (month != null) {
+            request.addParameter("myDate_month",month);
+        }
+
+        // If the day is null, we expect a default value of the 1st of the month
+        if (day != null) {
+            request.addParameter("myDate_day",day);
+        }
+
+        TestBean testBean = new TestBean();
+        GrailsDataBinder binder = new GrailsDataBinder(testBean,"testBean");
+        binder.bind(request);
+
+        assertNull(testBean.getMyDate());
+    }
+    
+
+
     /**
      * Tests the <code>GrailsDataBinder</code> using the specified request parameters.  Assumes that each of the
      * specified request parameters is either null or a valid integer value for the given parameter.  Asserts that the

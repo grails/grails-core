@@ -287,13 +287,19 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
                 if(type == Date.class || type == Calendar.class) {
                     try {
                         PropertyValue yearProperty = propertyValues.getPropertyValue(propertyName + "_year");
-                        // The request will always include the year value
+                        if (yearProperty == null) {
+                            // We can't populate a date without a year
+                            continue;
+                        }
+
                         String yearString = (String) yearProperty.getValue();
                         int year;
 
                         if(StringUtils.isBlank(yearString)) {
-                            Calendar now = Calendar.getInstance(RequestContextUtils.getLocale((HttpServletRequest) request));
-                            year = now.get(Calendar.YEAR);
+                            // We can't populate a date without a year, it doesn't make sense
+                            // skip out of here and leave the field unset so it fails validation
+                            // if null not permitted
+                            continue;
                         }
                         else {
                             year = Integer.parseInt(yearString);
