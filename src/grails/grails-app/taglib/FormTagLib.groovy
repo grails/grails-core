@@ -395,6 +395,7 @@ class FormTagLib {
     def timeZoneSelect = { attrs ->
         attrs['from'] = TimeZone.getAvailableIDs();
         attrs['value'] = (attrs['value'] ? attrs['value'].ID : TimeZone.getDefault().ID )
+        def date = new Date()
 
         // set the option value as a closure that formats the TimeZone for display
         attrs['optionValue'] = {
