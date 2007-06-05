@@ -98,6 +98,8 @@ abstract class AbstractGrailsControllerTests extends GroovyTestCase {
 		RequestContextHolder.setRequestAttributes(null)
         GroovySystem.metaClassRegistry.setMetaClassCreationHandle(originalHandler);
 
+		PluginManagerHolder.setPluginManager(null)
+
     	originalHandler = null
 	}
 	
