@@ -19,15 +19,18 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.web.binding.GrailsDataBinder;
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.web.bind.ServletRequestDataBinder;
+import org.springframework.web.context.request.RequestContextHolder;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.io.Serializable;
 
 /**
  * Default implementation of the ScaffoldRequestHandler interface. Uses a ScaffoldDomain to handle
@@ -97,8 +100,8 @@ public class DefaultScaffoldRequestHandler implements ScaffoldRequestHandler {
     public Map handleShow(HttpServletRequest request,
                           HttpServletResponse response, ScaffoldCallback callback) {
 
-        String id = request.getParameter(PARAM_ID);
-        if(StringUtils.isBlank(id)) {
+        Serializable id = getRequestId();
+        if(id==null) {
             LOG.debug("[ScaffoldRequestHandler] No ID parameter ["+id+"] for request [show]");
             callback.setInvoked(false);
             return Collections.EMPTY_MAP;
@@ -113,11 +116,16 @@ public class DefaultScaffoldRequestHandler implements ScaffoldRequestHandler {
         return model;
     }
 
+    private Serializable getRequestId() {
+        GrailsWebRequest webRequest = (GrailsWebRequest) RequestContextHolder.currentRequestAttributes();
+        return (Serializable)webRequest.getParams().get(PARAM_ID);
+    }
+
     public Map handleDelete(HttpServletRequest request,
                             HttpServletResponse response, ScaffoldCallback callback) {
 
-        String id = request.getParameter(PARAM_ID);
-        if(StringUtils.isBlank(id)) {
+        Serializable id = getRequestId();
+        if(id==null) {
             LOG.debug("[ScaffoldRequestHandler] No ID parameter ["+id+"] for request [delete]");
             callback.setInvoked(false);
             return Collections.EMPTY_MAP;
@@ -168,8 +176,8 @@ public class DefaultScaffoldRequestHandler implements ScaffoldRequestHandler {
 
 
     public Map handleUpdate(HttpServletRequest request, HttpServletResponse reponse, ScaffoldCallback callback) {
-        String id = request.getParameter(PARAM_ID);
-        if(StringUtils.isBlank(id)) {
+        Serializable id = getRequestId();
+        if(id==null) {
             LOG.debug("[ScaffoldRequestHandler] No ID parameter ["+id+"] for request [update]");
             callback.setInvoked(false);
             return Collections.EMPTY_MAP;
