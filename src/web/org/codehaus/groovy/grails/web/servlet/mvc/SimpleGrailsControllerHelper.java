@@ -391,9 +391,13 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
             String name = (String)e.nextElement();
             if(name.startsWith(DISPATCH_ACTION_PARAMETER)) {
             	// remove .x suffix in case of submit image
-            	name = StringUtils.removeEnd(name, ".x");
-            	actionName = GrailsClassUtils.getPropertyNameRepresentation(name.substring((DISPATCH_ACTION_PARAMETER).length()));
-            	uri = '/' + controllerName + '/' + actionName;
+                if (name.endsWith(".x") || name.endsWith(".y")) {
+                    name = name.substring(0, name.length()-2);
+                }
+                actionName = GrailsClassUtils.getPropertyNameRepresentation(name.substring((DISPATCH_ACTION_PARAMETER).length()));
+                StringBuffer sb = new StringBuffer();
+                sb.append('/').append(controllerName).append('/').append(actionName);
+                uri = sb.toString();
             	break;
             }
         }
