@@ -111,6 +111,7 @@ class FormTagLib {
      */
     void outputAttributes(attrs)
     {
+        attrs.remove( 'tagName') // Just in case one is left
         attrs.each { k,v ->
             out << k << "=\"" << v.encodeAsHTML() << "\" "
         }
@@ -154,8 +155,9 @@ class FormTagLib {
      *
      */
     def actionSubmit = { attrs ->
+        attrs.tagName = "actionSubmit"
     	if(!attrs.value) {
-            throwTagError("Tag [$tagName] is missing required attribute [value]")
+            throwTagError("Tag [$attrs.tagName] is missing required attribute [value]")
         }
 
 		// add action and value
@@ -181,8 +183,10 @@ class FormTagLib {
      *
      */
     def actionSubmitImage = { attrs ->
+        attrs.tagName = "actionSubmitImage"
+
         if(!attrs.value) {
-            throwTagError("Tag [$tagName] is missing required attribute [value]")
+            throwTagError("Tag [$attrs.tagName] is missing required attribute [value]")
         }
         
         // add action and value
