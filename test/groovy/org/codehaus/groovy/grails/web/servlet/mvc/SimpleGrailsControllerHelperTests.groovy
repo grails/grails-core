@@ -18,7 +18,43 @@ class SimpleGrailsControllerHelperTests extends AbstractGrailsControllerTests {
 				gcl.parseClass(
 		"""
 		class TestController {
-		   def list = {}			
+		   def list = {}
+
+		   def afterInterceptor = {
+		        it.put("after", "value")
+		   }
+		}
+		""")
+		gcl.parseClass(
+		"""
+		class Test2Controller {
+		   def list = {}
+
+		   def afterInterceptor = { model ->
+		        model.put("after", "value")
+		        return "not a boolean"
+		   }
+		}
+		""")
+		gcl.parseClass(
+		"""
+		class Test3Controller {
+		   def list = {}
+
+		   def afterInterceptor = { model, viewName ->
+		        model.put("after", viewName)
+		        return true
+		   }
+		}
+		""")
+		gcl.parseClass(
+		"""
+		class Test4Controller {
+		   def list = {}
+
+		   def afterInterceptor = { model, viewName ->
+		        return false
+		   }
 		}
 		""")
 	}
@@ -131,4 +167,36 @@ class SimpleGrailsControllerHelperTests extends AbstractGrailsControllerTests {
 			assertEquals "/controller/book", uri
 		}
 	}
+
+	void testCallsAfterInterceptorWithModel(){
+        runTest {
+			def helper = new SimpleGrailsControllerHelper(ga, appCtx , servletContext)
+			def mv = helper.handleURI("/test/list", webRequest)
+			assert mv.getModel()["after"] == "value"
+		}
+    }
+
+    void testCallsAfterInterceptorWithModelAndExplicitParam(){
+        runTest {
+			def helper = new SimpleGrailsControllerHelper(ga, appCtx , servletContext)
+			def mv = helper.handleURI("/test2/list", webRequest)
+			assert mv.getModel()["after"] == "value"
+		}
+    }
+
+     void testCallsAfterInterceptorWithModelAndViewExplicitParams(){
+        runTest {
+			def helper = new SimpleGrailsControllerHelper(ga, appCtx , servletContext)
+			def mv = helper.handleURI("/test3/list", webRequest)
+			assert mv.getModel()["after"] == "/test3/list"
+		}
+    }
+
+    void testReturnsNullIfAfterInterceptorReturnsFalse(){
+          runTest {
+			def helper = new SimpleGrailsControllerHelper(ga, appCtx , servletContext)
+			def mv = helper.handleURI("/test4/list", webRequest)
+			assert mv == null
+		}
+    }
 }

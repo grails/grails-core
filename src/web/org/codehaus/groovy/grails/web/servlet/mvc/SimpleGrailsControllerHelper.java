@@ -46,6 +46,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.validation.BindException;
 import org.springframework.validation.Errors;
 import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.View;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
@@ -303,8 +304,8 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
                     if(LOG.isDebugEnabled()) {
                         LOG.debug("Action ["+actionName+"] handled, created Spring model and view ["+mv+"]");
                     }
-                    invokeAfterInterceptor(controllerClass, controller, mv);
-                    return mv;
+                    boolean returnModelAndView = invokeAfterInterceptor(controllerClass, controller, mv);
+                    return returnModelAndView ? mv : null;
                 }
 
             }
@@ -326,16 +327,33 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
 
     }
 
-    private void invokeAfterInterceptor(GrailsControllerClass controllerClass, GroovyObject controller, ModelAndView mv) {
+    private boolean invokeAfterInterceptor(GrailsControllerClass controllerClass, GroovyObject controller, ModelAndView mv) {
         // Step 9: Check if there is after interceptor
+        Object interceptorResult = null;
         if(controllerClass.isInterceptedAfter(controller,actionName)) {
             Closure afterInterceptor = controllerClass.getAfterInterceptor(controller);
             Map model = Collections.EMPTY_MAP;
- 			if(mv != null) {
+            if(mv != null) {
 				model =	mv.getModel() != null ? mv.getModel() : Collections.EMPTY_MAP;
-			}
-            afterInterceptor.call(new Object[]{ model });
+            }
+            switch(afterInterceptor.getMaximumNumberOfParameters()){
+                case 1:
+                    interceptorResult = afterInterceptor.call(new Object[]{ model });
+                    break;
+                case 2:
+                    if(mv == null){
+                        throw new ControllerExecutionException("AfterInterceptor closure expects a view name but none is available");   
+                    }
+                    interceptorResult = afterInterceptor.call(new Object[]{ model, mv.getViewName() });
+                    break;
+                default:
+                    throw new ControllerExecutionException("AfterInterceptor closure must accept one or two parameters");
+            }
         }
+        if(interceptorResult != null &&interceptorResult instanceof Boolean) {
+           return ((Boolean) interceptorResult).booleanValue();
+        }
+        return true;
     }
 
     private String configureStateForUri(String uri) {
