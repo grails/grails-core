@@ -10,15 +10,19 @@
 			<classpath refid="classpath"/>
 			<packageset dir="${grails.src.commons}">
 				<include name="org/codehaus/groovy/grails/**"/>
+				<include name="grails/**"/>   				
 			</packageset>
 			<packageset dir="${grails.src.web}">
 				<include name="org/codehaus/groovy/grails/**"/>
+				<include name="grails/**"/>   								
 			</packageset>
 			<packageset dir="${grails.src.persistence}">
 				<include name="org/codehaus/groovy/grails/**"/>
+				<include name="grails/**"/>   								
 			</packageset>
 			<packageset dir="${grails.src.scaffolding}">
 				<include name="org/codehaus/groovy/grails/**"/>
+				<include name="grails/**"/>   								
 			</packageset>
 			<link href="http://java.sun.com/j2ee/1.4/docs/api"/>
 			<link href="http://java.sun.com/j2se/1.4.2/docs/api"/>
