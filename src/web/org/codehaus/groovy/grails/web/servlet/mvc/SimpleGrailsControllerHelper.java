@@ -46,7 +46,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.validation.BindException;
 import org.springframework.validation.Errors;
 import org.springframework.web.servlet.ModelAndView;
-import org.springframework.web.servlet.View;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
@@ -268,6 +267,9 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
             if(controllerClass.isInterceptedBefore(controller,actionName)) {
                 Closure beforeInterceptor = controllerClass.getBeforeInterceptor(controller);
                 if(beforeInterceptor!= null) {
+                    if(beforeInterceptor.getDelegate() != controller) {
+                        beforeInterceptor.setDelegate(controller);
+                    }
                     Object interceptorResult = beforeInterceptor.call();
                     if(interceptorResult instanceof Boolean) {
                         executeAction = ((Boolean)interceptorResult).booleanValue();
@@ -332,6 +334,9 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
         Object interceptorResult = null;
         if(controllerClass.isInterceptedAfter(controller,actionName)) {
             Closure afterInterceptor = controllerClass.getAfterInterceptor(controller);
+            if(afterInterceptor.getDelegate() != controller) {
+                afterInterceptor.setDelegate(controller);
+            }
             Map model = Collections.EMPTY_MAP;
             if(mv != null) {
 				model =	mv.getModel() != null ? mv.getModel() : Collections.EMPTY_MAP;
