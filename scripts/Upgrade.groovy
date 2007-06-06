@@ -65,8 +65,27 @@ task( upgrade: "main upgrade task") {
 			Ant.delete(file:"${basedir}/grails-app/utils/${f.name}")
 	}
 	
-	Ant.sequential {       
-   	   		
+	Ant.sequential {    
+		def testDir = "${basedir}/grails-tests"
+		if(new File("${testDir}/CVS").exists()) {
+			println """
+WARNING: Your Grails tests directory '${testDir}' is currently under CVS control so the upgrade script cannot
+move it to the new location of '${basedir}/unit/integration'. Please move the directory using the relevant CVS commands."""
+		}   
+		else if(new File("${testDir}/.svn").exists()) {
+						println """
+WARNING: Your Grails tests directory '${testDir}' is currently under SVN control so the upgrade script cannot
+move it to the new location of '${basedir}/unit/integration'. Please move the directory using the relevant SVN commands."""			
+		}   
+		else {
+			if(new File(testDir).exists()) {
+				move(todir:"${basedir}/test/integration") {
+					fileset(dir:testDir, includes:"**") 
+				}                                       
+				delete(dir:testDir)
+			}      	   		
+			
+		}
         delete(dir:"${basedir}/tmp", failonerror:false)
 		copy(todir:"${basedir}/web-app") {
 			fileset(dir:"${grailsHome}/src/war") {
