@@ -23,6 +23,7 @@ import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods;
 import org.codehaus.groovy.grails.web.metaclass.GetParamsDynamicProperty;
 import org.codehaus.groovy.grails.web.metaclass.GetSessionDynamicProperty;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
+import org.codehaus.groovy.grails.web.servlet.WrappedResponseHolder;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.springframework.context.ApplicationContext;
@@ -64,7 +65,10 @@ class GroovyPageWritable implements Writable {
     public GroovyPageWritable(GroovyPageMetaInfo metaInfo) {
         GrailsWebRequest webRequest = (GrailsWebRequest) RequestContextHolder.currentRequestAttributes();
         this.request = webRequest.getCurrentRequest();
-        this.response = webRequest.getCurrentResponse();
+        HttpServletResponse wrapped = WrappedResponseHolder.getWrappedResponse();
+        this.response = wrapped != null ? wrapped : webRequest.getCurrentResponse();
+
+
         this.context = webRequest.getServletContext();
         this.showSource = request.getParameter("showSource") != null && GrailsUtil.isDevelopmentEnv();
         this.metaInfo = metaInfo;
@@ -97,8 +101,9 @@ class GroovyPageWritable implements Writable {
             if(LOG.isDebugEnabled() && !response.isCommitted()) {
                 LOG.debug("Writing response with content type: " + metaInfo.getContentType());
             }
-            if(!response.isCommitted())
+            if(!response.isCommitted())  {                
                 response.setContentType(metaInfo.getContentType()); // must come before response.getWriter()
+            }
 
             Binding binding = formulateBinding(request, response, out);
             Script page = InvokerHelper.createScript(metaInfo.getPageClass(), binding);

@@ -1,10 +1,9 @@
 <html>
     <head>
         <title>Welcome to Grails</title>
-        <link rel="stylesheet" href="css/main.css"></link>
+		<meta name="layout" content="main" />
     </head>
     <body>
-        <p><img src="images/grails_logo.jpg" alt="Grails Logo" /></p>
         <h1 style="margin-left:20px;">Welcome to Grails</h1>
         <p style="margin-left:20px;width:80%">Congratulations, you have successfully started your first Grails application! At the moment
         this is the default page, feel free to modify it to either redirect to a controller or display whatever
@@ -17,6 +16,5 @@
               </g:each>
             </ul>
         </div>
-
     </body>
 </html>

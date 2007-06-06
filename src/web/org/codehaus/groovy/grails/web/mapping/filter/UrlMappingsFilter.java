@@ -14,28 +14,27 @@
  */
 package org.codehaus.groovy.grails.web.mapping.filter;
 
-import org.springframework.web.filter.OncePerRequestFilter;
-import org.springframework.web.util.UrlPathHelper;
-import org.springframework.web.util.WebUtils;
-import org.springframework.web.context.WebApplicationContext;
-import org.springframework.web.context.support.WebApplicationContextUtils;
-import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder;
-import org.codehaus.groovy.grails.web.mapping.UrlMapping;
-import org.codehaus.groovy.grails.web.mapping.UrlMappingInfo;
-import org.codehaus.groovy.grails.web.servlet.WrappedResponseHolder;
-import org.codehaus.groovy.grails.web.servlet.GrailsUrlPathHelper;
-import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.GrailsClass;
-import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
+import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.commons.GrailsClass;
+import org.codehaus.groovy.grails.web.mapping.UrlMappingInfo;
+import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder;
+import org.codehaus.groovy.grails.web.servlet.GrailsUrlPathHelper;
+import org.codehaus.groovy.grails.web.servlet.WrappedResponseHolder;
+import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.context.support.WebApplicationContextUtils;
+import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.web.util.UrlPathHelper;
+import org.springframework.web.util.WebUtils;
 
+import javax.servlet.FilterChain;
+import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.RequestDispatcher;
 import java.io.IOException;
 
 /**
@@ -70,8 +69,8 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
         if(LOG.isTraceEnabled()) {
             LOG.trace("Executing URL mapping filter");
         }
-        
-        UrlMapping[] mappings = holder.getUrlMappings();
+
+
         String uri = urlHelper.getPathWithinApplication(request);
         // filter doesn't apply to URLs with extensions for the moment, might add support
         // later to include certain extensions
@@ -81,31 +80,32 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
         }
 
         UrlMappingInfo info = holder.match(uri);
+        try {
+            WrappedResponseHolder.setWrappedResponse(response);
+            if(info!=null) {
+                String forwardUrl = buildDispatchUrlForMapping(request, info);
+                if(LOG.isDebugEnabled()) {
+                    LOG.debug("Matched URI ["+uri+"] to URL mapping, forwarding to ["+forwardUrl+"] with response ["+response.getClass()+"]");
+                }
+                //populateParamsForMapping(info);
+                RequestDispatcher dispatcher = request.getRequestDispatcher(forwardUrl);
 
-        if(info!=null) {
-            String forwardUrl = buildDispatchUrlForMapping(request, info);
-            if(LOG.isDebugEnabled()) {
-                LOG.debug("Matched URI ["+uri+"] to URL mapping, forwarding to ["+forwardUrl+"] with response ["+response.getClass()+"]");
-            }
-            //populateParamsForMapping(info);
-            RequestDispatcher dispatcher = request.getRequestDispatcher(forwardUrl);
-
-            try {
-                WrappedResponseHolder.setWrappedResponse(response);
                 WebUtils.exposeForwardRequestAttributes(request);
                 dispatcher.forward(request, response);
             }
-            finally {
-                WrappedResponseHolder.setWrappedResponse(null);
+            else {
+                if(LOG.isDebugEnabled()) {
+                    LOG.debug("No match found, processing remaining filter chain.");
+                }
+
+                if(filterChain!=null)
+                    filterChain.doFilter(request, response);
             }
-
-
-
         }
-        else {
-            if(filterChain!=null)
-                filterChain.doFilter(request, response);
+        finally {
+            WrappedResponseHolder.setWrappedResponse(null);
         }
+
     }
 
 
