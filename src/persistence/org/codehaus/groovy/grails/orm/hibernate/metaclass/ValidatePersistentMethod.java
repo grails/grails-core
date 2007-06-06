@@ -61,8 +61,7 @@ public class ValidatePersistentMethod extends AbstractDynamicPersistentMethod {
         Validator validator = null;
 
         if(domainClass != null)
-            validator = ((GrailsDomainClass)application.getArtefact(DomainClassArtefactHandler.TYPE, 
-                target.getClass().getName() )).getValidator();
+            validator = domainClass.getValidator();
 
         Boolean valid = Boolean.TRUE;
         if(validator != null) {
