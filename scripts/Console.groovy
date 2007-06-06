@@ -32,7 +32,7 @@ includeTargets << new File ( "${grailsHome}/scripts/Init.groovy" )
 includeTargets << new File ( "${grailsHome}/scripts/Package.groovy" )
 
 task ('default': "Load the Grails interactive Swing console") {
-	depends( checkVersion, packageApp, classpath )
+	depends( checkVersion, packageApp, classpath, packagePlugins )
 	console()
 }            
 
