@@ -333,10 +333,9 @@ public abstract class AbstractClausedStaticPersistentMethod extends
 		}
 	}
 
-	private String[] operators;
-	private Pattern[] operatorPatterns;
-	protected String operatorInUse;
-	protected GrailsApplication application;
+	private final String[] operators;
+	private final Pattern[] operatorPatterns;
+	protected final GrailsApplication application;
 
 	public AbstractClausedStaticPersistentMethod(GrailsApplication application, SessionFactory sessionFactory, ClassLoader classLoader, Pattern pattern, String[] operators) {
 		super(sessionFactory, classLoader, pattern);
@@ -364,7 +363,9 @@ public abstract class AbstractClausedStaticPersistentMethod extends
 		String querySequence = match.group(2);
 		// if it contains operator and split
 		boolean containsOperator = false;
-		for (int i = 0; i < operators.length; i++) {
+        String operatorInUse = null;
+
+        for (int i = 0; i < operators.length; i++) {
 			Matcher currentMatcher = operatorPatterns[i].matcher( querySequence );
 			if(currentMatcher.find()) {
 				containsOperator = true;
@@ -438,9 +439,9 @@ public abstract class AbstractClausedStaticPersistentMethod extends
 		if(LOG.isTraceEnabled())
 			LOG.trace("Calculated expressions: " + expressions);
 		
-		return doInvokeInternalWithExpressions(clazz, methodName, remainingArguments, expressions);
+		return doInvokeInternalWithExpressions(clazz, methodName, remainingArguments, expressions, operatorInUse);
 	}
 	
-	protected abstract Object doInvokeInternalWithExpressions(Class clazz, String methodName, Object[] arguments, List expressions);
+	protected abstract Object doInvokeInternalWithExpressions(Class clazz, String methodName, Object[] arguments, List expressions, String operatorInUse);
 
 }

@@ -14,18 +14,20 @@
  */ 
 package org.codehaus.groovy.grails.orm.hibernate.metaclass;
 
-import java.sql.SQLException;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.regex.Pattern;
-
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.hibernate.Criteria;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.criterion.Restrictions;
+import org.hibernate.criterion.Disjunction;
 import org.springframework.orm.hibernate3.HibernateCallback;
+
+import java.sql.SQLException;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Pattern;
 
 /**
  * The "findBy*" static persistent method. This method allows querying for
@@ -51,8 +53,10 @@ public class FindByPersistentMethod extends AbstractClausedStaticPersistentMetho
  		super(application,sessionFactory, classLoader, Pattern.compile( METHOD_PATTERN ),OPERATORS);
 	}
 
-	protected Object doInvokeInternalWithExpressions(final Class clazz, String methodName, final Object[] arguments, final List expressions) {
-		return super.getHibernateTemplate().execute( new HibernateCallback() {
+	protected Object doInvokeInternalWithExpressions(final Class clazz, String methodName, final Object[] arguments, final List expressions, String operatorInUse) {
+
+        final String operator = OPERATOR_OR.equals(operatorInUse) ? OPERATOR_OR : OPERATOR_AND;
+        return super.getHibernateTemplate().execute( new HibernateCallback() {
 
 			public Object doInHibernate(Session session) throws HibernateException, SQLException {
 
@@ -63,19 +67,24 @@ public class FindByPersistentMethod extends AbstractClausedStaticPersistentMetho
 						Map argMap = (Map)arguments[0];
 						populateArgumentsForCriteria(crit,argMap);										
 					}
-				}				
-				for (Iterator i = expressions.iterator(); i.hasNext();) {
-					GrailsMethodExpression current = (GrailsMethodExpression) i.next();
-					crit.add( current.getCriterion() );
-					
 				}
-				List results = crit.list();
-				if(results.size() > 0) {
-					return results.get(0);
-				}
-				else {
-					return null;
-				}
+                if(operator.equals(OPERATOR_OR)) {
+                    Disjunction dis = Restrictions.disjunction();
+                    for (Iterator i = expressions.iterator(); i.hasNext();) {
+                        GrailsMethodExpression current = (GrailsMethodExpression) i.next();
+                        dis.add( current.getCriterion() );
+                    }
+                    crit.add(dis);
+                }
+                else {
+                    for (Iterator i = expressions.iterator(); i.hasNext();) {
+                        GrailsMethodExpression current = (GrailsMethodExpression) i.next();
+                        crit.add( current.getCriterion() );
+
+                    }
+                }
+                crit.setMaxResults(1);
+                return crit.uniqueResult();
 			}
 		});
 	}

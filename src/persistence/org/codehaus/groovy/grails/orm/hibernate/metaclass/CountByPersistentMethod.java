@@ -14,18 +14,20 @@
  */
 package org.codehaus.groovy.grails.orm.hibernate.metaclass;
 
-import java.sql.SQLException;
-import java.util.Iterator;
-import java.util.List;
-import java.util.regex.Pattern;
-
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.hibernate.Criteria;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.criterion.Projections;
+import org.hibernate.criterion.Disjunction;
+import org.hibernate.criterion.Restrictions;
 import org.springframework.orm.hibernate3.HibernateCallback;
+
+import java.sql.SQLException;
+import java.util.Iterator;
+import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * Dynamic method that allows counting the values of the specified property names
@@ -50,20 +52,37 @@ public class CountByPersistentMethod extends
 	}
 
 	protected Object doInvokeInternalWithExpressions(final Class clazz,
-			String methodName, Object[] arguments, final List expressions) {
-		return super.getHibernateTemplate().execute( new HibernateCallback() {
+                                                     String methodName, Object[] arguments, final List expressions, String operatorInUse) {
+        final String operator = OPERATOR_OR.equals(operatorInUse) ? OPERATOR_OR : OPERATOR_AND;
+        return super.getHibernateTemplate().execute( new HibernateCallback() {
 
 			public Object doInHibernate(Session session) throws HibernateException, SQLException {
 				Criteria crit = session.createCriteria(clazz);
 				crit.setProjection(Projections.rowCount());
-				for (Iterator i = expressions.iterator(); i.hasNext();) {
-					GrailsMethodExpression current = (GrailsMethodExpression) i.next();
-					crit.add( current.getCriterion() );
+                populateCriteriaWithExpressions(crit, operator, expressions);
 
-				}
-				return crit.uniqueResult();
+                return crit.uniqueResult();
 			}
 		});
 	}
+
+    
+    protected void populateCriteriaWithExpressions(Criteria crit, String operator, List expressions) {
+        if(operator.equals(OPERATOR_OR)) {
+            Disjunction dis = Restrictions.disjunction();
+            for (Iterator i = expressions.iterator(); i.hasNext();) {
+                GrailsMethodExpression current = (GrailsMethodExpression) i.next();
+                dis.add( current.getCriterion() );
+            }
+            crit.add(dis);
+        }
+        else {
+            for (Iterator i = expressions.iterator(); i.hasNext();) {
+                GrailsMethodExpression current = (GrailsMethodExpression) i.next();
+                crit.add( current.getCriterion() );
+
+            }
+        }
+    }
 
 }
