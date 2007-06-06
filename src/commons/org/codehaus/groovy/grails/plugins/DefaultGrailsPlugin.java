@@ -382,6 +382,9 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
                                     .getLastModified();
                 if(currentModified > pluginLastModified) {
 
+                    if(LOG.isInfoEnabled())
+                        LOG.info("Grails plug-in "+this+" changed, reloading changes..");
+
                     GroovyClassLoader gcl = new GroovyClassLoader(application.getClassLoader());
                     initialisePlugin(gcl.parseClass(conn.getInputStream()));
                     pluginLastModified = currentModified;
@@ -412,8 +415,8 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
                     final Resource r = watchedResources[i];
                     long modifiedFlag = checkModified(r, modifiedTimes[i]) ;
                     if( modifiedFlag > -1) {
-                        if(LOG.isDebugEnabled())
-                            LOG.debug("[GrailsPlugin] plugin resource ["+r+"] changed, firing event if possible..");
+                        if(LOG.isInfoEnabled())
+                            LOG.info("Grails plug-in resource ["+r+"] changed, reloading changes..");
 
                         modifiedTimes[i] = modifiedFlag;
                         fireModifiedEvent(r, this);
@@ -509,6 +512,10 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
 
                         if(newResource!=null) {
                             watchedResources = (Resource[])ArrayUtils.add(watchedResources, newResource);
+
+                            if(LOG.isInfoEnabled())
+                                LOG.info("Found new Grails plug-in resource ["+newResource+"], adding to application..");
+
 
                             if(newResource.getFilename().endsWith(".groovy")) {
                                 if(LOG.isDebugEnabled())
