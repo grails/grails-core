@@ -18,19 +18,6 @@ import groovy.lang.GroovyObject;
 import groovy.lang.GroovyRuntimeException;
 import groovy.lang.MetaClass;
 import groovy.lang.MissingMethodException;
-
-import java.net.URI;
-import java.text.DateFormat;
-import java.util.Calendar;
-import java.util.Currency;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.Locale;
-import java.util.TimeZone;
-
-import javax.servlet.ServletRequest;
-import javax.servlet.http.HttpServletRequest;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -40,11 +27,7 @@ import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.metaclass.CreateDynamicMethod;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.runtime.InvokerHelper;
-import org.springframework.beans.ConfigurablePropertyAccessor;
-import org.springframework.beans.InvalidPropertyException;
-import org.springframework.beans.MutablePropertyValues;
-import org.springframework.beans.PropertyValue;
-import org.springframework.beans.PropertyValues;
+import org.springframework.beans.*;
 import org.springframework.beans.propertyeditors.CustomDateEditor;
 import org.springframework.beans.propertyeditors.LocaleEditor;
 import org.springframework.validation.BeanPropertyBindingResult;
@@ -55,6 +38,12 @@ import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.springframework.web.multipart.support.ByteArrayMultipartFileEditor;
 import org.springframework.web.multipart.support.StringMultipartFileEditor;
 import org.springframework.web.servlet.support.RequestContextUtils;
+
+import javax.servlet.ServletRequest;
+import javax.servlet.http.HttpServletRequest;
+import java.net.URI;
+import java.text.DateFormat;
+import java.util.*;
 
 /**
  * A data binder that handles binding dates that are specified with a "struct"-like syntax in request parameters.
@@ -284,7 +273,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
                 Class type = bean.getPropertyType(propertyName);
                 // if its a date check that it hasn't got structured parameters in the request
                 // this is used as an alternative to specifying the date format
-                if(type == Date.class || type == Calendar.class) {
+                if(type != null && (Date.class.isAssignableFrom(type)  || Calendar.class.isAssignableFrom(type))) {
                     try {
                         PropertyValue yearProperty = propertyValues.getPropertyValue(propertyName + "_year");
                         if (yearProperty == null) {
