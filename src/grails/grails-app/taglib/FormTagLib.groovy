@@ -223,14 +223,12 @@ class FormTagLib {
 			xdefault = null
 		}
 
-        println "A value ${attrs.value} / default $xdefault"
         def value = attrs['value']
         if (value.toString() == 'none') {
             value = null
         } else if (!value) {
             value = xdefault
         }
-        println "B value $value"
         def name = attrs['name']
         def id = attrs['id'] ? attrs['id'] : name
 
