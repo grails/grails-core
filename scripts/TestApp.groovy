@@ -58,17 +58,17 @@ testDir = "${basedir}/test/reports"
 def processResults = { 
 	if(result) { 
 		if(result.errorCount() > 0 || result.failureCount() > 0) {
-        	event("StatusFinal", ["Tests failed: ${result.errorCount()} errors, ${result.failureCount()} failures"])
+        	event("StatusFinal", ["Tests failed: ${result.errorCount()} errors, ${result.failureCount()} failures. View reports in $testDir"])
 			exit(1)
 		}
 		else {
-        	event("StatusFinal", ["Tests passed"])
+        	event("StatusFinal", ["Tests passed. View reports in $testDir"])
 			exit(0)
 		}			       
 
 	}  
 	else {
-        event("StatusFinal", ["Tests passed"])
+        event("StatusFinal", ["Tests passed. View reports in $testDir"])
 		exit(0)
 	}	
 }
