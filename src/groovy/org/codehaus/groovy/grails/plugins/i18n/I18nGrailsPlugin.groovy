@@ -18,7 +18,7 @@ package org.codehaus.groovy.grails.plugins.i18n
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.grails.plugins.support.GrailsPluginUtils;
-import org.springframework.web.servlet.i18n.CookieLocaleResolver;
+import org.springframework.web.servlet.i18n.SessionLocaleResolver;
 import org.springframework.web.servlet.i18n.LocaleChangeInterceptor;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 
@@ -51,7 +51,7 @@ class I18nGrailsPlugin {
 		localeChangeInterceptor(LocaleChangeInterceptor) {
 			paramName = "lang"
 		}
-		localeResolver(CookieLocaleResolver) {
+		localeResolver(SessionLocaleResolver) {
             cookieName = "lang" 
         }
 	}
