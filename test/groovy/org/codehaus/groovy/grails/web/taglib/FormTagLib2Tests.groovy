@@ -74,8 +74,33 @@ public class FormTagLib2Tests extends AbstractGrailsTagTests {
         testDatePickerTag(new Date(0), "day");
     }
 
+    public void testDatePickerTagWithNoneValues() {
+        Document document = getDatePickerOutput("none", "day", null);
+        assertNotNull(document);
+
+        // validate presence and structure of hidden date picker form field
+        XPath xpath = new DefaultXPath("//input[@name='" + DATE_PICKER_TAG_NAME + "' and @type='hidden' and @value='struct']");
+        assertTrue(xpath.booleanValueOf(document));
+
+        // validate id attributes
+        String xp = "//select[@name='" + DATE_PICKER_TAG_NAME + "_day' and @id='"+DATE_PICKER_TAG_NAME+"_day']";
+        xpath = new DefaultXPath(xp);
+        assertTrue(xpath.booleanValueOf(document));
+
+        xpath = new DefaultXPath("//select[@name='" + DATE_PICKER_TAG_NAME + "_month' and @id='"+DATE_PICKER_TAG_NAME+"_month']");
+        assertTrue(xpath.booleanValueOf(document));
+
+        xpath = new DefaultXPath("//select[@name='" + DATE_PICKER_TAG_NAME + "_year' and @id='"+DATE_PICKER_TAG_NAME+"_year']");
+        assertTrue(xpath.booleanValueOf(document));
+
+        assertSelectFieldPresentWithSelectedValue(document, DATE_PICKER_TAG_NAME + "_year", '');
+        assertSelectFieldPresentWithSelectedValue(document, DATE_PICKER_TAG_NAME + "_month", '');
+        assertSelectFieldPresentWithSelectedValue(document, DATE_PICKER_TAG_NAME + "_day", '');
+    }
+
+
     private void testDatePickerTag(Date date, String precision) throws Exception {
-        Document document = getDatePickerOutput(date, precision);
+        Document document = getDatePickerOutput(date, precision, null);
         assertNotNull(document);
 
         // validate presence and structure of hidden date picker form field
@@ -204,7 +229,7 @@ public class FormTagLib2Tests extends AbstractGrailsTagTests {
         assertFalse(xpath.booleanValueOf(document));
     }
 
-    private Document getDatePickerOutput(Date date, String precision) throws Exception {
+    private Document getDatePickerOutput(value, precision, xdefault) {
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
 
@@ -215,14 +240,19 @@ public class FormTagLib2Tests extends AbstractGrailsTagTests {
 	        Map attrs = new HashMap();
 	        attrs.put("name", DATE_PICKER_TAG_NAME);
 	
-	        if (date != null) {
-	            attrs.put("value", date);
+	        if (value != null) {
+	            attrs.value = value;
 	        }
 	
+            if (xdefault != null) {
+                attrs['default'] = xdefault;
+            }
+
 	        if (precision != null) {
-	            attrs.put("precision", precision);
+	            attrs.precision = precision;
 	        }
-	
+
+	        attrs.noSelection = ['':'Please choose']
 	        tag.call(attrs);
 	
 	        String enclosed = "<test>" + sw.toString() + "</test>";
