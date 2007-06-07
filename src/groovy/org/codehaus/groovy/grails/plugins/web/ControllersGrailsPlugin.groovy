@@ -385,6 +385,12 @@ class ControllersGrailsPlugin {
 		    metaClass.bindData = { Object target, Object args, List disallowed ->
 		    	bind.invoke(delegate, "bindData", [target, args, disallowed] as Object[])
 		    }
+		    metaClass.bindData = { Object target, Object args, List disallowed, String filter ->
+		    	bind.invoke(delegate, "bindData", [target, args, disallowed, filter] as Object[])
+		    }
+		    metaClass.bindData = { Object target, Object args, String filter ->
+		    	bind.invoke(delegate, "bindData", [target, args, filter] as Object[])
+		    }
 			
 			// look for actions that accept command objects and configure
 			// each of the command object types

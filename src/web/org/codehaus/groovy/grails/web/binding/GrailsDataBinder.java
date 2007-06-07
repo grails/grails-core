@@ -25,7 +25,6 @@ import org.codehaus.groovy.grails.commons.ApplicationHolder;
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.metaclass.CreateDynamicMethod;
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.springframework.beans.*;
 import org.springframework.beans.propertyeditors.CustomDateEditor;
@@ -33,7 +32,6 @@ import org.springframework.beans.propertyeditors.LocaleEditor;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.web.bind.ServletRequestDataBinder;
 import org.springframework.web.bind.ServletRequestParameterPropertyValues;
-import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.springframework.web.multipart.support.ByteArrayMultipartFileEditor;
 import org.springframework.web.multipart.support.StringMultipartFileEditor;
@@ -71,6 +69,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
     public static final String[] DOMAINCLASS_DISALLOWED = new String[] { "id", "version" };
     public static final String[] GROOVY_DOMAINCLASS_DISALLOWED = new String[] { "metaClass", "properties", "id", "version" };
     public static final String   NULL_ASSOCIATION = "null";
+    private static final String PREFIX_SEPERATOR = ".";
 
     /**
      * Create a new GrailsDataBinder instance.
@@ -81,7 +80,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
     public GrailsDataBinder(Object target, String objectName) {
         super(target, objectName);
 
-         bean = ((BeanPropertyBindingResult)super.getBindingResult()).getPropertyAccessor();
+        bean = ((BeanPropertyBindingResult)super.getBindingResult()).getPropertyAccessor();
         
         String[] disallowed = null;
         GrailsApplication grailsApplication = ApplicationHolder.getApplication();
@@ -128,38 +127,62 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
         binder.registerCustomEditor( Locale.class, new LocaleEditor());
         binder.registerCustomEditor( TimeZone.class, new TimeZoneEditor());
         binder.registerCustomEditor( URI.class, new UriEditor());
-        
-        
+
 		return binder;
     }
 
     public void bind(PropertyValues propertyValues) {
-        GrailsWebRequest webRequest = (GrailsWebRequest) RequestContextHolder.getRequestAttributes();
-        if(webRequest != null && propertyValues instanceof MutablePropertyValues) {
-            ServletRequest request = webRequest.getCurrentRequest();
-            checkStructuredDateDefinitions(request, (MutablePropertyValues) propertyValues);
-        }
-        super.bind(propertyValues);
+        bind(propertyValues, null);
     }
-    
-    public void bind(ServletRequest request) {
-        MutablePropertyValues mpvs = new ServletRequestParameterPropertyValues(request);
 
-        checkStructuredDateDefinitions(request, mpvs);
+    public void bind(PropertyValues propertyValues, String prefix) {
+        PropertyValues values = filterPropertyValues(propertyValues, prefix);
+        if(propertyValues instanceof MutablePropertyValues) {
+            MutablePropertyValues mutablePropertyValues = (MutablePropertyValues) propertyValues;
+            checkStructuredDateDefinitions(mutablePropertyValues);
+        }
+        super.bind(values);
+    }
+
+    public void bind(ServletRequest request) {
+        bind(request, null);
+    }
+
+    public void bind(ServletRequest request, String prefix) {
+    	MutablePropertyValues mpvs;
+    	if (prefix != null) {
+    		mpvs = new ServletRequestParameterPropertyValues(request, prefix, PREFIX_SEPERATOR);
+    	} else {
+            mpvs = new ServletRequestParameterPropertyValues(request);
+    	}
+
+        checkStructuredDateDefinitions(mpvs);
         autoCreateIfPossible(mpvs);
         bindAssociations(mpvs);
-        
+
         if (request instanceof MultipartHttpServletRequest) {
 			MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
 			bindMultipartFiles(multipartRequest.getFileMap(), mpvs);
 		}
-
         super.doBind(mpvs);
     }
 
     protected void doBind(MutablePropertyValues mpvs) {
         autoCreateIfPossible(mpvs);
         super.doBind(mpvs);
+    }
+
+    private PropertyValues filterPropertyValues(PropertyValues propertyValues, String prefix) {
+        if(prefix == null || prefix.length() == 0) return propertyValues;
+        PropertyValue[] valueArray = propertyValues.getPropertyValues();
+        MutablePropertyValues newValues = new MutablePropertyValues();
+        for (int i = 0; i < valueArray.length; i++) {
+            PropertyValue propertyValue = valueArray[i];
+            if(propertyValue.getName().startsWith(prefix + PREFIX_SEPERATOR)){
+                newValues.addPropertyValue(propertyValue.getName().replace(prefix + PREFIX_SEPERATOR, ""), propertyValue.getValue());
+            }
+        }
+        return newValues;
     }
 
     /**
@@ -263,7 +286,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
         return returnValue;
     }
 
-    private void checkStructuredDateDefinitions(ServletRequest request, MutablePropertyValues propertyValues) {
+    private void checkStructuredDateDefinitions(MutablePropertyValues propertyValues) {
         PropertyValue[] pvs = propertyValues.getPropertyValues();
         for (int i = 0; i < pvs.length; i++) {
             PropertyValue propertyValue = pvs[i];

@@ -51,46 +51,63 @@ public class BindDynamicMethod extends AbstractDynamicMethodInvocation {
 
 
     public Object invoke(Object target, String methodName, Object[] arguments) {
-        if(arguments.length < 2)
+        if(arguments.length < 2 || arguments.length > 4)
             throw new MissingMethodException(METHOD_SIGNATURE, target.getClass(), arguments);
         if(arguments[0] == null)
             throw new IllegalArgumentException("Argument [target] is required by method [bindData] on class ["+target.getClass()+"]");
 
         Object targetObject = arguments[0];
         Object bindParams = arguments[1];
-        Object disallowed = null;
-        if (arguments.length > 2) {
-            disallowed = arguments[2];
-            if(!(disallowed instanceof List)) {
-                throw new IllegalArgumentException("Argument [disallowed] for method [bindData] must implement the interface [java.util.List]");
-            }
+        List disallowed = null;
+        String filter = "";
+        switch(arguments.length){
+            case 3:
+                if(arguments[2] instanceof String){
+                    filter = (String) arguments[2];
+                }else if(!(arguments[2]  instanceof List)) {
+                       throw new IllegalArgumentException("The 3rd Argument for method bindData must represent disallowed properties " +
+                               "and implement the interface java.util.List or be a String and represent a prefix to filter parameters with");
+                }else {
+                    disallowed = (List) arguments[2];
+                }
+                break;
+            case 4:
+                if(!( arguments[2] instanceof List)) {
+                    throw new IllegalArgumentException("Argument [disallowed] for method [bindData] must implement the interface [java.util.List]");
+                }
+                disallowed = (List) arguments[2];
+                if(!(arguments[3] instanceof String)) {
+                    throw new IllegalArgumentException("Argument [prefix] for method [bindData] must be a String");
+                 }
+                filter = (String) arguments[3];
+                break;
         }
 
         GrailsDataBinder dataBinder;
         if(bindParams instanceof GrailsParameterMap) {
             GrailsParameterMap parameterMap = (GrailsParameterMap)bindParams;
             HttpServletRequest request = parameterMap.getRequest();
-            dataBinder = GrailsDataBinder.createBinder(targetObject, targetObject.getClass().getName(),request);
-            updateDisallowed( dataBinder, (List)disallowed);
-            dataBinder.bind(request);
+            dataBinder = GrailsDataBinder.createBinder(targetObject, targetObject.getClass().getName(), request);
+            updateDisallowed( dataBinder, disallowed);
+            dataBinder.bind(request, filter);
         }
         else if(bindParams instanceof HttpServletRequest) {
         	GrailsWebRequest webRequest = (GrailsWebRequest)RequestContextHolder.currentRequestAttributes();
             dataBinder = GrailsDataBinder.createBinder(targetObject, targetObject.getClass().getName(),webRequest.getCurrentRequest());
-            updateDisallowed( dataBinder, (List)disallowed);
-            dataBinder.bind((HttpServletRequest)arguments[1]);
+            updateDisallowed( dataBinder, disallowed);
+            dataBinder.bind((HttpServletRequest)bindParams, filter);
         }
         else if(bindParams instanceof Map) {
             dataBinder = new GrailsDataBinder(targetObject, targetObject.getClass().getName());
             PropertyValues pv = new MutablePropertyValues((Map)bindParams);
-            updateDisallowed( dataBinder, (List)disallowed);
-            dataBinder.bind(pv);
+            updateDisallowed( dataBinder, disallowed);
+            dataBinder.bind(pv, filter);
         }
         else {
         	GrailsWebRequest webRequest = (GrailsWebRequest)RequestContextHolder.currentRequestAttributes();        	
             dataBinder = GrailsDataBinder.createBinder(targetObject, targetObject.getClass().getName(), webRequest.getCurrentRequest());
-            updateDisallowed( dataBinder, (List)disallowed);
-            dataBinder.bind(webRequest.getCurrentRequest());
+            updateDisallowed( dataBinder, disallowed);
+            dataBinder.bind(webRequest.getCurrentRequest(), filter);
         }
         return targetObject;
     }

@@ -14,13 +14,13 @@
  */
 package org.codehaus.groovy.grails.web.binding;
 
+import junit.framework.TestCase;
+import org.springframework.beans.MutablePropertyValues;
+import org.springframework.mock.web.MockHttpServletRequest;
+
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
-
-import junit.framework.TestCase;
-
-import org.springframework.mock.web.MockHttpServletRequest;
 
 /**
  * @author Graeme Rocher
@@ -30,6 +30,15 @@ public class GrailsDataBinderTests extends TestCase {
 
     class TestBean {
         private Date myDate;
+        private String name;
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
 
         public Date getMyDate() {
             return myDate;
@@ -96,6 +105,72 @@ public class GrailsDataBinderTests extends TestCase {
 
         assertNull(testBean.getMyDate());
     }
+    
+    public void testFiltersRequestParams(){
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.addParameter("joe.name","joe");
+        request.addParameter("tom.name","tom");
+        TestBean testBean = new TestBean();
+        GrailsDataBinder binder = new GrailsDataBinder(testBean,"testBean");
+        binder.bind(request, "joe");
+        assertEquals("joe",testBean.getName());
+    }
+
+    public void testFiltersPropertyValues(){
+        MutablePropertyValues vals = new MutablePropertyValues();
+        vals.addPropertyValue("joe.name","joe");
+        vals.addPropertyValue("tom.name","tom");
+        TestBean testBean = new TestBean();
+        GrailsDataBinder binder = new GrailsDataBinder(testBean,"testBean");
+        binder.bind(vals, "tom");
+        assertEquals("tom",testBean.getName());
+    }
+
+    class Author {
+
+    	private String name;
+    	private int age;
+
+		public String getName() {
+			return name;
+		}
+		public void setName(String name) {
+			this.name = name;
+		}
+
+		public int getAge() {
+			return this.age;
+		}
+		public void setAge(int age){
+			this.age = age;
+		}
+    }
+
+    public void testBindingWithPrefix() throws Exception {
+    	MockHttpServletRequest request = new MockHttpServletRequest();
+
+        request.addParameter("author1.name","Graeme Rocher");
+        request.addParameter("author1.age","33");
+
+        request.addParameter("author2.name","Marc Palmer");
+        request.addParameter("author2.age","33");
+
+        Author author1 = new Author();
+        Author author2 = new Author();
+
+        GrailsDataBinder binder1 = GrailsDataBinder.createBinder(author1, "graeme");
+        binder1.bind(request, "author1");
+
+
+        GrailsDataBinder binder2 = GrailsDataBinder.createBinder(author2, "marc");
+        binder2.bind(request, "author2");
+
+        assertEquals("Graeme Rocher", author1.getName());
+        assertEquals(33, author1.getAge());
+        assertEquals("Marc Palmer", author2.getName());
+        assertEquals(33, author2.getAge());
+   }
+
     
 
 

@@ -25,15 +25,14 @@ import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
  *
  */
 class BindDataMethodTests extends AbstractGrailsControllerTests {
+    def mockController
+    def method
+    def target
+    def safeMeta
 
 	void testBindDataFromMap() {
 	    runTest() {
-            def mockController = ga.getControllerClass("BindController")
-
-            def method = new BindDynamicMethod()
-
-            def target = new CommandObject()
-            def safeMeta = target.metaClass
+            mockController = ga.getControllerClass("BindController")
             def src = [ 'metaClass' : this.metaClass, 'name' : 'Marc Palmer' ]
 
             method.invoke( mockController, "bindData", [target, src].toArray() )
@@ -45,12 +44,7 @@ class BindDataMethodTests extends AbstractGrailsControllerTests {
 
 	void testBindDataWithDisallowed() {
 	    runTest() {
-            def mockController = ga.getControllerClass("BindController")
-
-            def method = new BindDynamicMethod()
-
-            def target = new CommandObject()
-            def safeMeta = target.metaClass
+            mockController = ga.getControllerClass("BindController")
             def src = [ 'metaClass' : this.metaClass, 'name' : 'Marc Palmer', 'email' : 'dontwantthis' ]
             def excludes = ['email']
 
@@ -62,6 +56,33 @@ class BindDataMethodTests extends AbstractGrailsControllerTests {
         }
 	}
 
+	void testBindDataWithPrefixFilter() {
+	    runTest() {
+            mockController = ga.getControllerClass("BindController")
+            def src = [ 'metaClass' : this.metaClass, 'mark.name' : 'Marc Palmer', 'mark.email' : 'dontwantthis',
+                        'lee.name': 'Lee Butts', 'lee.email': 'lee@mail.com']
+            def filter = "lee"
+            method.invoke( mockController,"bindData", [target, src, filter].toArray() )
+            assertEquals "Lee Butts", target.name
+            assertEquals "lee@mail.com", target.email
+            assertEquals safeMeta, target.metaClass
+        }
+	}
+
+     void testBindDataWithPrefixFilterAndDisallowed() {
+	    runTest() {
+            mockController = ga.getControllerClass("BindController")
+            def src = [ 'metaClass' : this.metaClass, 'mark.name' : 'Marc Palmer', 'mark.email' : 'dontwantthis',
+                        'lee.name': 'Lee Butts', 'lee.email': 'lee@mail.com']
+            def filter = "lee"
+            def disallowed = ["email"]
+            method.invoke( mockController,"bindData", [target, src, disallowed, filter].toArray() )
+            assertEquals "Lee Butts", target.name
+            assertNull target.email
+            assertEquals safeMeta, target.metaClass
+        }
+	}
+
 	void onSetUp() {
 		gcl.parseClass(
 '''
@@ -69,6 +90,9 @@ class BindController {
 }
 '''
         )
+        method = new BindDynamicMethod()
+        target = new CommandObject()
+        safeMeta = target.metaClass
     }
 }
 
