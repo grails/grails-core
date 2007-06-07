@@ -542,7 +542,7 @@ class FormTagLib {
                 }
                 else if(valueMessagePrefix) {
                 	def message = messageSource.getMessage("${valueMessagePrefix}.${keyValue}", null, null, locale)
-                	if(message) {
+                	if(message != null) {
                 		out << message.encodeAsHTML()
                 	}
                 	else if (keyValue) {
