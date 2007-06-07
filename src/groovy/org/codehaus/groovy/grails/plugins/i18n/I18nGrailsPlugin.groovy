@@ -51,9 +51,7 @@ class I18nGrailsPlugin {
 		localeChangeInterceptor(LocaleChangeInterceptor) {
 			paramName = "lang"
 		}
-		localeResolver(SessionLocaleResolver) {
-            cookieName = "lang" 
-        }
+		localeResolver(SessionLocaleResolver) 
 	}
 	
 	def onChange = { event ->
