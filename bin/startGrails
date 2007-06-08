@@ -112,6 +112,11 @@ if [ -z "$GROOVY_CONF" ]; then
 fi
 STARTER_CLASSPATH="$GRAILS_HOME/lib/groovy-starter.jar"
 
+# Allow access to Cocoa classes on OS X
+if $darwin; then
+    STARTER_CLASSPATH="$STARTER_CLASSPATH:/System/Library/Java"
+fi
+
 # Create the final classpath
 # Setting a classpath using the -cp or -classpath option means not to use
 # the global classpath. Groovy behaves then the same as the java 
