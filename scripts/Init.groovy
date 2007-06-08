@@ -41,16 +41,28 @@ baseFile = new File(basedir)
 baseName = baseFile.name      
 userHome = Ant.antProject.properties."user.home"                     
 grailsTmp = "${userHome}/.grails/tmp"
+eventsClassLoader = new GroovyClassLoader(getClass().classLoader)
 
 resolver = new PathMatchingResourcePatternResolver()
 grailsAppName = null
 appGrailsVersion = null
 hookScripts = [this]
-
-loadEventHooks()
+hooksLoaded = false
+classpathSet = false
 
 // Send a scripting event notification to any and all event hooks in plugins/user scripts
 event = { String name, def args ->
+    if (!hooksLoaded) {
+        setClasspath()
+
+        loadEventHooks()
+
+        hooksLoaded = true
+
+        // Give scripts a chance to modify classpath
+        event('setClasspath', [getClass().classLoader.rootLoader])
+    }
+
     hookScripts.each() {
         try {
             def handler = it."event$name"
@@ -78,6 +90,9 @@ eventCreatedArtefact = { artefactType, artefactName ->
 }
 
 /* Standard handlers not handled by Init
+eventSetClasspath = { rootLoader ->
+    // Called when root classloader is being configured
+}
 eventCreatedFile = { fileName ->
     // Called when any file is created in the project tree, that is to be part of the project source (not regenerated)
 }
@@ -112,12 +127,13 @@ void loadEventHooks() {
 
 void loadEventScript(theFile) {
     try {
-        def script = getClass().classLoader.parseClass( theFile).newInstance()
+        def script = eventsClassLoader.parseClass( theFile).newInstance()
         script.delegate = binding
         script.run()
         hookScripts << script
     } catch (Throwable t) {
         println "Unable to load event script $theFile: ${t.message}"
+        t.printStackTrace()
     }
 }
 
@@ -153,7 +169,8 @@ resolveResources = { String pattern ->
 		return resolver.getResources(pattern)	   
 	}
 	catch(Exception e) {
-     	return []
+         e.printStackTrace()
+         return []
 	}	
 }
 
@@ -364,14 +381,20 @@ task(promptForName:"Prompts the user for the name of the Artifact if it isn't sp
 }
 
 task(classpath:"Sets the Grails classpath") {    
-	def grailsDir = resolveResources("file:${basedir}/grails-app/*")
-	
+    setClasspath()
+}
+
+void setClasspath() {
+    if (classpathSet) return
+
+    def grailsDir = resolveResources("file:${basedir}/grails-app/*")
+
 	Ant.path(id:"grails.classpath")  {
-		pathelement(location:"${basedir}") 		
-		pathelement(location:"${basedir}/grails-tests")		
+		pathelement(location:"${basedir}")
+		pathelement(location:"${basedir}/grails-tests")
 		pathelement(location:"${basedir}/web-app")
 		pathelement(location:"${basedir}/web-app/WEB-INF")
-		pathelement(location:"${basedir}/web-app/WEB-INF/classes")				
+		pathelement(location:"${basedir}/web-app/WEB-INF/classes")
 		if (new File("${basedir}/web-app/WEB-INF/lib").exists()) {
 		    fileset(dir:"${basedir}/web-app/WEB-INF/lib")
 		}
@@ -380,43 +403,50 @@ task(classpath:"Sets the Grails classpath") {
 		fileset(dir:"lib")
 		for(d in grailsDir) {
 			pathelement(location:"${d.file.absolutePath}")
-		}  	
+		}
 	}
     StringBuffer cpath = new StringBuffer("")
 
     def jarFiles = resolveResources("lib/*.jar").toList()
 
-    resolveResources("plugins/*/lib/*.jar").each { pluginJar ->  		    
+    resolveResources("plugins/*/lib/*.jar").each { pluginJar ->
         boolean matches = jarFiles.any { it.file.name == pluginJar.file.name }
         if(!matches) jarFiles.add(pluginJar)
     }
-    resolveResources("${grailsHome}/lib/junit-*.jar").each { testJar ->
-		jarFiles.add(testJar)
-	}                     
-	
+
+    resolveResources("file:${userHome}/.grails/lib/*.jar").each { userJar ->
+		jarFiles.add(userJar)
+	}
+
+
+
     def rootLoader = getClass().classLoader.rootLoader
 
     jarFiles.each { jar ->
         cpath << jar.file.absolutePath << File.pathSeparator
-        rootLoader?.addURL(jar.URL)       
-    }  
+        rootLoader?.addURL(jar.URL)
+    }
 
 	grailsDir.each { dir ->
-        cpath << dir.file.absolutePath << File.pathSeparator		
+        cpath << dir.file.absolutePath << File.pathSeparator
 		rootLoader?.addURL(dir.URL)
-   }                              
+   }
 
-    cpath << "${basedir}/web-app/WEB-INF/classes"  
+    cpath << "${basedir}/web-app/WEB-INF/classes"
 	rootLoader?.addURL(new File("${basedir}/web-app/WEB-INF/classes").toURL())
        cpath << "${basedir}/web-app/WEB-INF"
 	rootLoader?.addURL(new File("${basedir}/web-app/WEB-INF").toURL())
-             
 
   	// println "Classpath with which to generate web.xml: \n${cpath.toString()}"
 
    	parentLoader = getClass().getClassLoader()
+
    	compConfig = new CompilerConfiguration()
-   	compConfig.setClasspath(cpath.toString());	
+   	compConfig.setClasspath(cpath.toString());
+
+    classpathSet = true
+
+    event('setClasspath', [rootLoader])
 }
 
 task( configureProxy: "The implementation task")  {
