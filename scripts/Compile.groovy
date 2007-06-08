@@ -49,6 +49,7 @@ task ('default': "Performs compilation on any source files (Java or Groovy) in t
 task(compile : "Implementation of compilation phase") {    
 	depends(dependencies, classpath)           
 	
+    event("CompileStart", ['source'])
     event("StatusUpdate", ["Compiling sources"])
 	Ant.sequential {
 		mkdir(dir:"${basedir}/web-app/WEB-INF/classes") 
@@ -61,11 +62,13 @@ task(compile : "Implementation of compilation phase") {
 
         deleteAppClasses()
 	}
+    event("CompileEnd", ['source'])
 }
 
 task(compileTests: "Compiles test cases located in src/test") {
 
 	if(new File("${basedir}/src/test").exists()) {
+        event("CompileStart", ['tests'])
 	    event("StatusUpdate", ["Compiling test cases"])
 		depends(classpath)
 
@@ -80,8 +83,8 @@ task(compileTests: "Compiles test cases located in src/test") {
 
             deleteAppClasses()
 		}
-		
-	}	
+        event("CompileEnd", ['tests'])
+	}
 }
 
 task(deleteAppClasses: "Delete application classes compiled by groovyc") {

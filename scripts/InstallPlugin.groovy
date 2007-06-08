@@ -124,6 +124,7 @@ task(installPlugin:"Implementation task") {
                 includeTargets << instrumentedInstallScript
             }
             event("StatusFinal", [ "Plugin ${fullPluginName} installed"])
+            event("PluginInstalled", [ fullPluginName ])
         }
     }
 	else {
