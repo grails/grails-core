@@ -27,14 +27,18 @@
             <param name="dir.location" value="ant"/>
             <param name="dir.destination" value="${release.dir}/ant"/>
         </antcall>
-            <antcall target="copy-dir">
-                <param name="dir.location" value="scripts"/>
-                <param name="dir.destination" value="${release.dir}/scripts"/>
-            </antcall>   
-            <antcall target="copy-dir">
-                <param name="dir.location" value="conf"/>
-                <param name="dir.destination" value="${release.dir}/conf"/>
-            </antcall> 	
+        <antcall target="copy-dir">
+            <param name="dir.location" value="media"/>
+            <param name="dir.destination" value="${release.dir}/media"/>
+        </antcall>
+        <antcall target="copy-dir">
+            <param name="dir.location" value="scripts"/>
+            <param name="dir.destination" value="${release.dir}/scripts"/>
+        </antcall>
+        <antcall target="copy-dir">
+            <param name="dir.location" value="conf"/>
+            <param name="dir.destination" value="${release.dir}/conf"/>
+        </antcall>
         <antcall target="copy-dir">
             <param name="dir.location" value="samples"/>
             <param name="dir.destination" value="${release.dir}/samples"/>
@@ -63,19 +67,19 @@
             <param name="dir.location" value="src/war"/>
             <param name="dir.destination" value="${release.dir}/src/war"/>
         </antcall>
-    	<copy todir="${release.dir}/dist">
-          	<fileset dir="${grails.dist}" includes="*.jar">
-            		<exclude name="*.zip"/>
-               		<exclude name="*.tar.gz"/>
-          	</fileset>
-    	</copy>
+        <copy todir="${release.dir}/dist">
+            <fileset dir="${grails.dist}" includes="*.jar">
+                <exclude name="*.zip"/>
+                <exclude name="*.tar.gz"/>
+            </fileset>
+        </copy>
     </target>
 
     <target name="copy-exclusive-source-release-content">
         <antcall target="copy-dir">
             <param name="dir.location" value="cruise/coverage/lib"/>
             <param name="dir.destination" value="${release.dir}/cruise/coverage/lib"/>
-        </antcall>    	
+        </antcall>
         <antcall target="copy-dir">
             <param name="dir.location" value="src"/>
             <param name="dir.destination" value="${release.dir}/src"/>
@@ -84,17 +88,17 @@
             <param name="dir.location" value="test"/>
             <param name="dir.destination" value="${release.dir}/test"/>
         </antcall>
-    	<copy todir="${release.dir}/dist">
-          	<fileset dir="${grails.dist}" includes="*.jar">
-            		<exclude name="*.zip"/>
-               		<exclude name="*.tar.gz"/>
-          	</fileset>
-    	</copy>
+        <copy todir="${release.dir}/dist">
+            <fileset dir="${grails.dist}" includes="*.jar">
+                <exclude name="*.zip"/>
+                <exclude name="*.tar.gz"/>
+            </fileset>
+        </copy>
     </target>
 
     <target name="create-archives">
         <delete file="${archive}.zip" failonerror="true"/>
-        <zip basedir="${archive.dir}" destfile="${grails.dist}/${archive}.zip" />
+        <zip basedir="${archive.dir}" destfile="${grails.dist}/${archive}.zip"/>
         <delete file="${archive}.tar.gz" failonerror="true"/>
         <tar destfile="dist/${archive}.tar.gz" compression="gzip" longfile="gnu">
             <!-- Here we need to base on archive.dir so the tar has the grails-VERSION/ prefix dir
@@ -102,17 +106,17 @@
                 get found, obviously -->
             <tarfileset dir="${archive.dir}">
                 <exclude name="${grails.release.base.dir.name}/bin/grails"/>
-                <exclude name="${grails.release.base.dir.name}/bin/grails-0.4"/>            	
-                <exclude name="${grails.release.base.dir.name}/bin/startGrails"/>            	            	
+                <exclude name="${grails.release.base.dir.name}/bin/grails-0.4"/>
+                <exclude name="${grails.release.base.dir.name}/bin/startGrails"/>
                 <exclude name="${grails.release.base.dir.name}/ant/bin/ant"/>
             </tarfileset>
             <tarfileset dir="${archive.dir}" mode="755">
                 <include name="${grails.release.base.dir.name}/bin/grails"/>
                 <include name="${grails.release.base.dir.name}/ant/bin/ant"/>
-                <include name="${grails.release.base.dir.name}/bin/grails-0.4"/>            	
-                <include name="${grails.release.base.dir.name}/bin/startGrails"/>            	            	            	
+                <include name="${grails.release.base.dir.name}/bin/grails-0.4"/>
+                <include name="${grails.release.base.dir.name}/bin/startGrails"/>
             </tarfileset>
-		</tar>
+        </tar>
     </target>
 
     <target name="create-release-package">
@@ -125,7 +129,7 @@
         <antcall target="copy-common-release-content">
             <param name="release.dir" value="${grails.release.dir}"/>
         </antcall>
-		<antcall target="create-release-package:extra-target" />
+        <antcall target="create-release-package:extra-target"/>
         <antcall target="create-archives">
             <param name="archive" value="${grails.release}"/>
             <param name="archive.dir" value="tmp"/>
@@ -134,12 +138,12 @@
         <delete dir="${grails.release.dir}" failonerror="true"/>
     </target>
 
-	<target name="create-release-package:extra-target" if="extra.target">
-		<echo>Copying extra binary release content</echo>
-    	<antcall target="${extra.target}">
-    		<param name="release.dir" value="${grails.release.dir}"/>
-    	</antcall>
-	</target>
+    <target name="create-release-package:extra-target" if="extra.target">
+        <echo>Copying extra binary release content</echo>
+        <antcall target="${extra.target}">
+            <param name="release.dir" value="${grails.release.dir}"/>
+        </antcall>
+    </target>
 
     <target name="create-binary-release">
         <antcall target="create-release-package">
