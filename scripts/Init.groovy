@@ -168,8 +168,7 @@ resolveResources = { String pattern ->
 	try {
 		return resolver.getResources(pattern)	   
 	}
-	catch(Exception e) {
-         e.printStackTrace()
+	catch(Throwable e) {
          return []
 	}	
 }
