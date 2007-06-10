@@ -246,6 +246,7 @@ class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants 
 	 * title (optional*) - title caption for the column
 	 * titleKey (optional*) - title key to use for the column, resolved against the message source
 	 * params (optional) - a map containing request parameters
+	 * action (optional) - the name of the action to use in the link, if not specified the list action will be linked
 	 *
 	 * Attribute title or titleKey is required. When both attributes are specified then titleKey takes precedence,
 	 * resulting in the title caption to be resolved against the message source. In case when the message could
