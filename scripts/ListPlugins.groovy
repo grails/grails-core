@@ -99,7 +99,7 @@ Plug-ins available in the Grails repository are listed below:
                 }
                 pluginLine += "${spacesFormatter[pluginLine.length()..-1]}<${version} (?)>"
             } else {
-                pluginLine += "${spacesFormatter[pluginLine.length()..-1]}<unknown>"
+                pluginLine += "${spacesFormatter[pluginLine.length()..-1]}<no releases>"
             }
             def release = plugin.'release'.find{ rel -> rel.'@version' == version }
             if( release?.'title' ) {
