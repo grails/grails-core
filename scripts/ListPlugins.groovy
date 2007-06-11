@@ -90,14 +90,14 @@ Plug-ins available in the Grails repository are listed below:
             def title = "No description available"
             if( plugin.'@latest-release' ) {
                 version = plugin.'@latest-release'
-                pluginLine += "${spacesFormatter[pluginLine.length()..-1]}<${version}>"
+                pluginLine += "${spacesFormatter[pluginLine.length()..-1]}<${version}>\t"
             } else if( plugin.'release'.size() > 0) {
                 // determine latest release by comparing version names in lexicografic order
                 version = plugin.'release'[0].'@version'
                 plugin.'release'.each {
                     if( !"${it.'@version'}".endsWith("SNAPSHOT") && "${it.'@version'}" > version ) version = "${it.'@version'}"
                 }
-                pluginLine += "${spacesFormatter[pluginLine.length()..-1]}<${version} (?)>"
+                pluginLine += "${spacesFormatter[pluginLine.length()..-1]}<${version} (?)>\t"
             } else {
                 pluginLine += "${spacesFormatter[pluginLine.length()..-1]}<no releases>"
             }
@@ -132,6 +132,7 @@ def buildReleaseInfo = { root, pluginName, releasePath, releaseTag ->
         def properties = ['title','author','authorEmail','description','documentation']
         def releaseDescriptor = parseRemoteXML("${releasePath}/${releaseTag}/plugin.xml").documentElement
         def version = releaseDescriptor.'@version'
+        if( releaseTag == 'trunk' && !(version.endsWith('SNAPSHOT'))) return
         def releaseContent = new URL("${releasePath}/${releaseTag}/").text
         // we don't want to proceed release if zip distribution for this release is not published
         if( releaseContent.indexOf( "grails-${pluginName}-${version}.zip" ) < 0 ) return
@@ -155,13 +156,6 @@ def buildPluginInfo = {root, pluginName ->
             pluginNode = builder.'plugin'(name:pluginName)
             root.appendChild(pluginNode)
         }
-        def latestVersion = null
-        try {
-            latestVersion = parseRemoteXML("${DEFAULT_PLUGIN_DIST}/grails-${pluginName}/tags/LATEST_RELEASE/plugin.xml").documentElement.'@version'
-        } catch( Exception e ) {
-            // latest release version is not available
-        }
-        if( latestVersion ) pluginNode.setAttribute('latest-release',latestVersion as String)
 
         // proceed tagged releases
         try {
@@ -180,6 +174,14 @@ def buildPluginInfo = {root, pluginName ->
         } catch( Exception e ) {
             // no plugin release info available
         }
+
+        def latestVersion = null
+        try {
+            latestVersion = parseRemoteXML("${DEFAULT_PLUGIN_DIST}/grails-${pluginName}/tags/LATEST_RELEASE/plugin.xml").documentElement.'@version'
+        } catch( Exception e ) {
+            // latest release version is not available
+        }
+        if( latestVersion && pluginNode.'release'.find{ it.'@version' == latestVersion }) pluginNode.setAttribute('latest-release',latestVersion as String)
     }
 }
 
