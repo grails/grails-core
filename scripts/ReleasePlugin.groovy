@@ -76,15 +76,21 @@ task(releasePlugin: "The implementation task") {
      
 task(checkInPluginZip:"Checks in the plug-in zip if it has not been checked in already") {
 	def statusClient = new SVNStatusClient((ISVNAuthenticationManager)authManager,null)		 	
+	def wcClient = new SVNWCClient((ISVNAuthenticationManager)authManager,null)			
+	def pluginFile = new File(pluginZip)	
 	try {
-		statusClient.doStatus(pluginZip, true)
+		statusClient.doStatus(pluginFile, true)
 	}   
 	catch(SVNException) {                  
-		if(!message) askForMessage()		  
 		// not checked in add and commit
-		def wcClient = new SVNWCClient((ISVNAuthenticationManager)authManager,null)		
-		def pluginFile = new File(pluginZip)
 		wcClient.doAdd(pluginFile,true,false,false,false)
+	}    
+	def pluginXml = new File("${basedir}/plugin.xml")                               
+	try {
+		statusClient.doStatus(pluginXml, true)
+	}                                        
+	catch(SVNException e) {
+		wcClient.doAdd(pluginXml, true, false,false,false)
 	}
 }
 task(updateAndCommitLatest:"Commits the latest revision of the Plug-in") {
