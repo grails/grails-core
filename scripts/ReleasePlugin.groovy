@@ -13,8 +13,8 @@ grailsHome = Ant.project.properties."environment.GRAILS_HOME"
 includeTargets << new File ( "${grailsHome}/scripts/Init.groovy" )  
 includeTargets << new File ( "${grailsHome}/scripts/PackagePlugin.groovy" )
   
-//pluginSVN = "https://svn.codehaus.org/grails-plugins"
-pluginSVN = "file:///Developer/localsvn" 
+pluginSVN = "https://svn.codehaus.org/grails-plugins"
+//pluginSVN = "file:///Developer/localsvn" 
 authManager = null	      
 message = null    
 trunk = null    
@@ -37,8 +37,8 @@ task(processAuth:"Prompts user for login details to create authentication manage
 	}
 }
 task(releasePlugin: "The implementation task") {    
-	depends(packagePlugin)
-	//depends(packagePlugin, processAuth)                       
+	//depends(packagePlugin)
+	depends(packagePlugin, processAuth)                       
 	 
 	remoteLocation = "${pluginSVN}/grails-${pluginName}"	
 	trunk = SVNURL.parseURIDecoded("${remoteLocation}/trunk")	      
