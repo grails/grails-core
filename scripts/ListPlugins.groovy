@@ -123,7 +123,7 @@ For further info visit http://grails.org/Plugins
 
 def buildReleaseInfo = { root, pluginName, releasePath, releaseTag ->
     if( releaseTag == '..' || releaseTag == 'LATEST_RELEASE' ) return
-    def releaseNode = root.'release'.find{ it.'@tag' == releaseTag }
+    def releaseNode = root.'release'.find{ it.'@tag' == releaseTag && it.'&type' == 'svn' }
     if( releaseNode ) {
         if( releaseTag != 'trunk' ) return
         else root.removeChild(releaseNode)
@@ -197,7 +197,12 @@ def buildBinaryPluginInfo = {root, pluginName ->
             pluginNode = builder.'plugin'(name:name)
             root.appendChild(pluginNode)
         }
-        def releaseNode = pluginNode.'release'.find { it.'@version' == release }
+        def releaseNode = pluginNode.'release'.find { it.'@version' == release && it.'@type' == 'zip' }
+        // SVN releases have higher precedence than binary releases
+        if( pluginNode.'release'.find { it.'@version' == release && it.'@type' == 'svn' } ) {
+            if( releaseNode ) pluginNode.removeChild(releaseNode)
+            return
+        }
         if( !releaseNode ) {
             releaseNode = builder.'release'(type:'zip',version:release) {
                 title("This is a zip release, no info available for it")

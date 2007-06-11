@@ -101,13 +101,20 @@ def displayPluginInfo = { pluginName, version ->
            }
 
             def releases = ""
-            plugin.'release'.each {
+            plugin.'release'.findAll{ it.'@type' == 'svn'}.each {
                 releases += " ${it.'@version'}"
             }
+            def zipReleases = ""
+            plugin.'release'.findAll{ it.'@type' == 'zip'}.each {
+                zipReleases += " ${it.'@version'}"
+            }
             if( releases ) {
-                println "Available releases: ${releases}"
+                println "Available full releases: ${releases}"
             } else {
-                println "Available releases: <no releases available for this plugin now>"
+                println "Available full releases: <no full releases available for this plugin now>"
+            }
+            if( zipReleases ) {
+                println "Available zip releases:  ${zipReleases}"
             }
         }
     }
