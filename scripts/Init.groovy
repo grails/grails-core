@@ -188,7 +188,12 @@ getGrailsJar =  { args ->
    result
 }
 
-args = System.getProperty("grails.cli.args")
+args = System.getProperty("grails.cli.args")   
+
+confirmInput = { String message ->
+	Ant.input(message: message, addproperty:"confirm.message",validargs:"y,n")
+	Ant.antProject.properties."confirm.message"	
+}
 
 task ( createStructure: "Creates the application directory structure") {
 	Ant.sequential {

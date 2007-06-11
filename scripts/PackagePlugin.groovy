@@ -78,8 +78,6 @@ task(packagePlugin:"Implementation task") {
 
     def gcl = new GroovyClassLoader(cl,compConfig,true)
 
-    Class pluginClass
-    def plugin
     try {
         pluginClass = gcl.parseClass(pluginFile)
         plugin = pluginClass.newInstance()
@@ -89,7 +87,7 @@ task(packagePlugin:"Implementation task") {
         t.printStackTrace(System.out)
         Ant.fail("Cannot instantiate plugin file")
     }
-    def pluginName = GCU.getScriptName(GCU.getLogicalName(pluginClass, "GrailsPlugin"))
+    pluginName = GCU.getScriptName(GCU.getLogicalName(pluginClass, "GrailsPlugin"))
 
     // Generate plugin.xml descriptor from info in *GrailsPlugin.groovy
     new File("${basedir}/plugin.xml").delete()
@@ -103,7 +101,7 @@ task(packagePlugin:"Implementation task") {
     }
 
     // Package plugin's zip distribution
-    def pluginZip = "${basedir}/grails-${pluginName}-${plugin.version}.zip"
+    pluginZip = "${basedir}/grails-${pluginName}-${plugin.version}.zip"
     Ant.delete(file:pluginZip)
     def includesList = pluginIncludes.join(",")
 	def excludesList = pluginExcludes.join(",")
