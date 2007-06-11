@@ -13,8 +13,8 @@ grailsHome = Ant.project.properties."environment.GRAILS_HOME"
 includeTargets << new File ( "${grailsHome}/scripts/Init.groovy" )  
 includeTargets << new File ( "${grailsHome}/scripts/PackagePlugin.groovy" )
   
-pluginSVN = "https://svn.codehaus.org/grails-plugins"
-//pluginSVN = "file:///Developer/localsvn" 
+//pluginSVN = "https://svn.codehaus.org/grails-plugins"
+pluginSVN = "file:///Developer/localsvn" 
 authManager = null	      
 message = null    
 trunk = null    
@@ -37,7 +37,8 @@ task(processAuth:"Prompts user for login details to create authentication manage
 	}
 }
 task(releasePlugin: "The implementation task") {    
-	depends(packagePlugin, processAuth)                       
+	depends(packagePlugin)
+	//depends(packagePlugin, processAuth)                       
 	 
 	remoteLocation = "${pluginSVN}/grails-${pluginName}"	
 	trunk = SVNURL.parseURIDecoded("${remoteLocation}/trunk")	      
@@ -78,20 +79,26 @@ task(checkInPluginZip:"Checks in the plug-in zip if it has not been checked in a
 	def statusClient = new SVNStatusClient((ISVNAuthenticationManager)authManager,null)		 	
 	def wcClient = new SVNWCClient((ISVNAuthenticationManager)authManager,null)			
 	def pluginFile = new File(pluginZip)	
+	def addPluginFile = false
 	try {
-		statusClient.doStatus(pluginFile, true)
+		def status = statusClient.doStatus(pluginFile, true)
+		if(status.kind == SVNNodeKind.NONE || status.kind == SVNNodeKind.UNKNOWN) addPluginFile = true
 	}   
 	catch(SVNException) {                  
-		// not checked in add and commit
-		wcClient.doAdd(pluginFile,true,false,false,false)
-	}    
-	def pluginXml = new File("${basedir}/plugin.xml")                               
+		// not checked in add and commit       
+		addPluginFile = true
+	}                       
+	if(addPluginFile) wcClient.doAdd(pluginFile,true,false,false,false)
+	def pluginXml = new File("${basedir}/plugin.xml") 
+	addPluginFile = false                              
 	try {
-		statusClient.doStatus(pluginXml, true)
+		def status = statusClient.doStatus(pluginXml, true)
+		if(status.kind == SVNNodeKind.NONE || status.kind == SVNNodeKind.UNKNOWN) addPluginFile = true
 	}                                        
 	catch(SVNException e) {
-		wcClient.doAdd(pluginXml, true, false,false,false)
-	}
+		addPluginFile = true
+	}                       
+	if(addPluginFile) wcClient.doAdd(pluginXml, true, false,false,false)
 }
 task(updateAndCommitLatest:"Commits the latest revision of the Plug-in") {
    def result = confirmInput("""
