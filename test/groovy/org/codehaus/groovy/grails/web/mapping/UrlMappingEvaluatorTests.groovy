@@ -29,6 +29,8 @@ mappings {
         firstName(maxSize:5)
      }
   }
+
+  "/music/$band/$album" (controller:'music', action:'show')
 }
 '''
     
@@ -39,7 +41,7 @@ mappings {
          def mappings = evaluator.evaluateMappings(res)
 
          assert mappings
-         assertEquals 4, mappings.size()
+         assertEquals 5, mappings.size()
 
          def m1 = mappings[0]
          assertEquals "/(*)/(*)?/(*)?/(*)?", m1.urlData.urlPattern
@@ -88,8 +90,14 @@ mappings {
          
          // last name too long
          assert !m4.match("/author/Winter/Edgar")
+         
+         def m5 = mappings[4]
+         info = m5.match("/music/Rush/Hemispheres")
+         assert info
+         assertEquals "Rush", info.parameters.band
+         assertEquals "Hemispheres", info.parameters.album
+         assertEquals "show", info.actionName
+         assertEquals "music", info.controllerName
     }
-
-
 }
 

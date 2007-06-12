@@ -261,18 +261,7 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
                                 callable.call();
                             }
 
-                            Object controllerName = namedArguments.get(GrailsControllerClass.CONTROLLER);
-                            if(controllerName == null) {
-                                controllerName = binding.getVariables().get(GrailsControllerClass.CONTROLLER);
-                            }
-                            Object actionName = namedArguments.get(GrailsControllerClass.ACTION);
-                            if(actionName == null) {
-                                actionName = binding.getVariables().get(GrailsControllerClass.ACTION);
-                            }
-
-                            ConstrainedProperty[] constraints = (ConstrainedProperty[])previousConstraints.toArray(new ConstrainedProperty[previousConstraints.size()]);
-                            UrlMapping urlMapping = new RegexUrlMapping(urlData, controllerName, actionName, constraints);
-                            urlMappings.add(urlMapping);
+                            UrlMapping urlMapping = getURLMapping(namedArguments, urlData);
                             return urlMapping;
                         }
                     }
@@ -309,28 +298,43 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
             if(methodName.startsWith(SLASH)) {
                 try {
                     urlDefiningMode = false;
-                    if(args.length > 0 && (args[0] instanceof Closure)) {
-                        UrlMappingData urlData = urlParser.parse(methodName);
-                        Closure callable = (Closure)args[0];     
-                        callable.setDelegate(this);
-                        callable.call();
+                    if (args.length > 0) {
+                        if (args[0] instanceof Closure) {
+                            UrlMappingData urlData = urlParser
+                                    .parse(methodName);
+                            Closure callable = (Closure) args[0];
+                            callable.setDelegate(this);
+                            callable.call();
 
-                        ConstrainedProperty[] constraints = (ConstrainedProperty[])previousConstraints.toArray(new ConstrainedProperty[previousConstraints.size()]);
-                        
-                        UrlMapping urlMapping = new RegexUrlMapping(urlData, controllerName, actionName, constraints);
-                        
-                        urlMappings.add(urlMapping);
-                        
-                        return urlMapping;
-                    }
-                    else {
-                        throw new UrlMappingException("No controller or action defined for URL mapping ["+ methodName +"]");
-                    }
-                }
-                finally {
-                	controllerName = null;
-                	actionName=null;
-                	previousConstraints.clear();
+                            ConstrainedProperty[] constraints = (ConstrainedProperty[]) previousConstraints
+                                    .toArray(new ConstrainedProperty[previousConstraints
+                                            .size()]);
+
+                            UrlMapping urlMapping = new RegexUrlMapping(
+                                    urlData, controllerName, actionName,
+                                    constraints);
+
+                            urlMappings.add(urlMapping);
+
+                            return urlMapping;
+                        } else if (args[0] instanceof Map) {
+                            Map namedArguments = (Map) args[0];
+                            UrlMappingData urlData = urlParser
+                                    .parse(methodName);
+                            if (args.length > 1 && args[1] instanceof Closure) {
+                                Closure callable = (Closure) args[1];
+                                callable.call();
+                            }
+
+                            UrlMapping urlMapping = getURLMapping(namedArguments, urlData);
+                            return urlMapping;
+                        }
+                    } 
+                    throw new UrlMappingException("No controller or action defined for URL mapping [" + methodName + "]");
+                } finally {
+                    controllerName = null;
+                    actionName = null;
+                    previousConstraints.clear();
                     urlDefiningMode = true;
                 }
             }
@@ -351,6 +355,29 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
             else {
                 return super.invokeMethod(methodName, arg);
             }
+        }
+
+        private UrlMapping getURLMapping(Map namedArguments,
+                UrlMappingData urlData) {
+            Object controllerName = namedArguments
+                    .get(GrailsControllerClass.CONTROLLER);
+            if (controllerName == null) {
+                controllerName = binding.getVariables().get(
+                        GrailsControllerClass.CONTROLLER);
+            }
+            Object actionName = namedArguments
+                    .get(GrailsControllerClass.ACTION);
+            if (actionName == null) {
+                actionName = binding.getVariables().get(
+                        GrailsControllerClass.ACTION);
+            }
+
+            ConstrainedProperty[] constraints = (ConstrainedProperty[]) previousConstraints
+                    .toArray(new ConstrainedProperty[previousConstraints.size()]);
+            UrlMapping urlMapping = new RegexUrlMapping(urlData,
+                    controllerName, actionName, constraints);
+            urlMappings.add(urlMapping);
+            return urlMapping;
         }
     }
 }
