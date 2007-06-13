@@ -133,22 +133,21 @@ def populateTestSuite = { suite, testFiles, classLoader, ctx ->
 }   
 def runTests = { suite, TestResult result, Closure callback  ->
 	suite.tests().each { test ->
-		def thisTest = new TestResult()
 		new File("${testDir}/TEST-${test.name}.xml").withOutputStream { xmlOut ->
 			new File("${testDir}/plain/TEST-${test.name}.txt").withOutputStream { plainOut ->
 				def xmlOutput = new XMLJUnitResultFormatter(output:xmlOut)
 				def plainOutput = new PlainJUnitResultFormatter(output:plainOut)
 				def junitTest = new JUnitTest(test.name)
-				thisTest.addListener(xmlOutput)
-				thisTest.addListener(plainOutput)
 
 				plainOutput.startTestSuite(junitTest)
 				xmlOutput.startTestSuite(junitTest)
                 println "Running test ${test.name}..." 
 				for(i in 0..<test.testCount()) {   
+                    def thisTest = new TestResult()
+                    thisTest.addListener(xmlOutput)
+                    thisTest.addListener(plainOutput)
 					def t = test.testAt(i)
 					callback(test, {
-
                         print "                    ${t.name}..."
 						suite.runTest(t, thisTest)					
 					})
