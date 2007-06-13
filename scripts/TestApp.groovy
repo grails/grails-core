@@ -141,15 +141,18 @@ def runTests = { suite, TestResult result, Closure callback  ->
 
 				plainOutput.startTestSuite(junitTest)
 				xmlOutput.startTestSuite(junitTest)
-                println "Running test ${test.name}..." 
-				for(i in 0..<test.testCount()) {   
+                println "Running test ${test.name}..."
+				for(i in 0..<test.testCount()) {
+                    def thisTest = new TestResult()
+                    thisTest.addListener(xmlOutput)
+                    thisTest.addListener(plainOutput)
                     def thisTest = new TestResult()
                     thisTest.addListener(xmlOutput)
                     thisTest.addListener(plainOutput)
 					def t = test.testAt(i)
 					callback(test, {
-                        print "                    ${t.name}..."
-						suite.runTest(t, thisTest)					
+                        print "                    ${t.name}..."   
+						test.runTest(t, thisTest)					
 					})
 					if(thisTest.errorCount() > 0 || thisTest.failureCount() > 0) {
 						println "FAILURE"
@@ -270,6 +273,7 @@ task(runIntegrationTests:"Runs Grails' tests under the test/integration director
 				}                                                                           
 				
 				invocation()
+				interceptor?.flush() 				
  				RequestContextHolder.setRequestAttributes(null);
                 def cleaningOrder = test.cleaningOrder
                 app.domainClasses.each { dc ->
