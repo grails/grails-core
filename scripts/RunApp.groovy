@@ -53,7 +53,7 @@ task ( runApp : "Main implementation that executes a Grails application") {
 
         server.addWebApplication("/${grailsAppName}", "${basedir}/web-app")
         server.start()
-        event("StatusFinal", ["Server running on port $serverPort"])
+        event("StatusFinal", ["Server running. Browse to http://localhost:$serverPort/$grailsAppName"])
     } catch(Throwable t) {
         t.printStackTrace()
         event("StatusFinal", ["Server failed to start: $t"])
