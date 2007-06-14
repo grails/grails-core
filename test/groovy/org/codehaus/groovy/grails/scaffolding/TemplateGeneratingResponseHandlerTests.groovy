@@ -18,6 +18,7 @@ class TemplateGeneratingResponseHandlerTests extends GroovyTestCase {
     
     void setUp() {
         application = new DefaultGrailsApplication([Test.class] as Class[], new GroovyClassLoader())
+        System.setProperty("grails.env", "development")
     }
     void testCreateScaffoldedListResponse() {
         def webRequest = GrailsWebUtil.bindMockWebRequest()
@@ -117,6 +118,7 @@ class TemplateGeneratingResponseHandlerTests extends GroovyTestCase {
     void tearDown() {
          RequestContextHolder.setRequestAttributes(null)
          application = null
+        System.setProperty("grails.env", "")         
     }
 }
 class Test {
