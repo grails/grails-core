@@ -229,16 +229,11 @@ task(runIntegrationTests:"Runs Grails' tests under the test/integration director
 			return
 		}
 
-		def ctx 
-		if(appCtx) {
-			ctx = GU.bootstrapGrailsFromParentContext(appCtx)
-		}                                            
-		else {
-			ctx = GU.bootstrapGrailsFromClassPath()			
-		}
-
-
+		def	ctx = GU.bootstrapGrailsFromClassPath()			
 		def app = ctx.getBean(GrailsApplication.APPLICATION_ID)
+        if(app.parentContext == null) {
+            app.applicationContext = ctx
+        }
 		def classLoader = app.classLoader
 
         def resources = app.resourceLoader.resources as ArrayList
