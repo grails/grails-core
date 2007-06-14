@@ -15,11 +15,6 @@ class PackagePluginTests extends AbstractCliTests {
         ant.unzip(src:"${appDir}/grails-my-test-0.1.zip", dest:"${appBase}/unzipped")
 
         assertTrue new File("${appBase}/unzipped").exists()
-        assertTrue new File("${appBase}/unzipped/lib").exists()
-        assertTrue new File("${appBase}/unzipped/src").exists()
-        assertTrue new File("${appBase}/unzipped/web-app").exists()
-        assertTrue new File("${appBase}/unzipped/grails-app").exists()
-
         // test critical files
         assertTrue new File("${appBase}/unzipped/MyTestGrailsPlugin.groovy").exists()
         assertTrue new File("${appBase}/unzipped/plugin.xml").exists()
