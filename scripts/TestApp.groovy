@@ -146,9 +146,6 @@ def runTests = { suite, TestResult result, Closure callback  ->
                     def thisTest = new TestResult()
                     thisTest.addListener(xmlOutput)
                     thisTest.addListener(plainOutput)
-                    def thisTest = new TestResult()
-                    thisTest.addListener(xmlOutput)
-                    thisTest.addListener(plainOutput)
 					def t = test.testAt(i)
 					callback(test, {
                         print "                    ${t.name}..."   
