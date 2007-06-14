@@ -70,12 +70,12 @@ task( upgrade: "main upgrade task") {
 		if(new File("${testDir}/CVS").exists()) {
 			println """
 WARNING: Your Grails tests directory '${testDir}' is currently under CVS control so the upgrade script cannot
-move it to the new location of '${basedir}/unit/integration'. Please move the directory using the relevant CVS commands."""
+move it to the new location of '${basedir}/test/integration'. Please move the directory using the relevant CVS commands."""
 		}   
 		else if(new File("${testDir}/.svn").exists()) {
 						println """
 WARNING: Your Grails tests directory '${testDir}' is currently under SVN control so the upgrade script cannot
-move it to the new location of '${basedir}/unit/integration'. Please move the directory using the relevant SVN commands."""			
+move it to the new location of '${basedir}/test/integration'. Please move the directory using the relevant SVN commands."""			
 		}   
 		else {
 			if(new File(testDir).exists()) {
