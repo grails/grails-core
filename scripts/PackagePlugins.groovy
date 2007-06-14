@@ -44,7 +44,7 @@ task( packagePlugins : "Packages any Grails plugins that are installed for this 
 	
 		plugins += resolveResources("plugins/*/*GrailsPlugin.groovy").toList()
 	   	plugins?.each { p ->  	   
-	   		def pluginBase = p.file.parentFile  
+	   		def pluginBase = p.file.parentFile.canonicalFile
 	     	def pluginPath = pluginBase.absolutePath
 			def pluginName = pluginBase.name
 			def pluginNameWithVersion = pluginBase.name
