@@ -39,7 +39,8 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator  {
     def ant = new AntBuilder()  
 	ResourceLoader resourceLoader
 	
-	void setResourceLoader(ResourceLoader rl) {
+	void setResourceLoader(ResourceLoader rl) { 
+		LOG.info "Scaffolding template generator set to use resource loader ${rl}"
 		this.resourceLoader = rl
 	}
 

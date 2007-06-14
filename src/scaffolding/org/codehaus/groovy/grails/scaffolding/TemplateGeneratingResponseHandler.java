@@ -159,6 +159,7 @@ public class TemplateGeneratingResponseHandler implements ScaffoldResponseHandle
             if(LOG.isDebugEnabled()) {
                 LOG.debug("Generating view ["+uri+"] for scaffolded class ["+scaffoldedClass+"]");
             }
+            templateGenerator.setResourceLoader(this.applicationContext);
             templateGenerator.generateView((GrailsDomainClass)grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE,
                                                                 scaffoldedClass.getName()),
                                                                 actionName,
