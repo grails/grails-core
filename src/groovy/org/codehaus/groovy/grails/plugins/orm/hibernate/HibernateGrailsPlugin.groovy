@@ -47,7 +47,7 @@ class HibernateGrailsPlugin {
 	                 
 	def loadAfter = ['controllers']	                 
 	
-	def watchedResources = ["file:./grails-app/domain/*.groovy", "file:./hibernate/**.xml"]
+	def watchedResources = ["file:./grails-app/domain/**/*.groovy", "file:./hibernate/**.xml"]
 	def hibProps = [:]  
 	def hibConfigClass
 

@@ -29,7 +29,7 @@ class CodecsGrailsPlugin {
 	
 	def version = GrailsPluginUtils.getGrailsVersion()
 	def dependsOn = [core:version]
-	def watchedResources = "file:./grails-app/utils/*Codec.groovy"
+	def watchedResources = "file:./grails-app/utils/**/*Codec.groovy"
 
 	def onChange = { event ->
 		if(application.isArtefactOfType(CodecArtefactHandler.TYPE, event.source)) {

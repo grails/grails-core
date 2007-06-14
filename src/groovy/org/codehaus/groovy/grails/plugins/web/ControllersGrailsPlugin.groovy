@@ -61,10 +61,10 @@ import javax.servlet.http.HttpServletRequest
  */
 class ControllersGrailsPlugin {
 
-	def watchedResources = ["file:./grails-app/controllers/*Controller.groovy",
-							"file:./plugins/*/grails-app/controllers/*Controller.groovy",
-							"file:./plugins/*/grails-app/taglib/*TagLib.groovy",
-	                        "file:./grails-app/taglib/*TagLib.groovy"]
+	def watchedResources = ["file:./grails-app/controllers/**/*Controller.groovy",
+							"file:./plugins/*/grails-app/controllers/**/*Controller.groovy",
+							"file:./plugins/*/grails-app/taglib/**/*TagLib.groovy",
+	                        "file:./grails-app/taglib/**/*TagLib.groovy"]
 
 	def version = GrailsPluginUtils.getGrailsVersion()
 	def dependsOn = [core:version,i18n:version]

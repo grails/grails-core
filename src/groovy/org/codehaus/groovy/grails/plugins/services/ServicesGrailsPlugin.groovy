@@ -33,8 +33,8 @@ class ServicesGrailsPlugin {
 	def version = GrailsPluginUtils.getGrailsVersion()
 	def loadAfter = ['hibernate']
 	                 
-    def watchedResources = ["file:./grails-app/services/*Service.groovy",
-							"file:./plugins/*/grails-app/services/*Service.groovy"]
+    def watchedResources = ["file:./grails-app/services/**/*Service.groovy",
+							"file:./plugins/*/grails-app/services/**/*Service.groovy"]
 
 	                 
 	def doWithSpring = {
