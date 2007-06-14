@@ -131,6 +131,8 @@ AbstractDependencyInjectionSpringContextTests {
 		appCtx = springConfig.getApplicationContext()
 		mockManager.applicationContext = appCtx
 		servletContext.setAttribute( GrailsApplicationAttributes.APPLICATION_CONTEXT, appCtx)
+		GroovySystem.metaClassRegistry.removeMetaClass(String.class)
+		GroovySystem.metaClassRegistry.removeMetaClass(Object.class)		
 		mockManager.doDynamicMethods()
         request = webRequest.currentRequest
         request.characterEncoding = "utf-8"
