@@ -56,8 +56,14 @@ mappings {
 }
 '''
 
-def testController = '''
+def testController1 = '''
 class TestController {
+  def index = {}
+}
+'''
+def testController2 = '''
+package blogs
+class BlogController {
   def index = {}
 }
 '''
@@ -74,7 +80,8 @@ class TestController {
         def mappings = evaluator.evaluateMappings(new ByteArrayResource(mappingScript.getBytes()));
         appCtx.registerMockBean(UrlMappingsHolder.BEAN_ID, new DefaultUrlMappingsHolder(mappings));
         def gcl = new GroovyClassLoader()
-        gcl.parseClass(testController)
+        gcl.parseClass(testController1)
+        gcl.parseClass(testController2)
 
         appCtx.registerMockBean("grailsApplication", new DefaultGrailsApplication(gcl.loadedClasses,gcl))
 

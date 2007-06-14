@@ -52,7 +52,7 @@ import java.io.IOException;
 public class UrlMappingsFilter extends OncePerRequestFilter {
 
     private UrlPathHelper urlHelper = new UrlPathHelper();
-    private static final String SLASH = "/";
+    private static final char SLASH = '/';
     private static final Log LOG = LogFactory.getLog(UrlMappingsFilter.class);
 
 
@@ -72,17 +72,19 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
 
 
         String uri = urlHelper.getPathWithinApplication(request);
-        // filter doesn't apply to URLs with extensions for the moment, might add support
-        // later to include certain extensions
-        if(uri.substring(uri.lastIndexOf(SLASH)).indexOf(".") >-1) {
-            filterChain.doFilter(request, response);
-            return;
-        }
 
         UrlMappingInfo info = holder.match(uri);
         try {
             WrappedResponseHolder.setWrappedResponse(response);
+
             if(info!=null) {
+
+                GrailsClass controller = application.getArtefactForFeature(ControllerArtefactHandler.TYPE, SLASH+info.getControllerName());
+                if(controller == null)  {
+                    if(filterChain!=null)
+                        filterChain.doFilter(request,response);
+                    return;
+                }
                 String forwardUrl = buildDispatchUrlForMapping(request, info);
                 if(LOG.isDebugEnabled()) {
                     LOG.debug("Matched URI ["+uri+"] to URL mapping, forwarding to ["+forwardUrl+"] with response ["+response.getClass()+"]");
