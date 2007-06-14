@@ -7,7 +7,7 @@
 		<property name="groovyFiles">
             <list>
                 <value>file:./src/grails/grails-app/taglib/*.groovy</value>
-                <value>file:./src/grails/grails-app/utils/*.groovy</value>                                                
+                <value>file:./src/grails/grails-app/utils/*.groovy</value>
             </list>
         </property>
 	</bean>	

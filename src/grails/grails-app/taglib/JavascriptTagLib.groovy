@@ -29,7 +29,8 @@ class JavascriptTagLib  {
 	 * Mappings to the relevant files to be included for each library
 	 */
 	static final INCLUDED_LIBRARIES = "org.codehaus.grails.INCLUDED_JS_LIBRARIES"
-	static final INCLUDED_JS = "org.codehaus.grails.INCLUDED_JS"	
+	static final INCLUDED_JS = "org.codehaus.grails.INCLUDED_JS"
+    static final CONTROLLER = "org.codehaus.groovy.grails.CONTROLLER"
 	static final LIBRARY_MAPPINGS = [
 										prototype : ['prototype/prototype'],
 										yahoo : [ 'yahoo/yahoo-min','yahoo/connection-min', 'yahoo/dom-min','yahoo/event-min','yahoo/animation-min'],
@@ -57,12 +58,12 @@ class JavascriptTagLib  {
 	 * <g:javascript src="myscript.js" /> // actually imports '/app/js/myscript.js'
 	 **/
 	def javascript = { attrs, body ->
-		if(!request[INCLUDED_JS]) request[INCLUDED_JS] = []
-		if(!request[INCLUDED_LIBRARIES]) request[INCLUDED_LIBRARIES] = []
-		
+		setUpRequestAttributes();
+        def requestPluginContext = request[CONTROLLER].pluginContextPath
 		if(attrs.src) {
 			out << '<script type="text/javascript" src="'
-			out << grailsAttributes.getApplicationUri(request)
+			out <<  grailsAttributes.getApplicationUri(request)
+			out <<  (requestPluginContext ? "/${requestPluginContext}" : "")
 			out << "/js/${attrs.src}"
 			out.println '"></script>'		
 		}
@@ -75,6 +76,7 @@ class JavascriptTagLib  {
 								request[INCLUDED_JS] << it
 								out << '<script type="text/javascript" src="'
 								out << grailsAttributes.getApplicationUri(request)
+								out << (requestPluginContext ? "/${requestPluginContext}" : "")
 								out << "/js/${it}.js"							
 								out.println '"></script>'
 						}					
@@ -86,6 +88,7 @@ class JavascriptTagLib  {
 				if(!request[INCLUDED_LIBRARIES].contains(attrs.library)) {
 					out << '<script type="text/javascript" src="'
 					out << grailsAttributes.getApplicationUri(request)
+					out << (requestPluginContext ? "/${requestPluginContext}" : "")
 					out << "/js/${attrs.library}.js"						
 					out.println '"></script>'
 					request[INCLUDED_LIBRARIES] << attrs.library
@@ -95,7 +98,7 @@ class JavascriptTagLib  {
 		}
 		else {
 			out.println '<script type="text/javascript">'
-				out << body()
+			out.println body()
 			out.println '</script>'
 		}
 	}
@@ -117,7 +120,11 @@ class JavascriptTagLib  {
 		if(after)
 		   out <<  after			           		   
     }
-                                      
+
+    private setUpRequestAttributes(){
+        if(!request[INCLUDED_JS]) request[INCLUDED_JS] = []
+		if(!request[INCLUDED_LIBRARIES]) request[INCLUDED_LIBRARIES] = []
+    }
     /**
      * Normal map implementation does a shallow clone. This implements a deep clone for maps
      * using recursion
@@ -296,8 +303,9 @@ class JavascriptTagLib  {
 	 * Returns the provider of the necessary function calls to perform Javascript functions
 	 *
 	 **/
-	private JavascriptProvider getProvider() {					
-		if(request[JavascriptTagLib.INCLUDED_LIBRARIES]?.contains('yahoo')) {
+	private JavascriptProvider getProvider() {
+        setUpRequestAttributes()
+        if(request[JavascriptTagLib.INCLUDED_LIBRARIES]?.contains('yahoo')) {
 			return new YahooProvider()
 		}
 		else if(request[JavascriptTagLib.INCLUDED_LIBRARIES]?.contains('dojo')) {

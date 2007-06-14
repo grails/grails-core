@@ -73,10 +73,10 @@ public class DefaultGrailsApplicationAttributes implements GrailsApplicationAttr
 
         if(controller != null && application != null) {
             Resource controllerResource = application.getResourceForClass(controller.getClass());
-            return GrailsResourceUtils.getStaticResourcePathForResource(controllerResource, request.getContextPath());
+            return GrailsResourceUtils.getStaticResourcePathForResource(controllerResource, "");
         }
         else {
-            return request.getContextPath();
+            return "";
         }
     }
 

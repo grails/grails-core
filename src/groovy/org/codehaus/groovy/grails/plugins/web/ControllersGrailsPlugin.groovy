@@ -285,7 +285,7 @@ class ControllersGrailsPlugin {
 
 		   metaClass.getPluginContextPath = {-> 
 				def resource = application.getResourceForClass(delegate.class) 
-				GRU.getStaticResourcePathForResource(resource, request.contextPath)
+				GRU.getStaticResourcePathForResource(resource, null)
 		   }
 	}
 

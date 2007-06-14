@@ -35,12 +35,12 @@ class ApplicationTagLib {
      * eg. <link type="text/css" href="${createLinkTo(dir:'css',file:'main.css')}" />
      */
     def createLinkTo = { attrs ->
-         out << grailsAttributes.getApplicationUri(request)
-         if(attrs['dir'] || attrs['dir'] == '') {
-            out << "/${attrs['dir']}"
+         out << grailsAttributes.getApplicationUri(request) + "/";
+         if(attrs['dir'] ) {
+            out << "${attrs['dir']}" + ( attrs['file'] ? "/" :"");
          }
          if(attrs['file']) {
-            out << "/${attrs['file']}"
+            out << "${attrs['file']}"
          }
     }
 

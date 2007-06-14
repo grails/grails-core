@@ -277,7 +277,7 @@ public class GrailsResourceUtils {
 
         Matcher m = PLUGIN_RESOURCE_PATTERN.matcher(url);
         if(m.find()) {            
-             return contextPath + "/" + m.group(1);
+             return (contextPath.length() > 0 ? contextPath + "/" : "") + m.group(1);
         }
 
         return contextPath; 

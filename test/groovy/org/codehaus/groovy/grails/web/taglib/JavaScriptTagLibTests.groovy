@@ -3,6 +3,9 @@ package org.codehaus.groovy.grails.web.taglib;
 import groovy.lang.Closure;
 import groovy.lang.GroovyObject;
 
+import org.codehaus.groovy.grails.web.servlet.*;
+import org.springframework.web.util.*;
+
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.*;
@@ -73,7 +76,7 @@ public class JavaScriptTagLibTests extends AbstractGrailsTagTests {
 		}
 	}
 
-    void testRemoteField() {
+    public void testRemoteField() {
         // <g:remoteField action="changeTitle" update="titleDiv"  name="title" value="${book?.title}"/>
         StringWriter sw = new StringWriter()
         PrintWriter pw = new PrintWriter(sw)
@@ -89,6 +92,71 @@ public class JavaScriptTagLibTests extends AbstractGrailsTagTests {
             assertEquals("<input type=\"text\" name=\"title\" value=\"testValue\" onkeyup=\"new Ajax.Updater('titleDiv','/test/changeTitle',{asynchronous:true,evalScripts:true,parameters:'value='+this.value});\" />",sw.toString())
         }
 
+    }
+
+     public void testPluginAwareJSSrc (){
+        StringWriter sw = new StringWriter()
+        PrintWriter pw = new PrintWriter(sw)
+        withTag("javascript",pw) { tag ->
+           setupPluginController(tag)
+           def attrs = [src:'lib.js']
+           tag.call(attrs) { }
+           assertEquals("<script type=\"text/javascript\" src=\"/myapp/plugins/myplugin/js/lib.js\"></script>" + System.getProperty("line.separator"),sw.toString())
+        }
+   }
+
+   public void testPluginAwareJSLib (){
+        StringWriter sw = new StringWriter()
+        PrintWriter pw = new PrintWriter(sw)
+        withTag("javascript",pw) { tag ->
+            setupPluginController(tag)
+           def attrs = [library:'lib']
+           tag.call(attrs) {  }
+           assertEquals("<script type=\"text/javascript\" src=\"/myapp/plugins/myplugin/js/lib.js\"></script>" + System.getProperty("line.separator"), sw.toString())
+        }
+    }
+
+    public void testJSSrc (){
+        StringWriter sw = new StringWriter()
+        PrintWriter pw = new PrintWriter(sw)
+        withTag("javascript",pw) { tag ->
+           def attrs = [src:'lib.js']
+           setRequestContext()
+           tag.call(attrs) { }
+           assertEquals("<script type=\"text/javascript\" src=\"/myapp/js/lib.js\"></script>" + System.getProperty("line.separator"),sw.toString())
+        }
+   }
+
+   public void testJSLib (){
+        StringWriter sw = new StringWriter()
+        PrintWriter pw = new PrintWriter(sw)
+        withTag("javascript",pw) { tag ->
+           def attrs = [library:'lib']
+           setRequestContext()
+           tag.call(attrs) {  }
+           assertEquals("<script type=\"text/javascript\" src=\"/myapp/js/lib.js\"></script>" + System.getProperty("line.separator"), sw.toString())
+        }
+    }
+
+     public void testJSWithBody (){
+        StringWriter sw = new StringWriter()
+        PrintWriter pw = new PrintWriter(sw)
+        withTag("javascript",pw) { tag ->
+           setRequestContext()
+           tag.call([:]) { "do.this();" }
+           assertEquals("<script type=\"text/javascript\">"+ System.getProperty("line.separator") + "do.this();"+ System.getProperty("line.separator")+"</script>" + System.getProperty("line.separator"), sw.toString())
+        }
+    }
+
+    def setRequestContext(){
+        request.setAttribute(WebUtils.INCLUDE_CONTEXT_PATH_ATTRIBUTE, "/myapp")
+    }
+
+    def setupPluginController(tag){
+        GroovyObject tagLibrary = (GroovyObject)tag.getOwner()
+        def request = tagLibrary.getProperty("request")
+        setRequestContext()
+        request.setAttribute(GrailsApplicationAttributes.CONTROLLER, new Expando(pluginContextPath:"plugins/myplugin"));
     }
 
 
