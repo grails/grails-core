@@ -225,7 +225,7 @@ task(updatePluginsList:"Implementation tast. Updates list of plugins hosted at G
         }
         if( remoteRevision > localRevision ) {
             // Plugins list cache is expired, need to update
-            event("StatusUpdate", ["Plugins list cache is expired, updating"])
+            event("StatusUpdate", ["Plugins list cache has expired. Updating, please wait..."])
             pluginsList.setAttribute('revision',remoteRevision as String)
             // for each plugin directory under Grails Plugins SVN in form of 'grails-*'
             remotePluginsList.eachMatch( /<li><a href="grails-(.+?)">/ ) {
