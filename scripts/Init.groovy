@@ -329,7 +329,11 @@ task( init: "main init task") {
 task(createCorePlugin:"Creates the core plugin and its resources") {
 	Ant.mkdir(dir:"${basedir}/plugins/core/grails-app/taglib")
 	Ant.mkdir(dir:"${basedir}/plugins/core/grails-app/utils")		
-
+          
+	Ant.delete {
+		fileset(dir:"${basedir}/plugins/core/grails-app/taglib", includes:"*.groovy")
+		fileset(dir:"${basedir}/plugins/core/grails-app/utils", includes:"*.groovy")		
+	}
 	Ant.copy(todir:"${basedir}/plugins/core/grails-app/taglib") {
 			fileset(dir:"${grailsHome}/src/grails/grails-app/taglib", includes:"*")
 	}		                                                                                  
