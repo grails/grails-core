@@ -14,35 +14,36 @@
  */
 package org.codehaus.groovy.grails.web.pages;
 
-import groovy.lang.*;
+import grails.util.GrailsUtil;
+import groovy.lang.GroovyClassLoader;
 import groovy.text.Template;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.control.CompilationFailedException;
+import org.codehaus.groovy.grails.support.ResourceAwareTemplateEngine;
+import org.codehaus.groovy.grails.web.pages.exceptions.GroovyPagesException;
+import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.core.io.*;
+import org.springframework.web.context.ServletContextAware;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.support.ServletContextResourceLoader;
 
-import java.io.*;
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.commons.lang.StringUtils;
-import org.codehaus.groovy.control.CompilationFailedException;
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
-import org.codehaus.groovy.grails.web.pages.exceptions.GroovyPagesException;
-import org.codehaus.groovy.grails.support.ResourceAwareTemplateEngine;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.support.ServletContextResourceLoader;
-import org.springframework.web.context.ServletContextAware;
-import org.springframework.core.io.*;
-import org.springframework.beans.BeansException;
-import grails.util.GrailsUtil;
 
 /**
  * A GroovyPagesTemplateEngine based on (but not extending) the existing TemplateEngine implementations
@@ -445,7 +446,8 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
             name = pageName != null ? pageName : res.getURL().getPath();
             // As the name take the first / off and then replace all characters that aren't
             // a word character or a digit with an underscore
-            name = name.substring(1).replaceAll("[^\\w\\d]", "_");
+            if(name.startsWith("/")) name = name.substring(1);
+            name = name.replaceAll("[^\\w\\d]", "_");
 
         } catch (IllegalStateException e) {
             name = generateTemplateName();
