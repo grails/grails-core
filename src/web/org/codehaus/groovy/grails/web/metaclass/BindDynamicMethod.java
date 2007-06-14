@@ -15,6 +15,7 @@
 package org.codehaus.groovy.grails.web.metaclass;
 
 import groovy.lang.MissingMethodException;
+import org.apache.commons.collections.CollectionUtils;
 import org.codehaus.groovy.grails.commons.metaclass.AbstractDynamicMethodInvocation;
 import org.codehaus.groovy.grails.web.binding.GrailsDataBinder;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap;
@@ -22,10 +23,10 @@ import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.PropertyValues;
 import org.springframework.web.context.request.RequestContextHolder;
-import org.apache.commons.collections.CollectionUtils;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -59,7 +60,7 @@ public class BindDynamicMethod extends AbstractDynamicMethodInvocation {
         Object targetObject = arguments[0];
         Object bindParams = arguments[1];
         List disallowed = null;
-        String filter = "";
+        String filter = null;
         switch(arguments.length){
             case 3:
                 if(arguments[2] instanceof String){

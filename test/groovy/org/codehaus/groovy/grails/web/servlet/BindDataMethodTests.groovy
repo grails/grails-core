@@ -17,6 +17,7 @@ package org.codehaus.groovy.grails.web.servlet;
 
 import org.codehaus.groovy.grails.web.metaclass.BindDynamicMethod
 import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap
 
 /**
  * Tests for the bindData method
@@ -69,7 +70,27 @@ class BindDataMethodTests extends AbstractGrailsControllerTests {
         }
 	}
 
-     void testBindDataWithPrefixFilterAndDisallowed() {
+    void testBindDataWithDisallowedWithGrailsParameterMap() {
+        runTest() {
+            mockController = ga.getControllerClass("BindController")
+            def input = [ 'metaClass' : this.metaClass, 'name' : 'Marc Palmer', 'email' : 'dontwantthis',
+              'address.country':'gbr' ]
+            input.each() {
+                webRequest.currentRequest.addParameter((String)it.key, (String)it.value)
+            }
+            def excludes = ['email']
+            def params = new GrailsParameterMap(webRequest.currentRequest)
+
+            method.invoke( mockController,"bindData", [target, params, excludes].toArray() )
+
+            assertEquals "Marc Palmer", target.name
+            assertEquals safeMeta, target.metaClass
+            assertEquals "gbr", target.address.country
+            assertNull target.email
+        }
+    }
+
+    void testBindDataWithPrefixFilterAndDisallowed() {
 	    runTest() {
             mockController = ga.getControllerClass("BindController")
             def src = [ 'metaClass' : this.metaClass, 'mark.name' : 'Marc Palmer', 'mark.email' : 'dontwantthis',
@@ -99,4 +120,9 @@ class BindController {
 class CommandObject {
     String name
     String email
+    Address address = new Address()
+}
+
+class Address {
+    String country
 }
