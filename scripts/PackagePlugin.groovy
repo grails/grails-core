@@ -105,5 +105,5 @@ task(packagePlugin:"Implementation task") {
     Ant.delete(file:pluginZip)
     def includesList = pluginIncludes.join(",")
 	def excludesList = pluginExcludes.join(",")
-    Ant.zip(basedir:"${basedir}", destfile:pluginZip, includes:includesList, excludes:excludesList)
+    Ant.zip(basedir:"${basedir}", destfile:pluginZip, includes:includesList, excludes:excludesList, filesonly:true)
 }
