@@ -100,30 +100,37 @@ move it to the new location of '${basedir}/test/integration'. Please move the di
 			 tofile:"${basedir}/web-app/WEB-INF/applicationContext.xml", overwrite:true)
 
 		// These will still overwrite as the src name differs from target and the src name is not in target
-		copy(tofile:"${basedir}/grails-app/conf/log4j.development.properties") {
-		    fileset(file:"${grailsHome}/src/war/WEB-INF/log4j.properties") {
-                present(present:"srconly", targetdir:"${basedir}/grails-app/conf")
-            }
-        }
-		copy(tofile:"${basedir}/grails-app/conf/log4j.test.properties") {
-		    fileset(file:"${grailsHome}/src/war/WEB-INF/log4j.properties") {
-                present(present:"srconly", targetdir:"${basedir}/grails-app/conf")
-            }
-        }
-		copy(tofile:"${basedir}/grails-app/conf/log4j.production.properties") {
-		    fileset(file:"${grailsHome}/src/war/WEB-INF/log4j.properties") {
-                present(present:"srconly", targetdir:"${basedir}/grails-app/conf")
-            }
-        }
-		 
-        copy(tofile:"${basedir}/grails-app/conf/${appClassName}UrlMappings.groovy") {
-            fileset(file:"${grailsHome}/src/grails/templates/artifacts/UrlMappings.groovy") {
-                present(present:"srconly", targetdir:"${basedir}/grails-app/conf")
-            }
-        }
-		replace(file:"${basedir}/grails-app/conf/${appClassName}UrlMappings.groovy", 
-					token:"@artifact.name@", value:"${appClassName}UrlMappings" )
-
+		if(!new File("${basedir}/grails-app/conf/log4j.development.properties").exists()) {
+			copy(tofile:"${basedir}/grails-app/conf/log4j.development.properties") {
+			    fileset(file:"${grailsHome}/src/war/WEB-INF/log4j.properties") {
+	                present(present:"srconly", targetdir:"${basedir}/grails-app/conf")
+	            }
+	        }			
+		}
+		if(!new File("${basedir}/grails-app/conf/log4j.test.properties").exists()) {		
+			copy(tofile:"${basedir}/grails-app/conf/log4j.test.properties") {
+			    fileset(file:"${grailsHome}/src/war/WEB-INF/log4j.properties") {
+	                present(present:"srconly", targetdir:"${basedir}/grails-app/conf")
+	            }
+	        }
+		}         
+		if(!new File("${basedir}/grails-app/conf/log4j.production.properties").exists()) {
+			copy(tofile:"${basedir}/grails-app/conf/log4j.production.properties") {
+			    fileset(file:"${grailsHome}/src/war/WEB-INF/log4j.properties") {
+	                present(present:"srconly", targetdir:"${basedir}/grails-app/conf")
+	            }
+	        }
+		}
+		                
+		if(!new File("${basedir}/grails-app/conf/${appClassName}UrlMappings.groovy").exists()) {
+	        copy(tofile:"${basedir}/grails-app/conf/${appClassName}UrlMappings.groovy") {
+	            fileset(file:"${grailsHome}/src/grails/templates/artifacts/UrlMappings.groovy") {
+	                present(present:"srconly", targetdir:"${basedir}/grails-app/conf")
+	            }
+	        }
+			replace(file:"${basedir}/grails-app/conf/${appClassName}UrlMappings.groovy", 
+						token:"@artifact.name@", value:"${appClassName}UrlMappings" )			
+		}
 
         copy(file:"${grailsHome}/src/war/WEB-INF/web${servletVersion}.template.xml",
              tofile:"${basedir}/web-app/WEB-INF/web.template.xml",
