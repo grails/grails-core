@@ -85,7 +85,7 @@ task( packagePlugins : "Packages any Grails plugins that are installed for this 
 					fileset(dir:"${basedir}/lib",includes:"*.jar,*.zip")
 					fileset(dir:"${grailsHome}/lib",includes:"*.jar,*.zip")
 					fileset(dir:"${grailsHome}/dist",includes:"*.jar,*.zip")        
-					pathelement(dir:"${basedir}/web-app/WEB-INF/classes")  
+					pathelement(location:"${basedir}/web-app/WEB-INF/classes")  
 					fileset(dir:"${pluginBase}/lib",includes:"*.jar,*.zip")
 				}       
 				if(new File("${pluginBase}/src/java").exists()) {                                        
