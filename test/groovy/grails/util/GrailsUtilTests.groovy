@@ -8,7 +8,7 @@ class GrailsUtilTests extends GroovyTestCase {
     void testGrailsVersion() {
 
         
-        assertEquals "0.5.5-RC1", grails.util.GrailsUtil.getGrailsVersion()
+        assertEquals "0.5.5", grails.util.GrailsUtil.getGrailsVersion()
     }
 
 }
