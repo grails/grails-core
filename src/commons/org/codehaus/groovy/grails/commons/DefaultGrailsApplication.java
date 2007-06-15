@@ -165,15 +165,19 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
 
         try {
             for (int i = 0; resources != null && i < resources.length; i++) {
-                log.debug("Loading groovy file :[" + resources[i].getFile().getAbsolutePath() + "]");
+
                 if (!loadedResources.contains(resources[i])) {
                     try {
                         String className = resourceHolder.getClassName(resources[i]);
+              			log.debug("Loading groovy file from resource loader :[" + resources[i].getFile().getAbsolutePath() + "] with name ["+className+"]");	
                         if (!StringUtils.isBlank(className)) {
+
                             Class c = cl.loadClass(className, true, false);
                             Assert.notNull(c, "Groovy Bug! GCL loadClass method returned a null class!");
 
+
                             loadedClasses.add(c);
+                            log.debug("Added Groovy class ["+c+"] to loaded classes");
                             loadedResources = resourceLoader.getLoadedResources();
                         }
                     }
@@ -183,7 +187,8 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
                 }
                 else {
                     Class c;
-                    try {
+                    try {           
+              			log.debug("Loading groovy file from class loader :[" + resources[i].getFile().getAbsolutePath() + "]");		
                         c = cl.loadClass(resourceHolder.getClassName(resources[i]));
                     }
                     catch (ClassNotFoundException e) {
@@ -191,6 +196,7 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
                     }
 
                     loadedClasses.add(c);
+                    log.debug("Added Groovy class ["+c+"] to loaded classes");
                 }
             }
         }
