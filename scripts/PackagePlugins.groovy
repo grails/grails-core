@@ -82,11 +82,11 @@ task( packagePlugins : "Packages any Grails plugins that are installed for this 
 					}
 				}
 				path(id:"classpath") {
-					fileset(dir:"${basedir}/lib")
-					fileset(dir:"${grailsHome}/lib")
-					fileset(dir:"${grailsHome}/dist")        
-					fileset(dir:"${basedir}/web-app/WEB-INF/classes")  
-					fileset(dir:"${pluginBase}/lib")
+					fileset(dir:"${basedir}/lib",includes:"*.jar,*.zip")
+					fileset(dir:"${grailsHome}/lib",includes:"*.jar,*.zip")
+					fileset(dir:"${grailsHome}/dist",includes:"*.jar,*.zip")        
+					pathelement(dir:"${basedir}/web-app/WEB-INF/classes")  
+					fileset(dir:"${pluginBase}/lib",includes:"*.jar,*.zip")
 				}       
 				if(new File("${pluginBase}/src/java").exists()) {                                        
 					javac(srcdir:"${pluginBase}/src/java",destdir:"${basedir}/web-app/WEB-INF/classes",
