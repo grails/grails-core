@@ -25,6 +25,7 @@
 import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
 import groovy.text.SimpleTemplateEngine
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver
+import org.springframework.core.io.*
 import org.codehaus.groovy.grails.plugins.*
 import org.codehaus.groovy.grails.commons.*
 import org.codehaus.groovy.control.*    
@@ -156,7 +157,7 @@ task( generateWebXml : "Generates the web.xml file") {
 
         def classLoader = new GroovyClassLoader(parentLoader,compConfig,true)
 
-        pluginManager = new DefaultGrailsPluginManager(["*GrailsPlugin.groovy", "plugins/*/*GrailsPlugin.groovy"] as String[], new DefaultGrailsApplication(new Class[0], classLoader))
+        pluginManager = new DefaultGrailsPluginManager(pluginResources as Resource[], new DefaultGrailsApplication(new Class[0], classLoader))
     	PluginManagerHolder.setPluginManager(pluginManager)
 
     	def webXml = resolver.getResource("file:${basedir}/web-app/WEB-INF/web.template.xml")

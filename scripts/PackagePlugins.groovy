@@ -28,7 +28,8 @@ GCL = new GroovyClassLoader()
 Ant.property(environment:"env")   
 grailsHome = Ant.antProject.properties."env.GRAILS_HOME"    
 
-includeTargets << new File ( "${grailsHome}/scripts/Init.groovy" )
+includeTargets << new File ( "${grailsHome}/scripts/Init.groovy" ) 
+pluginResources = []
 
 task ( "default" : "Performs packaging of Grails plugins for when they are distributed as part of a WAR") {
    packagePlugins()                                                      
@@ -38,12 +39,17 @@ task( packagePlugins : "Packages any Grails plugins that are installed for this 
 	depends( classpath )   
 	Ant.mkdir(dir:"${basedir}/web-app/WEB-INF/lib")
 	try {
-	   	def plugins = resolveResources("**GrailsPlugin.groovy").toList()
-	    def basePlugin 
-	    if(plugins)basePlugin = plugins[0]
-	
-		plugins += resolveResources("plugins/*/*GrailsPlugin.groovy").toList()
-	   	plugins?.each { p ->  	   
+	  
+	    def basePluginFile = baseFile.listFiles().find { it.name.endsWith("GrailsPlugin.groovy")}
+		def basePlugin = null
+
+		if(basePluginFile) {
+			basePlugin = new org.springframework.core.io.FileSystemResource(basePluginFile)
+			pluginResources << basePlugin			
+		}                        
+
+		pluginResources += resolveResources("plugins/*/*GrailsPlugin.groovy").toList()
+	   	pluginResources?.each { p ->  	   
 	   		def pluginBase = p.file.parentFile.canonicalFile
 	     	def pluginPath = pluginBase.absolutePath
 			def pluginName = pluginBase.name
