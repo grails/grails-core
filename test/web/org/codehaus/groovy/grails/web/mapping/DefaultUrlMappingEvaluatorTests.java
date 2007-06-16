@@ -17,7 +17,7 @@ public class DefaultUrlMappingEvaluatorTests extends TestCase {
 	public void testNewMethod () throws Exception {
 		GroovyShell shell = new GroovyShell ();
 		Binding binding = new Binding();
-		Script script = (Script) shell.parse (
+		Script script = shell.parse (
 				"mappings = {\n" + 
 				"	\"/$controller/$action?/$id?\" { \n" + 
 				"		constraints {\n" + 
@@ -60,7 +60,7 @@ public class DefaultUrlMappingEvaluatorTests extends TestCase {
 
 	public void testOldMethod () throws Exception {
 		GroovyShell shell = new GroovyShell ();
-		Script script = (Script) shell.parse (
+		Script script = shell.parse (
 				"mappings {\n" + 
 				"	\"/$controller/$action?/$id?\" { \n" + 
 				"		constraints {\n" + 

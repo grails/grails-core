@@ -55,7 +55,7 @@ public class UrlMappingFactoryBean extends AbstractFactoryBean implements Applic
 		if(LOG.isDebugEnabled()) {
 			LOG.debug("[UrlMappingFactoryBean] Creating URL mappings as...");
 			for (Iterator i = mappings.keySet().iterator(); i.hasNext();) {
-				Object key = (Object) i.next();
+				Object key = i.next();
 				LOG.debug("[UrlMappingFactoryBean] " + key + "="+mappings.get(key));
 			}
 		}
