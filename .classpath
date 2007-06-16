@@ -25,7 +25,6 @@
 	<classpathentry kind="lib" path="lib/jta.jar"/>
 	<classpathentry kind="lib" path="lib/log4j-1.2.8.jar"/>
 	<classpathentry kind="lib" path="lib/org.mortbay.jetty.jar"/>
-	<classpathentry kind="lib" path="lib/quartz-1.6.0.jar"/>
 	<classpathentry kind="lib" path="lib/sitemesh-2.3.jar"/>
 	<classpathentry kind="lib" path="lib/spring-binding.jar"/>
 	<classpathentry kind="lib" path="lib/spring-mock.jar" sourcepath="/SPRING2_HOME/mock"/>
@@ -57,6 +56,6 @@
 	<classpathentry kind="lib" path="lib/ehcache-1.2.4.jar"/>
 	<classpathentry kind="lib" path="lib/antlr-2.7.6.jar"/>
 	<classpathentry kind="lib" path="lib/gant-0.2.5-SNAPSHOT.jar"/>
-	<classpathentry kind="lib" path="lib/groovy-all-1.1-BETA-1.jar"/>
+	<classpathentry kind="lib" path="lib/groovy-all-1.1-beta-2-snapshot.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>
