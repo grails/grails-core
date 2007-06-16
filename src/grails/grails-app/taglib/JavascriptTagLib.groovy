@@ -59,7 +59,7 @@ class JavascriptTagLib  {
 	 **/
 	def javascript = { attrs, body ->
 		setUpRequestAttributes();
-        def requestPluginContext = request[CONTROLLER].pluginContextPath
+        def requestPluginContext = request[CONTROLLER]?.pluginContextPath
 		if(attrs.src) {
 			out << '<script type="text/javascript" src="'
 			out <<  grailsAttributes.getApplicationUri(request)

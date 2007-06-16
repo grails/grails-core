@@ -126,6 +126,18 @@ public class JavaScriptTagLibTests extends AbstractGrailsTagTests {
            assertEquals("<script type=\"text/javascript\" src=\"/myapp/js/lib.js\"></script>" + System.getProperty("line.separator"),sw.toString())
         }
    }
+   
+    public void testJSSrcWithNoController (){
+        StringWriter sw = new StringWriter()
+        PrintWriter pw = new PrintWriter(sw)
+        withTag("javascript",pw) { tag ->
+           def attrs = [src:'lib.js']
+           setRequestContext()
+           request.setAttribute(GrailsApplicationAttributes.CONTROLLER, null);
+           tag.call(attrs) { }
+           assertEquals("<script type=\"text/javascript\" src=\"/myapp/js/lib.js\"></script>" + System.getProperty("line.separator"),sw.toString())
+        }
+   }
 
    public void testJSLib (){
         StringWriter sw = new StringWriter()
