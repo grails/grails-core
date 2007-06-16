@@ -40,7 +40,8 @@ task ('default': "Generates basic stats for a Grails project") {
 	      new Expando(name: "Tag Libraries", filetype: ".groovy", path: "taglib"),
 	      new Expando(name: "Groovy Helpers", filetype: ".groovy", path: "src.groovy"),
 	      new Expando(name: "Java Helpers", filetype: ".java", path: "src.java"),
-	      new Expando(name: "Tests", filetype: ".groovy", path: "grails-tests"),	      
+	      new Expando(name: "Unit Tests", filetype: ".groovy", path: "test.unit"),
+          new Expando(name: "Integration Tests", filetype: ".groovy", path: "test.integration"),	      
 	]
 	
 	

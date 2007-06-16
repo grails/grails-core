@@ -48,7 +48,7 @@ task ('default': "Creates a ZIP containing source artifacts for reporting bugs")
 
 	Ant.zip(destfile:zipName) {
 	    fileset(dir: "${basedir}", includes: "grails-app/**/*")
-	    fileset(dir: "${basedir}", includes: "grails-tests/**/*")
+	    fileset(dir: "${basedir}", includes: "test/**/*")
 	    fileset(dir: "${basedir}", includes: "scripts/**/*")
 	    fileset(dir: "${basedir}", includes: "spring/**/*")
 	    fileset(dir: "${basedir}", includes: "src/**/*")

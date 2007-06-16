@@ -36,6 +36,6 @@ task ('default': "Creates a new Grails test suite") {
 task (createTestSuite: "Implementation of create-test-suite") {
 	typeName <<= "Tests"   
 	artifactName = "Tests" 		
-	artifactPath = "grails-tests"
+	artifactPath = "test/integration"
 	createArtifact()   
 }
