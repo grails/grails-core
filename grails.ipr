@@ -317,7 +317,7 @@
     <library name="Groovy">
       <CLASSES>
         <root url="jar://$PROJECT_DIR$/lib/gant-0.2.5-SNAPSHOT.jar!/" />
-        <root url="jar://$PROJECT_DIR$/lib/groovy-all-1.1-BETA-1.jar!/" />
+        <root url="jar://$PROJECT_DIR$/lib/groovy-all-1.1-beta-2-snapshot.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES>
