@@ -29,4 +29,45 @@ class TestController {
 		assert appCtx.containsBean("TestControllerClass")
 		assert appCtx.containsBean("TestController")
 	}
+
+	void testOldBindDataMethodsDelegateToNewOnes() {
+	    Class testClass = parseTestBean()
+	    def controller = appCtx.getBean("TestController")
+	    def bean = testClass.newInstance()
+	    def params = [name:"beanName", pages:3]
+	    controller.bindData(bean, params, ["pages"])
+	    assertEquals(0, bean.pages)
+	    assertEquals("beanName", bean.name)
+
+	    bean = testClass.newInstance()
+	    params = ['a.name':"beanName", 'b.address':"address", 'a.pages':3]
+	    controller.bindData(bean, params, ["pages"], "a")
+	    assertEquals(0, bean.pages)
+	    assertEquals("beanName", bean.name)
+	    assertNull(bean.address)
+
+	    }
+
+    void testBindDataConvertsSingleIncludeToListInternally() {
+	    Class testClass = parseTestBean()
+	    def bean = testClass.newInstance()
+	    def params = ['a.name':"beanName", 'b.address':"address", 'a.pages':3]
+	    def controller = appCtx.getBean("TestController")
+	    controller.bindData(bean, params, [include:"name"], "a")
+	    assertEquals(0, bean.pages)
+	    assertEquals("beanName", bean.name)
+	    assertNull(bean.address)
+	}
+
+	Class parseTestBean(){
+	    return gcl.parseClass(
+        """
+        class TestDomainObject {
+           String name
+           int pages = 0
+           String address
+        }
+        """)
+     }
+
 }

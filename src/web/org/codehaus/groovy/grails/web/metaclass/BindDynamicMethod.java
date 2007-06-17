@@ -28,6 +28,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
 import java.util.regex.Pattern;
 
 /**
@@ -44,6 +45,8 @@ import java.util.regex.Pattern;
 public class BindDynamicMethod extends AbstractDynamicMethodInvocation {
     public static final String METHOD_SIGNATURE = "bindData";
     public static final Pattern METHOD_PATTERN = Pattern.compile('^'+METHOD_SIGNATURE+'$');
+    private static final String INCLUDE_MAP_KEY = "include";
+    private static final String EXCLUDE_MAP_KEY = "exclude";
 
     public BindDynamicMethod() {
         super(METHOD_PATTERN);
@@ -58,24 +61,27 @@ public class BindDynamicMethod extends AbstractDynamicMethodInvocation {
 
         Object targetObject = arguments[0];
         Object bindParams = arguments[1];
-        List disallowed = null;
+        Map includeExclude = new HashMap();
+        List include = null;
+        List exclude = null;
         String filter = null;
         switch(arguments.length){
             case 3:
                 if(arguments[2] instanceof String){
                     filter = (String) arguments[2];
-                }else if(!(arguments[2]  instanceof List)) {
-                       throw new IllegalArgumentException("The 3rd Argument for method bindData must represent disallowed properties " +
-                               "and implement the interface java.util.List or be a String and represent a prefix to filter parameters with");
+                }else if(!(arguments[2]  instanceof Map)) {
+                       throw new IllegalArgumentException("The 3rd Argument for method bindData must represent included and exlucded properties " +
+                               "and implement the interface java.util.Map or be a String and represent a prefix to filter parameters with");
                 }else {
-                    disallowed = (List) arguments[2];
+                    includeExclude = (Map) arguments[2];
                 }
                 break;
             case 4:
-                if(!( arguments[2] instanceof List)) {
-                    throw new IllegalArgumentException("Argument [disallowed] for method [bindData] must implement the interface [java.util.List]");
+                if(!( arguments[2] instanceof Map)) {
+                    throw new IllegalArgumentException("The 3rd Argument for method bindData must represent included and exlucded properties " +
+                               "and implement the interface java.util.Map or be a String and represent a prefix to filter parameters with");
                 }
-                disallowed = (List) arguments[2];
+                includeExclude = (Map) arguments[2];
                 if(!(arguments[3] instanceof String)) {
                     throw new IllegalArgumentException("Argument [prefix] for method [bindData] must be a String");
                  }
@@ -83,33 +89,68 @@ public class BindDynamicMethod extends AbstractDynamicMethodInvocation {
                 break;
         }
 
+        if(includeExclude.containsKey(INCLUDE_MAP_KEY)){
+            Object o = includeExclude.get(INCLUDE_MAP_KEY);
+            include = convertToListIfString(o);
+        }
+
+        if(includeExclude.containsKey(EXCLUDE_MAP_KEY)){
+            Object o = includeExclude.get(EXCLUDE_MAP_KEY);
+            exclude = convertToListIfString(o);
+        }
+
         GrailsDataBinder dataBinder;
         if(bindParams instanceof GrailsParameterMap) {
             GrailsParameterMap parameterMap = (GrailsParameterMap)bindParams;
             HttpServletRequest request = parameterMap.getRequest();
             dataBinder = GrailsDataBinder.createBinder(targetObject, targetObject.getClass().getName(), request);
-            updateDisallowed( dataBinder, disallowed);
+            includeExcludeFields(dataBinder, include, exclude);
             dataBinder.bind(request, filter);
         }
         else if(bindParams instanceof HttpServletRequest) {
         	GrailsWebRequest webRequest = (GrailsWebRequest)RequestContextHolder.currentRequestAttributes();
             dataBinder = GrailsDataBinder.createBinder(targetObject, targetObject.getClass().getName(),webRequest.getCurrentRequest());
-            updateDisallowed( dataBinder, disallowed);
+            includeExcludeFields(dataBinder, include, exclude);
             dataBinder.bind((HttpServletRequest)bindParams, filter);
         }
         else if(bindParams instanceof Map) {
             dataBinder = new GrailsDataBinder(targetObject, targetObject.getClass().getName());
             PropertyValues pv = new MutablePropertyValues((Map)bindParams);
-            updateDisallowed( dataBinder, disallowed);
+            includeExcludeFields(dataBinder, include, exclude);
             dataBinder.bind(pv, filter);
         }
         else {
         	GrailsWebRequest webRequest = (GrailsWebRequest)RequestContextHolder.currentRequestAttributes();        	
             dataBinder = GrailsDataBinder.createBinder(targetObject, targetObject.getClass().getName(), webRequest.getCurrentRequest());
-            updateDisallowed( dataBinder, disallowed);
+            includeExcludeFields(dataBinder, include, exclude);
             dataBinder.bind(webRequest.getCurrentRequest(), filter);
         }
         return targetObject;
+    }
+
+    private List convertToListIfString(Object o) {
+        if(o instanceof String){
+            List list = new ArrayList();
+            list.add(o);
+            o = list;
+        }
+        return (List) o;
+    }
+
+    private void includeExcludeFields(GrailsDataBinder dataBinder, List allowed, List disallowed) {
+        updateAllowed( dataBinder, allowed);
+        updateDisallowed( dataBinder, disallowed);
+    }
+
+    private void updateAllowed(GrailsDataBinder binder, List allowed) {
+          if (allowed != null) {
+            String[] currentAllowed = binder.getAllowedFields();
+            List newAllowed = new ArrayList(allowed);
+            CollectionUtils.addAll( newAllowed, currentAllowed);
+            String[] value = new String[newAllowed.size()];
+            newAllowed.toArray(value);
+            binder.setAllowedFields(value);
+        }
     }
 
     private void updateDisallowed( GrailsDataBinder binder, List disallowed) {

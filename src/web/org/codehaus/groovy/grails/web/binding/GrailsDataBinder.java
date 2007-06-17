@@ -70,6 +70,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
     public static final String[] GROOVY_DOMAINCLASS_DISALLOWED = new String[] { "metaClass", "properties", "id", "version" };
     public static final String   NULL_ASSOCIATION = "null";
     private static final String PREFIX_SEPERATOR = ".";
+    private static final String[] ALL_OTHER_FIELDS_ALLOWED_BY_DEFAULT = new String[0];
 
     /**
      * Create a new GrailsDataBinder instance.
@@ -82,7 +83,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
 
         bean = ((BeanPropertyBindingResult)super.getBindingResult()).getPropertyAccessor();
         
-        String[] disallowed = null;
+        String[] disallowed = new String[0];
         GrailsApplication grailsApplication = ApplicationHolder.getApplication();
         if (grailsApplication!=null && grailsApplication.isArtefactOfType(DomainClassArtefactHandler.TYPE, target.getClass())) {
             if (target instanceof GroovyObject) {
@@ -93,9 +94,8 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
         } else if (target instanceof GroovyObject) {
             disallowed = GROOVY_DISALLOWED;
         }
-        if (disallowed != null) {
-            setDisallowedFields(disallowed);
-        }
+        setDisallowedFields(disallowed);
+        setAllowedFields(ALL_OTHER_FIELDS_ALLOWED_BY_DEFAULT);
     }
 
     /**

@@ -57,6 +57,15 @@ public class GrailsDataBinderTests extends TestCase {
         testBindStructuredDate("1999", "1", null, null, null); // January 1st, 1999 - 00:00
         testBindStructuredDate("1999", "12", null, null, null); // December 1st, 1999 - 00:00
     }
+    
+    public void testAllowedAndDissallowedDefaultToEmptyArray(){
+        TestBean testBean = new TestBean();
+        GrailsDataBinder binder = new GrailsDataBinder(testBean,"testBean");
+        assertNotNull( binder.getAllowedFields());
+        assertEquals(0, binder.getAllowedFields().length);
+        assertNotNull( binder.getDisallowedFields());
+        assertEquals(0, binder.getDisallowedFields().length);
+    }
 
     public void testBindStructuredDateWithDayPrecision() throws Exception {
         testBindStructuredDate("2012", "2", "1", null, null); // February 1, 2012 - 00:00
@@ -105,7 +114,7 @@ public class GrailsDataBinderTests extends TestCase {
 
         assertNull(testBean.getMyDate());
     }
-    
+
     public void testFiltersRequestParams(){
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.addParameter("joe.name","joe");
@@ -171,7 +180,7 @@ public class GrailsDataBinderTests extends TestCase {
         assertEquals(33, author2.getAge());
    }
 
-    
+
 
 
     /**

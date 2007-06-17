@@ -383,10 +383,16 @@ class ControllersGrailsPlugin {
 		    	bind.invoke(delegate, "bindData", [target, args] as Object[])
 		    }
 		    metaClass.bindData = { Object target, Object args, List disallowed ->
-		    	bind.invoke(delegate, "bindData", [target, args, disallowed] as Object[])
+		    	bind.invoke(delegate, "bindData", [target, args, [exclude:disallowed]] as Object[])
 		    }
 		    metaClass.bindData = { Object target, Object args, List disallowed, String filter ->
-		    	bind.invoke(delegate, "bindData", [target, args, disallowed, filter] as Object[])
+		    	bind.invoke(delegate, "bindData", [target, args, [exclude:disallowed] , filter] as Object[])
+		    }
+		     metaClass.bindData = { Object target, Object args, Map includeExclude ->
+		    	bind.invoke(delegate, "bindData", [target, args, includeExclude] as Object[])
+		    }
+		    metaClass.bindData = { Object target, Object args, Map includeExclude, String filter ->
+		    	bind.invoke(delegate, "bindData", [target, args, includeExclude , filter] as Object[])
 		    }
 		    metaClass.bindData = { Object target, Object args, String filter ->
 		    	bind.invoke(delegate, "bindData", [target, args, filter] as Object[])
