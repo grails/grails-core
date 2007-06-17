@@ -29,7 +29,8 @@ grailsHome = Ant.antProject.properties."env.GRAILS_HOME"
 
 includeTargets << new File ( "${grailsHome}/scripts/Init.groovy" )
 task ('default': "Creates a new Grails test suite") {
-	typeName =""
+    println "[DEPRECATED] This command is deprecated now and will be removed from future releases. Use 'create-unit-test' and 'create-integration-test' instead."
+    typeName =""
 	depends( checkVersion, createTestSuite )
 }                            
 
