@@ -107,6 +107,20 @@ public class FormTagLib3Tests extends AbstractGrailsTagTests {
            }
        }
 
+        public void testRadioGroupTagWithNonStringValue() {
+           StringWriter sw = new StringWriter();
+           PrintWriter pw = new PrintWriter(sw);
+           withTag("radioGroup", pw) { tag ->
+               def attributes = new TreeMap([name: "testRadio2",
+                                            values:[4,1], value: 1])
+               tag.call(attributes, {"<p><g:message code=\"${it.label}\" /> ${it.radio}</p>"})
+               def lineSep = System.getProperty("line.separator")
+               assertEquals ("<p><g:message code=\"Radio 4\" /> <input type=\"radio\" name=\"testRadio2\" value=\"4\" /></p>"
+                + lineSep + "<p><g:message code=\"Radio 1\" /> <input type=\"radio\" name=\"testRadio2\" checked=\"checked\" value=\"1\" /></p>"
+                + lineSep , sw.toString())
+           }
+       }
+
 
     public void testSelectTag() {
     	final StringWriter sw = new StringWriter();
