@@ -227,7 +227,7 @@ public class DefaultGrailsPluginManager implements GrailsPluginManager {
           if( new File("./grails-app/jobs").exists() && plugins.get("quartz") == null ) {
               GrailsUtil.deprecated( "Job scheduling with Quartz was moved from Grails core " +
                       "to Quartz plugin. Please, install this plugin with " +
-                      "'grails install-plugin Quartz 0.1'. If you don't want use scheduling " +
+                      "'grails install-plugin quartz'. If you haven't need for scheduling " +
                       "just remove 'jobs' folder under 'grails-app'" );
           }
           initializePlugins();
