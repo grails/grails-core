@@ -78,6 +78,36 @@ public class FormTagLib3Tests extends AbstractGrailsTagTests {
     	}
     }
 
+    public void testRadioGroupTagWithLabels() {
+           StringWriter sw = new StringWriter();
+           PrintWriter pw = new PrintWriter(sw);
+          withTag("radioGroup", pw) { tag ->
+               def attributes = new TreeMap([name: "testRadio", labels:['radio.1', 'radio.2', 'radio.3'],
+                                            values:[1,2,3], value: "1"])
+               tag.call(attributes, {"<p><g:message code=\"${it.label}\" /> ${it.radio}</p>"})
+               def lineSep = System.getProperty("line.separator")
+               assertEquals ("<p><g:message code=\"radio.1\" /> <input type=\"radio\" name=\"testRadio\" checked=\"checked\" value=\"1\" /></p>"
+                + lineSep + "<p><g:message code=\"radio.2\" /> <input type=\"radio\" name=\"testRadio\" value=\"2\" /></p>"
+                + lineSep + "<p><g:message code=\"radio.3\" /> <input type=\"radio\" name=\"testRadio\" value=\"3\" /></p>"
+                + lineSep , sw.toString())
+           }
+       }
+
+        public void testRadioGroupTagWithoutLabelsAndInvalidValue() {
+           StringWriter sw = new StringWriter();
+           PrintWriter pw = new PrintWriter(sw);
+           withTag("radioGroup", pw) { tag ->
+               def attributes = new TreeMap([name: "testRadio2",
+                                            values:[3,2], value: "1"])
+               tag.call(attributes, {"<p><g:message code=\"${it.label}\" /> ${it.radio}</p>"})
+               def lineSep = System.getProperty("line.separator")
+               assertEquals ("<p><g:message code=\"Radio 3\" /> <input type=\"radio\" name=\"testRadio2\" value=\"3\" /></p>"
+                + lineSep + "<p><g:message code=\"Radio 2\" /> <input type=\"radio\" name=\"testRadio2\" value=\"2\" /></p>"
+                + lineSep , sw.toString())
+           }
+       }
+
+
     public void testSelectTag() {
     	final StringWriter sw = new StringWriter();
     	final PrintWriter pw = new PrintWriter(sw);

@@ -607,4 +607,27 @@ class FormTagLib {
         // close the tag, with no body
         out << ' />'
      }
+
+     /**
+     * A helper tag for creating radio button groups
+     */
+     def radioGroup = { attrs, body ->
+          def value = attrs.remove('value')
+          def values = attrs.remove('values')
+          def labels = attrs.remove('labels')
+          def name = attrs.remove('name')
+          values.eachWithIndex{ val, idx ->
+               def it = new Expando();
+                it.radio = "<input type=\"radio\" name=\"${name}\" "
+                if(value.equals(val.toString())) {
+                    it.radio += 'checked="checked" '
+                }
+                it.radio += "value=\"${val.toString().encodeAsHTML()}\" />"
+
+                it.label = labels == null ? 'Radio ' + val : labels[idx]
+                
+                out << body(it)
+                out.println()
+          }
+     }
 }
