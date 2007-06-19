@@ -24,7 +24,6 @@ import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
 import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator;
 import org.codehaus.groovy.grails.scaffolding.GrailsTemplateGenerator;
-import org.springframework.binding.support.Assert;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
@@ -61,7 +60,6 @@ public class GenerateUtils {
         if(domainClass == null) {
         	GrailsRuntimeConfigurator config = new GrailsRuntimeConfigurator(application,parent);
             ConfigurableApplicationContext appCtx = (ConfigurableApplicationContext)config.configure(new MockServletContext());
-            Assert.notNull(appCtx);
         }
 
         // retry

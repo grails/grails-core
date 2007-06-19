@@ -898,4 +898,19 @@ public class GrailsClassUtils {
         }
         return false;
     }
+
+    /**
+     * Returns the class name for the given logical name and trailing name. For example "person" and "Controller" would evaluate to "PersonController"
+     *
+     * @param logicalName The logical name
+     * @param trailingName The trailing name
+     * @return The class name
+     */
+    public static String getClassName(String logicalName, String trailingName) {
+        if(StringUtils.isBlank(logicalName)) throw new IllegalArgumentException("Argument [logicalName] cannot be null or blank");
+
+        String className = logicalName.substring(0,1).toUpperCase() + logicalName.substring(1);
+        if(trailingName != null) className = className + trailingName;
+        return className;
+    }
 }
