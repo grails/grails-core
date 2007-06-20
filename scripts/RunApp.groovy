@@ -24,12 +24,18 @@
 
 import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
 import org.mortbay.jetty.*
+import org.mortbay.jetty.nio.*
+import org.mortbay.jetty.handler.*
+import org.mortbay.jetty.webapp.*
+
+
 import org.mortbay.http.*
 
 
 Ant.property(environment:"env")                             
 grailsHome = Ant.antProject.properties."env.GRAILS_HOME" 
 grailsServer = null
+grailsContext = null
 
 includeTargets << new File ( "${grailsHome}/scripts/Init.groovy" ) 
 includeTargets << new File ( "${grailsHome}/scripts/Package.groovy" )  
@@ -45,13 +51,13 @@ task ( runApp : "Main implementation that executes a Grails application") {
     def server = new Server()
     grailsServer = server
     try {
-        def listener = new SocketListener()
-        listener.setPort(serverPort)    
-		if(serverHost)
-			listener.setHost(serverHost) 
-        server.addListener(listener)                          
-
-        server.addWebApplication("/${grailsAppName}", "${basedir}/web-app")
+        def connectors = [new SelectChannelConnector()]
+        connectors[0].setPort(serverPort)    
+        server.setConnectors( (Connector [])connectors )                          
+		ContextHandler handler = new WebAppContext("${basedir}/web-app", "/${grailsAppName}")
+		handler.setClassLoader(Thread.currentThread().getContextClassLoader())
+		grailsHandler = handler
+		server.setHandler( handler )
         server.start()
         event("StatusFinal", ["Server running. Browse to http://localhost:$serverPort/$grailsAppName"])
     } catch(Throwable t) {

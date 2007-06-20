@@ -24,7 +24,6 @@
 	<classpathentry kind="lib" path="lib/jstl-2.4.jar"/>
 	<classpathentry kind="lib" path="lib/jta.jar"/>
 	<classpathentry kind="lib" path="lib/log4j-1.2.8.jar"/>
-	<classpathentry kind="lib" path="lib/org.mortbay.jetty.jar"/>
 	<classpathentry kind="lib" path="lib/sitemesh-2.3.jar"/>
 	<classpathentry kind="lib" path="lib/spring-mock.jar" sourcepath="/SPRING2_HOME/mock"/>
 	<classpathentry kind="lib" path="lib/springmodules-sandbox.jar"/>
@@ -33,7 +32,6 @@
 	<classpathentry kind="lib" path="ant/lib/ant.jar"/>
 	<classpathentry kind="lib" path="lib/bsf-2.3.0.jar"/>
 	<classpathentry kind="lib" path="lib/commons-logging-1.1.jar"/>
-	<classpathentry kind="lib" path="lib/servletapi-2.4.jar"/>
 	<classpathentry kind="lib" path="lib/jsp-api-2.0.jar"/>
 	<classpathentry kind="lib" path="lib/commons-validator-1.3.0.jar"/>
 	<classpathentry kind="lib" path="lib/cglib-nodep-2.1_3.jar"/>
@@ -57,5 +55,9 @@
 	<classpathentry kind="lib" path="lib/groovy-all-1.1-beta-2-snapshot.jar"/>
 	<classpathentry kind="lib" path="lib/spring-binding-1.1-SNAPSHOT-20070611011605.jar"/>
 	<classpathentry kind="lib" path="lib/spring-webflow-1.1-SNAPSHOT-20070611011610.jar"/>
+	<classpathentry kind="lib" path="lib/start.jar"/>
+	<classpathentry kind="lib" path="lib/servlet-api-2.5-6.1.4.jar"/>
+	<classpathentry kind="lib" path="lib/jetty-util-6.1.4.jar"/>
+	<classpathentry kind="lib" path="lib/jetty-6.1.4.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

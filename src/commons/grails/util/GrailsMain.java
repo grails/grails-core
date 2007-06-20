@@ -16,73 +16,64 @@
 package grails.util;
 
 import java.io.File;
-import java.io.IOException;
 
 import org.apache.commons.lang.StringUtils;
-import org.mortbay.http.SocketListener;
+import org.mortbay.jetty.Connector;
 import org.mortbay.jetty.Server;
-
-
+import org.mortbay.jetty.handler.ContextHandler;
+import org.mortbay.jetty.nio.SelectChannelConnector;
+import org.mortbay.jetty.webapp.WebAppContext;
 
 /**
- *  A main class for Grails that launches a jetty instance and runs the 
- *  app specified by the basedir argument
- *
+ * A main class for Grails that launches a jetty instance and runs the app
+ * specified by the basedir argument
+ * 
  * @author Graeme Rocher
  * @since 09-May-2006
  */
 public class GrailsMain {
+    private static final String TMP_WAR_LOCATION = "web-app";
 
-	
-	private static final String TMP_WAR_LOCATION = "web-app";
-
-	/**
-	 * The main routine that loads a jetty instance and launches the Grails
-	 * application for the specified basedir/port etc.
-	 * 
-	 * @param args
-	 */
-	public static void main(String[] args) {
-		Server server = new Server();
-
-		SocketListener listener = new SocketListener();
-		String port = System.getProperty("server.port");
-		if(StringUtils.isBlank(port)) {
-			listener.setPort(8080);
-		}
-		else {			
-			listener.setPort(Integer.parseInt(port));
-		}
-		server.addListener(listener);
-		
-		try {
-			String basedir = System.getProperty("base.dir");
-			startServer(server, basedir);
-		}
-		catch(Exception e) {
-			System.out.println(e.getMessage());
-			e.printStackTrace();
-		}
-	}
-
-	private static void startServer(Server server, String basedir) throws IOException, Exception {
-		String name;
-		String location;
-		if(StringUtils.isBlank(basedir)) {
-			File current = new File(".");
-			name =  '/'+current.getParentFile().getName();
-			location= GrailsMain.TMP_WAR_LOCATION;
-		}
-		else {
-			File base = new File(basedir);
-			name = '/'+base.getName();
-			location = basedir + File.separator + TMP_WAR_LOCATION;
-		}
-		server.addWebApplication(name,
-				                 location);	
-		System.out.println("Starting Grails Jetty server for location: " + location);
-		server.start();
-		System.out.println("Grails Jetty Server Started...");
-	}
-
+    /**
+     * The main routine that loads a jetty instance and launches the Grails
+     * application for the specified basedir/port etc.
+     * 
+     * @param args
+     */
+    public static void main(String[] args) {
+        System.setProperty("org.mortbay.xml.XmlParser.NotValidating", "true");
+        Server server = new Server();
+        try {
+            Connector[] connectors = new Connector[] { new SelectChannelConnector() };
+            String port = System.getProperty("server.port");
+            if (StringUtils.isBlank(port)) {
+                connectors[0].setPort(8080);
+            } else {
+                connectors[0].setPort(Integer.parseInt(port));
+            }
+            String basedir = System.getProperty("base.dir");
+            server.setConnectors(connectors);
+            String name;
+            String location;
+            if (StringUtils.isBlank(basedir)) {
+                File current = new File(".");
+                name = '/' + current.getParentFile().getName();
+                location = GrailsMain.TMP_WAR_LOCATION;
+            } else {
+                File base = new File(basedir);
+                name = '/' + base.getName();
+                location = basedir + File.separator + TMP_WAR_LOCATION;
+            }
+            ContextHandler handler = new WebAppContext(location, name);
+            handler.setClassLoader(Thread.currentThread()
+                    .getContextClassLoader());
+            server.setHandler(handler);
+            System.out.println("Starting Grails Jetty server for location: "
+                    + location);
+            server.start();
+            System.out.println("Grails Jetty Server Started...");
+        } catch (Throwable t) {
+            t.printStackTrace();
+        }
+    }
 }
