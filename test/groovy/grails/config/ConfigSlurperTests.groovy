@@ -35,6 +35,8 @@ smtp.username = "fred"
 ''')
 
         assert config
+        println config
+        println config.smtp.server
         assertEquals "localhost", config.smtp.server.url
         assertEquals "fred", config.smtp.username
     }
@@ -69,7 +71,7 @@ smtp.username = "fred"
         ''')
 
         assert config
-        assertEquals "smtp.myisp.com", config.smtp.mail.host
+        assert "smtp.myisp.com" == config.smtp.mail.host
         assertEquals "server", config.smtp.mail.auth.user
         assertEquals "http://localhost:80/resources", config.resources.URL
 
@@ -80,8 +82,9 @@ smtp.username = "fred"
         def config = slurper.parse('''
 log4j {
     appender {
-        stdout="org.apache.log4j.ConsoleAppender"
-        layout="org.apache.log4j.PatternLayout"        
+        stdout("org.apache.log4j.ConsoleAppender") {
+            layout="org.apache.log4j.PatternLayout"
+        }                
     }
     rootLogger="error,stdout"
     logger {
@@ -97,8 +100,10 @@ log4j {
 
         assert config
 
+        println config
+
         assertEquals "org.apache.log4j.ConsoleAppender", config.log4j.appender.stdout
-        assertEquals "org.apache.log4j.PatternLayout", config.log4j.appender.layout
+        assertEquals "org.apache.log4j.PatternLayout", config.log4j.appender."stdout.layout"
         assertEquals "error,stdout", config.log4j.rootLogger
         assertEquals "info,stdout", config.log4j.logger.org.codehaus.groovy.grails
         assertEquals false, config.log4j.additivity.org.codehaus.groovy.grails              
@@ -109,8 +114,9 @@ log4j {
         def config = slurper.parse('''
 log4j {
     appender {
-        stdout="org.apache.log4j.ConsoleAppender"
-        layout="org.apache.log4j.PatternLayout"
+        stdout("org.apache.log4j.ConsoleAppender") {
+            layout="org.apache.log4j.PatternLayout"
+        }        
     }
     rootLogger="error,stdout"
     logger {
@@ -132,7 +138,7 @@ env {
         assert config
 
         assertEquals "org.apache.log4j.ConsoleAppender", config.log4j.appender.stdout
-        assertEquals "org.apache.log4j.PatternLayout", config.log4j.appender.layout
+        assertEquals "org.apache.log4j.PatternLayout", config.log4j.appender."stdout.layout"
         assertEquals "error,stdout", config.log4j.rootLogger
         assertEquals "info,stdout", config.log4j.logger.org.codehaus.groovy.grails
         assertEquals false, config.log4j.additivity.org.codehaus.groovy.grails
@@ -141,8 +147,9 @@ env {
         config = slurper.parse('''
 log4j {
     appender {
-        stdout="org.apache.log4j.ConsoleAppender"
-        layout="org.apache.log4j.PatternLayout"
+        stdout("org.apache.log4j.ConsoleAppender") {        
+            layout="org.apache.log4j.PatternLayout"
+        }
     }
     rootLogger="error,stdout"
     logger {
@@ -181,8 +188,9 @@ env {
         def config = slurper.parse('''
 log4j {
     appender {
-        stdout="org.apache.log4j.ConsoleAppender"
-        layout="org.apache.log4j.PatternLayout"
+        stdout("org.apache.log4j.ConsoleAppender") {        
+            layout="org.apache.log4j.PatternLayout"
+        }
     }
     rootLogger="error,stdout"
     logger {
@@ -200,7 +208,7 @@ log4j {
 
 
         assertEquals "org.apache.log4j.ConsoleAppender", config."log4j.appender.stdout"
-        assertEquals "org.apache.log4j.PatternLayout", config."log4j.appender.layout"
+        assertEquals "org.apache.log4j.PatternLayout", config."log4j.appender.stdout.layout"
         assertEquals "error,stdout", config."log4j.rootLogger"
         assertEquals "info,stdout", config."log4j.logger.org.codehaus.groovy.grails"
         assertEquals false, config."log4j.additivity.org.codehaus.groovy.grails"              
@@ -214,8 +222,9 @@ log4j {
         def config = slurper.parse('''
 log4j {
     appender {
-        stdout="org.apache.log4j.ConsoleAppender"
-        layout="org.apache.log4j.PatternLayout"
+        stdout("org.apache.log4j.ConsoleAppender") {
+           layout="org.apache.log4j.PatternLayout"
+        }
     }
     rootLogger="error,stdout"
     logger {
@@ -233,7 +242,7 @@ log4j {
         assert props
 
         assertEquals "org.apache.log4j.ConsoleAppender", props."log4j.appender.stdout"
-        assertEquals "org.apache.log4j.PatternLayout", props."log4j.appender.layout"
+        assertEquals "org.apache.log4j.PatternLayout", props."log4j.appender.stdout.layout"
         assertEquals "error,stdout", props."log4j.rootLogger"
         assertEquals "info,stdout", props."log4j.logger.org.codehaus.groovy.grails"
         assertEquals "false", props."log4j.additivity.org.codehaus.groovy.grails"
@@ -241,7 +250,7 @@ log4j {
 
         props = config.log4j.toProperties("log4j")
         assertEquals "org.apache.log4j.ConsoleAppender", props."log4j.appender.stdout"
-        assertEquals "org.apache.log4j.PatternLayout", props."log4j.appender.layout"
+        assertEquals "org.apache.log4j.PatternLayout", props."log4j.appender.stdout.layout"
         assertEquals "error,stdout", props."log4j.rootLogger"
         assertEquals "info,stdout", props."log4j.logger.org.codehaus.groovy.grails"
         assertEquals "false", props."log4j.additivity.org.codehaus.groovy.grails"

@@ -89,6 +89,7 @@ class ConfigSlurper {
     ConfigObject parse(Script script) {
         def config = new ConfigObject()
         def mc = script.class.metaClass
+        def prefix = ""
         Stack stack = new Stack()
         mc.getProperty = { String name ->
             def result
@@ -141,9 +142,20 @@ class ConfigSlurper {
                     stack.pop()
                 }
             }
+            else if(args.length == 2 && args[1] instanceof Closure) {
+                try {
+                   prefix = name +'.'
+                    def conf = stack ? stack.peek() : config
+                    conf[name] = args[0]
+                    args[1].call()
+                }  finally { prefix = "" }
+            }
             else {
                 MetaMethod mm = mc.getMetaMethod(name, args)
-                result = mm.invoke(delegate, args)
+                if(mm)result = mm.invoke(delegate, args)
+                else {
+                    throw new MissingMethodException(name, getClass(), args)                    
+                }
             }
             result
         }
@@ -155,7 +167,7 @@ class ConfigSlurper {
             else {
                 current = config
             }
-            current[name] = value
+            current[prefix+name] = value
         }
         script.binding = new ConfigBinding(setProperty)
 
@@ -169,6 +181,7 @@ class ConfigSlurper {
 
         return config        
     }
+
 
     /**
      * Merges the second map with the first overriding any matching configuration entries in the first map
