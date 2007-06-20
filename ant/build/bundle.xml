@@ -4,6 +4,7 @@
 		<delete>
 			<fileset dir="${grails.dist}" includes="*"/>
 		</delete>
+		<jar destfile="${grails.dist}/grails-config-${grails.version}.jar" basedir="${grails.build}/config"/>		
 		<jar destfile="${grails.dist}/grails-core-${grails.version}.jar" basedir="${grails.build}/core"/>
 		<jar destfile="${grails.dist}/grails-gorm-${grails.version}.jar" basedir="${grails.build}/gorm"/>		
 		<jar destfile="${grails.dist}/grails-web-${grails.version}.jar" basedir="${grails.build}/web"/>		

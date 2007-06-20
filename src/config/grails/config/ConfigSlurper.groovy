@@ -61,13 +61,14 @@ class ConfigSlurper {
         this.bean = Introspector.getBeanInfo(beanClass)
         this.instance = beanClass.newInstance()
     }*/
+    
 
     /**
      * Parse the given script as a string and return the configuration object
      *
      * @see ConfigSlurper#parse(groovy.lang.Script)
      */
-    def parse(String script) {
+    ConfigObject parse(String script) {
         return parse(classLoader.parseClass(script))
     }
 
@@ -76,7 +77,7 @@ class ConfigSlurper {
      *
      * @see ConfigSlurper#parse(groovy.lang.Script)
      */
-    def parse(Class scriptClass) {
+    ConfigObject parse(Class scriptClass) {
         return parse(scriptClass.newInstance())
     }
 
@@ -85,8 +86,8 @@ class ConfigSlurper {
      * @param script The script to parse
      * @return A Map of maps that can be navigating with dot de-referencing syntax to obtain configuration entries
      */
-    def parse(Script script) {
-        def config = [:]
+    ConfigObject parse(Script script) {
+        def config = new ConfigObject()
         def mc = script.class.metaClass
         Stack stack = new Stack()
         mc.getProperty = { String name ->
@@ -197,20 +198,6 @@ class ConfigSlurper {
             }
         }
         return config
-    }
-}
-/**
- * A ConfigObject is a simply a Map that creates configuration entries (other ConfigObjects) when referencing them.
- * This means that navigating to foo.bar.stuff will not return null but nested ConfigObjects which are of course empty maps
- * The Groovy truth can be used to check for the existance of "real" entries.
- */
-class ConfigObject extends HashMap {
-
-    def getProperty(String name) {
-        def prop = get(name)
-        if(prop == null) prop = new ConfigObject()
-        put(name, prop)
-        return prop
     }
 }
 /**

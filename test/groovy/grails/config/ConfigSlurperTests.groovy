@@ -69,7 +69,6 @@ smtp.username = "fred"
         ''')
 
         assert config
-        println config
         assertEquals "smtp.myisp.com", config.smtp.mail.host
         assertEquals "server", config.smtp.mail.auth.user
         assertEquals "http://localhost:80/resources", config.resources.URL
@@ -174,7 +173,78 @@ env {
         assertEquals "debug,stdout", config.log4j.logger.org.codehaus.groovy.grails
         assertEquals false, config.log4j.additivity.org.codehaus.groovy.grails
 
+    }
 
+
+    void testFlattenConfig() {
+        def slurper = new ConfigSlurper()
+        def config = slurper.parse('''
+log4j {
+    appender {
+        stdout="org.apache.log4j.ConsoleAppender"
+        layout="org.apache.log4j.PatternLayout"
+    }
+    rootLogger="error,stdout"
+    logger {
+        org.codehaus.groovy.grails="info,stdout"
+        org.springframework="info,stdout"
+    }
+    additivity {
+        org.codehaus.groovy.grails=false
+        org.springframework=false
+    }
+}
+        ''')
+
+        config = config.flatten()
+
+
+        assertEquals "org.apache.log4j.ConsoleAppender", config."log4j.appender.stdout"
+        assertEquals "org.apache.log4j.PatternLayout", config."log4j.appender.layout"
+        assertEquals "error,stdout", config."log4j.rootLogger"
+        assertEquals "info,stdout", config."log4j.logger.org.codehaus.groovy.grails"
+        assertEquals false, config."log4j.additivity.org.codehaus.groovy.grails"              
+
+
+    }
+
+
+    void testToProperties() {
+        def slurper = new ConfigSlurper()
+        def config = slurper.parse('''
+log4j {
+    appender {
+        stdout="org.apache.log4j.ConsoleAppender"
+        layout="org.apache.log4j.PatternLayout"
+    }
+    rootLogger="error,stdout"
+    logger {
+        org.codehaus.groovy.grails="info,stdout"
+        org.springframework="info,stdout"
+    }
+    additivity {
+        org.codehaus.groovy.grails=false
+        org.springframework=false
+    }
+}
+        ''')
+
+        def props = config.toProperties()
+        assert props
+
+        assertEquals "org.apache.log4j.ConsoleAppender", props."log4j.appender.stdout"
+        assertEquals "org.apache.log4j.PatternLayout", props."log4j.appender.layout"
+        assertEquals "error,stdout", props."log4j.rootLogger"
+        assertEquals "info,stdout", props."log4j.logger.org.codehaus.groovy.grails"
+        assertEquals "false", props."log4j.additivity.org.codehaus.groovy.grails"
+
+
+        props = config.log4j.toProperties("log4j")
+        assertEquals "org.apache.log4j.ConsoleAppender", props."log4j.appender.stdout"
+        assertEquals "org.apache.log4j.PatternLayout", props."log4j.appender.layout"
+        assertEquals "error,stdout", props."log4j.rootLogger"
+        assertEquals "info,stdout", props."log4j.logger.org.codehaus.groovy.grails"
+        assertEquals "false", props."log4j.additivity.org.codehaus.groovy.grails"
 
     }
 
