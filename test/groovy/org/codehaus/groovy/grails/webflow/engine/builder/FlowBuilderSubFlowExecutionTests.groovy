@@ -8,6 +8,14 @@ import org.springframework.webflow.definition.*
 
 class FlowBuilderSubFlowExecutionTests extends AbstractFlowExecutionTests{
 
+    void setUp() {
+        ExpandoMetaClass.enableGlobally()
+    }
+
+    void tearDown() {
+        ExpandoMetaClass.disableGlobally()
+    }    
+
     def foo() {
         "bar"
     }

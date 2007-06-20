@@ -6,6 +6,14 @@ import org.springframework.webflow.definition.*
 
 class FlowBuilderExecutionTests extends AbstractFlowExecutionTests{
 
+    void setUp() {
+        ExpandoMetaClass.enableGlobally()
+    }
+
+    void tearDown() {
+        ExpandoMetaClass.disableGlobally()
+    }    
+
     def searchService = [executeSearch:{["foo", "bar"]}]
     def params = [q:"foo"]
     

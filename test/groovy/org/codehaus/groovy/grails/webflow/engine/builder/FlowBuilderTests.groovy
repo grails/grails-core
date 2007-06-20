@@ -4,6 +4,14 @@ import org.springframework.webflow.engine.*
 
 class FlowBuilderTests extends GroovyTestCase{
 
+    void setUp() {
+        ExpandoMetaClass.enableGlobally()
+    }
+
+    void tearDown() {
+        ExpandoMetaClass.disableGlobally()
+    }
+
     void testFlowDataModel() {
 
 
