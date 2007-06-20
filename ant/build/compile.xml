@@ -3,7 +3,8 @@
     <taskdef name="groovyc"  classname="org.codehaus.groovy.ant.Groovyc" classpathref="classpath" />
 
     <target name="build-init">
-		<mkdir dir="${grails.build}"/>
+		<mkdir dir="${grails.build}"/> 
+		<mkdir dir="${grails.build}/config"/> 		
 		<mkdir dir="${grails.build}/core"/>
 		<mkdir dir="${grails.build}/web"/>
 		<mkdir dir="${grails.build}/gorm"/>		
@@ -47,7 +48,15 @@
 		      <pathelement path="${grails.build}/core"/>
 		    </classpath>  
 			<classpath refid="classpath"/>    
+		</groovyc>                                                                             
+        <groovyc destdir="${grails.build}/config" encoding="UTF-8">
+			<src path="${grails.src.config}"/>
+		    <classpath>
+		      <pathelement path="${grails.build}/core"/>
+		    </classpath>  
+			<classpath refid="classpath"/>    
 		</groovyc> 
+		
         <groovyc destdir="${grails.build}/core" srcdir="${grails.src.groovy}" encoding="UTF-8">
              <exclude name="**/orm/**" />
              <exclude name="**/web/**" />
