@@ -30,8 +30,24 @@ public class ParseTests extends TestCase {
 			"out.print('<div>hi</div>')\n"+
 			"}\n"+
 			"}";
+		assertEquals(expected, trimAndRemoveCR(output));
+	}
 
-		System.out.println(output);
+    public void testParseWithUnclosedSquareBracket() throws Exception {
+		String output = parseCode("myTest", "<g:message code=\"[\"/>");
+		String expected =
+			"import org.codehaus.groovy.grails.web.pages.GroovyPage\n" +
+			"import org.codehaus.groovy.grails.web.taglib.*\n"+
+			"\n"+
+			"class myTest extends GroovyPage {\n"+
+			"public Object run() {\n"+
+            "attrs1 = [\"code\":\"[\"]\n" +
+            "body1 = new GroovyPageTagBody(this,binding.webRequest) {\n" +
+            "}\n" +
+            "invokeTag('message','g',attrs1,body1)\n"+
+			"}\n"+
+			"}";
+
 		assertEquals(expected, trimAndRemoveCR(output));
 	}
 
