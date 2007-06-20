@@ -76,8 +76,106 @@ smtp.username = "fred"
 
     }
 
+    void testLog4jConfiguration() {
+        def slurper = new ConfigSlurper()
+        def config = slurper.parse('''
+log4j {
+    appender {
+        stdout="org.apache.log4j.ConsoleAppender"
+        layout="org.apache.log4j.PatternLayout"        
+    }
+    rootLogger="error,stdout"
+    logger {
+        org.codehaus.groovy.grails="info,stdout"
+        org.springframework="info,stdout"
+    }
+    additivity {
+        org.codehaus.groovy.grails=false
+        org.springframework=false
+    }
+}
+        ''')
+
+        assert config
+
+        assertEquals "org.apache.log4j.ConsoleAppender", config.log4j.appender.stdout
+        assertEquals "org.apache.log4j.PatternLayout", config.log4j.appender.layout
+        assertEquals "error,stdout", config.log4j.rootLogger
+        assertEquals "info,stdout", config.log4j.logger.org.codehaus.groovy.grails
+        assertEquals false, config.log4j.additivity.org.codehaus.groovy.grails              
+    }
+
     void testEnvironmentSpecificConfig() {
-        // coming soon!
+        def slurper = new ConfigSlurper()
+        def config = slurper.parse('''
+log4j {
+    appender {
+        stdout="org.apache.log4j.ConsoleAppender"
+        layout="org.apache.log4j.PatternLayout"
+    }
+    rootLogger="error,stdout"
+    logger {
+        org.codehaus.groovy.grails="info,stdout"
+        org.springframework="info,stdout"
+    }
+    additivity {
+        org.codehaus.groovy.grails=false
+        org.springframework=false
+    }
+}
+env {
+    development {
+        log4j.logger.org.codehaus.groovy.grails="debug,stdout"
+    }
+}
+        ''')
+
+        assert config
+
+        assertEquals "org.apache.log4j.ConsoleAppender", config.log4j.appender.stdout
+        assertEquals "org.apache.log4j.PatternLayout", config.log4j.appender.layout
+        assertEquals "error,stdout", config.log4j.rootLogger
+        assertEquals "info,stdout", config.log4j.logger.org.codehaus.groovy.grails
+        assertEquals false, config.log4j.additivity.org.codehaus.groovy.grails
+
+        slurper.setEnvironment("development")
+        config = slurper.parse('''
+log4j {
+    appender {
+        stdout="org.apache.log4j.ConsoleAppender"
+        layout="org.apache.log4j.PatternLayout"
+    }
+    rootLogger="error,stdout"
+    logger {
+        org.codehaus.groovy.grails="info,stdout"
+        org.springframework="info,stdout"
+    }
+    additivity {
+        org.codehaus.groovy.grails=false
+        org.springframework=false
+    }
+}
+env {
+    development {
+        log4j.logger.org.codehaus.groovy.grails="debug,stdout"
+        log4j.appender.layout="MyLayout"
+    }
+    production {
+        log4j.appender.stdout="MyRobustFileAppender"
+    }
+}
+        ''')
+
+        assert config
+
+        assertEquals "org.apache.log4j.ConsoleAppender", config.log4j.appender.stdout
+        assertEquals "MyLayout", config.log4j.appender.layout
+        assertEquals "error,stdout", config.log4j.rootLogger
+        assertEquals "debug,stdout", config.log4j.logger.org.codehaus.groovy.grails
+        assertEquals false, config.log4j.additivity.org.codehaus.groovy.grails
+
+
+
     }
 
 }

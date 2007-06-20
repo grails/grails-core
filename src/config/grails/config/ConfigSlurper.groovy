@@ -44,29 +44,47 @@ import java.beans.BeanInfo
 
 class ConfigSlurper {
 
-    private BeanInfo bean
-    private instance
+    private static final ENV_METHOD = "env"
+    static final ENV_SETTINGS = '__env_settings__'
+    //private BeanInfo bean
+    //private instance
     GroovyClassLoader classLoader = new GroovyClassLoader()
+    String environment
+    private envMode = false
 
     ConfigSlurper() { }
-    ConfigSlurper(Class beanClass) {
+
+
+    /*ConfigSlurper(Class beanClass) {
         if(!beanClass) throw new IllegalArgumentException("Argument [beanClass] cannot be null")
 
         this.bean = Introspector.getBeanInfo(beanClass)
         this.instance = beanClass.newInstance()
-    }
+    }*/
 
     /**
      * Parse the given script as a string and return the configuration object
+     *
+     * @see ConfigSlurper#parse(groovy.lang.Script)
      */
     def parse(String script) {
         return parse(classLoader.parseClass(script))
     }
 
+    /**
+     * Create a new instance of the given script class and parse a configuration object from it
+     *
+     * @see ConfigSlurper#parse(groovy.lang.Script)
+     */
     def parse(Class scriptClass) {
         return parse(scriptClass.newInstance())
     }
 
+    /**
+     * Parse the given script into a configuration object (a Map)
+     * @param script The script to parse
+     * @return A Map of maps that can be navigating with dot de-referencing syntax to obtain configuration entries
+     */
     def parse(Script script) {
         def config = [:]
         def mc = script.class.metaClass
@@ -91,16 +109,36 @@ class ConfigSlurper {
         mc.invokeMethod = { String name, args ->
             def result
             if(args.length == 1 && args[0] instanceof Closure) {
-                def co = new ConfigObject()
-                if(stack) {
-                    stack.peek()[name] = co
+                if(name == ENV_METHOD) {
+                    try {
+                        envMode = true
+                        args[0].call()
+                    }
+                    finally {
+                        envMode = false
+                    }
+                }
+                else if(envMode) {
+                    if(name == environment) {
+                        def co = new ConfigObject()
+                        config[ENV_SETTINGS] = co
+                        stack.push(co)
+                        args[0].call()
+                        stack.pop()
+                    }
                 }
                 else {
-                    config[name] = co
+                    def co = new ConfigObject()
+                    if(stack) {
+                        stack.peek()[name] = co
+                    }
+                    else {
+                        config[name] = co
+                    }
+                    stack.push(co)
+                    args[0].call()
+                    stack.pop()
                 }
-                stack.push(co)
-                args[0].call()
-                stack.pop()
             }
             else {
                 MetaMethod mm = mc.getMetaMethod(name, args)
@@ -123,18 +161,62 @@ class ConfigSlurper {
         
         script.run()
 
+        def envSettings = config.remove(ENV_SETTINGS)
+        if(envSettings) {
+            config = merge(config, envSettings)
+        }
+
         return config        
     }
+
+    /**
+     * Merges the second map with the first overriding any matching configuration entries in the first map
+     *
+     * @param config The root configuration Map
+     * @param other The map to merge with the root
+     *
+     * @return The root configuration Map with the configuration entries merged from the second map
+     *
+     */
+    def merge(Map config,Map other) {
+
+        for(entry in other) {
+            def configEntry = config[entry.key]
+            if(configEntry == null) {
+                config[entry.key] = entry.value
+                continue
+            }
+            else {
+               if(configEntry instanceof Map && entry.value instanceof Map) {
+                    // recurse
+                    merge(configEntry, entry.value)                                
+               }
+               else {
+                   config[entry.key] = entry.value
+               }
+            }
+        }
+        return config
+    }
 }
+/**
+ * A ConfigObject is a simply a Map that creates configuration entries (other ConfigObjects) when referencing them.
+ * This means that navigating to foo.bar.stuff will not return null but nested ConfigObjects which are of course empty maps
+ * The Groovy truth can be used to check for the existance of "real" entries.
+ */
 class ConfigObject extends HashMap {
 
     def getProperty(String name) {
         def prop = get(name)
-        if(!prop) prop = new ConfigObject()
+        if(prop == null) prop = new ConfigObject()
         put(name, prop)
         return prop
     }
 }
+/**
+ * Since Groovy Script don't support overriding setProperty, we have to using a trick with the Binding to provide this
+ * functionality
+ */
 class ConfigBinding extends Binding {
     def callable
     ConfigBinding(Closure c) {
