@@ -26,10 +26,8 @@
 	<classpathentry kind="lib" path="lib/log4j-1.2.8.jar"/>
 	<classpathentry kind="lib" path="lib/org.mortbay.jetty.jar"/>
 	<classpathentry kind="lib" path="lib/sitemesh-2.3.jar"/>
-	<classpathentry kind="lib" path="lib/spring-binding.jar"/>
 	<classpathentry kind="lib" path="lib/spring-mock.jar" sourcepath="/SPRING2_HOME/mock"/>
 	<classpathentry kind="lib" path="lib/springmodules-sandbox.jar"/>
-	<classpathentry kind="lib" path="lib/spring-webflow.jar"/>
 	<classpathentry kind="lib" path="lib/standard-2.3.jar"/>
 	<classpathentry kind="lib" path="lib/standard-2.4.jar"/>
 	<classpathentry kind="lib" path="ant/lib/ant.jar"/>
@@ -57,5 +55,7 @@
 	<classpathentry kind="lib" path="lib/antlr-2.7.6.jar"/>
 	<classpathentry kind="lib" path="lib/gant-0.2.5-SNAPSHOT.jar"/>
 	<classpathentry kind="lib" path="lib/groovy-all-1.1-beta-2-snapshot.jar"/>
+	<classpathentry kind="lib" path="lib/spring-binding-1.1-SNAPSHOT-20070611011605.jar"/>
+	<classpathentry kind="lib" path="lib/spring-webflow-1.1-SNAPSHOT-20070611011610.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>
