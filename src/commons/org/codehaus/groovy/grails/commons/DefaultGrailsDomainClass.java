@@ -609,9 +609,11 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
     public GrailsDomainClassProperty getVersion() {
         return this.version;
     }
-    /* (non-Javadoc)
-      * @see org.codehaus.groovy.grails.domain.GrailsDomainClass#getPersistantProperties()
-      */
+
+    /**
+     * @see org.codehaus.groovy.grails.commons.GrailsDomainClass#getPersistantProperties()
+     * @deprecated 
+     */
     public GrailsDomainClassProperty[] getPersistantProperties() {
         return this.persistantProperties;
     }

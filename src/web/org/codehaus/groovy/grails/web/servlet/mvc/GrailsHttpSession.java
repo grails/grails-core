@@ -35,7 +35,8 @@ public class GrailsHttpSession implements
 	public GrailsHttpSession(HttpSession session) {
 		this.adaptee = session;
 	}
-	/* (non-Javadoc)
+    
+    /* (non-Javadoc)
 	 * @see javax.servlet.http.HttpSession#getAttribute(java.lang.String)
 	 */
 	public Object getAttribute(String name) {
@@ -98,8 +99,9 @@ public class GrailsHttpSession implements
         }
     }
 
-	/* (non-Javadoc)
+	/**
 	 * @see javax.servlet.http.HttpSession#getSessionContext()
+	 * @deprecated
 	 */
 	public HttpSessionContext getSessionContext() {
         synchronized (adaptee) {
@@ -107,8 +109,9 @@ public class GrailsHttpSession implements
         }
     }
 
-	/* (non-Javadoc)
+	/**
 	 * @see javax.servlet.http.HttpSession#getValue(java.lang.String)
+	 * @deprecated
 	 */
 	public Object getValue(String name) {
         synchronized (adaptee) {
@@ -116,12 +119,33 @@ public class GrailsHttpSession implements
         }
     }
 
-	/* (non-Javadoc)
+	/**
 	 * @see javax.servlet.http.HttpSession#getValueNames()
+     * @deprecated
 	 */
 	public String[] getValueNames() {
         synchronized (adaptee) {
     		return adaptee.getValueNames();
+        }
+    }
+
+    /**
+     * @see javax.servlet.http.HttpSession#putValue(java.lang.String, java.lang.Object)
+     * @deprecated
+     */
+    public void putValue(String name, Object value) {
+        synchronized (adaptee) {
+            adaptee.setAttribute(name, value);
+        }
+    }
+
+    /**
+     * @see javax.servlet.http.HttpSession#removeValue(java.lang.String)
+     * @deprecated
+     */
+    public void removeValue(String name) {
+        synchronized (adaptee) {
+            adaptee.removeAttribute(name);
         }
     }
 
@@ -144,27 +168,9 @@ public class GrailsHttpSession implements
     }
 
 	/* (non-Javadoc)
-	 * @see javax.servlet.http.HttpSession#putValue(java.lang.String, java.lang.Object)
-	 */
-	public void putValue(String name, Object value) {
-        synchronized (adaptee) {
-    		adaptee.setAttribute(name, value);
-        }
-    }
-
-	/* (non-Javadoc)
 	 * @see javax.servlet.http.HttpSession#removeAttribute(java.lang.String)
 	 */
 	public void removeAttribute(String name) {
-        synchronized (adaptee) {
-    		adaptee.removeAttribute(name);
-        }
-    }
-
-	/* (non-Javadoc)
-	 * @see javax.servlet.http.HttpSession#removeValue(java.lang.String)
-	 */
-	public void removeValue(String name) {
         synchronized (adaptee) {
     		adaptee.removeAttribute(name);
         }

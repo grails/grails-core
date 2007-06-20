@@ -14,14 +14,13 @@
  */ 
 package org.codehaus.groovy.grails.domain;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import org.codehaus.groovy.grails.exceptions.InvalidPropertyException;
-import org.codehaus.groovy.grails.commons.*;
-
 import groovy.lang.GroovyClassLoader;
 import junit.framework.TestCase;
+import org.codehaus.groovy.grails.commons.*;
+import org.codehaus.groovy.grails.exceptions.InvalidPropertyException;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Graeme Rocher
@@ -57,7 +56,7 @@ public class DefaultGrailsDomainClassTests extends TestCase {
 		super.setUp();
 	}
 
-    public void testPersistantPropertyInheritance() {
+    public void testPersistentPropertyInheritance() {
         Class topClass = cl.parseClass("class Top {\n" +
                 "int id\n" +
                 "int version\n" +
@@ -74,9 +73,9 @@ public class DefaultGrailsDomainClassTests extends TestCase {
         DefaultGrailsDomainClass middleDomainClass = new DefaultGrailsDomainClass(middleClass);
         DefaultGrailsDomainClass bottomDomainClass = new DefaultGrailsDomainClass(bottomClass);
         
-        assertEquals("bottom class had wrong number of persistent properties", 3, bottomDomainClass.getPersistantProperties().length);
-        assertEquals("middle class had wrong number of persistent properties", 2, middleDomainClass.getPersistantProperties().length);
-        assertEquals("top class had wrong number of persistent properties", 1, topDomainClass.getPersistantProperties().length);
+        assertEquals("bottom class had wrong number of persistent properties", 3, bottomDomainClass.getPersistentProperties().length);
+        assertEquals("middle class had wrong number of persistent properties", 2, middleDomainClass.getPersistentProperties().length);
+        assertEquals("top class had wrong number of persistent properties", 1, topDomainClass.getPersistentProperties().length);
         
         GrailsDomainClassProperty topStringProperty = topDomainClass.getPropertyByName("topString");
         assertNotNull("topString property not found in topDomainClass", topStringProperty);
