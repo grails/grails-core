@@ -1,7 +1,6 @@
 package org.codehaus.groovy.grails.webflow.engine.builder;
 
 import org.springframework.webflow.engine.*
-import org.codehaus.groovy.grails.commons.metaclass.*
 import org.springframework.webflow.test.execution.*
 import org.springframework.webflow.definition.*
 
@@ -21,9 +20,7 @@ class FlowBuilderSubFlowExecutionTests extends AbstractFlowExecutionTests{
     }
 
     void testClosureMetaClassModifications() {
-
-         ExpandoMetaClass.enableGlobally()
-         def callable = {
+     def callable = {
             foo()
          }
          def metaClass = GroovySystem.metaClassRegistry.getMetaClass(callable.class)
