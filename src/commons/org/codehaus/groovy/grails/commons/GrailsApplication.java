@@ -15,11 +15,11 @@
  */ 
 package org.codehaus.groovy.grails.commons;
 
+import grails.config.ConfigObject;
+import groovy.lang.GroovyClassLoader;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.io.Resource;
-
-import groovy.lang.GroovyClassLoader;
 
 import java.util.Map;
 
@@ -61,6 +61,18 @@ public interface GrailsApplication extends ApplicationContextAware {
      * Constant for the test environment
      */
     String ENV_TEST  = "test";
+
+    /**
+     * The name of the class that provides configuration
+     */
+    String CONFIG_CLASS = "Config";
+
+    /**
+     * Returns the ConfigObject instance
+     *
+     * @return The ConfigObject instance
+     */
+    public ConfigObject getConfig();
 
     /**
      * <p>Returns the active data source for this Grails application or null if not available.

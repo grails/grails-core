@@ -1,14 +1,14 @@
 package org.codehaus.groovy.grails.plugins.support.aware;
 
+import groovy.lang.GroovyObject;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration;
 import org.codehaus.groovy.grails.plugins.AbstractGrailsPlugin;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.GenericApplicationContext;
 
+import java.util.Collections;
 import java.util.Map;
-
-import groovy.lang.GroovyObject;
 
 /**
  * <p>Grails plugin that registers <code>*Aware</code> {@link org.springframework.beans.factory.config.BeanPostProcessor}s.</p>
@@ -70,7 +70,11 @@ public class AwarePlugin extends AbstractGrailsPlugin {
         // do nothing
     }
 
-	public void doArtefactConfiguration() {
+    public Map notifyOfEvent(int eventKind, Object source) {
+        return Collections.EMPTY_MAP;
+    }
+
+    public void doArtefactConfiguration() {
 		// do nothing		
 	}
 

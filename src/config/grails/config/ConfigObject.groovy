@@ -13,15 +13,29 @@
  * limitations under the License.
  */
 package grails.config
+
+
 /**
- * A ConfigObject at a simple level is a Map that creates configuration entries (other ConfigObjects) when referencing them.
- * This means that navigating to foo.bar.stuff will not return null but nested ConfigObjects which are of course empty maps
- * The Groovy truth can be used to check for the existance of "real" entries.
- *
- * @author Graeme Rocher
- * @since 0.6
- */
-class ConfigObject extends HashMap {
+* A ConfigObject at a simple level is a Map that creates configuration entries (other ConfigObjects) when referencing them.
+* This means that navigating to foo.bar.stuff will not return null but nested ConfigObjects which are of course empty maps
+* The Groovy truth can be used to check for the existance of "real" entries.
+*
+* @author Graeme Rocher
+* @since 0.6
+*/
+class ConfigObject extends LinkedHashMap {
+
+    URL file
+
+    ConfigObject(URL file) {
+        this.file = file
+    }
+
+    ConfigObject() {}
+
+    URL getConfigFile() {
+        return this.file    
+    }
 
     /**
      * Overrides the default getProperty implementation to create nested ConfigObject instances on demand
@@ -29,7 +43,7 @@ class ConfigObject extends HashMap {
      */
     def getProperty(String name) {
         def prop = get(name)
-        if(prop == null) prop = new ConfigObject()
+        if(prop == null) prop = new ConfigObject(this.file)
         put(name, prop)
         return prop
     }

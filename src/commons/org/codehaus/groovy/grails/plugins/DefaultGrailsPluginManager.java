@@ -15,11 +15,10 @@
 */
 package org.codehaus.groovy.grails.plugins;
 
+import grails.config.ConfigObject;
+import grails.config.ConfigSlurper;
 import grails.util.GrailsUtil;
-import groovy.lang.Binding;
-import groovy.lang.GroovyClassLoader;
-import groovy.lang.GroovyShell;
-import groovy.lang.Writable;
+import groovy.lang.*;
 import groovy.util.XmlSlurper;
 import groovy.util.slurpersupport.GPathResult;
 import org.apache.commons.lang.ArrayUtils;
@@ -27,6 +26,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.commons.ConfigurationHolder;
 import org.codehaus.groovy.grails.commons.spring.DefaultRuntimeSpringConfiguration;
 import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration;
 import org.codehaus.groovy.grails.plugins.exceptions.PluginException;
@@ -43,6 +43,8 @@ import javax.servlet.ServletContext;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
 import java.lang.reflect.Modifier;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.*;
 
 /**
@@ -95,6 +97,7 @@ public class DefaultGrailsPluginManager implements GrailsPluginManager {
       private Map delayedEvictions = new HashMap();
       private ServletContext servletContext;
       private Map pluginToObserverMap = new HashMap();
+      private long configLastModified;
 
 
     public DefaultGrailsPluginManager(String resourcePath, GrailsApplication application) throws IOException {
@@ -117,7 +120,6 @@ public class DefaultGrailsPluginManager implements GrailsPluginManager {
       public DefaultGrailsPluginManager(String[] pluginResources, GrailsApplication application) {
           if(application == null)
               throw new IllegalArgumentException("Argument [application] cannot be null!");
-
           resolver = new PathMatchingResourcePatternResolver();
 
           List resourceList = new ArrayList();
@@ -151,6 +153,7 @@ public class DefaultGrailsPluginManager implements GrailsPluginManager {
       public DefaultGrailsPluginManager(Resource[] pluginFiles, GrailsApplication application) {
           if(application == null)
               throw new IllegalArgumentException("Argument [application] cannot be null!");
+
           resolver = new PathMatchingResourcePatternResolver();
           this.pluginResources = pluginFiles;
           this.application = application;
@@ -227,7 +230,7 @@ public class DefaultGrailsPluginManager implements GrailsPluginManager {
           if( new File("./grails-app/jobs").exists() && plugins.get("quartz") == null ) {
               GrailsUtil.deprecated( "Job scheduling with Quartz was moved from Grails core " +
                       "to Quartz plugin. Please, install this plugin with " +
-                      "'grails install-plugin quartz'. If you haven't need for scheduling " +
+                      "'grails install-plugin Quartz 0.1'. If you don't want use scheduling " +
                       "just remove 'jobs' folder under 'grails-app'" );
           }
           initializePlugins();
@@ -599,6 +602,7 @@ public class DefaultGrailsPluginManager implements GrailsPluginManager {
   }
 
   public void checkForChanges() {
+      checkForConfigChanges();
       for (Iterator i = pluginList.iterator(); i.hasNext();) {
           GrailsPlugin plugin = (GrailsPlugin) i.next();
           if(plugin.checkForChanges()) {
@@ -607,6 +611,50 @@ public class DefaultGrailsPluginManager implements GrailsPluginManager {
           }
       }
   }
+
+    private void checkForConfigChanges() {
+        ConfigObject config = application.getConfig();
+        URL configURL = config.getConfigFile();
+        if(configURL != null) {
+            URLConnection connection;
+            try {
+                connection = configURL.openConnection();
+            } catch (IOException e) {
+                LOG.error("I/O error obtaining URL connection for configuration ["+configURL+"]: " + e.getMessage(),e);
+                return;
+            }
+
+
+            long lastModified = connection.getLastModified();
+            if(configLastModified == 0) {
+                configLastModified = lastModified;
+            }
+            else {
+                if(configLastModified<lastModified) {
+                    LOG.info("Configuration ["+configURL+"] changed, reloading changes..");
+                    ConfigSlurper slurper = new ConfigSlurper(GrailsUtil.getEnvironment());
+
+                    try {
+                        config = slurper.parse(configURL);
+                        ConfigurationHolder.setConfig(config);
+                        configLastModified = lastModified;
+                        informPluginsOfConfigChange();
+
+                    } catch (GroovyRuntimeException gre) {
+                        LOG.error("Unable to reload configuration. Please correct problem and try again: " + gre.getMessage(),gre);
+                    }
+                }
+            }
+        }
+    }
+
+    private void informPluginsOfConfigChange() {
+        LOG.info("Informing plug-ins of configuration change..");
+        for (Iterator i = pluginList.iterator(); i.hasNext();) {
+            GrailsPlugin plugin = (GrailsPlugin) i.next();
+            plugin.notifyOfEvent(GrailsPlugin.EVENT_ON_CONFIG_CHANGE, application.getConfig());
+        }
+    }
 
     private void reloadPlugin(GrailsPlugin plugin) {
         plugin.doArtefactConfiguration();

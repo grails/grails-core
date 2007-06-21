@@ -15,6 +15,8 @@
 */
 package org.codehaus.groovy.grails.commons;
 
+import grails.config.ConfigObject;
+import grails.config.ConfigSlurper;
 import grails.util.GrailsUtil;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyObjectSupport;
@@ -30,8 +32,8 @@ import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException;
 import org.codehaus.groovy.grails.injection.GrailsInjectionOperation;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
-import org.springframework.core.io.Resource;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 import org.springframework.util.Assert;
 
 import java.io.IOException;
@@ -405,6 +407,25 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
 
     public GroovyClassLoader getClassLoader() {
         return this.cl;
+    }
+
+    public ConfigObject getConfig() {
+        ConfigObject c = ConfigurationHolder.getConfig();
+        if(c == null) {
+            try {
+                Class scriptClass= getClassLoader()
+                                       .loadClass(CONFIG_CLASS);
+
+                c = new ConfigSlurper(GrailsUtil.getEnvironment()).parse(scriptClass);
+            } catch (ClassNotFoundException e) {
+               log.debug("Could not find config class ["+CONFIG_CLASS+"]. This is probably nothing to worry about, it is not required to have a config: " + e.getMessage(),e);
+                // ignore, it is ok not to have a configuration file
+            }
+
+        }
+        if(c == null) c = new ConfigObject();
+        ConfigurationHolder.setConfig(c);
+        return c;
     }
 
     public GrailsDataSource getGrailsDataSource() {

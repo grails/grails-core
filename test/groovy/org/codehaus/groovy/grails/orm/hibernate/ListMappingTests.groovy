@@ -4,6 +4,25 @@ import org.codehaus.groovy.grails.commons.*
 
 class ListMappingTests extends AbstractGrailsHibernateTests {
 
+    void testAddPersistentPogoToList() {
+		def authorClass = ga.getDomainClass("Author")
+		def bookClass = ga.getDomainClass("Book")
+        def b = bookClass.newInstance()
+        def a = authorClass.newInstance()
+
+        a.name = "Stephen King"
+        a.save()
+
+        b.addToAuthors(a)
+        b.save()
+        session.flush()
+        session.clear()
+
+        b = bookClass.clazz.get(1)
+
+        assertEquals "Stephen King",b.authors[0].name
+    }
+
 	void testListMapping() {
 		def authorClass = ga.getDomainClass("Author")
 		def bookClass = ga.getDomainClass("Book")

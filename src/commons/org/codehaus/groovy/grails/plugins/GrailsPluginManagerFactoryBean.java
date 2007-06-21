@@ -15,6 +15,8 @@
  */ 
 package org.codehaus.groovy.grails.plugins;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
@@ -32,9 +34,10 @@ public class GrailsPluginManagerFactoryBean implements FactoryBean, Initializing
 	private Resource[] pluginFiles = new Resource[0];
 	private GrailsApplication application;
 	private GrailsPluginManager pluginManager;
-	
-	
-	/**
+    private static final Log LOG = LogFactory.getLog(GrailsPluginManagerFactoryBean.class);
+
+
+    /**
 	 * @param application the application to set
 	 */
 	public void setApplication(GrailsApplication application) {
@@ -64,7 +67,7 @@ public class GrailsPluginManagerFactoryBean implements FactoryBean, Initializing
 		this.pluginManager = PluginManagerHolder.getPluginManager();
 
 		if(pluginManager == null) {
-			pluginManager = new DefaultGrailsPluginManager(pluginFiles, application);
+            pluginManager = new DefaultGrailsPluginManager(pluginFiles, application);
 			PluginManagerHolder.setPluginManager(pluginManager);
 			pluginManager.loadPlugins();
 		}

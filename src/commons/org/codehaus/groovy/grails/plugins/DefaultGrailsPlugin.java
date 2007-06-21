@@ -76,6 +76,8 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
     private String[] observedPlugins;
     private long pluginLastModified = Long.MAX_VALUE;
     private URL pluginUrl;
+    private Closure onConfigChangeListener;
+    
 
 
     public DefaultGrailsPlugin(Class pluginClass, Resource resource, GrailsApplication application) {
@@ -144,6 +146,9 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
     }
 
     private void evaluateOnChangeListener() {
+        if(this.pluginBean.isReadableProperty(ON_CONFIG_CHANGE)) {
+            this.onConfigChangeListener = (Closure)GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(this.plugin, ON_CONFIG_CHANGE);
+        }
         if(this.pluginBean.isReadableProperty(ON_CHANGE)) {
             this.onChangeListener = (Closure) GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(this.plugin, ON_CHANGE);
             Object referencedResources = GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(this.plugin, WATCHED_RESOURCES);
@@ -566,21 +571,16 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
         }
 
         final Class resourceClass = loadedClass;
-        Map event = new HashMap() {{
-            if(resourceClass == null)
-                put(PLUGIN_CHANGE_EVENT_SOURCE, resource);
-            else
-                put(PLUGIN_CHANGE_EVENT_SOURCE, resourceClass);
-            put(PLUGIN_CHANGE_EVENT_PLUGIN, plugin);
-            put(PLUGIN_CHANGE_EVENT_APPLICATION, application);
-            put(PLUGIN_CHANGE_EVENT_MANAGER, getManager());
-            put(PLUGIN_CHANGE_EVENT_CTX, applicationContext);
-        }};
+        Object source;
+        if(resourceClass != null)source=resourceClass;
+        else source = resource;
+
+        Map event = notifyOfEvent(EVENT_ON_CHANGE, source);
 
         if(LOG.isDebugEnabled()) {
             LOG.debug("Firing onChange event listener with event object ["+event+"]");
         }
-        invokeOnChangeListener(event);
+
         getManager().informObservers(getName(), event);
     }
 
@@ -676,6 +676,37 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
             invokeOnChangeListener(event);
         }
     }
+
+    public Map notifyOfEvent(int eventKind, final Object source) {
+        Map event = new HashMap() {{
+            put(PLUGIN_CHANGE_EVENT_SOURCE, source);
+            put(PLUGIN_CHANGE_EVENT_PLUGIN, plugin);
+            put(PLUGIN_CHANGE_EVENT_APPLICATION, application);
+            put(PLUGIN_CHANGE_EVENT_MANAGER, getManager());
+            put(PLUGIN_CHANGE_EVENT_CTX, applicationContext);
+        }};
+
+        switch (eventKind) {
+            case EVENT_ON_CHANGE:
+                notifyOfEvent(event);
+            break;
+            case EVENT_ON_CONFIG_CHANGE:
+                invokeOnConfigChangeListener(event);
+            break;
+            default:
+                notifyOfEvent(event);
+        }
+
+        return event;
+    }
+
+    private void invokeOnConfigChangeListener(Map event) {
+        if(onConfigChangeListener!=null) {
+            onConfigChangeListener.setDelegate(this);
+            onConfigChangeListener.call(new Object[]{event});
+        }
+    }
+
     private void invokeOnChangeListener(Map event) {
         onChangeListener.setDelegate(this);
         onChangeListener.call(new Object[]{event});

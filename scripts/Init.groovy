@@ -297,13 +297,9 @@ task( init: "main init task") {
 				exclude(name:"WEB-INF/**")
 			} 
 		}		
-		copy(file:"${grailsHome}/src/war/WEB-INF/log4j.properties",
-			 tofile:"${basedir}/grails-app/conf/log4j.development.properties")
-		copy(file:"${grailsHome}/src/war/WEB-INF/log4j.properties",
-			 tofile:"${basedir}/grails-app/conf/log4j.test.properties")
-		copy(file:"${grailsHome}/src/war/WEB-INF/log4j.properties",
-			 tofile:"${basedir}/grails-app/conf/log4j.production.properties")
-
+        copy(file:"${grailsHome}/src/grails/templates/artifacts/Config.groovy",
+             tofile:"${basedir}/grails-app/conf/Config.groovy")    
+		
         copy(file:"${grailsHome}/src/grails/templates/artifacts/UrlMappings.groovy",
              tofile:"${basedir}/grails-app/conf/${appClassName}UrlMappings.groovy")    
 

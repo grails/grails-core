@@ -15,9 +15,17 @@
 	</target>
 
 	<target name="build" depends="build-init" description="compile Java and Groovy sources" >
-		<javac debug="on" deprecation="on" destdir="${grails.build}/core" source="1.4" target="1.4" encoding="UTF-8">
-			<src path="${grails.src.commons}"/>			
+        <groovyc destdir="${grails.build}/config" encoding="UTF-8">
+			<src path="${grails.src.config}"/>
 			<classpath refid="classpath"/>
+		</groovyc>
+
+        <javac debug="on" deprecation="on" destdir="${grails.build}/core" source="1.4" target="1.4" encoding="UTF-8">
+			<src path="${grails.src.commons}"/>
+            <classpath>
+                  <pathelement path="${grails.build}/config"/>
+            </classpath>                                       			            
+            <classpath refid="classpath"/>
 		</javac>
 		<javac debug="on" deprecation="on" destdir="${grails.build}/web" source="1.4" target="1.4" encoding="UTF-8">
 			<src path="${grails.src.web}"/>

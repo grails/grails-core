@@ -17,12 +17,14 @@
 package org.codehaus.groovy.grails.commons.spring;
 
 import grails.spring.BeanBuilder;
+import grails.config.ConfigObject;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.*;
 import org.codehaus.groovy.grails.plugins.DefaultGrailsPluginManager;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.codehaus.groovy.grails.plugins.PluginManagerHolder;
+import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException;
 import org.springframework.aop.framework.ProxyFactoryBean;
 import org.springframework.aop.target.HotSwappableTargetSource;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -99,7 +101,7 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
 
 
       } catch (IOException e) {
-          LOG.warn("I/O error loading plugin manager!:"+e.getMessage(), e);
+          throw new GrailsConfigurationException("I/O error loading plugin manager!:"+e.getMessage(), e);
       }
   }
 

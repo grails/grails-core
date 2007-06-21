@@ -23,7 +23,25 @@ import org.springframework.beans.BeanUtils
 
 class ExpandoMetaClassTests extends GroovyTestCase {
 
-    
+    void testOverrideGetPropertyOnScript() {
+        def gcl = new GroovyClassLoader()
+        def scriptClass = gcl.parseClass("foo+bar")
+
+        def mc = new ExpandoMetaClass(scriptClass)
+         mc.initialize()
+         mc.allowChangesAfterInit = true
+
+         mc.getProperty = { String name ->
+            if(name == 'metaClass') return getMetaProperty(name).getProperty(delegate)
+            "yay"
+         }
+         Script script = scriptClass.newInstance()
+         script.metaClass = mc
+         def result = script.run()
+
+         assertEquals "yayyay", result
+
+    }
 
     void testOverrideInvokeMethod() {
 	   	def mc = new ExpandoMetaClass(TestInvokeMethod.class)

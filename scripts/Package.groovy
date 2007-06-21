@@ -40,17 +40,32 @@ includeTargets << new File ( "${grailsHome}/scripts/Compile.groovy" )
 includeTargets << new File ( "${grailsHome}/scripts/PackagePlugins.groovy" ) 
 
 scaffoldDir = "${basedir}/web-app/WEB-INF/templates/scaffolding"     
+config = [:]
 
 task ('default': "Packages a Grails application. Note: To create WAR use 'grails war'") {
      depends( checkVersion)
-
 	 packagePlugins()	 
      packageApp()                   
 	 generateWebXml()        
 }                     
-      
+  
+task( createConfig: "Creates the configuration object") {
+   def configFile = new File("${basedir}/grails-app/conf/Config.groovy")
+   if(configFile.exists()) { 
+		try {
+			config = new grails.config.ConfigSlurper(grailsEnv).parse(configFile.toURL())
+			ConfigurationHolder.setConfig(config)			
+		}   
+		catch(Exception e) {
+			println "Failed to compile configuration file $configFile: ${e.message}"
+			e.printStackTrace()
+			exit(1)
+		}
+
+   } 
+}    
 task( packageApp : "Implementation of package task") {
-	depends(createStructure,compile)
+	depends(createStructure,compile, createConfig)
 	copyDependencies()
     Ant.delete(dir:"${basedir}/web-app/WEB-INF/grails-app", failonerror:true)	
 	Ant.mkdir(dir:"${basedir}/web-app/WEB-INF/grails-app/i18n")
@@ -80,14 +95,23 @@ task( packageApp : "Implementation of package task") {
 			exclude(name:"**/*.java")
 		}
 	}           
-	def logFile = "${basedir}/grails-app/conf/log4j.${grailsEnv}.properties"
-	def logDest = "${basedir}/web-app/WEB-INF/classes/log4j.properties"
-	if(new File(logFile).exists()) {
-		Ant.copy(file:logFile, tofile:logDest)
+
+	def logDest = new File("${basedir}/web-app/WEB-INF/classes/log4j.properties")
+
+    def log4jConfig = config.log4j          
+	try {
+	 	if(log4jConfig) {       
+			def props = log4jConfig.toProperties("log4j")
+			logDest.withOutputStream { out ->
+				props.store(out, "Grails' Log4j Configuration")
+			}
+		}		
+	}   
+	catch(Exception e) {    
+		println e.message
+		 e.printStackTrace()
 	}
-	else {
-		Ant.copy(file:"${grailsHome}/src/war/WEB-INF/log4j.properties", tofile:logDest)
-	}	
+
 }   
 
 DEPENDENCIES = [
@@ -156,7 +180,7 @@ task( generateWebXml : "Generates the web.xml file") {
     new File( "${basedir}/web-app/WEB-INF/web.xml" ).withWriter { w ->   
 
         def classLoader = new GroovyClassLoader(parentLoader,compConfig,true)
-
+                                                                                                                                             
         pluginManager = new DefaultGrailsPluginManager(pluginResources as Resource[], new DefaultGrailsApplication(new Class[0], classLoader))
     	PluginManagerHolder.setPluginManager(pluginManager)
 

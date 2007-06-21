@@ -43,7 +43,10 @@ import java.util.Map;
  */
 public interface GrailsPlugin extends ApplicationContextAware {
 
-	String DO_WITH_DYNAMIC_METHODS = "doWithDynamicMethods";
+    int EVENT_ON_CHANGE = 0;
+    int EVENT_ON_CONFIG_CHANGE = 1;
+
+    String DO_WITH_DYNAMIC_METHODS = "doWithDynamicMethods";
 	/**
 	 * Defines the name of the property that specifies resources which this plugin monitors for changes
 	 * in the format a Ant-style path
@@ -79,6 +82,11 @@ public interface GrailsPlugin extends ApplicationContextAware {
 	 */
 	String ON_CHANGE = "onChange";
 	/**
+	 * Defines the name of the property that defines the closure that will be invoked
+	 * when a the Grails configuration object changes
+	 */
+	String ON_CONFIG_CHANGE = "onConfigChange";
+    /**
 	 * Defines the name of the property that defines the closure that will be invoked
 	 * when the web.xml is being generated
 	 */
@@ -244,5 +252,14 @@ public interface GrailsPlugin extends ApplicationContextAware {
      */
     void notifyOfEvent(Map event);
 
-	void doArtefactConfiguration();
+    /**
+     * Notifies the plugin of a specific event for the given event id, which is one of ON_CHANGE, ON_CONFIG_CHANGE
+     *
+     * @param eventKind The event kind
+     * @param source The source of the event
+     * @return a Map that represents the event
+     */
+    Map notifyOfEvent(int eventKind, Object source);
+
+    void doArtefactConfiguration();
 }

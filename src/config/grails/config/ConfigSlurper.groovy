@@ -54,6 +54,10 @@ class ConfigSlurper {
 
     ConfigSlurper() { }
 
+    ConfigSlurper(env) {
+        this.environment = env
+    }
+
 
     /*ConfigSlurper(Class beanClass) {
         if(!beanClass) throw new IllegalArgumentException("Argument [beanClass] cannot be null")
@@ -62,6 +66,7 @@ class ConfigSlurper {
         this.instance = beanClass.newInstance()
     }*/
     
+
 
     /**
      * Parse the given script as a string and return the configuration object
@@ -87,7 +92,15 @@ class ConfigSlurper {
      * @return A Map of maps that can be navigating with dot de-referencing syntax to obtain configuration entries
      */
     ConfigObject parse(Script script) {
-        def config = new ConfigObject()
+         return parse(script, null)
+    }
+
+    ConfigObject parse(URL scriptLocation) {
+        return parse(classLoader.parseClass(scriptLocation.text).newInstance(), scriptLocation)
+    }
+
+    ConfigObject parse(Script script, URL location) {
+        def config = location ? new ConfigObject(location) : new ConfigObject()
         def mc = script.class.metaClass
         def prefix = ""
         Stack stack = new Stack()
@@ -154,7 +167,7 @@ class ConfigSlurper {
                 MetaMethod mm = mc.getMetaMethod(name, args)
                 if(mm)result = mm.invoke(delegate, args)
                 else {
-                    throw new MissingMethodException(name, getClass(), args)                    
+                    throw new MissingMethodException(name, getClass(), args)
                 }
             }
             result
@@ -171,7 +184,7 @@ class ConfigSlurper {
         }
         script.binding = new ConfigBinding(setProperty)
 
-        
+
         script.run()
 
         def envSettings = config.remove(ENV_SETTINGS)
@@ -179,9 +192,8 @@ class ConfigSlurper {
             config = merge(config, envSettings)
         }
 
-        return config        
+        return config
     }
-
 
     /**
      * Merges the second map with the first overriding any matching configuration entries in the first map

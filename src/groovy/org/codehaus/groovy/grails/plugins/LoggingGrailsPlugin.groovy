@@ -32,8 +32,6 @@ class LoggingGrailsPlugin {
 	def version = GrailsPluginUtils.getGrailsVersion()
 	def dependsOn = [core:version]
 
-	def watchedResources = "file:./grails-app/conf/log4j.*.properties"
-
 	def doWithWebDescriptor = { xml ->
 	    def log4j = xml.'context-param'.find { it.'param-name'.text() == 'log4jConfigLocation' }
 	   
@@ -61,6 +59,17 @@ class LoggingGrailsPlugin {
             }
         }
 	}
+
+    def onConfigChange = { event ->
+        def log4jConfig = event.source.log4j
+        if(log4jConfig) {
+            def props = log4jConfig.toProperties('log4j')
+            log.info "Updating Log4j configuration.."
+            new File("./web-app/WEB-INF/classes/log4j.properties").withOutputStream { out ->
+                props.store(out, "Grails' Log4j Configuration")
+            }
+        }
+    }
 
 	def onChange = { event ->
 	    def env = GrailsUtil.getEnvironment()
