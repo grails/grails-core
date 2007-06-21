@@ -363,16 +363,18 @@
     </library>
     <library name="Jetty">
       <CLASSES>
-        <root url="jar://$PROJECT_DIR$/lib/org.mortbay.jetty.jar!/" />
+        <root url="jar://$PROJECT_DIR$/lib/start.jar!/" />
+        <root url="jar://$PROJECT_DIR$/lib/jetty-util-6.1.4.jar!/" />
+        <root url="jar://$PROJECT_DIR$/lib/jetty-6.1.4.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES />
     </library>
     <library name="javax.servlet">
       <CLASSES>
-        <root url="jar://$PROJECT_DIR$/lib/servletapi-2.4.jar!/" />
         <root url="jar://$PROJECT_DIR$/lib/jsp-api-2.0.jar!/" />
         <root url="jar://$PROJECT_DIR$/lib/jstl-2.4.jar!/" />
+        <root url="jar://$PROJECT_DIR$/lib/servlet-api-2.5-6.1.4.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES />
