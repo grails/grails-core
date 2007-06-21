@@ -97,7 +97,11 @@ Grails home is set to: ${grailsHome}
             }
 
             // use current argument as script name and step further
-            def scriptName = GCU.getNameFromScript(allArgs[currentParamIndex++])
+            def paramName = allArgs[currentParamIndex++]
+            if (paramName[0] == '-') {
+                paramName = paramName[1..-1]
+            }
+            def scriptName = GCU.getNameFromScript(paramName)
 
             if( currentParamIndex < allArgs.size() ) {
                 // if we have additional params provided - store it in system property
