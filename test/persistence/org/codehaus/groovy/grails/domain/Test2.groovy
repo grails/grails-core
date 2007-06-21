@@ -5,5 +5,5 @@ class Test2 {
 	 Long version; 
 	 String firstName; 
 	 String lastName; 
-	 java.util.Date age;
+	 Date age;
 }

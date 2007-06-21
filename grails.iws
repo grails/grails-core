@@ -29,34 +29,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/grails.iws" afterPath="$PROJECT_DIR$/grails.iws" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/test/groovy/org/codehaus/groovy/grails/webflow/engine/builder" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/web/org/codehaus/groovy/grails/webflow/engine/builder/FlowDefinitionException.java" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/lib/spring-binding.jar" afterPath="" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/test/groovy/org/codehaus/groovy/grails/webflow/engine/builder/FlowBuilderSubFlowExecutionTests.groovy" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/web/org/codehaus/groovy/grails/webflow" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/web/org/codehaus/groovy/grails/webflow/engine" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/lib/spring-webflow-1.1-SNAPSHOT-20070611011610.jar" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/test/groovy/org/codehaus/groovy/grails/webflow/engine/builder/FlowBuilderExecutionTests.groovy" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/commons/org/codehaus/groovy/grails/commons/GrailsClassUtils.java" afterPath="$PROJECT_DIR$/src/commons/org/codehaus/groovy/grails/commons/GrailsClassUtils.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Grails.iml" afterPath="$PROJECT_DIR$/Grails.iml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/test/groovy/org/codehaus/groovy/grails/webflow/engine" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/lib/spring-binding-1.1-SNAPSHOT-20070611011605.jar" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/groovy/org/codehaus/groovy/grails/webflow/engine/builder" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/groovy/org/codehaus/groovy/grails/webflow" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/lib/spring-webflow.jar" afterPath="" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/test/groovy/org/codehaus/groovy/grails/webflow" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/web/org/codehaus/groovy/grails/webflow/engine/builder/ClosureInvokingAction.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/grails.ipr" afterPath="$PROJECT_DIR$/grails.ipr" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/web/org/codehaus/groovy/grails/webflow/engine/builder" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/groovy/org/codehaus/groovy/grails/webflow/engine/builder/FlowBuilder.groovy" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/test/groovy/org/codehaus/groovy/grails/webflow/engine/builder/FlowBuilderDecisionExecutionTests.groovy" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/lib/groovy-all-1.1-beta-2-snapshot.jar" afterPath="$PROJECT_DIR$/lib/groovy-all-1.1-beta-2-snapshot.jar" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/test/groovy/org/codehaus/groovy/grails/orm/hibernate/ListMappingTests.groovy" afterPath="$PROJECT_DIR$/test/groovy/org/codehaus/groovy/grails/orm/hibernate/ListMappingTests.groovy" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/scaffolding/grails/util/GenerateUtils.java" afterPath="$PROJECT_DIR$/src/scaffolding/grails/util/GenerateUtils.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/groovy/org/codehaus/groovy/grails/webflow/engine" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/web/org/codehaus/groovy/grails/web/servlet/view/GroovyPageView.java" afterPath="$PROJECT_DIR$/src/web/org/codehaus/groovy/grails/web/servlet/view/GroovyPageView.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/test/groovy/org/codehaus/groovy/grails/webflow/engine/builder/FlowBuilderTests.groovy" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/grails.iws" afterPath="$PROJECT_DIR$/grails.iws" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/test/persistence/org/codehaus/groovy/grails/domain/Test2.groovy" afterPath="$PROJECT_DIR$/test/persistence/org/codehaus/groovy/grails/domain/Test2.groovy" />
     </list>
     <list name="Failed commit: Default" comment="fix for GRAILS-1138, GRAILS-1076" />
     <list name="Failed commit: Default (2)" comment="fix for GRAILS-1138, GRAILS-1076" />
@@ -233,8 +208,44 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="groovy-starter.conf" pinned="false" current="true" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/conf/groovy-starter.conf">
+      <file leaf-file-name="GrailsScriptRunner.groovy" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/commons/org/codehaus/groovy/grails/cli/GrailsScriptRunner.groovy">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="96" column="13" selection-start="3538" selection-end="3538" vertical-scroll-proportion="0.65653497">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="BindDataMethodTests.groovy" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/test/groovy/org/codehaus/groovy/grails/web/servlet/BindDataMethodTests.groovy">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="41" column="26" selection-start="1449" selection-end="1449" vertical-scroll-proportion="0.8517442">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="ConfigSlurperTests.groovy" pinned="false" current="true" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/test/groovy/grails/config/ConfigSlurperTests.groovy">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="23" column="41" selection-start="756" selection-end="756" vertical-scroll-proportion="0.08430233">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="ConfigSlurper.groovy" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/config/grails/config/ConfigSlurper.groovy">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="4" column="60" selection-start="217" selection-end="217" vertical-scroll-proportion="0.14589666">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="ConfigObject.groovy" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/config/grails/config/ConfigObject.groovy">
           <provider selected="true" editor-type-id="text-editor">
             <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
               <folding />
@@ -430,8 +441,7 @@
       <SplitterProportionsDataImpl>
         <option name="proportions">
           <collection>
-            <option value="0.5" />
-            <option value="0.5" />
+            <option value="0.31" />
           </collection>
         </option>
       </SplitterProportionsDataImpl>
@@ -439,7 +449,7 @@
     <option name="lastEditedConfigurable" value="Grails" />
   </component>
   <component name="ProjectView">
-    <navigator currentView="ProjectPane" proportions="0.11111111" version="1" splitterProportion="0.5">
+    <navigator currentView="Scope" currentSubView="Production" proportions="0.11111111" version="1" splitterProportion="0.5">
       <flattenPackages PackagesPane="false" ProjectPane="false" />
       <showMembers />
       <showModules />
@@ -460,13 +470,13 @@
     <property name="vcs_file_view_flatWidth2" value="84" />
     <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_flatOrder4" value="4" />
     <property name="vcs_file_view_flatWidth5" value="83" />
-    <property name="vcs_file_view_flatOrder3" value="3" />
     <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_flatWidth0" value="63" />
+    <property name="vcs_file_view_flatOrder3" value="3" />
     <property name="MemberChooser.showClasses" value="true" />
     <property name="vcs_file_view_treeWidth0" value="369" />
     <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_flatWidth4" value="866" />
-    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_treeOrder4" value="4" />
     <property name="vcs_file_view_treeOrder0" value="0" />
+    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_treeOrder4" value="4" />
     <property name="vcs_file_view_flatOrder4" value="4" />
     <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_flatOrder2" value="2" />
     <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_treeOrder3" value="3" />
@@ -504,8 +514,8 @@
     <property name="vcs_file_view_flatWidth3" value="84" />
     <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_flatOrder0" value="0" />
     <property name="vcs_file_view_treeOrder1" value="1" />
-    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_treeWidth3" value="72" />
     <property name="Tomcat Context Descriptor Default Version" value="5.x" />
+    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_treeWidth3" value="72" />
   </component>
   <component name="ReadonlyStatusHandler">
     <option name="SHOW_DIALOG" value="true" />
@@ -531,19 +541,110 @@
       <recent name="org.codehaus.groovy.grails.scaffolding" />
     </key>
   </component>
-  <component name="RunManager" selected="JUnit.Grails Test Case">
-    <tempConfiguration default="false" name="FlowBuilderDecisionExecutionTests" type="JUnit" factoryName="JUnit" enabled="false" merge="false">
-      <pattern value="org.codehaus.groovy.grails.webflow.engine.builder.*" />
+  <component name="RestoreUpdateTree">
+    <UpdateInfo date="6/20/07 8:43 PM" ActionInfo="_Update">
+      <UpdatedFiles>
+        <FILE-GROUP>
+          <option name="myUpdateName" value="Updated from server" />
+          <option name="myStatusName" value="Changed on server" />
+          <option name="mySupportsDeletion" value="false" />
+          <option name="myCanBeAbsent" value="false" />
+          <option name="myId" value="CHANGED_ON_SERVER" />
+          <FILE-GROUP>
+            <option name="myUpdateName" value="Updated" />
+            <option name="myStatusName" value="Changed" />
+            <option name="mySupportsDeletion" value="false" />
+            <option name="myCanBeAbsent" value="false" />
+            <option name="myId" value="UPDATED" />
+            <PATH vcs="svn" revision="4729">$PROJECT_DIR$/src/commons/org/codehaus/groovy/grails/cli/GrailsScriptRunner.groovy</PATH>
+          </FILE-GROUP>
+          <FILE-GROUP>
+            <option name="myUpdateName" value="Created" />
+            <option name="myStatusName" value="Created" />
+            <option name="mySupportsDeletion" value="false" />
+            <option name="myCanBeAbsent" value="false" />
+            <option name="myId" value="CREATED" />
+          </FILE-GROUP>
+          <FILE-GROUP>
+            <option name="myUpdateName" value="Deleted" />
+            <option name="myStatusName" value="Deleted" />
+            <option name="mySupportsDeletion" value="false" />
+            <option name="myCanBeAbsent" value="true" />
+            <option name="myId" value="REMOVED_FROM_REPOSITORY" />
+          </FILE-GROUP>
+          <FILE-GROUP>
+            <option name="myUpdateName" value="Restored" />
+            <option name="myStatusName" value="Will be restored" />
+            <option name="mySupportsDeletion" value="false" />
+            <option name="myCanBeAbsent" value="false" />
+            <option name="myId" value="RESTORED" />
+          </FILE-GROUP>
+        </FILE-GROUP>
+        <FILE-GROUP>
+          <option name="myUpdateName" value="Modified" />
+          <option name="myStatusName" value="Modified" />
+          <option name="mySupportsDeletion" value="false" />
+          <option name="myCanBeAbsent" value="false" />
+          <option name="myId" value="MODIFIED" />
+        </FILE-GROUP>
+        <FILE-GROUP>
+          <option name="myUpdateName" value="Skipped" />
+          <option name="myStatusName" value="Skipped" />
+          <option name="mySupportsDeletion" value="false" />
+          <option name="myCanBeAbsent" value="false" />
+          <option name="myId" value="SKIPPED" />
+        </FILE-GROUP>
+        <FILE-GROUP>
+          <option name="myUpdateName" value="Merged with conflicts" />
+          <option name="myStatusName" value="Will be merged with conflicts" />
+          <option name="mySupportsDeletion" value="false" />
+          <option name="myCanBeAbsent" value="false" />
+          <option name="myId" value="MERGED_WITH_CONFLICTS" />
+        </FILE-GROUP>
+        <FILE-GROUP>
+          <option name="myUpdateName" value="Merged" />
+          <option name="myStatusName" value="Will be merged" />
+          <option name="mySupportsDeletion" value="false" />
+          <option name="myCanBeAbsent" value="false" />
+          <option name="myId" value="MERGED" />
+        </FILE-GROUP>
+        <FILE-GROUP>
+          <option name="myUpdateName" value="Not in repository" />
+          <option name="myStatusName" value="Not in repository" />
+          <option name="mySupportsDeletion" value="true" />
+          <option name="myCanBeAbsent" value="false" />
+          <option name="myId" value="UNKNOWN" />
+        </FILE-GROUP>
+        <FILE-GROUP>
+          <option name="myUpdateName" value="Locally added" />
+          <option name="myStatusName" value="Locally added" />
+          <option name="mySupportsDeletion" value="false" />
+          <option name="myCanBeAbsent" value="false" />
+          <option name="myId" value="LOCALLY_ADDED" />
+        </FILE-GROUP>
+        <FILE-GROUP>
+          <option name="myUpdateName" value="Locally removed" />
+          <option name="myStatusName" value="Locally removed" />
+          <option name="mySupportsDeletion" value="false" />
+          <option name="myCanBeAbsent" value="false" />
+          <option name="myId" value="LOCALLY_REMOVED" />
+        </FILE-GROUP>
+      </UpdatedFiles>
+    </UpdateInfo>
+  </component>
+  <component name="RunManager" selected="JUnit.ConfigSlurperTests">
+    <tempConfiguration default="false" name="ConfigSlurperTests" type="JUnit" factoryName="JUnit" enabled="false" merge="false">
+      <pattern value="grails.config.*" />
       <module name="Grails" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
-      <option name="ALTERNATIVE_JRE_PATH" value="" />
-      <option name="PACKAGE_NAME" value="org.codehaus.groovy.grails.webflow.engine.builder" />
-      <option name="MAIN_CLASS_NAME" value="org.codehaus.groovy.grails.webflow.engine.builder.FlowBuilderDecisionExecutionTests" />
-      <option name="METHOD_NAME" value="" />
+      <option name="ALTERNATIVE_JRE_PATH" />
+      <option name="PACKAGE_NAME" value="grails.config" />
+      <option name="MAIN_CLASS_NAME" value="grails.config.ConfigSlurperTests" />
+      <option name="METHOD_NAME" />
       <option name="TEST_OBJECT" value="class" />
-      <option name="VM_PARAMETERS" value="" />
-      <option name="PARAMETERS" value="" />
-      <option name="WORKING_DIRECTORY" value="file://$PROJECT_DIR$" />
+      <option name="VM_PARAMETERS" />
+      <option name="PARAMETERS" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
       <option name="ENV_VARIABLES" />
       <option name="ADDITIONAL_CLASS_PATH" />
       <option name="TEST_SEARCH_SCOPE">
@@ -555,6 +656,27 @@
         <option name="Make" value="true" />
       </method>
     </tempConfiguration>
+    <configuration default="true" type="Remote" factoryName="Remote">
+      <option name="USE_SOCKET_TRANSPORT" value="true" />
+      <option name="SERVER_MODE" value="false" />
+      <option name="SHMEM_ADDRESS" value="javadebug" />
+      <option name="HOST" value="localhost" />
+      <option name="PORT" value="5005" />
+    </configuration>
+    <configuration default="true" type="Application" factoryName="Application" enabled="false" merge="false">
+      <option name="MAIN_CLASS_NAME" />
+      <option name="VM_PARAMETERS" />
+      <option name="PROGRAM_PARAMETERS" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
+      <option name="ALTERNATIVE_JRE_PATH" />
+      <option name="ENABLE_SWING_INSPECTOR" value="false" />
+      <option name="ENV_VARIABLES" />
+      <module name="" />
+      <method>
+        <option name="Make" value="true" />
+      </method>
+    </configuration>
     <configuration default="true" type="JUnit" factoryName="JUnit" enabled="false" merge="false">
       <module name="" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
@@ -575,20 +697,6 @@
         <option name="Make" value="true" />
       </method>
     </configuration>
-    <configuration default="true" type="Application" factoryName="Application" enabled="false" merge="false">
-      <option name="MAIN_CLASS_NAME" />
-      <option name="VM_PARAMETERS" />
-      <option name="PROGRAM_PARAMETERS" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
-      <option name="ALTERNATIVE_JRE_PATH" />
-      <option name="ENABLE_SWING_INSPECTOR" value="false" />
-      <option name="ENV_VARIABLES" />
-      <module name="" />
-      <method>
-        <option name="Make" value="true" />
-      </method>
-    </configuration>
     <configuration default="true" type="Applet" factoryName="Applet">
       <module name="" />
       <option name="MAIN_CLASS_NAME" />
@@ -600,13 +708,6 @@
       <option name="VM_PARAMETERS" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
       <option name="ALTERNATIVE_JRE_PATH" />
-    </configuration>
-    <configuration default="true" type="Remote" factoryName="Remote">
-      <option name="USE_SOCKET_TRANSPORT" value="true" />
-      <option name="SERVER_MODE" value="false" />
-      <option name="SHMEM_ADDRESS" value="javadebug" />
-      <option name="HOST" value="localhost" />
-      <option name="PORT" value="5005" />
     </configuration>
     <configuration default="true" type="#com.intellij.j2ee.web.tomcat.TomcatRunConfigurationFactory" factoryName="Local">
       <option name="WORKING_DIRECTORY" />
@@ -791,6 +892,66 @@
     </option>
   </component>
   <component name="ScopeViewComponent">
+    <subPane subId="Production">
+      <PATH>
+        <PATH_ELEMENT USER_OBJECT="Root">
+          <option name="myItemId" value="" />
+          <option name="myItemType" value="" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT USER_OBJECT="Grails">
+          <option name="myItemId" value="" />
+          <option name="myItemType" value="" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT USER_OBJECT="grails">
+          <option name="myItemId" value="" />
+          <option name="myItemType" value="" />
+        </PATH_ELEMENT>
+      </PATH>
+      <PATH>
+        <PATH_ELEMENT USER_OBJECT="Root">
+          <option name="myItemId" value="" />
+          <option name="myItemType" value="" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT USER_OBJECT="Grails">
+          <option name="myItemId" value="" />
+          <option name="myItemType" value="" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT USER_OBJECT="grails">
+          <option name="myItemId" value="" />
+          <option name="myItemType" value="" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT USER_OBJECT="src">
+          <option name="myItemId" value="" />
+          <option name="myItemType" value="" />
+        </PATH_ELEMENT>
+      </PATH>
+      <PATH>
+        <PATH_ELEMENT USER_OBJECT="Root">
+          <option name="myItemId" value="" />
+          <option name="myItemType" value="" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT USER_OBJECT="Grails">
+          <option name="myItemId" value="" />
+          <option name="myItemType" value="" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT USER_OBJECT="grails">
+          <option name="myItemId" value="" />
+          <option name="myItemType" value="" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT USER_OBJECT="src">
+          <option name="myItemId" value="" />
+          <option name="myItemType" value="" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT USER_OBJECT="config">
+          <option name="myItemId" value="" />
+          <option name="myItemType" value="" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT USER_OBJECT="grails/config">
+          <option name="myItemId" value="" />
+          <option name="myItemType" value="" />
+        </PATH_ELEMENT>
+      </PATH>
+    </subPane>
     <subPane subId="Project">
       <PATH>
         <PATH_ELEMENT USER_OBJECT="Root">
@@ -845,7 +1006,7 @@
     <option name="UPDATE_RUN_STATUS" value="false" />
     <option name="UPDATE_RECURSIVELY" value="true" />
     <option name="MERGE_DRY_RUN" value="false" />
-    <configuration useDefault="true">/Users/graemerocher/.subversion</configuration>
+    <configuration useDefault="true">/Users/jeffbrown/.subversion</configuration>
     <upgradeMode>auto</upgradeMode>
   </component>
   <component name="TodoView" selected-index="0">
@@ -863,29 +1024,29 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="1" y="27" width="1272" height="767" extended-state="0" />
-    <editor active="false" />
+    <frame x="18" y="24" width="1420" height="837" extended-state="0" />
+    <editor active="true" />
     <layout>
       <window_info id="UI Designer" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" order="0" />
       <window_info id="IDEtalk" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" order="2" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.22063492" order="10" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.32924837" order="1" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.3287172" order="1" />
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.28067484" order="3" />
       <window_info id="Structure" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.20746888" order="9" />
-      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4937888" order="14" />
+      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4929972" order="14" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" order="9" />
       <window_info id="Module Dependencies" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" order="3" />
       <window_info id="Dependency Viewer" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3298077" order="11" />
       <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" order="1" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.12724936" order="7" />
       <window_info id="Maven projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3297785" order="0" />
-      <window_info id="Changes" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.8043478" order="0" x="29" y="335" width="1205" height="144" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.439441" order="4" />
+      <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.19887955" order="0" x="29" y="335" width="1205" height="144" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.43837535" order="4" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.24877651" order="8" x="606" y="188" width="388" height="789" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="FLOATING" visible="false" weight="0.69022554" order="6" x="540" y="176" width="685" height="614" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.19331159" order="6" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="FLOATING" visible="false" weight="0.69022554" order="6" x="540" y="176" width="685" height="614" />
       <window_info id="IDEtalk Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" order="1" />
-      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.39301974" order="13" />
+      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.39215687" order="13" />
       <window_info id="Duplicates" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" order="8" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" order="2" />
       <window_info id="Favorites" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.13560411" order="4" />
@@ -998,27 +1159,6 @@
     <option name="myLastEditedConfigurable" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file:///Developer/groovy/src/main/groovy/lang/MetaClassImpl.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="1915" column="35" selection-start="79785" selection-end="79785" vertical-scroll-proportion="0.35197368">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file:///Developer/groovy/src/main/org/codehaus/groovy/runtime/MetaClassHelper.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="832" column="26" selection-start="37338" selection-end="37338" vertical-scroll-proportion="0.33223686">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file:///Developer/groovy/src/main/groovy/lang/ExpandoMetaClass.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="846" column="90" selection-start="31550" selection-end="31550" vertical-scroll-proportion="0.020725388">
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/test/groovy/org/codehaus/groovy/grails/webflow/engine/builder/FlowBuilderDecisionExecutionTests.groovy">
       <provider selected="true" editor-type-id="text-editor">
         <state line="23" column="17" selection-start="813" selection-end="813" vertical-scroll-proportion="0.15151516">
@@ -1026,30 +1166,9 @@
         </state>
       </provider>
     </entry>
-    <entry file="file:///Developer/spring-webflow-1.1-SNAPSHOT/projects/spring-webflow/src/main/java/org/springframework/webflow/engine/SubflowState.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="44" column="13" selection-start="1961" selection-end="1961" vertical-scroll-proportion="0.020725388">
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/web/org/codehaus/groovy/grails/webflow/engine/builder/FlowDefinitionException.java">
       <provider selected="true" editor-type-id="text-editor">
         <state line="26" column="13" selection-start="854" selection-end="854" vertical-scroll-proportion="0.26262626">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file:///Developer/spring-webflow-1.1-SNAPSHOT/projects/spring-webflow/src/main/java/org/springframework/webflow/test/execution/AbstractFlowExecutionTests.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="77" column="22" selection-start="4005" selection-end="4005" vertical-scroll-proportion="0.16161616">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file:///Developer/groovy/src/main/groovy/lang/GroovyRuntimeException.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="66" column="34" selection-start="2538" selection-end="2538" vertical-scroll-proportion="0.4506579">
           <folding />
         </state>
       </provider>
@@ -1073,9 +1192,7 @@
     <entry file="file://$PROJECT_DIR$/src/groovy/org/codehaus/groovy/grails/webflow/engine/builder/FlowBuilder.groovy">
       <provider selected="true" editor-type-id="text-editor">
         <state line="75" column="29" selection-start="2849" selection-end="2849" vertical-scroll-proportion="1.3886011">
-          <folding>
-            <marker date="1182240681000" expanded="true" signature="1335:2129" placeholder="/**...*/" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -1093,16 +1210,42 @@
         </state>
       </provider>
     </entry>
-    <entry file="file:///Developer/spring-webflow-1.1-SNAPSHOT/projects/spring-webflow/src/main/java/org/springframework/webflow/executor/mvc/FlowController.java">
+    <entry file="file://$PROJECT_DIR$/conf/groovy-starter.conf">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="81" column="38" selection-start="3945" selection-end="3945" vertical-scroll-proportion="0.103626944">
+        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/commons/org/codehaus/groovy/grails/cli/GrailsScriptRunner.groovy">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="96" column="13" selection-start="3538" selection-end="3538" vertical-scroll-proportion="0.65653497">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/conf/groovy-starter.conf">
+    <entry file="file://$PROJECT_DIR$/test/groovy/org/codehaus/groovy/grails/web/servlet/BindDataMethodTests.groovy">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="41" column="26" selection-start="1449" selection-end="1449" vertical-scroll-proportion="0.8517442">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/config/grails/config/ConfigSlurper.groovy">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="4" column="60" selection-start="217" selection-end="217" vertical-scroll-proportion="0.14589666">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/config/grails/config/ConfigObject.groovy">
       <provider selected="true" editor-type-id="text-editor">
         <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/groovy/grails/config/ConfigSlurperTests.groovy">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="23" column="41" selection-start="756" selection-end="756" vertical-scroll-proportion="0.08430233">
           <folding />
         </state>
       </provider>
