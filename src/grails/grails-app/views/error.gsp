@@ -12,6 +12,8 @@
 	  			padding: 5px;	  		
 	  			overflow:auto;
 	  			height: 300px;
+          font-family:courier;
+          font-size:12px;
 	  		}
 	  		.snippet {
 	  			padding: 5px;
