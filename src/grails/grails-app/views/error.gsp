@@ -12,8 +12,6 @@
 	  			padding: 5px;	  		
 	  			overflow:auto;
 	  			height: 300px;
-          font-family:courier;
-          font-size:12px;
 	  		}
 	  		.snippet {
 	  			padding: 5px;
@@ -42,7 +40,7 @@
   	</div>
     <h2>Stack Trace</h2>
     <div class="stack">
-	    ${exception.stackTraceText?.encodeAsHTML()}
+      <pre>${exception.stackTraceText?.encodeAsHTML()}</pre>
     </div>
   </body>
 </html>
