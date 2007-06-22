@@ -35,7 +35,7 @@
                                         </ul>
                                      </td>
                               <% } else if(p.manyToOne || p.oneToOne) { %>
-                                    <td valign="top" class="value"><g:link controller="${p.referencedDomainClass?.propertyName}" action="show" id="\${${propertyName}?.${p.name}?.id}">\${${propertyName}?.${p.name}}</g:link></td>
+                                    <td valign="top" class="value"><g:link controller="${p.referencedDomainClass?.propertyName}" action="show" id="\${${propertyName}?.${p.name}?.id}">\${${propertyName}?.${p.name}?.encodeAsHTML()}</g:link></td>
                               <% } else  { %>
                                     <td valign="top" class="value">\${${propertyName}.${p.name}?.encodeAsHTML()}</td>
                               <% } %>
