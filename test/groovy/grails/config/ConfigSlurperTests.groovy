@@ -161,7 +161,7 @@ log4j {
         org.springframework=false
     }
 }
-env {
+environments {
     development {
         log4j.logger.org.codehaus.groovy.grails="debug,stdout"
         log4j.appender.layout="MyLayout"
@@ -255,6 +255,74 @@ log4j {
         assertEquals "info,stdout", props."log4j.logger.org.codehaus.groovy.grails"
         assertEquals "false", props."log4j.additivity.org.codehaus.groovy.grails"
 
-    }
+    }     
+      
+	void testConfigTokensAsStrings() {
+        def slurper = new ConfigSlurper()
+        def config = slurper.parse('''
+log4j {
+    appender.stdout = "org.apache.log4j.ConsoleAppender"
+	appender."stdout.layout"="org.apache.log4j.PatternLayout"
+	rootLogger="error,stdout"	
+}
+        ''')
 
+		assert config   
+        assertEquals "org.apache.log4j.ConsoleAppender", config.log4j.appender.stdout
+        assertEquals "org.apache.log4j.PatternLayout", config.log4j.appender."stdout.layout"
+        assertEquals "error,stdout", config.log4j.rootLogger		
+	}
+	
+	void testConfigInterReferencing() {
+        def slurper = new ConfigSlurper()
+        def config = slurper.parse('''
+			var.one=5
+			var.two=var.one*2
+        ''')
+		                     
+		assertEquals 5, config.var.one
+		assertEquals 10, config.var.two
+	}
+        
+
+	void testSerializeConfig() {   
+		def text = '''
+log4j {
+    appender.stdout="org.apache.log4j.ConsoleAppender"
+    appender.'stdout.layout'="org.apache.log4j.PatternLayout"        
+    rootLogger="error,stdout"
+    logger {
+        org.codehaus.groovy.grails="info,stdout"
+        org.springframework="info,stdout"
+    }
+    additivity {
+        org.codehaus.groovy.grails=false
+        org.springframework=false
+    }
+}'''
+        def slurper = new ConfigSlurper()
+        def config = slurper.parse(text)
+
+		assert config                  
+		                                   
+		def sw = new StringWriter()
+
+
+		config.writeTo(sw)
+
+		def newText = sw.toString()
+
+		println newText
+
+		config = slurper.parse(newText)
+
+
+        assertEquals "org.apache.log4j.ConsoleAppender", config.log4j.appender.stdout
+        assertEquals "org.apache.log4j.PatternLayout", config.log4j.appender."stdout.layout"
+        assertEquals "error,stdout", config.log4j.rootLogger
+        assertEquals "info,stdout", config.log4j.logger.org.codehaus.groovy.grails
+        assertEquals false, config.log4j.additivity.org.codehaus.groovy.grails
+
+		
+	}
 }

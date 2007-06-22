@@ -23,7 +23,7 @@ package grails.config
 * @author Graeme Rocher
 * @since 0.6
 */
-class ConfigObject extends LinkedHashMap {
+class ConfigObject extends LinkedHashMap implements Writable {
 
     URL file
 
@@ -35,6 +35,86 @@ class ConfigObject extends LinkedHashMap {
 
     URL getConfigFile() {
         return this.file    
+    }         
+
+    /**
+	 * Writes this config object into a String serialized representation which can later be parsed back using the parse()
+	 * method
+	 *
+     *  @see groovy.lang.Writable#writeTo(java.io.Writer)
+     */ 
+	Writer writeTo(Writer outArg) {
+        def out
+        try {
+            out = new BufferedWriter(outArg)
+            writeConfig("",this, out, 0, false)
+        } finally {
+            out.flush()
+        }
+
+		return outArg
+	}
+                  
+    private writeConfig(String prefix,ConfigObject map, out, Integer tab, boolean apply) {
+        def space = apply ? '\t'*tab : ''
+        for(key in map.keySet()) {
+			def value = map.get(key)
+
+			if(value instanceof ConfigObject) {
+                def dotsInKeys = value.find { entry -> entry.key.indexOf('.') > -1 }
+                def configSize = value.size()
+                def firstKey = value.keySet().iterator().next()
+                def firstValue = value.values().iterator().next()
+                def firstSize
+                if(firstValue instanceof ConfigObject){
+                    firstSize = firstValue.size()
+                }
+                else { firstSize = 1 }
+				if(configSize == 1|| dotsInKeys )  {
+
+                    if(firstSize == 1 && firstValue instanceof ConfigObject) {
+                        writeConfig("${key}.${firstKey}.", firstValue, out, tab, true)
+                    }
+                    else if(!dotsInKeys) {
+                       writeNode(key, space, tab,value, out)
+                    }  else {
+                        for(j in value.keySet()) {
+                            def v2 = value.get(j)
+                            def k2 = j.indexOf('.') > -1 ? j.inspect() : j
+                            if(v2 instanceof ConfigObject) {
+                                writeConfig("${key}", v2, out, tab, false)
+                            }
+                            else {
+                                writeValue("${key}.${k2}", space, prefix, v2, out)
+                            }
+                        }
+                    }
+
+				}
+				else {
+                    writeNode(key, space,tab, value, out)
+				}
+			}   
+			else {
+
+                writeValue(key, space, prefix, value, out)
+			}
+		}	
+	}
+
+    private writeValue(key, space, prefix, value, out) {
+        key = key.indexOf('.') > -1 ? key.inspect() : key
+        out << "${space}${prefix}$key=${value.inspect()}"
+        out.newLine()
+    }
+
+    private writeNode(key, space, tab, value, out) {
+        out << "${space}$key {"
+        out.newLine()
+        writeConfig("",value, out, tab+1, true)
+        def last = "${space}}"
+        out << last
+        out.newLine()
     }
 
     /**

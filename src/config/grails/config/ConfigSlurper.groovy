@@ -44,7 +44,7 @@ import java.beans.BeanInfo
 
 class ConfigSlurper {
 
-    private static final ENV_METHOD = "env"
+    private static final ENV_METHOD = "environments"
     static final ENV_SETTINGS = '__env_settings__'
     //private BeanInfo bean
     //private instance
@@ -66,7 +66,6 @@ class ConfigSlurper {
         this.instance = beanClass.newInstance()
     }*/
     
-
 
     /**
      * Parse the given script as a string and return the configuration object
