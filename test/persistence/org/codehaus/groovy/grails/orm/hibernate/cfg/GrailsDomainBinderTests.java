@@ -31,6 +31,8 @@ import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * @author Jason Rudolph
@@ -101,6 +103,18 @@ public class GrailsDomainBinderTests extends TestCase {
         // Verify that the default length remains intact when no size-related constraints are applied
         constrainedProperty = getConstrainedStringProperty();
         assertColumnLength(constrainedProperty, Column.DEFAULT_LENGTH);
+
+        // Verify that the correct length is set when an inList constraint is applied
+        constrainedProperty = getConstrainedStringProperty();
+        List validValuesList = Arrays.asList(new String[] {"Groovy", "Java", "C++"}); 
+        constrainedProperty.applyConstraint(ConstrainedProperty.IN_LIST_CONSTRAINT, validValuesList);
+        assertColumnLength(constrainedProperty, 6);
+
+        // Verify that the correct length is set when a maxSize constraint *and* an inList constraint are *both* applied
+        constrainedProperty = getConstrainedStringProperty();
+        constrainedProperty.applyConstraint(ConstrainedProperty.IN_LIST_CONSTRAINT, validValuesList);
+        constrainedProperty.applyConstraint(ConstrainedProperty.MAX_SIZE_CONSTRAINT, new Integer(30));
+        assertColumnLength(constrainedProperty, 30);
     }
 
     /**

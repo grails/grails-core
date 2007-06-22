@@ -1277,8 +1277,12 @@ w	 * Binds a simple value to the Hibernate metamodel. A simple value is
      */
     protected static void bindStringColumnConstraints(Column column, ConstrainedProperty constrainedProperty) {
         Integer columnLength = constrainedProperty.getMaxSize();
+        List inListValues = constrainedProperty.getInList();
         if (columnLength != null) {
             column.setLength(columnLength.intValue());
+        }
+        else if (inListValues != null) {
+            column.setLength(getMaxSize(inListValues));
         }
     }
 
@@ -1342,5 +1346,19 @@ w	 * Binds a simple value to the Hibernate metamodel. A simple value is
         }
 
         return numDigits;
+    }
+    
+    /** 
+     * @return the maximum length of the strings in the specified list
+     */
+    private static int getMaxSize(List inListValues) {
+        int maxSize = 0;
+
+        for (Iterator iter = inListValues.iterator(); iter.hasNext();) {
+            String value = (String)iter.next();
+            maxSize = Math.max(value.length(), maxSize); 
+        }
+
+        return maxSize;
     }
 }
