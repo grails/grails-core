@@ -23,8 +23,6 @@
  */
 
 import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
-import org.mortbay.jetty.*
-import org.mortbay.http.*
 
 
 Ant.property(environment:"env")                             
@@ -33,7 +31,7 @@ grailsHome = Ant.antProject.properties."env.GRAILS_HOME"
 includeTargets << new File ( "${grailsHome}/scripts/RunApp.groovy" )  
 
 task ('default': "Run's all of the Web tests against a Grails application") { 
-	depends( classpath, checkVersion )
+	depends( classpath, checkVersion, packagePlugins, packageApp, generateWebXml )
     event("StatusUpdate", [ "Running WebTest"])
 	try {
 	    runWebTest()
