@@ -47,10 +47,10 @@ result = new TestResult()
 includeTargets << new File ( "${grailsHome}/scripts/Package.groovy" )
 
 task ('default': "Run a Grails applications unit tests") {
-	depends( classpath, checkVersion, packagePlugins )
-	grailsEnv = "test"
-	packageApp()
-	testApp()
+  depends( classpath, checkVersion, packagePlugins )
+  grailsEnv = "test"
+  packageApp()
+  testApp()
 }
 
 testDir = "${basedir}/test/reports"    
@@ -181,11 +181,7 @@ task(runUnitTests:"Run Grails' unit tests under the test/unit directory") {
 		grailsApp = ctx.grailsApplication  
 		grailsApp.initialise()
 	                   
-	    def testCaseToRun = '*'
-	    if (args) {
-	        testCaseToRun = "${args}Tests"
-	    }	
-	    def testFiles = resolveResources("test/unit/${testCaseToRun}.groovy")
+    def testFiles = resolveTestResources { "test/unit/${it}.groovy" }
 		testFiles = testFiles.findAll { it.exists() } 
 		if(testFiles.size() == 0) {
             event("StatusUpdate", [ "No tests found in test/unit to execute"])
@@ -215,15 +211,11 @@ task(runUnitTests:"Run Grails' unit tests under the test/unit directory") {
 
 task(runIntegrationTests:"Runs Grails' tests under the test/integration directory") {
 	try {
-	    // allow user to specify test to run like this...
-	    // grails test-app Author
-	    // grails test-app AuthorController
-	    def testCaseToRun = '*'
-	    if (args) {
-	        testCaseToRun = "${args}Tests"
-	    }
-		def testFiles = resolveResources("test/integration/${testCaseToRun}.groovy")   
-		testFiles = testFiles.findAll { it.exists() } 
+    // allow user to specify test to run like this...
+    //   grails test-app Author
+    //   grails test-app AuthorController
+    def testFiles = resolveTestResources { "test/integration/${it}.groovy" }
+
 		if(testFiles.size() == 0) {
             event("StatusUpdate", [ "No tests found in test/integration to execute"])
 			return
@@ -291,4 +283,23 @@ task(runIntegrationTests:"Runs Grails' tests under the test/integration director
         event("StatusFinal", ["Error running tests: ${e.toString()}"])
 		exit(1)
 	}
+}
+
+def resolveTestResources(patternResolver) {
+    def testNames = getTestNames(args)
+
+    if (!testNames) {
+      testNames = ['*']
+    }
+      
+    def testResources = []
+    testNames.each { 
+      def testFiles = resolveResources(patternResolver(it)) 
+      testResources.addAll(testFiles.findAll { it.exists() })
+    }                     
+    testResources
+}
+
+def getTestNames(testNamesString) {
+  testNamesString ? testNamesString.tokenize().collect{ "${it}Tests" } : null
 }
