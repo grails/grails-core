@@ -274,10 +274,12 @@ public class GrailsClassUtils {
 
         String[] tokens = name.split("[^\\w\\d]");
         StringBuffer buf = new StringBuffer();
-        for (int i = 0; i < tokens.length; i++) {
-            String token = tokens[i].trim();
-            buf.append(token.substring(0, 1).toUpperCase(Locale.ENGLISH))
-               .append(token.substring(1));
+        if(name != null && name.length() > 0) {
+            for (int i = 0; i < tokens.length; i++) {
+                String token = tokens[i].trim();
+                buf.append(token.substring(0, 1).toUpperCase(Locale.ENGLISH))
+                        .append(token.substring(1));
+            }
         }
         className = buf.toString();
 
