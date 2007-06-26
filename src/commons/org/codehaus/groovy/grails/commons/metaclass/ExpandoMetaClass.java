@@ -628,9 +628,6 @@ public class  ExpandoMetaClass extends MetaClassImpl implements GroovyObject {
                     beanProperty = new MetaBeanProperty(propertyName,Object.class,null,metaMethod);
 
                 beanPropertyCache.put(propertyName, beanProperty);
-                synchronized(expandoProperties) {
-                    expandoProperties.put(beanProperty.getName(),beanProperty);
-                }
             }
             else {
                 if(getter) {
@@ -644,7 +641,10 @@ public class  ExpandoMetaClass extends MetaClassImpl implements GroovyObject {
                     beanPropertyCache .put(propertyName, beanProperty);
                 }
             }
-		    addMetaBeanProperty(beanProperty);
+            synchronized(expandoProperties) {
+                    expandoProperties.put(beanProperty.getName(),beanProperty);
+            }
+            addMetaBeanProperty(beanProperty);
         }
 	}
 	
