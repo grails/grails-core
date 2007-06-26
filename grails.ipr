@@ -400,6 +400,13 @@
       <JAVADOC />
       <SOURCES />
     </library>
+    <library name="Jaxen">
+      <CLASSES>
+        <root url="jar://$PROJECT_DIR$/lib/jaxen-1.1-beta-11.jar!/" />
+      </CLASSES>
+      <JAVADOC />
+      <SOURCES />
+    </library>
   </component>
 </project>
 
