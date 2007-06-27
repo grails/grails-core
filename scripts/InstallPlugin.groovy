@@ -67,7 +67,7 @@ task(cachePlugin:"Implementation task") {
                 System.exit(1)
             }
         } else {
-            event("StatusError", ["Plugin '${pluginName}' not found in repository, type 'grails list-plugins'"])
+            event("StatusError", ["Plugin '${pluginName}' was not found in repository, type 'grails list-plugins'"])
             System.exit(1)
         }
     }

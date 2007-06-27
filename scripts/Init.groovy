@@ -66,8 +66,10 @@ event = { String name, def args ->
     hookScripts.each() {
         try {
             def handler = it."event$name"
-            handler.delegate = binding
-            handler(*args)
+            if( handler ) {
+                handler.delegate = binding
+                handler(*args)
+            }
         } catch (MissingPropertyException e) {
         }
     }
