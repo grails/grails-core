@@ -194,4 +194,18 @@ public class GrailsHttpSession implements
         }
     }
 
+    public String toString() {
+        StringBuffer sb = new StringBuffer("Session Content:\n");
+        Enumeration e = adaptee.getAttributeNames();
+        while(e.hasMoreElements()) {
+            String name = (String) e.nextElement();
+            sb.append("  ");
+            sb.append(name);
+            sb.append(" = ");
+            sb.append(adaptee.getAttribute(name));
+            sb.append('\n');
+        }
+        return sb.toString();
+    }
+
 }
