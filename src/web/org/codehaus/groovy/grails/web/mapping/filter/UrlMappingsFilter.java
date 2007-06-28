@@ -78,8 +78,8 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
             WrappedResponseHolder.setWrappedResponse(response);
 
             if(info!=null) {
-
-                GrailsClass controller = application.getArtefactForFeature(ControllerArtefactHandler.TYPE, SLASH+info.getControllerName());
+                String action = info.getActionName() == null ? "" : info.getActionName();
+                GrailsClass controller = application.getArtefactForFeature(ControllerArtefactHandler.TYPE, SLASH + info.getControllerName() + SLASH + action);
                 if(controller == null)  {
                     if(filterChain!=null)
                         filterChain.doFilter(request,response);

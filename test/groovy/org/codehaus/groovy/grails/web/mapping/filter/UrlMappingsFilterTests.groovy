@@ -55,6 +55,15 @@ mappings {
   }
 }
 '''
+ def defaultMappings = '''
+mappings {
+  "/$controller/$action?/$id?" {
+        constraints {
+
+        }
+  }
+}
+'''
 
 def testController1 = '''
 class TestController {
@@ -64,7 +73,20 @@ class TestController {
 def testController2 = '''
 package blogs
 class BlogController {
-  def index = {}
+  def show = {}
+}
+'''
+def testController3 = '''
+class NoIndexController {
+  def myAction = {}
+
+  def myOtherAction = {}
+}
+'''
+
+def testController4 = '''
+class OtherController {
+  def myAction = {}
 }
 '''
 
@@ -103,4 +125,100 @@ class BlogController {
         assertEquals "06", webRequest.params.month
         assertEquals "01", webRequest.params.day
     }
+
+    void testFilterWithControllerWithNoIndex(){
+        def webRequest = grails.util.GrailsWebUtil.bindMockWebRequest()
+        def servletContext = new MockServletContext();
+
+        def appCtx = new MockApplicationContext();
+
+        def evaluator = new DefaultUrlMappingEvaluator();
+
+        def mappings = evaluator.evaluateMappings(new ByteArrayResource(defaultMappings.getBytes()));
+        appCtx.registerMockBean(UrlMappingsHolder.BEAN_ID, new DefaultUrlMappingsHolder(mappings));
+        def gcl = new GroovyClassLoader()
+        gcl.parseClass(testController3)
+        gcl.parseClass(testController4)
+
+        appCtx.registerMockBean("grailsApplication", new DefaultGrailsApplication(gcl.loadedClasses,gcl))
+
+        servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE,appCtx);
+
+        def request = new MockHttpServletRequest();
+        def response = new MockHttpServletResponse()
+        request.setRequestURI("/noIndex/myAction");
+
+        def filter = new UrlMappingsFilter();
+
+        filter.init(new MockFilterConfig(servletContext));
+
+        filter.doFilterInternal(request, response,null);
+
+        assertEquals "/grails/noIndex/myAction.dispatch", response.forwardedUrl
+
+        request = new MockHttpServletRequest();
+        response = new MockHttpServletResponse()
+        request.setRequestURI("/other/myAction");
+
+        filter = new UrlMappingsFilter();
+
+        filter.init(new MockFilterConfig(servletContext));
+
+        filter.doFilterInternal(request, response,null);
+
+        assertEquals "/grails/other/myAction.dispatch", response.forwardedUrl
+
+        }
+
+def testController5 = '''
+class IndexAndActionController {
+  def myAction = {}
+
+  def index = {}
+}
+'''
+
+void testFilterWithControllerWithIndexAndAction(){
+        def webRequest = grails.util.GrailsWebUtil.bindMockWebRequest()
+        def servletContext = new MockServletContext();
+
+        def appCtx = new MockApplicationContext();
+
+        def evaluator = new DefaultUrlMappingEvaluator();
+
+        def mappings = evaluator.evaluateMappings(new ByteArrayResource(defaultMappings.getBytes()));
+        appCtx.registerMockBean(UrlMappingsHolder.BEAN_ID, new DefaultUrlMappingsHolder(mappings));
+        def gcl = new GroovyClassLoader()
+        gcl.parseClass(testController5)
+
+        appCtx.registerMockBean("grailsApplication", new DefaultGrailsApplication(gcl.loadedClasses,gcl))
+
+        servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE,appCtx);
+
+        def request = new MockHttpServletRequest();
+        def response = new MockHttpServletResponse()
+        request.setRequestURI("/indexAndAction/");
+
+        def filter = new UrlMappingsFilter();
+
+        filter.init(new MockFilterConfig(servletContext));
+
+        filter.doFilterInternal(request, response,null);
+
+        assertEquals "/grails/indexAndAction.dispatch", response.forwardedUrl
+
+        request = new MockHttpServletRequest();
+        response = new MockHttpServletResponse()
+        request.setRequestURI("/indexAndAction");
+
+        filter = new UrlMappingsFilter();
+
+        filter.init(new MockFilterConfig(servletContext));
+
+        filter.doFilterInternal(request, response,null);
+
+        assertEquals "/grails/indexAndAction.dispatch", response.forwardedUrl
+
+        }
+
 }
