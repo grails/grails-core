@@ -42,7 +42,7 @@ or
 'grails install-plugin ${BINARY_PLUGIN_DIST}/grails-acegi-0.1.zip"""
 
 task ( "default" : "Installs a plug-in for the given URL or name and version") {
-   depends(checkVersion)
+   depends(checkVersion,configureProxy)
    installPlugin()
 }     
                 
@@ -60,15 +60,15 @@ task(cachePlugin:"Implementation task") {
                     pluginDistName = release.'file'.text()
                 } else {
                     event("StatusError", ["Release ${pluginRelease} was not found for this plugin. Type 'grails plugin-info ${pluginName}'"])
-                    System.exit(1)
+                    exit(1)
                 }
             } else {
                 event("StatusError", ["Latest release information is not available for plugin '${pluginName}', specify concrete release to install"])
-                System.exit(1)
+                exit(1)
             }
         } else {
             event("StatusError", ["Plugin '${pluginName}' was not found in repository, type 'grails list-plugins'"])
-            System.exit(1)
+            exit(1)
         }
     }
     def pluginCacheFileName = "${pluginsHome}/${pluginName}/grails-${pluginName}-${pluginRelease}.zip"
@@ -91,12 +91,12 @@ task(installPlugin:"Implementation task") {
 			def url = new URL(args.trim())			
 			def slash = url.file.lastIndexOf('/')
             fullPluginName = "${url.file[slash+8..-5]}"
-			Ant.get(dest:"${pluginsBase}/${fullPluginName}.zip",
+			Ant.get(dest:"${pluginsBase}/grails-${fullPluginName}.zip",
 				src:"${url}",
 				verbose:true,
 				usetimestamp:true)			
 		}
-        else if( new File(args.trim()).exists()) {
+        else if( new File(args.trim()).exists() && pluginFile.name.startsWith("grails-") && pluginFile.name.endsWith(".zip" )) {
             fullPluginName = "${pluginFile.name[7..-5]}"
             Ant.copy(file:args.trim(),tofile:"${pluginsBase}/grails-${fullPluginName}.zip")
         }
