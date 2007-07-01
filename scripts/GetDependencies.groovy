@@ -6,12 +6,12 @@ includeTargets << new File ( "${grailsHome}/scripts/Init.groovy" )
 includeTargets << new File ( "${grailsHome}/scripts/InstallIvy.groovy" )
 
 task ("default": "Default task") {
-	dependencies()
+    depends( configureProxy )
+    dependencies()
 }
 
 task ( dependencies: "Downloads dependencies from remote repository" ) {		
-	if (new File("${basedir}/ivy.xml").exists()
-			&& new File("${basedir}/ivyconf.xml").exists()) {
+	if (new File("${basedir}/ivy.xml").exists() && new File("${basedir}/ivyconf.xml").exists()) {
 		ivyDeps()
 	}
 }

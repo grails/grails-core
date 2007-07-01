@@ -47,7 +47,7 @@ result = new TestResult()
 includeTargets << new File ( "${grailsHome}/scripts/Package.groovy" )
 
 task ('default': "Run a Grails applications unit tests") {
-  depends( classpath, checkVersion, packagePlugins )
+  depends( classpath, checkVersion, configureProxy, packagePlugins )
   grailsEnv = "test"
   packageApp()
   testApp()

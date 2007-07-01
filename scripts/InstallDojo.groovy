@@ -30,7 +30,7 @@ grailsHome = Ant.antProject.properties."env.GRAILS_HOME"
 includeTargets << new File ( "${grailsHome}/scripts/Init.groovy" )  
 
 task ('default': "Installs the Dojo toolkit. An advanced Javascript library.") {
-    depends(checkVersion)
+    depends(checkVersion,configureProxy)
 
 	dojoVersion = "0.4.3"
 	

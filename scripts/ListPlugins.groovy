@@ -86,26 +86,29 @@ Plug-ins available in the Grails repository are listed below:
     use(DOMCategory) {
         pluginsList.'plugin'.each { plugin ->
             def pluginLine = plugin.'@name'
+            pluginLine += "${spacesFormatter[pluginLine.length()..-1]}"
             def version
             def title = "No description available"
+            def versionLine
             if( plugin.'@latest-release' ) {
                 version = plugin.'@latest-release'
-                pluginLine += "${spacesFormatter[pluginLine.length()..-1]}<${version}>\t"
+                pluginLine += "<${version}>"
             } else if( plugin.'release'.size() > 0) {
                 // determine latest release by comparing version names in lexicografic order
                 version = plugin.'release'[0].'@version'
                 plugin.'release'.each {
                     if( !"${it.'@version'}".endsWith("SNAPSHOT") && "${it.'@version'}" > version ) version = "${it.'@version'}"
                 }
-                pluginLine += "${spacesFormatter[pluginLine.length()..-1]}<${version} (?)>\t"
+                pluginLine += "<${version} (?)>\t"
             } else {
-                pluginLine += "${spacesFormatter[pluginLine.length()..-1]}<no releases>"
+                pluginLine += "<no releases>"
             }
             def release = plugin.'release'.find{ rel -> rel.'@version' == version }
             if( release?.'title' ) {
                 title = release?.'title'.text()
             }
-            pluginLine += "\t--\t${title}"
+            pluginLine += "${(spacesFormatter * 2)[pluginLine.length()..-1]}"
+            pluginLine += "--\t${title}"
             plugins << pluginLine
         }
     }

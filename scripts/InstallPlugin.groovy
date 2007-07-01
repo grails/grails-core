@@ -42,12 +42,12 @@ or
 'grails install-plugin ${BINARY_PLUGIN_DIST}/grails-acegi-0.1.zip"""
 
 task ( "default" : "Installs a plug-in for the given URL or name and version") {
-   depends(checkVersion,configureProxy)
+   depends(checkVersion)
    installPlugin()
 }     
                 
 task(cachePlugin:"Implementation task") {
-    depends(updatePluginsList)
+    depends(configureProxy,updatePluginsList)
     def pluginDistName
     use( DOMCategory ) {
         def plugin = pluginsList.'plugin'.find{ it.'@name' == pluginName }
@@ -81,6 +81,7 @@ task(cachePlugin:"Implementation task") {
 }
 
 task(installPlugin:"Implementation task") {
+    depends( configureProxy )
     // fix for Windows-style path with backslashes
     def pluginsBase = "${basedir}/plugins".toString().replaceAll(/\\/,'/')
 	if(args) {      

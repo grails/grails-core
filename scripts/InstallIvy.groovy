@@ -7,10 +7,11 @@ ivyVersion = "1.4.1"
 includeTargets << new File ( "${grailsHome}/scripts/Init.groovy" ) 
 
 task ("default": "Installs the Ivy dependency manager into the current Grails application") {
-	installIvy()
+    installIvy()
 }
 
 task (installIvy : "Install Ivy tasks") {
+    depends(configureProxy)
 	def ivyJar = "ivy-${ivyVersion}.jar";
 	def remoteFile = "http://www.jaya.free.fr/downloads/ivy/${ivyVersion}/${ivyJar}"
 	if (!new File("%{grailsHome}/lib/${ivyJar}").exists()) {

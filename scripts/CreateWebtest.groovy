@@ -56,7 +56,8 @@ task ('default': "Creates a skelenton of a Canoo WebTest (functional test) for a
 }
 
 task(downloadWebtest:"Downloads the WebTest distro") {
-	Ant.sequential {
+    depends( configureProxy )
+    Ant.sequential {
 		mkdir(dir:"${grailsHome}/downloads")
 		get(dest:"${grailsHome}/downloads/webtest.zip",
 			src: "http://webtest.canoo.com/webtest/build.zip",
