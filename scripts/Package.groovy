@@ -15,7 +15,7 @@
  */
 
 /**
- * Gant script that creates a new Grails controller
+ * Gant script that packages a Grails application (note: does not create WAR)
  * 
  * @author Graeme Rocher
  *

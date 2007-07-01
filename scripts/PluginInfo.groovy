@@ -15,7 +15,7 @@
  */
 
 /**
- * Gant script that displays info about plugin
+ * Gant script that displays info about a given plugin
  *
  * @author Sergey Nebolsin
  *

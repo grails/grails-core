@@ -15,7 +15,7 @@
  */
 
 /**
- * Gant script that handles the creation of Grails plugins
+ * Gant script that handles the packaging of a Grails plugin into a distribution zipfile
  * 
  * @author Graeme Rocher
  *

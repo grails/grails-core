@@ -15,7 +15,7 @@
  */
 
 /**
- * Gant script that creates a new Grails controller
+ * Gant script that compiles Groovy and Java files in the src tree
  * 
  * @author Graeme Rocher
  *

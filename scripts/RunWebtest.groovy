@@ -15,7 +15,7 @@
  */
 
 /**
- * Gant script that executes Grails using an embedded Jetty server
+ * Gant script that runs all the webtests against a Grails application
  * 
  * @author Graeme Rocher
  *

@@ -15,7 +15,7 @@
  */
 
 /**
- * Gant script that loads the Grails interactive shell
+ * Gant script that generates CRUD views for a given domain class
  * 
  * @author Graeme Rocher
  *

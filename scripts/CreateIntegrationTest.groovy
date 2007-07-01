@@ -15,7 +15,7 @@
  */
 
 /**
- * Gant script that creates a new test suite
+ * Gant script that creates a new Grails integration test
  * 
  * @author Graeme Rocher
  *

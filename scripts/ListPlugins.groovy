@@ -15,7 +15,7 @@
  */
 
 /**
- * Gant script that handles the creation of Grails plugins
+ * Gant script that handles the listing of Grails plugins
  * 
  * @author Sergey Nebolsin
  *
