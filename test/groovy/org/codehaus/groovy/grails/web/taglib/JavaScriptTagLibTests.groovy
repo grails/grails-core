@@ -3,6 +3,7 @@ package org.codehaus.groovy.grails.web.taglib;
 import groovy.lang.Closure;
 import groovy.lang.GroovyObject;
 
+import org.codehaus.groovy.grails.commons.*
 import org.codehaus.groovy.grails.web.servlet.*;
 import org.springframework.web.util.*;
 
@@ -12,6 +13,17 @@ import java.util.*;
 
 
 public class JavaScriptTagLibTests extends AbstractGrailsTagTests {
+
+    void onInit() {
+                def urlMappingsClass = gcl.parseClass('''\
+class TestUrlMappings {
+    static mappings = {
+        "/$controller/$action?/$id?" {}
+        "/people/details/$var1"(controller: 'person', action: 'show' )
+    }
+}''')
+        grailsApplication.addArtefact(UrlMappingsArtefactHandler.TYPE, urlMappingsClass)
+    }
 
 	public void testPrototypeRemoteFunction() throws Exception {
 		StringWriter sw = new StringWriter()
@@ -92,6 +104,26 @@ public class JavaScriptTagLibTests extends AbstractGrailsTagTests {
             assertEquals("<input type=\"text\" name=\"title\" value=\"testValue\" onkeyup=\"new Ajax.Updater('titleDiv','/test/changeTitle',{asynchronous:true,evalScripts:true,parameters:'value='+this.value});\" />",sw.toString())
         }
 
+    }
+
+    public void testRemoteLink() {
+        // test for GRAILS-1304
+        // Tag: <g:remoteLink controller="person" action="show" update="async" params="[var1:'0']">Show async</g:remoteLink>
+        // Expected result: <a href="/people/details/0" onclick="new Ajax.Updater('async','/people/details/0',{asynchronous:true,evalScripts:true,parameters:'var1=0'});return false;">Show async</a>
+        StringWriter sw = new StringWriter()
+        PrintWriter pw = new PrintWriter(sw)
+
+        withTag("remoteLink",pw) { tag ->
+            GroovyObject tagLibrary = (GroovyObject)tag.getOwner()
+            def request = tagLibrary.getProperty("request")
+            def includedLibrary = ['prototype']
+            request.setAttribute("org.codehaus.grails.INCLUDED_JS_LIBRARIES", includedLibrary)
+
+            def attrs = [controller:'person',action:'show',params:[var1:'0'],update:'async']
+            tag.call(attrs) { "Show async" }
+            println sw.toString()
+            assertEquals("<a href=\"/people/details/0\" onclick=\"new Ajax.Updater('async','/people/details/0',{asynchronous:true,evalScripts:true,parameters:'var1=0'});return false;\">Show async</a>",sw.toString())
+        }
     }
 
      public void testPluginAwareJSSrc (){

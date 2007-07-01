@@ -28,7 +28,7 @@ import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU;
 class ApplicationTagLib { 
 	
 	def grailsUrlMappingsHolder
-	
+
     /**
      * Creates a link to a resource, generally used as a method rather than a tag.
      *
@@ -51,21 +51,19 @@ class ApplicationTagLib {
      *  <g:link controller="myctrl" action="myaction">link 2</gr:link>
      */
     def link = { attrs, body ->
-        out << "<a href=\""
+        out << '<a href="'
         // create the link
         out << createLink(attrs)
-
-        out << '\" '
+        out << '"'
         // process remaining attributes
         attrs.each { k,v ->
-            out << k << "=\"" << v << "\" "
+            out << ' ' <<  k << '="' << v << '"'
         }
-        out << ">"
+        out << '>'
         // output the body
         out << body()
-
         // close tag
-        out << "</a>"
+        out << '</a>'
     }
 
 
@@ -76,29 +74,29 @@ class ApplicationTagLib {
      *
      *  <a href="${createLink(action:'list')}">List</a>
      */
-    def createLink = { attrs ->     
+    def createLink = { attrs ->
         out << grailsAttributes.getApplicationUri(request)
         // prefer a URL attribute
         if(attrs['url']) {
              attrs = attrs.remove('url')
         }
-                                                     
+
 		def controller = attrs.containsKey("controller") ? attrs.remove("controller") : grailsAttributes.getController(request)?.controllerName
 		def action = attrs.remove("action")
         def id = attrs.remove("id")
-        def params = attrs.params ? attrs.remove('params') : [:]
+        def params = attrs.params && attrs.params instanceof Map ? attrs.remove('params') : [:]
 
         def url
 		try {
             if(id != null) params.id = id
             def mapping = grailsUrlMappingsHolder.getReverseMapping(controller,action,params)
 			params.controller = controller
-			if(action) params.action = action  
+			if(action) params.action = action
             url = mapping.createURL(params, request.characterEncoding)
-		}        
+		}
 		finally {
 			params.remove('controller')
-			params.remove('action')          
+			params.remove('action')
 			params.remove('id')
 		}
         out << url

@@ -29,13 +29,13 @@ class TestUrlMappings {
     void testLinkWithOnlyId() {
         def template = '<g:link id="competition">Enter</g:link>'
 
-        assertOutputEquals('<a href="/competition" >Enter</a>', template)
+        assertOutputEquals('<a href="/competition">Enter</a>', template)
     }
 
     void testLinkWithOnlyIdAndAction() {
         def template = '<g:link id="competition" controller="content" action="view">Enter</g:link>'
 
-        assertOutputEquals('<a href="/competition" >Enter</a>', template)
+        assertOutputEquals('<a href="/competition">Enter</a>', template)
     }
 
     def assertOutputEquals(expected, template, params = [:]) {

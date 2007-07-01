@@ -154,10 +154,10 @@ class JavascriptTagLib  {
         // create remote function
         out << remoteFunction(attrs)   
 		attrs.remove('url')
-        out << "return false;\" "
+        out << "return false;\""
         // process remaining attributes
         attrs.each { k,v ->
-            out << k << "=\"" << v << "\" "
+            out << ' ' << k << "=\"" << v << "\""
         }
         out << ">"
         // output the body
@@ -363,15 +363,13 @@ class PrototypeProvider implements JavascriptProvider {
 		}
 		out << "'"						
 		
-		def pms = attrs.remove('params')   
+		def pms = attrs.get('params')   
 		if(attrs.url) {
 			out << taglib.createLink(attrs.url)			
-		}                              
-		else {
-			out << taglib.createLink(attrs)			
 		}
-
-		
+		else {
+			out << taglib.createLink(attrs)
+		}
 		out << "',"
 		if(pms)
 		    attrs.params = pms

@@ -40,16 +40,16 @@ class TestUrlMappings {
     void testOverlappingReverseMappings() {
         def template = '<g:link controller="searchable" action="index" >Search</g:link>'
 
-        assertOutputEquals('<a href="/searchable" >Search</a>', template)
+        assertOutputEquals('<a href="/searchable">Search</a>', template)
 
         template = '<g:link controller="searchable" >Search</g:link>'
 
-        assertOutputEquals('<a href="/searchable" >Search</a>', template)
+        assertOutputEquals('<a href="/searchable">Search</a>', template)
 
 
         template = '<g:link controller="searchable" action="other" >Search</g:link>'
 
-        assertOutputEquals('<a href="/searchable/other" >Search</a>', template)
+        assertOutputEquals('<a href="/searchable/other">Search</a>', template)
 
 
         template = '<g:form controller="searchable" action="index" >Search</g:form>'
@@ -66,11 +66,11 @@ class TestUrlMappings {
     void testRenderLinkWithReverseMapping() {
         def template = '<g:link controller="survey">${name}</g:link>'
 
-        assertOutputEquals('<a href="/surveys" >Food I Like</a>', template, [name:"Food I Like"])
+        assertOutputEquals('<a href="/surveys">Food I Like</a>', template, [name:"Food I Like"])
 
         template = '<g:link controller="test" action="index" id="MacBook">${name}</g:link>'
 
-        assertOutputEquals('<a href="/products/MacBook" >MacBook</a>', template, [name:"MacBook"])
+        assertOutputEquals('<a href="/products/MacBook">MacBook</a>', template, [name:"MacBook"])
 
     }    
 
@@ -83,7 +83,7 @@ class TestUrlMappings {
     void testRenderLink() {
         def template = '<g:link controller="foo" action="list">${name}</g:link>'
 
-        assertOutputEquals('<a href="/foo/list" >bar</a>', template, [name:"bar"])
+        assertOutputEquals('<a href="/foo/list">bar</a>', template, [name:"bar"])
     }
 
     void testRenderForm() {

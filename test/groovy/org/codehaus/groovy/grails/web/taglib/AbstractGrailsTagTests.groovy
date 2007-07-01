@@ -71,7 +71,7 @@ AbstractDependencyInjectionSpringContextTests {
 	        def webRequest = RequestContextHolder.currentRequestAttributes()
 
 	        webRequest.out = out
-	        println "calling tag"
+	        println "calling tag '${tagName}'"
 	        result = callable.call(go.getProperty(tagName))
 		}
 		return result

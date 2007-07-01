@@ -229,7 +229,7 @@ class RenderTagLibTests extends AbstractGrailsTagTests {
 		// Check the output of the tag. The query parameters are not
 		// guaranteed to be in any particular order, so we extract
 		// them with a regular expression.
-		def p = ~"<th class=\"${expectedClassValue}\" ><a href=\"\\S+?(\\w+=\\w+)&(\\w+=\\w+)\" >${expectedContent}</a></th>"
+		def p = ~"<th class=\"${expectedClassValue}\" ><a href=\"\\S+?(\\w+=\\w+)&(\\w+=\\w+)\">${expectedContent}</a></th>"
 		println "Output is $output"
 		def m = p.matcher(output)
 		
@@ -271,7 +271,7 @@ class RenderTagLibTests extends AbstractGrailsTagTests {
 		// Check the output of the tag. The query parameters are not
 		// guaranteed to be in any particular order, so we extract
 		// them with a regular expression.
-		def p = ~"<th class=\"${expectedClassValue}\"${otherAttrs} ><a href=\"\\S+?(\\w+=\\w+)&(\\w+=\\w+)\" >${expectedContent}</a></th>"
+		def p = ~"<th class=\"${expectedClassValue}\"${otherAttrs} ><a href=\"\\S+?(\\w+=\\w+)&(\\w+=\\w+)\">${expectedContent}</a></th>"
 		def m = p.matcher(output)
 		
 		// First step: check the output as a whole matches what we
