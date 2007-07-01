@@ -81,35 +81,29 @@ task(listPlugins:"Implementation task") {
 Plug-ins available in the Grails repository are listed below:
 -------------------------------------------------------------
 '''
-    def spacesFormatter = "                    "
     def plugins = []
     use(DOMCategory) {
         pluginsList.'plugin'.each { plugin ->
-            def pluginLine = plugin.'@name'
-            pluginLine += "${spacesFormatter[pluginLine.length()..-1]}"
             def version
+            def pluginLine = plugin.'@name'
+            def versionLine = "<no releases>"
             def title = "No description available"
-            def versionLine
             if( plugin.'@latest-release' ) {
                 version = plugin.'@latest-release'
-                pluginLine += "<${version}>"
+                versionLine = "<${version}>"
             } else if( plugin.'release'.size() > 0) {
                 // determine latest release by comparing version names in lexicografic order
                 version = plugin.'release'[0].'@version'
                 plugin.'release'.each {
                     if( !"${it.'@version'}".endsWith("SNAPSHOT") && "${it.'@version'}" > version ) version = "${it.'@version'}"
                 }
-                pluginLine += "<${version} (?)>\t"
-            } else {
-                pluginLine += "<no releases>"
+                versionLine = "<${version} (?)>\t"
             }
             def release = plugin.'release'.find{ rel -> rel.'@version' == version }
             if( release?.'title' ) {
                 title = release?.'title'.text()
             }
-            pluginLine += "${(spacesFormatter * 2)[pluginLine.length()..-1]}"
-            pluginLine += "--\t${title}"
-            plugins << pluginLine
+            plugins << "${pluginLine.padRight(20," ")}${versionLine.padRight(16," ")} --  ${title}"
         }
     }
     // Sort plugin descriptions
