@@ -54,8 +54,9 @@ task ( runApp : "Main implementation that executes a Grails application") {
         def connectors = [new SelectChannelConnector()]
         connectors[0].setPort(serverPort)    
         server.setConnectors( (Connector [])connectors )                          
-		ContextHandler handler = new WebAppContext("${basedir}/web-app", "/${grailsAppName}")
-		handler.setClassLoader(Thread.currentThread().getContextClassLoader())
+		WebAppContext handler = new WebAppContext("${basedir}/web-app", "/${grailsAppName}")
+        handler.setDefaultsDescriptor("${grailsHome}/conf/webdefault.xml")
+        handler.setClassLoader(Thread.currentThread().getContextClassLoader())
 		grailsHandler = handler
 		server.setHandler( handler )
         server.start()
