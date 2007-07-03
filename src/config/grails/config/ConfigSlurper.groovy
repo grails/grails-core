@@ -145,6 +145,7 @@ class ConfigSlurper {
      */
     ConfigObject parse(Script script, URL location) {
         def config = location ? new ConfigObject(location) : new ConfigObject()
+        GroovySystem.metaClassRegistry.removeMetaClass(script.class)
         def mc = script.class.metaClass
         def prefix = ""
         Stack stack = new Stack()
