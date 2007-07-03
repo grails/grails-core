@@ -34,7 +34,9 @@ public class GrailsRuntimeConfiguratorTests extends TestCase {
 		.getMetaRegistry()
 		.setMetaClassCreationHandle(new ExpandoMetaClassCreationHandle());
 
-		super.setUp();
+        ConfigurationHolder.setConfig(null);
+
+        super.setUp();
 	}
 
 	/* (non-Javadoc)
@@ -59,6 +61,8 @@ public class GrailsRuntimeConfiguratorTests extends TestCase {
                                         "def serviceMethod() {'hello'} }");
         
         Class c = gcl.parseClass("class TestController { def list = {} }");
+
+
 
         GrailsApplication app = new DefaultGrailsApplication(new Class[]{dc,sc,c}, gcl );
         MockApplicationContext parent = new MockApplicationContext();
@@ -91,9 +95,6 @@ public class GrailsRuntimeConfiguratorTests extends TestCase {
         assertNotNull(ms);
 
         Properties hibProps = (Properties)ctx.getBean(GrailsRuntimeConfigurator.HIBERNATE_PROPERTIES_BEAN);
-
-        assertNotNull(hibProps);
-        assertEquals("create-drop",hibProps.getProperty("hibernate.hbm2ddl.auto"));
 
         // test domain class setup correctly in the ctx
         GrailsDomainClass domainClass = (GrailsDomainClass)ctx.getBean("TestDomainClass");
@@ -202,7 +203,7 @@ public class GrailsRuntimeConfiguratorTests extends TestCase {
         GrailsWebApplicationContext ctx = (GrailsWebApplicationContext)conf.configure(new MockServletContext());
         assertNotNull(ctx);
 
-        Class service = gcl.parseClass("class TestService { boolean transactional = true;def serviceMethod() { 'hello' } }");
+        Class service = gcl.parseClass("class TestService { boolean transactional = false;def serviceMethod() { 'hello' } }");
         GrailsServiceClass serviceClass = (GrailsServiceClass) app.addArtefact(ServiceArtefactHandler.TYPE, service);
         conf.registerService(serviceClass,ctx);
 
@@ -328,6 +329,8 @@ public class GrailsRuntimeConfiguratorTests extends TestCase {
         assertNotNull(gdo.getApplication());
 
       //Make sure that the definition of the custom SessionFactory is not allowed.
+        //System.out.println("ctx.getBean(\"sessionFactory\") = " + ctx.getBean("sessionFactory"));
+        //System.out.println("ctx.getBean(\"sessionFactory\") class = " + ctx.getBean("sessionFactory").getClass());
         assertFalse(ctx.containsBean("sessionFactory"));
     	
     }

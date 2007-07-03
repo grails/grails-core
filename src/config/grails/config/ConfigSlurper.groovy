@@ -19,7 +19,7 @@ import java.beans.BeanInfo
 
 /**
 * <p>
-* ConfigSlurper2 is a utility class for reading configuration files defined in the form of Groovy
+* ConfigSlurper is a utility class for reading configuration files defined in the form of Groovy
 * scripts. Configuration settings can be defined using dot notation or scoped using closures
 *
 * <pre><code>
@@ -42,7 +42,7 @@ import java.beans.BeanInfo
 *        Time: 3:53:48 PM
 */
 
-class ConfigSlurper {
+class ConfigSlurper { 
 
     private static final ENV_METHOD = "environments"
     static final ENV_SETTINGS = '__env_settings__'
@@ -54,19 +54,50 @@ class ConfigSlurper {
 
     ConfigSlurper() { }
 
-    ConfigSlurper(env) {
+    /**
+     * Constructs a new ConfigSlurper instance using the given environment
+     * @param env The Environment to use
+     */
+    ConfigSlurper(String env) {
         this.environment = env
     }
 
+    /**
+     * Parses a ConfigObject instances from an instance of java.util.Properties
+     * @param The java.util.Properties instance
+     */
+    ConfigObject parse(Properties properties) {   
+        ConfigObject config = new ConfigObject()
+        for(key in properties.keySet()) {
+            def tokens = key.split(/\./)
+            
+            def current = config
+            def currentToken
+            def last
+            def lastToken
+            for(token in tokens) {
+                last = current
+                lastToken = token
 
-    /*ConfigSlurper(Class beanClass) {
-        if(!beanClass) throw new IllegalArgumentException("Argument [beanClass] cannot be null")
+                current = current."${token}"
+                if(!(current instanceof ConfigObject)) break
+            }
 
-        this.bean = Introspector.getBeanInfo(beanClass)
-        this.instance = beanClass.newInstance()
-    }*/
-    
-
+            if(current instanceof ConfigObject) {
+                if(last[lastToken]) {
+                    def flattened = last.flatten()
+                    last.clear()
+                    flattened.each { k2, v2 -> last[k2] = v2 }
+                    last[lastToken] = properties.get(key)
+                }
+                else {                    
+                    last[lastToken] = properties.get(key)
+                }
+            }
+            current = config
+        }
+        return config
+    }
     /**
      * Parse the given script as a string and return the configuration object
      *
@@ -94,10 +125,24 @@ class ConfigSlurper {
          return parse(script, null)
     }
 
+    /**
+     * Parses a Script represented by the given URL into a ConfigObject
+     *
+     * @param scriptLocation The location of the script to parse
+     * @return The ConfigObject instance
+     */
     ConfigObject parse(URL scriptLocation) {
         return parse(classLoader.parseClass(scriptLocation.text).newInstance(), scriptLocation)
     }
 
+    /**
+     * Parses the passed groovy.lang.Script instance using the second argument to allow the ConfigObject
+     * to retain an reference to the original location other Groovy script
+     *
+     * @param script The groovy.lang.Script instance
+     * @param location The original location of the Script as a URL
+     * @return The ConfigObject instance
+     */
     ConfigObject parse(Script script, URL location) {
         def config = location ? new ConfigObject(location) : new ConfigObject()
         def mc = script.class.metaClass
@@ -136,8 +181,14 @@ class ConfigSlurper {
                     if(name == environment) {
                         def co = new ConfigObject()
                         config[ENV_SETTINGS] = co
+
                         stack.push(co)
-                        args[0].call()
+                        try {
+                            envMode = false
+                            args[0].call()
+                        } finally {
+                            envMode = true
+                        }
                         stack.pop()
                     }
                 }
@@ -180,7 +231,7 @@ class ConfigSlurper {
                 current = config
             }
             current[prefix+name] = value
-        }
+        }                     
         script.binding = new ConfigBinding(setProperty)
 
 
@@ -188,41 +239,12 @@ class ConfigSlurper {
 
         def envSettings = config.remove(ENV_SETTINGS)
         if(envSettings) {
-            config = merge(config, envSettings)
+            config.merge(envSettings)
         }
 
         return config
     }
 
-    /**
-     * Merges the second map with the first overriding any matching configuration entries in the first map
-     *
-     * @param config The root configuration Map
-     * @param other The map to merge with the root
-     *
-     * @return The root configuration Map with the configuration entries merged from the second map
-     *
-     */
-    def merge(Map config,Map other) {
-
-        for(entry in other) {
-            def configEntry = config[entry.key]
-            if(configEntry == null) {
-                config[entry.key] = entry.value
-                continue
-            }
-            else {
-               if(configEntry instanceof Map && entry.value instanceof Map) {
-                    // recurse
-                    merge(configEntry, entry.value)                                
-               }
-               else {
-                   config[entry.key] = entry.value
-               }
-            }
-        }
-        return config
-    }
 }
 /**
  * Since Groovy Script don't support overriding setProperty, we have to using a trick with the Binding to provide this

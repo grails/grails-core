@@ -50,19 +50,30 @@ task ('default': "Packages a Grails application. Note: To create WAR use 'grails
 }                     
   
 task( createConfig: "Creates the configuration object") {
-   def configFile = new File("${basedir}/grails-app/conf/Config.groovy")
+   def configFile = new File("${basedir}/grails-app/conf/Config.groovy") 
+   def configSlurper = new grails.config.ConfigSlurper(grailsEnv)
    if(configFile.exists()) { 
 		try {
-			config = new grails.config.ConfigSlurper(grailsEnv).parse(configFile.toURL())
+			config = configSlurper.parse(configFile.toURL())
 			ConfigurationHolder.setConfig(config)			
 		}   
 		catch(Exception e) {
 			println "Failed to compile configuration file $configFile: ${e.message}"
-			e.printStackTrace()
 			exit(1)
 		}
 
    } 
+   def dataSourceFile = new File("${basedir}/grails-app/conf/DataSource.groovy")
+   if(dataSourceFile.exists()) {
+		try {
+		   def dataSourceConfig = configSlurper.parse(dataSourceFile.toURL())
+		   config.merge(dataSourceConfig)    
+		}
+		catch(Exception e) {
+			println "Failed to compile data source file $dataSourceFile: ${e.message}"
+			exit(1)
+		}
+   }
 }    
 task( packageApp : "Implementation of package task") {
 	depends(createStructure,compile, createConfig)

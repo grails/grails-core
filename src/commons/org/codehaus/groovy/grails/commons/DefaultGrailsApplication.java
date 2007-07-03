@@ -75,15 +75,15 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
     private static final Pattern ISCLASS_PATTERN = Pattern.compile("(is)(\\w+)(Class)");
     private static final Pattern GETCLASS_PATTERN = Pattern.compile("(get)(\\w+)Class");
     private static final String PROJECT_META_FILE = "application.properties";
+    private static final String DATA_SOURCE_CLASS = "DataSource";
 
     private GroovyClassLoader cl = null;
 
     private Class[] allClasses = null;
-
     private static Log log = LogFactory.getLog(DefaultGrailsApplication.class);
     private ApplicationContext parentContext;
-    private Set loadedClasses = new HashSet();
 
+    private Set loadedClasses = new HashSet();
     private GrailsResourceLoader resourceLoader;
     private ArtefactHandler[] artefactHandlers;
     private Map artefactHandlersByName = new HashMap();
@@ -241,8 +241,7 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
         registerArtefactHandler( new ServiceArtefactHandler());
         registerArtefactHandler( new TagLibArtefactHandler());
         registerArtefactHandler( new BootstrapArtefactHandler());
-        registerArtefactHandler( new CodecArtefactHandler());
-        registerArtefactHandler( new DataSourceArtefactHandler());
+        registerArtefactHandler( new CodecArtefactHandler());        
         registerArtefactHandler( new UrlMappingsArtefactHandler());
 
         // Cache the list as an array
@@ -412,57 +411,31 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
     public ConfigObject getConfig() {
         ConfigObject c = ConfigurationHolder.getConfig();
         if(c == null) {
+            ConfigSlurper configSlurper = new ConfigSlurper(GrailsUtil.getEnvironment());
             try {
                 Class scriptClass= getClassLoader()
                                        .loadClass(CONFIG_CLASS);
 
-                c = new ConfigSlurper(GrailsUtil.getEnvironment()).parse(scriptClass);
+                c = configSlurper.parse(scriptClass);
             } catch (ClassNotFoundException e) {
                log.debug("Could not find config class ["+CONFIG_CLASS+"]. This is probably nothing to worry about, it is not required to have a config: " + e.getMessage(),e);
                 // ignore, it is ok not to have a configuration file
             }
 
+            try {
+                Class dataSourceClass = getClassLoader()
+                                            .loadClass(DATA_SOURCE_CLASS);
+                c.merge(configSlurper.parse(dataSourceClass));
+            } catch (ClassNotFoundException e) {
+                log.debug("Cound not find data source class ["+DATA_SOURCE_CLASS+"]. This may be what you are expecting, but will result in Grails loading with an in-memory database");
+                // ignore
+            }
         }
         if(c == null) c = new ConfigObject();
         ConfigurationHolder.setConfig(c);
         return c;
     }
 
-    public GrailsDataSource getGrailsDataSource() {
-        String environment = GrailsUtil.getEnvironment();
-
-        if (log.isDebugEnabled()) {
-            log.debug("[GrailsApplication] Retrieving data source for environment: " + environment);
-        }
-        if (StringUtils.isBlank(environment)) {
-            environment = GrailsApplication.ENV_PRODUCTION;
-            String envPropName = GrailsClassUtils.getClassNameRepresentation(environment) + DataSourceArtefactHandler.TYPE;
-            GrailsDataSource devDataSource = (GrailsDataSource) getArtefact(DataSourceArtefactHandler.TYPE, envPropName);
-            if (devDataSource == null) {
-                devDataSource = (GrailsDataSource) getArtefact(DataSourceArtefactHandler.TYPE,
-                    GrailsClassUtils.getClassNameRepresentation(GrailsApplication.ENV_APPLICATION));
-
-            }
-            if (getArtefactCount(DataSourceArtefactHandler.TYPE) == 1 && devDataSource == null) {
-                devDataSource = (GrailsDataSource) getFirstArtefact(DataSourceArtefactHandler.TYPE);
-            }
-            return devDataSource;
-        }
-        else {
-            String envPropName = GrailsClassUtils.getClassNameRepresentation(environment) + DataSourceArtefactHandler.TYPE;
-            GrailsDataSource dataSource = (GrailsDataSource) getArtefact(DataSourceArtefactHandler.TYPE, envPropName);
-            if (dataSource == null && GrailsApplication.ENV_DEVELOPMENT.equalsIgnoreCase(environment)) {
-                dataSource = (GrailsDataSource) getArtefact(DataSourceArtefactHandler.TYPE,
-                    GrailsClassUtils.getClassNameRepresentation(GrailsApplication.ENV_APPLICATION));
-            }
-            if (dataSource == null) {
-                log.warn("No data source found for environment [" + environment + "]. Please specify alternative via -Dgrails.env=myenvironment");
-            }
-
-            return dataSource;
-
-        }
-    }
 
     /**
      * Retrieves the number of artefacts registered for the given artefactType as defined by the ArtefactHandler

@@ -24,7 +24,66 @@ package grails.config
  * 
  */
 
-class ConfigSlurperTests extends GroovyTestCase {
+class  ConfigSlurperTests extends GroovyTestCase {
+
+    void testEnvironmentProperties2() {
+        def config = new ConfigSlurper("production").parse('''
+dataSource {
+	pooling = false
+	driverClassName = "org.hsqldb.jdbcDriver"
+	username = "sa"
+	password = ""
+}
+environments {
+	development {
+		dataSource {
+			dbCreate = "create-drop"
+			url = "jdbc:hsqldb:mem:devDB"
+		}
+	}
+	test {
+		dataSource {
+			dbCreate = "update"
+			url = "jdbc:hsqldb:mem:testDb"
+		}
+	}
+	production {
+		dataSource {
+		    password = "secret"
+			dbCreate = "update"
+			url = "jdbc:hsqldb:file:prodDb;shutdown=true"
+		}
+	}
+}''')
+
+        assertEquals false, config.dataSource.pooling
+        assertEquals "org.hsqldb.jdbcDriver", config.dataSource.driverClassName
+        assertEquals "sa", config.dataSource.username
+        assertEquals "secret", config.dataSource.password
+        assertEquals "update", config.dataSource.dbCreate
+        assertEquals "jdbc:hsqldb:file:prodDb;shutdown=true", config.dataSource.url
+    }
+
+    void testParseProperties() {
+        Properties props = new Properties()
+        props['foo'] = 'bar'
+        props['log4j.appender.NULL']='org.apache.log4j.varia.NullAppender'
+        props['log4j.rootLogger']='error, NULL'
+        props['log4j.logger.org.codehaus.groovy.grails.plugins']='info,NULL'
+        props['log4j.additivity.org.codehaus.groovy.grails.plugins']='false'
+        props['log4j.additivity.org.springframework']='false'
+        props['log4j.logger.grails.spring']='info,NULL'
+        props['log4j.appender.NULL.layout']='org.apache.log4j.PatternLayout'
+
+        def config = new ConfigSlurper().parse(props)
+
+        assertEquals "org.apache.log4j.PatternLayout", config.log4j.appender.'NULL.layout' // tests overlapping properties
+        assertEquals "org.apache.log4j.varia.NullAppender", config.log4j.appender.NULL // tests overlapping properties
+        assertEquals 'error, NULL', config.log4j.rootLogger
+        assertEquals 'info,NULL', config.log4j.logger.org.codehaus.groovy.grails.plugins
+        assertEquals 'false', config.log4j.additivity.org.springframework
+        assertEquals 'bar', config.foo
+    }
     
     void testSimpleProperties() {
         def slurper = new ConfigSlurper()
@@ -128,7 +187,7 @@ log4j {
         org.springframework=false
     }
 }
-env {
+environments {
     development {
         log4j.logger.org.codehaus.groovy.grails="debug,stdout"
     }
@@ -295,10 +354,10 @@ log4j {
         org.codehaus.groovy.grails="info,stdout"
         org.springframework="info,stdout"
     }
-    additivity {
-        org.codehaus.groovy.grails=false
-        org.springframework=false
-    }
+     
+    additivity.'default' = true
+    additivity.org.codehaus.groovy.grails=false
+    additivity.org.springframework=false
 }'''
         def slurper = new ConfigSlurper()
         def config = slurper.parse(text)

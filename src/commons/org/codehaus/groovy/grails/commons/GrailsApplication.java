@@ -74,12 +74,6 @@ public interface GrailsApplication extends ApplicationContextAware {
      */
     public ConfigObject getConfig();
 
-    /**
-     * <p>Returns the active data source for this Grails application or null if not available.
-     *
-     * @return the active data source or null if not available.
-     */
-    public GrailsDataSource getGrailsDataSource();
 
     /**
      * <p>Returns the class loader instance for the Grails application</p>

@@ -45,7 +45,7 @@ class ServicesGrailsPlugin {
 				arguments = [ServiceArtefactHandler.TYPE, serviceClass.fullName]
 			}
 
-			def hasDataSource = (application.grailsDataSource || application.domainClasses.size() > 0)						
+			def hasDataSource = (application.config?.dataSource || application.domainClasses.size() > 0)						
 			if(serviceClass.transactional && hasDataSource) {
 				def props = new Properties()
 				props."*"="PROPAGATION_REQUIRED"

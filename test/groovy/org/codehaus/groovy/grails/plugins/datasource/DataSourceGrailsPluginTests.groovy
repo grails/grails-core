@@ -8,22 +8,43 @@ import org.codehaus.groovy.grails.plugins.*
 class DataSourceGrailsPluginTests extends AbstractGrailsMockTests {
 
 	void onSetUp() {
-		gcl.parseClass(
-"""
-class TestDataSource {
-   boolean pooling = true
-   String dbCreate = "update" // one of 'create', 'create-drop','update'
-   String url = "jdbc:hsqldb:mem:testDB"
-   String driverClassName = "org.hsqldb.jdbcDriver"
-   String username = "sa"
-   String password = ""			
+		def config = new grails.config.ConfigSlurper("test").parse(
+'''
+dataSource {
+	pooling = false                          
+	driverClassName = "org.hsqldb.jdbcDriver"	
+	username = "sa"
+	password = ""				
 }
-""")
+environments {
+	development {
+		dataSource {
+			dbCreate = "create-drop" 
+			url = "jdbc:hsqldb:mem:devDB"
+		}
+	}   
+	test {
+		dataSource {
+			dbCreate = "update"
+			url = "jdbc:hsqldb:mem:testDb"
+		}
+	}   
+	production {
+		dataSource {
+			dbCreate = "update"
+			url = "jdbc:hsqldb:file:prodDb;shutdown=true"
+		}
+	}
+}
+''')
+        ConfigurationHolder.setConfig(config)
+	} 
+	
+	void onTearDown() {
+		ConfigurationHolder.setConfig(null)
 	}
 	
 	void testDataSourcePlugin() {
-		try {
-		    System.setProperty("grails.env", "test")
             def pluginClass = gcl.loadClass("org.codehaus.groovy.grails.plugins.datasource.DataSourceGrailsPlugin")
 
             def plugin = new DefaultGrailsPlugin(pluginClass, ga)
@@ -37,9 +58,5 @@ class TestDataSource {
 
 
             assert appCtx.containsBean("dataSource")
-        }
-        finally {
-            System.setProperty("grails.env", "")
-        }
 	}
 }

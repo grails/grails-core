@@ -67,7 +67,7 @@ class HibernateGrailsPlugin {
 					vendorToDialect[entry.value] = "org.hibernate.dialect.${entry.key}".toString()
 				}
 			}
-			def ds = application.grailsDataSource
+			def ds = application.config.dataSource
 			if(ds || application.domainClasses.size() > 0) {  
 				hibConfigClass = ds?.configClass
 				

@@ -33,7 +33,7 @@ class DataSourceGrailsPlugin {
 	def watchedResources = "**/grails-app/conf/*DataSource.groovy"
 		
 	def doWithSpring = {
-		def ds = application.grailsDataSource
+		def ds = application.config.dataSource
 		if(ds || application.domainClasses.size() > 0) {
             def properties = {
                     driverClassName = ds?.driverClassName ? ds.driverClassName : "org.hsqldb.jdbcDriver"
@@ -42,7 +42,7 @@ class DataSourceGrailsPlugin {
                     password = ds?.password ? ds.password : ""
             }
             if(ds && !parentCtx?.containsBean("dataSource")) {
-                log.info("[RuntimeConfiguration] Configuring for environment: ${ds.name}");
+                log.info("[RuntimeConfiguration] Configuring data source for environment: ${grails.util.GrailsUtil.getEnvironment()}");
                 if(ds.pooled) {
                     def bean = dataSource(BasicDataSource, properties)
                     bean.destroyMethod = "close"

@@ -15,25 +15,24 @@
  */
 package org.codehaus.groovy.grails.orm.hibernate;
 
-import junit.framework.TestCase;
+import grails.config.ConfigObject;
+import grails.config.ConfigSlurper;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.MetaClassRegistry;
-import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
-import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.GrailsMetaClassUtils;
-import org.codehaus.groovy.grails.commons.ApplicationHolder;
+import junit.framework.TestCase;
+import org.codehaus.groovy.grails.commons.*;
 import org.codehaus.groovy.grails.commons.metaclass.ExpandoMetaClassCreationHandle;
 import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil;
 import org.codehaus.groovy.grails.support.MockApplicationContext;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
-import org.springframework.web.context.WebApplicationContext;
-import org.springframework.orm.hibernate3.SessionHolder;
-import org.springframework.orm.hibernate3.SessionFactoryUtils;
-import org.springframework.context.support.StaticMessageSource;
-import org.springframework.mock.web.MockServletContext;
 import org.hibernate.SessionFactory;
 import org.hibernate.classic.Session;
+import org.springframework.context.support.StaticMessageSource;
+import org.springframework.mock.web.MockServletContext;
+import org.springframework.orm.hibernate3.SessionFactoryUtils;
+import org.springframework.orm.hibernate3.SessionHolder;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
+import org.springframework.web.context.WebApplicationContext;
 
 
 /**
@@ -76,6 +75,15 @@ public abstract class AbstractGrailsHibernateTests extends TestCase {
 
         onSetUp();
 
+        ConfigObject config = new ConfigSlurper().parse("dataSource {\n" +
+                "dbCreate = \"create-drop\" \n" +
+                "url = \"jdbc:hsqldb:mem:devDB\"\n" +
+                "pooling = false                          \n" +
+                "driverClassName = \"org.hsqldb.jdbcDriver\"\t\n" +
+                "username = \"sa\"\n" +
+                "password = \"\"\n" +
+                "}");
+        ConfigurationHolder.setConfig(config);
         ga = new DefaultGrailsApplication(gcl.getLoadedClasses(),gcl);
         ApplicationHolder.setApplication(ga);
 
@@ -125,6 +133,7 @@ public abstract class AbstractGrailsHibernateTests extends TestCase {
 
 
     protected final void tearDown() throws Exception {
+        ConfigurationHolder.setConfig(null);
         ApplicationHolder.setApplication(null);
         GrailsMetaClassUtils.getRegistry().setMetaClassCreationHandle( new MetaClassRegistry.MetaClassCreationHandle());
         if(TransactionSynchronizationManager.hasResource(this.sessionFactory)) {
@@ -135,6 +144,7 @@ public abstract class AbstractGrailsHibernateTests extends TestCase {
 		    SessionFactoryUtils.releaseSession(s, this.sessionFactory);
 		}
         onTearDown();
+
 
         gcl = null;
         ga = null;

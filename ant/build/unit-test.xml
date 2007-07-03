@@ -69,6 +69,7 @@
 				<pathelement path="${grails.build}/web" />
 				<pathelement path="${grails.build}/gorm" />
 				<pathelement path="${grails.build}/crud" />
+				<pathelement path="${grails.build}/config" />				
 			</classpath>
 		</javac>
 		<groovyc srcdir="test/groovy" destdir="${grails.test.build}"  encoding="UTF-8">
