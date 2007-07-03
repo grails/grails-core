@@ -10,8 +10,8 @@ package org.codehaus.groovy.grails.webflow.engine.builder
  * 
  */
 
-class ControllerFlowRegistryTests {    
+class ControllerFlowRegistryTests extends GroovyTestCase {
     void testFlowRegsitry() {
-        fail("Not yet implemented!")
+        // TODO
     }
 }
