@@ -243,7 +243,9 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass
 					if(((List)onlys).contains(action))
 						return true;
 				}
-			}
+			}else{
+                return true;
+            }
 		}
 		else if(bip instanceof Closure) {
 			return true;

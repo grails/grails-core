@@ -121,8 +121,23 @@ public class DefaultGrailsControllerClass2Tests extends TestCase {
 		assertFalse(grailsClass.isInterceptedAfter(controller,"list"));
 		assertTrue(grailsClass.isInterceptedAfter(controller,"save"));
 	}
-	
-	public void testAllowedMethods() throws Exception {
+    
+    public void testBeforeInterceptorWithNoExcept() {
+        GroovyClassLoader cl = new GroovyClassLoader();
+		Class clazz = cl.parseClass("class TestController { \n" +
+										"def beforeInterceptor = [action:this.&before]\n" +
+										"def before() { return 'success' }\n" +
+										"def list = { return 'test' }\n " +
+                                        "def show = { return 'test' }\n " +
+                                    "} ");
+		GrailsControllerClass grailsClass = new DefaultGrailsControllerClass(clazz);
+		GroovyObject controller = (GroovyObject)grailsClass.newInstance();
+
+        assertTrue(grailsClass.isInterceptedBefore(controller,"list"));
+		assertTrue(grailsClass.isInterceptedBefore(controller,"show"));
+    }
+
+    public void testAllowedMethods() throws Exception {
 		GroovyClassLoader cl = new GroovyClassLoader();
 		Class clazz = cl.parseClass("class TestController { \n" +
 				"def allowedMethods = [actionTwo:'POST', actionThree:['POST', 'PUT']]\n" +
