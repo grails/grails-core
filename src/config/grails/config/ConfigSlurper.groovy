@@ -113,7 +113,7 @@ class ConfigSlurper {
      * @see ConfigSlurper#parse(groovy.lang.Script)
      */
     ConfigObject parse(Class scriptClass) {
-        return parse(scriptClass.newInstance())
+        return parse(scriptClass.newInstance()) 
     }
 
     /**
@@ -142,11 +142,12 @@ class ConfigSlurper {
      * @param script The groovy.lang.Script instance
      * @param location The original location of the Script as a URL
      * @return The ConfigObject instance
-     */
+     */                                                             
     ConfigObject parse(Script script, URL location) {
         def config = location ? new ConfigObject(location) : new ConfigObject()
-        GroovySystem.metaClassRegistry.removeMetaClass(script.class)
-        def mc = script.class.metaClass
+        def mc = new ExpandoMetaClass(script.class)
+        mc.initialize()
+        mc.allowChangesAfterInit = true
         def prefix = ""
         Stack stack = new Stack()
         mc.getProperty = { String name ->
