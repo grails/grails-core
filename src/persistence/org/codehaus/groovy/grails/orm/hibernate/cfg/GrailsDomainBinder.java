@@ -779,12 +779,12 @@ public final class GrailsDomainBinder {
 	 */
 	protected static void createClassProperties(GrailsDomainClass domainClass, PersistentClass persistentClass, Mappings mappings) {
 		
-		GrailsDomainClassProperty[] persistantProperties = domainClass.getPersistentProperties();
+		GrailsDomainClassProperty[] persistentProperties = domainClass.getPersistentProperties();
 		Table table = persistentClass.getTable();
 		
-		for(int i = 0; i < persistantProperties.length;i++) {
+		for(int i = 0; i < persistentProperties.length;i++) {
 			
-			GrailsDomainClassProperty currentGrailsProp = persistantProperties[i];
+			GrailsDomainClassProperty currentGrailsProp = persistentProperties[i];
 			// if its inherited skip
 			if(currentGrailsProp.isInherited())
 				continue;
@@ -836,11 +836,11 @@ public final class GrailsDomainBinder {
 					LOG.debug("[GrailsDomainBinder] Binding property [" + currentGrailsProp.getName() + "] as SimpleValue");
 				
 				value = new SimpleValue( table );
-				bindSimpleValue( persistantProperties[i], (SimpleValue) value, EMPTY_PATH, mappings );
+				bindSimpleValue( persistentProperties[i], (SimpleValue) value, EMPTY_PATH, mappings );
 			}
 
 			if(value != null) {
-				Property property = createProperty( value, persistentClass, persistantProperties[i], mappings );
+				Property property = createProperty( value, persistentClass, persistentProperties[i], mappings );
 				persistentClass.addProperty( property );						
 			}
 		}		
