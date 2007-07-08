@@ -345,10 +345,7 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
                 case 1:
                     interceptorResult = afterInterceptor.call(new Object[]{ model });
                     break;
-                case 2:
-                    if(mv == null){
-                        throw new ControllerExecutionException("AfterInterceptor closure expects a view information but none is available");
-                    }
+                case 2:                   
                     interceptorResult = afterInterceptor.call(new Object[]{ model, mv });
                     break;
                 default:
