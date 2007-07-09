@@ -67,7 +67,8 @@ task( createConfig: "Creates the configuration object") {
    if(dataSourceFile.exists()) {
 		try {
 		   def dataSourceConfig = configSlurper.parse(dataSourceFile.toURL())
-		   config.merge(dataSourceConfig)    
+		   config.merge(dataSourceConfig)
+		   ConfigurationHolder.setConfig(config)
 		}
 		catch(Exception e) {
 			println "Failed to compile data source file $dataSourceFile: ${e.message}"
