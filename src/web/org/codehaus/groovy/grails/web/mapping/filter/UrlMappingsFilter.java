@@ -24,6 +24,8 @@ import org.codehaus.groovy.grails.web.mapping.UrlMappingInfo;
 import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder;
 import org.codehaus.groovy.grails.web.servlet.GrailsUrlPathHelper;
 import org.codehaus.groovy.grails.web.servlet.WrappedResponseHolder;
+import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -59,6 +61,7 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         UrlMappingsHolder holder = lookupUrlMappings();
         GrailsApplication application = lookupApplication();
+        GrailsWebRequest webRequest = (GrailsWebRequest)request.getAttribute(GrailsApplicationAttributes.WEB_REQUEST);
 
         GrailsClass[] controllers = application.getArtefacts(ControllerArtefactHandler.TYPE);
         if(controllers == null || controllers.length == 0) {
@@ -91,6 +94,7 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
                 }
                 //populateParamsForMapping(info);
                 RequestDispatcher dispatcher = request.getRequestDispatcher(forwardUrl);
+                populateWebRequestWithInfo(webRequest, info);
 
                 WebUtils.exposeForwardRequestAttributes(request);
                 dispatcher.forward(request, response);
@@ -110,6 +114,14 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
 
     }
 
+    private void populateWebRequestWithInfo(GrailsWebRequest webRequest, UrlMappingInfo info) {
+        if(webRequest != null) {            
+            webRequest.setControllerName(info.getControllerName());
+            webRequest.setActionName(info.getActionName());
+            String id = info.getId();
+            if(!StringUtils.isBlank(id))webRequest.getParams().put(GrailsWebRequest.ID_PARAMETER, id);
+        }
+    }
 
 
     /**

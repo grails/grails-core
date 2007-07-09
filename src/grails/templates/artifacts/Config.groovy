@@ -6,11 +6,13 @@ log4j {
     logger {
 		grails.spring="info,stdout"
 		org {            
-            codehaus.groovy.grails.commons="info,stdout"
-            codehaus.groovy.grails.plugins="info,stdout"
-            codehaus.groovy.grails.orm.hibernate="info,stdout"
-            springframework="off,stdout"
-            hibernate="off,stdout"
+            grails.spring="info,stdout"
+            org.codehaus.groovy.grails.web="info,stdout"
+            org.codehaus.groovy.grails.commons="info,stdout"
+            org.codehaus.groovy.grails.plugins="info,stdout"
+            org.springframework="off,stdout"
+            org.codehaus.groovy.grails.orm.hibernate="info,stdout"
+            org.hibernate="off,stdout"
         }
     }
 	additivity.'default' = false

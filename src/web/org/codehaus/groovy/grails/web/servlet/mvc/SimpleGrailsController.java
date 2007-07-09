@@ -49,7 +49,7 @@ public class SimpleGrailsController implements Controller, ServletContextAware {
 
 
     public SimpleGrailsController() {
-        super();
+        super();        
     }
 
 

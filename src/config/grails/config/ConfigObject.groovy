@@ -23,7 +23,7 @@ package grails.config
 * @author Graeme Rocher
 * @since 0.6
 */
-class ConfigObject extends LinkedHashMap implements Writable {
+class ConfigObject extends LinkedHashMap implements Writable { 
 
     // would be better to have these availabe as constants from Groovy, but couldn't find
     static final KEYWORDS = ['class', 'extends', 'implements', 'package','return','def',

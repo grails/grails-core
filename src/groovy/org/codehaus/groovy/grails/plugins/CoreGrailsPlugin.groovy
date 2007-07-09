@@ -62,8 +62,17 @@ class CoreGrailsPlugin {
 				return mc
 			}
 			else {
+ 
 				registry.removeMetaClass(delegate)
-				return registry.getMetaClass(delegate)
+				if(registry.metaClassCreationHandler instanceof ExpandoMetaClassCreationHandle)				
+					return registry.getMetaClass(delegate)
+			   	else {
+				 	def emc = new ExpandoMetaClass(delegate)
+					emc.initialize()
+					emc.allowChangesAfterInit = true
+					registry.setMetaClass(delegate, emc)    
+					return emc
+				}					
 			}
 		}
 	}

@@ -280,7 +280,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
         int returnValue = defaultValue;
         PropertyValue propertyValue = propertyValues.getPropertyValue(propertyName);
         if(propertyValue != null) {
-            returnValue = Integer.parseInt((String)propertyValue.getValue());
+            returnValue = Integer.parseInt(getStringValue(propertyValue));
         }
         
         return returnValue;
@@ -304,7 +304,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
                             continue;
                         }
 
-                        String yearString = (String) yearProperty.getValue();
+                        String yearString = getStringValue(yearProperty);
                         int year;
 
                         if(StringUtils.isBlank(yearString)) {
@@ -337,5 +337,14 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
                 // ignore
             }
         }
+    }
+
+    private String getStringValue(PropertyValue yearProperty) {
+        Object value = yearProperty.getValue();
+        if(value == null) return null;
+        else if(value.getClass().isArray()) {
+            return ((String[])value)[0];
+        }
+        return (String)value ;
     }
 }

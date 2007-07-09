@@ -43,15 +43,16 @@ public class GrailsWebRequest extends DispatcherServletWebRequest {
 	private HttpServletResponse response;
 	private GrailsHttpSession session;
 	private boolean renderView = true;
-    private static final String ACTION_NAME = "org.codehaus.groovy.grails.ACTION_NAME";
-    private static final String CONTROLLER_NAME = "org.codehaus.groovy.grails.CONTROLLER_NAME";
+    private static final String ACTION_NAME_ATTRIBUTE = "org.codehaus.groovy.grails.ACTION_NAME_ATTRIBUTE";
+    private static final String CONTROLLER_NAME_ATTRIBUTE = "org.codehaus.groovy.grails.CONTROLLER_NAME_ATTRIBUTE";
+    public static final String ID_PARAMETER = "id";
 
 
     public GrailsWebRequest(HttpServletRequest request,  HttpServletResponse response, ServletContext servletContext) {
 		super(request);
 		this.attributes = new DefaultGrailsApplicationAttributes(servletContext);
 		this.response = response;
-		this.params = new GrailsParameterMap(request);
+
 		
 	}
 
@@ -61,6 +62,7 @@ public class GrailsWebRequest extends DispatcherServletWebRequest {
      * @return An instance of GrailsParameterMap
      */
     public Map getParameterMap() {
+        if(this.params == null) this.params = new GrailsParameterMap(getCurrentRequest());
         return this.params;
     }
 
@@ -118,7 +120,8 @@ public class GrailsWebRequest extends DispatcherServletWebRequest {
 	 * @return The Grails params object
 	 */
 	public GrailsParameterMap getParams() {
-		return this.params;
+        if(this.params == null) this.params = new GrailsParameterMap(getCurrentRequest());
+        return this.params;
 	}
 	
 	/**
@@ -140,25 +143,25 @@ public class GrailsWebRequest extends DispatcherServletWebRequest {
 	}
 
 	public void setActionName(String actionName) {
-		getCurrentRequest().setAttribute(ACTION_NAME, actionName);
+		getCurrentRequest().setAttribute(ACTION_NAME_ATTRIBUTE, actionName);
 	}
 
 	public void setControllerName(String controllerName) {
-		getCurrentRequest().setAttribute(CONTROLLER_NAME, controllerName);
+		getCurrentRequest().setAttribute(CONTROLLER_NAME_ATTRIBUTE, controllerName);
 	}
 
 	/**
 	 * @return the actionName
 	 */
 	public String getActionName() {
-		return (String)getCurrentRequest().getAttribute(ACTION_NAME);
+		return (String)getCurrentRequest().getAttribute(ACTION_NAME_ATTRIBUTE);
 	}
 
 	/**
 	 * @return the controllerName
 	 */
 	public String getControllerName() {
-		return (String)getCurrentRequest().getAttribute(CONTROLLER_NAME);
+		return (String)getCurrentRequest().getAttribute(CONTROLLER_NAME_ATTRIBUTE);
 	}
 
 	public void setRenderView(boolean renderView) {
@@ -170,6 +173,10 @@ public class GrailsWebRequest extends DispatcherServletWebRequest {
 	 */
 	public boolean isRenderView() {
 		return renderView;
-	}	
-	
+	}
+
+    public String getId() {
+        Object id = getParams().get(ID_PARAMETER);
+        return id != null ? id.toString() : null;
+    }
 }

@@ -52,7 +52,12 @@ class ApplicationTagLib {
      */
     def link = { attrs, body ->
         out << '<a href="'
-        // create the link
+        // create the link 
+		if(request['flowExecutionKey']) {
+			if(!attrs.params) attrs.params = [:]
+			attrs.params."_flowExecutionKey" = request['flowExecutionKey']
+		}
+
         out << createLink(attrs)
         out << '"'
         // process remaining attributes
@@ -74,7 +79,7 @@ class ApplicationTagLib {
      *
      *  <a href="${createLink(action:'list')}">List</a>
      */
-    def createLink = { attrs ->
+    def createLink = { attrs -> 
         out << grailsAttributes.getApplicationUri(request)
         // prefer a URL attribute
         if(attrs['url']) {
@@ -85,13 +90,16 @@ class ApplicationTagLib {
 		def action = attrs.remove("action")
         def id = attrs.remove("id")
         def params = attrs.params && attrs.params instanceof Map ? attrs.remove('params') : [:]
-
+        
+		if(attrs.event) {       
+			params."_eventId" = attrs.event
+		}
         def url
 		try {
             if(id != null) params.id = id
             def mapping = grailsUrlMappingsHolder.getReverseMapping(controller,action,params)
 			params.controller = controller
-			if(action) params.action = action
+			if(action) params.action = action  
             url = mapping.createURL(params, request.characterEncoding)
 		}
 		finally {

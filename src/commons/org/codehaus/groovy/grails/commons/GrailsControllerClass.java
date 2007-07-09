@@ -18,6 +18,7 @@ package org.codehaus.groovy.grails.commons;
 import groovy.lang.Closure;
 import groovy.lang.GroovyObject;
 
+import java.util.Map;
 import java.util.Set;
 
 
@@ -153,4 +154,22 @@ public interface GrailsControllerClass extends InjectableGrailsClass {
      * @return A Set of command object classes used by this controller
      */
     public Set getCommandObjectClasses();
+
+    /**
+     * <p>Returns a map of the flows for this controller. A flow is an action that ends with the convention "Flow".
+     *    The keys in the map are the flow ids which are the text before the "Flow" suffix. For example a flow called
+     *    "bookFlow" would have a key of "book"
+     * <p>The values within the Map are Groovy closures (@see groovy.lang.Closure) which represent the flow definition
+     *
+     * @return A Map of flows for this controller
+     */
+    public Map getFlows();
+
+    /**
+     * Returns true if the given action name is a flow action
+     *
+     * @param actionName The name of the action
+     * @return True if it is a flow action
+     */
+    public boolean isFlowAction(String actionName);
 }

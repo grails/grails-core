@@ -12,11 +12,11 @@ class FlowBuilderExecutionTests extends AbstractFlowExecutionTests{
 
     void tearDown() {
         ExpandoMetaClass.disableGlobally()
-    }    
+    }
 
     def searchService = [executeSearch:{["foo", "bar"]}]
     def params = [q:"foo"]
-    
+
     void testFlowExecution() {
         def viewSelection = startFlow()
         assert viewSelection
@@ -62,6 +62,4 @@ class FlowBuilderExecutionTests extends AbstractFlowExecutionTests{
         }
     }
 }
-class FooException extends Exception {
-
-}
+class FooException extends Exception {}

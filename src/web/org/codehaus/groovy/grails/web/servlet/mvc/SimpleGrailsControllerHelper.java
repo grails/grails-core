@@ -22,7 +22,6 @@ import groovy.util.Proxy;
 import org.apache.commons.beanutils.BeanMap;
 import org.apache.commons.collections.map.CompositeMap;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.WordUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
@@ -41,22 +40,33 @@ import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecution
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.NoClosurePropertyForURIException;
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.NoViewNameDefinedException;
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.UnknownControllerException;
+import org.codehaus.groovy.grails.webflow.executor.support.GrailsConventionsFlowExecutorArgumentHandler;
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.context.ApplicationContext;
 import org.springframework.validation.BindException;
 import org.springframework.validation.Errors;
 import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.view.RedirectView;
+import org.springframework.web.util.WebUtils;
+import org.springframework.webflow.context.servlet.ServletExternalContext;
+import org.springframework.webflow.execution.support.ApplicationView;
+import org.springframework.webflow.execution.support.ExternalRedirect;
+import org.springframework.webflow.execution.support.FlowDefinitionRedirect;
+import org.springframework.webflow.execution.support.FlowExecutionRedirect;
+import org.springframework.webflow.executor.FlowExecutor;
+import org.springframework.webflow.executor.ResponseInstruction;
+import org.springframework.webflow.executor.support.FlowExecutorArgumentHandler;
+import org.springframework.webflow.executor.support.FlowRequestHandler;
+import org.springframework.webflow.executor.support.ResponseInstructionHandler;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
- * A helper class for handling controller requests
+ * <p>This is a helper class that does the main job of dealing with Grails web requests
  *
  * @author Graeme Rocher
  * @since 0.1
@@ -73,26 +83,16 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
     private Map chainModel = Collections.EMPTY_MAP;
     private ServletContext servletContext;
     private GrailsApplicationAttributes grailsAttributes;
-    private Pattern uriPattern = Pattern.compile("/(\\w+)/?(\\w*)/?([^/]*)/?(.*)");
-
-
 	private GrailsWebRequest webRequest;
     
     private static final Log LOG = LogFactory.getLog(SimpleGrailsControllerHelper.class);
+    private static final char SLASH = '/';
     private static final String DISPATCH_ACTION_PARAMETER = "_action_";
-    private static final String ID_PARAMETER = "id";
 
-
-	private String id;
-
-
-	private String controllerName;
-
-
-	private String actionName;
-
-
-	private Map extraParams;
+    private static final String FLOW_EXECUTOR_BEAN = "flowExecutor";
+    private String id;
+    private String controllerName;
+    private String actionName;
 
     public SimpleGrailsControllerHelper(GrailsApplication application, ApplicationContext context, ServletContext servletContext) {
         super();
@@ -160,27 +160,25 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
       * @see org.codehaus.groovy.grails.web.servlet.mvc.GrailsControllerHelper#handleURI(java.lang.String, javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, java.util.Map)
       */
     public ModelAndView handleURI(String uri, GrailsWebRequest webRequest, Map params) {
-        if(uri == null)
+        if(uri == null) {
             throw new IllegalArgumentException("Controller URI [" + uri + "] cannot be null!");
-        
-        this.webRequest = webRequest;
-
-        uri = configureStateForUri(uri);
-       
+        }
         HttpServletRequest request = webRequest.getCurrentRequest();
         HttpServletResponse response = webRequest.getCurrentResponse();
 
-        // if the action name is blank check its included as dispatch parameter
-        if(StringUtils.isBlank(actionName))
-        	uri = checkDispatchAction(request, uri);
+        configureStateForWebRequest(webRequest, request);
 
-        if(uri.endsWith("/"))
+
+        // if the action name is blank check its included as dispatch parameter
+        if(StringUtils.isBlank(actionName)) {
+            uri = checkDispatchAction(request, uri);
+        }
+
+        if(uri.endsWith("/")) {
             uri = uri.substring(0,uri.length() - 1);
+        }
 
         // if the id is blank check if its a request parameter
-        if(StringUtils.isBlank(id) && request.getParameter(ID_PARAMETER) != null) {
-            id = request.getParameter(ID_PARAMETER);
-        }
 
         // Step 2: lookup the controller in the application.
         GrailsControllerClass controllerClass = getControllerClassByURI(uri);
@@ -189,18 +187,15 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
             throw new UnknownControllerException("No controller found for URI [" + uri + "]!");
         }
 
-        // parse the uri in its individual tokens
-        controllerName = WordUtils.uncapitalize(controllerClass.getName());
-
+        actionName = controllerClass.getClosurePropertyName(uri);
+        webRequest.setActionName(actionName);
+        
         if(LOG.isDebugEnabled()) {
             LOG.debug("Processing request for controller ["+controllerName+"], action ["+actionName+"], and id ["+id+"]");
         }
-        if(LOG.isTraceEnabled()) {
-            LOG.trace("Extra params from uri ["+extraParams+"] ");
-        }
-
         // Step 3: load controller from application context.
         GroovyObject controller = getControllerInstance(controllerClass);
+
 
         if(!controllerClass.isHttpMethodAllowedForAction(controller, request.getMethod(), actionName)) {
         	try {
@@ -215,38 +210,12 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
 
 
         // Step 3: if scaffolding retrieve scaffolder
-        GrailsScaffolder scaffolder = null;
-        if(controllerClass.isScaffolding())  {
-            scaffolder = (GrailsScaffolder)applicationContext.getBean( controllerClass.getFullName() + SCAFFOLDER );
-            if(scaffolder == null)
-                throw new IllegalStateException("Scaffolding set to true for controller ["+controllerClass.getFullName()+"] but no scaffolder available!");
-        }
-
-        // Step 4: get closure property name for URI.
-        if(StringUtils.isBlank(actionName))
-            actionName = controllerClass.getClosurePropertyName(uri);
+        GrailsScaffolder scaffolder = obtainScaffolder(controllerClass);
 
         if (StringUtils.isBlank(actionName)) {
             // Step 4a: Check if scaffolding
             if( controllerClass.isScaffolding() && !scaffolder.supportsAction(actionName))
                 throw new NoClosurePropertyForURIException("Could not find closure property for URI [" + uri + "] for controller [" + controllerClass.getFullName() + "]!");
-        }
-
-        // Step 4a: Set the action and controller name of the web request
-        webRequest.setActionName(actionName);
-        webRequest.setControllerName(controllerName);
-        
-        // populate additional params from url
-        Map controllerParams = webRequest.getParameterMap();
-        
-        if(!StringUtils.isBlank(id)) {
-            controllerParams.put(GrailsApplicationAttributes.ID_PARAM, id);
-        }
-        if(!extraParams.isEmpty()) {
-            for (Iterator i = extraParams.keySet().iterator(); i.hasNext();) {
-                String name = (String) i.next();
-                controllerParams.put(name,extraParams.get(name));
-            }
         }
 
         // set the flash scope instance to its next state and set on controller
@@ -259,6 +228,136 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
         // Step 5: get the view name for this URI.
         String viewName = controllerClass.getViewByURI(uri);
 
+        if(controllerClass.isFlowAction(actionName)) {
+            return executeFlow(webRequest,request, response);
+        }
+        else {
+            return executeAction(controller, controllerClass, viewName, request, response, params);
+        }
+
+    }
+
+    /**
+     * This method is responsible for execution of a flow based on the currently executing GrailsWebRequest
+     *
+     * @param webRequest The GrailsWebRequest
+     * @param request The HttpServletRequest instance
+     * @param response The HttpServletResponse instance
+     * @return A Spring ModelAndView
+     */
+    protected ModelAndView executeFlow(GrailsWebRequest webRequest, final HttpServletRequest request, HttpServletResponse response) {
+        final Thread currentThread = Thread.currentThread();
+        ClassLoader cl = currentThread.getContextClassLoader();
+        try {
+            currentThread.setContextClassLoader(application.getClassLoader());
+
+            FlowExecutorArgumentHandler argumentHandler = new GrailsConventionsFlowExecutorArgumentHandler(webRequest);
+            FlowExecutor flowExecutor = getFlowExecutor();
+
+            if(flowExecutor == null) {
+                throw new ControllerExecutionException("No [flowExecutor] found. This is likely a configuration problem, check your version of Grails.");
+            }
+
+            ServletExternalContext externalContext = new ServletExternalContext(getServletContext(), request, response) {
+                public String getDispatcherPath() {
+                    String forwardURI = (String)request.getAttribute(WebUtils.FORWARD_REQUEST_URI_ATTRIBUTE);
+                    if(!StringUtils.isBlank(forwardURI)) {
+                        forwardURI = forwardURI.substring(1);
+                        forwardURI = forwardURI.substring(forwardURI.indexOf('/'), forwardURI.length());
+                        return forwardURI;
+                    }
+                    return super.getDispatcherPath();
+                }
+            };
+            ResponseInstruction responseInstruction = createRequestHandler(argumentHandler).handleFlowRequest(externalContext);
+
+            return toModelAndView(responseInstruction, externalContext, argumentHandler);
+        }
+        finally {
+             currentThread.setContextClassLoader(cl);
+        }
+    }
+
+    /**
+     * Deals with translating a WebFlow ResponseInstruction instance into an appropriate Spring ModelAndView
+     *
+     * @param responseInstruction The ResponseInstruction instance
+     * @param context The ExternalContext for the webflow
+     * @param argumentHandler The FlowExecutorArgumentHandler instance
+     * @return A Spring ModelAndView instance
+     */
+    protected ModelAndView toModelAndView(final ResponseInstruction responseInstruction, final ServletExternalContext context, final FlowExecutorArgumentHandler argumentHandler) {
+		return (ModelAndView)new ResponseInstructionHandler() {
+			protected void handleApplicationView(ApplicationView view) throws Exception {
+				// forward to a view as part of an active conversation
+				Map model = new HashMap(view.getModel());
+				argumentHandler.exposeFlowExecutionContext(responseInstruction.getFlowExecutionKey(),
+						responseInstruction.getFlowExecutionContext(), model);
+				setResult(new ModelAndView(SLASH + controllerName + SLASH + view.getViewName(), model));
+			}
+
+			protected void handleFlowDefinitionRedirect(FlowDefinitionRedirect redirect) throws Exception {
+				// restart the flow by redirecting to flow launch URL
+                if(LOG.isDebugEnabled())
+                    LOG.debug("Flow definition redirect issued to flow with id " + redirect.getFlowDefinitionId());
+
+                String flowUrl = argumentHandler.createFlowDefinitionUrl(redirect, context);
+				setResult(new ModelAndView(new RedirectView(flowUrl)));
+			}
+
+			protected void handleFlowExecutionRedirect(FlowExecutionRedirect redirect) throws Exception {
+                if(LOG.isDebugEnabled())
+                    LOG.debug("Flow execution redirect issued " + redirect);
+
+                // redirect to active flow execution URL
+				String flowExecutionUrl = argumentHandler.createFlowExecutionUrl(
+						responseInstruction.getFlowExecutionKey(),
+						responseInstruction.getFlowExecutionContext(), context);
+				setResult(new ModelAndView(new RedirectView(flowExecutionUrl)));
+			}
+
+			protected void handleExternalRedirect(ExternalRedirect redirect) throws Exception {
+                if(LOG.isDebugEnabled())
+                    LOG.debug("External redirect issued from flow with URL " + redirect.getUrl());
+
+                // redirect to external URL
+				String externalUrl = argumentHandler.createExternalUrl(redirect,
+						responseInstruction.getFlowExecutionKey(), context);
+				setResult(new ModelAndView(new RedirectView(externalUrl)));
+			}
+
+			protected void handleNull() throws Exception {
+				// no response to issue
+				setResult(null);
+			}
+		}.handleQuietly(responseInstruction).getResult();
+    }
+
+    /**
+	 * Factory method that creates a new helper for processing a request into
+	 * this flow controller. The handler is a basic template encapsulating
+	 * reusable flow execution request handling workflow.
+	 * This implementation just creates a new {@link FlowRequestHandler}.
+     * @param argumentHandler The FlowExecutorArgumentHandler to use
+     * 
+	 * @return the controller helper
+	 */
+	protected FlowRequestHandler createRequestHandler(FlowExecutorArgumentHandler argumentHandler ) {
+		return new FlowRequestHandler(getFlowExecutor(), argumentHandler);
+	}
+
+    /**
+     * Invokes the action defined by the webRequest for the given arguments
+     * 
+     * @param controller The controller instance
+     * @param controllerClass The GrailsControllerClass that defines the conventions within the controller
+     * @param viewName The name of the view to delegate to if necessary
+     * @param request The HttpServletRequest object
+     * @param response The HttpServletResponse object
+     * @param params A map of parameters
+     * @return A Spring ModelAndView instance
+     */
+    protected ModelAndView executeAction(GroovyObject controller, GrailsControllerClass controllerClass, String viewName, HttpServletRequest request, HttpServletResponse response, Map params) {
         // Step 5a: Check if there is a before interceptor if there is execute it
         ClassLoader cl = Thread.currentThread().getContextClassLoader();
         try {
@@ -326,7 +425,28 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
         } finally {
             Thread.currentThread().setContextClassLoader(cl);
         }
+    }
 
+
+    private GrailsScaffolder obtainScaffolder(GrailsControllerClass controllerClass) {
+        GrailsScaffolder scaffolder = null;
+        if(controllerClass.isScaffolding())  {
+            scaffolder = (GrailsScaffolder)applicationContext.getBean( controllerClass.getFullName() + SCAFFOLDER );
+            if(scaffolder == null)
+                throw new IllegalStateException("Scaffolding set to true for controller ["+controllerClass.getFullName()+"] but no scaffolder available!");
+        }
+        return scaffolder;
+    }
+
+    private void configureStateForWebRequest(GrailsWebRequest webRequest, HttpServletRequest request) {
+        this.webRequest = webRequest;
+        this.actionName = webRequest.getActionName();
+        this.controllerName = webRequest.getControllerName();
+        this.id = webRequest.getId();
+
+        if(StringUtils.isBlank(id) && request.getParameter(GrailsWebRequest.ID_PARAMETER) != null) {
+            id = request.getParameter(GrailsWebRequest.ID_PARAMETER);
+        }
     }
 
     private boolean invokeAfterInterceptor(GrailsControllerClass controllerClass, GroovyObject controller, ModelAndView mv) {
@@ -352,60 +472,10 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
                     throw new ControllerExecutionException("AfterInterceptor closure must accept one or two parameters");
             }
         }
-        if(interceptorResult != null &&interceptorResult instanceof Boolean) {
-           return ((Boolean) interceptorResult).booleanValue();
-        }
-        return true;
+        return !(interceptorResult != null && interceptorResult instanceof Boolean) || ((Boolean) interceptorResult).booleanValue();
     }
 
-    private String configureStateForUri(String uri) {
-		// step 1: process the uri
-        if (uri.indexOf("?") > -1) {
-            uri = uri.substring(0, uri.indexOf("?"));
-        }
-        if(uri.indexOf('\\') > -1) {
-            uri = uri.replaceAll("\\\\", "/");
-        }
-        if(!uri.startsWith("/"))
-            uri = '/' + uri;
-        if(uri.endsWith("/"))
-            uri = uri.substring(0,uri.length() - 1);
 
-        id = null;
-		controllerName = null;
-		actionName = null;
-		extraParams = Collections.EMPTY_MAP;
-		Matcher m = uriPattern.matcher(uri);
-        if(m.find()) {
-            controllerName = m.group(1);
-            actionName =  m.group(2);
-            uri = '/' + controllerName + '/' + actionName;
-            id = m.group(3);
-            String extraParamsString = m.group(4);
-            if(!StringUtils.isBlank(extraParamsString)) {
-                extraParams = new HashMap();
-                if(extraParamsString.indexOf('/') > -1) {
-                    String[] tokens = extraParamsString.split("/");
-
-                    for (int i = 0; i < tokens.length; i++) {
-                        String token = tokens[i];
-                        if(i == 0 || ((i % 2) == 0)) {
-                            if((i + 1) < tokens.length) {
-                                extraParams.put(token, tokens[i + 1]);
-                            }
-                        }
-                    }
-                }
-                else {
-                   extraParams.put(extraParamsString, null); 
-                }
-
-
-            }
-        }
-		return uri;
-	}
-	
 	private String checkDispatchAction(HttpServletRequest request, String uri) {
     	for(Enumeration e = request.getParameterNames(); e.hasMoreElements();) {
             String name = (String)e.nextElement();
@@ -555,4 +625,10 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
 	}
 
 
+    public FlowExecutor getFlowExecutor() {
+        if(applicationContext.containsBean(FLOW_EXECUTOR_BEAN)) {
+            return (FlowExecutor)applicationContext.getBean(FLOW_EXECUTOR_BEAN);
+        }
+        return null;
+    }
 }

@@ -28,10 +28,14 @@ import java.beans.PropertyDescriptor;
 import java.util.*;
 
 /**
- * 
- * 
+ * A class that evaluates the conventions contained within controllers to perform auto-configuration
+ *
+ * @author Graeme Rocher
  * @author Steven Devijver
- * @since Jul 2, 2005
+ *
+ * @since 0.1
+ *
+ * Created: Jul 2, 2005
  */
 public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass
 		implements GrailsControllerClass {
@@ -45,22 +49,23 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass
 	private static final String ALLOWED_HTTP_METHODS_PROPERTY = "allowedMethods";
 
 	private static final String EXCEPT = "except";
-	private static final String ONLY = "only";
-	private static final String ACTION = "action";
+    private static final String ONLY = "only";
+    private static final String FLOW_SUFFIX = "Flow";
 
-	
 
-	private Map uri2viewMap = null;
-	private Map uri2closureMap = null;
-	private Map viewNames = null;
-	private String[] uris = null;
+    private static final String ACTION = "action";
+    private Map uri2viewMap = null;
+    private Map uri2closureMap = null;
+    private Map viewNames = null;
+    private String[] uris = null;
     private String uri;
+
     private AntPathMatcher pathMatcher = new AntPathMatcher();
-
     private boolean scaffolding;
-    private Class scaffoldedClass;
 
+    private Class scaffoldedClass;
     private final Set commandObjectClasses = new HashSet();
+    private Map flows = new HashMap();
 
 
     public DefaultGrailsControllerClass(Class clazz) {
@@ -89,13 +94,14 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass
         this.uri2closureMap = new HashMap();
         this.viewNames = new HashMap();
 
+        final String controllerPath = uri + SLASH;
         if(this.scaffolding) {
             this.uri2closureMap.put(uri, defaultActionName);
-            this.uri2closureMap.put(uri + SLASH, defaultActionName);
-            this.uri2viewMap.put(uri + SLASH, uri + SLASH + defaultActionName);
-            this.uri2viewMap.put(uri,uri + SLASH +  defaultActionName);
-            this.viewNames.put( defaultActionName, uri + SLASH + defaultActionName );
-            
+            this.uri2closureMap.put(controllerPath, defaultActionName);
+            this.uri2viewMap.put(controllerPath, controllerPath + defaultActionName);
+            this.uri2viewMap.put(uri, controllerPath +  defaultActionName);
+            this.viewNames.put( defaultActionName, controllerPath + defaultActionName );
+
             for(int i = 0; i < GrailsScaffolder.ACTION_NAMES.length;i++) {
                 closureNames.add(GrailsScaffolder.ACTION_NAMES[i]);
                 String viewName = (String)getPropertyOrStaticPropertyOrFieldValue(GrailsScaffolder.ACTION_NAMES[i] + VIEW, String.class);
@@ -103,8 +109,8 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass
                 if(viewName == null) {
                     viewName =GrailsScaffolder.ACTION_NAMES[i];
                 }
-                String tmpUri = uri + SLASH + GrailsScaffolder.ACTION_NAMES[i];
-                String viewUri = uri + SLASH + viewName;
+                String tmpUri = controllerPath + GrailsScaffolder.ACTION_NAMES[i];
+                String viewUri = controllerPath + viewName;
                 if (StringUtils.isNotBlank(viewName)) {
                     this.uri2viewMap.put(tmpUri, viewUri);
                     this.viewNames.put( GrailsScaffolder.ACTION_NAMES[i], viewUri );
@@ -119,26 +125,34 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass
             PropertyDescriptor propertyDescriptor = propertyDescriptors[i];
             Closure closure = (Closure)getPropertyOrStaticPropertyOrFieldValue(propertyDescriptor.getName(), Closure.class);
             if (closure != null) {
-                
-                Class[] parameterTypes = closure.getParameterTypes();
-                if(parameterTypes != null && parameterTypes.length > 0) {
-                    for(int j = 0; j < parameterTypes.length; j++) {
-                        Class parameterType = parameterTypes[j];
-                        if(GroovyObject.class.isAssignableFrom(parameterType)) {
-                            commandObjectClasses.add(parameterType);
+
+                String closureName = propertyDescriptor.getName();
+                if(closureName.endsWith(FLOW_SUFFIX)) {
+                    String flowId = closureName.substring(0, closureName.length()-FLOW_SUFFIX.length());
+                    flows.put(flowId, closure);
+                    closureName = flowId;
+                }
+                else {                    
+                    Class[] parameterTypes = closure.getParameterTypes();
+                    if(parameterTypes != null && parameterTypes.length > 0) {
+                        for(int j = 0; j < parameterTypes.length; j++) {
+                            Class parameterType = parameterTypes[j];
+                            if(GroovyObject.class.isAssignableFrom(parameterType)) {
+                                commandObjectClasses.add(parameterType);
+                            }
                         }
                     }
                 }
-                closureNames.add(propertyDescriptor.getName());
-                String closureName = propertyDescriptor.getName();
+
+                closureNames.add(closureName);
                 String viewName = (String)getPropertyOrStaticPropertyOrFieldValue(propertyDescriptor.getName() + VIEW, String.class);
                 // if no explicity view name is specified just use property name
                 if(viewName == null) {
-                    viewName = propertyDescriptor.getName();
+                    viewName = closureName;
                 }
 
-                String tmpUri = uri + SLASH + propertyDescriptor.getName();
-                String viewUri = uri + SLASH + viewName;
+                String tmpUri = controllerPath + closureName;
+                String viewUri = controllerPath + viewName;
 
                 uri2closureMap.put(tmpUri,closureName);
                 uri2closureMap.put(tmpUri + SLASH + "**",closureName);
@@ -151,16 +165,16 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass
 
         if (getReference().isReadableProperty(defaultActionName)) {
             this.uri2closureMap.put(uri, defaultActionName);
-            this.uri2closureMap.put(uri + SLASH, defaultActionName);
-            this.uri2viewMap.put(uri + SLASH, uri + SLASH + defaultActionName);
-            this.uri2viewMap.put(uri,uri + SLASH +  defaultActionName);
-            this.viewNames.put( defaultActionName, uri + SLASH + defaultActionName );
+            this.uri2closureMap.put(controllerPath, defaultActionName);
+            this.uri2viewMap.put(controllerPath, controllerPath + defaultActionName);
+            this.uri2viewMap.put(uri, controllerPath +  defaultActionName);
+            this.viewNames.put( defaultActionName, controllerPath + defaultActionName );
         }
 
         if (closureNames.size() == 1) {
             String closureName = ((String)closureNames.iterator().next());
             this.uri2closureMap.put(uri, closureName);
-            this.uri2closureMap.put(uri + SLASH, closureName);
+            this.uri2closureMap.put(controllerPath, closureName);
             if (!this.uri2viewMap.isEmpty()) {
                 this.uri2viewMap.put(uri, this.uri2viewMap.values().iterator().next());
             }
@@ -306,5 +320,13 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass
 
     public Set getCommandObjectClasses() {
         return Collections.unmodifiableSet(commandObjectClasses);
+    }
+
+    public Map getFlows() {
+        return this.flows;
+    }
+
+    public boolean isFlowAction(String actionName) {
+        return this.flows.containsKey(actionName);
     }
 }

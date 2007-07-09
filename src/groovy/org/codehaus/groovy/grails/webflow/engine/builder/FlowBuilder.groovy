@@ -24,10 +24,15 @@ import org.springframework.webflow.engine.support.TransitionExecutingStateExcept
 import org.springframework.webflow.core.collection.LocalAttributeMap;
 import org.springframework.webflow.execution.Event;
 import org.codehaus.groovy.grails.commons.metaclass.ExpandoMetaClass;
+import org.apache.commons.logging.LogFactory
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
+import java.util.Map
+import org.springframework.webflow.engine.support.ActionTransitionCriteria
+import org.springframework.webflow.execution.Action
+import org.springframework.webflow.execution.RequestContext;
+import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 
 /**
  * <p>A builder implementation used to construct Spring Webflows. This is a DSL specifically
@@ -57,7 +62,8 @@ import java.util.Map;
  *        Created: Jun 8, 2007
  *        Time: 9:09:05 AM
  */
-class  FlowBuilder extends AbstractFlowBuilder implements GroovyObject {
+class FlowBuilder extends AbstractFlowBuilder implements GroovyObject {
+    static final LOG = LogFactory.getLog(FlowBuilder)
     static final DO_CALL_METHOD = "doCall"
     static final FLOW_METHOD = "flow"
     static final CLOSURE_METHODS = ['setDelegate', 'setMetaClass', 'getMetaClass', 'call', 'doCall']
@@ -76,12 +82,18 @@ class  FlowBuilder extends AbstractFlowBuilder implements GroovyObject {
         super.init(flowId, null);
     }
 
+    public FlowBuilder(String flowId, Closure newFlowClosure) {
+       this(flowId)
+       this.flowClosure = newFlowClosure
+    }
+
     public invokeMethod(String name, args) {
         if(isRootFlowDefinition(name, args) && !initialised) {
             this.flowClosure = args[0];
             flowClosure.setDelegate(this);
             flowDefiningMode = true;
-            buildStates();
+            this.flowClosure.delegate = this
+            this.flowClosure.call();
             flowDefiningMode = false;
             initialised = true;
             return super.getFlow();
@@ -126,7 +138,34 @@ class  FlowBuilder extends AbstractFlowBuilder implements GroovyObject {
                     state = addSubflowState(name, flow,null, trans );
                 }
                 else {
-                    state = addViewState(name, name, trans);
+                    def renderAction = new ClosureInvokingAction() { RequestContext ctx ->
+                        for(entry in ctx.flashScope.asMap()) {
+                            def key = entry.key
+                             if(key.startsWith(GrailsApplicationAttributes.ERRORS)) {
+                                  key = key.substring(GrailsApplicationAttributes.ERRORS.length()+1)
+                                  def formObject = ctx.flowScope.get(key)
+                                  if(formObject) {
+                                      try {
+                                          formObject.errors = entry.value
+                                      } catch (MissingPropertyException mpe) {
+                                            // ignore
+                                      }
+                                  }
+                                  else {
+                                      formObject = ctx.conversationScope.get(key)
+                                      if(formObject) {
+                                          try {
+                                              formObject.errors = entry.value
+                                          } catch (MissingPropertyException mpe) {
+                                                // ignore
+                                          }
+                                      }
+                                  }
+                             }
+                        }
+                    }
+
+                    state = addViewState(name, name,(Action) renderAction,trans);
                 }
 
                 // add start state
@@ -162,12 +201,12 @@ class  FlowBuilder extends AbstractFlowBuilder implements GroovyObject {
     private Object invokeMethodAsEvent(String name, Object args) {
         Object[] argArray = (Object[])args;
         if(argArray.length == 0)
-            return new Event(getFlow(),name);
+            return new Event(name,name);
         else if(argArray[0] instanceof Map) {
-            return new Event(getFlow(),name,new LocalAttributeMap((Map)argArray[0]));
+            return new Event(name,name,new LocalAttributeMap((Map)argArray[0]));
         }
         else {
-            return new Event(getFlow(),name);
+            return new Event(name,name);
         }
     }
 
@@ -196,8 +235,7 @@ class  FlowBuilder extends AbstractFlowBuilder implements GroovyObject {
     }
 
     public void buildStates() throws FlowBuilderException {
-
-        this.flowClosure.call();
+         flow(this.flowClosure)
     }
 }
 /**
@@ -219,12 +257,16 @@ private class FlowInfoCapturer {
     public Closure getAction() {
         return action;
     }
-
     public Closure getSubflow() {
         return subflow;
     }
     public TransitionTo on(String name) {
         return new TransitionTo(name, builder, transitions);
+    }
+    public TransitionTo on(String name, Closure transitionCriteria) {
+        def transitionCriteriaAction = new ClosureInvokingAction(transitionCriteria)
+
+        return new TransitionTo(name, builder, transitions, transitionCriteriaAction)
     }
     public TransitionTo on(Class exception) {
         if(!Throwable.class.isAssignableFrom(exception)) {
@@ -244,12 +286,20 @@ class TransitionTo {
     private Class error;
     private builder
     List transitions
+    private criteria
 
 
     public TransitionTo(String newOn, builder, newTransitions) {
         this.on = newOn;
         this.builder = builder
         this.transitions = newTransitions
+    }
+
+    public TransitionTo(String newOn, builder, newTransitions, org.codehaus.groovy.grails.webflow.engine.builder.ClosureInvokingAction newCriteria) {
+        this.on = newOn;
+        this.builder = builder
+        this.transitions = newTransitions
+        this.criteria = newCriteria
     }
 
     public TransitionTo(Class exception, builder, newTransitions) {
@@ -266,7 +316,13 @@ class TransitionTo {
             return handler;
         }
         else {
-            Transition t = builder.transition(builder.on(on), builder.to(newTo));
+            Transition t
+            if(this.criteria) {
+               t = builder.transition(builder.on(on), builder.to(newTo), new ActionTransitionCriteria(this.criteria));                 
+            }
+            else {
+               t = builder.transition(builder.on(on), builder.to(newTo));
+            }
             transitions.add(t);
             return t;
         }

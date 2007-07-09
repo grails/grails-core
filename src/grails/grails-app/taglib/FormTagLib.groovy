@@ -53,6 +53,9 @@ class FormTagLib {
 	def submitButton = { attrs ->
 		attrs.type = "submit"
 		attrs.tagName = "submitButton"
+		if(request['flowExecutionKey']) {
+			attrs.name = "_eventId_${attrs.name}"
+		}
 		out << field(attrs)
 	}
 	/**
@@ -136,7 +139,11 @@ class FormTagLib {
         // process remaining attributes
         outputAttributes(attrs)
 
-        out << ">"
+        out << ">"         
+		if(request['flowExecutionKey']) {
+			out.println()
+			out << hiddenField(name:"_flowExecutionKey", value:request['flowExecutionKey'])
+		}
         // output the body
         def bodyContent = body()
 		out << bodyContent

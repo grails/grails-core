@@ -15,6 +15,35 @@ class DefaultGrailsControllerClassTests extends GroovyTestCase {
         gcl = null
     }
 
+    void testEvaluateFlowDefinitions() {
+        gcl.parseClass("""
+class FooController {
+    def bookFlow = { }
+    def storeFlow = { }
+    def index = { }
+    def test = { }
+}
+        """)
+
+        def ga = new DefaultGrailsApplication(gcl.loadedClasses, gcl)
+
+        def foo = ga.getControllerClass("FooController")
+        assertEquals 2, foo.flows.size()
+        assertTrue foo.flows.containsKey("book")
+        assertTrue foo.flows.containsKey("store")
+        assertTrue foo.flows.book instanceof Closure
+        assertTrue foo.flows.store instanceof Closure
+
+        assertTrue foo.mapsToURI("/foo/book")
+        assertTrue foo.mapsToURI("/foo/store")
+        assertTrue foo.mapsToURI("/foo/index")
+        assertTrue foo.mapsToURI("/foo/test")
+
+        assertTrue foo.isFlowAction("book")
+        assertTrue foo.isFlowAction("store")
+        assertFalse foo.isFlowAction("test")
+        assertFalse foo.isFlowAction("index")
+    }
     void testInterceptorInheritance() {
         gcl.parseClass("""
 abstract class ParentController {

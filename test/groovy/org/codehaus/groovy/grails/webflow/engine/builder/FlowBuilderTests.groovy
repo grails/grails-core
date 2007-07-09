@@ -1,6 +1,7 @@
 package org.codehaus.groovy.grails.webflow.engine.builder;
 
 import org.springframework.webflow.engine.*
+import org.springframework.webflow.engine.support.ActionTransitionCriteria
 
 class FlowBuilderTests extends GroovyTestCase{
 
@@ -10,6 +11,37 @@ class FlowBuilderTests extends GroovyTestCase{
 
     void tearDown() {
         ExpandoMetaClass.disableGlobally()
+    }
+
+    void testFlowWithTransitionCriteria() {
+        def flow = new FlowBuilder("myFlow").flow {
+            displaySearchForm {
+                on("submit") {
+                    error()
+                }.to "executeSearch"
+
+            }
+            executeSearch {
+                action {
+                    [results:searchService.executeSearch(params.q)]
+                }
+                on("success").to "displayResults"
+                on(Exception).to "displaySearchForm"
+            }
+            displayResults()
+        }
+
+        assert flow
+        assertEquals 3, flow.stateCount
+        def state = flow.getState('displaySearchForm')
+
+        assertTrue state instanceof ViewState
+        assertEquals flow.startState, state
+        assertEquals "displaySearchForm", state.id
+        assertEquals 1, state.transitions.size()
+
+        def t = state.transitions[0]
+        assertTrue t.executionCriteria instanceof ActionTransitionCriteria
     }
 
     void testFlowDataModel() {
@@ -55,7 +87,7 @@ class FlowBuilderTests extends GroovyTestCase{
         assertTrue state instanceof EndState
     }
 
-    void testFlowBuilder() {
+    /*void testFlowBuilder() {
         def someOtherFlow = {
 
         }
@@ -96,5 +128,5 @@ class FlowBuilderTests extends GroovyTestCase{
             }
         }
 
-    }
+    }  */
 }

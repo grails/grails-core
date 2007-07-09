@@ -59,7 +59,7 @@ class ValidationTagLib {
             else {       
 				try {
 					if ((i.errors != null) && (i.errors instanceof Errors)) {
-		                if (i.hasErrors())
+		                if (i.errors.hasErrors())
 		                    errors = i.errors
 		            }
 					
@@ -113,7 +113,7 @@ class ValidationTagLib {
             }
             else {
 				if ((i.errors != null) && (i.errors instanceof Errors)) {
-	                if (i.hasErrors())
+	                if (i.errors.hasErrors())
 	                    errors = i.errors
 	            }
 			}
