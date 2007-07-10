@@ -16,7 +16,6 @@
 package grails.orm;
 
 import grails.util.ExtendProxy;
-import grails.util.GrailsUtil;
 import groovy.lang.Closure;
 import groovy.lang.GString;
 import groovy.lang.MissingMethodException;
@@ -73,7 +72,6 @@ public class HibernateCriteriaBuilder extends BuilderSupport {
     public static final String AND = "and"; // builder
     public static final String IS_NULL = "isNull"; // builder
     public static final String IS_NOT_NULL = "isNotNull"; // builder
-    public static final String IS_NOT_NULL_OLD_FORM = "notNull"; // builder
     public static final String NOT = "not";// builder
     public static final String OR = "or"; // builder
     public static final String ID_EQUALS = "idEq"; // builder
@@ -851,7 +849,6 @@ public class HibernateCriteriaBuilder extends BuilderSupport {
 
             if(	name.equals( IS_NULL ) ||
                 name.equals( IS_NOT_NULL ) ||
-                name.equals( IS_NOT_NULL_OLD_FORM ) ||
                 name.equals( IS_EMPTY ) ||
                 name.equals( IS_NOT_EMPTY )) {
                 if(!(value instanceof String))
@@ -861,10 +858,6 @@ public class HibernateCriteriaBuilder extends BuilderSupport {
                     c = Restrictions.isNull( (String)value ) ;
                 }
                 else if(name.equals( IS_NOT_NULL )) {
-                    c = Restrictions.isNotNull( (String)value );
-                }
-                else if(name.equals( IS_NOT_NULL_OLD_FORM )) {
-                    GrailsUtil.deprecated("'notNull' criteria restriction is deprecated for 0.5 and will be removed in future versions, use 'isNotNull' instead");
                     c = Restrictions.isNotNull( (String)value );
                 }
                 else if(name.equals( IS_EMPTY )) {
