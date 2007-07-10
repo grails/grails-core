@@ -60,9 +60,8 @@ public class GrailsDomainBinderTests extends TestCase {
 			            "    static constraints = {\n" +
 			            "        firstName(nullable:true,size:4..15)\n" +
 			            "        lastName(nullable:false)\n" +
+                        "        age(nullable:true)\n" +
 			            "    }\n" +
-			            "\n" +
-			            "    static optionals = ['age']" +
 			            "}")
 		);
         GrailsApplication grailsApplication = new DefaultGrailsApplication(new Class[]{domainClass.getClazz()},cl);
@@ -75,8 +74,6 @@ public class GrailsDomainBinderTests extends TestCase {
         assertFalse("Property [lastName] must be required in db mapping", persistentClass.getProperty("lastName").isOptional());
         // Property must be required by default
         assertFalse("Property [comment] must be required in db mapping", persistentClass.getProperty("comment").isOptional());
-        // TODO added to test backward compatibility in 0.5, remove this in 0.6
-        assertTrue("Property [age] must be optional in db mapping", persistentClass.getProperty("age").isOptional());
         
         // Test properties
         assertTrue("Property [firstName] must be optional", domainClass.getPropertyByName("firstName").isOptional());

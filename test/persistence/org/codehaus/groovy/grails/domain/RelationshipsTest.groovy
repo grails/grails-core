@@ -5,8 +5,6 @@ class RelationshipsTest {
   								"manys" : ManyToManyTest.class,
   								"uniones" : UniOneToManyTest.class ];
 
-   def optionals = [ "ones","uniones" ]
-   
     Long id;
     Long version;
 

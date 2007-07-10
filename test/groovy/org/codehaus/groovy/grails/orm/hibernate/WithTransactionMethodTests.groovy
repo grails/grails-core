@@ -44,7 +44,6 @@ class Book1 {
   static belongsTo = Author1
   Author1 author
   String title
-  static optionals = ['author']
   boolean equals(obj) { title == obj?.title }
   int hashCode() { title ? title.hashCode() : super.hashCode() }
   String toString() { title }

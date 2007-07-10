@@ -109,7 +109,6 @@ public class DefaultGrailsDomainClassTests extends TestCase {
                 " int id; " +
                 " int version; " +
                 " List transients = [ \"age\" ]; " +
-                " List optionals  = [ \"lastName\" ]; " +
                 " String firstName; " +
                 " String lastName; " +
                 " java.util.Date age; " +
@@ -137,7 +136,7 @@ public class DefaultGrailsDomainClassTests extends TestCase {
 		
 		GrailsDomainClassProperty lastName = domainClass.getPropertyByName( "lastName" );
 		assertNotNull(lastName);
-		assertTrue(lastName.isOptional());
+		assertFalse(lastName.isOptional());
 		
 		GrailsDomainClassProperty firstName = domainClass.getPropertyByName( "firstName" );
 		assertNotNull(firstName);

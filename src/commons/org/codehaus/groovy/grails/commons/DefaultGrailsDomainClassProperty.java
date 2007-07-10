@@ -14,12 +14,12 @@
  */ 
 package org.codehaus.groovy.grails.commons;
 
-import java.beans.PropertyDescriptor;
-import java.util.*;
-
 import org.apache.commons.lang.ClassUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
+
+import java.beans.PropertyDescriptor;
+import java.util.*;
 
 /**
  *
@@ -35,7 +35,6 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
 	
 	private DefaultGrailsDomainClass domainClass;
     private boolean persistant;
-	private boolean optional;
 	private boolean identity;
 	private boolean oneToMany;
 	private String name;
@@ -59,8 +58,6 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
 
     public DefaultGrailsDomainClassProperty(DefaultGrailsDomainClass domainClass, PropertyDescriptor descriptor)  {
         this.domainClass = domainClass;
-        // required by default
-        this.optional = false;
         // persistant by default
         this.persistant = true;
         this.name = descriptor.getName();
@@ -71,11 +68,6 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
         if(!domainClass.isRoot()) {
         	this.inherited = GrailsClassUtils.isPropertyInherited(domainClass.getClazz(), this.name);
         }        
-
-        // establish of property is required
-        // TODO remove this in 0.6
-        List optionalProps  = (List)domainClass.getPropertyOrStaticPropertyOrFieldValue( OPTIONAL, List.class );
-        checkIfOptional(optionalProps);
 
         // establish if property is persistant
         List transientProps = getTransients(domainClass);
@@ -97,32 +89,6 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
 			}
 		}
 	}
-
-
-	/**
-	 * Checks whether this property is optional
-	 * 
-	 * @param optionalProps The optional property list
-	 */
-	private void checkIfOptional(List optionalProps) {
-		if(optionalProps != null) {
-            for(Iterator i = optionalProps.iterator();i.hasNext();) {
-
-                // make sure its a string otherwise ignore. Note: Maybe put a warning here?
-                Object currentObj = i.next();
-                if(currentObj instanceof String) {
-                    String propertyName = (String)currentObj;
-                    // if the property name in the not required list
-                    // matches this property name set not required
-                    if(propertyName.equals( this.name )) {
-                        this.optional = true;
-                        break;
-                    }
-                }
-            }
-        }
-	}
-
 
 	/**
 	 * Checks whether this property is transient
@@ -196,10 +162,8 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
 	 * @see org.codehaus.groovy.grails.domain.GrailsDomainClassProperty#isRequired()
 	 */
 	public boolean isOptional() {
-		// TODO Remove this line and 'optional' property in 0.6 
-		if( optional ) return true;
 		ConstrainedProperty constrainedProperty = (ConstrainedProperty) domainClass.getConstrainedProperties().get(name);
-		return (constrainedProperty == null) ? false : constrainedProperty.isNullable();
+		return ( constrainedProperty != null ) && constrainedProperty.isNullable();
 	}
 
 	/* (non-Javadoc)
@@ -286,7 +250,6 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
 	
 	/**
 	 * Sets whether the relationship is bidirectional or not
-	 * @param bidirectional
 	 */
 	protected void setBidirectional(boolean bidirectional) {
 		this.bidirectional = bidirectional;
@@ -326,7 +289,6 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
 
 	/**
 	 * Sets the referenced property type of this property
-	 * @param referencedPropertyType
 	 */
 	protected void setReferencedPropertyType(Class referencedPropertyType) {
 		this.referencedPropertyType = referencedPropertyType;

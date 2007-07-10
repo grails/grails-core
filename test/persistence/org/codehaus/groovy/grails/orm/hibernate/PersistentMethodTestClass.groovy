@@ -1,9 +1,6 @@
 package org.codehaus.groovy.grails.orm.hibernate;
 
 public class PersistentMethodTestClass {
-
-	 List optionals = [ "age" ];
-	
 	 Long id;
 	 Long version;
 	

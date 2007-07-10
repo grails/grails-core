@@ -15,7 +15,6 @@
 package org.codehaus.groovy.grails.commons;
 
 
-import grails.util.GrailsUtil;
 import groovy.lang.Closure;
 import groovy.lang.GroovyObject;
 import org.apache.commons.lang.ClassUtils;
@@ -87,9 +86,6 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
         
         // establish the owners of relationships
         establishRelationshipOwners();
-
-        if(getPropertyOrStaticPropertyOrFieldValue(GrailsDomainClassProperty.OPTIONAL, List.class) != null)
-        	GrailsUtil.deprecated( "domain class " + getName() + ": 'optionals' property is deprecated since 0.5 and will be removed in future releases, use 'nullable' constraint instead");
 
         // First go through the properties of the class and create domain properties
         // populating into a map
@@ -221,7 +217,6 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
            !descriptor.getName().equals( GrailsDomainClassProperty.RELATES_TO_MANY) &&
            !descriptor.getName().equals( GrailsDomainClassProperty.HAS_MANY) &&
            !descriptor.getName().equals( GrailsDomainClassProperty.EVANESCENT) &&
-           !descriptor.getName().equals( GrailsDomainClassProperty.OPTIONAL) &&
            !descriptor.getName().equals( GrailsDomainClassProperty.CONSTRAINTS )&&
            !descriptor.getName().equals( GrailsDomainClassProperty.MAPPING_STRATEGY ) &&
            !descriptor.getName().equals( GrailsDomainClassProperty.MAPPED_BY ) &&
