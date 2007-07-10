@@ -14,13 +14,10 @@
  */
 package org.codehaus.groovy.grails.validation;
 
-import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.springframework.validation.Errors;
 
-import grails.util.GrailsUtil;
-
-import java.util.Collection;
 import java.lang.reflect.Array;
+import java.util.Collection;
 
 /**
  * A constraint that validates minimum size or length of the property, for strings and arrays this is the length, collections
@@ -63,42 +60,33 @@ class MinSizeConstraint extends AbstractConstraint {
        * @see org.codehaus.groovy.grails.validation.Constraint#supports(java.lang.Class)
        */
     public boolean supports(Class type) {
-    	if( GrailsClassUtils.isAssignableOrConvertibleFrom(Number.class, type) ) {
-        	GrailsUtil.deprecated("'minSize' constraint is deprecated for numeric properties and will be removed in 0.6, use 'min' constraint instead");
-    	}
-        return type != null && (Comparable.class.isAssignableFrom(type) ||
-        		GrailsClassUtils.isAssignableOrConvertibleFrom(Number.class, type) ||
+        return type != null && (
+                String.class.isAssignableFrom(type) ||
                 Collection.class.isAssignableFrom(type) ||
-                type.isArray());
-        
+                type.isArray()
+        );
     }
 
     protected void processValidate(Object target, Object propertyValue, Errors errors) {
         Object[] args = new Object[] { constraintPropertyName, constraintOwningClass, propertyValue, new Integer(minSize) };
 
-        if(propertyValue == null) {
-            return; // A null is not a value we should even check
-        }
-        else if(propertyValue.getClass().isArray()) {
-            int length = Array.getLength( propertyValue );
-            if(length < minSize) {
-                super.rejectValue(target,errors,ConstrainedProperty.DEFAULT_INVALID_MIN_SIZE_MESSAGE_CODE, ConstrainedProperty.MIN_SIZE_CONSTRAINT + ConstrainedProperty.NOTMET_SUFFIX,args );
+        // A null is not a value we should even check
+        if(propertyValue != null) {
+            if(propertyValue.getClass().isArray()) {
+                int length = Array.getLength( propertyValue );
+                if(length < minSize) {
+                    super.rejectValue(target,errors,ConstrainedProperty.DEFAULT_INVALID_MIN_SIZE_MESSAGE_CODE, ConstrainedProperty.MIN_SIZE_CONSTRAINT + ConstrainedProperty.NOTMET_SUFFIX,args );
+                }
             }
-        }
-        else if(propertyValue instanceof Collection) {
-            if( ((Collection)propertyValue).size() < minSize ) {
-                super.rejectValue(target,errors,ConstrainedProperty.DEFAULT_INVALID_MIN_SIZE_MESSAGE_CODE, ConstrainedProperty.MIN_SIZE_CONSTRAINT + ConstrainedProperty.NOTMET_SUFFIX,args );
+            else if(propertyValue instanceof Collection) {
+                if( ((Collection)propertyValue).size() < minSize ) {
+                    super.rejectValue(target,errors,ConstrainedProperty.DEFAULT_INVALID_MIN_SIZE_MESSAGE_CODE, ConstrainedProperty.MIN_SIZE_CONSTRAINT + ConstrainedProperty.NOTMET_SUFFIX,args );
+                }
             }
-        }
-        else if(propertyValue instanceof Number) {
-            int numberSize = ((Number)propertyValue).intValue();
-            if( numberSize < minSize ) {
-                super.rejectValue(target,errors,ConstrainedProperty.DEFAULT_INVALID_MIN_SIZE_MESSAGE_CODE, ConstrainedProperty.MIN_SIZE_CONSTRAINT + ConstrainedProperty.NOTMET_SUFFIX,args);
-            }
-        }
-        else if(propertyValue instanceof String) {
-            if(((String)propertyValue ).length() < minSize) {
-                super.rejectValue(target,errors,ConstrainedProperty.DEFAULT_INVALID_MIN_SIZE_MESSAGE_CODE,ConstrainedProperty.MIN_SIZE_CONSTRAINT + ConstrainedProperty.NOTMET_SUFFIX,args);
+            else if(propertyValue instanceof String) {
+                if(((String)propertyValue ).length() < minSize) {
+                    super.rejectValue(target,errors,ConstrainedProperty.DEFAULT_INVALID_MIN_SIZE_MESSAGE_CODE,ConstrainedProperty.MIN_SIZE_CONSTRAINT + ConstrainedProperty.NOTMET_SUFFIX,args);
+                }
             }
         }
     }

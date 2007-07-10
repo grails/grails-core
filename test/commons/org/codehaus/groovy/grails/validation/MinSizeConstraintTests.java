@@ -44,12 +44,6 @@ public class MinSizeConstraintTests extends AbstractConstraintTests{
                 list
         );
 
-        // remove this in 0.6 as minSize constraint is deprecated for numeric fields now
-        testConstraintFailed(
-                getConstraint( "testInteger", new Integer(3)),
-                new Integer( 1 )
-        );
-
         testConstraintPassed(
                 getConstraint( "testString", new Integer(5)),
                 "12345"
@@ -77,6 +71,8 @@ public class MinSizeConstraintTests extends AbstractConstraintTests{
         assertTrue( constraint.supports( List.class ));
         assertTrue( constraint.supports( Set.class ));
         assertTrue( constraint.supports( Collection.class ));
+        assertFalse( constraint.supports( Integer.class ));
+        assertFalse( constraint.supports( Number.class ));
         assertEquals( 10, constraint.getMinSize());
 
         try {

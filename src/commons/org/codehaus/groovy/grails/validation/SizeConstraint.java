@@ -14,9 +14,7 @@
  */
 package org.codehaus.groovy.grails.validation;
 
-import grails.util.GrailsUtil;
 import groovy.lang.IntRange;
-import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.springframework.validation.Errors;
 
 import java.lang.reflect.Array;
@@ -49,14 +47,11 @@ class SizeConstraint extends AbstractConstraint {
      * @see org.codehaus.groovy.grails.validation.Constraint#supports(java.lang.Class)
      */
     public boolean supports(Class type) {
-    	if(GrailsClassUtils.isAssignableOrConvertibleFrom(Number.class, type)) {
-    		GrailsUtil.deprecated("'size' constraint is deprecated for numeric properties and will be removed in 0.6, use 'range' constraint instead");
-    	}
-        return type != null && (Comparable.class.isAssignableFrom(type) ||
-        		GrailsClassUtils.isAssignableOrConvertibleFrom(Number.class, type) ||
-                Collection.class.isAssignableFrom(type) ||
-                type.isArray());
-        
+        return type != null && (
+                String.class.isAssignableFrom(type) ||
+                Collection.class.isAssignableFrom(type) || 
+                type.isArray()
+        );
     }
 
 
@@ -85,16 +80,6 @@ class SizeConstraint extends AbstractConstraint {
             return; // A null is not a value we should even check
         }
 
-        if(propertyValue instanceof Number) {
-            if(range.getFrom().compareTo(propertyValue ) == 1) {
-                rejectValueTooSmall(args, errors, target, propertyValue);
-            }
-            else if(range.getTo().compareTo(propertyValue) == -1) {
-                rejectValueTooBig(args, errors, target, propertyValue);
-            }
-            return;
-        }
-        
         // size of the property (e.g. String length(), Collection size(), etc.) 
         Integer size = null;
 
@@ -111,24 +96,24 @@ class SizeConstraint extends AbstractConstraint {
         
         if(!range.contains(size)) {
             if(range.getFrom().compareTo(size) == 1) {
-                rejectValueTooSmall(args, errors, target, propertyValue);
+                rejectValueTooSmall(args, errors, target);
             }
             else if(range.getTo().compareTo(size) == -1) {
-                rejectValueTooBig(args, errors, target, propertyValue);
+                rejectValueTooBig(args, errors, target);
             }
         }
     }
     
-    private void rejectValueTooSmall(Object[] args, Errors errors, Object target, Object propertyValue){
-        rejectValue(args, errors, target, propertyValue, false);
+    private void rejectValueTooSmall(Object[] args, Errors errors, Object target){
+        rejectValue(args, errors, target, false);
     }
     
-    private void rejectValueTooBig(Object[] args, Errors errors, Object target, Object propertyValue){
-        rejectValue(args, errors, target, propertyValue, true);
+    private void rejectValueTooBig(Object[] args, Errors errors, Object target){
+        rejectValue(args, errors, target, true);
     }
     
-    private void rejectValue(Object[] args, Errors errors, Object target, Object propertyValue, boolean tooBig) {
-        String suffix = null;
+    private void rejectValue(Object[] args, Errors errors, Object target, boolean tooBig) {
+        String suffix;
         if (tooBig) {
             suffix = ConstrainedProperty.TOOBIG_SUFFIX;
         } else {

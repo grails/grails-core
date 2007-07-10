@@ -47,6 +47,9 @@ public class ConstrainedPropertyTests extends TestCase {
         assertTrue(cp.supportsContraint( ConstrainedProperty.RANGE_CONSTRAINT ));
         assertTrue(cp.supportsContraint( ConstrainedProperty.URL_CONSTRAINT ));
         assertTrue(cp.supportsContraint( ConstrainedProperty.VALIDATOR_CONSTRAINT ));
+        assertTrue(cp.supportsContraint( ConstrainedProperty.MAX_SIZE_CONSTRAINT ));
+        assertTrue(cp.supportsContraint( ConstrainedProperty.MIN_SIZE_CONSTRAINT ));
+        assertTrue(cp.supportsContraint( ConstrainedProperty.SIZE_CONSTRAINT ));
 
         assertFalse(cp.supportsContraint( ConstrainedProperty.SCALE_CONSTRAINT ));
 
@@ -72,9 +75,6 @@ public class ConstrainedPropertyTests extends TestCase {
 
         cp = new ConstrainedProperty(ConstrainedPropertyTests.class,"testProperty", Number.class);
 
-        assertTrue(cp.supportsContraint( ConstrainedProperty.MAX_SIZE_CONSTRAINT ));
-        assertTrue(cp.supportsContraint( ConstrainedProperty.MIN_SIZE_CONSTRAINT ));
-        assertTrue(cp.supportsContraint( ConstrainedProperty.SIZE_CONSTRAINT ));
         assertTrue(cp.supportsContraint( ConstrainedProperty.IN_LIST_CONSTRAINT ));
         assertTrue(cp.supportsContraint( ConstrainedProperty.NOT_EQUAL_CONSTRAINT ));
         assertTrue(cp.supportsContraint( ConstrainedProperty.NULLABLE_CONSTRAINT ));
@@ -83,6 +83,9 @@ public class ConstrainedPropertyTests extends TestCase {
         assertTrue(cp.supportsContraint( ConstrainedProperty.RANGE_CONSTRAINT ));
         assertTrue(cp.supportsContraint( ConstrainedProperty.VALIDATOR_CONSTRAINT ));
 
+        assertFalse(cp.supportsContraint( ConstrainedProperty.MAX_SIZE_CONSTRAINT ));
+        assertFalse(cp.supportsContraint( ConstrainedProperty.MIN_SIZE_CONSTRAINT ));
+        assertFalse(cp.supportsContraint( ConstrainedProperty.SIZE_CONSTRAINT ));
         assertFalse(cp.supportsContraint( ConstrainedProperty.BLANK_CONSTRAINT ));
         assertFalse(cp.supportsContraint( ConstrainedProperty.EMAIL_CONSTRAINT ));
         assertFalse(cp.supportsContraint( ConstrainedProperty.MATCHES_CONSTRAINT ));

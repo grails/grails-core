@@ -48,21 +48,6 @@ public class SizeConstraintTests extends AbstractConstraintTests{
                 list
         );
 
-        // remove this in 0.6 since size constraint is deprecated for numeric properties
-        testConstraintPassed(
-                getConstraint( "testInteger", new IntRange(2,5)),
-                new Integer(3)
-        );
-        testConstraintFailed(
-                getConstraint( "testInteger", new IntRange(2,5)),
-                new Integer(1)
-        );
-        testConstraintFailed(
-                getConstraint( "testInteger", new IntRange(2,5)),
-                new Integer(6)
-        );
-
-
         // must always pass on null value
         testConstraintPassed(
                 getConstraint( "testArray", new IntRange(2, 5)),
@@ -83,10 +68,10 @@ public class SizeConstraintTests extends AbstractConstraintTests{
         assertTrue( constraint.supports( List.class ));
         assertTrue(  constraint.supports( Collection.class ));
         assertTrue( constraint.supports( Double[].class ));
-        // remove this in 0.6 since size constraint is deprecated for numeric properties
-        assertTrue( constraint.supports( Integer.class ));
         assertFalse( constraint.supports( Object.class ));
         assertFalse( constraint.supports( null ));
+        assertFalse( constraint.supports( Integer.class ));
+        assertFalse( constraint.supports( Number.class ));
         assertEquals( new IntRange(1,5), constraint.getRange() );
 
         try {
