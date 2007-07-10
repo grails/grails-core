@@ -298,7 +298,12 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
 				argumentHandler.exposeFlowExecutionContext(responseInstruction.getFlowExecutionKey(),
 						responseInstruction.getFlowExecutionContext(), model);
 
-                setResult(new ModelAndView(controllerActionURI + view.getViewName(), model));
+
+                final String viewName = view.getViewName();
+                if(viewName.startsWith("/"))
+                    setResult(new ModelAndView(viewName, model));
+                else
+                    setResult(new ModelAndView(controllerActionURI + viewName, model));
 			}
 
 			protected void handleFlowDefinitionRedirect(FlowDefinitionRedirect redirect) throws Exception {

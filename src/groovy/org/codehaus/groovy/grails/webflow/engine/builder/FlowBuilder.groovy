@@ -67,7 +67,7 @@ class FlowBuilder extends AbstractFlowBuilder implements GroovyObject {
     static final DO_CALL_METHOD = "doCall"
     static final FLOW_METHOD = "flow"
     static final CLOSURE_METHODS = ['setDelegate', 'setMetaClass', 'getMetaClass', 'call', 'doCall']
-    static final FLOW_INFO_METHODS =  ['on', 'action', 'subflow']
+    static final FLOW_INFO_METHODS =  ['on', 'action', 'subflow',"render","redirect"]
 
     final String flowId
     private MetaClass metaClass
@@ -119,22 +119,22 @@ class FlowBuilder extends AbstractFlowBuilder implements GroovyObject {
                     }
                 }
                 c.metaClass = closureMetaClass
-                c.setDelegate(flowInfo);
-                c.call();
+                c.delegate = flowInfo
+                c.call()
 
-                Transition[] trans = flowInfo.getTransitions();
+                Transition[] trans = flowInfo.transitions
 
-                Closure action = flowInfo.getAction();
+                Closure action = flowInfo.action
                 State state
-                if(trans.length == 0 && flowInfo.getSubflow() == null) {
+                if(trans.length == 0 && flowInfo.subflow == null) {
                     state = addEndState(name, name);
                 }
-                else if(action!=null) {
+                else if(action) {
                    // add action state
                     state = addActionState(name, new ClosureInvokingAction(action),trans);
                 }
-                else if(flowInfo.getSubflow()!= null) {
-                    Flow flow = new FlowBuilder(name).flow(flowInfo.getSubflow());
+                else if(flowInfo.subflow) {
+                    Flow flow = new FlowBuilder(name).flow(flowInfo.subflow)
                     state = addSubflowState(name, flow,null, trans );
                 }
                 else {
@@ -165,7 +165,10 @@ class FlowBuilder extends AbstractFlowBuilder implements GroovyObject {
                         }
                     }
 
-                    state = addViewState(name, name,(Action) renderAction,trans);
+                    if(flowInfo.viewName)
+                        state = addViewState(name, flowInfo.viewName,(Action) renderAction,trans);
+                    else
+                        state = addViewState(name, name,(Action) renderAction,trans);
                 }
 
                 // add start state
@@ -246,39 +249,43 @@ private class FlowInfoCapturer {
     private List transitions = new ArrayList();
     private Closure action;
     private Closure subflow;
+    private String viewName
 
-    public Transition[] getTransitions() {
-        return (Transition[])transitions.toArray(new Transition[transitions.size()]);
+    Transition[] getTransitions() {
+        return transitions.toArray(new Transition[transitions.size()])
     }
-    public FlowInfoCapturer(FlowBuilder builder) {
+    FlowInfoCapturer(FlowBuilder builder) {
         this.builder = builder;
     }
 
-    public Closure getAction() {
-        return action;
-    }
-    public Closure getSubflow() {
-        return subflow;
-    }
-    public TransitionTo on(String name) {
+    String getViewName() { this.viewName }
+    Closure getAction() { this.action }
+    Closure getSubflow() { this.subflow }
+
+    TransitionTo on(String name) {
         return new TransitionTo(name, builder, transitions);
     }
-    public TransitionTo on(String name, Closure transitionCriteria) {
+    TransitionTo on(String name, Closure transitionCriteria) {
         def transitionCriteriaAction = new ClosureInvokingAction(transitionCriteria)
 
         return new TransitionTo(name, builder, transitions, transitionCriteriaAction)
     }
-    public TransitionTo on(Class exception) {
+    TransitionTo on(Class exception) {
         if(!Throwable.class.isAssignableFrom(exception)) {
             throw new FlowDefinitionException("Event handler in flow ["+getFlowId()+"] passed a class which is not a instance of java.lang.Throwable");
         }
         return new TransitionTo(exception, builder, transitions);
     }
-    public void action(Closure callable) {
+    void action(Closure callable) {
         this.action = callable;
     }
-    public void subflow(Closure callable) {
+    void subflow(Closure callable) {
         this.subflow = callable;
+    }
+    void render(Map args) {
+        if(args.view) {
+            this.viewName = args.view
+        }
     }
 }
 class TransitionTo {
