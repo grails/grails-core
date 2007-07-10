@@ -93,6 +93,7 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
     private String id;
     private String controllerName;
     private String actionName;
+    private String controllerActionURI;
 
     public SimpleGrailsControllerHelper(GrailsApplication application, ApplicationContext context, ServletContext servletContext) {
         super();
@@ -189,10 +190,13 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
 
         actionName = controllerClass.getClosurePropertyName(uri);
         webRequest.setActionName(actionName);
+
         
         if(LOG.isDebugEnabled()) {
             LOG.debug("Processing request for controller ["+controllerName+"], action ["+actionName+"], and id ["+id+"]");
         }
+        controllerActionURI = SLASH + controllerName + SLASH + actionName + SLASH;
+        
         // Step 3: load controller from application context.
         GroovyObject controller = getControllerInstance(controllerClass);
 
@@ -293,7 +297,8 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
 				Map model = new HashMap(view.getModel());
 				argumentHandler.exposeFlowExecutionContext(responseInstruction.getFlowExecutionKey(),
 						responseInstruction.getFlowExecutionContext(), model);
-				setResult(new ModelAndView(SLASH + controllerName + SLASH + view.getViewName(), model));
+
+                setResult(new ModelAndView(controllerActionURI + view.getViewName(), model));
 			}
 
 			protected void handleFlowDefinitionRedirect(FlowDefinitionRedirect redirect) throws Exception {

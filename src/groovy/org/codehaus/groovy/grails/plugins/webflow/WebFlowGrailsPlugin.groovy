@@ -14,8 +14,8 @@
  */
 package org.codehaus.groovy.grails.plugins.webflow
 
-import org.springframework.webflow.execution.RequestContext
-
+import org.springframework.webflow.engine.RequestControlContext
+import org.springframework.webflow.core.collection.MutableAttributeMap
 /**
  * A Grails plug-in that sets up Spring webflow integration
  
@@ -28,12 +28,22 @@ import org.springframework.webflow.execution.RequestContext
  */
 
 import grails.util.GrailsUtil
+import org.springframework.webflow.definition.registry.FlowDefinitionRegistry
+import org.codehaus.groovy.grails.commons.GrailsControllerClass
+import org.springframework.webflow.engine.builder.FlowAssembler
+import org.codehaus.groovy.grails.webflow.engine.builder.FlowBuilder
+import org.springframework.webflow.definition.registry.StaticFlowDefinitionHolder
 
 class WebFlowGrailsPlugin {
 
     def version = GrailsUtil.getGrailsVersion()
     def dependsOn = [core:version,i18n:version]
+    def observe = ['controllers']
 
+    /**
+     * The doWithSpring method of this plug-in registers two beans. The 'flowRegistry" bean which is responsible for storing
+     * flows and the 'flowExecutor' bean which is the core of Spring WebFlow and deals with the execution of flows
+     */
     def doWithSpring = {
         flowRegistry(org.codehaus.groovy.grails.webflow.engine.builder.ControllerFlowRegistry) {
             grailsApplication = ref("grailsApplication", true)
@@ -45,15 +55,53 @@ class WebFlowGrailsPlugin {
         }
     }
 
+    /**
+     * Spring WebFlow has its own Map API for some reason so we can add implementations so that they behave like Groovy maps
+     * Also we add shortcuts such as flow, conversation and flash for accessing the scopes as the "Scope" suffix seems redundant
+     */
     def doWithDynamicMethods = {
-        RequestContext.metaClass.getFlow = {->
+        RequestControlContext.metaClass.getFlow = {->
             delegate.flowScope
         }
-        RequestContext.metaClass.getConversation = {->
+        RequestControlContext.metaClass.getConversation = {->
             delegate.conversationScope
         }
-        RequestContext.metaClass.getFlash = {->
+        RequestControlContext.metaClass.getFlash = {->
             delegate.flashScope
+        }
+
+        MutableAttributeMap.metaClass.getProperty = { String name ->
+            def mp = delegate.class.metaClass.getMetaProperty(name)
+            def result = null
+            if(mp) result = mp.getProperty(delegate)
+            else {
+                result = delegate.get(name)
+            }
+            result
+        }
+        MutableAttributeMap.metaClass.setProperty = { String name, value ->
+            def mp = delegate.class.metaClass.getMetaProperty(name)
+            if(mp) mp.setProperty(delegate, value)
+            else {
+                delegate.put(name, value)
+            }
+        }
+        MutableAttributeMap.metaClass.clear = {-> delegate.asMap().clear() }
+        MutableAttributeMap.metaClass.getAt = { String key -> delegate.get(key) }
+        MutableAttributeMap.metaClass.putAt = { String key, value -> delegate.put(key,value) }
+    }
+
+    /**
+     * Since this plug-in observes the controllers plugin it will receive onChange events when controllers change.
+     * This onChange handler will then go through all the flows of the controller, assemble them and re-register
+     * with the flow definition registry
+     */
+    def onChange = { event ->
+        FlowDefinitionRegistry flowRegistry = event.ctx.flowRegistry
+        def controller = application.getControllerClass(event.source.name)
+        for(flow in controller.flows) {
+            FlowAssembler flowAssembler = new FlowAssembler(flow.key, new FlowBuilder(flow.key, flow.value))
+            flowRegistry.registerFlowDefinition(new StaticFlowDefinitionHolder(flowAssembler.assembleFlow()))
         }
     }
 }
