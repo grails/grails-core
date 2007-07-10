@@ -227,8 +227,54 @@ class UniqueConstraintTests extends AbstractGrailsHibernateTests {
 		}
 	}
 
+    void testRelationships() {
+        def userClass = ga.getDomainClass("User").clazz
+        def linkClass = ga.getDomainClass("Link").clazz
 
-	void onSetUp() {
+        def user1 = userClass.newInstance()
+        user1.code = "1"
+        user1.login = "login1"
+        user1.grp = "group1"
+        user1.department = "department1"
+        user1.organization = "organization1"
+        user1.save(true)
+
+        def user2 = userClass.newInstance()
+        user2.code = "2"
+        user2.login = "login2"
+        user2.grp = "group2"
+        user2.department = "department2"
+        user2.organization = "organization2"
+        user2.save(true)
+
+        def user3 = userClass.newInstance()
+        user3.code = "3"
+        user3.login = "login3"
+        user3.grp = "group3"
+        user3.department = "department3"
+        user3.organization = "organization3"
+        user3.save(true)
+
+        def link = linkClass.newInstance()
+        link.u1 = user1
+        link.u2 = user2
+        link.validate()
+        assertFalse link.hasErrors()
+        link.save(true)
+
+        link = linkClass.newInstance()
+        link.u1 = user1
+        link.u2 = user3
+        link.validate()
+        assertFalse link.hasErrors()
+
+        link.u2 = user2
+        link.validate()
+        assertTrue link.hasErrors()
+    }
+
+
+    void onSetUp() {
 
 		this.gcl.parseClass('''
 class User {
@@ -249,6 +295,21 @@ class User {
 }
 '''
 		)
+
+        this.gcl.parseClass('''
+class Link {
+    Long id
+    Long version
+
+    User u1
+    User u2
+
+    static constraints = {
+        u2(unique:'u1')
+    }
+}
+'''
+        )
 	}
 
 	void onTearDown() {
