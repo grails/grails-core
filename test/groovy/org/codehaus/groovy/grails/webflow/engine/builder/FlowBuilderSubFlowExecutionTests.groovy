@@ -44,6 +44,7 @@ class FlowBuilderSubFlowExecutionTests extends AbstractFlowExecutionTests{
         assert subflow.getState('noResults') instanceof EndState
     }
 
+    def searchMoreAction = { [moreResults:["one", "two", "three"]] }
     void testSubFlowExecution() {
         def viewSelection = startFlow()
         assert viewSelection
@@ -56,6 +57,20 @@ class FlowBuilderSubFlowExecutionTests extends AbstractFlowExecutionTests{
         assertEquals "displayMoreResults", viewSelection.viewName
     }
 
+
+    void testSubFlowExecution2() {
+        searchMoreAction = { error() }
+        def viewSelection = startFlow()
+        assert viewSelection
+        assertEquals "displaySearchForm", viewSelection.viewName
+        viewSelection = signalEvent( "submit" )
+        assert viewSelection
+        assertEquals "results", viewSelection.viewName
+        //assertEquals( ["foo", "bar"],viewSelection.model.results)
+        viewSelection = signalEvent("findMore")
+        assertEquals "displayNoResults", viewSelection.viewName
+    }
+
     FlowDefinition getFlowDefinition() {
         def searchService = [executeSearch:{["foo", "bar"]}]
         def params = [q:"foo"]
@@ -66,9 +81,7 @@ class FlowBuilderSubFlowExecutionTests extends AbstractFlowExecutionTests{
                 on("searchAgain").to "noResults"
             }
             searchMore {
-                action {
-                    [moreResults:["one", "two", "three"]]
-                }
+                action(searchMoreAction)
                 on("success").to "moreResults"
                 on("error").to "noResults"
             }
@@ -90,8 +103,10 @@ class FlowBuilderSubFlowExecutionTests extends AbstractFlowExecutionTests{
             displayResults {
                 subflow(displayResultsSubFlow)
                 on("moreResults").to "displayMoreResults"
+                on("noResults").to "displayNoResults"
             }
             displayMoreResults()
+            displayNoResults()
 
         }
     }

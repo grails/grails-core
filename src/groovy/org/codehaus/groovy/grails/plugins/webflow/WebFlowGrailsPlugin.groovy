@@ -51,7 +51,7 @@ class WebFlowGrailsPlugin {
             grailsApplication = ref("grailsApplication", true)
         }
         if(manager.hasGrailsPlugin('hibernate')) {
-            hibernateConversationListener(org.springframework.webflow.support.persistence.HibernateSessionPerConversationListener, sessionFactory)
+            hibernateConversationListener(org.springframework.webflow.support.persistence.HibernateSessionPerConversationListener, ref("sessionFactory")
             executionListenerLoader(org.springframework.webflow.execution.factory.StaticFlowExecutionListenerLoader, hibernateConversationListener)                                   
         }
         flowExecutor(org.codehaus.groovy.grails.webflow.config.GrailsAwareFlowExecutorFactoryBean) {
