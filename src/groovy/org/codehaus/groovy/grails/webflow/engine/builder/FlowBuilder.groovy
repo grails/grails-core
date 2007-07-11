@@ -33,36 +33,40 @@ import org.springframework.webflow.engine.support.ActionTransitionCriteria
 import org.springframework.webflow.execution.Action
 import org.springframework.webflow.execution.RequestContext;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
+import org.springframework.context.ApplicationContextAware
+import org.springframework.context.ApplicationContext
+import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder
+import org.codehaus.groovy.grails.web.mapping.UrlCreator
 
 /**
- * <p>A builder implementation used to construct Spring Webflows. This is a DSL specifically
- *   designed to allow the construction of complex flows and is integrated into Grails'
- *   controller mechanism</p>
- *
- * <p>An example flow can be seen below:
- *
- * <pre><code>
-            displaySearchForm {
-                on("submit").to "executeSearch"
-            }
-            executeSearch {
-                action {
-                    [results:searchService.executeSearch(params.q)]
-                }
-                on("success").to "displayResults"
-                on(Exception).to "displaySearchForm"
-            }
-            displayResults()
- * </code></pre>
- *
- * @author Graeme Rocher
- * @since 0.6
- *
- *        <p/>
- *        Created: Jun 8, 2007
- *        Time: 9:09:05 AM
- */
-class FlowBuilder extends AbstractFlowBuilder implements GroovyObject {
+* <p>A builder implementation used to construct Spring Webflows. This is a DSL specifically
+*   designed to allow the construction of complex flows and is integrated into Grails'
+*   controller mechanism</p>
+*
+* <p>An example flow can be seen below:
+*
+* <pre><code>
+           displaySearchForm {
+               on("submit").to "executeSearch"
+           }
+           executeSearch {
+               action {
+                   [results:searchService.executeSearch(params.q)]
+               }
+               on("success").to "displayResults"
+               on(Exception).to "displaySearchForm"
+           }
+           displayResults()
+* </code></pre>
+*
+* @author Graeme Rocher
+* @since 0.6
+*
+*        <p/>
+*        Created: Jun 8, 2007
+*        Time: 9:09:05 AM
+*/
+class FlowBuilder extends AbstractFlowBuilder implements GroovyObject, ApplicationContextAware {
     static final LOG = LogFactory.getLog(FlowBuilder)
     static final DO_CALL_METHOD = "doCall"
     static final FLOW_METHOD = "flow"
@@ -75,6 +79,8 @@ class FlowBuilder extends AbstractFlowBuilder implements GroovyObject {
     private boolean flowDefiningMode = false
     private String startFlow;
     private boolean initialised = false
+
+    ApplicationContext applicationContext
 
     public FlowBuilder(String flowId) {
         this.flowId = flowId;
@@ -100,7 +106,7 @@ class FlowBuilder extends AbstractFlowBuilder implements GroovyObject {
         }
         else if(flowDefiningMode) {
             if(isFirstArgumentClosure(args)) {
-                FlowInfoCapturer flowInfo = new FlowInfoCapturer(this);
+                FlowInfoCapturer flowInfo = new FlowInfoCapturer(this, applicationContext)
 
                 Closure c = args[0];
                 def builder = this
@@ -126,7 +132,10 @@ class FlowBuilder extends AbstractFlowBuilder implements GroovyObject {
 
                 Closure action = flowInfo.action
                 State state
-                if(trans.length == 0 && flowInfo.subflow == null) {
+                if(flowInfo.redirectUrl) {
+                    state = addEndState(name, flowInfo.redirectUrl );
+                }
+                else if(trans.length == 0 && flowInfo.subflow == null) {
                     state = addEndState(name, name);
                 }
                 else if(action) {
@@ -245,22 +254,27 @@ class FlowBuilder extends AbstractFlowBuilder implements GroovyObject {
  *  Used to capture details of the flow
  */
 private class FlowInfoCapturer {
-    private FlowBuilder builder;
-    private List transitions = new ArrayList();
-    private Closure action;
-    private Closure subflow;
+    private FlowBuilder builder
+    private List transitions = []
+    private Closure action
+    private Closure subflow
     private String viewName
+    private applicationContext
+    private redirectUrl
+
+    FlowInfoCapturer(FlowBuilder builder,ApplicationContext applicationContext) {
+        this.builder = builder;
+        this.applicationContext = applicationContext
+    }
 
     Transition[] getTransitions() {
         return transitions.toArray(new Transition[transitions.size()])
-    }
-    FlowInfoCapturer(FlowBuilder builder) {
-        this.builder = builder;
     }
 
     String getViewName() { this.viewName }
     Closure getAction() { this.action }
     Closure getSubflow() { this.subflow }
+    String getRedirectUrl() { this.redirectUrl }
 
     TransitionTo on(String name) {
         return new TransitionTo(name, builder, transitions);
@@ -286,6 +300,23 @@ private class FlowInfoCapturer {
         if(args.view) {
             this.viewName = args.view
         }
+    }
+    void redirect(Map args) {
+        if(args.url) redirectUrl = "externalRedirect:${args.url}"
+        else if(args.uri) redirectUrl = "externalRedirect:${args.uri}"
+        else {
+            if(args.controller) {
+                def controller = args.controller
+                def params = args.params ? args.params : [:]
+                def urlMapper =  applicationContext?.getBean(UrlMappingsHolder.BEAN_ID)
+                if(!urlMapper) throw new IllegalStateException("Cannot redirect without an instance of [org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder] within the ApplicationContext")
+                if(args.id) params.id = args.id
+
+                UrlCreator urlCreator = urlMapper.getReverseMapping( controller, args.action, params );
+                def url = urlCreator.createURL(controller, args.action, params, 'utf-8')
+                redirectUrl = "externalRedirect:$url"                
+            }
+        }   
     }
 }
 class TransitionTo {

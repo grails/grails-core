@@ -19,6 +19,8 @@ import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.springframework.webflow.engine.builder.AbstractFlowBuilderFlowRegistryFactoryBean
 import org.springframework.webflow.definition.registry.FlowDefinitionRegistry
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware
+import org.springframework.context.ApplicationContextAware
+import org.springframework.context.ApplicationContext
 
 /**
 * A flow execution repository that scans the set GrailsApplication instance for controllers
@@ -32,8 +34,10 @@ import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware
 *
 */
 
-class ControllerFlowRegistry extends AbstractFlowBuilderFlowRegistryFactoryBean implements GrailsApplicationAware {
+class ControllerFlowRegistry extends AbstractFlowBuilderFlowRegistryFactoryBean implements GrailsApplicationAware, ApplicationContextAware {
 
+
+    ApplicationContext applicationContext
     GrailsApplication grailsApplication
 
     /**
@@ -45,7 +49,10 @@ class ControllerFlowRegistry extends AbstractFlowBuilderFlowRegistryFactoryBean 
             for(c in grailsApplication.controllerClasses) {
                 for(flow in c.flows) {
                     def flowId = flow.key
-                    super.registerFlowDefinition(registry, flowId, new FlowBuilder(flowId, flow.value));
+                    FlowBuilder builder = new FlowBuilder(flowId, flow.value)
+                    builder.applicationContext = applicationContext
+                    
+                    super.registerFlowDefinition(registry, flowId, builder);
                 }
             }
 
