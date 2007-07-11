@@ -50,15 +50,22 @@ class WebFlowGrailsPlugin {
         flowRegistry(org.codehaus.groovy.grails.webflow.engine.builder.ControllerFlowRegistry) {
             grailsApplication = ref("grailsApplication", true)
         }
-        if(manager.hasGrailsPlugin('hibernate')) {
-            hibernateConversationListener(org.springframework.webflow.support.persistence.HibernateSessionPerConversationListener, ref("sessionFactory") )
-            executionListenerLoader(org.springframework.webflow.execution.factory.StaticFlowExecutionListenerLoader, hibernateConversationListener)                                   
+        boolean hasExecutionListener = false
+        if(manager.hasGrailsPlugin('hibernate') ) {
+            try {
+                hibernateConversationListener(org.springframework.webflow.support.persistence.HibernateSessionPerConversationListener, sessionFactory)
+                executionListenerLoader(org.springframework.webflow.execution.factory.StaticFlowExecutionListenerLoader, hibernateConversationListener)
+                hasExecutionListener = true
+            } catch (MissingPropertyException mpe) {
+                // no session factory, this is ok
+            }
+
         }
         flowExecutor(org.codehaus.groovy.grails.webflow.config.GrailsAwareFlowExecutorFactoryBean) {
             definitionLocator = flowRegistry
             repositoryType = "CONTINUATION"
             grailsApplication = ref("grailsApplication", true)
-            if(manager.hasGrailsPlugin('hibernate')) {
+            if(manager.hasGrailsPlugin('hibernate') && hasExecutionListener) {
                 executionListenerLoader = executionListenerLoader
             }
         }
