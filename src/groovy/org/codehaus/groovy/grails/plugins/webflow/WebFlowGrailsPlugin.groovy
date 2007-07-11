@@ -34,11 +34,13 @@ import org.springframework.webflow.engine.builder.FlowAssembler
 import org.codehaus.groovy.grails.webflow.engine.builder.FlowBuilder
 import org.springframework.webflow.definition.registry.StaticFlowDefinitionHolder
 
+
 class WebFlowGrailsPlugin {
 
     def version = GrailsUtil.getGrailsVersion()
     def dependsOn = [core:version,i18n:version]
     def observe = ['controllers']
+    def loadAfter = ['hibernate']
 
     /**
      * The doWithSpring method of this plug-in registers two beans. The 'flowRegistry" bean which is responsible for storing
@@ -48,10 +50,17 @@ class WebFlowGrailsPlugin {
         flowRegistry(org.codehaus.groovy.grails.webflow.engine.builder.ControllerFlowRegistry) {
             grailsApplication = ref("grailsApplication", true)
         }
+        if(manager.hasGrailsPlugin('hibernate')) {
+            hibernateConversationListener(org.springframework.webflow.support.persistence.HibernateSessionPerConversationListener, sessionFactory)
+            executionListenerLoader(org.springframework.webflow.execution.factory.StaticFlowExecutionListenerLoader, hibernateConversationListener)                                   
+        }
         flowExecutor(org.codehaus.groovy.grails.webflow.config.GrailsAwareFlowExecutorFactoryBean) {
             definitionLocator = flowRegistry
             repositoryType = "CONTINUATION"
             grailsApplication = ref("grailsApplication", true)
+            if(manager.hasGrailsPlugin('hibernate')) {
+                executionListenerLoader = executionListenerLoader
+            }
         }
     }
 
@@ -100,7 +109,10 @@ class WebFlowGrailsPlugin {
         FlowDefinitionRegistry flowRegistry = event.ctx.flowRegistry
         def controller = application.getControllerClass(event.source.name)
         for(flow in controller.flows) {
-            FlowAssembler flowAssembler = new FlowAssembler(flow.key, new FlowBuilder(flow.key, flow.value))
+            def FlowBuilder builder = new FlowBuilder(flow.key, flow.value)
+            builder.applicationContext = event.ctx
+            
+            FlowAssembler flowAssembler = new FlowAssembler(flow.key, builder)
             flowRegistry.registerFlowDefinition(new StaticFlowDefinitionHolder(flowAssembler.assembleFlow()))
         }
     }

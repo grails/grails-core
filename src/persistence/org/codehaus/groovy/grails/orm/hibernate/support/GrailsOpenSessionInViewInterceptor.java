@@ -14,10 +14,15 @@
  */
 package org.codehaus.groovy.grails.orm.hibernate.support;
 
-import org.springframework.orm.hibernate3.support.OpenSessionInViewInterceptor;
-import org.hibernate.Session;
-import org.hibernate.HibernateException;
+import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.hibernate.FlushMode;
+import org.hibernate.HibernateException;
+import org.hibernate.Session;
+import org.springframework.dao.DataAccessException;
+import org.springframework.orm.hibernate3.support.OpenSessionInViewInterceptor;
+import org.springframework.ui.ModelMap;
+import org.springframework.web.context.request.WebRequest;
 
 /**
  * An interceptor that extends the default spring OSIVI and doesn't flush the session if it has been set
@@ -32,9 +37,35 @@ import org.hibernate.FlushMode;
  */
 public class GrailsOpenSessionInViewInterceptor extends OpenSessionInViewInterceptor {
 
+    private static final String IS_FLOW_REQUEST_ATTRIBUTE = "org.codehaus.groovy.grails.webflow.flow_request";
+
+    public void preHandle(WebRequest request) throws DataAccessException {
+        GrailsWebRequest webRequest = (GrailsWebRequest) request.getAttribute(GrailsApplicationAttributes.WEB_REQUEST, WebRequest.SCOPE_REQUEST);
+        final boolean isFlowRequest = webRequest.isFlowRequest();
+        if(isFlowRequest) {
+            webRequest.setAttribute(IS_FLOW_REQUEST_ATTRIBUTE, "true", WebRequest.SCOPE_REQUEST);
+        }
+        else {
+            super.preHandle(request);
+        }
+    }
+
+    public void postHandle(WebRequest request, ModelMap model) throws DataAccessException {
+        final boolean isWebRequest = request.getAttribute(IS_FLOW_REQUEST_ATTRIBUTE, WebRequest.SCOPE_REQUEST) != null;
+        if(!isWebRequest)
+            super.postHandle(request, model);
+    }
+
+    public void afterCompletion(WebRequest request, Exception ex) throws DataAccessException {
+        final boolean isWebRequest = request.getAttribute(IS_FLOW_REQUEST_ATTRIBUTE, WebRequest.SCOPE_REQUEST) != null;
+        if(!isWebRequest)
+            super.afterCompletion(request, ex);   
+    }
+
     protected void flushIfNecessary(Session session, boolean existingTransaction) throws HibernateException {
         if(session.getFlushMode() != FlushMode.MANUAL) {
             super.flushIfNecessary(session, existingTransaction);
         }
     }
+
 }

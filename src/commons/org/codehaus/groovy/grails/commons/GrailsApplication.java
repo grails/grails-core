@@ -255,4 +255,11 @@ public interface GrailsApplication extends ApplicationContextAware {
      */
     public Map getMetadata();
 
+    /**
+     * Retrieves an artefact by its logical property name. For example the logical property name of BookController would be book
+     * @param type The artefact type
+     * @param logicalName The logical name
+     * @return The GrailsClass or null if it doesn't exist
+     */
+    GrailsClass getArtefactByLogicalPropertyName(String type, String logicalName);
 }

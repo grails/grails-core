@@ -864,4 +864,9 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
         return applicationMeta;
     }
 
+    public GrailsClass getArtefactByLogicalPropertyName(String type, String logicalName) {
+        ArtefactInfo info = getArtefactInfo(type);
+        return info == null ? null : info.getGrailsClassByLogicalPropertyName(logicalName);
+    }
+
 }

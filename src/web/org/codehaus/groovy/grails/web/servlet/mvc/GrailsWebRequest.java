@@ -15,7 +15,13 @@
  */
 package org.codehaus.groovy.grails.web.servlet.mvc;
 
-import org.codehaus.groovy.grails.web.servlet.*;
+import org.apache.commons.lang.StringUtils;
+import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
+import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.commons.GrailsControllerClass;
+import org.codehaus.groovy.grails.web.servlet.DefaultGrailsApplicationAttributes;
+import org.codehaus.groovy.grails.web.servlet.FlashScope;
+import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
 import org.springframework.web.servlet.handler.DispatcherServletWebRequest;
 
@@ -178,5 +184,19 @@ public class GrailsWebRequest extends DispatcherServletWebRequest {
     public String getId() {
         Object id = getParams().get(ID_PARAMETER);
         return id != null ? id.toString() : null;
+    }
+
+    /**
+     * Returns true if the current executing request is a flow request
+     *
+     * @return True if it is a flow request
+     */
+    public boolean isFlowRequest() {
+        final String actionName = getActionName();
+        if(StringUtils.isBlank(actionName))return false;
+        GrailsApplication application = getAttributes().getGrailsApplication();
+        GrailsControllerClass controllerClass = (GrailsControllerClass)application.getArtefactByLogicalPropertyName(ControllerArtefactHandler.TYPE,getControllerName());
+        if(controllerClass != null && controllerClass.isFlowAction(actionName)) return true;
+        return false;
     }
 }

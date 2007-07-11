@@ -634,8 +634,12 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
         }
 	}
 
-
-    public FlowExecutor getFlowExecutor() {
+    /**
+     * Retrieves the FlowExecutor instance stored in the ApplicationContext
+     *
+     * @return The FlowExecution
+     */
+    protected FlowExecutor getFlowExecutor() {
         if(applicationContext.containsBean(FLOW_EXECUTOR_BEAN)) {
             return (FlowExecutor)applicationContext.getBean(FLOW_EXECUTOR_BEAN);
         }

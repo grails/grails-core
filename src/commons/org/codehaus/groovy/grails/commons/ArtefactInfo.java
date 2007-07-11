@@ -20,6 +20,7 @@ import java.util.Map;
 /**
  * <p>Holder for all the class-related info and structures relating to an Artefact</p>
  * @author Marc Palmer (marc@anyware.co.uk)
+ * @author Graeme Rocher
  */
 public interface ArtefactInfo {
 
@@ -60,4 +61,11 @@ public interface ArtefactInfo {
      * @return The Map, which may be empty but never null.
      */
     GrailsClass getGrailsClass(String name);
+
+    /**
+     * Retrieves a Grails class by its logical property name. For example "BookController" would be "book"
+     * @param logicalName The logical name
+     * @return A GrailsClass or null
+     */
+    GrailsClass getGrailsClassByLogicalPropertyName(String logicalName);
 }

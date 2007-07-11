@@ -21,7 +21,9 @@ import java.util.Collections;
 
 /**
  * <p>Mutable holder of artefact info</p>
+ *
  * @author Marc Palmer (marc@anyware.co.uk)
+ * @author Graeme Rocher
  */
 public class DefaultArtefactInfo implements ArtefactInfo {
 
@@ -32,6 +34,8 @@ public class DefaultArtefactInfo implements ArtefactInfo {
     private Map grailsClassesByName = new HashMap();
 
     private Map classesByName = new HashMap();
+
+    private Map logicalPropertyNameToClassMap = new HashMap();
 
     public Map handlerData = new HashMap();
 
@@ -53,6 +57,7 @@ public class DefaultArtefactInfo implements ArtefactInfo {
             grailsClassesByName.put( actualClass.getName(), artefactClass);
         }
         classesByName.put( actualClass.getName(), actualClass);
+        logicalPropertyNameToClassMap.put( artefactClass.getLogicalPropertyName(), artefactClass);
     }
 
     /**
@@ -89,5 +94,9 @@ public class DefaultArtefactInfo implements ArtefactInfo {
 
     public synchronized GrailsClass getGrailsClass(String name) {
         return (GrailsClass) this.grailsClassesByName.get(name);
+    }
+
+    public synchronized GrailsClass getGrailsClassByLogicalPropertyName(String logicalName) {
+        return (GrailsClass)logicalPropertyNameToClassMap.get(logicalName);
     }
 }
