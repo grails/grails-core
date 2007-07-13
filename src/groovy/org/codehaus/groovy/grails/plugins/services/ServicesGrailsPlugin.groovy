@@ -30,7 +30,7 @@ import org.codehaus.groovy.grails.commons.ServiceArtefactHandler
  */
 class ServicesGrailsPlugin {
 	
-	def version = GrailsPluginUtils.getGrailsVersion()
+	def version = grails.util.GrailsUtil.getGrailsVersion()
 	def loadAfter = ['hibernate']
 	                 
     def watchedResources = ["file:./grails-app/services/**/*Service.groovy",

@@ -27,24 +27,4 @@
 	
 	
 	
-	<bean id="sessionFactory" class="org.codehaus.groovy.grails.orm.hibernate.ConfigurableLocalSessionFactoryBean">
-		<property name="grailsApplication">
-			<ref bean="grailsApplication" />
-		</property>
-		<property name="configLocation">
-			<value>hibernate.cfg.xml</value>
-		</property> 				
-		<property name="configurationClass">
-			<value>org.codehaus.groovy.grails.orm.hibernate.cfg.DefaultGrailsDomainConfiguration</value>
-		</property> 
-		<property name="hibernateProperties">
-			<props>
-				<prop key="hibernate.dialect">org.hibernate.dialect.HSQLDialect</prop>
-				<prop key="hibernate.hbm2ddl.auto">create-drop</prop>				
-			</props>
-		</property>
-		<property name="dataSource">
-			<ref bean="dataSource" />
-		</property>		
-	</bean>		
 </beans>

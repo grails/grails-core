@@ -13,10 +13,10 @@ class TwoUnidirecitonalOneToManyTests extends AbstractGrailsHibernateTests {
 		doc1.filename = "file1.txt"
 		doc2.filename = "file2.txt"
 		
-		mailing.addDocument(doc1)
+		mailing.addToDocuments(doc1)
 		mailing.save(true)
 		
-		recipient.addDocument(doc2)
+		recipient.addToDocuments(doc2)
 		recipient.save(true)
 	}
 	

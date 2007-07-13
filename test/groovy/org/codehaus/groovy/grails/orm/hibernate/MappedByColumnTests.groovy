@@ -13,7 +13,7 @@ class MappedByColumnTests extends AbstractGrailsHibernateTests {
 		a.save(true)
 		
 		def r = routeClass.newInstance()
-		a.addRoute(r)
+		a.addToRoutes(r)
 		
 		a.save(true)
 		

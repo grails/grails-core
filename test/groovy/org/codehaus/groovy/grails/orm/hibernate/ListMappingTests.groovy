@@ -36,9 +36,9 @@ class ListMappingTests extends AbstractGrailsHibernateTests {
 
         def book = bookClass.newInstance()
 
-        book.addAuthor(a1)
-            .addAuthor(a2)
-            .addAuthor(a3)
+        book.addToAuthors(a1)
+            .addToAuthors(a2)
+            .addToAuthors(a3)
             .save(true)
 
         session.flush()

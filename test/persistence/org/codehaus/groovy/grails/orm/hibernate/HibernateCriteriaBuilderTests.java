@@ -5,23 +5,25 @@ import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyObject;
 import groovy.lang.MissingMethodException;
 import groovy.util.Proxy;
-
 import org.apache.commons.lang.ArrayUtils;
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
+import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
-import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
-import org.codehaus.groovy.grails.orm.hibernate.cfg.DefaultGrailsDomainConfiguration;
-import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil;
+import org.codehaus.groovy.grails.commons.metaclass.ExpandoMetaClass;
+import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator;
+import org.codehaus.groovy.grails.support.MockApplicationContext;
 import org.codehaus.groovy.runtime.InvokerInvocationException;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.StaticMessageSource;
 import org.springframework.orm.hibernate3.SessionHolder;
 import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
+import org.springframework.mock.web.MockServletContext;
 
 import java.util.List;
-import java.util.Properties;
 
 public class HibernateCriteriaBuilderTests extends
         AbstractDependencyInjectionSpringContextTests {
@@ -53,6 +55,14 @@ public class HibernateCriteriaBuilderTests extends
     }
 
     protected void onSetUp() throws Exception {
+        cl.parseClass("dataSource {\n" +
+                "\t\t\tdbCreate = \"create-drop\" // one of 'create', 'create-drop','update'\n" +
+                "\t\t\turl = \"jdbc:hsqldb:mem:devDB\" \n" +
+                "\tpooled = false\n" +
+                "\tdriverClassName = \"org.hsqldb.jdbcDriver\"\n" +
+                "\tusername = \"sa\"\n" +
+                "\tpassword = \"\"\n" +
+                "}", "DataSource");        
         Class groovyClass = cl.parseClass("public class CriteriaBuilderTestClass {\n" +
                 "\n" +
                 "\tLong id; \n" +
@@ -75,23 +85,16 @@ public class HibernateCriteriaBuilderTests extends
         grailsApplication = new DefaultGrailsApplication(new Class[]{groovyClass},cl);
 
 
-        DefaultGrailsDomainConfiguration config = new DefaultGrailsDomainConfiguration();
-        config.setGrailsApplication(this.grailsApplication);
-        Properties props = new Properties();
-        props.put("hibernate.connection.username","sa");
-        props.put("hibernate.connection.password","");
-        props.put("hibernate.connection.url","jdbc:hsqldb:mem:grailsDB");
-        props.put("hibernate.connection.driver_class","org.hsqldb.jdbcDriver");
-        props.put("hibernate.dialect","org.hibernate.dialect.HSQLDialect");
-        props.put("hibernate.hbm2ddl.auto","create-drop");
-        props.put("hibernate.show_sql","true");
 
-        //props.put("hibernate.hbm2ddl.auto","update");
-        config.setProperties(props);
-        //originalClassLoader = Thread.currentThread().getContextClassLoader();
-        Thread.currentThread().setContextClassLoader(this.cl);
-        this.sessionFactory = config.buildSessionFactory();
-        GrailsHibernateUtil.configureDynamicMethods(sessionFactory, grailsApplication);
+        ExpandoMetaClass.enableGlobally();
+
+
+        MockApplicationContext parent = new MockApplicationContext();
+        parent.registerMockBean(GrailsApplication.APPLICATION_ID, grailsApplication);
+        parent.registerMockBean("messageSource", new StaticMessageSource());
+        GrailsRuntimeConfigurator configurator = new GrailsRuntimeConfigurator(grailsApplication,parent);
+        ApplicationContext appCtx = configurator.configure( new MockServletContext( ));
+        this.sessionFactory = (SessionFactory)appCtx.getBean("sessionFactory");
 
 
 
@@ -104,7 +107,7 @@ public class HibernateCriteriaBuilderTests extends
         super.onSetUp();
     }		
 
-    private Proxy parse(String groovy,String testClassName, boolean uniqueResult) throws Exception {
+    private Proxy parse(String groovy,String testClassName, String criteriaClassName, boolean uniqueResult) throws Exception {
 
 
         GroovyClassLoader cl = this.grailsApplication.getClassLoader();
@@ -124,7 +127,7 @@ public class HibernateCriteriaBuilderTests extends
         GroovyObject go = (GroovyObject)clazz.newInstance();
         go.setProperty("sf", this.sessionFactory);
 
-        Class tc = this.grailsApplication.getArtefacts(DomainClassArtefactHandler.TYPE)[0].getClazz();
+        Class tc = this.grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE, criteriaClassName).getClazz();
         go.setProperty("tc", tc);
 
         Closure closure = (Closure)go.getProperty("test");
@@ -133,8 +136,8 @@ public class HibernateCriteriaBuilderTests extends
 
     }
     
-    private Proxy parse(String groovy,String testClassName) throws Exception {
-        return parse(groovy,testClassName,false);
+    private Proxy parse(String groovy,String testClassName, String criteriaClassName) throws Exception {
+        return parse(groovy,testClassName,criteriaClassName,false);
     }
     
     public void testWithGString() throws Exception {
@@ -150,9 +153,10 @@ public class HibernateCriteriaBuilderTests extends
 
         obj.invokeMethod("save", null);
 
-        Proxy p = parse(	".list { " +
+        Proxy p = null;
+        p = parse(	".list { " +
                         "like('firstName',\"${'ba'}%\");" +
-                "}", "Test1");
+                "}", "Test1", "CriteriaBuilderTestClass");
         List results = (List)p.getAdaptee();
         assertEquals(1 , results.size());
     }
@@ -185,11 +189,12 @@ public class HibernateCriteriaBuilderTests extends
         obj3.setProperty( "parent", obj) ;
         obj3.invokeMethod("save", null);
 
-        Proxy p = parse(	".list { " +
+        Proxy p = null;
+        p = parse(	".list { " +
                     "children { " +
                         "eq('firstName','bart');" +
                     "}" +
-                "}", "Test1");
+                "}", "Test1","CriteriaBuilderTestClass");
         List results = (List)p.getAdaptee();
         assertEquals(1 , results.size());
 
@@ -212,9 +217,10 @@ public class HibernateCriteriaBuilderTests extends
         
 	// check that calling uniqueResult version of constructor
 	// returns a single object
-        Proxy p = parse(	".list { " +
+        Proxy p = null;
+        p = parse(	".list { " +
                         "eq('firstName','homer');" +
-                "}", "Test1", true);
+                "}", "Test1", "CriteriaBuilderTestClass",true);
         Object result = p.getAdaptee();
         assertEquals(clazzName , result.getClass().getName());
 
@@ -222,7 +228,7 @@ public class HibernateCriteriaBuilderTests extends
 	// returns a List
         Proxy p2 = parse(	".list { " +
                         "eq('firstName','homer');" +
-                "}", "Test1", false);
+                "}", "Test1","CriteriaBuilderTestClass", false);
         Object result2 = p2.getAdaptee();
         assertTrue(List.class.isAssignableFrom(result2.getClass()));
 
@@ -264,7 +270,7 @@ public class HibernateCriteriaBuilderTests extends
                             "eq('firstName','bart');" +
                         "}" +
                     "}" +
-                "}", "Test1");
+                "}", "Test1","CriteriaBuilderTestClass");
         List results = (List)p.getAdaptee();
         assertEquals(1 , results.size());
 
@@ -275,7 +281,7 @@ public class HibernateCriteriaBuilderTests extends
                             "eq('firstName','bart');" +
                         "}" +
                     "}" +
-                "}", "Test1");
+                "}", "Test1","CriteriaBuilderTestClass");
         results = (List)p2.getAdaptee();
         assertEquals(2 , results.size());
     }
@@ -304,7 +310,8 @@ public class HibernateCriteriaBuilderTests extends
         obj3.setProperty( "parent", obj) ;
         obj3.invokeMethod("save", null);
 
-        Proxy p = parse(
+        Proxy p = null;
+        p = parse(	
 			".list { \n" +
 				"or { \n" +
 					"gt('age', 40) \n" +
@@ -313,7 +320,7 @@ public class HibernateCriteriaBuilderTests extends
 					"} \n" +
 				"} \n" +
 				"resultTransformer(org.hibernate.criterion.CriteriaSpecification.DISTINCT_ROOT_ENTITY) \n" +
-			"}", "Test1");
+			"}", "Test1","CriteriaBuilderTestClass");
         List results = (List)p.getAdaptee();
         assertEquals(1 , results.size());
 	}
@@ -350,13 +357,14 @@ public class HibernateCriteriaBuilderTests extends
         obj4.setProperty( "age", new Integer(45));
         obj4.invokeMethod("save", null);
 
-        Proxy p = parse(	"{ " +
+        Proxy p = null;
+        p = parse(	"{ " +
                     "or { " +
                         "eq('firstName','fred');" +
                         "eq('lastName', 'flintstone');" +
                         "eq('age', 12)" +
                     "}" +
-                "}", "Test1");
+                "}", "Test1","CriteriaBuilderTestClass");
         List results = (List)p.getAdaptee();
         assertEquals(3, results.size());
 
@@ -364,7 +372,7 @@ public class HibernateCriteriaBuilderTests extends
                     "or { " +
                         "eq('lastName', 'flintstone');" +
                     "}" +
-                "}", "Test1");
+                "}", "Test1","CriteriaBuilderTestClass");
         results = (List)p.getAdaptee();
         assertEquals(2, results.size());
 
@@ -376,7 +384,7 @@ public class HibernateCriteriaBuilderTests extends
                             "eq('lastName', 'flintstone');" +
                         "}" +
                     "}" +
-                "}", "Test1");
+                "}", "Test1","CriteriaBuilderTestClass");
         results = (List)p.getAdaptee();
         assertEquals(1, results.size());
     }
@@ -406,11 +414,12 @@ public class HibernateCriteriaBuilderTests extends
         obj3.setProperty( "age", new Integer(12));
         obj3.invokeMethod("save", null);
 
-        Proxy p = parse(	"{ " +
+        Proxy p = null;
+        p = parse(	"{ " +
                     "projections { " +
                         "distinct('lastName');" +
                     "}" +
-                "}", "Test1");
+                "}", "Test1","CriteriaBuilderTestClass");
         List results = (List)p.getAdaptee();
         assertEquals(2, results.size());
         assertTrue(results.contains("flintstone"));
@@ -420,7 +429,7 @@ public class HibernateCriteriaBuilderTests extends
                     "projections { " +
                         "distinct( ['lastName','age'] );" +
                     "}" +
-                "}", "Test1");
+                "}", "Test1","CriteriaBuilderTestClass");
         results = (List)p.getAdaptee();
         assertEquals(3, results.size());
         System.out.println(results);
@@ -454,12 +463,13 @@ public class HibernateCriteriaBuilderTests extends
         obj3.invokeMethod("save", null);
 
 
-        Proxy p = parse(	"{ " +
+        Proxy p = null;
+        p = parse(	"{ " +
                     "and { " +
                         "eq('firstName','fred');" +
                         "eq('lastName', 'flintstone')" +
                     "}" +
-                "}", "Test1");
+                "}", "Test1","CriteriaBuilderTestClass");
         System.out.println("Criteria output = ");
         System.out.println(ArrayUtils.toString(p.invokeMethod("toArray",null)));
         p = parse(	"{\n" +
@@ -470,21 +480,21 @@ public class HibernateCriteriaBuilderTests extends
                                 "eq(\"lastName\", \"flintstone\")\n" +
                              "}\n" +
                         "}\n" +
-                    "}", "Test2");
+                    "}", "Test2","CriteriaBuilderTestClass");
         System.out.println("Criteria output = ");
         System.out.println(ArrayUtils.toString(p.invokeMethod("toArray",null)));
         p = parse(	"{\n" +
                         "eq(\"firstName\",\"Fred\")\n" +
                         "order(\"firstName\")\n" +
                         "maxResults(10)\n" +
-                    "}", "Test3");
+                    "}", "Test3","CriteriaBuilderTestClass");
         System.out.println("Criteria output = ");
         System.out.println(ArrayUtils.toString(p.invokeMethod("toArray",null)));
 
 
         try {
             // rubbish argument
-            parse(	"{\n" +
+            p = parse(	"{\n" +
                     "and {\n" +
                         "eq(\"firstName\",\"Fred\");\n" +
                         "not {\n" +
@@ -492,7 +502,7 @@ public class HibernateCriteriaBuilderTests extends
                             "rubbish()\n" +
                          "}\n" +
                     "}\n" +
-                "}", "Test5");
+                "}", "Test5","CriteriaBuilderTestClass");
 
             fail("Should have thrown illegal argument exception");
         }
@@ -515,11 +525,12 @@ public class HibernateCriteriaBuilderTests extends
 
         obj.invokeMethod("save", null);
 
-        Proxy p = parse(	"{ " +
+        Proxy p = null;
+        p = parse(	"{ " +
                     "projections { " +
                         "property('lastName',);" +
                     "}" +
-                "}", "Test1");
+                "}", "Test1","CriteriaBuilderTestClass");
         List results = (List)p.getAdaptee();
         assertEquals(1, results.size());
    }
@@ -544,11 +555,12 @@ public class HibernateCriteriaBuilderTests extends
 
         obj2.invokeMethod("save", null);
 
-        Proxy p = parse(	"{ " +
+        Proxy p = null;
+        p = parse(	"{ " +
                     "projections { " +
                         "avg('age',);" +
                     "}" +
-                "}", "Test1");
+                "}", "Test1","CriteriaBuilderTestClass");
         List results = (List)p.getAdaptee();
 	Double result = (Double) results.get(0);
         assertEquals(40, result.longValue());
@@ -574,13 +586,14 @@ public class HibernateCriteriaBuilderTests extends
 
         obj2.invokeMethod("save", null);
 
-        Proxy p = parse(	"{ " +
+        Proxy p = null;
+        p = parse(	"{ " +
                     "projections { " +
                         "count('firstName');" +
                     "}" +
-                "}", "Test1");
+                "}", "Test1","CriteriaBuilderTestClass");
         List results = (List)p.getAdaptee();
-        assertEquals(new Integer(2), results.get(0));
+        assertEquals(new Integer(2), (Integer)results.get(0));
    }
 
    public void testProjectionCountDistinct() throws Exception {
@@ -603,13 +616,14 @@ public class HibernateCriteriaBuilderTests extends
 
         obj2.invokeMethod("save", null);
 
-        Proxy p = parse(	"{ " +
+        Proxy p = null;
+        p = parse(	"{ " +
                     "projections { " +
                         "countDistinct('lastName');" +
                     "}" +
-                "}", "Test1");
+                "}", "Test1","CriteriaBuilderTestClass");
         List results = (List)p.getAdaptee();
-        assertEquals(new Integer(1), results.get(0));
+        assertEquals(new Integer(1), (Integer)results.get(0));
    }
 
    public void testProjectionMax() throws Exception {
@@ -632,13 +646,14 @@ public class HibernateCriteriaBuilderTests extends
 
         obj2.invokeMethod("save", null);
 
-        Proxy p = parse(	"{ " +
+        Proxy p = null;
+        p = parse(	"{ " +
                     "projections { " +
                         "max('age');" +
                     "}" +
-                "}", "Test1");
+                "}", "Test1","CriteriaBuilderTestClass");
         List results = (List)p.getAdaptee();
-        assertEquals(new Integer(45), results.get(0));
+        assertEquals(new Integer(45), (Integer)results.get(0));
    }
    
    public void testProjectionMin() throws Exception {
@@ -661,13 +676,14 @@ public class HibernateCriteriaBuilderTests extends
 
         obj2.invokeMethod("save", null);
 
-        Proxy p = parse(	"{ " +
+        Proxy p = null;
+        p = parse(	"{ " +
                     "projections { " +
                         "min('age');" +
                     "}" +
-                "}", "Test1");
+                "}", "Test1","CriteriaBuilderTestClass");
         List results = (List)p.getAdaptee();
-        assertEquals(new Integer(35), results.get(0));
+        assertEquals(new Integer(35), (Integer)results.get(0));
    }
    
    public void testProjectionRowCount() throws Exception {
@@ -690,13 +706,14 @@ public class HibernateCriteriaBuilderTests extends
 
         obj2.invokeMethod("save", null);
 
-        Proxy p = parse(	"{ " +
+        Proxy p = null;
+        p = parse(	"{ " +
                     "projections { " +
                         "rowCount();" +
                     "}" +
-                "}", "Test1");
+                "}", "Test1","CriteriaBuilderTestClass");
         List results = (List)p.getAdaptee();
-        assertEquals(new Integer(2), results.get(0));
+        assertEquals(new Integer(2), (Integer)results.get(0));
    }
    
    public void testProjectionSum() throws Exception {
@@ -719,13 +736,14 @@ public class HibernateCriteriaBuilderTests extends
 
         obj2.invokeMethod("save", null);
 
-        Proxy p = parse(	"{ " +
+        Proxy p = null;
+        p = parse(	"{ " +
                     "projections { " +
                         "sum('age');" +
                     "}" +
-                "}", "Test1");
+                "}", "Test1","CriteriaBuilderTestClass");
         List results = (List)p.getAdaptee();
-        assertEquals(new Integer(80), results.get(0));
+        assertEquals(new Integer(80), (Integer)results.get(0));
    }
    
    public void testOrderAsc() throws Exception {
@@ -748,12 +766,13 @@ public class HibernateCriteriaBuilderTests extends
 
         obj2.invokeMethod("save", null);
 
-        Proxy p = parse(	"{ " +
+        Proxy p = null;
+        p = parse(	"{ " +
                     "projections { " +
                         "property('firstName');" +
                         "order('firstName', 'asc');" +
                     "}" +
-                "}", "Test1");
+                "}", "Test1","CriteriaBuilderTestClass");
         List results = (List)p.getAdaptee();
         System.out.println(results.get(0));
    }
@@ -778,12 +797,13 @@ public class HibernateCriteriaBuilderTests extends
 
         obj2.invokeMethod("save", null);
 
-        Proxy p = parse(	"{ " +
+        Proxy p = null;
+        p = parse(	"{ " +
                     "projections { " +
                         "property('firstName');" +
                         "order('firstName','desc');" +
                     "}" +
-                "}", "Test1");
+                "}", "Test1","CriteriaBuilderTestClass");
         List results = (List)p.getAdaptee();
         System.out.println(results.get(0));
    }
@@ -815,9 +835,10 @@ public class HibernateCriteriaBuilderTests extends
 
         obj3.invokeMethod("save", null);
 
-        Proxy p = parse(	"{ " +
+        Proxy p = null;
+        p = parse(	"{ " +
                         "eqProperty('firstName','lastName');" +
-                "}", "Test1");
+                "}", "Test1","CriteriaBuilderTestClass");
         List results = (List)p.getAdaptee();
         assertEquals(2, results.size());
    }
@@ -842,9 +863,10 @@ public class HibernateCriteriaBuilderTests extends
 
         obj2.invokeMethod("save", null);
 
-        Proxy p = parse(	"{ " +
+        Proxy p = null;
+        p = parse(	"{ " +
                         "gtProperty('firstName','lastName');" +
-                "}", "Test1");
+                "}", "Test1","CriteriaBuilderTestClass");
         List results = (List)p.getAdaptee();
         assertEquals(1, results.size());
    }
@@ -870,9 +892,10 @@ public class HibernateCriteriaBuilderTests extends
 
         obj2.invokeMethod("save", null);
 
-        Proxy p = parse(	"{ " +
+        Proxy p = null;
+        p = parse(	"{ " +
                         "ge('age',43);" +
-                "}", "Test1");
+                "}", "Test1","CriteriaBuilderTestClass");
         List results = (List)p.getAdaptee();
         assertEquals(2, results.size());
    }
@@ -897,9 +920,10 @@ public class HibernateCriteriaBuilderTests extends
 
         obj2.invokeMethod("save", null);
 
-        Proxy p = parse(	"{ " +
+        Proxy p = null;
+        p = parse(	"{ " +
                         "le('age',45);" +
-                "}", "Test1");
+                "}", "Test1","CriteriaBuilderTestClass");
         List results = (List)p.getAdaptee();
         assertEquals(2, results.size());
    }
@@ -924,9 +948,10 @@ public class HibernateCriteriaBuilderTests extends
 
         obj2.invokeMethod("save", null);
 
-        Proxy p = parse(	"{ " +
+        Proxy p = null;
+        p = parse(	"{ " +
                         "lt('age',44);" +
-                "}", "Test1");
+                "}", "Test1","CriteriaBuilderTestClass");
         List results = (List)p.getAdaptee();
         assertEquals(1, results.size());
    }
@@ -951,9 +976,10 @@ public class HibernateCriteriaBuilderTests extends
 
         obj2.invokeMethod("save", null);
 
-        Proxy p = parse(	"{ " +
+        Proxy p = null;
+        p = parse(	"{ " +
                         "eq('firstName','fred');" +
-                "}", "Test1");
+                "}", "Test1","CriteriaBuilderTestClass");
         List results = (List)p.getAdaptee();
         assertEquals(1, results.size());
    }
@@ -978,9 +1004,10 @@ public class HibernateCriteriaBuilderTests extends
 
         obj2.invokeMethod("save", null);
 
-        Proxy p = parse(	"{ " +
+        Proxy p = null;
+        p = parse(	"{ " +
                         "ne('firstName','fred');" +
-                "}", "Test1");
+                "}", "Test1","CriteriaBuilderTestClass");
         List results = (List)p.getAdaptee();
         assertEquals(1, results.size());
    }
@@ -1005,9 +1032,10 @@ public class HibernateCriteriaBuilderTests extends
 
         obj2.invokeMethod("save", null);
 
-        Proxy p = parse(	"{ " +
+        Proxy p = null;
+        p = parse(	"{ " +
                         "ltProperty('firstName','lastName');" +
-                "}", "Test1");
+                "}", "Test1","CriteriaBuilderTestClass");
         List results = (List)p.getAdaptee();
         assertEquals(1, results.size());
    }
@@ -1032,9 +1060,10 @@ public class HibernateCriteriaBuilderTests extends
 
         obj2.invokeMethod("save", null);
 
-        Proxy p = parse(	"{ " +
+        Proxy p = null;
+        p = parse(	"{ " +
                         "geProperty('firstName','lastName');" +
-                "}", "Test1");
+                "}", "Test1","CriteriaBuilderTestClass");
         List results = (List)p.getAdaptee();
         assertEquals(2, results.size());
    }
@@ -1059,9 +1088,10 @@ public class HibernateCriteriaBuilderTests extends
 
         obj2.invokeMethod("save", null);
 
-        Proxy p = parse(	"{ " +
+        Proxy p = null;
+        p = parse(	"{ " +
                         "leProperty('firstName','lastName');" +
-                "}", "Test1");
+                "}", "Test1","CriteriaBuilderTestClass");
         List results = (List)p.getAdaptee();
         assertEquals(2, results.size());
    }
@@ -1086,9 +1116,10 @@ public class HibernateCriteriaBuilderTests extends
 
         obj2.invokeMethod("save", null);
 
-        Proxy p = parse(	"{ " +
+        Proxy p = null;
+        p = parse(	"{ " +
                         "neProperty('firstName','lastName');" +
-                "}", "Test1");
+                "}", "Test1","CriteriaBuilderTestClass");
         List results = (List)p.getAdaptee();
         assertEquals(1, results.size());
    }
@@ -1120,9 +1151,10 @@ public class HibernateCriteriaBuilderTests extends
 
         obj3.invokeMethod("save", null);
 
-        Proxy p = parse(	"{ " +
+        Proxy p = null;
+        p = parse(	"{ " +
                         "between('age',40, 46);" +
-                "}", "Test1");
+                "}", "Test1","CriteriaBuilderTestClass");
         List results = (List)p.getAdaptee();
         assertEquals(2, results.size());
    }
@@ -1147,9 +1179,10 @@ public class HibernateCriteriaBuilderTests extends
 
         obj2.invokeMethod("save", null);
 
-        Proxy p = parse(	"{ " +
+        Proxy p = null;
+        p = parse(	"{ " +
                         "ilike('lastName', 'flint%');" +
-                "}", "Test1");
+                "}", "Test1","CriteriaBuilderTestClass");
         List results = (List)p.getAdaptee();
         assertEquals(1, results.size());
    }
@@ -1174,9 +1207,10 @@ public class HibernateCriteriaBuilderTests extends
 
         obj2.invokeMethod("save", null);
 
-        Proxy p = parse(	"{ " +
+        Proxy p = null;
+        p = parse(	"{ " +
                         "'in'('firstName',['fred','donkey']);" +
-                "}", "Test1");
+                "}", "Test1","CriteriaBuilderTestClass");
         List results = (List)p.getAdaptee();
         assertEquals(1, results.size());
    }
@@ -1201,12 +1235,13 @@ public class HibernateCriteriaBuilderTests extends
 
         obj2.invokeMethod("save", null);
 
-        Proxy p = parse(	"{ " +
+        Proxy p = null;
+        p = parse(	"{ " +
                         "not{" +
                         "eq('age', new Integer(35));" +
                         "eq('firstName', 'fred');" +
                         "}" +
-                "}", "Test1");
+                "}", "Test1","CriteriaBuilderTestClass");
         List results = (List)p.getAdaptee();
         assertEquals(0, results.size());
 
@@ -1214,15 +1249,15 @@ public class HibernateCriteriaBuilderTests extends
                         "not{" +
                         "eq('age', new Integer(35));" +
                         "}" +
-                "}", "Test1");
+                "}", "Test1","CriteriaBuilderTestClass");
         results = (List)p.getAdaptee();
         assertEquals(1, results.size());
 	
         try {
-            parse(	"{ " +
+            p = parse(	"{ " +
                     "not{" +
                     "}" +
-                "}", "Test1");
+                "}", "Test1","CriteriaBuilderTestClass");
             fail("Should have thrown illegal argument exception");
         }
         catch(InvokerInvocationException iie) {
@@ -1252,15 +1287,20 @@ public class HibernateCriteriaBuilderTests extends
         obj.setProperty( "lastName", "smith" );
         obj.invokeMethod("save", null);
 
-        Proxy p;
+        Proxy p = null;
         p = parse("{ " +
                 "isNull('age');" +
-                "}", "Test1");
+                "}", "Test1","CriteriaBuilderTestClass");
         List results = (List)p.getAdaptee();
         assertEquals(2, results.size());
         p = parse("{ " +
                 "isNotNull('age');" +
-                "}", "Test1");
+                "}", "Test1","CriteriaBuilderTestClass");
+        results = (List)p.getAdaptee();
+        assertEquals(1, results.size());
+        p = parse("{ " +
+                "notNull('age');" +
+                "}", "Test1","CriteriaBuilderTestClass");
         results = (List)p.getAdaptee();
         assertEquals(1, results.size());
     }

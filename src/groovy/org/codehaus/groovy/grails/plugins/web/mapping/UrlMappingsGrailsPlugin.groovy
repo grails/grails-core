@@ -28,9 +28,8 @@ class UrlMappingsGrailsPlugin {
 
 	def watchedResources = ["file:./grails-app/conf/*UrlMappings.groovy"]
 
-	def version = GrailsUtil.getGrailsVersion()
+	def version = grails.util.GrailsUtil.getGrailsVersion()
 	def dependsOn = [core:version]
-
                                 
 	def doWithSpring = {
 		grailsUrlMappingsHolder(UrlMappingsHolderFactoryBean) {

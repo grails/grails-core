@@ -29,7 +29,7 @@ import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler
  */
 class ScaffoldingGrailsPlugin {
 
-	def version = GrailsPluginUtils.getGrailsVersion()
+	def version = grails.util.GrailsUtil.getGrailsVersion()
 	def dependsOn = [hibernate:version, controllers:version]
 	def observe = ['hibernate']
 	

@@ -37,10 +37,10 @@ class Author {
 
         def b1 = bookClass.newInstance()
         b1.title = "foo"
-	    a.addBook(b1)
+	    a.addToBooks(b1)
         def b2 = bookClass.newInstance()
         b2.title = "bar"
-	    a.addBook(b2)
+	    a.addToBooks(b2)
 
 	    a.save(true)
 

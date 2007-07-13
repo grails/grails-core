@@ -15,19 +15,21 @@
  */
 package org.codehaus.groovy.grails.commons.test;
 
-import java.io.IOException;
-
 import groovy.lang.GroovyClassLoader;
+import groovy.lang.GroovySystem;
+import groovy.lang.MetaClassRegistry;
 import junit.framework.TestCase;
-
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.commons.metaclass.ExpandoMetaClass;
 import org.codehaus.groovy.grails.support.MockApplicationContext;
+import org.springframework.context.MessageSource;
+import org.springframework.context.support.StaticMessageSource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.mock.web.MockServletContext;
-import org.springframework.context.MessageSource;
-import org.springframework.context.support.StaticMessageSource;
+
+import java.io.IOException;
 
 /**
  * Abstract simple test harness for testing Grails Applications that just loads
@@ -48,6 +50,7 @@ public abstract class AbstractGrailsMockTests extends TestCase {
     public MockApplicationContext ctx;
 
     protected final void setUp() throws Exception {
+        ExpandoMetaClass.enableGlobally();
         super.setUp();
 
         System.out.println("Setting up test");
@@ -67,6 +70,7 @@ public abstract class AbstractGrailsMockTests extends TestCase {
         ctx = null;
         gcl = null;
 
+        GroovySystem.getMetaClassRegistry().setMetaClassCreationHandle(new MetaClassRegistry.MetaClassCreationHandle());
         super.tearDown();
     }
 

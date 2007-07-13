@@ -15,17 +15,19 @@
 package org.codehaus.groovy.grails.commons;
 
 
+import groovy.lang.GroovySystem;
 import groovy.lang.MetaClass;
-import groovy.lang.MetaClassImpl;
 import groovy.lang.MetaClassRegistry;
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.grails.commons.metaclass.AdapterMetaClass;
 import org.codehaus.groovy.grails.commons.metaclass.DynamicMethodsMetaClass;
-import org.codehaus.groovy.runtime.InvokerHelper;
+import org.codehaus.groovy.grails.commons.metaclass.ExpandoMetaClass;
+import org.codehaus.groovy.grails.commons.metaclass.ExpandoMetaClassCreationHandle;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.beans.BeansException;
+import org.springframework.util.Assert;
 
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
@@ -832,20 +834,28 @@ public class GrailsClassUtils {
 	}
 
 	public static MetaClass getExpandoMetaClass(Class clazz) {
-        MetaClassRegistry registry = InvokerHelper.getInstance().getMetaRegistry();
+        MetaClassRegistry registry = GroovySystem.getMetaClassRegistry();
+        Assert.isTrue(registry.getMetaClassCreationHandler() instanceof ExpandoMetaClassCreationHandle, "Grails requires an instance of [ExpandoMetaClassCreationHandle] to be set in Groovy's MetaClassRegistry!");
         MetaClass mc = registry.getMetaClass(clazz);
-
+        AdapterMetaClass adapter = null;
         if(mc instanceof DynamicMethodsMetaClass) {
-			return ((DynamicMethodsMetaClass) mc).getAdaptee();
+            adapter = (DynamicMethodsMetaClass) mc;
+            mc= adapter.getAdaptee();
 		}
 		else if(mc instanceof AdapterMetaClass) {
-			return ((AdapterMetaClass)mc).getAdaptee();
+            adapter = (DynamicMethodsMetaClass) mc;
+            mc= ((AdapterMetaClass)mc).getAdaptee();
 		}
-        else if(MetaClassImpl.class == mc.getClass()) {
+
+        if(!(mc instanceof ExpandoMetaClass)) {
             // removes cached version
             registry.removeMetaClass(clazz);
-            return registry.getMetaClass(clazz);
+            mc= registry.getMetaClass(clazz);
+            if(adapter != null) {
+                adapter.setAdaptee(mc);
+            }
         }
+        Assert.isTrue(mc instanceof ExpandoMetaClass,"BUG! Method must return an instance of [ExpandoMetaClass]!");
         return mc;
 	}	
 	

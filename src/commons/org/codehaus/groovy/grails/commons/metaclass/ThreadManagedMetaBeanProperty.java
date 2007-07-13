@@ -15,14 +15,14 @@
  */
 package org.codehaus.groovy.grails.commons.metaclass;
 
+import groovy.lang.Closure;
 import groovy.lang.MetaBeanProperty;
 import groovy.lang.MetaMethod;
+import org.apache.commons.collections.map.ReferenceMap;
+import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 
 import java.lang.reflect.Modifier;
 import java.util.Map;
-
-import org.apache.commons.collections.map.ReferenceMap;
-import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 
 /**
  * This MetaBeanProperty will create a psuedo property whoes value is bound to the current
@@ -44,17 +44,36 @@ public class ThreadManagedMetaBeanProperty extends MetaBeanProperty {
 	private ThreadBoundGetter getter;
 	private ThreadBoundSetter setter;
 	private Object initialValue;
-	
-	/**
+    private Closure initialValueCreator;
+
+    /**
 	 * Retrieves the initial value of the ThreadBound property
 	 * 
 	 * @return The initial value
 	 */
 	public synchronized Object getInitialValue() {
-		return initialValue;
-	}
-	
-	/**
+        return getInitialValue(null);
+    }
+
+    public synchronized Object getInitialValue(Object object) {
+        if(initialValueCreator != null) {
+            return initialValueCreator.call(object);
+        }
+        return initialValue;
+
+    }
+
+
+    /**
+     * Closure responsible for creating the initial value of thread managed bean properties
+     *
+     * @param callable The closure responsible for creating the initial value
+     */
+    public void setInitialValueCreator(Closure callable) {
+       this.initialValueCreator = callable;
+    }
+
+    /**
 	 * Constructs a new ThreadManagedBeanProperty for the given arguments
 	 * 
 	 * @param declaringClass The class that declares the property
@@ -72,8 +91,27 @@ public class ThreadManagedMetaBeanProperty extends MetaBeanProperty {
 		initialValue = iv;
 		
 	}
-	
-	private static final Object getThreadBoundPropertyValue(Object obj, String name, Object initialValue) {
+
+    /**
+	 * Constructs a new ThreadManagedBeanProperty for the given arguments
+	 *
+	 * @param declaringClass The class that declares the property
+	 * @param name The name of the property
+	 * @param type The type of the property
+	 * @param initialValueCreator The closure responsible for creating the initial value
+	 */
+	public ThreadManagedMetaBeanProperty(Class declaringClass, String name, Class type, Closure initialValueCreator) {
+		super(name, type, null,null);
+		this.type = type;
+		this.declaringClass = declaringClass;
+
+		this.getter = new ThreadBoundGetter(name);
+		this.setter = new ThreadBoundSetter(name);
+		this.initialValueCreator = initialValueCreator;
+
+	}
+
+    private static final Object getThreadBoundPropertyValue(Object obj, String name, Object initialValue) {
 		Map propertyMap = getThreadBoundPropertMap();
 		String key = System.identityHashCode(obj) + name;
 		if(propertyMap.containsKey(key)) {
@@ -146,11 +184,12 @@ public class ThreadManagedMetaBeanProperty extends MetaBeanProperty {
 		 * @see groovy.lang.MetaMethod#invoke(java.lang.Object, java.lang.Object[])
 		 */
 		public Object invoke(Object object, Object[] arguments) {			
-			return getThreadBoundPropertyValue(object, name, getInitialValue());
+			return getThreadBoundPropertyValue(object, name, getInitialValue(object));
 		}
 	}
-	
-	/**
+
+
+    /**
 	 * Sets the ThreadBound state of the property like a setter
 	 * 
 	 * @author Graeme Rocher

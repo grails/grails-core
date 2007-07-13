@@ -17,26 +17,23 @@ package org.codehaus.groovy.grails.orm.hibernate.cfg;
 import groovy.lang.GroovyObject;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
-import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
-import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
 import org.codehaus.groovy.grails.commons.metaclass.DynamicMethods;
 import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator;
-import org.codehaus.groovy.grails.metaclass.AddRelatedDynamicMethod;
-import org.codehaus.groovy.grails.metaclass.AddToRelatedDynamicMethod;
 import org.codehaus.groovy.grails.metaclass.DomainClassMethods;
 import org.codehaus.groovy.grails.orm.hibernate.GrailsHibernateDomainClass;
-import org.codehaus.groovy.runtime.InvokerHelper;
 import org.hibernate.EntityMode;
 import org.hibernate.SessionFactory;
 import org.hibernate.metadata.ClassMetadata;
 import org.springframework.context.ApplicationContext;
-import org.springframework.transaction.PlatformTransactionManager;
 
 import java.beans.IntrospectionException;
-import java.util.*;
-import java.lang.reflect.Modifier;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 /**
  * A class containing utility methods for configuring Hibernate inside Grails
@@ -50,31 +47,18 @@ import java.lang.reflect.Modifier;
 public class GrailsHibernateUtil {
     private static final Log LOG = LogFactory.getLog(GrailsHibernateUtil.class);
 
-    public static Collection configureDynamicMethods(SessionFactory sessionFactory, GrailsApplication application) {
+    public static void configureDynamicMethods(SessionFactory sessionFactory, GrailsApplication application) {
         LOG.trace("Configuring dynamic methods");
         // if its not a grails domain class and one written in java then add it
         // to grails
-        Map hibernateDomainClassMap = new HashMap();
-		Collection dynamicMethods = new ArrayList();
 		Collection classMetaData = sessionFactory.getAllClassMetadata().values();
         for (Iterator i = classMetaData.iterator(); i.hasNext();) {
             ClassMetadata cmd = (ClassMetadata) i.next();
 
             Class persistentClass = cmd.getMappedClass(EntityMode.POJO);
-            GrailsDomainClass dc = null;
-            if(application != null && persistentClass != null) {
-                if (!Modifier.isAbstract(persistentClass.getModifiers())) {
-                    dc = configureDomainClass(sessionFactory, application, cmd, persistentClass, hibernateDomainClassMap);
-                }
-            }
-            if(dc != null) {
-                dynamicMethods.add( configureDynamicMethodsFor(sessionFactory, application, persistentClass, dc) );
-            }
+            configureDynamicMethodsFor(sessionFactory, application, persistentClass); 
+
         }
-        configureInheritanceMappings(hibernateDomainClassMap);
-
-
-        return dynamicMethods;
 	}
 
     /**
@@ -90,43 +74,30 @@ public class GrailsHibernateUtil {
 
         SessionFactory sessionFactory = (SessionFactory)applicationContext.getBean(GrailsRuntimeConfigurator.SESSION_FACTORY_BEAN);
 
-        Collection dynamicMethods = configureDynamicMethods(sessionFactory, application);
-
-        for (Iterator i = dynamicMethods.iterator(); i.hasNext();) {
-            DomainClassMethods methods = (DomainClassMethods) i.next();
-            boolean isTransactionAware = applicationContext.containsBean(GrailsRuntimeConfigurator.TRANSACTION_MANAGER_BEAN);
-            if(isTransactionAware) {
-                PlatformTransactionManager ptm = (PlatformTransactionManager)applicationContext.getBean(GrailsRuntimeConfigurator.TRANSACTION_MANAGER_BEAN);
-
-                methods.setTransactionManager(ptm);
-            }
-        }
+        configureDynamicMethods(sessionFactory, application);
     }
 
-    public static DynamicMethods configureDynamicMethodsFor(SessionFactory sessionFactory, GrailsApplication application, Class persistentClass, GrailsDomainClass dc) {
+    public static DynamicMethods configureDynamicMethodsFor(SessionFactory sessionFactory, GrailsApplication application, Class persistentClass) {
 		if (LOG.isTraceEnabled()) {
             LOG.trace("Registering dynamic methods on class ["+persistentClass+"]");
         }
 		DynamicMethods dm = null;
 		try {
 			dm = new DomainClassMethods(application,persistentClass,sessionFactory,application.getClassLoader());
-		    dm.addDynamicMethodInvocation(new AddToRelatedDynamicMethod(dc));
-		    for (int j = 0; j < dc.getPersistentProperties().length; j++) {
-		          GrailsDomainClassProperty p = dc.getPersistentProperties()[j];
-		          if(p.isOneToMany() || p.isManyToMany()) {
-		              dm.addDynamicMethodInvocation(new AddRelatedDynamicMethod(p));
-		          }
-		    }
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Metaclass for persistent class ["+persistentClass+"]: "
-                    + InvokerHelper.getInstance().getMetaRegistry().getMetaClass(persistentClass));
-            }
         } catch (IntrospectionException e) {
 		    LOG.warn("Introspection exception registering dynamic methods for ["+persistentClass+"]:" + e.getMessage(), e);
 		}
 		return dm;
 	}
 
+    public static void configureHibernateDomainClasses(SessionFactory sessionFactory, GrailsApplication application) {
+        Map hibernateDomainClassMap = new HashMap();
+        for (Iterator i = sessionFactory.getAllClassMetadata().values().iterator(); i.hasNext();) {
+            ClassMetadata classMetadata = (ClassMetadata) i.next();
+            configureDomainClass(sessionFactory, application, classMetadata, classMetadata.getMappedClass(EntityMode.POJO),hibernateDomainClassMap);
+        }
+        configureInheritanceMappings(hibernateDomainClassMap);
+    }
     public static void configureInheritanceMappings(Map hibernateDomainClassMap) {
         // now get through all domainclasses, and add all subclasses to root class
         for (Iterator it = hibernateDomainClassMap.values().iterator(); it.hasNext(); ) {

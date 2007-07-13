@@ -21,17 +21,23 @@ import org.springframework.beans.factory.config.MethodInvokingFactoryBean
 import org.springframework.aop.framework.ProxyFactoryBean
 import org.springframework.aop.target.HotSwappableTargetSource
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler
+import org.codehaus.groovy.grails.commons.GrailsDomainClass
+import org.springframework.beans.BeanUtils
+import org.codehaus.groovy.grails.commons.metaclass.ThreadManagedMetaBeanProperty
+import org.springframework.validation.Errors
+import org.springframework.validation.BindException
 
 /**
- * A plug-in that configures the domain classes in the spring context 
- * 
- * @author Graeme Rocher
- * @since 0.4
- */
+* A plug-in that configures the domain classes in the spring context
+*
+* @author Graeme Rocher
+* @since 0.4
+*/
 class DomainClassGrailsPlugin {
 	
-	def version = GrailsPluginUtils.getGrailsVersion()
+	def version = grails.util.GrailsUtil.getGrailsVersion()
 	def dependsOn = [i18n:version]
+	def loadAfter = ['hibernate']
 	
 	def doWithSpring = {
 		application.domainClasses.each { dc ->
@@ -55,5 +61,19 @@ class DomainClassGrailsPlugin {
             }
 
 		}
+	}
+
+	def doWithDynamicMethods = { ctx->
+        for(GrailsDomainClass domainClass in application.domainClasses) {
+            MetaClass metaClass = domainClass.metaClass
+
+            metaClass.ident = {-> delegate[domainClass.identifier.name] }
+            metaClass.constraints = {-> domainClass.constrainedProperties }
+            metaClass.'static'.create = {-> BeanUtils.instantiateClass(domainClass.getClazz()) }
+            metaClass.hasErrors = {-> delegate.errors?.hasErrors() }
+            metaClass.errors = new ThreadManagedMetaBeanProperty(domainClass.clazz, "errors", Errors, { 
+                object -> object ? new BindException( object, object.getClass().getName()) : null
+            })
+        }
 	}
 }

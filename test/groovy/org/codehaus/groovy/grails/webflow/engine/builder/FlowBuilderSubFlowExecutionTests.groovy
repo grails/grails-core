@@ -32,7 +32,7 @@ class FlowBuilderSubFlowExecutionTests extends AbstractFlowExecutionTests{
         def theFlow = getFlowDefinition()
 
          // test sub flow model
-        def subflowState = theFlow.getState('displayResults')
+        def subflowState = theFlow.getState('extendedSearch')
 
         assert subflowState instanceof SubflowState
 
@@ -51,8 +51,13 @@ class FlowBuilderSubFlowExecutionTests extends AbstractFlowExecutionTests{
         assertEquals "displaySearchForm", viewSelection.viewName
         viewSelection = signalEvent( "submit" )
         assert viewSelection
-        assertEquals "results", viewSelection.viewName
+        assertEquals "displayResults", viewSelection.viewName
+
+        viewSelection = signalEvent("searchDeeper")        
         //assertEquals( ["foo", "bar"],viewSelection.model.results)
+
+        assertEquals "startExtendedSearch", viewSelection.viewName
+        
         viewSelection = signalEvent("findMore")
         assertEquals "displayMoreResults", viewSelection.viewName
     }
@@ -65,23 +70,32 @@ class FlowBuilderSubFlowExecutionTests extends AbstractFlowExecutionTests{
         assertEquals "displaySearchForm", viewSelection.viewName
         viewSelection = signalEvent( "submit" )
         assert viewSelection
-        assertEquals "results", viewSelection.viewName
+        assertEquals "displayResults", viewSelection.viewName
+        viewSelection = signalEvent("searchDeeper")
+        //assertEquals( ["foo", "bar"],viewSelection.model.results)
+
+        assertEquals "startExtendedSearch", viewSelection.viewName
+                      
         //assertEquals( ["foo", "bar"],viewSelection.model.results)
         viewSelection = signalEvent("findMore")
-        assertEquals "displayNoResults", viewSelection.viewName
+        assertEquals "displayNoMoreResults", viewSelection.viewName
     }
 
     FlowDefinition getFlowDefinition() {
         def searchService = [executeSearch:{["foo", "bar"]}]
         def params = [q:"foo"]
 
-        def displayResultsSubFlow = {
-            results {
+        def extendedSearchFlow = {
+            startExtendedSearch {
                 on("findMore").to "searchMore"
                 on("searchAgain").to "noResults"
             }
             searchMore {
-                action(searchMoreAction)
+                action(searchMoreAction) /*{ ctx ->
+                    def results = searchService.deepSearch(ctx.conversation.query)
+                    if(!results)return error
+                    ctx.conversation.extendedResults = results
+                }*/
                 on("success").to "moreResults"
                 on("error").to "noResults"
             }
@@ -101,13 +115,17 @@ class FlowBuilderSubFlowExecutionTests extends AbstractFlowExecutionTests{
                 on("error").to "displaySearchForm"
             }
             displayResults {
-                subflow(displayResultsSubFlow)
+                on("searchDeeper").to "extendedSearch"
+                on("searchAgain").to "displaySearchForm"
+            }
+            extendedSearch {
+                subflow(extendedSearchFlow)
                 on("moreResults").to "displayMoreResults"
-                on("noResults").to "displayNoResults"
+                on("noResults").to "displayNoMoreResults"
+
             }
             displayMoreResults()
-            displayNoResults()
-
+            displayNoMoreResults()
         }
     }
 }

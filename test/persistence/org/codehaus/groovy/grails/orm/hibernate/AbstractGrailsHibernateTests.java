@@ -18,12 +18,12 @@ package org.codehaus.groovy.grails.orm.hibernate;
 import grails.config.ConfigObject;
 import grails.config.ConfigSlurper;
 import groovy.lang.GroovyClassLoader;
+import groovy.lang.GroovySystem;
 import groovy.lang.MetaClassRegistry;
 import junit.framework.TestCase;
 import org.codehaus.groovy.grails.commons.*;
-import org.codehaus.groovy.grails.commons.metaclass.ExpandoMetaClassCreationHandle;
+import org.codehaus.groovy.grails.commons.metaclass.ExpandoMetaClass;
 import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator;
-import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil;
 import org.codehaus.groovy.grails.support.MockApplicationContext;
 import org.hibernate.SessionFactory;
 import org.hibernate.classic.Session;
@@ -70,8 +70,8 @@ public abstract class AbstractGrailsHibernateTests extends TestCase {
 
     protected final void setUp() throws Exception {
         super.setUp();
-        
-        GrailsMetaClassUtils.getRegistry().setMetaClassCreationHandle( new ExpandoMetaClassCreationHandle());
+
+        ExpandoMetaClass.enableGlobally();
 
         onSetUp();
 
@@ -84,36 +84,20 @@ public abstract class AbstractGrailsHibernateTests extends TestCase {
                 "password = \"\"\n" +
                 "}");
         ConfigurationHolder.setConfig(config);
+        for (int i = 0; i < gcl.getLoadedClasses().length; i++) {
+            Class aClass = gcl.getLoadedClasses()[i];
+            GroovySystem.getMetaClassRegistry().removeMetaClass(aClass);
+        }
         ga = new DefaultGrailsApplication(gcl.getLoadedClasses(),gcl);
         ApplicationHolder.setApplication(ga);
 
-
-
-//        DefaultGrailsDomainConfiguration config = new DefaultGrailsDomainConfiguration();
-//        config.setGrailsApplication(this.ga);
-//        Properties props = new Properties();
-//        props.put("hibernate.connection.username","sa");
-//        props.put("hibernate.connection.password","");
-//        props.put("hibernate.connection.url","jdbc:hsqldb:mem:grailsDB");
-//        props.put("hibernate.connection.driver_class","org.hsqldb.jdbcDriver");
-//        props.put("hibernate.dialect","org.hibernate.dialect.HSQLDialect");
-//        props.put("hibernate.hbm2ddl.auto","create-drop");
-//        props.put("hibernate.log_sql","true");
-//
-//        //props.put("hibernate.hbm2ddl.auto","update");
-//        config.setProperties(props);
-//
-//        //originalClassLoader = Thread.currentThread().getContextClassLoader();
-//        Thread.currentThread().setContextClassLoader(this.gcl);
-//        this.sessionFactory = config.buildSessionFactory();
         MockApplicationContext mc = new MockApplicationContext();
         mc.registerMockBean(GrailsApplication.APPLICATION_ID, ga);
         mc.registerMockBean("messageSource", new StaticMessageSource());
        
         GrailsRuntimeConfigurator grc = new GrailsRuntimeConfigurator(ga, mc);
         this.applicationContext = grc.configure(new MockServletContext());
-        this.sessionFactory = (SessionFactory)this.applicationContext.getBean(GrailsRuntimeConfigurator.SESSION_FACTORY_BEAN);
-        GrailsHibernateUtil.configureDynamicMethods(applicationContext,ga);
+        this.sessionFactory = (SessionFactory)this.applicationContext.getBean(GrailsRuntimeConfigurator.SESSION_FACTORY_BEAN);        
 
         if(!TransactionSynchronizationManager.hasResource(this.sessionFactory)) {
             this.session = this.sessionFactory.openSession();
@@ -129,13 +113,13 @@ public abstract class AbstractGrailsHibernateTests extends TestCase {
      * Classes created here will then be passed to the GrailsApplication instance.
      *
      */
-    protected abstract void onSetUp() throws Exception;
+    protected void onSetUp() throws Exception {}
 
 
     protected final void tearDown() throws Exception {
         ConfigurationHolder.setConfig(null);
         ApplicationHolder.setApplication(null);
-        GrailsMetaClassUtils.getRegistry().setMetaClassCreationHandle( new MetaClassRegistry.MetaClassCreationHandle());
+        GroovySystem.getMetaClassRegistry().setMetaClassCreationHandle(new MetaClassRegistry.MetaClassCreationHandle());
         if(TransactionSynchronizationManager.hasResource(this.sessionFactory)) {
 		    SessionHolder holder = (SessionHolder) TransactionSynchronizationManager.getResource(this.sessionFactory);
 		    org.hibernate.Session s = holder.getSession();
@@ -157,6 +141,6 @@ public abstract class AbstractGrailsHibernateTests extends TestCase {
     /**
      * Called directly before destruction of the TestCase in the junit.framework.TestCase#tearDown() method
      */
-    protected abstract void onTearDown() throws Exception;
+    protected void onTearDown() throws Exception {}
 
 }

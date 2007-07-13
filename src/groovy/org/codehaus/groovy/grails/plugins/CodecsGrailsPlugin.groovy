@@ -27,7 +27,7 @@ import grails.util.GrailsUtil
  */
 class CodecsGrailsPlugin {
 	
-	def version = GrailsPluginUtils.getGrailsVersion()
+	def version = grails.util.GrailsUtil.getGrailsVersion()
 	def dependsOn = [core:version]
 	def watchedResources = "file:./grails-app/utils/**/*Codec.groovy"
 

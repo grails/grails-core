@@ -31,7 +31,7 @@ import org.springframework.web.util.*
 class ServletsGrailsPlugin {
 
 
-	def version = GU.getGrailsVersion()
+	def version = grails.util.GrailsUtil.getGrailsVersion()
 	def dependsOn = [core:version]
 
 

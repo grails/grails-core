@@ -1,22 +1,24 @@
 package org.codehaus.groovy.grails.orm.hibernate;
 
+
 import groovy.lang.*;
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
+import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
-import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
-import org.codehaus.groovy.grails.metaclass.DomainClassMethods;
-import org.codehaus.groovy.grails.orm.hibernate.cfg.DefaultGrailsDomainConfiguration;
-import org.codehaus.groovy.grails.orm.hibernate.exceptions.GrailsQueryException;
+import org.codehaus.groovy.grails.commons.metaclass.ExpandoMetaClass;
+import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator;
 import org.codehaus.groovy.grails.orm.hibernate.metaclass.FindByPersistentMethod;
-import org.codehaus.groovy.grails.validation.GrailsDomainClassValidator;
+import org.codehaus.groovy.grails.support.MockApplicationContext;
 import org.hibernate.SessionFactory;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.StaticMessageSource;
+import org.springframework.mock.web.MockServletContext;
 import org.springframework.orm.hibernate3.SessionHolder;
 import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.validation.Errors;
 
-import java.beans.IntrospectionException;
 import java.util.*;
 
 public class PersistentMethodTests extends AbstractDependencyInjectionSpringContextTests {
@@ -45,6 +47,14 @@ public class PersistentMethodTests extends AbstractDependencyInjectionSpringCont
     }
 
     protected void onSetUp() throws Exception {
+        cl.parseClass("dataSource {\n" +
+                "\t\t\tdbCreate = \"create-drop\" // one of 'create', 'create-drop','update'\n" +
+                "\t\t\turl = \"jdbc:hsqldb:mem:devDB\" \n" +
+                "\tpooled = false\n" +
+                "\tdriverClassName = \"org.hsqldb.jdbcDriver\"\n" +
+                "\tusername = \"sa\"\n" +
+                "\tpassword = \"\"\n" +
+                "}", "DataSource");
         Class groovyClass = cl.parseClass("public class PersistentMethodTests {\n" +
             "\t Long id \n" +
             "\t Long version \n" +
@@ -70,24 +80,17 @@ public class PersistentMethodTests extends AbstractDependencyInjectionSpringCont
             "}"
         );
 
+        ExpandoMetaClass.enableGlobally();
+
         grailsApplication = new DefaultGrailsApplication(new Class[]{groovyClass, descendentClass},cl);
 
 
-        DefaultGrailsDomainConfiguration config = new DefaultGrailsDomainConfiguration();
-        config.setGrailsApplication(this.grailsApplication);
-        Properties props = new Properties();
-        props.put("hibernate.connection.username","sa");
-        props.put("hibernate.connection.password","");
-        props.put("hibernate.connection.url","jdbc:hsqldb:mem:grailsDB");
-        props.put("hibernate.connection.driver_class","org.hsqldb.jdbcDriver");
-        props.put("hibernate.dialect","org.hibernate.dialect.HSQLDialect");
-        props.put("hibernate.hbm2ddl.auto","create-drop");
-
-        //props.put("hibernate.hbm2ddl.auto","update");
-        config.setProperties(props);
-        //originalClassLoader = Thread.currentThread().getContextClassLoader();
-        Thread.currentThread().setContextClassLoader(this.cl);
-        this.sessionFactory = config.buildSessionFactory();
+        MockApplicationContext parent = new MockApplicationContext();
+        parent.registerMockBean(GrailsApplication.APPLICATION_ID, grailsApplication);
+        parent.registerMockBean("messageSource", new StaticMessageSource());
+        GrailsRuntimeConfigurator configurator = new GrailsRuntimeConfigurator(grailsApplication,parent);
+        ApplicationContext appCtx = configurator.configure( new MockServletContext( ));
+        this.sessionFactory = (SessionFactory)appCtx.getBean("sessionFactory");
 
 
 
@@ -96,18 +99,7 @@ public class PersistentMethodTests extends AbstractDependencyInjectionSpringCont
             TransactionSynchronizationManager.bindResource(this.sessionFactory, new SessionHolder(hibSession));
         }
 
-        initDomainClass( groovyClass, "PersistentMethodTests");
-        initDomainClass( descendentClass, "PersistentMethodTestsDescendent");
-
         super.onSetUp();
-    }
-
-    protected void initDomainClass(Class groovyClass, String classname) throws IntrospectionException {
-        new DomainClassMethods(grailsApplication,groovyClass,sessionFactory,cl);
-        GrailsDomainClassValidator validator = new GrailsDomainClassValidator();
-        GrailsDomainClass domainClass = (GrailsDomainClass) this.grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE, classname);
-        validator.setDomainClass(domainClass);
-        domainClass.setValidator(validator);
     }
 
     protected String[] getConfigLocations() {
@@ -219,7 +211,7 @@ public class PersistentMethodTests extends AbstractDependencyInjectionSpringCont
             obj.getMetaClass().invokeStaticMethod(obj, "find", new Object[] {"from AnotherClass"} );
             fail("Should have thrown grails query exception");
         }
-        catch(GrailsQueryException gqe) {
+        catch(GroovyRuntimeException gqe) {
             //expected
         }
 
@@ -295,7 +287,7 @@ public class PersistentMethodTests extends AbstractDependencyInjectionSpringCont
             // new Long(1) is not valid name for named param, so exception should be thrown
             fail("Should have thrown grails query exception");
         }
-        catch(GrailsQueryException gqe) {
+        catch(GroovyRuntimeException gqe) {
             //expected
         }
         
@@ -497,7 +489,11 @@ public class PersistentMethodTests extends AbstractDependencyInjectionSpringCont
         obj3.invokeMethod("save", null);
 
         // get wilma and fred by ids passed as method arguments
-        Object returnValue = obj.getMetaClass().invokeStaticMethod(obj, "getAll", new Object[] { new Long(2), new Long(1) });
+        List args = new ArrayList();
+        args.add(new Long(2));
+        args.add(new Long(1));
+
+        Object returnValue = obj.getMetaClass().invokeStaticMethod(obj, "getAll", new Object[] { args });
         assertNotNull(returnValue);
         assertEquals(ArrayList.class,returnValue.getClass());
         List returnList = (List)returnValue;
@@ -528,8 +524,13 @@ public class PersistentMethodTests extends AbstractDependencyInjectionSpringCont
         returnList = (List)returnValue;
         assertEquals(3, returnList.size());
 
+        args = new ArrayList();
+        args.add(new Long(5));
+        args.add(new Long(2));
+        args.add(new Long(7));
+        args.add(new Long(1));
         // if there are no object with specified id - should return null on corresponding places
-        returnValue = obj.getMetaClass().invokeStaticMethod(obj, "getAll", new Object[] {new Long(5),new Long(2), new Long(7),new Long(1)});
+        returnValue = obj.getMetaClass().invokeStaticMethod(obj, "getAll", new Object[] {args});
         assertNotNull(returnValue);
         assertEquals(ArrayList.class,returnValue.getClass());
         returnList = (List)returnValue;
@@ -577,7 +578,7 @@ public class PersistentMethodTests extends AbstractDependencyInjectionSpringCont
             obj.getMetaClass().invokeStaticMethod(obj, "findAll", new Object[] {"from AnotherClass"} );
             fail("Should have thrown grails query exception");
         }
-        catch(GrailsQueryException gqe) {
+        catch(GroovyRuntimeException gqe) {
             //expected
         }
 
@@ -750,7 +751,7 @@ public class PersistentMethodTests extends AbstractDependencyInjectionSpringCont
             // new Long(1) is not valid name for named param, so exception should be thrown
             fail("Should have thrown grails query exception");
         }
-        catch(GrailsQueryException gqe) {
+        catch(GroovyRuntimeException gqe) {
             //expected
         }
         
@@ -942,7 +943,7 @@ public class PersistentMethodTests extends AbstractDependencyInjectionSpringCont
             // new Long(1) is not valid name for named param, so exception should be thrown
             fail("Should have thrown grails query exception");
         }
-        catch(GrailsQueryException gqe) {
+        catch(GroovyRuntimeException gqe) {
             //expected
         }
     }

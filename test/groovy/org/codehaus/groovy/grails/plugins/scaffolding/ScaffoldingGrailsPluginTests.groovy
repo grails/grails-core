@@ -8,7 +8,15 @@ import org.codehaus.groovy.grails.plugins.*
 class ScaffoldingPluginTests extends AbstractGrailsMockTests {
 
 	void onSetUp() {
-		gcl.parseClass(
+        gcl.parseClass("dataSource {\n" +
+                "dbCreate = \"create-drop\" \n" +
+                "url = \"jdbc:hsqldb:mem:devDB\"\n" +
+                "pooling = false                          \n" +
+                "driverClassName = \"org.hsqldb.jdbcDriver\"\t\n" +
+                "username = \"sa\"\n" +
+                "password = \"\"\n" +
+                "}", "DataSource")
+        gcl.parseClass(
 """
 class Test {
    Long id
@@ -49,8 +57,8 @@ class TestController {
 		
 		plugin.doWithRuntimeConfiguration(springConfig)
 		
-		def appCtx = springConfig.getApplicationContext() 
-        mockManager.getGrailsPlugin("hibernate").doWithDynamicMethods(appCtx)		
+		def appCtx = springConfig.getApplicationContext()
+		dependentPlugins*.doWithDynamicMethods(appCtx)		
 		assert appCtx.containsBean("dataSource")
 		assert appCtx.containsBean("sessionFactory")
 		assert appCtx.containsBean("openSessionInViewInterceptor")

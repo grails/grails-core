@@ -66,7 +66,7 @@ class ControllersGrailsPlugin {
 							"file:./plugins/*/grails-app/taglib/**/*TagLib.groovy",
 	                        "file:./grails-app/taglib/**/*TagLib.groovy"]
 
-	def version = GrailsPluginUtils.getGrailsVersion()
+	def version = grails.util.GrailsUtil.getGrailsVersion()
 	def dependsOn = [core:version,i18n:version]
 
 	def doWithSpring = {
@@ -294,7 +294,24 @@ class ControllersGrailsPlugin {
 
 		// add common objects and out variable for tag libraries
 		def registry = GroovySystem.getMetaClassRegistry()
-	   	application.tagLibClasses.each { taglib ->
+
+        for(domainClass in application.domainClasses) {
+            def metaClass = domainClass.metaClass
+            def constructor = new DataBindingDynamicConstructor(ctx)
+            metaClass.ctor = {->
+                constructor.invoke(domainClass.clazz, [] as Object[])
+            }
+            metaClass.ctor = { Map params ->
+                constructor.invoke(domainClass.clazz, [params] as Object[])
+            }
+
+            def setProps = new SetPropertiesDynamicProperty()
+            metaClass.setProperties = { Object o ->
+                setProps.set(delegate, o)
+            }
+        }
+
+	   	for(taglib in application.tagLibClasses) {
 	   		def metaClass = taglib.metaClass
 	   		registerCommonObjects(metaClass, application)
 
@@ -314,7 +331,7 @@ class ControllersGrailsPlugin {
 	   		ctx.getBean(taglib.fullName).metaClass = adaptedMetaClass
 	   	}
 		// add commons objects and dynamic methods like render and redirect to controllers
-		application.controllerClasses.each { controller ->
+		for(controller in application.controllerClasses ) {
 		   def metaClass = controller.metaClass
 			registerCommonObjects(metaClass, application)
 
@@ -427,16 +444,6 @@ class ControllersGrailsPlugin {
 		}
 	}
 
-	def doWithApplicationContext = { ctx ->
-        application.domainClasses.each { domainClass ->
-            def metaClass = GMCU.registry.getMetaClass(domainClass.getClazz())
-			log.debug("meta class of ${domainClass.clazz} is ${metaClass.getClass()}")
-            if(metaClass instanceof DynamicMethodsMetaClass) {
-                   metaClass.dynamicMethods.addDynamicConstructor(new DataBindingDynamicConstructor(ctx))
-                   metaClass.dynamicMethods.addDynamicProperty(new SetPropertiesDynamicProperty())
-            }
-        }
-	}
 
 	def onChange = { event -> 
         if(application.isArtefactOfType(ControllerArtefactHandler.TYPE, event.source)) {

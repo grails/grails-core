@@ -30,7 +30,7 @@ import org.springframework.context.support.ReloadableResourceBundleMessageSource
  */
 class I18nGrailsPlugin {
 	
-	def version = GrailsPluginUtils.getGrailsVersion()
+	def version = grails.util.GrailsUtil.getGrailsVersion()
 	def watchedResources = "file:./grails-app/i18n/*.properties"
 	
 	def doWithSpring = {

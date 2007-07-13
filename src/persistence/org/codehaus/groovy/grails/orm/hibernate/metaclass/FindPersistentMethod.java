@@ -14,22 +14,20 @@
  */
 package org.codehaus.groovy.grails.orm.hibernate.metaclass;
 
-import groovy.lang.MissingMethodException;
 import groovy.lang.GString;
-
-import java.sql.SQLException;
-import java.util.*;
-import java.util.regex.Pattern;
-
+import groovy.lang.MissingMethodException;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.orm.hibernate.exceptions.GrailsQueryException;
-import org.hibernate.Criteria;
-import org.hibernate.HibernateException;
-import org.hibernate.Query;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
+import org.hibernate.*;
 import org.hibernate.criterion.Example;
 import org.springframework.orm.hibernate3.HibernateCallback;
+
+import java.sql.SQLException;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Pattern;
 
 /**
  * <p>
@@ -148,7 +146,7 @@ public class FindPersistentMethod
 
 					Criteria crit = session.createCriteria(clazz);
 					crit.add(example);
-
+                    crit.setMaxResults(1);
 					List results = crit.list();
 					if (results.size() > 0)
 						return results.get(0);

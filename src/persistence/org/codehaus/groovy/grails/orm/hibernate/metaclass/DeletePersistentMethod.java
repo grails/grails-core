@@ -39,7 +39,6 @@ public class DeletePersistentMethod extends AbstractDynamicPersistentMethod {
 
     protected Object doInvokeInternal(Object target, Object[] arguments) {
         HibernateTemplate t = getHibernateTemplate();
-        t.setFlushMode(HibernateTemplate.FLUSH_COMMIT);
         t.delete(target);
         return null;
     }

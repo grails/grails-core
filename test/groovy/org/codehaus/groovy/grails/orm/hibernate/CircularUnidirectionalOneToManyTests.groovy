@@ -21,7 +21,7 @@ class CircularUnidirectionalOneToManyTests extends AbstractGrailsHibernateTests 
 		def taskParent = taskClass.newInstance()
 		def taskChild = taskClass.newInstance()
 		
-		taskParent.addTask(taskChild)
+		taskParent.addToTasks(taskChild)
 		taskParent.save(true)
 		
 		session.evict(taskParent)

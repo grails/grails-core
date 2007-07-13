@@ -15,22 +15,21 @@
  */
 package org.codehaus.groovy.grails.orm.hibernate.metaclass;
 
-import groovy.lang.MissingMethodException;
 import groovy.lang.GString;
-
-import java.sql.SQLException;
-import java.util.*;
-import java.util.regex.Pattern;
-
+import groovy.lang.MissingMethodException;
+import org.apache.commons.lang.ArrayUtils;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.orm.hibernate.exceptions.GrailsQueryException;
-import org.hibernate.Criteria;
-import org.hibernate.HibernateException;
-import org.hibernate.Query;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
+import org.hibernate.*;
 import org.hibernate.criterion.Example;
 import org.springframework.orm.hibernate3.HibernateCallback;
+
+import java.sql.SQLException;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Pattern;
 
 /**
  * <p>
@@ -80,10 +79,14 @@ import org.springframework.orm.hibernate3.HibernateCallback;
  * 		def a = Account.find(a)
  * 
  * </code>
- * 
+ *
+ * @author Graeme Rocher
  * @author Steven Devijver
  * @author Sergey Nebolsin
- * @since Aug 8, 2005
+ *
+ * @since 0.1
+ *
+ * Created: Aug 8, 2005
  * 
  */
 public class FindAllPersistentMethod
@@ -111,7 +114,8 @@ public class FindAllPersistentMethod
 			return super.getHibernateTemplate().executeFind(new HibernateCallback() {
 				public Object doInHibernate(Session session) throws HibernateException, SQLException {
 					Query q = session.createQuery(query);
-					Object[] queryArgs = null;
+
+                    Object[] queryArgs = null;
 					Map queryNamedArgs = null;
 					int max = retrieveMaxValue(arguments);
 					int offset = retrieveOffsetValue(arguments);
@@ -124,8 +128,8 @@ public class FindAllPersistentMethod
 							queryNamedArgs = (Map) arguments[1];
 						}
 					}
-					if (queryArgs != null) {
-						for (int i = 0; i < queryArgs.length; i++) {
+                    if (queryArgs != null) {
+                        for (int i = 0; i < queryArgs.length; i++) {
 							if (queryArgs[i] instanceof GString) {
 								q.setParameter(i, queryArgs[i].toString());
 							} else {

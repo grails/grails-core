@@ -30,7 +30,7 @@ import org.codehaus.groovy.runtime.InvokerHelper;
  */
 class CoreGrailsPlugin {
 	
-	def version = GrailsPluginUtils.getGrailsVersion()
+	def version = grails.util.GrailsUtil.getGrailsVersion()
     def watchedResources = "file:./spring/resources.xml"
 	
 	

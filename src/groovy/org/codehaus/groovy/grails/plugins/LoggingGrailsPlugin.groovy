@@ -29,7 +29,7 @@ import grails.util.GrailsUtil
  */
 class LoggingGrailsPlugin {
 
-	def version = GrailsPluginUtils.getGrailsVersion()
+	def version = grails.util.GrailsUtil.getGrailsVersion()
 	def dependsOn = [core:version]
 
 	def doWithWebDescriptor = { xml ->

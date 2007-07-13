@@ -27,7 +27,7 @@ import org.springframework.webflow.core.collection.MutableAttributeMap
  * 
  */
 
-import grails.util.GrailsUtil
+
 import org.springframework.webflow.definition.registry.FlowDefinitionRegistry
 import org.codehaus.groovy.grails.commons.GrailsControllerClass
 import org.springframework.webflow.engine.builder.FlowAssembler
@@ -37,7 +37,7 @@ import org.springframework.webflow.definition.registry.StaticFlowDefinitionHolde
 
 class WebFlowGrailsPlugin {
 
-    def version = GrailsUtil.getGrailsVersion()
+    def version = grails.util.GrailsUtil.getGrailsVersion()
     def dependsOn = [core:version,i18n:version]
     def observe = ['controllers']
     def loadAfter = ['hibernate']

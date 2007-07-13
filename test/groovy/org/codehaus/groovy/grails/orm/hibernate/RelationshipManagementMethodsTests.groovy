@@ -3,7 +3,7 @@ package org.codehaus.groovy.grails.orm.hibernate;
 import org.codehaus.groovy.grails.commons.*
 import org.codehaus.groovy.grails.commons.test.*
 
-class RelationshipManagementMethodsTests extends org.codehaus.groovy.grails.plugins.web.AbstractGrailsPluginTests {
+class RelationshipManagementMethodsTests extends AbstractGrailsHibernateTests {
 
 	void testWithMapAddition() {
 		def personClass = ga.getDomainClass("Person")
@@ -77,13 +77,6 @@ class RelationshipManagementMethodsTests extends org.codehaus.groovy.grails.plug
 
 
 	void onSetUp() {
-
-		pluginsToLoad << gcl.loadClass("org.codehaus.groovy.grails.plugins.CoreGrailsPlugin")
-		pluginsToLoad << gcl.loadClass("org.codehaus.groovy.grails.plugins.datasource.DataSourceGrailsPlugin")
-		pluginsToLoad << gcl.loadClass("org.codehaus.groovy.grails.plugins.i18n.I18nGrailsPlugin")
-		pluginsToLoad << gcl.loadClass("org.codehaus.groovy.grails.plugins.DomainClassGrailsPlugin")
-		pluginsToLoad << gcl.loadClass("org.codehaus.groovy.grails.plugins.orm.hibernate.HibernateGrailsPlugin")
-		pluginsToLoad << gcl.loadClass("org.codehaus.groovy.grails.plugins.web.ControllersGrailsPlugin")
 
 		this.gcl.parseClass('''
 class Person {

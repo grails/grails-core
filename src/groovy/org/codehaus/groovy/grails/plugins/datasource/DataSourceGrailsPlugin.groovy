@@ -27,7 +27,7 @@ import org.springframework.jdbc.datasource.DriverManagerDataSource
  */
 class DataSourceGrailsPlugin {
 
-	def version = GrailsPluginUtils.getGrailsVersion()
+	def version = grails.util.GrailsUtil.getGrailsVersion()
 	def dependsOn = [core:GrailsPluginUtils.getGrailsVersion()]
 	
 	def watchedResources = "**/grails-app/conf/*DataSource.groovy"

@@ -22,7 +22,7 @@ class ManyToManyTests extends AbstractGrailsHibernateTests {
 		def bookClass = ga.getDomainClass("Book")
 		def a = authorClass.newInstance()
 		
-		a.addBook(bookClass.newInstance())
+		a.addToBooks(bookClass.newInstance())
 		a.save(true)
 		
 		a = null

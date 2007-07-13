@@ -18,7 +18,6 @@ import org.springframework.validation.Errors;
 import org.springframework.orm.hibernate3.HibernateCallback;
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.codehaus.groovy.grails.commons.*;
-import org.codehaus.groovy.grails.metaclass.IdentDynamicMethod;
 import org.hibernate.*;
 import org.hibernate.criterion.Restrictions;
 
@@ -104,7 +103,7 @@ public class UniqueConstraint extends AbstractPersistentConstraint {
     protected void processValidate(final Object target, final Object propertyValue, Errors errors) {
 
         if(unique) {
-        	final Object id = InvokerHelper.invokeMethod(target, IdentDynamicMethod.METHOD_SIGNATURE,null);
+        	final Object id = InvokerHelper.invokeMethod(target, "ident",null);
             List results = this.constraintHibernateTemplate.executeFind( new HibernateCallback() {
                 public Object doInHibernate(Session session) throws HibernateException {
                     session.setFlushMode(FlushMode.MANUAL);
@@ -130,7 +129,7 @@ public class UniqueConstraint extends AbstractPersistentConstraint {
                 boolean reject = false;
                 if(id != null) {
                     Object existing = results.get(0);
-                    Object existingId = InvokerHelper.invokeMethod(existing, IdentDynamicMethod.METHOD_SIGNATURE,null);
+                    Object existingId = InvokerHelper.invokeMethod(existing, "ident",null);
                     if(!id.equals(existingId)) {
                         reject = true;
                     }

@@ -183,8 +183,14 @@ public class  ExpandoMetaClass extends MetaClassImpl implements GroovyObject {
 	private void addSuperMethodIfNotOverriden(final MetaMethod metaMethodFromSuper) {
 		performOperationOnMetaClass(new Callable() {
 			public void call() {
+
+				MetaMethod existing = null;
+				try {
+					existing = pickMethod(metaMethodFromSuper.getName(), metaMethodFromSuper.getParameterTypes());}
+				catch ( GroovyRuntimeException e) { 
+					// ignore, this happens with overlapping method definitions
+				}
 				
-				MetaMethod existing = pickMethod(metaMethodFromSuper.getName(), metaMethodFromSuper.getParameterTypes());
 
 				if(existing == null) {
                         addMethodWithKey(metaMethodFromSuper);
@@ -480,11 +486,11 @@ public class  ExpandoMetaClass extends MetaClassImpl implements GroovyObject {
 	 * @param newValue The properties initial value
 	 */
 	protected void registerBeanProperty(final String property, final Object newValue) {
-			performOperationOnMetaClass(new Callable() {		
+            performOperationOnMetaClass(new Callable() {
 				public void call() {
 					Class type = newValue == null ? Object.class : newValue.getClass();
 					
-					MetaBeanProperty mbp = new ThreadManagedMetaBeanProperty(theClass,property,type,newValue);
+					MetaBeanProperty mbp = newValue instanceof MetaBeanProperty ? (MetaBeanProperty)newValue : new ThreadManagedMetaBeanProperty(theClass,property,type,newValue);
 					
 					addMetaMethod(mbp.getGetter());
 					addMetaMethod(mbp.getSetter());

@@ -15,22 +15,21 @@
 package org.codehaus.groovy.grails.orm.hibernate.metaclass;
 
 
-
-import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.GrailsDomainClass;
+import groovy.lang.GroovySystem;
+import groovy.lang.MetaClass;
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
+import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
-import org.codehaus.groovy.grails.commons.metaclass.DynamicMethodsMetaClass;
+import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.metaclass.DomainClassMethods;
 import org.codehaus.groovy.grails.validation.CascadingValidator;
-import org.codehaus.groovy.runtime.InvokerHelper;
 import org.hibernate.SessionFactory;
 import org.springframework.validation.BindException;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
 
-import java.util.regex.Pattern;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 /**
  * A method that validates an instance of a domain class against its constraints 
@@ -100,8 +99,8 @@ public class ValidatePersistentMethod extends AbstractDynamicPersistentMethod {
                         getHibernateTemplate().evict(target);
                     }
                 }
-                DynamicMethodsMetaClass metaClass = (DynamicMethodsMetaClass)InvokerHelper.getInstance().getMetaRegistry().getMetaClass(target.getClass());
-                metaClass.setProperty(target.getClass(),target,DomainClassMethods.ERRORS_PROPERTY,errors, false,false);
+                MetaClass metaClass = GroovySystem.getMetaClassRegistry().getMetaClass(target.getClass());
+                metaClass.setProperty(target, DomainClassMethods.ERRORS_PROPERTY, errors);
             }
         }
         return valid;
