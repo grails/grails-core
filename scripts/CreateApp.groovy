@@ -24,6 +24,9 @@
          
 import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
 
+// Ensure that the application is created in the current directory
+System.setProperty("base.dir", new File("").absolutePath)
+
 grailsAppName = ""
 
 Ant.property(environment:"env")   
