@@ -24,9 +24,6 @@
          
 import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
 
-// Ensure that the application is created in the current directory
-System.setProperty("base.dir", new File("").absolutePath)
-
 grailsAppName = ""
 
 Ant.property(environment:"env")   
@@ -49,7 +46,7 @@ task( createApp: "The implementation task")  {
         entry(key:"app.version", value:"0.1")
     }
 
-    event("StatusFinal", ["Created Grails Application at $basedir"])
+	println "Created Grails Application at $basedir"
 }                         
 
 task( createIDESupportFiles: "Creates the IDE suppot files (Eclipse, TextMate etc.) project files") {
