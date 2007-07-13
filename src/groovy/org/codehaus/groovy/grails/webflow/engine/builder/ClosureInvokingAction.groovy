@@ -62,7 +62,13 @@ public class ClosureInvokingAction extends AbstractAction implements GroovyObjec
         cloned.delegate = this
         cloned.metaClass = emc
 
-        Object result = cloned.call(context)
+        def result
+        try {
+            result = cloned.call(context)
+        } catch (Exception e) {
+            LOG.error("Exception occured invoking flow action: ${e.message}", e)            
+            throw e;
+        }
         def event
         if(result instanceof Map) {
             context.flowScope.putAll(new LocalAttributeMap(result))
