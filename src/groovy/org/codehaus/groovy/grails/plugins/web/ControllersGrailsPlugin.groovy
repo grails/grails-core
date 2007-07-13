@@ -295,15 +295,16 @@ class ControllersGrailsPlugin {
 		// add common objects and out variable for tag libraries
 		def registry = GroovySystem.getMetaClassRegistry()
 
+        def constructor = new DataBindingDynamicConstructor(ctx)
+        def Closure constructorMapArg = {domainClass, Map params ->
+                constructor.invoke(domainClass.clazz, [params] as Object[])
+        }
         for(domainClass in application.domainClasses) {
             def metaClass = domainClass.metaClass
-            def constructor = new DataBindingDynamicConstructor(ctx)
             metaClass.ctor = {->
                 constructor.invoke(domainClass.clazz, [] as Object[])
             }
-            metaClass.ctor = { Map params ->
-                constructor.invoke(domainClass.clazz, [params] as Object[])
-            }
+            metaClass.ctor = constructorMapArg.curry(domainClass)
 
             def setProps = new SetPropertiesDynamicProperty()
             metaClass.setProperties = { Object o ->

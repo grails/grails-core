@@ -40,7 +40,7 @@ class DomainClassGrailsPlugin {
 	def loadAfter = ['hibernate']
 	
 	def doWithSpring = {
-		application.domainClasses.each { dc ->
+		for(dc in application.domainClasses) {
 		    // Note the use of Groovy's ability to use dynamic strings in method names!
 		    "${dc.fullName}"(dc.getClazz()) { bean ->
 				bean.singleton = false

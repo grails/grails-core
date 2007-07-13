@@ -44,6 +44,8 @@ import org.springframework.transaction.support.TransactionTemplate
 import org.springframework.transaction.support.TransactionCallback
 import org.codehaus.groovy.grails.orm.hibernate.metaclass.ValidatePersistentMethod
 import org.codehaus.groovy.grails.metaclass.DomainClassMethods
+import org.springframework.orm.hibernate3.HibernateCallback
+import org.hibernate.Session
 
 
 
@@ -179,9 +181,15 @@ class HibernateGrailsPlugin {
         SessionFactory sessionFactory = ctx.sessionFactory
 
         def validateMethod = new ValidatePersistentMethod(sessionFactory, application.classLoader, application)
-        metaClass.validate = {-> validateMethod.invoke(delegate, "validate", [] as Object[]) }
-        metaClass.validate = {Map args-> validateMethod.invoke(delegate, "validate", [args] as Object[]) }
-        metaClass.validate = {Boolean b-> validateMethod.invoke(delegate, "validate", [b] as Object[]) }        
+        metaClass.validate = {->
+            validateMethod.invoke(delegate, "validate", [] as Object[])
+        }
+        metaClass.validate = {Map args->
+            validateMethod.invoke(delegate, "validate", [args] as Object[])
+        }
+        metaClass.validate = {Boolean b->
+            validateMethod.invoke(delegate, "validate", [b] as Object[])
+        }        
     }
 
     private addTransactionalMethods(GrailsDomainClass dc, GrailsApplication application, ctx) {
@@ -209,8 +217,12 @@ class HibernateGrailsPlugin {
         FindAllPersistentMethod findAllMethod = new FindAllPersistentMethod(sessionFactory, classLoader)
         metaClass.createCriteria = {-> new HibernateCriteriaBuilder(domainClassType,sessionFactory) }
 
-        metaClass.'static'.findAll = {-> findAllMethod.invoke(domainClassType,"findAll", [] as Object[]) }
-        metaClass.'static'.findAll = { String query -> findAllMethod.invoke(domainClassType,"findAll", [query] as Object[]) }
+        metaClass.'static'.findAll = {->
+            findAllMethod.invoke(domainClassType,"findAll", [] as Object[])
+        }
+        metaClass.'static'.findAll = { String query ->
+            findAllMethod.invoke(domainClassType,"findAll", [query] as Object[])
+        }
         metaClass.'static'.findAll = { String query, Integer max ->
             findAllMethod.invoke(domainClassType,"findAll", [query, max] as Object[])
         }
@@ -238,8 +250,12 @@ class HibernateGrailsPlugin {
             findAllMethod.invoke(domainClassType,"findAll", [query, positionalParams, max, offset] as Object[])
         }
         
-        metaClass.'static'.findAll = { String query, Collection positionalParams, Map args -> findAllMethod.invoke(domainClassType,"findAll", [query, positionalParams, args] as Object[]) }
-        metaClass.'static'.findAll = { String query, Object[] positionalParams, Map args -> findAllMethod.invoke(domainClassType,"findAll", [query, positionalParams, args] as Object[]) }
+        metaClass.'static'.findAll = { String query, Collection positionalParams, Map args ->
+            findAllMethod.invoke(domainClassType,"findAll", [query, positionalParams, args] as Object[])
+        }
+        metaClass.'static'.findAll = { String query, Object[] positionalParams, Map args ->
+            findAllMethod.invoke(domainClassType,"findAll", [query, positionalParams, args] as Object[])
+        }
         metaClass.'static'.findAll = { String query, Map namedArgs ->
                findAllMethod.invoke(domainClassType,"findAll", [query, namedArgs] as Object[])
         }
@@ -255,43 +271,65 @@ class HibernateGrailsPlugin {
         metaClass.'static'.findAll = { Object example -> findAllMethod.invoke(domainClassType,"findAll", [example] as Object[]) }
 
         def findMethod = new FindPersistentMethod(sessionFactory, classLoader)
-        metaClass.'static'.find = { String query -> findMethod.invoke(domainClassType, "find", [query] as Object[] ) }
-        metaClass.'static'.find = { Object example -> findMethod.invoke(domainClassType, "find", [example] as Object[] ) }
-        metaClass.'static'.find = { String query, Collection args -> findMethod.invoke(domainClassType, "find", [query, args] as Object[] ) }
-        metaClass.'static'.find = { String query, Object[] args -> findMethod.invoke(domainClassType, "find", [query, args] as Object[] ) }
-        metaClass.'static'.find = { String query, Map namedArgs -> findMethod.invoke(domainClassType, "find", [query, namedArgs] as Object[] ) }
+        metaClass.'static'.find = { String query ->
+            findMethod.invoke(domainClassType, "find", [query] as Object[] )
+        }
+        metaClass.'static'.find = { Object example ->
+            findMethod.invoke(domainClassType, "find", [example] as Object[] )
+        }
+        metaClass.'static'.find = { String query, Collection args ->
+            findMethod.invoke(domainClassType, "find", [query, args] as Object[] )
+        }
+        metaClass.'static'.find = { String query, Object[] args ->
+            findMethod.invoke(domainClassType, "find", [query, args] as Object[] )
+        }
+        metaClass.'static'.find = { String query, Map namedArgs ->
+            findMethod.invoke(domainClassType, "find", [query, namedArgs] as Object[] )
+        }
 
 
         def listMethod = new ListPersistentMethod(sessionFactory, classLoader)
         metaClass.'static'.list = {-> listMethod.invoke(domainClassType, "list", [] as Object[]) }
         metaClass.'static'.list = { Map args -> listMethod.invoke(domainClassType, "list", [args] as Object[]) }
         metaClass.'static'.findWhere = { Map query ->
-            def criteria = sessionFactory.currentSession.createCriteria(domainClassType)
-            criteria.add( org.hibernate.criterion.Expression.allEq(query))
-            criteria.setMaxResults(1)
-            criteria.uniqueResult()
+            template.execute({ Session session ->
+                def criteria = session.createCriteria(domainClassType)
+                criteria.add( org.hibernate.criterion.Expression.allEq(query))
+                criteria.setMaxResults(1)
+                criteria.uniqueResult()
+            } as HibernateCallback)
         }
         metaClass.'static'.findAllWhere = { Map query ->
-            def criteria = sessionFactory.currentSession.createCriteria(domainClassType)
-            criteria.add( org.hibernate.criterion.Expression.allEq(query))
-            criteria.list()        
+            template.execute({ Session session ->
+                def criteria = session.createCriteria(domainClassType)
+                criteria.add( org.hibernate.criterion.Expression.allEq(query))
+                criteria.list()
+            } as HibernateCallback)
+
         }
-        metaClass.'static'.getAll = {-> sessionFactory.currentSession.createCriteria(domainClassType).list() }
+        metaClass.'static'.getAll = {->
+            template.execute({ session ->
+                session.createCriteria(domainClassType).list()
+            } as HibernateCallback)
+        }
         metaClass.'static'.getAll = { List ids ->
-            def identityType = dc.identifier.type
-            ids = ids.collect { convertToType(it, identityType) }
-            def criteria = sessionFactory.currentSession.createCriteria(domainClassType)
-            criteria.add(org.hibernate.criterion.Restrictions.'in'(dc.identifier.name, ids))
-            def results = criteria.list()
-            def idsMap = [:]
-            for(object in results) {
-                idsMap[object[dc.identifier.name]] = object
-            }
-            results.clear()
-            for(id in ids) {
-                results << idsMap[id]
-            }
-            results
+            template.execute({ Session session ->
+                def identityType = dc.identifier.type
+                ids = ids.collect { convertToType(it, identityType) }
+                def criteria = session.createCriteria(domainClassType)
+                criteria.add(org.hibernate.criterion.Restrictions.'in'(dc.identifier.name, ids))
+                def results = criteria.list()
+                def idsMap = [:]
+                for(object in results) {
+                    idsMap[object[dc.identifier.name]] = object
+                }
+                results.clear()
+                for(id in ids) {
+                    results << idsMap[id]
+                }
+                results
+            } as HibernateCallback)
+
         }
         metaClass.'static'.exists = { id ->
             def identityType = dc.identifier.type
@@ -314,13 +352,27 @@ class HibernateGrailsPlugin {
 
 
         def executeQueryMethod = new ExecuteQueryPersistentMethod(sessionFactory, classLoader)
-        metaClass.'static'.executeQuery = { String query -> executeQueryMethod.invoke(domainClassType, "executeQuery", [query] as Object[]) }
-        metaClass.'static'.executeQuery = { String query, Collection positionalParams -> executeQueryMethod.invoke(domainClassType, "executeQuery", [query, positionalParams] as Object[])}
-        metaClass.'static'.executeQuery = { String query, Object[] positionalParams -> executeQueryMethod.invoke(domainClassType, "executeQuery", [query, positionalParams] as Object[])}
-        metaClass.'static'.executeQuery = { String query, Collection positionalParams, Map args -> executeQueryMethod.invoke(domainClassType, "executeQuery", [query, positionalParams, args] as Object[]) }
-        metaClass.'static'.executeQuery = { String query, Object[] positionalParams, Map args -> executeQueryMethod.invoke(domainClassType, "executeQuery", [query, positionalParams, args] as Object[]) }
-        metaClass.'static'.executeQuery = { String query, Map namedParams -> executeQueryMethod.invoke(domainClassType, "executeQuery", [query, namedParams] as Object[]) }
-        metaClass.'static'.executeQuery = { String query, Map namedParams, Map args -> executeQueryMethod.invoke(domainClassType, "executeQuery", [query, namedParams, args] as Object[]) }
+        metaClass.'static'.executeQuery = { String query ->
+            executeQueryMethod.invoke(domainClassType, "executeQuery", [query] as Object[])
+        }
+        metaClass.'static'.executeQuery = { String query, Collection positionalParams ->
+            executeQueryMethod.invoke(domainClassType, "executeQuery", [query, positionalParams] as Object[])
+        }
+        metaClass.'static'.executeQuery = { String query, Object[] positionalParams ->
+            executeQueryMethod.invoke(domainClassType, "executeQuery", [query, positionalParams] as Object[])
+        }
+        metaClass.'static'.executeQuery = { String query, Collection positionalParams, Map args ->
+            executeQueryMethod.invoke(domainClassType, "executeQuery", [query, positionalParams, args] as Object[])
+        }
+        metaClass.'static'.executeQuery = { String query, Object[] positionalParams, Map args ->
+            executeQueryMethod.invoke(domainClassType, "executeQuery", [query, positionalParams, args] as Object[])
+        }
+        metaClass.'static'.executeQuery = { String query, Map namedParams ->
+            executeQueryMethod.invoke(domainClassType, "executeQuery", [query, namedParams] as Object[])
+        }
+        metaClass.'static'.executeQuery = { String query, Map namedParams, Map args ->
+            executeQueryMethod.invoke(domainClassType, "executeQuery", [query, namedParams, args] as Object[])
+        }
 
 
         
@@ -348,12 +400,23 @@ class HibernateGrailsPlugin {
         def saveMethod = new SavePersistentMethod(sessionFactory, classLoader, application)
         def metaClass = dc.metaClass
 
-        metaClass.save = { args -> saveMethod.invoke(delegate, "save", args ) }
-        metaClass.save = {-> saveMethod.invoke(delegate, "save", [] as Object[]) }
+        metaClass.save = { Boolean validate ->
+            saveMethod.invoke(delegate, "save", [validate] as Object[] )
+        }
+        metaClass.save = { Map args ->
+            saveMethod.invoke(delegate, "save", [args] as Object[] )
+        }
+        metaClass.save = {->
+            saveMethod.invoke(delegate, "save", [] as Object[])
+        }
 
         def mergeMethod = new MergePersistentMethod(sessionFactory, classLoader, application)
-        metaClass.merge = { args -> mergeMethod.invoke(delegate, "merge", args) }
-        metaClass.merge = {-> mergeMethod.invoke(delegate, "merge", [] as Object[]) }
+        metaClass.merge = { args ->
+            mergeMethod.invoke(delegate, "merge", [args] as Object[])
+        }
+        metaClass.merge = {->
+            mergeMethod.invoke(delegate, "merge", [] as Object[])
+        }
 
         metaClass.delete = { template.delete(delegate) }
         metaClass.refresh = { template.refresh(delegate) }
@@ -366,9 +429,11 @@ class HibernateGrailsPlugin {
         }
 
         metaClass.'static'.count = {->
-            def criteria = sessionFactory.currentSession.createCriteria(dc.clazz)
-            criteria.setProjection(org.hibernate.criterion.Projections.rowCount())
-            criteria.uniqueResult()
+           template.execute( { Session session ->
+                def criteria = session.createCriteria(dc.clazz)
+                criteria.setProjection(org.hibernate.criterion.Projections.rowCount())
+                criteria.uniqueResult()
+           } as HibernateCallback)
         }
     }
 
@@ -380,7 +445,7 @@ class HibernateGrailsPlugin {
                 value = value.toLong()
             }
             else {
-                value = typeConverter.convertIfNecessary(id, targetType);
+                value = typeConverter.convertIfNecessary(value, targetType);
             }
         }
         return value
