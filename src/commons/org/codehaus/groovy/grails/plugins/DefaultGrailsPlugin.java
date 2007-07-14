@@ -224,7 +224,7 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
 
     private void evaluatePluginVersion() {
         if(this.pluginBean.isReadableProperty(VERSION)) {
-            Object vobj = this.plugin.getProperty("version");
+            Object vobj = this.plugin.getProperty(VERSION);
             if(vobj != null)
                 this.version = vobj.toString();
             else
