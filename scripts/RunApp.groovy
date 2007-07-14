@@ -48,17 +48,8 @@ task ('default': "Run's a Grails application in Jetty") {
 }                 
 task ( runApp : "Main implementation that executes a Grails application") {
 	System.setProperty('org.mortbay.xml.XmlParser.NotValidating', 'true')
-    def server = new Server()
-    grailsServer = server
     try {
-        def connectors = [new SelectChannelConnector()]
-        connectors[0].setPort(serverPort)    
-        server.setConnectors( (Connector [])connectors )                          
-		WebAppContext handler = new WebAppContext("${basedir}/web-app", "/${grailsAppName}")
-        handler.setDefaultsDescriptor("${grailsHome}/conf/webdefault.xml")
-        handler.setClassLoader(Thread.currentThread().getContextClassLoader())
-		grailsHandler = handler
-		server.setHandler( handler )
+        def server = configureHttpServer()
         server.start()
         event("StatusFinal", ["Server running. Browse to http://localhost:$serverPort/$grailsAppName"])
     } catch(Throwable t) {
@@ -86,6 +77,21 @@ task( watchContext : "Watches the Jetty web.xml for changes and reloads of neces
         sleep(2000)
 	}	
 }
+
+task( configureHttpServer : "Returns a jetty server configured with an HTTP connector") {
+    def server = new Server()
+    grailsServer = server
+    def connectors = [new SelectChannelConnector()]
+    connectors[0].setPort(serverPort)
+    server.setConnectors( (Connector [])connectors )
+    WebAppContext handler = new WebAppContext("${basedir}/web-app", "/${grailsAppName}")
+    handler.setDefaultsDescriptor("${grailsHome}/conf/webdefault.xml")
+    handler.setClassLoader(Thread.currentThread().getContextClassLoader())
+    grailsHandler = handler
+    server.setHandler( handler )
+    return server
+}
+
 task( stopServer : "Stops the Grails Jetty server") {
 	if(grailsServer) {
 		grailsServer.stop()		

@@ -68,6 +68,7 @@ if "%eval[2+2]" == "4" goto 4NT_args
 @rem Slurp the command line arguments.  
 set CMD_LINE_ARGS=
 set SERVER_PORT=
+set SERVER_PORT_HTTPS=
 set CP=
 
 :win9xME_args_slurp
@@ -76,6 +77,11 @@ if "%~1" == "-Dserver.port" (
 	set SERVER_PORT=%~1=%~2
 	shift
 	shift	
+	goto win9xME_args_slurp
+) else if "%~1" == "-Dserver.port.https" (
+	set SERVER_PORT_HTTPS=%~1=%~2
+	shift
+	shift
 	goto win9xME_args_slurp
 ) else (
 	if "x%~1" == "x-cp" (
@@ -135,7 +141,7 @@ set JAVA_OPTS=%JAVA_OPTS% -Dgroovy.starter.conf="%STARTER_CONF%"
 if exist "%USERPROFILE%/.groovy/postinit.bat" call "%USERPROFILE%/.groovy/postinit.bat"
 
 @rem Execute Groovy
-CALL "%JAVA_EXE%" %JAVA_OPTS% %SERVER_PORT% -classpath "%STARTER_CLASSPATH%" %STARTER_MAIN_CLASS% --main %CLASS% --conf "%STARTER_CONF%" --classpath "%CP%" "%CMD_LINE_ARGS%"
+CALL "%JAVA_EXE%" %JAVA_OPTS% %SERVER_PORT% %SERVER_PORT_HTTPS% -classpath "%STARTER_CLASSPATH%" %STARTER_MAIN_CLASS% --main %CLASS% --conf "%STARTER_CONF%" --classpath "%CP%" "%CMD_LINE_ARGS%"
 :end
 @rem End local scope for the variables with windows NT shell
 if "%OS%"=="Windows_NT" endlocal
