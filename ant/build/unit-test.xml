@@ -13,7 +13,6 @@
 			<pathelement path="${grails.build}/web" />
 			<pathelement path="${grails.build}/gorm" />
 			<pathelement path="${grails.build}/crud" />
-			<pathelement path="${grails.build}/config" />			
 			<fileset dir="cruise/coverage/lib" includes="*.jar" />
 		</classpath>
 		<classpath refid="classpath" />
@@ -47,7 +46,6 @@
 		<cobertura-report format="html" destdir="cruise/coverage/report">
 			<fileset dir="${grails.src.commons}" />
 			<fileset dir="${grails.src.web}" />
-			<fileset dir="${grails.src.config}" />			
 			<fileset dir="${grails.src.persistence}" />
 			<fileset dir="${grails.src.scaffolding}" />
 			<fileset dir="${grails.test.src.commons}" />
@@ -69,7 +67,6 @@
 				<pathelement path="${grails.build}/web" />
 				<pathelement path="${grails.build}/gorm" />
 				<pathelement path="${grails.build}/crud" />
-				<pathelement path="${grails.build}/config" />				
 			</classpath>
 		</javac>
 		<groovyc srcdir="test/groovy" destdir="${grails.test.build}"  encoding="UTF-8">
@@ -78,7 +75,6 @@
 			<classpath location="${grails.build}" />
 			<classpath>
 				<pathelement path="${grails.build}/core" />
-				<pathelement path="${grails.build}/config" />				
 				<pathelement path="${grails.build}/web" />
 				<pathelement path="${grails.build}/gorm" />
 				<pathelement path="${grails.build}/crud" />
@@ -115,7 +111,6 @@
 				<pathelement path="${grails.build}/web" />
 				<pathelement path="${grails.build}/gorm" />
 				<pathelement path="${grails.build}/crud" />
-				<pathelement path="${grails.build}/config" />				
 			</classpath>
 			<classpath location="${grails.test.build}" />
 			<classpath location="${grails.test.src.web}" />
