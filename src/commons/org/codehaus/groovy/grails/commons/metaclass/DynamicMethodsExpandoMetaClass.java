@@ -15,6 +15,7 @@
 package org.codehaus.groovy.grails.commons.metaclass;
 
 import groovy.lang.Closure;
+import groovy.lang.ExpandoMetaClass;
 
 import java.beans.IntrospectionException;
 
@@ -156,7 +157,7 @@ public class DynamicMethodsExpandoMetaClass extends ExpandoMetaClass {
      */
     class DynamicExpandoMetaProperty extends ExpandoMetaProperty {
         private DynamicExpandoMetaProperty(ExpandoMetaProperty wrapped) {
-            super(wrapped.propertyName, wrapped.isStatic);
+            super(wrapped.getPropertyName(), wrapped.isStatic());
         }
         public Object leftShift(Object arg) {
             if(isRegexMethod(propertyName, arg)) {

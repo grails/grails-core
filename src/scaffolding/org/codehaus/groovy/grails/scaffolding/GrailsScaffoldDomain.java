@@ -14,7 +14,6 @@
  */
 package org.codehaus.groovy.grails.scaffolding;
 
-import org.codehaus.groovy.grails.metaclass.DomainClassMethods;
 import org.codehaus.groovy.grails.orm.hibernate.metaclass.DeletePersistentMethod;
 import org.codehaus.groovy.grails.orm.hibernate.metaclass.SavePersistentMethod;
 import org.codehaus.groovy.runtime.InvokerHelper;
@@ -38,7 +37,7 @@ public class GrailsScaffoldDomain extends DefaultScaffoldDomain implements Scaff
         Object result = InvokerHelper.invokeMethod(domainObject,SavePersistentMethod.METHOD_SIGNATURE, new Object[0]);
         
         if(result == null) {
-            callback.setErrors((Errors)InvokerHelper.getProperty(domainObject, DomainClassMethods.ERRORS_PROPERTY));
+            callback.setErrors((Errors)InvokerHelper.getProperty(domainObject, org.codehaus.groovy.grails.orm.hibernate.metaclass.DomainClassMethods.ERRORS_PROPERTY));
         }
 
         return result != null;
@@ -47,7 +46,7 @@ public class GrailsScaffoldDomain extends DefaultScaffoldDomain implements Scaff
     public boolean update(final Object domainObject, final ScaffoldCallback callback) {
         Object result = InvokerHelper.invokeMethod(domainObject,SavePersistentMethod.METHOD_SIGNATURE, new Object[0]);
         if(result == null) {
-            callback.setErrors((Errors)InvokerHelper.getProperty(domainObject, DomainClassMethods.ERRORS_PROPERTY));
+            callback.setErrors((Errors)InvokerHelper.getProperty(domainObject, org.codehaus.groovy.grails.orm.hibernate.metaclass.DomainClassMethods.ERRORS_PROPERTY));
         }
 
         return result != null;

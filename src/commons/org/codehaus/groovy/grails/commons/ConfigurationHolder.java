@@ -14,7 +14,7 @@
  */
 package org.codehaus.groovy.grails.commons;
 
-import grails.config.ConfigObject;
+import groovy.util.ConfigObject;
 
 /**
  * A class that holds a reference to the grails.config.ConfigObject instance

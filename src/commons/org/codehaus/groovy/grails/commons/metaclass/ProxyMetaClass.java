@@ -16,11 +16,7 @@ package org.codehaus.groovy.grails.commons.metaclass;
 
 import org.codehaus.groovy.runtime.InvokerHelper;
 
-import groovy.lang.Closure;
-import groovy.lang.GroovyObject;
-import groovy.lang.MetaClass;
-import groovy.lang.MetaClassImpl;
-import groovy.lang.MetaClassRegistry;
+import groovy.lang.*;
 
 import java.beans.IntrospectionException;
 
@@ -38,7 +34,7 @@ import java.beans.IntrospectionException;
  * @author Graeme Rocher
  * 
  */
-public class ProxyMetaClass extends MetaClassImpl implements AdapterMetaClass {
+public class ProxyMetaClass extends MetaClassImpl implements AdaptingMetaClass {
 
     protected MetaClass adaptee = null;
     protected Interceptor interceptor = null;

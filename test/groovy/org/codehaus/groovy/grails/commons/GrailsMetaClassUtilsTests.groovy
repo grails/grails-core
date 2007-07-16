@@ -26,7 +26,7 @@ public class GrailsMetaClassUtilsTests extends GroovyTestCase {
         // add static method
         metaClass.'static'.bar = {-> "foo" }
         // add constructor
-        metaClass.'ctor' = { String txt ->
+        metaClass.constructor = { String txt ->
             def obj = BeanUtils.instantiateClass(Dummy.class)
             obj.name = txt
             obj

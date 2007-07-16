@@ -15,14 +15,8 @@
 package org.codehaus.groovy.grails.commons;
 
 
-import groovy.lang.GroovySystem;
-import groovy.lang.MetaClass;
-import groovy.lang.MetaClassRegistry;
+import groovy.lang.*;
 import org.apache.commons.lang.StringUtils;
-import org.codehaus.groovy.grails.commons.metaclass.AdapterMetaClass;
-import org.codehaus.groovy.grails.commons.metaclass.DynamicMethodsMetaClass;
-import org.codehaus.groovy.grails.commons.metaclass.ExpandoMetaClass;
-import org.codehaus.groovy.grails.commons.metaclass.ExpandoMetaClassCreationHandle;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
@@ -837,14 +831,10 @@ public class GrailsClassUtils {
         MetaClassRegistry registry = GroovySystem.getMetaClassRegistry();
         Assert.isTrue(registry.getMetaClassCreationHandler() instanceof ExpandoMetaClassCreationHandle, "Grails requires an instance of [ExpandoMetaClassCreationHandle] to be set in Groovy's MetaClassRegistry!");
         MetaClass mc = registry.getMetaClass(clazz);
-        AdapterMetaClass adapter = null;
-        if(mc instanceof DynamicMethodsMetaClass) {
-            adapter = (DynamicMethodsMetaClass) mc;
-            mc= adapter.getAdaptee();
-		}
-		else if(mc instanceof AdapterMetaClass) {
-            adapter = (DynamicMethodsMetaClass) mc;
-            mc= ((AdapterMetaClass)mc).getAdaptee();
+        AdaptingMetaClass adapter = null;
+        if(mc instanceof AdaptingMetaClass) {
+            adapter = (AdaptingMetaClass) mc;
+            mc= ((AdaptingMetaClass)mc).getAdaptee();
 		}
 
         if(!(mc instanceof ExpandoMetaClass)) {

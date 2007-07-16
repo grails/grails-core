@@ -15,8 +15,8 @@
  */ 
 package org.codehaus.groovy.grails.commons;
 
-import grails.config.ConfigObject;
 import groovy.lang.GroovyClassLoader;
+import groovy.util.ConfigObject;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.io.Resource;

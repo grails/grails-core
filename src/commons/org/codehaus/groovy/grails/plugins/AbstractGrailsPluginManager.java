@@ -3,24 +3,18 @@
  */
 package org.codehaus.groovy.grails.plugins;
 
+import groovy.lang.ExpandoMetaClass;
 import groovy.lang.MetaClass;
 import groovy.lang.MetaClassRegistry;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
 import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.metaclass.DynamicMethodsMetaClass;
-import org.codehaus.groovy.grails.commons.metaclass.ExpandoMetaClass;
 import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration;
 import org.codehaus.groovy.grails.plugins.exceptions.PluginException;
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.Resource;
+
+import java.util.*;
 
 /**
  * Abstract implementation of the GrailsPluginManager interface
@@ -132,22 +126,10 @@ public abstract class AbstractGrailsPluginManager implements GrailsPluginManager
 			
 			for (int i = 0; i < allClasses.length; i++) {
 				Class c = allClasses[i];
-				MetaClass mc = registry.getMetaClass(c);
-				if(mc instanceof DynamicMethodsMetaClass) {
-					ExpandoMetaClass adaptee = new ExpandoMetaClass(c);
-					adaptee.setAllowChangesAfterInit(true);
-					adaptee.initialize();
-					
-					((DynamicMethodsMetaClass)mc).setAdaptee(adaptee);
-					metaClasses[i] = adaptee;
-				}
-				else {
-					ExpandoMetaClass emc = new ExpandoMetaClass(c,true);
-					emc.setAllowChangesAfterInit(true);
-					emc.initialize();
-					metaClasses[i] = emc;	
-				}
-				
+                ExpandoMetaClass emc = new ExpandoMetaClass(c,true);
+                emc.setAllowChangesAfterInit(true);
+                emc.initialize();
+                metaClasses[i] = emc;
 			}
 			for (Iterator i = pluginList.iterator(); i.hasNext();) {
 				GrailsPlugin plugin = (GrailsPlugin) i.next();

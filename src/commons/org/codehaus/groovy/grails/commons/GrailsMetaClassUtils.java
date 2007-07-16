@@ -14,23 +14,17 @@
  */
 package org.codehaus.groovy.grails.commons;
 
-import groovy.lang.Closure;
-import groovy.lang.GroovyObject;
-import groovy.lang.MetaClass;
-import groovy.lang.MetaClassRegistry;
+import groovy.lang.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.commons.metaclass.AdapterMetaClass;
-import org.codehaus.groovy.grails.commons.metaclass.ClosureInvokingMethod;
-import org.codehaus.groovy.grails.commons.metaclass.ExpandoMetaClass;
-import org.codehaus.groovy.grails.commons.metaclass.ThreadManagedMetaBeanProperty;
 import org.codehaus.groovy.runtime.InvokerHelper;
+import org.codehaus.groovy.runtime.metaclass.ThreadManagedMetaBeanProperty;
 import org.springframework.beans.BeanUtils;
 
 import java.lang.reflect.Constructor;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Collection;
 
 /**
  * A class that provides utility methods for working with the Groovy MetaClass API
@@ -67,11 +61,11 @@ public class GrailsMetaClassUtils {
         MetaClass oldMetaClass = registry.getMetaClass(fromClass);
 
 
-        AdapterMetaClass adapter = null;
+        AdaptingMetaClass adapter = null;
         ExpandoMetaClass emc;
 
-        if(oldMetaClass instanceof AdapterMetaClass) {
-            adapter = ((AdapterMetaClass)oldMetaClass);
+        if(oldMetaClass instanceof AdaptingMetaClass) {
+            adapter = ((AdaptingMetaClass)oldMetaClass);
             emc = (ExpandoMetaClass)adapter.getAdaptee();
             if(LOG.isDebugEnabled()) {
                 LOG.debug("Obtained adapted MetaClass ["+emc+"] from AdapterMetaClass instance ["+adapter+"]");
@@ -88,7 +82,7 @@ public class GrailsMetaClassUtils {
         }
 
         List metaMethods = emc.getExpandoMethods();
-        ExpandoMetaClass replacement = new ExpandoMetaClass(toClass);
+        ExpandoMetaClass replacement = new ExpandoMetaClass(toClass, true);
         replacement.setAllowChangesAfterInit(true);
         for (Iterator i = metaMethods.iterator(); i.hasNext();) {
             Object obj = i.next();

@@ -1,17 +1,15 @@
 package org.codehaus.groovy.grails.commons.spring;
 
+import groovy.lang.ExpandoMetaClass;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyObject;
-import groovy.lang.MetaClassRegistry;
 import junit.framework.TestCase;
 import org.codehaus.groovy.grails.commons.*;
-import org.codehaus.groovy.grails.commons.metaclass.ExpandoMetaClassCreationHandle;
 import org.codehaus.groovy.grails.plugins.DefaultGrailsPluginManager;
 import org.codehaus.groovy.grails.support.ClassEditor;
 import org.codehaus.groovy.grails.support.MockApplicationContext;
 import org.codehaus.groovy.grails.web.errors.GrailsExceptionResolver;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsUrlHandlerMapping;
-import org.codehaus.groovy.runtime.InvokerHelper;
 import org.springframework.aop.target.HotSwappableTargetSource;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.MessageSource;
@@ -30,10 +28,7 @@ public class GrailsRuntimeConfiguratorTests extends TestCase {
 	 * @see junit.framework.TestCase#setUp()
 	 */
 	protected void setUp() throws Exception {
-		InvokerHelper.getInstance()
-		.getMetaRegistry()
-		.setMetaClassCreationHandle(new ExpandoMetaClassCreationHandle());
-
+        ExpandoMetaClass.enableGlobally();
         ConfigurationHolder.setConfig(null);
 
         super.setUp();
@@ -43,10 +38,7 @@ public class GrailsRuntimeConfiguratorTests extends TestCase {
 	 * @see junit.framework.TestCase#tearDown()
 	 */
 	protected void tearDown() throws Exception {
-		InvokerHelper.getInstance()
-		.getMetaRegistry()
-		.setMetaClassCreationHandle(new MetaClassRegistry.MetaClassCreationHandle());
-
+        ExpandoMetaClass.disableGlobally();
 		super.tearDown();
 	}
 

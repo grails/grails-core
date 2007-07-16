@@ -67,7 +67,6 @@ public abstract class AbstractDynamicMethods implements DynamicMethods {
 	public AbstractDynamicMethods(Class theClass, boolean inRegistry)
 	throws IntrospectionException {
 			super();
-			new DynamicMethodsMetaClass(theClass, this, inRegistry).initialize();
 			this.clazz = theClass;
 			this.dynamicMethodInvocations = new ArrayList();
 			this.staticMethodInvocations = new ArrayList();

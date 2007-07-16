@@ -28,26 +28,17 @@ import org.springframework.orm.hibernate3.support.OpenSessionInViewInterceptor;
 import org.springframework.orm.hibernate3.HibernateAccessor;
 import org.codehaus.groovy.runtime.InvokerHelper;   
 import org.codehaus.groovy.grails.commons.metaclass.*
-import org.codehaus.groovy.grails.orm.hibernate.metaclass.SavePersistentMethod
-import org.codehaus.groovy.grails.orm.hibernate.metaclass.MergePersistentMethod
+import org.codehaus.groovy.grails.orm.hibernate.metaclass.*
 import org.hibernate.SessionFactory
 import org.springframework.beans.SimpleTypeConverter
 import org.codehaus.groovy.runtime.DefaultGroovyMethods
 import grails.orm.HibernateCriteriaBuilder
-import org.codehaus.groovy.grails.orm.hibernate.metaclass.FindAllPersistentMethod
-import org.codehaus.groovy.grails.orm.hibernate.metaclass.ListPersistentMethod
 import org.springframework.beans.BeanWrapperImpl
-import org.codehaus.groovy.grails.orm.hibernate.metaclass.ExecuteQueryPersistentMethod
 import org.springframework.orm.hibernate3.HibernateTemplate
-import org.codehaus.groovy.grails.orm.hibernate.metaclass.FindPersistentMethod
 import org.springframework.transaction.support.TransactionTemplate
 import org.springframework.transaction.support.TransactionCallback
-import org.codehaus.groovy.grails.orm.hibernate.metaclass.ValidatePersistentMethod
-import org.codehaus.groovy.grails.metaclass.DomainClassMethods
 import org.springframework.orm.hibernate3.HibernateCallback
 import org.hibernate.Session
-
-
 
 /**
 * A plug-in that handles the configuration of Hibernate within Grails
@@ -147,7 +138,6 @@ class HibernateGrailsPlugin {
 	    if(ctx.containsBean('sessionFactory')) {
             def factory = new PersistentConstraintFactory(ctx.sessionFactory, UniqueConstraint.class)
             ConstrainedProperty.registerNewConstraint(UniqueConstraint.UNIQUE_CONSTRAINT, factory);
-            GrailsHibernateUtil.configureDynamicMethods(ctx, ctx.grailsApplication);            
         }
 	}   
 	
@@ -163,19 +153,48 @@ class HibernateGrailsPlugin {
 		    addQueryMethods(dc, application, ctx)
 		    addTransactionalMethods(dc, application, ctx)
 		    addValidationMethods(dc, application, ctx)
-		   // addDynamicFinderSupport(dc, application, ctx)
+		    addDynamicFinderSupport(dc, application, ctx)
 		}
 
 	}
-/*
+
     private addDynamicFinderSupport(GrailsDomainClass dc, GrailsApplication application, ctx ) {
-        def dynamicMethods = new DomainClassMethods(application, dc.clazz, ctx.sessionFactory, application.classLoader)
-        dc.metaClass.'static'.invokeMethod = { String methodName, args ->
+        def metaClass = dc.metaClass
+        def GroovyClassLoader classLoader = application.classLoader
+        def sessionFactory = ctx.sessionFactory
 
+        def dynamicMethods = [ new FindAllByPersistentMethod(application,sessionFactory, classLoader),
+                               new FindByPersistentMethod(application,sessionFactory, classLoader),
+                               new CountByPersistentMethod(application,sessionFactory, classLoader),
+                               new ListOrderByPersistentMethod(sessionFactory, classLoader)]
 
+        // This is the code that deals with dynamic finders. It looks up a static method, if it exists it invokes it
+        // otherwise it trys to match the method invocation to one of the dynamic methods. If it matches it will
+        // register a new method with the ExpandoMetaClass so the next time it is invoked it doesn't have this overhead.
+        metaClass.'static'.invokeMethod = { String methodName, args -> 
+			 args = args == null? args = [] as Object[] : args
+             def metaMethod = metaClass.getStaticMetaMethod(methodName, (Object[])args)
+             def result = null
+             if(metaMethod) {
+                 result = metaMethod.invoke(dc.clazz, args)
+             }
+             else {
+                 StaticMethodInvocation method = dynamicMethods.find { it.isMethodMatch(methodName) }
+                 if(method) {
+                    // register the method invocation for next time
+                    metaClass.'static'."$methodName" = { Object[] varArgs ->
+                        method.invoke(dc.clazz, methodName, varArgs)
+                    }
+                    result = method.invoke(dc.clazz, methodName, args)                                                                                                      
+                 }
+                 else {
+                     throw new MissingMethodException(methodName, dc.clazz, args)
+                 }
+             }
+             result
         }
     }
-*/
+
     private addValidationMethods(GrailsDomainClass dc, GrailsApplication application, ctx ) {
         def metaClass = dc.metaClass
         SessionFactory sessionFactory = ctx.sessionFactory

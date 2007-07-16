@@ -21,7 +21,7 @@ import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
-import org.codehaus.groovy.grails.metaclass.DomainClassMethods;
+import org.codehaus.groovy.grails.orm.hibernate.metaclass.DomainClassMethods;
 import org.codehaus.groovy.grails.validation.CascadingValidator;
 import org.hibernate.SessionFactory;
 import org.springframework.validation.BindException;

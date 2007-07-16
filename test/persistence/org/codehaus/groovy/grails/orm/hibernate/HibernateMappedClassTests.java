@@ -1,10 +1,10 @@
 package org.codehaus.groovy.grails.orm.hibernate;
 
-import grails.config.ConfigObject;
-import grails.config.ConfigSlurper;
-import org.codehaus.groovy.grails.commons.GrailsApplication;
+import groovy.lang.ExpandoMetaClass;
+import groovy.util.ConfigObject;
+import groovy.util.ConfigSlurper;
 import org.codehaus.groovy.grails.commons.ConfigurationHolder;
-import org.codehaus.groovy.grails.commons.metaclass.ExpandoMetaClass;
+import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator;
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware;
 import org.codehaus.groovy.grails.support.MockApplicationContext;

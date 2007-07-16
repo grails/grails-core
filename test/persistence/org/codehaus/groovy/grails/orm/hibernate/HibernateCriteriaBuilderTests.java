@@ -1,16 +1,12 @@
 package org.codehaus.groovy.grails.orm.hibernate;
 
-import groovy.lang.Closure;
-import groovy.lang.GroovyClassLoader;
-import groovy.lang.GroovyObject;
-import groovy.lang.MissingMethodException;
+import groovy.lang.*;
 import groovy.util.Proxy;
 import org.apache.commons.lang.ArrayUtils;
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
-import org.codehaus.groovy.grails.commons.metaclass.ExpandoMetaClass;
 import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator;
 import org.codehaus.groovy.grails.support.MockApplicationContext;
 import org.codehaus.groovy.runtime.InvokerInvocationException;
@@ -18,10 +14,10 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.StaticMessageSource;
+import org.springframework.mock.web.MockServletContext;
 import org.springframework.orm.hibernate3.SessionHolder;
 import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
-import org.springframework.mock.web.MockServletContext;
 
 import java.util.List;
 
@@ -1295,11 +1291,6 @@ public class HibernateCriteriaBuilderTests extends
         assertEquals(2, results.size());
         p = parse("{ " +
                 "isNotNull('age');" +
-                "}", "Test1","CriteriaBuilderTestClass");
-        results = (List)p.getAdaptee();
-        assertEquals(1, results.size());
-        p = parse("{ " +
-                "notNull('age');" +
                 "}", "Test1","CriteriaBuilderTestClass");
         results = (List)p.getAdaptee();
         assertEquals(1, results.size());

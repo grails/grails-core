@@ -1,7 +1,6 @@
 package org.codehaus.groovy.grails.web.taglib;
 
 import org.codehaus.groovy.runtime.InvokerHelper
-import org.codehaus.groovy.grails.commons.metaclass.ExpandoMetaClass
 import org.codehaus.groovy.grails.commons.*
 
 class LinkRenderingTagLib2Tests extends AbstractGrailsTagTests {

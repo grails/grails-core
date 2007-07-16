@@ -15,11 +15,11 @@
 */
 package org.codehaus.groovy.grails.commons;
 
-import grails.config.ConfigObject;
-import grails.config.ConfigSlurper;
 import grails.util.GrailsUtil;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyObjectSupport;
+import groovy.util.ConfigObject;
+import groovy.util.ConfigSlurper;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;

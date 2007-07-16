@@ -13,11 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.metaclass;
+package org.codehaus.groovy.grails.orm.hibernate.metaclass;
 
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.metaclass.AbstractDynamicMethods;
-import org.codehaus.groovy.grails.orm.hibernate.metaclass.*;
 import org.hibernate.SessionFactory;
 
 import java.beans.IntrospectionException;

@@ -8,7 +8,7 @@ import org.codehaus.groovy.grails.plugins.*
 class DataSourceGrailsPluginTests extends AbstractGrailsMockTests {
 
 	void onSetUp() {
-		def config = new grails.config.ConfigSlurper("test").parse(
+		def config = new ConfigSlurper("test").parse(
 '''
 dataSource {
 	pooling = false                          

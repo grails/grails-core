@@ -23,7 +23,6 @@ import org.springframework.webflow.engine.builder.FlowBuilderException;
 import org.springframework.webflow.engine.support.TransitionExecutingStateExceptionHandler;
 import org.springframework.webflow.core.collection.LocalAttributeMap;
 import org.springframework.webflow.execution.Event;
-import org.codehaus.groovy.grails.commons.metaclass.ExpandoMetaClass;
 import org.apache.commons.logging.LogFactory
 
 import java.util.ArrayList;

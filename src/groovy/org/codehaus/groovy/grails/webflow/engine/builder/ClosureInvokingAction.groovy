@@ -20,7 +20,6 @@ import groovy.lang.MetaClass;
 import groovy.lang.MetaMethod;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.commons.metaclass.ExpandoMetaClass;
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.springframework.webflow.action.AbstractAction;
 import org.springframework.webflow.core.collection.LocalAttributeMap;

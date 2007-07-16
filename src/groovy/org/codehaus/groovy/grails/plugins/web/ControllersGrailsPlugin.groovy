@@ -299,12 +299,13 @@ class ControllersGrailsPlugin {
         def Closure constructorMapArg = {domainClass, Map params ->
                 constructor.invoke(domainClass.clazz, [params] as Object[])
         }
+        def consructorNoArgs = {domainClass ->
+            constructor.invoke(domainClass.clazz, [] as Object[])
+        }
         for(domainClass in application.domainClasses) {
             def metaClass = domainClass.metaClass
-            metaClass.ctor = {->
-                constructor.invoke(domainClass.clazz, [] as Object[])
-            }
-            metaClass.ctor = constructorMapArg.curry(domainClass)
+            metaClass.constructor = consructorNoArgs.curry(domainClass)
+            metaClass.constructor = constructorMapArg.curry(domainClass)
 
             def setProps = new SetPropertiesDynamicProperty()
             metaClass.setProperties = { Object o ->

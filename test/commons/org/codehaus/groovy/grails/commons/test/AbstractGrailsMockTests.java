@@ -15,13 +15,11 @@
  */
 package org.codehaus.groovy.grails.commons.test;
 
+import groovy.lang.ExpandoMetaClass;
 import groovy.lang.GroovyClassLoader;
-import groovy.lang.GroovySystem;
-import groovy.lang.MetaClassRegistry;
 import junit.framework.TestCase;
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.metaclass.ExpandoMetaClass;
 import org.codehaus.groovy.grails.support.MockApplicationContext;
 import org.springframework.context.MessageSource;
 import org.springframework.context.support.StaticMessageSource;
@@ -70,7 +68,7 @@ public abstract class AbstractGrailsMockTests extends TestCase {
         ctx = null;
         gcl = null;
 
-        GroovySystem.getMetaClassRegistry().setMetaClassCreationHandle(new MetaClassRegistry.MetaClassCreationHandle());
+        ExpandoMetaClass.disableGlobally();
         super.tearDown();
     }
 

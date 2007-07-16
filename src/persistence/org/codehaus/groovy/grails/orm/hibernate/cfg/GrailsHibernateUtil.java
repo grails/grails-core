@@ -22,7 +22,7 @@ import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.commons.metaclass.DynamicMethods;
 import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator;
-import org.codehaus.groovy.grails.metaclass.DomainClassMethods;
+import org.codehaus.groovy.grails.orm.hibernate.metaclass.DomainClassMethods;
 import org.codehaus.groovy.grails.orm.hibernate.GrailsHibernateDomainClass;
 import org.hibernate.EntityMode;
 import org.hibernate.SessionFactory;

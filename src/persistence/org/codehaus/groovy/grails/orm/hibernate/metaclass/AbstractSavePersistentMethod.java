@@ -16,29 +16,27 @@
 package org.codehaus.groovy.grails.orm.hibernate.metaclass;
 
 import groovy.lang.GroovyObject;
-
-import java.io.Serializable;
-import java.util.regex.Pattern;
-import java.util.Map;
-import java.sql.SQLException;
-
+import groovy.lang.GroovySystem;
+import groovy.lang.MetaClass;
 import org.codehaus.groovy.grails.commons.*;
-import org.codehaus.groovy.grails.commons.metaclass.DynamicMethodsMetaClass;
-import org.codehaus.groovy.grails.metaclass.DomainClassMethods;
 import org.codehaus.groovy.grails.validation.CascadingValidator;
-import org.codehaus.groovy.runtime.InvokerHelper;
-import org.hibernate.SessionFactory;
-import org.hibernate.Session;
-import org.hibernate.HibernateException;
 import org.hibernate.FlushMode;
+import org.hibernate.HibernateException;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.beans.InvalidPropertyException;
-import org.springframework.orm.hibernate3.HibernateTemplate;
 import org.springframework.orm.hibernate3.HibernateCallback;
+import org.springframework.orm.hibernate3.HibernateTemplate;
 import org.springframework.validation.BindException;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
+
+import java.io.Serializable;
+import java.sql.SQLException;
+import java.util.Map;
+import java.util.regex.Pattern;
 
 /**
  * Abstract class for different implementations that perform saving to implement
@@ -193,11 +191,11 @@ public abstract class AbstractSavePersistentMethod extends
      */
     protected void setErrorsOnInstance(Object target, Errors errors) {
         if(target instanceof GroovyObject) {
-            ((GroovyObject)target).setProperty(DomainClassMethods.ERRORS_PROPERTY,errors);
+            ((GroovyObject)target).setProperty(org.codehaus.groovy.grails.orm.hibernate.metaclass.DomainClassMethods.ERRORS_PROPERTY,errors);
         }
         else {
-            DynamicMethodsMetaClass metaClass = (DynamicMethodsMetaClass) InvokerHelper.getInstance().getMetaRegistry().getMetaClass(target.getClass());
-            metaClass.setProperty(target.getClass() ,target,DomainClassMethods.ERRORS_PROPERTY,errors, false, false);
+            MetaClass metaClass = GroovySystem.getMetaClassRegistry().getMetaClass(target.getClass());
+            metaClass.setProperty(target.getClass() ,target, org.codehaus.groovy.grails.orm.hibernate.metaclass.DomainClassMethods.ERRORS_PROPERTY,errors, false, false);
         }
     }
 

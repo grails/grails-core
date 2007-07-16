@@ -15,18 +15,18 @@
 */
 package org.codehaus.groovy.grails.plugins;
 
-import grails.config.ConfigObject;
-import grails.config.ConfigSlurper;
 import grails.util.GrailsUtil;
 import groovy.lang.*;
+import groovy.util.ConfigObject;
+import groovy.util.ConfigSlurper;
 import groovy.util.XmlSlurper;
 import groovy.util.slurpersupport.GPathResult;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.control.CompilationFailedException;
-import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.ConfigurationHolder;
+import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.spring.DefaultRuntimeSpringConfiguration;
 import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration;
 import org.codehaus.groovy.grails.plugins.exceptions.PluginException;

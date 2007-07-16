@@ -16,15 +16,13 @@
 package org.codehaus.groovy.grails.web.servlet.mvc;
 
 import grails.util.GrailsWebUtil;
+import groovy.lang.ExpandoMetaClass;
 import groovy.lang.GroovyClassLoader;
-import groovy.lang.MetaClassRegistry;
 import junit.framework.TestCase;
 import org.codehaus.groovy.grails.commons.*;
-import org.codehaus.groovy.grails.commons.metaclass.ExpandoMetaClassCreationHandle;
 import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator;
 import org.codehaus.groovy.grails.commons.spring.GrailsWebApplicationContext;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
-import org.codehaus.groovy.runtime.InvokerHelper;
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.ConstructorArgumentValues;
@@ -63,9 +61,7 @@ public class SimpleGrailsControllerTests extends TestCase {
 	 * @see junit.framework.TestCase#setUp()
 	 */
 	protected void setUp() throws Exception {
-		InvokerHelper.getInstance()
-					.getMetaRegistry()
-					.setMetaClassCreationHandle(new ExpandoMetaClassCreationHandle());
+        ExpandoMetaClass.enableGlobally();
 		GroovyClassLoader cl = new GroovyClassLoader();
         cl.parseClass("class MyCommandObject {\n" +
                 "String firstName\n" +
@@ -166,9 +162,7 @@ public class SimpleGrailsControllerTests extends TestCase {
 	 * @see junit.framework.TestCase#tearDown()
 	 */
 	protected void tearDown() throws Exception {
-		InvokerHelper.getInstance()
-		.getMetaRegistry()
-		.setMetaClassCreationHandle(new MetaClassRegistry.MetaClassCreationHandle());
+        ExpandoMetaClass.disableGlobally();
 
         grailsApplication = null;
 	    controller = null;

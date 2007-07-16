@@ -17,7 +17,6 @@
 package org.codehaus.groovy.grails.commons.spring;
 
 import grails.spring.BeanBuilder;
-import grails.config.ConfigObject;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.*;

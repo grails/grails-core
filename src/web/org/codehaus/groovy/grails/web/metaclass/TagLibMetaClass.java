@@ -18,7 +18,6 @@ package org.codehaus.groovy.grails.web.metaclass;
 import groovy.lang.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.commons.metaclass.AdapterMetaClass;
 import org.codehaus.groovy.grails.commons.metaclass.CachingMetaClass;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
@@ -37,7 +36,7 @@ import java.io.Writer;
  * @author Graeme Rocher
  * @since Apr 3, 20056
  */
-public class TagLibMetaClass extends CachingMetaClass implements AdapterMetaClass {
+public class TagLibMetaClass extends CachingMetaClass implements AdaptingMetaClass {
 	private MetaClass adaptee;
 
 

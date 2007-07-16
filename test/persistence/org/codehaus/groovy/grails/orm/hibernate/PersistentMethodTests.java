@@ -6,10 +6,10 @@ import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
-import org.codehaus.groovy.grails.commons.metaclass.ExpandoMetaClass;
 import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator;
 import org.codehaus.groovy.grails.orm.hibernate.metaclass.FindByPersistentMethod;
 import org.codehaus.groovy.grails.support.MockApplicationContext;
+import org.codehaus.groovy.runtime.InvokerInvocationException;
 import org.hibernate.SessionFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.StaticMessageSource;
@@ -420,7 +420,10 @@ public class PersistentMethodTests extends AbstractDependencyInjectionSpringCont
             returnList = (List)obj.getMetaClass().invokeStaticMethod(obj, "findAllById", new Object[] { "1.1" });
         } catch(MissingMethodException iae) {
         	// great!
-         }
+         }   
+		catch(InvokerInvocationException iie) {
+			// great!
+		}
         // now lets test out some junk and make sure we get errors!
         try {
             obj.getMetaClass().invokeStaticMethod(obj, "findAllByLastNameLike", new Object[] {Boolean.FALSE});
@@ -429,6 +432,10 @@ public class PersistentMethodTests extends AbstractDependencyInjectionSpringCont
         catch(MissingMethodException mme) {
             //great!
         }
+        catch(InvokerInvocationException iie) {
+            // great!
+        }
+
         // and the wrong number of arguments!
         try {
             obj.getMetaClass().invokeStaticMethod(obj, "findAllByAgeBetween", new Object[] { new Integer(10) });
@@ -437,6 +444,10 @@ public class PersistentMethodTests extends AbstractDependencyInjectionSpringCont
         catch(MissingMethodException mme) {
             //great!
         }
+        catch(InvokerInvocationException iie) {
+            // great!
+        }
+        
     }
 
     public void testGetPersistentMethod() {

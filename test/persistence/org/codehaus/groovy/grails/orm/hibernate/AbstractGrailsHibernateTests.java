@@ -15,14 +15,17 @@
  */
 package org.codehaus.groovy.grails.orm.hibernate;
 
-import grails.config.ConfigObject;
-import grails.config.ConfigSlurper;
+import groovy.lang.ExpandoMetaClass;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovySystem;
 import groovy.lang.MetaClassRegistry;
+import groovy.util.ConfigObject;
+import groovy.util.ConfigSlurper;
 import junit.framework.TestCase;
-import org.codehaus.groovy.grails.commons.*;
-import org.codehaus.groovy.grails.commons.metaclass.ExpandoMetaClass;
+import org.codehaus.groovy.grails.commons.ApplicationHolder;
+import org.codehaus.groovy.grails.commons.ConfigurationHolder;
+import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
+import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator;
 import org.codehaus.groovy.grails.support.MockApplicationContext;
 import org.hibernate.SessionFactory;

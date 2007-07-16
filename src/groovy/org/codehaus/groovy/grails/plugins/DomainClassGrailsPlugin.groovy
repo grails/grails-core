@@ -23,9 +23,9 @@ import org.springframework.aop.target.HotSwappableTargetSource
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler
 import org.codehaus.groovy.grails.commons.GrailsDomainClass
 import org.springframework.beans.BeanUtils
-import org.codehaus.groovy.grails.commons.metaclass.ThreadManagedMetaBeanProperty
 import org.springframework.validation.Errors
 import org.springframework.validation.BindException
+import org.codehaus.groovy.runtime.metaclass.ThreadManagedMetaBeanProperty
 
 /**
 * A plug-in that configures the domain classes in the spring context
