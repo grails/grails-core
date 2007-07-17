@@ -59,7 +59,7 @@ public class DefaultGrailsPluginManagerTests extends TestCase {
         //third depends on i18n
         assertNotNull(manager.getGrailsPlugin("third"));
         
-        assertEquals(5, pluginList.size());
+        assertEquals(6, pluginList.size());
 
 	}
 
