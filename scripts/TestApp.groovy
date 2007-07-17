@@ -265,12 +265,11 @@ task(runIntegrationTests:"Runs Grails' tests under the test/integration director
 				invocation()
 				interceptor?.flush() 				
  				RequestContextHolder.setRequestAttributes(null);
-                def cleaningOrder = test.cleaningOrder
+                if( test.cleaningOrder ) {
+                    grails.util.GrailsUtil.deprecated "'cleaningOrder' property for integration tests is not in use anymore since now we make Hibernate manage the cleaning order. You can just remove it from your tests."
+                }
                 app.domainClasses.each { dc ->
-                    if ( !cleaningOrder.contains(dc.clazz) ) cleaningOrder << dc.clazz
-				}
-                cleaningOrder.each { dc ->
-                    dc.executeUpdate("delete from ${dc.name}")
+                    dc.clazz.list()*.delete()
                 }
 				interceptor?.flush()
 			}                     
