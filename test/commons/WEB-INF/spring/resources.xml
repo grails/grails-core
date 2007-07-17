@@ -15,6 +15,6 @@
 	</bean>
 
 <!-- Dummy bean pretending to be a session factory to check if Grails disallows the definition of custom session factory -->
-	<bean id="sessionFactory" class="org.codehaus.groovy.grails.orm.hibernate.SessionFactoryAdapter"/>          
-		
+	<bean id="sessionFactory" class="org.codehaus.groovy.grails.orm.hibernate.SessionFactoryAdapter"/>
+
 </beans>

@@ -128,7 +128,8 @@ class TestUrlMappings {
         def out = new PrintWriter(sw)
         webRequest.out = out
         w.writeTo(out)
-
+        
+		println "OUTPUT = ${sw.toString()}"
         assertEquals expected, sw.toString()
     }
 

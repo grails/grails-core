@@ -194,7 +194,7 @@ public abstract class GroovyPage extends Script {
 	        if(tagLib != null) {
 	            Object tagLibProp;
 	            BeanWrapper bean = getTagLibraryBean(tagLib, webRequest);
-				if(bean.isWritableProperty(tagName)) {
+				if(bean.isReadableProperty(tagName)) {
 	                tagLibProp = tagLib.getProperty(tagName);
 	            } else {
 	                throw new GrailsTagException("Tag ["+tagName+"] does not exist in tag library ["+tagLib.getClass().getName()+"]");

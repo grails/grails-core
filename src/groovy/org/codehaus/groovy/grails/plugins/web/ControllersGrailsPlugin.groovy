@@ -52,13 +52,15 @@ import org.codehaus.groovy.grails.web.metaclass.TagLibMetaClass
 import org.codehaus.groovy.grails.commons.TagLibArtefactHandler
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler     
 import javax.servlet.http.HttpServletRequest
+import org.codehaus.groovy.grails.commons.GrailsClass
+import org.springframework.beans.BeanWrapperImpl
 
 /**
- * A plug-in that handles the configuration of controllers for Grails
- *
- * @author Graeme Rocher
- * @since 0.4
- */
+* A plug-in that handles the configuration of controllers for Grails
+*
+* @author Graeme Rocher
+* @since 0.4
+*/
 class ControllersGrailsPlugin {
 
 	def watchedResources = ["file:./grails-app/controllers/**/*Controller.groovy",
@@ -326,11 +328,85 @@ class ControllersGrailsPlugin {
 	   		metaClass.setOut = { Writer newOut ->
 	   			RCH.currentRequestAttributes().out = newOut
 	   		}
+            metaClass.getProperty = { String name ->
+                MetaProperty metaProperty = metaClass.getMetaProperty(name)
+                def result
+                if(metaProperty) result = metaProperty.getProperty(delegate)
+                else {
+                    GrailsClass tagLibraryClass = application.getArtefactForFeature(
+	                                                    TagLibArtefactHandler.TYPE, name)
+                    if(tagLibraryClass) {
+                        def tagLibrary = ctx.getBean(tagLibraryClass.fullName)
+                        result = tagLibrary."$name".clone()
+                        metaClass."${GCU.getGetterName(name)}" = {-> result }
+                    }
+                    else {
+                        throw new MissingPropertyException(name, delegate.class)
+                    }
+                }
+                result
+            }
+            metaClass.invokeMethod = { String name, args ->
+                args = args == null ? [] as Object[] : args
+                def metaMethod = metaClass.getMetaMethod(name, args)
+                def result
+                if(metaMethod) result = metaMethod.invoke(delegate, args)
+                else if(args.size() > 0 && args[0] instanceof Map) {
+                    def tagName = "${GroovyPage.DEFAULT_NAMESPACE}:$name"
+                    GrailsClass tagLibraryClass = application.getArtefactForFeature(
+	                                                    TagLibArtefactHandler.TYPE, tagName.toString())
+                    
+                    if(tagLibraryClass) {
+                        def tagLibrary = ctx.getBean(tagLibraryClass.fullName)
+                        def tagBean = new BeanWrapperImpl(tagLibrary)
 
-	   		def adaptedMetaClass = new TagLibMetaClass(taglib.metaClass)
-
-	   		registry.setMetaClass(taglib.clazz, adaptedMetaClass)
-	   		ctx.getBean(taglib.fullName).metaClass = adaptedMetaClass
+                        def tagMethodMapArg =  { Map attrs ->
+                            def webRequest = RCH.currentRequestAttributes()
+                            def originalOut = webRequest.out
+                            def capturedOutput
+                            try {
+                                capturedOutput = GroovyPage.captureTagOutput(tagLibrary, name, attrs,null, webRequest, tagBean)
+                            } finally {
+                                webRequest.out = originalOut
+                            }
+                            capturedOutput
+                        }
+                        def tagMethodMapAndClosureArgs = { Map attrs, Closure body ->
+                            def webRequest = RCH.currentRequestAttributes()
+                            def originalOut = webRequest.out
+                            def capturedOutput
+                            try {
+                                capturedOutput = GroovyPage.captureTagOutput(tagLibrary, name, attrs,body, webRequest, tagBean)
+                            } finally {
+                                webRequest.out = originalOut
+                            }
+                            capturedOutput
+                        }
+                        metaClass."$name" = tagMethodMapArg
+                        metaClass."$name" = tagMethodMapAndClosureArgs
+                        if(args.size() == 2) result = tagMethodMapAndClosureArgs.call(*args)
+                        else result = tagMethodMapArg.call(args[0])                                                                                                                                                                                                                                                                                                                                                                                                   
+                    }
+                    else {
+                        throw new MissingMethodException(name, delegate.class, args)
+                    }
+                }else {
+                    // deal with the case where there is a closure property that could be invoked
+                    MetaProperty metaProperty = metaClass.getMetaProperty(name)
+                    def callable = metaProperty?.getProperty(delegate)
+                    if(callable instanceof Closure) {
+                        metaClass."$name" = { Object[] varArgs ->
+                            varArgs ? callable.call(*varArgs) : callable.call()
+                        }                        
+                        result = args ? callable.call(*args) : callable.call()
+                    }
+                    else {
+                        throw new MissingMethodException(name, delegate.class, args)
+                    }
+                }
+                result
+            }
+	   		ctx.getBean(taglib.fullName).metaClass = metaClass
 	   	}
 		// add commons objects and dynamic methods like render and redirect to controllers
 		for(controller in application.controllerClasses ) {

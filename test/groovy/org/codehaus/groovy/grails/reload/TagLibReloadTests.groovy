@@ -33,15 +33,13 @@ class TestTagLib {
     }
 }
 '''),
-                        ctx:appCtx]
+                        ctx:appCtx, manager:mockManager]
 
         def plugin = mockManager.getGrailsPlugin("controllers")
 
         def eventHandler = plugin.instance.onChange
         eventHandler.delegate = plugin
         eventHandler.call(event)
-        GrailsMetaClassUtils.copyExpandoMetaClass(oldClass, event.source, true)
-
         
 		withTag("myTag",pw) { tag ->
             tag.call([bar:"foo"], null)
