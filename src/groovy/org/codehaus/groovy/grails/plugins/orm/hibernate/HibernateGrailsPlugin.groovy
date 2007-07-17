@@ -14,7 +14,8 @@
  * limitations under the License.
  */ 
 package org.codehaus.groovy.grails.plugins.orm.hibernate;
-                                              
+
+import grails.util.GrailsUtil                                              
 import org.codehaus.groovy.grails.commons.*
 import org.codehaus.groovy.grails.validation.*
 import org.codehaus.groovy.grails.plugins.support.GrailsPluginUtils 
@@ -233,59 +234,25 @@ class HibernateGrailsPlugin {
         def Class domainClassType = dc.clazz
 
         def GroovyClassLoader classLoader = application.classLoader
-        FindAllPersistentMethod findAllMethod = new FindAllPersistentMethod(sessionFactory, classLoader)
-        metaClass.createCriteria = {-> new HibernateCriteriaBuilder(domainClassType,sessionFactory) }
 
+        def findAllMethod = new FindAllPersistentMethod(sessionFactory, classLoader)
         metaClass.'static'.findAll = {->
             findAllMethod.invoke(domainClassType,"findAll", [] as Object[])
         }
         metaClass.'static'.findAll = { String query ->
             findAllMethod.invoke(domainClassType,"findAll", [query] as Object[])
         }
-        metaClass.'static'.findAll = { String query, Integer max ->
-            findAllMethod.invoke(domainClassType,"findAll", [query, max] as Object[])
-        }
-        metaClass.'static'.findAll = { String query, Integer max, Integer offset ->
-            findAllMethod.invoke(domainClassType,"findAll", [query, max, offset] as Object[]) 
-        }
-
         metaClass.'static'.findAll = { String query, Collection positionalParams ->
             findAllMethod.invoke(domainClassType,"findAll", [query, positionalParams] as Object[])
         }
-        metaClass.'static'.findAll = { String query, Collection positionalParams, Integer max ->
-            findAllMethod.invoke(domainClassType,"findAll", [query, positionalParams, max] as Object[])
-        }
-        metaClass.'static'.findAll = { String query, Collection positionalParams, Integer max, Integer offset ->
-            findAllMethod.invoke(domainClassType,"findAll", [query, positionalParams, max, offset] as Object[])
-        }
-
-        metaClass.'static'.findAll = { String query, Object[] positionalParams ->
-            findAllMethod.invoke(domainClassType,"findAll", [query, positionalParams] as Object[]) 
-        }
-        metaClass.'static'.findAll = { String query, Object[] positionalParams, Integer max ->
-            findAllMethod.invoke(domainClassType,"findAll", [query, positionalParams, max] as Object[])
-        }
-        metaClass.'static'.findAll = { String query, Object[] positionalParams, Integer max, Integer offset ->
-            findAllMethod.invoke(domainClassType,"findAll", [query, positionalParams, max, offset] as Object[])
-        }
-        
-        metaClass.'static'.findAll = { String query, Collection positionalParams, Map args ->
-            findAllMethod.invoke(domainClassType,"findAll", [query, positionalParams, args] as Object[])
-        }
-        metaClass.'static'.findAll = { String query, Object[] positionalParams, Map args ->
-            findAllMethod.invoke(domainClassType,"findAll", [query, positionalParams, args] as Object[])
+        metaClass.'static'.findAll = { String query, Collection positionalParams, Map paginateParams ->
+            findAllMethod.invoke(domainClassType,"findAll", [query, positionalParams, paginateParams] as Object[])
         }
         metaClass.'static'.findAll = { String query, Map namedArgs ->
                findAllMethod.invoke(domainClassType,"findAll", [query, namedArgs] as Object[])
         }
-        metaClass.'static'.findAll = { String query, Map namedArgs, Integer max ->
-               findAllMethod.invoke(domainClassType,"findAll", [query, namedArgs, max] as Object[])
-        }
-        metaClass.'static'.findAll = { String query, Map namedArgs, Integer max, Integer offset ->
-               findAllMethod.invoke(domainClassType,"findAll", [query, namedArgs, max, offset] as Object[])
-        }
-        metaClass.'static'.findAll = { String query, Map namedArgs, Map args ->
-            findAllMethod.invoke(domainClassType,"findAll", [query, namedArgs, args] as Object[])
+        metaClass.'static'.findAll = { String query, Map namedArgs, Map paginateParams ->
+            findAllMethod.invoke(domainClassType,"findAll", [query, namedArgs, paginateParams] as Object[])
         }
         metaClass.'static'.findAll = { Object example -> findAllMethod.invoke(domainClassType,"findAll", [example] as Object[]) }
 
@@ -293,19 +260,39 @@ class HibernateGrailsPlugin {
         metaClass.'static'.find = { String query ->
             findMethod.invoke(domainClassType, "find", [query] as Object[] )
         }
-        metaClass.'static'.find = { Object example ->
-            findMethod.invoke(domainClassType, "find", [example] as Object[] )
-        }
         metaClass.'static'.find = { String query, Collection args ->
-            findMethod.invoke(domainClassType, "find", [query, args] as Object[] )
-        }
-        metaClass.'static'.find = { String query, Object[] args ->
             findMethod.invoke(domainClassType, "find", [query, args] as Object[] )
         }
         metaClass.'static'.find = { String query, Map namedArgs ->
             findMethod.invoke(domainClassType, "find", [query, namedArgs] as Object[] )
         }
+        metaClass.'static'.find = { Object example ->
+            findMethod.invoke(domainClassType, "find", [example] as Object[] )
+        }
 
+        def executeQueryMethod = new ExecuteQueryPersistentMethod(sessionFactory, classLoader)
+        metaClass.'static'.executeQuery = { String query ->
+            executeQueryMethod.invoke(domainClassType, "executeQuery", [query] as Object[])
+        }
+        metaClass.'static'.executeQuery = { String query, Collection positionalParams ->
+            executeQueryMethod.invoke(domainClassType, "executeQuery", [query, positionalParams] as Object[])
+        }
+        metaClass.'static'.executeQuery = { String query, Collection positionalParams, Map paginateParams ->
+            executeQueryMethod.invoke(domainClassType, "executeQuery", [query, positionalParams, paginateParams] as Object[])
+        }
+        metaClass.'static'.executeQuery = { String query, Map namedParams ->
+            executeQueryMethod.invoke(domainClassType, "executeQuery", [query, namedParams] as Object[])
+        }
+        metaClass.'static'.executeQuery = { String query, Map namedParams, Map paginateParams ->
+            executeQueryMethod.invoke(domainClassType, "executeQuery", [query, namedParams, paginateParams] as Object[])
+        }
+
+        metaClass.'static'.executeUpdate = { String query ->
+            template.bulkUpdate(query)
+        }
+        metaClass.'static'.executeUpdate = { String query, Collection args ->
+            template.bulkUpdate(query, GrailsClassUtils.collectionToObjectArray(args))
+        }
 
         def listMethod = new ListPersistentMethod(sessionFactory, classLoader)
         metaClass.'static'.list = {-> listMethod.invoke(domainClassType, "list", [] as Object[]) }
@@ -355,6 +342,8 @@ class HibernateGrailsPlugin {
             id = convertToType(it, identityType )
             template.get(domainClassType, id) != null
         }
+
+        metaClass.createCriteria = {-> new HibernateCriteriaBuilder(domainClassType,sessionFactory) }
         metaClass.'static'.withCriteria = { Closure callable ->
             new HibernateCriteriaBuilder(domainClassType, sessionFactory).invokeMethod("doCall", callable)
         }
@@ -370,40 +359,70 @@ class HibernateGrailsPlugin {
         }
 
 
-        def executeQueryMethod = new ExecuteQueryPersistentMethod(sessionFactory, classLoader)
-        metaClass.'static'.executeQuery = { String query ->
-            executeQueryMethod.invoke(domainClassType, "executeQuery", [query] as Object[])
+        // TODO: deprecated methods planned for removing from further releases
+
+        def deprecated = { methodSignature ->
+            GrailsUtil.deprecated("${methodSignature} domain class dynamic method is deprecated since 0.6. Check out docs at: http://grails.org/DomainClass+Dynamic+Methods")
         }
-        metaClass.'static'.executeQuery = { String query, Collection positionalParams ->
-            executeQueryMethod.invoke(domainClassType, "executeQuery", [query, positionalParams] as Object[])
+        metaClass.'static'.findAll = { String query, Integer max ->
+            deprecated("findAll(String query, int max)")
+            findAllMethod.invoke(domainClassType,"findAll", [query, max] as Object[])
         }
+        metaClass.'static'.findAll = { String query, Integer max, Integer offset ->
+            deprecated("findAll(String query, int max, int offset)")
+            findAllMethod.invoke(domainClassType,"findAll", [query, max, offset] as Object[])
+        }
+
+        metaClass.'static'.findAll = { String query, Collection positionalParams, Integer max ->
+            deprecated("findAll(String query, Collection positionalParams, int max)")
+            findAllMethod.invoke(domainClassType,"findAll", [query, positionalParams, max] as Object[])
+        }
+        metaClass.'static'.findAll = { String query, Collection positionalParams, Integer max, Integer offset ->
+            deprecated("findAll(String query, Collection positionalParams, int max, int offset)")
+            findAllMethod.invoke(domainClassType,"findAll", [query, positionalParams, max, offset] as Object[])
+        }
+        metaClass.'static'.findAll = { String query, Object[] positionalParams ->
+            deprecated("findAll(String query, Object[] positionalParams)")
+            findAllMethod.invoke(domainClassType,"findAll", [query, positionalParams] as Object[])
+        }
+        metaClass.'static'.findAll = { String query, Object[] positionalParams, Integer max ->
+            deprecated("findAll(String query, Object[] positionalParams, int max)")
+            findAllMethod.invoke(domainClassType,"findAll", [query, positionalParams, max] as Object[])
+        }
+        metaClass.'static'.findAll = { String query, Object[] positionalParams, Integer max, Integer offset ->
+            deprecated("findAll(String query, Object[] positionalParams, int max, int offset)")
+            findAllMethod.invoke(domainClassType,"findAll", [query, positionalParams, max, offset] as Object[])
+        }
+        metaClass.'static'.findAll = { String query, Object[] positionalParams, Map args ->
+            deprecated("findAll(String query, Object[] positionalParams, Map namedArgs)")
+            findAllMethod.invoke(domainClassType,"findAll", [query, positionalParams, args] as Object[])
+        }
+        metaClass.'static'.findAll = { String query, Map namedArgs, Integer max ->
+            deprecated("findAll(String query, Map namedParams, int max)")
+            findAllMethod.invoke(domainClassType,"findAll", [query, namedArgs, max] as Object[])
+        }
+        metaClass.'static'.findAll = { String query, Map namedArgs, Integer max, Integer offset ->
+            deprecated("findAll(String query, Map namedParams, int max, int offset)")
+            findAllMethod.invoke(domainClassType,"findAll", [query, namedArgs, max, offset] as Object[])
+        }
+
+        metaClass.'static'.find = { String query, Object[] args ->
+            deprecated("find(String query, Object[] positionalParams)")
+            findMethod.invoke(domainClassType, "find", [query, args] as Object[] )
+        }
+
         metaClass.'static'.executeQuery = { String query, Object[] positionalParams ->
+            deprecated("executeQuery(String query, Object[] positionalParams)")
             executeQueryMethod.invoke(domainClassType, "executeQuery", [query, positionalParams] as Object[])
-        }
-        metaClass.'static'.executeQuery = { String query, Collection positionalParams, Map args ->
-            executeQueryMethod.invoke(domainClassType, "executeQuery", [query, positionalParams, args] as Object[])
         }
         metaClass.'static'.executeQuery = { String query, Object[] positionalParams, Map args ->
+            deprecated("executeQuery(String query, Object[] positionalParams, Map namedParams)")
             executeQueryMethod.invoke(domainClassType, "executeQuery", [query, positionalParams, args] as Object[])
         }
-        metaClass.'static'.executeQuery = { String query, Map namedParams ->
-            executeQueryMethod.invoke(domainClassType, "executeQuery", [query, namedParams] as Object[])
-        }
-        metaClass.'static'.executeQuery = { String query, Map namedParams, Map args ->
-            executeQueryMethod.invoke(domainClassType, "executeQuery", [query, namedParams, args] as Object[])
-        }
 
-
-        
-
-        metaClass.'static'.executeUpdate = { String query ->
-            template.bulkUpdate(query)
-        }
         metaClass.'static'.executeUpdate = { String query, Object[] args ->
+            deprecated("executeQuery(String query, Object[] positionalParams)")
             template.bulkUpdate(query, args)
-        }
-        metaClass.'static'.executeUpdate = { String query, Collection args ->
-            template.bulkUpdate(query, GrailsClassUtils.collectionToObjectArray(args))
         }
 //
     }
