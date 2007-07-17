@@ -43,6 +43,7 @@ grailsHome = Ant.antProject.properties."env.GRAILS_HOME"
 grailsApp = null   
 appCtx = null
 result = new TestResult()
+compilationFailures = []
 
 includeTargets << new File ( "${grailsHome}/scripts/Package.groovy" )
 
@@ -53,12 +54,12 @@ task ('default': "Run a Grails applications unit tests") {
   testApp()
 }
 
-testDir = "${basedir}/test/reports"    
+testDir = "${basedir}/test/reports"
 
 def processResults = { 
 	if(result) { 
-		if(result.errorCount() > 0 || result.failureCount() > 0) {
-        	event("StatusFinal", ["Tests failed: ${result.errorCount()} errors, ${result.failureCount()} failures. View reports in $testDir"])
+		if(result.errorCount() > 0 || result.failureCount() > 0 || compilationFailures.size > 0) {
+        	event("StatusFinal", ["Tests failed: ${result.errorCount()} errors, ${result.failureCount()} failures, ${compilationFailures.size} compilation errors. View reports in $testDir"])
 			exit(1)
 		}
 		else {
@@ -125,11 +126,16 @@ task(produceReports:"Outputs aggregated xml and html reports") {
  
 def populateTestSuite = { suite, testFiles, classLoader, ctx ->
 	testFiles.each { r ->
-		def c = classLoader.parseClass(r.file)
-		if(TestCase.isAssignableFrom(c) && !Modifier.isAbstract(c.modifiers)) {
-			suite.addTest(new GrailsTestSuite(ctx.beanFactory, c))
-		}
-	}	
+	    try {
+		    def c = classLoader.parseClass(r.file)
+            if(TestCase.isAssignableFrom(c) && !Modifier.isAbstract(c.modifiers)) {
+                suite.addTest(new GrailsTestSuite(ctx.beanFactory, c))
+            }
+		} catch( Exception e ) {
+            compilationFailures << r.file.name
+            println e.getMessage()
+        }
+	}
 }   
 def runTests = { suite, TestResult result, Closure callback  ->
 	suite.tests().each { test ->
