@@ -48,7 +48,6 @@ import org.codehaus.groovy.grails.commons.metaclass.*
 import org.codehaus.groovy.grails.web.servlet.*
 import org.springframework.validation.Errors
 import org.codehaus.groovy.grails.web.pages.GroovyPage
-import org.codehaus.groovy.grails.web.metaclass.TagLibMetaClass
 import org.codehaus.groovy.grails.commons.TagLibArtefactHandler
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler     
 import javax.servlet.http.HttpServletRequest
