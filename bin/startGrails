@@ -225,7 +225,7 @@ lateInit
 startGrails() {
   CLASS=$1
   shift
-  
+  JAVA_OPTS="-server -Xmx256M $JAVA_OPTS"
   # Start the Profiler or the JVM
   if $useprofiler; then
       runProfiler
