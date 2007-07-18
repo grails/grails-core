@@ -150,10 +150,17 @@ public interface GrailsControllerClass extends InjectableGrailsClass {
     public Class getScaffoldedClass();
     
     /**
+     *
+     * @return A Set of names of actions with command objects presented in this controller
+     */
+    public Set getCommandObjectActions();
+
+    /**
      * 
      * @return A Set of command object classes used by this controller
      */
     public Set getCommandObjectClasses();
+
 
     /**
      * <p>Returns a map of the flows for this controller. A flow is an action that ends with the convention "Flow".

@@ -29,8 +29,6 @@ import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.commons.GrailsControllerClass;
 import org.codehaus.groovy.grails.scaffolding.GrailsScaffolder;
-import org.codehaus.groovy.grails.validation.ConstrainedProperty;
-import org.codehaus.groovy.grails.web.binding.GrailsDataBinder;
 import org.codehaus.groovy.grails.web.metaclass.ChainDynamicMethod;
 import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods;
 import org.codehaus.groovy.grails.web.servlet.DefaultGrailsApplicationAttributes;
@@ -41,10 +39,7 @@ import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.NoClosurePropertyFo
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.NoViewNameDefinedException;
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.UnknownControllerException;
 import org.codehaus.groovy.grails.webflow.executor.support.GrailsConventionsFlowExecutorArgumentHandler;
-import org.springframework.beans.MutablePropertyValues;
 import org.springframework.context.ApplicationContext;
-import org.springframework.validation.BindException;
-import org.springframework.validation.Errors;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.view.RedirectView;
 import org.springframework.web.util.WebUtils;
@@ -518,37 +513,7 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
         if(params != null && !params.isEmpty()) {
             paramsMap.putAll( params );
         }
-        // Step 7: determine argument count and execute.
-        Class[] paramTypes = action.getParameterTypes();
-        List commandObjects = new ArrayList();
-        if(paramTypes != null) {
-            for(int j = 0; j < paramTypes.length; j++) {
-                Class paramType = paramTypes[j];
-                if(GroovyObject.class.isAssignableFrom(paramType)) {
-                    try {
-                        GroovyObject commandObject = (GroovyObject) paramType.newInstance();
-                        GrailsDataBinder binder = GrailsDataBinder.createBinder(commandObject, commandObject.getClass().getName());
-                        binder.bind(new MutablePropertyValues(paramsMap));
-
-                        Errors errors = new BindException(commandObject, paramType.getName());
-                        Collection constrainedProperties = ((Map)commandObject.getProperty("constraints")).values();
-                        for (Iterator i = constrainedProperties.iterator(); i.hasNext();) {
-                            ConstrainedProperty constrainedProperty = (ConstrainedProperty)i.next();
-                            constrainedProperty.setMessageSource( applicationContext );
-                            constrainedProperty.validate(commandObject, commandObject.getProperty( constrainedProperty.getPropertyName() ),errors);
-                        }
-                        commandObject.setProperty("errors", errors);
-                        if(errors.hasErrors()) {
-                            LOG.warn("Command Object " + paramType.getName() + " Failed Validation");
-                        }
-                        commandObjects.add(commandObject);
-                    } catch (Exception e) {
-                        throw new ControllerExecutionException("Error occurred creating command object.", e);
-                    }
-                }
-            }
-        }
-        Object returnValue = action.call(commandObjects.toArray());
+        Object returnValue = action.call();
 
         // Step 8: add any errors to the request
         request.setAttribute( GrailsApplicationAttributes.ERRORS, controller.getProperty(ControllerDynamicMethods.ERRORS_PROPERTY) );

@@ -53,6 +53,12 @@ import org.codehaus.groovy.grails.commons.ControllerArtefactHandler
 import javax.servlet.http.HttpServletRequest
 import org.codehaus.groovy.grails.commons.GrailsClass
 import org.springframework.beans.BeanWrapperImpl
+import org.springframework.validation.BindException
+import org.codehaus.groovy.grails.web.binding.GrailsDataBinder
+import org.codehaus.groovy.grails.validation.ConstrainedProperty
+import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException
+import org.codehaus.groovy.grails.commons.GrailsClassUtils
+import org.codehaus.groovy.grails.commons.ApplicationHolder
 
 /**
 * A plug-in that handles the configuration of controllers for Grails
@@ -491,7 +497,37 @@ class ControllersGrailsPlugin {
 		    metaClass.bindData = { Object target, Object args, String filter ->
 		    	bind.invoke(delegate, "bindData", [target, args, filter] as Object[])
 		    }
-			
+
+            // look for actions that accept command objects and override
+            // each of the actions to make command objects binding before executing
+            controller.commandObjectActions.each { actionName ->
+                def originalAction = controller.getPropertyValue(actionName)
+                def paramTypes = originalAction.getParameterTypes()
+                def commandObjectBindingAction = { ->
+                    def commandObjects = []
+                    for( paramType in paramTypes ) {
+                        if(GroovyObject.class.isAssignableFrom(paramType)) {
+                            try {
+                                def commandObject = (GroovyObject) paramType.newInstance();
+                                bind.invoke(commandObject,"bindData",[commandObject, RCH.currentRequestAttributes().params] as Object[])
+                                def errors = new BindException(commandObject, paramType.name)
+                                def constrainedProperties = commandObject.constraints?.values()
+                                constrainedProperties.each { constrainedProperty ->
+                                    constrainedProperty.messageSource = ctx.getBean("messageSource") 
+                                    constrainedProperty.validate(commandObject, commandObject.getProperty( constrainedProperty.getPropertyName() ),errors);
+                                }
+                                commandObject.errors = errors
+                                commandObjects << commandObject
+                            } catch (Exception e) {
+                                throw new ControllerExecutionException("Error occurred creating command object.", e);
+                            }
+                        }
+                    }
+                    originalAction.call( commandObjects )
+                }
+                metaClass."${GrailsClassUtils.getGetterName(actionName)}" = { -> commandObjectBindingAction }
+            }
+
 			// look for actions that accept command objects and configure
 			// each of the command object types
 			def commandObjectClasses = controller.commandObjectClasses

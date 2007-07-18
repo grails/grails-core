@@ -17,18 +17,17 @@ package org.codehaus.groovy.grails.validation;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
+import org.springframework.beans.BeanWrapperImpl;
+import org.springframework.beans.NotReadablePropertyException;
 import org.springframework.context.MessageSource;
-import org.springframework.context.NoSuchMessageException;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.Errors;
 import org.springframework.validation.FieldError;
-import org.springframework.beans.NotReadablePropertyException;
-import org.springframework.beans.BeanWrapperImpl;
 
-import java.util.Locale;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Arrays;
+import java.util.List;
+import java.util.Locale;
 
 /**
  * @author Graeme Rocher
@@ -169,7 +168,7 @@ public abstract class AbstractConstraint implements Constraint {
             else
                 defaultMessage = (String)ConstrainedProperty.DEFAULT_MESSAGES.get(code);
         }
-        catch(NoSuchMessageException nsme) {
+        catch(Exception e) {
             defaultMessage = (String)ConstrainedProperty.DEFAULT_MESSAGES.get(code);
         }
         return defaultMessage;

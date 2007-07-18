@@ -64,6 +64,7 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass
     private boolean scaffolding;
 
     private Class scaffoldedClass;
+    private final Set commandObjectActions = new HashSet();
     private final Set commandObjectClasses = new HashSet();
     private Map flows = new HashMap();
 
@@ -138,6 +139,7 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass
                         for(int j = 0; j < parameterTypes.length; j++) {
                             Class parameterType = parameterTypes[j];
                             if(GroovyObject.class.isAssignableFrom(parameterType)) {
+                                commandObjectActions.add(closureName);
                                 commandObjectClasses.add(parameterType);
                             }
                         }
@@ -317,6 +319,10 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass
 		}
 		return null;
 	}
+
+    public Set getCommandObjectActions() {
+        return commandObjectActions;
+    }
 
     public Set getCommandObjectClasses() {
         return Collections.unmodifiableSet(commandObjectClasses);
