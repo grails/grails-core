@@ -15,20 +15,9 @@
  */ 
 package org.codehaus.groovy.grails.web.errors;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.LineNumberReader;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import javax.servlet.ServletContext;
-
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.control.MultipleCompilationErrorsException;
 import org.codehaus.groovy.control.messages.SyntaxErrorMessage;
 import org.codehaus.groovy.grails.commons.*;
@@ -36,8 +25,13 @@ import org.codehaus.groovy.grails.exceptions.GrailsException;
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
 import org.codehaus.groovy.grails.web.servlet.DefaultGrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
-import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.io.Resource;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+
+import javax.servlet.ServletContext;
+import java.io.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  *  An exception that wraps a Grails RuntimeException and attempts to extract more relevent diagnostic messages from the stack trace
@@ -51,6 +45,7 @@ public class GrailsWrappedRuntimeException extends GrailsException {
 
     private static final Pattern PARSE_DETAILS_STEP1 = Pattern.compile("\\((\\w+)\\.groovy:(\\d+)\\)");
     private static final Pattern PARSE_DETAILS_STEP2 = Pattern.compile("at\\s{1}(\\w+)\\$_closure\\d+\\.doCall\\(\\1:(\\d+)\\)");
+    private static final Pattern PARSE_DETAILS_STEP3 = Pattern.compile("\\p{Upper}(\\S+?)\\$_closure\\d+\\.doCall\\(\\1:(\\d+)\\)");
     private static final Pattern PARSE_GSP_DETAILS_STEP1 = Pattern.compile("(\\S+?)_\\S+?_gsp.run\\((\\S+?\\.gsp):(\\d+)\\)");
     public static final String URL_PREFIX = "/WEB-INF/grails-app/";
     private static final Log LOG  = LogFactory.getLog(GrailsWrappedRuntimeException.class);
@@ -61,6 +56,7 @@ public class GrailsWrappedRuntimeException extends GrailsException {
     private String gspFile;
 	private Throwable cause;
     private PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
+    private String filteredStackTrace;
 
 
     /**
@@ -83,6 +79,28 @@ public class GrailsWrappedRuntimeException extends GrailsException {
         	cause = t.getCause();
         }
         
+        String[] lines= this.stackTrace.split("\\n");
+        StringBuffer buffy = new StringBuffer();
+        for (int i = 0; i < lines.length; i++) {
+            String line = lines[i];
+            if(PARSE_DETAILS_STEP1.matcher(line).find()) {
+                buffy.append(line);continue;
+            }
+            if(PARSE_DETAILS_STEP2.matcher(line).find()) {
+                buffy.append(line);continue;
+            }
+            if(PARSE_DETAILS_STEP3.matcher(line).find()) {
+                buffy.append(line);continue;
+            }
+            if(PARSE_GSP_DETAILS_STEP1.matcher(line).find()) {
+                buffy.append(line);continue;
+            }
+        }
+        this.filteredStackTrace = buffy.toString();
+        if(StringUtils.isBlank(filteredStackTrace)) {
+            //this.filteredStackTrace =              
+        }
+        
 
         if(cause instanceof MultipleCompilationErrorsException) {
         	MultipleCompilationErrorsException mcee = (MultipleCompilationErrorsException)cause;
@@ -90,8 +108,6 @@ public class GrailsWrappedRuntimeException extends GrailsException {
         	if(message instanceof SyntaxErrorMessage) {
         		SyntaxErrorMessage sem = (SyntaxErrorMessage)message;
         		this.lineNumber = sem.getCause().getLine();
-                sw  = new StringWriter();
-                pw = new PrintWriter(sw);
                 sem.write(pw);
                 String messageText = sw.toString();
                 if(messageText.indexOf(':') > -1) {

@@ -19,6 +19,8 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 import org.springframework.core.style.ToStringCreator;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.*;
 
 /**
@@ -145,6 +147,18 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
         return info;
     }
 
+    public String toString() {
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
+        pw.println("URL Mappings");
+        pw.println("------------");
+        for (int i = 0; i < mappings.length; i++) {
+            UrlMapping mapping = mappings[i];
+            pw.println(mapping);
+        }
+        pw.flush();
+        return sw.toString();
+    }
 
     /**
      * A class used as a key to lookup a UrlMapping based on controller, action and parameter names

@@ -97,6 +97,7 @@ AbstractDependencyInjectionSpringContextTests {
 
 
         grailsApplication.setApplicationContext(ctx);
+
         ctx.registerMockBean(GrailsApplication.APPLICATION_ID, grailsApplication);
 		mockManager = new MockGrailsPluginManager(grailsApplication)
 
@@ -132,13 +133,13 @@ AbstractDependencyInjectionSpringContextTests {
 		mockManager.applicationContext = appCtx
 		servletContext.setAttribute( GrailsApplicationAttributes.APPLICATION_CONTEXT, appCtx)
 		GroovySystem.metaClassRegistry.removeMetaClass(String.class)
-		GroovySystem.metaClassRegistry.removeMetaClass(Object.class)		
+		GroovySystem.metaClassRegistry.removeMetaClass(Object.class)
+	    grailsApplication.tagLibClasses.each { tc -> GroovySystem.metaClassRegistry.removeMetaClass(tc.clazz)}
 		mockManager.doDynamicMethods()
         request = webRequest.currentRequest
         request.characterEncoding = "utf-8"
         response = webRequest.currentResponse
 		
-
 		assert appCtx.grailsUrlMappingsHolder
     }
     

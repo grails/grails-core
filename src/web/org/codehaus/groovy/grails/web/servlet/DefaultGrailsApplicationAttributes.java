@@ -15,7 +15,6 @@
 package org.codehaus.groovy.grails.web.servlet;
 
 import groovy.lang.GroovyObject;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
@@ -37,8 +36,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.Writer;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Implementation of the GrailsApplicationAttributes interface that holds knowledge about how to obtain
@@ -172,31 +169,14 @@ public class DefaultGrailsApplicationAttributes implements GrailsApplicationAttr
     }
     
 	public GroovyObject getTagLibraryForTag(HttpServletRequest request, HttpServletResponse response,String tagName, String namespace) {
-		Map tagCache = (Map)request.getAttribute(TAG_CACHE);
 		String nonNullNamesapce = namespace == null ? GroovyPage.DEFAULT_NAMESPACE : namespace;
 		String fullTagName = nonNullNamesapce + ":" + tagName;
-		if(tagCache == null) {
-			tagCache = new HashMap();
-			request.setAttribute(TAG_CACHE,tagCache);
-		}
-		if(tagCache.containsKey(fullTagName)) {
-			return (GroovyObject)tagCache.get(fullTagName);
-		}
-		else {
-			GrailsTagLibClass tagLibClass = (GrailsTagLibClass) getGrailsApplication().getArtefactForFeature(
-	                TagLibArtefactHandler.TYPE, fullTagName);
-			if(tagLibClass == null)return null;
-
-			//GroovyObject controller = getController(request);
-			
-			GroovyObject tagLib = (GroovyObject)getApplicationContext()
-													.getBean(tagLibClass.getFullName());
-			
-			LOG.debug("Tag lib of the class was retrieved:" + tagLib.getClass().getName());
-			
-			tagCache.put(fullTagName,tagLib);
-			return tagLib;
-		}
+		
+		GrailsTagLibClass tagLibClass = (GrailsTagLibClass) getGrailsApplication().getArtefactForFeature(
+                TagLibArtefactHandler.TYPE, fullTagName);
+		if(tagLibClass == null)return null;
+		return (GroovyObject)getApplicationContext()
+												.getBean(tagLibClass.getFullName());
 	}
 
 	public String getViewUri(String viewName, HttpServletRequest request) {

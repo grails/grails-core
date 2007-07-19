@@ -117,6 +117,7 @@ class TestUrlMappings {
 
 
     def assertOutputEquals(expected, template, params = [:]) {
+
         def engine = appCtx.groovyPagesTemplateEngine
 
         assert engine
@@ -128,8 +129,7 @@ class TestUrlMappings {
         def out = new PrintWriter(sw)
         webRequest.out = out
         w.writeTo(out)
-        
-		println "OUTPUT = ${sw.toString()}"
+
         assertEquals expected, sw.toString()
     }
 

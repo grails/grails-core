@@ -34,13 +34,14 @@ class ApplicationTagLib {
      *
      * eg. <link type="text/css" href="${createLinkTo(dir:'css',file:'main.css')}" />
      */
-    def createLinkTo = { attrs ->
-         out << grailsAttributes.getApplicationUri(request) + "/";
+    def createLinkTo = { attrs -> 
+		def writer = out
+         writer << grailsAttributes.getApplicationUri(request) + "/";
          if(attrs['dir'] ) {
-            out << "${attrs['dir']}" + ( attrs['file'] ? "/" :"");
+            writer << "${attrs['dir']}" + ( attrs['file'] ? "/" :"");
          }
          if(attrs['file']) {
-            out << "${attrs['file']}"
+            writer << "${attrs['file']}"
          }
     }
 
@@ -50,25 +51,26 @@ class ApplicationTagLib {
      *  <g:link action="myaction">link 1</gr:link>
      *  <g:link controller="myctrl" action="myaction">link 2</gr:link>
      */
-    def link = { attrs, body ->
-        out << '<a href="'
+    def link = { attrs, body ->  
+		def writer = out
+        writer << '<a href="'
         // create the link 
 		if(request['flowExecutionKey']) {
 			if(!attrs.params) attrs.params = [:]
 			attrs.params."_flowExecutionKey" = request['flowExecutionKey']
 		}
 
-        out << createLink(attrs)
-        out << '"'
+        writer << createLink(attrs)
+        writer << '"'
         // process remaining attributes
         attrs.each { k,v ->
-            out << ' ' <<  k << '="' << v << '"'
+            writer << " $k=\"$v\""
         }
-        out << '>'
+        writer << '>'
         // output the body
-        out << body()
+        writer << body()
         // close tag
-        out << '</a>'
+        writer << '</a>'
     }
 
 
@@ -95,18 +97,9 @@ class ApplicationTagLib {
 			params."_eventId" = attrs.event
 		}
         def url
-		try {
-            if(id != null) params.id = id
-            def mapping = grailsUrlMappingsHolder.getReverseMapping(controller,action,params)
-			params.controller = controller
-			if(action) params.action = action  
-            url = mapping.createURL(params, request.characterEncoding)
-		}
-		finally {
-			params.remove('controller')
-			params.remove('action')
-			params.remove('id')
-		}
+        if(id != null) params.id = id
+        def mapping = grailsUrlMappingsHolder.getReverseMapping(controller,action,params)
+        url = mapping.createURL(controller, action, params, request.characterEncoding)
         out << url
     }
 
@@ -118,23 +111,24 @@ class ApplicationTagLib {
 	 * }
 	 */
 	def withTag = { attrs, body ->
-		out << "<${attrs.name}"
+		def writer = out
+		writer << "<${attrs.name}"
 		if(attrs.attrs) {
 			attrs.attrs.each{ k,v ->
 				if(v) {
 					if(v instanceof Closure) {
-						out << " $k=\""
+						writer << " $k=\""
 					    v()
-						out << '"'
+						writer << '"'
 					}
 					else {
-						out << " $k=\"$v\""
+						writer << " $k=\"$v\""
 					}					
 				} 				
 			}
 		}
-		out << '>'  
-		out << body()
-		out << "</${attrs.name}>"			
+		writer << '>'  
+		writer << body()
+		writer << "</${attrs.name}>"			
 	}	
 }

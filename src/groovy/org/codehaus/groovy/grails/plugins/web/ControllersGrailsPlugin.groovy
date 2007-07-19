@@ -362,11 +362,12 @@ class ControllersGrailsPlugin {
 	                                                    TagLibArtefactHandler.TYPE, tagName.toString())
                     
                     if(tagLibraryClass) {
-                        def tagLibrary = ctx.getBean(tagLibraryClass.fullName)
-                        def tagBean = new BeanWrapperImpl(tagLibrary)
 
                         def tagMethodMapArg =  { Map attrs ->
                             def webRequest = RCH.currentRequestAttributes()
+                            def tagLibrary = ctx.getBean(tagLibraryClass.fullName)     
+	                        def tagBean = new BeanWrapperImpl(tagLibrary)
+
                             def originalOut = webRequest.out
                             def capturedOutput
                             try {
@@ -378,6 +379,8 @@ class ControllersGrailsPlugin {
                         }
                         def tagMethodMapAndClosureArgs = { Map attrs, Closure body ->
                             def webRequest = RCH.currentRequestAttributes()
+                            def tagLibrary = ctx.getBean(tagLibraryClass.fullName) 
+	                        def tagBean = new BeanWrapperImpl(tagLibrary)
                             def originalOut = webRequest.out
                             def capturedOutput
                             try {
