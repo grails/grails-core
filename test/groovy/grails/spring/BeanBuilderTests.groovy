@@ -21,9 +21,35 @@ import org.codehaus.groovy.grails.commons.*
  * @since 0.4
  *
  */
+
 class BeanBuilderTests extends GroovyTestCase {
 
-	void testSimpleBean() {
+
+    void testScopes() {
+        def bb = new BeanBuilder()
+        bb.beans {
+            myBean(ScopeTest) { bean ->
+                bean.scope = "prototype"
+            }
+            myBean2(ScopeTest)
+            myBeanFactory(Bean1Factory)
+
+            myBean3(myBeanFactory)
+        }
+        def ctx = bb.createApplicationContext()
+
+        def b1 = ctx.myBean
+        def b2 = ctx.myBean
+
+        assert b1 != b2
+
+        b1 = ctx.myBean2
+        b2 = ctx.myBean2
+
+        assertEquals b1, b2
+    }
+
+    void testSimpleBean() {
 		def bb = new BeanBuilder()
 		bb.beans {
 			bean1(Bean1) {
@@ -351,3 +377,4 @@ class Bean1Factory {
 		return new Bean1()
 	}
 }
+class ScopeTest {}

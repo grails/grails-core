@@ -18,6 +18,7 @@ import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware;
 import org.codehaus.groovy.grails.webflow.execution.repository.continuation.GrailsAwareClientContinuationFlowExecutionRepository;
 import org.codehaus.groovy.grails.webflow.execution.repository.continuation.GrailsAwareContinuationFlowExecutionRepository;
+import org.codehaus.groovy.grails.webflow.executor.GrailsFlowExecutor;
 import org.springframework.util.Assert;
 import org.springframework.webflow.config.FlowExecutorFactoryBean;
 import org.springframework.webflow.config.RepositoryType;
@@ -25,6 +26,10 @@ import org.springframework.webflow.conversation.ConversationManager;
 import org.springframework.webflow.execution.repository.FlowExecutionRepository;
 import org.springframework.webflow.execution.repository.continuation.ContinuationFlowExecutionRepository;
 import org.springframework.webflow.execution.repository.support.FlowExecutionStateRestorer;
+import org.springframework.webflow.execution.FlowExecutionFactory;
+import org.springframework.webflow.executor.FlowExecutor;
+import org.springframework.webflow.executor.FlowExecutorImpl;
+import org.springframework.webflow.definition.registry.FlowDefinitionLocator;
 
 /**
  * <p>Extends Spring WebFlow's FlowExecutorFactoryBean to supply an alternative implementation of the
@@ -51,6 +56,26 @@ public class GrailsAwareFlowExecutorFactoryBean extends FlowExecutorFactoryBean 
      */
     public void setGrailsApplication(GrailsApplication grailsApplication) {
         this.grailsApplication = grailsApplication;
+    }
+
+    /**
+     * Create the flow executor instance created by this factory bean and configure
+     * it appropriately. Subclasses may override if they which to use a custom executor
+     * implementation.
+     * @param definitionLocator the definition locator to use
+     * @param executionFactory the execution factory to use
+     * @param executionRepository the execution repository to use
+     * @return a new flow executor instance
+     */
+    protected FlowExecutor createFlowExecutor(
+            FlowDefinitionLocator definitionLocator, FlowExecutionFactory executionFactory,
+            FlowExecutionRepository executionRepository) {
+        FlowExecutorImpl flowExecutor =
+        	new GrailsFlowExecutor(definitionLocator, executionFactory, executionRepository);
+        if (getInputMapper() != null) {
+        	flowExecutor.setInputMapper(getInputMapper());
+        }
+        return flowExecutor;
     }
 
     /**

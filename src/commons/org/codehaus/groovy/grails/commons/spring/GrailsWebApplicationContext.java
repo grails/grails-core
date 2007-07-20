@@ -17,13 +17,8 @@ package org.codehaus.groovy.grails.commons.spring;
 
 import groovy.lang.GroovyObject;
 import groovy.lang.MetaClass;
-
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletContext;
-
-
-import org.codehaus.groovy.runtime.InvokerHelper;
 import org.codehaus.groovy.grails.orm.support.TransactionManagerPostProcessor;
+import org.codehaus.groovy.runtime.InvokerHelper;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.beans.BeansException;
@@ -38,9 +33,15 @@ import org.springframework.ui.context.ThemeSource;
 import org.springframework.ui.context.support.UiApplicationContextUtils;
 import org.springframework.web.context.ConfigurableWebApplicationContext;
 import org.springframework.web.context.ServletContextAware;
+import org.springframework.web.context.request.RequestScope;
+import org.springframework.web.context.request.SessionScope;
 import org.springframework.web.context.support.ServletContextAwareProcessor;
 import org.springframework.web.context.support.ServletContextResource;
 import org.springframework.web.context.support.ServletContextResourcePatternResolver;
+import org.springframework.webflow.config.scope.ScopeRegistrar;
+
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletContext;
 
 /**
  * A WebApplicationContext that extends StaticApplicationContext to allow for programmatic
@@ -107,7 +108,12 @@ public class GrailsWebApplicationContext extends StaticApplicationContext
 	 * @see ServletContextAwareProcessor
 	 */
 	protected void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) {
-		beanFactory.addBeanPostProcessor(new ServletContextAwareProcessor(this.servletContext));
+        beanFactory.registerScope(SCOPE_REQUEST, new RequestScope());
+        beanFactory.registerScope(SCOPE_SESSION, new SessionScope(false));
+        beanFactory.registerScope(SCOPE_GLOBAL_SESSION, new SessionScope(true));
+        new ScopeRegistrar().postProcessBeanFactory(beanFactory);
+
+        beanFactory.addBeanPostProcessor(new ServletContextAwareProcessor(this.servletContext));
 		beanFactory.ignoreDependencyInterface(ServletContextAware.class);
 	}
 

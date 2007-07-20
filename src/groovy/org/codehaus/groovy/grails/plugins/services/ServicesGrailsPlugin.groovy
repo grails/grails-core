@@ -1,4 +1,4 @@
-/*
+    /*
  * Copyright 2004-2005 the original author or authors.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -51,14 +51,13 @@ class ServicesGrailsPlugin {
 			if(serviceClass.transactional && hasDataSource) {
 				def props = new Properties()
 				props."*"="PROPAGATION_REQUIRED"
-				"${serviceClass.propertyName}"(TransactionProxyFactoryBean) {
-					target = { bean ->
-						bean.factoryBean = "${serviceClass.fullName}ServiceClass"
-						bean.factoryMethod = "newInstance"
-						bean.autowire = "byName"
-						if(scope) {
-                            bean.scope = scope
-                        }
+				"${serviceClass.propertyName}"(TransactionProxyFactoryBean) { bean ->
+				    if(scope) bean.scope = scope
+					target = { innerBean ->
+						innerBean.factoryBean = "${serviceClass.fullName}ServiceClass"
+						innerBean.factoryMethod = "newInstance"
+						innerBean.autowire = "byName"
+						if(scope) innerBean.scope = scope
 					}
 					proxyTargetClass = true
 					transactionAttributes = props
@@ -93,15 +92,14 @@ class ServicesGrailsPlugin {
 					}									
 					def props = new Properties()
 					props."*"="PROPAGATION_REQUIRED"
-					"${serviceName}"(TransactionProxyFactoryBean) {
-						target = { bean ->
-							bean.factoryBean = "${serviceClass.fullName}ServiceClass"
-							bean.factoryMethod = "newInstance"
-							bean.autowire = "byName"
-                            if(scope) {
-                                bean.scope = scope
-                            }
-						}
+					"${serviceName}"(TransactionProxyFactoryBean) { bean ->
+                        if(scope) bean.scope = scope
+                        target = { innerBean ->
+                            innerBean.factoryBean = "${serviceClass.fullName}ServiceClass"
+                            innerBean.factoryMethod = "newInstance"
+                            innerBean.autowire = "byName"
+                            if(scope) innerBean.scope = scope
+                        }
 						proxyTargetClass = true
 						transactionAttributes = props
 						transactionManager = ref("transactionManager")
