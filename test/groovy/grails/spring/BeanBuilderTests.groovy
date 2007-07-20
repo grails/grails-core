@@ -32,9 +32,6 @@ class BeanBuilderTests extends GroovyTestCase {
                 bean.scope = "prototype"
             }
             myBean2(ScopeTest)
-            myBeanFactory(Bean1Factory)
-
-            myBean3(myBeanFactory)
         }
         def ctx = bb.createApplicationContext()
 
