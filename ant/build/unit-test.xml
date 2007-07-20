@@ -99,8 +99,9 @@
 		<mkdir dir="${grails.test.reports}" />
 		<junit fork="true" maxmemory="512m" forkmode="once">
 			<!-- only fork VMs as needed -->
-			<jvmarg value="-XX:MaxPermSize=512m"/>
-			<jvmarg value="-server"/>
+			<jvmarg value="-server" />
+			<jvmarg value="-Xmx512M" />
+			<jvmarg value="-XX:MaxPermSize=256m"/>
 			<classpath location="${coverage.build}" />
 			<!-- must be first in cp!    -->
 			<classpath location="cruise/coverage/lib/cobertura.jar" />
@@ -126,20 +127,20 @@
 					<include name="**/${test}Tests.class" />
 					<exclude name="**/Abstract*" />
 					<exclude name="**/GrailsHibernateConfigurationTests*" />
-					<exclude name="**/ClassReloadingTests*" />
+<!--					<exclude name="**/ClassReloadingTests*" />
 					<exclude name="**/MessageTagTests*" />
 					<exclude name="**/FormTagLib*Tests*" />
-					<exclude name="**/CodecsGrailsPluginTests*" />
+					<exclude name="**/CodecsGrailsPluginTests*" />-->
 				</fileset>
 			</batchtest>
 			<!-- GrailsHibernateConfigurationTests needs it's own VM -->
-			<test todir="${grails.test.reports}" name="org.codehaus.groovy.grails.orm.hibernate.GrailsHibernateConfigurationTests" fork="true" if="test.isolated" />
-			<test todir="${grails.test.reports}" name="org.codehaus.groovy.grails.plugins.web.CodecsGrailsPluginTests" fork="true" if="test.isolated" />
+		    <test todir="${grails.test.reports}" name="org.codehaus.groovy.grails.orm.hibernate.GrailsHibernateConfigurationTests" fork="true" if="test.isolated" />
+		   <!-- <test todir="${grails.test.reports}" name="org.codehaus.groovy.grails.plugins.web.CodecsGrailsPluginTests" fork="true" if="test.isolated" />
 			<test todir="${grails.test.reports}" name="org.codehaus.groovy.grails.commons.ClassReloadingTests" fork="true" if="test.isolated" />
 			<test todir="${grails.test.reports}" name="org.codehaus.groovy.grails.web.taglib.MessageTagTests" fork="true" if="test.isolated" />
 			<test todir="${grails.test.reports}" name="org.codehaus.groovy.grails.web.taglib.FormTagLibTests" fork="true" if="test.isolated" />
 			<test todir="${grails.test.reports}" name="org.codehaus.groovy.grails.web.taglib.FormTagLib2Tests" fork="true" if="test.isolated" />
-			<test todir="${grails.test.reports}" name="org.codehaus.groovy.grails.web.taglib.FormTagLib3Tests" fork="true" if="test.isolated" />
+			<test todir="${grails.test.reports}" name="org.codehaus.groovy.grails.web.taglib.FormTagLib3Tests" fork="true" if="test.isolated" />    -->
 
 		</junit>
 	</target>

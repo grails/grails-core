@@ -19,6 +19,7 @@ class FlowBuilderDecisionExecutionTests extends AbstractFlowExecutionTests{
     def params = [q:"foo"]
 
     void testNoResultFlowExecution() {
+        grails.util.GrailsWebUtil.bindMockWebRequest()
         searchService = [executeSearch:{[]}]
 
         ViewSelection viewSelection = startFlow()
@@ -30,6 +31,7 @@ class FlowBuilderDecisionExecutionTests extends AbstractFlowExecutionTests{
 
     }
     void testSuccessFlowExecution() {
+        grails.util.GrailsWebUtil.bindMockWebRequest()
         searchService = [executeSearch:{["foo", "bar"]}]
 
         def viewSelection = startFlow()

@@ -51,44 +51,38 @@ public class ClosureInvokingAction extends AbstractAction implements GroovyObjec
     }
 
     protected Event doExecute(RequestContext context) throws Exception {
-        Closure cloned = callable.clone()
-
-        def emc = new ExpandoMetaClass(cloned.class)
-        emc.initialize() ; emc.allowChangesAfterInit = true
-        emc.getFlow = {-> context.flowScope }
-        emc.getFlash = {-> context.flashScope }
-        emc.getConversation = {-> context.conversationScope }
-        cloned.delegate = this
-        cloned.metaClass = emc
 
         def result
         try {
+            Closure cloned = callable.clone()
+            cloned.delegate = new ActionDelegate(this, context)
+            cloned.resolveStrategy = Closure.DELEGATE_FIRST
             result = cloned.call(context)
-        } catch (Exception e) {
-            LOG.error("Exception occured invoking flow action: ${e.message}", e)            
+            def event
+            if(result instanceof Map) {
+                context.flowScope.putAll(new LocalAttributeMap(result))
+                event = super.success(result)
+            }
+            else if(result instanceof Event) {
+                event = result;
+
+                def model =  event.attributes.get(RESULT)
+                if(model)
+                    context.flowScope.putAll(new LocalAttributeMap(model))
+            }
+            else {
+                event = super.success(result)
+            }
+            // here we place any errors that have occured in groovy objects into flashScope so they
+                // can be restored upon deserialization of the flow
+            checkForErrors(context,context.flowScope.asMap())
+            checkForErrors(context,context.conversationScope.asMap())
+            return event;
+        } catch (Throwable e) {
+            LOG.error("Exception occured invoking flow action: ${e.message}", e)
             throw e;
         }
-        def event
-        if(result instanceof Map) {
-            context.flowScope.putAll(new LocalAttributeMap(result))
-            event = super.success(result)
-        }
-        else if(result instanceof Event) {
-           event = result;
 
-            def model =  event.attributes.get(RESULT)
-            if(model)
-                context.flowScope.putAll(new LocalAttributeMap(model))
-        }
-        else {
-            event = super.success(result)
-        }
-        // here we place any errors that have occured in groovy objects into flashScope so they
-        // can be restored upon deserialization of the flow
-        checkForErrors(context,context.flowScope.asMap())
-        checkForErrors(context,context.conversationScope.asMap())
-
-        return event;
     }
 
     def checkForErrors(context, scope) {

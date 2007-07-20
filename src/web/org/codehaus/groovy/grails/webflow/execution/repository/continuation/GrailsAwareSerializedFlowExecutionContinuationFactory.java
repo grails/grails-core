@@ -45,6 +45,8 @@ public class GrailsAwareSerializedFlowExecutionContinuationFactory extends Seria
     }
 
     public FlowExecutionContinuation createContinuation(FlowExecution flowExecution) throws ContinuationCreationException {
-        return new GrailsAwareSerializedFlowExecutionContinuation(flowExecution, getCompress(), grailsApplication);    
+        final GrailsAwareSerializedFlowExecutionContinuation executionContinuation = new GrailsAwareSerializedFlowExecutionContinuation(flowExecution, getCompress());
+        executionContinuation.setGrailsApplication(grailsApplication);
+        return executionContinuation;
     }
 }

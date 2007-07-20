@@ -18,6 +18,7 @@ class FlowBuilderExecutionTests extends AbstractFlowExecutionTests{
     def params = [q:"foo"]
 
     void testFlowExecution() {
+        grails.util.GrailsWebUtil.bindMockWebRequest()
         def viewSelection = startFlow()
         assert viewSelection
         assertEquals "displaySearchForm", viewSelection.viewName
@@ -30,6 +31,7 @@ class FlowBuilderExecutionTests extends AbstractFlowExecutionTests{
     }
 
     void testFlowExecutionException() {
+        grails.util.GrailsWebUtil.bindMockWebRequest()
         searchService.executeSearch = { throw new FooException() }
 
         def viewSelection = startFlow()

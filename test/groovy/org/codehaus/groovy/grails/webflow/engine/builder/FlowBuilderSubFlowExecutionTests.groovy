@@ -29,6 +29,7 @@ class FlowBuilderSubFlowExecutionTests extends AbstractFlowExecutionTests{
     }
 
     void testSubFlowDefinition() {
+        grails.util.GrailsWebUtil.bindMockWebRequest()
         def theFlow = getFlowDefinition()
 
          // test sub flow model
@@ -46,6 +47,8 @@ class FlowBuilderSubFlowExecutionTests extends AbstractFlowExecutionTests{
 
     def searchMoreAction = { [moreResults:["one", "two", "three"]] }
     void testSubFlowExecution() {
+        grails.util.GrailsWebUtil.bindMockWebRequest()
+
         def viewSelection = startFlow()
         assert viewSelection
         assertEquals "displaySearchForm", viewSelection.viewName

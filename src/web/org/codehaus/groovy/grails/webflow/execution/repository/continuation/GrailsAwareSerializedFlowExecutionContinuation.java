@@ -15,9 +15,11 @@
 package org.codehaus.groovy.grails.webflow.execution.repository.continuation;
 
 import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware;
 import org.springframework.util.Assert;
 import org.springframework.webflow.execution.FlowExecution;
 import org.springframework.webflow.execution.repository.continuation.SerializedFlowExecutionContinuation;
+import org.springframework.webflow.execution.repository.continuation.ContinuationCreationException;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -37,16 +39,19 @@ import java.io.ObjectStreamClass;
  *        Created: Jul 6, 2007
  *        Time: 11:02:00 PM
  */
-public class GrailsAwareSerializedFlowExecutionContinuation extends SerializedFlowExecutionContinuation {
+public class GrailsAwareSerializedFlowExecutionContinuation extends SerializedFlowExecutionContinuation implements GrailsApplicationAware {
     private GrailsApplication grailsApplication;
 
-    public GrailsAwareSerializedFlowExecutionContinuation(FlowExecution flowExecution, boolean compress, GrailsApplication grailsApplication) {
+    public GrailsAwareSerializedFlowExecutionContinuation() {
+        super();
+    }
+
+    public GrailsAwareSerializedFlowExecutionContinuation(FlowExecution flowExecution, boolean compress) throws ContinuationCreationException {
         super(flowExecution, compress);
-        Assert.notNull(grailsApplication, "Argument [grailsApplication] is required!");
-        this.grailsApplication = grailsApplication;
     }
 
     protected FlowExecution deserialize(byte[] data) throws IOException, ClassNotFoundException {
+        Assert.notNull(grailsApplication, "Property [grailsApplication] must be set!");
         ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(data)) {
             protected Class resolveClass(ObjectStreamClass objectStreamClass) throws IOException, ClassNotFoundException {
                 return Class.forName(objectStreamClass.getName(), true, grailsApplication.getClassLoader());
@@ -59,5 +64,9 @@ public class GrailsAwareSerializedFlowExecutionContinuation extends SerializedFl
             ois.close();
         }
 
+    }
+
+    public void setGrailsApplication(GrailsApplication grailsApplication) {
+        this.grailsApplication = grailsApplication;
     }
 }

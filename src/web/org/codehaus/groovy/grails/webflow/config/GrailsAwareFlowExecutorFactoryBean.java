@@ -16,6 +16,7 @@ package org.codehaus.groovy.grails.webflow.config;
 
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware;
+import org.codehaus.groovy.grails.webflow.execution.repository.continuation.GrailsAwareClientContinuationFlowExecutionRepository;
 import org.codehaus.groovy.grails.webflow.execution.repository.continuation.GrailsAwareContinuationFlowExecutionRepository;
 import org.springframework.util.Assert;
 import org.springframework.webflow.config.FlowExecutorFactoryBean;
@@ -68,7 +69,16 @@ public class GrailsAwareFlowExecutorFactoryBean extends FlowExecutorFactoryBean 
             conversationManagerToUse = createDefaultConversationManager();
         }
 
-        if (repositoryType == RepositoryType.CONTINUATION) {
+        if (repositoryType == RepositoryType.CLIENT) {
+			if (conversationManager == null) {
+				// use the default no-op conversation manager
+				return new GrailsAwareClientContinuationFlowExecutionRepository(executionStateRestorer, grailsApplication);
+			}
+			else {
+				// use the conversation manager specified by the user
+				return new GrailsAwareClientContinuationFlowExecutionRepository(executionStateRestorer, conversationManager, grailsApplication);
+			}
+		}else if (repositoryType == RepositoryType.CONTINUATION) {
             ContinuationFlowExecutionRepository repository =
                 new GrailsAwareContinuationFlowExecutionRepository(executionStateRestorer, conversationManagerToUse, grailsApplication);
             if (getMaxContinuations() != null) {

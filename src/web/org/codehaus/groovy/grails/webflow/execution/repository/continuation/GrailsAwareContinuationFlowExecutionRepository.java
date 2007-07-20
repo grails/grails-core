@@ -20,7 +20,8 @@ import org.springframework.webflow.conversation.ConversationManager;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 
 /**
- * Class description here.
+ * extends Webflows default ContinuationFlowExecutionRepository to allow the continuation factory to
+ * be aware of the Grails class loader
  *
  * @author Graeme Rocher
  * @since 0.6

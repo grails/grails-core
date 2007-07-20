@@ -39,6 +39,8 @@ class ServicesGrailsPlugin {
 	                 
 	def doWithSpring = {
 		application.serviceClasses.each { serviceClass ->
+		    def scope = serviceClass.getPropertyValue("scope")
+
 			"${serviceClass.fullName}ServiceClass"(MethodInvokingFactoryBean) {
 				targetObject = ref("grailsApplication", true)
 				targetMethod = "getArtefact"
@@ -54,6 +56,9 @@ class ServicesGrailsPlugin {
 						bean.factoryBean = "${serviceClass.fullName}ServiceClass"
 						bean.factoryMethod = "newInstance"
 						bean.autowire = "byName"
+						if(scope) {
+                            bean.scope = scope
+                        }
 					}
 					proxyTargetClass = true
 					transactionAttributes = props
@@ -63,6 +68,10 @@ class ServicesGrailsPlugin {
 			else {
 				"${serviceClass.propertyName}"(serviceClass.getClazz()) { bean ->
 					bean.autowire =  true
+                    if(scope) {
+                        bean.scope = scope
+                    }
+
 				}
 			}
 		}
@@ -72,6 +81,8 @@ class ServicesGrailsPlugin {
 		if(event.source) {
 			def serviceClass = application.addArtefact(ServiceArtefactHandler.TYPE, event.source)
 			def serviceName = "${serviceClass.propertyName}"
+            def scope = serviceClass.getPropertyValue("scope")
+
 
 			if(serviceClass.transactional && event.ctx.containsBean("transactionManager")) {
 				def beans = beans {                 
@@ -87,6 +98,9 @@ class ServicesGrailsPlugin {
 							bean.factoryBean = "${serviceClass.fullName}ServiceClass"
 							bean.factoryMethod = "newInstance"
 							bean.autowire = "byName"
+                            if(scope) {
+                                bean.scope = scope
+                            }
 						}
 						proxyTargetClass = true
 						transactionAttributes = props
@@ -103,6 +117,9 @@ class ServicesGrailsPlugin {
 				def beans = beans {
 					"$serviceName"(serviceClass.getClazz()) { bean ->
 						bean.autowire =  true
+                        if(scope) {
+                            bean.scope = scope
+                        }
 					}					
 				}
 				if(event.ctx) {

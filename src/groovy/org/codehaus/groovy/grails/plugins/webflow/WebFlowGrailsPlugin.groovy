@@ -50,6 +50,7 @@ class WebFlowGrailsPlugin {
         flowRegistry(org.codehaus.groovy.grails.webflow.engine.builder.ControllerFlowRegistry) {
             grailsApplication = ref("grailsApplication", true)
         }
+        flowScopeRegistrar(org.springframework.webflow.config.scope.ScopeRegistrar)        
         boolean hasExecutionListener = false
         if(manager.hasGrailsPlugin('hibernate') ) {
             try {
@@ -61,9 +62,10 @@ class WebFlowGrailsPlugin {
             }
 
         }
+        def repoType = "client".equalsIgnoreCase(application.config.grails.webflow.flow.storage) ? "CLIENT" : "CONTINUATION"
         flowExecutor(org.codehaus.groovy.grails.webflow.config.GrailsAwareFlowExecutorFactoryBean) {
             definitionLocator = flowRegistry
-            repositoryType = "CONTINUATION"
+            repositoryType = repoType
             grailsApplication = ref("grailsApplication", true)
             if(manager.hasGrailsPlugin('hibernate') && hasExecutionListener) {
                 executionListenerLoader = executionListenerLoader
