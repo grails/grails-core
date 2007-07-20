@@ -51,7 +51,7 @@ class LoggingGrailsPlugin {
                 // Formulate a name of the form grails.<artefactType>.classname
                 // Do it here so not calculated in every getLog call :)
                 def type = GCU.getPropertyNameRepresentation(handler.type)
-                def logName = "grails.app.${type}.${it.clazz.name}".toString()
+                def logName = "grails.app.${type}.${GCU.getShortName(it.clazz)}".toString()
 
                 def log = LogFactory.getLog( logName)
 
