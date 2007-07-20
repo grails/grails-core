@@ -16,16 +16,17 @@
 
 package org.codehaus.groovy.grails.plugins;
 
-import java.io.IOException;
-import java.util.LinkedList;
-import java.util.List;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.plugins.exceptions.PluginException;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+
+import java.io.IOException;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Class with responsibility for loading core plugin classes. 
@@ -44,16 +45,16 @@ public class CorePluginFinder {
 
 	private final GrailsApplication application;
 
-	private final List foundPluginClasses;
+	private final Set foundPluginClasses;
 
 	public CorePluginFinder(GrailsApplication application) {
 		super();
 		this.resolver = new PathMatchingResourcePatternResolver();
 		this.application = application;
-		this.foundPluginClasses = new LinkedList();
+		this.foundPluginClasses = new HashSet();
 	}
 
-	public List getPluginClasses() {
+	public Set getPluginClasses() {
 
 		// just in case we try to use this twice
 		foundPluginClasses.clear();

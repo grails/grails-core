@@ -59,7 +59,7 @@ public class DefaultGrailsPluginManagerTests extends TestCase {
         //third depends on i18n
         assertNotNull(manager.getGrailsPlugin("third"));
         
-        assertEquals(6, pluginList.size());
+        assertEquals("Expected plugins not loaded. Expected " + 5 + " but got " + pluginList, 5, pluginList.size());
 
 	}
 

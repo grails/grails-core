@@ -436,7 +436,9 @@ void setClasspath() {
 
 	grailsDir.each { dir ->
         cpath << dir.file.absolutePath << File.pathSeparator
-		rootLoader?.addURL(dir.URL)
+        // Adding the grails-app folders to the root loader causes re-load issues as
+        // root loader returns old class before the grails GCL attempts to recompile it
+        //rootLoader?.addURL(dir.URL)
    }
 
     cpath << "${basedir}/web-app/WEB-INF/classes"

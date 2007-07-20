@@ -276,7 +276,7 @@ public class DefaultGrailsPluginManager implements GrailsPluginManager {
   private List findCorePlugins() {
 	  CorePluginFinder finder = new CorePluginFinder(application);
 	  
-	  List classes = finder.getPluginClasses();
+	  Set classes = finder.getPluginClasses();
 	  
 	  Iterator classesIterator = classes.iterator();
 	  List grailsCorePlugins = new ArrayList();
