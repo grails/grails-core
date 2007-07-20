@@ -62,7 +62,7 @@ class WebFlowGrailsPlugin {
             }
 
         }
-        def repoType = "client".equalsIgnoreCase(application.config.grails.webflow.flow.storage) ? "CLIENT" : "CONTINUATION"
+        def repoType = "client" == application.config.grails.webflow.flow.storage ? "CLIENT" : "CONTINUATION"
         flowExecutor(org.codehaus.groovy.grails.webflow.config.GrailsAwareFlowExecutorFactoryBean) {
             definitionLocator = flowRegistry
             repositoryType = repoType
