@@ -19,12 +19,14 @@ import org.springframework.webflow.execution.RequestContext
 import org.springframework.webflow.core.collection.MutableAttributeMap
 import org.springframework.web.context.request.RequestContextHolder
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
+import org.codehaus.groovy.grails.commons.GrailsClassUtils
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 import javax.servlet.http.HttpSession
 import javax.servlet.ServletContext
 import org.springframework.web.context.support.WebApplicationContextUtils
 import org.springframework.context.*
+import org.springframework.webflow.core.collection.LocalAttributeMap
 
 
 /**
@@ -123,9 +125,23 @@ class ActionDelegate {
         }
         else {
             def controller = webRequest.attributes.getController(webRequest.currentRequest)
-            if(controller) controller."$name"(args)
+            metaMethod = controller?.metaClass?.getMetaMethod(name, args)
+            if(metaMethod) return metaMethod.invoke(controller, args) 
             else {
-                throw new MissingMethodException(name, action.class, args)
+                if(args.length == 0 || args[0] == null) {
+                    return action.result(name)
+                }
+                else {
+                    if(args[0] instanceof Map) {
+                        LocalAttributeMap model = new LocalAttributeMap(args[0])
+                        return action.result(name, model)
+                    }
+                    else {
+                        def obj = args[0]
+                        def modelName = GrailsClassUtils.getPropertyName(name.getClass())
+                        return action.result(name, [(modelName):obj])
+                    }
+                }
             }
         }
     }
