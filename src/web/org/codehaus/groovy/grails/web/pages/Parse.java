@@ -60,6 +60,10 @@ public class Parse implements Tokens {
     private String contentType = "text/html;charset=UTF-8";
     private boolean doNextScan = true;
     private int state;
+    private static final String START_MULTILINE_STRING = "'''";
+    private static final String END_MULTILINE_STRING = "'''";
+    private Map constants = new HashMap();
+    private int constantCount = 0;
 
 
     public String getContentType() {
@@ -96,6 +100,9 @@ public class Parse implements Tokens {
         page();
 //		if (DEBUG) System.out.println(buf);
         InputStream in = new ByteArrayInputStream(sw.toString().getBytes());
+        if(LOG.isDebugEnabled()) {
+            LOG.debug("Compiled GSP into Groovy code: " + sw.toString());
+        }
         scan = null;
         return in;
     } // parse()
@@ -145,20 +152,26 @@ public class Parse implements Tokens {
         out.printlnToResponse(GroovyPage.fromHtml(text));
     } // expr()
 
+
     private void html() {
         if (!finalPass) return;
         if (LOG.isDebugEnabled()) LOG.debug("parse: html");
-        StringBuffer text = new StringBuffer(scan.getToken());
-        while (text.length() > 80) {
-            int end = 80;
-                // don't end a line with a '\'
-            while (text.charAt(end - 1) == '\\') end--;
-            print(text.subSequence(0, end));
-            text.delete(0, end);
+        String text = scan.getToken();
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
+
+        pw.println(START_MULTILINE_STRING);
+
+        String[] lines = text.split("\\n");
+        for (int i = 0; i < lines.length; i++) {
+            String line = lines[i];
+            pw.println(escapeGroovy(line));
         }
-        if (text.length() > 0) {
-            print(text);
-        }
+        pw.println(END_MULTILINE_STRING);
+
+        final String constantName = "STATIC_HTML_CONTENT_" + constantCount++;
+        constants.put(constantName, sw.toString());
+        out.printlnToResponse(constantName);
     } // html()
 
     private void makeName(String uri) {
@@ -215,7 +228,8 @@ public class Parse implements Tokens {
             out.print("class ");
             out.print(className);
             out.println(" extends GroovyPage {");
-            out.println("public Object run() {");
+            out.println("public Object run() {");            
+
         } else {
             out.println("import org.codehaus.groovy.grails.web.pages.GroovyPage");
             out.println("import org.codehaus.groovy.grails.web.taglib.*");
@@ -241,8 +255,13 @@ public class Parse implements Tokens {
                 case GEND_TAG: endTag(); break;
             }
         }
+
         if (finalPass) {
             out.println("}");
+            for (Iterator i = constants.keySet().iterator(); i.hasNext();) {
+                String name = (String) i.next();
+                out.println("static final " + name + " = " + constants.get(name));
+            }
             out.println("}");
         }
     } // page()
@@ -416,12 +435,9 @@ public class Parse implements Tokens {
         }
     } // pageImport()
 
-    private void print(CharSequence text) {
-        StringBuffer buf = new StringBuffer();
-        if(Pattern.compile("\\S").matcher(text).find())
-            bufferWhiteSpace = false;
 
-        buf.append('\'');
+    private String escapeGroovy(CharSequence text) {
+        StringBuffer buf = new StringBuffer();
         for (int ix = 0, ixz = text.length(); ix < ixz; ix++) {
             char c = text.charAt(ix);
             String rep = null;
@@ -436,16 +452,8 @@ public class Parse implements Tokens {
             if (rep != null) buf.append(rep);
             else buf.append(c);
         }
-        buf.append('\'');
-        if(!bufferWhiteSpace) {
-           out.printlnToResponse(buf.toString());
-        }
-        else {
-            whiteSpaceBuffer.append(buf.toString());
-            whiteSpaceBuffer.delete(0,whiteSpaceBuffer.length());
-        }
-
-    } // print()
+        return buf.toString();
+    }
 
     private String readStream(InputStream in) throws IOException {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
