@@ -64,6 +64,7 @@ public class Parse implements Tokens {
     private static final String END_MULTILINE_STRING = "'''";
     private Map constants = new HashMap();
     private int constantCount = 0;
+    private static final String EMPTY_MULTILINE_STRING = "''''''";
 
 
     public String getContentType() {
@@ -159,19 +160,35 @@ public class Parse implements Tokens {
         String text = scan.getToken();
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
-
-        pw.println(START_MULTILINE_STRING);
-
         String[] lines = text.split("\\n");
-        for (int i = 0; i < lines.length; i++) {
-            String line = lines[i];
-            pw.println(escapeGroovy(line));
-        }
-        pw.println(END_MULTILINE_STRING);
 
-        final String constantName = "STATIC_HTML_CONTENT_" + constantCount++;
-        constants.put(constantName, sw.toString());
-        out.printlnToResponse(constantName);
+        if(lines.length == 1 && !StringUtils.isBlank(lines[0])) {
+            out.printlnToResponse('\'' + escapeGroovy(lines[0]) + '\'');
+        }
+        else {
+
+            pw.print(START_MULTILINE_STRING);
+            boolean hasContent = false;
+            for (int i = 0; i < lines.length; i++) {
+                String line = lines[i];
+                final String content = escapeGroovy(line);
+                if(!StringUtils.isBlank(content)) {
+                    hasContent = true;
+                    pw.println(content);
+                }
+            }
+            pw.println(END_MULTILINE_STRING);
+
+
+
+            if(hasContent) {
+                final String constantValue = sw.toString();
+                final String constantName = "STATIC_HTML_CONTENT_" + constantCount++;
+                constants.put(constantName, constantValue);
+                out.printlnToResponse(constantName);
+            }
+        }
+
     } // html()
 
     private void makeName(String uri) {

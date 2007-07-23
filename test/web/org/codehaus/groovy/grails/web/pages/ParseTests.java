@@ -91,17 +91,23 @@ public class ParseTests extends TestCase {
  	public void testParseGTagsWithNamespaces() throws Exception {
  		String expected =
  			"import org.codehaus.groovy.grails.web.pages.GroovyPage\n" +
- 			"import org.codehaus.groovy.grails.web.taglib.*\n" +
- 			"\n" +
- 			"class myTest extends GroovyPage {\n" +
- 			"public Object run() {\n" +
- 			"out.print(\'<tbody>\\n  \')\n" +
- 			"body1 = new GroovyPageTagBody(this,binding.webRequest) {\n" +
- 			"}\n" +
- 			"invokeTag(\'form\',\'tt\',[:],body1)\n" +
- 			"out.print(\'\\n</tbody>\')\n" +
- 			"}\n" +
- 			"}";
+                     "import org.codehaus.groovy.grails.web.taglib.*\n" +
+                     "\n" +
+                     "class myTest extends GroovyPage {\n" +
+                     "public Object run() {\n" +
+                     "out.print(STATIC_HTML_CONTENT_0)\n" +
+                     "body1 = new GroovyPageTagBody(this,binding.webRequest) {\n" +
+                     "}\n" +
+                     "invokeTag('form','tt',[:],body1)\n" +
+                     "out.print(STATIC_HTML_CONTENT_1)\n" +
+                     "}\n" +
+                     "static final STATIC_HTML_CONTENT_1 = '''</tbody>\n" +
+                     "'''\n" +
+                     "\n" +
+                     "static final STATIC_HTML_CONTENT_0 = '''<tbody>\n" +
+                     "'''\n" +
+                     "\n" +
+                     "}";
  		String output = parseCode("myTest",
  		"<tbody>\n" +
  		"  <tt:form />\n" +
