@@ -27,6 +27,8 @@ import javax.servlet.ServletContext
 import org.springframework.web.context.support.WebApplicationContextUtils
 import org.springframework.context.*
 import org.springframework.webflow.core.collection.LocalAttributeMap
+import org.codehaus.groovy.grails.web.servlet.GrailsRequestContext
+import org.codehaus.groovy.grails.web.servlet.WebRequestDelegatingRequestContext
 
 
 /**
@@ -40,80 +42,15 @@ import org.springframework.webflow.core.collection.LocalAttributeMap
 *
 */
 
-class ActionDelegate {
+class ActionDelegate extends AbstractDelegate {
     Action action
-    RequestContext context
-    GrailsWebRequest webRequest
     MetaClass actionMetaClass
 
     ActionDelegate(Action action,RequestContext context) {
+        super(context)
         this.action = action
         this.actionMetaClass = action.class.metaClass
-        this.context = context
-        this.webRequest = RequestContextHolder.currentRequestAttributes()
     }
-
-    /**
-     * Returns the flow scope instance
-     */
-    MutableAttributeMap getFlow() { context.flowScope }
-    /**
-     * Returns the conversation scope instance
-     */
-    MutableAttributeMap getConversation() { context.conversationScope }
-    /**
-     * Returns the flash scope instance
-     */
-    MutableAttributeMap getFlash() { context.flashScope }
-
-    /**
-     * The request object
-     */
-    HttpServletRequest getRequest() { webRequest.currentRequest }
-    /**
-     * The response object
-     */
-    HttpServletResponse getResponse() { webRequest.currentResponse }
-    /**
-     * The params object
-     */
-    Map getParams() { webRequest.params }
-
-    /**
-     * The session object
-     */    
-    HttpSession getSession() { webRequest.session }
-
-    /**
-     * Returns the servlet context object
-     */
-    ServletContext getServletContext() { webRequest.servletContext }
-
-    ApplicationContext getApplicationContext() {
-        def servletContext = getServletContext()
-        return WebApplicationContextUtils.getWebApplicationContext(servletContext)
-    }
-
-    /**
-     * Resolves properties from the currently executing controller
-     */
-    def getProperty(String name) {
-        def MetaProperty property = metaClass.getMetaProperty(name)
-        def ctx = getApplicationContext()
-        if(property) {
-            return property.getProperty(this)
-        }
-        else if(ctx && ctx.containsBean(name)) {
-            return ctx.getBean(name)
-        }
-        else {
-            def controller = webRequest.attributes.getController(webRequest.currentRequest)
-            if(controller)return controller.getProperty(name)
-            else
-                throw new MissingPropertyException(name, action.class)
-        }
-    }
-
     /**
      * invokes a method as an action if possible
      */

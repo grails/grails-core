@@ -125,6 +125,7 @@ class FlowBuilder extends AbstractFlowBuilder implements GroovyObject, Applicati
                 }
                 c.metaClass = closureMetaClass
                 c.delegate = flowInfo
+                c.resolveStrategy = Closure.DELEGATE_ONLY
                 c.call()
 
                 Transition[] trans = flowInfo.transitions
@@ -345,6 +346,18 @@ class TransitionTo {
         this.transitions = newTransitions
     }
 
+    public Object to(Closure resolver) {
+        def closureResolver = new org.springframework.webflow.engine.support.DefaultTargetStateResolver(new ClosureExpression(resolver))
+        Transition t
+        if(this.criteria) {
+             t = builder.transition(builder.on(on), closureResolver, new ActionTransitionCriteria(this.criteria));
+        }
+        else {
+            t = builder.transition(builder.on(on), closureResolver);
+        }
+        transitions.add(t);
+        return t
+    }
     public Object to(String newTo) {
         if(error != null) {
             TransitionExecutingStateExceptionHandler handler = new TransitionExecutingStateExceptionHandler();
