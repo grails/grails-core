@@ -1110,7 +1110,10 @@ public final class GrailsDomainBinder {
 		// set to cascade all for the moment
 		if(grailsProperty.isAssociation()) {
             if(grailsProperty.isOneToMany()) {
-                prop.setCascade("all");
+                if(!grailsProperty.isBidirectional() && grailsProperty.isOwningSide())
+                    prop.setCascade("save");
+                else if(grailsProperty.isBidirectional())
+                    prop.setCascade("all");
             }
             else if(grailsProperty.isManyToMany()) {
             	if(grailsProperty.isOwningSide()) {
@@ -1126,9 +1129,6 @@ public final class GrailsDomainBinder {
                     GrailsDomainClassProperty otherSide = grailsProperty.getOtherSide();
                     if(otherSide != null && otherSide.isOneToMany()) {
                         prop.setCascade("merge");
-                    }
-                    else {
-                        prop.setCascade("all");
                     }
                 }
             }
