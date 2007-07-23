@@ -125,7 +125,6 @@ class FlowBuilder extends AbstractFlowBuilder implements GroovyObject, Applicati
                 }
                 c.metaClass = closureMetaClass
                 c.delegate = flowInfo
-                c.resolveStrategy = Closure.DELEGATE_ONLY
                 c.call()
 
                 Transition[] trans = flowInfo.transitions
