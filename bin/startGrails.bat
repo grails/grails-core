@@ -65,6 +65,9 @@ if not "%OS%" == "Windows_NT" goto win9xME_args
 if "%eval[2+2]" == "4" goto 4NT_args
 
 :win9xME_args
+@rem remove trailing slash from GRAILS_HOME
+if "%GRAILS_HOME:~-1%"=="\" SET GRAILS_HOME=%GRAILS_HOME:~0,-1%
+
 @rem Slurp the command line arguments.  
 set CMD_LINE_ARGS=
 set SERVER_PORT=
