@@ -319,6 +319,23 @@ class BeanBuilderTests extends GroovyTestCase {
 		
 	}
 
+	void testBeanBuilderWithScript() {
+        def script = '''
+def bb = new grails.spring.BeanBuilder()
+
+bb.beans {
+quest(grails.spring.HolyGrailQuest) {}
+
+knight(grails.spring.KnightOfTheRoundTable, "Bedivere") { quest = quest }
+}
+bb.createApplicationContext()
+ '''
+        def ctx = new GroovyShell().evaluate(script)
+
+        def knight = ctx.getBean('knight')
+        knight.embarkOnQuest()
+    }
+
 }
 class HolyGrailQuest {
 	   def start() { println "lets begin" }
