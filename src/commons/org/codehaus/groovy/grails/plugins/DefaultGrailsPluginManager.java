@@ -43,6 +43,9 @@ import javax.servlet.ServletContext;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
 import java.lang.reflect.Modifier;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.*;
@@ -100,6 +103,8 @@ public class DefaultGrailsPluginManager implements GrailsPluginManager {
       private long configLastModified;
 
       private PluginFilter pluginFilter;
+    private static final Class[] COMMON_CLASSES = new Class[]{Boolean.class, Byte.class, Character.class, Class.class, Double.class,Float.class, Integer.class, Long.class,
+                                          Number.class, Short.class, String.class, BigInteger.class, BigDecimal.class, URL.class, URI.class};
 
     public DefaultGrailsPluginManager(String resourcePath, GrailsApplication application) throws IOException {
           super();
@@ -738,6 +743,12 @@ public class DefaultGrailsPluginManager implements GrailsPluginManager {
 
   public void doDynamicMethods() {
       checkInitialised();
+      // remove common meta classes just to be sure
+      MetaClassRegistry registry = GroovySystem.getMetaClassRegistry();
+      for (int i = 0; i < COMMON_CLASSES.length; i++) {
+          Class commonClass = COMMON_CLASSES[i];
+          registry.removeMetaClass(commonClass);
+      }
       for (Iterator i = pluginList.iterator(); i.hasNext();) {
           GrailsPlugin plugin = (GrailsPlugin) i.next();
           plugin.doWithDynamicMethods(applicationContext);
