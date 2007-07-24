@@ -64,52 +64,56 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
         GrailsWebRequest webRequest = (GrailsWebRequest)request.getAttribute(GrailsApplicationAttributes.WEB_REQUEST);
 
         GrailsClass[] controllers = application.getArtefacts(ControllerArtefactHandler.TYPE);
-        if(controllers == null || controllers.length == 0) {
+        if(controllers == null || controllers.length == 0 || holder == null) {
             filterChain.doFilter(request,response);
             return;
         }
 
-        if(LOG.isTraceEnabled()) {
-            LOG.trace("Executing URL mapping filter");
+        if(LOG.isDebugEnabled()) {
+            LOG.debug("Executing URL mapping filter...");
+            LOG.debug(holder);
         }
 
 
         String uri = urlHelper.getPathWithinApplication(request);
 
-        UrlMappingInfo info = holder.match(uri);
+        UrlMappingInfo[] urlInfos = holder.matchAll(uri);
+        WrappedResponseHolder.setWrappedResponse(response);
+        boolean dispatched = false;
         try {
-            WrappedResponseHolder.setWrappedResponse(response);
+            for (int i = 0; i < urlInfos.length; i++) {
+                UrlMappingInfo info = urlInfos[i];
+                    if(info!=null) {
+                        String action = info.getActionName() == null ? "" : info.getActionName();
+                        GrailsClass controller = application.getArtefactForFeature(ControllerArtefactHandler.TYPE, SLASH + info.getControllerName() + SLASH + action);
+                        if(controller == null)  {
+                            continue;
+                        }
+                        dispatched = true;
 
-            if(info!=null) {
-                String action = info.getActionName() == null ? "" : info.getActionName();
-                GrailsClass controller = application.getArtefactForFeature(ControllerArtefactHandler.TYPE, SLASH + info.getControllerName() + SLASH + action);
-                if(controller == null)  {
-                    if(filterChain!=null)
-                        filterChain.doFilter(request,response);
-                    return;
-                }
-                String forwardUrl = buildDispatchUrlForMapping(request, info);
-                if(LOG.isDebugEnabled()) {
-                    LOG.debug("Matched URI ["+uri+"] to URL mapping, forwarding to ["+forwardUrl+"] with response ["+response.getClass()+"]");
-                }
-                //populateParamsForMapping(info);
-                RequestDispatcher dispatcher = request.getRequestDispatcher(forwardUrl);
-                populateWebRequestWithInfo(webRequest, info);
+                        String forwardUrl = buildDispatchUrlForMapping(request, info);
+                        if(LOG.isDebugEnabled()) {
+                            LOG.debug("Matched URI ["+uri+"] to URL mapping, forwarding to ["+forwardUrl+"] with response ["+response.getClass()+"]");
+                        }
+                        //populateParamsForMapping(info);
+                        RequestDispatcher dispatcher = request.getRequestDispatcher(forwardUrl);
+                        populateWebRequestWithInfo(webRequest, info);
 
-                WebUtils.exposeForwardRequestAttributes(request);
-                dispatcher.forward(request, response);
-            }
-            else {
-                if(LOG.isDebugEnabled()) {
-                    LOG.debug("No match found, processing remaining filter chain.");
-                }
+                        WebUtils.exposeForwardRequestAttributes(request);
+                        dispatcher.forward(request, response);
+                    }
 
-                if(filterChain!=null)
-                    filterChain.doFilter(request, response);
             }
         }
         finally {
             WrappedResponseHolder.setWrappedResponse(null);
+        }
+
+        if(!dispatched) {
+            if(LOG.isDebugEnabled()) {
+                LOG.debug("No match found, processing remaining filter chain.");
+            }
+            filterChain.doFilter(request, response);
         }
 
     }

@@ -147,6 +147,24 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
         return info;
     }
 
+    public UrlMappingInfo[] matchAll(String uri) {
+        List matchingUrls = new ArrayList();
+        for (int i = 0; i < mappings.length; i++) {
+            UrlMapping mapping = mappings[i];
+            if(LOG.isDebugEnabled())
+                LOG.debug("Attempting to match URI ["+uri+"] with pattern ["+mapping.getUrlData().getUrlPattern()+"]");
+
+            UrlMappingInfo current = mapping.match(uri);
+            if(current!=null)
+                matchingUrls.add(current);
+        }
+        return (UrlMappingInfo[])matchingUrls.toArray(new UrlMappingInfo[matchingUrls.size()]);
+    }
+
+    public UrlMappingInfo[] matchAll(String uri, String httpMethod) {
+        return new UrlMappingInfo[0];  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
     public String toString() {
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);

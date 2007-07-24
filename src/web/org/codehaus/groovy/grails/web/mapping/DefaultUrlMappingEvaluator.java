@@ -189,7 +189,7 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
         private List previousConstraints = new ArrayList();
         private List urlMappings = new ArrayList();
         private Binding binding;
-        private String actionName = null;
+        private Object actionName = null;
         private String controllerName = null;
 
         public UrlMappingBuilder(Binding b) {
@@ -214,10 +214,10 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
             }
         }
         
-        public void setAction(String action) {
+        public void setAction(Object action) {
         	actionName = action;
         }
-        public String getAction() {
+        public Object getAction() {
         	return actionName;
         }
         

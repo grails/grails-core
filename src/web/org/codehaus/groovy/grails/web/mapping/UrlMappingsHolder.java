@@ -18,8 +18,8 @@ package org.codehaus.groovy.grails.web.mapping;
 import java.util.Map;
 
 /**
- * A simple holder interface to be registered in the ApplicationContext that should hold a reference to all
- * UrlMappings.
+ * Main entry point of Grails URL mapping mechanism. This interface defines methods to match
+ * URLs and create reverse mappings based on the UrlMapping instances the implementor contains
  *
  * @author Graeme Rocher
  * @since 0.5
@@ -51,9 +51,27 @@ public interface UrlMappingsHolder {
     UrlCreator getReverseMapping(String controller, String action, Map params);
 
     /**
-     * Match and return a UrlMappingInfo otherwise returns null
+     * Match and return the first UrlMappingInfo instance possible
+     *
      * @param uri The URI to match
      * @return A UrlMappingInfo or null
      */
     UrlMappingInfo match(String uri);
+
+    /**
+     * Matches all possible UrlMappingInfo instances to the given URI and returns them all
+     *
+     * @param uri The URI to match
+     * @return An array of 0 or many UrlMappngInfo instances
+     */
+    UrlMappingInfo[] matchAll(String uri);
+
+    /**
+     * Match all possible UrlMappingInfo instances to the given URI and HTTP method
+     *
+     * @param uri The URI to match
+     * @param httpMethod The HTTP method (GET,POST,PUT,DELETE etc.)
+     * @return An array of 0 or many UrlMappingInfo instances
+     */
+    UrlMappingInfo[] matchAll(String uri, String httpMethod);
 }

@@ -15,15 +15,14 @@
 package org.codehaus.groovy.grails.web.mapping;
 
 import groovy.lang.Closure;
+import org.codehaus.groovy.grails.web.mapping.exceptions.UrlMappingException;
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap;
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
+import org.springframework.web.context.request.RequestContextHolder;
 
-import java.util.Map;
 import java.util.Collections;
 import java.util.Iterator;
-
-import org.codehaus.groovy.grails.web.mapping.exceptions.UrlMappingException;
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap;
-import org.springframework.web.context.request.RequestContextHolder;
+import java.util.Map;
 
 /**
  * A Class that implements the UrlMappingInfo interface and holds information established from a matched
@@ -91,13 +90,18 @@ public class DefaultUrlMappingInfo implements UrlMappingInfo {
         return id;
     }
 
-    public static String evaluateNameForValue(Object value) {
+    private String evaluateNameForValue(Object value) {
         if(value == null)return null;
         String name;
         if(value instanceof Closure) {
             Closure callable = (Closure)value;
             Object result = ((Closure)callable.clone()).call();
             name = result != null ? result.toString() : null;
+        }
+        else if(value instanceof Map) {
+            Map httpMethods = (Map)value;
+            GrailsWebRequest webRequest = (GrailsWebRequest) RequestContextHolder.currentRequestAttributes();
+            name = (String)httpMethods.get(webRequest.getCurrentRequest().getMethod());
         }
         else {
             name = value.toString();
