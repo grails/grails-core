@@ -3,7 +3,7 @@ package org.codehaus.groovy.grails.orm.hibernate;
 import org.codehaus.groovy.grails.commons.*
 import org.codehaus.groovy.grails.commons.test.*
 
-class SavePersistentMethodTests extends AbstractGrailsHibernateTests {
+class SavePersistentMethodTests extends AbstractGrailsHibernateTests {     
 
     void testFlush() {
         def bookClass = ga.getDomainClass("Book")
@@ -37,14 +37,16 @@ class SavePersistentMethodTests extends AbstractGrailsHibernateTests {
         assert !book.save()
         assert !book.save(deepValidate:false)
 
-        def author = authorClass.newInstance()
+        def author = authorClass.newInstance()        
+        author.name = "Bar"
+        author.save()
+        
         book.author = author
 
         // will validate book is owned by author
         assert book.save()
         assert book.save(deepValidate:false)
 
-        author.name = "Bar"
 
         assert book.save()
         assert book.save(deepValidate:false)
