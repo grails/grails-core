@@ -15,13 +15,9 @@
  */ 
 package grails.orm;
 
-import grails.util.ExtendProxy;
-import groovy.lang.Closure;
-import groovy.lang.GString;
-import groovy.lang.MissingMethodException;
-import groovy.lang.MissingPropertyException;
-import groovy.util.BuilderSupport;
-import groovy.util.Proxy;
+import groovy.lang.*;
+import org.apache.commons.lang.ArrayUtils;
+import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.hibernate.Criteria;
 import org.hibernate.FetchMode;
 import org.hibernate.Session;
@@ -67,7 +63,7 @@ import java.util.*;
  * @author Graeme Rocher
  * @since Oct 10, 2005
  */
-public class HibernateCriteriaBuilder extends BuilderSupport {
+public class HibernateCriteriaBuilder extends GroovyObjectSupport {
 
     public static final String AND = "and"; // builder
     public static final String IS_NULL = "isNull"; // builder
@@ -113,10 +109,9 @@ public class HibernateCriteriaBuilder extends BuilderSupport {
     private Session session;
     private Class targetClass;
     private Criteria criteria;
+    private MetaClass criteriaMetaClass;
     private boolean uniqueResult = false;
-    private Proxy resultProxy = new ExtendProxy();
-    private Proxy criteriaProxy;
-    private Object parent;
+
     private Stack logicalExpressionStack = new Stack();
     private boolean participate;
     private boolean scroll;
@@ -126,6 +121,7 @@ public class HibernateCriteriaBuilder extends BuilderSupport {
     private List aliasStack = new ArrayList();
     private static final String ALIAS = "_alias";
     private ResultTransformer resultTransformer;
+
 
 
     public HibernateCriteriaBuilder(Class targetClass, SessionFactory sessionFactory) {
@@ -672,32 +668,24 @@ public class HibernateCriteriaBuilder extends BuilderSupport {
         return addToCriteria(Restrictions.between(propertyName, lo, hi));
     }
 
-    protected Object createNode(Object name) {
-        return createNode( name, Collections.EMPTY_MAP );
-    }
 
     private boolean validateSimpleExpression() {
-        if(this.criteria == null)
+        if(this.criteria == null) {
             return false;
-
-        return !(!isInsideLogicalExpression() &&
-                !(this.parent instanceof Proxy) &&
-                this.parent != null &&
-                this.aliasStack.size() == 0);
-
+        }
+        return true;
     }
 
-    private boolean isInsideLogicalExpression() {
-		return !logicalExpressionStack.isEmpty();
-    }
 
-    protected Object createNode(Object name, Map attributes) {
+
+    public Object invokeMethod(String name, Object obj) {
+        Object[] args = obj.getClass().isArray() ? (Object[])obj : new Object[]{obj};        
         if(name.equals(ROOT_CALL) ||
                 name.equals(LIST_CALL) ||
                 name.equals(LIST_DISTINCT_CALL) ||
                 name.equals(GET_CALL) ||
                 name.equals(COUNT_CALL) ||
-                name.equals(SCROLL_CALL)) {
+                name.equals(SCROLL_CALL) && args.length == 1 && args[0] instanceof Closure) {
 
             if(this.criteria != null)
                 throwRuntimeException( new IllegalArgumentException("call to [" + name + "] not supported here"));
@@ -723,94 +711,145 @@ public class HibernateCriteriaBuilder extends BuilderSupport {
                 this.session = sessionFactory.openSession();
             }
             this.criteria = this.session.createCriteria(targetClass);
-            this.criteriaProxy = new ExtendProxy();
-            this.criteriaProxy.setAdaptee(this.criteria);
-            resultProxy = new ExtendProxy();
-            this.parent = resultProxy;
+            this.criteriaMetaClass = GroovySystem.getMetaClassRegistry().getMetaClass(criteria.getClass());
 
-            return resultProxy;
-        } else if(name.equals( AND ) ||
-                  name.equals( OR ) ||
-                  name.equals( NOT )) {
-            if(this.criteria == null)
-                throwRuntimeException( new IllegalArgumentException("call to [" + name + "] not supported here"));
-
-            this.logicalExpressionStack.add(new LogicalExpression(name));
-            return name;
-        } else if(name.equals( PROJECTIONS )) {
-            if(this.criteria == null)
-                throwRuntimeException( new IllegalArgumentException("call to [" + name + "] not supported here"));
-
-            this.projectionList = Projections.projectionList();
-
-            return name;
-        }
-        else if(targetBean.isReadableProperty(name.toString())) {
-            this.criteria.createAlias(name.toString(), name.toString()+ALIAS,CriteriaSpecification.LEFT_JOIN);
-            this.aliasStack.add(name.toString()+ALIAS);
-            // the criteria within an association node are grouped with an implicit AND
-            logicalExpressionStack.push(new LogicalExpression(AND));
-            return name;
-        }
-
-        closeSessionFollowingException();
-        throw new MissingMethodException((String) name, getClass(), new Object[] {}) ;
-    }
+            invokeClosureNode(args);
 
 
-    protected void nodeCompleted(Object parent, Object node) {
-        if(node instanceof Proxy) {
-            if(resultTransformer != null) {
+           if(resultTransformer != null) {
                 this.criteria.setResultTransformer(resultTransformer);
             }
+            Object result;
             if(!uniqueResult) {
                 if(scroll) {
-                    resultProxy.setAdaptee(
-                            this.criteria.scroll()
-                    );
+                    result = this.criteria.scroll();
                 }
                 else if(count) {
                     this.criteria.setProjection(Projections.rowCount());
-                    resultProxy.setAdaptee(
-                                this.criteria.uniqueResult()
-                            );
+                    result = this.criteria.uniqueResult();
                 }
                 else {
-                    resultProxy.setAdaptee(
-                            this.criteria.list()
-                    );
+                    result = this.criteria.list();
                 }
             }
             else {
-                resultProxy.setAdaptee(
-                        this.criteria.uniqueResult()
-                );
+                result = this.criteria.uniqueResult();
             }
-            this.criteria = null;
             if(!this.participate) {
                 this.session.close();
             }
+            return result;
+
         }
-        else if(node.equals( AND ) ||
-                node.equals( OR ) ||
-                node.equals( NOT )) {
-            LogicalExpression logicalExpression = (LogicalExpression) logicalExpressionStack.pop();
-            addToCriteria(logicalExpression.toCriterion());
-        }
-        else if(node.equals(PROJECTIONS)) {
-            if(this.projectionList != null && this.projectionList.getLength() > 0) {
-                this.criteria.setProjection(this.projectionList);
+        else {
+            System.out.println("Trying to invoke MetaMethod name = " + name + " args = " + ArrayUtils.toString(args));
+
+           MetaMethod metaMethod = getMetaClass().getMetaMethod(name, args);
+            if(metaMethod != null) {
+                 return metaMethod.invoke(this, args);
+            }
+
+            metaMethod = criteriaMetaClass.getMetaMethod(name, args);
+            if(metaMethod != null) {
+                 return metaMethod.invoke(criteria, args);
+            }
+            metaMethod = criteriaMetaClass.getMetaMethod(GrailsClassUtils.getSetterName(name), args);
+            if(metaMethod != null) {
+                 return metaMethod.invoke(criteria, args);
+            }
+           else if(args.length == 1 && args[0] instanceof Closure) {
+                if(name.equals( AND ) ||
+                        name.equals( OR ) ||
+                        name.equals( NOT ) ) {
+                    if(this.criteria == null)
+                        throwRuntimeException( new IllegalArgumentException("call to [" + name + "] not supported here"));
+
+                    this.logicalExpressionStack.add(new LogicalExpression(name));
+                    invokeClosureNode(args);
+
+                    LogicalExpression logicalExpression = (LogicalExpression) logicalExpressionStack.pop();
+                    addToCriteria(logicalExpression.toCriterion());
+
+                    return name;
+                } else if(name.equals( PROJECTIONS ) && args.length == 1 && (args[0] instanceof Closure)) {
+                    if(this.criteria == null)
+                        throwRuntimeException( new IllegalArgumentException("call to [" + name + "] not supported here"));
+
+                    this.projectionList = Projections.projectionList();
+                    invokeClosureNode(args);
+
+                    if(this.projectionList != null && this.projectionList.getLength() > 0) {
+                        this.criteria.setProjection(this.projectionList);
+                    }
+
+
+                    return name;
+                }
+                else if(targetBean.isReadableProperty(name.toString())) {
+                    this.criteria.createAlias(name.toString(), name.toString()+ALIAS,CriteriaSpecification.LEFT_JOIN);
+                    this.aliasStack.add(name.toString()+ALIAS);
+                    // the criteria within an association node are grouped with an implicit AND
+                    logicalExpressionStack.push(new LogicalExpression(AND));
+                    invokeClosureNode(args);
+                    aliasStack.remove(aliasStack.size()-1);
+                    LogicalExpression logicalExpression = (LogicalExpression) logicalExpressionStack.pop();
+                    if (!logicalExpression.args.isEmpty()) {
+                        addToCriteria(logicalExpression.toCriterion());
+                    }
+
+                    return name;
+                }
+            }
+            else if(args.length == 1 && args[0] != null) {
+                if(this.criteria == null)
+                    throwRuntimeException( new IllegalArgumentException("call to [" + name + "] not supported here"));
+
+                Object value = args[0];
+                Criterion c = null;
+                if(name.equals(ID_EQUALS)) {
+                    c = Restrictions.idEq(value);
+                }
+                else {
+
+                    if(	name.equals( IS_NULL ) ||
+                            name.equals( IS_NOT_NULL ) ||
+                            name.equals( IS_EMPTY ) ||
+                            name.equals( IS_NOT_EMPTY )) {
+                        if(!(value instanceof String))
+                            throwRuntimeException( new IllegalArgumentException("call to [" + name + "] with value ["+value+"] requires a String value."));
+
+                        if(name.equals( IS_NULL )) {
+                            c = Restrictions.isNull( (String)value ) ;
+                        }
+                        else if(name.equals( IS_NOT_NULL )) {
+                            c = Restrictions.isNotNull( (String)value );
+                        }
+                        else if(name.equals( IS_EMPTY )) {
+                            c = Restrictions.isEmpty( (String)value );
+                        }
+                        else if(name.equals( IS_NOT_EMPTY )) {
+                            c = Restrictions.isNotEmpty( (String)value );
+                        }
+                    }
+                }
+                if(c != null) {
+                    return addToCriteria(c);
+                }
+
             }
         }
-        else if(targetBean.isReadableProperty(node.toString()) && aliasStack.size() > 0) {
-            aliasStack.remove(aliasStack.size()-1);
-            LogicalExpression logicalExpression = (LogicalExpression) logicalExpressionStack.pop();
-            if (!logicalExpression.args.isEmpty()) {
-                addToCriteria(logicalExpression.toCriterion());
-            }
-        }
-        super.nodeCompleted(parent, node);
+
+
+        closeSessionFollowingException();
+        throw new MissingMethodException(name, getClass(), args) ;
     }
+
+    private void invokeClosureNode(Object[] args) {
+        Closure callable = (Closure)args[0];
+        callable.setDelegate(this);
+        callable.call();
+    }
+
 
     /**
      * Throws a runtime exception where necessary to ensure the session gets closed
@@ -829,73 +868,6 @@ public class HibernateCriteriaBuilder extends BuilderSupport {
         }
     }
 
-    protected void setParent(Object parent, Object child) {
-        this.parent = parent;
-    }
-
-    protected Object createNode(Object name, Object value) {
-        return createNode(name, Collections.EMPTY_MAP, value);
-    }
-
-    protected Object createNode(Object name, Map attributes, Object value) {
-        if(this.criteria == null)
-            throwRuntimeException( new IllegalArgumentException("call to [" + name + "] not supported here"));
-
-        Criterion c = null;
-        if(name.equals(ID_EQUALS)) {
-            c = Restrictions.idEq(value);
-        }
-        else {
-
-            if(	name.equals( IS_NULL ) ||
-                name.equals( IS_NOT_NULL ) ||
-                name.equals( IS_EMPTY ) ||
-                name.equals( IS_NOT_EMPTY )) {
-                if(!(value instanceof String))
-                    throwRuntimeException( new IllegalArgumentException("call to [" + name + "] with value ["+value+"] requires a String value."));
-
-                if(name.equals( IS_NULL )) {
-                    c = Restrictions.isNull( (String)value ) ;
-                }
-                else if(name.equals( IS_NOT_NULL )) {
-                    c = Restrictions.isNotNull( (String)value );
-                }
-                else if(name.equals( IS_EMPTY )) {
-                    c = Restrictions.isEmpty( (String)value );
-                }
-                else if(name.equals( IS_NOT_EMPTY )) {
-                    c = Restrictions.isNotEmpty( (String)value );
-                }
-            }
-        }
-        if(c != null) {
-            return addToCriteria(c);
-        }
-        else {
-            String nameString = name.toString();
-            if(value instanceof Closure) {
-                if(targetBean.isReadableProperty(nameString)) {
-                    this.criteria.createAlias(nameString, nameString+ALIAS,CriteriaSpecification.LEFT_JOIN);
-                    this.aliasStack.add(nameString+ALIAS);
-                    // the criteria within an association node are grouped with an implicit AND
-                    logicalExpressionStack.push(new LogicalExpression(AND));
-                    return name;
-                }
-            }
-            else if(parent instanceof Proxy) {
-                try {
-                    criteriaProxy.setProperty(nameString, value);
-                    return criteria;
-                }
-                catch(MissingPropertyException mpe) {
-                    throwRuntimeException( new MissingMethodException(nameString, getClass(), new Object[] {value}) );
-                }
-            }
-
-            throwRuntimeException( new MissingMethodException(nameString, getClass(), new Object[] {value}));
-        }
-        return c;
-    }
 
     /**
      * adds and returns the given criterion to the currently active criteria set.
