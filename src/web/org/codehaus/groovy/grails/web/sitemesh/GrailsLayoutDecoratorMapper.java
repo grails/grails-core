@@ -23,28 +23,27 @@ import com.opensymphony.module.sitemesh.mapper.AbstractDecoratorMapper;
 import com.opensymphony.module.sitemesh.mapper.DefaultDecorator;
 import grails.util.GrailsUtil;
 import groovy.lang.GroovyObject;
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.grails.commons.GrailsResourceUtils;
 import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods;
 import org.codehaus.groovy.grails.web.pages.DevelopmentGroovyPageResourceLoader;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
-import org.codehaus.groovy.grails.commons.GrailsResourceUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
-import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.support.WebApplicationContextUtils;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
-import java.io.IOException;
 
 /**
  * Implements the SiteMesh decorator mapper interface and allows grails views to map to grails layouts
@@ -66,7 +65,8 @@ public class GrailsLayoutDecoratorMapper extends AbstractDecoratorMapper impleme
 	public void init(Config config, Properties properties, DecoratorMapper parent) throws InstantiationException {		
 		super.init(config,properties,parent);
 		this.servletContext = config.getServletContext();
-	}
+        
+    }
 
 	public Decorator getDecorator(HttpServletRequest request, Page page) {
 		if(LOG.isDebugEnabled()) {
@@ -175,9 +175,7 @@ public class GrailsLayoutDecoratorMapper extends AbstractDecoratorMapper impleme
 
     private ResourceLoader establishResourceLoader() {
         ResourceLoader resourceLoader;
-        GrailsWebRequest webRequest = (GrailsWebRequest) RequestContextHolder.currentRequestAttributes();
-        ApplicationContext ctx = webRequest.getAttributes().getApplicationContext();
-
+        ApplicationContext ctx = WebApplicationContextUtils.getRequiredWebApplicationContext(servletContext);
         if(ctx.containsBean(DevelopmentGroovyPageResourceLoader.BEAN_ID) && GrailsUtil.isDevelopmentEnv()) {
             resourceLoader = (ResourceLoader)ctx.getBean(DevelopmentGroovyPageResourceLoader.BEAN_ID);
         }

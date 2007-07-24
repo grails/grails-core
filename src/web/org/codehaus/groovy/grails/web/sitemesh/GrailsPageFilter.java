@@ -46,7 +46,8 @@ public class GrailsPageFilter extends PageFilter {
 	public void init(FilterConfig filterConfig) {
 		super.init(filterConfig);
 		this.filterConfig = filterConfig;
-	}
+        FactoryHolder.setFactory(this.factory);        
+    }
 
 
 	/* (non-Javadoc)
