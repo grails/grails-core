@@ -117,12 +117,14 @@ class WebFlowGrailsPlugin {
     def onChange = { event ->
         FlowDefinitionRegistry flowRegistry = event.ctx.flowRegistry
         def controller = application.getControllerClass(event.source.name)
-        for(flow in controller.flows) {
-            def FlowBuilder builder = new FlowBuilder(flow.key, flow.value)
-            builder.applicationContext = event.ctx
-            
-            FlowAssembler flowAssembler = new FlowAssembler(flow.key, builder)
-            flowRegistry.registerFlowDefinition(new StaticFlowDefinitionHolder(flowAssembler.assembleFlow()))
-        }
+		if(controller) {
+	        for(flow in controller.flows) {
+	            def FlowBuilder builder = new FlowBuilder(flow.key, flow.value)
+	            builder.applicationContext = event.ctx
+
+	            FlowAssembler flowAssembler = new FlowAssembler(flow.key, builder)
+	            flowRegistry.registerFlowDefinition(new StaticFlowDefinitionHolder(flowAssembler.assembleFlow()))
+	        }			
+		}
     }
 }
