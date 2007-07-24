@@ -326,18 +326,22 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
             // first load the domain classes
             log.debug("Going to inspect artefact classes.");
             for (int i = 0; i < classes.length; i++) {
-                log.debug("Inspecting [" + classes[i].getName() + "]");
-                if (Modifier.isAbstract(classes[i].getModifiers())) {
-                    log.debug("[" + classes[i].getName() + "] is abstract.");
+                final Class theClass = classes[i];
+                log.debug("Inspecting [" + theClass.getName() + "]");
+                if (Modifier.isAbstract(theClass.getModifiers())) {
+                    log.debug("[" + theClass.getName() + "] is abstract.");
                     continue;
                 }
+                if(allArtefactClasses.contains(theClass))
+                    continue;
 
                 // check what kind of artefact it is and add to corrent data structure
                 for (int j = 0; j < artefactHandlers.length; j++) {
-                    if (artefactHandlers[j].isArtefact(classes[i])) {
-                        GrailsClass gclass = addArtefact(artefactHandlers[j].getType(), classes[i]);
+                    if (artefactHandlers[j].isArtefact(theClass)) {
+                        log.debug("Adding artefact "+ theClass +" of kind " + artefactHandlers[j].getType());
+                        GrailsClass gclass = addArtefact(artefactHandlers[j].getType(), theClass);
                         // Also maintain set of all artefacts (!= all classes loaded)
-                        allArtefactClasses.add(classes[i]);
+                        allArtefactClasses.add(theClass);
 
                         // Update per-artefact cache
                         DefaultArtefactInfo info = getArtefactInfo(artefactHandlers[j].getType(), true);
@@ -655,7 +659,8 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
 
             addToLoaded(artefactClass);
 
-            initializeArtefacts(artefactType);
+            if(isInitialised())
+                initializeArtefacts(artefactType);
 
 
             return artefactGrailsClass;
@@ -733,6 +738,7 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
             ArtefactInfo info = getArtefactInfo(handler.getType());
             // Only init those that have data
             if (info != null) {
+                //System.out.println("Initialising artefacts of kind " + handler.getType() + " with registered artefacts" + info.getGrailsClassesByName());
                 handler.initialize(info);
             }
         }

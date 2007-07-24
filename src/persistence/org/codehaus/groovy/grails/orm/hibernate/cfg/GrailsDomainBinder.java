@@ -1110,8 +1110,12 @@ public final class GrailsDomainBinder {
 		// set to cascade all for the moment
 		if(grailsProperty.isAssociation()) {
             if(grailsProperty.isOneToMany()) {
-                if(!grailsProperty.isBidirectional() && grailsProperty.isOwningSide())
-                    prop.setCascade("save");
+                if(!grailsProperty.isBidirectional()) {
+                    if(grailsProperty.isOwningSide())
+                        prop.setCascade("all");
+                    else
+                        prop.setCascade("save-update");
+                }
                 else if(grailsProperty.isBidirectional())
                     prop.setCascade("all");
             }
@@ -1122,13 +1126,22 @@ public final class GrailsDomainBinder {
             }
             else if(grailsProperty.isManyToOne() || grailsProperty.isOneToOne()) {
                 GrailsDomainClass domainClass = grailsProperty.getDomainClass();
+                System.out.println("grailsProperty.getName() = " + grailsProperty.getName());
+
                 if(domainClass.isOwningClass(grailsProperty.getType())) {
-                    prop.setCascade("merge");
+                    System.out.println("set cascade to all");
+                    prop.setCascade("all");
                 }
                 else {
                     GrailsDomainClassProperty otherSide = grailsProperty.getOtherSide();
+                    System.out.println("otherSide = " + otherSide); 
                     if(otherSide != null && otherSide.isOneToMany()) {
+                        System.out.println("set cascade to merge");
                         prop.setCascade("merge");
+                    }
+                    else if(grailsProperty.isOwningSide()) {
+                        System.out.println("set cascade to all");
+                        prop.setCascade("all");
                     }
                 }
             }

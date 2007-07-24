@@ -199,4 +199,6 @@ public interface GrailsDomainClassProperty {
      * @return True if it is, false otherwise
      */
     boolean isEmbedded();
+
+    void setOwningSide(boolean b);
 }

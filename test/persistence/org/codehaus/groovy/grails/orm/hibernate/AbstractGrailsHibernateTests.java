@@ -22,6 +22,7 @@ import groovy.lang.MetaClassRegistry;
 import groovy.util.ConfigObject;
 import groovy.util.ConfigSlurper;
 import junit.framework.TestCase;
+import org.apache.commons.lang.ArrayUtils;
 import org.codehaus.groovy.grails.commons.ApplicationHolder;
 import org.codehaus.groovy.grails.commons.ConfigurationHolder;
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
@@ -91,6 +92,7 @@ public abstract class AbstractGrailsHibernateTests extends TestCase {
             Class aClass = gcl.getLoadedClasses()[i];
             GroovySystem.getMetaClassRegistry().removeMetaClass(aClass);
         }
+        System.out.println("gcl.getLoadedClasses() = " + ArrayUtils.toString(gcl.getLoadedClasses()));
         ga = new DefaultGrailsApplication(gcl.getLoadedClasses(),gcl);
         ApplicationHolder.setApplication(ga);
 

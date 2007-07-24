@@ -197,4 +197,8 @@ public class GrailsHibernateDomainClassProperty implements GrailsDomainClassProp
         return false;
     }
 
+    public void setOwningSide(boolean b) {
+		throw new UnsupportedOperationException("Method 'setOwningSide' is not supported by implementation");
+    }
+
 }

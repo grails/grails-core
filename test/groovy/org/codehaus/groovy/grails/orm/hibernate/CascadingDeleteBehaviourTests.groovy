@@ -13,24 +13,26 @@ package org.codehaus.groovy.grails.orm.hibernate
 
 class CascadingDeleteBehaviourTests extends AbstractGrailsHibernateTests {
 
-
+    /*void testSomething() {
+        fail('irk!!!!')
+                               
+    } */
     void testDeleteToOne() {
-        def companyClass = ga.getDomainClass("Company")
+        def companyClass = ga.getDomainClass("Company")  
         def projectClass = ga.getDomainClass("Project")
         def memberClass = ga.getDomainClass("Member")
-        def c = companyClass.newInstance()
+        def c = companyClass.newInstance()     
         def p = projectClass.newInstance()
         def m = memberClass.newInstance()
-        c.save()
+        c.save()                       
         p.company = c
         p.member = m
         p.save()
 
         session.flush()
 
-
         p.delete()
-        session.flush()
+        session.flush()                                     \
 
         assertEquals 1, companyClass.clazz.list().size()
         assertEquals 0, memberClass.clazz.list().size()
@@ -50,7 +52,7 @@ class CascadingDeleteBehaviourTests extends AbstractGrailsHibernateTests {
         session.flush()
 
         assertEquals 1, companyClass.clazz.list().size()
-        assertEquals 1, locationClass.clazz.list().size()
+         assertEquals 1, locationClass.clazz.list().size()
         assertEquals 1, personClass.clazz.list().size()
 
         c.delete()
@@ -60,7 +62,7 @@ class CascadingDeleteBehaviourTests extends AbstractGrailsHibernateTests {
         assertEquals 1, locationClass.clazz.list().size()
         assertEquals 0, personClass.clazz.list().size()
 
-    }
+    }  
 
     void onSetUp() {
 		this.gcl.parseClass('''

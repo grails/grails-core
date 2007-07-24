@@ -83,6 +83,8 @@ public class GrailsDomainConfigurationUtil {
                     GrailsDomainClassProperty prop = props[j];
                     GrailsDomainClass referenced = prop.getReferencedDomainClass();
                     if(referenced != null) {
+                        boolean isOwnedBy = referenced.isOwningClass(domainClass.getClazz());
+                        prop.setOwningSide(isOwnedBy);
                         String refPropertyName = null;
                         try {
                             refPropertyName = prop.getReferencedPropertyName();
