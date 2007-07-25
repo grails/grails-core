@@ -61,7 +61,7 @@ class ServicesGrailsPlugin {
 					}
 					proxyTargetClass = true
 					transactionAttributes = props
-					transactionManager = transactionManager
+					transactionManager = ref("transactionManager")
 				}
 			}
 			else {
