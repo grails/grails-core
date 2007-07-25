@@ -483,7 +483,7 @@ public class BeanBuilder extends GroovyObjectSupport {
 	private BeanBuilder invokeBeanDefiningClosure(Object arg) {
 		Closure callable = (Closure)arg;
 		callable.setDelegate(this);
-        callable.setResolveStrategy(Closure.DELEGATE_FIRST);
+  //      callable.setResolveStrategy(Closure.DELEGATE_FIRST);
         callable.call();
 		finalizeDeferredProperties();
 
