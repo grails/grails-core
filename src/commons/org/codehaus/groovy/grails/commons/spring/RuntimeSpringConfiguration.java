@@ -191,4 +191,12 @@ public interface RuntimeSpringConfiguration extends ServletContextAware {
      * @param applicationContext The ApplicationContext instance
      */
     void registerBeansWithContext(StaticApplicationContext applicationContext);
+
+    /**
+     * Adds an abstract bean definition to the bean factory and returns the BeanConfiguration object
+     *
+     * @param name The name of the bean 
+     * @return The BeanConfiguration object
+     */
+    BeanConfiguration addAbstractBean(String name);
 }
