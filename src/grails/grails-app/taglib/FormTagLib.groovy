@@ -54,7 +54,7 @@ class FormTagLib {
 		attrs.type = "submit"
 		attrs.tagName = "submitButton"
 		if(request['flowExecutionKey']) {
-			attrs.name = "_eventId_${attrs.name}"
+			attrs.name = attrs.event ? "_eventId_${attrs.event}" : "_eventId_${attrs.name}"
 		}
 		out << field(attrs)
 	}
