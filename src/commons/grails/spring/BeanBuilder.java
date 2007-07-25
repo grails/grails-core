@@ -22,6 +22,7 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.spring.BeanConfiguration;
 import org.codehaus.groovy.grails.commons.spring.DefaultRuntimeSpringConfiguration;
 import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration;
+import org.codehaus.groovy.grails.commons.spring.DefaultBeanConfiguration;
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.RuntimeBeanReference;
@@ -75,13 +76,13 @@ public class BeanBuilder extends GroovyObjectSupport {
 	private static final Log LOG = LogFactory.getLog(BeanBuilder.class);
 	private static final String CREATE_APPCTX = "createApplicationContext";
     private static final String REGISTER_BEANS = "registerBeans";
+    private static final String BEANS = "beans";
     private static final String REF = "ref";
-	private RuntimeSpringConfiguration springConfig = new DefaultRuntimeSpringConfiguration();
-	private BeanConfiguration currentBeanConfig;
-	private Map deferredProperties = new HashMap();
-	private ApplicationContext parentCtx;
-	private Map binding = Collections.EMPTY_MAP;
-
+    private RuntimeSpringConfiguration springConfig = new DefaultRuntimeSpringConfiguration();
+    private BeanConfiguration currentBeanConfig;
+    private Map deferredProperties = new HashMap();
+    private ApplicationContext parentCtx;
+    private Map binding = Collections.EMPTY_MAP;
 
 
     public BeanBuilder() {
@@ -341,9 +342,12 @@ public class BeanBuilder extends GroovyObjectSupport {
             springConfig.registerBeansWithContext(ctx);
             return null;
         }
+        else if(BEANS.equals(name) && args.length == 1 && args[0] instanceof Closure) {
+            return invokeBeanDefiningClosure(args[0]);
+        }
 		
 
-		if(args.length == 0) 
+        if(args.length == 0)
 			throw new MissingMethodException(name, getClass(),args);
 		
 		if(REF.equals(name)) {
@@ -368,13 +372,14 @@ public class BeanBuilder extends GroovyObjectSupport {
 		}
 		
 		if(args[0] instanceof Closure) {
-			invokeBeanDefiningClosure(args[0]);
+            // abstract bean definition
+            invokeBeanDefiningMethod(name, args);
 		}
 		else if(args[0] instanceof Class || args[0] instanceof RuntimeBeanReference || args[0] instanceof Map) {
 			return invokeBeanDefiningMethod(name, args);			
 		}
-		else {
-			return super.invokeMethod(name,arg);
+		else if (args.length > 1 && args[args.length -1] instanceof Closure) {
+			return invokeBeanDefiningMethod(name, args);
 		}
 		return this;
 	}
@@ -432,7 +437,7 @@ public class BeanBuilder extends GroovyObjectSupport {
 					Object[] constructorArgs = ArrayUtils.subarray(args, 1, args.length);
 					currentBeanConfig = springConfig.addSingletonBean(name, beanClass, Arrays.asList(constructorArgs));
 				}
-	
+
 			}			
 		}
 		else if(args[0] instanceof RuntimeBeanReference) {
@@ -445,7 +450,21 @@ public class BeanBuilder extends GroovyObjectSupport {
 			currentBeanConfig.setFactoryBean(factoryBeanEntry.getKey().toString());
 			currentBeanConfig.setFactoryMethod(factoryBeanEntry.getValue().toString());
 		}
-		if(args[args.length-1] instanceof Closure) {
+        else if(args[0] instanceof Closure) {
+            currentBeanConfig = springConfig.addAbstractBean(name);
+        }
+        else {
+            Object[] constructorArgs;
+            if(args[args.length-1] instanceof Closure) {
+                constructorArgs= ArrayUtils.subarray(args, 0, args.length-1);
+            }
+            else {
+                constructorArgs= ArrayUtils.subarray(args, 0, args.length);
+            }
+            currentBeanConfig = new DefaultBeanConfiguration(name, null, Arrays.asList(constructorArgs));
+            springConfig.addBeanConfiguration(name,currentBeanConfig);
+        }
+        if(args[args.length-1] instanceof Closure) {
 			Closure callable = (Closure)args[args.length-1];
 			callable.setDelegate(this);
             callable.setResolveStrategy(Closure.DELEGATE_FIRST);
@@ -461,13 +480,15 @@ public class BeanBuilder extends GroovyObjectSupport {
 	 * 
 	 * @param arg The closure argument
 	 */
-	private void invokeBeanDefiningClosure(Object arg) {
+	private BeanBuilder invokeBeanDefiningClosure(Object arg) {
 		Closure callable = (Closure)arg;
 		callable.setDelegate(this);
         callable.setResolveStrategy(Closure.DELEGATE_FIRST);
         callable.call();
 		finalizeDeferredProperties();
-	}
+
+        return this;
+    }
 
 	/**
 	 * This method overrides property setting in the scope of the BeanBuilder to set

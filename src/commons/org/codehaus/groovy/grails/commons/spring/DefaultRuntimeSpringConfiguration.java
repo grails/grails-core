@@ -59,15 +59,13 @@ public class DefaultRuntimeSpringConfiguration implements
 
     public BeanConfiguration addSingletonBean(String name, Class clazz) {
         BeanConfiguration bc = new DefaultBeanConfiguration(name,clazz);
-        beanConfigs.put(name,bc);
-        beanNames.add(name);
+        registerBeanConfiguration(name, bc);
         return bc;
     }
 
     public BeanConfiguration addPrototypeBean(String name, Class clazz) {
         BeanConfiguration bc = new DefaultBeanConfiguration(name,clazz,true);
-        beanConfigs.put(name,bc);
-        beanNames.add(name);
+        registerBeanConfiguration(name, bc);
         return bc;
     }
 
@@ -79,8 +77,7 @@ public class DefaultRuntimeSpringConfiguration implements
 
     public BeanConfiguration addSingletonBean(String name) {
         BeanConfiguration bc = new DefaultBeanConfiguration(name);
-        beanConfigs.put(name,bc);
-        beanNames.add(name);
+        registerBeanConfiguration(name, bc);
         return bc;
     }
 
@@ -90,16 +87,19 @@ public class DefaultRuntimeSpringConfiguration implements
 
     public BeanConfiguration addSingletonBean(String name, Class clazz, Collection args) {
         BeanConfiguration bc = new DefaultBeanConfiguration(name,clazz,args);
-        beanConfigs.put(name,bc);
-        beanNames.add(name);
+        registerBeanConfiguration(name, bc);
         return bc;
     }
 
     public BeanConfiguration addPrototypeBean(String name) {
         BeanConfiguration bc = new DefaultBeanConfiguration(name,true);
+        registerBeanConfiguration(name, bc);
+        return bc;
+    }
+
+    private void registerBeanConfiguration(String name, BeanConfiguration bc) {
         beanConfigs.put(name,bc);
         beanNames.add(name);
-        return bc;
     }
 
     public BeanConfiguration createSingletonBean(Class clazz, Collection constructorArguments) {
@@ -120,8 +120,7 @@ public class DefaultRuntimeSpringConfiguration implements
 
     public void addBeanConfiguration(String beanName, BeanConfiguration beanConfiguration) {
         beanConfiguration.setName(beanName);
-        beanConfigs.put(beanName,beanConfiguration);
-        beanNames.add(beanName);
+        registerBeanConfiguration(beanName, beanConfiguration);
     }
 
     public void addBeanDefinition(String name, BeanDefinition bd) {
@@ -192,5 +191,19 @@ public class DefaultRuntimeSpringConfiguration implements
             applicationContext.registerBeanDefinition(key.toString(), bd);
 
         }
+    }
+
+    /**
+     * Adds an abstract bean and returns the BeanConfiguration instance
+     *
+     * @param name The name of the bean
+     * @return The BeanConfiguration object
+     */
+    public BeanConfiguration addAbstractBean(String name) {
+        BeanConfiguration bc = new DefaultBeanConfiguration(name);
+        bc.setAbstract(true);
+        registerBeanConfiguration(name, bc);
+
+        return bc;
     }
 }

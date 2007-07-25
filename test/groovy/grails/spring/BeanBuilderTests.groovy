@@ -4,8 +4,8 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *                                                              
+ *      http://www.apache.org/licenses/LICENSE-2.0             s
  * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -23,6 +23,51 @@ import org.codehaus.groovy.grails.commons.*
  */
 
 class BeanBuilderTests extends GroovyTestCase {
+
+    void testAbstractBeanDefinition() {      
+          def bb = new grails.spring.BeanBuilder()
+          bb.beans {
+              abstractBean {
+                  leader = "Lancelot"
+              }
+              quest(HolyGrailQuest)
+              knights(KnightOfTheRoundTable, "Camelot") { bean ->
+                  bean.parent = abstractBean
+                  quest = quest
+              }
+          }
+          def ctx = bb.createApplicationContext()
+
+          def knights = ctx.knights   
+          assert knights
+          shouldFail(org.springframework.beans.factory.BeanIsAbstractException) {
+              ctx.abstractBean
+          }
+          assertEquals "Lancelot", knights.leader
+    }
+
+    void testAbstractBeanDefinitionWithClass() {
+          def bb = new grails.spring.BeanBuilder()
+          bb.beans {                                          
+              abstractBean(KnightOfTheRoundTable) { bean ->
+                  bean.'abstract' = true                  
+                  leader = "Lancelot"
+              }
+              quest(HolyGrailQuest)
+              knights("Camelot") { bean ->
+                  bean.parent = abstractBean
+                  quest = quest
+              }
+          }
+          def ctx = bb.createApplicationContext()
+
+          shouldFail(org.springframework.beans.factory.BeanIsAbstractException) {
+              ctx.abstractBean                                                         
+          }                                
+          def knights = ctx.knights
+          assert knights
+          assertEquals "Lancelot", knights.leader
+    }
 
 
     void testScopes() {
@@ -329,12 +374,14 @@ quest(grails.spring.HolyGrailQuest) {}
 knight(grails.spring.KnightOfTheRoundTable, "Bedivere") { quest = quest }
 }
 bb.createApplicationContext()
- '''
+ '''                                                                                
         def ctx = new GroovyShell().evaluate(script)
 
         def knight = ctx.getBean('knight')
         knight.embarkOnQuest()
     }
+
+
 
 }
 class HolyGrailQuest {
@@ -342,6 +389,7 @@ class HolyGrailQuest {
 }
 class KnightOfTheRoundTable {
    String name
+   String leader
    KnightOfTheRoundTable(String n) {
       this.name = n
    }

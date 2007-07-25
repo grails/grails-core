@@ -126,4 +126,19 @@ public interface BeanConfiguration {
 	 * @param newValue The value
 	 */
 	void setPropertyValue(String property, Object newValue);
+
+    /**
+     * Sets the BeanConfiguration as an Abstract bean definition
+     * @param isAbstract Whether its abstract or not
+     * @return This BeanConfiguration object
+     */
+    BeanConfiguration setAbstract(boolean isAbstract);
+
+    /**
+     * Sets the name of the parent bean
+     *
+      * @param name Either a string which is the name of the bean, a RuntimeBeanReference or a BeanConfiguration
+     */
+    void setParent(Object name);
+
 }
