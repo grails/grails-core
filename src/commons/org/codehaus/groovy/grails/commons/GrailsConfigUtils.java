@@ -19,6 +19,7 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.codehaus.groovy.grails.support.PersistenceContextInterceptor;
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.web.context.WebApplicationContext;
 
 import javax.servlet.ServletContext;
@@ -55,8 +56,12 @@ public class GrailsConfigUtils {
 	        try {
 	            GrailsClass[] bootstraps =  application.getArtefacts(BootstrapArtefactHandler.TYPE);
 	            for (int i = 0; i < bootstraps.length; i++) {
-	                ((GrailsBootstrapClass)bootstraps[i]).callInit(  servletContext );
-	            }
+                    final GrailsBootstrapClass bootstrapClass = (GrailsBootstrapClass) bootstraps[i];
+                    final Object instance = bootstrapClass.getReference().getWrappedInstance();
+                    webContext.getAutowireCapableBeanFactory()
+                                .autowireBeanProperties(instance, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
+                    bootstrapClass.callInit(  servletContext );
+                }
                 interceptor.flush();
             }
 	        finally {
