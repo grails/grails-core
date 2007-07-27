@@ -14,30 +14,22 @@
  * limitations under the License.
  */
 
- /**
-  * A code that encodes and decodes Objects using Base64 encoding
-  *
-  * @author Drew Varner
-  */
+package org.codehaus.groovy.grails.plugins.codecs
 
-import org.codehaus.groovy.runtime.DefaultGroovyMethods
+import org.springframework.web.util.HtmlUtils
 
-class Base64Codec {
+/**
+ * A codecs that encodes and decodes strings to and from HTML
+ *
+ * @author Graeme Rocher
+ * @since 0.5
+ */
+class HTMLCodec {
     static encode = { theTarget ->
-       if (theTarget == null) {
-           return null
-       } else if (theTarget instanceof byte[] || theTarget instanceof Byte[]) {
-           return theTarget.encodeBase64()
-       } else {
-    	   return theTarget.toString().getBytes().encodeBase64()
-       }
+        HtmlUtils.htmlEscape(theTarget.toString())
     }
-
+    
     static decode = { theTarget ->
-        if (theTarget == null) {
-            return null
-        } else {
-            return DefaultGroovyMethods.decodeBase64(theTarget.toString())
-        }
+    	HtmlUtils.htmlUnescape(theTarget.toString())
     }
 }

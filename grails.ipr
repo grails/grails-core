@@ -22,6 +22,7 @@
       <file url="file:///Users/graemerocher/Library/Caches/IntelliJIDEA70/compiler/grails.grailsd7d2b0b8/.generated/Groovy_to_java_source_code_generator/Grails.4ea48c75/org/codehaus/groovy/grails/scaffolding/DefaultGrailsTemplateGenerator.java" />
       <file url="file:///Users/graemerocher/Library/Caches/IntelliJIDEA70/compiler/grails.grailsd7d2b0b8/.generated/Groovy_to_java_source_code_generator/Grails.4ea48c75/org/codehaus/groovy/grails/scaffolding/DefaultGrailsTemplateGenerator.java" />
       <file url="file:///Users/graemerocher/Library/Caches/IntelliJIDEA70/compiler/grails.grailsd7d2b0b8/.generated/Groovy_to_java_source_code_generator/Grails.4ea48c75/org/codehaus/groovy/grails/web/servlet/filter/GrailsResourceCopier.java" />
+      <file url="file:///Users/graemerocher/Library/Caches/IntelliJIDEA70/compiler/grails.grailsd7d2b0b8/.generated/Groovy_to_java_source_code_generator/Grails.4ea48c75/production/org/codehaus/groovy/grails/webflow/engine/builder/ActionDelegate.java" />
     </excludeFromCompile>
     <resourceExtensions>
       <entry name=".+\.(properties|xml|html|dtd|tld)" />
@@ -344,8 +345,8 @@
         <root url="jar://$PROJECT_DIR$/lib/spring-mock.jar!/" />
         <root url="jar://$PROJECT_DIR$/lib/springmodules-sandbox.jar!/" />
         <root url="jar://$PROJECT_DIR$/lib/spring-2.0.jar!/" />
-        <root url="jar://$PROJECT_DIR$/lib/spring-webflow-1.1-SNAPSHOT-20070611011610.jar!/" />
-        <root url="jar://$PROJECT_DIR$/lib/spring-binding-1.1-SNAPSHOT-20070611011605.jar!/" />
+        <root url="jar://$PROJECT_DIR$/lib/spring-binding-1.1-SNAPSHOT-20070720144338.jar!/" />
+        <root url="jar://$PROJECT_DIR$/lib/spring-webflow-1.1-SNAPSHOT-20070720141159.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES>

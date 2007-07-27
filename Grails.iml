@@ -6,7 +6,6 @@
     <output-test url="file://$MODULE_DIR$/idea/test-classes" />
     <content url="file://$MODULE_DIR$">
       <sourceFolder url="file://$MODULE_DIR$/src/commons" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/config" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/groovy" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/persistence" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/scaffolding" isTestSource="false" />
@@ -41,34 +40,7 @@
     <orderEntry type="module-library">
       <library>
         <CLASSES>
-          <root url="file://$MODULE_DIR$/target/classes/gorm" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
-    <orderEntry type="module-library">
-      <library>
-        <CLASSES>
-          <root url="file://$MODULE_DIR$/target/classes/core" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
-    <orderEntry type="module-library">
-      <library>
-        <CLASSES>
-          <root url="file://$MODULE_DIR$/target/classes/crud" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
-    <orderEntry type="module-library">
-      <library>
-        <CLASSES>
-          <root url="file://$MODULE_DIR$/target/classes/web" />
+          <root url="jar://$MODULE_DIR$/lib/ognl-2.6.9.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
@@ -86,29 +58,12 @@
     <orderEntry type="module-library">
       <library>
         <CLASSES>
-          <root url="file://$MODULE_DIR$/test/commons" />
+          <root url="jar://$MODULE_DIR$/lib/ant-nodeps.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/ant.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/ant-junit.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
-      </library>
-    </orderEntry>
-    <orderEntry type="module-library">
-      <library>
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/ognl-2.6.9.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
-    <orderEntry type="module-library">
-      <library>
-        <CLASSES>
-          <root url="file://$MODULE_DIR$/test/persistence" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-        <jarDirectory url="file://$MODULE_DIR$/test/persistence" recursive="false" />
       </library>
     </orderEntry>
     <orderEntryProperties />

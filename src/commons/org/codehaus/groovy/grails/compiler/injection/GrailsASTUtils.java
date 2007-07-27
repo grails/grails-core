@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.injection;
+package org.codehaus.groovy.grails.compiler.injection;
 
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.ast.ClassNode;

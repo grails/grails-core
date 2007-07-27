@@ -10,11 +10,9 @@ class URLCodecTests extends GroovyTestCase {
     def resourceLoader = new DefaultResourceLoader()
 
 	void setUp() {
-        def gcl = new GroovyClassLoader()
-        def clazz = gcl.parseClass(resourceLoader.getResource('file:./src/grails/grails-app/utils/URLCodec.groovy').inputStream)
         def webRequest = new GrailsWebRequest(new MockHttpServletRequest(), new MockHttpServletResponse(), new MockServletContext())
         RequestContextHolder.setRequestAttributes(webRequest)
-        codec = clazz.newInstance()
+        codec = new org.codehaus.groovy.grails.plugins.codecs.URLCodec()
     }
 
     void tearDown() {

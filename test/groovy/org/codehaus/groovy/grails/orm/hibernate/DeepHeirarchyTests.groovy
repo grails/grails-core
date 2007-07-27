@@ -2,7 +2,7 @@ package org.codehaus.groovy.grails.orm.hibernate;
 
 import org.codehaus.groovy.grails.commons.*
 import org.codehaus.groovy.grails.commons.test.*
-
+                                                                    
 class DeepHeirarchyTests extends AbstractGrailsHibernateTests {
 
 	void testCountInDeepHeirarchy() {

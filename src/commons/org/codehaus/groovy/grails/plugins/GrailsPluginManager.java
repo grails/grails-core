@@ -184,7 +184,20 @@ public interface GrailsPluginManager extends ApplicationContextAware, ServletCon
      * @param event The event
      */
     public void informObservers(String pluginName, Map event);
-    
+
+    /**
+     * Called prior to the initialisation of the GrailsApplication object to allow registration of additional ArtefactHandler objects
+     *
+     * @see org.codehaus.groovy.grails.commons.ArtefactHandler
+     * 
+     */
     public void doArtefactConfiguration();
-    
+
+    /**
+     * Registers pre-compiled artefacts with the GrailsApplication instance, only overriding if the application doesn't already provide an artefact of the same
+     * name
+     *
+     * @param application The GrailsApplication object
+     */
+    void registerProvidedArtefacts(GrailsApplication application);
 }

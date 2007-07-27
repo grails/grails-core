@@ -13,11 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.injection;
+package org.codehaus.groovy.grails.compiler.injection;
 
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.classgen.GeneratorContext;
 import org.codehaus.groovy.control.SourceUnit;
+
+import java.net.URL;
 
 /**
  * An interface that when implemented allows additional properties to be injected into Grails
@@ -40,4 +42,11 @@ public interface ClassInjector {
 	 */
 	void performInjection(SourceUnit source, GeneratorContext context, ClassNode classNode);
 
+    /**
+     * Returns whether this injector should inject
+     *
+     * @param url The URL of the source file
+     * @return True if injection should occur
+     */
+    boolean shouldInject(URL url);
 }

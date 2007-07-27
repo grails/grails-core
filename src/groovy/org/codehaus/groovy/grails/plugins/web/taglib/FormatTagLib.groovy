@@ -1,3 +1,4 @@
+package org.codehaus.groovy.grails.plugins.web.taglib
 
 /* Copyright 2004-2005 the original author or authors.
  *

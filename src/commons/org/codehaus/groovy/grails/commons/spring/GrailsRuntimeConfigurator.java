@@ -243,6 +243,8 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
 
       Assert.notNull(application);
 
+      this.pluginManager.registerProvidedArtefacts(application);
+
       this.pluginManager.doRuntimeConfiguration(springConfig);
 
       // configure scaffolding

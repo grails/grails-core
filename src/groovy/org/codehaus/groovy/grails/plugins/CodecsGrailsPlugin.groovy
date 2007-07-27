@@ -18,6 +18,7 @@ package org.codehaus.groovy.grails.plugins
 import org.codehaus.groovy.grails.plugins.support.GrailsPluginUtils
 import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
 import grails.util.GrailsUtil
+import org.codehaus.groovy.grails.plugins.codecs.*
 
 /**
  * A plug-in that configures pluggable codecs 
@@ -30,6 +31,12 @@ class CodecsGrailsPlugin {
 	def version = grails.util.GrailsUtil.getGrailsVersion()
 	def dependsOn = [core:version]
 	def watchedResources = "file:./grails-app/utils/**/*Codec.groovy"
+	def providedArtefacts = [
+                               HTMLCodec,
+                               JavaScriptCodec,
+                               URLCodec,
+                               Base64Codec
+                            ]
 
 	def onChange = { event ->
 		if(application.isArtefactOfType(CodecArtefactHandler.TYPE, event.source)) {

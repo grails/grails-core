@@ -7,9 +7,7 @@ class Base64CodecTests extends GroovyTestCase{
     def resourceLoader = new DefaultResourceLoader()
     
 	void setUp() {
-        GroovyClassLoader gcl = new GroovyClassLoader();
-        Class clazz = gcl.parseClass(resourceLoader.getResource('file:./src/grails/grails-app/utils/Base64Codec.groovy').inputStream);
-        codec = (GroovyObject)clazz.newInstance()
+        codec = new org.codehaus.groovy.grails.plugins.codecs.Base64Codec()
     }
 
     void tearDown() {

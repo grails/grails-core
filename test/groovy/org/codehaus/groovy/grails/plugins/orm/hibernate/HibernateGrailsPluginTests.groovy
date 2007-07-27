@@ -17,6 +17,18 @@ class Test {
    Long version			
 }
 """)
+        gcl.parseClass(
+"""
+dataSource {
+	pooled = false
+	driverClassName = "org.hsqldb.jdbcDriver"
+	username = "sa"
+	password = ""
+    dbCreate = "create-drop" // one of 'create', 'create-drop','update'
+    url = "jdbc:hsqldb:mem:devDB"
+
+}
+""", "DataSource" )
 	}
 	
 	void testHibernatePlugin() {

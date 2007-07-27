@@ -16,15 +16,20 @@
 	        <value></value>
 	    </property>					
 	</bean>
-	
-	
-	<bean id="grailsApplication" class="org.codehaus.groovy.grails.commons.GrailsApplicationFactoryBean">
-		<description>Grails application factory bean</description>
-		<property name="groovyFiles">
+
+    <bean id="grailsApplication" class="org.codehaus.groovy.grails.commons.GrailsApplicationFactoryBean">
+        <description>Grails application factory bean</description>
+        <property name="grailsResourceLoader" ref="grailsResourceLoader" />
+    </bean>
+
+    <bean id="grailsResourceLoader" class="org.codehaus.groovy.grails.commons.GrailsResourceLoaderFactoryBean">
+        <property name="grailsResourceHolder" ref="grailsResourceHolder" />
+    </bean>
+
+    <bean id="grailsResourceHolder" class="org.codehaus.groovy.grails.commons.spring.GrailsResourceHolder">
+        <property name="resources">
 			<value>org/codehaus/groovy/grails/orm/hibernate/PersistentMethodTestClass.groovy</value>
-		</property>
-	</bean>
-	
-	
+        </property>
+    </bean>
 	
 </beans>

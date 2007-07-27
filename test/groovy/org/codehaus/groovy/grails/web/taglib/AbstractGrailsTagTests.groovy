@@ -24,17 +24,9 @@ import org.codehaus.groovy.grails.commons.ControllerArtefactHandler
 import org.codehaus.groovy.grails.commons.TagLibArtefactHandler
 import grails.util.*
 
-abstract class AbstractGrailsTagTests extends
-AbstractDependencyInjectionSpringContextTests {
+abstract class AbstractGrailsTagTests extends GroovyTestCase {
 
 
-	public AbstractGrailsTagTests() {
-		dependencyCheck = false
-	}
-
-	protected String[] getConfigLocations() {
-        return [ "org/codehaus/groovy/grails/web/taglib/grails-taglib-tests.xml" ] as String[]
-    }
 
 	def servletContext
 	def webRequest
@@ -45,12 +37,13 @@ AbstractDependencyInjectionSpringContextTests {
 	def appCtx
 	def ga
 	def mockManager
+	def gcl = new GroovyClassLoader()
 
 	GrailsApplication grailsApplication;
 	MessageSource messageSource;
 
 
-	GroovyClassLoader gcl = new GroovyClassLoader()
+
 
 	def withTag(String tagName, Writer out, Closure callable) {
 		def result = null
@@ -77,20 +70,17 @@ AbstractDependencyInjectionSpringContextTests {
 		return result
 	}
 
-    protected final void onSetUp() throws Exception {
+    void setUp() throws Exception {
         originalHandler = 	GroovySystem.metaClassRegistry.metaClassCreationHandle
 
 		GroovySystem.metaClassRegistry.metaClassCreationHandle = new ExpandoMetaClassCreationHandle();
 
-
-        grailsApplication.initialise()
+        grailsApplication = new DefaultGrailsApplication(gcl.loadedClasses, gcl)
         ga = grailsApplication
-        
-        onInit() 
+        grailsApplication.initialise()
+        onInit()
 
-        gcl.loadedClasses.find { it.name.endsWith("TagLib") }.each {
-            grailsApplication.addArtefact(TagLibArtefactHandler.TYPE, it)
-        }
+
 
 		def mockControllerClass = gcl.parseClass("class MockController {  def index = {} } ")
         ctx = new MockApplicationContext();
@@ -119,6 +109,9 @@ AbstractDependencyInjectionSpringContextTests {
 
 		
 		def dependentPlugins = dependantPluginClasses.collect { new DefaultGrailsPlugin(it, grailsApplication)}
+
+		dependentPlugins.each{ mockManager.registerMockPlugin(it); it.manager = mockManager }
+		mockManager.registerProvidedArtefacts(grailsApplication)
 		def springConfig = new DefaultRuntimeSpringConfiguration(ctx)
         webRequest = GrailsWebUtil.bindMockWebRequest()
 
@@ -127,8 +120,7 @@ AbstractDependencyInjectionSpringContextTests {
 		springConfig.servletContext = servletContext
 
 		dependentPlugins*.doWithRuntimeConfiguration(springConfig)
-		dependentPlugins.each{ mockManager.registerMockPlugin(it); it.manager = mockManager }
-			
+
 		appCtx = springConfig.getApplicationContext()
 		mockManager.applicationContext = appCtx
 		servletContext.setAttribute( GrailsApplicationAttributes.APPLICATION_CONTEXT, appCtx)
@@ -143,7 +135,7 @@ AbstractDependencyInjectionSpringContextTests {
 		assert appCtx.grailsUrlMappingsHolder
     }
     
-    protected final void onTearDown() {
+    void tearDown() {
         RequestContextHolder.setRequestAttributes(null)
 		InvokerHelper.getInstance()
 		.getMetaRegistry()
@@ -173,7 +165,7 @@ AbstractDependencyInjectionSpringContextTests {
 	
 	protected void onDestroy() {
 		
-	}
+	}                                  
 	
 	protected MockServletContext createMockServletContext() {
 		return new MockServletContext();

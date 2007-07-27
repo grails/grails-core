@@ -40,7 +40,7 @@ includeTargets << new File ( "${grailsHome}/scripts/Compile.groovy" )
 includeTargets << new File ( "${grailsHome}/scripts/PackagePlugins.groovy" ) 
 
 scaffoldDir = "${basedir}/web-app/WEB-INF/templates/scaffolding"     
-config = [:]
+config = new ConfigObject()
 
 task ('default': "Packages a Grails application. Note: To create WAR use 'grails war'") {
      depends( checkVersion)
@@ -58,7 +58,7 @@ task( createConfig: "Creates the configuration object") {
 			ConfigurationHolder.setConfig(config)			
 		}   
 		catch(Exception e) {
-			println "Failed to compile configuration file $configFile: ${e.message}"
+			event("StatusFinal", "Failed to compile configuration file $configFile: ${e.message}")
 			exit(1)
 		}
 
@@ -71,7 +71,7 @@ task( createConfig: "Creates the configuration object") {
 		   ConfigurationHolder.setConfig(config)
 		}
 		catch(Exception e) {
-			println "Failed to compile data source file $dataSourceFile: ${e.message}"
+			event("StatusFinal", "Failed to compile data source file $dataSourceFile: ${e.message}")
 			exit(1)
 		}
    }
@@ -79,7 +79,6 @@ task( createConfig: "Creates the configuration object") {
 task( packageApp : "Implementation of package task") {
 	depends(createStructure,compile, createConfig)
 	copyDependencies()
-    Ant.delete(dir:"${basedir}/web-app/WEB-INF/grails-app", failonerror:true)	
 	Ant.mkdir(dir:"${basedir}/web-app/WEB-INF/grails-app/i18n")
 	
 	if(!GrailsUtil.isDevelopmentEnv()) {
@@ -88,11 +87,18 @@ task( packageApp : "Implementation of package task") {
 			fileset(dir:"${basedir}/grails-app/views", includes:"**")
 		} 
 		packageTemplates()   						
-	}	
-	Ant.native2ascii(src:"${basedir}/grails-app/i18n",
-					 dest:"${basedir}/web-app/WEB-INF/grails-app/i18n",
-					 includes:"*.properties",
-					 encoding:"UTF-8")   
+	}	   
+	if(config.grails.enable.native2ascii == true) {
+		Ant.native2ascii(src:"${basedir}/grails-app/i18n",
+						 dest:"${basedir}/web-app/WEB-INF/grails-app/i18n",
+						 includes:"*.properties",
+						 encoding:"UTF-8")   		
+	}                                        
+	else {
+	    Ant.copy(todir:"${basedir}/web-app/WEB-INF/grails-app/i18n") {
+			fileset(dir:"${basedir}/grails-app/i18n", includes:"*.properties")
+		}							
+	}
     Ant.copy(todir:"${basedir}/web-app/WEB-INF/spring") {
 		fileset(dir:"${basedir}/spring", includes:"**")
 	}					

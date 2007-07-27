@@ -117,6 +117,10 @@ public interface GrailsPlugin extends ApplicationContextAware {
 	 * Define the list of ArtefactHandlers supporting by the plugin
 	 */
 	String ARTEFACTS = "artefacts";
+    /**
+     * The name of the property that provides a list of shipped, but overridable artefactssw
+     */
+    String PROVIDED_ARTEFACTS = "providedArtefacts";
 
     /**
      * <p>This method is called to allow the plugin to add {@link org.springframework.beans.factory.config.BeanDefinition}s
@@ -261,5 +265,20 @@ public interface GrailsPlugin extends ApplicationContextAware {
      */
     Map notifyOfEvent(int eventKind, Object source);
 
+    /**
+     * Called prior to the initialisation of the GrailsApplication instance to allow the registration
+     * of additonal ArtefactHandlers
+     *
+     * @see org.codehaus.groovy.grails.commons.ArtefactHandler
+     *
+     */
     void doArtefactConfiguration();
+
+    /**
+     * Retrieves an array of provided Artefacts that are pre-compiled additions to the GrailsApplication object
+     * but are overridable by the end-user
+     *
+     * @return A list of provided artefacts
+     */
+    Class[] getProvidedArtefacts();
 }

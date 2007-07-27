@@ -24,12 +24,14 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.control.CompilationFailedException;
-import org.codehaus.groovy.control.CompilationUnit;
-import org.codehaus.groovy.control.CompilerConfiguration;
-import org.codehaus.groovy.control.Phases;
 import org.codehaus.groovy.grails.commons.spring.GrailsResourceHolder;
+import org.codehaus.groovy.grails.compiler.GrailsClassLoader;
+import org.codehaus.groovy.grails.compiler.injection.ClassInjector;
+import org.codehaus.groovy.grails.compiler.injection.DefaultGrailsDomainClassInjector;
+import org.codehaus.groovy.grails.compiler.injection.GrailsAwareClassLoader;
+import org.codehaus.groovy.grails.compiler.support.GrailsResourceLoader;
 import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException;
-import org.codehaus.groovy.grails.injection.GrailsInjectionOperation;
+import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.ClassPathResource;
@@ -38,7 +40,6 @@ import org.springframework.util.Assert;
 
 import java.io.IOException;
 import java.lang.reflect.Modifier;
-import java.security.CodeSource;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -92,7 +93,6 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
     private boolean suspectArtefactInit;
     private Class[] allArtefactClassesArray;
     private Map applicationMeta;
-    private GrailsInjectionOperation injectionOperation;
     private Resource[] resources;
     private boolean initialised = false;
 
@@ -126,41 +126,23 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
      * @throws IOException Thrown when an error occurs reading a Groovy source
      */
     public DefaultGrailsApplication(final Resource[] resources) throws IOException {
-        this(resources, new GrailsInjectionOperation());
+        this(new GrailsResourceLoader(resources));
     }
 
-    /**
-     * <p>Constructs a GrailsApplication with the given set of groovy sources specified as Spring Resource instances</p>
-     *
-     * <p>An optional GrailsInjectionOperation can be provided which is registered with the GroovyClassLoader. A GrailsInjectionOperation
-     * is a class that interacts with the Groovy compiler to inject code into the Groovy AST before compilation</p>
-     *
-     * <p>This is how Grails injects the id and version into Grails domain classes before compilation for example</p>
-     *
-     * @param resources An array or Groovy sources provides by Spring Resource instances
-     * @param injectionOperation The GrailsInjectionOperation to use
-     *
-     * @throws IOException Thrown when an error occurs reading a Groovy source
-     */
-    public DefaultGrailsApplication(final Resource[] resources,
-        final GrailsInjectionOperation injectionOperation) throws IOException {
-        super();
 
-        log.debug("Loading Grails application.");
+    public DefaultGrailsApplication(GrailsResourceLoader resourceLoader) {
+        this.resourceLoader = resourceLoader;
 
-        loadMetadata();
-
-        this.resources = resources;
-        this.injectionOperation = injectionOperation;
-
-        loadGrailsApplicationFromResources(resources, injectionOperation);
-
+        try {
+            loadGrailsApplicationFromResources(resourceLoader.getResources());
+        } catch (IOException e) {
+            throw new GrailsConfigurationException("I/O exception loading Grails: " + e.getMessage(),e);
+        }
     }
 
-    private void loadGrailsApplicationFromResources(Resource[] resources, GrailsInjectionOperation injectionOperation) throws IOException {
+    private void loadGrailsApplicationFromResources(Resource[] resources) throws IOException {
         GrailsResourceHolder resourceHolder = new GrailsResourceHolder();
-        this.resourceLoader = new GrailsResourceLoader(resources);
-        this.cl = configureClassLoader(injectionOperation, resourceLoader);
+        this.cl = configureClassLoader(resourceLoader);
 
         Collection loadedResources = new ArrayList();
         this.loadedClasses = new HashSet();
@@ -184,20 +166,21 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
                         }
                     }
                     catch (ClassNotFoundException e) {
-                        throw new org.codehaus.groovy.grails.exceptions.CompilationFailedException("Compilation error parsing file [" + resources[i].getFilename() + "]: " + e.getMessage(), e);
+                        log.error("Class not found attempting to load class " + e.getMessage(),e);
                     }
                 }
                 else {
-                    Class c;
+                    Class c = null;
                     try {           
               			log.debug("Loading groovy file from class loader :[" + resources[i].getFile().getAbsolutePath() + "]");		
                         c = cl.loadClass(resourceHolder.getClassName(resources[i]));
                     }
                     catch (ClassNotFoundException e) {
-                        throw new GrailsConfigurationException("Groovy Bug! Resource [" + resources[i] + "] loaded, but not returned by GCL.");
+                        log.error("Class not found attempting to load class " + e.getMessage(),e);
                     }
 
-                    loadedClasses.add(c);
+                    if(c != null)
+                        loadedClasses.add(c);
                     log.debug("Added Groovy class ["+c+"] to loaded classes");
                 }
             }
@@ -252,40 +235,27 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
     /**
      * Configures a GroovyClassLoader for the given GrailsInjectionOperation and GrailsResourceLoader
      *
-     * @param injectionOperation The GrailsInjectionOperation
      * @param resourceLoader The GrailsResourceLoader
      * @return A GroovyClassLoader
      */
-    private GroovyClassLoader configureClassLoader(final GrailsInjectionOperation injectionOperation,
-        final GrailsResourceLoader resourceLoader) {
+    private GroovyClassLoader configureClassLoader(
+            final GrailsResourceLoader resourceLoader) {
+
+        final ClassLoader contextLoader = Thread.currentThread().getContextClassLoader();
+        ClassLoader rootLoader = DefaultGroovyMethods.getRootLoader(contextLoader);
         GroovyClassLoader cl;
-
-
-        if (injectionOperation == null) {
-            cl = new GroovyClassLoader();
+        if(rootLoader != null) {
+            cl = new GrailsClassLoader(rootLoader, resourceLoader);
         }
         else {
-            if (log.isDebugEnabled()) {
-                log.debug("Creating new Groovy class loader without compiler config");
-            }
-
-            cl = new GroovyClassLoader() {
-
-                /* (non-Javadoc)
-                * @see groovy.lang.GroovyClassLoader#createCompilationUnit(org.codehaus.groovy.control.CompilerConfiguration, java.security.CodeSource)
-                */
-                protected CompilationUnit createCompilationUnit(CompilerConfiguration config, CodeSource source) {
-                    CompilationUnit cu = super.createCompilationUnit(config, source);
-                    injectionOperation.setResourceLoader(resourceLoader);
-                    cu.addPhaseOperation(injectionOperation, Phases.CONVERSION);
-                    return cu;
-                }
-
-            };
+            GrailsAwareClassLoader gcl = new GrailsAwareClassLoader(contextLoader);
+            if(resourceLoader != null)
+                gcl.setResourceLoader(resourceLoader);
+            gcl.setClassInjectors(new ClassInjector[]{new DefaultGrailsDomainClassInjector()});
+            cl = gcl;
         }
 
-        cl.setShouldRecompile(Boolean.TRUE);
-        cl.setResourceLoader(resourceLoader);
+
         Thread.currentThread().setContextClassLoader(cl);
 
         return cl;
@@ -529,7 +499,7 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
 
         if(GrailsUtil.isDevelopmentEnv()) {
             try {
-                loadGrailsApplicationFromResources(this.resources, injectionOperation);
+                loadGrailsApplicationFromResources(this.resources);
                 initialise();
             } catch (IOException e) {
                 throw new GrailsConfigurationException("I/O error rebuilding GrailsApplication: " + e.getMessage(),e);
@@ -874,6 +844,15 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
     public GrailsClass getArtefactByLogicalPropertyName(String type, String logicalName) {
         ArtefactInfo info = getArtefactInfo(type);
         return info == null ? null : info.getGrailsClassByLogicalPropertyName(logicalName);
+    }
+
+    public void addArtefact(Class artefact) {
+        for (int i = 0; i < artefactHandlers.length; i++) {
+            ArtefactHandler artefactHandler = artefactHandlers[i];
+            if(artefactHandler.isArtefact(artefact)) {
+                addArtefact(artefactHandler.getType(), artefact);
+            }
+        }
     }
 
 }

@@ -40,6 +40,7 @@ import org.springframework.transaction.support.TransactionTemplate
 import org.springframework.transaction.support.TransactionCallback
 import org.springframework.orm.hibernate3.HibernateCallback
 import org.hibernate.Session
+import org.springframework.context.ApplicationContext
 
 /**
 * A plug-in that handles the configuration of Hibernate within Grails
@@ -148,16 +149,34 @@ class HibernateGrailsPlugin {
         if(sessionFactory)
             GrailsHibernateUtil.configureHibernateDomainClasses(sessionFactory, application)
 
-		for(dc in application.domainClasses) {
-		    addRelationshipManagementMethods(dc)
-		    addBasicPersistenceMethods(dc, application, ctx)
-		    addQueryMethods(dc, application, ctx)
-		    addTransactionalMethods(dc, application, ctx)
-		    addValidationMethods(dc, application, ctx)
-		    addDynamicFinderSupport(dc, application, ctx)
-		}
+        // we're going to configure Grails to lazily initialise the dynamic methods on domain classes to avoid
+        // the overhead of doing so at start-up time
+        def lazyInit = { GrailsDomainClass dc ->
+            registerDynamicMethods(dc, application, ctx)
+		    for(subClass in dc.subClasses) {
+                registerDynamicMethods(subClass, application, ctx)
+            }
+        }
 
+        for(dc in application.domainClasses) {
+            MetaClass mc = dc.metaClass
+            def initDomainClass = lazyInit.curry(dc)
+            mc.'static'.methodMissing = { String name, args ->
+                initDomainClass()
+				mc.invokeMethod(delegate, name, args)
+            }
+
+		}
 	}
+
+	private registerDynamicMethods(GrailsDomainClass dc, GrailsApplication application, ApplicationContext ctx) {
+        addRelationshipManagementMethods(dc)
+        addBasicPersistenceMethods(dc, application, ctx)
+        addQueryMethods(dc, application, ctx)
+        addTransactionalMethods(dc, application, ctx)
+        addValidationMethods(dc, application, ctx)
+        addDynamicFinderSupport(dc, application, ctx)
+    }
 
     private addDynamicFinderSupport(GrailsDomainClass dc, GrailsApplication application, ctx ) {
         def metaClass = dc.metaClass
@@ -458,6 +477,7 @@ class HibernateGrailsPlugin {
             id = convertToType(id, identityType)
             template.get(dc.clazz, id)
         }
+
 
         metaClass.'static'.count = {->
            template.execute( { Session session ->

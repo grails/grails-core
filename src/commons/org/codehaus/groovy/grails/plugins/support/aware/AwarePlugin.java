@@ -78,4 +78,8 @@ public class AwarePlugin extends AbstractGrailsPlugin {
 		// do nothing		
 	}
 
+    public Class[] getProvidedArtefacts() {
+        return new Class[0];
+    }
+
 }

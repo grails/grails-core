@@ -262,4 +262,10 @@ public interface GrailsApplication extends ApplicationContextAware {
      * @return The GrailsClass or null if it doesn't exist
      */
     GrailsClass getArtefactByLogicalPropertyName(String type, String logicalName);
+
+    /**
+     * Adds the given artefact, attempting to determine type from
+     * @param artefact The artefact to add
+     */
+    void addArtefact(Class artefact);
 }

@@ -20,14 +20,23 @@
 	
 	<bean id="grailsApplication" class="org.codehaus.groovy.grails.commons.GrailsApplicationFactoryBean">
 		<description>Grails application factory bean</description>
-		<property name="groovyFiles">
-			<value>org/codehaus/groovy/grails/orm/hibernate/PersistentMethodTestClass.groovy</value>
-		</property>
+		<property name="grailsResourceLoader" ref="grailsResourceLoader" />
 	</bean>
-	
-	
-	
-	<bean id="sessionFactory" class="org.codehaus.groovy.grails.orm.hibernate.ConfigurableLocalSessionFactoryBean">
+
+    <bean id="grailsResourceLoader" class="org.codehaus.groovy.grails.commons.GrailsResourceLoaderFactoryBean">
+        <property name="grailsResourceHolder" ref="grailsResourceHolder" />
+    </bean>
+
+    <bean id="grailsResourceHolder" class="org.codehaus.groovy.grails.commons.spring.GrailsResourceHolder">
+        <property name="resources">
+            <value>org/codehaus/groovy/grails/orm/hibernate/PersistentMethodTestClass.groovy</value>
+        </property>
+    </bean>
+
+
+
+
+    <bean id="sessionFactory" class="org.codehaus.groovy.grails.orm.hibernate.ConfigurableLocalSessionFactoryBean">
 		<property name="grailsApplication">
 			<ref bean="grailsApplication" />
 		</property>

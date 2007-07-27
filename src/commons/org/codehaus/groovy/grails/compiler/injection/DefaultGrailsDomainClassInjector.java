@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.injection;
+package org.codehaus.groovy.grails.compiler.injection;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -25,9 +25,11 @@ import org.codehaus.groovy.classgen.GeneratorContext;
 import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
 import org.codehaus.groovy.grails.commons.GrailsDomainConfigurationUtil;
+import org.codehaus.groovy.grails.commons.GrailsResourceUtils;
 
 import java.lang.reflect.Modifier;
 import java.util.*;
+import java.net.URL;
 
 /**
  * Default implementation of domain class injector interface that adds the 'id'
@@ -46,8 +48,8 @@ public class DefaultGrailsDomainClassInjector implements
 	
 	public void performInjection(SourceUnit source, GeneratorContext context,
 			ClassNode classNode) {
-		
-		if(shouldInject(classNode)) {
+
+        if(shouldInject(classNode)) {
 			injectIdProperty(classNode);
 			
 			injectVersionProperty(classNode);
@@ -59,7 +61,11 @@ public class DefaultGrailsDomainClassInjector implements
         }
 	}
 
-	private boolean shouldInject(ClassNode classNode) {
+    public boolean shouldInject(URL url) {
+        return GrailsResourceUtils.isDomainClass(url);
+    }
+
+    private boolean shouldInject(ClassNode classNode) {
 		String fullName = GrailsASTUtils.getFullName(classNode);
 		String mappingFile = GrailsDomainConfigurationUtil.getMappingFileName(fullName);
 		

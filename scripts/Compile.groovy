@@ -23,9 +23,16 @@
  */
 
 import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
+import org.codehaus.groovy.grails.compiler.support.GrailsResourceLoader
+import org.codehaus.groovy.grails.compiler.support.GrailsResourceLoaderHolder
+import org.codehaus.groovy.grails.compiler.injection.*
+import org.springframework.core.io.*
 import groovy.text.SimpleTemplateEngine
+import org.codehaus.groovy.ant.*
+import org.codehaus.groovy.control.*
+import java.security.CodeSource
 
-Ant.property(environment:"env")                             
+Ant.property(environment:"env")
 grailsHome = Ant.antProject.properties."env.GRAILS_HOME"    
 
 includeTargets << new File ( "${grailsHome}/scripts/Init.groovy" ) 
@@ -37,7 +44,7 @@ if(!Ant.antProject.properties."groovyJarSet") {
 	}	
 }    
 Ant.taskdef ( 	name : 'groovyc' , 
-				classname : 'org.codehaus.groovy.ant.Groovyc' , 
+				classname : 'org.codehaus.groovy.grails.compiler.GrailsCompiler' , 
 				classpathref : 'groovyJarSet' )
 
 
@@ -51,19 +58,38 @@ task(compile : "Implementation of compilation phase") {
 	
     event("CompileStart", ['source'])
     event("StatusUpdate", ["Compiling sources"])
+
+ 
 	Ant.sequential {
 		mkdir(dir:"${basedir}/web-app/WEB-INF/classes") 
-		
- 		javac(srcdir:"${basedir}/src/java",destdir:"${basedir}/web-app/WEB-INF/classes",
- 				classpathref:"grails.classpath",debug:"on",deprecation:"on", optimize:"off")
+		          
 
- 		groovyc(srcdir:"${basedir}/src/groovy",destdir:"${basedir}/web-app/WEB-INF/classes",
-				classpathref:"grails.classpath")
+		def excludedPaths = ["views", "i18n"]
 
-        deleteAppClasses()
+		def destDir = "${userHome}/.grails/${grailsVersion}/tmp/${baseName}/classes"    		
+
+		mkdir(dir:destDir)
+        groovyc(destdir:destDir,
+                classpathref:"grails.classpath",
+				resourcePattern:"file:${basedir}/grails-app/**/*.groovy") {
+            for(dir in new File("${basedir}/grails-app").listFiles()) {
+                if(!excludedPaths.contains(dir.name) && dir.isDirectory())
+                    src(path:"${dir}")
+            }
+            src(path:"${basedir}/src/java")
+            src(path:"${basedir}/src/groovy")           
+        }
+
+        def rootLoader = getClass()
+            			    .classLoader
+			                .rootLoader
+
+        rootLoader?.addURL(new File(destDir).toURL())
+
 	}
     event("CompileEnd", ['source'])
 }
+
 
 task(compileTests: "Compiles test cases located in src/test") {
 
@@ -87,18 +113,3 @@ task(compileTests: "Compiles test cases located in src/test") {
 	}
 }
 
-task(deleteAppClasses: "Delete application classes compiled by groovyc") {
-    // Remove classes that were compiled by groovyc but are part of app, so compile time injection can still work
-    def grailsDir = resolveResources("file:${basedir}/grails-app/**/*.groovy")
-
-    if (grailsDir.size() > 0) {
-	    Ant.delete() {
-	        fileset( dir: "$basedir/web-app/WEB-INF/classes") {
-	            grailsDir.each() {
-	                include(name: (it.file.name - '.groovy') + '.class' )
-	                include(name: (it.file.name - '.groovy') + '$*.class')
-	            }
-	        }
-	    }
-    }
-}

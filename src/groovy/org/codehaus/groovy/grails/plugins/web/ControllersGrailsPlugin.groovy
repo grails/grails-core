@@ -59,7 +59,7 @@ import org.codehaus.groovy.grails.validation.ConstrainedProperty
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException
 import org.codehaus.groovy.grails.commons.GrailsClassUtils
 import org.codehaus.groovy.grails.commons.ApplicationHolder
-
+import org.codehaus.groovy.grails.plugins.web.taglib.*
 /**
 * A plug-in that handles the configuration of controllers for Grails
 *
@@ -75,6 +75,13 @@ class ControllersGrailsPlugin {
 
 	def version = grails.util.GrailsUtil.getGrailsVersion()
 	def dependsOn = [core:version,i18n:version]
+	def providedArtefacts = [ ApplicationTagLib,
+                              FormatTagLib,
+                              FormTagLib,
+                              JavascriptTagLib,
+                              RenderTagLib,
+                              ValidationTagLib 
+                            ]
 
 	def doWithSpring = {
 		exceptionHandler(GrailsExceptionResolver) {

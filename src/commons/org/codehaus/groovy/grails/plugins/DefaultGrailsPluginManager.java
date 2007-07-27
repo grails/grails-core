@@ -84,30 +84,29 @@ import java.util.*;
 * @since 0.4
 *
 */
-public class DefaultGrailsPluginManager implements GrailsPluginManager {
+public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager implements GrailsPluginManager {
 
-      private static final Log LOG = LogFactory.getLog(DefaultGrailsPluginManager.class);
-      private Resource[] pluginResources = new Resource[0];
-      private GrailsApplication application;
-      private Map plugins = new HashMap();
-      private Class[] pluginClasses = new Class[0];
-      private List delayedLoadPlugins = new LinkedList();
-      private ApplicationContext applicationContext;
-      private List pluginList = new ArrayList();
-      private ApplicationContext parentCtx;
-      private PathMatchingResourcePatternResolver resolver;
-      boolean initialised = false;
-      private Map delayedEvictions = new HashMap();
-      private ServletContext servletContext;
-      private Map pluginToObserverMap = new HashMap();
-      private long configLastModified;
+    private static final Log LOG = LogFactory.getLog(DefaultGrailsPluginManager.class);
+    private static final Class[] COMMON_CLASSES =
+            new Class[]{Boolean.class, Byte.class, Character.class, Class.class, Double.class,Float.class, Integer.class, Long.class,
+                        Number.class, Short.class, String.class, BigInteger.class, BigDecimal.class, URL.class, URI.class};
 
-      private PluginFilter pluginFilter;
-    private static final Class[] COMMON_CLASSES = new Class[]{Boolean.class, Byte.class, Character.class, Class.class, Double.class,Float.class, Integer.class, Long.class,
-                                          Number.class, Short.class, String.class, BigInteger.class, BigDecimal.class, URL.class, URI.class};
+
+
+
+
+    private List delayedLoadPlugins = new LinkedList();
+    private ApplicationContext parentCtx;
+    private PathMatchingResourcePatternResolver resolver;
+    private Map delayedEvictions = new HashMap();
+    private ServletContext servletContext;
+    private Map pluginToObserverMap = new HashMap();
+
+    private long configLastModified;
+    private PluginFilter pluginFilter;
 
     public DefaultGrailsPluginManager(String resourcePath, GrailsApplication application) throws IOException {
-          super();
+          super(application);
           if(application == null)
               throw new IllegalArgumentException("Argument [application] cannot be null!");
 
@@ -125,8 +124,7 @@ public class DefaultGrailsPluginManager implements GrailsPluginManager {
 
 
       public DefaultGrailsPluginManager(String[] pluginResources, GrailsApplication application) {
-          if(application == null)
-              throw new IllegalArgumentException("Argument [application] cannot be null!");
+          super(application);
           resolver = new PathMatchingResourcePatternResolver();
 
           List resourceList = new ArrayList();
@@ -152,6 +150,7 @@ public class DefaultGrailsPluginManager implements GrailsPluginManager {
       }
 
       public DefaultGrailsPluginManager(Class[] plugins, GrailsApplication application) throws IOException {
+          super(application);
           this.pluginClasses = plugins;
           resolver = new PathMatchingResourcePatternResolver();
           //this.corePlugins = new PathMatchingResourcePatternResolver().getResources("classpath:org/codehaus/groovy/grails/**/plugins/**GrailsPlugin.groovy");
@@ -160,9 +159,7 @@ public class DefaultGrailsPluginManager implements GrailsPluginManager {
       }
 
       public DefaultGrailsPluginManager(Resource[] pluginFiles, GrailsApplication application) {
-          if(application == null)
-              throw new IllegalArgumentException("Argument [application] cannot be null!");
-
+          super(application);
           resolver = new PathMatchingResourcePatternResolver();
           this.pluginResources = pluginFiles;
           this.application = application;
@@ -173,13 +170,6 @@ public class DefaultGrailsPluginManager implements GrailsPluginManager {
   		 this.pluginFilter = new PluginFilterRetriever().getPluginFilter(this.application.getConfig().toProperties());
   	  }
 
-
-      /**
-       * @return the initialised
-       */
-      public boolean isInitialised() {
-          return initialised;
-      }
 
       public void refreshPlugin(String name) {
           if(hasGrailsPlugin(name)) {
@@ -530,79 +520,7 @@ public class DefaultGrailsPluginManager implements GrailsPluginManager {
       return getGrailsPlugin(name, version) != null;
   }
 
-  /* (non-Javadoc)
-   * @see org.codehaus.groovy.grails.plugins.GrailsPluginManager#doRuntimeConfiguration(org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration)
-   */
-  public void doRuntimeConfiguration(RuntimeSpringConfiguration springConfig) {
-      checkInitialised();
-      for (Iterator i = pluginList.iterator(); i.hasNext();) {
-          GrailsPlugin plugin = (GrailsPlugin) i.next();
-          plugin.doWithRuntimeConfiguration(springConfig);
-      }
-  }
 
-  private void checkInitialised() {
-      if(!initialised)
-          throw new IllegalStateException("Must call loadPlugins() before invoking configurational methods on GrailsPluginManager");
-  }
-
-  public void doRuntimeConfiguration(String pluginName, RuntimeSpringConfiguration springConfig) {
-      checkInitialised();
-      GrailsPlugin plugin = getGrailsPlugin(pluginName);
-      if(plugin == null) throw new PluginException("Plugin ["+pluginName+"] not found");
-
-      String[] dependencyNames = plugin.getDependencyNames();
-      doRuntimeConfigurationForDependencies(dependencyNames, springConfig);
-      String[] loadAfters = plugin.getLoadAfterNames();
-      for (int i = 0; i < loadAfters.length; i++) {
-          String name = loadAfters[i];
-          GrailsPlugin current = getGrailsPlugin(name);
-          if(current != null) {
-              current.doWithRuntimeConfiguration(springConfig);
-          }
-      }
-      plugin.doWithRuntimeConfiguration(springConfig);
-  }
-
-  private void doRuntimeConfigurationForDependencies(String[] dependencyNames, RuntimeSpringConfiguration springConfig) {
-      for (int i = 0; i < dependencyNames.length; i++) {
-          String dn = dependencyNames[i];
-          GrailsPlugin current = getGrailsPlugin(dn);
-          if(current == null) throw new PluginException("Cannot load Plugin. Dependency ["+current+"] not found");
-          String[] pluginDependencies = current.getDependencyNames();
-          if(pluginDependencies.length > 0)
-              doRuntimeConfigurationForDependencies(pluginDependencies, springConfig);
-          current.doWithRuntimeConfiguration(springConfig);
-      }
-  }
-
-  /* (non-Javadoc)
-    * @see org.codehaus.groovy.grails.plugins.GrailsPluginManager#doPostProcessing(org.springframework.context.ApplicationContext)
-    */
-  public void doPostProcessing(ApplicationContext applicationContext) {
-      checkInitialised();
-      for (Iterator i = pluginList.iterator(); i.hasNext();) {
-          GrailsPlugin plugin = (GrailsPlugin) i.next();
-          plugin.doWithApplicationContext(applicationContext);
-      }
-  }
-
-  public Resource[] getPluginResources() {
-      return this.pluginResources;
-  }
-
-  public GrailsPlugin getGrailsPlugin(String name) {
-      return (GrailsPlugin)this.plugins.get(name);
-  }
-
-  public GrailsPlugin getGrailsPlugin(String name, Object version) {
-      GrailsPlugin plugin = (GrailsPlugin)this.plugins.get(name);
-      if(plugin != null) {
-          if(plugin.getVersion().equals(version.toString()))
-              return plugin;
-      }
-      return null;
-  }
 
   public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
       this.applicationContext = applicationContext;
@@ -769,7 +687,7 @@ public class DefaultGrailsPluginManager implements GrailsPluginManager {
           plugin.doArtefactConfiguration();
       }	  	  
   }
-  
+
   void setPluginFilter(PluginFilter pluginFilter)
   {
 	  this.pluginFilter = pluginFilter;

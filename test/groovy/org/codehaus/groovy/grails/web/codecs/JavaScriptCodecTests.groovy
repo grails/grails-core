@@ -5,8 +5,7 @@ class JavaScriptCodecTests extends GroovyTestCase{
     
 	void setUp() {
         GroovyClassLoader gcl = new GroovyClassLoader();
-        Class clazz = gcl.parseClass(gcl.getResource('JavaScriptCodec.groovy').text);
-        codec = (GroovyObject)clazz.newInstance()
+        codec = new org.codehaus.groovy.grails.plugins.codecs.JavaScriptCodec()
     }
 
     void tearDown() {

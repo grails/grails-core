@@ -4,9 +4,7 @@ class HTMLCodecTests extends GroovyTestCase{
     def GroovyObject codec
     
 	void setUp() {
-        GroovyClassLoader gcl = new GroovyClassLoader();
-        Class clazz = gcl.parseClass(gcl.getResource('HTMLCodec.groovy').text);
-        codec = (GroovyObject)clazz.newInstance()
+        codec = new org.codehaus.groovy.grails.plugins.codecs.HTMLCodec()
     }
 
     void tearDown() {

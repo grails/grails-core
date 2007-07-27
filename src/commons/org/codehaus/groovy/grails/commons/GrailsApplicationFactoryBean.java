@@ -15,13 +15,13 @@
  */ 
 package org.codehaus.groovy.grails.commons;
 
-import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.injection.GrailsInjectionOperation;
+import org.codehaus.groovy.grails.compiler.injection.GrailsInjectionOperation;
+import org.codehaus.groovy.grails.compiler.support.GrailsResourceLoader;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.core.io.Resource;
+import org.springframework.util.Assert;
 
 /**
  * <p>Factory bean that creates a Grails application object based on Groovy files.
@@ -32,12 +32,12 @@ import org.springframework.core.io.Resource;
 public class GrailsApplicationFactoryBean implements FactoryBean, InitializingBean {
 	
 	private static Log LOG = LogFactory.getLog(GrailsApplicationFactoryBean.class);
-	private Resource[] groovyFiles = new Resource[0];
 	private GrailsInjectionOperation injectionOperation = null;
 	private GrailsApplication grailsApplication = null;
-	
-	
-	public GrailsInjectionOperation getInjectionOperation() {
+    private GrailsResourceLoader resourceLoader;
+
+
+    public GrailsInjectionOperation getInjectionOperation() {
 		return injectionOperation;
 	}
 
@@ -49,24 +49,12 @@ public class GrailsApplicationFactoryBean implements FactoryBean, InitializingBe
 		super();		
 	}
 
-	public void setGroovyFiles(Resource[] groovyFiles) {
-		this.groovyFiles = groovyFiles;
-	}
-	
-	public void afterPropertiesSet() throws Exception {
-		if (groovyFiles.length == 0) {
-			LOG.warn("Warning: No Groovy files found in application");
-		}
-		if(LOG.isDebugEnabled()) {
-			LOG.debug("Loaded Groovy resources: " + ArrayUtils.toString(groovyFiles));
-		}		
-		if(injectionOperation != null) {
-			this.grailsApplication = new DefaultGrailsApplication(this.groovyFiles,injectionOperation);
-		}
-		else {
-			this.grailsApplication = new DefaultGrailsApplication(this.groovyFiles);
-		}
 
+	public void afterPropertiesSet() throws Exception {
+
+        Assert.notNull(resourceLoader, "Property [resourceLoader] must be set!");
+
+		this.grailsApplication = new DefaultGrailsApplication(this.resourceLoader);
         ApplicationHolder.setApplication(this.grailsApplication);
     }
 	
@@ -82,4 +70,7 @@ public class GrailsApplicationFactoryBean implements FactoryBean, InitializingBe
 		return true;
 	}
 
+    public void setGrailsResourceLoader(GrailsResourceLoader resourceLoader) {
+        this.resourceLoader = resourceLoader;
+    }
 }

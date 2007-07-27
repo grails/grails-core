@@ -48,7 +48,7 @@ class TestTagLib {
     }
 
 	void onInit() {
-		gcl.parseClass(
+		def tagLibClass = gcl.parseClass(
 '''
 class TestTagLib {
     def myTag = { attrs, body ->
@@ -58,6 +58,8 @@ class TestTagLib {
 }
 '''
         )
+
+        ga.addArtefact(tagLibClass)
     }
 
 }

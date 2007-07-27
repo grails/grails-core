@@ -51,19 +51,11 @@ task( upgrade: "main upgrade task") {
        def answer = Ant.antProject.properties."grails.upgrade.warning"        
 
 	if(answer == "n") exit(0)
-	createCorePlugin()
 	
-	def coreTaglibs = new File("${basedir}/plugins/core/grails-app/taglib")
-	assert coreTaglibs.exists()   
-	coreTaglibs.eachFile { f ->
-		if(!f.isDirectory())
-			Ant.delete(file:"${basedir}/grails-app/taglib/${f.name}")
-	}                      
-	def coreUtils = new File("${basedir}/plugins/core/grails-app/utils")	
-	coreUtils.eachFile { f ->
-		if(!f.isDirectory())
-			Ant.delete(file:"${basedir}/grails-app/utils/${f.name}")
-	}
+	def coreTaglibs = new File("${basedir}/plugins/core")
+
+	Ant.delete(dir:"${coreTaglibs}", failonerror:false)
+
 	
 	Ant.sequential {    
 		def testDir = "${basedir}/grails-tests"
@@ -174,9 +166,10 @@ move it to the new location of '${basedir}/test/integration'. Please move the di
     plugins.eachFile { f ->
         if(f.isDirectory() && f.name != 'core' ) {
             // fix for Windows-style path with backslashes
-            def pluginBase = "${basedir}/plugins/${f.name}".toString().replaceAll(/\\/,'/')
+
+            def pluginBase = "${basedir}/plugins/${f.name}".toString().replaceAll("\\\\","/")
             // proceed _Upgrade.groovy plugin script if exists
-            def upgradeScript = new File ( "${pluginBase}/scripts/_Upgrade.groovy" )
+            def upgradeScript = new File ( "${pluginBase}/scripts/_Upgrade.groovy" )        
             if( upgradeScript.exists() ) {
                 event("StatusUpdate", [ "Executing ${f.name} plugin upgrade script"])
                 // instrumenting plugin scripts adding 'pluginBasedir' variable

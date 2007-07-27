@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.injection;
+package org.codehaus.groovy.grails.compiler.injection;
 
 /**
  * Mainly just a marker interface for implementations that perform injection

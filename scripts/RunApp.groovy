@@ -44,11 +44,11 @@ includeTargets << new File ( "${grailsHome}/scripts/PackagePlugins.groovy" )
 task ('default': "Run's a Grails application in Jetty") { 
 	depends( checkVersion, configureProxy, packagePlugins, packageApp, generateWebXml )
 	runApp()
-	watchContext()
 }                 
 task ( runApp : "Main implementation that executes a Grails application") {
 	System.setProperty('org.mortbay.xml.XmlParser.NotValidating', 'true')
-    try {
+    try {           
+		println "Running Grails application.."
         def server = configureHttpServer()
         server.start()
         event("StatusFinal", ["Server running. Browse to http://localhost:$serverPort/$grailsAppName"])
@@ -57,27 +57,6 @@ task ( runApp : "Main implementation that executes a Grails application") {
         event("StatusFinal", ["Server failed to start: $t"])
     }
 }    
-task( watchContext : "Watches the Jetty web.xml for changes and reloads of necessary") {
-	def f = new File("${basedir}/web-app/WEB-INF/web.xml")
-	long lastModified = f.lastModified()
-    while(true) {
-		if(lastModified < f.lastModified()) {
-    	    event("StatusUpdate", [ "Web Context changed, reloading"])
-        	lastModified = f.lastModified()
-			def ctx = grailsServer.getContext("/${grailsAppName}")
-			if(ctx) {
-        	    event("StatusUpdate", [ 'New Controller added. Restarting Grails context: /' + grailsAppName])
-				ctx.stop(true)
-				ctx.start()
-			}
-			else {
-        	    event("StatusError", [ 'Cannot get server context, new Controller not added'])
-			}
-    	}
-        sleep(2000)
-	}	
-}
-
 task( configureHttpServer : "Returns a jetty server configured with an HTTP connector") {
     def server = new Server()
     grailsServer = server

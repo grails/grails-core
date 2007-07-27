@@ -12,11 +12,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.commons;
+package org.codehaus.groovy.grails.compiler.support;
 
 import groovy.lang.GroovyResourceLoader;
 import org.springframework.core.io.Resource;
 import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException;
+import org.codehaus.groovy.grails.commons.GrailsResourceUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -41,9 +42,24 @@ public class GrailsResourceLoader implements GroovyResourceLoader {
     private List loadedResources = new ArrayList();
     private Map classToResource = new HashMap();
     private static final Log LOG = LogFactory.getLog(GrailsResourceLoader.class);
+    private Map pathToResource = new HashMap();
 
     public GrailsResourceLoader(Resource[] resources) {
          this.resources = resources;
+        createPathToURLMappings(resources);
+    }
+
+    private void createPathToURLMappings(Resource[] resources) {
+        for (int i = 0; i < resources.length; i++) {
+            String resourceURL;
+            try {
+                resourceURL = resources[i].getURL().toString();
+            } catch (IOException e) {
+                throw new GrailsConfigurationException("Unable to load Grails resource: " + e.getMessage(), e);
+            }
+            String pathWithinRoot = GrailsResourceUtils.getPathFromRoot(resourceURL);
+            pathToResource.put(pathWithinRoot, resources[i]);
+        }
     }
 
     public List getLoadedResources() {
@@ -52,6 +68,7 @@ public class GrailsResourceLoader implements GroovyResourceLoader {
 
     public void setResources(Resource[] resources) {
         this.resources = resources;
+        createPathToURLMappings(resources);
     }
 
     public Resource[] getResources() {
@@ -64,23 +81,7 @@ public class GrailsResourceLoader implements GroovyResourceLoader {
 
         try {
 
-            Resource foundResource = null;
-            for (int i = 0; resources != null && i < resources.length; i++) {
-                String resourceURL = resources[i].getURL().toString();
-                String pathWithinRoot = GrailsResourceUtils.getPathFromRoot(resourceURL);
-                if (pathWithinRoot != null && pathWithinRoot.equals(groovyFile)) {
-                    if (foundResource == null) {
-                        foundResource = resources[i];
-
-                    } else {
-                        try {
-                            throw new IllegalArgumentException("Found two identical classes at [" + resources[i].getFile().getAbsolutePath()+ "] and [" + foundResource.getFile().getAbsolutePath() + "] whilst attempting to load [" + className + "]. Please remove one to avoid duplicates.");
-                        } catch (IOException e) {
-                            throw new GrailsConfigurationException("I/O error whilst attempting to load class " + className, e);
-                        }
-                    }
-                }
-            }
+            Resource foundResource = (Resource)pathToResource.get(groovyFile);
             if (foundResource != null) {
                 loadedResources.add(foundResource);
                 classToResource.put(className, foundResource);

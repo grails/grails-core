@@ -23,6 +23,8 @@ import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.*;
+import org.codehaus.groovy.grails.compiler.GrailsClassLoader;
+import org.codehaus.groovy.grails.compiler.support.GrailsResourceLoader;
 import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration;
 import org.codehaus.groovy.grails.plugins.exceptions.PluginException;
 import org.codehaus.groovy.grails.support.ParentApplicationContextAware;
@@ -74,7 +76,7 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
     private long pluginLastModified = Long.MAX_VALUE;
     private URL pluginUrl;
     private Closure onConfigChangeListener;
-    
+    private Class[] providedArtefacts = new Class[0];
 
 
     public DefaultGrailsPlugin(Class pluginClass, Resource resource, GrailsApplication application) {
@@ -106,11 +108,20 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
         evaluatePluginVersion();
         evaluatePluginDependencies();
         evaluatePluginLoadAfters();
+        evaluateProvidedArtefacts();
         evaluatePluginEvictionPolicy();
         evaluatePluginInfluencePolicy();
         evaluateOnChangeListener();
         evaluateObservedPlugins();
         evaluatePluginStatus();
+    }
+
+    private void evaluateProvidedArtefacts() {
+        Object providedArtefacts = GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(this.plugin, PROVIDED_ARTEFACTS);
+        if(providedArtefacts instanceof Collection) {
+            final Collection artefactList = (Collection) providedArtefacts;
+            this.providedArtefacts = (Class[])artefactList.toArray(new Class[artefactList.size()]);
+        }
     }
 
     public DefaultGrailsPlugin(Class pluginClass, GrailsApplication application) {
@@ -588,10 +599,11 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
 
 
     private Class attemptClassReload(String className) {
-        try {
-            return application.getClassLoader().loadClass(className,true,false);
-        } catch (ClassNotFoundException e) {
-            LOG.error("Class not found error reloading plugin resource ["+className+"]:" + e.getMessage(),e);
+        final GroovyClassLoader loader = application.getClassLoader();
+        if(loader instanceof GrailsClassLoader) {
+            GrailsClassLoader grailsLoader = (GrailsClassLoader)loader;
+
+            return grailsLoader.reloadClass(className);
         }
         return null;
     }
@@ -729,5 +741,9 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
 			}
 		}
 	}
+
+    public Class[] getProvidedArtefacts() {
+        return this.providedArtefacts;
+    }
 
 }

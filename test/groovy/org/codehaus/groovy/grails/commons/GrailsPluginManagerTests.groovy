@@ -45,18 +45,20 @@ public class GrailsPluginManagerTests extends AbstractGrailsMockTests {
 	}
 
 	public void testLoadPlugins() throws Exception {
-		GrailsPluginManager manager = new DefaultGrailsPluginManager(RESOURCE_PATH,ga);
+        println "LOAD PLUGINS"
+        GrailsPluginManager manager = new DefaultGrailsPluginManager(RESOURCE_PATH,ga);
 		manager.loadPlugins();
-		
+
+
 		GrailsPlugin plugin = manager.getGrailsPlugin("classEditor");
 		assertNotNull(plugin);
 		assertEquals("classEditor",plugin.getName());
 		assertEquals("1.1", plugin.getVersion());
 		
-		plugin = manager.getGrailsPlugin("classEditor", 1.1);
+		plugin = manager.getGrailsPlugin("classEditor", "1.1");
 		assertNotNull(plugin);
 		
-		plugin = manager.getGrailsPlugin("classEditor", 1.2);
+		plugin = manager.getGrailsPlugin("classEditor", "1.2");
 		assertNull(plugin);
 	}
 	
