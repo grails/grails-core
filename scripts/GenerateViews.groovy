@@ -28,19 +28,12 @@ import groovy.text.SimpleTemplateEngine
 Ant.property(environment:"env")                             
 grailsHome = Ant.antProject.properties."env.GRAILS_HOME"    
 
-includeTargets << new File ( "${grailsHome}/scripts/Init.groovy" )
-includeTargets << new File ( "${grailsHome}/scripts/Package.groovy" )
+includeTargets << new File ( "${grailsHome}/scripts/GenerateAll.groovy" )
 
 task ('default': "Generates the CRUD views for a specified domain class") {
 	depends( checkVersion, packageApp )
 	typeName = "Domain Class"
-	promptForName()
+	promptForName()  
+	generateController = false
 	generateAll()
 }            
-
-task(generateAll:"The implementation task") { 
-	Ant.java(classname:"grails.util.GenerateUtils", failonerror:true) 	 {
-		arg(value:"view")       
-		arg(value:args)
-	}   	
-}

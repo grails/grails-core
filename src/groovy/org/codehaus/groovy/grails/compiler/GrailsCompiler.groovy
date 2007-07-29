@@ -32,39 +32,41 @@ class GrailsCompiler extends Groovyc {
 
 	String resourcePattern
 
-    void compile() {
-        println "Compiling ${compileList.length} source file${compileList ? 's' : ''} to ${destdir}"
-        CompilerConfiguration configuration = new CompilerConfiguration()
-        if(classpath) configuration.classpath = classpath.toString()
+    void compile() {     
+		if(compileList) {
+	        println "Compiling ${compileList.length} source file${compileList ? 's' : ''} to ${destdir}"
+	        CompilerConfiguration configuration = new CompilerConfiguration()
+	        if(classpath) configuration.classpath = classpath.toString()
 
-        def compilerOptions = [stubDir: createTempDir()]
-        configuration.targetDirectory = destdir
-        configuration.jointCompilationOptions = compilerOptions
+	        def compilerOptions = [stubDir: createTempDir()]
+	        configuration.targetDirectory = destdir
+	        configuration.jointCompilationOptions = compilerOptions
 
-        if(encoding)configuration.sourceEncoding = encoding
+	        if(encoding)configuration.sourceEncoding = encoding
 
-		def resources = resourcePattern ? resolveResources(resourcePattern) : [] as Resource[]
-		def resourceLoader = new GrailsResourceLoader(resources)
-        GrailsResourceLoaderHolder.resourceLoader = resourceLoader
+			def resources = resourcePattern ? resolveResources(resourcePattern) : [] as Resource[]
+			def resourceLoader = new GrailsResourceLoader(resources)
+	        GrailsResourceLoaderHolder.resourceLoader = resourceLoader
 
-		def classInjectors = [new DefaultGrailsDomainClassInjector()] as ClassInjector[]
+			def classInjectors = [new DefaultGrailsDomainClassInjector()] as ClassInjector[]
 
-        def unit = new JavaAwareCompilationUnit(configuration, buildClassLoaderFor(configuration, resourceLoader, classInjectors));
-		def injectionOperation = new GrailsAwareInjectionOperation(resourceLoader, classInjectors)
-        unit.addPhaseOperation(injectionOperation, Phases.CONVERSION)
-        unit.addSources(compileList)
+	        def unit = new JavaAwareCompilationUnit(configuration, buildClassLoaderFor(configuration, resourceLoader, classInjectors));
+			def injectionOperation = new GrailsAwareInjectionOperation(resourceLoader, classInjectors)
+	        unit.addPhaseOperation(injectionOperation, Phases.CONVERSION)
+	        unit.addSources(compileList)
 
 
-        try {
-            unit.compile()
-        }
-        catch(Exception e) {
-            e.printStackTrace()
-            def ErrorReporter reporter = new org.codehaus.groovy.tools.ErrorReporter(e, false)
-            def sw = new StringWriter()
-            def writer = new PrintWriter(sw)
-            throw new BuildException(sw.toString(), e, getLocation())
-        }
+	        try {
+	            unit.compile()
+	        }
+	        catch(Exception e) {
+	            def ErrorReporter reporter = new org.codehaus.groovy.tools.ErrorReporter(e, false)
+	            def sw = new StringWriter()
+	            def writer = new PrintWriter(sw)
+	            throw new BuildException(sw.toString(), e, getLocation())
+	        }
+			
+		}
     }
 
     private File createTempDir()  {

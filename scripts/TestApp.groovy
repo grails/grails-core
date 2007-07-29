@@ -81,7 +81,7 @@ task(testApp:"The test app implementation task") {
 	Ant.mkdir(dir:"${testDir}/plain")  
 	
 
-	//runCompiledTests()      
+  	compileTests()
 	try {
 		runUnitTests() 
 		runIntegrationTests()
@@ -91,28 +91,19 @@ task(testApp:"The test app implementation task") {
 		processResults()
 	}
 }
+task(compileTests:"Compiles the test cases") {            
+	def destDir = "${basedir}/test/classes"	
+	Ant.sequential {                                            
 
-task(runCompiledTests:"Runs the tests located under src/test which are compiled then executed") {
-	compileTests()
-	Ant.sequential {
-		junit(fork:true, forkmode:"once", failureproperty:"grails.test.failures") {
-	        classpath(refid:"grails.classpath")		
-			jvmarg(value:"-Xmx256M")        
-
-			formatter(type:"xml")
-			batchtest(todir:testDir) {
-				fileset(dir:"${basedir}/target/test-classes", includes:"**/*Tests.class")
-			}
-		}	   
-	}
-	def result = Ant.antProject.properties["grails.test.failures"]
-	if(result == "true")  {
-    	event("StatusFinal", ["Compiled tests failed"])
-		exit(1)		
-	}   
-	event("StatusFinal", ["Compiled tests complete"])
-}     
-
+		mkdir(dir:destDir)
+	    groovyc(destdir:destDir,
+	            classpathref:"grails.classpath",
+				resourcePattern:"file:${basedir}/**/grails-app/**/*.groovy",
+				compilerClasspath.curry(true))			
+	}                            
+	def rootLoader = getClass().classLoader.rootLoader
+	rootLoader?.addURL(new File(destDir).toURL())
+}    
 
 task(produceReports:"Outputs aggregated xml and html reports") {
 	Ant.junitreport {
@@ -125,9 +116,9 @@ task(produceReports:"Outputs aggregated xml and html reports") {
     
  
 def populateTestSuite = { suite, testFiles, classLoader, ctx ->
-	testFiles.each { r ->
+	for(r in testFiles) {
 	    try {
-		    def c = classLoader.parseClass(r.file)
+		    def c = classLoader.loadClass(r.filename - ".groovy")
             if(TestCase.isAssignableFrom(c) && !Modifier.isAbstract(c.modifiers)) {
                 suite.addTest(new GrailsTestSuite(ctx.beanFactory, c))
             }
@@ -138,7 +129,7 @@ def populateTestSuite = { suite, testFiles, classLoader, ctx ->
 	}
 }   
 def runTests = { suite, TestResult result, Closure callback  ->
-	suite.tests().each { test ->
+	for(test in suite.tests()) {
 		new File("${testDir}/TEST-${test.name}.xml").withOutputStream { xmlOut ->
 			new File("${testDir}/plain/TEST-${test.name}.txt").withOutputStream { plainOut ->
 				def xmlOutput = new XMLJUnitResultFormatter(output:xmlOut)
@@ -174,11 +165,14 @@ def runTests = { suite, TestResult result, Closure callback  ->
 }   
 task(runUnitTests:"Run Grails' unit tests under the test/unit directory") {         
    try {     
-	 def beans = new grails.spring.BeanBuilder().beans {
-			domainInjector(org.codehaus.groovy.grails.injection.DefaultGrailsDomainClassInjector.class)
-			injectionOperation(org.codehaus.groovy.grails.injection.GrailsInjectionOperation.class)
-			def appResources = resolveResources("grails-app/**/*.groovy")
-			grailsApplication(org.codehaus.groovy.grails.commons.DefaultGrailsApplication.class, appResources, ref("injectionOperation") )
+		def beans = new grails.spring.BeanBuilder().beans {
+			resourceHolder(org.codehaus.groovy.grails.commons.spring.GrailsResourceHolder) {
+				resources = "file:${basedir}/**/grails-app/**/*.groovy"
+			}
+			grailsResourceLoader(org.codehaus.groovy.grails.commons.GrailsResourceLoaderFactoryBean) {
+				grailsResourceHolder = resourceHolder
+			}
+			grailsApplication(org.codehaus.groovy.grails.commons.DefaultGrailsApplication.class, ref("grailsResourceLoader"))
 		}
 	                                                    
 		appCtx = beans.createApplicationContext()
@@ -226,18 +220,14 @@ task(runIntegrationTests:"Runs Grails' tests under the test/integration director
             event("StatusUpdate", [ "No tests found in test/integration to execute"])
 			return
 		}
-
-		def	ctx = GU.bootstrapGrailsFromClassPath()			
+                
+		def config = new org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator(grailsApp,appCtx)
+		def ctx = config.configure(new MockServletContext())
 		def app = ctx.getBean(GrailsApplication.APPLICATION_ID)
         if(app.parentContext == null) {
             app.applicationContext = ctx
         }
 		def classLoader = app.classLoader
-
-        def resources = app.resourceLoader.resources as ArrayList
-        testFiles.each() { resources << it }
-		app.resourceLoader.resources = resources
-
 		def suite = new TestSuite()
 
    		populateTestSuite(suite, testFiles, classLoader, ctx)

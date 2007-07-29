@@ -91,29 +91,7 @@ move it to the new location of '${basedir}/test/integration'. Please move the di
 		copy(file:"${grailsHome}/src/war/WEB-INF/applicationContext.xml",
 			 tofile:"${basedir}/web-app/WEB-INF/applicationContext.xml", overwrite:true)
 
-		// These will still overwrite as the src name differs from target and the src name is not in target
-		if(!new File("${basedir}/grails-app/conf/log4j.development.properties").exists()) {
-			copy(tofile:"${basedir}/grails-app/conf/log4j.development.properties") {
-			    fileset(file:"${grailsHome}/src/war/WEB-INF/log4j.properties") {
-	                present(present:"srconly", targetdir:"${basedir}/grails-app/conf")
-	            }
-	        }			
-		}
-		if(!new File("${basedir}/grails-app/conf/log4j.test.properties").exists()) {		
-			copy(tofile:"${basedir}/grails-app/conf/log4j.test.properties") {
-			    fileset(file:"${grailsHome}/src/war/WEB-INF/log4j.properties") {
-	                present(present:"srconly", targetdir:"${basedir}/grails-app/conf")
-	            }
-	        }
-		}         
-		if(!new File("${basedir}/grails-app/conf/log4j.production.properties").exists()) {
-			copy(tofile:"${basedir}/grails-app/conf/log4j.production.properties") {
-			    fileset(file:"${grailsHome}/src/war/WEB-INF/log4j.properties") {
-	                present(present:"srconly", targetdir:"${basedir}/grails-app/conf")
-	            }
-	        }
-		}
-		                
+		// These will still overwrite as the src name differs from target and the src name is not in target		                
 		if(!new File("${basedir}/grails-app/conf/${appClassName}UrlMappings.groovy").exists()) {
 	        copy(tofile:"${basedir}/grails-app/conf/${appClassName}UrlMappings.groovy") {
 	            fileset(file:"${grailsHome}/src/grails/templates/artifacts/UrlMappings.groovy") {

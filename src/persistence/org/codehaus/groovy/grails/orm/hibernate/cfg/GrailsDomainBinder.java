@@ -1126,21 +1126,16 @@ public final class GrailsDomainBinder {
             }
             else if(grailsProperty.isManyToOne() || grailsProperty.isOneToOne()) {
                 GrailsDomainClass domainClass = grailsProperty.getDomainClass();
-                System.out.println("grailsProperty.getName() = " + grailsProperty.getName());
 
                 if(domainClass.isOwningClass(grailsProperty.getType())) {
-                    System.out.println("set cascade to all");
                     prop.setCascade("all");
                 }
                 else {
                     GrailsDomainClassProperty otherSide = grailsProperty.getOtherSide();
-                    System.out.println("otherSide = " + otherSide); 
                     if(otherSide != null && otherSide.isOneToMany()) {
-                        System.out.println("set cascade to merge");
                         prop.setCascade("merge");
                     }
                     else if(grailsProperty.isOwningSide()) {
-                        System.out.println("set cascade to all");
                         prop.setCascade("all");
                     }
                 }

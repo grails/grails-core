@@ -381,7 +381,8 @@ void setClasspath() {
 
 	Ant.path(id:"grails.classpath")  {
 		pathelement(location:"${basedir}")
-		pathelement(location:"${basedir}/grails-tests")
+		pathelement(location:"${basedir}/test/unit")
+		pathelement(location:"${basedir}/test/integration")		
 		pathelement(location:"${basedir}/web-app")
 		pathelement(location:"${basedir}/web-app/WEB-INF")
 		pathelement(location:"${basedir}/web-app/WEB-INF/classes")
@@ -389,8 +390,10 @@ void setClasspath() {
 		    fileset(dir:"${basedir}/web-app/WEB-INF/lib")
 		}
 		fileset(dir:"${grailsHome}/lib")
-		fileset(dir:"${grailsHome}/dist")
-		fileset(dir:"lib")
+		fileset(dir:"${grailsHome}/dist") 
+		if(new File("${basedir}/lib").exists()) {
+			fileset(dir:"${basedir}/lib")
+		}
 		for(d in grailsDir) {
 			pathelement(location:"${d.file.absolutePath}")
 		}

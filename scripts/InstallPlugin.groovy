@@ -83,7 +83,7 @@ task(cachePlugin:"Implementation task") {
 task(installPlugin:"Implementation task") {
     depends( configureProxy )
     // fix for Windows-style path with backslashes
-    def pluginsBase = "${basedir}/plugins".toString().replaceAll(/\\/,'/')
+    def pluginsBase = "${basedir}/plugins".toString().replaceAll('\\\\','/')
 	if(args) {      
 		def pluginFile = new File(args.trim())
         Ant.mkdir(dir:pluginsBase)

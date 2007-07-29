@@ -245,7 +245,7 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
         ClassLoader rootLoader = DefaultGroovyMethods.getRootLoader(contextLoader);
         GroovyClassLoader cl;
         if(rootLoader != null) {
-            cl = new GrailsClassLoader(rootLoader, resourceLoader);
+            cl = new GrailsClassLoader(contextLoader, resourceLoader);
         }
         else {
             GrailsAwareClassLoader gcl = new GrailsAwareClassLoader(contextLoader);

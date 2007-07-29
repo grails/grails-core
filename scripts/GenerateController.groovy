@@ -15,7 +15,7 @@
  */
 
 /**
- * Gant script that generates a CRUD controller for a given domain class
+ * Gant script that generates CRUD views for a given domain class
  * 
  * @author Graeme Rocher
  *
@@ -28,19 +28,12 @@ import groovy.text.SimpleTemplateEngine
 Ant.property(environment:"env")                             
 grailsHome = Ant.antProject.properties."env.GRAILS_HOME"    
 
-includeTargets << new File ( "${grailsHome}/scripts/Init.groovy" )
-includeTargets << new File ( "${grailsHome}/scripts/Package.groovy" )
+includeTargets << new File ( "${grailsHome}/scripts/GenerateAll.groovy" )
 
-task ('default': "Generates a CRUD controller for a specified domain class") {
+task ('default': "Generates the CRUD views for a specified domain class") {
 	depends( checkVersion, packageApp )
 	typeName = "Domain Class"
-	promptForName()
+	promptForName()  
+	generateViews = false
 	generateAll()
 }            
-
-task(generateAll:"The implementation task") { 
-	Ant.java(classname:"grails.util.GenerateUtils", failonerror:true) 	 {
-		arg(value:"controller")       
-		arg(value:args)
-	}   	
-}

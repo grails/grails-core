@@ -52,7 +52,30 @@ Ant.taskdef ( 	name : 'groovyc' ,
 task ('default': "Performs compilation on any source files (Java or Groovy) in the 'src' tree") {
 	compile()
 }            
+  
+compilerClasspath = { testSources -> 
 
+	def excludedPaths = ["views", "i18n"]	
+	def pluginResources = resolveResources("file:${basedir}/plugins/*/grails-app/*").toList() +
+						  resolveResources("file:${basedir}/plugins/*/src/java").toList() +
+						  resolveResources("file:${basedir}/plugins/*/src/groovy").toList() 
+	
+	for(dir in new File("${basedir}/grails-app").listFiles()) {
+	if(!excludedPaths.contains(dir.name) && dir.isDirectory())
+	    src(path:"${dir}")
+	} 
+	for(dir in pluginResources.file) {
+	if(!excludedPaths.contains(dir.name) && dir.isDirectory()) {
+		src(path:"${dir}")
+	}
+	}
+	src(path:"${basedir}/src/java")
+	src(path:"${basedir}/src/groovy")   
+	if(testSources) {
+         src(path:"${basedir}/test/unit")
+         src(path:"${basedir}/test/integration")
+	}
+}
 task(compile : "Implementation of compilation phase") {    
 	depends(dependencies, classpath)           
 	
@@ -63,22 +86,14 @@ task(compile : "Implementation of compilation phase") {
 	Ant.sequential {
 		mkdir(dir:"${basedir}/web-app/WEB-INF/classes") 
 		          
-
-		def excludedPaths = ["views", "i18n"]
-
-		def destDir = "${userHome}/.grails/${grailsVersion}/tmp/${baseName}/classes"    		
-
+		//def destDir = "${userHome}/.grails/${grailsVersion}/tmp/${baseName}/classes"    		
+		def destDir = "${basedir}/web-app/WEB-INF/classes"		
+							
 		mkdir(dir:destDir)
         groovyc(destdir:destDir,
                 classpathref:"grails.classpath",
-				resourcePattern:"file:${basedir}/grails-app/**/*.groovy") {
-            for(dir in new File("${basedir}/grails-app").listFiles()) {
-                if(!excludedPaths.contains(dir.name) && dir.isDirectory())
-                    src(path:"${dir}")
-            }
-            src(path:"${basedir}/src/java")
-            src(path:"${basedir}/src/groovy")           
-        }
+				resourcePattern:"file:${basedir}/**/grails-app/**/*.groovy",
+				compilerClasspath.curry(false)) 
 
         def rootLoader = getClass()
             			    .classLoader
