@@ -36,7 +36,9 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator as GRC;
 import org.apache.tools.ant.taskdefs.optional.junit.*                        
 import org.springframework.mock.web.*       
+import org.springframework.core.io.Resource 
 import org.springframework.web.context.request.RequestContextHolder;
+import org.codehaus.groovy.grails.plugins.*
 
 Ant.property(environment:"env")
 grailsHome = Ant.antProject.properties."env.GRAILS_HOME"  
@@ -219,8 +221,15 @@ task(runIntegrationTests:"Runs Grails' tests under the test/integration director
 		if(testFiles.size() == 0) {
             event("StatusUpdate", [ "No tests found in test/integration to execute"])
 			return
-		}
-                
+		}               
+		
+		println "-------------------------------------------------------"
+		println "Running Integration Tests..."
+		
+        pluginManager = new DefaultGrailsPluginManager(pluginResources as Resource[], grailsApp)
+    	PluginManagerHolder.setPluginManager(pluginManager)
+		pluginManager.loadPlugins()
+                                            
 		def config = new org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator(grailsApp,appCtx)
 		def ctx = config.configure(new MockServletContext())
 		def app = ctx.getBean(GrailsApplication.APPLICATION_ID)
@@ -239,8 +248,6 @@ task(runIntegrationTests:"Runs Grails' tests under the test/integration director
 
 		try {
 			interceptor?.init()           	
-			println "-------------------------------------------------------"
-			println "Running Integration Tests..."
 			   
 			def start = new Date()			
             runTests(suite, result) { test, invocation ->
