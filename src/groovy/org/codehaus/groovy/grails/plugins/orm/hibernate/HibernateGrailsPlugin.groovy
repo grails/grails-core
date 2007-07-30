@@ -102,6 +102,7 @@ class HibernateGrailsPlugin {
                 else if(ds.dbCreate) {
                     hibProps."hibernate.hbm2ddl.auto" = ds.dbCreate
                 }
+                log.info "Set db generation strategy to '${hibProps.'hibernate.hbm2ddl.auto'}'"
 
                 hibernateProperties(MapToPropertiesFactoryBean) {
                     map = hibProps

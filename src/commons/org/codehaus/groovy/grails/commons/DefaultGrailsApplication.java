@@ -283,6 +283,7 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
      */
     private void configureLoadedClasses(Class[] classes) {
         initArtefactHandlers();
+        loadMetadata();
 
         artefactInfo.clear();
         allArtefactClasses.clear();

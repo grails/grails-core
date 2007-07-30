@@ -72,7 +72,7 @@ task( watchContext: "Watches the WEB-INF/classes directory for changes and resta
 			
 		}   
 		catch(Exception e) {
-			println "Compilation error: ${e.message}"	
+			event("StatusUpdate", ["Compilation error: ${e.message}"] )
 			e.printStackTrace()
 		}
         def tmp = classesDir.lastModified()

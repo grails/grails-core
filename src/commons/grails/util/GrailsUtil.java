@@ -168,7 +168,7 @@ public class GrailsUtil {
 
         if(StringUtils.isBlank(envName)) {
             // for now if no environment specified default to production
-            return GrailsApplication.ENV_APPLICATION;                
+            return GrailsApplication.ENV_DEVELOPMENT;
         }
         else {
             if(envNameMappings.containsKey(envName)) {
