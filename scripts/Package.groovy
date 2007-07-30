@@ -123,7 +123,17 @@ task( packageApp : "Implementation of package task") {
 			logDest.withOutputStream { out ->
 				props.store(out, "Grails' Log4j Configuration")
 			}
-		}		
+		}	
+		else {             
+			// default log4j settings
+			logDest <<  '''
+log4j.appender.stdout=org.apache.log4j.ConsoleAppender
+log4j.appender.stdout.layout=org.apache.log4j.PatternLayout
+log4j.rootLogger=error,stdout   
+log4j.logger.org.codehaus.groovy.grails.plugins=info,stdout
+log4j.logger.org.codehaus.groovy.grails.commons=info,stdout
+			'''
+		}	
 	}   
 	catch(Exception e) {    
 		println e.message
