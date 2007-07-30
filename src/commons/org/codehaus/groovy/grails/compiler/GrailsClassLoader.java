@@ -85,4 +85,8 @@ public class GrailsClassLoader extends GroovyClassLoader {
         return super.loadClass(name, resolve);
 
     }
+
+    public void setGrailsResourceLoader(GrailsResourceLoader resourceLoader) {
+        this.grailsResourceLoader = resourceLoader;
+    }
 }

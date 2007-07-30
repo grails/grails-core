@@ -25,6 +25,7 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.*;
 import org.codehaus.groovy.grails.compiler.GrailsClassLoader;
 import org.codehaus.groovy.grails.compiler.support.GrailsResourceLoader;
+import org.codehaus.groovy.grails.compiler.support.GrailsResourceLoaderHolder;
 import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration;
 import org.codehaus.groovy.grails.plugins.exceptions.PluginException;
 import org.codehaus.groovy.grails.support.ParentApplicationContextAware;
@@ -536,12 +537,15 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
 
                                 GroovyClassLoader classLoader = this.application.getClassLoader();
 
-                                GrailsResourceLoader resourceLoader = (GrailsResourceLoader) classLoader
-                                                                                                .getResourceLoader();
+                                GrailsResourceLoader resourceLoader = GrailsResourceLoaderHolder.getResourceLoader();
 
                                 Resource[] classLoaderResources = resourceLoader.getResources();
                                 classLoaderResources = (Resource[])ArrayUtils.add(classLoaderResources, newResource);
                                 resourceLoader.setResources(classLoaderResources);
+
+                                if(classLoader instanceof GrailsClassLoader) {
+                                    ((GrailsClassLoader)classLoader).setGrailsResourceLoader(resourceLoader);
+                                }
                             }
 
                             initializeModifiedTimes();
@@ -571,7 +575,9 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
         if(className != null) {
             Class oldClass = application.getClassForName(className);
             loadedClass = attemptClassReload(className);
-            GroovySystem.getMetaClassRegistry().removeMetaClass(oldClass);
+            if(oldClass != null) {                
+                GroovySystem.getMetaClassRegistry().removeMetaClass(oldClass);
+            }
         }
 
         final Class resourceClass = loadedClass;
