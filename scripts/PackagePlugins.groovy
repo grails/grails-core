@@ -81,21 +81,6 @@ task( packagePlugins : "Packages any Grails plugins that are installed for this 
 			   			}  		                     							
 					}
 				}
-				path(id:"classpath") {
-					fileset(dir:"${basedir}/lib",includes:"*.jar,*.zip")
-					fileset(dir:"${grailsHome}/lib",includes:"*.jar,*.zip")
-					fileset(dir:"${grailsHome}/dist",includes:"*.jar,*.zip")        
-					pathelement(location:"${basedir}/web-app/WEB-INF/classes")  
-					fileset(dir:"${pluginBase}/lib",includes:"*.jar,*.zip")
-				}       
-				if(new File("${pluginBase}/src/java").exists()) {                                        
-					javac(srcdir:"${pluginBase}/src/java",destdir:"${basedir}/web-app/WEB-INF/classes",
-							classpathref:"classpath",debug:"on",deprecation:"on", optimize:"off")
-				}
-				if(new File("${pluginBase}/src/groovy").exists()) { 
-					groovyc(srcdir:"${pluginBase}/src/groovy",destdir:"${basedir}/web-app/WEB-INF/classes",
-							classpathref:"classpath")			
-				}
 	   		}             
 	   	}  		
 	}

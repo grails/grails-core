@@ -15,13 +15,23 @@
  */ 
 package org.codehaus.groovy.grails.commons;
 
+import groovy.lang.GroovyClassLoader;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.compiler.injection.GrailsInjectionOperation;
 import org.codehaus.groovy.grails.compiler.support.GrailsResourceLoader;
+import org.dom4j.Document;
+import org.dom4j.Node;
+import org.dom4j.io.SAXReader;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.core.io.Resource;
 import org.springframework.util.Assert;
+
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * <p>Factory bean that creates a Grails application object based on Groovy files.
@@ -35,6 +45,7 @@ public class GrailsApplicationFactoryBean implements FactoryBean, InitializingBe
 	private GrailsInjectionOperation injectionOperation = null;
 	private GrailsApplication grailsApplication = null;
     private GrailsResourceLoader resourceLoader;
+    private Resource descriptor;
 
 
     public GrailsInjectionOperation getInjectionOperation() {
@@ -51,10 +62,32 @@ public class GrailsApplicationFactoryBean implements FactoryBean, InitializingBe
 
 
 	public void afterPropertiesSet() throws Exception {
+        if(descriptor != null && descriptor.exists()) {
+            GroovyClassLoader classLoader = new GroovyClassLoader(Thread.currentThread().getContextClassLoader());
+            List classes = new ArrayList();
+            SAXReader reader = new SAXReader();
+            InputStream inputStream = null;
+            try {
+                inputStream = descriptor.getInputStream();
+                Document doc = reader.read(inputStream);
+                List grailsClasses = doc.selectNodes("/grails/resources/resource");
+                for (Iterator i = grailsClasses.iterator(); i.hasNext();) {
+                    Node node = (Node) i.next();
+                    classes.add(classLoader.loadClass(node.getText()));
+                }
+            } finally {
+                if(inputStream!=null)
+                    inputStream.close();
+            }
+            Class[] loadedClasses = (Class[])classes.toArray(new Class[classes.size()]);
+            this.grailsApplication = new DefaultGrailsApplication(loadedClasses, classLoader);
+        }
+        else {
+            Assert.notNull(resourceLoader, "Property [resourceLoader] must be set!");
 
-        Assert.notNull(resourceLoader, "Property [resourceLoader] must be set!");
+            this.grailsApplication = new DefaultGrailsApplication(this.resourceLoader);
+        }
 
-		this.grailsApplication = new DefaultGrailsApplication(this.resourceLoader);
         ApplicationHolder.setApplication(this.grailsApplication);
     }
 	
@@ -72,5 +105,9 @@ public class GrailsApplicationFactoryBean implements FactoryBean, InitializingBe
 
     public void setGrailsResourceLoader(GrailsResourceLoader resourceLoader) {
         this.resourceLoader = resourceLoader;
+    }
+
+    public void setGrailsDescriptor(Resource r) {
+        this.descriptor = r;
     }
 }

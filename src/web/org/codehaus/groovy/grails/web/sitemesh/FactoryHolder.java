@@ -35,10 +35,7 @@ public class FactoryHolder {
 
     public static void setFactory(Factory newFactory) {
         synchronized(FactoryHolder.class) {
-            if(factory != null) throw new IllegalStateException("Cannot set Sitemesh factory it has already been set!");
-            else {
-                factory = newFactory;
-            }
+           factory = newFactory;
         }
     }
 }

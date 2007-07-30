@@ -164,7 +164,9 @@ DEPENDENCIES = [
 "commons-validator-*.jar",
 "commons-fileupload-*.jar",
 "commons-io-*.jar", 
-"*oro-*.jar",
+"commons-io-*.jar",  
+"*oro-*.jar",    
+"jaxen-*.jar"
 ]    
 JAVA_5_DEPENDENCIES = [        
 "hibernate-annotations.jar",

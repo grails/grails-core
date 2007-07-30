@@ -6,7 +6,8 @@ http://www.springframework.org/schema/beans http://www.springframework.org/schem
 
 	<bean id="grailsApplication" class="org.codehaus.groovy.grails.commons.GrailsApplicationFactoryBean">
 		<description>Grails application factory bean</description>
-		<property name="grailsResourceLoader" ref="grailsResourceLoader" />
+        <property name="grailsDescriptor" value="/WEB-INF/grails.xml" />
+        <property name="grailsResourceLoader" ref="grailsResourceLoader" />
 	</bean>
 
 	<bean id="pluginManager" class="org.codehaus.groovy.grails.plugins.GrailsPluginManagerFactoryBean">

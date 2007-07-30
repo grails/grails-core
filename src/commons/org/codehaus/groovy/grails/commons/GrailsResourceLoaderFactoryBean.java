@@ -21,7 +21,7 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
 
 /**
- * Class description here.
+ * A factory bean that constructs the Grails ResourceLoader used to load Grails classes
  *
  * @author Graeme Rocher
  * @since 0.4

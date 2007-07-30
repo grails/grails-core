@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import org.codehaus.groovy.grails.compiler.support.*
+
 /**
  * Gant script that creates a WAR file from a Grails project
  * 
@@ -44,7 +46,7 @@ task (war: "The implementation task") {
 			fileset(dir:"${basedir}/web-app", includes:"**") 
 		}       
 		Ant.copy(todir:"${basedir}/staging/WEB-INF/grails-app", overwrite:true) {
-			fileset(dir:"${basedir}/grails-app", includes:"**")
+			fileset(dir:"${basedir}/grails-app", includes:"views, i18n")
 		}
 		              
 		scaffoldDir = "${basedir}/staging/WEB-INF/templates/scaffolding"
@@ -76,7 +78,8 @@ task (war: "The implementation task") {
 		}
 		warName = "${basedir}/${fileName}${version}.war"
 
-		warPlugins()		
+		warPlugins()		    
+		createDescriptor()
 		Ant.jar(destfile:warName, basedir:"${basedir}/staging")
 		
 	}   
@@ -85,7 +88,25 @@ task (war: "The implementation task") {
 	}
     event("StatusFinal", ["Created WAR ${warName}"])
 }                                                                    
-   
+  
+task(createDescriptor:"Creates the WEB-INF/grails.xml file used to load Grails classes in WAR mode") {
+     def resourceList = GrailsResourceLoaderHolder.resourceLoader.getResources()
+      
+	 new File("${basedir}/staging/WEB-INF/grails.xml").withWriter { writer ->
+		def xml = new groovy.xml.MarkupBuilder(writer)
+		xml.grails {
+			resources {
+			   for(r in resourceList) {
+				    def matcher = r.URL.toString() =~ /\S+?\/grails-app\/\S+?\/(\S+?).groovy/
+					def name = matcher[0][1].replaceAll('/', /\./)
+					resource(name)
+			   } 
+			}
+		}
+	 }
+	 
+}   
+
 task(cleanUpAfterWar:"Cleans up after performing a WAR") {
 	Ant.delete(dir:"${basedir}/staging", failonerror:true)
 }
@@ -96,8 +117,6 @@ task(warPlugins:"Includes the plugins in the WAR") {
 		copy(todir:"${basedir}/staging/WEB-INF/plugins", failonerror:false) {
 			fileset(dir:"${basedir}/plugins")  {    
 				include(name:"**/*GrailsPlugin.groovy")
-				include(name:"**/grails-app/**")
-				exclude(name:"**/grails-app/i18n")				
 			}
 		}
 	}

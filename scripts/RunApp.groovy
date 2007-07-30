@@ -37,13 +37,14 @@ grailsHome = Ant.antProject.properties."env.GRAILS_HOME"
 grailsServer = null
 grailsContext = null
 
-includeTargets << new File ( "${grailsHome}/scripts/Init.groovy" ) 
+
 includeTargets << new File ( "${grailsHome}/scripts/Package.groovy" )  
 includeTargets << new File ( "${grailsHome}/scripts/PackagePlugins.groovy" )  
 
 task ('default': "Run's a Grails application in Jetty") { 
 	depends( checkVersion, configureProxy, packagePlugins, packageApp, generateWebXml )
 	runApp()
+	watchContext()
 }                 
 task ( runApp : "Main implementation that executes a Grails application") {
 	System.setProperty('org.mortbay.xml.XmlParser.NotValidating', 'true')
@@ -56,18 +57,31 @@ task ( runApp : "Main implementation that executes a Grails application") {
         t.printStackTrace()
         event("StatusFinal", ["Server failed to start: $t"])
     }
-}    
+}
+task( watchContext: "Watches the WEB-INF/classes directory for changes and restarts the server if necessary") {
+    long lastModified = classesDir.lastModified()
+    while(true) {
+		compile()
+        def tmp = classesDir.lastModified()
+        if(lastModified < tmp) {
+			lastModified = tmp	
+            grailsServer.stop()
+            grailsServer.start()  
+        }
+        sleep(1000)
+    }
+}
 task( configureHttpServer : "Returns a jetty server configured with an HTTP connector") {
     def server = new Server()
     grailsServer = server
     def connectors = [new SelectChannelConnector()]
     connectors[0].setPort(serverPort)
     server.setConnectors( (Connector [])connectors )
-    WebAppContext handler = new WebAppContext("${basedir}/web-app", "/${grailsAppName}")
-    handler.setDefaultsDescriptor("${grailsHome}/conf/webdefault.xml")
-    handler.setClassLoader(Thread.currentThread().getContextClassLoader())
-    grailsHandler = handler
-    server.setHandler( handler )
+    webContext = new WebAppContext("${basedir}/web-app", "/${grailsAppName}")
+    webContext.setDefaultsDescriptor("${grailsHome}/conf/webdefault.xml")
+    webContext.setClassLoader(Thread.currentThread().getContextClassLoader())
+    grailsHandler = webContext
+    server.setHandler( webContext )
     return server
 }
 
@@ -75,9 +89,5 @@ task( stopServer : "Stops the Grails Jetty server") {
 	if(grailsServer) {
 		grailsServer.stop()		
 	}	
-	else {
-		 def svr = HttpServer.httpServers.iterator().next()
-		 svr.stop()
-	}
     event("StatusFinal", ["Server stopped"])
 }

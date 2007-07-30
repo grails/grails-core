@@ -32,7 +32,11 @@ class GrailsCompiler extends Groovyc {
 
 	String resourcePattern
 
-    void compile() {     
+    void compile() {            
+		def resources = resourcePattern ? resolveResources(resourcePattern) : [] as Resource[]
+		def resourceLoader = new GrailsResourceLoader(resources)
+        GrailsResourceLoaderHolder.resourceLoader = resourceLoader
+	
 		if(compileList) {
 	        println "Compiling ${compileList.length} source file${compileList ? 's' : ''} to ${destdir}"
 	        CompilerConfiguration configuration = new CompilerConfiguration()
@@ -44,9 +48,6 @@ class GrailsCompiler extends Groovyc {
 
 	        if(encoding)configuration.sourceEncoding = encoding
 
-			def resources = resourcePattern ? resolveResources(resourcePattern) : [] as Resource[]
-			def resourceLoader = new GrailsResourceLoader(resources)
-	        GrailsResourceLoaderHolder.resourceLoader = resourceLoader
 
 			def classInjectors = [new DefaultGrailsDomainClassInjector()] as ClassInjector[]
 
@@ -58,6 +59,7 @@ class GrailsCompiler extends Groovyc {
 
 	        try {
 	            unit.compile()
+	            getDestdir().setLastModified(System.currentTimeMillis())
 	        }
 	        catch(Exception e) {
 	            def ErrorReporter reporter = new org.codehaus.groovy.tools.ErrorReporter(e, false)

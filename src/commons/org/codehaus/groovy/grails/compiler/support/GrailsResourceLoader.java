@@ -15,19 +15,17 @@
 package org.codehaus.groovy.grails.compiler.support;
 
 import groovy.lang.GroovyResourceLoader;
-import org.springframework.core.io.Resource;
-import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException;
 import org.codehaus.groovy.grails.commons.GrailsResourceUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException;
+import org.springframework.core.io.Resource;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
 
 /**
  * A GroovyResourceLoader that loads groovy files using Spring's IO abstraction
@@ -41,7 +39,6 @@ public class GrailsResourceLoader implements GroovyResourceLoader {
     private Resource[] resources;
     private List loadedResources = new ArrayList();
     private Map classToResource = new HashMap();
-    private static final Log LOG = LogFactory.getLog(GrailsResourceLoader.class);
     private Map pathToResource = new HashMap();
 
     public GrailsResourceLoader(Resource[] resources) {

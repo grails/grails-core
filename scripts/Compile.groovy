@@ -49,6 +49,9 @@ Ant.taskdef ( 	name : 'groovyc' ,
 
 
 
+classesDirPath = "${basedir}/web-app/WEB-INF/classes"
+classesDir = new File(classesDirPath)
+
 task ('default': "Performs compilation on any source files (Java or Groovy) in the 'src' tree") {
 	compile()
 }            
@@ -80,13 +83,8 @@ task(compile : "Implementation of compilation phase") {
 	depends(dependencies, classpath)           
 	
     event("CompileStart", ['source'])
-    event("StatusUpdate", ["Compiling sources"])
-
- 
 	Ant.sequential {
-		mkdir(dir:"${basedir}/web-app/WEB-INF/classes") 
-		          
-		//def destDir = "${userHome}/.grails/${grailsVersion}/tmp/${baseName}/classes"    		
+		mkdir(dir:classesDirPath)
 		def destDir = "${basedir}/web-app/WEB-INF/classes"		
 							
 		mkdir(dir:destDir)
@@ -105,26 +103,4 @@ task(compile : "Implementation of compilation phase") {
     event("CompileEnd", ['source'])
 }
 
-
-task(compileTests: "Compiles test cases located in src/test") {
-
-	if(new File("${basedir}/src/test").exists()) {
-        event("CompileStart", ['tests'])
-	    event("StatusUpdate", ["Compiling test cases"])
-		depends(classpath)
-
-		Ant.sequential {
-			mkdir(dir:"${basedir}/target/test-classes")
-
-			javac(srcdir:"${basedir}/src/test",destdir:"${basedir}/target/test-classes",
-					classpathref:"grails.classpath",debug:"on",deprecation:"on", optimize:"off")
-
-			groovyc(srcdir:"${basedir}/src/test",destdir:"${basedir}/target/test-classes",
-					classpathref:"grails.classpath")
-
-            deleteAppClasses()
-		}
-        event("CompileEnd", ['tests'])
-	}
-}
 
