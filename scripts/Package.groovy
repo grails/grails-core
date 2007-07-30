@@ -35,7 +35,6 @@ import grails.util.*
 Ant.property(environment:"env")                             
 grailsHome = Ant.antProject.properties."env.GRAILS_HOME"    
 
-includeTargets << new File ( "${grailsHome}/scripts/Init.groovy" )  
 includeTargets << new File ( "${grailsHome}/scripts/Compile.groovy" )  
 includeTargets << new File ( "${grailsHome}/scripts/PackagePlugins.groovy" ) 
 
@@ -77,7 +76,16 @@ task( createConfig: "Creates the configuration object") {
    }
 }    
 task( packageApp : "Implementation of package task") {
-	depends(createStructure,compile, createConfig)
+	depends(createStructure, createConfig)
+	try {
+		compile()		
+	}   
+	catch(Exception e) {
+		event("StatusFinal", ["Compilation error: ${e.message}"])
+		e.printStackTrace()
+		exit(1)
+	}
+	
 	copyDependencies()
 	Ant.mkdir(dir:"${basedir}/web-app/WEB-INF/grails-app/i18n")
 	
