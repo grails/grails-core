@@ -60,13 +60,20 @@ task ( runApp : "Main implementation that executes a Grails application") {
 }
 task( watchContext: "Watches the WEB-INF/classes directory for changes and restarts the server if necessary") {
     long lastModified = classesDir.lastModified()
-    while(true) {
-        Ant.groovyc(destdir:classesDirPath,
-                classpathref:"grails.classpath",
-				resourcePattern:"file:${basedir}/**/grails-app/**/*.groovy") {
-					src(path:"${basedir}/src/java")
-					src(path:"${basedir}/src/groovy")
-					src(path:"${basedir}/grails-app/domain")										
+    while(true) {        
+		try {
+	        Ant.groovyc(destdir:classesDirPath,
+	                classpathref:"grails.classpath",
+					resourcePattern:"file:${basedir}/**/grails-app/**/*.groovy") {
+						src(path:"${basedir}/src/java")
+						src(path:"${basedir}/src/groovy")
+						src(path:"${basedir}/grails-app/domain")										
+			}
+			
+		}   
+		catch(Exception e) {
+			println "Compilation error: ${e.message}"	
+			e.printStackTrace()
 		}
         def tmp = classesDir.lastModified()
         if(lastModified < tmp) {
