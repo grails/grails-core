@@ -182,33 +182,41 @@ task(runUnitTests:"Run Grails' unit tests under the test/unit directory") {
 		ctx.servletContext = new MockServletContext()
 		grailsApp = ctx.grailsApplication  
 		grailsApp.initialise()
-	                   
-    def testFiles = resolveTestResources { "test/unit/${it}.groovy" }
-		testFiles = testFiles.findAll { it.exists() } 
-		if(testFiles.size() == 0) {
-            event("StatusUpdate", [ "No tests found in test/unit to execute"])
-			return
-		}	
-	    def classLoader = grailsApp.classLoader
-	    classLoader.rootLoader.addURL(new File("test/unit").toURL())	 
-	    def suite = new TestSuite()
-	    populateTestSuite(suite, testFiles, classLoader, ctx)  
-		println "-------------------------------------------------------"
-		println "Running Unit Tests..."
-	                                     
-		def start = new Date()
-		runTests(suite,result) { test, invocation -> 
-				invocation()           
-		} 
-		def end = new Date()		
+		
+           pluginManager = new DefaultGrailsPluginManager(pluginResources as Resource[], grailsApp)
+           PluginManagerHolder.setPluginManager(pluginManager)
+           pluginManager.loadPlugins()
 
-		event("StatusUpdate", [ "Unit Tests Completed in ${end.time-start.time}ms" ])  		
-		println "-------------------------------------------------------"		
-	}                      
-	catch(Exception e) {
-        event("StatusFinal", ["Error running unit tests: ${e.toString()}"])
-		e.printStackTrace()
-	}	  
+           pluginManager.getGrailsPlugin("core")?.doWithDynamicMethods(appCtx)
+           pluginManager.getGrailsPlugin("logging")?.doWithDynamicMethods(appCtx)
+
+	                   
+        def testFiles = resolveTestResources { "test/unit/${it}.groovy" }
+            testFiles = testFiles.findAll { it.exists() }
+            if(testFiles.size() == 0) {
+                event("StatusUpdate", [ "No tests found in test/unit to execute"])
+                return
+            }
+            def classLoader = grailsApp.classLoader
+            classLoader.rootLoader.addURL(new File("test/unit").toURL())
+            def suite = new TestSuite()
+            populateTestSuite(suite, testFiles, classLoader, ctx)
+            println "-------------------------------------------------------"
+            println "Running Unit Tests..."
+
+            def start = new Date()
+            runTests(suite,result) { test, invocation ->
+                    invocation()
+            }
+            def end = new Date()
+
+            event("StatusUpdate", [ "Unit Tests Completed in ${end.time-start.time}ms" ])
+            println "-------------------------------------------------------"
+        }
+        catch(Exception e) {
+            event("StatusFinal", ["Error running unit tests: ${e.toString()}"])
+            e.printStackTrace()
+        }
 }
 
 task(runIntegrationTests:"Runs Grails' tests under the test/integration directory") {
@@ -226,10 +234,7 @@ task(runIntegrationTests:"Runs Grails' tests under the test/integration director
 		println "-------------------------------------------------------"
 		println "Running Integration Tests..."
 		
-        pluginManager = new DefaultGrailsPluginManager(pluginResources as Resource[], grailsApp)
-    	PluginManagerHolder.setPluginManager(pluginManager)
-		pluginManager.loadPlugins()
-                                            
+
 		def config = new org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator(grailsApp,appCtx)
 		def ctx = config.configure(new MockServletContext())
 		def app = ctx.getBean(GrailsApplication.APPLICATION_ID)
