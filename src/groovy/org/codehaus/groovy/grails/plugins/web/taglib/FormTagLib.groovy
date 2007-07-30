@@ -480,7 +480,7 @@ class FormTagLib {
     def select = { attrs ->
 	    def messageSource = grailsAttributes.getApplicationContext().getBean("messageSource")
 		def locale = RCU.getLocale(request)
-
+        def writer = out
         def from = attrs.remove('from')
         def keys = attrs.remove('keys')
         def optionKey = attrs.remove('optionKey')
@@ -492,87 +492,84 @@ class FormTagLib {
             noSelection = noSelection.entrySet().iterator().next()
         }
 
-        out << "<select name=\"${attrs.remove('name')}\" "
+        writer << "<select name=\"${attrs.remove('name')}\" "
         // process remaining attributes
         outputAttributes(attrs)
 
-        out << '>'
-        out.println()
+        writer << '>'
+        writer.println()
 
         if (noSelection) {
 		    renderNoSelectionOption(noSelection.key, noSelection.value, value)
-            out.println()
+            writer.println()
         }
 
         // create options from list
         if(from) {
             from.eachWithIndex { el,i ->
             	def keyValue = null
-                out << '<option '
+                writer << '<option '
                 if(keys) {
                     keyValue = keys[i]
-                    out << 'value="' << keyValue << '" '
+                    writer << 'value="' << keyValue << '" '
                     if(keyValue == value) {
-                        out << 'selected="selected" '
+                        writer << 'selected="selected" '
                     }
                 }
                 else if(optionKey) {
                     if(optionKey instanceof Closure) {
                         keyValue = optionKey(el)
-                        out << 'value="' << keyValue << '" '
                     }
                     else if(el !=null && optionKey == 'id' && grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE, el.getClass().name)) {
                         keyValue = el.ident()
-                        out << 'value="' << keyValue << '" '
                     }
                     else {
-                        keyValue = el.properties[optionKey]
-                        out << 'value="' << keyValue << '" '
+                        keyValue = el[optionKey]
                     }
-
+                    writer << "value=\"${keyValue}\" "
                     if(keyValue == value) {
-                        out << 'selected="selected" '
+                        writer << 'selected="selected" '
                     }
                 }
                 else {
                 	keyValue = el
-                    out << "value=\"${keyValue}\" "
+                    writer << "value=\"${keyValue}\" "
                     if(keyValue == value) {
-                        out << 'selected="selected" '
+                        writer << 'selected="selected" '
                     }
                 }
-                out << '>'
+                writer << '>'
                 if(optionValue) {
                     if(optionValue instanceof Closure) {
-                         out << optionValue(el).toString().encodeAsHTML()
+                         writer << optionValue(el).toString().encodeAsHTML()
                     }
                     else {
-                        out << el.properties[optionValue].toString().encodeAsHTML()
+                        writer << el[optionValue].toString().encodeAsHTML()
                     }
                 }
                 else if(valueMessagePrefix) {
                 	def message = messageSource.getMessage("${valueMessagePrefix}.${keyValue}", null, null, locale)
                 	if(message != null) {
-                		out << message.encodeAsHTML()
+                		writer << message.encodeAsHTML()
                 	}
                 	else if (keyValue) {
-                		out << keyValue.encodeAsHTML()
+                		writer << keyValue.encodeAsHTML()
                 	}
 					else {
         	            def s = el.toString()
-    	                if(s) out << s.encodeAsHTML()
+    	                if(s) writer << s.encodeAsHTML()
 	                }
                 }
                 else {
                     def s = el.toString()
-                    if(s) out << s.encodeAsHTML()
+                    if(s) writer << s.encodeAsHTML()
                 }
-                out << '</option>'
-                out.println()
+                writer << '</option>'
+                writer.println()
             }
         }
         // close tag
-        out << '</select>'
+        writer << '</select>'
     }
 
     /**
