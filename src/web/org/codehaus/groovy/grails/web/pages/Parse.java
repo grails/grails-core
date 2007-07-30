@@ -158,6 +158,9 @@ public class Parse implements Tokens {
         if (!finalPass) return;
         if (LOG.isDebugEnabled()) LOG.debug("parse: html");
         String text = scan.getToken();
+        if(Pattern.compile("\\S").matcher(text).find())
+            bufferWhiteSpace = false;
+        
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
         String[] lines = text.split("\\n");
@@ -181,7 +184,7 @@ public class Parse implements Tokens {
 
 
 
-            if(hasContent) {
+            if(hasContent && !bufferWhiteSpace) {
                 final String constantValue = sw.toString();
                 final String constantName = "STATIC_HTML_CONTENT_" + constantCount++;
                 constants.put(constantName, constantValue);
