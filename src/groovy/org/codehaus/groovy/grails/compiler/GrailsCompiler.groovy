@@ -32,20 +32,17 @@ class GrailsCompiler extends Groovyc {
 
 	String resourcePattern
 
-    void compile() {            
-		def resources = resourcePattern ? resolveResources(resourcePattern) : [] as Resource[]
+    void compile() {
+        setJointCompilationOptions("-j -Jclasspath=\"${getClasspath()}\"")
+        def resources = resourcePattern ? resolveResources(resourcePattern) : [] as Resource[]
 		def resourceLoader = new GrailsResourceLoader(resources)
         GrailsResourceLoaderHolder.resourceLoader = resourceLoader
 	
 		if(compileList) {
 	        println "Compiling ${compileList.length} source file${compileList ? 's' : ''} to ${destdir}"
-	        CompilerConfiguration configuration = new CompilerConfiguration()
+	        
 	        if(classpath) configuration.classpath = classpath.toString()
-
-	        def compilerOptions = [stubDir: createTempDir()]
-	        configuration.targetDirectory = destdir
-	        configuration.jointCompilationOptions = compilerOptions
-
+            configuration.targetDirectory = destdir
 	        if(encoding)configuration.sourceEncoding = encoding
 
 
