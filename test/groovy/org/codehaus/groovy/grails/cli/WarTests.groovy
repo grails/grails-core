@@ -18,12 +18,10 @@ class WarTests  extends AbstractCliTests {
 		// test critical files
 		assert new File("${appBase}/unzipped/WEB-INF/applicationContext.xml").exists()
 		assert new File("${appBase}/unzipped/WEB-INF/sitemesh.xml").exists()
+		assert new File("${appBase}/unzipped/WEB-INF/grails.xml").exists()
 		assert new File("${appBase}/unzipped/WEB-INF/web.template.xml").exists()
 		assert new File("${appBase}/unzipped/css/main.css").exists()
 		assert new File("${appBase}/unzipped/js/application.js").exists()
-		assert new File("${appBase}/unzipped/WEB-INF/grails-app/conf/ApplicationBootStrap.groovy").exists()
-		assert new File("${appBase}/unzipped/WEB-INF/grails-app/conf/DataSource.groovy").exists()
-		assert new File("${appBase}/unzipped/WEB-INF/grails-app/conf/Config.groovy").exists()
 		assert new File("${appBase}/unzipped/WEB-INF/grails-app/i18n/messages.properties").exists()
 		assert new File("${appBase}/unzipped/WEB-INF/grails-app/views/error.gsp").exists()
 		assert new File("${appBase}/unzipped/WEB-INF/grails-app/views/layouts/main.gsp").exists()
