@@ -157,21 +157,25 @@ class HibernateGrailsPlugin {
             registerDynamicMethods(dc, application, ctx)
 		    for(subClass in dc.subClasses) {
                 registerDynamicMethods(subClass, application, ctx)
-            }
+            }                                                                           
+            MetaClass emc = GroovySystem.metaClassRegistry.getMetaClass(dc.clazz)
         }
 
         for(dc in application.domainClasses) {
+        //    registerDynamicMethods(dc, application, ctx)
             MetaClass mc = dc.metaClass
             def initDomainClass = lazyInit.curry(dc)
             mc.'static'.methodMissing = { String name, args ->
                 initDomainClass()
 				mc.invokeMethod(delegate, name, args)
             }
-
 		}
 	}
 
 	private registerDynamicMethods(GrailsDomainClass dc, GrailsApplication application, ApplicationContext ctx) {
+        dc.metaClass.'static'.methodMissing = { String name, args ->
+            throw new MissingMethodException(name, dc.clazz, args, true)
+        }
         addRelationshipManagementMethods(dc)
         addBasicPersistenceMethods(dc, application, ctx)
         addQueryMethods(dc, application, ctx)
@@ -181,7 +185,7 @@ class HibernateGrailsPlugin {
     }
 
     private addDynamicFinderSupport(GrailsDomainClass dc, GrailsApplication application, ctx ) {
-        def metaClass = dc.metaClass
+        def mc = dc.metaClass
         def GroovyClassLoader classLoader = application.classLoader
         def sessionFactory = ctx.sessionFactory
 
@@ -193,19 +197,25 @@ class HibernateGrailsPlugin {
         // This is the code that deals with dynamic finders. It looks up a static method, if it exists it invokes it
         // otherwise it trys to match the method invocation to one of the dynamic methods. If it matches it will
         // register a new method with the ExpandoMetaClass so the next time it is invoked it doesn't have this overhead.
-        metaClass.'static'.methodMissing = { String methodName, args -> 
+        mc.'static'.invokeMethod = { String methodName, args ->
+            def metaMethod = mc.getStaticMetaMethod(methodName, args)            
 			def result = null
-             StaticMethodInvocation method = dynamicMethods.find { it.isMethodMatch(methodName) }
-             if(method) {
-                // register the method invocation for next time
-                metaClass.'static'."$methodName" = { List varArgs ->
-                    method.invoke(dc.clazz, methodName, varArgs)
-                }
-                result = method.invoke(dc.clazz, methodName, args)                                                                                                      
-             }
-             else {
-                 throw new MissingMethodException(methodName, dc.clazz, args)
-             }
+			if(metaMethod) {
+                result = metaMethod.invoke(delegate, args)
+            }
+            else {
+                StaticMethodInvocation method = dynamicMethods.find { it.isMethodMatch(methodName) }
+                 if(method) {
+                     // register the method invocation for next time
+                    mc.'static'."$methodName" = { List varArgs ->
+                        method.invoke(delegate, methodName, varArgs)
+                    }
+                    result = method.invoke(delegate, methodName, args)
+                 }
+                 else {
+                     throw new MissingMethodException(methodName, delegate, args)
+                 }
+            }
              result
         }
     }
