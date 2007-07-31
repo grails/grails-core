@@ -742,7 +742,6 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
 
         }
         else {
-            System.out.println("Trying to invoke MetaMethod name = " + name + " args = " + ArrayUtils.toString(args));
 
            MetaMethod metaMethod = getMetaClass().getMetaMethod(name, args);
             if(metaMethod != null) {
