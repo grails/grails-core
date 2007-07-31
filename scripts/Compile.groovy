@@ -53,7 +53,14 @@ classesDirPath = "${basedir}/web-app/WEB-INF/classes"
 classesDir = new File(classesDirPath)
 
 task ('default': "Performs compilation on any source files (Java or Groovy) in the 'src' tree") {
-	compile()
+	try {
+		compile()		
+	}   
+	catch(Exception e) {
+		event("StatusFinal", ["Compilation error: ${e.message}"])
+		e.printStackTrace()
+		exit(1)
+	}
 }            
   
 compilerClasspath = { testSources -> 
@@ -87,7 +94,8 @@ task(compile : "Implementation of compilation phase") {
 		mkdir(dir:classesDirPath)
 		def destDir = "${basedir}/web-app/WEB-INF/classes"		
 							
-		mkdir(dir:destDir)
+		mkdir(dir:destDir)    
+		
         groovyc(destdir:destDir,
                 classpathref:"grails.classpath",
 				resourcePattern:"file:${basedir}/**/grails-app/**/*.groovy",

@@ -400,8 +400,36 @@ void setClasspath() {
 	}
     StringBuffer cpath = new StringBuffer("")
 
-    def jarFiles = resolveResources("lib/*.jar").toList()
+    def jarFiles = getJarFiles()
 
+
+	for(dir in grailsDir) {
+        cpath << dir.file.absolutePath << File.pathSeparator
+        // Adding the grails-app folders to the root loader causes re-load issues as
+        // root loader returns old class before the grails GCL attempts to recompile it
+        //rootLoader?.addURL(dir.URL)
+    }
+    cpath << "${basedir}/web-app/WEB-INF/classes"
+    cpath << "${basedir}/web-app/WEB-INF"
+    
+    compConfig = new CompilerConfiguration()
+   	compConfig.setClasspath(cpath.toString());
+
+    for(jar in jarFiles) {
+        cpath << jar.file.absolutePath << File.pathSeparator
+    }
+
+    def rootLoader = getClass().classLoader.rootLoader
+    populateRootLoader(rootLoader, jarFiles)
+    
+   	parentLoader = getClass().getClassLoader()
+    classpathSet = true
+
+    event('setClasspath', [rootLoader])
+}
+
+getJarFiles = {->
+    def jarFiles = resolveResources("lib/*.jar").toList()
     resolveResources("plugins/*/lib/*.jar").each { pluginJar ->
         boolean matches = jarFiles.any { it.file.name == pluginJar.file.name }
         if(!matches) jarFiles.add(pluginJar)
@@ -410,38 +438,15 @@ void setClasspath() {
     resolveResources("file:${userHome}/.grails/lib/*.jar").each { userJar ->
 		jarFiles.add(userJar)
 	}
+	jarFiles
+}
 
-
-
-    def rootLoader = getClass().classLoader.rootLoader
-
-    jarFiles.each { jar ->
-        cpath << jar.file.absolutePath << File.pathSeparator
+populateRootLoader = { rootLoader, jarFiles ->
+    for(jar in jarFiles) {        
         rootLoader?.addURL(jar.URL)
     }
-
-	grailsDir.each { dir ->
-        cpath << dir.file.absolutePath << File.pathSeparator
-        // Adding the grails-app folders to the root loader causes re-load issues as
-        // root loader returns old class before the grails GCL attempts to recompile it
-        //rootLoader?.addURL(dir.URL)
-   }
-
-    cpath << "${basedir}/web-app/WEB-INF/classes"
 	rootLoader?.addURL(new File("${basedir}/web-app/WEB-INF/classes").toURL())
-       cpath << "${basedir}/web-app/WEB-INF"
 	rootLoader?.addURL(new File("${basedir}/web-app/WEB-INF").toURL())
-
-  	// println "Classpath with which to generate web.xml: \n${cpath.toString()}"
-
-   	parentLoader = getClass().getClassLoader()
-
-   	compConfig = new CompilerConfiguration()
-   	compConfig.setClasspath(cpath.toString());
-
-    classpathSet = true
-
-    event('setClasspath', [rootLoader])
 }
 
 task( configureProxy: "The implementation task")  {

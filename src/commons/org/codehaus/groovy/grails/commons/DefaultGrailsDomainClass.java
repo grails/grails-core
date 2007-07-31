@@ -625,7 +625,7 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
             return (GrailsDomainClassProperty)this.propertyMap.get(name);
         }
         else {
-            throw new InvalidPropertyException("No property found for name ["+name+"]");
+            throw new InvalidPropertyException("No property found for name ["+name+"] for class ["+getClazz()+"]");
         }
     }
     /* (non-Javadoc)

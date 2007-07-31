@@ -1,14 +1,18 @@
-/**
- * Class description here.
- 
- * @author Graeme Rocher
- * @since 0.4
-  *
- * Created: Jul 27, 2007
- * Time: 3:53:37 PM
- * 
+/*
+ * Copyright 2003-2007 Graeme Rocher.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
-
 package org.codehaus.groovy.grails.compiler
 
 import org.codehaus.groovy.ant.Groovyc
@@ -22,6 +26,16 @@ import org.codehaus.groovy.tools.ErrorReporter
 import org.apache.tools.ant.AntClassLoader
 import org.codehaus.groovy.control.*
 
+/**
+ * <p>An extended version of the Groovy compiler that performs AST injection into Grails domain classes
+
+ * @author Graeme Rocher
+ * @since 0.6
+  *
+ * Created: Jul 27, 2007
+ * Time: 3:53:37 PM
+ *
+ */
 class GrailsCompiler extends Groovyc {
 
     GrailsCompiler() {
@@ -29,8 +43,41 @@ class GrailsCompiler extends Groovyc {
     }
 
 	def resolver = new org.springframework.core.io.support.PathMatchingResourcePatternResolver()
+	def compileList = []
 
 	String resourcePattern
+
+	void resetFileLists() { compileList.clear() }
+
+	File[] getFileList() { compileList as File[] }
+
+	void scanDir(File srcDir, File destDir, String[] files) {
+        def srcPath = srcDir.absolutePath
+        def destPath = destDir.absolutePath
+        for(f in files) {
+            def sf = new File("${srcPath}/$f")
+            def df = null
+            if(f.endsWith(".groovy") ) {
+                df = new File("${destPath}/${f-'.groovy' + '.class'}")
+                def i = f.lastIndexOf('/')
+                if(!df.exists() && i > -1) {
+                    // check root package
+                    def tmp = new File("${destPath}/${f[i..-1] - '.groovy' + '.class'}")
+                    if(tmp.exists()) df = tmp
+                }
+            }
+            else if(f.endsWith(".java")) {
+                df = new File("${destPath}/${f-'.java' + '.class'}")
+            }
+            else {
+                continue
+            }
+
+            if(sf.lastModified() > df.lastModified()) {
+                compileList << sf
+            }            
+        }
+    }
 
     void compile() {
         setJointCompilationOptions("-j -Jclasspath=\"${getClasspath()}\"")
@@ -39,7 +86,7 @@ class GrailsCompiler extends Groovyc {
         GrailsResourceLoaderHolder.resourceLoader = resourceLoader
 	
 		if(compileList) {
-	        println "Compiling ${compileList.length} source file${compileList ? 's' : ''} to ${destdir}"
+	        println "Compiling ${compileList.size()} source file${compileList ? 's' : ''} to ${destdir}"
 	        
 	        if(classpath) configuration.classpath = classpath.toString()
             configuration.targetDirectory = destdir
@@ -51,7 +98,7 @@ class GrailsCompiler extends Groovyc {
 	        def unit = new JavaAwareCompilationUnit(configuration, buildClassLoaderFor(configuration, resourceLoader, classInjectors));
 			def injectionOperation = new GrailsAwareInjectionOperation(resourceLoader, classInjectors)
 	        unit.addPhaseOperation(injectionOperation, Phases.CONVERSION)
-	        unit.addSources(compileList)
+	        unit.addSources(compileList as File[])
 
 
 	        try {

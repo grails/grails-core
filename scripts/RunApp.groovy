@@ -30,6 +30,7 @@ import org.mortbay.jetty.webapp.*
 
 
 import org.mortbay.http.*
+import org.codehaus.groovy.tools.RootLoader
 
 
 Ant.property(environment:"env")                             
@@ -60,30 +61,51 @@ task ( runApp : "Main implementation that executes a Grails application") {
 }
 task( watchContext: "Watches the WEB-INF/classes directory for changes and restarts the server if necessary") {
     long lastModified = classesDir.lastModified()
-    while(true) {        
-		try {
+    while(true) {
+
+        try {
 	        Ant.groovyc(destdir:classesDirPath,
 	                classpathref:"grails.classpath",
 					resourcePattern:"file:${basedir}/**/grails-app/**/*.groovy") {
 						src(path:"${basedir}/src/java")
 						src(path:"${basedir}/src/groovy")
-						src(path:"${basedir}/grails-app/domain")										
+						src(path:"${basedir}/grails-app/domain")
 			}
-			
-		}   
-		catch(Exception e) {
-			event("StatusUpdate", ["Compilation error: ${e.message}"] )
-			e.printStackTrace()
+
 		}
+        catch(Exception e) {
+            compilationError = true
+            event("StatusUpdate", ["Error automatically restarting container: ${e.message}"])
+            e.printStackTrace()
+
+        }
         def tmp = classesDir.lastModified()
         if(lastModified < tmp) {
-			lastModified = tmp	
-            grailsServer.stop()
-            grailsServer.start()  
+
+            // run another compile JIT
+			try {
+	            grailsServer.stop()
+	            compile()
+
+	            def rootLoader = new RootLoader([] as URL[], Thread.currentThread().contextClassLoader)
+	            def jarFiles = getJarFiles()
+	            populateRootLoader(rootLoader, jarFiles)
+	            webContext.setClassLoader(rootLoader)
+            	grailsServer.start()
+			}
+            catch(Exception e) {
+                event("StatusUpdate", ["Error automatically restarting container: ${e.message}"])
+                e.printStackTrace()
+            }
+
+			finally {
+               lastModified = classesDir.lastModified()
+            }
         }
         sleep(1000)
     }
 }
+
 task( configureHttpServer : "Returns a jetty server configured with an HTTP connector") {
     def server = new Server()
     grailsServer = server

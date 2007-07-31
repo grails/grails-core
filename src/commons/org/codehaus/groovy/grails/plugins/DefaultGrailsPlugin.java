@@ -22,11 +22,14 @@ import groovy.util.slurpersupport.GPathResult;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.commons.*;
+import org.codehaus.groovy.grails.commons.ArtefactHandler;
+import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.commons.GrailsClassUtils;
+import org.codehaus.groovy.grails.commons.GrailsResourceUtils;
+import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration;
 import org.codehaus.groovy.grails.compiler.GrailsClassLoader;
 import org.codehaus.groovy.grails.compiler.support.GrailsResourceLoader;
 import org.codehaus.groovy.grails.compiler.support.GrailsResourceLoaderHolder;
-import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration;
 import org.codehaus.groovy.grails.plugins.exceptions.PluginException;
 import org.codehaus.groovy.grails.support.ParentApplicationContextAware;
 import org.springframework.beans.BeanWrapper;
@@ -36,6 +39,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 
 import java.io.IOException;
+import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.*;
@@ -585,13 +589,29 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
         if(resourceClass != null)source=resourceClass;
         else source = resource;
 
-        Map event = notifyOfEvent(EVENT_ON_CHANGE, source);
+        if(loadedClass != null && Modifier.isAbstract(loadedClass.getModifiers())) {
+            restartContainer();
+        }
+        else {
+            Map event = notifyOfEvent(EVENT_ON_CHANGE, source);
+            if(LOG.isDebugEnabled()) {
+                LOG.debug("Firing onChange event listener with event object ["+event+"]");
+            }
 
-        if(LOG.isDebugEnabled()) {
-            LOG.debug("Firing onChange event listener with event object ["+event+"]");
+            getManager().informObservers(getName(), event);
         }
 
-        getManager().informObservers(getName(), event);
+    }
+
+    private void restartContainer() {
+        // here we touch the classes directory if the file is abstract to force the Grails server
+        // to restart the web application
+        Resource r = this.applicationContext.getResource("/WEB-INF/classes");
+        try {
+            r.getFile().setLastModified(System.currentTimeMillis());
+        } catch (IOException e) {
+            LOG.error("Error retrieving /WEB-INF/classes directory: " + e.getMessage(),e);
+        }
     }
 
     private Class attemptClassReload(final Resource resource) {

@@ -44,6 +44,7 @@ public class GrailsHibernateDomainClassProperty implements GrailsDomainClassProp
     private Class relatedClassType;
     private GrailsDomainClass referencedDomainClass;
     private GrailsDomainClassProperty otherSide;
+    private boolean owingSide;
 
 
     public GrailsHibernateDomainClassProperty(GrailsHibernateDomainClass domainClass, String propertyName) {
@@ -182,7 +183,7 @@ public class GrailsHibernateDomainClassProperty implements GrailsDomainClassProp
 	}
 
 	public boolean isOwningSide() {
-		throw new UnsupportedOperationException("Method 'isOwningSide' is not supported by implementation");
+		return this.owingSide;
 	}
 
 	public boolean isCircular() {
@@ -198,7 +199,7 @@ public class GrailsHibernateDomainClassProperty implements GrailsDomainClassProp
     }
 
     public void setOwningSide(boolean b) {
-		throw new UnsupportedOperationException("Method 'setOwningSide' is not supported by implementation");
+		this.owingSide = b;
     }
 
 }
