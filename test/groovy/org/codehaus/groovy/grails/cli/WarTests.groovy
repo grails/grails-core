@@ -23,8 +23,6 @@ class WarTests  extends AbstractCliTests {
 		assert new File("${appBase}/unzipped/css/main.css").exists()
 		assert new File("${appBase}/unzipped/js/application.js").exists()
 		assert new File("${appBase}/unzipped/WEB-INF/grails-app/i18n/messages.properties").exists()
-		assert new File("${appBase}/unzipped/WEB-INF/grails-app/views/error.gsp").exists()
-		assert new File("${appBase}/unzipped/WEB-INF/grails-app/views/layouts/main.gsp").exists()
 			
 	}
 
