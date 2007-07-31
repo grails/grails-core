@@ -183,7 +183,7 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
 		  callable.call()
 	}
 
-    def assertOutputEquals(expected, template, params = [:]) {
+    def assertOutputEquals(expected, template, params = [:], Closure transform = { it.toString() }) {
 
         def engine = appCtx.groovyPagesTemplateEngine
 
@@ -197,7 +197,7 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
         webRequest.out = out
         w.writeTo(out)
 
-        assertEquals expected, sw.toString()
+        assertEquals expected, transform(sw)
     }	
 	
 }
