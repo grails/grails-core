@@ -280,7 +280,7 @@ public class RegexUrlMapping extends AbstractUrlMapping implements UrlMapping {
             this.actionName = createRuntimeConstraintEvaluator(GrailsControllerClass.ACTION, this.constraints);
         }
 
-        return new DefaultUrlMappingInfo(this.controllerName, this.actionName, params);
+        return new DefaultUrlMappingInfo(this.controllerName, this.actionName, params,this.urlData);
     }
 
     /**

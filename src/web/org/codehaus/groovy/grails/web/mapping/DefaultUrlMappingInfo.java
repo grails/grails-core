@@ -41,8 +41,9 @@ public class DefaultUrlMappingInfo implements UrlMappingInfo {
     private Object actionName;
     private static final String ID_PARAM = "id";
     private String id;
+    private UrlMappingData urlData;
 
-    public DefaultUrlMappingInfo(Object controllerName, Object actionName, Map params) {
+    public DefaultUrlMappingInfo(Object controllerName, Object actionName, Map params, UrlMappingData urlData) {
         if(controllerName == null) throw new IllegalArgumentException("Argument [controllerName] cannot be null or blank");
         if(params == null) throw new IllegalArgumentException("Argument [params] cannot be null");
 
@@ -51,6 +52,11 @@ public class DefaultUrlMappingInfo implements UrlMappingInfo {
         this.controllerName = controllerName;
         this.actionName = actionName;
         this.id = (String)params.get(ID_PARAM);
+        this.urlData = urlData;
+    }
+
+    public String toString() {
+        return urlData.getUrlPattern();
     }
 
     /**

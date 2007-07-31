@@ -155,8 +155,12 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
                 LOG.debug("Attempting to match URI ["+uri+"] with pattern ["+mapping.getUrlData().getUrlPattern()+"]");
 
             UrlMappingInfo current = mapping.match(uri);
-            if(current!=null)
+            if(current!=null) {
+                if(LOG.isDebugEnabled())
+                    LOG.debug("Matched URI ["+uri+"] with pattern ["+mapping.getUrlData().getUrlPattern()+"], adding to posibilities");
+
                 matchingUrls.add(current);
+            }
         }
         return (UrlMappingInfo[])matchingUrls.toArray(new UrlMappingInfo[matchingUrls.size()]);
     }

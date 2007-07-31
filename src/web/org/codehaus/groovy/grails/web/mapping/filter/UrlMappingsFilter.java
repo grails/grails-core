@@ -93,7 +93,7 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
 
                         String forwardUrl = buildDispatchUrlForMapping(request, info);
                         if(LOG.isDebugEnabled()) {
-                            LOG.debug("Matched URI ["+uri+"] to URL mapping, forwarding to ["+forwardUrl+"] with response ["+response.getClass()+"]");
+                            LOG.debug("Matched URI ["+uri+"] to URL mapping ["+info+"], forwarding to ["+forwardUrl+"] with response ["+response.getClass()+"]");
                         }
                         //populateParamsForMapping(info);
                         RequestDispatcher dispatcher = request.getRequestDispatcher(forwardUrl);
@@ -101,6 +101,7 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
 
                         WebUtils.exposeForwardRequestAttributes(request);
                         dispatcher.forward(request, response);
+                        break;
                     }
 
             }
