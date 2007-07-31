@@ -1,24 +1,24 @@
 /*
  * Copyright 2004-2005 the original author or authors.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */ 
+ */
 package org.codehaus.groovy.grails.plugins.orm.hibernate;
 
-import grails.util.GrailsUtil                                              
+import grails.util.GrailsUtil
 import org.codehaus.groovy.grails.commons.*
 import org.codehaus.groovy.grails.validation.*
-import org.codehaus.groovy.grails.plugins.support.GrailsPluginUtils 
+import org.codehaus.groovy.grails.plugins.support.GrailsPluginUtils
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil
 import org.codehaus.groovy.grails.orm.hibernate.ConfigurableLocalSessionFactoryBean;
 import org.codehaus.groovy.grails.orm.hibernate.support.*
@@ -27,7 +27,7 @@ import org.springframework.orm.hibernate3.HibernateTransactionManager;
 import org.springmodules.beans.factory.config.MapToPropertiesFactoryBean;
 import org.springframework.orm.hibernate3.support.OpenSessionInViewInterceptor;
 import org.springframework.orm.hibernate3.HibernateAccessor;
-import org.codehaus.groovy.runtime.InvokerHelper;   
+import org.codehaus.groovy.runtime.InvokerHelper;
 import org.codehaus.groovy.grails.commons.metaclass.*
 import org.codehaus.groovy.grails.orm.hibernate.metaclass.*
 import org.hibernate.SessionFactory
@@ -52,14 +52,14 @@ import org.springframework.core.io.Resource
 class HibernateGrailsPlugin {
 
 	def version = grails.util.GrailsUtil.getGrailsVersion()
-	def dependsOn = [dataSource:version,	                 
+	def dependsOn = [dataSource:version,
 	                 i18n:version,
 	                 core: version]
-	                 
-	def loadAfter = ['controllers']	                 
-	
+
+	def loadAfter = ['controllers']
+
 	def watchedResources = ["file:./hibernate/**.xml"]
-	def hibProps = [:]  
+	def hibProps = [:]
 	def hibConfigClass
 
 	def doWithSpring = {
@@ -79,9 +79,9 @@ class HibernateGrailsPlugin {
 				}
 			}
 			def ds = application.config.dataSource
-			if(ds || application.domainClasses.size() > 0) {  
+			if(ds || application.domainClasses.size() > 0) {
 				hibConfigClass = ds?.configClass
-				
+
                 if(ds && ds.loggingSql) {
                     hibProps."hibernate.show_sql" = "true"
                     hibProps."hibernate.format_sql" = "true"
@@ -137,14 +137,14 @@ class HibernateGrailsPlugin {
 
 
 	}
-	
+
 	def doWithApplicationContext = { ctx ->
 	    if(ctx.containsBean('sessionFactory')) {
             def factory = new PersistentConstraintFactory(ctx.sessionFactory, UniqueConstraint.class)
             ConstrainedProperty.registerNewConstraint(UniqueConstraint.UNIQUE_CONSTRAINT, factory);
         }
-	}   
-	
+	}
+
 	def doWithDynamicMethods = { ctx->
 
         SessionFactory sessionFactory = ctx.sessionFactory
@@ -157,7 +157,7 @@ class HibernateGrailsPlugin {
             registerDynamicMethods(dc, application, ctx)
 		    for(subClass in dc.subClasses) {
                 registerDynamicMethods(subClass, application, ctx)
-            }                                                                           
+            }
             MetaClass emc = GroovySystem.metaClassRegistry.getMetaClass(dc.clazz)
         }
 
@@ -198,7 +198,8 @@ class HibernateGrailsPlugin {
         // otherwise it trys to match the method invocation to one of the dynamic methods. If it matches it will
         // register a new method with the ExpandoMetaClass so the next time it is invoked it doesn't have this overhead.
         mc.'static'.invokeMethod = { String methodName, args ->
-            def metaMethod = mc.getStaticMetaMethod(methodName, args)            
+            args = args == null ? [args] as Object[] : args
+            def metaMethod = mc.getStaticMetaMethod(methodName, args)
 			def result = null
 			if(metaMethod) {
                 result = metaMethod.invoke(delegate, args)
@@ -233,7 +234,7 @@ class HibernateGrailsPlugin {
         }
         metaClass.validate = {Boolean b->
             validateMethod.invoke(delegate, "validate", [b] as Object[])
-        }        
+        }
     }
 
     private addTransactionalMethods(GrailsDomainClass dc, GrailsApplication application, ctx) {
@@ -575,8 +576,8 @@ class HibernateGrailsPlugin {
         }
 
     }
-	
-	def onChange = {  event ->         
+
+	def onChange = {  event ->
         if(event.source instanceof Resource) {
 
             new AntBuilder().sequential {
@@ -587,4 +588,5 @@ class HibernateGrailsPlugin {
              }
         }
 	}
+
 }
