@@ -209,9 +209,9 @@ class HibernateGrailsPlugin {
                  if(method) {
                      // register the method invocation for next time
                     mc.'static'."$methodName" = { List varArgs ->
-                        method.invoke(delegate, methodName, varArgs)
+                        method.invoke(dc.clazz, methodName, varArgs)
                     }
-                    result = method.invoke(delegate, methodName, args)
+                    result = method.invoke(dc.clazz, methodName, args)
                  }
                  else {
                      throw new MissingMethodException(methodName, delegate, args)
