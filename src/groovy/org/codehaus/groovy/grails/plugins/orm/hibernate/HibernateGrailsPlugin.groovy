@@ -368,7 +368,7 @@ class HibernateGrailsPlugin {
             template.get(domainClassType, id) != null
         }
 
-        metaClass.createCriteria = {-> new HibernateCriteriaBuilder(domainClassType,sessionFactory) }
+        metaClass.'static'.createCriteria = {-> new HibernateCriteriaBuilder(domainClassType,sessionFactory) }
         metaClass.'static'.withCriteria = { Closure callable ->
             new HibernateCriteriaBuilder(domainClassType, sessionFactory).invokeMethod("doCall", callable)
         }
