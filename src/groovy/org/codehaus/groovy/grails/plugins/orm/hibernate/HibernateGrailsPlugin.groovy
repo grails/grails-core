@@ -587,5 +587,4 @@ class HibernateGrailsPlugin {
              }
         }
 	}
-
 }
