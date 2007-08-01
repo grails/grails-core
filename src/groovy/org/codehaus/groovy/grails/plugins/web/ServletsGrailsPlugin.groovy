@@ -38,8 +38,7 @@ class ServletsGrailsPlugin {
 
 	def doWithDynamicMethods = { ctx ->
 
-        // enables access to session attributes using session.foo syntax
-        HttpSession.metaClass.getProperty = { String name ->
+        def getAttributeClosure = { String name ->
             def mp = delegate.class.metaClass.getMetaProperty(name)
             def result = null
             if(mp) result = mp.getProperty(delegate)
@@ -48,13 +47,16 @@ class ServletsGrailsPlugin {
             }
             result
         }
-        HttpSession.metaClass.setProperty = { String name, value ->
+        def setAttributeClosure = { String name, value ->
             def mp = delegate.class.metaClass.getMetaProperty(name)
             if(mp) mp.setProperty(delegate, value)
             else {
                 delegate.setAttribute(name, value)
             }
         }
+        // enables access to session attributes using session.foo syntax
+        HttpSession.metaClass.getProperty = getAttributeClosure
+        HttpSession.metaClass.setProperty = setAttributeClosure
 		// enables access to session attributes with session["foo"] syntax
 	    HttpSession.metaClass.getAt = { String key ->
 	        delegate.getAttribute(key)
@@ -79,6 +81,10 @@ class ServletsGrailsPlugin {
 	    HttpServletRequest.metaClass.putAt = { String key, Object val ->
 	        delegate.setAttribute(key, val)
 	    }
+	    // enables access to request attributes using property syntax
+        HttpServletRequest.metaClass.getProperty = getAttributeClosure
+        HttpServletRequest.metaClass.setProperty = setAttributeClosure
+
         HttpServletRequest.metaClass.isGet = {->
             delegate.method == "GET"
         }        

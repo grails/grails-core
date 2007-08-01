@@ -73,7 +73,14 @@ class ServletsGrailsPluginTests extends AbstractGrailsPluginTests {
         def request = new MockHttpServletRequest()
 
         request["foo"] = "bar"        
-        assert "bar" == request["foo"]
+        assertEquals "bar", request["foo"]
+        assertEquals "bar", request.foo
+
+        request.foo = "foo"
+
+        assertEquals "foo", request["foo"]
+        assertEquals "foo", request.foo
+
     }
 
     void testEachMethod() {
