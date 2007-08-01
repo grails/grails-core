@@ -68,7 +68,8 @@ class DomainClassGrailsPlugin {
             MetaClass metaClass = domainClass.metaClass
 
             metaClass.ident = {-> delegate[domainClass.identifier.name] }
-            metaClass.constraints = {-> domainClass.constrainedProperties }
+            metaClass.'static'.getConstraints = {-> domainClass.constrainedProperties }
+            metaClass.getConstraints = {-> domainClass.constrainedProperties }
             metaClass.'static'.create = {-> BeanUtils.instantiateClass(domainClass.getClazz()) }
             metaClass.hasErrors = {-> delegate.errors?.hasErrors() }
             metaClass.errors = new ThreadManagedMetaBeanProperty(domainClass.clazz, "errors", Errors, { 

@@ -167,7 +167,12 @@ class HibernateGrailsPlugin {
             def initDomainClass = lazyInit.curry(dc)
             mc.'static'.methodMissing = { String name, args ->
                 initDomainClass()
-				mc.invokeMethod(delegate, name, args)
+                def result
+                if(delegate instanceof Class)
+				    result = mc.invokeStaticMethod(delegate, name, args)
+				else
+				    result = mc.invokeMethod(delegate, name, args)
+                result
             }
 		}
 	}
@@ -210,7 +215,7 @@ class HibernateGrailsPlugin {
                      // register the method invocation for next time
                     mc.'static'."$methodName" = { List varArgs ->
                         method.invoke(dc.clazz, methodName, varArgs)
-                    }
+                    }                    
                     result = method.invoke(dc.clazz, methodName, args)
                  }
                  else {
