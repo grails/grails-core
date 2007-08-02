@@ -62,7 +62,7 @@ class RenderMethodTests extends AbstractGrailsControllerTests {
 		// TODO	
 	}
 	
-	void testRenderTemplate() {
+   /* void testRenderTemplate() {
 		
 		runTest {
 			def mockController = ga.getControllerClass("RenderController").newInstance()
@@ -75,7 +75,7 @@ class RenderMethodTests extends AbstractGrailsControllerTests {
 			
 			assertEquals "hello world!", response.contentAsString
 		}
-	}
+	}*/
 
 	void onSetUp() {
 		gcl.parseClass(
