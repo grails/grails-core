@@ -41,14 +41,11 @@ out.print(STATIC_HTML_CONTENT_1)
 }
 out.print(STATIC_HTML_CONTENT_2)
 }
-static final STATIC_HTML_CONTENT_1 = '''\\t
-'''
+static final STATIC_HTML_CONTENT_1 = '''\\t'''
 
-static final STATIC_HTML_CONTENT_2 = '''\\t
-'''
+static final STATIC_HTML_CONTENT_2 = '''\\t'''
 
-static final STATIC_HTML_CONTENT_0 = '''\\t
-'''
+static final STATIC_HTML_CONTENT_0 = '''\\t'''
 
 }"""),trimAndRemoveCR(output) )
 					
@@ -71,14 +68,11 @@ out.print(STATIC_HTML_CONTENT_1)
 }
 out.print(STATIC_HTML_CONTENT_2)
 }
-static final STATIC_HTML_CONTENT_1 = '''\\t
-'''
+static final STATIC_HTML_CONTENT_1 = '''\\t'''
 
-static final STATIC_HTML_CONTENT_2 = '''\\t
-'''
+static final STATIC_HTML_CONTENT_2 = '''\\t'''
 
-static final STATIC_HTML_CONTENT_0 = '''\\t
-'''
+static final STATIC_HTML_CONTENT_0 = '''\\t'''
 
 }"""),trimAndRemoveCR(output) )
 		}
