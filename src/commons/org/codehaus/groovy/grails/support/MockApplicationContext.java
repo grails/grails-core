@@ -161,7 +161,15 @@ public class MockApplicationContext extends GroovyObjectSupport implements WebAp
 		throw new UnsupportedOperationException("Method not supported by implementation");
 	}
 
-	public Class getType(String name) throws NoSuchBeanDefinitionException {
+    public boolean isPrototype(String s) throws NoSuchBeanDefinitionException {
+        throw new UnsupportedOperationException("Method not supported by implementation");
+    }
+
+    public boolean isTypeMatch(String s, Class aClass) throws NoSuchBeanDefinitionException {
+        throw new UnsupportedOperationException("Method not supported by implementation");
+    }
+
+    public Class getType(String name) throws NoSuchBeanDefinitionException {
 		if(!beans.containsKey(name))throw new NoSuchBeanDefinitionException(name);
 
 		return beans.get(name).getClass();

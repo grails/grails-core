@@ -94,16 +94,20 @@ public class GrailsWebApplicationContext extends StaticApplicationContext
 		}
 	}
 
-	protected String getNamespace() {
-		return this.namespace;
+	public String getNamespace() {
+		return namespace;
 	}
 
 	public void setConfigLocations(String[] configLocations) {
 		throw new UnsupportedOperationException("StaticWebApplicationContext does not support configLocations");
 	}
 
+    public String[] getConfigLocations() {
+        throw new UnsupportedOperationException("StaticWebApplicationContext does not support configLocations");
+    }
 
-	/**
+
+    /**
 	 * Register ServletContextAwareProcessor.
 	 * @see ServletContextAwareProcessor
 	 */
@@ -148,7 +152,11 @@ public class GrailsWebApplicationContext extends StaticApplicationContext
 		this.servletConfig = servletConfig;
 	}
 
-	public MetaClass getMetaClass() {
+    public ServletConfig getServletConfig() {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    public MetaClass getMetaClass() {
 		return this.metaClass;
 	}
 

@@ -18,6 +18,7 @@ package org.codehaus.groovy.grails.commons.spring;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.PropertyValue;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
@@ -55,7 +56,22 @@ public class DefaultRuntimeSpringConfiguration implements
     public DefaultRuntimeSpringConfiguration(ApplicationContext parent) {
         super();
         this.context = new GrailsWebApplicationContext(parent);
+        if(parent != null){
+            trySettingClassLoaderOnContextIfFoundInParent(parent);
+        }
     }
+
+    private void trySettingClassLoaderOnContextIfFoundInParent(ApplicationContext parent) {
+        try{
+            Object classLoader = parent.getBean(GrailsRuntimeConfigurator.CLASS_LOADER_BEAN);
+            if(classLoader instanceof ClassLoader){
+            //    this.context.setClassLoader((ClassLoader) classLoader);
+            }
+        }catch(NoSuchBeanDefinitionException nsbde){
+            //ignore, we tried our best
+        }
+    }
+   
 
     public BeanConfiguration addSingletonBean(String name, Class clazz) {
         BeanConfiguration bc = new DefaultBeanConfiguration(name,clazz);

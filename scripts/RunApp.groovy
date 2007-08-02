@@ -28,28 +28,26 @@ import org.mortbay.jetty.nio.*
 import org.mortbay.jetty.handler.*
 import org.mortbay.jetty.webapp.*
 
-
-import org.mortbay.http.*
 import org.codehaus.groovy.tools.RootLoader
 
 
-Ant.property(environment:"env")                             
-grailsHome = Ant.antProject.properties."env.GRAILS_HOME" 
+Ant.property(environment:"env")
+grailsHome = Ant.antProject.properties."env.GRAILS_HOME"
 grailsServer = null
 grailsContext = null
 
 
-includeTargets << new File ( "${grailsHome}/scripts/Package.groovy" )  
-includeTargets << new File ( "${grailsHome}/scripts/PackagePlugins.groovy" )  
+includeTargets << new File ( "${grailsHome}/scripts/Package.groovy" )
+includeTargets << new File ( "${grailsHome}/scripts/PackagePlugins.groovy" )
 
-task ('default': "Run's a Grails application in Jetty") { 
+task ('default': "Run's a Grails application in Jetty") {
 	depends( checkVersion, configureProxy, packagePlugins, packageApp, generateWebXml )
 	runApp()
 	watchContext()
-}                 
+}
 task ( runApp : "Main implementation that executes a Grails application") {
 	System.setProperty('org.mortbay.xml.XmlParser.NotValidating', 'true')
-    try {           
+    try {
 		println "Running Grails application.."
         def server = configureHttpServer()
         server.start()

@@ -10,7 +10,7 @@ class ServicesGrailsPluginTests extends AbstractGrailsMockTests {
 	void onSetUp() {
 		gcl.parseClass(
 """
-class TransactionalService {
+class SomeTransactionalService {
 	boolean transactional = true
     def serviceMethod() {
          return "hello"
@@ -56,7 +56,7 @@ class ApplicationDataSource {
 		def appCtx = springConfig.getApplicationContext()
 		assert appCtx.containsBean("dataSource")
 		assert appCtx.containsBean("sessionFactory")
-		assert appCtx.containsBean("transactionalService")
+		assert appCtx.containsBean("someTransactionalService")
 		assert appCtx.containsBean("nonTransactionalService")
 	}	
 }

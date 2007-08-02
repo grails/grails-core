@@ -99,6 +99,7 @@ public abstract class AbstractGrailsHibernateTests extends TestCase {
         MockApplicationContext mc = new MockApplicationContext();
         mc.registerMockBean(GrailsApplication.APPLICATION_ID, ga);
         mc.registerMockBean("messageSource", new StaticMessageSource());
+        mc.registerMockBean(GrailsRuntimeConfigurator.CLASS_LOADER_BEAN, gcl);
        
         GrailsRuntimeConfigurator grc = new GrailsRuntimeConfigurator(ga, mc);
         this.applicationContext = grc.configure(new MockServletContext());

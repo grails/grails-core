@@ -400,9 +400,7 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
              }
              return new HandlerExecutionChain(grailsController, interceptors);
         }
-        else {
-            return super.getHandler(request, cache);
-        }
+        return null;
     }
 
 }

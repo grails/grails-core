@@ -32,9 +32,7 @@ class TransactionalService {
             assertEquals "foo", testService.myMethod()
 
 
-            def newGcl = new GroovyClassLoader()
-
-            def event = [source:newGcl.parseClass(service1),
+             def event = [source:gcl.parseClass(service1),
                          ctx:appCtx]
 
             def plugin = mockManager.getGrailsPlugin("services")

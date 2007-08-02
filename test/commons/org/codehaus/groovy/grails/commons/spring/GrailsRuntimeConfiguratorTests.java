@@ -59,6 +59,7 @@ public class GrailsRuntimeConfiguratorTests extends TestCase {
         GrailsApplication app = new DefaultGrailsApplication(new Class[]{dc,sc,c}, gcl );
         MockApplicationContext parent = new MockApplicationContext();
         parent.registerMockBean(GrailsApplication.APPLICATION_ID, app);
+        parent.registerMockBean("classLoader", gcl);
         
         GrailsRuntimeConfigurator conf = new GrailsRuntimeConfigurator(app,parent);
         DefaultGrailsPluginManager manager = new DefaultGrailsPluginManager(new Class[0], app);

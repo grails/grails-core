@@ -44,6 +44,7 @@ abstract class AbstractGrailsPluginTests extends GroovyTestCase {
         ApplicationHolder.application = ga
         ga.setApplicationContext(ctx);
         ctx.registerMockBean(GrailsApplication.APPLICATION_ID, ga);
+        ctx.registerMockBean(GrailsRuntimeConfigurator.CLASS_LOADER_BEAN, gcl)
 
 		mockManager = new MockGrailsPluginManager(ga)
 		ctx.registerMockBean("manager", mockManager )
