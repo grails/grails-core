@@ -160,6 +160,9 @@ public class GrailsLayoutDecoratorMapper extends AbstractDecoratorMapper impleme
                 } catch (IOException e) {
                     // ignore, if there was a problem here its going to be a FNFE which is ok
                 }
+                catch (IllegalArgumentException e) {
+                    // ignore, this is thrown when the plugins dir doesn't exist
+                }
                 return null;
             }
             else {
