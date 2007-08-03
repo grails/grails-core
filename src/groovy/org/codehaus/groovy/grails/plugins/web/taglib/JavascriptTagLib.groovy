@@ -63,11 +63,7 @@ class JavascriptTagLib  {
 		setUpRequestAttributes();
         def requestPluginContext = request[CONTROLLER]?.pluginContextPath
 		if(attrs.src) {
-			out << '<script type="text/javascript" src="'
-			out <<  grailsAttributes.getApplicationUri(request)
-			out <<  (requestPluginContext ? "/${requestPluginContext}" : "")
-			out << "/js/${attrs.src}"
-			out.println '"></script>'		
+            javascriptInclude(attrs)
 		}
 		else if(attrs.library) {
 
@@ -75,24 +71,20 @@ class JavascriptTagLib  {
 				if(!request[INCLUDED_LIBRARIES].contains(attrs.library)) {
 					LIBRARY_MAPPINGS[attrs.library].each {
 						if(!request[INCLUDED_JS].contains(it)) {
-								request[INCLUDED_JS] << it
-								out << '<script type="text/javascript" src="'
-								out << grailsAttributes.getApplicationUri(request)
-								out << (requestPluginContext ? "/${requestPluginContext}" : "")
-								out << "/js/${it}.js"							
-								out.println '"></script>'
-						}					
+							request[INCLUDED_JS] << it
+							def newattrs = [:] + attrs
+							newattrs.src = it+'.js'
+							javascriptInclude(newattrs)
+					    }
 					}
 					request[INCLUDED_LIBRARIES] << attrs.library					
 				}				
 			}
 			else {
 				if(!request[INCLUDED_LIBRARIES].contains(attrs.library)) {
-					out << '<script type="text/javascript" src="'
-					out << grailsAttributes.getApplicationUri(request)
-					out << (requestPluginContext ? "/${requestPluginContext}" : "")
-					out << "/js/${attrs.library}.js"						
-					out.println '"></script>'
+					def newattrs = [:] + attrs
+					newattrs.src = newattrs.remove('library')+'.js'
+					javascriptInclude(newattrs)
 					request[INCLUDED_LIBRARIES] << attrs.library
 					request[INCLUDED_JS] << attrs.library					
 				}
@@ -104,6 +96,21 @@ class JavascriptTagLib  {
 			out.println '</script>'
 		}
 	}
+
+	private javascriptInclude(attrs) {
+    	def requestPluginContext = request[CONTROLLER]?.pluginContextPath
+		out << '<script type="text/javascript" src="'
+		if (!attrs.base) {
+			out << grailsAttributes.getApplicationUri(request)
+			out << (requestPluginContext ? "/${requestPluginContext}" : "")
+			out << '/js/'
+		} else {
+			out << attrs.base
+		}
+		out << attrs.src
+ 		out.println '"></script>'
+	}
+		
     /**
      *  Creates a remote function call using the prototype library
      */

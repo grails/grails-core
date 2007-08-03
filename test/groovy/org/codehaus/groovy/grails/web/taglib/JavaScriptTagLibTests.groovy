@@ -192,6 +192,30 @@ class TestUrlMappings {
         }
     }
 
+
+    public void testJSLibWithBase (){
+        StringWriter sw = new StringWriter()
+        PrintWriter pw = new PrintWriter(sw)
+        withTag("javascript",pw) { tag ->
+           def attrs = [library:'lib', base:'http://testserver/static/']
+           setRequestContext()
+           tag.call(attrs) {  }
+           assertEquals("<script type=\"text/javascript\" src=\"http://testserver/static/lib.js\"></script>" + System.getProperty("line.separator"), sw.toString())
+        }
+    }
+
+
+    public void testJSSrcWithBase (){
+        StringWriter sw = new StringWriter()
+        PrintWriter pw = new PrintWriter(sw)
+        withTag("javascript",pw) { tag ->
+           def attrs = [src:'mylib.js', base:'http://testserver/static/']
+           setRequestContext()
+           tag.call(attrs) {  }
+           assertEquals("<script type=\"text/javascript\" src=\"http://testserver/static/mylib.js\"></script>" + System.getProperty("line.separator"), sw.toString())
+        }
+    }
+
     def setRequestContext(){
         request.setAttribute(WebUtils.INCLUDE_CONTEXT_PATH_ATTRIBUTE, "/myapp")
     }
