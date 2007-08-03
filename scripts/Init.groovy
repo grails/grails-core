@@ -298,8 +298,6 @@ task ( copyBasics: "Copies the basic resources required for a Grails app to func
 				include(name:"sitemesh.xml")
 			}			
 		}	
-		copy(file:"${grailsHome}/src/war/WEB-INF/web${servletVersion}.template.xml",
-				 tofile:"${basedir}/web-app/WEB-INF/web.template.xml") 
 				 
 		copy(todir:"${basedir}/web-app/WEB-INF/tld") {
 			fileset(dir:"${grailsHome}/src/war/WEB-INF/tld/${servletVersion}")	
