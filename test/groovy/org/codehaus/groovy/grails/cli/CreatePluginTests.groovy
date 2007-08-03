@@ -32,8 +32,7 @@ class CreatePluginTests extends AbstractCliTests {
 		// test critical files
         assertTrue new File("${appBase}/MyTest/MyTestGrailsPlugin.groovy").exists()
 		assertTrue new File("${appBase}/MyTest/web-app/WEB-INF/applicationContext.xml").exists()
-		assertTrue new File("${appBase}/MyTest/web-app/WEB-INF/sitemesh.xml").exists()
-		assertTrue new File("${appBase}/MyTest/web-app/WEB-INF/web.template.xml").exists()
+		assertTrue new File("${appBase}/MyTest/web-app/WEB-INF/sitemesh.xml").exists()		
 	}
 
 }
