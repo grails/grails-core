@@ -33,4 +33,17 @@ class MessageTagTests extends AbstractGrailsTagTests {
 		
 	}
 
+	void testMessageTagWithCodec() {
+		StringWriter sw = new StringWriter();
+
+		withTag("message", sw) { tag ->
+
+			def attrs = [code:"test.code", encodeAs:'HTML']	
+			messageSource.addMessage("test.code", new Locale("en"), ">>&&")
+			tag.call( attrs )
+			assertEquals "&gt;&gt;&amp;&amp;", sw.toString()
+		}
+
+	}
+
 }

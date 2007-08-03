@@ -164,6 +164,7 @@ class ValidationTagLib {
                                 .getBean("messageSource")
 
           def locale = RCU.getLocale(request)
+          def text
 
           if(attrs['error']) {
                 def error = attrs['error']
@@ -173,10 +174,10 @@ class ValidationTagLib {
                                                         defaultMessage,
                                                         locale )
                 if(message) {
-                    out << message
+                    text = message
                 }
                 else {
-                    out << error.code
+                    text = error.code
                 }
           }
           if(attrs['code']) {
@@ -189,11 +190,14 @@ class ValidationTagLib {
                                                         defaultMessage,
                                                         locale )
                 if(message) {
-                    out << message
+                    text = message
                 }
                 else {
-                    out << code
+                    text = code
                 }
+          }
+          if (text) {
+                out << (attrs.encodeAs ? text."encodeAs${attrs.encodeAs}"() : text)
           }
     }
     // Maps out how Grails contraints map to Apache commons validators
