@@ -238,7 +238,9 @@ public class BeanBuilder extends GroovyObjectSupport {
 				return this.metaClass.getProperty(this, property);
 		}
 
-		/**
+
+
+        /**
 		 * Wraps a BeanConfiguration property an ensures that any RuntimeReference additions to it are
 		 * deferred for resolution later
 		 *  
@@ -253,12 +255,7 @@ public class BeanBuilder extends GroovyObjectSupport {
 				this.propertyValue = propertyValue;
 				this.propertyName = propertyName;
 			}
-			public void setProperty(String property, Object newValue) {
-				if(!addToDeferred(beanConfig,property, newValue)) {
-					beanConfig.setPropertyValue(property, newValue);
-				}
-			}
-	
+
 			public void leftShift(Object value) {
 				InvokerHelper.invokeMethod(propertyValue, "leftShift", value);
 				if(value instanceof RuntimeBeanReference) {
@@ -275,7 +272,9 @@ public class BeanBuilder extends GroovyObjectSupport {
 		}
 
 		public void setProperty(String property, Object newValue) {
-			this.metaClass.setProperty(this, property, newValue);
+            if(!addToDeferred(beanConfig,property, newValue)) {
+                beanConfig.setPropertyValue(property, newValue);
+            }
 		}
 	}	
 	/**
