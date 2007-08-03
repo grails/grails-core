@@ -57,7 +57,9 @@ task( createConfig: "Creates the configuration object") {
 			ConfigurationHolder.setConfig(config)			
 		}   
 		catch(Exception e) {
-			event("StatusFinal", "Failed to compile configuration file $configFile: ${e.message}")
+            e.printStackTrace()
+            
+			event("StatusFinal", ["Failed to compile configuration file ${configFile}: ${e.message}"])
 			exit(1)
 		}
 
@@ -70,7 +72,9 @@ task( createConfig: "Creates the configuration object") {
 		   ConfigurationHolder.setConfig(config)
 		}
 		catch(Exception e) {
-			event("StatusFinal", "Failed to compile data source file $dataSourceFile: ${e.message}")
+            e.printStackTrace()
+            
+            event("StatusFinal", ["Failed to compile data source file $dataSourceFile: ${e.message}"])
 			exit(1)
 		}
    }
@@ -78,9 +82,6 @@ task( createConfig: "Creates the configuration object") {
 task( packageApp : "Implementation of package task") {
 	depends(createStructure)
 
-	profile("creating config") {
-        createConfig()
-    }
 	try {
         profile("compile") {
             compile()
@@ -91,6 +92,9 @@ task( packageApp : "Implementation of package task") {
 		e.printStackTrace()
 		exit(1)
 	}
+    profile("creating config") {
+        createConfig()
+    }
 
 	profile("dependencies") {
 

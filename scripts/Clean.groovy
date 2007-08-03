@@ -42,6 +42,7 @@ task ( cleanCompiledSources : "Cleans compiled Java and Groovy sources") {
 	def webInf = "${basedir}/web-app/WEB-INF"
 	Ant.delete(dir:"${webInf}/classes")
 	Ant.delete(dir:"${webInf}/lib")
+	Ant.delete(dir:"${classesDirPath}")
 	Ant.mkdir(dir:"${webInf}/classes")
 	Ant.mkdir(dir:"${webInf}/lib")	
 }   

@@ -440,8 +440,6 @@ void setClasspath() {
     populateRootLoader(rootLoader, jarFiles)
     
    	parentLoader = getClass().getClassLoader()
-    ClassLoader contextLoader = Thread.currentThread().getContextClassLoader()   	
-    classLoader = new URLClassLoader([classesDir.toURL()] as URL[], contextLoader)
     classpathSet = true
 
     event('setClasspath', [rootLoader])

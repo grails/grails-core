@@ -97,6 +97,9 @@ task(compile : "Implementation of compilation phase") {
 				compilerClasspath.curry(false))
 
 	}
+    ClassLoader contextLoader = Thread.currentThread().getContextClassLoader()
+    classLoader = new URLClassLoader([classesDir.toURL()] as URL[], contextLoader)
+	
     event("CompileEnd", ['source'])
 }
 
