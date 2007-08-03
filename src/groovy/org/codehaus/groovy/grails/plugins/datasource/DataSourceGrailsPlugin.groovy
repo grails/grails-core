@@ -30,7 +30,7 @@ class DataSourceGrailsPlugin {
 	def version = grails.util.GrailsUtil.getGrailsVersion()
 	def dependsOn = [core:GrailsPluginUtils.getGrailsVersion()]
 	
-	def watchedResources = "**/grails-app/conf/*DataSource.groovy"
+	def watchedResources = "**/grails-app/conf/DataSource.groovy"
 		
 	def doWithSpring = {
 		def ds = application.config.dataSource
@@ -62,7 +62,7 @@ class DataSourceGrailsPlugin {
 	}
 		
 	def onChange = {
-		// TODO Implement reload of data source ?	
+	    restartContainer()	
 	}
 
 }

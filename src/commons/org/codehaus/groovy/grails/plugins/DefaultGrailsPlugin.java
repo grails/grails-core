@@ -20,6 +20,7 @@ import grails.util.GrailsUtil;
 import groovy.lang.*;
 import groovy.util.slurpersupport.GPathResult;
 import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.ArtefactHandler;
@@ -39,6 +40,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 
 import java.io.IOException;
+import java.io.File;
 import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.net.URLConnection;
@@ -603,12 +605,22 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
 
     }
 
-    private void restartContainer() {
+    public void restartContainer() {
         // here we touch the classes directory if the file is abstract to force the Grails server
         // to restart the web application
-        Resource r = this.applicationContext.getResource("/WEB-INF/classes");
         try {
-            r.getFile().setLastModified(System.currentTimeMillis());
+            String classesDir = System.getProperty("grails.classes.dir");
+            File classesFile = null;
+            if(!StringUtils.isBlank(classesDir)) {
+                classesFile = new File(classesDir);
+            }
+            else {
+
+                Resource r = this.applicationContext.getResource("/WEB-INF/classes");
+                classesFile = r.getFile();
+
+            }
+            classesFile.setLastModified(System.currentTimeMillis());
         } catch (IOException e) {
             LOG.error("Error retrieving /WEB-INF/classes directory: " + e.getMessage(),e);
         }
