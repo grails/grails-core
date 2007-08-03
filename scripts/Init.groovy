@@ -55,7 +55,7 @@ appGrailsVersion = null
 hookScripts = [this]
 hooksLoaded = false
 classpathSet = false
-enableProfile = false
+enableProfile = System.getProperty("grails.script.profile") ? true : false
 profile = { String name , Closure callable ->
    if(enableProfile) {
        def now = System.currentTimeMillis()

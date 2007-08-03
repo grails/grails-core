@@ -102,9 +102,12 @@ move it to the new location of '${basedir}/test/integration'. Please move the di
 						token:"@artifact.name@", value:"${appClassName}UrlMappings" )			
 		}
 
-        copy(file:"${grailsHome}/src/war/WEB-INF/web${servletVersion}.template.xml",
-             tofile:"${basedir}/web-app/WEB-INF/web.template.xml",
-             overwrite:"true")
+        if(new File("${basedir}/spring").exists()) {
+            move(file:"${basedir}/spring", todir:"${basedir}/grails-app/conf")
+        }
+        if(new File("${basedir}/hibernate").exists()) {
+            move(file:"${basedir}/hibernate", todir:"${basedir}/grails-app/conf")            
+        }
 
 	    def appKey = baseName.replaceAll( /\s/, '.' ).toLowerCase()
 
