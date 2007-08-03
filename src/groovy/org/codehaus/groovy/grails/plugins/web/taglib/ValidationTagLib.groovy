@@ -42,11 +42,12 @@ class ValidationTagLib {
         else {
 			if(request.attributeNames) {
 				request.attributeNames.each { ra ->
-					if(ra) {
-                        if(ra instanceof Errors)
-                            checkList << ra
-	                    else if (ra.properties?.errors instanceof Errors) {
-                            checkList << ra
+				    def v = request.getAttribute(ra)
+					if(v) {
+                        if(v instanceof Errors)
+                            checkList << v
+	                    else if (v.properties?.errors instanceof Errors) {
+                            checkList << v
 						}
 					}
 				}
@@ -67,7 +68,7 @@ class ValidationTagLib {
 					
 				}   
 				catch(MissingPropertyException mpe) {
-					// ignore
+					// ignore - @todo Get rid of this performance bottleneck for every request using this tag!
 				}
 			}
             if(errors) {
