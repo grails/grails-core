@@ -28,6 +28,7 @@ import org.codehaus.groovy.grails.commons.metaclass.CreateDynamicMethod;
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.springframework.beans.*;
 import org.springframework.beans.propertyeditors.CustomDateEditor;
+import org.springframework.beans.propertyeditors.CustomNumberEditor;
 import org.springframework.beans.propertyeditors.LocaleEditor;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.web.bind.ServletRequestDataBinder;
@@ -37,10 +38,12 @@ import org.springframework.web.multipart.support.ByteArrayMultipartFileEditor;
 import org.springframework.web.multipart.support.StringMultipartFileEditor;
 import org.springframework.web.servlet.support.RequestContextUtils;
 
+import java.math.BigDecimal;
 import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
 import java.net.URI;
 import java.text.DateFormat;
+import java.text.DecimalFormat;
 import java.util.*;
 
 /**
@@ -109,6 +112,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
     public static GrailsDataBinder createBinder(Object target, String objectName, HttpServletRequest request) {
         GrailsDataBinder binder = createBinder(target,objectName);
         binder.registerCustomEditor( Date.class, new CustomDateEditor(DateFormat.getDateInstance( DateFormat.SHORT, RequestContextUtils.getLocale(request) ),true) );
+		binder.registerCustomEditor( BigDecimal.class, new CustomNumberEditor(BigDecimal.class, DecimalFormat.getInstance(RequestContextUtils.getLocale(request)),true));
         return binder;
     }
 
