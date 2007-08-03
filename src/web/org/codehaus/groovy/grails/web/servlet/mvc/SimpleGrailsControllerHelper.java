@@ -367,19 +367,7 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
         ClassLoader cl = Thread.currentThread().getContextClassLoader();
         try {
             Thread.currentThread().setContextClassLoader(application.getClassLoader());
-            boolean executeAction = true;
-            if(controllerClass.isInterceptedBefore(controller,actionName)) {
-                Closure beforeInterceptor = controllerClass.getBeforeInterceptor(controller);
-                if(beforeInterceptor!= null) {
-                    if(beforeInterceptor.getDelegate() != controller) {
-                        beforeInterceptor.setDelegate(controller);
-                    }
-                    Object interceptorResult = beforeInterceptor.call();
-                    if(interceptorResult instanceof Boolean) {
-                        executeAction = ((Boolean)interceptorResult).booleanValue();
-                    }
-                }
-            }
+            boolean executeAction = invokeBeforeInterceptor(controller, controllerClass);
             // if the interceptor returned false don't execute the action
             if(!executeAction)
         	return null;
@@ -432,6 +420,24 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
         }
     }
 
+    private boolean invokeBeforeInterceptor(GroovyObject controller, GrailsControllerClass controllerClass) {
+        boolean executeAction = true;
+        if(controllerClass.isInterceptedBefore(controller,actionName)) {
+            Closure beforeInterceptor = controllerClass.getBeforeInterceptor(controller);
+            if(beforeInterceptor!= null) {
+                if(beforeInterceptor.getDelegate() != controller) {
+                    beforeInterceptor.setDelegate(controller);
+                    beforeInterceptor.setResolveStrategy(Closure.DELEGATE_FIRST);                    
+                }
+                Object interceptorResult = beforeInterceptor.call();
+                if(interceptorResult instanceof Boolean) {
+                    executeAction = ((Boolean)interceptorResult).booleanValue();
+                }
+            }
+        }
+        return executeAction;
+    }
+
 
     private GrailsScaffolder obtainScaffolder(GrailsControllerClass controllerClass) {
         GrailsScaffolder scaffolder = null;
@@ -461,6 +467,7 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
             Closure afterInterceptor = controllerClass.getAfterInterceptor(controller);
             if(afterInterceptor.getDelegate() != controller) {
                 afterInterceptor.setDelegate(controller);
+                afterInterceptor.setResolveStrategy(Closure.DELEGATE_FIRST);
             }
             Map model = Collections.EMPTY_MAP;
             if(mv != null) {
