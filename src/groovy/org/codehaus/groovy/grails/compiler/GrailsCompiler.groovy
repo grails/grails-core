@@ -81,13 +81,23 @@ class GrailsCompiler extends Groovyc {
         }
     }
 
+    File createTempDir()  {
+        File tempFile;
+        try {
+            def userHome = System.getProperty("user.home")
+            tempFile = new File("${userHome}/.grails/${grails.util.GrailsUtil.getGrailsVersion()}/projects/${project}/generated-java-source")
+            if(tempFile.exists()) {                
+                tempFile.delete();
+            }
+            tempFile.mkdirs();
+        } catch (IOException e) {
+            throw new BuildException(e);
+        }
+        return tempFile;
+    }
+
     void compile() {
         setJointCompilationOptions("-j -Jclasspath=\"${getClasspath()}\"")
-        def userHome = System.getProperty("user.home")
-        File stubDir = new File("${userHome}/.grails/${grails.util.GrailsUtil.getGrailsVersion()}/projects/${project}/stubs")
-        stubDir.mkdirs()
-        
-        configuration.jointCompilationOptions.stubDir = stubDir
 
         def resources = resourcePattern ? resolveResources(resourcePattern) : [] as Resource[]
 		def resourceLoader = new GrailsResourceLoader(resources)
