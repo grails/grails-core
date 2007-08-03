@@ -46,7 +46,7 @@ task (war: "The implementation task") {
 			fileset(dir:"${basedir}/web-app", includes:"**") 
 		}       
 		Ant.copy(todir:"${basedir}/staging/WEB-INF/grails-app", overwrite:true) {
-			fileset(dir:"${basedir}/grails-app", includes:"views, i18n")
+			fileset(dir:"${basedir}/grails-app", includes:"views")
 		}
 		              
 		scaffoldDir = "${basedir}/staging/WEB-INF/templates/scaffolding"
