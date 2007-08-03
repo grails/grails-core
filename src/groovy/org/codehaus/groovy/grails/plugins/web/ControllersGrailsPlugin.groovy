@@ -324,7 +324,8 @@ class ControllersGrailsPlugin {
             def setProps = new SetPropertiesDynamicProperty()
             metaClass.setProperties = { Object o ->
                 setProps.set(delegate, o)
-            }
+            }                               
+			metaClass.getProperties = {-> org.codehaus.groovy.runtime.DefaultGroovyMethods.getProperties(delegate) }
         }
 
 	   	for(taglib in application.tagLibClasses) {
