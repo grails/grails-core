@@ -28,6 +28,7 @@ import org.codehaus.groovy.grails.commons.ConfigurationHolder;
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator;
+import org.codehaus.groovy.grails.plugins.PluginManagerHolder;
 import org.codehaus.groovy.grails.support.MockApplicationContext;
 import org.hibernate.SessionFactory;
 import org.hibernate.classic.Session;
@@ -76,6 +77,7 @@ public abstract class AbstractGrailsHibernateTests extends TestCase {
         super.setUp();
 
         ExpandoMetaClass.enableGlobally();
+        PluginManagerHolder.setPluginManager(null);
 
         onSetUp();
 
@@ -99,7 +101,6 @@ public abstract class AbstractGrailsHibernateTests extends TestCase {
         MockApplicationContext mc = new MockApplicationContext();
         mc.registerMockBean(GrailsApplication.APPLICATION_ID, ga);
         mc.registerMockBean("messageSource", new StaticMessageSource());
-        mc.registerMockBean(GrailsRuntimeConfigurator.CLASS_LOADER_BEAN, gcl);
        
         GrailsRuntimeConfigurator grc = new GrailsRuntimeConfigurator(ga, mc);
         this.applicationContext = grc.configure(new MockServletContext());
@@ -126,6 +127,7 @@ public abstract class AbstractGrailsHibernateTests extends TestCase {
         ConfigurationHolder.setConfig(null);
         ApplicationHolder.setApplication(null);
         GroovySystem.getMetaClassRegistry().setMetaClassCreationHandle(new MetaClassRegistry.MetaClassCreationHandle());
+        PluginManagerHolder.setPluginManager(null);
         if(TransactionSynchronizationManager.hasResource(this.sessionFactory)) {
 		    SessionHolder holder = (SessionHolder) TransactionSynchronizationManager.getResource(this.sessionFactory);
 		    org.hibernate.Session s = holder.getSession();
