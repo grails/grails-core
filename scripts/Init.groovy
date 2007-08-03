@@ -43,6 +43,11 @@ baseName = baseFile.name
 userHome = Ant.antProject.properties."user.home"                     
 grailsTmp = "${userHome}/.grails/tmp"
 eventsClassLoader = new GroovyClassLoader(getClass().classLoader)
+classesDirPath = "${userHome}/.grails/${grailsVersion}/projects/${baseName}/classes"
+classesDir = new File(classesDirPath)
+log4jConfig = "${classesDirPath}/log4j.properties"
+System.setProperty("grails.log4j.config", log4jConfig)
+
 
 resolver = new PathMatchingResourcePatternResolver()
 grailsAppName = null
@@ -50,6 +55,19 @@ appGrailsVersion = null
 hookScripts = [this]
 hooksLoaded = false
 classpathSet = false
+enableProfile = false
+profile = { String name , Closure callable ->
+   if(enableProfile) {
+       def now = System.currentTimeMillis()
+       println "Profiling [$name] start"
+       callable()
+       def then = System.currentTimeMillis() - now
+       println "Profiling [$name] finish. Took $then ms"
+   }
+   else {
+       callable()
+   }
+}
 
 // Send a scripting event notification to any and all event hooks in plugins/user scripts
 event = { String name, def args ->
@@ -409,9 +427,10 @@ void setClasspath() {
         // root loader returns old class before the grails GCL attempts to recompile it
         //rootLoader?.addURL(dir.URL)
     }
-    cpath << "${basedir}/web-app/WEB-INF/classes"
+    cpath << classesDirPath << File.pathSeparator
     cpath << "${basedir}/web-app/WEB-INF"
-    
+
+
     compConfig = new CompilerConfiguration()
    	compConfig.setClasspath(cpath.toString());
 
@@ -419,10 +438,12 @@ void setClasspath() {
         cpath << jar.file.absolutePath << File.pathSeparator
     }
 
-    def rootLoader = getClass().classLoader.rootLoader
+    rootLoader = getClass().classLoader.rootLoader
     populateRootLoader(rootLoader, jarFiles)
     
    	parentLoader = getClass().getClassLoader()
+    ClassLoader contextLoader = Thread.currentThread().getContextClassLoader()   	
+    classLoader = new URLClassLoader([classesDir.toURL()] as URL[], contextLoader)
     classpathSet = true
 
     event('setClasspath', [rootLoader])

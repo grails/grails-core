@@ -40,20 +40,20 @@ includeTargets << new File ( "${grailsHome}/scripts/PackagePlugins.groovy" )
 
 scaffoldDir = "${basedir}/web-app/WEB-INF/templates/scaffolding"     
 config = new ConfigObject()
+configFile = new File("${basedir}/grails-app/conf/Config.groovy")
+webXmlFile = new File("${basedir}/web-app/WEB-INF/web.xml")
 
 task ('default': "Packages a Grails application. Note: To create WAR use 'grails war'") {
      depends( checkVersion)
 	 packagePlugins()	 
-     packageApp()                   
-	 generateWebXml()        
+     packageApp()                           
 }                     
   
 task( createConfig: "Creates the configuration object") {
-   def configFile = new File("${basedir}/grails-app/conf/Config.groovy") 
    def configSlurper = new ConfigSlurper(grailsEnv)
    if(configFile.exists()) { 
 		try {
-			config = configSlurper.parse(configFile.toURL())
+			config = configSlurper.parse(classLoader.loadClass("Config"))
 			ConfigurationHolder.setConfig(config)			
 		}   
 		catch(Exception e) {
@@ -65,7 +65,7 @@ task( createConfig: "Creates the configuration object") {
    def dataSourceFile = new File("${basedir}/grails-app/conf/DataSource.groovy")
    if(dataSourceFile.exists()) {
 		try {
-		   def dataSourceConfig = configSlurper.parse(dataSourceFile.toURL())
+		   def dataSourceConfig = configSlurper.parse(classLoader.loadClass("DataSource"))
 		   config.merge(dataSourceConfig)
 		   ConfigurationHolder.setConfig(config)
 		}
@@ -76,17 +76,26 @@ task( createConfig: "Creates the configuration object") {
    }
 }    
 task( packageApp : "Implementation of package task") {
-	depends(createStructure, createConfig)
+	depends(createStructure)
+
+	profile("creating config") {
+        createConfig()
+    }
 	try {
-		compile()		
-	}   
+        profile("compile") {
+            compile()
+        }
+	}
 	catch(Exception e) {
 		event("StatusFinal", ["Compilation error: ${e.message}"])
 		e.printStackTrace()
 		exit(1)
 	}
-	
-	copyDependencies()
+
+	profile("dependencies") {
+
+        copyDependencies()
+    }
 	Ant.mkdir(dir:"${basedir}/web-app/WEB-INF/grails-app/i18n")
 	
 	if(!GrailsUtil.isDevelopmentEnv()) {
@@ -108,14 +117,14 @@ task( packageApp : "Implementation of package task") {
 		}							
 	}
     Ant.copy(todir:"${basedir}/web-app/WEB-INF/spring") {
-		fileset(dir:"${basedir}/spring", includes:"**")
+		fileset(dir:"${basedir}/grails-app/conf/spring", includes:"**")
 	}					
-    Ant.copy(todir:"${basedir}/web-app/WEB-INF/classes") {
+    Ant.copy(todir:classesDirPath) {
 		fileset(dir:"${basedir}", includes:"application.properties")
 	}					
-	Ant.copy(todir:"${basedir}/web-app/WEB-INF/classes") {
-		fileset(dir:"${basedir}/grails-app/conf", includes:"**", excludes:"*.groovy, log4j*")		
-		fileset(dir:"${basedir}/hibernate", includes:"**/**")
+	Ant.copy(todir:classesDirPath) {
+		fileset(dir:"${basedir}/grails-app/conf", includes:"**", excludes:"*.groovy, log4j*, hibernate, spring")
+		fileset(dir:"${basedir}/grails-app/conf/hibernate", includes:"**/**")
 		fileset(dir:"${basedir}/src/java") {
 			include(name:"**/**")
 			exclude(name:"**/*.java")
@@ -124,29 +133,40 @@ task( packageApp : "Implementation of package task") {
 
 	def logDest = new File("${basedir}/web-app/WEB-INF/classes/log4j.properties")
 
-    def log4jConfig = config.log4j          
-	try {
-	 	if(log4jConfig) {       
-			def props = log4jConfig.toProperties("log4j")
-			logDest.withOutputStream { out ->
-				props.store(out, "Grails' Log4j Configuration")
-			}
-		}	
-		else {             
-			// default log4j settings
-			logDest <<  '''
+    profile("log4j-creation") {
+
+        if(configFile.lastModified() > logDest.lastModified()) {
+
+            def log4jConfig = config.log4j
+        try {
+            if(log4jConfig) {
+                def props = log4jConfig.toProperties("log4j")
+                logDest.withOutputStream { out ->
+                    props.store(out, "Grails' Log4j Configuration")
+                }
+            }
+            else {
+                // default log4j settings
+                logDest <<  '''
 log4j.appender.stdout=org.apache.log4j.ConsoleAppender
 log4j.appender.stdout.layout=org.apache.log4j.PatternLayout
-log4j.rootLogger=error,stdout   
+log4j.rootLogger=error,stdout
 log4j.logger.org.codehaus.groovy.grails.plugins=info,stdout
 log4j.logger.org.codehaus.groovy.grails.commons=info,stdout
-			'''
-		}	
-	}   
-	catch(Exception e) {    
-		println e.message
-		 e.printStackTrace()
-	}
+                '''
+            }
+        }
+        catch(Exception e) {
+            println e.message
+             e.printStackTrace()
+        }
+    }
+    }
+
+    loadPlugins()
+    if(!webXmlFile.exists()) {
+        generateWebXml()
+    }
 
 }   
 
@@ -212,26 +232,49 @@ task( copyDependencies : "Copies the necessary dependencies (jar files) into the
 	}
 }
 
+task(loadPlugins:"Loads Grails' plugins") {
+    def classLoader = new GroovyClassLoader(rootLoader,compConfig,true)
+
+    try {
+        pluginManager = new DefaultGrailsPluginManager(pluginResources as Resource[], new DefaultGrailsApplication(new Class[0], classLoader))
+        PluginManagerHolder.setPluginManager(pluginManager)
+        profile("loading plugins") {
+            pluginManager.loadPlugins()
+        }
+    } catch (Exception e) {
+        event("StatusError", [ e.message ])
+        e.printStackTrace(System.out)
+        
+    }
+
+
+
+}
 task( generateWebXml : "Generates the web.xml file") {                
 	depends(classpath)
-	
-    new File( "${basedir}/web-app/WEB-INF/web.xml" ).withWriter { w ->   
 
-        def classLoader = new GroovyClassLoader(parentLoader,compConfig,true)
-                                                                                                                                             
-        pluginManager = new DefaultGrailsPluginManager(pluginResources as Resource[], new DefaultGrailsApplication(new Class[0], classLoader))
-    	PluginManagerHolder.setPluginManager(pluginManager)
+    boolean fileExists = webXmlFile.exists()
 
-    	def webXml = resolver.getResource("file:${basedir}/web-app/WEB-INF/web.template.xml")
-		try {
-    		pluginManager.loadPlugins()  			
-	    	pluginManager.doWebDescriptor(webXml, w)			
-		}   
-		catch(Exception e) {
-            event("StatusError", [ e.message ])
-			e.printStackTrace(System.out)
-		}
+    def webXml = new FileSystemResource(webXmlFile)
+    if(!fileExists) webXml = resolver.getResource("file:${grailsHome}/src/war/WEB-INF/web${servletVersion}.template.xml")
+
+	def sw = new StringWriter()
+
+    println "Generating from ${webXml.file.absolutePath}"
+
+    try {
+        profile("generating web.xml") {
+            pluginManager.doWebDescriptor(webXml, sw)
+            webXmlFile.withWriter {
+                it << sw.toString()
+            }         
+        }
     }
+    catch(Exception e) {
+        event("StatusError", [ e.message ])
+        e.printStackTrace(System.out)
+    }
+
 }      
 
 task(packageTemplates: "Packages templates into the app") {  

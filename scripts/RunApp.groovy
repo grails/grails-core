@@ -41,7 +41,7 @@ includeTargets << new File ( "${grailsHome}/scripts/Package.groovy" )
 includeTargets << new File ( "${grailsHome}/scripts/PackagePlugins.groovy" )
 
 task ('default': "Run's a Grails application in Jetty") {
-	depends( checkVersion, configureProxy, packagePlugins, packageApp, generateWebXml )
+	depends( checkVersion, configureProxy, packagePlugins, packageApp )
 	runApp()
 	watchContext()
 }
@@ -50,7 +50,9 @@ task ( runApp : "Main implementation that executes a Grails application") {
     try {
 		println "Running Grails application.."
         def server = configureHttpServer()
-        server.start()
+        profile("start server") {            
+            server.start()
+        }
         event("StatusFinal", ["Server running. Browse to http://localhost:$serverPort/$grailsAppName"])
     } catch(Throwable t) {
         t.printStackTrace()
@@ -63,8 +65,9 @@ task( watchContext: "Watches the WEB-INF/classes directory for changes and resta
 
         try {
 	        Ant.groovyc(destdir:classesDirPath,
-	                classpathref:"grails.classpath",
-					resourcePattern:"file:${basedir}/**/grails-app/**/*.groovy") {
+	                    classpathref:"grails.classpath",
+					    resourcePattern:"file:${basedir}/**/grails-app/**/*.groovy",
+                        project:baseName) {
 						src(path:"${basedir}/src/java")
 						src(path:"${basedir}/src/groovy")
 						src(path:"${basedir}/grails-app/domain")
@@ -84,11 +87,9 @@ task( watchContext: "Watches the WEB-INF/classes directory for changes and resta
 			try {
 	            grailsServer.stop()
 	            compile()
-
-	            def rootLoader = new RootLoader([] as URL[], Thread.currentThread().contextClassLoader)
-	            def jarFiles = getJarFiles()
-	            populateRootLoader(rootLoader, jarFiles)
-	            webContext.setClassLoader(rootLoader)
+                ClassLoader contextLoader = Thread.currentThread().getContextClassLoader()
+                def classLoader = new URLClassLoader([classesDir.toURL()] as URL[], contextLoader)
+	            webContext.setClassLoader(classLoader)
             	grailsServer.start()
 			}
             catch(Exception e) {
@@ -112,7 +113,7 @@ task( configureHttpServer : "Returns a jetty server configured with an HTTP conn
     server.setConnectors( (Connector [])connectors )
     webContext = new WebAppContext("${basedir}/web-app", "/${grailsAppName}")
     webContext.setDefaultsDescriptor("${grailsHome}/conf/webdefault.xml")
-    webContext.setClassLoader(Thread.currentThread().getContextClassLoader())
+    webContext.setClassLoader(classLoader)
     grailsHandler = webContext
     server.setHandler( webContext )
     return server

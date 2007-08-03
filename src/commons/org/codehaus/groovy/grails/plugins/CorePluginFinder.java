@@ -25,7 +25,6 @@ import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 
 import java.io.IOException;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -82,12 +81,14 @@ public class CorePluginFinder {
 		// resolve .class files dynamically
 		// on OC4J. If anyones knows how to fix this shout
 		loadCorePlugin("org.codehaus.groovy.grails.plugins.CoreGrailsPlugin");
-		loadCorePlugin("org.codehaus.groovy.grails.plugins.i18n.I18nGrailsPlugin");
+        loadCorePlugin("org.codehaus.groovy.grails.plugins.LoggingGrailsPlugin");
+        loadCorePlugin("org.codehaus.groovy.grails.plugins.i18n.I18nGrailsPlugin");
 		loadCorePlugin("org.codehaus.groovy.grails.plugins.datasource.DataSourceGrailsPlugin");
 		loadCorePlugin("org.codehaus.groovy.grails.plugins.DomainClassGrailsPlugin");
 		loadCorePlugin("org.codehaus.groovy.grails.plugins.web.ServletsGrailsPlugin");
 		loadCorePlugin("org.codehaus.groovy.grails.plugins.web.ControllersGrailsPlugin");
-		loadCorePlugin("org.codehaus.groovy.grails.plugins.orm.hibernate.HibernateGrailsPlugin");
+        loadCorePlugin("org.codehaus.groovy.grails.plugins.webflow.WebFlowGrailsPlugin");
+        loadCorePlugin("org.codehaus.groovy.grails.plugins.orm.hibernate.HibernateGrailsPlugin");
 		loadCorePlugin("org.codehaus.groovy.grails.plugins.services.ServicesGrailsPlugin");
 		loadCorePlugin("org.codehaus.groovy.grails.plugins.scaffolding.ScaffoldingGrailsPlugin");
 	}

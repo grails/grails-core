@@ -30,7 +30,8 @@ Ant.property(environment:"env")
 grailsHome = Ant.antProject.properties."env.GRAILS_HOME"    
 
 includeTargets << new File ( "${grailsHome}/scripts/Clean.groovy" )
-includeTargets << new File ( "${grailsHome}/scripts/Init.groovy" )
+includeTargets << new File ( "${grailsHome}/scripts/Package.groovy" )
+
 
 task ( "default" : "Creates a Grails project, including the necessary directory structure and commons files") {
    createApp()
@@ -40,6 +41,10 @@ task( createApp: "The implementation task")  {
     depends( appName, createStructure, updateAppProperties, init )
 	
 	createIDESupportFiles()
+
+    classpath()
+    loadPlugins()
+	generateWebXml()
 
 	// Set the default version number for the application
     Ant.propertyfile(file:"${basedir}/application.properties") {

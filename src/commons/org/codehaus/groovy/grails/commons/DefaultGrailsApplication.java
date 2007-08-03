@@ -317,6 +317,7 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
                         // Update per-artefact cache
                         DefaultArtefactInfo info = getArtefactInfo(artefactHandlers[j].getType(), true);
                         info.addGrailsClass(gclass);
+                        break;
                     }
                 }
             }

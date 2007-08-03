@@ -42,10 +42,12 @@ class GrailsCompiler extends Groovyc {
         jointCompilationOptions = "-j"
     }
 
+
 	def resolver = new org.springframework.core.io.support.PathMatchingResourcePatternResolver()
 	def compileList = []
 
 	String resourcePattern
+	String project
 
 	void resetFileLists() { compileList.clear() }
 
@@ -81,6 +83,12 @@ class GrailsCompiler extends Groovyc {
 
     void compile() {
         setJointCompilationOptions("-j -Jclasspath=\"${getClasspath()}\"")
+        def userHome = System.getProperty("user.home")
+        File stubDir = new File("${userHome}/.grails/${grails.util.GrailsUtil.getGrailsVersion()}/projects/${project}/stubs")
+        stubDir.mkdirs()
+        
+        configuration.jointCompilationOptions.stubDir = stubDir
+
         def resources = resourcePattern ? resolveResources(resourcePattern) : [] as Resource[]
 		def resourceLoader = new GrailsResourceLoader(resources)
         GrailsResourceLoaderHolder.resourceLoader = resourceLoader
@@ -114,19 +122,6 @@ class GrailsCompiler extends Groovyc {
 			
 		}
     }
-
-    private File createTempDir()  {
-        File tempFile;
-        try {
-            tempFile = File.createTempFile("generated-", "java-source");
-            tempFile.delete();
-            tempFile.mkdirs();
-        } catch (IOException e) {
-            throw new BuildException(e);
-        }
-        return tempFile;
-    }
-
 
     private GroovyClassLoader buildClassLoaderFor(CompilerConfiguration configuration, def resourceLoader, ClassInjector[] classInjectors) {
         ClassLoader parent = this.getClass().getClassLoader()

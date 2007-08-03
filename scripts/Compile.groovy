@@ -49,8 +49,6 @@ Ant.taskdef ( 	name : 'groovyc' ,
 
 
 
-classesDirPath = "${basedir}/web-app/WEB-INF/classes"
-classesDir = new File(classesDirPath)
 
 task ('default': "Performs compilation on any source files (Java or Groovy) in the 'src' tree") {
 	try {
@@ -92,20 +90,11 @@ task(compile : "Implementation of compilation phase") {
     event("CompileStart", ['source'])
 	Ant.sequential {
 		mkdir(dir:classesDirPath)
-		def destDir = "${basedir}/web-app/WEB-INF/classes"		
-							
-		mkdir(dir:destDir)    
-		
-        groovyc(destdir:destDir,
+        groovyc(destdir:classesDirPath,
+                project:baseName,
                 classpathref:"grails.classpath",
 				resourcePattern:"file:${basedir}/**/grails-app/**/*.groovy",
-				compilerClasspath.curry(false)) 
-
-        def rootLoader = getClass()
-            			    .classLoader
-			                .rootLoader
-
-        rootLoader?.addURL(new File(destDir).toURL())
+				compilerClasspath.curry(false))
 
 	}
     event("CompileEnd", ['source'])

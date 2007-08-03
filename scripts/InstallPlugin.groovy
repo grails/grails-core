@@ -30,8 +30,8 @@ appName = ""
 Ant.property(environment:"env")   
 grailsHome = Ant.antProject.properties."env.GRAILS_HOME"    
 
-includeTargets << new File ( "${grailsHome}/scripts/Init.groovy" )
 includeTargets << new File ( "${grailsHome}/scripts/ListPlugins.groovy" )
+includeTargets << new File ( "${grailsHome}/scripts/Package.groovy" )
 
 ERROR_MESSAGE = """
 You need to specify either the direct URL of the plugin or the name and version
@@ -43,7 +43,10 @@ or
 
 task ( "default" : "Installs a plug-in for the given URL or name and version") {
    depends(checkVersion)
+
    installPlugin()
+   loadPlugins()
+   generateWebXml()
 }     
                 
 task(cachePlugin:"Implementation task") {
