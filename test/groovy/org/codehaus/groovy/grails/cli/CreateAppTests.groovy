@@ -31,7 +31,6 @@ class CreateAppTests extends AbstractCliTests {
 		// test critical files
 		assert new File("${appBase}/testapp/web-app/WEB-INF/applicationContext.xml").exists()
 		assert new File("${appBase}/testapp/web-app/WEB-INF/sitemesh.xml").exists()
-		assert new File("${appBase}/testapp/web-app/WEB-INF/web.template.xml").exists()
 		assert new File("${appBase}/testapp/web-app/css/main.css").exists()
 		assert new File("${appBase}/testapp/web-app/js/application.js").exists()
 		assert new File("${appBase}/testapp/grails-app/conf/ApplicationBootStrap.groovy").exists()
