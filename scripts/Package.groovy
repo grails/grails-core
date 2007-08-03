@@ -208,7 +208,9 @@ DEPENDENCIES = [
 "commons-io-*.jar", 
 "commons-io-*.jar",  
 "*oro-*.jar",    
-"jaxen-*.jar"
+"jaxen-*.jar",
+"xstream-1.2.1.jar",
+"xpp3_min-1.1.3.4.O.jar"
 ]    
 JAVA_5_DEPENDENCIES = [        
 "hibernate-annotations.jar",

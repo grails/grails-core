@@ -45,8 +45,7 @@ grailsTmp = "${userHome}/.grails/tmp"
 eventsClassLoader = new GroovyClassLoader(getClass().classLoader)
 classesDirPath = "${userHome}/.grails/${grailsVersion}/projects/${baseName}/classes"
 classesDir = new File(classesDirPath)
-log4jConfig = "${classesDirPath}/log4j.properties"
-System.setProperty("grails.log4j.config", log4jConfig)
+System.setProperty("grails.classes.dir", classesDirPath)
 
 
 resolver = new PathMatchingResourcePatternResolver()
@@ -221,7 +220,6 @@ task ( createStructure: "Creates the application directory structure") {
 	    mkdir(dir:"${basedir}/src")
 	    mkdir(dir:"${basedir}/src/java")
 	    mkdir(dir:"${basedir}/src/groovy")
-	    mkdir(dir:"${basedir}/src/test")  
 	    mkdir(dir:"${basedir}/grails-app")
 	    mkdir(dir:"${basedir}/grails-app/controllers")
 	    mkdir(dir:"${basedir}/grails-app/services")
@@ -243,8 +241,8 @@ task ( createStructure: "Creates the application directory structure") {
 	    mkdir(dir:"${basedir}/web-app/WEB-INF/classes")
 	    mkdir(dir:"${basedir}/web-app/META-INF")
 	    mkdir(dir:"${basedir}/lib")
-	    mkdir(dir:"${basedir}/spring")
-	    mkdir(dir:"${basedir}/hibernate") 
+	    mkdir(dir:"${basedir}/grails-app/conf/spring")
+	    mkdir(dir:"${basedir}/grails-app/conf/hibernate") 
 	}
 }  
 

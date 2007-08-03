@@ -82,6 +82,7 @@ public class CorePluginFinder {
 		// on OC4J. If anyones knows how to fix this shout
 		loadCorePlugin("org.codehaus.groovy.grails.plugins.CoreGrailsPlugin");
         loadCorePlugin("org.codehaus.groovy.grails.plugins.LoggingGrailsPlugin");
+        loadCorePlugin("org.codehaus.groovy.grails.plugins.CodecsGrailsPlugin");
         loadCorePlugin("org.codehaus.groovy.grails.plugins.i18n.I18nGrailsPlugin");
 		loadCorePlugin("org.codehaus.groovy.grails.plugins.datasource.DataSourceGrailsPlugin");
 		loadCorePlugin("org.codehaus.groovy.grails.plugins.DomainClassGrailsPlugin");
@@ -90,7 +91,8 @@ public class CorePluginFinder {
         loadCorePlugin("org.codehaus.groovy.grails.plugins.webflow.WebFlowGrailsPlugin");
         loadCorePlugin("org.codehaus.groovy.grails.plugins.orm.hibernate.HibernateGrailsPlugin");
 		loadCorePlugin("org.codehaus.groovy.grails.plugins.services.ServicesGrailsPlugin");
-		loadCorePlugin("org.codehaus.groovy.grails.plugins.scaffolding.ScaffoldingGrailsPlugin");
+        loadCorePlugin("org.codehaus.groovy.grails.plugins.converters.ConvertersGrailsPlugin");
+        loadCorePlugin("org.codehaus.groovy.grails.plugins.scaffolding.ScaffoldingGrailsPlugin");
 	}
 
 	private void loadCorePluginsFromResources(Resource[] resources)

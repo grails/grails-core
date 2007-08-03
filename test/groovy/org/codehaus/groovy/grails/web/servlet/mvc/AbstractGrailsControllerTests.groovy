@@ -60,6 +60,7 @@ abstract class AbstractGrailsControllerTests extends GroovyTestCase {
 		dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.web.ServletsGrailsPlugin")
 	    dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.web.mapping.UrlMappingsGrailsPlugin")		
 		dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.web.ControllersGrailsPlugin")
+		dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.converters.ConvertersGrailsPlugin")
 
 		
 		def dependentPlugins = dependantPluginClasses.collect { new DefaultGrailsPlugin(it, ga)}

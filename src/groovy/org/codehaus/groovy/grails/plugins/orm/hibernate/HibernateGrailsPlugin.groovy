@@ -58,7 +58,7 @@ class HibernateGrailsPlugin {
 
 	def loadAfter = ['controllers']
 
-	def watchedResources = ["file:./hibernate/**.xml"]
+	def watchedResources = ["file:./grails-app/conf/hibernate/**.xml"]
 	def hibProps = [:]
 	def hibConfigClass
 
@@ -584,13 +584,15 @@ class HibernateGrailsPlugin {
 
 	def onChange = {  event ->
         if(event.source instanceof Resource) {
-
-            new AntBuilder().sequential {
-                copy(todir:"./web-app/WEB-INF/classes") {
-                    fileset(dir:"./hibernate", includes:"**/**")
-                 }
-                 touch(dir:"./web-app/WEB-INF/classes")
-             }
+            def classesDir = System.getProperty("grails.classes.dir")
+            if(classesDir) {
+                new AntBuilder().sequential {
+                     copy(todir:classesDir) {
+                        fileset(dir:"./grails-app/conf/hibernate", includes:"**/**")
+                     }
+                    touch(dir:classesDir)
+                }
+            }
         }
 	}
 
