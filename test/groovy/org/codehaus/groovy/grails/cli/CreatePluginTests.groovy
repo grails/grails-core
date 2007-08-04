@@ -11,8 +11,8 @@ class CreatePluginTests extends AbstractCliTests {
 		
 		// test basic structure
 		assertTrue new File("${appBase}/MyTest").exists()
-		assertTrue new File("${appBase}/MyTest/hibernate").exists()
-		assertTrue new File("${appBase}/MyTest/spring").exists()
+		assertTrue new File("${appBase}/MyTest/grails-app/conf/hibernate").exists()
+		assertTrue new File("${appBase}/MyTest/grails-app/conf/spring").exists()
 		assertTrue new File("${appBase}/MyTest/lib").exists()
 		assertTrue new File("${appBase}/MyTest/src/java").exists()
 		assertTrue new File("${appBase}/MyTest/src/groovy").exists()
