@@ -10,8 +10,8 @@ class CreateAppTests extends AbstractCliTests {
 		
 		// test basic structure
 		assert new File("${appBase}/testapp").exists()
-		assert new File("${appBase}/testapp/hibernate").exists()
-		assert new File("${appBase}/testapp/spring").exists()
+		assert new File("${appBase}/testapp/grails-app/conf/hibernate").exists()
+		assert new File("${appBase}/testapp/grails-app/conf/spring").exists()
 		assert new File("${appBase}/testapp/lib").exists()
 		assert new File("${appBase}/testapp/src/java").exists()
 		assert new File("${appBase}/testapp/src/groovy").exists()
