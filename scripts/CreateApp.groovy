@@ -43,8 +43,8 @@ task( createApp: "The implementation task")  {
 	createIDESupportFiles()
 
     classpath()
-    loadPlugins()
-	generateWebXml()
+    //loadPlugins()
+	//generateWebXml()
 
 	// Set the default version number for the application
     Ant.propertyfile(file:"${basedir}/application.properties") {

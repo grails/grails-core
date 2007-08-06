@@ -45,8 +45,6 @@ task ( "default" : "Installs a plug-in for the given URL or name and version") {
    depends(checkVersion)
 
    installPlugin()
-   loadPlugins()
-   generateWebXml()
 }     
                 
 task(cachePlugin:"Implementation task") {

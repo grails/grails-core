@@ -168,10 +168,7 @@ log4j.logger.org.codehaus.groovy.grails.commons=info,stdout
     }
 
     loadPlugins()
-    if(!webXmlFile.exists()) {
-        generateWebXml()
-    }
-
+    generateWebXml()
 }   
 
 DEPENDENCIES = [
@@ -265,8 +262,6 @@ task( generateWebXml : "Generates the web.xml file") {
     if(!fileExists) webXml = resolver.getResource("file:${grailsHome}/src/war/WEB-INF/web${servletVersion}.template.xml")
 
 	def sw = new StringWriter()
-
-    println "Generating from ${webXml.file.absolutePath}"
 
     try {
         profile("generating web.xml") {
