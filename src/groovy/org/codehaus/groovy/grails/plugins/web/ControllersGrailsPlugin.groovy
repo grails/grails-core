@@ -60,6 +60,9 @@ import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecution
 import org.codehaus.groovy.grails.commons.GrailsClassUtils
 import org.codehaus.groovy.grails.commons.ApplicationHolder
 import org.codehaus.groovy.grails.plugins.web.taglib.*
+import org.codehaus.groovy.grails.commons.GrailsTagLibClass
+import org.springframework.context.ApplicationContext
+
 /**
 * A plug-in that handles the configuration of controllers for Grails
 *
@@ -257,7 +260,7 @@ class ControllersGrailsPlugin {
 	 * are implemented by looking up the current request from the RequestContextHolder (RCH)
 	 */
 
-	def registerCommonObjects(metaClass, application) {
+	def registerCommonObjects(mc, application) {
 	   	def paramsObject = {->
 			RCH.currentRequestAttributes().params
 		}
@@ -281,23 +284,23 @@ class ControllersGrailsPlugin {
 		}
 
 		   // the params object
-		   metaClass.getParams = paramsObject
+		   mc.getParams = paramsObject
 		   // the flash object
-		   metaClass.getFlash = flashObject
+		   mc.getFlash = flashObject
 		   // the session object
-			metaClass.getSession = sessionObject
+			mc.getSession = sessionObject
 		   // the request object
-			metaClass.getRequest = requestObject
+			mc.getRequest = requestObject
 		   // the servlet context
-		   metaClass.getServletContext = servletContextObject
+		   mc.getServletContext = servletContextObject
 		   // the response object
-			metaClass.getResponse = responseObject
+			mc.getResponse = responseObject
 		   // The GrailsApplicationAttributes object
-		   metaClass.getGrailsAttributes = grailsAttrsObject
+		   mc.getGrailsAttributes = grailsAttrsObject
 		   // The GrailsApplication object
-		   metaClass.getGrailsApplication = {-> RCH.currentRequestAttributes().attributes.grailsApplication }
+		   mc.getGrailsApplication = {-> RCH.currentRequestAttributes().attributes.grailsApplication }
 
-		   metaClass.getPluginContextPath = {-> 
+		   mc.getPluginContextPath = {->
 				def resource = application.getResourceForClass(delegate.class) 
 				GRU.getStaticResourcePathForResource(resource, null)
 		   }
@@ -317,41 +320,44 @@ class ControllersGrailsPlugin {
             constructor.invoke(domainClass.clazz, [] as Object[])
         }
         for(domainClass in application.domainClasses) {
-            def metaClass = domainClass.metaClass
-            metaClass.constructor = consructorNoArgs.curry(domainClass)
-            metaClass.constructor = constructorMapArg.curry(domainClass)
+            def mc = domainClass.metaClass
+            mc.constructor = consructorNoArgs.curry(domainClass)
+            mc.constructor = constructorMapArg.curry(domainClass)
 
             def setProps = new SetPropertiesDynamicProperty()
-            metaClass.setProperties = { Object o ->
+            mc.setProperties = { Object o ->
                 setProps.set(delegate, o)
             }                               
-			metaClass.getProperties = {-> org.codehaus.groovy.runtime.DefaultGroovyMethods.getProperties(delegate) }
+			mc.getProperties = {-> org.codehaus.groovy.runtime.DefaultGroovyMethods.getProperties(delegate) }
         }
 
 	   	for(taglib in application.tagLibClasses) {
-	   		def metaClass = taglib.metaClass
-	   		registerCommonObjects(metaClass, application)
+	   		MetaClass mc = taglib.metaClass
+	   		registerCommonObjects(mc, application)
 
-	   		metaClass.throwTagError = { String message ->
+	   		mc.throwTagError = { String message ->
 	   			throw new org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException(message)
 	   		}
-	   		metaClass.getOut = {->
+	   		mc.getOut = {->
 	   			RCH.currentRequestAttributes().out
 	   		}
-	   		metaClass.setOut = { Writer newOut ->
+	   		mc.setOut = { Writer newOut ->
 	   			RCH.currentRequestAttributes().out = newOut
 	   		}
-            metaClass.getProperty = { String name ->
-                MetaProperty metaProperty = metaClass.getMetaProperty(name)
+            mc.getProperty = { String name ->
+                MetaProperty metaProperty = mc.getMetaProperty(name)
                 def result
                 if(metaProperty) result = metaProperty.getProperty(delegate)
                 else {
+                    def tagName = "${GroovyPage.DEFAULT_NAMESPACE}:$name"
+
                     GrailsClass tagLibraryClass = application.getArtefactForFeature(
-	                                                    TagLibArtefactHandler.TYPE, name)
+	                                                    TagLibArtefactHandler.TYPE, tagName.toString())
+
                     if(tagLibraryClass) {
                         def tagLibrary = ctx.getBean(tagLibraryClass.fullName)
                         result = tagLibrary."$name".clone()
-                        metaClass."${GCU.getGetterName(name)}" = {-> result }
+                        mc."${GCU.getGetterName(name)}" = {-> result }
                     }
                     else {
                         throw new MissingPropertyException(name, delegate.class)
@@ -359,61 +365,31 @@ class ControllersGrailsPlugin {
                 }
                 result
             }
-            metaClass.invokeMethod = { String name, args ->
+            mc.invokeMethod = { String name, args ->
                 args = args == null ? [] as Object[] : args
-                def metaMethod = metaClass.getMetaMethod(name, args)
+                def metaMethod = mc.getMetaMethod(name, args)
                 def result
                 if(metaMethod) result = metaMethod.invoke(delegate, args)
                 else if(args.size() > 0 && args[0] instanceof Map) {
                     def tagName = "${GroovyPage.DEFAULT_NAMESPACE}:$name"
                     GrailsClass tagLibraryClass = application.getArtefactForFeature(
 	                                                    TagLibArtefactHandler.TYPE, tagName.toString())
-                    
+
                     if(tagLibraryClass) {
-
-                        def tagMethodMapArg =  { Map attrs ->
-                            def webRequest = RCH.currentRequestAttributes()
-                            def tagLibrary = ctx.getBean(tagLibraryClass.fullName)     
-	                        def tagBean = new BeanWrapperImpl(tagLibrary)
-
-                            def originalOut = webRequest.out
-                            def capturedOutput
-                            try {
-                                capturedOutput = GroovyPage.captureTagOutput(tagLibrary, name, attrs,null, webRequest, tagBean)
-                            } finally {
-                                webRequest.out = originalOut
-                            }
-                            capturedOutput
-                        }
-                        def tagMethodMapAndClosureArgs = { Map attrs, Closure body ->
-                            def webRequest = RCH.currentRequestAttributes()
-                            def tagLibrary = ctx.getBean(tagLibraryClass.fullName) 
-	                        def tagBean = new BeanWrapperImpl(tagLibrary)
-                            def originalOut = webRequest.out
-                            def capturedOutput
-                            try {
-                                capturedOutput = GroovyPage.captureTagOutput(tagLibrary, name, attrs,body, webRequest, tagBean)
-                            } finally {
-                                webRequest.out = originalOut
-                            }
-                            capturedOutput
-                        }
-                        metaClass."$name" = tagMethodMapArg
-                        metaClass."$name" = tagMethodMapAndClosureArgs
-                        if(args.size() == 2) result = tagMethodMapAndClosureArgs.call(*args)
-                        else result = tagMethodMapArg.call(args[0])                                                                                                                                                                                                                                                                                                                                                                                                   
+                         registerMethodMissingForTags(mc, ctx, tagLibraryClass, name)
+                         result = mc.invokeMethod(delegate, name, args)
                     }
                     else {
                         throw new MissingMethodException(name, delegate.class, args)
                     }
                 }else {
                     // deal with the case where there is a closure property that could be invoked
-                    MetaProperty metaProperty = metaClass.getMetaProperty(name)
+                    MetaProperty metaProperty = mc.getMetaProperty(name)
                     def callable = metaProperty?.getProperty(delegate)
                     if(callable instanceof Closure) {
-                        metaClass."$name" = { Object[] varArgs ->
+                        mc."$name" = { Object[] varArgs ->
                             varArgs ? callable.call(*varArgs) : callable.call()
-                        }                        
+                        }
                         result = args ? callable.call(*args) : callable.call()
                     }
                     else {
@@ -422,46 +398,65 @@ class ControllersGrailsPlugin {
                 }
                 result
             }
-	   		ctx.getBean(taglib.fullName).metaClass = metaClass
+            ctx.getBean(taglib.fullName).metaClass = mc
 	   	}
 		// add commons objects and dynamic methods like render and redirect to controllers
 		for(controller in application.controllerClasses ) {
-		   def metaClass = controller.metaClass
-			registerCommonObjects(metaClass, application)
+		   MetaClass mc = controller.metaClass
+			registerCommonObjects(mc, application)
 
-			metaClass.getActionUri = {-> "/$controllerName/$actionName".toString()	}
-			metaClass.getControllerUri = {-> "/$controllerName".toString()	}
-		    metaClass.getTemplateUri = { String name ->
+			// allow controllers to call tag library methods
+            mc.methodMissing = { String name, args ->
+               args = args == null ? [] as Object[] : args
+
+                def tagName = "${GroovyPage.DEFAULT_NAMESPACE}:$name"
+                GrailsClass tagLibraryClass = application.getArtefactForFeature(
+                                                    TagLibArtefactHandler.TYPE, tagName.toString())
+
+                def result
+                if(tagLibraryClass) {
+                    registerMethodMissingForTags(mc, ctx, tagLibraryClass, name)
+                    result = mc.invokeMethod(delegate, name, args)
+                }
+                else {
+                     throw new MissingMethodException(name, delegate.class, args)
+                }
+                result
+            }
+
+            mc.getActionUri = {-> "/$controllerName/$actionName".toString()	}
+			mc.getControllerUri = {-> "/$controllerName".toString()	}
+		    mc.getTemplateUri = { String name ->
 		    	def webRequest = RCH.currentRequestAttributes()
 		    	webRequest.attributes.getTemplateUri(name, webRequest.currentRequest)
 		    }
-		    metaClass.getViewUri = { String name ->
+		    mc.getViewUri = { String name ->
 		    	def webRequest = RCH.currentRequestAttributes()
 		    	webRequest.attributes.getViewUri(name, webRequest.currentRequest)
 		    }
-			metaClass.getActionName = {->
+			mc.getActionName = {->
 				RCH.currentRequestAttributes().actionName
 			}
-			metaClass.getControllerName = {->
+			mc.getControllerName = {->
 				RCH.currentRequestAttributes().controllerName
 			}
 
-			metaClass.setErrors = { Errors errors ->
+			mc.setErrors = { Errors errors ->
 				RCH.currentRequestAttributes().setAttribute( GrailsApplicationAttributes.ERRORS, errors, 0)
 			}
-		    metaClass.getErrors = {->
+		    mc.getErrors = {->
 		   		RCH.currentRequestAttributes().getAttribute(GrailsApplicationAttributes.ERRORS, 0)
 		    }
-			metaClass.setModelAndView = { ModelAndView mav ->
+			mc.setModelAndView = { ModelAndView mav ->
 				RCH.currentRequestAttributes().setAttribute( GrailsApplicationAttributes.MODEL_AND_VIEW, mav, 0)
 			}
-		    metaClass.getModelAndView = {->
+		    mc.getModelAndView = {->
 	   			RCH.currentRequestAttributes().getAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW, 0)
 		    }
-		    metaClass.getChainModel = {->
+		    mc.getChainModel = {->
 		    	RCH.currentRequestAttributes().flashScope["chainModel"]
 		    }
-			metaClass.hasErrors = {->
+			mc.hasErrors = {->
 				errors?.hasErrors() ? true : false
 			}
 
@@ -470,48 +465,48 @@ class ControllersGrailsPlugin {
 			def render = new RenderDynamicMethod()
 			def bind = new BindDynamicMethod()
 			// the redirect dynamic method
-			metaClass.redirect = { Map args ->
+			mc.redirect = { Map args ->
 				redirect.invoke(delegate,"redirect",args)
 			}
-		    metaClass.chain = { Map args ->
+		    mc.chain = { Map args ->
 		    	chain.invoke(delegate, "chain",args)
 		    }
 		    // the render method
-		    metaClass.render = { String txt ->
+		    mc.render = { String txt ->
 				render.invoke(delegate, "render",[txt] as Object[])
 		    }
-		    metaClass.render = { Map args ->
+		    mc.render = { Map args ->
 				render.invoke(delegate, "render",[args] as Object[])
 	    	}
-		    metaClass.render = { Closure c ->
+		    mc.render = { Closure c ->
 				render.invoke(delegate,"render", [c] as Object[])
 	    	}
-		    metaClass.render = { Map args, Closure c ->
+		    mc.render = { Map args, Closure c ->
 				render.invoke(delegate,"render", [args, c] as Object[])
 		    }
 		    // the bindData method
-		    metaClass.bindData = { Object target, Object args ->
+		    mc.bindData = { Object target, Object args ->
 		    	bind.invoke(delegate, "bindData", [target, args] as Object[])
 		    }
-		    metaClass.bindData = { Object target, Object args, List disallowed ->
+		    mc.bindData = { Object target, Object args, List disallowed ->
 		    	bind.invoke(delegate, "bindData", [target, args, [exclude:disallowed]] as Object[])
 		    }
-		    metaClass.bindData = { Object target, Object args, List disallowed, String filter ->
+		    mc.bindData = { Object target, Object args, List disallowed, String filter ->
 		    	bind.invoke(delegate, "bindData", [target, args, [exclude:disallowed] , filter] as Object[])
 		    }
-		     metaClass.bindData = { Object target, Object args, Map includeExclude ->
+		     mc.bindData = { Object target, Object args, Map includeExclude ->
 		    	bind.invoke(delegate, "bindData", [target, args, includeExclude] as Object[])
 		    }
-		    metaClass.bindData = { Object target, Object args, Map includeExclude, String filter ->
+		    mc.bindData = { Object target, Object args, Map includeExclude, String filter ->
 		    	bind.invoke(delegate, "bindData", [target, args, includeExclude , filter] as Object[])
 		    }
-		    metaClass.bindData = { Object target, Object args, String filter ->
+		    mc.bindData = { Object target, Object args, String filter ->
 		    	bind.invoke(delegate, "bindData", [target, args, filter] as Object[])
 		    }
 
             // look for actions that accept command objects and override
             // each of the actions to make command objects binding before executing
-            controller.commandObjectActions.each { actionName ->
+            for(actionName in controller.commandObjectActions) {
                 def originalAction = controller.getPropertyValue(actionName)
                 def paramTypes = originalAction.getParameterTypes()
                 def commandObjectBindingAction = { ->
@@ -536,13 +531,13 @@ class ControllersGrailsPlugin {
                     }
                     originalAction.call( commandObjects )
                 }
-                metaClass."${GrailsClassUtils.getGetterName(actionName)}" = { -> commandObjectBindingAction }
+                mc."${GrailsClassUtils.getGetterName(actionName)}" = { -> commandObjectBindingAction }
             }
 
 			// look for actions that accept command objects and configure
 			// each of the command object types
 			def commandObjectClasses = controller.commandObjectClasses
-			commandObjectClasses.each { commandObjectClass ->
+			for(commandObjectClass in commandObjectClasses) {
 	            def commandObject = commandObjectClass.newInstance()
            		def commandObjectMetaClass = commandObject.metaClass
            		commandObjectMetaClass.setErrors = { Errors errors ->
@@ -568,6 +563,36 @@ class ControllersGrailsPlugin {
 		}
 	}
 
+
+    def registerMethodMissingForTags(MetaClass mc, ApplicationContext ctx, GrailsTagLibClass tagLibraryClass, String name) {
+        mc."$name" = { Map attrs, Closure body ->
+                def webRequest = RCH.currentRequestAttributes()
+                def tagLibrary = ctx.getBean(tagLibraryClass.fullName)
+                def tagBean = new BeanWrapperImpl(tagLibrary)
+                def originalOut = webRequest.out
+                def capturedOutput
+                try {
+                    capturedOutput = GroovyPage.captureTagOutput(tagLibrary, name, attrs,body, webRequest, tagBean)
+                } finally {
+                    webRequest.out = originalOut
+                }
+                capturedOutput
+        }
+        mc."$name" = { Map attrs ->
+                def webRequest = RCH.currentRequestAttributes()
+                def tagLibrary = ctx.getBean(tagLibraryClass.fullName)
+                def tagBean = new BeanWrapperImpl(tagLibrary)
+
+                def originalOut = webRequest.out
+                def capturedOutput
+                try {
+                    capturedOutput = GroovyPage.captureTagOutput(tagLibrary, name, attrs,null, webRequest, tagBean)
+                } finally {
+                    webRequest.out = originalOut
+                }
+                capturedOutput
+        }
+    }
 
 	def onChange = { event -> 
         if(application.isArtefactOfType(ControllerArtefactHandler.TYPE, event.source)) {
