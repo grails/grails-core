@@ -36,7 +36,7 @@ public class TagLibArtefactHandler extends ArtefactHandlerAdapter {
     private static Log LOG = LogFactory.getLog(TagLibArtefactHandler.class);
     public static final String TYPE = "TagLib";
 
-    private HashMap tag2libMap;
+    private HashMap tag2libMap = new HashMap();
 
 
     public TagLibArtefactHandler() {
