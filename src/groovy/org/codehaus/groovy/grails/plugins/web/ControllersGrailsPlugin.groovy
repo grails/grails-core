@@ -537,7 +537,7 @@ class ControllersGrailsPlugin {
 			// look for actions that accept command objects and configure
 			// each of the command object types
 			def commandObjectClasses = controller.commandObjectClasses
-			for(commandObjectClass in commandObjectClasses) {
+			commandObjectClasses.each { commandObjectClass ->
 	            def commandObject = commandObjectClass.newInstance()
            		def commandObjectMetaClass = commandObject.metaClass
            		commandObjectMetaClass.setErrors = { Errors errors ->
