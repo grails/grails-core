@@ -40,7 +40,7 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
 	def gcl = new GroovyClassLoader()
 
 	GrailsApplication grailsApplication;
-	MessageSource messageSource;
+	StaticMessageSource messageSource;
 
 
 
