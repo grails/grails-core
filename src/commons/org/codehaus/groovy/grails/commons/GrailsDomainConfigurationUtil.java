@@ -63,7 +63,7 @@ public class GrailsDomainConfigurationUtil {
             GrailsDomainClassProperty[] props = domainClass.getPersistentProperties();
 
             for (int j = 0; j < props.length; j++) {
-                if(props[j].isAssociation()) {
+                if(props[j] != null && props[j].isAssociation()) {
                     GrailsDomainClassProperty prop = props[j];
                     GrailsDomainClass referencedGrailsDomainClass = (GrailsDomainClass)domainMap.get( props[j].getReferencedPropertyType().getName() );
                     prop.setReferencedDomainClass(referencedGrailsDomainClass);
@@ -79,7 +79,7 @@ public class GrailsDomainConfigurationUtil {
             GrailsDomainClassProperty[] props = domainClass.getPersistentProperties();
 
             for (int j = 0; j < props.length; j++) {
-                if(props[j].isAssociation()) {
+                if(props[j] != null && props[j].isAssociation()) {
                     GrailsDomainClassProperty prop = props[j];
                     GrailsDomainClass referenced = prop.getReferencedDomainClass();
                     if(referenced != null) {
