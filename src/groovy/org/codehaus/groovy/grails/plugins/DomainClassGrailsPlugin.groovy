@@ -64,12 +64,18 @@ class DomainClassGrailsPlugin {
 	}
 
 	def doWithDynamicMethods = { ctx->
-        for(GrailsDomainClass domainClass in application.domainClasses) {
+        for(GrailsDomainClass dc in application.domainClasses) {
+			def domainClass = dc
             MetaClass metaClass = domainClass.metaClass
 
             metaClass.ident = {-> delegate[domainClass.identifier.name] }
-            metaClass.'static'.getConstraints = {-> domainClass.constrainedProperties }
-            metaClass.getConstraints = {-> domainClass.constrainedProperties }
+            metaClass.'static'.getConstraints = {->    
+                domainClass.constrainedProperties
+            }
+            metaClass.getConstraints = {->
+                domainClass.constrainedProperties
+            }
+            
             metaClass.'static'.create = {-> BeanUtils.instantiateClass(domainClass.getClazz()) }
             metaClass.hasErrors = {-> delegate.errors?.hasErrors() }
             metaClass.errors = new ThreadManagedMetaBeanProperty(domainClass.clazz, "errors", Errors, { 
