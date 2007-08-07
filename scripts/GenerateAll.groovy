@@ -45,10 +45,11 @@ task ('default': "Generates a CRUD interface (contoroller + views) for a domain 
 }            
 
 task(generateAll:"The implementation task") {  
-	
+	                                     
+	rootLoader.addURL(classesDir.toURL())
 	def beans = new grails.spring.BeanBuilder().beans {
 		resourceHolder(org.codehaus.groovy.grails.commons.spring.GrailsResourceHolder) {
-			resources = "file:${basedir}/**/grails-app/domain/*.groovy"
+			resources = "file:${basedir}/grails-app/domain/**/*.groovy"
 		}
 		grailsResourceLoader(org.codehaus.groovy.grails.commons.GrailsResourceLoaderFactoryBean) {
 			grailsResourceHolder = resourceHolder
@@ -56,10 +57,12 @@ task(generateAll:"The implementation task") {
 		grailsApplication(org.codehaus.groovy.grails.commons.DefaultGrailsApplication.class, ref("grailsResourceLoader"))
 	}
                                                     
-	appCtx = beans.createApplicationContext()  
-	grailsApp = appCtx.grailsApplication 
+	appCtx = beans.createApplicationContext()     
+	appCtx.servletContext = new MockServletContext()
+	grailsApp = appCtx.grailsApplication  
+	
+
 	grailsApp.initialise()
-	    
 	def name = args.trim()
 	def domainClass = grailsApp.getDomainClass(name)  
 	
@@ -67,7 +70,7 @@ task(generateAll:"The implementation task") {
    		println "Domain class not found in grails-app/domain, trying hibernate mapped classes..."		
 		try {
 			def config = new GrailsRuntimeConfigurator(grailsApp, appCtx)  
-			appCtx = config.configure(new MockServletContext())     			
+			appCtx = config.configure(appCtx.servletContext)     			
 		}   
 		catch(Exception e) {
 			println e.message
