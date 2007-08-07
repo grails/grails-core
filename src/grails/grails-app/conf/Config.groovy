@@ -7,12 +7,10 @@ log4j {
     logger {
         grails="info,stdout"
         org {
-            codehaus.groovy.grails {
-                web="info,stdout"
-                commons="info,stdout"
-                plugins="info,stdout"
-                orm.hibernate="info,stdout"
-            }
+            codehaus.groovy.grails.web="info,stdout"
+            codehaus.groovy.grails.commons="info,stdout"
+            codehaus.groovy.grails.plugins="info,stdout"
+            codehaus.groovy.grails.orm.hibernate="info,stdout"
             springframework="off,stdout"
             hibernate="off,stdout"
         }
