@@ -322,7 +322,7 @@ task( init: "main init task") {
 		}                                                                              
 				
 					
-		copy(todir:"${basedir}/spring") {
+		copy(todir:"${basedir}/grails-app/conf/spring") {
 			fileset(dir:"${grailsHome}/src/war/WEB-INF/spring") {
 				include(name:"*.xml")
 			}
