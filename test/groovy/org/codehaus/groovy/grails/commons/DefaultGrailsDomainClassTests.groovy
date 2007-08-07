@@ -128,4 +128,23 @@ class DefaultGrailsDomainClassTests extends GroovyTestCase {
 		assertFalse destination.bidirectional
 		assertTrue destination.oneToOne
 	}
+
+	void testTableName() {
+        this.gcl.parseClass('''
+				class Person {
+				    Long id
+				    Long version
+				    String firstName
+				    String lastName
+
+				    static mapping = {
+				        withTable 'people'
+				    }
+				}
+				'''	)
+		def ga = new DefaultGrailsApplication(gcl.loadedClasses, gcl)
+		def personClass = ga.getDomainClass('Person')
+		assertNotNull 'person class was null', personClass
+		assertEquals 'person was mapped to the wrong table', 'people', personClass.tableName
+    }
 }

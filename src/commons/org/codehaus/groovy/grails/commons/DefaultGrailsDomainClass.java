@@ -109,8 +109,27 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
         establishPersistentProperties();
         // process the constraints
         evaluateConstraints();
+
+        evaluateOrmMapping();
+
     }
 
+    private void evaluateOrmMapping() {
+        //TODO this is just a holding place to start filling in some of the orm dsl
+        // details.  this will likely be pulled out and cleaned up as more of the
+        // dsl is filled in.
+        Closure ormMappingClosure = (Closure)getPropertyOrStaticPropertyOrFieldValue(
+                GrailsDomainClassProperty.ORM_MAPPING, Closure.class );
+        if(ormMappingClosure != null) {
+            class OrmMappingDelegate {
+                void withTable(String name) {
+                    tableName = name;
+                }
+            }
+            ormMappingClosure.setDelegate(new OrmMappingDelegate());
+            ormMappingClosure.call();
+        }
+    }
 
 
     /**

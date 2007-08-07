@@ -37,6 +37,7 @@ public interface GrailsDomainClassProperty {
 	String FETCH_MODE = "fetchMode";
 	String WITH_TABLE = "withTable";
     String EMBEDDED = "embedded";
+    String ORM_MAPPING = "mapping";
     
     int FETCH_EAGER = 1;
 	int FETCH_LAZY = 0;
