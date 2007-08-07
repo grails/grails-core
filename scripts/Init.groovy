@@ -313,16 +313,10 @@ task( init: "main init task") {
 				include(name:"**/**")
 				exclude(name:"WEB-INF/**")
 			} 
-		}		
-        copy(file:"${grailsHome}/src/grails/templates/artifacts/Config.groovy",
-             tofile:"${basedir}/grails-app/conf/Config.groovy")    
-		
+		}				
         copy(file:"${grailsHome}/src/grails/templates/artifacts/UrlMappings.groovy",
-             tofile:"${basedir}/grails-app/conf/${appClassName}UrlMappings.groovy")    
+             tofile:"${basedir}/grails-app/conf/UrlMappings.groovy")    
 
-		replace(file:"${basedir}/grails-app/conf/${appClassName}UrlMappings.groovy", 
-					token:"@artifact.name@", value:"${appClassName}UrlMappings" )
-			
 		copy(todir:"${basedir}/grails-app") {
 			fileset(dir:"${grailsHome}/src/grails/grails-app", excludes:"**/taglib/**, **/utils/**")
 		}                                                                              

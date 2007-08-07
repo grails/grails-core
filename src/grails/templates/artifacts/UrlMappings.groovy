@@ -1,4 +1,4 @@
-class @artifact.name@ {
+class UrlMappings {
 	static mappings = {
 	  "/$controller/$action?/$id?"{
 	      constraints {

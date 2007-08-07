@@ -256,11 +256,7 @@ task(loadPlugins:"Loads Grails' plugins") {
 task( generateWebXml : "Generates the web.xml file") {                
 	depends(classpath)
 
-    boolean fileExists = webXmlFile.exists()
-
-    def webXml = new FileSystemResource(webXmlFile)
-    if(!fileExists) webXml = resolver.getResource("file:${grailsHome}/src/war/WEB-INF/web${servletVersion}.template.xml")
-
+    def webXml = resolver.getResource("file:${grailsHome}/src/war/WEB-INF/web${servletVersion}.template.xml")
 	def sw = new StringWriter()
 
     try {

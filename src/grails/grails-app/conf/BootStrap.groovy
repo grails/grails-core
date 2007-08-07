@@ -1,4 +1,4 @@
-class ApplicationBootStrap {
+class BootStrap {
 
      def init = { servletContext ->
      }
