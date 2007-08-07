@@ -33,7 +33,7 @@ class CreateAppTests extends AbstractCliTests {
 		assert new File("${appBase}/testapp/web-app/WEB-INF/sitemesh.xml").exists()
 		assert new File("${appBase}/testapp/web-app/css/main.css").exists()
 		assert new File("${appBase}/testapp/web-app/js/application.js").exists()
-		assert new File("${appBase}/testapp/grails-app/conf/ApplicationBootStrap.groovy").exists()
+		assert new File("${appBase}/testapp/grails-app/conf/BootStrap.groovy").exists()
 		assert new File("${appBase}/testapp/grails-app/conf/DataSource.groovy").exists()
 		assert new File("${appBase}/testapp/grails-app/conf/Config.groovy").exists()
 		assert new File("${appBase}/testapp/grails-app/i18n/messages.properties").exists()
