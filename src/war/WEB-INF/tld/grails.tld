@@ -417,28 +417,6 @@
         <dynamic-attributes>false</dynamic-attributes>
     </tag>
 
-    <tag>
-        <description>A tag that attempts to render an input for a bean property
-        into an appropriate component based on the type. It uses the templates
-        defined in "grails-app/views/scaffolding" to achieve this by looking up
-		the template by type.</description>
-        <name>renderInput</name>
-        <tag-class>org.codehaus.groovy.grails.web.taglib.GroovyRenderInputTag</tag-class>
-        <body-content>JSP</body-content>
-        <attribute>
-        	<description>The Bean to render the input for</description>
-            <name>bean</name>
-            <required>true</required>
-            <rtexprvalue>true</rtexprvalue>
-        </attribute>
-        <attribute>
-        	<description>The property of the bean to render input for</description>
-            <name>property</name>
-            <required>true</required>
-            <rtexprvalue>true</rtexprvalue>
-        </attribute>
-        <dynamic-attributes>false</dynamic-attributes>
-    </tag>
 
     <tag>
         <name>link</name>
