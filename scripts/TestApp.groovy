@@ -83,7 +83,8 @@ task(testApp:"The test app implementation task") {
 	Ant.mkdir(dir:"${testDir}/plain")  
 	
 
-  	compileTests()
+  	compileTests()  
+	"hello?"
 	try {
 		runUnitTests() 
 		runIntegrationTests()
@@ -95,14 +96,18 @@ task(testApp:"The test app implementation task") {
 }
 task(compileTests:"Compiles the test cases") {            
 	def destDir = "${basedir}/test/classes"	
-	Ant.sequential {                                            
-
-		mkdir(dir:destDir)
-	    groovyc(destdir:destDir,
+	Ant.mkdir(dir:destDir)
+	try {                         
+	    Ant.groovyc(destdir:destDir,
 	            classpathref:"grails.classpath",
-				resourcePattern:"file:${basedir}/**/grails-app/**/*.groovy",
-				compilerClasspath.curry(true))			
-	}                            
+			    resourcePattern:"file:${basedir}/**/grails-app/**/*.groovy",
+				compilerClasspath.curry(true))						
+	}   
+	catch(Exception e) {
+	   event("StatusFinal", ["Compilation Error: ${e.message}"])
+	   exit(1)
+	}
+
 	def rootLoader = getClass().classLoader.rootLoader
 	rootLoader?.addURL(new File(destDir).toURL())
 }    

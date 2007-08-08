@@ -126,7 +126,7 @@ class GrailsCompiler extends Groovyc {
 	        catch(Exception e) {
 	            def ErrorReporter reporter = new org.codehaus.groovy.tools.ErrorReporter(e, false)
 	            def sw = new StringWriter()
-	            def writer = new PrintWriter(sw)
+				reporter.write( new PrintWriter(sw) );
 	            throw new BuildException(sw.toString(), e, getLocation())
 	        }
 			

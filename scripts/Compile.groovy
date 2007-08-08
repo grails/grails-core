@@ -45,20 +45,14 @@ if(!Ant.antProject.properties."groovyJarSet") {
 }    
 Ant.taskdef ( 	name : 'groovyc' , 
 				classname : 'org.codehaus.groovy.grails.compiler.GrailsCompiler' , 
+//								classname : 'org.codehaus.groovy.ant.Groovyc' , 
 				classpathref : 'groovyJarSet' )
 
 
 
 
 task ('default': "Performs compilation on any source files (Java or Groovy) in the 'src' tree") {
-	try {
-		compile()		
-	}   
-	catch(Exception e) {
-		event("StatusFinal", ["Compilation error: ${e.message}"])
-		e.printStackTrace()
-		exit(1)
-	}
+	compile()
 }            
   
 compilerClasspath = { testSources -> 
@@ -88,15 +82,19 @@ task(compile : "Implementation of compilation phase") {
 	depends(dependencies, classpath)           
 	
     event("CompileStart", ['source'])
-	Ant.sequential {
-		mkdir(dir:classesDirPath)
-        groovyc(destdir:classesDirPath,
-                project:baseName,
-                classpathref:"grails.classpath",
+
+	Ant.mkdir(dir:classesDirPath)
+		try {
+	       Ant.groovyc(destdir:classesDirPath,
+	               project:baseName,
+	               classpathref:"grails.classpath",
 				resourcePattern:"file:${basedir}/**/grails-app/**/*.groovy",
 				compilerClasspath.curry(false))
-
-	}
+		}   
+		catch(Exception e) {
+			event("StatusFinal", ["Compilation error: ${e.message}"])
+			exit(1)
+		}
     ClassLoader contextLoader = Thread.currentThread().getContextClassLoader()
     classLoader = new URLClassLoader([classesDir.toURL()] as URL[], contextLoader)
 	
