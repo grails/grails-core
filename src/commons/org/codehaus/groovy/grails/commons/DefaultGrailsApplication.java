@@ -80,7 +80,7 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
 
     private GroovyClassLoader cl = null;
 
-    private Class[] allClasses = null;
+    private Class[] allClasses = new Class[0];
     private static Log log = LogFactory.getLog(DefaultGrailsApplication.class);
     private ApplicationContext parentContext;
 

@@ -181,12 +181,15 @@ task(runUnitTests:"Run Grails' unit tests under the test/unit directory") {
 		def ctx = appCtx
 		ctx.servletContext = new MockServletContext()
 		grailsApp = ctx.grailsApplication  
-		grailsApp.initialise()
-		
-           pluginManager = new DefaultGrailsPluginManager(pluginResources as Resource[], grailsApp)
-           PluginManagerHolder.setPluginManager(pluginManager)
-           pluginManager.loadPlugins()
 
+		
+        pluginManager = new DefaultGrailsPluginManager(pluginResources as Resource[], grailsApp)
+
+           	PluginManagerHolder.setPluginManager(pluginManager)
+           	pluginManager.loadPlugins()
+			pluginManager.doArtefactConfiguration()
+			grailsApp.initialise()                 		
+				
            pluginManager.getGrailsPlugin("core")?.doWithDynamicMethods(appCtx)
            pluginManager.getGrailsPlugin("logging")?.doWithDynamicMethods(appCtx)
 
