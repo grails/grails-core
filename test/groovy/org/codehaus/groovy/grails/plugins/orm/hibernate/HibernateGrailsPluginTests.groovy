@@ -1,10 +1,13 @@
 package org.codehaus.groovy.grails.plugins.orm.hibernate;
 
+import groovy.mock.interceptor.MockFor
+import org.springframework.core.io.*
 import org.codehaus.groovy.grails.commons.test.*
 import org.codehaus.groovy.grails.commons.*
 import org.codehaus.groovy.grails.commons.metaclass.*
 import org.codehaus.groovy.grails.commons.spring.*
 import org.codehaus.groovy.grails.plugins.*
+import org.springframework.context.ApplicationContext
 
 class HibernateGrailsPluginTests extends AbstractGrailsMockTests {
 
@@ -33,59 +36,67 @@ class HibernateGrailsPluginTests extends AbstractGrailsMockTests {
 
                 }
                 """, "DataSource")
-           loadPluginCheckCanSaveDomainClass();
+       loadPluginCheckCanSaveDomainClass()
     }
 
-    void testConfiguresHibernateWhenDataSourceInExternalSpringXml(){
-       
+    void testConfiguresHibernateWhenDataSourceInExternalSpringXml() {
+        def mocker = new MockFor(ApplicationContext.class)
+        ctx.registerMockResource(GrailsRuntimeConfigurator.SPRING_RESOURCES_XML, """
+            <?xml version="1.0" encoding="UTF-8"?>
+            <!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
+            <beans>
+	            <bean name="dataSource"
+		            class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+		            <property name="driverClassName" value="org.hsqldb.jdbcDriver"/>
+                    <property name="url" value="jdbc:hsqldb:mem:devDB"/>
+                    <property name="username" value="sa"/>
+                    <property name="password" value=""/>
+                </bean>
+            </beans>
+        """)
+
         loadPluginCheckCanSaveDomainClass();
     }
 
-    void testConfiguresHibernateWhenDataSourceInExternalSpringGroovyl(){
-
+    void testConfiguresHibernateWhenDataSourceInExternalSpringGroovy() {
+        def mocker = new MockFor(ApplicationContext.class)
+        ctx.registerMockResource(GrailsRuntimeConfigurator.SPRING_RESOURCES_XML, """
+          beans {
+            dataSawks(org.springframework.jdbc.datasource.DriverManagerDataSource){
+                driverClassName="com.mysql.jdbc.Driver"
+                url="jdbc:mysql://localhost:3307/grails"
+                username="grails"
+                password="grails"
+            }
+        }
+        """)
 
         loadPluginCheckCanSaveDomainClass();
     }
 
-    private loadPluginCheckCanSaveDomainClass(){
-           def mockManager = new MockGrailsPluginManager()
-        ctx.registerMockBean("manager", mockManager)
+    private loadPluginCheckCanSaveDomainClass() {
+        gcl.loadClass("org.codehaus.groovy.grails.plugins.CoreGrailsPlugin")
+        gcl.loadClass("org.codehaus.groovy.grails.plugins.datasource.DataSourceGrailsPlugin")
+        gcl.loadClass("org.codehaus.groovy.grails.plugins.web.ControllersGrailsPlugin")
+        gcl.loadClass("org.codehaus.groovy.grails.plugins.i18n.I18nGrailsPlugin")
+        gcl.loadClass("org.codehaus.groovy.grails.plugins.DomainClassGrailsPlugin")
+        gcl.loadClass("org.codehaus.groovy.grails.plugins.orm.hibernate.HibernateGrailsPlugin")
 
-        def dependantPluginClasses = []
-        dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.CoreGrailsPlugin")
-        dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.datasource.DataSourceGrailsPlugin")
-        dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.web.ControllersGrailsPlugin")
-        dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.i18n.I18nGrailsPlugin")
-        dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.DomainClassGrailsPlugin")
-
-        def dependentPlugins = dependantPluginClasses.collect {new DefaultGrailsPlugin(it, ga)}
-        def springConfig = new DefaultRuntimeSpringConfiguration(ctx)
-        springConfig.servletContext = createMockServletContext()
-
-        dependentPlugins*.doWithRuntimeConfiguration(springConfig)
-        dependentPlugins.each {mockManager.registerMockPlugin(it); it.manager = mockManager}
-
-
-        def pluginClass = gcl.loadClass("org.codehaus.groovy.grails.plugins.orm.hibernate.HibernateGrailsPlugin")
-        def plugin = new DefaultGrailsPlugin(pluginClass, ga)
-        plugin.manager = mockManager
-
-        plugin.doWithRuntimeConfiguration(springConfig)
-
-
-        def appCtx = springConfig.getApplicationContext()
-        assert appCtx.containsBean("dataSource")
-        assert appCtx.containsBean("sessionFactory")
-        assert appCtx.containsBean("openSessionInViewInterceptor")
-        assert appCtx.containsBean("TestValidator")
-        assert appCtx.containsBean("persistenceInterceptor")
-        dependentPlugins*.doWithDynamicMethods(appCtx)
-        plugin.doWithDynamicMethods(appCtx)
+        def configurator = new GrailsRuntimeConfigurator(ga, ctx)
+        def appCtx = configurator.configure(ctx.getServletContext())
+        checkAppCtxContainsPluginBeans(appCtx)
 
         def testClass = ga.getDomainClass("Test").clazz
 
         def testObj = testClass.newInstance()
         testObj.save()
+    }
 
+    private void checkAppCtxContainsPluginBeans(appCtx){
+        assert appCtx.containsBean("dataSource")
+        assert appCtx.containsBean("sessionFactory")
+        assert appCtx.containsBean("openSessionInViewInterceptor")
+        assert appCtx.containsBean("TestValidator")
+        assert appCtx.containsBean("persistenceInterceptor")
     }
 }
