@@ -35,7 +35,7 @@ class JavascriptTagLib  {
     static final CONTROLLER = "org.codehaus.groovy.grails.CONTROLLER"
 	static final LIBRARY_MAPPINGS = [
 										prototype : ['prototype/prototype'],
-										yahoo : [ 'yahoo/yahoo-min','yahoo/connection-min', 'yahoo/dom-min','yahoo/event-min','yahoo/animation-min'],
+										yahoo : [ 'yahoo/yahoo-min','yahoo/event-min','yahoo/connection-min', 'yahoo/dom-min','yahoo/animation-min'],
 										dojo : [ 'dojo/dojo']
 									]
 										

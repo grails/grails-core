@@ -16,9 +16,10 @@
 package org.codehaus.groovy.grails.commons;
 
 import groovy.lang.GroovyObject;
-import groovy.lang.MetaClass;
 import groovy.lang.GroovySystem;
+import groovy.lang.MetaClass;
 import org.apache.commons.lang.ClassUtils;
+import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.grails.exceptions.NewInstanceCreationException;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.springframework.beans.BeanWrapper;
@@ -121,7 +122,12 @@ public abstract class AbstractGrailsClass implements GrailsClass {
     }
 
     public String getLogicalPropertyName() {
-        return GrailsClassUtils.getPropertyNameRepresentation(getName());
+
+        final String logicalName = getName();
+        if(StringUtils.isBlank(logicalName)) {
+            return GrailsClassUtils.getPropertyNameRepresentation(getShortName());            
+        }
+        return GrailsClassUtils.getPropertyNameRepresentation(logicalName);
     }
 
     public String getPackageName() {

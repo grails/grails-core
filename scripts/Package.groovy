@@ -52,8 +52,11 @@ task ('default': "Packages a Grails application. Note: To create WAR use 'grails
 task( createConfig: "Creates the configuration object") {
    def configSlurper = new ConfigSlurper(grailsEnv)
    if(configFile.exists()) { 
-		try {
+		try {              
+			
 			config = configSlurper.parse(classLoader.loadClass("Config"))
+			config.setConfigFile(configFile.toURL())
+
 			ConfigurationHolder.setConfig(config)			
 		}   
 		catch(Exception e) {

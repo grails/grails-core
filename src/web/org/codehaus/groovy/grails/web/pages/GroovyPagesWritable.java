@@ -99,7 +99,7 @@ class GroovyPageWritable implements Writable {
         } else {
             // Set it to HTML by default
             if(LOG.isDebugEnabled() && !response.isCommitted()) {
-                LOG.debug("Writing response with content type: " + metaInfo.getContentType());
+                LOG.debug("Writing response to ["+response.getClass()+"] with content type: " + metaInfo.getContentType());
             }
             if(!response.isCommitted())  {                
                 response.setContentType(metaInfo.getContentType()); // must come before response.getWriter()
