@@ -17,14 +17,16 @@ class CommandObjectsTests extends AbstractGrailsControllerTests {
                 gcl.parseClass(
         '''
         class TestController {
+           def someProperty
+           
            def action1 = {
-                "text"
+                someProperty
            }
            def action2 = { Command command ->
-                [command:command]
+                [command:command, someProperty:someProperty]
            }
            def action3 = { Command command, ConstrainedCommand command2 ->
-                [command:command, command2:command2]
+                [command:command, command2:command2, someProperty:someProperty]
            }
         }
         class Command {
@@ -43,12 +45,14 @@ class CommandObjectsTests extends AbstractGrailsControllerTests {
     void testBinding() {
         // no command objects
         def testCtrl = ga.getControllerClass("TestController").newInstance()
+        testCtrl.someProperty = "text"
         def result = testCtrl.action1()
         assertEquals "text", result
 
         // one command object without params binding
         result = testCtrl.action2()
         assertNotNull result.command
+        assertEquals "text", result.someProperty
         assertNull result.command.name
 
         // one command object with params binding
@@ -60,6 +64,7 @@ class CommandObjectsTests extends AbstractGrailsControllerTests {
         // two command objects with params only for the first
         request.setParameter('name', 'Sergey')
         result = testCtrl.action3()
+        assertEquals "text", result.someProperty
         assertNotNull result.command
         assertNotNull result.command2
         assertEquals 'Sergey', result.command.name

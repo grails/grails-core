@@ -509,6 +509,7 @@ class ControllersGrailsPlugin {
             for(actionName in controller.commandObjectActions) {
                 def originalAction = controller.getPropertyValue(actionName)
                 def paramTypes = originalAction.getParameterTypes()
+                def closureName = actionName
                 def commandObjectBindingAction = { ->
                     def commandObjects = []
                     for( paramType in paramTypes ) {
@@ -529,9 +530,12 @@ class ControllersGrailsPlugin {
                             }
                         }
                     }
-                    originalAction.call( commandObjects )
+                    GCU.getPropertyOrStaticPropertyOrFieldValue(delegate, closureName).call(commandObjects)
                 }
-                mc."${GrailsClassUtils.getGetterName(actionName)}" = { -> commandObjectBindingAction }
+                mc."${GrailsClassUtils.getGetterName(actionName)}" = { ->
+                     commandObjectBindingAction.delegate = delegate
+                     commandObjectBindingAction
+                }
             }
 
 			// look for actions that accept command objects and configure
