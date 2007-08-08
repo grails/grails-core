@@ -28,6 +28,7 @@ import org.codehaus.groovy.control.*
 Ant.property(environment:"env")       
 
 servletVersion = System.getProperty("servlet.version") ? System.getProperty("servlet.version") : "2.4"
+
 grailsHome = Ant.antProject.properties."env.GRAILS_HOME"   
 Ant.property(file:"${grailsHome}/build.properties")
 
@@ -171,9 +172,11 @@ exit = {
 if (new File("${basedir}/application.properties").exists()) {
     // We know we have an app
     Ant.property(file:"${basedir}/application.properties")
-
-    grailsAppName = Ant.antProject.properties.'app.name'
-    appGrailsVersion = Ant.antProject.properties.'app.grails.version'
+    
+	def props = Ant.antProject.properties
+    grailsAppName = props.'app.name'
+    appGrailsVersion = props.'app.grails.version'
+	servletVersion = props.'app.servlet.version' ? props.'app.servlet.version' : servletVersion
 }
 
 // If no app name property (upgraded/new/edited project) default to basedir

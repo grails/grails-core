@@ -49,6 +49,7 @@ task( createApp: "The implementation task")  {
 	// Set the default version number for the application
     Ant.propertyfile(file:"${basedir}/application.properties") {
         entry(key:"app.version", value:"0.1")
+        entry(key:"app.servlet.version", value:servletVersion)
     }
 
     event("StatusFinal", ["Created Grails Application at $basedir"])

@@ -30,7 +30,7 @@ grailsHome = Ant.antProject.properties."env.GRAILS_HOME"
 includeTargets << new File ( "${grailsHome}/scripts/Init.groovy" )  
 
 task ('default': "Installs the artifact and scaffolding templates") {
-    depends(checkVersion)
+    depends(checkVersion) 
 
 	targetDir = "${basedir}/src/templates"
 	overwrite = false
@@ -48,7 +48,10 @@ task ('default': "Installs the artifact and scaffolding templates") {
 	Ant.copy(todir: targetDir, overwrite: overwrite) {
 		// copy artifact and scaffolding templates
 		fileset(dir: "${grailsHome}/src/grails/templates", includes: "artifacts/*, scaffolding/*")
-	}
+	}    
+	Ant.mkdir(dir:"${targetDir}/war")
+	Ant.copy(tofile:"${targetDir}/war/web.xml", file:"${grailsHome}/src/war/WEB-INF/web${servletVersion}.template.xml")
+    Ant.replace(file:"${targetDir}/war/web.xml",token:"@grails.project.key@", value:baseName)
 	
     event("StatusUpdate", [ "Templates installed successfully"])
 }

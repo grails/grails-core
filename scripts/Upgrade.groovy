@@ -92,15 +92,28 @@ move it to the new location of '${basedir}/test/integration'. Please move the di
 			 tofile:"${basedir}/web-app/WEB-INF/applicationContext.xml", overwrite:true)
 
 		// These will still overwrite as the src name differs from target and the src name is not in target		                
-		if(!new File("${basedir}/grails-app/conf/${appClassName}UrlMappings.groovy").exists()) {
-	        copy(tofile:"${basedir}/grails-app/conf/${appClassName}UrlMappings.groovy") {
+		if(!new File("${basedir}/grails-app/conf/UrlMappings.groovy").exists()) {
+	        copy(tofile:"${basedir}/grails-app/conf/UrlMappings.groovy") {
 	            fileset(file:"${grailsHome}/src/grails/templates/artifacts/UrlMappings.groovy") {
 	                present(present:"srconly", targetdir:"${basedir}/grails-app/conf")
 	            }
 	        }
-			replace(file:"${basedir}/grails-app/conf/${appClassName}UrlMappings.groovy", 
-						token:"@artifact.name@", value:"${appClassName}UrlMappings" )			
 		}
+		if(!new File("${basedir}/grails-app/conf/Config.groovy").exists()) {
+	        copy(tofile:"${basedir}/grails-app/conf/Config.groovy") {
+	            fileset(file:"${grailsHome}/src/grails/grails-app/conf/Config.groovy") {
+	                present(present:"srconly", targetdir:"${basedir}/grails-app/conf")
+	            }
+	        }
+		}
+		if(!new File("${basedir}/grails-app/conf/DataSource.groovy").exists()) {
+	        copy(tofile:"${basedir}/grails-app/conf/DataSource.groovy") {
+	            fileset(file:"${grailsHome}/src/grails/grails-app/conf/DataSource.groovy") {
+	                present(present:"srconly", targetdir:"${basedir}/grails-app/conf")
+	            }
+	        }
+		}
+		
 
         if(new File("${basedir}/spring").exists()) {
             move(file:"${basedir}/spring", todir:"${basedir}/grails-app/conf")

@@ -259,11 +259,14 @@ task(loadPlugins:"Loads Grails' plugins") {
 task( generateWebXml : "Generates the web.xml file") {                
 	depends(classpath)
 
-    def webXml = resolver.getResource("file:${grailsHome}/src/war/WEB-INF/web${servletVersion}.template.xml")
+    def webXml = new FileSystemResource("${basedir}/src/templates/war/web.xml")
+    if(!webXml.exists()) {
+        webXml = new FileSystemResource("${grailsHome}/src/war/WEB-INF/web${servletVersion}.template.xml")
+    }
 	def sw = new StringWriter()
 
     try {
-        profile("generating web.xml") {
+        profile("generating web.xml from $webXml") {
             pluginManager.doWebDescriptor(webXml, sw)
             webXmlFile.withWriter {
                 it << sw.toString()
