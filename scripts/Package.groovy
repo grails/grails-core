@@ -105,7 +105,7 @@ task( packageApp : "Implementation of package task") {
     }
 	Ant.mkdir(dir:"${basedir}/web-app/WEB-INF/grails-app/i18n")
 	
-	if(!GrailsUtil.isDevelopmentEnv()) {
+	if(!GrailsUtil.isDevelopmentEnv() && shouldPackageTemplates) {
 		Ant.mkdir(dir:"${basedir}/web-app/WEB-INF/grails-app/views")		
 	    Ant.copy(todir:"${basedir}/web-app/WEB-INF/grails-app/views") {
 			fileset(dir:"${basedir}/grails-app/views", includes:"**")

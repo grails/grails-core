@@ -166,7 +166,10 @@ def runTests = { suite, TestResult result, Closure callback  ->
 	
 }   
 task(runUnitTests:"Run Grails' unit tests under the test/unit directory") {         
-   try {     
+   try {    
+        def classLoader = getClass().classLoader	 
+
+		classLoader.rootLoader.addURL(new File("${basedir}/grails-app/conf/hibernate").toURL())
 		def beans = new grails.spring.BeanBuilder().beans {
 			resourceHolder(org.codehaus.groovy.grails.commons.spring.GrailsResourceHolder) {
 				resources = "file:${basedir}/**/grails-app/**/*.groovy"
@@ -200,7 +203,7 @@ task(runUnitTests:"Run Grails' unit tests under the test/unit directory") {
                 event("StatusUpdate", [ "No tests found in test/unit to execute"])
                 return
             }
-            def classLoader = grailsApp.classLoader
+
             classLoader.rootLoader.addURL(new File("test/unit").toURL())
             def suite = new TestSuite()
             populateTestSuite(suite, testFiles, classLoader, ctx)

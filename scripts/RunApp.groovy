@@ -40,6 +40,8 @@ grailsContext = null
 includeTargets << new File ( "${grailsHome}/scripts/Package.groovy" )
 includeTargets << new File ( "${grailsHome}/scripts/PackagePlugins.groovy" )
 
+shouldPackageTemplates=true
+
 task ('default': "Run's a Grails application in Jetty") {
 	depends( checkVersion, configureProxy, packagePlugins, packageApp )
 	runApp()

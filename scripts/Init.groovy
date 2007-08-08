@@ -52,7 +52,8 @@ System.setProperty("grails.classes.dir", classesDirPath)
 resolver = new PathMatchingResourcePatternResolver()
 grailsAppName = null
 appGrailsVersion = null
-hookScripts = [this]
+hookScripts = [this]   
+shouldPackageTemplates=false
 hooksLoaded = false
 classpathSet = false
 enableProfile = System.getProperty("grails.script.profile") ? true : false

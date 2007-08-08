@@ -318,7 +318,7 @@ class ControllersGrailsPlugin {
         }
         def consructorNoArgs = {domainClass ->
             constructor.invoke(domainClass.clazz, [] as Object[])
-        }
+        }                       
         for(domainClass in application.domainClasses) {
             def mc = domainClass.metaClass
             mc.constructor = consructorNoArgs.curry(domainClass)

@@ -157,9 +157,6 @@ class HibernateGrailsPlugin {
     def doWithDynamicMethods = {ctx ->
 
         SessionFactory sessionFactory = ctx.sessionFactory
-        if (sessionFactory)
-            GrailsHibernateUtil.configureHibernateDomainClasses(sessionFactory, application)
-
         // we're going to configure Grails to lazily initialise the dynamic methods on domain classes to avoid
         // the overhead of doing so at start-up time
         def lazyInit = {GrailsDomainClass dc ->

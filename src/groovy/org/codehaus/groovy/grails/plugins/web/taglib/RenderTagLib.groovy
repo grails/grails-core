@@ -406,7 +406,7 @@ class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants 
         if(attrs.model instanceof Map) {
             t.make( attrs.model ).writeTo(out)
         }
-        else if(attrs.collection) {
+        else if(attrs.containsKey('collection')) {
             attrs.collection.each {
             	if(var) {
             		def b = [:]
@@ -418,7 +418,7 @@ class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants 
 	            }
             }
         }
-        else if(attrs.bean) {
+        else if(attrs.containsKey('bean')) {
         	if(var) {
         		def b = [:]
         		b.put(var, attrs.bean)

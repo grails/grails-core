@@ -18,6 +18,9 @@ package org.codehaus.groovy.grails.orm.hibernate;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.DefaultGrailsDomainConfiguration;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsDomainConfiguration;
+import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil;
+import org.hibernate.HibernateException;
+import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeansException;
@@ -79,12 +82,14 @@ public class ConfigurableLocalSessionFactoryBean extends
 	public void setClassLoader(ClassLoader classLoader) {
 		this.classLoader = classLoader;
 	}
-	
-	public void afterPropertiesSet() throws Exception {
-        super.afterPropertiesSet();
-	}
 
-	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+    protected SessionFactory newSessionFactory(Configuration config) throws HibernateException {
+        SessionFactory sf = super.newSessionFactory(config);
+        GrailsHibernateUtil.configureHibernateDomainClasses(sf, getGrailsApplication());
+        return sf;
+    }
+
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
 		this.applicationContext = applicationContext;
 	}
 }
