@@ -172,21 +172,27 @@ public class Parse implements Tokens {
 
             pw.print(START_MULTILINE_STRING);
             boolean hasContent = false;
+            boolean firstLine = true;
             for (int i = 0; i < lines.length; i++) {
                 String line = lines[i];
                 final String content = escapeGroovy(line);
                 if(!StringUtils.isBlank(content)) {
-                    hasContent = true; 
-					if(i == lines.length)
-                    	pw.println(content);
-					else
-						pw.print(content);
+                    if(!hasContent) {
+                        hasContent = true;
+                    }
+                    if(firstLine) {
+                        pw.print(content);
+                        firstLine = false;
+                    }
+                    else {
+                        pw.println();
+                        pw.print(content);
+                    }
                 }
             }
-            pw.println(END_MULTILINE_STRING);
-
-
-
+            pw.print(END_MULTILINE_STRING);
+            pw.println();
+            
             if(hasContent && !bufferWhiteSpace) {
                 final String constantValue = sw.toString();
                 final String constantName = "STATIC_HTML_CONTENT_" + constantCount++;
