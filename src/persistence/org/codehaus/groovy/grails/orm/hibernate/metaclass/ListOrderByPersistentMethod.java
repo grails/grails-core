@@ -55,7 +55,7 @@ public class ListOrderByPersistentMethod extends AbstractStaticPersistentMethod 
 				
 				Criteria crit = session.createCriteria(clazz);
 				
-				if(arguments.length > 0) {
+				if(arguments != null && arguments.length > 0) {
 					if(arguments[0] instanceof Map) {
 						Map argMap = (Map)arguments[0];
 						argMap.put(ARGUMENT_SORT,propertyName);
