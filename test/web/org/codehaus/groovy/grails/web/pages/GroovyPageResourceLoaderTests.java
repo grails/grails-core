@@ -31,10 +31,10 @@ public class GroovyPageResourceLoaderTests extends TestCase {
     public void testGetRealLocationInProject() {
         GroovyPageResourceLoader rl = new GroovyPageResourceLoader();
 
-        assertEquals("/grails-app/views/layouts/main.gsp", rl.getRealLocationInProject("/WEB-INF/grails-app/views/layouts/main.gsp"));
-        assertEquals("/grails-app/views/books/list.gsp", rl.getRealLocationInProject("/WEB-INF/grails-app/views/books/list.gsp"));
-        assertEquals("/grails-app/views/_template.gsp",rl.getRealLocationInProject( "/WEB-INF/grails-app/views/_template.gsp"));
-        assertEquals("/web-app/other.gsp", rl.getRealLocationInProject("/other.gsp"));
-        assertEquals("/web-app/somedir/other.gsp",rl.getRealLocationInProject( "/somedir/other.gsp"));
+        assertEquals("grails-app/views/layouts/main.gsp", rl.getRealLocationInProject("/WEB-INF/grails-app/views/layouts/main.gsp"));
+        assertEquals("grails-app/views/books/list.gsp", rl.getRealLocationInProject("/WEB-INF/grails-app/views/books/list.gsp"));
+        assertEquals("grails-app/views/_template.gsp",rl.getRealLocationInProject( "/WEB-INF/grails-app/views/_template.gsp"));
+        assertEquals("web-app/other.gsp", rl.getRealLocationInProject("/other.gsp"));
+        assertEquals("web-app/somedir/other.gsp",rl.getRealLocationInProject( "/somedir/other.gsp"));
     }
 }
