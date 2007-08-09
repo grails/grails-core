@@ -14,7 +14,6 @@
  */
 package org.codehaus.groovy.grails.web.pages;
 
-import grails.util.GrailsUtil;
 import groovy.lang.GroovyClassLoader;
 import groovy.text.Template;
 import org.apache.commons.lang.StringUtils;
@@ -73,6 +72,7 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
     
     public static final String BEAN_ID = "groovyPagesTemplateEngine";
     public static final String RESOURCE_LOADER_BEAN_ID = "groovyPagesResourceLoader";
+    private boolean reloadEnabled;
 
 
     public GroovyPagesTemplateEngine() {
@@ -300,7 +300,25 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
      * @return True if it is reloadable
      */
     private boolean isGroovyPageReloadable(Resource resource, GroovyPageMetaInfo meta) {
-        return GrailsUtil.isDevelopmentEnv() && (establishLastModified(resource) > meta.getLastModified());
+        return isReloadEnabled() && (establishLastModified(resource) > meta.getLastModified());
+    }
+
+    /**
+     * Return whether reload is enabled for the GroovyPagesTemplateEngine
+     *
+     * @return True if it is
+     */
+    public boolean isReloadEnabled() {
+        return this.reloadEnabled;
+    }
+
+    /**
+     * Sets whether reloading is enabled
+     *
+     * @param b True if it is enabled
+     */
+    public void setReloadEnabled(boolean b) {
+        this.reloadEnabled = true;
     }
 
     /**
@@ -417,7 +435,7 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
         pageMeta.setLineNumbers(parse.getLineNumberMatrix());
         pageMeta.setLastModified(lastModified);
             // just return groovy and don't compile if asked
-        if (GrailsUtil.isDevelopmentEnv()) {
+        if (isReloadEnabled()) {
             pageMeta.setGroovySource(in);
         }
 

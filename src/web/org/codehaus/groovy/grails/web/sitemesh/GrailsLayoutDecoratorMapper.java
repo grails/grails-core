@@ -29,7 +29,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsResourceUtils;
 import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods;
-import org.codehaus.groovy.grails.web.pages.DevelopmentGroovyPageResourceLoader;
+import org.codehaus.groovy.grails.web.pages.GroovyPageResourceLoader;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.Resource;
@@ -179,8 +179,8 @@ public class GrailsLayoutDecoratorMapper extends AbstractDecoratorMapper impleme
     private ResourceLoader establishResourceLoader() {
         ResourceLoader resourceLoader;
         ApplicationContext ctx = WebApplicationContextUtils.getRequiredWebApplicationContext(servletContext);
-        if(ctx.containsBean(DevelopmentGroovyPageResourceLoader.BEAN_ID) && GrailsUtil.isDevelopmentEnv()) {
-            resourceLoader = (ResourceLoader)ctx.getBean(DevelopmentGroovyPageResourceLoader.BEAN_ID);
+        if(ctx.containsBean(GroovyPageResourceLoader.BEAN_ID) && GrailsUtil.isDevelopmentEnv()) {
+            resourceLoader = (ResourceLoader)ctx.getBean(GroovyPageResourceLoader.BEAN_ID);
         }
         else {
             resourceLoader = ctx;

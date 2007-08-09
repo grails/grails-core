@@ -26,10 +26,10 @@ import junit.framework.TestCase;
  *        Created: Feb 26, 2007
  *        Time: 5:44:06 PM
  */
-public class DevelopmentGroovyPageResourceLoaderTests extends TestCase {
+public class GroovyPageResourceLoaderTests extends TestCase {
 
     public void testGetRealLocationInProject() {
-        DevelopmentGroovyPageResourceLoader rl = new DevelopmentGroovyPageResourceLoader();
+        GroovyPageResourceLoader rl = new GroovyPageResourceLoader();
 
         assertEquals("/grails-app/views/layouts/main.gsp", rl.getRealLocationInProject("/WEB-INF/grails-app/views/layouts/main.gsp"));
         assertEquals("/grails-app/views/books/list.gsp", rl.getRealLocationInProject("/WEB-INF/grails-app/views/books/list.gsp"));

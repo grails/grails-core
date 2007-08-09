@@ -42,6 +42,7 @@ import org.springframework.web.servlet.i18n.CookieLocaleResolver;
 import org.springframework.web.servlet.i18n.LocaleChangeInterceptor;
 import org.springframework.web.context.request.RequestContextHolder as RCH
 import org.springframework.web.context.WebApplicationContext;
+import org.springframework.core.io.*
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.web.metaclass.*
 import org.codehaus.groovy.grails.commons.metaclass.*
@@ -98,18 +99,31 @@ class ControllersGrailsPlugin {
 		simpleGrailsController(SimpleGrailsController.class) {
 			grailsApplication = ref("grailsApplication", true)
 		}
+          
 
-        if(grails.util.GrailsUtil.isDevelopmentEnv()) {
-	    	groovyPageResourceLoader(org.codehaus.groovy.grails.web.pages.DevelopmentGroovyPageResourceLoader) {
-					baseResource = "file:./"		
-			}
-		}
+		
+			def viewsDir = application.config.grails.gsp.view.dir
+            if(viewsDir) {
+				log.info "Configuring GSP views directory as '${viewsDir}'"
+	         	groovyPageResourceLoader(org.codehaus.groovy.grails.web.pages.GroovyPageResourceLoader) {
+                     baseResource = "file:${viewsDir}"
+				}
+	        }
+        	else if(grails.util.GrailsUtil.isDevelopmentEnv()) {
+				groovyPageResourceLoader(org.codehaus.groovy.grails.web.pages.GroovyPageResourceLoader) {			         
+					baseResource = new FileSystemResource(".")		                                            
+				}
+			}                                                   
+
 
 		groovyPagesTemplateEngine(org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine) {
 			classLoader = ref("classLoader")
 			if(grails.util.GrailsUtil.isDevelopmentEnv()) {
 				resourceLoader = groovyPageResourceLoader
 			}
+			if(grails.util.GrailsUtil.isDevelopmentEnv() || application.config.grails.gsp.enable.reload == true) {
+                reloadEnabled = true
+            }
 		}   
 		
 		jspViewResolver(GrailsViewResolver) {
