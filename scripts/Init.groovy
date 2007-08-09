@@ -200,7 +200,9 @@ resolveResources = { String pattern ->
 getGrailsLibs =  {
   def result = ''
    (new File("${grailsHome}/lib")).eachFileMatch(~/.*\.jar/) { file ->
-      result += "<classpathentry kind=\"var\" path=\"GRAILS_HOME/lib/${file.name}\" />\n\n"
+      if(!file.name.startsWith("gant-")) {          
+          result += "<classpathentry kind=\"var\" path=\"GRAILS_HOME/lib/${file.name}\" />\n\n"
+      }
    }
    result
 }

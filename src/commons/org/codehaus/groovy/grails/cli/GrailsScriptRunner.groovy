@@ -40,7 +40,7 @@ class GrailsScriptRunner {
 	static userHome = System.properties.'user.home'       
 	static version = GrailsUtil.getGrailsVersion()
 	
-	static main(args) {
+	static main(String[] args) {
 		MetaClassRegistry registry = InvokerHelper
 										.getInstance()
 										.getMetaRegistry();
@@ -64,7 +64,7 @@ Welcome to Grails ${grailsVersion} - http://grails.org/
 Licensed under Apache Standard License 2.0
 Grails home is set to: ${grailsHome}		
 		"""		  
-		if(args.length && args[0].trim()) {         
+		if(args.size() && args[0].trim()) {         
                
 
 			baseDir = establishBaseDir()
@@ -216,27 +216,35 @@ Grails home is set to: ${grailsHome}
 		return allArgs
 	}   
 	   
-	private static establishBaseDir() {
-        def baseDir = new File("")
-        if(!new File(baseDir.absolutePath, "grails-app").exists()) {
-        	
-        	// be careful with this next step...
-        	// baseDir.parentFile will return null since baseDir is new File("")
-        	// baseDir.absoluteFile needs to happen before retrieving the parentFile
-    		def parentDir = baseDir.absoluteFile.parentFile
+	private static establishBaseDir() {   
+		def sysProp = System.getProperty("base.dir")
+		def baseDir
+		if(sysProp) {
+			baseDir = new File(sysProp)
+		}          
+		else {
+	        baseDir = new File("")
+	        if(!new File(baseDir.absolutePath, "grails-app").exists()) {
 
-    		// keep moving up one directory until we find 
-    		// one that contains the grails-app dir or get 
-    		// to the top of the filesystem...
-    		while(parentDir != null && !new File(parentDir, "grails-app").exists()) {
-    			parentDir = parentDir.parentFile
-    		}
-        	
-    		if(parentDir != null) {
-    			// if we found the project root, use it
-    			baseDir = parentDir
-    		} 
-        }
+	        	// be careful with this next step...
+	        	// baseDir.parentFile will return null since baseDir is new File("")
+	        	// baseDir.absoluteFile needs to happen before retrieving the parentFile
+	    		def parentDir = baseDir.absoluteFile.parentFile
+
+	    		// keep moving up one directory until we find 
+	    		// one that contains the grails-app dir or get 
+	    		// to the top of the filesystem...
+	    		while(parentDir != null && !new File(parentDir, "grails-app").exists()) {
+	    			parentDir = parentDir.parentFile
+	    		}
+
+	    		if(parentDir != null) {
+	    			// if we found the project root, use it
+	    			baseDir = parentDir
+	    		} 
+	        }
+			
+		}
 		return baseDir
 	}      
 
