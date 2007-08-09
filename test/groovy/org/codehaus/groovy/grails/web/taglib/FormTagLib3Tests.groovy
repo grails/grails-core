@@ -278,16 +278,18 @@ public class FormTagLib3Tests extends AbstractGrailsTagTests {
     }
 
     public void testCheckboxTag() {
-    	final StringWriter sw = new StringWriter();
-    	final PrintWriter pw = new PrintWriter(sw);
+        def template = '<g:checkBox name="foo" value="${test}"/>'
 
-    	withTag("checkBox", pw) { tag ->    	
-	    	// use sorted map to be able to predict the order in which tag attributes are generated
-    		def attributes = new TreeMap([name: "testCheck", extra: "1", value: "true"])
-    		tag.call(attributes)
-	
-    		assertEquals '<input type="hidden" name="_testCheck" /><input type="checkbox" name="testCheck" checked="checked" value="true" extra="1"  />', sw.toString()
-    	}
+        assertOutputEquals('<input type="hidden" name="_foo" /><input type="checkbox" name="foo" checked="checked" value="hello"  />', template, [test:"hello"])
+
+        template = '<g:checkBox name="foo" value="${test}" checked="false"/>'
+
+        assertOutputEquals('<input type="hidden" name="_foo" /><input type="checkbox" name="foo" value="hello"  />', template, [test:"hello"])
+
+        template = '<g:checkBox name="foo" value="${test}" checked="${true}"/>'
+
+        assertOutputEquals('<input type="hidden" name="_foo" /><input type="checkbox" name="foo" checked="checked" value="hello"  />', template, [test:"hello"])
+
     }
 
     void testRenderingNoSelectionOption() {

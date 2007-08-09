@@ -71,7 +71,31 @@ class FormTagLib {
         outputAttributes(attrs)
 		out << "/>"
 	}
+          
 
+    /**
+     * A helper tag for creating checkboxes
+     **/
+    def checkBox = { attrs ->
+          def value = attrs.remove('value')
+          def name = attrs.remove('name')  
+          def checked = attrs.remove('checked')
+		  if(checked == null) checked = true
+		  if(checked instanceof String) checked = Boolean.valueOf(checked)
+		
+          if(value == null) value = false
+          out << "<input type=\"hidden\" name=\"_${name}\" /><input type=\"checkbox\" name=\"${name}\" "
+          if(value && checked) {
+                out << 'checked="checked" '
+          }
+          out << "value=\"${value}\" "
+        // process remaining attributes
+        outputAttributes(attrs)
+
+        // close the tag, with no body
+        out << ' />'
+
+    }
 	/**
 	 * A general tag for creating textareas
 	 */
@@ -572,28 +596,7 @@ class FormTagLib {
         writer << '</select>'
     }
 
-    /**
-     * A helper tag for creating checkboxes
-     **/
-    def checkBox = { attrs ->
-          def value = attrs.remove('value')
-          def name = attrs.remove('name')
-          if(!value) value = false
-          out << '<input type="hidden" '
-          out << "name=\"_${name}\" />"
-          out << '<input type="checkbox" '
-          out << "name=\"${name}\" "
-          if(value) {
-                out << 'checked="checked" '
-          }
-          out << "value=\"true\" "
-        // process remaining attributes
-        outputAttributes(attrs)
 
-        // close the tag, with no body
-        out << ' />'
-
-    }
 
     /**
      * A helper tag for creating radio buttons
