@@ -63,6 +63,8 @@ import org.codehaus.groovy.grails.commons.ApplicationHolder
 import org.codehaus.groovy.grails.plugins.web.taglib.*
 import org.codehaus.groovy.grails.commons.GrailsTagLibClass
 import org.springframework.context.ApplicationContext
+import java.lang.reflect.Modifier
+import org.codehaus.groovy.grails.commons.GrailsApplication
 
 /**
 * A plug-in that handles the configuration of controllers for Grails
@@ -415,109 +417,21 @@ class ControllersGrailsPlugin {
             ctx.getBean(taglib.fullName).metaClass = mc
 	   	}
 		// add commons objects and dynamic methods like render and redirect to controllers
-		for(controller in application.controllerClasses ) {
+        for(controller in application.controllerClasses ) {
 		   MetaClass mc = controller.metaClass
 			registerCommonObjects(mc, application)
-
-			// allow controllers to call tag library methods
-            mc.methodMissing = { String name, args ->
-               args = args == null ? [] as Object[] : args
-
-                def tagName = "${GroovyPage.DEFAULT_NAMESPACE}:$name"
-                GrailsClass tagLibraryClass = application.getArtefactForFeature(
-                                                    TagLibArtefactHandler.TYPE, tagName.toString())
-
-                def result
-                if(tagLibraryClass) {
-                    registerMethodMissingForTags(mc, ctx, tagLibraryClass, name)
-                    result = mc.invokeMethod(delegate, name, args)
+			registerControllerMethods(mc, ctx)
+			registerMethodMissing(mc, application, ctx)
+            Class superClass = controller.clazz.superclass
+            // deal with abstract super classes
+            while(superClass != Object.class) {
+                if(Modifier.isAbstract(superClass.getModifiers())) {
+                    registerCommonObjects(superClass.metaClass, application)
+                    registerControllerMethods(superClass.metaClass, ctx)
+                    registerMethodMissing(superClass.metaClass, application, ctx)                    
                 }
-                else {
-                     throw new MissingMethodException(name, delegate.class, args)
-                }
-                result
+                superClass = superClass.superclass
             }
-
-            mc.getActionUri = {-> "/$controllerName/$actionName".toString()	}
-			mc.getControllerUri = {-> "/$controllerName".toString()	}
-		    mc.getTemplateUri = { String name ->
-		    	def webRequest = RCH.currentRequestAttributes()
-		    	webRequest.attributes.getTemplateUri(name, webRequest.currentRequest)
-		    }
-		    mc.getViewUri = { String name ->
-		    	def webRequest = RCH.currentRequestAttributes()
-		    	webRequest.attributes.getViewUri(name, webRequest.currentRequest)
-		    }
-			mc.getActionName = {->
-				RCH.currentRequestAttributes().actionName
-			}
-			mc.getControllerName = {->
-				RCH.currentRequestAttributes().controllerName
-			}
-
-			mc.setErrors = { Errors errors ->
-				RCH.currentRequestAttributes().setAttribute( GrailsApplicationAttributes.ERRORS, errors, 0)
-			}
-		    mc.getErrors = {->
-		   		RCH.currentRequestAttributes().getAttribute(GrailsApplicationAttributes.ERRORS, 0)
-		    }
-			mc.setModelAndView = { ModelAndView mav ->
-				RCH.currentRequestAttributes().setAttribute( GrailsApplicationAttributes.MODEL_AND_VIEW, mav, 0)
-			}
-		    mc.getModelAndView = {->
-	   			RCH.currentRequestAttributes().getAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW, 0)
-		    }
-		    mc.getChainModel = {->
-		    	RCH.currentRequestAttributes().flashScope["chainModel"]
-		    }
-			mc.hasErrors = {->
-				errors?.hasErrors() ? true : false
-			}
-
-			def redirect = new RedirectDynamicMethod(ctx)
-			def chain = new ChainDynamicMethod()
-			def render = new RenderDynamicMethod()
-			def bind = new BindDynamicMethod()
-			// the redirect dynamic method
-			mc.redirect = { Map args ->
-				redirect.invoke(delegate,"redirect",args)
-			}
-		    mc.chain = { Map args ->
-		    	chain.invoke(delegate, "chain",args)
-		    }
-		    // the render method
-		    mc.render = { String txt ->
-				render.invoke(delegate, "render",[txt] as Object[])
-		    }
-		    mc.render = { Map args ->
-				render.invoke(delegate, "render",[args] as Object[])
-	    	}
-		    mc.render = { Closure c ->
-				render.invoke(delegate,"render", [c] as Object[])
-	    	}
-		    mc.render = { Map args, Closure c ->
-				render.invoke(delegate,"render", [args, c] as Object[])
-		    }
-		    // the bindData method
-		    mc.bindData = { Object target, Object args ->
-		    	bind.invoke(delegate, "bindData", [target, args] as Object[])
-		    }
-		    mc.bindData = { Object target, Object args, List disallowed ->
-		    	bind.invoke(delegate, "bindData", [target, args, [exclude:disallowed]] as Object[])
-		    }
-		    mc.bindData = { Object target, Object args, List disallowed, String filter ->
-		    	bind.invoke(delegate, "bindData", [target, args, [exclude:disallowed] , filter] as Object[])
-		    }
-		     mc.bindData = { Object target, Object args, Map includeExclude ->
-		    	bind.invoke(delegate, "bindData", [target, args, includeExclude] as Object[])
-		    }
-		    mc.bindData = { Object target, Object args, Map includeExclude, String filter ->
-		    	bind.invoke(delegate, "bindData", [target, args, includeExclude , filter] as Object[])
-		    }
-		    mc.bindData = { Object target, Object args, String filter ->
-		    	bind.invoke(delegate, "bindData", [target, args, filter] as Object[])
-		    }
-
             // look for actions that accept command objects and override
             // each of the actions to make command objects binding before executing
             for(actionName in controller.commandObjectActions) {
@@ -581,6 +495,109 @@ class ControllersGrailsPlugin {
 		}
 	}
 
+    def registerMethodMissing(MetaClass mc, GrailsApplication application, ApplicationContext ctx) {
+        // allow controllers to call tag library methods
+        mc.methodMissing = { String name, args ->
+           args = args == null ? [] as Object[] : args
+
+            def tagName = "${GroovyPage.DEFAULT_NAMESPACE}:$name"
+            GrailsClass tagLibraryClass = application.getArtefactForFeature(
+                                                TagLibArtefactHandler.TYPE, tagName.toString())
+
+            def result
+            if(tagLibraryClass) {
+                registerMethodMissingForTags(mc, ctx, tagLibraryClass, name)
+                result = mc.invokeMethod(delegate, name, args)
+            }
+            else {
+                 throw new MissingMethodException(name, delegate.class, args)
+            }
+            result
+        }
+    }
+
+    def registerControllerMethods(MetaClass mc, ApplicationContext ctx) {
+        mc.getActionUri = {-> "/$controllerName/$actionName".toString()	}
+        mc.getControllerUri = {-> "/$controllerName".toString()	}
+        mc.getTemplateUri = { String name ->
+            def webRequest = RCH.currentRequestAttributes()
+            webRequest.attributes.getTemplateUri(name, webRequest.currentRequest)
+        }
+        mc.getViewUri = { String name ->
+            def webRequest = RCH.currentRequestAttributes()
+            webRequest.attributes.getViewUri(name, webRequest.currentRequest)
+        }
+        mc.getActionName = {->
+            RCH.currentRequestAttributes().actionName
+        }
+        mc.getControllerName = {->
+            RCH.currentRequestAttributes().controllerName
+        }
+
+        mc.setErrors = { Errors errors ->
+            RCH.currentRequestAttributes().setAttribute( GrailsApplicationAttributes.ERRORS, errors, 0)
+        }
+        mc.getErrors = {->
+               RCH.currentRequestAttributes().getAttribute(GrailsApplicationAttributes.ERRORS, 0)
+        }
+        mc.setModelAndView = { ModelAndView mav ->
+            RCH.currentRequestAttributes().setAttribute( GrailsApplicationAttributes.MODEL_AND_VIEW, mav, 0)
+        }
+        mc.getModelAndView = {->
+               RCH.currentRequestAttributes().getAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW, 0)
+        }
+        mc.getChainModel = {->
+            RCH.currentRequestAttributes().flashScope["chainModel"]
+        }
+        mc.hasErrors = {->
+            errors?.hasErrors() ? true : false
+        }
+
+        def redirect = new RedirectDynamicMethod(ctx)
+        def chain = new ChainDynamicMethod()
+        def render = new RenderDynamicMethod()
+        def bind = new BindDynamicMethod()
+        // the redirect dynamic method
+        mc.redirect = { Map args ->
+            redirect.invoke(delegate,"redirect",args)
+        }
+        mc.chain = { Map args ->
+            chain.invoke(delegate, "chain",args)
+        }
+        // the render method
+        mc.render = { String txt ->
+            render.invoke(delegate, "render",[txt] as Object[])
+        }
+        mc.render = { Map args ->
+            render.invoke(delegate, "render",[args] as Object[])
+        }
+        mc.render = { Closure c ->
+            render.invoke(delegate,"render", [c] as Object[])
+        }
+        mc.render = { Map args, Closure c ->
+            render.invoke(delegate,"render", [args, c] as Object[])
+        }
+        // the bindData method
+        mc.bindData = { Object target, Object args ->
+            bind.invoke(delegate, "bindData", [target, args] as Object[])
+        }
+        mc.bindData = { Object target, Object args, List disallowed ->
+            bind.invoke(delegate, "bindData", [target, args, [exclude:disallowed]] as Object[])
+        }
+        mc.bindData = { Object target, Object args, List disallowed, String filter ->
+            bind.invoke(delegate, "bindData", [target, args, [exclude:disallowed] , filter] as Object[])
+        }
+         mc.bindData = { Object target, Object args, Map includeExclude ->
+            bind.invoke(delegate, "bindData", [target, args, includeExclude] as Object[])
+        }
+        mc.bindData = { Object target, Object args, Map includeExclude, String filter ->
+            bind.invoke(delegate, "bindData", [target, args, includeExclude , filter] as Object[])
+        }
+        mc.bindData = { Object target, Object args, String filter ->
+            bind.invoke(delegate, "bindData", [target, args, filter] as Object[])
+        }
+
+    }
 
     def registerMethodMissingForTags(MetaClass mc, ApplicationContext ctx, GrailsTagLibClass tagLibraryClass, String name) {
         mc."$name" = { Map attrs, Closure body ->
