@@ -36,7 +36,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator as GRC;
 import org.apache.tools.ant.taskdefs.optional.junit.*                        
 import org.springframework.mock.web.*       
-import org.springframework.core.io.Resource 
+import org.springframework.core.io.* 
 import org.springframework.web.context.request.RequestContextHolder;
 import org.codehaus.groovy.grails.plugins.*
 
@@ -51,7 +51,9 @@ includeTargets << new File ( "${grailsHome}/scripts/Package.groovy" )
 
 task ('default': "Run a Grails applications unit tests") {
   depends( classpath, checkVersion, configureProxy, packagePlugins )
-  grailsEnv = "test"
+  grailsEnv = "test"                                                
+
+	
   packageApp()
   testApp()
 }
@@ -84,7 +86,7 @@ task(testApp:"The test app implementation task") {
 	
 
   	compileTests()  
-	"hello?"
+
 	try {
 		runUnitTests() 
 		runIntegrationTests()
@@ -125,13 +127,17 @@ task(produceReports:"Outputs aggregated xml and html reports") {
 def populateTestSuite = { suite, testFiles, classLoader, ctx ->
 	for(r in testFiles) {
 	    try {
-		    def c = classLoader.loadClass(r.filename - ".groovy")
+		    def c = classLoader.loadClass(r.filename - ".groovy") 
             if(TestCase.isAssignableFrom(c) && !Modifier.isAbstract(c.modifiers)) {
                 suite.addTest(new GrailsTestSuite(ctx.beanFactory, c))
-            }
+            }                                                  
+			else {
+				event("StatusUpdate", ["Test ${r.filename} is not a valid test case. It does not implement junit.framework.TestCase or is abstract!"])
+			}
 		} catch( Exception e ) {
             compilationFailures << r.file.name
-            println e.getMessage()
+			event("StatusFinal", ["Error loading test: ${e.message}"])
+			exit(1)
         }
 	}
 }   
@@ -212,17 +218,20 @@ task(runUnitTests:"Run Grails' unit tests under the test/unit directory") {
             classLoader.rootLoader.addURL(new File("test/unit").toURL())
             def suite = new TestSuite()
             populateTestSuite(suite, testFiles, classLoader, ctx)
-            println "-------------------------------------------------------"
-            println "Running Unit Tests..."
+			if(suite.testCount() > 0) {      
+				int testCases = suite.countTestCases()
+	            println "-------------------------------------------------------"
+	            println "Running ${testCases} Unit Test${testCases > 1 ? 's' : ''}..."
 
-            def start = new Date()
-            runTests(suite,result) { test, invocation ->
-                    invocation()
-            }
-            def end = new Date()
+	            def start = new Date()
+	            runTests(suite,result) { test, invocation ->
+	                    invocation()
+	            }
+	            def end = new Date()
 
-            event("StatusUpdate", [ "Unit Tests Completed in ${end.time-start.time}ms" ])
-            println "-------------------------------------------------------"
+	            event("StatusUpdate", [ "Unit Tests Completed in ${end.time-start.time}ms" ])
+	            println "-------------------------------------------------------"				
+			}
         }
         catch(Exception e) {
             event("StatusFinal", ["Error running unit tests: ${e.toString()}"])
@@ -242,8 +251,6 @@ task(runIntegrationTests:"Runs Grails' tests under the test/integration director
 			return
 		}               
 		
-		println "-------------------------------------------------------"
-		println "Running Integration Tests..."
 		
 
 		def config = new org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator(grailsApp,appCtx)
@@ -255,45 +262,51 @@ task(runIntegrationTests:"Runs Grails' tests under the test/integration director
 		def classLoader = app.classLoader
 		def suite = new TestSuite()
 
-   		populateTestSuite(suite, testFiles, classLoader, ctx)
+   		populateTestSuite(suite, testFiles, classLoader, ctx)   
+		if(suite.testCount() > 0) {      
+			int testCases = suite.countTestCases()
+            println "-------------------------------------------------------"
+            println "Running ${testCases} Integration Test${testCases > 1 ? 's' : ''}..."
 
-		def beanNames = ctx.getBeanNamesForType(PersistenceContextInterceptor)
-		def interceptor = null
-		if(beanNames.size() > 0)interceptor = ctx.getBean(beanNames[0])
+
+			def beanNames = ctx.getBeanNamesForType(PersistenceContextInterceptor)
+			def interceptor = null
+			if(beanNames.size() > 0)interceptor = ctx.getBean(beanNames[0])
            		
 
-		try {
-			interceptor?.init()           	
+			try {
+				interceptor?.init()           	
 			   
-			def start = new Date()			
-            runTests(suite, result) { test, invocation ->
-                name = test.name[0..-6]
-				def webRequest = GWU.bindMockWebRequest(ctx)	  
+				def start = new Date()			
+	            runTests(suite, result) { test, invocation ->
+	                name = test.name[0..-6]
+					def webRequest = GWU.bindMockWebRequest(ctx)	  
 				
-				// @todo this is horrible and dirty, should find a better way  		
-				if(name.endsWith("Controller")) {
-					webRequest.controllerName = GCU.getLogicalPropertyName(name, "Controller")
-				}                                                                           
+					// @todo this is horrible and dirty, should find a better way  		
+					if(name.endsWith("Controller")) {
+						webRequest.controllerName = GCU.getLogicalPropertyName(name, "Controller")
+					}                                                                           
 				
-				invocation()
-				interceptor?.flush() 				
- 				RequestContextHolder.setRequestAttributes(null);
-                if( test.cleaningOrder ) {
-                    grails.util.GrailsUtil.deprecated "'cleaningOrder' property for integration tests is not in use anymore since now we make Hibernate manage the cleaning order. You can just remove it from your tests."
-                }
-                app.domainClasses.each { dc ->
-                    dc.clazz.list()*.delete()
-                }
-				interceptor?.flush()
-			}                     
-			def end = new Date()
-			println "Integration Tests Completed in ${end.time-start.time}ms"  		
-			println "-------------------------------------------------------"		
+					invocation()
+					interceptor?.flush() 				
+	 				RequestContextHolder.setRequestAttributes(null);
+	                if( test.cleaningOrder ) {
+	                    grails.util.GrailsUtil.deprecated "'cleaningOrder' property for integration tests is not in use anymore since now we make Hibernate manage the cleaning order. You can just remove it from your tests."
+	                }
+	                app.domainClasses.each { dc ->
+	                    dc.clazz.list()*.delete()
+	                }
+					interceptor?.flush()
+				}                     
+				def end = new Date()
+				println "Integration Tests Completed in ${end.time-start.time}ms"  		
+				println "-------------------------------------------------------"		
 			
-		}                         		
-		finally {
-			interceptor?.destroy()
-		}	   
+			}                         		
+			finally {
+				interceptor?.destroy()
+			}	
+		}   
 	}
 	catch(Throwable e) {
         event("StatusUpdate", [ "Error executing tests ${e.message}"])
