@@ -11,12 +11,12 @@
 
 package org.codehaus.groovy.grails.orm.hibernate
 
+import org.codehaus.groovy.grails.commons.GrailsDomainClass
+
 class CascadingDeleteBehaviourTests extends AbstractGrailsHibernateTests {
 
-    /*void testSomething() {
-        fail('irk!!!!')
-                               
-    } */
+
+
     void testDeleteToOne() {
         def companyClass = ga.getDomainClass("Company")  
         def projectClass = ga.getDomainClass("Project")
@@ -34,8 +34,9 @@ class CascadingDeleteBehaviourTests extends AbstractGrailsHibernateTests {
         p.delete()
         session.flush()                                     \
 
-        assertEquals 1, companyClass.clazz.list().size()
-        assertEquals 0, memberClass.clazz.list().size()
+        assertEquals 1, companyClass.clazz.count()
+        assertEquals 0, memberClass.clazz.count()
+        assertEquals 0, projectClass.clazz.count()
 
     }
 
@@ -51,18 +52,49 @@ class CascadingDeleteBehaviourTests extends AbstractGrailsHibernateTests {
         c.save()
         session.flush()
 
-        assertEquals 1, companyClass.clazz.list().size()
-         assertEquals 1, locationClass.clazz.list().size()
-        assertEquals 1, personClass.clazz.list().size()
+        assertEquals 1, companyClass.clazz.count()
+         assertEquals 1, locationClass.clazz.count()
+        assertEquals 1, personClass.clazz.count()
 
         c.delete()
         session.flush()
 
-        assertEquals 0, companyClass.clazz.list().size()
-        assertEquals 1, locationClass.clazz.list().size()
-        assertEquals 0, personClass.clazz.list().size()
+        assertEquals 0, companyClass.clazz.count()
+        assertEquals 1, locationClass.clazz.count()
+        assertEquals 0, personClass.clazz.count()
 
     }  
+
+    void testDomainModel() {
+        GrailsDomainClass companyClass = ga.getDomainClass("Company")
+        GrailsDomainClass memberClass = ga.getDomainClass("Member")
+        GrailsDomainClass projectClass = ga.getDomainClass("Project")
+        GrailsDomainClass locationClass = ga.getDomainClass("Location")
+        GrailsDomainClass personClass = ga.getDomainClass("Person")
+
+
+        assert !companyClass.isOwningClass(memberClass.clazz)
+        assert !companyClass.isOwningClass(projectClass.clazz)
+        assert !companyClass.isOwningClass(locationClass.clazz)
+        assert !companyClass.isOwningClass(personClass.clazz)
+
+        assert !projectClass.isOwningClass(companyClass.clazz)
+        assert !projectClass.isOwningClass(memberClass.clazz)
+        assert !projectClass.isOwningClass(locationClass.clazz)
+        assert !projectClass.isOwningClass(personClass.clazz)
+
+        assert memberClass.isOwningClass(projectClass.clazz)
+        assert !memberClass.isOwningClass(companyClass.clazz)
+        assert !memberClass.isOwningClass(personClass.clazz)
+        assert !memberClass.isOwningClass(locationClass.clazz)
+
+        assert personClass.isOwningClass(companyClass.clazz)
+        assert !personClass.isOwningClass(locationClass.clazz)
+        assert !personClass.isOwningClass(memberClass.clazz)
+        assert !personClass.isOwningClass(projectClass.clazz)
+
+
+    }
 
     void onSetUp() {
 		this.gcl.parseClass('''

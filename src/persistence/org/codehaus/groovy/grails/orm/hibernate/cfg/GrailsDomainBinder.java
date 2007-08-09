@@ -57,6 +57,9 @@ public final class GrailsDomainBinder {
     private static final String STRING_TYPE = "string";
     private static final String EMPTY_PATH = "";
     private static final char UNDERSCORE = '_';
+    private static final String CASCADE_ALL = "all";
+    private static final String CASCADE_SAVE_UPDATE = "save-update";
+    private static final String CASCADE_MERGE = "merge";
 
     /**
 	 * A Collection type, for the moment only Set is supported
@@ -1095,9 +1098,11 @@ public final class GrailsDomainBinder {
 	}
 
 	/**
-	 * @param grailsProperty
-	 * @param prop
-	 * @param mappings
+     * Binds a property to Hibernate runtime meta model. Deals with cascade strategy based on the Grails domain model
+     *
+	 * @param grailsProperty The grails property instance
+	 * @param prop The Hibernate property
+	 * @param mappings The Hibernate mappings
 	 */
 	private static void bindProperty(GrailsDomainClassProperty grailsProperty, Property prop, Mappings mappings) {
 		// set the property name
@@ -1109,40 +1114,53 @@ public final class GrailsDomainBinder {
 		prop.setOptional( grailsProperty.isOptional() );
 		// set to cascade all for the moment
 		if(grailsProperty.isAssociation()) {
+
+            // for a one-to-many relationship we cascade all updates if it is the owning side
+            // otherwise we cascade only saves and updates
             if(grailsProperty.isOneToMany()) {
-                if(!grailsProperty.isBidirectional()) {
-                    if(grailsProperty.isOwningSide())
-                        prop.setCascade("all");
-                    else
-                        prop.setCascade("save-update");
-                }
-                else if(grailsProperty.isBidirectional())
-                    prop.setCascade("all");
+                if(grailsProperty.isOwningSide())
+                    prop.setCascade(CASCADE_ALL);
+                else
+                    prop.setCascade(CASCADE_SAVE_UPDATE);
             }
+            // for many-to-many relationships we only cascade saves and updates from the owning side
             else if(grailsProperty.isManyToMany()) {
             	if(grailsProperty.isOwningSide()) {
-            		prop.setCascade("save-update");
+            		prop.setCascade(CASCADE_SAVE_UPDATE);
             	}
             }
-            else if(grailsProperty.isManyToOne() || grailsProperty.isOneToOne()) {
+            // in the case of a many-to-one which is implicitly bidirectional we check whether it is the
+            // owning side and if so cascade otherwise only merge to deal with transient or detached instances
+            else if(grailsProperty.isManyToOne()) {
                 GrailsDomainClass domainClass = grailsProperty.getDomainClass();
 
-                if(domainClass.isOwningClass(grailsProperty.getType())) {
-                    prop.setCascade("all");
+                if(!domainClass.isOwningClass(grailsProperty.getType())) {
+                    prop.setCascade(CASCADE_ALL);
                 }
                 else {
                     GrailsDomainClassProperty otherSide = grailsProperty.getOtherSide();
                     if(otherSide != null && otherSide.isOneToMany()) {
-                        prop.setCascade("merge");
+                        prop.setCascade(CASCADE_MERGE);
                     }
                     else if(grailsProperty.isOwningSide()) {
-                        prop.setCascade("all");
+                        prop.setCascade(CASCADE_ALL);
                     }
+                }
+            }
+            // in a one-to-one we check if it is un-directional and the other side is an owning side and then cascade
+            // otherwise if is the ownside we cascade all
+            else if(grailsProperty.isOneToOne()) {
+                GrailsDomainClass domainClass = grailsProperty.getDomainClass();
+                if(!grailsProperty.isBidirectional() && domainClass.isOwningClass(grailsProperty.getType())) {
+                    prop.setCascade(CASCADE_ALL);
+                }
+                else if(grailsProperty.isOwningSide()) {
+                    prop.setCascade(CASCADE_ALL);
                 }
             }
         }
         else if( Map.class.isAssignableFrom(grailsProperty.getType())) {
-            prop.setCascade("all");
+            prop.setCascade(CASCADE_ALL);
         }
 
 
