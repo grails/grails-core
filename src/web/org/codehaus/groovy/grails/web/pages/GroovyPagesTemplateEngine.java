@@ -14,6 +14,7 @@
  */
 package org.codehaus.groovy.grails.web.pages;
 
+import grails.util.GrailsUtil;
 import groovy.lang.GroovyClassLoader;
 import groovy.text.Template;
 import org.apache.commons.lang.StringUtils;
@@ -435,7 +436,7 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
         pageMeta.setLineNumbers(parse.getLineNumberMatrix());
         pageMeta.setLastModified(lastModified);
             // just return groovy and don't compile if asked
-        if (isReloadEnabled()) {
+        if (isReloadEnabled() || GrailsUtil.isDevelopmentEnv()) {
             pageMeta.setGroovySource(in);
         }
 

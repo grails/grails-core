@@ -287,16 +287,14 @@ class User {
     String organization
     String code
 
+    static belongsTo = Link
+
     static constraints = {
         login(unique:['grp','department'])
         department(unique:"organization")
         code(unique:true)
     }
 }
-'''
-		)
-
-        this.gcl.parseClass('''
 class Link {
     Long id
     Long version
@@ -304,12 +302,14 @@ class Link {
     User u1
     User u2
 
+
     static constraints = {
         u2(unique:'u1')
     }
 }
 '''
-        )
+		)
+
 	}
 
 	void onTearDown() {
