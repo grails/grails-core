@@ -548,7 +548,7 @@ class HibernateGrailsPlugin {
                             delegate[prop.name].add(obj)
                         }
                         else {
-                            throw new MissingMethodException(dc.clazz, "addTo${collectionName}", [arg] as Object[])
+                            throw new MissingMethodException("addTo${collectionName}", dc.clazz, [arg] as Object[])
                         }
                         if (prop.bidirectional) {
                             if (prop.manyToMany) {
@@ -578,7 +578,7 @@ class HibernateGrailsPlugin {
                             }
                         }
                         else {
-                            throw new MissingMethodException(dc.clazz, "removeFrom${collectionName}", [arg] as Object[])
+                            throw new MissingMethodException("removeFrom${collectionName}", dc.clazz, [arg] as Object[])
                         }
                         delegate
                     }
