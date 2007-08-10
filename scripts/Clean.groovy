@@ -28,7 +28,7 @@ import groovy.text.SimpleTemplateEngine
 Ant.property(environment:"env")                             
 grailsHome = Ant.antProject.properties."env.GRAILS_HOME"    
 
-includeTargets << new File ( "${grailsHome}/scripts/Init.groovy" )
+includeTargets << new File ( "${grailsHome}/scripts/Package.groovy" )
 
 task ('default': "Cleans a Grails project") {
 	clean()
@@ -41,6 +41,9 @@ task ( clean: "Implementation of clean") {
 task ( cleanCompiledSources : "Cleans compiled Java and Groovy sources") {
 	def webInf = "${basedir}/web-app/WEB-INF"
 	Ant.delete(dir:"${webInf}/classes")
+	Ant.delete(dir:"${webInf}/test/classes", failonerror:false)	
+	Ant.delete(dir:"${webInf}/test/reports", failonerror:false)		
+	Ant.delete(file:webXmlFile.absolutePath, failonerror:false)
 	Ant.delete(dir:"${webInf}/lib")
 	Ant.delete(dir:"${classesDirPath}")
 	Ant.mkdir(dir:"${webInf}/classes")

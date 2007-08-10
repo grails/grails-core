@@ -41,7 +41,7 @@ includeTargets << new File ( "${grailsHome}/scripts/PackagePlugins.groovy" )
 scaffoldDir = "${basedir}/web-app/WEB-INF/templates/scaffolding"     
 config = new ConfigObject()
 configFile = new File("${basedir}/grails-app/conf/Config.groovy")
-webXmlFile = new File("${basedir}/web-app/WEB-INF/web.xml")
+webXmlFile = new File("${userHome}/.grails/${grailsVersion}/projects/${baseName}/web.xml")
 
 task ('default': "Packages a Grails application. Note: To create WAR use 'grails war'") {
      depends( checkVersion)

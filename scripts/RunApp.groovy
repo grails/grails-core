@@ -116,6 +116,7 @@ task( configureHttpServer : "Returns a jetty server configured with an HTTP conn
     webContext = new WebAppContext("${basedir}/web-app", "/${grailsAppName}")
     webContext.setDefaultsDescriptor("${grailsHome}/conf/webdefault.xml")
     webContext.setClassLoader(classLoader)
+    webContext.setDescriptor(webXmlFile.absolutePath)
     grailsHandler = webContext
     server.setHandler( webContext )
     return server

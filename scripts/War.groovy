@@ -74,13 +74,14 @@ task (war: "The implementation task") {
                     }
                 }
             }
-		}
-        Ant.copy(todir:"${basedir}/staging/WEB-INF/lib", flatten:true) {
+		}                 
+		Ant.copy(file:webXmlFile.absolutePath, tofile:"${basedir}/staging/WEB-INF/web.xml")
+        Ant.copy(todir:"${basedir}/staging/WEB-INF/lib", flatten:true, failonerror:false) {
 			fileset(dir:"${basedir}/plugins") {
                 include(name:"*/lib/*.jar")
             }
         }
-		
+		  
 	    Ant.propertyfile(file:"${basedir}/staging/WEB-INF/classes/application.properties") {
 	        entry(key:"grails.env", value:grailsEnv)
 	    }		
@@ -96,7 +97,6 @@ task (war: "The implementation task") {
 		    version = ''
 		}
 		warName = "${basedir}/${fileName}${version}.war"
-
 		warPlugins()		    
 		createDescriptor()
 		Ant.jar(destfile:warName, basedir:"${basedir}/staging")
