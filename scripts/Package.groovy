@@ -100,8 +100,7 @@ task( packageApp : "Implementation of package task") {
     }
 
 	profile("dependencies") {
-
-        copyDependencies()
+//        copyDependencies()
     }
 	Ant.mkdir(dir:"${basedir}/web-app/WEB-INF/grails-app/i18n")
 	

@@ -56,11 +56,11 @@ task( packagePlugins : "Packages any Grails plugins that are installed for this 
 			def pluginNameWithVersion = pluginBase.name
 			
 	   		Ant.sequential {            
-				if(new File("${pluginBase}/lib").exists()) {
+			   /* if(new File("${pluginBase}/lib").exists()) {
 		   			copy(todir:"${basedir}/web-app/WEB-INF/lib", failonerror:false) {
 		   				fileset(dir:"${pluginBase}/lib", includes:"**")
 		   			}   			                     					
-				}                                           
+				}*/                                           
 				if(new File("${pluginBase}/grails-app/conf").exists()) {
 		   			copy(todir:"${basedir}/web-app/WEB-INF/classes", failonerror:false) {
 		   				fileset(dir:"${pluginBase}/grails-app/conf", includes:"*", excludes:"*.groovy")

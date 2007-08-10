@@ -42,12 +42,16 @@ task (war: "The implementation task") {
 	 
 	try {
 		Ant.mkdir(dir:"${basedir}/staging")
+
 		Ant.copy(todir:"${basedir}/staging", overwrite:true) {
 			fileset(dir:"${basedir}/web-app", includes:"**") 
 		}       
 		Ant.copy(todir:"${basedir}/staging/WEB-INF/grails-app", overwrite:true) {
-			fileset(dir:"${basedir}/grails-app", includes:"views")
+			fileset(dir:"${basedir}/grails-app", includes:"views/**")
 		}
+		Ant.copy(todir:"${basedir}/staging/WEB-INF/classes") {
+            fileset(dir:classesDirPath)
+        }
 		              
 		scaffoldDir = "${basedir}/staging/WEB-INF/templates/scaffolding"
 		packageTemplates()
@@ -60,7 +64,22 @@ task (war: "The implementation task") {
 			fileset(dir:"${basedir}/lib") {
 					include(name:"*.jar")
 			}
-		}              
+            fileset(dir:"${grailsHome}/lib") {
+                for(d in DEPENDENCIES) {
+                    include(name:d)
+                }
+                if(antProject.properties."ant.java.version" == "1.5") {
+                    for(d in JAVA_5_DEPENDENCIES) {
+                        include(name:d)
+                    }
+                }
+            }
+		}
+        Ant.copy(todir:"${basedir}/staging/WEB-INF/lib", flatten:true) {
+			fileset(dir:"${basedir}/plugins") {
+                include(name:"*/lib/*.jar")
+            }
+        }
 		
 	    Ant.propertyfile(file:"${basedir}/staging/WEB-INF/classes/application.properties") {
 	        entry(key:"grails.env", value:grailsEnv)

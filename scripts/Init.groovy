@@ -392,6 +392,7 @@ void setClasspath() {
     if (classpathSet) return
 
     def grailsDir = resolveResources("file:${basedir}/grails-app/*")
+	def pluginLibs = resolveResources("file:${basedir}/plugins/*/lib")
 
 	Ant.path(id:"grails.classpath")  {
 		pathelement(location:"${basedir}")
@@ -400,6 +401,9 @@ void setClasspath() {
 		pathelement(location:"${basedir}/web-app")
 		pathelement(location:"${basedir}/web-app/WEB-INF")
 		pathelement(location:"${basedir}/web-app/WEB-INF/classes")
+		for(pluginLib in pluginLibs) {                      
+			fileset(dir:pluginLib.file.absolutePath)
+		}
 		if (new File("${basedir}/web-app/WEB-INF/lib").exists()) {
 		    fileset(dir:"${basedir}/web-app/WEB-INF/lib")
 		}
@@ -425,18 +429,14 @@ void setClasspath() {
     }
     cpath << classesDirPath << File.pathSeparator
     cpath << "${basedir}/web-app/WEB-INF"
-
-
-    compConfig = new CompilerConfiguration()
-   	compConfig.setClasspath(cpath.toString());
-
     for(jar in jarFiles) {
         cpath << jar.file.absolutePath << File.pathSeparator
-    }
+    }                                       
 
+    compConfig = new CompilerConfiguration()
+   	compConfig.setClasspath(cpath.toString()); 
     rootLoader = getClass().classLoader.rootLoader
     populateRootLoader(rootLoader, jarFiles)
-    
    	parentLoader = getClass().getClassLoader()
     classpathSet = true
 
@@ -444,13 +444,15 @@ void setClasspath() {
 }
 
 getJarFiles = {->
-    def jarFiles = resolveResources("lib/*.jar").toList()
-    resolveResources("plugins/*/lib/*.jar").each { pluginJar ->
+    def jarFiles = resolveResources("file:${basedir}/lib/*.jar").toList()
+    def pluginJars = resolveResources("file:${basedir}/plugins/*/lib/*.jar")
+    for(pluginJar in pluginJars) {
         boolean matches = jarFiles.any { it.file.name == pluginJar.file.name }
         if(!matches) jarFiles.add(pluginJar)
     }
 
-    resolveResources("file:${userHome}/.grails/lib/*.jar").each { userJar ->
+    def userJars = resolveResources("file:${userHome}/.grails/lib/*.jar")
+    for(userJar in userJars) {
 		jarFiles.add(userJar)
 	}
 	jarFiles

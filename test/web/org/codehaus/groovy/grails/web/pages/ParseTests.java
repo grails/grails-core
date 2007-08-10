@@ -110,8 +110,9 @@ public class ParseTests extends TestCase {
  		"<tbody>\n" +
  		"  <tt:form />\n" +
 		"</tbody>");
- 		//System.out.println(output);
- 		assertEquals(trimAndRemoveCR(expected), trimAndRemoveCR(output));
+ 		System.out.println("|"+trimAndRemoveCR(output)+"|");
+         System.out.println("|"+trimAndRemoveCR(expected)+"|");
+         assertEquals(trimAndRemoveCR(expected), trimAndRemoveCR(output));
  	}
 
     /**
