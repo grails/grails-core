@@ -110,7 +110,7 @@ fi
 if [ -z "$GROOVY_CONF" ]; then
     GROOVY_CONF="$GRAILS_HOME/conf/groovy-starter.conf"
 fi
-STARTER_CLASSPATH="$GRAILS_HOME/lib/groovy-starter.jar"
+STARTER_CLASSPATH="$GRAILS_HOME/lib/groovy-all-1.1-beta-3-SNAPSHOT.jar"
 
 # Allow access to Cocoa classes on OS X
 if $darwin; then
@@ -236,6 +236,7 @@ startGrails() {
           -Dprogram.name="$PROGNAME" \
           -Dgroovy.starter.conf="$GROOVY_CONF" \
           -Dgrails.home="$GRAILS_HOME" \
+          -Dbase.dir="." \
           -Dtools.jar="$TOOLS_JAR" \
           $STARTER_MAIN_CLASS \
           --main $CLASS \
