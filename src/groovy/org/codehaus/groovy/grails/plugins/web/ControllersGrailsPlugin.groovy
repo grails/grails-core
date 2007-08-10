@@ -415,7 +415,8 @@ class ControllersGrailsPlugin {
                 result
             }
             ctx.getBean(taglib.fullName).metaClass = mc
-	   	}
+	   	}    
+        def bind = new BindDynamicMethod()	
 		// add commons objects and dynamic methods like render and redirect to controllers
         for(controller in application.controllerClasses ) {
 		   MetaClass mc = controller.metaClass
@@ -431,7 +432,8 @@ class ControllersGrailsPlugin {
                     registerMethodMissing(superClass.metaClass, application, ctx)                    
                 }
                 superClass = superClass.superclass
-            }
+            }  
+
             // look for actions that accept command objects and override
             // each of the actions to make command objects binding before executing
             for(actionName in controller.commandObjectActions) {
