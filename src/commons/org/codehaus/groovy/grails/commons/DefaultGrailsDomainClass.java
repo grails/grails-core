@@ -71,7 +71,7 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
            !Modifier.isAbstract(clazz.getSuperclass().getModifiers())) {
             this.root = false;
         }
-        this.propertyMap = new HashMap();
+        this.propertyMap = new TreeMap();
         this.relationshipMap = getAssociationMap();
         this.embedded = getEmbeddedList();
         this.tableName = (String)getPropertyOrStaticPropertyOrFieldValue(GrailsDomainClassProperty.WITH_TABLE, String.class);

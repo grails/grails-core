@@ -21,8 +21,8 @@ class XMLConverterTests extends AbstractGrailsControllerTests {
            c.test()
 
            assertEquals( '''<?xml version="1.0" encoding="ISO-8859-1"?><book>
-  <title>The Stand</title>
   <author>Stephen King</author>
+  <title>The Stand</title>
 </book>''', response.contentAsString)
        }
 

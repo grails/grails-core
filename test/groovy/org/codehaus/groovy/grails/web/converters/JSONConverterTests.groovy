@@ -15,12 +15,12 @@ import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
 
 class JSONConverterTests extends AbstractGrailsControllerTests {
 
-       void testXMLConverter() {
+       void testJSONConverter() {
            def c = ga.getControllerClass("RestController").newInstance()
 
            c.test()
 
-           assertEquals( '''{"id":null,"class":"Book","title":"The Stand","author":"Stephen King"}''', response.contentAsString)
+           assertEquals( '''{"id":null,"class":"Book","author":"Stephen King","title":"The Stand"}''', response.contentAsString)
        }
 
     void onSetUp() {

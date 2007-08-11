@@ -62,7 +62,7 @@ public class Parse implements Tokens {
     private int state;
     private static final String START_MULTILINE_STRING = "'''";
     private static final String END_MULTILINE_STRING = "'''";
-    private Map constants = new HashMap();
+    private Map constants = new TreeMap();
     private int constantCount = 0;
     private static final String EMPTY_MULTILINE_STRING = "''''''";
 

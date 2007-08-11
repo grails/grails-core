@@ -101,9 +101,9 @@ public class ParseTests extends TestCase {
                      "invokeTag('form','tt',[:],body1)\n" +
                      "out.print(STATIC_HTML_CONTENT_1)\n" +
                      "}\n" +
-                     "static final STATIC_HTML_CONTENT_1 = '''</tbody>'''\n" +
-                     "\n" +
                      "static final STATIC_HTML_CONTENT_0 = '''<tbody>'''\n" +
+                     "\n" +
+                     "static final STATIC_HTML_CONTENT_1 = '''</tbody>'''\n" +
                      "\n" +
                      "}";
  		String output = parseCode("myTest",
