@@ -74,6 +74,6 @@ public class InteractiveShell {
 
         });
 
-        shell.run(args);
+        shell.run();
 	}
 }
