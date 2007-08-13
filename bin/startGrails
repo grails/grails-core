@@ -248,6 +248,7 @@ startGrails() {
           -Dprogram.name="$PROGNAME" \
           -Dgroovy.starter.conf="$GROOVY_CONF" \
           -Dgrails.home="$GRAILS_HOME" \
+          -Dbase.dir="." \
           -Dtools.jar="$TOOLS_JAR" \
           $STARTER_MAIN_CLASS \
           --main $CLASS \
