@@ -22,16 +22,16 @@
             </g:hasErrors>
             <g:form action="save" method="post" <%= multiPart ? ' enctype="multipart/form-data"' : '' %>>
                 <div class="dialog">
-                <table>
-                    <tbody>
-                    <%  props = domainClass.properties.findAll { it.name != 'version' && it.name != 'id' }
-                        Collections.sort(props, comparator.constructors[0].newInstance([domainClass] as Object[]))
-                        props.each { p ->
-                        if(p.type != Set.class) { %>
-                        ${renderEditor(p)}
-                    <%  }} %>
-                    </tbody>
-                </table>
+                    <table>
+                        <tbody>
+                        <%  props = domainClass.properties.findAll { it.name != 'version' && it.name != 'id' }
+                            Collections.sort(props, comparator.constructors[0].newInstance([domainClass] as Object[]))
+                            props.each { p ->
+                            if(p.type != Set.class) { %>
+                            ${renderEditor(p)}
+                        <%  }} %>
+                        </tbody>
+                    </table>
                 </div>
                 <div class="buttons">
                     <span class="formButton">
