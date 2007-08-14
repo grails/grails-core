@@ -159,7 +159,7 @@ public class FormTagLib3Tests extends AbstractGrailsTagTests {
     	sw = new StringWriter();
     	pw = new PrintWriter(sw);
 
-        def sel = 5
+        def sel = '5'
 
     	withTag("select", pw) { tag ->
 	    	// use sorted map to be able to predict the order in which tag attributes are generated

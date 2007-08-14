@@ -534,11 +534,8 @@ class FormTagLib {
             	def keyValue = null
                 writer << '<option '
                 if(keys) {
-                    keyValue = keys[i]
-                    writer << 'value="' << keyValue << '" '
-                    if(keyValue == value) {
-                        writer << 'selected="selected" '
-                    }
+                    keyValue = keys[i]                     
+                    writeValueAndCheckIfSelected(keyValue, value, writer)
                 }
                 else if(optionKey) {
                     if(optionKey instanceof Closure) {
@@ -550,17 +547,11 @@ class FormTagLib {
                     else {
                         keyValue = el[optionKey]
                     }
-                    writer << "value=\"${keyValue}\" "
-                    if(keyValue == value) {
-                        writer << 'selected="selected" '
-                    }
+                    writeValueAndCheckIfSelected(keyValue, value, writer)
                 }
                 else {
                 	keyValue = el
-                    writer << "value=\"${keyValue}\" "
-                    if(keyValue == value) {
-                        writer << 'selected="selected" '
-                    }
+                    writeValueAndCheckIfSelected(keyValue, value, writer)
                 }
                 writer << '>'
                 if(optionValue) {
@@ -596,7 +587,12 @@ class FormTagLib {
         writer << '</select>'
     }
 
-
+    private writeValueAndCheckIfSelected(keyValue, value, writer){
+        writer << "value=\"${keyValue}\" "
+        if(keyValue?.toString() == value?.toString()) {
+            writer << 'selected="selected" '
+        }
+    }
 
     /**
      * A helper tag for creating radio buttons
