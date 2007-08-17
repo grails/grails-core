@@ -114,7 +114,11 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
             throw new IllegalArgumentException("Constructor argument 'classes' cannot be null");
         }
 
-        configureLoadedClasses(classes);
+        for (int i = 0; i < classes.length; i++) {
+            Class aClass = classes[i];
+            loadedClasses.add(aClass);
+        }
+        this.allClasses = classes;
         this.cl = classLoader;
     }
 

@@ -37,7 +37,11 @@ import java.util.List;
  * <p>Factory bean that creates a Grails application object based on Groovy files.
  * 
  * @author Steven Devijver
- * @since Jul 2, 2005
+ * @author Graeme Rocher
+ *
+ * @since 0.1
+ *
+ * Created - Jul 2, 2005
  */
 public class GrailsApplicationFactoryBean implements FactoryBean, InitializingBean {
 	
