@@ -31,7 +31,12 @@ grailsHome = Ant.antProject.properties."env.GRAILS_HOME"
 includeTargets << new File ( "${grailsHome}/scripts/Clean.groovy" ) 
 includeTargets << new File ( "${grailsHome}/scripts/Package.groovy" )
 
-task ('default': "Creates a WAR archive") {
+task ('default':'''Creates a WAR archive for deployment onto a Java EE application server.
+
+Examples: 
+grails war
+grails prod war
+''') {
     depends( checkVersion)
 
 	war()
