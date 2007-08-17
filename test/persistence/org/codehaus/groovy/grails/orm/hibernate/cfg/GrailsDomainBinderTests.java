@@ -65,6 +65,7 @@ public class GrailsDomainBinderTests extends TestCase {
 			            "}")
 		);
         GrailsApplication grailsApplication = new DefaultGrailsApplication(new Class[]{domainClass.getClazz()},cl);
+		grailsApplication.initialise();
         DefaultGrailsDomainConfiguration config = new DefaultGrailsDomainConfiguration();
         config.setGrailsApplication(grailsApplication);
         config.buildMappings();

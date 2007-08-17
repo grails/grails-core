@@ -59,6 +59,7 @@ class FooController {
 
     void testFlowRegsitry() {
         def ga = new DefaultGrailsApplication(gcl.loadedClasses, gcl)
+        ga.initialise()
 
         assertEquals 1, ga.controllerClasses.size()
 

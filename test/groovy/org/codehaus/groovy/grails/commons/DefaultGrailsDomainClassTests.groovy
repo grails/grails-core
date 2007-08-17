@@ -39,6 +39,7 @@ class DefaultGrailsDomainClassTests extends GroovyTestCase {
 						)
 		
 		def ga = new DefaultGrailsApplication(gcl.loadedClasses, gcl)
+		ga.initialise()
 		
 		def testDomain = ga.getDomainClass("Test")
 		assertEquals(GrailsDomainClassProperty.FETCH_EAGER, testDomain.getPropertyByName('others').getFetchMode())

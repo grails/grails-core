@@ -25,7 +25,8 @@ class FooController {
 }
         """)
 
-        def ga = new DefaultGrailsApplication(gcl.loadedClasses, gcl)
+        def ga = new DefaultGrailsApplication(gcl.loadedClasses, gcl)   
+		ga.initialise()
 
         def foo = ga.getControllerClass("FooController")
         assertEquals 2, foo.flows.size()

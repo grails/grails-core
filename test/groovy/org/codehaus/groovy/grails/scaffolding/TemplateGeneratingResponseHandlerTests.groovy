@@ -18,6 +18,7 @@ class TemplateGeneratingResponseHandlerTests extends GroovyTestCase {
     
     void setUp() {
         application = new DefaultGrailsApplication([Test.class] as Class[], new GroovyClassLoader())
+		application.initialise()
         System.setProperty("grails.env", "development")
     }
     void testCreateScaffoldedListResponse() {

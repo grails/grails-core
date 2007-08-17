@@ -104,8 +104,10 @@ class OtherController {
         def gcl = new GroovyClassLoader()
         gcl.parseClass(testController1)
         gcl.parseClass(testController2)
-
-        appCtx.registerMockBean("grailsApplication", new DefaultGrailsApplication(gcl.loadedClasses,gcl))
+                                                     
+		def app =  new DefaultGrailsApplication(gcl.loadedClasses,gcl)
+		app.initialise()
+        appCtx.registerMockBean("grailsApplication", app)
 
         servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE,appCtx);
 

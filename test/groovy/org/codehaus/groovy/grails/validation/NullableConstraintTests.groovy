@@ -49,6 +49,7 @@ class ProjectVersion {
 
 
         def ga = new DefaultGrailsApplication(gcl.loadedClasses, gcl)
+        ga.initialise()
 
         def project = ga.getDomainClass("Project")
 
