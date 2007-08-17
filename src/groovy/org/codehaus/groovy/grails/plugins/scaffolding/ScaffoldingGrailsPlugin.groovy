@@ -15,23 +15,21 @@
  */ 
 package org.codehaus.groovy.grails.plugins.scaffolding;
 
-import org.codehaus.groovy.grails.plugins.support.GrailsPluginUtils
-import org.codehaus.groovy.grails.scaffolding.*;
-import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU 
-import org.codehaus.groovy.grails.web.servlet.filter.GrailsResourceCopier
+import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler
+import org.codehaus.groovy.grails.scaffolding.*
 
 /**
- * A plug-in that handles the configuration of Hibernate within Grails 
- * 
- * @author Graeme Rocher
- * @since 0.4
- */
+* A plug-in that handles the configuration of Hibernate within Grails
+*
+* @author Graeme Rocher
+* @since 0.4
+*/
 class ScaffoldingGrailsPlugin {
 
 	def version = grails.util.GrailsUtil.getGrailsVersion()
 	def dependsOn = [hibernate:version, controllers:version]
-	def observe = ['hibernate']
+	def observe = ['controllers']
 	
 	def doWithSpring = {
 		application.controllerClasses.each { controller ->
@@ -87,35 +85,84 @@ class ScaffoldingGrailsPlugin {
 		registerScaffoldedActions(application, ctx)
         // configure scaffolders
         GrailsScaffoldingUtil.configureScaffolders(application, ctx);		
-	}  
-	
-	def onChange = { event ->		
-	    if(event.source instanceof Class) {
-			def domainClass = application.getDomainClass(event.source.name)
-			
-			registerScaffoldedActions(application, event.ctx)   
-             // configure scaffolders
-	        GrailsScaffoldingUtil.configureScaffolders(application, event.ctx);			
-		}
-	}
+	}       
 	
 	def registerScaffoldedActions(application,ctx) {
-		application.controllerClasses.each { controller ->
-			if(controller.scaffolding) {
-				if(ctx.containsBean("${controller.fullName}Scaffolder")) {
-					def scaffolder = ctx."${controller.fullName}Scaffolder"
+			application.controllerClasses.each { controller ->
+				if(controller.scaffolding) {
+					if(ctx.containsBean("${controller.fullName}Scaffolder")) {
+						def scaffolder = ctx."${controller.fullName}Scaffolder"
 
-					scaffolder.supportedActionNames.each { name ->
-						if(!controller.hasProperty(name)) {
-							def getter = GCU.getGetterName(name)
-							controller.metaClass."$getter" = {->
-								scaffolder.getAction(delegate, name)
+						scaffolder.supportedActionNames.each { name ->
+							if(!controller.hasProperty(name)) {
+								def getter = GCU.getGetterName(name)
+								controller.metaClass."$getter" = {->
+									scaffolder.getAction(delegate, name)
+								}
 							}
 						}
 					}
 				}
 			}
-		}
-		
+			
+	}	
+	
+	def onChange = { event ->		
+	    if(event.source instanceof Class) {
+            def controllerClass = application.getControllerClass(event.source.name)
+
+            if(controllerClass.scaffolding ) {
+                def scaffoldClass = controllerClass.scaffoldedClass
+                def ctx = event.ctx
+
+                if(!scaffoldClass) {
+                    scaffoldClass = application.getDomainClass(controller.name)?.clazz
+                }
+
+                if(scaffoldClass) {
+
+                    log.info "Re-configuring scaffolding for reloaded class ${event.source}"
+
+                    def beans = beans {
+
+                        "${scaffoldClass.name}Domain"(	GrailsScaffoldDomain,
+                                                        scaffoldClass,
+                                                        ref("sessionFactory"))
+                        // setup the default response handler that simply delegates to a view
+                        "${scaffoldClass.name}ResponseHandler"(TemplateGeneratingResponseHandler) {
+                            templateGenerator = {DefaultGrailsTemplateGenerator bean->}
+                            viewResolver = ref("jspViewResolver")
+                            grailsApplication = ref("grailsApplication", true)
+                            scaffoldedClass = scaffoldClass
+                        }
+                        // setup a response handler factory which can be used to output different
+                        // responses based on the model returned by the scaffold domain
+
+                        "${scaffoldClass.name}ResponseHandlerFactory"(	DefaultGrailsResponseHandlerFactory,
+                                                ref("grailsApplication",true),
+                                                ref("${scaffoldClass.name}ResponseHandler") )
+
+                        log.debug "Registering new scaffolder [${controllerClass.fullName}Scaffolder]"
+                        "${controllerClass.fullName}Scaffolder" (DefaultGrailsScaffolder) {
+                            scaffoldRequestHandler = { DefaultScaffoldRequestHandler dsrh ->
+                                scaffoldDomain = ref("${scaffoldClass.name}Domain")
+                            }
+                            scaffoldResponseHandlerFactory = ref( "${scaffoldClass.name}ResponseHandlerFactory")
+                        }
+
+                    }
+
+                    for(bean in beans.beanDefinitions) {
+                        ctx.registerBeanDefinition(bean.key, bean.value)
+                    }
+
+                    registerScaffoldedActions(event.application, ctx)
+                    // configure scaffolders
+                    GrailsScaffoldingUtil.configureScaffolders(event.application, ctx);		
+
+                }
+            }
+        }
 	}
+
 }

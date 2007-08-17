@@ -126,7 +126,27 @@ public class BeanBuilder extends GroovyObjectSupport {
 			return null;
 		return getSpringConfig().getBeanConfig(name).getBeanDefinition();
 	}
-	/**
+
+    /**
+     * Retrieves all BeanDefinitions for this BeanBuilder
+     *
+     * @return A map of BeanDefinition instances with the bean id as the key
+     */
+    public Map getBeanDefinitions() {
+
+        Map beanDefinitions = new HashMap();
+        final List beanNames = getSpringConfig().getBeanNames();
+        for (Iterator i = beanNames.iterator(); i.hasNext();) {
+            String beanName = (String) i.next();
+            BeanDefinition bd = getSpringConfig()
+                                    .getBeanConfig(beanName)
+                                    .getBeanDefinition();
+            beanDefinitions.put(beanName,bd);
+        }
+        return beanDefinitions;
+    }
+
+    /**
 	 * Sets the runtime Spring configuration instance to use. This is not necessary to set
 	 * and is configured to default value if not, but is useful for integrating with other
 	 * spring configuration mechanisms @see org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator
