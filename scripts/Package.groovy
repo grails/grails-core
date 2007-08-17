@@ -258,8 +258,10 @@ task(loadPlugins:"Loads Grails' plugins") {
 			for(plugin in pluginFiles) {
 			   def className = plugin.name - '.groovy'
                pluginClasses << classLoader.loadClass(className)
-			}                                                  
-			event("StatusUpdate", ["Loading with installed plug-ins: ${pluginClasses.name}"])
+			}                              
+			if(pluginClasses) {
+				event("StatusUpdate", ["Loading with installed plug-ins: ${pluginClasses.name}"])				
+			}                    
 	        pluginManager = new DefaultGrailsPluginManager(pluginClasses as Class[], new DefaultGrailsApplication(new Class[0], new GroovyClassLoader(classLoader)))
 	        PluginManagerHolder.setPluginManager(pluginManager)			
 		}

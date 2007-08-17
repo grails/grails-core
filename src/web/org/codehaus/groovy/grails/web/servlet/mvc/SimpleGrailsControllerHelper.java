@@ -469,9 +469,9 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
                 afterInterceptor.setDelegate(controller);
                 afterInterceptor.setResolveStrategy(Closure.DELEGATE_FIRST);
             }
-            Map model = Collections.EMPTY_MAP;
+            Map model = new HashMap();
             if(mv != null) {
-				model =	mv.getModel() != null ? mv.getModel() : Collections.EMPTY_MAP;
+				model =	mv.getModel() != null ? mv.getModel() : new HashMap();
             }
             switch(afterInterceptor.getMaximumNumberOfParameters()){
                 case 1:
