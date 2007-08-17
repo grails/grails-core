@@ -99,9 +99,9 @@ task( packageApp : "Implementation of package task") {
         createConfig()
     }
 
-	profile("dependencies") {
+//	profile("dependencies") {
 //        copyDependencies()
-    }
+//    }
 	Ant.mkdir(dir:"${basedir}/web-app/WEB-INF/grails-app/i18n")
 	
 	if(!GrailsUtil.isDevelopmentEnv() && shouldPackageTemplates) {
@@ -163,8 +163,8 @@ log4j.logger.org.codehaus.groovy.grails.commons=info,stdout
             }
         }
         catch(Exception e) {
-            println e.message
-             e.printStackTrace()
+	        event("StatusFinal", [ "Error creating Log4j config: " + e.message ])
+			exit(1)
         }
     }
     }
@@ -237,23 +237,39 @@ task( copyDependencies : "Copies the necessary dependencies (jar files) into the
 	}
 }
 
-task(loadPlugins:"Loads Grails' plugins") {
-    def classLoader = new GroovyClassLoader(rootLoader,compConfig,true)
+task(loadPlugins:"Loads Grails' plugins") {              
+	compConfig.setTargetDirectory(classesDir)
+    def unit = new CompilationUnit ( compConfig , null , new GroovyClassLoader(classLoader) )	          
+	def pluginFiles = pluginResources.file
+	
+	for(plugin in pluginFiles) {
+        def className = plugin.name - '.groovy'
+        def classFile = new File("${classesDirPath}/${className}.class")
+        if(plugin.lastModified() > classFile.lastModified())
+              unit.addSource ( plugin )		
+	}
 
-    try {
-        pluginManager = new DefaultGrailsPluginManager(pluginResources as Resource[], new DefaultGrailsApplication(new Class[0], classLoader))
-        PluginManagerHolder.setPluginManager(pluginManager)
+    try {   
+		profile("compiling plugins") {
+    		unit.compile ()								
+		}
+		profile("construct plugin manager") {
+			def pluginClasses = []
+			for(plugin in pluginFiles) {
+			   def className = plugin.name - '.groovy'
+               pluginClasses << classLoader.loadClass(className)
+			}                                                  
+			event("StatusUpdate", ["Loading with installed plug-ins: ${pluginClasses.name}"])
+	        pluginManager = new DefaultGrailsPluginManager(pluginClasses as Class[], new DefaultGrailsApplication(new Class[0], new GroovyClassLoader(classLoader)))
+	        PluginManagerHolder.setPluginManager(pluginManager)			
+		}
         profile("loading plugins") {
             pluginManager.loadPlugins()
-        }
+        } 
     } catch (Exception e) {
-        event("StatusError", [ e.message ])
-        e.printStackTrace(System.out)
-        
+        event("StatusFinal", [ "Error loading plugin manager: " + e.message ])
+		exit(1)
     }
-
-
-
 }
 task( generateWebXml : "Generates the web.xml file") {                
 	depends(classpath)
