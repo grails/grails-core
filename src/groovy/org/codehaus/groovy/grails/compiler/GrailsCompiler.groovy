@@ -47,7 +47,7 @@ class GrailsCompiler extends Groovyc {
 	def compileList = []
 
 	String resourcePattern
-	String project
+	String projectName
 
 	void resetFileLists() { compileList.clear() }
 
@@ -85,7 +85,7 @@ class GrailsCompiler extends Groovyc {
         File tempFile;
         try {
             def userHome = System.getProperty("user.home")
-            tempFile = new File("${userHome}/.grails/${grails.util.GrailsUtil.getGrailsVersion()}/projects/${project}/generated-java-source")
+            tempFile = new File("${userHome}/.grails/${grails.util.GrailsUtil.getGrailsVersion()}/projects/${projectName}/generated-java-source")
             if(tempFile.exists()) {                
                 tempFile.delete();
             }

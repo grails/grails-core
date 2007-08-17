@@ -69,7 +69,7 @@ task( watchContext: "Watches the WEB-INF/classes directory for changes and resta
 	        Ant.groovyc(destdir:classesDirPath,
 	                    classpathref:"grails.classpath",
 					    resourcePattern:"file:${basedir}/**/grails-app/**/*.groovy",
-                        project:baseName) {
+                        projectName:baseName) {
 						src(path:"${basedir}/src/java")
 						src(path:"${basedir}/src/groovy")
 						src(path:"${basedir}/grails-app/domain")

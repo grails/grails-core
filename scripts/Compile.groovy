@@ -86,10 +86,10 @@ task(compile : "Implementation of compilation phase") {
 	Ant.mkdir(dir:classesDirPath)
 		try {
 	       Ant.groovyc(destdir:classesDirPath,
-	               project:baseName,
-	               classpathref:"grails.classpath",
-				resourcePattern:"file:${basedir}/**/grails-app/**/*.groovy",
-				compilerClasspath.curry(false))
+	                   projectName:baseName,
+	                   classpathref:"grails.classpath",
+				       resourcePattern:"file:${basedir}/**/grails-app/**/*.groovy",
+				       compilerClasspath.curry(false))
 		}   
 		catch(Exception e) {
 			event("StatusFinal", ["Compilation error: ${e.message}"])

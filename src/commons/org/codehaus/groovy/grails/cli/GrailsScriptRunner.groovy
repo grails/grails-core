@@ -116,7 +116,7 @@ Grails home is set to: ${grailsHome}
             }
             
 			println "Environment set to ${System.getProperty('grails.env')}"
-
+                                        
 			System.setProperty("base.dir", baseDir.absolutePath)
 			
 			try {      
@@ -220,7 +220,7 @@ Grails home is set to: ${grailsHome}
 		def sysProp = System.getProperty("base.dir")
 		def baseDir
 		if(sysProp) {
-			baseDir = new File(sysProp)
+			baseDir = sysProp == '.' ? new File("") : new File(sysProp)
 		}          
 		else {
 	        baseDir = new File("")
