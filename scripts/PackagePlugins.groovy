@@ -48,7 +48,7 @@ task( packagePlugins : "Packages any Grails plugins that are installed for this 
 			pluginResources << basePlugin			
 		}                        
 
-		pluginResources += resolveResources("plugins/*/*GrailsPlugin.groovy").toList()
+		pluginResources += resolveResources("file:${basedir}/plugins/*/*GrailsPlugin.groovy").toList()
 	   	pluginResources?.each { p ->  	   
 	   		def pluginBase = p.file.parentFile.canonicalFile
 	     	def pluginPath = pluginBase.absolutePath
