@@ -155,8 +155,9 @@ public class DefaultGrailsDomainClassTests extends TestCase {
 						
 										
 		GrailsApplication grailsApplication = new DefaultGrailsApplication(new Class[]{ relClass,oneToManyClass,oneToOneClass,manyToManyClass },cl);
-		
-		GrailsDomainClass c1dc = (GrailsDomainClass) grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE,
+        grailsApplication.initialise();
+
+        GrailsDomainClass c1dc = (GrailsDomainClass) grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE,
             relClass.getName());
 		GrailsDomainClass c2dc = (GrailsDomainClass) grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE,
             oneToManyClass.getName());

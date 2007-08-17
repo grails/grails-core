@@ -39,8 +39,9 @@ public class HeirarchyDomainClassTests extends TestCase {
 						"class Sub2 extends Sub { }");
 		
 		GrailsApplication ga = new DefaultGrailsApplication(gcl.getLoadedClasses(),gcl);
-		
-		GrailsDomainClass gdc1 = (GrailsDomainClass) ga.getArtefact(DomainClassArtefactHandler.TYPE, "Super");
+        ga.initialise();
+
+        GrailsDomainClass gdc1 = (GrailsDomainClass) ga.getArtefact(DomainClassArtefactHandler.TYPE, "Super");
 		assertNotNull(gdc1);
 		assertTrue(gdc1.isRoot());
 		assertEquals(2,gdc1.getSubClasses().size());

@@ -62,7 +62,9 @@ public class GrailsDispatcherServletTests extends TestCase {
             cl.parseClass("class TestController {" +
                     "def action = {} " +
                     "}");
-            dispatcherServlet.setApplication(new DefaultGrailsApplication(cl.getLoadedClasses(), cl));
+            final DefaultGrailsApplication grailsApplication = new DefaultGrailsApplication(cl.getLoadedClasses(), cl);
+            grailsApplication.initialise();
+            dispatcherServlet.setApplication(grailsApplication);
             dispatcherServlet.init(new MockServletConfig(new MockServletContext()));
 
             MockHttpServletRequest request = new MockHttpServletRequest("GET", "/test/action");

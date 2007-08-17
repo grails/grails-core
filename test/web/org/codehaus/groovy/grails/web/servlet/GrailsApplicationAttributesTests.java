@@ -80,7 +80,8 @@ public class GrailsApplicationAttributesTests extends TestCase {
 		servletContext.setAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT,context);
 
 		GrailsApplication app = new DefaultGrailsApplication(classes,gcl);
-		context.registerMockBean(GrailsApplication.APPLICATION_ID,app);
+        app.initialise();
+        context.registerMockBean(GrailsApplication.APPLICATION_ID,app);
 
         GrailsClass[] controllers = app.getArtefacts(ControllerArtefactHandler.TYPE);
         for (int i = 0; i < controllers.length; i++) {
