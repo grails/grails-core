@@ -149,6 +149,7 @@ def runTests = { suite, TestResult result, Closure callback  ->
 				def plainOutput = new PlainJUnitResultFormatter(output:plainOut)
 				def junitTest = new JUnitTest(test.name)
 
+
 				plainOutput.startTestSuite(junitTest)
 				xmlOutput.startTestSuite(junitTest)
                 println "Running test ${test.name}..."
@@ -157,17 +158,22 @@ def runTests = { suite, TestResult result, Closure callback  ->
                     thisTest.addListener(xmlOutput)
                     thisTest.addListener(plainOutput)
 					def t = test.testAt(i)
+					def start = System.currentTimeMillis()
 					callback(test, {
                         print "                    ${t.name}..."   
 						test.runTest(t, thisTest)					
 					})
+                    junitTest.setCounts(thisTest.runCount(), thisTest.failureCount(),
+                                         thisTest.errorCount());
+                    junitTest.setRunTime(System.currentTimeMillis() - start)
+                    
 					if(thisTest.errorCount() > 0 || thisTest.failureCount() > 0) {
 						println "FAILURE"
 						thisTest.errors().each { result.addError(t, it.thrownException())  }
 						thisTest.failures().each { result.addFailure(t, it.thrownException()) }
 					}
-					else { println "SUCCESS"}				
-					
+					else { println "SUCCESS"}
+
 				}
 				plainOutput.endTestSuite(junitTest)
 				xmlOutput.endTestSuite(junitTest)				
