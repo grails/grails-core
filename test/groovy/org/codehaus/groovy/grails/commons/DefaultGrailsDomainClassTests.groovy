@@ -69,7 +69,7 @@ class DefaultGrailsDomainClassTests extends GroovyTestCase {
 	    )						
 		
 		def ga = new DefaultGrailsApplication(gcl.loadedClasses, gcl)
-		
+		ga.initialise()
 		def testDomain = ga.getDomainClass("Test")
 		def otherDomain = ga.getDomainClass("Other")
 		
@@ -107,6 +107,7 @@ class DefaultGrailsDomainClassTests extends GroovyTestCase {
 				}
 				'''	)
 		def ga = new DefaultGrailsApplication(gcl.loadedClasses, gcl)
+		ga.initialise()		
 		def airportClass = ga.getDomainClass("Airport")
 		def routeClass = ga.getDomainClass("Route")
 		
@@ -144,6 +145,7 @@ class DefaultGrailsDomainClassTests extends GroovyTestCase {
 				}
 				'''	)
 		def ga = new DefaultGrailsApplication(gcl.loadedClasses, gcl)
+		ga.initialise()		
 		def personClass = ga.getDomainClass('Person')
 		assertNotNull 'person class was null', personClass
 		assertEquals 'person was mapped to the wrong table', 'people', personClass.tableName

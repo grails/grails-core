@@ -141,8 +141,11 @@ class OtherController {
         def gcl = new GroovyClassLoader()
         gcl.parseClass(testController3)
         gcl.parseClass(testController4)
+                                             
+		def app =  new DefaultGrailsApplication(gcl.loadedClasses,gcl)
+		app.initialise()
 
-        appCtx.registerMockBean("grailsApplication", new DefaultGrailsApplication(gcl.loadedClasses,gcl))
+        appCtx.registerMockBean("grailsApplication", app)
 
         servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE,appCtx);
 
@@ -192,8 +195,11 @@ void testFilterWithControllerWithIndexAndAction(){
         appCtx.registerMockBean(UrlMappingsHolder.BEAN_ID, new DefaultUrlMappingsHolder(mappings));
         def gcl = new GroovyClassLoader()
         gcl.parseClass(testController5)
+                                          
+		def app =  new DefaultGrailsApplication(gcl.loadedClasses,gcl)
+		app.initialise()
 
-        appCtx.registerMockBean("grailsApplication", new DefaultGrailsApplication(gcl.loadedClasses,gcl))
+        appCtx.registerMockBean("grailsApplication", app)
 
         servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE,appCtx);
 

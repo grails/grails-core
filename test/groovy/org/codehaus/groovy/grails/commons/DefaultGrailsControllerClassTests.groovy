@@ -59,6 +59,7 @@ class  ChildController extends ParentController {
 
 
         def ga = new DefaultGrailsApplication(gcl.loadedClasses, gcl)
+        ga.initialise()
 
         def child = ga.getControllerClass("ChildController")
 
