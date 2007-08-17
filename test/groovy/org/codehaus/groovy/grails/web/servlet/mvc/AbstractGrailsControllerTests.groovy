@@ -24,7 +24,7 @@ abstract class AbstractGrailsControllerTests extends GroovyTestCase {
 	def request
 	def response
 	GroovyClassLoader gcl = new GroovyClassLoader()
-    def ga;
+    GrailsApplication ga;
 	def mockManager
     MockApplicationContext ctx;
     def appCtx;
@@ -45,7 +45,7 @@ abstract class AbstractGrailsControllerTests extends GroovyTestCase {
         ctx = new MockApplicationContext();
         onSetUp();
         ga = new DefaultGrailsApplication(gcl.getLoadedClasses(),gcl);
-        
+        ga.initialise()
         ga.setApplicationContext(ctx);
         ctx.registerMockBean(GrailsApplication.APPLICATION_ID, ga);
 		
