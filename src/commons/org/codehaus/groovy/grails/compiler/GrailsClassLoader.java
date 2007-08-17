@@ -56,7 +56,7 @@ public class GrailsClassLoader extends GroovyClassLoader {
 
             try {
                 inputStream = resourceURL.openStream();
-                Class reloadedClass = innerLoader.parseClass(inputStream);
+                Class reloadedClass = innerLoader.parseClass(inputStream, name);
                 innerClassLoaderMap.put(name, innerLoader);
                 return reloadedClass;
             } catch (IOException e) {
