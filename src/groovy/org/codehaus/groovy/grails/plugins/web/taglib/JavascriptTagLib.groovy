@@ -42,7 +42,16 @@ class JavascriptTagLib  {
 	static {
 		LIBRARY_MAPPINGS.scriptaculous = LIBRARY_MAPPINGS.prototype + ['prototype/scriptaculous','prototype/builder','prototype/controls','prototype/effects','prototype/slider','prototype/dragdrop']		
 		LIBRARY_MAPPINGS.rico = LIBRARY_MAPPINGS.prototype + ['prototype/rico']				
-	}									
+	}
+	
+	static final PROVIDER_MAPPINGS = [
+	                                     prototype: PrototypeProvider.class,
+	                                     scriptaculous: PrototypeProvider.class,
+	                                     rico: PrototypeProvider.class,
+	                                     yahoo: YahooProvider.class,
+	                                     dojo: DojoProvider.class
+                                  	 ]
+
 	/**
 	 * Includes a javascript src file, library or inline script
 	 * if the tag has no 'src' or 'library' attributes its assumed to be an inline script:
@@ -222,7 +231,7 @@ class JavascriptTagLib  {
 		def url = deepClone(attrs.url)
  		
 		// prepare form settings
-		prepareAjaxForm(p,attrs)
+		p.prepareAjaxForm(attrs)
         
         def params = [  onsubmit:remoteFunction(attrs) + 'return false',
 					    method: (attrs.method? attrs.method : 'POST' ),
@@ -245,7 +254,7 @@ class JavascriptTagLib  {
 		def p = getProvider()    
 		// prepare form settings 
 		attrs.forSubmitTag = ".form"
-		prepareAjaxForm(p,attrs)    
+		p.prepareAjaxForm(attrs)    
         def params = [  onclick:remoteFunction(attrs) + 'return false',
 					    type: 'button',
 					    name: attrs.remove('name'),
@@ -259,26 +268,6 @@ class JavascriptTagLib  {
 		}
     }
 	
-	 private prepareAjaxForm(provider,attrs) {
-		if(provider instanceof PrototypeProvider) {
-			if(!attrs.forSubmitTag) attrs.forSubmitTag = ""
-		    attrs.params = "Form.serialize(this${attrs.remove('forSubmitTag')})"
-		}
-		else if(provider instanceof YahooProvider) {
-			if(attrs.before) {
-				attrs.before += ";YAHOO.util.Connect.setForm('${attrs.name}')"
-			}
-			else {
-				attrs.before = "YAHOO.util.Connect.setForm('${attrs.name}')"
-			}
-		}
-		else if(provider instanceof DojoProvider) {
-			if(attrs.options) attrs.options.formNode = "dojo.byId('${attrs.name}')"
-			else {
-				attrs.options = [formNode:"dojo.byId('${attrs.name}')"]
-			}
-		}
-	 }
 	/**
 	 * Escapes a javasacript string replacing single/double quotes and new lines
 	 *
@@ -307,6 +296,13 @@ class JavascriptTagLib  {
 					.replaceAll('"','\\\\"')
 					  .replaceAll("'","\\\\'")
 	}
+	 
+	def setProvider = { attrs, body ->
+		if (request[JavascriptTagLib.INCLUDED_LIBRARIES] == null) {
+		    request[JavascriptTagLib.INCLUDED_LIBRARIES] = []
+		}
+		request[JavascriptTagLib.INCLUDED_LIBRARIES] << attrs.library
+	}
 
 	/**
 	 * Returns the provider of the necessary function calls to perform Javascript functions
@@ -314,15 +310,11 @@ class JavascriptTagLib  {
 	 **/
 	private JavascriptProvider getProvider() {
         setUpRequestAttributes()
-        if(request[JavascriptTagLib.INCLUDED_LIBRARIES]?.contains('yahoo')) {
-			return new YahooProvider()
-		}
-		else if(request[JavascriptTagLib.INCLUDED_LIBRARIES]?.contains('dojo')) {
-			return new DojoProvider()
-		}		
-		else {
-			return new PrototypeProvider()
-		}
+        def providerClass = PROVIDER_MAPPINGS.find { request[JavascriptTagLib.INCLUDED_LIBRARIES]?.contains(it.key) }?.value
+        if (providerClass == null) {
+            providerClass = PrototypeProvider.class
+        }
+        return providerClass.newInstance()
 	}
 }
 /**
@@ -338,6 +330,8 @@ interface JavascriptProvider {
 	 * @param The output to write to
 	 */
 	def doRemoteFunction(taglib,attrs, out)
+	
+	def prepareAjaxForm(attrs)
 }
 
 /**
@@ -440,6 +434,10 @@ class PrototypeProvider implements JavascriptProvider {
         return "{${ajaxOptions.join(',')}}"
     }
 	
+    def prepareAjaxForm(attrs) {
+		if(!attrs.forSubmitTag) attrs.forSubmitTag = ""
+	    attrs.params = "Form.serialize(this${attrs.remove('forSubmitTag')})"
+    }
 }
 
 /**
@@ -506,8 +504,18 @@ class YahooProvider implements JavascriptProvider {
 				}													
 				out << '}'							   		
 			out << '}'		
-	}	
+	}
+	
+	def prepareAjaxForm(attrs) {
+		if(attrs.before) {
+			attrs.before += ";YAHOO.util.Connect.setForm('${attrs.name}')"
+		}
+		else {
+			attrs.before = "YAHOO.util.Connect.setForm('${attrs.name}')"
+		}
+	}
 }
+
 /**
  * An implementation for the Dojo javascript library
  *
@@ -556,5 +564,14 @@ class DojoProvider implements JavascriptProvider {
 	     }
 		 out << '});' 
 		attrs.remove('options')
+	 }
+	 
+	 def prepareAjaxForm(attrs) {
+		if(attrs.options) {
+		    attrs.options.formNode = "dojo.byId('${attrs.name}')"
+		}
+		else {
+			attrs.options = [formNode:"dojo.byId('${attrs.name}')"]
+		}
 	 }
 }
