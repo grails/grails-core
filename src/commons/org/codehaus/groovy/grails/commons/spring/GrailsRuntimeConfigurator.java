@@ -242,6 +242,10 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
           this.pluginManager.loadPlugins();
 
       Assert.notNull(application);
+      if(!application.isInitialised()) {
+          pluginManager.doArtefactConfiguration();
+          application.initialise();
+      }
 
       this.pluginManager.registerProvidedArtefacts(application);
 
