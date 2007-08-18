@@ -17,7 +17,7 @@ class CascadingDeleteBehaviour2Tests extends AbstractGrailsHibernateTests {
 
 
     void testCascadingDeleteFromChild() {
-        def uClass = ga.getDomainClass("User")
+        def uClass = ga.getDomainClass("UserRecord")
         def iClass = ga.getDomainClass("Item")
         def irClass = ga.getDomainClass("ItemRating")
 
@@ -51,7 +51,7 @@ class CascadingDeleteBehaviour2Tests extends AbstractGrailsHibernateTests {
 
     void testDomainModel() {
         GrailsDomainClass ir = ga.getDomainClass("ItemRating")
-        GrailsDomainClass uClass = ga.getDomainClass("User")
+        GrailsDomainClass uClass = ga.getDomainClass("UserRecord")
         GrailsDomainClass iClass = ga.getDomainClass("Item")
 
         assert ir.isOwningClass(uClass.clazz)
@@ -60,10 +60,12 @@ class CascadingDeleteBehaviour2Tests extends AbstractGrailsHibernateTests {
         assert !iClass.isOwningClass(ir.clazz)
     }
 
+//TODO find out why calling the class User instead of UserRecord clashes with UniqueConstraintTests,
+//    there must be some static hibernate reference which is not being cleaned up between tests...
     void onSetUp() {
         gcl.parseClass('''
 
-class User {
+class UserRecord {
     Long id
     Long version
     static hasMany = [ratings:ItemRating]
@@ -84,9 +86,9 @@ class Item {
 class ItemRating {
     Long id
     Long version
-    static belongsTo = [User,Item]
+    static belongsTo = [UserRecord,Item]
 
-    User user
+    UserRecord user
     Item item
     int rating
 }

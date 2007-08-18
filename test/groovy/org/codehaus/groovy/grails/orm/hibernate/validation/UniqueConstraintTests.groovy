@@ -6,39 +6,38 @@ import org.codehaus.groovy.grails.orm.hibernate.*
 
 class UniqueConstraintTests extends AbstractGrailsHibernateTests {
 
-	void testApplying() {
-	    assertTrue applicationContext.containsBean("UserValidator")
-	    def validator = applicationContext.getBean("UserValidator")
-	    assertNotNull(validator.domainClass)
-	    
-		def userClass = ga.getDomainClass("User")
-		ga.getDomainClass("User").constrainedProperties.each { key, value ->
-	    	if( key == 'code') {
-	    		value.appliedConstraints.each {
-		    		if( it.name == UniqueConstraint.UNIQUE_CONSTRAINT ) assertTrue it.unique
-		    	}
-            } else if( key == 'login') {
-                value.appliedConstraints.each {
-                    if( it.name == UniqueConstraint.UNIQUE_CONSTRAINT ) assertTrue it.unique
-                }
-            } else if( key == 'department') {
-                value.appliedConstraints.each {
-                    if( it.name == UniqueConstraint.UNIQUE_CONSTRAINT ) assertTrue it.unique
-                }
-	    	} else if( key == 'organization') {
-	    		value.appliedConstraints.each {
-		    		if( it.name == UniqueConstraint.UNIQUE_CONSTRAINT ) assertFalse it.unique
-		    	}
-	    	}
-	    }
-	}
-	
-	/* @todo fix me
-	void testValidation() {
-		def userClass = ga.getDomainClass("User").clazz
+    void testApplying() {
+        assertTrue applicationContext.containsBean("UserValidator")
+        def validator = applicationContext.getBean("UserValidator")
+        assertNotNull(validator.domainClass)
 
-		// The first object shouldn't fire any unique constraints 
-	    def user = userClass.newInstance()
+        def userClass = ga.getDomainClass("User")
+        ga.getDomainClass("User").constrainedProperties.each {key, value ->
+            if (key == 'code') {
+                value.appliedConstraints.each {
+                    if (it.name == UniqueConstraint.UNIQUE_CONSTRAINT) assertTrue it.unique
+                }
+            } else if (key == 'login') {
+                value.appliedConstraints.each {
+                    if (it.name == UniqueConstraint.UNIQUE_CONSTRAINT) assertTrue it.unique
+                }
+            } else if (key == 'department') {
+                value.appliedConstraints.each {
+                    if (it.name == UniqueConstraint.UNIQUE_CONSTRAINT) assertTrue it.unique
+                }
+            } else if (key == 'organization') {
+                value.appliedConstraints.each {
+                    if (it.name == UniqueConstraint.UNIQUE_CONSTRAINT) assertFalse it.unique
+                }
+            }
+        }
+    }
+
+    void testValidation() {
+        def userClass = ga.getDomainClass("User").clazz
+
+        // The first object shouldn't fire any unique constraints
+        def user = userClass.newInstance()
         user.code = "123"
         user.login = "login1"
         user.grp = "group1"
@@ -49,7 +48,7 @@ class UniqueConstraintTests extends AbstractGrailsHibernateTests {
         user.save(true)
 
         def id = user.id
-        
+
         // instance with same id shouldn't fire unique constraint 
         user = userClass.newInstance()
         user.id = id
@@ -75,7 +74,7 @@ class UniqueConstraintTests extends AbstractGrailsHibernateTests {
         user.organization = "organization2"
         user.validate()
         assertTrue user.hasErrors()
-        
+
         // 'login' should fire unique constraint since it is in the same grp and same department
         user.code = "321"
         user.login = "login1"
@@ -84,7 +83,7 @@ class UniqueConstraintTests extends AbstractGrailsHibernateTests {
         user.organization = "organization2"
         user.validate()
         assertTrue user.hasErrors()
-        
+
         // 'login' shouldn't fire unique constraint since it is in the same department but not in the same grp
         user.grp = "group2"
         user.validate()
@@ -108,14 +107,14 @@ class UniqueConstraintTests extends AbstractGrailsHibernateTests {
         user.organization = "organization2"
         user.validate()
         assertFalse user.hasErrors()
-	}*/
-	
-	void testWrongUniqueParams() {
-		// Test argument with wrong type (Long)
-		GroovyClassLoader gcl = new GroovyClassLoader();
-		Class userClass
-		try {
-			userClass = gcl.parseClass('''
+    }
+
+    void testWrongUniqueParams() {
+        // Test argument with wrong type (Long)
+        GroovyClassLoader gcl = new GroovyClassLoader();
+        Class userClass
+        try {
+            userClass = gcl.parseClass('''
 			class User {
 			    Long id
 			    Long version
@@ -130,15 +129,15 @@ class UniqueConstraintTests extends AbstractGrailsHibernateTests {
 			    }
 			}
 			''')
-			new DefaultGrailsDomainClass(userClass);
-			fail("Exception expected")
-		} catch( Exception e ) {
-			// Greate
-		}
+            new DefaultGrailsDomainClass(userClass);
+            fail("Exception expected")
+        } catch (Exception e) {
+            // Greate
+        }
 
-		// Test list argument with wrong type (Long)
-		try {
-			userClass = gcl.parseClass('''
+        // Test list argument with wrong type (Long)
+        try {
+            userClass = gcl.parseClass('''
 			class User {
 			    Long id
 			    Long version
@@ -153,15 +152,15 @@ class UniqueConstraintTests extends AbstractGrailsHibernateTests {
 			    }
 			}
 			''')
-			new DefaultGrailsDomainClass(userClass);
-			fail("Exception expected")
-		} catch( Exception e ) {
-			// Greate
-		}
+            new DefaultGrailsDomainClass(userClass);
+            fail("Exception expected")
+        } catch (Exception e) {
+            // Greate
+        }
 
-		// Test argument with non-existent property value
-		try {
-			userClass = gcl.parseClass('''
+        // Test argument with non-existent property value
+        try {
+            userClass = gcl.parseClass('''
 				class User {
 				    Long id
 				    Long version
@@ -176,15 +175,15 @@ class UniqueConstraintTests extends AbstractGrailsHibernateTests {
 				    }
 				}
 				''')
-			new DefaultGrailsDomainClass(userClass);
-			fail("Exception expected")
-		} catch( Exception e ) {
-			// Greate
-		}
+            new DefaultGrailsDomainClass(userClass);
+            fail("Exception expected")
+        } catch (Exception e) {
+            // Greate
+        }
 
-		// Test list argument with non-existent property value
-		try {
-			userClass = gcl.parseClass('''
+        // Test list argument with non-existent property value
+        try {
+            userClass = gcl.parseClass('''
 				class User {
 				    Long id
 				    Long version
@@ -199,15 +198,15 @@ class UniqueConstraintTests extends AbstractGrailsHibernateTests {
 				    }
 				}
 				''')
-			new DefaultGrailsDomainClass(userClass);
-			fail("Exception expected")
-		} catch( Exception e ) {
-			// Greate
-		}
+            new DefaultGrailsDomainClass(userClass);
+            fail("Exception expected")
+        } catch (Exception e) {
+            // Greate
+        }
 
-		// Test that right syntax doesn't throws exception
-		try {
-			userClass = gcl.parseClass('''
+        // Test that right syntax doesn't throws exception
+        try {
+            userClass = gcl.parseClass('''
 				class User {
 				    Long id
 				    Long version
@@ -222,13 +221,12 @@ class UniqueConstraintTests extends AbstractGrailsHibernateTests {
 				    }
 				}
 				''')
-				new DefaultGrailsDomainClass(userClass);
-		} catch( Exception e ) {
-			fail("Exception isn't expected")
-		}
-	}
+            new DefaultGrailsDomainClass(userClass);
+        } catch (Exception e) {
+            fail("Exception isn't expected")
+        }
+    }
 
-    /* @todo fix me
     void testRelationships() {
         def userClass = ga.getDomainClass("User").clazz
         def linkClass = ga.getDomainClass("Link").clazz
@@ -273,48 +271,47 @@ class UniqueConstraintTests extends AbstractGrailsHibernateTests {
         link.u2 = user2
         link.validate()
         assertTrue link.hasErrors()
-    }*/
+    }
 
 
     void onSetUp() {
+        gcl.parseClass('''
+            class User {
+                Long id
+                Long version
 
-		this.gcl.parseClass('''
-class User {
-    Long id
-    Long version
+                String login
+                String grp
+                String department
+                String organization
+                String code
 
-    String login
-    String grp
-    String department
-    String organization
-    String code
+                static belongsTo = Link
 
-    static belongsTo = Link
+                static constraints = {
+                    login(unique:['grp','department'])
+                    department(unique:"organization")
+                    code(unique:true)
+                }
+            }
+            class Link {
+                Long id
+                Long version
 
-    static constraints = {
-        login(unique:['grp','department'])
-        department(unique:"organization")
-        code(unique:true)
+                User u1
+                User u2
+
+
+                static constraints = {
+                    u2(unique:'u1')
+                }
+            }
+            '''
+                )
+
     }
-}
-class Link {
-    Long id
-    Long version
 
-    User u1
-    User u2
+    void onTearDown() {
 
-
-    static constraints = {
-        u2(unique:'u1')
     }
-}
-'''
-		)
-
-	}
-
-	void onTearDown() {
-
-	}
 }
