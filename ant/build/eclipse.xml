@@ -37,10 +37,10 @@
 			
 				classpathentry(kind:"lib", path: "lib/hibernate3.jar", sourcepath: "/HIBERNATE_HOME/src")
 				added.add("hibernate3.jar")
-				classpathentry(kind:"lib", path: "lib/spring-2.0.jar", sourcepath: "/SPRING_HOME/src")
-				added.add("spring-2.0.jar")
-				classpathentry(kind:"lib", path: "lib/spring-mock.jar", sourcepath: "/SPRING_HOME/mock")
-				added.add("spring-mock.jar")
+				classpathentry(kind:"lib", path: "lib/spring-2.0.2.jar", sourcepath: "/SPRING_HOME/src")
+				added.add("spring-2.0.2.jar")
+				classpathentry(kind:"lib", path: "lib/spring-mock-2.0.2.jar", sourcepath: "/SPRING_HOME/mock")
+				added.add("spring-mock-2.0.2.jar")
 			
 				new File('lib').eachFile { f -> 
 					if (!(f.directory || added.contains(f.name)))
