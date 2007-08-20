@@ -7,18 +7,18 @@
     </head>
     <body>
         <div class="nav">
-            <span class="menuButton"><a href="\${createLinkTo(dir:'')}">Home</a></span>
-            <span class="menuButton"><g:link action="list">${className} List</g:link></span>
+            <span class="menuButton"><a class="home" href="\${createLinkTo(dir:'')}">Home</a></span>
+            <span class="menuButton"><g:link class="list" action="list">${className} List</g:link></span>
         </div>
         <div class="body">
             <h1>Create ${className}</h1>
             <g:if test="\${flash.message}">
-                <div class="message">\${flash.message}</div>
+            <div class="message">\${flash.message}</div>
             </g:if>
             <g:hasErrors bean="\${${propertyName}}">
-                <div class="errors">
-                    <g:renderErrors bean="\${${propertyName}}" as="list" />
-                </div>
+            <div class="errors">
+                <g:renderErrors bean="\${${propertyName}}" as="list" />
+            </div>
             </g:hasErrors>
             <g:form action="save" method="post" <%= multiPart ? ' enctype="multipart/form-data"' : '' %>>
                 <div class="dialog">
@@ -34,9 +34,7 @@
                     </table>
                 </div>
                 <div class="buttons">
-                    <span class="formButton">
-                        <input type="submit" value="Create"></input>
-                    </span>
+                    <span class="button"><input class="save" type="submit" value="Create"></input></span>
                 </div>
             </g:form>
         </div>

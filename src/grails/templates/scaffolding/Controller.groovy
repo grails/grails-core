@@ -2,11 +2,8 @@
 class ${className}Controller {
     def index = { redirect(action:list,params:params) }
 
-    // the delete, save and update actions only
-    // accept POST requests
-    def allowedMethods = [delete:'POST',
-                          save:'POST',
-                          update:'POST']
+    // the delete, save and update actions only accept POST requests
+    def allowedMethods = [delete:'POST', save:'POST', update:'POST']
 
     def list = {
         if(!params.max)params.max = 10
@@ -47,6 +44,7 @@ class ${className}Controller {
         if(${propertyName}) {
              ${propertyName}.properties = params
             if(${propertyName}.save()) {
+                flash.message = "${className} \${params.id} updated."
                 redirect(action:show,id:${propertyName}.id)
             }
             else {
@@ -69,6 +67,7 @@ class ${className}Controller {
         def ${propertyName} = new ${className}()
         ${propertyName}.properties = params
         if(${propertyName}.save()) {
+            flash.message = "${className} \${${propertyName}.id} created."
             redirect(action:show,id:${propertyName}.id)
         }
         else {
