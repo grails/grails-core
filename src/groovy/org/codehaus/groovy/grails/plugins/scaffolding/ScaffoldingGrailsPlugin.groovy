@@ -108,8 +108,8 @@ class ScaffoldingGrailsPlugin {
 	}	
 	
 	def onChange = { event ->		
-	    if(event.source instanceof Class) {
-            def controllerClass = application.getControllerClass(event.source.name)
+	    if(application.isControllerClass(event.source)) {
+			def controllerClass = application.getControllerClass(event.source.name)
 
             if(controllerClass.scaffolding ) {
                 def scaffoldClass = controllerClass.scaffoldedClass
