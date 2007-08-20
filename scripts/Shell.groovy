@@ -23,13 +23,14 @@
  */
 
 import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
-import groovy.text.SimpleTemplateEngine
+import groovy.text.SimpleTemplateEngine   
+import org.codehaus.groovy.grails.support.* 
 
 Ant.property(environment:"env")                             
 grailsHome = Ant.antProject.properties."env.GRAILS_HOME"    
 
-includeTargets << new File ( "${grailsHome}/scripts/Init.groovy" )
 includeTargets << new File ( "${grailsHome}/scripts/Package.groovy" )
+includeTargets << new File ( "${grailsHome}/scripts/Bootstrap.groovy" )
 
 task ('default': "Load the Grails interactive shell") {
 	depends( configureProxy, packageApp, classpath )
@@ -37,7 +38,24 @@ task ('default': "Load the Grails interactive shell") {
 }            
 
 task(shell:"The shell implementation task") { 
-//	Ant.java(classname:"grails.ui.InteractiveShell", failonerror:true, 
-//			 classpathref:"grails.classpath",fork:true) 
-	Ant.java(classname:"grails.ui.InteractiveShell", failonerror:true) 			
+	rootLoader.addURL(classesDir.toURL())
+	loadApp()
+	configureApp()
+	def b = new Binding()
+	b.ctx = appCtx
+	b.grailsApplication = grailsApp
+	def c = new groovy.ui.InteractiveShell(grailsApp.classLoader, b,System.in,System.out,System.err)
+	c.beforeExecution = {
+		appCtx.getBeansOfType(PersistenceContextInterceptor).each { k,v ->
+			v.init()
+		}
+	}           
+	c.afterExecution = {
+		appCtx.getBeansOfType(PersistenceContextInterceptor).each { k,v ->
+			v.flush()
+			v.destroy()
+		}
+	}       
+	c.run()
+ 	
 }

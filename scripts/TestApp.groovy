@@ -48,6 +48,7 @@ result = new TestResult()
 compilationFailures = []
 
 includeTargets << new File ( "${grailsHome}/scripts/Package.groovy" )
+includeTargets << new File ( "${grailsHome}/scripts/Bootstrap.groovy" )
 
 task ('default': "Run a Grails applications unit tests") {
   depends( classpath, checkVersion, configureProxy, packagePlugins )
@@ -184,36 +185,11 @@ def runTests = { suite, TestResult result, Closure callback  ->
 }   
 task(runUnitTests:"Run Grails' unit tests under the test/unit directory") {         
    try {    
-        def classLoader = getClass().classLoader	 
-
-		classLoader.rootLoader.addURL(new File("${basedir}/grails-app/conf/hibernate").toURL())
-		def beans = new grails.spring.BeanBuilder().beans {
-			resourceHolder(org.codehaus.groovy.grails.commons.spring.GrailsResourceHolder) {
-				resources = "file:${basedir}/**/grails-app/**/*.groovy"
-			}
-			grailsResourceLoader(org.codehaus.groovy.grails.commons.GrailsResourceLoaderFactoryBean) {
-				grailsResourceHolder = resourceHolder
-			}
-			grailsApplication(org.codehaus.groovy.grails.commons.DefaultGrailsApplication.class, ref("grailsResourceLoader"))
-		}
-	                                                    
-		appCtx = beans.createApplicationContext()
-		def ctx = appCtx
-		ctx.servletContext = new MockServletContext()
-		grailsApp = ctx.grailsApplication  
-
+		loadApp()
 		
-        pluginManager = new DefaultGrailsPluginManager(pluginResources as Resource[], grailsApp)
+        pluginManager.getGrailsPlugin("core")?.doWithDynamicMethods(appCtx)
+        pluginManager.getGrailsPlugin("logging")?.doWithDynamicMethods(appCtx)
 
-           	PluginManagerHolder.setPluginManager(pluginManager)
-           	pluginManager.loadPlugins()
-			pluginManager.doArtefactConfiguration()
-			grailsApp.initialise()                 		
-				
-           pluginManager.getGrailsPlugin("core")?.doWithDynamicMethods(appCtx)
-           pluginManager.getGrailsPlugin("logging")?.doWithDynamicMethods(appCtx)
-
-	                   
         def testFiles = resolveTestResources { "test/unit/${it}.groovy" }
             testFiles = testFiles.findAll { it.exists() }
             if(testFiles.size() == 0) {
@@ -258,26 +234,24 @@ task(runIntegrationTests:"Runs Grails' tests under the test/integration director
 		}               
 		
 		
-
-		def config = new org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator(grailsApp,appCtx)
-		def ctx = config.configure(new MockServletContext())
-		def app = ctx.getBean(GrailsApplication.APPLICATION_ID)
+        configureApp()
+		def app = appCtx.getBean(GrailsApplication.APPLICATION_ID)
         if(app.parentContext == null) {
-            app.applicationContext = ctx
+            app.applicationContext = appCtx
         }
 		def classLoader = app.classLoader
 		def suite = new TestSuite()
 
-   		populateTestSuite(suite, testFiles, classLoader, ctx)   
+   		populateTestSuite(suite, testFiles, classLoader, appCtx)   
 		if(suite.testCount() > 0) {      
 			int testCases = suite.countTestCases()
             println "-------------------------------------------------------"
             println "Running ${testCases} Integration Test${testCases > 1 ? 's' : ''}..."
 
 
-			def beanNames = ctx.getBeanNamesForType(PersistenceContextInterceptor)
+			def beanNames = appCtx.getBeanNamesForType(PersistenceContextInterceptor)
 			def interceptor = null
-			if(beanNames.size() > 0)interceptor = ctx.getBean(beanNames[0])
+			if(beanNames.size() > 0)interceptor = appCtx.getBean(beanNames[0])
            		
 
 			try {
@@ -286,7 +260,7 @@ task(runIntegrationTests:"Runs Grails' tests under the test/integration director
 				def start = new Date()			
 	            runTests(suite, result) { test, invocation ->
 	                name = test.name[0..-6]
-					def webRequest = GWU.bindMockWebRequest(ctx)	  
+					def webRequest = GWU.bindMockWebRequest(appCtx)	  
 				
 					// @todo this is horrible and dirty, should find a better way  		
 					if(name.endsWith("Controller")) {
