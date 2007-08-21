@@ -6,6 +6,8 @@ import groovy.lang.GroovyObject;
 import junit.framework.TestCase;
 import org.codehaus.groovy.grails.commons.*;
 import org.codehaus.groovy.grails.plugins.DefaultGrailsPluginManager;
+import org.codehaus.groovy.grails.plugins.PluginMetaManager;
+import org.codehaus.groovy.grails.plugins.DefaultPluginMetaManager;
 import org.codehaus.groovy.grails.support.ClassEditor;
 import org.codehaus.groovy.grails.support.MockApplicationContext;
 import org.codehaus.groovy.grails.web.errors.GrailsExceptionResolver;
@@ -18,6 +20,7 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.mock.web.MockServletContext;
 import org.springframework.web.multipart.commons.CommonsMultipartResolver;
 import org.springframework.web.servlet.ModelAndView;
+import org.springframework.core.io.Resource;
 
 import java.util.Properties;
 
@@ -60,6 +63,7 @@ public class GrailsRuntimeConfiguratorTests extends TestCase {
         MockApplicationContext parent = new MockApplicationContext();
         parent.registerMockBean(GrailsApplication.APPLICATION_ID, app);
         parent.registerMockBean("classLoader", gcl);
+        parent.registerMockBean(PluginMetaManager.BEAN_ID, new DefaultPluginMetaManager(new Resource[0]));
         
         GrailsRuntimeConfigurator conf = new GrailsRuntimeConfigurator(app,parent);
         DefaultGrailsPluginManager manager = new DefaultGrailsPluginManager(new Class[0], app);
@@ -126,6 +130,7 @@ public class GrailsRuntimeConfiguratorTests extends TestCase {
         GrailsApplication app = new DefaultGrailsApplication(new Class[]{dc,c}, gcl );
         MockApplicationContext parent = new MockApplicationContext();
         parent.registerMockBean(GrailsApplication.APPLICATION_ID, app);
+        parent.registerMockBean(PluginMetaManager.BEAN_ID, new DefaultPluginMetaManager(new Resource[0]));
 
         GrailsRuntimeConfigurator conf = new GrailsRuntimeConfigurator(app,parent);
         ApplicationContext ctx = conf.configure(new MockServletContext());
@@ -144,6 +149,7 @@ public class GrailsRuntimeConfiguratorTests extends TestCase {
         GrailsApplication app = new DefaultGrailsApplication(new Class[0], gcl );
         MockApplicationContext parent = new MockApplicationContext();
         parent.registerMockBean(GrailsApplication.APPLICATION_ID, app);
+        parent.registerMockBean(PluginMetaManager.BEAN_ID, new DefaultPluginMetaManager(new Resource[0]));
 
         GrailsRuntimeConfigurator conf = new GrailsRuntimeConfigurator(app,parent);
         GrailsWebApplicationContext ctx = (GrailsWebApplicationContext)conf.configure(new MockServletContext());
@@ -170,6 +176,7 @@ public class GrailsRuntimeConfiguratorTests extends TestCase {
         GrailsApplication app = new DefaultGrailsApplication(new Class[0], gcl );
         MockApplicationContext parent = new MockApplicationContext();
         parent.registerMockBean(GrailsApplication.APPLICATION_ID, app);
+        parent.registerMockBean(PluginMetaManager.BEAN_ID, new DefaultPluginMetaManager(new Resource[0]));
 
         GrailsRuntimeConfigurator conf = new GrailsRuntimeConfigurator(app,parent);
         GrailsWebApplicationContext ctx = (GrailsWebApplicationContext)conf.configure(new MockServletContext());
@@ -191,6 +198,7 @@ public class GrailsRuntimeConfiguratorTests extends TestCase {
         GrailsApplication app = new DefaultGrailsApplication(gcl.getLoadedClasses(), gcl );
         MockApplicationContext parent = new MockApplicationContext();
         parent.registerMockBean(GrailsApplication.APPLICATION_ID, app);
+        parent.registerMockBean(PluginMetaManager.BEAN_ID, new DefaultPluginMetaManager(new Resource[0]));
 
         GrailsRuntimeConfigurator conf = new GrailsRuntimeConfigurator(app,parent);
         GrailsWebApplicationContext ctx = (GrailsWebApplicationContext)conf.configure(new MockServletContext());
@@ -256,6 +264,7 @@ public class GrailsRuntimeConfiguratorTests extends TestCase {
         GrailsApplication app = new DefaultGrailsApplication(new Class[]{ds}, gcl );
         MockApplicationContext parent = new MockApplicationContext();
         parent.registerMockBean(GrailsApplication.APPLICATION_ID, app);
+        parent.registerMockBean(PluginMetaManager.BEAN_ID, new DefaultPluginMetaManager(new Resource[0]));
 
         GrailsRuntimeConfigurator conf = new GrailsRuntimeConfigurator(app,parent);
         conf.setLoadExternalPersistenceConfig(false);
@@ -273,6 +282,7 @@ public class GrailsRuntimeConfiguratorTests extends TestCase {
         GrailsApplication app = new DefaultGrailsApplication(new Class[]{s1,s2}, gcl );
         MockApplicationContext parent = new MockApplicationContext();
         parent.registerMockBean(GrailsApplication.APPLICATION_ID, app);
+        parent.registerMockBean(PluginMetaManager.BEAN_ID, new DefaultPluginMetaManager(new Resource[0]));
 
         GrailsRuntimeConfigurator conf = new GrailsRuntimeConfigurator(app,parent);
         conf.setLoadExternalPersistenceConfig(false);
@@ -292,6 +302,7 @@ public class GrailsRuntimeConfiguratorTests extends TestCase {
         GrailsApplication app = new DefaultGrailsApplication(new Class[]{s1,s2}, gcl );
         MockApplicationContext parent = new MockApplicationContext();
         parent.registerMockBean(GrailsApplication.APPLICATION_ID, app);
+        parent.registerMockBean(PluginMetaManager.BEAN_ID, new DefaultPluginMetaManager(new Resource[0]));
 
         GrailsRuntimeConfigurator conf = new GrailsRuntimeConfigurator(app,parent);
         conf.setLoadExternalPersistenceConfig(false);
@@ -312,6 +323,7 @@ public class GrailsRuntimeConfiguratorTests extends TestCase {
         GrailsApplication app = new DefaultGrailsApplication(new Class[0], gcl );
         MockApplicationContext parent = new MockApplicationContext();
         parent.registerMockBean(GrailsApplication.APPLICATION_ID, app);
+        parent.registerMockBean(PluginMetaManager.BEAN_ID, new DefaultPluginMetaManager(new Resource[0]));
 
         GrailsRuntimeConfigurator conf = new GrailsRuntimeConfigurator(app,parent);
         conf.setLoadExternalPersistenceConfig(false);

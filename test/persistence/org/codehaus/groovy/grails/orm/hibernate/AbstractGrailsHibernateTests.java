@@ -28,11 +28,14 @@ import org.codehaus.groovy.grails.commons.ConfigurationHolder;
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator;
+import org.codehaus.groovy.grails.plugins.DefaultPluginMetaManager;
 import org.codehaus.groovy.grails.plugins.PluginManagerHolder;
+import org.codehaus.groovy.grails.plugins.PluginMetaManager;
 import org.codehaus.groovy.grails.support.MockApplicationContext;
 import org.hibernate.SessionFactory;
 import org.hibernate.classic.Session;
 import org.springframework.context.support.StaticMessageSource;
+import org.springframework.core.io.Resource;
 import org.springframework.mock.web.MockServletContext;
 import org.springframework.orm.hibernate3.SessionFactoryUtils;
 import org.springframework.orm.hibernate3.SessionHolder;
@@ -47,7 +50,7 @@ import org.springframework.web.context.WebApplicationContext;
  * to test inside the onSetUp() method.
  *
  * @author Graeme Rocher
- *         <p/>
+ *
  *         <p/>
  *         Date: Sep 19, 2006
  *         Time: 7:26:52 AM
@@ -57,7 +60,7 @@ public abstract class AbstractGrailsHibernateTests extends TestCase {
     /**
      * A GroovyClassLoader instance
      */
-    public GroovyClassLoader gcl;
+    public GroovyClassLoader gcl = new GroovyClassLoader();
     /**
      * The GrailsApplication instance created during setup
      */
@@ -74,7 +77,6 @@ public abstract class AbstractGrailsHibernateTests extends TestCase {
 
 
     protected final void setUp() throws Exception {
-        gcl = new GroovyClassLoader();
         super.setUp();
 
         ExpandoMetaClass.enableGlobally();
@@ -96,20 +98,22 @@ public abstract class AbstractGrailsHibernateTests extends TestCase {
             GroovySystem.getMetaClassRegistry().removeMetaClass(aClass);
         }
         System.out.println("gcl.getLoadedClasses() = " + ArrayUtils.toString(gcl.getLoadedClasses()));
-        ga = new DefaultGrailsApplication(gcl.getLoadedClasses(), gcl);
+        ga = new DefaultGrailsApplication(gcl.getLoadedClasses(),gcl);
         ApplicationHolder.setApplication(ga);
 
         MockApplicationContext mc = new MockApplicationContext();
         mc.registerMockBean(GrailsApplication.APPLICATION_ID, ga);
         mc.registerMockBean("messageSource", new StaticMessageSource());
-        mc.registerMockBean(GrailsRuntimeConfigurator.CLASS_LOADER_BEAN, gcl);
-
+        mc.registerMockBean(PluginMetaManager.BEAN_ID, new DefaultPluginMetaManager(new Resource[0]));
+       
         GrailsRuntimeConfigurator grc = new GrailsRuntimeConfigurator(ga, mc);
         this.applicationContext = grc.configure(new MockServletContext());
-        this.sessionFactory = (SessionFactory) this.applicationContext.getBean(GrailsRuntimeConfigurator.SESSION_FACTORY_BEAN);
+        this.sessionFactory = (SessionFactory)this.applicationContext.getBean(GrailsRuntimeConfigurator.SESSION_FACTORY_BEAN);        
 
-        this.session = this.sessionFactory.openSession();
-        TransactionSynchronizationManager.bindResource(this.sessionFactory, new SessionHolder(session));
+        if(!TransactionSynchronizationManager.hasResource(this.sessionFactory)) {
+            this.session = this.sessionFactory.openSession();
+            TransactionSynchronizationManager.bindResource(this.sessionFactory, new SessionHolder(session));
+        }
 
 
     }
@@ -118,22 +122,25 @@ public abstract class AbstractGrailsHibernateTests extends TestCase {
      * Called directly before initialization of the TestCase in the junit.framework.TestCase#setUp() method.
      * This is where any classes should be created at runtime using the GroovyClassLoader gcl field's parseClass method.
      * Classes created here will then be passed to the GrailsApplication instance.
+     *
      */
-    protected void onSetUp() throws Exception {
-    }
+    protected void onSetUp() throws Exception {}
 
 
     protected final void tearDown() throws Exception {
-        onTearDown();
         ConfigurationHolder.setConfig(null);
         ApplicationHolder.setApplication(null);
         GroovySystem.getMetaClassRegistry().setMetaClassCreationHandle(new MetaClassRegistry.MetaClassCreationHandle());
         PluginManagerHolder.setPluginManager(null);
-        SessionHolder holder = (SessionHolder) TransactionSynchronizationManager.getResource(this.sessionFactory);
-        org.hibernate.Session s = holder.getSession();
-        TransactionSynchronizationManager.unbindResource(this.sessionFactory);
-        SessionFactoryUtils.releaseSession(s, this.sessionFactory);
-        SessionFactoryUtils.closeSession(s);
+        if(TransactionSynchronizationManager.hasResource(this.sessionFactory)) {
+		    SessionHolder holder = (SessionHolder) TransactionSynchronizationManager.getResource(this.sessionFactory);
+		    org.hibernate.Session s = holder.getSession();
+		    //s.flush();
+		    TransactionSynchronizationManager.unbindResource(this.sessionFactory);
+		    SessionFactoryUtils.releaseSession(s, this.sessionFactory);
+		}
+        onTearDown();
+
 
         gcl = null;
         ga = null;
@@ -146,7 +153,6 @@ public abstract class AbstractGrailsHibernateTests extends TestCase {
     /**
      * Called directly before destruction of the TestCase in the junit.framework.TestCase#tearDown() method
      */
-    protected void onTearDown() throws Exception {
-    }
+    protected void onTearDown() throws Exception {}
 
 }
