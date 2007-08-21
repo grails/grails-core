@@ -157,22 +157,25 @@ move it to the new location of '${basedir}/test/integration'. Please move the di
 
     // proceed plugin-specific upgrade logic contained in 'scripts/_Upgrade.groovy' under plugin's root
     def plugins = new File("${basedir}/plugins/")
-    plugins.eachFile { f ->
-        if(f.isDirectory() && f.name != 'core' ) {
-            // fix for Windows-style path with backslashes
+	if(plugins.exists()) {
+	    plugins.eachFile { f ->
+	        if(f.isDirectory() && f.name != 'core' ) {
+	            // fix for Windows-style path with backslashes
 
-            def pluginBase = "${basedir}/plugins/${f.name}".toString().replaceAll("\\\\","/")
-            // proceed _Upgrade.groovy plugin script if exists
-            def upgradeScript = new File ( "${pluginBase}/scripts/_Upgrade.groovy" )        
-            if( upgradeScript.exists() ) {
-                event("StatusUpdate", [ "Executing ${f.name} plugin upgrade script"])
-                // instrumenting plugin scripts adding 'pluginBasedir' variable
-                def instrumentedUpgradeScript = "def pluginBasedir = '${pluginBase}'\n" + upgradeScript.text
-                // we are using text form of script here to prevent Gant caching
-                includeTargets << instrumentedUpgradeScript
-            }
-        }
-    }
+	            def pluginBase = "${basedir}/plugins/${f.name}".toString().replaceAll("\\\\","/")
+	            // proceed _Upgrade.groovy plugin script if exists
+	            def upgradeScript = new File ( "${pluginBase}/scripts/_Upgrade.groovy" )        
+	            if( upgradeScript.exists() ) {
+	                event("StatusUpdate", [ "Executing ${f.name} plugin upgrade script"])
+	                // instrumenting plugin scripts adding 'pluginBasedir' variable
+	                def instrumentedUpgradeScript = "def pluginBasedir = '${pluginBase}'\n" + upgradeScript.text
+	                // we are using text form of script here to prevent Gant caching
+	                includeTargets << instrumentedUpgradeScript
+	            }
+	        }
+	    }
+		
+	}
 
     event("StatusUpdate", [ "Please make sure you view the README for important information about changes to your source code."])
 
