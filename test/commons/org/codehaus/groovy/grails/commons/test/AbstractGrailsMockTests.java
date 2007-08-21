@@ -22,6 +22,8 @@ import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator;
 import org.codehaus.groovy.grails.support.MockApplicationContext;
+import org.codehaus.groovy.grails.plugins.PluginMetaManager;
+import org.codehaus.groovy.grails.plugins.DefaultPluginMetaManager;
 import org.springframework.context.MessageSource;
 import org.springframework.context.support.StaticMessageSource;
 import org.springframework.core.io.Resource;
@@ -54,6 +56,7 @@ public abstract class AbstractGrailsMockTests extends TestCase {
 
         System.out.println("Setting up test");
         ctx = new MockApplicationContext();
+        ctx.registerMockBean(PluginMetaManager.BEAN_ID, new DefaultPluginMetaManager(new Resource[0]));
         ctx.registerMockBean(GrailsRuntimeConfigurator.CLASS_LOADER_BEAN, gcl);
         onSetUp();
         ga = new DefaultGrailsApplication(gcl.getLoadedClasses(),gcl);

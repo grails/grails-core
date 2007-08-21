@@ -4,6 +4,7 @@ import org.codehaus.groovy.grails.commons.test.*
 import org.codehaus.groovy.grails.commons.*
 import org.codehaus.groovy.grails.commons.spring.*
 import org.codehaus.groovy.grails.plugins.*
+import org.springframework.core.io.Resource
 
 class ScaffoldingPluginTests extends AbstractGrailsMockTests {
 
@@ -32,6 +33,7 @@ class TestController {
 		
 		def mockManager = new MockGrailsPluginManager()
 		ctx.registerMockBean("manager", mockManager )
+        ctx.registerMockBean(PluginMetaManager.BEAN_ID, new DefaultPluginMetaManager(new Resource[0]));
 		
 		def dependantPluginClasses = []
 		dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.CoreGrailsPlugin")			

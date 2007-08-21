@@ -22,6 +22,8 @@ import junit.framework.TestCase;
 import org.codehaus.groovy.grails.commons.*;
 import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator;
 import org.codehaus.groovy.grails.commons.spring.GrailsWebApplicationContext;
+import org.codehaus.groovy.grails.plugins.DefaultPluginMetaManager;
+import org.codehaus.groovy.grails.plugins.PluginMetaManager;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -29,6 +31,7 @@ import org.springframework.beans.factory.config.ConstructorArgumentValues;
 import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.GenericApplicationContext;
+import org.springframework.core.io.Resource;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.mock.web.MockServletContext;
@@ -137,7 +140,10 @@ public class SimpleGrailsControllerTests extends TestCase {
 
 		BeanDefinition grailsApplicationBean = new RootBeanDefinition(DefaultGrailsApplication.class,args,propValues);
 		localContext.registerBeanDefinition( "grailsApplication", grailsApplicationBean );
-		this.localContext.refresh();
+        ConstructorArgumentValues conArgs = new ConstructorArgumentValues();
+        conArgs.addGenericArgumentValue(new Resource[0]);
+        localContext.registerBeanDefinition(PluginMetaManager.BEAN_ID, new RootBeanDefinition(DefaultPluginMetaManager.class,conArgs,null));
+        this.localContext.refresh();
 
 		this.grailsApplication = (GrailsApplication)localContext.getBean("grailsApplication");
         ApplicationHolder.setApplication(grailsApplication);

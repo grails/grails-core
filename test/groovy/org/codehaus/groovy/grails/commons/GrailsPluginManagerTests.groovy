@@ -7,7 +7,8 @@ import org.codehaus.groovy.grails.commons.test.AbstractGrailsMockTests;
 import org.codehaus.groovy.grails.plugins.exceptions.PluginException
 import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.context.support.GenericApplicationContext;
-import org.springframework.web.servlet.i18n.CookieLocaleResolver;
+import org.springframework.web.servlet.i18n.CookieLocaleResolver
+import org.springframework.core.io.Resource;
 
 
 public class GrailsPluginManagerTests extends AbstractGrailsMockTests {
@@ -94,6 +95,7 @@ public class GrailsPluginManagerTests extends AbstractGrailsMockTests {
 		
 		def parent = createMockApplicationContext()
 		parent.registerMockBean("grailsApplication", ga)
+        parent.registerMockBean(PluginMetaManager.BEAN_ID, new DefaultPluginMetaManager(new Resource[0]));
 		
 		def springConfig = new org.codehaus.groovy.grails.commons.spring.DefaultRuntimeSpringConfiguration(parent)
 		springConfig.servletContext = createMockServletContext()
@@ -111,6 +113,7 @@ public class GrailsPluginManagerTests extends AbstractGrailsMockTests {
 		
 		def parent = createMockApplicationContext()
 		parent.registerMockBean("grailsApplication", ga)
+		parent.registerMockBean(PluginMetaManager.BEAN_ID, new DefaultPluginMetaManager(new Resource[0]));
 		def springConfig = new org.codehaus.groovy.grails.commons.spring.DefaultRuntimeSpringConfiguration(parent)
 		springConfig.servletContext = createMockServletContext()
 		

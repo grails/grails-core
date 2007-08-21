@@ -8,6 +8,8 @@ import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator;
 import org.codehaus.groovy.grails.support.MockApplicationContext;
+import org.codehaus.groovy.grails.plugins.PluginMetaManager;
+import org.codehaus.groovy.grails.plugins.DefaultPluginMetaManager;
 import org.codehaus.groovy.runtime.InvokerInvocationException;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -17,6 +19,7 @@ import org.springframework.mock.web.MockServletContext;
 import org.springframework.orm.hibernate3.SessionHolder;
 import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
+import org.springframework.core.io.Resource;
 
 import java.util.List;
 
@@ -87,6 +90,7 @@ public class HibernateCriteriaBuilderTests extends
         MockApplicationContext parent = new MockApplicationContext();
         parent.registerMockBean(GrailsApplication.APPLICATION_ID, grailsApplication);
         parent.registerMockBean("messageSource", new StaticMessageSource());
+        parent.registerMockBean(PluginMetaManager.BEAN_ID, new DefaultPluginMetaManager(new Resource[0]));
         GrailsRuntimeConfigurator configurator = new GrailsRuntimeConfigurator(grailsApplication,parent);
         ApplicationContext appCtx = configurator.configure( new MockServletContext( ));
         this.sessionFactory = (SessionFactory)appCtx.getBean("sessionFactory");

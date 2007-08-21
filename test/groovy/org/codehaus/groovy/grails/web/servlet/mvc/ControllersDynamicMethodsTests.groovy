@@ -11,6 +11,7 @@ import org.codehaus.groovy.grails.web.servlet.*
 import org.springframework.mock.web.*
 import org.springframework.validation.*
 import org.springframework.web.servlet.*
+import org.springframework.core.io.Resource
 
 class ControllersDynamicMethodsTests extends AbstractGrailsMockTests {
 	
@@ -39,6 +40,7 @@ class ControllersDynamicMethodsTests extends AbstractGrailsMockTests {
         GroovySystem.metaClassRegistry.metaClassCreationHandle = new ExpandoMetaClassCreationHandle();
 		def mockManager = new MockGrailsPluginManager(ga)
 		ctx.registerMockBean("manager", mockManager )
+        ctx.registerMockBean(PluginMetaManager.BEAN_ID, new DefaultPluginMetaManager(new Resource[0]));
 		
 		def dependantPluginClasses = []
 		dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.CoreGrailsPlugin")					
