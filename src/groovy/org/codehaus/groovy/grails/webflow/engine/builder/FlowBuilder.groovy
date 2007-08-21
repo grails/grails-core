@@ -20,7 +20,6 @@ import org.springframework.webflow.engine.Transition;
 import org.springframework.webflow.engine.Flow;
 import org.springframework.webflow.engine.builder.AbstractFlowBuilder;
 import org.springframework.webflow.engine.builder.FlowBuilderException;
-import org.springframework.webflow.engine.support.TransitionExecutingStateExceptionHandler;
 import org.springframework.webflow.core.collection.LocalAttributeMap;
 import org.springframework.webflow.execution.Event;
 import org.apache.commons.logging.LogFactory
@@ -36,6 +35,7 @@ import org.springframework.context.ApplicationContextAware
 import org.springframework.context.ApplicationContext
 import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder
 import org.codehaus.groovy.grails.web.mapping.UrlCreator
+import org.springframework.webflow.engine.support.TransitionExecutingFlowExecutionExceptionHandler
 
 /**
 * <p>A builder implementation used to construct Spring Webflows. This is a DSL specifically
@@ -101,7 +101,9 @@ class FlowBuilder extends AbstractFlowBuilder implements GroovyObject, Applicati
             this.flowClosure.call();
             flowDefiningMode = false;
             initialised = true;
-            return super.getFlow();
+            Flow flow = super.getFlow()
+            flow.attributeMap.put("persistenceContext", true)
+            return flow;
         }
         else if(flowDefiningMode) {
             if(isFirstArgumentClosure(args)) {
@@ -133,9 +135,11 @@ class FlowBuilder extends AbstractFlowBuilder implements GroovyObject, Applicati
                 State state
                 if(flowInfo.redirectUrl) {
                     state = addEndState(name, flowInfo.redirectUrl );
+                    state.attributeMap.put("commit", true)
                 }
                 else if(trans.length == 0 && flowInfo.subflow == null) {
                     state = addEndState(name, name);
+                    state.attributeMap.put("commit", true)
                 }
                 else if(action) {
                    // add action state
@@ -188,7 +192,9 @@ class FlowBuilder extends AbstractFlowBuilder implements GroovyObject, Applicati
                 return state;
             }
             else {
-               return addEndState(name, name);
+               State state = addEndState(name, name)
+               state.attributeMap.put("commit", true)
+               return state;
             }
         }
         else {
@@ -359,7 +365,7 @@ class TransitionTo {
     }
     public Object to(String newTo) {
         if(error != null) {
-            TransitionExecutingStateExceptionHandler handler = new TransitionExecutingStateExceptionHandler();
+            TransitionExecutingFlowExecutionExceptionHandler handler = new TransitionExecutingFlowExecutionExceptionHandler();
             handler.add(error, newTo);
             builder.getFlow().getExceptionHandlerSet().add(handler);
             return handler;
