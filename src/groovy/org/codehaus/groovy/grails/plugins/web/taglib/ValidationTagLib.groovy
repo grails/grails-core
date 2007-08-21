@@ -74,6 +74,12 @@ class ValidationTagLib {
             if(errors) {
                 if(attrs['field']) {
                     if(errors.hasFieldErrors(attrs['field'])) {
+                        def e = errors.getFieldErrors(attrs['field'])
+                        def errorArgs = e.arguments[0]
+
+                        if (i.class == errorArgs[1]) {
+                             out << body()
+                        }
                         out << body()
                     }
                 }
@@ -124,13 +130,20 @@ class ValidationTagLib {
                 if(attrs['field']) {
                     if(errors.hasFieldErrors(attrs['field'])) {
                         errors.getFieldErrors( attrs["field"] ).each {
-                            out << body(it)
+                            def args = it.arguments
+
+                            if (i.class == args[1]) {
+                                out << body(it)
+                            }                                
                         }
                     }
                 }
                 else {
                     errors.allErrors.each {
-                        out << body( it )
+                         def errorArgs = it.arguments    
+                         if (i.class == errorArgs[1]) {
+                             out << body( it )
+                         }
                     }
                 }
             }
