@@ -206,6 +206,9 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
         catch (IOException e) {
             log.warn("No application metadata file found at " + r);
         }
+        if (System.getProperty(GrailsApplication.ENVIRONMENT) != null) {
+        	meta.setProperty(GrailsApplication.ENVIRONMENT, System.getProperty(GrailsApplication.ENVIRONMENT));
+        }
         applicationMeta = Collections.unmodifiableMap(meta);
     }
 
