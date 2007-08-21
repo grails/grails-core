@@ -29,53 +29,60 @@ import grails.util.GrailsUtil
  */
 class LoggingGrailsPlugin {
 
-	def version = grails.util.GrailsUtil.getGrailsVersion()
-	def dependsOn = [core:version]
+    def version = grails.util.GrailsUtil.getGrailsVersion()
+    def dependsOn = [core: version]
+    def observe = ['controllers', 'services', 'hibernate', 'taglib', 'codecs', 'converters']
 
-	def doWithWebDescriptor = { xml ->
-	    def log4j = xml.'context-param'.find { it.'param-name'.text() == 'log4jConfigLocation' }
-	   
-	    if(GrailsUtil.isDevelopmentEnv() && log4j) {
+    def doWithWebDescriptor = {xml ->
+        def log4j = xml.'context-param'.find {it.'param-name'.text() == 'log4jConfigLocation'}
+
+        if (GrailsUtil.isDevelopmentEnv() && log4j) {
             log4j + {
-            	'context-param' {
-            	    'param-name'('log4jRefreshInterval')
-            	    'param-value'(1000)
+                'context-param' {
+                    'param-name'('log4jRefreshInterval')
+                    'param-value'(1000)
                 }
             }
         }
-	}
+    }
 
-	def doWithDynamicMethods = { applicationContext ->
-        application.artefactHandlers.each() { handler ->
+    def doWithDynamicMethods = {applicationContext ->
+        application.artefactHandlers.each() {handler ->
             application."${handler.type}Classes".each() {
-                // Formulate a name of the form grails.<artefactType>.classname
-                // Do it here so not calculated in every getLog call :)
-                def type = GCU.getPropertyNameRepresentation(handler.type)
-                def logName = "grails.app.${type}.${GCU.getShortName(it.clazz)}".toString()
-
-                def log = LogFactory.getLog( logName)
-
-                it.clazz.metaClass.getLog << { -> log }
+                addLogMethod(it.clazz, handler)
             }
         }
-	}
+    }
 
-    def onConfigChange = { event ->
+    def onConfigChange = {event ->
         def log4jConfig = event.source.log4j
-        if(log4jConfig) {
+        if (log4jConfig) {
             def props = log4jConfig.toProperties('log4j')
             log.info "Updating Log4j configuration.."
-            new File("./web-app/WEB-INF/classes/log4j.properties").withOutputStream { out ->
+            new File("./web-app/WEB-INF/classes/log4j.properties").withOutputStream {out ->
                 props.store(out, "Grails' Log4j Configuration")
             }
         }
     }
 
-	def onChange = { event ->
-	    def env = GrailsUtil.getEnvironment()
-	    if(event.source.filename == "log4j.${env}.properties") {
-	        new AntBuilder().copy(  file:event.source.file,
-	                                tofile:new File("./web-app/WEB-INF/classes/log4j.properties"))
+    def onChange = {event ->
+        if (event.source instanceof Class) {
+            log.debug "Adding log method to modified artefact [${event.source}]"
+            def handler = application.artefactHandlers.find {it.isArtefact(event.source)}
+            if (handler) {
+                addLogMethod(event.source, handler)
+            }
         }
-	}
+    }
+
+    def addLogMethod(artefactClass, handler) {
+        // Formulate a name of the form grails.<artefactType>.classname
+        // Do it here so not calculated in every getLog call :)
+        def type = GCU.getPropertyNameRepresentation(handler.type)
+        def logName = "grails.app.${type}.${GCU.getShortName(artefactClass)}".toString()
+
+        def log = LogFactory.getLog(logName)
+
+        artefactClass.metaClass.getLog << {-> log}
+    }
 }
