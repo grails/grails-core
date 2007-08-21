@@ -20,6 +20,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsResourceUtils;
+import org.codehaus.groovy.grails.plugins.PluginMetaManager;
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.springframework.context.ApplicationContext;
@@ -50,6 +51,7 @@ public class GrailsViewResolver extends InternalResourceViewResolver implements 
     private static final String GSP_SUFFIX = ".gsp";
     private ResourceLoader resourceLoader;
     private GroovyPagesTemplateEngine templateEngine;
+    private PluginMetaManager pluginMetaManager;
     
     private static final String GROOVY_PAGE_RESOURCE_LOADER = "groovyPageResourceLoader";
 
@@ -71,6 +73,9 @@ public class GrailsViewResolver extends InternalResourceViewResolver implements 
          this.resourceLoader = resourceLoader;
     }
 
+    public void setPluginMetaManager(PluginMetaManager pluginMetaManager) {
+        this.pluginMetaManager = pluginMetaManager;
+    }
 
     public void setTemplateEngine(GroovyPagesTemplateEngine templateEngine) {
         this.templateEngine = templateEngine;
@@ -78,6 +83,7 @@ public class GrailsViewResolver extends InternalResourceViewResolver implements 
 
     protected View loadView(String viewName, Locale locale) throws Exception {
         if(this.templateEngine == null) throw new IllegalStateException("Property [templateEngine] cannot be null");
+        if(this.pluginMetaManager == null) throw new IllegalStateException("Property [pluginMetaManager] cannot be null");
         
         ResourceLoader resourceLoader = establishResourceLoader();
 
@@ -135,12 +141,10 @@ public class GrailsViewResolver extends InternalResourceViewResolver implements 
     protected String resolveViewForController(GroovyObject controller, GrailsApplication application, String viewName, ResourceLoader resourceLoader) {
         String gspView;// try to resolve the view relative to the controller first, this allows us to support
         // views provided by plugins
-        if(controller != null && application != null) {
-            Resource controllerResource = application.getResourceForClass(controller.getClass());
-            if(controllerResource != null) {
-                Resource viewsDir = GrailsResourceUtils.getViewsDir(controllerResource);
-                String pathToView = GrailsResourceUtils.getRelativeInsideWebInf(viewsDir);
-                gspView = pathToView + viewName + GSP_SUFFIX;
+        if(controller != null && application != null) {            
+            String pathToView = this.pluginMetaManager.getPluginViewsPathForResource(controller.getClass().getName());
+            if(pathToView!= null) {
+                gspView = GrailsResourceUtils.WEB_INF+pathToView+'/'+viewName+GSP_SUFFIX;
 
             }
             else {

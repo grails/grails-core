@@ -1,3 +1,5 @@
+package org.codehaus.groovy.grails.commons
+
 import  org.codehaus.groovy.grails.commons.test.*
 import org.codehaus.groovy.grails.plugins.*
 

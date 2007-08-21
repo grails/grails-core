@@ -115,6 +115,7 @@ task (war: "The implementation task") {
   
 task(createDescriptor:"Creates the WEB-INF/grails.xml file used to load Grails classes in WAR mode") {
      def resourceList = GrailsResourceLoaderHolder.resourceLoader.getResources()
+     def pluginList = resolveResources("file:${basedir}/plugins/*/*GrailsPlugin.groovy")
       
 	 new File("${basedir}/staging/WEB-INF/grails.xml").withWriter { writer ->
 		def xml = new groovy.xml.MarkupBuilder(writer)
@@ -126,10 +127,17 @@ task(createDescriptor:"Creates the WEB-INF/grails.xml file used to load Grails c
 					resource(name)
 			   } 
 			}
+			plugins {
+                for(p in pluginList) {
+
+                    def name = p.file.name - '.groovy'
+                    plugin(name)
+                }
+            }
 		}
 	 }
 	 
-}   
+}
 
 task(cleanUpAfterWar:"Cleans up after performing a WAR") {
 	Ant.delete(dir:"${basedir}/staging", failonerror:true)
@@ -140,7 +148,7 @@ task(warPlugins:"Includes the plugins in the WAR") {
 		mkdir(dir:"${basedir}/staging/WEB-INF/plugins")
 		copy(todir:"${basedir}/staging/WEB-INF/plugins", failonerror:false) {
 			fileset(dir:"${basedir}/plugins")  {    
-				include(name:"**/*GrailsPlugin.groovy")
+				include(name:"**/*plugin.xml")
 			}
 		}
 	}

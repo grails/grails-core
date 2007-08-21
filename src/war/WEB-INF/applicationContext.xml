@@ -12,13 +12,15 @@ http://www.springframework.org/schema/beans http://www.springframework.org/schem
 
 	<bean id="pluginManager" class="org.codehaus.groovy.grails.plugins.GrailsPluginManagerFactoryBean">
 		<description>A bean that manages Grails plugins</description>
-		<property name="pluginFiles">
-			<value>classpath*:**/plugins/**/*GrailsPlugin.groovy</value>
-		</property>
-		<property name="application" ref="grailsApplication" />
-	</bean>    
-	
-	<bean id="grailsConfigurator" class="org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator">
+        <property name="grailsDescriptor" value="/WEB-INF/grails.xml" />
+        <property name="application" ref="grailsApplication" />
+	</bean>
+
+    <bean id="pluginMetaManager" class="org.codehaus.groovy.grails.plugins.DefaultPluginMetaManager">
+        <constructor-arg value="classpath*:**/plugins/*/plugin.xml" />
+    </bean>
+
+    <bean id="grailsConfigurator" class="org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator">
         <constructor-arg>
             <ref bean="grailsApplication" />
         </constructor-arg>

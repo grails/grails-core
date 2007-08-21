@@ -41,6 +41,7 @@ public class GroovyPageResourceLoader extends StaticResourceLoader {
      */
     public static final String BEAN_ID = "groovyPageResourceLoader";
     private Resource localBaseResource;
+    private static final String PLUGINS = "/plugins";
 
     public void setBaseResource(Resource baseResource) {
         this.localBaseResource = baseResource;
@@ -49,6 +50,12 @@ public class GroovyPageResourceLoader extends StaticResourceLoader {
 
     public Resource getResource(String location) {
         if(StringUtils.isBlank(location)) throw new IllegalArgumentException("Argument [location] cannot be null or blank");
+
+        // deal with plug-in resolving
+        if(location.startsWith(PLUGINS)) {
+            Resource r = super.getResource(location.substring(1));
+            if(r.exists()) return r;
+        }
 
         location = getRealLocationInProject(location);
 

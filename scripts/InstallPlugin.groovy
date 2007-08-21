@@ -24,7 +24,8 @@
  */
 import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU  
 import groovy.xml.dom.DOMCategory
- 
+import groovy.xml.MarkupBuilder
+
 appName = ""
 
 Ant.property(environment:"env")   
@@ -115,6 +116,27 @@ task(installPlugin:"Implementation task") {
             Ant.delete(dir:"${pluginsBase}/${fullPluginName}", failonerror:false)
             Ant.mkdir(dir:"${pluginsBase}/${fullPluginName}")
             Ant.unzip(dest:"${pluginsBase}/${fullPluginName}", src:"${pluginsBase}/grails-${fullPluginName}.zip")
+
+            // for backwards compatability with older plug-ins we need to populate the plug-in resources
+            // if they don't exist
+            def resourceList = resolveResources("file:${pluginsBase}/${fullPluginName}/grails-app/**/*.groovy")
+            def pluginXml = "${pluginsBase}/${fullPluginName}/plugin.xml"
+            def xml = new XmlSlurper().parse(new File(pluginXml))
+            def resourceElements = xml.resources.resource
+            if(resourceElements.size()==0) {
+                def writer = new IndentPrinter( new PrintWriter( new FileWriter(pluginXml)))
+                def mkp = new MarkupBuilder(writer)
+                mkp.plugin(name:xml.@name, version:xml.@version) {
+                    resources {
+                        for(r in resourceList) {
+                             def matcher = r.URL.toString() =~ /\S+?\/grails-app\/\S+?\/(\S+?).groovy/
+                             def name = matcher[0][1].replaceAll('/', /\./)
+                             resource(name)
+                        }
+                    }
+                }
+
+            }
 
             // proceed _Install.groovy plugin script if exists
             def installScript = new File ( "${pluginsBase}/${fullPluginName}/scripts/_Install.groovy" )

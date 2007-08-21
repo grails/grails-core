@@ -65,6 +65,7 @@ import org.codehaus.groovy.grails.commons.GrailsTagLibClass
 import org.springframework.context.ApplicationContext
 import java.lang.reflect.Modifier
 import org.codehaus.groovy.grails.commons.GrailsApplication
+import org.codehaus.groovy.grails.plugins.PluginMetaManager
 
 /**
 * A plug-in that handles the configuration of controllers for Grails
@@ -133,6 +134,7 @@ class ControllersGrailsPlugin {
 			prefix = GrailsApplicationAttributes.PATH_TO_VIEWS
 		    suffix = ".jsp"
 		    templateEngine = groovyPagesTemplateEngine
+		    pluginMetaManager = ref("pluginMetaManager", true)
 			if(grails.util.GrailsUtil.isDevelopmentEnv()) {
 				resourceLoader = groovyPageResourceLoader
 			}		
@@ -315,11 +317,6 @@ class ControllersGrailsPlugin {
 		   mc.getGrailsAttributes = grailsAttrsObject
 		   // The GrailsApplication object
 		   mc.getGrailsApplication = {-> RCH.currentRequestAttributes().attributes.grailsApplication }
-
-		   mc.getPluginContextPath = {->
-				def resource = application.getResourceForClass(delegate.class) 
-				GRU.getStaticResourcePathForResource(resource, null)
-		   }
 	}
 
 
@@ -354,6 +351,12 @@ class ControllersGrailsPlugin {
 	   		mc.throwTagError = { String message ->
 	   			throw new org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException(message)
 	   		}
+           mc.getPluginContextPath = {->
+               PluginMetaManager metaManager = ctx.pluginMetaManager
+               String path = metaManager.getPluginPathForResource(delegate.class.name)
+               path ? path : ""
+           }
+
 	   		mc.getOut = {->
 	   			RCH.currentRequestAttributes().out
 	   		}
@@ -424,6 +427,13 @@ class ControllersGrailsPlugin {
 			registerControllerMethods(mc, ctx)
 			registerMethodMissing(mc, application, ctx)
             Class superClass = controller.clazz.superclass
+            
+            mc.getPluginContextPath = {->
+                 PluginMetaManager metaManager = ctx.pluginMetaManager
+                 String path = metaManager.getPluginPathForResource(delegate.class.name)
+                 path ? path : ""
+            }
+
             // deal with abstract super classes
             while(superClass != Object.class) {
                 if(Modifier.isAbstract(superClass.getModifiers())) {

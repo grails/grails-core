@@ -400,8 +400,11 @@ class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants 
         def engine = groovyPagesTemplateEngine
         def uri = grailsAttributes.getTemplateUri(attrs.template,request)
         def var = attrs['var']
+        def contextPath = attrs.contextPath ? attrs.contextPath : ""
 
-        def t = engine.createTemplate( uri )
+        def r = engine.getResourceForUri("${contextPath}${uri}")
+        if(!r.exists()) r = engine.getResourceForUri("${contextPath}/grails-app/views/${uri}")
+        def t = engine.createTemplate( r )
 
         if(attrs.model instanceof Map) {
             t.make( attrs.model ).writeTo(out)

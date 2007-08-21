@@ -24,6 +24,7 @@
 import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU  
 import org.codehaus.groovy.control.*
 import groovy.xml.MarkupBuilder
+import org.codehaus.groovy.grails.compiler.support.GrailsResourceLoaderHolder
 
 
 appName = ""
@@ -94,9 +95,17 @@ task(packagePlugin:"Implementation task") {
     def writer = new IndentPrinter( new PrintWriter( new FileWriter("${basedir}/plugin.xml")))
     def xml = new MarkupBuilder(writer)
     def props = ['author','authorEmail','title','description','documentation']
+    def resourceList = GrailsResourceLoaderHolder.resourceLoader.getResources()
     xml.plugin(name:"${pluginName}",version:"${plugin.version}") {
         props.each {
             if( plugin.properties[it] ) "${it}"(plugin.properties[it])
+        }
+        resources {
+            for(r in resourceList) {
+                 def matcher = r.URL.toString() =~ /\S+?\/grails-app\/\S+?\/(\S+?).groovy/
+                 def name = matcher[0][1].replaceAll('/', /\./)
+                 resource(name)
+            }             
         }
     }
 

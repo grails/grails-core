@@ -25,6 +25,7 @@ import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods;
 import org.codehaus.groovy.grails.web.pages.GroovyPage;
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
 import org.codehaus.groovy.grails.web.pages.exceptions.GroovyPagesException;
+import org.codehaus.groovy.grails.plugins.PluginMetaManager;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.Resource;
 import org.springframework.validation.Errors;
@@ -69,8 +70,10 @@ public class DefaultGrailsApplicationAttributes implements GrailsApplicationAttr
         GrailsApplication application = getGrailsApplication();
 
         if(controller != null && application != null) {
-            Resource controllerResource = application.getResourceForClass(controller.getClass());
-            return GrailsResourceUtils.getStaticResourcePathForResource(controllerResource, "");
+            final Class controllerClass = controller.getClass();
+            PluginMetaManager metaManager = (PluginMetaManager)getApplicationContext().getBean(PluginMetaManager.BEAN_ID);
+            String path = metaManager.getPluginPathForResource(controllerClass.getName());
+            return path == null ? "" : path;
         }
         else {
             return "";

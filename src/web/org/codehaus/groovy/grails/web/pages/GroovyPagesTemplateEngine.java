@@ -21,6 +21,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.control.CompilationFailedException;
+import org.codehaus.groovy.grails.commons.GrailsResourceUtils;
 import org.codehaus.groovy.grails.support.ResourceAwareTemplateEngine;
 import org.codehaus.groovy.grails.web.pages.exceptions.GroovyPagesException;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
@@ -332,15 +333,19 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
         Resource r;
         r = getResourceWithinContext(uri);
         if(r == null || !r.exists()) {
-            uri = getUriWithinGrailsViews(uri);
-            return getResourceWithinContext(uri); 
+            // try plugin
+            String pluginUri = GrailsResourceUtils.WEB_INF + uri;
+            r = getResourceWithinContext(pluginUri);
+            if(r == null || !r.exists()) {                
+                uri = getUriWithinGrailsViews(uri);
+                return getResourceWithinContext(uri);
+            }
         }
         return r;
     }
 
     private Resource getResourceWithinContext(String uri) {
         if(resourceLoader == null) throw new IllegalStateException("TemplateEngine not initialised correctly, no [resourceLoader] specified!");
-        
         return resourceLoader.getResource(uri);
     }
 
