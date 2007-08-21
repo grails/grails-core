@@ -28,6 +28,7 @@ task(loadApp:"Loads the Grails application object") {
 			grailsResourceHolder = resourceHolder
 		}
 		grailsApplication(org.codehaus.groovy.grails.commons.DefaultGrailsApplication.class, ref("grailsResourceLoader"))
+		pluginMetaManager(DefaultPluginMetaManager, "file:${basedir}/plugins/*/plugin.xml".toString())
 	}
                                                     
 	appCtx = beans.createApplicationContext()
