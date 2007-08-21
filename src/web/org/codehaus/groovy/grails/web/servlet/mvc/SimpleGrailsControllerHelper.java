@@ -227,13 +227,21 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
         // Step 5: get the view name for this URI.
         String viewName = controllerClass.getViewByURI(uri);
 
+        boolean executeAction = invokeBeforeInterceptor(controller, controllerClass);
+        // if the interceptor returned false don't execute the action
+        if(!executeAction)
+            return null;
+
+        ModelAndView mv;
         if(controllerClass.isFlowAction(actionName)) {
-            return executeFlow(webRequest,request, response);
+            mv = executeFlow(webRequest,request, response);
         }
         else {
-            return executeAction(controller, controllerClass, viewName, request, response, params);
+            mv = executeAction(controller, controllerClass, viewName, request, response, params);
         }
 
+        boolean returnModelAndView = invokeAfterInterceptor(controllerClass, controller, mv);
+        return returnModelAndView ? mv : null;
     }
 
     /**
@@ -248,6 +256,7 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
         final Thread currentThread = Thread.currentThread();
         ClassLoader cl = currentThread.getContextClassLoader();
         try {
+
             currentThread.setContextClassLoader(application.getClassLoader());
 
             FlowExecutorArgumentHandler argumentHandler = new GrailsConventionsFlowExecutorArgumentHandler(webRequest);
@@ -268,6 +277,8 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
                     return super.getDispatcherPath();
                 }
             };
+
+
             ResponseInstruction responseInstruction = createRequestHandler(argumentHandler).handleFlowRequest(externalContext);
 
             return toModelAndView(responseInstruction, externalContext, argumentHandler);
@@ -366,12 +377,6 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
         // Step 5a: Check if there is a before interceptor if there is execute it
         ClassLoader cl = Thread.currentThread().getContextClassLoader();
         try {
-            Thread.currentThread().setContextClassLoader(application.getClassLoader());
-            boolean executeAction = invokeBeforeInterceptor(controller, controllerClass);
-            // if the interceptor returned false don't execute the action
-            if(!executeAction)
-        	return null;
-
             // Step 6: get closure from closure property
             Closure action;
             try {
@@ -386,7 +391,6 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
                     if(LOG.isDebugEnabled()) {
                         LOG.debug("Response has been redirected, returning null model and view");
                     }
-                    invokeAfterInterceptor(controllerClass, controller, null);
                     return null;
                 }
                 else {
@@ -398,8 +402,7 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
                     if(LOG.isDebugEnabled()) {
                         LOG.debug("Action ["+actionName+"] handled, created Spring model and view ["+mv+"]");
                     }
-                    boolean returnModelAndView = invokeAfterInterceptor(controllerClass, controller, mv);
-                    return returnModelAndView ? mv : null;
+                    return mv;
                 }
 
             }
