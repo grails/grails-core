@@ -199,7 +199,7 @@ task(runUnitTests:"Run Grails' unit tests under the test/unit directory") {
 
             classLoader.rootLoader.addURL(new File("test/unit").toURL())
             def suite = new TestSuite()
-            populateTestSuite(suite, testFiles, classLoader, ctx)
+            populateTestSuite(suite, testFiles, classLoader, appCtx)
 			if(suite.testCount() > 0) {      
 				int testCases = suite.countTestCases()
 	            println "-------------------------------------------------------"
