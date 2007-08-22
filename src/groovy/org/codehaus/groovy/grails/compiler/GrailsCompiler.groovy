@@ -23,7 +23,8 @@ import org.codehaus.groovy.grails.compiler.injection.*
 import org.apache.tools.ant.BuildException
 import org.codehaus.groovy.tools.javac.JavaAwareCompilationUnit
 import org.codehaus.groovy.tools.ErrorReporter
-import org.apache.tools.ant.AntClassLoader
+import org.apache.tools.ant.AntClassLoader  
+import org.apache.tools.ant.util.*
 import org.codehaus.groovy.control.*
 
 /**
@@ -47,7 +48,8 @@ class GrailsCompiler extends Groovyc {
 	def compileList = []
 
 	String resourcePattern
-	String projectName
+	String projectName  
+	boolean cleanJavaCompile = false
 
 	void resetFileLists() { compileList.clear() }
 
@@ -103,7 +105,23 @@ class GrailsCompiler extends Groovyc {
 		def resourceLoader = new GrailsResourceLoader(resources)
         GrailsResourceLoaderHolder.resourceLoader = resourceLoader
 	
-		if(compileList) {
+		if(compileList) {                                      
+			// if there are Java sources do a complete re-compile
+			if(cleanJavaCompile && compileList.find { it.name.endsWith(".java") }) {
+				compileList.clear()
+			    def m = new IdentityMapper()
+        		def sfs = new SourceFileScanner(this);
+				for(srcPath in src.list()) {
+					def srcDir = getProject().resolveFile(srcPath)
+					def files = getDirectoryScanner(srcDir).getIncludedFiles()
+					files = sfs.restrictAsFiles(files, srcDir, destDir, m)					
+					for(f in files) {
+						if(f.name.endsWith(".groovy") || f.name.endsWith(".java"))
+							compileList << f
+					}
+						
+				}
+			} 
 	        println "Compiling ${compileList.size()} source file${compileList ? 's' : ''} to ${destdir}"
 	        
 	        if(classpath) configuration.classpath = classpath.toString()

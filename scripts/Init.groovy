@@ -394,7 +394,8 @@ void setClasspath() {
     def grailsDir = resolveResources("file:${basedir}/grails-app/*")
 	def pluginLibs = resolveResources("file:${basedir}/plugins/*/lib")
 
-	Ant.path(id:"grails.classpath")  {
+	Ant.path(id:"grails.classpath")  {       
+		pathelement(location:"${classesDir.absolutePath}")
 		pathelement(location:"${basedir}")
 		pathelement(location:"${basedir}/test/unit")
 		pathelement(location:"${basedir}/test/integration")		
