@@ -1,9 +1,13 @@
 <project name="grails-unit-test">
+                 
+  <condition property="_skipTests_">
+    <istrue value="${skipTests}"/>
+  </condition>
 
 	<target name="test-with-coverage" depends="build-test, instrument-for-coverage, run-test, coverage-report" description="Compile and Run the unit tests while measuring coverage">
 		<fail if="grails.test.failure">The tests failed. Have a look at ${grails.test.reports}</fail>
 	</target>
-	<target name="test" depends="clean-instrumented, run-test" description="Compile and Run the unit tests plainly">
+	<target name="test" depends="clean-instrumented, run-test" unless="_skipTests_" description="Compile and Run the unit tests plainly">
 		<fail if="grails.test.failure">The tests failed. Have a look at ${grails.test.reports}</fail>
 	</target>
 
@@ -94,7 +98,7 @@
 		</condition>
 	</target>
 
-	<target name="run-test" depends="defineTestingScope, build-test">
+	<target name="run-test" depends="defineTestingScope, build-test" unless="_skipTests_">
 		<delete dir="${grails.test.reports}" />
 		<mkdir dir="${grails.test.reports}" />
 		<junit fork="true" maxmemory="512m" forkmode="once">
