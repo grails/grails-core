@@ -62,21 +62,21 @@ class GrailsCompiler extends Groovyc {
             def sf = new File("${srcPath}/$f")
             def df = null
             if(f.endsWith(".groovy") ) {
-                df = new File("${destPath}/${f-'.groovy' + '.class'}")
+                df = new File("${destPath}/${f[0..-7] + 'class'}")
                 def i = f.lastIndexOf('/')
                 if(!df.exists() && i > -1) {
                     // check root package
-                    def tmp = new File("${destPath}/${f[i..-1] - '.groovy' + '.class'}")
+                    def tmp = new File("${destPath}/${f[i..-7] + 'class'}")
                     if(tmp.exists()) df = tmp
                 }
             }
             else if(f.endsWith(".java")) {
-                df = new File("${destPath}/${f-'.java' + '.class'}")
+                df = new File("${destPath}/${f[0..-5] + 'class'}")
             }
             else {
                 continue
             }
-
+                       
             if(sf.lastModified() > df.lastModified()) {
                 compileList << sf
             }            
@@ -123,7 +123,6 @@ class GrailsCompiler extends Groovyc {
 				}
 			} 
 	        println "Compiling ${compileList.size()} source file${compileList ? 's' : ''} to ${destdir}"
-	        
 	        if(classpath) configuration.classpath = classpath.toString()
             configuration.targetDirectory = destdir
 	        if(encoding)configuration.sourceEncoding = encoding
