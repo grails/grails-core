@@ -226,5 +226,14 @@ public class GrailsUtil {
     	LOG.warn("[DEPRECATED] " + message);
     }
 
+    /**
+     * Logs warning message to grails.util.GrailsUtil logger which is turned on in development mode.
+     *
+     * @param message Message to display
+     */
+    public static void warn(String message) {
+    	LOG.warn("[WARNING] " + message);
+    }
+
 
 }

@@ -45,6 +45,8 @@ public class NullableConstraint2Tests extends AbstractConstraintTests {
         assertEquals( ConstrainedProperty.NULLABLE_CONSTRAINT, constraint.getName() );
         assertTrue( constraint.supports( String.class ));
         assertTrue( constraint.supports( Object.class ));
+        assertFalse(  constraint.supports( int.class ));
+        assertFalse(  constraint.supports( float.class ));
         assertFalse(  constraint.supports( null ));
         assertFalse( constraint.isNullable() );
 

@@ -25,6 +25,8 @@ import org.springframework.beans.InvalidPropertyException;
 
 import groovy.lang.MissingMethodException;
 import groovy.util.BuilderSupport;
+import grails.util.GrailsUtil;
+
 /**
  * Builder used as a delegate within the "constraints" closure of GrailsDomainClass instances 
  * 
@@ -65,7 +67,9 @@ public class ConstrainedPropertyBuilder extends BuilderSupport {
 				String constraintName = (String) i.next();
 				if(cp.supportsContraint(constraintName)) {
 					cp.applyConstraint(constraintName, attributes.get(constraintName));
-				}					
+				} else {
+                    GrailsUtil.warn( "Property [" + cp.getPropertyName() + "] of type [" + cp.getPropertyType().getName() + "] doesn't support constraint [" + constraintName + "]. This constraint will not be checked during validation." );
+                }
 			}				
 			return cp;
 		}
