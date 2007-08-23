@@ -134,7 +134,7 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator  {
             else {
                 if(cp.inList) {
                    def sb = new StringBuffer('<g:select ')
-                   sb << "id='${property.name}' name='${property.name}' from='\${${domainClass.propertyName}.constraints.${property.name}.inList.collect{it.encodeAsHTML()}}' value=\"\${${domainClass.propertyName}.${property.name}?.encodeAsHTML()}\">"
+                   sb << "id='${property.name}' name='${property.name}' from='\${${domainClass.propertyName}.constraints.${property.name}.inList.collect{it.encodeAsHTML()}}' value=\"\${${domainClass.propertyName}.${property.name}?.encodeAsHTML()}\" ${renderNoSelection(property)}>"
                    sb << '</g:select>'
                    return sb.toString()
                 }
@@ -156,7 +156,7 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator  {
 
     private renderManyToOne(domainClass,property) {
         if(property.association) {            
-            return "<g:select optionKey=\"id\" from=\"\${${property.type.name}.list()}\" name='${property.name}.id' value=\"\${${domainClass.propertyName}?.${property.name}?.id}\"></g:select>"
+            return "<g:select optionKey=\"id\" from=\"\${${property.type.name}.list()}\" name='${property.name}.id' value=\"\${${domainClass.propertyName}?.${property.name}?.id}\" ${renderNoSelection(property)}></g:select>"
         }
     }
 
@@ -184,10 +184,7 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator  {
         }
         else {
             if(cp.range) {
-                return "<g:select from='\${${cp.range.from}..${cp.range.to}}' id='${property.name}' name='${property.name}' value=\"\${${domainClass.propertyName}?.${property.name}}\"></g:select>"
-            }
-            else if(cp.size) {
-                return "<g:select from='\${${cp.size.from}..${cp.size.to}}' id='${property.name}' name='${property.name}' value=\"\${${domainClass.propertyName}?.${property.name}}\"></g:select>"
+                return "<g:select from='\${${cp.range.from}..${cp.range.to}}' id='${property.name}' name='${property.name}' value=\"\${${domainClass.propertyName}?.${property.name}}\" ${renderNoSelection(property)}></g:select>"
             }
             else {
                 return "<input type='text' id='${property.name}' name='${property.name}' value=\"\${${domainClass.propertyName}?.${property.name}}\" />"
@@ -226,13 +223,12 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator  {
           }
           else {
             def buf = new StringBuffer('<g:datePicker ')
-            if(cp.widget) buf << "widget='${cp.widget}' ";
-
-            if(cp.format) buf << "format='${cp.format}' ";
+            if(cp.widget) buf << "widget='${cp.widget}' "
+            if(cp.format) buf << "format='${cp.format}' "
             cp.attributes.each { k,v ->
                   buf << "${k}=\"${v}\" "
             }
-            buf << "name='${property.name}' value=\"\${${domainClass.propertyName}?.${property.name}}\"></g:datePicker>"
+            buf << "name='${property.name}' value=\"\${${domainClass.propertyName}?.${property.name}}\" ${renderNoSelection(property)}></g:datePicker>"
             return buf.toString()
           }
         }
@@ -249,13 +245,22 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator  {
             cp.attributes.each { k,v ->
                   buf << "${k}=\"${v}\" "
             }
-            buf << "name='${property.name}' value=\"\${${domainClass.propertyName}?.${property.name}}\"></g:${type}Select>"
+            buf << "name='${property.name}' value=\"\${${domainClass.propertyName}?.${property.name}}\" ${renderNoSelection(property)}></g:${type}Select>"
             return buf.toString()
         }
     }
 
-
-
+	private renderNoSelection(property) {
+		if(property.optional) {
+			if(property.manyToOne) {
+				return "noSelection=\"['null':'']\""				
+			}
+			else {
+				return "noSelection=\"['':'']\""
+			}
+		}
+		return ""
+	}
 
     private generateListView(domainClass, destDir) {
         def listFile = new File("${destDir}/list.gsp")
