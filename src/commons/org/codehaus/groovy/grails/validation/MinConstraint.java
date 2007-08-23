@@ -71,12 +71,7 @@ class MinConstraint extends AbstractConstraint {
         return ConstrainedProperty.MIN_CONSTRAINT;
     }
 
-
     protected void processValidate(Object target, Object propertyValue, Errors errors)		{
-        if(propertyValue == null) {
-            return; // A null is not a value we should even check
-        }
-
         if(minValue.compareTo(propertyValue) > 0) {
             Object[] args = new Object[] { constraintPropertyName, constraintOwningClass, propertyValue, minValue  };
             super.rejectValue(target,errors,ConstrainedProperty.DEFAULT_INVALID_MIN_MESSAGE_CODE, ConstrainedProperty.MIN_CONSTRAINT + ConstrainedProperty.NOTMET_SUFFIX,args);

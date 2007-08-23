@@ -72,10 +72,6 @@ class MaxConstraint extends AbstractConstraint {
 
 
     protected void processValidate(Object target, Object propertyValue, Errors errors) {
-        if(propertyValue == null) {
-            return; // A null is not a value we should even check
-        }
-
         if(maxValue.compareTo(propertyValue) < 0) {
             Object[] args = new Object[] { constraintPropertyName, constraintOwningClass, propertyValue, maxValue  };
             super.rejectValue(target,errors,ConstrainedProperty.DEFAULT_INVALID_MAX_MESSAGE_CODE,ConstrainedProperty.MAX_CONSTRAINT + ConstrainedProperty.EXCEEDED_SUFFIX,args);

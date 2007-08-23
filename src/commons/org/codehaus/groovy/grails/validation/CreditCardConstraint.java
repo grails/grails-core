@@ -31,10 +31,6 @@ class CreditCardConstraint extends AbstractConstraint {
 
 
     protected void processValidate(Object target, Object propertyValue, Errors errors) {
-        if(propertyValue == null) {
-            return; // A null is not a value we should even check
-        }
-
         if(creditCard) {
             CreditCardValidator validator = new CreditCardValidator();
 

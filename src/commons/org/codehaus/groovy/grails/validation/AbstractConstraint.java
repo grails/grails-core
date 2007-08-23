@@ -81,7 +81,23 @@ public abstract class AbstractConstraint implements Constraint {
         if(constraintParameter == null)
             throw new IllegalStateException("Property 'constraintParameter' must be set on the constraint");
 
+        if( propertyValue == null ) {
+            if( skipNullValues() ) return;
+        } else if ("".equals( propertyValue.toString() ) ) {
+            if( skipEmptyStrings() ) return;
+        }
+
         processValidate(target, propertyValue, errors);
+    }
+
+    protected boolean skipNullValues() {
+        // a null is not a value we should even check in most cases
+        return true;
+    }
+
+    protected boolean skipEmptyStrings() {
+        // an empty string is not a value we should even check in most cases
+        return true;
     }
 
     public void rejectValue(Object target,Errors errors, String defaultMessageCode, Object[] args) {

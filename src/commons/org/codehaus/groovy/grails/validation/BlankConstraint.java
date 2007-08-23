@@ -59,12 +59,11 @@ class BlankConstraint extends AbstractConstraint {
         return ConstrainedProperty.BLANK_CONSTRAINT;
     }
 
+    protected boolean skipEmptyStrings() {
+        return false;
+    }
+
     protected void processValidate(Object target, Object propertyValue, Errors errors) {
-
-        if(propertyValue == null) {
-            return; // A null is not a value we should even check
-        }
-
         if(!blank) {
             if(propertyValue instanceof String) {
                 if(StringUtils.isBlank((String)propertyValue)) {

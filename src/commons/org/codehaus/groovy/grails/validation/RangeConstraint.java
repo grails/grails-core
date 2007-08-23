@@ -63,10 +63,6 @@ class RangeConstraint extends AbstractConstraint {
     }
 
     protected void processValidate(Object target, Object propertyValue, Errors errors) {
-        if(propertyValue == null) {
-            return; // A null is not a value we should even check
-        }
-
         if(!this.range.contains(propertyValue)) {
             Object[] args = new Object[] { constraintPropertyName, constraintOwningClass, propertyValue, range.getFrom(), range.getTo()  };
 
@@ -76,8 +72,6 @@ class RangeConstraint extends AbstractConstraint {
             else if(range.getTo().compareTo(propertyValue) == -1) {
                 super.rejectValue(target,errors,ConstrainedProperty.DEFAULT_INVALID_RANGE_MESSAGE_CODE, ConstrainedProperty.SIZE_CONSTRAINT + ConstrainedProperty.TOOBIG_SUFFIX,args );
             }
-
-
         }
     }
 }

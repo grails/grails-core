@@ -55,10 +55,6 @@ class UrlConstraint extends AbstractConstraint {
     }
 
     protected void processValidate(Object target, Object propertyValue, Errors errors) {
-        if(propertyValue == null) {
-            return; // A null is not a value we should even check
-        }
-
         if(url) {
             UrlValidator urlValidator = new UrlValidator(UrlValidator.ALLOW_ALL_SCHEMES + UrlValidator.ALLOW_2_SLASHES);
 

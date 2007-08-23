@@ -31,13 +31,11 @@ class EmailConstraint extends AbstractConstraint {
     private boolean email;
 
 
-
     /* (non-Javadoc)
      * @see org.codehaus.groovy.grails.validation.Constraint#supports(java.lang.Class)
      */
     public boolean supports(Class type) {
         return type != null && String.class.isAssignableFrom(type);
-
     }
 
     /* (non-Javadoc)
@@ -56,10 +54,6 @@ class EmailConstraint extends AbstractConstraint {
     }
 
     protected void processValidate(Object target, Object propertyValue, Errors errors) {
-        if(propertyValue == null) {
-            return; // A null is not a value we should even check
-        }
-
         if(email) {
             EmailValidator emailValidator = EmailValidator.getInstance();
             Object[] args = new Object[] { constraintPropertyName, constraintOwningClass, propertyValue };

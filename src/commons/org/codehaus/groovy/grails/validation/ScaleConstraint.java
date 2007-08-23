@@ -109,27 +109,25 @@ class ScaleConstraint extends AbstractConstraint {
      *      java.lang.Object, org.springframework.validation.Errors)
      */
     protected void processValidate(Object target, Object propertyValue, Errors errors) {
-        if (propertyValue != null) {
-            BigDecimal bigDecimal;
+        BigDecimal bigDecimal;
 
-            BeanWrapper bean = new BeanWrapperImpl(target);
+        BeanWrapper bean = new BeanWrapperImpl(target);
 
-            if (propertyValue instanceof Float) {
-                bigDecimal = new BigDecimal(propertyValue.toString());
-                bigDecimal = getScaledValue(bigDecimal);
-                bean.setPropertyValue(this.getPropertyName(), new Float(bigDecimal.floatValue()));
-            } else if (propertyValue instanceof Double) {
-                bigDecimal = new BigDecimal(propertyValue.toString());
-                bigDecimal = getScaledValue(bigDecimal);
-                bean.setPropertyValue(this.getPropertyName(), new Double(bigDecimal.doubleValue()));
-            } else if (propertyValue instanceof BigDecimal) {
-                bigDecimal = (BigDecimal) propertyValue;
-                bigDecimal = getScaledValue(bigDecimal);
-                bean.setPropertyValue(this.getPropertyName(), bigDecimal);
-            } else {
-                throw new IllegalArgumentException("Unsupported type detected in constraint [" + this.getName()
-                        + "] of property [" + constraintPropertyName + "] of class [" + constraintOwningClass + "]");
-            }
+        if (propertyValue instanceof Float) {
+            bigDecimal = new BigDecimal(propertyValue.toString());
+            bigDecimal = getScaledValue(bigDecimal);
+            bean.setPropertyValue(this.getPropertyName(), new Float(bigDecimal.floatValue()));
+        } else if (propertyValue instanceof Double) {
+            bigDecimal = new BigDecimal(propertyValue.toString());
+            bigDecimal = getScaledValue(bigDecimal);
+            bean.setPropertyValue(this.getPropertyName(), new Double(bigDecimal.doubleValue()));
+        } else if (propertyValue instanceof BigDecimal) {
+            bigDecimal = (BigDecimal) propertyValue;
+            bigDecimal = getScaledValue(bigDecimal);
+            bean.setPropertyValue(this.getPropertyName(), bigDecimal);
+        } else {
+            throw new IllegalArgumentException("Unsupported type detected in constraint [" + this.getName()
+                    + "] of property [" + constraintPropertyName + "] of class [" + constraintOwningClass + "]");
         }
     }
 

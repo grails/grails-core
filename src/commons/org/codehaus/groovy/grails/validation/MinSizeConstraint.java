@@ -70,23 +70,20 @@ class MinSizeConstraint extends AbstractConstraint {
     protected void processValidate(Object target, Object propertyValue, Errors errors) {
         Object[] args = new Object[] { constraintPropertyName, constraintOwningClass, propertyValue, new Integer(minSize) };
 
-        // A null is not a value we should even check
-        if(propertyValue != null) {
-            if(propertyValue.getClass().isArray()) {
-                int length = Array.getLength( propertyValue );
-                if(length < minSize) {
-                    super.rejectValue(target,errors,ConstrainedProperty.DEFAULT_INVALID_MIN_SIZE_MESSAGE_CODE, ConstrainedProperty.MIN_SIZE_CONSTRAINT + ConstrainedProperty.NOTMET_SUFFIX,args );
-                }
+        if(propertyValue.getClass().isArray()) {
+            int length = Array.getLength( propertyValue );
+            if(length < minSize) {
+                super.rejectValue(target,errors,ConstrainedProperty.DEFAULT_INVALID_MIN_SIZE_MESSAGE_CODE, ConstrainedProperty.MIN_SIZE_CONSTRAINT + ConstrainedProperty.NOTMET_SUFFIX,args );
             }
-            else if(propertyValue instanceof Collection) {
-                if( ((Collection)propertyValue).size() < minSize ) {
-                    super.rejectValue(target,errors,ConstrainedProperty.DEFAULT_INVALID_MIN_SIZE_MESSAGE_CODE, ConstrainedProperty.MIN_SIZE_CONSTRAINT + ConstrainedProperty.NOTMET_SUFFIX,args );
-                }
+        }
+        else if(propertyValue instanceof Collection) {
+            if( ((Collection)propertyValue).size() < minSize ) {
+                super.rejectValue(target,errors,ConstrainedProperty.DEFAULT_INVALID_MIN_SIZE_MESSAGE_CODE, ConstrainedProperty.MIN_SIZE_CONSTRAINT + ConstrainedProperty.NOTMET_SUFFIX,args );
             }
-            else if(propertyValue instanceof String) {
-                if(((String)propertyValue ).length() < minSize) {
-                    super.rejectValue(target,errors,ConstrainedProperty.DEFAULT_INVALID_MIN_SIZE_MESSAGE_CODE,ConstrainedProperty.MIN_SIZE_CONSTRAINT + ConstrainedProperty.NOTMET_SUFFIX,args);
-                }
+        }
+        else if(propertyValue instanceof String) {
+            if(((String)propertyValue ).length() < minSize) {
+                super.rejectValue(target,errors,ConstrainedProperty.DEFAULT_INVALID_MIN_SIZE_MESSAGE_CODE,ConstrainedProperty.MIN_SIZE_CONSTRAINT + ConstrainedProperty.NOTMET_SUFFIX,args);
             }
         }
     }

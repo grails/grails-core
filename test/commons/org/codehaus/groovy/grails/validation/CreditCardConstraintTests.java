@@ -24,11 +24,6 @@ public class CreditCardConstraintTests extends AbstractConstraintTests {
                 new Object[] {"testString", TestClass.class, "1234512"}
         );
 
-        testConstraintFailed(
-                getConstraint( "testString", Boolean.TRUE ),
-                ""
-        );
-
         // too short number
         testConstraintFailed(
                 getConstraint( "testString", Boolean.TRUE ),
@@ -60,6 +55,12 @@ public class CreditCardConstraintTests extends AbstractConstraintTests {
         testConstraintPassed(
                 getConstraint( "testString", Boolean.TRUE ),
                 null
+        );
+
+        // empty string value should always pass validation
+        testConstraintPassed(
+                getConstraint( "testString", Boolean.TRUE ),
+                ""
         );
 
         testConstraintPassed(

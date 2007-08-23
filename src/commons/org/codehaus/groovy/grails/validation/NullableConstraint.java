@@ -57,6 +57,10 @@ class NullableConstraint extends AbstractConstraint {
         return ConstrainedProperty.NULLABLE_CONSTRAINT;
     }
 
+    protected boolean skipNullValues() {
+        return false;
+    }
+    
     protected void processValidate(Object target, Object propertyValue, Errors errors) {
         if(!nullable && propertyValue == null) {
             Object[] args = new Object[] { constraintPropertyName, constraintOwningClass};

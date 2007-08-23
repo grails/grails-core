@@ -69,23 +69,20 @@ class MaxSizeConstraint extends AbstractConstraint {
     protected void processValidate(Object target, Object propertyValue, Errors errors) {
         Object[] args = new Object[] { constraintPropertyName, constraintOwningClass, propertyValue, new Integer(maxSize) };
 
-        // A null is not a value we should even check
-        if(propertyValue != null) {
-            if(propertyValue.getClass().isArray()) {
-                int length = Array.getLength( propertyValue );
-                if(length > maxSize) {
-                    super.rejectValue(target,errors,ConstrainedProperty.DEFAULT_INVALID_MAX_SIZE_MESSAGE_CODE, ConstrainedProperty.MAX_SIZE_CONSTRAINT + ConstrainedProperty.EXCEEDED_SUFFIX,args);
-                }
+        if(propertyValue.getClass().isArray()) {
+            int length = Array.getLength( propertyValue );
+            if(length > maxSize) {
+                super.rejectValue(target,errors,ConstrainedProperty.DEFAULT_INVALID_MAX_SIZE_MESSAGE_CODE, ConstrainedProperty.MAX_SIZE_CONSTRAINT + ConstrainedProperty.EXCEEDED_SUFFIX,args);
             }
-            else if(propertyValue instanceof Collection) {
-                if (((Collection) propertyValue).size() > maxSize) {
-                    super.rejectValue(target,errors,ConstrainedProperty.DEFAULT_INVALID_MAX_SIZE_MESSAGE_CODE, ConstrainedProperty.MAX_SIZE_CONSTRAINT + ConstrainedProperty.EXCEEDED_SUFFIX, args);
-                }
+        }
+        else if(propertyValue instanceof Collection) {
+            if (((Collection) propertyValue).size() > maxSize) {
+                super.rejectValue(target,errors,ConstrainedProperty.DEFAULT_INVALID_MAX_SIZE_MESSAGE_CODE, ConstrainedProperty.MAX_SIZE_CONSTRAINT + ConstrainedProperty.EXCEEDED_SUFFIX, args);
             }
-            else if (propertyValue instanceof String) {
-                if (((String) propertyValue).length() > maxSize) {
-                    super.rejectValue(target,errors, ConstrainedProperty.DEFAULT_INVALID_MAX_SIZE_MESSAGE_CODE, ConstrainedProperty.MAX_SIZE_CONSTRAINT + ConstrainedProperty.EXCEEDED_SUFFIX, args );
-                }
+        }
+        else if (propertyValue instanceof String) {
+            if (((String) propertyValue).length() > maxSize) {
+                super.rejectValue(target,errors, ConstrainedProperty.DEFAULT_INVALID_MAX_SIZE_MESSAGE_CODE, ConstrainedProperty.MAX_SIZE_CONSTRAINT + ConstrainedProperty.EXCEEDED_SUFFIX, args );
             }
         }
     }

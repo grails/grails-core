@@ -28,6 +28,11 @@ public class NullableConstraint2Tests extends AbstractConstraintTests {
                 null
         );
 
+        testConstraintPassed(
+                getConstraint( "testString", Boolean.TRUE ),
+                ""
+        );
+
         testConstraintDefaultMessage(
                 getConstraint( "testString", Boolean.FALSE ),
                 null,

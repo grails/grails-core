@@ -54,6 +54,11 @@ public class SizeConstraintTests extends AbstractConstraintTests{
                 null
         );
 
+        // empty string value should always pass validation
+        testConstraintPassed(
+                getConstraint( "testString", new IntRange(2, 5)),
+                ""
+        );
 
         testConstraintDefaultMessage(
                 getConstraint( "testString", new IntRange( 1, 5 ) ),

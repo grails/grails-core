@@ -45,6 +45,12 @@ public class UrlConstraintTests extends AbstractConstraintTests{
                 null
         );
 
+        // empty string value should always pass validation
+        testConstraintPassed(
+                getConstraint( "testString", Boolean.TRUE ),
+                ""
+        );
+
         testConstraintDefaultMessage(
                 getConstraint( "testURL", Boolean.TRUE ),
                 "wrong_url",

@@ -73,12 +73,7 @@ class SizeConstraint extends AbstractConstraint {
 
 
     protected void processValidate(Object target, Object propertyValue, Errors errors) {
-
         Object[] args = new Object[] { constraintPropertyName, constraintOwningClass, propertyValue, range.getFrom(), range.getTo() };
-
-        if(propertyValue == null) {
-            return; // A null is not a value we should even check
-        }
 
         // size of the property (e.g. String length(), Collection size(), etc.) 
         Integer size = null;

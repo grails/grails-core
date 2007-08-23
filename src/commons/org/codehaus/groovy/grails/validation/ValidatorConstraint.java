@@ -52,6 +52,14 @@ class ValidatorConstraint extends AbstractConstraint {
     private Closure validator;
     private int numValidatorParams;
 
+    protected boolean skipNullValues() {
+        return false;
+    }
+
+    protected boolean skipEmptyStrings() {
+        return false;
+    }
+
     protected void processValidate(Object target, Object propertyValue, Errors errors) {
         if(validator != null) {
 
