@@ -116,7 +116,8 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
             loadedClasses.add(aClass);
         }
         this.allClasses = classes;
-        this.cl = classLoader;
+        this.cl = classLoader; 
+        loadMetadata();
     }
 
 
@@ -134,7 +135,8 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
     public DefaultGrailsApplication(GrailsResourceLoader resourceLoader) {
         this.resourceLoader = resourceLoader;
 
-        try {
+        try {                                                                 
+        	loadMetadata();	
             loadGrailsApplicationFromResources(resourceLoader.getResources());
         } catch (IOException e) {
             throw new GrailsConfigurationException("I/O exception loading Grails: " + e.getMessage(), e);
@@ -281,7 +283,7 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
      */
     private void configureLoadedClasses(Class[] classes) {
         initArtefactHandlers();
-        loadMetadata();
+
 
         artefactInfo.clear();
         allArtefactClasses.clear();
