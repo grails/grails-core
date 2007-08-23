@@ -214,10 +214,6 @@ class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants 
 		def max = params.max?.toInteger()
 		def maxsteps = (attrs.maxsteps ? attrs.maxsteps.toInteger() : 10)
 
-        if(attrs.breadcrumb) {
-			log.warn("Tag [paginate] includes the [breadcrumb] attribute. This attribute is deprecated and will be removed in the future. Please update your code to use the [maxsteps] attribute instead.")
-		}
-
 		if(!offset) offset = (attrs.offset ? attrs.offset.toInteger() : 0)
 		if(!max) max = (attrs.max ? attrs.max.toInteger() : 10)
 
