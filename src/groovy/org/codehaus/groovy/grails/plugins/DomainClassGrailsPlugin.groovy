@@ -25,7 +25,8 @@ import org.codehaus.groovy.grails.commons.GrailsDomainClass
 import org.springframework.beans.BeanUtils
 import org.springframework.validation.Errors
 import org.springframework.validation.BindException
-import org.codehaus.groovy.runtime.metaclass.ThreadManagedMetaBeanProperty
+import org.codehaus.groovy.runtime.metaclass.ThreadManagedMetaBeanProperty    
+import org.springframework.web.context.request.RequestContextHolder as RCH       
 
 /**
 * A plug-in that configures the domain classes in the spring context
@@ -37,7 +38,7 @@ class DomainClassGrailsPlugin {
 	
 	def version = grails.util.GrailsUtil.getGrailsVersion()
 	def dependsOn = [i18n:version]
-	def loadAfter = ['hibernate']
+	def loadAfter = ['hibernate', 'controllers']
 	
 	def doWithSpring = {
 		for(dc in application.domainClasses) {
@@ -78,9 +79,19 @@ class DomainClassGrailsPlugin {
             
             metaClass.'static'.create = {-> BeanUtils.instantiateClass(domainClass.getClazz()) }
             metaClass.hasErrors = {-> delegate.errors?.hasErrors() }
-            metaClass.errors = new ThreadManagedMetaBeanProperty(domainClass.clazz, "errors", Errors, { 
-                object -> object ? new BindException( object, object.getClass().getName()) : null
-            })
+			if(manager.hasGrailsPlugin("controllers")) {
+				metaClass.getErrors = {->
+				     RCH.currentRequestAttributes().currentRequest["org.codehaus.groovy.grails.ERRORS_${delegate.class.name}_${System.identityHashCode(delegate)}"]
+			   	}                                                                                                          
+				metaClass.setErrors = { Errors errors ->
+					RCH.currentRequestAttributes().currentRequest["org.codehaus.groovy.grails.ERRORS_${delegate.class.name}_${System.identityHashCode(delegate)}"] = errors
+			    }
+			}   
+			else {
+				metaClass.errors = new ThreadManagedMetaBeanProperty(domainClass.clazz, "errors", Errors, { 
+	                object -> object ? new BindException( object, object.getClass().getName()) : null
+	            })
+			}
         }
 	}
 }
