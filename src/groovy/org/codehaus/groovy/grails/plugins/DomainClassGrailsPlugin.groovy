@@ -63,7 +63,9 @@ class DomainClassGrailsPlugin {
 
 		}
 	}
-
+          
+	static final PROPERTY_INSTANCE_MAP = new org.codehaus.groovy.grails.support.SoftThreadLocalMap()	
+	
 	def doWithDynamicMethods = { ctx->
         for(GrailsDomainClass dc in application.domainClasses) {
 			def domainClass = dc
@@ -79,19 +81,25 @@ class DomainClassGrailsPlugin {
             
             metaClass.'static'.create = {-> BeanUtils.instantiateClass(domainClass.getClazz()) }
             metaClass.hasErrors = {-> delegate.errors?.hasErrors() }
-			if(manager.hasGrailsPlugin("controllers")) {
-				metaClass.getErrors = {->
-				     RCH.currentRequestAttributes().currentRequest["org.codehaus.groovy.grails.ERRORS_${delegate.class.name}_${System.identityHashCode(delegate)}"]
-			   	}                                                                                                          
-				metaClass.setErrors = { Errors errors ->
-					RCH.currentRequestAttributes().currentRequest["org.codehaus.groovy.grails.ERRORS_${delegate.class.name}_${System.identityHashCode(delegate)}"] = errors
-			    }
-			}   
-			else {
-				metaClass.errors = new ThreadManagedMetaBeanProperty(domainClass.clazz, "errors", Errors, { 
-	                object -> object ? new BindException( object, object.getClass().getName()) : null
-	            })
-			}
+			metaClass.getErrors = {->      
+				def request = RCH.getRequestAttributes()?.currentRequest
+				def errors
+				def storage = request ? request : PROPERTY_INSTANCE_MAP.get()
+				def key = "org.codehaus.groovy.grails.ERRORS_${delegate.class.name}_${System.identityHashCode(delegate)}"
+				errors = storage[key]
+				if(!errors) {
+					errors =  new BindException( delegate, delegate.getClass().getName())
+					storage[key] = errors
+				}					
+				errors
+		   	}                                                                                                          
+			metaClass.setErrors = { Errors errors -> 
+				def request = RCH.getRequestAttributes()?.currentRequest
+				def storage = request ? request : PROPERTY_INSTANCE_MAP.get()
+				def key = "org.codehaus.groovy.grails.ERRORS_${delegate.class.name}_${System.identityHashCode(delegate)}"
+				storage[key] = errors
+		    }
+
         }
 	}
 }
