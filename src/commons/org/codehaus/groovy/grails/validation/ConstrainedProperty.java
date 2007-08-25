@@ -209,6 +209,10 @@ public class ConstrainedProperty   {
         constraints.put(name, factory);
     }
 
+    public static boolean hasRegisteredConstraint( String constraintName ) {
+        return constraints.containsKey( constraintName );
+    }
+
 
     /**
      * @return Returns the appliedConstraints.

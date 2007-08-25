@@ -68,7 +68,10 @@ public class ConstrainedPropertyBuilder extends BuilderSupport {
 				if(cp.supportsContraint(constraintName)) {
 					cp.applyConstraint(constraintName, attributes.get(constraintName));
 				} else {
-                    GrailsUtil.warn( "Property [" + cp.getPropertyName() + "] of type [" + cp.getPropertyType().getName() + "] doesn't support constraint [" + constraintName + "]. This constraint will not be checked during validation." );
+                    if( ConstrainedProperty.hasRegisteredConstraint( constraintName ) ) {
+                        // constraint is registered but doesn't support this property's type
+                        GrailsUtil.warn( "Property [" + cp.getPropertyName() + "] of domain class " + this.target.getClass().getName() + " has type [" + cp.getPropertyType().getName() + "] and doesn't support constraint [" + constraintName + "]. This constraint will not be checked during validation." );
+                    }
                 }
 			}				
 			return cp;
