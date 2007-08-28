@@ -27,7 +27,7 @@ import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
 Ant.property(environment:"env")       
 grailsHome = Ant.antProject.properties."env.GRAILS_HOME"   
 
-includeTargets << new File ( "${grailsHome}/scripts/Init.groovy" )
+includeTargets << new File ( "${grailsHome}/scripts/CreateApp.groovy" )
 
 task( upgrade: "main upgrade task") {
 
@@ -79,6 +79,7 @@ move it to the new location of '${basedir}/test/integration'. Please move the di
 			
 		}
         delete(dir:"${basedir}/tmp", failonerror:false)
+		createIDESupportFiles()
 		copy(todir:"${basedir}/web-app") {
 			fileset(dir:"${grailsHome}/src/war") {
 				include(name:"**/**")

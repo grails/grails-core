@@ -63,9 +63,9 @@ task( createIDESupportFiles: "Creates the IDE suppot files (Eclipse, TextMate et
 	}   
 	Ant.copy(todir:"${basedir}", file:"${grailsHome}/src/grails/build.xml") 
 	Ant.copy(file:"${grailsHome}/src/grails/templates/ide-support/eclipse/.launch", 
-			tofile:"${basedir}/${grailsAppName}.launch")     
+			tofile:"${basedir}/${grailsAppName}.launch", overwrite:true)     
 	Ant.copy(file:"${grailsHome}/src/grails/templates/ide-support/textmate/project.tmproj", 
-			tofile:"${basedir}/${grailsAppName}.tmproj")    		
+			tofile:"${basedir}/${grailsAppName}.tmproj", overwrite:true)    		
 			
 			
 	Ant.replace(dir:"${basedir}",includes:"**/*.*", 
