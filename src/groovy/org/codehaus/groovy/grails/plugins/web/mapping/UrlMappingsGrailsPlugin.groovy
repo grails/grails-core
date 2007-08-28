@@ -18,12 +18,16 @@ package org.codehaus.groovy.grails.plugins.web.mapping;
 import grails.util.GrailsUtil
 import org.codehaus.groovy.grails.web.mapping.*
 import org.codehaus.groovy.grails.commons.*
+import org.springframework.context.ApplicationContext
+import org.springframework.aop.target.HotSwappableTargetSource
+import org.springframework.aop.framework.ProxyFactoryBean
+
 /**
- * A plug-in that handles the configuration of URL mappings for Grails
- *
- * @author Graeme Rocher
- * @since 0.4
- */
+* A plug-in that handles the configuration of URL mappings for Grails
+*
+* @author Graeme Rocher
+* @since 0.4
+*/
 class UrlMappingsGrailsPlugin {
 
 	def watchedResources = ["file:./grails-app/conf/*UrlMappings.groovy"]
@@ -32,24 +36,31 @@ class UrlMappingsGrailsPlugin {
 	def dependsOn = [core:version]
                                 
 	def doWithSpring = {
-		grailsUrlMappingsHolder(UrlMappingsHolderFactoryBean) {
+		grailsUrlMappingsHolderBean(UrlMappingsHolderFactoryBean) {
             grailsApplication = ref("grailsApplication", true)
-        }		
-	}   
-	
-    def doWithApplicationContext = { ctx ->
-        def beans = beans {
-            grailsUrlMappingsHolder(UrlMappingsHolderFactoryBean) {
-                grailsApplication = ref("grailsApplication", true)
-            }
         }
-        ctx.registerBeanDefinition(UrlMappingsHolder.BEAN_ID, beans.getBeanDefinition(UrlMappingsHolder.BEAN_ID))	
+        urlMappingsTargetSource(org.springframework.aop.target.HotSwappableTargetSource, grailsUrlMappingsHolderBean)
+        grailsUrlMappingsHolder(ProxyFactoryBean) {
+            targetSource = urlMappingsTargetSource
+            proxyInterfaces = [org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder]
+        }
+	}
+
+    def doWithApplicationContext = { ApplicationContext ctx ->
+        def beans = beans(doWithSpring)
+        beans.registerBeans(ctx)        	
 	}
 	
 	def onChange = { event ->
 	    if(application.isUrlMappingsClass(event.source)) {
 	        application.addArtefact( UrlMappingsArtefactHandler.TYPE, event.source )	        
-			doWithApplicationContext(event.ctx)
+
+			def factory = new UrlMappingsHolderFactoryBean(grailsApplication:application)
+			factory.afterPropertiesSet()
+			def mappings = factory.getObject()
+
+			HotSwappableTargetSource ts = event.ctx.getBean("urlMappingsTargetSource")
+			ts.swap mappings			
         }
 	}
 }

@@ -25,11 +25,15 @@ package org.codehaus.groovy.grails.plugins.web.taglib
 import org.springframework.validation.Errors;
 import org.springframework.context.NoSuchMessageException;
 import org.springframework.web.servlet.support.RequestContextUtils as RCU;
-import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU;
+import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
+import org.springframework.context.ApplicationContextAware
+import org.springframework.context.ApplicationContext;
 
-class ApplicationTagLib { 
-	
-	def grailsUrlMappingsHolder
+class ApplicationTagLib implements ApplicationContextAware {
+
+    ApplicationContext applicationContext
+
+    def grailsUrlMappingsHolder
 
     /**
      * Creates a link to a resource, generally used as a method rather than a tag.
@@ -100,7 +104,8 @@ class ApplicationTagLib {
 		}
         def url
         if(id != null) params.id = id
-        def mapping = grailsUrlMappingsHolder.getReverseMapping(controller,action,params)
+        def urlMappings = applicationContext.getBean("grailsUrlMappingsHolder")
+        def mapping = urlMappings.getReverseMapping(controller,action,params)
         url = mapping.createURL(controller, action, params, request.characterEncoding)
         out << response.encodeURL(url)
     }
