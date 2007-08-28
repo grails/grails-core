@@ -12,6 +12,7 @@ import org.codehaus.groovy.grails.web.servlet.*
 import org.springframework.mock.web.*
 import org.springframework.validation.*
 import org.springframework.web.servlet.*
+import org.springframework.context.*
 import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 import org.springframework.web.servlet.DispatcherServlet;
 import org.springframework.web.servlet.i18n.AcceptHeaderLocaleResolver;
@@ -61,6 +62,9 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
 	        if(go.properties.containsKey("grailsUrlMappingsHolder"))   {
 	            go.grailsUrlMappingsHolder = appCtx.grailsUrlMappingsHolder
             }
+			if(go instanceof ApplicationContextAware) {
+				go.applicationContext = appCtx
+			}
 	        def webRequest = RequestContextHolder.currentRequestAttributes()
 
 	        webRequest.out = out
