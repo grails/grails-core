@@ -1112,66 +1112,83 @@ public final class GrailsDomainBinder {
 		prop.setUpdateable(true);
 		prop.setPropertyAccessorName( mappings.getDefaultAccess() );
 		prop.setOptional( grailsProperty.isOptional() );
-		// set to cascade all for the moment
-		if(grailsProperty.isAssociation()) {
+        String cascadeStrategy = "none";
+        // set to cascade all for the moment
+        GrailsDomainClass domainClass = grailsProperty.getDomainClass();
+        if(grailsProperty.isAssociation()) {
+            GrailsDomainClass referenced = grailsProperty.getReferencedDomainClass();
 
-            // for a one-to-many relationship we cascade all updates if it is the owning side
-            // otherwise we cascade only saves and updates
-            if(grailsProperty.isOneToMany()) {
-                if(grailsProperty.isOwningSide())
-                    prop.setCascade(CASCADE_ALL);
+            if(grailsProperty.isOneToOne()) {
+                if(referenced!=null&&referenced.isOwningClass(domainClass.getClazz()))
+                    cascadeStrategy = CASCADE_ALL;
+            }
+            else if(grailsProperty.isOneToMany()) {
+                if(referenced!=null&&referenced.isOwningClass(domainClass.getClazz()))
+                    cascadeStrategy = CASCADE_ALL;
                 else
-                    prop.setCascade(CASCADE_SAVE_UPDATE);
+                    cascadeStrategy = CASCADE_SAVE_UPDATE;
             }
-            // for many-to-many relationships we only cascade saves and updates from the owning side
             else if(grailsProperty.isManyToMany()) {
-            	if(grailsProperty.isOwningSide()) {
-            		prop.setCascade(CASCADE_SAVE_UPDATE);
-            	}
+                if(referenced!=null&&referenced.isOwningClass(domainClass.getClazz()))
+                    cascadeStrategy = CASCADE_SAVE_UPDATE;
             }
-            // in the case of a many-to-one which is implicitly bidirectional we check whether it is the
-            // owning side and if so cascade otherwise only merge to deal with transient or detached instances
             else if(grailsProperty.isManyToOne()) {
-                GrailsDomainClass domainClass = grailsProperty.getDomainClass();
+                if(referenced!=null&&referenced.isOwningClass(domainClass.getClazz()))
+                    cascadeStrategy = CASCADE_ALL;
+                else
+                    cascadeStrategy = CASCADE_MERGE;
+            }
 
-                if(!domainClass.isOwningClass(grailsProperty.getType())) {
-                    prop.setCascade(CASCADE_ALL);
-                }
-                else {
-                    GrailsDomainClassProperty otherSide = grailsProperty.getOtherSide();
-                    if(otherSide != null && otherSide.isOneToMany()) {
-                        prop.setCascade(CASCADE_MERGE);
-                    }
-                    else if(grailsProperty.isOwningSide()) {
-                        prop.setCascade(CASCADE_ALL);
-                    }
-                }
-            }
-            // in a one-to-one we check if it is un-directional and the other side is an owning side and then cascade
-            // otherwise if is the ownside we cascade all
-            else if(grailsProperty.isOneToOne()) {
-                GrailsDomainClass domainClass = grailsProperty.getDomainClass();
-                if(!grailsProperty.isBidirectional() && domainClass.isOwningClass(grailsProperty.getType())) {
-                    prop.setCascade(CASCADE_ALL);
-                }
-                else if(grailsProperty.isOwningSide()) {
-                    prop.setCascade(CASCADE_ALL);
-                }
-            }
+            logCascadeMapping(grailsProperty, cascadeStrategy, referenced);
+            prop.setCascade(cascadeStrategy);
         }
         else if( Map.class.isAssignableFrom(grailsProperty.getType())) {
-            prop.setCascade(CASCADE_ALL);
+            GrailsDomainClass referenced = grailsProperty.getReferencedDomainClass();
+            if(referenced!=null&&referenced.isOwningClass(grailsProperty.getDomainClass().getClazz())) {
+                cascadeStrategy = CASCADE_ALL;
+            }
+            else {
+                cascadeStrategy = CASCADE_SAVE_UPDATE;
+            }
+            logCascadeMapping(grailsProperty, cascadeStrategy, referenced);
+            prop.setCascade(cascadeStrategy);
+
         }
 
 
-        if(LOG.isTraceEnabled())
-            LOG.trace( "[GrailsDomainBinder] Set cascading strategy on property ["+grailsProperty.getName()+"] to ["+prop.getCascade()+"]" );
         // lazy to true
 		prop.setLazy(true);
 		
 	}
 
-	/**
+    private static void logCascadeMapping(GrailsDomainClassProperty grailsProperty, String cascadeStrategy, GrailsDomainClass referenced) {
+        if(LOG.isDebugEnabled()) {
+            String assType = getAssociationDescription(grailsProperty);
+            LOG.debug("Mapping cascade strategy for "+assType+" property "+grailsProperty.getDomainClass().getFullName()+"." + grailsProperty.getName() + " referencing type ["+referenced.getClazz()+"] -> [CASCADE: "+cascadeStrategy+"]");
+        }
+    }
+
+    private static String getAssociationDescription(GrailsDomainClassProperty grailsProperty) {
+        String assType = "unknown";
+        if(grailsProperty.isManyToMany()) {
+            assType = "many-to-many";
+        }
+        else if(grailsProperty.isOneToMany()) {
+            assType = "one-to-many";
+        }
+        else if(grailsProperty.isOneToOne()) {
+            assType = "one-to-one";
+        }
+        else if(grailsProperty.isManyToOne()) {
+            assType = "many-to-one";
+        }
+        else if(grailsProperty.isEmbedded()) {
+            assType = "embedded";
+        }
+        return assType;
+    }
+
+    /**
 w	 * Binds a simple value to the Hibernate metamodel. A simple value is 
 	 * any type within the Hibernate type system
 	 * 
