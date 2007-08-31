@@ -1,4 +1,4 @@
-Grails, release 0.5 (April 2007)
+Grails, release 0.6 (August 2007)
 --------------------------------------------------
 http://grails.org
 
@@ -96,7 +96,9 @@ There are some unavoidable issues that may affect you when upgrading to 0.5 from
       ...    
    }
 
-6. Note the deprecation warnings you see in your console, these need to be tackled prior to 0.6 where these old features will be removed.
+6. Note the deprecation warnings you see in your console, these need to be tackled prior to 0.6 where these old features will be removed.  
+
+7. The DataSource and Log4j mechanisms have changed. There were previously 3 *DataSource.groovy files inside grails-app/conf. There is now only a single DataSource.groovy file which contains all configurations for all environments. Log4j is no longer configured with log4j properties files but instead with the global configuration Groovy script. See grails-app/conf/Config.groovy.
 
 =============================================================================
 Enjoy working with Grails.
