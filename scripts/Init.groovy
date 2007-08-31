@@ -440,6 +440,8 @@ void setClasspath() {
     populateRootLoader(rootLoader, jarFiles)      
   
 	rootLoader?.addURL(new File("${basedir}/grails-app/conf/hibernate").toURL())
+	rootLoader?.addURL(new File("${basedir}/src/java").toURL())	
+	
    	parentLoader = getClass().getClassLoader()
     classpathSet = true
 
