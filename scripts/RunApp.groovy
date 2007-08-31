@@ -34,7 +34,8 @@ import org.codehaus.groovy.tools.RootLoader
 Ant.property(environment:"env")
 grailsHome = Ant.antProject.properties."env.GRAILS_HOME"
 grailsServer = null
-grailsContext = null
+grailsContext = null 
+autoRecompile = System.getProperty("disable.auto.recompile") ? !(System.getProperty("disable.auto.recompile").toBoolean()) : true
 
 
 includeTargets << new File ( "${grailsHome}/scripts/Package.groovy" )
@@ -63,8 +64,7 @@ task ( runApp : "Main implementation that executes a Grails application") {
 }
 task( watchContext: "Watches the WEB-INF/classes directory for changes and restarts the server if necessary") {
     long lastModified = classesDir.lastModified()
-    while(true) {
-
+    while(true && autoRecompile) {
         try {
 	        Ant.groovyc(destdir:classesDirPath,
 	                    classpathref:"grails.classpath",
