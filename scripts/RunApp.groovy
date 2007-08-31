@@ -103,7 +103,7 @@ task( watchContext: "Watches the WEB-INF/classes directory for changes and resta
                lastModified = classesDir.lastModified()
             }
         }
-        sleep(1000)
+        sleep(2500)
     }
 }
 
