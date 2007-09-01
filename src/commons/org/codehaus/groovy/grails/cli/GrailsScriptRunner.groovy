@@ -110,8 +110,13 @@ Grails home is set to: ${grailsHome}
                 System.setProperty("grails.cli.args", allArgs[currentParamIndex..-1].join("\n"))
             }
 
-            if(!new File(baseDir.absolutePath, "grails-app").exists() && (!['CreateApp','CreatePlugin','PackagePlugin','Help','ListPlugins','PluginInfo','SetProxy'].contains(scriptName))) {
+            def scriptsAllowedOutsideProject = ['CreateApp','CreatePlugin','PackagePlugin','Help','ListPlugins','PluginInfo','SetProxy']
+            if(!new File(baseDir.absolutePath, "grails-app").exists() && (!scriptsAllowedOutsideProject.contains(scriptName))) {
             	println "${baseDir.absolutePath} does not appear to be part of a Grails application."
+            	println 'The following commands are supported outside of a project:'
+            	scriptsAllowedOutsideProject.sort().each {
+                    println "\t${GCU.getScriptName(it)}"
+                }
             	println "Run 'grails help' for a complete list of available scripts."
             	println 'Exiting.'
             	System.exit(-1)
