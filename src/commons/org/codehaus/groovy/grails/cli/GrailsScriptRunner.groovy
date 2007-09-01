@@ -111,7 +111,9 @@ Grails home is set to: ${grailsHome}
             }
 
             if(!new File(baseDir.absolutePath, "grails-app").exists() && (!['CreateApp','CreatePlugin','PackagePlugin','Help','ListPlugins','PluginInfo','SetProxy'].contains(scriptName))) {
-            	println "${baseDir.absolutePath} does not appear to be part of a Grails application.  Exiting."
+            	println "${baseDir.absolutePath} does not appear to be part of a Grails application."
+            	println "Run 'grails help' for a complete list of available scripts."
+            	println 'Exiting.'
             	System.exit(-1)
             }
             
@@ -199,6 +201,7 @@ Grails home is set to: ${grailsHome}
 		}
 		else {
 			println "Script $scriptName not found."
+            println "Run 'grails help' for a complete list of available scripts."
 		}    		
 	}
 	
