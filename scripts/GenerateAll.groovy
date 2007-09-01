@@ -63,8 +63,8 @@ task(generateAll:"The implementation task") {
 	
 
 	grailsApp.initialise()
-	def name = args.trim()
-	def domainClass = grailsApp.getDomainClass(name)  
+	def name = GCU.getClassNameRepresentation(args.trim())
+    def domainClass = grailsApp.getDomainClass(name)
 	
 	if(!domainClass) {
    		println "Domain class not found in grails-app/domain, trying hibernate mapped classes..."		
