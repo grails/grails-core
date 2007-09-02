@@ -32,6 +32,9 @@ public interface GrailsDomainClass extends GrailsClass {
 	 * The name of the default ORM implementation used to map the class
 	 */
 	String GORM = "GORM";
+    
+    String WITH_TABLE = "withTable";
+    String ORM_MAPPING = "mapping";
 
     /**
      * @param domainClass

@@ -74,7 +74,7 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
         this.propertyMap = new TreeMap();
         this.relationshipMap = getAssociationMap();
         this.embedded = getEmbeddedList();
-        this.tableName = (String)getPropertyOrStaticPropertyOrFieldValue(GrailsDomainClassProperty.WITH_TABLE, String.class);
+        this.tableName = (String)getPropertyOrStaticPropertyOrFieldValue(WITH_TABLE, String.class);
 
         // get mapping strategy by setting
         if(getPropertyOrStaticPropertyOrFieldValue(GrailsDomainClassProperty.MAPPING_STRATEGY, String.class) != null)
@@ -119,7 +119,8 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
         // details.  this will likely be pulled out and cleaned up as more of the
         // dsl is filled in.
         Closure ormMappingClosure = (Closure)getPropertyOrStaticPropertyOrFieldValue(
-                GrailsDomainClassProperty.ORM_MAPPING, Closure.class );
+                ORM_MAPPING, Closure.class );
+
         if(ormMappingClosure != null) {
             class OrmMappingDelegate {
                 void withTable(String name) {
