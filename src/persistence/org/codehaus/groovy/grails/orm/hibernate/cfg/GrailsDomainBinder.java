@@ -1282,12 +1282,14 @@ w	 * Binds a simple value to the Hibernate metamodel. A simple value is
 	}
 
     private static String getColumnNameForPropertyAndPath(GrailsDomainClassProperty grailsProp, String path) {
-        String columnName;
-        if(StringHelper.isNotEmpty(path)) {
-            columnName = namingStrategy.propertyToColumnName(path) + UNDERSCORE +  namingStrategy.propertyToColumnName(grailsProp.getName());
-        }
-        else {
-            columnName = namingStrategy.propertyToColumnName(grailsProp.getName());
+        String columnName = grailsProp.getColumnName();
+        if(columnName == null) {
+            if(StringHelper.isNotEmpty(path)) {
+                columnName = namingStrategy.propertyToColumnName(path) + UNDERSCORE +  namingStrategy.propertyToColumnName(grailsProp.getName());
+            }
+            else {
+                columnName = namingStrategy.propertyToColumnName(grailsProp.getName());
+            }
         }
         return columnName;
     }

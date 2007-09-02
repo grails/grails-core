@@ -45,6 +45,7 @@ public class GrailsHibernateDomainClassProperty implements GrailsDomainClassProp
     private GrailsDomainClass referencedDomainClass;
     private GrailsDomainClassProperty otherSide;
     private boolean owingSide;
+    private String columnName;
 
 
     public GrailsHibernateDomainClassProperty(GrailsHibernateDomainClass domainClass, String propertyName) {
@@ -200,6 +201,14 @@ public class GrailsHibernateDomainClassProperty implements GrailsDomainClassProp
 
     public void setOwningSide(boolean b) {
 		this.owingSide = b;
+    }
+
+    public void setColumnName(String columnName) {
+        this.columnName = columnName;
+    }
+
+    public String getColumnName() {
+        return columnName;
     }
 
 }

@@ -145,9 +145,35 @@ class DefaultGrailsDomainClassTests extends GroovyTestCase {
 				}
 				'''	)
 		def ga = new DefaultGrailsApplication(gcl.loadedClasses, gcl)
-		ga.initialise()		
+		ga.initialise()
 		def personClass = ga.getDomainClass('Person')
 		assertNotNull 'person class was null', personClass
 		assertEquals 'person was mapped to the wrong table', 'people', personClass.tableName
+    }
+	void testColumnName() {
+        this.gcl.parseClass('''
+				class Person {
+				    Long id
+				    Long version
+				    String firstName
+				    String lastName
+
+				    static mapping = {
+				        firstName(column:'fname')
+				    }
+				}
+				'''	)
+		def ga = new DefaultGrailsApplication(gcl.loadedClasses, gcl)
+		ga.initialise()
+		def personClass = ga.getDomainClass('Person')
+		assertNotNull 'person class was null', personClass
+
+		def firstNameProperty = personClass.getPropertyByName('firstName')
+		assertNotNull ' firstName property not found', firstNameProperty
+		assertEquals 'firstName property had wrong column name', 'fname', firstNameProperty.columnName
+
+		def lastNameProperty = personClass.getPropertyByName('lastName')
+		assertNotNull ' lastName property not found', lastNameProperty
+		assertNull 'lastName property had wrong column name', lastNameProperty.columnName
     }
 }

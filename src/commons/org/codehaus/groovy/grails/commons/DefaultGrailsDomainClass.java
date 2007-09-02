@@ -17,6 +17,7 @@ package org.codehaus.groovy.grails.commons;
 
 import groovy.lang.Closure;
 import groovy.lang.GroovyObject;
+import groovy.lang.GroovyObjectSupport;
 import org.apache.commons.lang.ClassUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -122,9 +123,22 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
                 ORM_MAPPING, Closure.class );
 
         if(ormMappingClosure != null) {
-            class OrmMappingDelegate {
+            class OrmMappingDelegate extends GroovyObjectSupport {
                 void withTable(String name) {
                     tableName = name;
+                }
+                public Object invokeMethod(String name, Object args) {
+                    GrailsDomainClassProperty property = getPropertyByName(name);
+                    if(property != null) {
+                        if(((Object[])args)[0] instanceof Map) {
+                            Map map = (Map) ((Object[])args)[0];
+                            String columnName = (String) map.get("column");
+                            if(columnName != null) {
+                                property.setColumnName(columnName);
+                            }
+                        }
+                    }
+                    return null;
                 }
             }
             ormMappingClosure.setDelegate(new OrmMappingDelegate());

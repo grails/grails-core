@@ -200,4 +200,16 @@ public interface GrailsDomainClassProperty {
     boolean isEmbedded();
 
     void setOwningSide(boolean b);
+
+    /**
+     *
+     * @param columnName column name for this property
+     */
+    void setColumnName(String columnName);
+
+    /**
+     *
+     * @return column name for this property
+     */
+    String getColumnName();
 }
