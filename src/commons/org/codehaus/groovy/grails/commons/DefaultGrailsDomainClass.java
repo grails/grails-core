@@ -137,8 +137,9 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
                                 property.setColumnName(columnName);
                             }
                         }
+                        return property;
                     }
-                    return null;
+                    return super.invokeMethod(name, args);
                 }
             }
             ormMappingClosure.setDelegate(new OrmMappingDelegate());
