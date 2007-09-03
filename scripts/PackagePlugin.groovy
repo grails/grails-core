@@ -73,14 +73,8 @@ task(packagePlugin:"Implementation task") {
 
     if(!pluginFile) Ant.fail("Plugin file not found for plugin project")
 
-    def cl = Thread.currentThread().getContextClassLoader()
-    def compConfig = new CompilerConfiguration()
-    compConfig.setClasspath("${basedir}/web-app/WEB-INF/classes");
-
-    def gcl = new GroovyClassLoader(cl,compConfig,true)
-
     try {
-        pluginClass = gcl.parseClass(pluginFile)
+        pluginClass = classLoader.loadClass(pluginFile.name[0..-8])
         plugin = pluginClass.newInstance()
     }
     catch(Throwable t) {
