@@ -144,34 +144,41 @@ task( packageApp : "Implementation of package task") {
         if(configFile.lastModified() > logDest.lastModified()) {
 
             def log4jConfig = config.log4j
-        try {
-            if(log4jConfig) {
-                def props = log4jConfig.toProperties("log4j")
-                logDest.withOutputStream { out ->
-                    props.store(out, "Grails' Log4j Configuration")
-                }
-            }
-            else {
-                // default log4j settings
-                logDest <<  '''
-log4j.appender.stdout=org.apache.log4j.ConsoleAppender
-log4j.appender.stdout.layout=org.apache.log4j.PatternLayout
-log4j.rootLogger=error,stdout
-log4j.logger.org.codehaus.groovy.grails.plugins=info,stdout
-log4j.logger.org.codehaus.groovy.grails.commons=info,stdout
-                '''
-            }
-        }
-        catch(Exception e) {
-	        event("StatusFinal", [ "Error creating Log4j config: " + e.message ])
-			exit(1)
-        }
-    }
+	        try {
+	            if(log4jConfig) {
+	                def props = log4jConfig.toProperties("log4j")
+	                logDest.withOutputStream { out ->
+	                    props.store(out, "Grails' Log4j Configuration")
+	                }
+	            }
+	            else {
+	                // default log4j settings
+					createDefaultLog4J(logDest)
+	            }
+	        }
+	        catch(Exception e) {
+		        event("StatusFinal", [ "Error creating Log4j config: " + e.message ])
+				exit(1)
+	        }  
+    	}
+		else if(!logDest.exists()) {
+			createDefaultLog4J(logDest)
+		}
     }
 
     loadPlugins()
     generateWebXml()
 }   
+   
+def createDefaultLog4J(logDest) {
+	logDest <<  '''
+log4j.appender.stdout=org.apache.log4j.ConsoleAppender
+log4j.appender.stdout.layout=org.apache.log4j.PatternLayout
+log4j.rootLogger=error,stdout
+log4j.logger.org.codehaus.groovy.grails.plugins=info,stdout
+log4j.logger.org.codehaus.groovy.grails.commons=info,stdout'''
+	
+}
 
 DEPENDENCIES = [
 "ejb-3.0-persistence.jar",
