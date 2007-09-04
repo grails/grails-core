@@ -79,6 +79,7 @@ abstract class AbstractGrailsControllerTests extends GroovyTestCase {
 		dependentPlugins.each{ mockManager.registerMockPlugin(it); it.manager = mockManager }
 			
 		appCtx = springConfig.getApplicationContext()
+		servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, appCtx)
 
 		mockManager.applicationContext = appCtx
 		servletContext.setAttribute( GrailsApplicationAttributes.APPLICATION_CONTEXT, appCtx)
