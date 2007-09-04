@@ -67,14 +67,12 @@ public class GroovyPageTagBody extends Closure {
 
             if(args!=null) {
                 if(args instanceof Map) {
-                    bodyClosure.setResolveStrategy(Closure.DELEGATE_FIRST);
                     Map delegate = binding.getVariables();
 
                     final Map argMap = (Map) args;
                     delegate.putAll(argMap);
 
                     try {
-                        bodyClosure.setDelegate(delegate);
                         bodyClosure.call(args);
                     } finally {
                         for (Iterator i = argMap.keySet().iterator(); i.hasNext();) {
