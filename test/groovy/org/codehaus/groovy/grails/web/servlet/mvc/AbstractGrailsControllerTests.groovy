@@ -16,6 +16,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.codehaus.groovy.runtime.InvokerHelper;
 import grails.util.*
+import org.springframework.web.context.WebApplicationContext
 
 abstract class AbstractGrailsControllerTests extends GroovyTestCase {
 		
