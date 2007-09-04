@@ -346,6 +346,8 @@ class ControllersGrailsPlugin {
 
 	   	for(taglib in application.tagLibClasses) {
 	   		MetaClass mc = taglib.metaClass
+	   		String namespace = taglib.namespace
+
 	   		registerCommonObjects(mc, application)
 
 	   		mc.throwTagError = { String message ->
@@ -368,7 +370,8 @@ class ControllersGrailsPlugin {
                 def result
                 if(metaProperty) result = metaProperty.getProperty(delegate)
                 else {
-                    def tagName = "${GroovyPage.DEFAULT_NAMESPACE}:$name"
+                    def ns = namespace ? namespace : GroovyPage.DEFAULT_NAMESPACE
+                    def tagName = "${ns}:$name"
 
                     GrailsClass tagLibraryClass = application.getArtefactForFeature(
 	                                                    TagLibArtefactHandler.TYPE, tagName.toString())
@@ -379,7 +382,19 @@ class ControllersGrailsPlugin {
                         mc."${GCU.getGetterName(name)}" = {-> result }
                     }
                     else {
-                        throw new MissingPropertyException(name, delegate.class)
+
+                        // try obtaining reference to tag lib via namespacing
+                        tagLibraryClass = application.getArtefactForFeature(TagLibArtefactHandler.TYPE, name)
+
+                        if(tagLibraryClass) {
+                            def tagLibrary = ctx.getBean(tagLibraryClass.fullName)
+                            result = tagLibrary
+                            mc."${GCU.getGetterName(name)}" = {-> result }
+                        }
+                        else {
+                            throw new MissingPropertyException(name, delegate.class)
+                        }
+
                     }
                 }
                 result
@@ -390,7 +405,8 @@ class ControllersGrailsPlugin {
                 def result
                 if(metaMethod) result = metaMethod.invoke(delegate, args)
                 else if(args.size() > 0 && args[0] instanceof Map) {
-                    def tagName = "${GroovyPage.DEFAULT_NAMESPACE}:$name"
+                    def ns = namespace ? namespace : GroovyPage.DEFAULT_NAMESPACE
+                    def tagName = "${ns}:$name"
                     GrailsClass tagLibraryClass = application.getArtefactForFeature(
 	                                                    TagLibArtefactHandler.TYPE, tagName.toString())
 
@@ -639,6 +655,22 @@ class ControllersGrailsPlugin {
                 }
                 capturedOutput
         }
+        mc."$name" = { ->
+                def webRequest = RCH.currentRequestAttributes()
+                def tagLibrary = ctx.getBean(tagLibraryClass.fullName)
+                def tagBean = new BeanWrapperImpl(tagLibrary)
+
+                def originalOut = webRequest.out
+                def capturedOutput
+                try {
+                    capturedOutput = GroovyPage.captureTagOutput(tagLibrary, name, [:],null, webRequest, tagBean)
+                } finally {
+                    webRequest.out = originalOut
+                }
+                capturedOutput
+        }
+
+
     }
 
 	def onChange = { event -> 

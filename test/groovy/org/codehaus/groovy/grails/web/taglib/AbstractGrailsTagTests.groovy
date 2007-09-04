@@ -24,6 +24,7 @@ import org.codehaus.groovy.runtime.InvokerHelper;
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler
 import org.codehaus.groovy.grails.commons.TagLibArtefactHandler
 import grails.util.*
+import org.springframework.web.context.WebApplicationContext
 
 abstract class AbstractGrailsTagTests extends GroovyTestCase {
 
@@ -105,6 +106,7 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
 		messageSource = new StaticMessageSource()
 		ctx.registerMockBean("manager", mockManager )
 		ctx.registerMockBean("messageSource", messageSource )
+		ctx.registerMockBean("grailsApplication",grailsApplication)
 				
 		def dependantPluginClasses = []
 		dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.CoreGrailsPlugin")
@@ -130,6 +132,8 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
 		dependentPlugins*.doWithRuntimeConfiguration(springConfig)
 
 		appCtx = springConfig.getApplicationContext()
+
+		servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, appCtx)
 		mockManager.applicationContext = appCtx
 		servletContext.setAttribute( GrailsApplicationAttributes.APPLICATION_CONTEXT, appCtx)
 		GroovySystem.metaClassRegistry.removeMetaClass(String.class)

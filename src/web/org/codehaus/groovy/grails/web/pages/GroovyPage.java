@@ -15,18 +15,24 @@
  */
 package org.codehaus.groovy.grails.web.pages;
 
-import groovy.lang.*;
+import groovy.lang.Binding;
+import groovy.lang.Closure;
+import groovy.lang.GroovyObject;
+import groovy.lang.Script;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.commons.lang.StringUtils;
+import org.codehaus.groovy.grails.commons.ApplicationHolder;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsClass;
 import org.codehaus.groovy.grails.commons.TagLibArtefactHandler;
-import org.codehaus.groovy.grails.web.servlet.DefaultGrailsApplicationAttributes;
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.taglib.GroovyPageTagWriter;
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
 import org.springframework.beans.BeanWrapper;
+import org.springframework.web.context.support.WebApplicationContextUtils;
+import org.springframework.web.context.WebApplicationContext;
+import org.springframework.context.ApplicationContext;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
@@ -64,11 +70,12 @@ public abstract class GroovyPage extends Script {
     public static final String PLUGIN_CONTEXT_PATH = "pluginContextPath";
     public static final String EXTENSION = ".gsp";
     public static final String WEB_REQUEST = "webRequest";
-	public static final String DEFAULT_NAMESPACE = "g";
+    private static final String BINDING = "binding";
 
+    public static final String DEFAULT_NAMESPACE = "g";
     private GrailsApplication application;
-    private GrailsApplicationAttributes grailsAttributes;
     private static final String BLANK_STRING = "";
+    private ApplicationContext applicationContext;
 
 
     /**
@@ -151,14 +158,13 @@ public abstract class GroovyPage extends Script {
         // in GSP we assume if a property doesn't exist that
         // it is null rather than throw an error this works nicely
         // with the Groovy Truth
-        try {
-            return super.getProperty(property);
-        } catch (MissingPropertyException mpe) {
-              if(LOG.isDebugEnabled()) {
-                  LOG.debug("No property ["+property+"] found in GSP returning null");
-              }
-              return null;
+        if(BINDING.equals(property)) return getBinding();
+        
+        Object value = getBinding().getVariables().get(property);
+        if(value == null) {
+            value = getTagLibForNamespace(property);
         }
+        return value;
     }
 
     /**
@@ -228,9 +234,22 @@ public abstract class GroovyPage extends Script {
     private void initPageState() {
         if(this.application == null) {
             ServletContext context = (ServletContext)getBinding().getVariable(SERVLET_CONTEXT);
-            this.grailsAttributes = new DefaultGrailsApplicationAttributes(context);
-            this.application = grailsAttributes.getGrailsApplication();
+            this.applicationContext = WebApplicationContextUtils.getRequiredWebApplicationContext(context);
+            this.application = (GrailsApplication)applicationContext.getBean(GrailsApplication.APPLICATION_ID);
+
         }
+    }
+
+    private GroovyObject getTagLibForNamespace(String namespace) {
+        if(this.application == null)
+            initPageState();
+        
+
+        GrailsClass tagLibClass = application.getArtefactForFeature(TagLibArtefactHandler.TYPE, namespace);
+        if(tagLibClass != null) {
+            return (GroovyObject) applicationContext.getBean(tagLibClass.getFullName());
+        }
+        return null;
     }
 
     private GroovyObject getTagLib(String tagName) {
@@ -240,11 +259,12 @@ public abstract class GroovyPage extends Script {
     private GroovyObject getTagLib(String tagName, String namespace) {
         if(this.application == null)
             initPageState();
-        Binding binding = getBinding();
-        HttpServletRequest request = (HttpServletRequest)binding.getVariable(GroovyPage.REQUEST);
-        HttpServletResponse response = (HttpServletResponse)binding.getVariable(GroovyPage.RESPONSE);
 
-        return grailsAttributes.getTagLibraryForTag(request,response,tagName,namespace);
+        GrailsClass tagLibClass = application.getArtefactForFeature(TagLibArtefactHandler.TYPE, namespace+':'+tagName);
+        if(tagLibClass != null) {
+            return (GroovyObject) applicationContext.getBean(tagLibClass.getFullName());
+        }
+        return null;
     }
 
     /**
@@ -263,8 +283,7 @@ public abstract class GroovyPage extends Script {
     		Object body = null;
     		GroovyObject tagLib = getTagLib(methodName);
 
-    		GrailsWebRequest webRequest = (GrailsWebRequest)getBinding().getVariable(WEB_REQUEST);
-
+            final GrailsWebRequest webRequest = (GrailsWebRequest)getBinding().getVariable(WEB_REQUEST);
             Writer originalOut = webRequest.getOut();
     		try {
         		if(tagLib != null) {

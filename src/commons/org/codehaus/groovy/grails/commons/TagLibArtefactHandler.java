@@ -15,12 +15,13 @@
 */
 package org.codehaus.groovy.grails.commons;
 
-import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException;
 
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 /**
  * An ArtefactHandlerAdapter that configures tag libraries within namespaces in Grails
@@ -36,7 +37,8 @@ public class TagLibArtefactHandler extends ArtefactHandlerAdapter {
     private static Log LOG = LogFactory.getLog(TagLibArtefactHandler.class);
     public static final String TYPE = "TagLib";
 
-    private HashMap tag2libMap = new HashMap();
+    private Map tag2libMap = new HashMap();
+    private Map namespace2tagLibMap = new HashMap();
 
 
     public TagLibArtefactHandler() {
@@ -52,6 +54,7 @@ public class TagLibArtefactHandler extends ArtefactHandlerAdapter {
         for (int i = 0; i < classes.length; i++) {
             GrailsTagLibClass taglibClass = (GrailsTagLibClass) classes[i];
             String namespace = taglibClass.getNamespace();
+            namespace2tagLibMap.put(namespace, taglibClass);
             for (Iterator j = taglibClass.getTagNames().iterator(); j.hasNext();) {
                	String tagName = namespace + ":" + (String) j.next();
                 if (!tag2libMap.containsKey(tagName)) {
@@ -71,7 +74,18 @@ public class TagLibArtefactHandler extends ArtefactHandlerAdapter {
         }
     }
 
+    /**
+     * This will look-up a tag library by using either a full qualified tag name such as g:link or via namespace such as "g"
+     *
+     * @param feature The tag name or namespace
+     * @return A GrailsClass instance representing the tag library
+     */
     public GrailsClass getArtefactForFeature(Object feature) {
-        return (GrailsClass) tag2libMap.get(feature);
+        final Object tagLib = tag2libMap.get(feature);
+        if(tagLib!= null)
+            return (GrailsClass) tagLib;
+        else {
+             return (GrailsClass)namespace2tagLibMap.get(feature);
+        }
     }
 }
