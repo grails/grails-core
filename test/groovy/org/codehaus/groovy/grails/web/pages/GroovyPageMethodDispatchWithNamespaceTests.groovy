@@ -26,7 +26,7 @@ class Test1TagLib {
 	   
 		out << "print"
  
-		def result = tag2(test:'blah')
+		def result = g.tag2(test:'blah')
 		out << result
 
 		result = body()
