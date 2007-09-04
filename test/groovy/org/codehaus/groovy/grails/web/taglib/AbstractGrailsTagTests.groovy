@@ -82,6 +82,8 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
         grailsApplication = new DefaultGrailsApplication(gcl.loadedClasses, gcl)
         ga = grailsApplication
         grailsApplication.initialise()
+        mockManager = new MockGrailsPluginManager(grailsApplication)
+        mockManager.registerProvidedArtefacts(grailsApplication)
         onInit()
 
 
@@ -95,7 +97,7 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
         ctx.registerMockBean(GrailsApplication.APPLICATION_ID, grailsApplication);
         ctx.registerMockBean(PluginMetaManager.BEAN_ID, new DefaultPluginMetaManager(new Resource[0]));
                 
-		mockManager = new MockGrailsPluginManager(grailsApplication)
+
 
         grailsApplication.addArtefact(ControllerArtefactHandler.TYPE, mockControllerClass)
 

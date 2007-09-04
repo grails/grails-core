@@ -21,6 +21,9 @@ import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 
 import java.io.StringWriter;
 import java.io.Writer;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Iterator;
 
 /**
  * A closure that represents the body of a tag and captures its output returning the result when invoked
@@ -59,8 +62,30 @@ public class GroovyPageTagBody extends Closure {
         try {
             final GroovyPageTagWriter capturedOut = createWriter();
 
+
+
+
             if(args!=null) {
-                bodyClosure.call(args);                
+                if(args instanceof Map) {
+                    bodyClosure.setResolveStrategy(Closure.DELEGATE_FIRST);
+                    Map delegate = binding.getVariables();
+
+                    final Map argMap = (Map) args;
+                    delegate.putAll(argMap);
+
+                    try {
+                        bodyClosure.setDelegate(delegate);
+                        bodyClosure.call(args);
+                    } finally {
+                        for (Iterator i = argMap.keySet().iterator(); i.hasNext();) {
+                            Object o =  i.next();
+                            delegate.remove(o);                            
+                        }
+                    }
+                }
+                else {
+                    bodyClosure.call(args);
+                }
             }
             else {
                 bodyClosure.call();
