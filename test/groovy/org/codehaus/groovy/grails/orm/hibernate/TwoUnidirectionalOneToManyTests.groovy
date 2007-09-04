@@ -2,7 +2,7 @@ package org.codehaus.groovy.grails.orm.hibernate;
 
 import org.codehaus.groovy.grails.commons.*
 
-class TwoUnidirecitonalOneToManyTests extends AbstractGrailsHibernateTests {
+class TwoUnidirectionalOneToManyTests extends AbstractGrailsHibernateTests {
 
 	void testTwoUniOneToManys() {
 		def mailing = ga.getDomainClass("Mailing").newInstance()
