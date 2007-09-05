@@ -363,6 +363,16 @@ class ControllersGrailsPlugin {
                String path = metaManager.getPluginPathForResource(delegate.class.name)
                path ? path : ""
            }
+           
+           mc.getPageScope = {->
+               def request = RCH.currentRequestAttributes().currentRequest
+               def binding = request[GrailsApplicationAttributes.PAGE_SCOPE]
+               if(!binding) {
+                   binding = new Binding()
+                   request[GrailsApplicationAttributes.PAGE_SCOPE] = binding
+               }
+               binding
+           }
 
 	   		mc.getOut = {->
 	   			RCH.currentRequestAttributes().out

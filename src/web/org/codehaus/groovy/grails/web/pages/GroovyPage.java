@@ -70,9 +70,10 @@ public abstract class GroovyPage extends Script {
     public static final String PLUGIN_CONTEXT_PATH = "pluginContextPath";
     public static final String EXTENSION = ".gsp";
     public static final String WEB_REQUEST = "webRequest";
-    private static final String BINDING = "binding";
-
     public static final String DEFAULT_NAMESPACE = "g";
+    public static final String PAGE_SCOPE = "pageScope";
+
+    private static final String BINDING = "binding";
     private GrailsApplication application;
     private static final String BLANK_STRING = "";
     private ApplicationContext applicationContext;

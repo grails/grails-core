@@ -146,7 +146,14 @@ class GroovyPageWritable implements Writable {
     protected Binding formulateBinding(HttpServletRequest request, HttpServletResponse response, Writer out)
             throws IOException {
         // Set up the script context
-        Binding binding = new Binding();
+        Binding binding = (Binding)request.getAttribute(GrailsApplicationAttributes.PAGE_SCOPE);
+
+        if(binding == null) {
+            binding = new Binding();
+            request.setAttribute(GrailsApplicationAttributes.PAGE_SCOPE, binding);
+        }
+
+        binding.setVariable(GroovyPage.PAGE_SCOPE, binding);
 
         GroovyObject controller = (GroovyObject)request.getAttribute(GrailsApplicationAttributes.CONTROLLER);
 

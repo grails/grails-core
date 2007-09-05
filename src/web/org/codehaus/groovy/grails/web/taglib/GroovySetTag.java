@@ -26,17 +26,30 @@ import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
 public class GroovySetTag extends GroovySyntaxTag {
     public static final String TAG_NAME = "set";
     private static final String ATTRIBUTE_VALUE = "value";
+    private static final String ATTRIBUTE_SCOPE = "scope";
+    private static final char DOT_CHAR = '.';
+    private static final String BLANK_STRING = "";
+    private static final char EQUALS_SIGN = '=';
+
     public void doStartTag() {
         String expr = (String) attributes.get(ATTRIBUTE_VALUE);
         String var = (String) attributes.get(ATTRIBUTE_VAR);
+        String scope = (String)attributes.get(ATTRIBUTE_SCOPE);
+        if(!StringUtils.isBlank(scope)) {
+            scope = scope.substring(1,scope.length()-1) + DOT_CHAR;
+        }
+        else {
+            scope = BLANK_STRING;
+        }
 
         if(StringUtils.isBlank(var))
             throw new GrailsTagException("Tag ["+TAG_NAME+"] missing required attribute ["+ATTRIBUTE_VAR+"]");
         if(StringUtils.isBlank(expr))
             throw new GrailsTagException("Tag ["+TAG_NAME+"] missing required attribute ["+ATTRIBUTE_VALUE +"]");
 
+        out.print(scope);
         out.print(var.substring(1,var.length() -1));
-        out.print('=');
+        out.print(EQUALS_SIGN);
         out.println(expr);
     }
 

@@ -99,14 +99,15 @@ public class Parse implements Tokens {
         finalPass = true;
         scan.reset();
         page();
-//		if (DEBUG) System.out.println(buf);
+
         InputStream in = new ByteArrayInputStream(sw.toString().getBytes());
+        //System.out.println("Compiled GSP into Groovy code: " + sw.toString());
         if(LOG.isDebugEnabled()) {
             LOG.debug("Compiled GSP into Groovy code: " + sw.toString());
         }
         scan = null;
         return in;
-    } // parse()
+    } 
 
     private void declare(boolean gsp) {
         if (finalPass) return;
