@@ -35,7 +35,7 @@ grailsHome = Ant.antProject.properties."env.GRAILS_HOME"
 
 includeTargets << new File ( "${grailsHome}/scripts/Init.groovy" )
 
-pluginsHome = "${userHome}/.grails/plugins/"
+pluginsHome = "${userHome}/.grails/${grailsVersion}/plugins/"
 Ant.mkdir(dir:"${pluginsHome}")
 pluginsListFile = new File("${pluginsHome}/plugins-list.xml")
 
