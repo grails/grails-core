@@ -19,15 +19,13 @@ mappings {
 
 
     void setUp() {
-/*
         super.setUp()
-        def res = new ByteArrayResource(topLevelMapping.bytes)
+/*        def res = new ByteArrayResource(topLevelMapping.bytes)
 
         def evaluator = new DefaultUrlMappingEvaluator()
         def mappings = evaluator.evaluateMappings(res)
 
-        holder = new DefaultUrlMappingsHolder(mappings)
-*/
+        holder = new DefaultUrlMappingsHolder(mappings)*/
     }
 
 
