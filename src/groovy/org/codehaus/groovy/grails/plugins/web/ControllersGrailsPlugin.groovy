@@ -66,6 +66,8 @@ import org.springframework.context.ApplicationContext
 import java.lang.reflect.Modifier
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.plugins.PluginMetaManager
+import grails.util.GrailsUtil
+import org.codehaus.groovy.grails.web.taglib.NamespacedTagDispatcher
 
 /**
 * A plug-in that handles the configuration of controllers for Grails
@@ -192,7 +194,7 @@ class ControllersGrailsPlugin {
 	def doWithWebDescriptor = { webXml ->
 
 		def basedir = System.getProperty("base.dir")
-		def grailsEnv = System.getProperty("grails.env")
+		def grailsEnv = GrailsUtil.getEnvironment()
 
 		def mappingElement = webXml.'servlet-mapping'
 		mappingElement + {
@@ -344,9 +346,12 @@ class ControllersGrailsPlugin {
 			mc.getProperties = {-> org.codehaus.groovy.runtime.DefaultGroovyMethods.getProperties(delegate) }
         }
 
+        def namespaces = [] as HashSet
+
 	   	for(taglib in application.tagLibClasses) {
 	   		MetaClass mc = taglib.metaClass
 	   		String namespace = taglib.namespace
+            namespaces << namespace
 
 	   		registerCommonObjects(mc, application)
 
@@ -386,9 +391,8 @@ class ControllersGrailsPlugin {
                         // try obtaining reference to tag lib via namespacing
                         tagLibraryClass = application.getArtefactForFeature(TagLibArtefactHandler.TYPE, name)
 
-                        if(tagLibraryClass) {
-                            def tagLibrary = ctx.getBean(tagLibraryClass.fullName)
-                            result = tagLibrary
+                        if(tagLibraryClass) {                            
+                            result = new NamespacedTagDispatcher(tagLibraryClass.namespace,delegate.class, application, ctx)
                             mc."${GCU.getGetterName(name)}" = {-> result }
                         }
                         else {
@@ -437,18 +441,29 @@ class ControllersGrailsPlugin {
 	   	}    
         def bind = new BindDynamicMethod()	
 		// add commons objects and dynamic methods like render and redirect to controllers
-        for(controller in application.controllerClasses ) {
+        for(GrailsClass controller in application.controllerClasses ) {
 		   MetaClass mc = controller.metaClass
+		   Class controllerClass = controller.clazz
 			registerCommonObjects(mc, application)
 			registerControllerMethods(mc, ctx)
 			registerMethodMissing(mc, application, ctx)
             Class superClass = controller.clazz.superclass
+
+            for(ns in namespaces) {
+                def propName = GCU.getGetterName(ns)
+                if(!controller.hasProperty(propName)) {
+                    def namespaceDispatcher = new NamespacedTagDispatcher(ns, controllerClass, application, ctx)
+                    mc."$propName" = {-> namespaceDispatcher }
+                }
+            }
             
             mc.getPluginContextPath = {->
                  PluginMetaManager metaManager = ctx.pluginMetaManager
                  String path = metaManager.getPluginPathForResource(delegate.class.name)
                  path ? path : ""
             }
+
+
 
             // deal with abstract super classes
             while(superClass != Object.class) {
@@ -542,6 +557,8 @@ class ControllersGrailsPlugin {
             }
             result
         }
+
+
     }
 
     def registerControllerMethods(MetaClass mc, ApplicationContext ctx) {
