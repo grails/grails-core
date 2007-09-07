@@ -212,14 +212,6 @@ class ControllersGrailsPlugin {
                 'servlet-name'("grails-errorhandler")
                 'url-pattern'("/grails-errorhandler")
             }
-            filter {
-                'filter-name'('grailsErrorHandlerFilter')
-                'filter-class'(org.codehaus.groovy.grails.web.mapping.filter.ErrorHandlingFilter.getName())
-            }
-            'filter-mapping' {
-                'filter-name'('grailsErrorHandlerFilter')
-                'url-pattern'("/grails-errorhandler")
-            }
  			filter {
 				'filter-name'('grailsWebRequest')
 				'filter-class'(org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequestFilter.getName())
