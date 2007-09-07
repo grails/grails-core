@@ -129,7 +129,7 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
         return;
     }
 
-    private void populateWebRequestWithInfo(GrailsWebRequest webRequest, UrlMappingInfo info) {
+    protected static void populateWebRequestWithInfo(GrailsWebRequest webRequest, UrlMappingInfo info) {
         if(webRequest != null) {            
             webRequest.setControllerName(info.getControllerName());
             webRequest.setActionName(info.getActionName());
@@ -146,7 +146,7 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
      * @param info The UrlMappingInfo
      * @return The URI to forward to
      */
-    protected String buildDispatchUrlForMapping(HttpServletRequest request, UrlMappingInfo info) {
+    protected static String buildDispatchUrlForMapping(HttpServletRequest request, UrlMappingInfo info) {
         StringBuffer forwardUrl = new StringBuffer(GrailsUrlPathHelper.GRAILS_SERVLET_PATH);
         forwardUrl.append(SLASH)
                           .append(info.getControllerName());

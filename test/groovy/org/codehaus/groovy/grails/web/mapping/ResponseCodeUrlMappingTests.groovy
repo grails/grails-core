@@ -10,26 +10,48 @@ class ResponseCodeUrlMappingTests extends AbstractGrailsControllerTests {
     def topLevelMapping = '''
 mappings {
     "404"{
-        controller = "sustem"
-        action = "notfound"
+        controller = "errors"
+        action = "error404"
     }
 }
 '''
-    def holder
+    def UrlMappingsHolder holder
 
 
     void setUp() {
         super.setUp()
-/*        def res = new ByteArrayResource(topLevelMapping.bytes)
+        def res = new ByteArrayResource(topLevelMapping.bytes)
 
         def evaluator = new DefaultUrlMappingEvaluator()
         def mappings = evaluator.evaluateMappings(res)
 
-        holder = new DefaultUrlMappingsHolder(mappings)*/
+        holder = new DefaultUrlMappingsHolder(mappings)
     }
 
 
-    void testSimple() {
-//        assertNotNull holder
+    void testParse() {
+        assertNotNull holder
+    }
+
+    void testMatch() {
+        assertNull holder.match("/")
+    }
+
+    void testForwardMapping() {
+        def info = holder.matchStatusCode(404)
+        assertNotNull info
+        assertEquals("errors", info.getControllerName());
+        assertEquals("error404", info.getActionName());
+    }
+
+    void testMissingForwardMapping() {
+        def info = holder.matchStatusCode(500)
+        assertNull info
+    }
+
+    void testNoReverseMappingOccures() {
+        def creator = holder.getReverseMapping("errors", "error404", null)
+
+        assertTrue ("Creator is of wrong type: " + creator.class, creator instanceof DefaultUrlCreator)
     }
 }

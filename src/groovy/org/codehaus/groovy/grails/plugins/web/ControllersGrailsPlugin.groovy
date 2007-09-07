@@ -189,7 +189,38 @@ class ControllersGrailsPlugin {
 
 		// add the Grails web request filter
 		lastFilter + {
-			filter {
+            'servlet' {
+                'servlet-name'("grails-errorhandler")
+                'servlet-class'(org.codehaus.groovy.grails.web.mapping.filter.ErrorHandlingServlet.getName())
+            }
+
+             for ( i in 400..417) {
+                 'error-page' {
+                     'error-code'(i)
+                     'location'("/grails-errorhandler")
+                 }
+             }
+
+             for ( i in 500..505) {
+                 'error-page' {
+                     'error-code'(i)
+                     'location'("/grails-errorhandler")
+                 }
+             }
+
+            'servlet-mapping' {
+                'servlet-name'("grails-errorhandler")
+                'url-pattern'("/grails-errorhandler")
+            }
+            filter {
+                'filter-name'('grailsErrorHandlerFilter')
+                'filter-class'(org.codehaus.groovy.grails.web.mapping.filter.ErrorHandlingFilter.getName())
+            }
+            'filter-mapping' {
+                'filter-name'('grailsErrorHandlerFilter')
+                'url-pattern'("/grails-errorhandler")
+            }
+ 			filter {
 				'filter-name'('grailsWebRequest')
 				'filter-class'(org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequestFilter.getName())
 			}     

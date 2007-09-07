@@ -111,16 +111,16 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
         if(params == null) params = Collections.EMPTY_MAP;
 
         UrlMapping mapping = (UrlMapping)mappingsLookup.get(new UrlMappingKey(controller, action, params.keySet()));
-        if(mapping == null) {
+        if(mapping == null || (mapping instanceof ResponseCodeUrlMapping)) {
             mapping = (UrlMapping)mappingsLookup.get(new UrlMappingKey(controller, action, Collections.EMPTY_SET));                   
         }
-        if(mapping == null) {
+        if(mapping == null || (mapping instanceof ResponseCodeUrlMapping)) {
             mapping = (UrlMapping)mappingsLookup.get(new UrlMappingKey(controller, null, DEFAULT_ACTION_PARAMS));
         }
-        if(mapping == null) {
+        if(mapping == null || (mapping instanceof ResponseCodeUrlMapping)) {
             mapping = (UrlMapping)mappingsLookup.get(new UrlMappingKey(null, null, DEFAULT_CONTROLLER_PARAMS));
         }
-        if(mapping == null) {
+        if(mapping == null || (mapping instanceof ResponseCodeUrlMapping)) {
             return new DefaultUrlCreator(controller, action);
         }
         else {
@@ -169,6 +169,19 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
 
     public UrlMappingInfo[] matchAll(String uri, String httpMethod) {
         return new UrlMappingInfo[0];  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    public UrlMappingInfo matchStatusCode(int responseCode) {
+        for (int i = 0; i < mappings.length; i++) {
+            UrlMapping mapping = mappings[i];
+            if (mapping instanceof ResponseCodeUrlMapping) {
+                ResponseCodeUrlMapping responseCodeUrlMapping = (ResponseCodeUrlMapping) mapping;
+                final UrlMappingInfo current = responseCodeUrlMapping.match(responseCode);
+                if (current != null) return current;
+            }
+        }
+
+        return null;
     }
 
     public String toString() {

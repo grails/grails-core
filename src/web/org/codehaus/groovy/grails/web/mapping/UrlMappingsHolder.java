@@ -74,4 +74,13 @@ public interface UrlMappingsHolder {
      * @return An array of 0 or many UrlMappingInfo instances
      */
     UrlMappingInfo[] matchAll(String uri, String httpMethod);
+
+    /**
+     * Match and return the first UrlMappingInfo instance possible
+     *
+     * @param responseCode The responseCode to match
+     * @return A UrlMappingInfo or null
+     */
+    UrlMappingInfo matchStatusCode(int responseCode);
+
 }
