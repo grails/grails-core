@@ -53,6 +53,7 @@
         <groovyc destdir="${grails.build}/core" srcdir="${grails.src.groovy}" encoding="UTF-8">
              <exclude name="**/orm/**" />
              <exclude name="**/web/**" />
+             <exclude name="**/webflow/**" />
              <exclude name="**/scaffolding/**" />	
    		    <classpath>
 		      <pathelement path="${grails.build}/core"/>			      
@@ -65,7 +66,7 @@
 
 
 	
-        <groovyc destdir="${grails.build}/web" includes="**/web/**" encoding="UTF-8">
+        <groovyc destdir="${grails.build}/web" includes="**/web/**,**/webflow/**" encoding="UTF-8">
    			<src path="${grails.src.groovy}"/>
    		    <classpath>
 		      <pathelement path="${grails.build}/core"/>			      

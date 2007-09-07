@@ -14,22 +14,14 @@
  */
 package org.codehaus.groovy.grails.webflow.engine.builder
 
+import org.codehaus.groovy.grails.commons.GrailsApplication
+import org.codehaus.groovy.grails.commons.GrailsClassUtils
+import org.codehaus.groovy.grails.commons.TagLibArtefactHandler
+import org.codehaus.groovy.grails.web.pages.GroovyPage
+import org.codehaus.groovy.grails.web.plugins.support.WebMetaUtils
+import org.springframework.webflow.core.collection.LocalAttributeMap
 import org.springframework.webflow.execution.Action
 import org.springframework.webflow.execution.RequestContext
-import org.springframework.webflow.core.collection.MutableAttributeMap
-import org.springframework.web.context.request.RequestContextHolder
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
-import org.codehaus.groovy.grails.commons.GrailsClassUtils
-import javax.servlet.http.HttpServletRequest
-import javax.servlet.http.HttpServletResponse
-import javax.servlet.http.HttpSession
-import javax.servlet.ServletContext
-import org.springframework.web.context.support.WebApplicationContextUtils
-import org.springframework.context.*
-import org.springframework.webflow.core.collection.LocalAttributeMap
-import org.codehaus.groovy.grails.web.servlet.GrailsRequestContext
-import org.codehaus.groovy.grails.web.servlet.WebRequestDelegatingRequestContext
-
 
 /**
 * A class that acts as a delegate to a flow action
@@ -54,33 +46,42 @@ class ActionDelegate extends AbstractDelegate {
     /**
      * invokes a method as an action if possible
      */
-    def invokeMethod(String name, args) {
-        def metaMethod = actionMetaClass.getMetaMethod(name, args)
-        if(metaMethod){
-            def result = metaMethod.invoke(this.action, args)
-            return result
-        }
+    def methodMissing(String name, args) {
+        def controller = webRequest.attributes.getController(webRequest.currentRequest)
+        def metaMethod = controller?.metaClass?.getMetaMethod(name, args)
+        if(metaMethod) return metaMethod.invoke(controller, args)
         else {
-            def controller = webRequest.attributes.getController(webRequest.currentRequest)
-            metaMethod = controller?.metaClass?.getMetaMethod(name, args)
-            if(metaMethod) return metaMethod.invoke(controller, args) 
+            def application = applicationContext?.getBean(GrailsApplication.APPLICATION_ID)
+            def tagName = "${GroovyPage.DEFAULT_NAMESPACE}:$name"
+            def tagLibraryClass = application?.getArtefactForFeature(
+                                                TagLibArtefactHandler.TYPE, tagName.toString())
+
+            if(tagLibraryClass) {
+                WebMetaUtils.registerMethodMissingForTags(ActionDelegate.metaClass, applicationContext, tagLibraryClass, name)
+                return invokeMethod(name, args)
+            }
             else {
-                if(args.length == 0 || args[0] == null) {
-                    return action.result(name)
-                }
-                else {
-                    if(args[0] instanceof Map) {
-                        LocalAttributeMap model = new LocalAttributeMap(args[0])
-                        return action.result(name, model)
-                    }
-                    else {
-                        def obj = args[0]
-                        def modelName = GrailsClassUtils.getPropertyName(name.getClass())
-                        return action.result(name, [(modelName):obj])
-                    }
-                }
+                return invokeMethodAsEvent(name,args)
             }
         }
+    }
+
+    def invokeMethodAsEvent(String name, args) {
+        if(!args || args[0] == null) {
+            return action.result(name)
+        }
+        else {
+            if(args[0] instanceof Map) {
+                LocalAttributeMap model = new LocalAttributeMap(args[0])
+                return action.result(name, model)
+            }
+            else {
+                def obj = args[0]
+                def modelName = GrailsClassUtils.getPropertyName(name.getClass())
+                return action.result(name, [(modelName):obj])
+            }
+        }
+
     }
 
 }

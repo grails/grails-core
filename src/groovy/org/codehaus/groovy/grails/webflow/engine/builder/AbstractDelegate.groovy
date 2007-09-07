@@ -17,6 +17,10 @@ package org.codehaus.groovy.grails.webflow.engine.builder
 import org.codehaus.groovy.grails.web.servlet.WebRequestDelegatingRequestContext
 import org.springframework.webflow.execution.RequestContext
 import org.springframework.webflow.core.collection.MutableAttributeMap
+import org.codehaus.groovy.grails.commons.GrailsApplication
+import org.codehaus.groovy.grails.commons.TagLibArtefactHandler
+import org.codehaus.groovy.grails.web.taglib.NamespacedTagDispatcher
+import org.codehaus.groovy.grails.commons.GrailsClassUtils
 
 /**
  * A abstract delegate that relays property look-ups onto a either the application context
@@ -65,9 +69,18 @@ abstract class AbstractDelegate extends WebRequestDelegatingRequestContext  {
         }
         else {
             def controller = webRequest.attributes.getController(webRequest.currentRequest)
-            if(controller)return controller.getProperty(name)
-            else
-                throw new MissingPropertyException(name, action.class)
+            def application = applicationContext?.getBean(GrailsApplication.APPLICATION_ID)
+            def tagLibraryClass = application?.getArtefactForFeature(TagLibArtefactHandler.TYPE, name)
+            if(tagLibraryClass) {
+                def ntd = new NamespacedTagDispatcher(tagLibraryClass.namespace,controller ? controller.class : getClass(), application, applicationContext)
+                AbstractDelegate.metaClass."${GrailsClassUtils.getGetterName(name)}" = {-> ntd }
+                return ntd
+            }
+            else {
+                if(controller)return controller.getProperty(name)
+                else
+                    throw new MissingPropertyException(name, action.class)
+            }
         }
     }
 

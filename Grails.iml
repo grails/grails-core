@@ -1,9 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <module relativePaths="true" type="JAVA_MODULE" version="4">
+  <component name="FacetManager">
+    <facet type="hibernate" name="Hibernate">
+      <configuration>
+        <option name="myHibernateValidationEnabled" value="true" />
+        <datasource-map />
+        <deploymentDescriptor name="hibernate.cfg.xml" url="file://$MODULE_DIR$/test/persistence/hibernate.cfg.xml" optional="false" version="3.0" />
+      </configuration>
+    </facet>
+    <facet type="Groovy" name="Groovy">
+      <configuration />
+    </facet>
+  </component>
   <component name="NewModuleRootManager" inherit-compiler-output="false">
-    <output url="file://$MODULE_DIR$/idea/classes" />
+    <output url="file://$MODULE_DIR$/target/classes" />
     <exclude-output />
-    <output-test url="file://$MODULE_DIR$/idea/test-classes" />
+    <output-test url="file://$MODULE_DIR$/target/test-classes" />
     <content url="file://$MODULE_DIR$">
       <sourceFolder url="file://$MODULE_DIR$/src/commons" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/groovy" isTestSource="false" />
@@ -18,6 +30,7 @@
       <sourceFolder url="file://$MODULE_DIR$/test/web" isTestSource="true" />
       <excludeFolder url="file://$MODULE_DIR$/bin" />
       <excludeFolder url="file://$MODULE_DIR$/cruise" />
+      <excludeFolder url="file://$MODULE_DIR$/samples" />
       <excludeFolder url="file://$MODULE_DIR$/sandbox" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
     </content>
@@ -25,7 +38,6 @@
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="Apache Commons" level="project" />
     <orderEntry type="library" name="dom4j" level="project" />
-    <orderEntry type="library" name="Groovy" level="project" />
     <orderEntry type="library" name="Hibernate 3" level="project" />
     <orderEntry type="library" name="javax.servlet" level="project" />
     <orderEntry type="library" name="Jetty" level="project" />
@@ -33,7 +45,6 @@
     <orderEntry type="library" name="SiteMesh" level="project" />
     <orderEntry type="library" name="Spring" level="project" />
     <orderEntry type="library" name="Apache Commons" level="project" />
-    <orderEntry type="library" name="Apache Ant" level="project" />
     <orderEntry type="library" name="Apache Commons" level="project" />
     <orderEntry type="library" name="HSQLDB" level="project" />
     <orderEntry type="module-library">
@@ -55,17 +66,6 @@
       </library>
     </orderEntry>
     <orderEntry type="module-library">
-      <library>
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/ant-nodeps.jar!/" />
-          <root url="jar://$MODULE_DIR$/lib/ant.jar!/" />
-          <root url="jar://$MODULE_DIR$/lib/ant-junit.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
-    <orderEntry type="module-library">
       <library name="XStream">
         <CLASSES>
           <root url="jar://$MODULE_DIR$/lib/xpp3_min-1.1.3.4.O.jar!/" />
@@ -73,6 +73,21 @@
         </CLASSES>
         <JAVADOC />
         <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="library" name="GROOVY" level="application" />
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/target/classes/core" />
+          <root url="file://$MODULE_DIR$/target/classes/crud" />
+          <root url="file://$MODULE_DIR$/target/classes/gorm" />
+          <root url="file://$MODULE_DIR$/target/classes/web" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES>
+          <root url="file://$MODULE_DIR$/../groovy/src/main" />
+        </SOURCES>
       </library>
     </orderEntry>
     <orderEntryProperties />

@@ -15,59 +15,35 @@
  */ 
 package org.codehaus.groovy.grails.plugins.web;
                                                  
-import org.codehaus.groovy.grails.support.*
-import org.codehaus.groovy.grails.plugins.support.GrailsPluginUtils
-import org.codehaus.groovy.grails.web.errors.GrailsExceptionResolver;
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsUrlHandlerMapping;
-import org.codehaus.groovy.grails.web.servlet.mvc.SimpleGrailsController;
-import org.codehaus.groovy.grails.web.servlet.view.GrailsViewResolver;
-import org.codehaus.groovy.grails.beans.factory.UrlMappingFactoryBean;
-import org.springframework.aop.target.HotSwappableTargetSource;
-import org.springframework.aop.framework.ProxyFactoryBean;
-import org.codehaus.groovy.grails.validation.ConstrainedPropertyBuilder
-
-import org.springframework.web.multipart.commons.CommonsMultipartResolver;
-import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
-import org.codehaus.groovy.grails.commons.spring.*
-import org.springframework.beans.factory.config.RuntimeBeanReference;
-import org.springframework.beans.factory.config.MethodInvokingFactoryBean;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
-import org.codehaus.groovy.grails.commons.GrailsResourceUtils as GRU
-import org.codehaus.groovy.grails.commons.GrailsMetaClassUtils as GMCU     
-import org.springframework.web.context.request.WebRequestInterceptor;
-import org.springframework.web.servlet.*
-import org.springframework.web.servlet.handler.WebRequestHandlerInterceptorAdapter;
-import org.springframework.web.servlet.i18n.CookieLocaleResolver;
-import org.springframework.web.servlet.i18n.LocaleChangeInterceptor;
 import org.springframework.web.context.request.RequestContextHolder as RCH
-import org.springframework.web.context.WebApplicationContext;
-import org.springframework.core.io.*
-import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.web.metaclass.*
-import org.codehaus.groovy.grails.commons.metaclass.*
-import org.codehaus.groovy.grails.web.servlet.*
-import org.springframework.validation.Errors
-import org.codehaus.groovy.grails.web.pages.GroovyPage
-import org.codehaus.groovy.grails.commons.TagLibArtefactHandler
-import org.codehaus.groovy.grails.commons.ControllerArtefactHandler     
-import javax.servlet.http.HttpServletRequest
-import org.codehaus.groovy.grails.commons.GrailsClass
-import org.springframework.beans.BeanWrapperImpl
-import org.springframework.validation.BindException
-import org.codehaus.groovy.grails.web.binding.GrailsDataBinder
-import org.codehaus.groovy.grails.validation.ConstrainedProperty
-import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException
-import org.codehaus.groovy.grails.commons.GrailsClassUtils
-import org.codehaus.groovy.grails.commons.ApplicationHolder
-import org.codehaus.groovy.grails.plugins.web.taglib.*
-import org.codehaus.groovy.grails.commons.GrailsTagLibClass
-import org.springframework.context.ApplicationContext
-import java.lang.reflect.Modifier
-import org.codehaus.groovy.grails.commons.GrailsApplication
-import org.codehaus.groovy.grails.plugins.PluginMetaManager
+
 import grails.util.GrailsUtil
+import java.lang.reflect.Modifier
+import org.codehaus.groovy.grails.beans.factory.UrlMappingFactoryBean
+import org.codehaus.groovy.grails.commons.*
+import org.codehaus.groovy.grails.plugins.PluginMetaManager
+import org.codehaus.groovy.grails.plugins.web.taglib.*
+import org.codehaus.groovy.grails.validation.ConstrainedPropertyBuilder
+import org.codehaus.groovy.grails.web.errors.GrailsExceptionResolver
+import org.codehaus.groovy.grails.web.metaclass.*
+import org.codehaus.groovy.grails.web.pages.GroovyPage
+import org.codehaus.groovy.grails.web.plugins.support.WebMetaUtils
+import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsUrlHandlerMapping
+import org.codehaus.groovy.grails.web.servlet.mvc.SimpleGrailsController
+import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException
+import org.codehaus.groovy.grails.web.servlet.view.GrailsViewResolver
 import org.codehaus.groovy.grails.web.taglib.NamespacedTagDispatcher
+import org.springframework.aop.framework.ProxyFactoryBean
+import org.springframework.aop.target.HotSwappableTargetSource
+import org.springframework.beans.factory.config.MethodInvokingFactoryBean
+import org.springframework.context.ApplicationContext
+import org.springframework.core.io.FileSystemResource
+import org.springframework.validation.BindException
+import org.springframework.validation.Errors
+import org.springframework.web.multipart.commons.CommonsMultipartResolver
+import org.springframework.web.servlet.ModelAndView
 
 /**
 * A plug-in that handles the configuration of controllers for Grails
@@ -425,7 +401,7 @@ class ControllersGrailsPlugin {
 	                                                    TagLibArtefactHandler.TYPE, tagName.toString())
 
                     if(tagLibraryClass) {
-                         registerMethodMissingForTags(mc, ctx, tagLibraryClass, name)
+                         WebMetaUtils.registerMethodMissingForTags(mc, ctx, tagLibraryClass, name)
                          result = mc.invokeMethod(delegate, name, args)
                     }
                     else {
@@ -559,7 +535,7 @@ class ControllersGrailsPlugin {
 
             def result
             if(tagLibraryClass) {
-                registerMethodMissingForTags(mc, ctx, tagLibraryClass, name)
+                WebMetaUtils.registerMethodMissingForTags(mc, ctx, tagLibraryClass, name)
                 result = mc.invokeMethod(delegate, name, args)
             }
             else {
@@ -654,51 +630,6 @@ class ControllersGrailsPlugin {
 
     }
 
-    def registerMethodMissingForTags(MetaClass mc, ApplicationContext ctx, GrailsTagLibClass tagLibraryClass, String name) {
-        mc."$name" = { Map attrs, Closure body ->
-                def webRequest = RCH.currentRequestAttributes()
-                def tagLibrary = ctx.getBean(tagLibraryClass.fullName)
-                def tagBean = new BeanWrapperImpl(tagLibrary)
-                def originalOut = webRequest.out
-                def capturedOutput
-                try {
-                    capturedOutput = GroovyPage.captureTagOutput(tagLibrary, name, attrs,body, webRequest, tagBean)
-                } finally {
-                    webRequest.out = originalOut
-                }
-                capturedOutput
-        }
-        mc."$name" = { Map attrs ->
-                def webRequest = RCH.currentRequestAttributes()
-                def tagLibrary = ctx.getBean(tagLibraryClass.fullName)
-                def tagBean = new BeanWrapperImpl(tagLibrary)
-
-                def originalOut = webRequest.out
-                def capturedOutput
-                try {
-                    capturedOutput = GroovyPage.captureTagOutput(tagLibrary, name, attrs,null, webRequest, tagBean)
-                } finally {
-                    webRequest.out = originalOut
-                }
-                capturedOutput
-        }
-        mc."$name" = { ->
-                def webRequest = RCH.currentRequestAttributes()
-                def tagLibrary = ctx.getBean(tagLibraryClass.fullName)
-                def tagBean = new BeanWrapperImpl(tagLibrary)
-
-                def originalOut = webRequest.out
-                def capturedOutput
-                try {
-                    capturedOutput = GroovyPage.captureTagOutput(tagLibrary, name, [:],null, webRequest, tagBean)
-                } finally {
-                    webRequest.out = originalOut
-                }
-                capturedOutput
-        }
-
-
-    }
 
 	def onChange = { event -> 
         if(application.isArtefactOfType(ControllerArtefactHandler.TYPE, event.source)) {

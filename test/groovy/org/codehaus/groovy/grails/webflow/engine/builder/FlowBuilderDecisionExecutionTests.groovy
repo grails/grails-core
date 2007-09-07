@@ -56,7 +56,8 @@ class FlowBuilderDecisionExecutionTests extends AbstractFlowExecutionTests{
             executeSearch {
                 action {
                     def r = searchService.executeSearch(params.q)
-                    r ? success(results:r) : none()                   
+                    def result = success(results:r)
+                    r ? result : none()
                 }
                 on("success").to "displayResults"
                 on("none").to "noResults"

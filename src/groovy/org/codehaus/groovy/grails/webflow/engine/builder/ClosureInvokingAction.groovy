@@ -65,10 +65,7 @@ public class ClosureInvokingAction extends AbstractAction implements GroovyObjec
             }
             else if(result instanceof Event) {
                 event = result;
-
-                def model =  event.attributes.get(RESULT)
-                if(model)
-                    context.flowScope.putAll(new LocalAttributeMap(model))
+                context.flowScope.putAll(event.attributes)
             }
             else {
                 event = super.success(result)
