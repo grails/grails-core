@@ -260,6 +260,12 @@ class HibernateGrailsPlugin {
                 callable.call(status)
             } as TransactionCallback)
         }
+        // Initiates a pessimistic lock on the row represented by the object using
+        // the dbs "SELECT FOR UPDATE" mechanism
+        def template = new HibernateTemplate(sessionFactory)
+        metaClass.lock = {->
+            template.lock(delegate, LockMode.UPGRADE)
+        }
 
     }
 
@@ -492,9 +498,13 @@ class HibernateGrailsPlugin {
             mergeMethod.invoke(delegate, "merge", [] as Object[])
         }
 
-        metaClass.delete = {template.delete(delegate)}
-        metaClass.refresh = {template.refresh(delegate)}
-        metaClass.discard = {template.evict(delegate)}
+        metaClass.delete = {->template.delete(delegate)}
+        metaClass.delete = { Map args ->
+            template.delete(delegate)
+            if(args?.flush) template.flush()                
+        }
+        metaClass.refresh = {->template.refresh(delegate)}
+        metaClass.discard = {->template.evict(delegate)}
         metaClass.'static'.get = {id ->
             def identityType = dc.identifier.type
 
