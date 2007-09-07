@@ -157,7 +157,26 @@ public class PersistentMethodTests extends AbstractDependencyInjectionSpringCont
         assertNotNull(errors);
         assertTrue(errors.hasErrors());
     }
-    
+
+    public void testValidateMethodWithFieldList() {
+        // init spring config
+
+
+        GrailsDomainClass domainClass = (GrailsDomainClass) this.grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE,
+            "PersistentMethodTests");
+
+        GroovyObject obj = (GroovyObject)domainClass.newInstance();
+        obj.setProperty( "id", new Long(1) );
+        obj.setProperty( "firstName", "fr" );
+        obj.setProperty( "lastName", "flintstone" );
+
+        Object result = obj.invokeMethod("validate", Arrays.asList(new Object[]{"age"}));
+        assertEquals(Boolean.TRUE, result);
+
+        result = obj.invokeMethod("validate", Arrays.asList(new Object[]{"firstName"}));
+        assertEquals(Boolean.FALSE, result);
+    }
+
     public void testValidatePersistentMethodOnDerivedClass() {
         GrailsDomainClass domainClass = (GrailsDomainClass) this.grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE,
             "PersistentMethodTestsDescendent");

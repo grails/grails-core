@@ -21,14 +21,14 @@ import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
-import org.codehaus.groovy.grails.orm.hibernate.metaclass.DomainClassMethods;
 import org.codehaus.groovy.grails.validation.CascadingValidator;
 import org.hibernate.SessionFactory;
-import org.springframework.validation.BindException;
-import org.springframework.validation.Errors;
-import org.springframework.validation.Validator;
+import org.springframework.validation.*;
 
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 /**
@@ -54,7 +54,7 @@ public class ValidatePersistentMethod extends AbstractDynamicPersistentMethod {
     }
 
     protected Object doInvokeInternal(Object target, Object[] arguments) {
-        Errors errors = new BindException(target, target.getClass().getName());
+        Errors errors = new BeanPropertyBindingResult(target, target.getClass().getName());
         GrailsDomainClass domainClass = (GrailsDomainClass) application.getArtefact(DomainClassArtefactHandler.TYPE,
             target.getClass().getName() );
         Validator validator = null;
@@ -67,6 +67,8 @@ public class ValidatePersistentMethod extends AbstractDynamicPersistentMethod {
             // should evict?
             boolean evict = false;
             boolean deepValidate = true;
+            Set validatedFields = null;
+
             if(arguments.length > 0) {
                 if(arguments[0] instanceof Boolean) {
                     evict = ((Boolean)arguments[0]).booleanValue();
@@ -79,6 +81,9 @@ public class ValidatePersistentMethod extends AbstractDynamicPersistentMethod {
                     
                     evict = GrailsClassUtils.getBooleanFromMap(ARGUMENT_EVICT, argsMap);
                 }
+                if (arguments[0] instanceof List) {
+                    validatedFields = new HashSet((List) arguments[0]);
+                }
             }
             if(deepValidate && (validator instanceof CascadingValidator)) {
                 ((CascadingValidator)validator).validate(target, errors, deepValidate);
@@ -87,6 +92,8 @@ public class ValidatePersistentMethod extends AbstractDynamicPersistentMethod {
                 validator.validate(target,errors);
             }
 
+
+            errors = filterErrors(errors, validatedFields, target);
 
             if(errors.hasErrors()) {
                 valid = Boolean.valueOf(false);
@@ -104,6 +111,26 @@ public class ValidatePersistentMethod extends AbstractDynamicPersistentMethod {
             }
         }
         return valid;
+    }
+
+    private Errors filterErrors(Errors errors, Set validatedFields, Object target) {
+        if (validatedFields == null) return errors;
+
+        BeanPropertyBindingResult result = new BeanPropertyBindingResult(target, target.getClass().getName());
+
+        final List allErrors = errors.getAllErrors();
+        for (int i = 0; i < allErrors.size(); i++) {
+            ObjectError error = (ObjectError) allErrors.get(i);
+
+            if (error instanceof FieldError) {
+                FieldError fieldError = (FieldError) error;
+                if (!validatedFields.contains(fieldError.getField())) continue;
+            }
+
+            result.addError(error);
+        }
+
+        return result;
     }
 
 }

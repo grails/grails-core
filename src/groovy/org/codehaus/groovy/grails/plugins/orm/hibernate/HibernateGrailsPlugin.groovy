@@ -246,6 +246,9 @@ class HibernateGrailsPlugin {
         metaClass.validate = {Boolean b ->
             validateMethod.invoke(delegate, "validate", [b] as Object[])
         }
+        metaClass.validate = {List args ->
+            validateMethod.invoke(delegate, "validate", [args] as Object[])
+        }
     }
 
     private addTransactionalMethods(GrailsDomainClass dc, GrailsApplication application, ctx) {
