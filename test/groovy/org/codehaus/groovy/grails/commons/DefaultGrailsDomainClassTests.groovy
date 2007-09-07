@@ -140,7 +140,7 @@ class DefaultGrailsDomainClassTests extends GroovyTestCase {
 				    String lastName
 
 				    static mapping = {
-				        withTable 'people'
+				        table 'people'
 				    }
 				}
 				'''	)
@@ -148,7 +148,8 @@ class DefaultGrailsDomainClassTests extends GroovyTestCase {
 		ga.initialise()
 		def personClass = ga.getDomainClass('Person')
 		assertNotNull 'person class was null', personClass
-		assertEquals 'person was mapped to the wrong table', 'people', personClass.tableName
+		assertNotNull 'ormMapping was null', personClass.ormMapping
+		assertEquals 'person was mapped to the wrong table', 'people', personClass.ormMapping.tableName
     }
 	void testColumnName() {
         this.gcl.parseClass('''
@@ -167,13 +168,15 @@ class DefaultGrailsDomainClassTests extends GroovyTestCase {
 		ga.initialise()
 		def personClass = ga.getDomainClass('Person')
 		assertNotNull 'person class was null', personClass
+		def ormMapping = personClass.ormMapping
+		assertNotNull 'ormMapping was null', ormMapping
 
 		def firstNameProperty = personClass.getPropertyByName('firstName')
 		assertNotNull ' firstName property not found', firstNameProperty
-		assertEquals 'firstName property had wrong column name', 'fname', firstNameProperty.columnName
+		assertEquals 'firstName property had wrong column name', 'fname', ormMapping.getColumnName(firstNameProperty)
 
 		def lastNameProperty = personClass.getPropertyByName('lastName')
 		assertNotNull ' lastName property not found', lastNameProperty
-		assertNull 'lastName property had wrong column name', lastNameProperty.columnName
+		assertNull 'lastName property had wrong column name', ormMapping.getColumnName(lastNameProperty)
     }
 }

@@ -22,6 +22,7 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
+import org.codehaus.groovy.grails.orm.OrmMapping;
 import org.hibernate.FetchMode;
 import org.hibernate.MappingException;
 import org.hibernate.cfg.ImprovedNamingStrategy;
@@ -566,10 +567,12 @@ public final class GrailsDomainBinder {
 	 * @return The table name
 	 */
 	private static String getTableName(GrailsDomainClass domainClass) {
-		if(domainClass.getTableName() == null)
-			return namingStrategy.classToTableName(domainClass.getShortName());
-		else
-			return domainClass.getTableName();
+        final OrmMapping ormMapping = domainClass.getOrmMapping();
+        String tableName = ormMapping.getTableName();
+        if(tableName == null) {
+			tableName = namingStrategy.classToTableName(domainClass.getShortName());
+        }
+        return tableName;
 	}	
 	/**
 	 * Binds a Grails domain class to the Hibernate runtime meta model
@@ -1282,7 +1285,9 @@ w	 * Binds a simple value to the Hibernate metamodel. A simple value is
 	}
 
     private static String getColumnNameForPropertyAndPath(GrailsDomainClassProperty grailsProp, String path) {
-        String columnName = grailsProp.getColumnName();
+        GrailsDomainClass domainClass = grailsProp.getDomainClass();
+        OrmMapping ormMapping = domainClass.getOrmMapping();
+        String columnName = ormMapping.getColumnName(grailsProp);
         if(columnName == null) {
             if(StringHelper.isNotEmpty(path)) {
                 columnName = namingStrategy.propertyToColumnName(path) + UNDERSCORE +  namingStrategy.propertyToColumnName(grailsProp.getName());

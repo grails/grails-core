@@ -15,6 +15,7 @@
 package org.codehaus.groovy.grails.commons;
 
 import org.springframework.validation.Validator;
+import org.codehaus.groovy.grails.orm.OrmMapping;
 
 import java.util.Map;
 import java.util.Set;
@@ -33,7 +34,6 @@ public interface GrailsDomainClass extends GrailsClass {
 	 */
 	String GORM = "GORM";
     
-    String WITH_TABLE = "withTable";
     String ORM_MAPPING = "mapping";
 
     /**
@@ -91,13 +91,6 @@ public interface GrailsDomainClass extends GrailsClass {
 	 * @return The field representation of the property name
 	 */
 	public String getFieldName(String propertyName);
-	
-	/**
-	 * Returns the table name for this class
-	 * 
-	 * @return the table name representation of the class name
-	 */
-	public String getTableName();
 	
 	/**
 	 * <p>Returns the default property name of the GrailsClass. For example the property name for 
@@ -180,4 +173,6 @@ public interface GrailsDomainClass extends GrailsClass {
      * Refreshes the constraint defined on a domain class
      */
     void refreshConstraints();
+
+    OrmMapping getOrmMapping();
 }

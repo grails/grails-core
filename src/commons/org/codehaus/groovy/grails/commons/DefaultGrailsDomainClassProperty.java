@@ -54,7 +54,6 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
 	private boolean owningSide;
 	private String referencePropertyName;
     private boolean embedded;
-    private String columnName;
 
 
     public DefaultGrailsDomainClassProperty(DefaultGrailsDomainClass domainClass, PropertyDescriptor descriptor)  {
@@ -389,14 +388,6 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
 	public void setOwningSide(boolean b) {
 		this.owningSide = b;
 	}
-
-    public void setColumnName(String columnName) {
-        this.columnName = columnName;
-    }
-
-    public String getColumnName() {
-        return columnName;
-    }
 
     public boolean isCircular() {
 		if(this.otherSide != null) {
