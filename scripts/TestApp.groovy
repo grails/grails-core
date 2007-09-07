@@ -300,7 +300,7 @@ def resolveTestResources(patternResolver) {
     def testNames = getTestNames(args)
 
     if (!testNames) {
-      testNames = ['*']
+      testNames = ['**/*']
     }
       
     def testResources = []
