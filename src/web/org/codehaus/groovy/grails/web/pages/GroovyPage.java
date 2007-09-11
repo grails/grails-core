@@ -15,14 +15,12 @@
  */
 package org.codehaus.groovy.grails.web.pages;
 
-import groovy.lang.Binding;
 import groovy.lang.Closure;
 import groovy.lang.GroovyObject;
+import groovy.lang.MetaProperty;
 import groovy.lang.Script;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.commons.lang.StringUtils;
-import org.codehaus.groovy.grails.commons.ApplicationHolder;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsClass;
 import org.codehaus.groovy.grails.commons.TagLibArtefactHandler;
@@ -30,13 +28,10 @@ import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.taglib.GroovyPageTagWriter;
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
 import org.springframework.beans.BeanWrapper;
-import org.springframework.web.context.support.WebApplicationContextUtils;
-import org.springframework.web.context.WebApplicationContext;
 import org.springframework.context.ApplicationContext;
+import org.springframework.web.context.support.WebApplicationContextUtils;
 
 import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
@@ -160,6 +155,9 @@ public abstract class GroovyPage extends Script {
         // it is null rather than throw an error this works nicely
         // with the Groovy Truth
         if(BINDING.equals(property)) return getBinding();
+
+        MetaProperty mp = getMetaClass().getMetaProperty(property);
+        if(mp!= null)return mp.getProperty(this);
         
         Object value = getBinding().getVariables().get(property);
         if(value == null) {
