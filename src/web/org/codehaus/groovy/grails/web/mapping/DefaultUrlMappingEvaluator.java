@@ -342,14 +342,14 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
             Object controllerName = namedArguments
                     .get(GrailsControllerClass.CONTROLLER);
             if (controllerName == null) {
-                controllerName = binding.getVariables().get(
-                        GrailsControllerClass.CONTROLLER);
+                controllerName = binding != null ? binding.getVariables().get(
+                        GrailsControllerClass.CONTROLLER) : null;
             }
             Object actionName = namedArguments
                     .get(GrailsControllerClass.ACTION);
             if (actionName == null) {
-                actionName = binding.getVariables().get(
-                        GrailsControllerClass.ACTION);
+                actionName = binding != null ? binding.getVariables().get(
+                        GrailsControllerClass.ACTION) : null;
             }
 
             ConstrainedProperty[] constraints = (ConstrainedProperty[]) previousConstraints
