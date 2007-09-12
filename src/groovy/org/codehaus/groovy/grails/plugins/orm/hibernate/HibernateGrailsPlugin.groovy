@@ -171,6 +171,10 @@ class HibernateGrailsPlugin {
             //    registerDynamicMethods(dc, application, ctx)
             MetaClass mc = dc.metaClass
             def initDomainClass = lazyInit.curry(dc)
+            mc.methodMissing = { String name, args ->
+                initDomainClass()
+                mc.invokeMethod(delegate, name, args)
+            }
             mc.'static'.methodMissing = {String name, args ->
                 initDomainClass()
                 def result
@@ -184,7 +188,7 @@ class HibernateGrailsPlugin {
     }
 
     private registerDynamicMethods(GrailsDomainClass dc, GrailsApplication application, ApplicationContext ctx) {
-        dc.metaClass.'static'.methodMissing = {String name, args ->
+        dc.metaClass.methodMissing = { String name, args ->
             throw new MissingMethodException(name, dc.clazz, args, true)
         }
         addRelationshipManagementMethods(dc)
@@ -208,25 +212,18 @@ class HibernateGrailsPlugin {
         // This is the code that deals with dynamic finders. It looks up a static method, if it exists it invokes it
         // otherwise it trys to match the method invocation to one of the dynamic methods. If it matches it will
         // register a new method with the ExpandoMetaClass so the next time it is invoked it doesn't have this overhead.
-        mc.'static'.invokeMethod = {String methodName, args ->
-            args = args == null ? [args] as Object[] : args
-            def metaMethod = mc.getStaticMetaMethod(methodName, args)
+        mc.'static'.methodMissing = {String methodName, args ->
             def result = null
-            if (metaMethod) {
-                result = metaMethod.invoke(delegate, args)
+            StaticMethodInvocation method = dynamicMethods.find {it.isMethodMatch(methodName)}
+            if (method) {
+                // register the method invocation for next time
+                mc.'static'."$methodName" = {List varArgs ->
+                    method.invoke(dc.clazz, methodName, varArgs)
+                }
+                result = method.invoke(dc.clazz, methodName, args)
             }
             else {
-                StaticMethodInvocation method = dynamicMethods.find {it.isMethodMatch(methodName)}
-                if (method) {
-                    // register the method invocation for next time
-                    mc.'static'."$methodName" = {List varArgs ->
-                        method.invoke(dc.clazz, methodName, varArgs)
-                    }
-                    result = method.invoke(dc.clazz, methodName, args)
-                }
-                else {
-                    throw new MissingMethodException(methodName, delegate, args)
-                }
+                throw new MissingMethodException(methodName, delegate, args)
             }
             result
         }

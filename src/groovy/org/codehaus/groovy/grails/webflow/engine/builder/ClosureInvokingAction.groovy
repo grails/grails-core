@@ -26,6 +26,11 @@ import org.springframework.webflow.core.collection.LocalAttributeMap;
 import org.springframework.webflow.execution.Event;
 import org.springframework.webflow.execution.RequestContext;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
+import org.codehaus.groovy.grails.web.binding.*
+import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
+import org.springframework.web.context.request.RequestContextHolder as RCH
+import org.codehaus.groovy.grails.validation.metaclass.ConstraintsEvaluatingDynamicProperty
+import org.springframework.validation.Errors
 
 import java.util.Map;
 
@@ -45,9 +50,42 @@ public class ClosureInvokingAction extends AbstractAction implements GroovyObjec
     private transient MetaClass metaClass;
     private static final String RESULT = "result";
 
+    def commandClasses
+    def noOfParams
+    boolean hasCommandObjects
+
     public ClosureInvokingAction(Closure callable) {
         this.callable = callable;
         this.metaClass = InvokerHelper.getMetaClass(this);
+        this.commandClasses = callable.parameterTypes
+        this.noOfParams = commandClasses.size()
+        this.hasCommandObjects = noOfParams > 1 || (noOfParams == 1 && commandClasses[0] != Object.class && commandClasses[0] != RequestContext.class)
+        if(hasCommandObjects) {
+            for(co in commandClasses) {
+                co.metaClass.getErrors = {->
+                      RCH.currentRequestAttributes().getAttribute("${co.name}_${delegate.hashCode()}_errors",0)
+                }
+                co.metaClass.setErrors = { Errors errors ->
+                     RCH.currentRequestAttributes().setAttribute("${co.name}_${delegate.hashCode()}_errors",errors,0)
+                }
+                co.metaClass.hasErrors = {-> errors?.hasErrors() ? true : false }
+                def cp = new ConstraintsEvaluatingDynamicProperty()
+                def constrainedProperties = cp.get(co.newInstance())
+                co.metaClass.getConstraints = {-> constrainedProperties }
+                co.metaClass.validate = {->
+                    errors = new org.springframework.validation.BeanPropertyBindingResult(delegate, delegate.class.name)
+                    def localErrors = errors
+
+                    def webRequest = RCH.currentRequestAttributes()
+                    def ctx = webRequest.attributes.applicationContext
+                    for(prop in constrainedProperties.values()) {
+                        prop.messageSource = ctx.getBean("messageSource")
+                        prop.validate(delegate, delegate.getProperty( prop.getPropertyName() ),localErrors);
+                    }
+                    !localErrors.hasErrors()
+                }
+            }
+        }
     }
 
     protected Event doExecute(RequestContext context) throws Exception {
@@ -55,9 +93,27 @@ public class ClosureInvokingAction extends AbstractAction implements GroovyObjec
         def result
         try {
             Closure cloned = callable.clone()
-            cloned.delegate = new ActionDelegate(this, context)
+            def actionDelegate = new ActionDelegate(this, context)
+            cloned.delegate = actionDelegate
             cloned.resolveStrategy = Closure.DELEGATE_FIRST
-            result = cloned.call(context)
+
+            if(hasCommandObjects) {
+                def commandInstances = []
+                for(p in commandClasses) {
+                    def instance = p.newInstance()
+                    def params = noOfParams > 1 ? actionDelegate.params[GCU.getPropertyName(instance.class)] : actionDelegate.params
+                    if(params) {
+                        def binder = GrailsDataBinder.createBinder(instance, instance.class.name, actionDelegate.request)
+                        binder.bind(params)
+                    }
+                    instance.validate()
+                    commandInstances << instance
+                }
+                result = cloned.call(commandInstances)
+            }
+            else {
+                result = cloned.call(context)
+            }
             def event
             if(result instanceof Map) {
                 context.flowScope.putAll(new LocalAttributeMap(result))

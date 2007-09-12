@@ -150,12 +150,12 @@ class FlowBuilder extends AbstractFlowBuilder implements GroovyObject, Applicati
                     state = addSubflowState(name, flow,null, trans );
                 }
                 else {
-                    def renderAction = new ClosureInvokingAction() { RequestContext ctx ->
-                        for(entry in ctx.flashScope.asMap()) {
+                    def renderAction = new ClosureInvokingAction() { 
+                        for(entry in flash.asMap()) {
                             def key = entry.key
                              if(key.startsWith(GrailsApplicationAttributes.ERRORS)) {
                                   key = key.substring(GrailsApplicationAttributes.ERRORS.length()+1)
-                                  def formObject = ctx.flowScope.get(key)
+                                  def formObject = flow[key]
                                   if(formObject) {
                                       try {
                                           formObject.errors = entry.value
@@ -164,7 +164,7 @@ class FlowBuilder extends AbstractFlowBuilder implements GroovyObject, Applicati
                                       }
                                   }
                                   else {
-                                      formObject = ctx.conversationScope.get(key)
+                                      formObject = conversation[key]
                                       if(formObject) {
                                           try {
                                               formObject.errors = entry.value
@@ -177,8 +177,9 @@ class FlowBuilder extends AbstractFlowBuilder implements GroovyObject, Applicati
                         }
                     }
 
-                    if(flowInfo.viewName)
+                    if(flowInfo.viewName) {
                         state = addViewState(name, flowInfo.viewName,(Action) renderAction,trans);
+                    }
                     else
                         state = addViewState(name, name,(Action) renderAction,trans);
                 }

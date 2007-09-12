@@ -25,6 +25,7 @@ import org.codehaus.groovy.grails.commons.ApplicationHolder;
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.metaclass.CreateDynamicMethod;
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap;
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.springframework.beans.*;
 import org.springframework.beans.propertyeditors.CustomDateEditor;
@@ -38,9 +39,9 @@ import org.springframework.web.multipart.support.ByteArrayMultipartFileEditor;
 import org.springframework.web.multipart.support.StringMultipartFileEditor;
 import org.springframework.web.servlet.support.RequestContextUtils;
 
-import java.math.BigDecimal;
 import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
+import java.math.BigDecimal;
 import java.net.URI;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
@@ -139,6 +140,15 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
         bind(propertyValues, null);
     }
 
+    /**
+     * Binds from a GrailsParameterMap object
+     *
+     * @param params The GrailsParameterMap object
+     */
+    public void bind(GrailsParameterMap params) {
+        bindWithRequestAndPropertyValues(params.getRequest(), new MutablePropertyValues(params));        
+    }
+
     public void bind(PropertyValues propertyValues, String prefix) {
         PropertyValues values = filterPropertyValues(propertyValues, prefix);
         if(propertyValues instanceof MutablePropertyValues) {
@@ -160,6 +170,10 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
             mpvs = new ServletRequestParameterPropertyValues(request);
     	}
 
+        bindWithRequestAndPropertyValues(request, mpvs);
+    }
+
+    private void bindWithRequestAndPropertyValues(ServletRequest request, MutablePropertyValues mpvs) {
         checkStructuredDateDefinitions(mpvs);
         autoCreateIfPossible(mpvs);
         bindAssociations(mpvs);
@@ -168,7 +182,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
 			MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
 			bindMultipartFiles(multipartRequest.getFileMap(), mpvs);
 		}
-        super.doBind(mpvs);
+        doBind(mpvs);
     }
 
     protected void doBind(MutablePropertyValues mpvs) {
@@ -217,7 +231,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
                                                     .getMetaRegistry()
                                                     .getMetaClass(type);
                                 if(mc!=null) {
-                                    Object created = mc.invokeStaticMethod(type.getName(),CreateDynamicMethod.METHOD_NAME, new Object[0]);
+                                    Object created = mc.invokeStaticMethod(type,CreateDynamicMethod.METHOD_NAME, new Object[0]);
                                     bean.setPropertyValue(propertyName,created);
                                 }
                             }

@@ -82,8 +82,8 @@ public class DataBindingDynamicConstructor implements DynamicConstructor {
                 GrailsParameterMap parameterMap = (GrailsParameterMap)map;
                 HttpServletRequest request = parameterMap.getRequest();
 
-                ServletRequestDataBinder dataBinder = GrailsDataBinder.createBinder(instance, instance.getClass().getName(),request);
-                dataBinder.bind(request);
+                GrailsDataBinder dataBinder = GrailsDataBinder.createBinder(instance, instance.getClass().getName(),request);
+                dataBinder.bind(parameterMap);
                 return instance;
             }
             else if (map instanceof HttpServletRequest) {

@@ -36,19 +36,66 @@ public class GrailsParameterMap implements Map {
 
 	private Map parameterMap;
 	private HttpServletRequest request;
-		
-	public GrailsParameterMap(HttpServletRequest request) {
+
+    /**
+     * Creates a GrailsParameterMap populating from the given request object
+     * @param request The request object
+     */
+    public GrailsParameterMap(HttpServletRequest request) {
 		super();
 
 		this.request = request;
 		this.parameterMap = new HashMap();
-		for (Iterator it = request.getParameterMap().keySet().iterator(); it.hasNext(); ){
-			Object key = it.next();
-			parameterMap.put(key, request.getParameterMap().get(key));
-		}
+        final Map requestMap = request.getParameterMap();
+        for (Iterator it = requestMap.keySet().iterator(); it.hasNext(); ){
+			String key = (String) it.next();
+			parameterMap.put(key, requestMap.get(key));
+            processNestedKeys(request, requestMap, key, key ,parameterMap);
+        }
 	}
 
-	/**
+    /*
+     * This method builds up a multi dimensional hash structure from the parameters so that nested keys such as "book.author.name"
+     * can be addressed like params['author'].name
+     *
+     * This also allows data binding to occur for only a subset of the properties in the parameter map
+     */
+    private void processNestedKeys(HttpServletRequest request, Map requestMap, String key, String nestedKey, Map nestedLevel) {
+        final int nestedIndex = nestedKey.indexOf('.');
+        if(nestedIndex > -1) {
+            final String nestedPrefix = nestedKey.substring(0, nestedIndex);
+            if(request.getParameter(nestedPrefix)==null) {
+                Map nestedMap = (Map)nestedLevel.get(nestedPrefix);
+                if(nestedMap == null) {
+                    nestedMap = new GrailsParameterMap(new HashMap(), request);
+                    nestedLevel.put(nestedPrefix, nestedMap);
+                }
+                if(nestedIndex < nestedKey.length()-1) {
+                    final String remainderOfKey = nestedKey.substring(nestedIndex + 1, nestedKey.length());
+                    nestedMap.put(remainderOfKey,requestMap.get(key) );
+                    if(remainderOfKey.indexOf('.') >-1) {
+                        processNestedKeys(request, requestMap,key,remainderOfKey,nestedMap);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * This constructor does not populate the GrailsParameterMap from the request but instead uses
+     * the supplied values
+     *
+     * @param values The values to populate with
+     * @param request The request object
+     */
+	public GrailsParameterMap(Map values,HttpServletRequest request) {
+		super();
+
+		this.request = request;
+		this.parameterMap = values;
+	}
+
+    /**
 	 * @return Returns the request.
 	 */
 	public HttpServletRequest getRequest() {

@@ -70,8 +70,8 @@ public class SetPropertiesDynamicProperty extends AbstractDynamicProperty {
 		if(newValue instanceof GrailsParameterMap) {
 			GrailsParameterMap parameterMap = (GrailsParameterMap)newValue;
 			HttpServletRequest request = parameterMap.getRequest();
-			ServletRequestDataBinder dataBinder = GrailsDataBinder.createBinder(object, object.getClass().getName(),request); 
-			dataBinder.bind(request);
+			GrailsDataBinder dataBinder = GrailsDataBinder.createBinder(object, object.getClass().getName(),request); 
+			dataBinder.bind(parameterMap);
 		}
 		else if(newValue instanceof Map) {
 			

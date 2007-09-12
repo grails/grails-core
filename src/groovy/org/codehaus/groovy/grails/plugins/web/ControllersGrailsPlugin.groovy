@@ -495,7 +495,7 @@ class ControllersGrailsPlugin {
                     for( paramType in paramTypes ) {
                         if(GroovyObject.class.isAssignableFrom(paramType)) {
                             try {
-                                def commandObject = (GroovyObject) paramType.newInstance();
+                                def commandObject = (GroovyObject) paramType.newInstance()
                                 bind.invoke(commandObject,"bindData",[commandObject, RCH.currentRequestAttributes().params] as Object[])
                                 def errors = new BindException(commandObject, paramType.name)
                                 def constrainedProperties = commandObject.constraints?.values()
