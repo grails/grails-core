@@ -17,7 +17,8 @@ package org.codehaus.groovy.grails.plugins.web.taglib
 import org.springframework.validation.Errors;
 import org.springframework.context.NoSuchMessageException;
 import org.springframework.web.servlet.support.RequestContextUtils as RCU;
-import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU;
+import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU;   
+import org.codehaus.groovy.grails.commons.ApplicationHolder
 
 /**
 *  A  tag lib that provides tags to handle validation and errors
@@ -41,12 +42,15 @@ class ValidationTagLib {
         }
         else {
 			if(request.attributeNames) {
-				request.attributeNames.each { ra ->
-				    def v = request.getAttribute(ra)
-					if(v) {
+				def application = ApplicationHolder.application
+				def rq = request
+				for(ra in rq.attributeNames) {
+				    def v = rq.getAttribute(ra)        
+					def mc = GroovySystem.metaClassRegistry.getMetaClass(v.getClass())
+					if(v) {                         
                         if(v instanceof Errors)
                             checkList << v
-	                    else if (v.properties?.errors instanceof Errors) {
+	                    else if (mc.hasProperty(v, 'errors') && v.errors instanceof Errors) {
                             checkList << v
 						}
 					}
@@ -141,7 +145,7 @@ class ValidationTagLib {
                 else {
                     errors.allErrors.each {
                          def errorArgs = it.arguments    
-                         if (i.class == errorArgs[1]) {
+                         if (errorsArgs && i.class == errorArgs[1]) {
                              out << body( it )
                          }
                     }
