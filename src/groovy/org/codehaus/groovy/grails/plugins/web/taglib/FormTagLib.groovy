@@ -87,8 +87,10 @@ class FormTagLib {
           out << "<input type=\"hidden\" name=\"_${name}\" /><input type=\"checkbox\" name=\"${name}\" "
           if(value && checked) {
                 out << 'checked="checked" '
-          }
-          out << "value=\"${value}\" "
+          }  
+		  def outputValue = !(value instanceof Boolean || value?.class == boolean.class)
+		  if(outputValue)
+          	out << "value=\"${value}\" "
         // process remaining attributes
         outputAttributes(attrs)
 
