@@ -52,7 +52,7 @@ import javax.servlet.ServletContext;
  *
  */
 public class GrailsWebApplicationContext extends StaticApplicationContext
-		implements ConfigurableWebApplicationContext, GroovyObject {
+		implements ConfigurableWebApplicationContext, GroovyObject, ThemeSource {
 
 	private ServletContext servletContext;
 	private String namespace;
@@ -67,7 +67,7 @@ public class GrailsWebApplicationContext extends StaticApplicationContext
 	}
 
 	public GrailsWebApplicationContext(ApplicationContext parent) throws BeansException {
-		super(parent);	
+		super(parent);
 		initialise();
 	}
 
