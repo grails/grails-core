@@ -1,6 +1,7 @@
 import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
 import org.codehaus.groovy.grails.commons.ApplicationAttributes;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.commons.ApplicationHolder;
 import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator;
 import org.springframework.context.ApplicationContext;
 import org.codehaus.groovy.grails.plugins.*
@@ -35,6 +36,7 @@ task(loadApp:"Loads the Grails application object") {
 	def ctx = appCtx
 	ctx.servletContext = new MockServletContext()
 	grailsApp = ctx.grailsApplication 
+	ApplicationHolder.application = grailsApp
 	
     pluginManager = new DefaultGrailsPluginManager(pluginResources as Resource[], grailsApp)
 
