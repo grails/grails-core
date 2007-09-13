@@ -184,6 +184,7 @@ class HibernateGrailsPlugin {
                     result = mc.invokeMethod(delegate, name, args)
                 result
             }
+            addValidationMethods(dc, application, ctx) 
         }
     }
 
@@ -234,6 +235,7 @@ class HibernateGrailsPlugin {
         SessionFactory sessionFactory = ctx.sessionFactory
 
         def validateMethod = new ValidatePersistentMethod(sessionFactory, application.classLoader, application)
+
         metaClass.validate = {->
             validateMethod.invoke(delegate, "validate", [] as Object[])
         }
