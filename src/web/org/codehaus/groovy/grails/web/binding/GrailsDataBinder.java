@@ -153,7 +153,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
         PropertyValues values = filterPropertyValues(propertyValues, prefix);
         if(propertyValues instanceof MutablePropertyValues) {
             MutablePropertyValues mutablePropertyValues = (MutablePropertyValues) propertyValues;
-            checkStructuredDateDefinitions(mutablePropertyValues);
+            preProcessMutablePropertyValues(mutablePropertyValues);
         }
         super.bind(values);
     }
@@ -174,15 +174,19 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
     }
 
     private void bindWithRequestAndPropertyValues(ServletRequest request, MutablePropertyValues mpvs) {
-        checkStructuredDateDefinitions(mpvs);
-        autoCreateIfPossible(mpvs);
-        bindAssociations(mpvs);
+        preProcessMutablePropertyValues(mpvs);
 
         if (request instanceof MultipartHttpServletRequest) {
 			MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
 			bindMultipartFiles(multipartRequest.getFileMap(), mpvs);
 		}
         doBind(mpvs);
+    }
+
+    private void preProcessMutablePropertyValues(MutablePropertyValues mpvs) {
+        checkStructuredDateDefinitions(mpvs);
+        autoCreateIfPossible(mpvs);
+        bindAssociations(mpvs);
     }
 
     protected void doBind(MutablePropertyValues mpvs) {
