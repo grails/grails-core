@@ -383,7 +383,7 @@ class HibernateGrailsPlugin {
         }
         metaClass.'static'.exists = {id ->
             def identityType = dc.identifier.type
-            id = convertToType(it, identityType)
+            id = convertToType(id, identityType)
             template.get(domainClassType, id) != null
         }
 
