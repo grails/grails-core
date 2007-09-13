@@ -66,7 +66,7 @@ class FormTagLib {
 	 */
 	def field = { attrs ->  
         resolveAttributes( attrs)
-
+        attrs.id = attrs.id ? attrs.id : attrs.name
 		out << "<input type=\"${attrs.remove('type')}\" "
         outputAttributes(attrs)
 		out << "/>"
@@ -77,6 +77,7 @@ class FormTagLib {
      * A helper tag for creating checkboxes
      **/
     def checkBox = { attrs ->
+          attrs.id = attrs.id ? attrs.id : attrs.name    
           def value = attrs.remove('value')
           def name = attrs.remove('name')  
           def checked = attrs.remove('checked')
@@ -103,7 +104,7 @@ class FormTagLib {
 	 */
 	def textArea = { attrs ->
 	    resolveAttributes(attrs)
-
+        attrs.id = attrs.id ? attrs.id : attrs.name
         // Pull out the value to use as content not attrib
         def value = attrs.remove( 'value')
         def escapeHtml = true
@@ -166,6 +167,7 @@ class FormTagLib {
             out << 'method="post" '
         }
         // process remaining attributes
+        attrs.id = attrs.id ? attrs.id : attrs.name        
         outputAttributes(attrs)
 
         out << ">"         
@@ -507,6 +509,7 @@ class FormTagLib {
 	    def messageSource = grailsAttributes.getApplicationContext().getBean("messageSource")
 		def locale = RCU.getLocale(request)
         def writer = out
+        attrs.id = attrs.id ? attrs.id : attrs.name
         def from = attrs.remove('from')
         def keys = attrs.remove('keys')
         def optionKey = attrs.remove('optionKey')
@@ -601,6 +604,7 @@ class FormTagLib {
      */
      def radio = { attrs ->
           def value = attrs.remove('value')
+          attrs.id = attrs.id ? attrs.id : attrs.name
           def name = attrs.remove('name')
           def checked = (attrs.remove('checked') ? true : false)
           out << '<input type="radio" '
