@@ -47,6 +47,8 @@ public interface RuntimeSpringConfiguration extends ServletContextAware {
      * @return A BeanConfiguration instance
      */
     public BeanConfiguration addSingletonBean(String name, Class clazz);
+    
+    public WebApplicationContext getUnrefreshedApplicationContext();
     /**
      * Adds a prototype bean definition
      *

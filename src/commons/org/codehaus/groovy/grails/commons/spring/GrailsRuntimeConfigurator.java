@@ -34,6 +34,7 @@ import org.springframework.beans.factory.xml.XmlBeanFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.core.io.Resource;
 import org.springframework.mock.web.MockServletContext;
 import org.springframework.transaction.interceptor.TransactionProxyFactoryBean;
@@ -258,8 +259,9 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
           doPostResourceConfiguration(springConfig);
 
       // TODO GRAILS-720 this causes plugin beans to be re-created - should get getApplicationContext always call refresh?
-      WebApplicationContext ctx = springConfig.getApplicationContext();
-
+      // don't register beans or call refresh on the application context
+      WebApplicationContext ctx = springConfig.getUnrefreshedApplicationContext();
+      
       this.pluginManager.setApplicationContext(ctx);
 
       this.pluginManager.doDynamicMethods();
@@ -327,8 +329,10 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
            Resource groovySpringResources = parent.getResource(GrailsRuntimeConfigurator.SPRING_RESOURCES_GROOVY);
            if(springResources.exists()) {
               LOG.debug("[RuntimeConfiguration] Configuring additional beans from " +springResources.getURL());
-              XmlBeanFactory xmlBf = new XmlBeanFactory(springResources);
-              String[] beanNames = xmlBf.getBeanDefinitionNames();
+              // beans from resources.xml are processed via applicationContext implementation not via beanfactory
+              // beanpostprocessors are called and context gets refreshed implicitly
+              ClassPathXmlApplicationContext ct = new ClassPathXmlApplicationContext(new String[]{springResources.getURL().toString()},  springConfig.getApplicationContext());
+              String[] beanNames = ct.getBeanDefinitionNames();
               LOG.debug("[RuntimeConfiguration] Found ["+beanNames.length+"] beans to configure");
               for (int k = 0; k < beanNames.length; k++) {
                 if(SESSION_FACTORY_BEAN.equals(beanNames[k])) {
@@ -337,9 +341,9 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
                             " internally in order to inject dynamic bahavior into domain classes");
                     continue;
                 }
-                  BeanDefinition bd = xmlBf.getBeanDefinition(beanNames[k]);
-
-                  springConfig.addBeanDefinition(beanNames[k], bd);
+                BeanDefinition bd = ct.getBeanFactory().getBeanDefinition(beanNames[k]);
+                
+                springConfig.addBeanDefinition(beanNames[k], bd);
               }
 
            }

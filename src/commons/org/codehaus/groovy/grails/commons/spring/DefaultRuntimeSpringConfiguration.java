@@ -91,6 +91,10 @@ public class DefaultRuntimeSpringConfiguration implements
         return context;
     }
 
+    public WebApplicationContext getUnrefreshedApplicationContext() {
+        return context;
+    }
+    
     public BeanConfiguration addSingletonBean(String name) {
         BeanConfiguration bc = new DefaultBeanConfiguration(name);
         registerBeanConfiguration(name, bc);
