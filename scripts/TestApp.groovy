@@ -163,6 +163,7 @@ def runTests = { suite, TestResult result, Closure callback  ->
 					callback(test, {
                         print "                    ${t.name}..."   
 						test.runTest(t, thisTest)					
+						thisTest
 					})
                     junitTest.setCounts(thisTest.runCount(), thisTest.failureCount(),
                                          thisTest.errorCount());
@@ -267,8 +268,15 @@ task(runIntegrationTests:"Runs Grails' tests under the test/integration director
 						webRequest.controllerName = GCU.getLogicalPropertyName(name, "Controller")
 					}                                                                           
 				
-					invocation()
-					interceptor?.flush() 				
+					def result = invocation()  
+					// don't flush the session if there are errors
+					if(result.errorCount() > 0) {
+						interceptor?.clear()
+					}   
+					else {
+						interceptor?.flush() 										
+					}
+
 	 				RequestContextHolder.setRequestAttributes(null);
 	                if( test.cleaningOrder ) {
 	                    grails.util.GrailsUtil.deprecated "'cleaningOrder' property for integration tests is not in use anymore since now we make Hibernate manage the cleaning order. You can just remove it from your tests."

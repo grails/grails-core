@@ -60,7 +60,12 @@ public class HibernatePersistenceContextInterceptor implements
     public void flush() {
         Session session = SessionFactoryUtils.getSession(sessionFactory,true);
         session.flush();
-    }
+    }  
+
+	public void clear() {
+        Session session = SessionFactoryUtils.getSession(sessionFactory,true);
+        session.clear();		
+	}
 
     /* (non-Javadoc)
       * @see org.codehaus.groovy.grails.support.PersistenceContextInterceptor#init()

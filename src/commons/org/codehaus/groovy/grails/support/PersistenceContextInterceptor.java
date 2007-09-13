@@ -38,5 +38,10 @@ public interface PersistenceContextInterceptor  {
     /**
      *  Flushes any pending changes to the DB
      */
-    void flush();
+    void flush();    
+                 
+	/**
+	 * Clear any pending changes
+	 */
+	void clear();
 }
