@@ -22,12 +22,20 @@ class ValidationTagLibTests extends AbstractGrailsTagTests {
 		}
 	}
 
-	void testMessageTag() {
+	void testMessageTagWithError() {
         def error = new FieldError("foo", "bar",1, false, ["my.error.code"] as String[], null, "This is default")
         def template = '<g:message error="${error}" />'
 
         assertOutputEquals("This is default", template, [error:error])
-                
+    }
+
+	void testMessageTagWithBlankButExistingMessageBundleValue() {
+	    println "Locale is ${Locale.ENGLISH}"
+	    messageSource.addMessage( "test.blank.message", Locale.ENGLISH, "")
+	    
+        def template = '<g:message code="test.blank.message" />'
+
+        assertOutputEquals("", template, [:])
     }
 
 
