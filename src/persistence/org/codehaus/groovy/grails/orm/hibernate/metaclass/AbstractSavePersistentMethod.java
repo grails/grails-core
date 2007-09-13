@@ -32,6 +32,7 @@ import org.springframework.orm.hibernate3.HibernateTemplate;
 import org.springframework.validation.BindException;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
+import org.springframework.validation.BeanPropertyBindingResult;
 
 import java.io.Serializable;
 import java.sql.SQLException;
@@ -70,7 +71,11 @@ public abstract class AbstractSavePersistentMethod extends
         
         if(shouldValidate(arguments, domainClass)) {
         	Validator validator = domainClass.getValidator();
-        	Errors errors = new BindException(target, target.getClass().getName());
+            MetaClass mc = GroovySystem.getMetaClassRegistry().getMetaClass(target.getClass());
+
+            Errors errors = new BeanPropertyBindingResult(target, target.getClass().getName());
+            mc.setProperty(target, "errors", errors);
+            
             if(validator != null) {
                 boolean deepValidate = true;
                 if(arguments.length > 0) {

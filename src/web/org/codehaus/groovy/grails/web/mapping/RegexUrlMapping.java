@@ -184,6 +184,15 @@ public class RegexUrlMapping extends AbstractUrlMapping implements UrlMapping {
             }
 
         }
+        populateParameterList(parameterValues, encoding, uri, usedParams);
+
+        if(LOG.isDebugEnabled()) {
+            LOG.debug("Created reverse URL mapping ["+uri.toString()+"] for parameters ["+parameterValues+"]");
+        }        
+        return  uri.toString();
+    }
+
+    private void populateParameterList(Map parameterValues, String encoding, StringBuffer uri, Set usedParams) {
         boolean addedParams = false;
         usedParams.add( "controller" );
         usedParams.add( "action" );
@@ -199,19 +208,41 @@ public class RegexUrlMapping extends AbstractUrlMapping implements UrlMapping {
                     uri.append(AMPERSAND);
                 }
                 Object value = parameterValues.get(name);
-                try {
-                    uri.append(URLEncoder.encode(name,encoding)).append('=')
-                       .append(URLEncoder.encode(value != null ? value.toString() : "",encoding));
-                } catch (UnsupportedEncodingException e) {
-                    throw new ControllerExecutionException("Error redirecting request for url ["+name+":"+value +"]: " + e.getMessage(),e);
+                if(value != null && value instanceof Collection) {
+                    Collection multiValues = (Collection)value;
+                    for (Iterator j = multiValues.iterator(); j.hasNext();) {
+                        Object o = j.next();
+                        appendValueToURI(encoding, uri, name, o);
+                        if(j.hasNext()) {
+                            uri.append(AMPERSAND);
+                        }
+                    }
+                }
+                else if(value!= null && value.getClass().isArray()) {
+                    Object[] multiValues = (Object[])value;
+                    for (int j = 0; j < multiValues.length; j++) {
+                        Object o = multiValues[j];
+                        appendValueToURI(encoding, uri, name, o);
+                        if(j+1 < multiValues.length) {
+                            uri.append(AMPERSAND);
+                        }
+                    }
+                }
+                else {
+                    appendValueToURI(encoding, uri, name, value);
                 }
             }
 
         }
-        if(LOG.isDebugEnabled()) {
-            LOG.debug("Created reverse URL mapping ["+uri.toString()+"] for parameters ["+parameterValues+"]");
-        }        
-        return  uri.toString();
+    }
+
+    private void appendValueToURI(String encoding, StringBuffer uri, String name, Object value) {
+        try {
+            uri.append(URLEncoder.encode(name,encoding)).append('=')
+                    .append(URLEncoder.encode(value != null ? value.toString() : "",encoding));
+        } catch (UnsupportedEncodingException e) {
+            throw new ControllerExecutionException("Error redirecting request for url ["+name+":"+value +"]: " + e.getMessage(),e);
+        }
     }
 
     public String createURL(String controller, String action, Map parameterValues, String encoding) {

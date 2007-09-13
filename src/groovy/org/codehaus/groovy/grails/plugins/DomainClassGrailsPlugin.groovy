@@ -26,7 +26,8 @@ import org.springframework.beans.BeanUtils
 import org.springframework.validation.Errors
 import org.springframework.validation.BindException
 import org.codehaus.groovy.runtime.metaclass.ThreadManagedMetaBeanProperty    
-import org.springframework.web.context.request.RequestContextHolder as RCH       
+import org.springframework.web.context.request.RequestContextHolder as RCH
+import org.springframework.validation.BeanPropertyBindingResult
 
 /**
 * A plug-in that configures the domain classes in the spring context
@@ -88,7 +89,7 @@ class DomainClassGrailsPlugin {
 				def key = "org.codehaus.groovy.grails.ERRORS_${delegate.class.name}_${System.identityHashCode(delegate)}"
 				errors = storage[key]
 				if(!errors) {
-					errors =  new BindException( delegate, delegate.getClass().getName())
+					errors =  new BeanPropertyBindingResult( delegate, delegate.getClass().getName())
 					storage[key] = errors
 				}					
 				errors
@@ -99,6 +100,15 @@ class DomainClassGrailsPlugin {
 				def key = "org.codehaus.groovy.grails.ERRORS_${delegate.class.name}_${System.identityHashCode(delegate)}"
 				storage[key] = errors
 		    }
+            metaClass.validate = {->
+                errors = new org.springframework.validation.BeanPropertyBindingResult(delegate, delegate.class.name)
+                def localErrors = errors
+                for(prop in constraints.values()) {
+                    prop.messageSource = ctx.getBean("messageSource")
+                    prop.validate(delegate, delegate.getProperty( prop.getPropertyName() ),localErrors);
+                }
+                !localErrors.hasErrors()
+            }
 
         }
 	}

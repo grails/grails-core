@@ -125,7 +125,7 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator  {
     private renderStringEditor(domainClass, property) {
         def cp = domainClass.constrainedProperties[property.name]
         if(!cp) {
-            return "<input type='text' name='${property.name}' id='${property.name}' value=\"\${${domainClass.propertyName}?.${property.name}?.encodeAsHTML()}\" />"
+            return "<input type='text' name='${property.name}' id='${property.name}' value=\"\${fieldValue(bean:${domainClass.propertyName},field:'${property.name}')}\" />"
         }
         else {
 			if("textarea" == cp.widget || (cp.maxSize > 250 && !cp.password && !cp.inList)) {
@@ -134,7 +134,7 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator  {
             else {
                 if(cp.inList) {
                    def sb = new StringBuffer('<g:select ')
-                   sb << "id='${property.name}' name='${property.name}' from='\${${domainClass.propertyName}.constraints.${property.name}.inList.collect{it.encodeAsHTML()}}' value=\"\${${domainClass.propertyName}.${property.name}?.encodeAsHTML()}\" ${renderNoSelection(property)}>"
+                   sb << "id='${property.name}' name='${property.name}' from='\${${domainClass.propertyName}.constraints.${property.name}.inList.collect{it.encodeAsHTML()}}' value=\"\${fieldValue(bean:${domainClass.propertyName},field:'${property.name}')}\" ${renderNoSelection(property)}>"
                    sb << '</g:select>'
                    return sb.toString()
                 }
@@ -143,7 +143,7 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator  {
                     cp.password ? sb << 'type="password" ' : sb << 'type="text" '
                     if(!cp.editable) sb << 'readonly="readonly" '
                     if(cp.maxSize) sb << "maxlength='${cp.maxSize}' "
-                    sb << "id='${property.name}' name='${property.name}' value=\"\${${domainClass.propertyName}?.${property.name}?.encodeAsHTML()}\"/>"
+                    sb << "id='${property.name}' name='${property.name}' value=\"\${fieldValue(bean:${domainClass.propertyName},field:'${property.name}')}\"/>"
                     return sb.toString()
                 }
             }
@@ -179,7 +179,7 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator  {
                 return "<g:select from='\${-128..127}' name='${property.name}' value=\"\${${domainClass.propertyName}?.${property.name}}\"></g:select>"
             }
             else {
-                return "<input type='text' id='${property.name}' name='${property.name}' value=\"\${${domainClass.propertyName}?.${property.name}}\" />"
+                return "<input type='text' id='${property.name}' name='${property.name}' value=\"\${fieldValue(bean:${domainClass.propertyName},field:'${property.name}')}\" />"
             }
         }
         else {
@@ -187,7 +187,7 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator  {
                 return "<g:select from='\${${cp.range.from}..${cp.range.to}}' id='${property.name}' name='${property.name}' value=\"\${${domainClass.propertyName}?.${property.name}}\" ${renderNoSelection(property)}></g:select>"
             }
             else {
-                return "<input type='text' id='${property.name}' name='${property.name}' value=\"\${${domainClass.propertyName}?.${property.name}}\" />"
+                return "<input type='text' id='${property.name}' name='${property.name}' value=\"\${fieldValue(bean:${domainClass.propertyName},field:'${property.name}')}\" />"
             }
         }
     }

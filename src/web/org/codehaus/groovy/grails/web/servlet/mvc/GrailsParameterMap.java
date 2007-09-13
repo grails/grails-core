@@ -49,10 +49,22 @@ public class GrailsParameterMap implements Map {
         final Map requestMap = request.getParameterMap();
         for (Iterator it = requestMap.keySet().iterator(); it.hasNext(); ){
 			String key = (String) it.next();
-			parameterMap.put(key, requestMap.get(key));
+            Object paramValue = getParameterValue(requestMap, key);
+            parameterMap.put(key, paramValue);
             processNestedKeys(request, requestMap, key, key ,parameterMap);
         }
 	}
+
+    private Object getParameterValue(Map requestMap, String key) {
+        Object paramValue = requestMap.get(key);
+        if(paramValue instanceof String[]) {
+            String[] multiParams = (String[])paramValue;
+            if(multiParams.length == 1) {
+                paramValue = multiParams[0];
+            }
+        }
+        return paramValue;
+    }
 
     /*
      * This method builds up a multi dimensional hash structure from the parameters so that nested keys such as "book.author.name"
@@ -72,7 +84,7 @@ public class GrailsParameterMap implements Map {
                 }
                 if(nestedIndex < nestedKey.length()-1) {
                     final String remainderOfKey = nestedKey.substring(nestedIndex + 1, nestedKey.length());
-                    nestedMap.put(remainderOfKey,requestMap.get(key) );
+                    nestedMap.put(remainderOfKey,getParameterValue(requestMap, key) );
                     if(remainderOfKey.indexOf('.') >-1) {
                         processNestedKeys(request, requestMap,key,remainderOfKey,nestedMap);
                     }

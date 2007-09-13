@@ -43,7 +43,7 @@ class ${className}Controller {
         def ${propertyName} = ${className}.get( params.id )
         if(${propertyName}) {
              ${propertyName}.properties = params
-            if(${propertyName}.save()) {
+            if(!${propertyName}.hasErrors() && ${propertyName}.save()) {
                 flash.message = "${className} \${params.id} updated."
                 redirect(action:show,id:${propertyName}.id)
             }
@@ -64,9 +64,8 @@ class ${className}Controller {
     }
 
     def save = {
-        def ${propertyName} = new ${className}()
-        ${propertyName}.properties = params
-        if(${propertyName}.save()) {
+        def ${propertyName} = new ${className}(params)
+        if(!${propertyName}.hasErrors() && ${propertyName}.save()) {
             flash.message = "${className} \${${propertyName}.id} created."
             redirect(action:show,id:${propertyName}.id)
         }

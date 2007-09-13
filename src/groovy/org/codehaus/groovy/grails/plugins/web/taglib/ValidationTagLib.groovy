@@ -27,7 +27,35 @@ import org.codehaus.groovy.grails.commons.ApplicationHolder
 * @since 17-Jan-2006
 */
 
-class ValidationTagLib {
+class ValidationTagLib {     
+   /**
+    * Obtains the value of a field either from the original errors
+    *
+    * eg. <g:fieldValue bean="${book}" field="title" />
+    */ 
+   def fieldValue =  { attrs, body ->
+   		def bean = attrs.bean
+		def field = attrs.field
+		if(bean && field) {
+			if(bean.getClass().metaClass.hasProperty(bean, 'errors')) {
+				def errors = bean.errors
+				def rejectedValue = errors?.getFieldError(field)?.rejectedValue
+				if(rejectedValue == null ) {
+					rejectedValue = bean."$field"
+				}   
+				if(rejectedValue != null) {
+					out << rejectedValue.toString().encodeAsHTML()
+				}                            
+			}                       
+			else {     
+				def rejectedValue = bean."$field"
+				if(rejectedValue != null) {
+					out << rejectedValue.toString().encodeAsHTML()						
+				}
+			}
+		}
+   }
+	
     /**
      * Checks if the request has errors either for a field or global errors
      */
@@ -63,27 +91,16 @@ class ValidationTagLib {
             if (i instanceof Errors) {
                errors = i
             }
-            else {       
-				try {
-					if ((i.errors != null) && (i.errors instanceof Errors)) {
-		                if (i.errors.hasErrors())
-		                    errors = i.errors
-		            }
-					
-				}   
-				catch(MissingPropertyException mpe) {
-					// ignore - @todo Get rid of this performance bottleneck for every request using this tag!
+            else {           
+				def mc = GroovySystem.metaClassRegistry.getMetaClass(i.getClass())
+				if(mc.hasProperty(i, 'errors')) {
+	                if (i.errors.hasErrors())
+	                    errors = i.errors					
 				}
 			}
-            if(errors) {
+            if(errors?.hasErrors()) {
                 if(attrs['field']) {
                     if(errors.hasFieldErrors(attrs['field'])) {
-                        def e = errors.getFieldErrors(attrs['field'])
-                        def errorArgs = e.arguments[0]
-
-                        if (i.class == errorArgs[1]) {
-                             out << body()
-                        }
                         out << body()
                     }
                 }
@@ -100,6 +117,8 @@ class ValidationTagLib {
     def eachError = { attrs, body ->
         def model = attrs['model']
         def errorList = []
+        def var = attrs.var
+        
         if(model) {
             errorList = model.findAll { it.value?.errors instanceof Errors }.collect { it.value }
         }
@@ -133,21 +152,28 @@ class ValidationTagLib {
             if(errors && errors.hasErrors()) {
                 if(attrs['field']) {
                     if(errors.hasFieldErrors(attrs['field'])) {
-                        errors.getFieldErrors( attrs["field"] ).each {
-                            def args = it.arguments
+                        for(e in errors.getFieldErrors( attrs["field"] )) {
+                            def args = e.arguments
 
                             if (i.class == args[1]) {
-                                out << body(it)
-                            }                                
+                                if(var) {
+                                    out << body([(var):e])
+                                }
+                                else {
+                                    out << body(e)
+                                }
+                            }
                         }
                     }
                 }
                 else {
-                    errors.allErrors.each {
-                         def errorArgs = it.arguments    
-                         if (errorsArgs && i.class == errorArgs[1]) {
-                             out << body( it )
-                         }
+                   for(e in errors.allErrors) {
+                       if(var) {
+                           out << body([(var):e])
+                       }
+                       else {
+                           out << body(e)
+                       }
                     }
                 }
             }
@@ -164,9 +190,7 @@ class ValidationTagLib {
         if(renderAs == 'list') {
             out << "<ul>"
             out << eachError(attrs, {
-                out << "<li>"
-                out << message(error:it)
-                out << "</li>"
+                out << "<li>${message(error:it)}</li>"
               }
             )
             out << "</ul>"

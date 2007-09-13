@@ -1,30 +1,27 @@
-package org.codehaus.groovy.grails.web.taglib;
+package org.codehaus.groovy.grails.web.taglib
 
-import org.codehaus.groovy.grails.support.*
-import org.codehaus.groovy.grails.commons.test.*
-import org.codehaus.groovy.grails.commons.*
-import org.codehaus.groovy.grails.commons.metaclass.*
-import org.codehaus.groovy.grails.commons.spring.*
-import org.codehaus.groovy.grails.plugins.*
-import org.springframework.web.context.request.*
-import org.codehaus.groovy.grails.web.servlet.mvc.*
-import org.codehaus.groovy.grails.web.servlet.*
-import org.springframework.mock.web.*
-import org.springframework.validation.*
-import org.springframework.web.servlet.*
-import org.springframework.context.*
-import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
-import org.springframework.web.servlet.DispatcherServlet;
-import org.springframework.web.servlet.i18n.AcceptHeaderLocaleResolver;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
-import org.springframework.context.MessageSource;
-import org.springframework.context.support.StaticMessageSource;
-import org.codehaus.groovy.runtime.InvokerHelper;
+import grails.util.GrailsWebUtil
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler
+import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
+import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.TagLibArtefactHandler
-import grails.util.*
+import org.codehaus.groovy.grails.commons.spring.DefaultRuntimeSpringConfiguration
+import org.codehaus.groovy.grails.plugins.DefaultGrailsPlugin
+import org.codehaus.groovy.grails.plugins.DefaultPluginMetaManager
+import org.codehaus.groovy.grails.plugins.MockGrailsPluginManager
+import org.codehaus.groovy.grails.plugins.PluginMetaManager
+import org.codehaus.groovy.grails.support.MockApplicationContext
+import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
+import org.codehaus.groovy.runtime.InvokerHelper
+import org.springframework.context.ApplicationContextAware
+import org.springframework.context.support.StaticMessageSource
+import org.springframework.core.io.Resource
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver
+import org.springframework.mock.web.MockServletContext
 import org.springframework.web.context.WebApplicationContext
+import org.springframework.web.context.request.RequestContextHolder
+import org.springframework.web.servlet.DispatcherServlet
+import org.springframework.web.servlet.i18n.AcceptHeaderLocaleResolver;
 
 abstract class AbstractGrailsTagTests extends GroovyTestCase {
 
@@ -75,11 +72,15 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
 		return result
 	}
 
+    void onSetUp() {
+
+    }
+    
     void setUp() throws Exception {
         originalHandler = 	GroovySystem.metaClassRegistry.metaClassCreationHandle
 
 		GroovySystem.metaClassRegistry.metaClassCreationHandle = new ExpandoMetaClassCreationHandle();
-
+        onSetUp()
         grailsApplication = new DefaultGrailsApplication(gcl.loadedClasses, gcl)
         ga = grailsApplication
         grailsApplication.initialise()
@@ -111,6 +112,7 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
 		def dependantPluginClasses = []
 		dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.CoreGrailsPlugin")
 		dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.CodecsGrailsPlugin")
+		dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.DomainClassGrailsPlugin")
 		dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.i18n.I18nGrailsPlugin")
 		dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.web.ServletsGrailsPlugin")
 	    dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.web.mapping.UrlMappingsGrailsPlugin")		

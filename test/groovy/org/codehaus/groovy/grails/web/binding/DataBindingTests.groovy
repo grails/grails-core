@@ -24,6 +24,7 @@ class Book {
     Long version
     String title
     Author author
+    URL site
 }
 class Author {
     Long id
@@ -32,6 +33,26 @@ class Author {
     String hairColour
 }
         ''')
+    }
+
+    void testTypeConversionErrors() {
+        def c = ga.getControllerClass("TestController").newInstance()
+
+        request.addParameter("site", "not_a_valid_URL")
+
+
+        def params = c.params
+
+        def b = ga.getDomainClass("Book").newInstance()
+
+        b.properties = params
+
+        println b.errors
+        assert b.hasErrors()
+
+        def error = b.errors.getFieldError('site')
+                      
+
     }
 
     void testAssociationAutoCreation() {

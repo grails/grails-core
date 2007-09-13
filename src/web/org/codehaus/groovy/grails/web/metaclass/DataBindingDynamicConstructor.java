@@ -20,10 +20,12 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.metaclass.DynamicConstructor;
 import org.codehaus.groovy.grails.exceptions.GrailsDomainException;
 import org.codehaus.groovy.grails.web.binding.GrailsDataBinder;
+import org.codehaus.groovy.grails.web.binding.DataBindingUtils;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap;
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.PropertyValues;
 import org.springframework.validation.DataBinder;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.ServletRequestDataBinder;
 import org.springframework.context.ApplicationContext;
 
@@ -78,45 +80,10 @@ public class DataBindingDynamicConstructor implements DynamicConstructor {
 
 
         if (map !=null) {
-            if(map instanceof GrailsParameterMap) {
-                GrailsParameterMap parameterMap = (GrailsParameterMap)map;
-                HttpServletRequest request = parameterMap.getRequest();
-
-                GrailsDataBinder dataBinder = GrailsDataBinder.createBinder(instance, instance.getClass().getName(),request);
-                dataBinder.bind(parameterMap);
-                return instance;
-            }
-            else if (map instanceof HttpServletRequest) {
-                HttpServletRequest request = (HttpServletRequest)map;
-                ServletRequestDataBinder dataBinder = GrailsDataBinder.createBinder(instance, instance.getClass().getName(),request);
-                dataBinder.bind(request);
-                return instance;
-            }
-            else if(map instanceof Map) {
-
-                DataBinder dataBinder = new DataBinder(instance);
-                Map m = convertPotentialGStrings((Map)map);
-                PropertyValues pv = new MutablePropertyValues(m);
-                dataBinder.bind(pv);
-            }
+                DataBindingUtils.bindObjectToInstance(instance, map);
         }
         return instance;
-	}    
-	
-	private Map convertPotentialGStrings(Map args) {  
-		Map newArgs = new java.util.HashMap();
-		for(java.util.Iterator i = args.keySet().iterator(); i.hasNext();) {
-			Object key = i.next();  
-			Object value = args.get(key);
-			if(key instanceof groovy.lang.GString) {
-				key = key.toString();
-			}
-			if(value instanceof groovy.lang.GString) {
-				value = value.toString();				
-			}   
-			newArgs.put(key,value);
-		}
-		return newArgs;
 	}
+
 
 }

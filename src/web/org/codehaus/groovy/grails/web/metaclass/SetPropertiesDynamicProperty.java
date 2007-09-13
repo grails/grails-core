@@ -19,17 +19,11 @@ import groovy.lang.MissingPropertyException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.metaclass.AbstractDynamicProperty;
-import org.codehaus.groovy.grails.web.binding.GrailsDataBinder;
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap;
+import org.codehaus.groovy.grails.web.binding.DataBindingUtils;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
-import org.springframework.web.bind.ServletRequestDataBinder;
-import org.springframework.beans.TypeConverter;
 import org.springframework.beans.SimpleTypeConverter;
-import org.springframework.beans.MutablePropertyValues;
-
-
-import javax.servlet.http.HttpServletRequest;
-import java.util.Map;
+import org.springframework.beans.TypeConverter;
+import org.springframework.validation.BindingResult;
 
 /**
  * A dynamic property that uses a Map of OGNL expressions to sets properties on the target object
@@ -66,22 +60,10 @@ public class SetPropertiesDynamicProperty extends AbstractDynamicProperty {
 	public void set(Object object, Object newValue) {
 		if(newValue == null)
 			return;
-		
-		if(newValue instanceof GrailsParameterMap) {
-			GrailsParameterMap parameterMap = (GrailsParameterMap)newValue;
-			HttpServletRequest request = parameterMap.getRequest();
-			GrailsDataBinder dataBinder = GrailsDataBinder.createBinder(object, object.getClass().getName(),request); 
-			dataBinder.bind(parameterMap);
-		}
-		else if(newValue instanceof Map) {
-			
-			Map propertyMap = (Map)newValue;
-            GrailsDataBinder binder = GrailsDataBinder.createBinder(object, object.getClass().getName());
-            binder.bind(new MutablePropertyValues(propertyMap));			
-		}
-		else {
-			throw new MissingPropertyException(PROPERTY_NAME,object.getClass());
-		}
-	}
+
+        BindingResult result = DataBindingUtils.bindObjectToInstance(object, newValue);
+        if(result == null)
+            throw new MissingPropertyException(PROPERTY_NAME,object.getClass());
+    }
 
 }
