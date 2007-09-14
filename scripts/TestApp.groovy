@@ -127,10 +127,14 @@ task(produceReports:"Outputs aggregated xml and html reports") {
 }
     
  
-def populateTestSuite = { suite, testFiles, classLoader, ctx ->
+def populateTestSuite = { suite, testFiles, classLoader, ctx, String base ->
 	for(r in testFiles) {
 	    try {
-		    def c = classLoader.loadClass(r.filename - ".groovy") 
+		    def fileName = r.URL.toString()
+		    println fileName
+		    println base
+		    def className = fileName[fileName.indexOf(base)+base.size()..-8].replace('/' as char, '.' as char)
+            def c = classLoader.loadClass(className) 
             if(TestCase.isAssignableFrom(c) && !Modifier.isAbstract(c.modifiers)) {
                 suite.addTest(new GrailsTestSuite(ctx.beanFactory, c))
             }                                                  
@@ -202,7 +206,7 @@ task(runUnitTests:"Run Grails' unit tests under the test/unit directory") {
 
             classLoader.rootLoader.addURL(new File("test/unit").toURL())
             def suite = new TestSuite()
-            populateTestSuite(suite, testFiles, classLoader, appCtx)
+            populateTestSuite(suite, testFiles, classLoader, appCtx, "test/unit/")
 			if(suite.testCount() > 0) {      
 				int testCases = suite.countTestCases()
 	            println "-------------------------------------------------------"
@@ -245,7 +249,7 @@ task(runIntegrationTests:"Runs Grails' tests under the test/integration director
 		def classLoader = app.classLoader
 		def suite = new TestSuite()
 
-   		populateTestSuite(suite, testFiles, classLoader, appCtx)   
+   		populateTestSuite(suite, testFiles, classLoader, appCtx, "test/integration/")
 		if(suite.testCount() > 0) {      
 			int testCases = suite.countTestCases()
             println "-------------------------------------------------------"
