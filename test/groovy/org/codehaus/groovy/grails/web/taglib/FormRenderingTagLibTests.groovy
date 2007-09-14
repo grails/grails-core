@@ -24,7 +24,7 @@ class FormRenderingTagLibTests extends AbstractGrailsTagTests {
         def output = sw.toString()
 
         println output
-        assertTrue output.startsWith('<select name="foo" >')
+        assertTrue output.startsWith('<select name="foo" id="foo" >')
         assertTrue output.endsWith('</select>')
 
     }

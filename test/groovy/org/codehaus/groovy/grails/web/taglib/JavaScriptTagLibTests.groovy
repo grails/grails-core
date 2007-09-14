@@ -67,26 +67,6 @@ class TestUrlMappings {
 		}
 	}	
 	
-	public void testYahooRemoteFunction() throws Exception {
-		StringWriter sw = new StringWriter()
-		PrintWriter pw = new PrintWriter(sw)
-		
-		withTag("remoteFunction",pw) { tag ->
-			GroovyObject tagLibrary = (GroovyObject)tag.getOwner()
-			def request = tagLibrary.getProperty("request")
-			def includedLibrary = ['yahoo']
-			request.setAttribute("org.codehaus.grails.INCLUDED_JS_LIBRARIES", includedLibrary)
-			
-			def attrs = [action:'action',controller:'test']
-			tag.call(attrs)
-			assertEquals("YAHOO.util.Connect.asyncRequest('GET','/test/action',{ success: function(o) {  }, failure: function(o) {}},null);",sw.toString());
-			
-			sw.getBuffer().delete(0,sw.getBuffer().length());
-			attrs = [action:'action',controller:'test',update:[success:'updateMe']]
-			tag.call(attrs);
-			assertEquals("YAHOO.util.Connect.asyncRequest('GET','/test/action',{ success: function(o) { YAHOO.util.Dom.get('updateMe').innerHTML = o.responseText; }, failure: function(o) {}},null);",sw.toString());
-		}
-	}
 
     public void testRemoteField() {
         // <g:remoteField action="changeTitle" update="titleDiv"  name="title" value="${book?.title}"/>

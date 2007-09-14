@@ -35,7 +35,6 @@ class JavascriptTagLib  {
     static final CONTROLLER = "org.codehaus.groovy.grails.CONTROLLER"
 	static final LIBRARY_MAPPINGS = [
 										prototype : ['prototype/prototype'],
-										yahoo : [ 'yahoo/yahoo-min','yahoo/event-min','yahoo/connection-min', 'yahoo/dom-min','yahoo/animation-min'],
 										dojo : [ 'dojo/dojo']
 									]
 										
@@ -48,7 +47,6 @@ class JavascriptTagLib  {
 	                                     prototype: PrototypeProvider.class,
 	                                     scriptaculous: PrototypeProvider.class,
 	                                     rico: PrototypeProvider.class,
-	                                     yahoo: YahooProvider.class,
 	                                     dojo: DojoProvider.class
                                   	 ]
 
@@ -440,81 +438,6 @@ class PrototypeProvider implements JavascriptProvider {
     }
 }
 
-/**
- * A implementation for the Yahoo library
- *
- * @author Graeme Rocher
- **/
-class YahooProvider implements JavascriptProvider {
-	def doRemoteFunction(taglib,attrs, out)	{  
-
-		def method = (attrs.method ? attrs.method : 'GET' )
-		if(attrs.onLoading) {
-			out << "${attrs.onLoading};"
-		}
-		out << "YAHOO.util.Connect.asyncRequest('${method}','"
-				
-		if(attrs.url) {
-			out << taglib.createLink(attrs.url)
-		}
-		else {
-			out << taglib.createLink(attrs)
-		}		
-		attrs.remove('url')
-		out << "',"
-		buildYahooCallback(attrs,out)
-		out << ',null);'
-	}	
-	
-
-	// helper method to create yahoo callback object
-	def buildYahooCallback(attrs,out) {     
-
-		out << '{ '
-			  out <<'success: function(o) { '
-			    if(attrs.onLoaded) {
-					out << "${attrs.onLoaded}(o);";
-				}
-				if(attrs.update instanceof Map) {
-					if(attrs.update.success) {
-						out << "YAHOO.util.Dom.get('${attrs.update.success}').innerHTML = o.responseText;"									
-					}								
-				}
-				else if(attrs.update) {
-					out <<  "YAHOO.util.Dom.get('${attrs.update}').innerHTML = o.responseText;"
-				}
-				if(attrs.onSuccess) {
-					out << "${attrs.onSuccess}(o);"
-				}	
-				if(attrs.onComplete) {
-					out << "${attrs.onComplete}(o);"
-				}		  
-				out << ' }'
-				out << 	', failure: function(o) {'									
-				if(attrs.update instanceof Map) {
-					if(attrs.update.failure) {
-						out << "YAHOO.util.Dom.get('${attrs.update.failure}').innerHTML = o.statusText;"																				
-					}
-				}
-				if(attrs.onFailure) {
-					out << "${attrs.onFailure}(o);"
-				}	
-				if(attrs.onComplete) {
-					out << "${attrs.onComplete}(o);"
-				}													
-				out << '}'							   		
-			out << '}'		
-	}
-	
-	def prepareAjaxForm(attrs) {
-		if(attrs.before) {
-			attrs.before += ";YAHOO.util.Connect.setForm('${attrs.name}')"
-		}
-		else {
-			attrs.before = "YAHOO.util.Connect.setForm('${attrs.name}')"
-		}
-	}
-}
 
 /**
  * An implementation for the Dojo javascript library

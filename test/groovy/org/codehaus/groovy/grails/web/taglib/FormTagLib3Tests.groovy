@@ -63,7 +63,7 @@ public class FormTagLib3Tests extends AbstractGrailsTagTests {
     		def attributes = new TreeMap([name: "testRadio", checked: "true", value: "1"])
     		tag.call(attributes)
 
-	    	assertEquals "<input type=\"radio\" name=\"testRadio\" checked=\"checked\" value=\"1\"  />", sw.toString()
+	    	assertEquals "<input type=\"radio\" name=\"testRadio\" checked=\"checked\" value=\"1\" id=\"testRadio\"  />", sw.toString()
     	}
 
     	sw = new StringWriter();
@@ -74,7 +74,7 @@ public class FormTagLib3Tests extends AbstractGrailsTagTests {
     		def attributes = new TreeMap([name: "testRadio", value: "2"])
     		tag.call(attributes)
 
-    		assertEquals "<input type=\"radio\" name=\"testRadio\" value=\"2\"  />", sw.toString()
+    		assertEquals "<input type=\"radio\" name=\"testRadio\" value=\"2\" id=\"testRadio\"  />", sw.toString()
     	}
     }
 
@@ -195,12 +195,18 @@ public class FormTagLib3Tests extends AbstractGrailsTagTests {
     	}
 
 
-        def doc = DocumentHelper.parseText( sw.toString() )
-        assertNotNull( doc)
+        println "SELECT = $sw"
 
-        assertSelectFieldPresentWithValueAndText( doc, SELECT_TAG_NAME, '?', 'NONE' )
-        range.each() {
-            assertSelectFieldPresentWithValue( doc, SELECT_TAG_NAME, it.toString() )
+        def xml = new XmlSlurper().parseText(sw.toString())
+
+        assertEquals "testSelect", xml.@name?.toString()
+        assertEquals "testSelect", xml.@id?.toString()
+        assertEquals "NONE", xml.option[0].text()
+        assertEquals "?", xml.option[0].@value.toString()
+
+        range.eachWithIndex { e, i ->
+            assertEquals e, xml.option[i+1].text()
+            assertEquals e, xml.option[i+1].@value.toString()
         }
 
 
@@ -214,7 +220,7 @@ public class FormTagLib3Tests extends AbstractGrailsTagTests {
     	}
 
 
-        doc = DocumentHelper.parseText( sw.toString() )
+        def doc = DocumentHelper.parseText( sw.toString() )
         assertNotNull( doc)
 
         assertSelectFieldPresentWithSelectedValue( doc, SELECT_TAG_NAME, '')
@@ -280,15 +286,15 @@ public class FormTagLib3Tests extends AbstractGrailsTagTests {
     public void testCheckboxTag() {
         def template = '<g:checkBox name="foo" value="${test}"/>'
 
-        assertOutputEquals('<input type="hidden" name="_foo" /><input type="checkbox" name="foo" checked="checked" value="hello"  />', template, [test:"hello"])
+        assertOutputEquals('<input type="hidden" name="_foo" /><input type="checkbox" name="foo" checked="checked" value="hello" id="foo"  />', template, [test:"hello"])
 
         template = '<g:checkBox name="foo" value="${test}" checked="false"/>'
 
-        assertOutputEquals('<input type="hidden" name="_foo" /><input type="checkbox" name="foo" value="hello"  />', template, [test:"hello"])
+        assertOutputEquals('<input type="hidden" name="_foo" /><input type="checkbox" name="foo" value="hello" id="foo"  />', template, [test:"hello"])
 
         template = '<g:checkBox name="foo" value="${test}" checked="${true}"/>'
 
-        assertOutputEquals('<input type="hidden" name="_foo" /><input type="checkbox" name="foo" checked="checked" value="hello"  />', template, [test:"hello"])
+        assertOutputEquals('<input type="hidden" name="_foo" /><input type="checkbox" name="foo" checked="checked" value="hello" id="foo"  />', template, [test:"hello"])
 
     }
 
