@@ -226,7 +226,7 @@ class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants 
 		if(attrs.controller) {
 			linkTagAttrs.controller = attrs.controller
 		}
-		if(attrs.id) {
+		if(attrs.id!=null) {
 			linkTagAttrs.id = attrs.id
 		}
 		linkTagAttrs.params = linkParams
