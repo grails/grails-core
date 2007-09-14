@@ -83,6 +83,7 @@ task (war: "The implementation task") {
             }
 		}                 
 		Ant.copy(file:webXmlFile.absolutePath, tofile:"${basedir}/staging/WEB-INF/web.xml")
+		Ant.copy(file:log4jFile.absolutePath, tofile:"${basedir}/staging/WEB-INF/log4j.properties")
         Ant.copy(todir:"${basedir}/staging/WEB-INF/lib", flatten:true, failonerror:false) {
 			fileset(dir:"${basedir}/plugins") {
                 include(name:"*/lib/*.jar")

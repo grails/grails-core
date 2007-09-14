@@ -43,7 +43,7 @@ scaffoldDir = "${basedir}/web-app/WEB-INF/templates/scaffolding"
 config = new ConfigObject()
 configFile = new File("${basedir}/grails-app/conf/Config.groovy")
 webXmlFile = new File("${userHome}/.grails/${grailsVersion}/projects/${baseName}/web.xml")
-logDest = new File("${basedir}/web-app/WEB-INF/classes/log4j.properties")
+log4jFile = new File("${basedir}/web-app/WEB-INF/classes/log4j.properties")
 generateLog4jFile = false
 
 task ('default': "Packages a Grails application. Note: To create WAR use 'grails war'") {
@@ -115,10 +115,12 @@ task( packageApp : "Implementation of package task") {
 		packageTemplates()   						
 	}	   
 	if(config.grails.enable.native2ascii == true) {
-		Ant.native2ascii(src:"${basedir}/grails-app/i18n",
-						 dest:"${basedir}/web-app/WEB-INF/grails-app/i18n",
-						 includes:"*.properties",
-						 encoding:"UTF-8")   		
+		profile("converting native message bundles to ascii") {
+			Ant.native2ascii(src:"${basedir}/grails-app/i18n",
+							 dest:"${basedir}/web-app/WEB-INF/grails-app/i18n",
+							 includes:"*.properties",
+							 encoding:"UTF-8")   					
+		}
 	}                                        
 	else {
 	    Ant.copy(todir:"${basedir}/web-app/WEB-INF/grails-app/i18n") {
@@ -141,13 +143,13 @@ task( packageApp : "Implementation of package task") {
 	}           
 
 
-    if(configFile.lastModified() > logDest.lastModified() || generateLog4jFile) {
+    if(configFile.lastModified() > log4jFile.lastModified() || generateLog4jFile) {
         generateLog4j()
     }
-    else if(!logDest.exists()) {
-        createDefaultLog4J(logDest)
+    else if(!log4jFile.exists()) {
+        createDefaultLog4J(log4jFile)
     }
-    Log4jConfigurer.initLogging("file:${logDest.absolutePath}")
+    Log4jConfigurer.initLogging("file:${log4jFile.absolutePath}")
         
     loadPlugins()
     generateWebXml()
@@ -159,13 +161,13 @@ task(generateLog4j:"Generates the Log4j config File") {
         try {
             if(log4jConfig) {
                 def props = log4jConfig.toProperties("log4j")
-                logDest.withOutputStream { out ->
+                log4jFile.withOutputStream { out ->
                     props.store(out, "Grails' Log4j Configuration")
                 }
             }
             else {
                 // default log4j settings
-                createDefaultLog4J(logDest)
+                createDefaultLog4J(log4jFile)
             }
 
         }
