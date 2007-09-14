@@ -35,6 +35,26 @@ class Author {
         ''')
     }
 
+    void testTypeConversionErrorsWithNestedAssociations() {
+        def c = ga.getControllerClass("TestController").newInstance()
+
+        request.addParameter("author.name", "Stephen King")
+        request.addParameter("author.hairColour", "Black")
+
+
+        def params = c.params
+
+        def b = ga.getDomainClass("Book").newInstance()
+
+        b.properties = params
+
+        def a = b.author
+
+        assert !a.hasErrors()
+        println b.errors
+        assert !b.hasErrors()
+
+    }
     void testTypeConversionErrors() {
         def c = ga.getControllerClass("TestController").newInstance()
 

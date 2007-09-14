@@ -190,8 +190,19 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
     }
 
     protected void doBind(MutablePropertyValues mpvs) {
+        filterNestedParameterMaps(mpvs);
         autoCreateIfPossible(mpvs);
         super.doBind(mpvs);
+    }
+
+    private void filterNestedParameterMaps(MutablePropertyValues mpvs) {
+        PropertyValue[] values = mpvs.getPropertyValues();
+        for (int i = 0; i < values.length; i++) {
+            PropertyValue pv = values[i];
+            if(pv.getValue() instanceof GrailsParameterMap) {
+                mpvs.removePropertyValue(pv);
+            }
+        }
     }
 
     private PropertyValues filterPropertyValues(PropertyValues propertyValues, String prefix) {
