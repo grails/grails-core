@@ -42,6 +42,8 @@ grails prod war
 	war()
 } 
 
+generateLog4jFile = true
+
 task (war: "The implementation task") {
 	depends( clean, packagePlugins, packageApp, generateWebXml )
 	 

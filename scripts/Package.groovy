@@ -28,7 +28,8 @@ import org.springframework.core.io.support.PathMatchingResourcePatternResolver
 import org.springframework.core.io.*
 import org.codehaus.groovy.grails.plugins.*
 import org.codehaus.groovy.grails.commons.*
-import org.codehaus.groovy.control.*    
+import org.codehaus.groovy.control.*
+import org.springframework.util.Log4jConfigurer
 import grails.util.*
 
 
@@ -42,6 +43,8 @@ scaffoldDir = "${basedir}/web-app/WEB-INF/templates/scaffolding"
 config = new ConfigObject()
 configFile = new File("${basedir}/grails-app/conf/Config.groovy")
 webXmlFile = new File("${userHome}/.grails/${grailsVersion}/projects/${baseName}/web.xml")
+logDest = new File("${basedir}/web-app/WEB-INF/classes/log4j.properties")
+generateLog4jFile = false
 
 task ('default': "Packages a Grails application. Note: To create WAR use 'grails war'") {
      depends( checkVersion)
@@ -137,38 +140,41 @@ task( packageApp : "Implementation of package task") {
 		}
 	}           
 
-	def logDest = new File("${basedir}/web-app/WEB-INF/classes/log4j.properties")
 
-    profile("log4j-creation") {
-
-        if(configFile.lastModified() > logDest.lastModified()) {
-
-            def log4jConfig = config.log4j
-	        try {
-	            if(log4jConfig) {
-	                def props = log4jConfig.toProperties("log4j")
-	                logDest.withOutputStream { out ->
-	                    props.store(out, "Grails' Log4j Configuration")
-	                }
-	            }
-	            else {
-	                // default log4j settings
-					createDefaultLog4J(logDest)
-	            }
-	        }
-	        catch(Exception e) {
-		        event("StatusFinal", [ "Error creating Log4j config: " + e.message ])
-				exit(1)
-	        }  
-    	}
-		else if(!logDest.exists()) {
-			createDefaultLog4J(logDest)
-		}
+    if(configFile.lastModified() > logDest.lastModified() || generateLog4jFile) {
+        generateLog4j()
     }
-
+    else if(!logDest.exists()) {
+        createDefaultLog4J(logDest)
+    }
+    Log4jConfigurer.initLogging("file:${logDest.absolutePath}")
+        
     loadPlugins()
     generateWebXml()
-}   
+}
+
+task(generateLog4j:"Generates the Log4j config File") {
+    profile("log4j-generation") {
+        def log4jConfig = config.log4j
+        try {
+            if(log4jConfig) {
+                def props = log4jConfig.toProperties("log4j")
+                logDest.withOutputStream { out ->
+                    props.store(out, "Grails' Log4j Configuration")
+                }
+            }
+            else {
+                // default log4j settings
+                createDefaultLog4J(logDest)
+            }
+
+        }
+        catch(Exception e) {
+            event("StatusFinal", [ "Error creating Log4j config: " + e.message ])
+            exit(1)
+        }
+    }
+}
    
 def createDefaultLog4J(logDest) {
 	logDest <<  '''

@@ -50,6 +50,8 @@ compilationFailures = []
 includeTargets << new File ( "${grailsHome}/scripts/Package.groovy" )
 includeTargets << new File ( "${grailsHome}/scripts/Bootstrap.groovy" )
 
+generateLog4jFile = true
+
 task ('default': "Run a Grails applications unit tests") {
   depends( classpath, checkVersion, configureProxy, packagePlugins )
   grailsEnv = "test"                                                
