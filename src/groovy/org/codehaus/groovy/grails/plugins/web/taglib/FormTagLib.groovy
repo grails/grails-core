@@ -167,7 +167,9 @@ class FormTagLib {
             out << 'method="post" '
         }
         // process remaining attributes
-        attrs.id = attrs.id ? attrs.id : attrs.name        
+        attrs.id = attrs.id ? attrs.id : attrs.name
+        if(attrs.id == null) attrs.remove('id')
+                        
         outputAttributes(attrs)
 
         out << ">"         
