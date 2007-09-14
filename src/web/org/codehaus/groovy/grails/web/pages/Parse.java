@@ -66,6 +66,11 @@ public class Parse implements Tokens {
     private int constantCount = 0;
     private static final String EMPTY_MULTILINE_STRING = "''''''";
 
+    private static final String[] DEFAULT_IMPORTS = new String[] {
+        "org.codehaus.groovy.grails.web.pages.GroovyPage",
+        "org.codehaus.groovy.grails.web.taglib.*",
+        "grails.util.GrailsUtil"
+    };
 
     public String getContentType() {
         return this.contentType;
@@ -261,8 +266,11 @@ public class Parse implements Tokens {
             out.println("public Object run() {");            
 
         } else {
-            out.println("import org.codehaus.groovy.grails.web.pages.GroovyPage");
-            out.println("import org.codehaus.groovy.grails.web.taglib.*");
+            for (int i = 0; i < DEFAULT_IMPORTS.length; i++) {
+                out.print("import ");
+                out.println(DEFAULT_IMPORTS[i]);
+
+            }
         }
         loop: for (;;) {
             if(doNextScan)

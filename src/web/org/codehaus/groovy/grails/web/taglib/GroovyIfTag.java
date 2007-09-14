@@ -16,6 +16,7 @@ package org.codehaus.groovy.grails.web.taglib;
 
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
+import grails.util.GrailsUtil;
 
 /**
  * @author Graeme Rocher
@@ -24,14 +25,31 @@ import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
 public class GroovyIfTag extends GroovySyntaxTag {
     public static final String TAG_NAME = "if";
     private static final String ATTRIBUTE_TEST = "test";
+    private static final String ATTRIBUTE_ENV = "env";
 
     public void doStartTag() {
+        String env = (String) attributes.get(ATTRIBUTE_ENV);
         String test = (String) attributes.get(ATTRIBUTE_TEST);
-        if(StringUtils.isBlank(test))
-            throw new GrailsTagException("Tag ["+TAG_NAME+"] missing required attribute ["+ATTRIBUTE_TEST+"]");
-        out.print("if(");
-        out.print(test);
-        out.println(") {");
+        env = StringUtils.isBlank(env) ? null : env;
+        test = StringUtils.isBlank(test) ? null : test;
+        if((env == null) && (test == null))
+            throw new GrailsTagException(
+                "Tag ["+TAG_NAME+"] must have one or both of the attributes ["+ATTRIBUTE_TEST+"] or ["+ATTRIBUTE_ENV+"]");
+        if (env != null) {
+            env = calculateExpression(env);
+        }
+        if ((env != null) && (test != null)) {
+            out.print("if((GrailsUtil.environment == '"+env+"') && (");
+            out.print(test);
+            out.println(")) {");
+        } else if (env != null) {
+            // double (( is deliberate... to avoid thorny logic
+            out.print("if(GrailsUtil.environment == '"+env+"') {");
+        } else {
+            out.print("if(");
+            out.print(test);
+            out.println(") {");
+        }
     }
 
     public void doEndTag() {

@@ -11,6 +11,8 @@
 
 package org.codehaus.groovy.grails.web.taglib
 
+import grails.util.GrailsUtil
+
 class CoreTagsTests extends AbstractGrailsTagTests {
 
     void testIfElse() {
@@ -41,5 +43,46 @@ bar
 
    }
 
+    void testIfWithEnv() {
 
+        def template = '''
+<g:if env="testing" test="${foo}">foo</g:if>
+'''
+        assertOutputEquals("", template, [foo:true])
+
+        // Here we assume "development" is the env during tests
+        def template2 = '''
+<g:if env="development" test="${foo}">foo</g:if>
+'''
+        assertOutputEquals("foo", template2, [foo:true])
+    }
+
+    void testElseIf() {
+
+        def template = '''
+<g:if test="${foo}">foo</g:if>
+<g:elseif env="development">bar</g:elseif>
+'''
+        assertOutputEquals("bar", template, [foo:false])
+
+        template = '''
+<g:if test="${foo}">foo</g:if>
+<g:elseif test="${!foo}">bar</g:elseif>
+'''
+        assertOutputEquals("bar", template, [foo:false])
+
+        template = '''
+<g:if test="${foo}">foo</g:if>
+<g:elseif test="${foo}" env="development">bar</g:elseif>
+'''
+        assertOutputEquals("", template, [foo:false])
+
+
+        template = '''
+<g:if test="${foo}">foo</g:if>
+<g:elseif test="${!foo}" env="development">bar</g:elseif>
+'''
+        assertOutputEquals("bar", template, [foo:false])
+
+    }
 }
