@@ -51,8 +51,9 @@ task ( "default" : "Installs a plug-in for the given URL or name and version") {
 task(cachePlugin:"Implementation task") {
     depends(configureProxy,updatePluginsList)
     def pluginDistName
+    def plugin
     use( DOMCategory ) {
-        def plugin = pluginsList.'plugin'.find{ it.'@name' == pluginName }
+        plugin = pluginsList.'plugin'.find{ it.'@name'.toLowerCase() == pluginName.toLowerCase() }
         def release = null
         if( plugin ) {
             pluginRelease = pluginRelease ? pluginRelease : plugin.'@latest-release'
@@ -72,13 +73,14 @@ task(cachePlugin:"Implementation task") {
             event("StatusError", ["Plugin '${pluginName}' was not found in repository, type 'grails list-plugins'"])
             exit(1)
         }
-    }
-    def pluginCacheFileName = "${pluginsHome}/${pluginName}/grails-${pluginName}-${pluginRelease}.zip"
-    if( !new File(pluginCacheFileName).exists() || pluginRelease.endsWith("SNAPSHOT") ) {
-        Ant.mkdir(dir:"${pluginsHome}/${pluginName}")
-        Ant.get(dest:pluginCacheFileName,
-            src:"${pluginDistName}",
-            verbose:true)
+
+        def pluginCacheFileName = "${pluginsHome}/${plugin.'@name'}/grails-${plugin.'@name'}-${pluginRelease}.zip"        
+        if( !new File(pluginCacheFileName).exists() || pluginRelease.endsWith("SNAPSHOT") ) {
+            Ant.mkdir(dir:"${pluginsHome}/${pluginName}")
+            Ant.get(dest:pluginCacheFileName,
+                src:"${pluginDistName}",
+                verbose:true)
+        }
     }
 }
 
