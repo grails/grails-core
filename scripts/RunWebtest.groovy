@@ -28,10 +28,11 @@ import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
 Ant.property(environment:"env")                             
 grailsHome = Ant.antProject.properties."env.GRAILS_HOME"  
 
-includeTargets << new File ( "${grailsHome}/scripts/RunApp.groovy" )  
+includeTargets << new File ( "${grailsHome}/scripts/RunApp.groovy" )
+includeTargets << new File ( "${grailsHome}/scripts/CreateWebtest.groovy" )
 
 task ('default': "Run's all of the Web tests against a Grails application") { 
-	depends( classpath, checkVersion, packagePlugins, packageApp, generateWebXml )
+	depends( checkForTests, classpath, checkVersion, packagePlugins, packageApp, generateWebXml )
     event("StatusUpdate", [ "Running WebTest"])
 	try {
 	    runWebTest()
@@ -60,4 +61,11 @@ task ( runWebTest : "Main implementation that executes a Grails' Web tests") {
     def testRunner = classLoader.parseClass(new File("${basedir}/webtest/tests/TestSuite.groovy")).newInstance()
 
     testRunner.runTests()
+}
+
+task ( checkForTests : "Checks that there are WebTests to run and fails if not"){
+    def tests = resolveResources("file:${basedir}/webtest/tests/**/*")
+    if(tests.size() == 0){
+        Ant.fail("WARNING: This project does not contain any WebTests.")
+    }
 }
