@@ -9,11 +9,8 @@ class GroovyEachParseTests extends ParseTests {
 <g:each var="t" in="${'blah'}">
 </g:each>
 """);	
-		def expected = '"blah".each { t ->'
 
-			assertEquals(trimAndRemoveCR("""import org.codehaus.groovy.grails.web.pages.GroovyPage
-import org.codehaus.groovy.grails.web.taglib.*
-
+        assertEquals(trimAndRemoveCR(makeImports()+"""\n
 class myTest extends GroovyPage {
 public Object run() {
 "blah".each { t ->
@@ -30,9 +27,7 @@ public Object run() {
 	</g:each>
 	""");	             
 		
-			assertEquals(trimAndRemoveCR("""import org.codehaus.groovy.grails.web.pages.GroovyPage
-import org.codehaus.groovy.grails.web.taglib.*
-
+			assertEquals(trimAndRemoveCR(makeImports()+"""\n
 class myTest2 extends GroovyPage {
 public Object run() {
 out.print(STATIC_HTML_CONTENT_0)
@@ -57,9 +52,7 @@ static final STATIC_HTML_CONTENT_2 = '''\\t'''
 	</g:each>
 	""");	
 						
-		  assertEquals(trimAndRemoveCR("""import org.codehaus.groovy.grails.web.pages.GroovyPage
-import org.codehaus.groovy.grails.web.taglib.*
-
+		  assertEquals(trimAndRemoveCR(makeImports()+"""\n
 class myTest2 extends GroovyPage {
 public Object run() {
 out.print(STATIC_HTML_CONTENT_0)

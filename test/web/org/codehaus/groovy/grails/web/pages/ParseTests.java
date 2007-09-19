@@ -2,7 +2,6 @@ package org.codehaus.groovy.grails.web.pages;
 
 import junit.framework.TestCase;
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
-
 import java.io.*;
 
 
@@ -19,25 +18,29 @@ import java.io.*;
  */
 public class ParseTests extends TestCase {
 
-	public void testParse() throws Exception {
+    protected String makeImports() {
+        StringBuffer result = new StringBuffer();
+        for (int i = 0; i < Parse.DEFAULT_IMPORTS.length; i++) {
+            result.append( "import "+Parse.DEFAULT_IMPORTS[i]+"\n");
+        }
+        return result.toString();
+    }
+
+    public void testParse() throws Exception {
 		String output = parseCode("myTest", "<div>hi</div>");
-		String expected = 
-			"import org.codehaus.groovy.grails.web.pages.GroovyPage\n" +
-			"import org.codehaus.groovy.grails.web.taglib.*\n"+
-			"\n"+
+		String expected = makeImports() +
+            "\n"+
 			"class myTest extends GroovyPage {\n"+
 			"public Object run() {\n"+
 			"out.print('<div>hi</div>')\n"+
 			"}\n"+
 			"}";
-		assertEquals(expected, trimAndRemoveCR(output));
+		assertEquals(trimAndRemoveCR(expected), trimAndRemoveCR(output));
 	}
 
     public void testParseWithUnclosedSquareBracket() throws Exception {
 		String output = parseCode("myTest", "<g:message code=\"[\"/>");
-		String expected =
-			"import org.codehaus.groovy.grails.web.pages.GroovyPage\n" +
-			"import org.codehaus.groovy.grails.web.taglib.*\n"+
+		String expected = makeImports() +
 			"\n"+
 			"class myTest extends GroovyPage {\n"+
 			"public Object run() {\n"+
@@ -48,7 +51,7 @@ public class ParseTests extends TestCase {
 			"}\n"+
 			"}";
 
-		assertEquals(expected, trimAndRemoveCR(output));
+		assertEquals(trimAndRemoveCR(expected), trimAndRemoveCR(output));
 	}
 
     public void testParseWithUnclosedGstringThrowsException() throws IOException {
@@ -71,7 +74,7 @@ public class ParseTests extends TestCase {
 	public String trimAndRemoveCR(String s) {
 		int index;
 		StringBuffer sb = new StringBuffer(s.trim());
-		while ((index = sb.toString().indexOf('\r')) != -1) {
+		while (((index = sb.toString().indexOf('\r')) != -1) || ((index = sb.toString().indexOf('\n')) != -1) ) {
 			sb.deleteCharAt(index);
 		}
 		return sb.toString();
@@ -89,23 +92,21 @@ public class ParseTests extends TestCase {
 	}
 
  	public void testParseGTagsWithNamespaces() throws Exception {
- 		String expected =
- 			"import org.codehaus.groovy.grails.web.pages.GroovyPage\n" +
-                     "import org.codehaus.groovy.grails.web.taglib.*\n" +
-                     "\n" +
-                     "class myTest extends GroovyPage {\n" +
-                     "public Object run() {\n" +
-                     "out.print(STATIC_HTML_CONTENT_0)\n" +
-                     "body1 = new GroovyPageTagBody(this,binding.webRequest) {\n" +
-                     "}\n" +
-                     "invokeTag('form','tt',[:],body1)\n" +
-                     "out.print(STATIC_HTML_CONTENT_1)\n" +
-                     "}\n" +
-                     "static final STATIC_HTML_CONTENT_0 = '''<tbody>'''\n" +
-                     "\n" +
-                     "static final STATIC_HTML_CONTENT_1 = '''</tbody>'''\n" +
-                     "\n" +
-                     "}";
+ 		String expected = makeImports() +
+             "\n" +
+             "class myTest extends GroovyPage {\n" +
+             "public Object run() {\n" +
+             "out.print(STATIC_HTML_CONTENT_0)\n" +
+             "body1 = new GroovyPageTagBody(this,binding.webRequest) {\n" +
+             "}\n" +
+             "invokeTag('form','tt',[:],body1)\n" +
+             "out.print(STATIC_HTML_CONTENT_1)\n" +
+             "}\n" +
+             "static final STATIC_HTML_CONTENT_0 = '''<tbody>'''\n" +
+             "\n" +
+             "static final STATIC_HTML_CONTENT_1 = '''</tbody>'''\n" +
+             "\n" +
+             "}";
  		String output = parseCode("myTest",
  		"<tbody>\n" +
  		"  <tt:form />\n" +

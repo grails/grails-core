@@ -66,7 +66,7 @@ public class Parse implements Tokens {
     private int constantCount = 0;
     private static final String EMPTY_MULTILINE_STRING = "''''''";
 
-    private static final String[] DEFAULT_IMPORTS = new String[] {
+    public static final String[] DEFAULT_IMPORTS = new String[] {
         "org.codehaus.groovy.grails.web.pages.GroovyPage",
         "org.codehaus.groovy.grails.web.taglib.*",
         "grails.util.GrailsUtil"
