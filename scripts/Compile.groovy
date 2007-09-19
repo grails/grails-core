@@ -78,8 +78,14 @@ compilerClasspath = { testSources ->
          src(path:"${basedir}/test/integration")
 	}
 }
-task(compile : "Implementation of compilation phase") {    
-	depends(dependencies, classpath)           
+task(compile : "Implementation of compilation phase") {   
+	if(System.getProperty('skipDependencies') == 'true') {
+		depends(classpath)           		
+	} 
+	else {
+		depends(dependencies, classpath)           
+	}
+
 	
     event("CompileStart", ['source'])
 
