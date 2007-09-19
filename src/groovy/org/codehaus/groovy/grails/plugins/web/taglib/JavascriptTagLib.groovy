@@ -408,10 +408,11 @@ class PrototypeProvider implements JavascriptProvider {
             if(options.params) {
 				def params = options.remove('params')
 				if (params instanceof Map) {
-				ajaxOptions << "parameters:'" +
-					params.collect { k, v -> "${k}=${v}" }.join('&') +
-				"'"
-				} else {
+					ajaxOptions << "parameters:'" +
+										params.collect { k, v -> "${k.encodeAsHTML()}=${v.encodeAsHTML()}" }.join('&').encodeAsJavaScript() +
+									"'"				
+				} 
+				else {
 					ajaxOptions << "parameters:${params}"
 				}
             }
