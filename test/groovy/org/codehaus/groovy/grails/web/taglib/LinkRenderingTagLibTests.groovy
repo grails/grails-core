@@ -62,6 +62,13 @@ class TestUrlMappings {
 
     }
 
+    void testLinkWithControllerAndId() {
+        def template = '<g:link controller="book" id="10">${name}</g:link>'
+
+        assertOutputEquals('<a href="/book?id=10">Groovy in Action</a>', template, [name:"Groovy in Action"])
+
+    }
+
     void testRenderLinkWithReverseMapping() {
         def template = '<g:link controller="survey">${name}</g:link>'
 

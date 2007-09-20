@@ -85,12 +85,12 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
                 UrlMappingInfo info = urlInfos[i];
                     if(info!=null) {
                         String action = info.getActionName() == null ? "" : info.getActionName();
+                        info.configure(webRequest);
                         GrailsClass controller = application.getArtefactForFeature(ControllerArtefactHandler.TYPE, SLASH + info.getControllerName() + SLASH + action);
                         if(controller == null)  {
                             continue;
                         }
                         dispatched = true;
-                        info.configure(webRequest);
 
                         String forwardUrl = buildDispatchUrlForMapping(request, info);
                         if(LOG.isDebugEnabled()) {
