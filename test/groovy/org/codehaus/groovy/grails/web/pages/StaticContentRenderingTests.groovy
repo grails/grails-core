@@ -25,4 +25,14 @@ class StaticContentRenderingTests extends AbstractGrailsTagTests {
 
         assertOutputEquals('<div>    <p>1</p>    <p>2</p>    <p>3</p></div>', template, [numbers:[1,2,3]])
     }
+
+    void testGspComments() {
+        def template = '''<div><%--
+<g:each in="${numbers}">
+    <p>${it}</p>
+</g:each>--%>
+</div>'''
+
+        assertOutputEquals('<div>\n</div>', template, [numbers:[1,2,3]])
+    }
 }
