@@ -4,6 +4,18 @@ import org.codehaus.groovy.runtime.InvokerHelper
 
 class ApplicationTagLibTests extends AbstractGrailsTagTests {
 
+	void testSetTag() {
+        def template = '<g:set var="one" value="two" />one: ${one}'
+
+        assertOutputEquals('one: two', template)	
+	}
+	
+	void testSetTagWithBody() {
+        def template = '<g:set var="one">two</g:set>one: ${one}'
+
+        assertOutputEquals('one: two', template)		
+	}
+	
 	void testCreateLinkTo() {
 		StringWriter sw = new StringWriter();
 		withTag("createLinkTo", sw) { tag ->
