@@ -264,6 +264,8 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
 
       this.pluginManager.doDynamicMethods();
 
+      ctx.publishEvent(new GrailsContextEvent(ctx, GrailsContextEvent.DYNAMIC_METHODS_REGISTERED));
+
 
       performPostProcessing(ctx);
 
