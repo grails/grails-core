@@ -19,6 +19,7 @@ package org.codehaus.groovy.grails.web.servlet.mvc;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpSessionContext;
+import javax.servlet.http.HttpServletRequest;
 import java.util.*;
 
 /**
@@ -30,26 +31,33 @@ import java.util.*;
 public class GrailsHttpSession implements
 		HttpSession {
 
-	private final HttpSession adaptee;
+	private HttpSession adaptee = null;
+    private HttpServletRequest request;
 
-	public GrailsHttpSession(HttpSession session) {
-		this.adaptee = session;
+    public GrailsHttpSession(HttpServletRequest request) {
+        this.request = request;
 	}
     
     /* (non-Javadoc)
 	 * @see javax.servlet.http.HttpSession#getAttribute(java.lang.String)
 	 */
 	public Object getAttribute(String name) {
-		synchronized (adaptee) {
+        createSessionIfNecessary();
+        synchronized (this) {
             return adaptee.getAttribute(name);
         }
     }
 
-	/* (non-Javadoc)
-	 * @see javax.servlet.http.HttpSession#getAttributeNames()
-	 */
+    private void createSessionIfNecessary() {
+        if(this.adaptee == null) this.adaptee = request.getSession(true);
+    }
+
+    /* (non-Javadoc)
+      * @see javax.servlet.http.HttpSession#getAttributeNames()
+      */
 	public Enumeration getAttributeNames() {
-        synchronized (adaptee) {
+        createSessionIfNecessary();
+        synchronized (this) {
     		return adaptee.getAttributeNames();
         }
     }
@@ -58,7 +66,8 @@ public class GrailsHttpSession implements
 	 * @see javax.servlet.http.HttpSession#getCreationTime()
 	 */
 	public long getCreationTime() {
-        synchronized (adaptee) {
+        createSessionIfNecessary();
+        synchronized (this) {
     		return adaptee.getCreationTime();
         }
     }
@@ -67,7 +76,8 @@ public class GrailsHttpSession implements
 	 * @see javax.servlet.http.HttpSession#getId()
 	 */
 	public String getId() {
-        synchronized (adaptee) {
+        createSessionIfNecessary();
+        synchronized (this) {
     		return adaptee.getId();
         }
     }
@@ -76,7 +86,8 @@ public class GrailsHttpSession implements
 	 * @see javax.servlet.http.HttpSession#getLastAccessedTime()
 	 */
 	public long getLastAccessedTime() {
-        synchronized (adaptee) {
+        createSessionIfNecessary();
+        synchronized (this) {
     		return adaptee.getLastAccessedTime();
         }
     }
@@ -85,7 +96,8 @@ public class GrailsHttpSession implements
 	 * @see javax.servlet.http.HttpSession#getMaxInactiveInterval()
 	 */
 	public int getMaxInactiveInterval() {
-        synchronized (adaptee) {
+        createSessionIfNecessary();
+        synchronized (this) {
     		return adaptee.getMaxInactiveInterval();
         }
     }
@@ -94,7 +106,8 @@ public class GrailsHttpSession implements
 	 * @see javax.servlet.http.HttpSession#getServletContext()
 	 */
 	public ServletContext getServletContext() {
-        synchronized (adaptee) {
+        createSessionIfNecessary();
+        synchronized (this) {
     		return adaptee.getServletContext();
         }
     }
@@ -104,7 +117,8 @@ public class GrailsHttpSession implements
 	 * @deprecated
 	 */
 	public HttpSessionContext getSessionContext() {
-        synchronized (adaptee) {
+        createSessionIfNecessary();
+        synchronized (this) {
     		return adaptee.getSessionContext();
         }
     }
@@ -114,7 +128,8 @@ public class GrailsHttpSession implements
 	 * @deprecated
 	 */
 	public Object getValue(String name) {
-        synchronized (adaptee) {
+        createSessionIfNecessary();
+        synchronized (this) {
     		return adaptee.getAttribute(name);
         }
     }
@@ -124,7 +139,8 @@ public class GrailsHttpSession implements
      * @deprecated
 	 */
 	public String[] getValueNames() {
-        synchronized (adaptee) {
+        createSessionIfNecessary();
+        synchronized (this) {
     		return adaptee.getValueNames();
         }
     }
@@ -134,7 +150,8 @@ public class GrailsHttpSession implements
      * @deprecated
      */
     public void putValue(String name, Object value) {
-        synchronized (adaptee) {
+        createSessionIfNecessary();
+        synchronized (this) {
             adaptee.setAttribute(name, value);
         }
     }
@@ -144,7 +161,8 @@ public class GrailsHttpSession implements
      * @deprecated
      */
     public void removeValue(String name) {
-        synchronized (adaptee) {
+        createSessionIfNecessary();
+        synchronized (this) {
             adaptee.removeAttribute(name);
         }
     }
@@ -153,7 +171,8 @@ public class GrailsHttpSession implements
 	 * @see javax.servlet.http.HttpSession#invalidate()
 	 */
 	public void invalidate() {
-        synchronized (adaptee) {
+        createSessionIfNecessary();
+        synchronized (this) {
     		adaptee.invalidate();
         }
     }
@@ -162,7 +181,8 @@ public class GrailsHttpSession implements
 	 * @see javax.servlet.http.HttpSession#isNew()
 	 */
 	public boolean isNew() {
-        synchronized (adaptee) {
+        createSessionIfNecessary();
+        synchronized (this) {
     		return adaptee.isNew();
         }
     }
@@ -171,7 +191,8 @@ public class GrailsHttpSession implements
 	 * @see javax.servlet.http.HttpSession#removeAttribute(java.lang.String)
 	 */
 	public void removeAttribute(String name) {
-        synchronized (adaptee) {
+        createSessionIfNecessary();
+        synchronized (this) {
     		adaptee.removeAttribute(name);
         }
     }
@@ -180,7 +201,8 @@ public class GrailsHttpSession implements
 	 * @see javax.servlet.http.HttpSession#setAttribute(java.lang.String, java.lang.Object)
 	 */
 	public void setAttribute(String name, Object value) {
-        synchronized (adaptee) {
+        createSessionIfNecessary();
+        synchronized (this) {
     		adaptee.setAttribute(name, value);
         }
     }
@@ -189,12 +211,14 @@ public class GrailsHttpSession implements
 	 * @see javax.servlet.http.HttpSession#setMaxInactiveInterval(int)
 	 */
 	public void setMaxInactiveInterval(int arg0) {
-        synchronized (adaptee) {
+        createSessionIfNecessary();
+        synchronized (this) {
     		adaptee.setMaxInactiveInterval(arg0);
         }
     }
 
     public String toString() {
+        createSessionIfNecessary();
         StringBuffer sb = new StringBuffer("Session Content:\n");
         Enumeration e = adaptee.getAttributeNames();
         while(e.hasMoreElements()) {

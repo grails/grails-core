@@ -14,6 +14,12 @@
  */
 package org.codehaus.groovy.grails.web.servlet;
 
+import groovy.lang.GroovySystem;
+import groovy.lang.MetaClass;
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
+import org.springframework.web.context.request.RequestContextHolder;
+
+import javax.servlet.http.HttpSession;
 import java.util.*;
 
 /**
@@ -25,11 +31,33 @@ import java.util.*;
 public class GrailsFlashScope implements FlashScope {
     private HashMap current = new HashMap();
     private HashMap next = new HashMap();
+    private static final String ERRORS_PREFIX = "org.codehaus.groovy.grails.ERRORS_";
+    private static final String ERRORS_PROPERTY = "errors";
+
+    public GrailsFlashScope() {
+    }
 
     public void next() {
         current.clear();
         current = (HashMap)next.clone();
         next.clear();
+        reassociateObjectsWithErrors();
+    }
+
+    private void reassociateObjectsWithErrors() {
+        for (Iterator i = current.keySet().iterator(); i.hasNext();) {
+            Object key =  i.next();
+            Object value = current.get(key);
+            String errorsKey = ERRORS_PREFIX + System.identityHashCode(value);
+            Object errors = current.get(errorsKey);
+            if(value!=null && errors != null) {
+                MetaClass mc = GroovySystem.getMetaClassRegistry().getMetaClass(value.getClass());
+                if(mc.hasProperty(value, ERRORS_PROPERTY)!=null) {
+                    mc.setProperty(value, ERRORS_PROPERTY, errors);
+                }
+            }
+
+        }
     }
 
     public int size() {
@@ -95,9 +123,32 @@ public class GrailsFlashScope implements FlashScope {
     }
 
     public Object put(Object key, Object value) {
+        // create the session if it doesn't exist
+        registerWithSessionIfNecessary();
         if(current.containsKey(key)) {
             current.remove(key);
         }
+        storeErrorsIfPossible(value);
+
         return next.put(key,value);
+    }
+
+    private void storeErrorsIfPossible(Object value) {
+        if(value != null) {
+
+            MetaClass mc = GroovySystem.getMetaClassRegistry().getMetaClass(value.getClass());
+            if(mc.hasProperty(value, ERRORS_PROPERTY)!=null) {
+                Object errors = mc.getProperty(value, ERRORS_PROPERTY);
+                if(errors != null) {
+                    next.put(ERRORS_PREFIX + System.identityHashCode(value), errors);
+                }
+            }
+        }
+    }
+
+    private void registerWithSessionIfNecessary() {
+        GrailsWebRequest webRequest = (GrailsWebRequest) RequestContextHolder.currentRequestAttributes();
+        HttpSession session = webRequest.getCurrentRequest().getSession(true);
+        if(session.getAttribute(GrailsApplicationAttributes.FLASH_SCOPE) == null) session.setAttribute(GrailsApplicationAttributes.FLASH_SCOPE, this);
     }
 }

@@ -136,7 +136,7 @@ public class GrailsWebRequest extends DispatcherServletWebRequest {
 	 */
 	public GrailsHttpSession getSession() {
 		if(session == null)
-			session = new GrailsHttpSession(getCurrentRequest().getSession(true));
+			session = new GrailsHttpSession(getCurrentRequest());
 		
 		return session;
 	}

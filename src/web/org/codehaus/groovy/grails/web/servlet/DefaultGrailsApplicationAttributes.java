@@ -102,11 +102,23 @@ public class DefaultGrailsApplicationAttributes implements GrailsApplicationAttr
 
     public FlashScope getFlashScope(ServletRequest request) {
         if(request instanceof HttpServletRequest) {
-            HttpSession session = ((HttpServletRequest)request).getSession(true);
-            FlashScope fs = (FlashScope)session.getAttribute(FLASH_SCOPE);
+            HttpServletRequest servletRequest = (HttpServletRequest) request;
+            HttpSession session = servletRequest.getSession(false);
+            FlashScope fs;
+            if(session != null) {
+                fs = (FlashScope)session.getAttribute(FLASH_SCOPE);
+            }
+            else {
+                fs = (FlashScope)request.getAttribute(FLASH_SCOPE);
+            }
             if(fs == null) {
                 fs = new GrailsFlashScope();
-                session.setAttribute(FLASH_SCOPE,fs);
+                if(session!=null) {
+                    session.setAttribute(FLASH_SCOPE,fs);
+                }
+                else {
+                    request.setAttribute(FLASH_SCOPE,fs);
+                }
             }
             return fs;
         }

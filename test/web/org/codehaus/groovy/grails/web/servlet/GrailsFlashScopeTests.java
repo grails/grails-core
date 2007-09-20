@@ -15,6 +15,7 @@
 package org.codehaus.groovy.grails.web.servlet;
 
 import junit.framework.TestCase;
+import org.springframework.mock.web.MockHttpServletRequest;
 
 /**
  * @author Graeme Rocher
