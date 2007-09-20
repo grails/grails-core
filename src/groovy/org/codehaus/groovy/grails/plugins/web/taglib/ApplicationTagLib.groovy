@@ -33,7 +33,28 @@ class ApplicationTagLib implements ApplicationContextAware {
 
     ApplicationContext applicationContext
 
-    def grailsUrlMappingsHolder
+    def grailsUrlMappingsHolder          
+
+                                                        
+	static final SCOPES = [page:'pageScope',
+						   application:'servleContext',						   
+						   request:'request',
+						   session:'session',
+						   flash:'flash']
+    /**
+     * Sets a variable in the pageContext or the specified scope
+     */						
+	def set = { attrs, body ->
+		def scope = attrs.scope ? SCOPES[attrs.scope] : 'pageScope'
+		def var = attrs.var
+		def value = attrs.value
+		if(!scope) throw new IllegalArgumentException("Invalid [scope] attribute for tag <g:set>!")
+		if(!var) throw new IllegalArgumentException("[var] attribute must be specified to for <g:set>!")
+		
+		if(value == null && body) value = body()
+
+		this."$scope"."$var" = value
+	}
 
     /**
      * Creates a link to a resource, generally used as a method rather than a tag.
