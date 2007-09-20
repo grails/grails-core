@@ -14,45 +14,32 @@
  * limitations under the License.
  */ 
 package org.codehaus.groovy.grails.commons;
-
-
-
 /**
+ * Configures Grails classe to be autowirable by name, always.
  * 
- * 
+ * @author Graeme Rocher
  * @author Steven Devijver
- * @since Jul 2, 2005
+ * 
+ * @since 0.1
+ * 
+ *  Created: Jul 2, 2005
  */
 public abstract class AbstractInjectableGrailsClass extends AbstractGrailsClass
 		implements InjectableGrailsClass {
 
-	private static final String BY_NAME_PROPERTY = "byName";
-	private static final String AVAILABLE_PROPERTY = "available";
-	
-	private boolean byName = false;
-	private boolean byType = true;
-	private boolean available = true;
-	
 	public AbstractInjectableGrailsClass(Class clazz, String trailingName) {
 		super(clazz, trailingName);
-
-		Object byNameValue = getPropertyOrStaticPropertyOrFieldValue(BY_NAME_PROPERTY, Boolean.class);
-		this.byName = byNameValue != null && byNameValue.equals(Boolean.TRUE);
-		this.byType = !byName;
-		
-		Object availableValue = getPropertyOrStaticPropertyOrFieldValue(AVAILABLE_PROPERTY, Boolean.class);
-		this.available = availableValue == null || availableValue.equals(Boolean.TRUE);
 	}
 
 	public boolean byName() {
-		return this.byName;
+		return true;
 	}
 
 	public boolean byType() {
-		return this.byType;
+		return false;
 	}
 	
 	public boolean getAvailable() {
-		return this.available;
+		return true;
 	}
 }
