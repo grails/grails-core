@@ -46,6 +46,8 @@ import java.io.Writer;
 import java.util.HashMap;
 import java.util.Map;
 
+import grails.util.GrailsUtil;
+
 /**
  * A servlet filter that copies resources from the source on content change and manages reloading if necessary
  *
@@ -145,6 +147,7 @@ public class GrailsReloadServletFilter extends OncePerRequestFilter {
                 LOG.debug("Plugin manager not found, skipping change check");
             }
         } catch (Exception e) {
+            e = (Exception)GrailsUtil.sanitize(e);
             LOG.error("Error occured reloading application: " + e.getMessage(),e);
 
             httpServletResponse.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);

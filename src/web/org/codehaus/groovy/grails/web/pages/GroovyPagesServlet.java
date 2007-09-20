@@ -38,6 +38,8 @@ import java.io.Writer;
 import java.util.HashMap;
 import java.util.Map;
 
+import grails.util.GrailsUtil;
+
 /**
  * NOTE: Based on work done by on the GSP standalone project (https://gsp.dev.java.net/)
  *
@@ -174,8 +176,9 @@ public class GroovyPagesServlet extends HttpServlet  {
      * @throws ServletException Thrown when an exception occurs in the servlet environment
      */
     protected void handleException(Exception exception,Writer out, GroovyPagesTemplateEngine engine) throws ServletException, IOException {
-        if(LOG.isDebugEnabled())
-            LOG.debug("Error processing GSP: " + exception.getMessage(), exception);
+        GrailsUtil.sanitize(exception);
+        if(LOG.isErrorEnabled())
+            LOG.error("Error processing GSP: " + exception.getMessage(), exception);
 
         try {
             Template t = engine.createTemplate(ERRORS_VIEW);

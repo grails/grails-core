@@ -254,11 +254,14 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
             }
             catch (Exception ex) {
                 Object handler = (mappedHandler != null ? mappedHandler.getHandler() : null);
-                mv = processHandlerException(request, response, handler, ex);
+                mv = processHandlerException(request, response, handler, (Exception)GrailsUtil.sanitize(ex));
             }
 
             // Did the handler return a view to render?
             if (mv != null && !mv.wasCleared()) {
+                // If an exception occurs in here, like a bad closing tag,
+                // we have nothing to render.
+                // @todo instead of re-throwing later, render our error page
                 render(mv, processedRequest, response);
             }
             else {

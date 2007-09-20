@@ -33,8 +33,12 @@ import org.springframework.mock.web.MockServletContext;
 import org.springframework.util.Assert;
 
 import java.io.IOException;
+import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
@@ -53,8 +57,21 @@ import java.util.jar.Manifest;
 public class GrailsUtil {
 
 	private static final Log LOG  = LogFactory.getLog(GrailsUtil.class);
+    private static final Log STACK_LOG  = LogFactory.getLog("StackTrace");
     private static final String GRAILS_IMPLEMENTATION_TITLE = "Grails";
     private static final String GRAILS_VERSION;
+    private static final String[] GRAILS_PACKAGES = new String[] {
+            "org.codehaus.groovy.",
+            "grails.",
+            "groovy.",
+            "org.mortbay.",
+            "sun.",
+            "java.lang.reflect.",
+            "org.springframework.",
+            "com.opensymphony.",
+            "org.hibernate.",
+            "javax.servlet."
+    };
 
     static {
         PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
@@ -236,4 +253,46 @@ public class GrailsUtil {
     }
 
 
+    public static Throwable sanitize(Throwable t) {
+        StackTraceElement[] trace = t.getStackTrace();
+        List newTrace = new ArrayList();
+        for (int i = 0; i < trace.length; i++) {
+            StackTraceElement stackTraceElement = trace[i];
+            if (isApplicationClass(stackTraceElement.getClassName())) {
+                newTrace.add( stackTraceElement);
+            }
+        }
+        // We don't want to lose anything
+        STACK_LOG.error("Sanitizing stacktrace:", t);
+        StackTraceElement[] clean = new StackTraceElement[newTrace.size()];
+        newTrace.toArray(clean);
+        t.setStackTrace(clean);
+        return t;
+    }
+
+    public static void printSanitizedStackTrace(Throwable t, PrintWriter p) {
+        t = GrailsUtil.sanitize(t);
+
+        StackTraceElement[] trace = t.getStackTrace();
+        for (int i = 0; i < trace.length; i++) {
+            StackTraceElement stackTraceElement = trace[i];
+            p.println(  "at "+stackTraceElement.getClassName()
+                        +"("+stackTraceElement.getMethodName()
+                        +":"+stackTraceElement.getLineNumber()+")");
+        }
+    }
+
+    public static void printSanitizedStackTrace(Throwable t) {
+        printSanitizedStackTrace(t, new PrintWriter(System.err));
+    }
+
+    public static boolean isApplicationClass(String className) {
+        for (int i = 0; i < GRAILS_PACKAGES.length; i++) {
+            String grailsPackage = GRAILS_PACKAGES[i];
+            if (className.startsWith(grailsPackage)) {
+                return false;
+            }
+        }
+        return true;
+    }
 }

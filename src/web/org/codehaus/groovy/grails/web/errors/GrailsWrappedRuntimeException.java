@@ -33,6 +33,8 @@ import java.io.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import grails.util.GrailsUtil;
+
 /**
  *  An exception that wraps a Grails RuntimeException and attempts to extract more relevent diagnostic messages from the stack trace
  * 
@@ -70,7 +72,7 @@ public class GrailsWrappedRuntimeException extends GrailsException {
         PrintWriter pw = new PrintWriter(sw);
         cause.printStackTrace(pw);
         this.stackTrace = sw.toString();
-        
+
         while(t.getCause()!=cause) {
         	if(t.getCause() == null) {
         		cause = t;
@@ -97,9 +99,6 @@ public class GrailsWrappedRuntimeException extends GrailsException {
             }
         }
         this.filteredStackTrace = buffy.toString();
-        if(StringUtils.isBlank(filteredStackTrace)) {
-            //this.filteredStackTrace =              
-        }
         
 
         if(cause instanceof MultipleCompilationErrorsException) {

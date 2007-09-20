@@ -34,6 +34,8 @@ import java.io.Writer;
 import java.util.HashMap;
 import java.util.Map;
 
+import grails.util.GrailsUtil;
+
 /**
  * A Spring View that renders Groovy Server Pages to the reponse. It requires an instance
  * of GroovyPagesTemplateEngine to be set and will render to view returned by the getUrl()
@@ -125,7 +127,8 @@ public class GroovyPageView extends AbstractUrlBasedView  {
      */
     protected void handleException(Exception exception, Writer out, GroovyPagesTemplateEngine engine, HttpServletRequest request)  {
 
-        LOG.error("Error processing GroovyPageView: " + exception.getMessage(), exception);        
+        GrailsUtil.sanitize(exception);
+        LOG.error("Error processing GroovyPageView: " + exception.getMessage(), exception);
         try {
             // GRAILS-603 null out controller to avoid default layout being applied to error page
             request.setAttribute(GrailsApplicationAttributes.CONTROLLER, null);
