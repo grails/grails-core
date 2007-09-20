@@ -350,7 +350,7 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
            }
 
            if(groovySpringResources.exists()) {
-               BeanBuilder bb = new BeanBuilder();
+               BeanBuilder bb = new BeanBuilder(Thread.currentThread().getContextClassLoader());
                bb.setSpringConfig(springConfig);
                bb.loadBeans(groovySpringResources);
            }

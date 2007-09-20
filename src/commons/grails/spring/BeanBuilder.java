@@ -83,11 +83,17 @@ public class BeanBuilder extends GroovyObjectSupport {
     private Map deferredProperties = new HashMap();
     private ApplicationContext parentCtx;
     private Map binding = Collections.EMPTY_MAP;
+    private ClassLoader classLoader = null;
 
 
     public BeanBuilder() {
 		super();
 	}
+    
+    public BeanBuilder(ClassLoader classLoader) {
+		super();
+		this.classLoader = classLoader;
+	}    
 	
 	public BeanBuilder(ApplicationContext parent) {
 		super();
@@ -95,6 +101,12 @@ public class BeanBuilder extends GroovyObjectSupport {
 		this.springConfig = new DefaultRuntimeSpringConfiguration(parent);
 	}	
 	
+	public BeanBuilder(ApplicationContext parent,ClassLoader classLoader) {
+		super();
+		this.parentCtx = parent;
+		this.springConfig = new DefaultRuntimeSpringConfiguration(parent);
+		this.classLoader = classLoader;
+	}		
 
 	public Log getLog() {
 		return LOG;
@@ -157,43 +169,7 @@ public class BeanBuilder extends GroovyObjectSupport {
 		this.springConfig = springConfig;
 	}
 
-	/**
-	 * A constructor that takes a resource pattern as (@see org.springframework.core.io.support.PathMatchingResourcePatternResolver)
-	 * This allows you load multiple bean resources in this single builder
-	 * 
-	 * eg new BeanBuilder("classpath:*Beans.groovy")
-	 *  
-	 * @param resourcePattern
-	 * @throws IOException When the path cannot be matched
-	 */
-	public BeanBuilder(String resourcePattern) throws IOException {
-		loadBeans(resourcePattern);
-	}
 
-
-	public BeanBuilder(Resource resource) throws IOException {
-		loadBeans(resource);
-	}
-	
-	public BeanBuilder(Resource[] resources) throws IOException {
-		loadBeans(resources);
-	}	
-	
-	public BeanBuilder(ApplicationContext parent, String resourcePattern) throws IOException {
-		this.springConfig = new DefaultRuntimeSpringConfiguration(parent);
-		loadBeans(resourcePattern);
-	}
-
-
-	public BeanBuilder(ApplicationContext parent, Resource resource) throws IOException {
-		this.springConfig = new DefaultRuntimeSpringConfiguration(parent);
-		loadBeans(resource);
-	}
-	
-	public BeanBuilder(ApplicationContext parent, Resource[] resources) throws IOException {
-		this.springConfig = new DefaultRuntimeSpringConfiguration(parent);
-		loadBeans(resources);
-	}	
 
 	/**
 	 * This class is used to defer the adding of a property to a bean definition until later
@@ -335,7 +311,7 @@ public class BeanBuilder extends GroovyObjectSupport {
 		Binding b = new Binding();
 		b.setVariable("beans", beans);
 		
-		GroovyShell shell = new GroovyShell(b);
+		GroovyShell shell = classLoader != null ? new GroovyShell(classLoader,b) : new GroovyShell(b);
 		for (int i = 0; i < resources.length; i++) {
 			Resource resource = resources[i];
 			shell.evaluate(resource.getInputStream());

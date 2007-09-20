@@ -332,7 +332,7 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
                 LOG.debug("Plugin " + this + " is participating in Spring configuration...");
             }
             Closure c = (Closure)this.plugin.getProperty(DO_WITH_SPRING);
-            BeanBuilder bb = new BeanBuilder(getParentCtx());
+            BeanBuilder bb = new BeanBuilder(getParentCtx(), application.getClassLoader());
             bb.setSpringConfig(springConfig);
             Binding b = new Binding();
             b.setVariable("application", application);
