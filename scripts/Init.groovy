@@ -38,6 +38,7 @@ defaultEnv = System.getProperty("grails.default.env") == "true" ? true : false
 serverPort = System.getProperty('server.port') ? System.getProperty('server.port').toInteger() : 8080   
 serverPortHttps = System.getProperty('server.port.https') ? System.getProperty('server.port.https').toInteger() : 8443
 serverHost = System.getProperty('server.host') ? System.getProperty('server.host') : null
+enableJndi = System.getProperty('enable.jndi') == "true" ? true : false
 basedir = System.getProperty("base.dir") 
 baseFile = new File(basedir)
 baseName = baseFile.name      

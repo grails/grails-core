@@ -27,6 +27,8 @@ import org.mortbay.jetty.*
 import org.mortbay.jetty.nio.*
 import org.mortbay.jetty.handler.*
 import org.mortbay.jetty.webapp.*
+import org.mortbay.jetty.plus.naming.*
+import javax.naming.*
 
 import org.codehaus.groovy.tools.RootLoader
 
@@ -114,6 +116,14 @@ task( configureHttpServer : "Returns a jetty server configured with an HTTP conn
     connectors[0].setPort(serverPort)
     server.setConnectors( (Connector [])connectors )
     webContext = new WebAppContext("${basedir}/web-app", "/${grailsAppName}")
+    if (enableJndi) { 
+        def confClassList = ["org.mortbay.jetty.webapp.WebInfConfiguration", 
+                             "org.mortbay.jetty.plus.webapp.EnvConfiguration", 
+                             "org.mortbay.jetty.plus.webapp.Configuration", 
+                             "org.mortbay.jetty.webapp.JettyWebXmlConfiguration", 
+                             "org.mortbay.jetty.webapp.TagLibConfiguration"] 
+        webContext.setConfigurationClasses((String[])confClassList ) 
+    }
     webContext.setDefaultsDescriptor("${grailsHome}/conf/webdefault.xml")
     webContext.setClassLoader(classLoader)
     webContext.setDescriptor(webXmlFile.absolutePath)
