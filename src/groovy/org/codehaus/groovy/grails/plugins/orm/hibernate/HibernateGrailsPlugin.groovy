@@ -116,7 +116,10 @@ class HibernateGrailsPlugin {
 
             hibernateProperties(MapToPropertiesFactoryBean) {
                 map = hibProps
-            }
+            }  
+			lobHandlerDetector(SpringLobHandlerDetectorFactoryBean) {
+				dataSource = dataSource
+			}
             sessionFactory(ConfigurableLocalSessionFactoryBean) {
                 dataSource = dataSource
                 if (application.classLoader.getResource("hibernate.cfg.xml")) {
@@ -126,7 +129,8 @@ class HibernateGrailsPlugin {
                     configClass = ds.configClass
                 }
                 hibernateProperties = hibernateProperties
-                grailsApplication = ref("grailsApplication", true)
+                grailsApplication = ref("grailsApplication", true) 
+				lobHandler = lobHandlerDetector
             }
             transactionManager(HibernateTransactionManager) {
                 sessionFactory = sessionFactory
