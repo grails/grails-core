@@ -151,6 +151,14 @@ class FormTagLib {
     }
 
     /**
+     * Same as <g:form>, except sets the relevant enctype for a file upload form
+     */
+	def uploadForm = { attrs, body ->
+		attrs.enctype = "multipart/form-data"
+		out << form(attrs, body)
+	}
+
+    /**
      *  General linking to controllers, actions etc. Examples:
      *
      *  <g:form action="myaction">...</gr:form>
