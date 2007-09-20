@@ -90,6 +90,7 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
                             continue;
                         }
                         dispatched = true;
+                        info.configure(webRequest);
 
                         String forwardUrl = buildDispatchUrlForMapping(request, info);
                         if(LOG.isDebugEnabled()) {

@@ -15,6 +15,8 @@
 */
 package org.codehaus.groovy.grails.web.mapping;
 
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
+
 import java.util.Map;
 
 /**
@@ -58,4 +60,11 @@ public interface UrlMappingInfo {
      * @return A Map of parameters
      */
     Map getParameters();
+
+    /**
+     * Configure this UrlMappingInfo the for the given GrailsWebRequest
+     *
+     * @param webRequest The GrailsWebRequest instance
+     */
+    void configure(GrailsWebRequest webRequest);
 }

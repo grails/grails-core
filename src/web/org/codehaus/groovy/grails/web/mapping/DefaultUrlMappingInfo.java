@@ -48,7 +48,6 @@ public class DefaultUrlMappingInfo implements UrlMappingInfo {
         if(params == null) throw new IllegalArgumentException("Argument [params] cannot be null");
 
         this.params = Collections.unmodifiableMap(params);
-        populateParamsForMapping(this.params);
         this.controllerName = controllerName;
         this.actionName = actionName;
         this.id = (String)params.get(ID_PARAM);
@@ -80,6 +79,10 @@ public class DefaultUrlMappingInfo implements UrlMappingInfo {
 
     public Map getParameters() {
         return params;
+    }
+
+    public void configure(GrailsWebRequest webRequest) {
+        populateParamsForMapping(this.params);
     }
 
     public String getControllerName() {        
