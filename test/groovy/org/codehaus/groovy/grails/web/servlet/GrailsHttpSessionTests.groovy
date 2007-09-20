@@ -42,8 +42,7 @@ class GrailsHttpSessionTests extends AbstractGrailsPluginTests {
 
 
 	 void testSetAttribute() {
-		 def mock = new MockHttpSession()
-		 def grailsSession = new GrailsHttpSession(mock)
+		 def grailsSession = new GrailsHttpSession(new MockHttpServletRequest())
 		 
 		 grailsSession.myAttribute = "blah"
 		 
@@ -52,7 +51,7 @@ class GrailsHttpSessionTests extends AbstractGrailsPluginTests {
 	 
 	 void testRemoveAttribute() {
 		 def mock = new MockHttpSession()
-		 def grailsSession = new GrailsHttpSession(mock)
+		 def grailsSession = new GrailsHttpSession(new MockHttpServletRequest())
 		 
 		 grailsSession.myAttribute = "blah"
 		 
