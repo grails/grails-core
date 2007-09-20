@@ -14,8 +14,8 @@
  */
 package org.codehaus.groovy.grails.web.servlet;
 
+import grails.util.GrailsWebUtil;
 import junit.framework.TestCase;
-import org.springframework.mock.web.MockHttpServletRequest;
 
 /**
  * @author Graeme Rocher
@@ -23,7 +23,11 @@ import org.springframework.mock.web.MockHttpServletRequest;
  */
 public class GrailsFlashScopeTests extends TestCase {
 
+
     public void testNextState() {
+
+        GrailsWebUtil.bindMockWebRequest();
+        
         FlashScope fs = new GrailsFlashScope();
         fs.put("test","value");
         fs.put("fred","flintstone");
