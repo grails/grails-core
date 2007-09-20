@@ -55,59 +55,59 @@ class ValidationTagLib {
 			}
 		}
    }
-	
+
+	def extractErrors(attrs) {
+        def model = attrs['model']
+        def checkList = []
+        if (attrs['bean']) {
+            checkList << attrs['bean']
+        } else if (model) {
+            checkList = model.findAll {it.value?.errors instanceof Errors}.collect {it.value}
+        } else {
+            request.attributeNames.each {
+                def ra = request[it]
+                if(ra) {
+                    def mc = GroovySystem.metaClassRegistry.getMetaClass(ra.getClass())
+                    if (ra instanceof Errors)
+                        checkList << ra
+                    else if (mc.hasProperty(ra, 'errors') && ra.errors instanceof Errors) {
+                        checkList << ra.errors
+					}
+                }
+            }
+        }
+
+        def resultErrorsList = []
+
+        for (i in checkList) {
+            def errors = null
+            if (i instanceof Errors) {
+                errors = i
+            } else {
+                def mc = GroovySystem.metaClassRegistry.getMetaClass(i.getClass())
+                if (mc.hasProperty(i, 'errors')) {
+                    errors = i.errors
+                }
+            }
+            if (errors?.hasErrors()) {
+                // if the 'field' attribute is not provided then we should output a body,
+                // otherwise we should check for field-specific errors
+                if (!attrs['field'] || errors.hasFieldErrors(attrs['field'])) {
+                    resultErrorsList << errors
+                }
+            }
+        }
+
+        return resultErrorsList
+    }
+    
     /**
      * Checks if the request has errors either for a field or global errors
      */
-    def hasErrors = { attrs, body ->
-        def model = attrs['model']
-        def checkList = []
-        if(model) {
-            checkList = model.findAll { it.value?.errors instanceof Errors }.collect { it.value }
-        }
-        if(attrs['bean']) {
-            checkList << attrs['bean']
-        }
-        else {
-			if(request.attributeNames) {
-				def application = ApplicationHolder.application
-				def rq = request
-				for(ra in rq.attributeNames) {
-				    def v = rq.getAttribute(ra)        
-					def mc = GroovySystem.metaClassRegistry.getMetaClass(v.getClass())
-					if(v) {                         
-                        if(v instanceof Errors)
-                            checkList << v
-	                    else if (mc.hasProperty(v, 'errors') && v.errors instanceof Errors) {
-                            checkList << v
-						}
-					}
-				}
-			}
-        }
-
-        for(i in checkList) {
-            def errors = null
-            if (i instanceof Errors) {
-               errors = i
-            }
-            else {           
-				def mc = GroovySystem.metaClassRegistry.getMetaClass(i.getClass())
-				if(mc.hasProperty(i, 'errors')) {
-	                if (i.errors.hasErrors())
-	                    errors = i.errors					
-				}
-			}
-            if(errors?.hasErrors()) {
-                if(attrs['field']) {
-                    if(errors.hasFieldErrors(attrs['field'])) {
-                        out << body()
-                    }
-                }
-                else {
-                    out << body()
-                }
-            }
+    def hasErrors = {attrs, body ->
+        def errorsList = extractErrors(attrs)
+        if(errorsList) {
+            out << body()
         }
     }
 
@@ -115,67 +115,26 @@ class ValidationTagLib {
      * Loops through each error for either field or global errors
      */
     def eachError = { attrs, body ->
-        def model = attrs['model']
-        def errorList = []
+        def errorsList = extractErrors(attrs)
         def var = attrs.var
-        
-        if(model) {
-            errorList = model.findAll { it.value?.errors instanceof Errors }.collect { it.value }
-        }
-        if(attrs['bean']) {
-            errorList << attrs['bean']
-        }
-        else {
-            request.attributeNames.each {
-                def ra = request[it]
-                if(ra) {
-                    if (ra instanceof Errors)
-                        errorList << ra
-                    else if (ra.properties?.errors instanceof Errors) {
-                        errorList << ra
-					}
+        def field = attrs['field']
+
+        def errorList = []
+        errorsList.each { errors ->
+            if(field) {
+                if(errors.hasFieldErrors(field)) {
+                    errorList += errors.getFieldErrors(field)
                 }
+            } else {
+                errorList += errors.allErrors
             }
         }
 
-        for(i in errorList) {
-            def errors = null
-            if(i instanceof Errors) {
-               errors = i
-            }
-            else {
-				if ((i.errors != null) && (i.errors instanceof Errors)) {
-	                if (i.errors.hasErrors())
-	                    errors = i.errors
-	            }
-			}
-            if(errors && errors.hasErrors()) {
-                if(attrs['field']) {
-                    if(errors.hasFieldErrors(attrs['field'])) {
-                        for(e in errors.getFieldErrors( attrs["field"] )) {
-                            def args = e.arguments
-
-                            if (i.class == args[1]) {
-                                if(var) {
-                                    out << body([(var):e])
-                                }
-                                else {
-                                    out << body(e)
-                                }
-                            }
-                        }
-                    }
-                }
-                else {
-                   for(e in errors.allErrors) {
-                       if(var) {
-                           out << body([(var):e])
-                       }
-                       else {
-                           out << body(e)
-                       }
-                    }
-                }
+        errorList.each { error ->
+            if(var) {
+                out << body([(var):error])
+            } else {
+                out << body(error)
             }
         }
     }
@@ -223,12 +182,10 @@ class ValidationTagLib {
                 def args = attrs['args']
                 def defaultMessage = ( attrs['default'] != null ? attrs['default'] : code )
 
-                println "default is [$defaultMessage] for locale $locale"
                 def message = messageSource.getMessage( code,
                                                         args == null ? null : args.toArray(),
                                                         defaultMessage,
                                                         locale )
-                println "message is [$message]"
                 if(message != null) {
                     text = message
                 }

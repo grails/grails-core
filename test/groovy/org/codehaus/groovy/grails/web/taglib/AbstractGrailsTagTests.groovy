@@ -213,5 +213,21 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
 
         assertEquals expected, transform(sw)
     }	
-	
+
+	def applyTemplate(template, params = [:] ) {
+
+        def engine = appCtx.groovyPagesTemplateEngine
+
+        assert engine
+        def t = engine.createTemplate(template, "test_"+ System.currentTimeMillis())
+
+        def w = t.make(params)
+
+        def sw = new StringWriter()
+        def out = new PrintWriter(sw)
+        webRequest.out = out
+        w.writeTo(out)
+
+        return sw.toString()
+    }
 }
