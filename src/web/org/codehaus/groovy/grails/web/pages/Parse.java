@@ -86,6 +86,10 @@ public class Parse implements Tokens {
         Object instance;
         boolean isDynamic;
         boolean hasAttributes;
+
+        public String toString() {
+            return "<"+namespace+":"+name+">";
+        }
     }
 
     public Parse(String name, InputStream in) throws IOException {
@@ -295,6 +299,11 @@ public class Parse implements Tokens {
         }
 
         if (finalPass) {
+            if(!tagMetaStack.isEmpty()) {
+                throw new GrailsTagException("Grails tags were not closed! ["+tagMetaStack+"]");
+            }
+
+
             out.println("}");
             for (Iterator i = constants.keySet().iterator(); i.hasNext();) {
                 String name = (String) i.next();
