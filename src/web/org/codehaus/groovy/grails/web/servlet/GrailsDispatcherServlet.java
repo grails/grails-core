@@ -249,12 +249,15 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
                 }
             }
             catch (ModelAndViewDefiningException ex) {
-                logger.debug("ModelAndViewDefiningException encountered", ex);
+                GrailsUtil.deepSanitize(ex);
+                if (logger.isDebugEnabled())
+                    logger.debug("ModelAndViewDefiningException encountered", ex);
                 mv = ex.getModelAndView();
             }
             catch (Exception ex) {
+                GrailsUtil.deepSanitize(ex);
                 Object handler = (mappedHandler != null ? mappedHandler.getHandler() : null);
-                mv = processHandlerException(request, response, handler, (Exception)GrailsUtil.sanitize(ex));
+                mv = processHandlerException(request, response, handler, ex);
             }
 
             // Did the handler return a view to render?
@@ -278,12 +281,14 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
         catch (Exception ex) {
             // Trigger after-completion for thrown exception.
             triggerAfterCompletion(mappedHandler, interceptorIndex, processedRequest, response, ex);
+            System.out.println("Exception handler in doDispatch took the crash");
             throw ex;
         }
         catch (Error err) {
             ServletException ex = new NestedServletException("Handler processing failed", err);
             // Trigger after-completion for thrown exception.
             triggerAfterCompletion(mappedHandler, interceptorIndex, processedRequest, response, ex);
+            System.out.println("Error handler in doDispatch took the crash");
             throw ex;
         }
 

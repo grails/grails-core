@@ -147,7 +147,7 @@ public class GrailsReloadServletFilter extends OncePerRequestFilter {
                 LOG.debug("Plugin manager not found, skipping change check");
             }
         } catch (Exception e) {
-            e = (Exception)GrailsUtil.sanitize(e);
+            GrailsUtil.deepSanitize(e);
             LOG.error("Error occured reloading application: " + e.getMessage(),e);
 
             httpServletResponse.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);

@@ -127,7 +127,7 @@ public class GroovyPageView extends AbstractUrlBasedView  {
      */
     protected void handleException(Exception exception, Writer out, GroovyPagesTemplateEngine engine, HttpServletRequest request)  {
 
-        GrailsUtil.sanitize(exception);
+        GrailsUtil.deepSanitize(exception);
         LOG.error("Error processing GroovyPageView: " + exception.getMessage(), exception);
         try {
             // GRAILS-603 null out controller to avoid default layout being applied to error page

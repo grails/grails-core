@@ -25,6 +25,8 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import grails.util.GrailsUtil;
+
 /**
  *  Exception resolver that wraps any runtime exceptions with a GrailsWrappedException instance
  * 
@@ -42,6 +44,8 @@ public class GrailsExceptionResolver  extends SimpleMappingExceptionResolver imp
     public ModelAndView resolveException(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) {
         ModelAndView mv = super.resolveException(request, response, handler, ex);
         response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+
+        GrailsUtil.deepSanitize(ex);
 
         LOG.error(ex.getMessage(), ex);
         

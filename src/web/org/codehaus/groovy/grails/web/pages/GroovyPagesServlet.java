@@ -176,7 +176,7 @@ public class GroovyPagesServlet extends HttpServlet  {
      * @throws ServletException Thrown when an exception occurs in the servlet environment
      */
     protected void handleException(Exception exception,Writer out, GroovyPagesTemplateEngine engine) throws ServletException, IOException {
-        GrailsUtil.sanitize(exception);
+        GrailsUtil.deepSanitize(exception);
         if(LOG.isErrorEnabled())
             LOG.error("Error processing GSP: " + exception.getMessage(), exception);
 

@@ -17,10 +17,7 @@ package grails.util;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.commons.ApplicationAttributes;
-import org.codehaus.groovy.grails.commons.ApplicationHolder;
-import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
-import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.commons.*;
 import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator;
 import org.codehaus.groovy.grails.support.MockApplicationContext;
 import org.codehaus.groovy.grails.support.MockResourceLoader;
@@ -61,9 +58,11 @@ public class GrailsUtil {
     private static final String GRAILS_IMPLEMENTATION_TITLE = "Grails";
     private static final String GRAILS_VERSION;
     private static final String[] GRAILS_PACKAGES = new String[] {
-            "org.codehaus.groovy.",
+            "org.codehaus.groovy.grails.",
+            "org.codehaus.groovy.runtime.",
+            "org.codehaus.groovy.reflecton.",
             "grails.",
-            "groovy.",
+            "groovy.lang.",
             "org.mortbay.",
             "sun.",
             "java.lang.reflect.",
@@ -253,20 +252,29 @@ public class GrailsUtil {
     }
 
 
+    /**
+     * <p>Remove all apparently Grails-internal trace entries from the exception instance<p>
+     * <p>This modifies the original instance and returns it, it does not clone</p>
+     * @param t
+     * @return The exception passed in, after cleaning the stack trace
+     */
     public static Throwable sanitize(Throwable t) {
-        StackTraceElement[] trace = t.getStackTrace();
-        List newTrace = new ArrayList();
-        for (int i = 0; i < trace.length; i++) {
-            StackTraceElement stackTraceElement = trace[i];
-            if (isApplicationClass(stackTraceElement.getClassName())) {
-                newTrace.add( stackTraceElement);
+        // Note that this getProperty access may well be synced...
+        if (!Boolean.parseBoolean(System.getProperty("grails.full.stacktrace"))) {
+            StackTraceElement[] trace = t.getStackTrace();
+            List newTrace = new ArrayList();
+            for (int i = 0; i < trace.length; i++) {
+                StackTraceElement stackTraceElement = trace[i];
+                if (isApplicationClass(stackTraceElement.getClassName())) {
+                    newTrace.add( stackTraceElement);
+                }
             }
+            // We don't want to lose anything, so log it
+            STACK_LOG.error("Sanitizing stacktrace:", t);
+            StackTraceElement[] clean = new StackTraceElement[newTrace.size()];
+            newTrace.toArray(clean);
+            t.setStackTrace(clean);
         }
-        // We don't want to lose anything
-        STACK_LOG.error("Sanitizing stacktrace:", t);
-        StackTraceElement[] clean = new StackTraceElement[newTrace.size()];
-        newTrace.toArray(clean);
-        t.setStackTrace(clean);
         return t;
     }
 
@@ -294,5 +302,42 @@ public class GrailsUtil {
             }
         }
         return true;
+    }
+
+    /**
+     * <p>Extracts the root cause of the exception, no matter how nested it is</p>
+     * @param t
+     * @return The deepest cause of the exception that can be found
+     */
+    public static Throwable extractRootCause(Throwable t) {
+        Throwable result = t;
+        while (result.getCause() != null) {
+            result = result.getCause();
+        }
+        return result;
+    }
+
+    /**
+     * <p>Get the root cause of an exception and sanitize it for display to the user</p>
+     * <p>This will MODIFY the stacktrace of the root cause exception object and return it</p>
+     * @param t
+     * @return The root cause exception instance, with its stace trace modified to filter out grails runtime classes
+     */
+    public static Throwable sanitizeRootCause(Throwable t) {
+        return GrailsUtil.sanitize(GrailsUtil.extractRootCause(t));
+    }
+
+    /**
+     * <p>Sanitize the exception and ALL nested causes</p>
+     * <p>This will MODIFY the stacktrace of the exception instance and all its causes irreversibly</p>
+     * @param t
+     * @return The root cause exception instances, with stack trace modified to filter out grails runtime classes
+     */
+    public static Throwable deepSanitize(Throwable t) {
+        Throwable current = t;
+        while (current.getCause() != null) {
+            current = GrailsUtil.sanitize(current.getCause());
+        }
+        return GrailsUtil.sanitize(t);
     }
 }

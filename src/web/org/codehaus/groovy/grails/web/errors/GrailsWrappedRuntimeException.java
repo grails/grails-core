@@ -58,7 +58,7 @@ public class GrailsWrappedRuntimeException extends GrailsException {
     private String gspFile;
 	private Throwable cause;
     private PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
-    private String filteredStackTrace;
+    private String[] stackTraceLines;
 
 
     /**
@@ -81,25 +81,7 @@ public class GrailsWrappedRuntimeException extends GrailsException {
         	cause = t.getCause();
         }
         
-        String[] lines= this.stackTrace.split("\\n");
-        StringBuffer buffy = new StringBuffer();
-        for (int i = 0; i < lines.length; i++) {
-            String line = lines[i];
-            if(PARSE_DETAILS_STEP1.matcher(line).find()) {
-                buffy.append(line);continue;
-            }
-            if(PARSE_DETAILS_STEP2.matcher(line).find()) {
-                buffy.append(line);continue;
-            }
-            if(PARSE_DETAILS_STEP3.matcher(line).find()) {
-                buffy.append(line);continue;
-            }
-            if(PARSE_GSP_DETAILS_STEP1.matcher(line).find()) {
-                buffy.append(line);continue;
-            }
-        }
-        this.filteredStackTrace = buffy.toString();
-        
+        this.stackTraceLines = this.stackTrace.split("\\n");
 
         if(cause instanceof MultipleCompilationErrorsException) {
         	MultipleCompilationErrorsException mcee = (MultipleCompilationErrorsException)cause;
@@ -256,6 +238,13 @@ public class GrailsWrappedRuntimeException extends GrailsException {
      */
     public String getStackTraceText() {
         return stackTrace;
+    }
+
+    /**
+     * @return Returns the stackTrace lines
+     */
+    public String[] getStackTraceLines() {
+        return stackTraceLines;
     }
 
     /* (non-Javadoc)
