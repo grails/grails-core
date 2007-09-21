@@ -334,7 +334,8 @@ class BeanBuilderTests extends GroovyTestCase {
 		def pr = new org.springframework.core.io.support.PathMatchingResourcePatternResolver()
 		def r = pr.getResource("grails/spring/resources1.groovy")
 		
-		def bb = new BeanBuilder(r)
+		def bb = new BeanBuilder()
+		bb.loadBeans(r)
 		
 		def ctx = bb.createApplicationContext()
 		

@@ -39,6 +39,7 @@ mappings {
 
              def info = m.match("/book/show/1")
              assert info
+             info.configure(webRequest)
 
              assertEquals "book", info.controllerName
              assertEquals "show", info.actionName
@@ -61,6 +62,7 @@ mappings {
 
              def info = m.match("/book/graeme/grails/read")
              assert info
+             info.configure(webRequest)
              assert info.controllerName
              assertEquals "read", info.actionName
 
@@ -80,7 +82,7 @@ mappings {
 
              def info = m.match("/book/show/1")
              assert info
-
+             info.configure(webRequest)
              assertEquals "book", info.controllerName
              assertEquals "show", info.actionName
              assertEquals "1", info.id

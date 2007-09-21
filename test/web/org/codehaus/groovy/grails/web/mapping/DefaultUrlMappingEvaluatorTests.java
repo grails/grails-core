@@ -36,7 +36,7 @@ public class DefaultUrlMappingEvaluatorTests extends TestCase {
 		assertEquals(1, mappings.size());
 		
 		UrlMapping mapping = (UrlMapping) mappings.get(0);
-		
+
 		assertNull(mapping.getActionName());
 		assertNull(mapping.getControllerName());
 		assertEquals("(*)",mapping.getUrlData().getTokens()[0]);
@@ -48,12 +48,17 @@ public class DefaultUrlMappingEvaluatorTests extends TestCase {
 		assertTrue(makeSureMatchesConstraintExistsOnId(mapping));
 		
 		GrailsWebRequest r = GrailsWebUtil.bindMockWebRequest();
-		
-		assertEquals("mycontroller",mapping.match("/mycontroller").getControllerName());
+
+        UrlMappingInfo info = mapping.match("/mycontroller");
+        info.configure(r);
+        
+        assertEquals("mycontroller", info.getControllerName());
 		assertNull(mapping.match("/mycontroller").getActionName());
 		assertNull(mapping.match("/mycontroller").getId());
-		
-		assertEquals("test",mapping.match("/mycontroller/test").getActionName());
+
+        UrlMappingInfo info2 = mapping.match("/mycontroller/test");
+        info2.configure(r);
+        assertEquals("test", info2.getActionName());
 		assertNull(mapping.match("/mycontroller/test").getId());
 		assertEquals("234", mapping.match("/blog/test/234").getId());
 	}
