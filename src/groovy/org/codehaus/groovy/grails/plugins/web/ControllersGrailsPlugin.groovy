@@ -321,7 +321,7 @@ class ControllersGrailsPlugin {
 	}
 
 
-	def doWithDynamicMethods = { ctx ->
+	def doWithDynamicMethods = { ApplicationContext ctx ->
 
 		// add common objects and out variable for tag libraries
 		def registry = GroovySystem.getMetaClassRegistry()
@@ -490,27 +490,44 @@ class ControllersGrailsPlugin {
                 def originalAction = controller.getPropertyValue(actionName)
                 def paramTypes = originalAction.getParameterTypes()
                 def closureName = actionName
-                def commandObjectBindingAction = { ->
+                def commandObjectBindingAction = { Object[] varArgs ->
+
                     def commandObjects = []
+                    for( v in varArgs) {
+                        commandObjects << v
+                    }
+                    def counter = 0
                     for( paramType in paramTypes ) {
+
                         if(GroovyObject.class.isAssignableFrom(paramType)) {
                             try {
-                                def commandObject = (GroovyObject) paramType.newInstance()
-                                bind.invoke(commandObject,"bindData",[commandObject, RCH.currentRequestAttributes().params] as Object[])
+                                def commandObject;
+                                if(counter < commandObjects.size()) {
+                                    if(paramType.isInstance(commandObjects[counter])) {
+                                        commandObject = commandObjects[counter]
+                                    }
+                                }
+
+                                if(!commandObject) {
+                                    commandObject = paramType.newInstance()
+                                    commandObjects << commandObject
+                                }
+                                def params = RCH.currentRequestAttributes().params
+                                bind.invoke(commandObject,"bindData",[commandObject, params] as Object[])
                                 def errors = new BindException(commandObject, paramType.name)
                                 def constrainedProperties = commandObject.constraints?.values()
                                 constrainedProperties.each { constrainedProperty ->
-                                    constrainedProperty.messageSource = ctx.getBean("messageSource") 
+                                    constrainedProperty.messageSource = ctx.getBean("messageSource")
                                     constrainedProperty.validate(commandObject, commandObject.getProperty( constrainedProperty.getPropertyName() ),errors);
                                 }
                                 commandObject.errors = errors
-                                commandObjects << commandObject
                             } catch (Exception e) {
                                 throw new ControllerExecutionException("Error occurred creating command object.", e);
                             }
                         }
+                        counter++
                     }
-                    GCU.getPropertyOrStaticPropertyOrFieldValue(delegate, closureName).call(commandObjects)
+                    GCU.getPropertyOrStaticPropertyOrFieldValue(delegate, closureName).call(*commandObjects)
                 }
                 mc."${GrailsClassUtils.getGetterName(actionName)}" = { ->
                      commandObjectBindingAction.delegate = delegate

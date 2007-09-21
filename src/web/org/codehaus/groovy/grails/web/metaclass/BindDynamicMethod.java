@@ -105,7 +105,19 @@ public class BindDynamicMethod extends AbstractDynamicMethodInvocation {
             HttpServletRequest request = parameterMap.getRequest();
             dataBinder = GrailsDataBinder.createBinder(targetObject, targetObject.getClass().getName(), request);
             includeExcludeFields(dataBinder, include, exclude);
-            dataBinder.bind(request, filter);
+
+            if(filter!=null) {
+                Object o = parameterMap.get(filter);
+                if(o instanceof GrailsParameterMap) {
+                    dataBinder.bind((GrailsParameterMap)o);                    
+                }
+                else {
+                    dataBinder.bind(parameterMap);
+                }
+            }
+            else {
+                dataBinder.bind(parameterMap);
+            }
         }
         else if(bindParams instanceof HttpServletRequest) {
         	GrailsWebRequest webRequest = (GrailsWebRequest)RequestContextHolder.currentRequestAttributes();

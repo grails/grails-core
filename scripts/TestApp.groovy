@@ -39,6 +39,7 @@ import org.springframework.mock.web.*
 import org.springframework.core.io.* 
 import org.springframework.web.context.request.RequestContextHolder;
 import org.codehaus.groovy.grails.plugins.*
+import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 
 Ant.property(environment:"env")
 grailsHome = Ant.antProject.properties."env.GRAILS_HOME"  
@@ -267,7 +268,8 @@ task(runIntegrationTests:"Runs Grails' tests under the test/integration director
 				def start = new Date()			
 	            runTests(suite, result) { test, invocation ->
 	                name = test.name[0..-6]
-					def webRequest = GWU.bindMockWebRequest(appCtx)	  
+					def webRequest = GWU.bindMockWebRequest(appCtx)
+					webRequest.getServletContext().setAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT, appCtx)
 				
 					// @todo this is horrible and dirty, should find a better way  		
 					if(name.endsWith("Controller")) {
