@@ -118,6 +118,10 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
         return ormMapping;
     }
 
+    public boolean hasSubClasses() {
+        return getSubClasses().size() > 0;
+    }
+
     private void evaluateOrmMapping() {
         Closure ormMappingClosure = (Closure)getPropertyOrStaticPropertyOrFieldValue(
                 ORM_MAPPING, Closure.class );

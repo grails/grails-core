@@ -175,4 +175,10 @@ public interface GrailsDomainClass extends GrailsClass {
     void refreshConstraints();
 
     OrmMapping getOrmMapping();
+
+    /**
+     * Returns true if the domain classes has sub classes
+     * @return True if it does
+     */
+    boolean hasSubClasses();
 }

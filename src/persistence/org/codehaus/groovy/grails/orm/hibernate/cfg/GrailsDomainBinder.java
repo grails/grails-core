@@ -15,14 +15,13 @@
 package org.codehaus.groovy.grails.orm.hibernate.cfg;
 
 
-
 import org.apache.commons.lang.math.NumberUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
-import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 import org.codehaus.groovy.grails.orm.OrmMapping;
+import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 import org.hibernate.FetchMode;
 import org.hibernate.MappingException;
 import org.hibernate.cfg.ImprovedNamingStrategy;
@@ -33,12 +32,13 @@ import org.hibernate.id.PersistentIdentifierGenerator;
 import org.hibernate.mapping.*;
 import org.hibernate.mapping.Collection;
 import org.hibernate.persister.entity.SingleTableEntityPersister;
+import org.hibernate.usertype.UserType;
 import org.hibernate.util.StringHelper;
 
 import java.util.*;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.List;
 
 
 /**
@@ -792,9 +792,11 @@ public final class GrailsDomainBinder {
 			
 			GrailsDomainClassProperty currentGrailsProp = persistentProperties[i];
 			// if its inherited skip
-			if(currentGrailsProp.isInherited())
+			if(currentGrailsProp.isInherited() && !isBidirectionalManyToOne(currentGrailsProp))
 				continue;
-			/*if(currentGrailsProp.isManyToMany() && !currentGrailsProp.isOwningSide())
+            else if(domainClass.hasSubClasses() && (currentGrailsProp.isOneToOne() || currentGrailsProp.isManyToOne()))
+                continue;
+            /*if(currentGrailsProp.isManyToMany() && !currentGrailsProp.isOwningSide())
 				continue;*/
 
 						
@@ -821,9 +823,9 @@ public final class GrailsDomainBinder {
 					LOG.debug("[GrailsDomainBinder] Binding property [" + currentGrailsProp.getName() + "] as ManyToOne");
 				
 				value = new ManyToOne( table );
-				bindManyToOne( currentGrailsProp, (ManyToOne) value, EMPTY_PATH, mappings );
+                bindManyToOne( currentGrailsProp, (ManyToOne) value, EMPTY_PATH, mappings );
 			}
-			else if ( currentGrailsProp.isOneToOne()) {		
+			else if ( currentGrailsProp.isOneToOne() && !UserType.class.isAssignableFrom(currentGrailsProp.getType())) {		
 				if(LOG.isDebugEnabled()) 
 					LOG.debug("[GrailsDomainBinder] Binding property [" + currentGrailsProp.getName() + "] as OneToOne");
 				
@@ -851,6 +853,10 @@ public final class GrailsDomainBinder {
 			}
 		}		
 	}
+
+    private static boolean isBidirectionalManyToOne(GrailsDomainClassProperty currentGrailsProp) {
+        return (currentGrailsProp.isBidirectional() && currentGrailsProp.isManyToOne());
+    }
 
     /**
      * Binds a Hibernate component type using the given GrailsDomainClassProperty instance
@@ -966,7 +972,7 @@ public final class GrailsDomainBinder {
 		
 		if(value.getTable() != null)
 			value.createForeignKey();
-		
+
 		Property prop = new Property();
 		prop.setValue( value );
 		
@@ -1245,13 +1251,18 @@ w	 * Binds a simple value to the Hibernate metamodel. A simple value is
 	private static void bindColumn(GrailsDomainClassProperty grailsProp, Column column, String path, Table table) {
 		if(grailsProp.isAssociation()) {
 			if(!grailsProp.isBidirectional() && grailsProp.isOneToMany()) {
-				String prefix = namingStrategy.classToTableName(grailsProp.getDomainClass().getName());				
+				String prefix = namingStrategy.classToTableName(grailsProp.getDomainClass().getName());
                 String columnName = getColumnNameForPropertyAndPath(grailsProp, path);
                 column.setName(prefix+ UNDERSCORE +columnName + FOREIGN_KEY_SUFFIX);
 			}
 			else {
-				column.setName( namingStrategy.propertyToColumnName(grailsProp.getName()) + FOREIGN_KEY_SUFFIX );				
-			}
+                if(grailsProp.isInherited() && isBidirectionalManyToOne(grailsProp)) {
+                    column.setName( namingStrategy.propertyToColumnName(grailsProp.getDomainClass().getName()) + '_'+ namingStrategy.propertyToColumnName(grailsProp.getName()) + FOREIGN_KEY_SUFFIX );
+                }
+                else {
+                    column.setName( namingStrategy.propertyToColumnName(grailsProp.getName()) + FOREIGN_KEY_SUFFIX );
+                }
+            }
 			column.setNullable(true);
 			
 		} 

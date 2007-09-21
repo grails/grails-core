@@ -215,6 +215,10 @@ public class GrailsHibernateDomainClass extends AbstractGrailsClass implements E
 	throw new UnsupportedOperationException("Method 'getOrmMapping' is not supported by implementation");
     }
 
+    public boolean hasSubClasses() {
+        return false;  
+    }
+
     public boolean isOneToMany(String propertyName) {
 	GrailsDomainClassProperty prop = getPropertyByName(propertyName);
 	return prop != null && prop.isOneToMany();
