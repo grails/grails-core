@@ -10,6 +10,7 @@ import org.codehaus.groovy.grails.web.servlet.*
 import org.springframework.mock.web.*
 import org.springframework.validation.*
 import org.springframework.web.servlet.*
+import grails.util.GrailsWebUtil
 
 class CommandObjectsTests extends AbstractGrailsControllerTests {
 
@@ -56,9 +57,12 @@ class CommandObjectsTests extends AbstractGrailsControllerTests {
         assertNull result.command.name
 
         // one command object with params binding
-        request.setParameter('name', 'Sergey')
+        def webRequest = GrailsWebUtil.bindMockWebRequest()
+        request = webRequest.currentRequest
+        request.addParameter('name', 'Sergey')
         result = testCtrl.action2()
         assertNotNull result.command
+
         assertEquals 'Sergey', result.command.name
 
         // two command objects with params only for the first
@@ -71,6 +75,9 @@ class CommandObjectsTests extends AbstractGrailsControllerTests {
         assertNull result.command2.data
 
         // two command objects with params
+        webRequest = GrailsWebUtil.bindMockWebRequest()
+        request = webRequest.currentRequest
+        
         request.setParameter('name', 'Sergey')
         request.setParameter('data', 'Some data')
         result = testCtrl.action3()
@@ -92,6 +99,9 @@ class CommandObjectsTests extends AbstractGrailsControllerTests {
         assertFalse result.command.hasErrors()
 
         // command objects validation should fail for 'command2' since 'data' param is too short
+        def webRequest = GrailsWebUtil.bindMockWebRequest()
+        request = webRequest.currentRequest
+        
         request.setParameter('name', 'Sergey')
         request.setParameter('data', 'Some')
         result = testCtrl.action3()
