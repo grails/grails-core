@@ -52,38 +52,39 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator  {
         def display = (cp ? cp.display : true)        
         if(!display) return ''
         
-	def buf = new StringBuffer("<tr class='prop'>")
-	buf << "<td valign='top' class='name'><label for='${property.name}'>${property.naturalName}:</label></td>"
-	buf << "<td valign='top' class='value \${hasErrors(bean:${domainClass.propertyName},field:'${property.name}','errors')}'>"
-		    if(property.type == Boolean.class || property.type == boolean.class)
-		        buf << renderBooleanEditor(domainClass,property)	
-            else if(Number.class.isAssignableFrom(property.type) || (property.type.isPrimitive() && property.type != boolean.class))
-                buf << renderNumberEditor(domainClass,property)
-            else if(property.type == String.class)
-                buf << renderStringEditor(domainClass,property)
-            else if(property.type == Date.class || property.type == java.sql.Date.class || property.type == java.sql.Time.class)
-                buf << renderDateEditor(domainClass,property)
-            else if(property.type == Calendar.class)
-                buf << renderDateEditor(domainClass,property)  
-            else if(property.type == URL.class) 
-           		buf << renderStringEditor(domainClass,property)
-            else if(property.type == TimeZone.class)
-                buf << renderSelectTypeEditor("timeZone",domainClass,property)
-            else if(property.type == Locale.class)
-                buf << renderSelectTypeEditor("locale",domainClass,property)
-            else if(property.type == Currency.class)
-                buf << renderSelectTypeEditor("currency",domainClass,property)
-            else if(property.type==([] as Byte[]).class) //TODO: Bug in groovy means i have to do this :(
-                buf << renderByteArrayEditor(domainClass,property)
-            else if(property.type==([] as byte[]).class) //TODO: Bug in groovy means i have to do this :(
-                buf << renderByteArrayEditor(domainClass,property)                
-            else if(property.manyToOne || property.oneToOne)
-                buf << renderManyToOne(domainClass,property)
-            else if(property.oneToMany || property.manyToMany)
-                buf << renderOneToMany(domainClass,property)
+        def buf = new StringBuffer("<tr class='prop'>")
+        buf << "<td valign='top' class='name'><label for='${property.name}'>${property.naturalName}:</label></td>"
+        buf << "<td valign='top' class='value \${hasErrors(bean:${domainClass.propertyName},field:'${property.name}','errors')}'>"
+        
+        if(property.type == Boolean.class || property.type == boolean.class)
+            buf << renderBooleanEditor(domainClass,property)	
+        else if(Number.class.isAssignableFrom(property.type) || (property.type.isPrimitive() && property.type != boolean.class))
+            buf << renderNumberEditor(domainClass,property)
+        else if(property.type == String.class)
+            buf << renderStringEditor(domainClass,property)
+        else if(property.type == Date.class || property.type == java.sql.Date.class || property.type == java.sql.Time.class)
+            buf << renderDateEditor(domainClass,property)
+        else if(property.type == Calendar.class)
+            buf << renderDateEditor(domainClass,property)  
+        else if(property.type == URL.class) 
+            buf << renderStringEditor(domainClass,property)
+        else if(property.type == TimeZone.class)
+            buf << renderSelectTypeEditor("timeZone",domainClass,property)
+        else if(property.type == Locale.class)
+            buf << renderSelectTypeEditor("locale",domainClass,property)
+        else if(property.type == Currency.class)
+            buf << renderSelectTypeEditor("currency",domainClass,property)
+        else if(property.type==([] as Byte[]).class) //TODO: Bug in groovy means i have to do this :(
+            buf << renderByteArrayEditor(domainClass,property)
+        else if(property.type==([] as byte[]).class) //TODO: Bug in groovy means i have to do this :(
+            buf << renderByteArrayEditor(domainClass,property)                
+        else if(property.manyToOne || property.oneToOne)
+            buf << renderManyToOne(domainClass,property)
+        else if(property.oneToMany || property.manyToMany)
+            buf << renderOneToMany(domainClass,property)
                 
-       buf << '</td></tr>'
-       return buf.toString()
+        buf << '</td></tr>'
+        return buf.toString()
     }
 
     public void generateViews(GrailsDomainClass domainClass, String destdir) {
