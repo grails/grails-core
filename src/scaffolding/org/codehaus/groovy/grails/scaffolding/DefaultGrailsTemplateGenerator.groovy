@@ -15,6 +15,7 @@
  */
 package org.codehaus.groovy.grails.scaffolding;
 
+import groovy.text.*;
 import org.apache.commons.logging.Log;
 import org.springframework.core.io.*
 import org.apache.commons.logging.LogFactory;
@@ -35,9 +36,10 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator  {
 
     String basedir = "."
     boolean overwrite = false
-    def engine = new groovy.text.SimpleTemplateEngine()
+    def engine = new SimpleTemplateEngine()
     def ant = new AntBuilder()  
 	ResourceLoader resourceLoader
+	Template renderEditorTemplate
 	
 	void setResourceLoader(ResourceLoader rl) { 
 		LOG.info "Scaffolding template generator set to use resource loader ${rl}"
@@ -48,43 +50,15 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator  {
     def renderEditor = { property ->
         def domainClass = property.domainClass
         def cp = domainClass.constrainedProperties[property.name]
-        
-        def display = (cp ? cp.display : true)        
-        if(!display) return ''
-        
-        def buf = new StringBuffer("<tr class='prop'>")
-        buf << "<td valign='top' class='name'><label for='${property.name}'>${property.naturalName}:</label></td>"
-        buf << "<td valign='top' class='value \${hasErrors(bean:${domainClass.propertyName},field:'${property.name}','errors')}'>"
-        
-        if(property.type == Boolean.class || property.type == boolean.class)
-            buf << renderBooleanEditor(domainClass,property)	
-        else if(Number.class.isAssignableFrom(property.type) || (property.type.isPrimitive() && property.type != boolean.class))
-            buf << renderNumberEditor(domainClass,property)
-        else if(property.type == String.class)
-            buf << renderStringEditor(domainClass,property)
-        else if(property.type == Date.class || property.type == java.sql.Date.class || property.type == java.sql.Time.class)
-            buf << renderDateEditor(domainClass,property)
-        else if(property.type == Calendar.class)
-            buf << renderDateEditor(domainClass,property)  
-        else if(property.type == URL.class) 
-            buf << renderStringEditor(domainClass,property)
-        else if(property.type == TimeZone.class)
-            buf << renderSelectTypeEditor("timeZone",domainClass,property)
-        else if(property.type == Locale.class)
-            buf << renderSelectTypeEditor("locale",domainClass,property)
-        else if(property.type == Currency.class)
-            buf << renderSelectTypeEditor("currency",domainClass,property)
-        else if(property.type==([] as Byte[]).class) //TODO: Bug in groovy means i have to do this :(
-            buf << renderByteArrayEditor(domainClass,property)
-        else if(property.type==([] as byte[]).class) //TODO: Bug in groovy means i have to do this :(
-            buf << renderByteArrayEditor(domainClass,property)                
-        else if(property.manyToOne || property.oneToOne)
-            buf << renderManyToOne(domainClass,property)
-        else if(property.oneToMany || property.manyToMany)
-            buf << renderOneToMany(domainClass,property)
-                
-        buf << '</td></tr>'
-        return buf.toString()
+                                                   
+        if(!renderEditorTemplate) {
+        	// create template once for performance
+        	def templateText = getTemplateText("renderEditor.template")
+        	renderEditorTemplate = engine.createTemplate(templateText)
+        }
+
+        def binding = [property:property,domainClass:domainClass,cp:cp]
+        return renderEditorTemplate.make(binding).toString()
     }
 
     public void generateViews(GrailsDomainClass domainClass, String destdir) {
@@ -122,146 +96,6 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator  {
 			}
         }
     }
-
-    private renderStringEditor(domainClass, property) {
-        def cp = domainClass.constrainedProperties[property.name]
-        if(!cp) {
-            return "<input type='text' name='${property.name}' id='${property.name}' value=\"\${fieldValue(bean:${domainClass.propertyName},field:'${property.name}')}\" />"
-        }
-        else {
-			if("textarea" == cp.widget || (cp.maxSize > 250 && !cp.password && !cp.inList)) {
-                return "<textarea rows='5' cols='40' name='${property.name}'>\${${domainClass.propertyName}?.${property.name}?.encodeAsHTML()}</textarea>"
-            }
-            else {
-                if(cp.inList) {
-                   def sb = new StringBuffer('<g:select ')
-                   sb << "id='${property.name}' name='${property.name}' from='\${${domainClass.propertyName}.constraints.${property.name}.inList.collect{it.encodeAsHTML()}}' value=\"\${fieldValue(bean:${domainClass.propertyName},field:'${property.name}')}\" ${renderNoSelection(property)}>"
-                   sb << '</g:select>'
-                   return sb.toString()
-                }
-                else {
-                    def sb = new StringBuffer('<input ')
-                    cp.password ? sb << 'type="password" ' : sb << 'type="text" '
-                    if(!cp.editable) sb << 'readonly="readonly" '
-                    if(cp.maxSize) sb << "maxlength='${cp.maxSize}' "
-                    sb << "id='${property.name}' name='${property.name}' value=\"\${fieldValue(bean:${domainClass.propertyName},field:'${property.name}')}\"/>"
-                    return sb.toString()
-                }
-            }
-        }
-    }
-
-    private renderByteArrayEditor(domainClass,property) {
-        return "<input type='file' id='${property.name}' name='${property.name}' />"
-    }
-
-    private renderManyToOne(domainClass,property) {
-        if(property.association) {            
-            return "<g:select optionKey=\"id\" from=\"\${${property.type.name}.list()}\" name='${property.name}.id' value=\"\${${domainClass.propertyName}?.${property.name}?.id}\" ${renderNoSelection(property)}></g:select>"
-        }
-    }
-
-    private renderOneToMany(domainClass,property) {
-        def sw = new StringWriter()
-        def pw = new PrintWriter(sw)
-        pw.println '<ul>'
-        pw.println "    <g:each var='${property.name[0]}' in='\${${domainClass.propertyName}?.${property.name}?}'>"
-        pw.println "        <li><g:link controller='${property.referencedDomainClass.propertyName}' action='show' id='\${${property.name[0]}.id}'>\${${property.name[0]}}</g:link></li>"
-        pw.println "    </g:each>"
-        pw.println "</ul>"
-        pw.println "<g:link controller='${property.referencedDomainClass.propertyName}' params='[\"${domainClass.propertyName}.id\":${domainClass.propertyName}?.id]' action='create'>Add ${property.referencedDomainClass.shortName}</g:link>"
-        return sw.toString()
-    }
-
-    private renderNumberEditor(domainClass,property) {
-        def cp = domainClass.constrainedProperties[property.name]
-        if(!cp) {
-            if(property.type == Byte.class) {
-                return "<g:select from='\${-128..127}' name='${property.name}' value=\"\${${domainClass.propertyName}?.${property.name}}\"></g:select>"
-            }
-            else {
-                return "<input type='text' id='${property.name}' name='${property.name}' value=\"\${fieldValue(bean:${domainClass.propertyName},field:'${property.name}')}\" />"
-            }
-        }
-        else {
-            if(cp.range) {
-                return "<g:select from='\${${cp.range.from}..${cp.range.to}}' id='${property.name}' name='${property.name}' value=\"\${${domainClass.propertyName}?.${property.name}}\" ${renderNoSelection(property)}></g:select>"
-            }
-            else {
-                return "<input type='text' id='${property.name}' name='${property.name}' value=\"\${fieldValue(bean:${domainClass.propertyName},field:'${property.name}')}\" />"
-            }
-        }
-    }
-
-    private renderBooleanEditor(domainClass,property) {
-
-        def cp = domainClass.constrainedProperties[property.name]
-        if(!cp) {
-            return "<g:checkBox name='${property.name}' value=\"\${${domainClass.propertyName}?.${property.name}}\"></g:checkBox>"
-        }
-        else {
-            def buf = new StringBuffer('<g:checkBox ')
-            if(cp.widget) buf << "widget='${cp.widget}'";
-
-            buf << "name='${property.name}' value=\"\${${domainClass.propertyName}?.${property.name}}\" "
-            cp.attributes.each { k,v ->
-                  buf << "${k}=\"${v}\" "
-            }
-            buf << '></g:checkBox>'
-            return buf.toString()
-        }
-
-    }
-
-    private renderDateEditor(domainClass,property) {
-        def cp = domainClass.constrainedProperties[property.name]
-        if(!cp) {
-            return "<g:datePicker name='${property.name}' value=\"\${${domainClass.propertyName}?.${property.name}}\"></g:datePicker>"
-        }
-        else {
-          if(!cp.editable) {
-            return "\${${domainClass.propertyName}?.${property.name}?.toString()}"
-          }
-          else {
-            def buf = new StringBuffer('<g:datePicker ')
-            if(cp.widget) buf << "widget='${cp.widget}' "
-            if(cp.format) buf << "format='${cp.format}' "
-            cp.attributes.each { k,v ->
-                  buf << "${k}=\"${v}\" "
-            }
-            buf << "name='${property.name}' value=\"\${${domainClass.propertyName}?.${property.name}}\" ${renderNoSelection(property)}></g:datePicker>"
-            return buf.toString()
-          }
-        }
-    }
-
-    private renderSelectTypeEditor(type,domainClass,property) {
-       def cp = domainClass.constrainedProperties[property.name]
-        if(!cp) {
-            return "<g:${type}Select name='${property.name}' value=\"\${${domainClass.propertyName}?.${property.name}}\"></g:${type}Select>"
-        }
-        else {
-            def buf = new StringBuffer("<g:${type}Select ")
-            if(cp.widget) buf << "widget='${cp.widget}' ";
-            cp.attributes.each { k,v ->
-                  buf << "${k}=\"${v}\" "
-            }
-            buf << "name='${property.name}' value=\"\${${domainClass.propertyName}?.${property.name}}\" ${renderNoSelection(property)}></g:${type}Select>"
-            return buf.toString()
-        }
-    }
-
-	private renderNoSelection(property) {
-		if(property.optional) {
-			if(property.manyToOne) {
-				return "noSelection=\"['null':'']\""				
-			}
-			else {
-				return "noSelection=\"['':'']\""
-			}
-		}
-		return ""
-	}
 
     private generateListView(domainClass, destDir) {
         def listFile = new File("${destDir}/list.gsp")
@@ -305,34 +139,34 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator  {
     }
 
     void generateView(GrailsDomainClass domainClass, String viewName, Writer out) {
-            def templateText = getTemplateText("${viewName}.gsp")
+        def templateText = getTemplateText("${viewName}.gsp")
 
-            def t = engine.createTemplate(templateText)
-            def multiPart = domainClass.properties.find{it.type==([] as Byte[]).class || it.type==([] as byte[]).class}
+        def t = engine.createTemplate(templateText)
+        def multiPart = domainClass.properties.find{it.type==([] as Byte[]).class || it.type==([] as byte[]).class}
 
-            def packageName  = domainClass.packageName ? "<%@ page import=\"${domainClass.fullName}\" %>" : ""
-                def binding = [ packageName:packageName,
-                                domainClass: domainClass,
-                            multiPart:multiPart,
-                            className:domainClass.shortName,
-                            propertyName:domainClass.propertyName,
-                            renderEditor:renderEditor,
-                            comparator:org.codehaus.groovy.grails.scaffolding.DomainClassPropertyComparator.class]
+        def packageName  = domainClass.packageName ? "<%@ page import=\"${domainClass.fullName}\" %>" : ""
+        def binding = [ packageName:packageName,
+                        domainClass: domainClass,
+                        multiPart:multiPart,
+                        className:domainClass.shortName,
+                        propertyName:domainClass.propertyName,
+                        renderEditor:renderEditor,
+                        comparator:org.codehaus.groovy.grails.scaffolding.DomainClassPropertyComparator.class]
 
-            t.make(binding).writeTo(out)
+        t.make(binding).writeTo(out)
     }
 
     void generateController(GrailsDomainClass domainClass, Writer out) {
-            def templateText = getTemplateText("Controller.groovy")
+        def templateText = getTemplateText("Controller.groovy")
 
-            def binding = [ packageName:domainClass.packageName,
-                            domainClass:domainClass,
-                            className:domainClass.shortName,
-                            propertyName:domainClass.propertyName,
-                            comparator:org.codehaus.groovy.grails.scaffolding.DomainClassPropertyComparator.class]
+        def binding = [ packageName:domainClass.packageName,
+                        domainClass:domainClass,
+                        className:domainClass.shortName,
+                        propertyName:domainClass.propertyName,
+                        comparator:org.codehaus.groovy.grails.scaffolding.DomainClassPropertyComparator.class]
 
-            def t = engine.createTemplate(templateText)
-            t.make(binding).writeTo(out)
+        def t = engine.createTemplate(templateText)
+        t.make(binding).writeTo(out)
     }
     
     private canWrite(testFile) {

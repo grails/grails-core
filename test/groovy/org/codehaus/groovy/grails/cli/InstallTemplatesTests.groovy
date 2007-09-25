@@ -32,7 +32,8 @@ class InstallTemplatesTests extends AbstractCliTests {
 		  "/scaffolding/create.gsp",
 		  "/scaffolding/edit.gsp",
 		  "/scaffolding/list.gsp",
-		  "/scaffolding/show.gsp"
+		  "/scaffolding/show.gsp",
+		  "/scaffolding/renderEditor.template"
 		]
 		
 		for (t in templates) {
