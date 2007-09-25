@@ -153,6 +153,7 @@ class ScaffoldingGrailsPlugin {
                     }
 
                     for(bean in beans.beanDefinitions) {
+                        ctx.removeBeanDefinition(bean.key )
                         ctx.registerBeanDefinition(bean.key, bean.value)
                     }
 

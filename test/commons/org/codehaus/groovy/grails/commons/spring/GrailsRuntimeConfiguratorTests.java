@@ -60,10 +60,12 @@ public class GrailsRuntimeConfiguratorTests extends TestCase {
 
 
         GrailsApplication app = new DefaultGrailsApplication(new Class[]{dc,sc,c}, gcl );
+
         MockApplicationContext parent = new MockApplicationContext();
         parent.registerMockBean(GrailsApplication.APPLICATION_ID, app);
         parent.registerMockBean("classLoader", gcl);
         parent.registerMockBean(PluginMetaManager.BEAN_ID, new DefaultPluginMetaManager(new Resource[0]));
+        app.setApplicationContext(parent);
         
         GrailsRuntimeConfigurator conf = new GrailsRuntimeConfigurator(app,parent);
         DefaultGrailsPluginManager manager = new DefaultGrailsPluginManager(new Class[0], app);
@@ -124,7 +126,7 @@ public class GrailsRuntimeConfiguratorTests extends TestCase {
     public void testConfigureScaffolding() throws Exception {
         GroovyClassLoader gcl = new GroovyClassLoader();
         Class dc = gcl.parseClass("class Test { Long id; Long version; }");
-        
+
         Class c = gcl.parseClass("class TestController { def scaffold = Test }");
 
         GrailsApplication app = new DefaultGrailsApplication(new Class[]{dc,c}, gcl );
@@ -163,8 +165,8 @@ public class GrailsRuntimeConfiguratorTests extends TestCase {
         // now test override bean
         gcl = new GroovyClassLoader();
         dc = gcl.parseClass("class Test { Long id; Long version;String updatedProp = 'hello'; }");
+        ctx.removeBeanDefinition("Test");
         ctx.registerSingleton("Test",dc);
-
         testInstance = (GroovyObject)ctx.getBean("Test");
         assertNotNull(testInstance);
         assertEquals("hello",testInstance.getProperty("updatedProp"));

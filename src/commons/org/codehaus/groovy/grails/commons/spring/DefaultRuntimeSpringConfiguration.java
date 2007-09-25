@@ -192,6 +192,10 @@ public class DefaultRuntimeSpringConfiguration implements
                 }
             }
 
+            
+            if(applicationContext.containsBeanDefinition(bc.getName()))
+                applicationContext.removeBeanDefinition(bc.getName());
+            
             applicationContext.registerBeanDefinition(bc.getName(),
                                                 bc.getBeanDefinition()	);
         }
@@ -208,7 +212,12 @@ public class DefaultRuntimeSpringConfiguration implements
                     }
                 }
             }
-            applicationContext.registerBeanDefinition(key.toString(), bd);
+            final String beanName = key.toString();
+            if(applicationContext.containsBean(beanName)) {
+                applicationContext.removeBeanDefinition(beanName);
+            }
+
+            applicationContext.registerBeanDefinition(beanName, bd);
 
         }
     }

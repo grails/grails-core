@@ -17,6 +17,8 @@ package org.codehaus.groovy.grails.commons.spring;
 
 import groovy.lang.GroovyObject;
 import groovy.lang.MetaClass;
+import groovy.lang.GroovyClassLoader;
+import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.orm.support.TransactionManagerPostProcessor;
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.springframework.beans.BeanWrapper;
@@ -60,15 +62,16 @@ public class GrailsWebApplicationContext extends StaticApplicationContext
 	private ServletConfig servletConfig;
 	private MetaClass metaClass;
 	private BeanWrapper ctxBean = new BeanWrapperImpl(this);
+    private GroovyClassLoader grailsClassLoader;
 
-	public GrailsWebApplicationContext() throws BeansException {
+    public GrailsWebApplicationContext() throws BeansException {
 		super();
 		initialise();
 	}
 
 	public GrailsWebApplicationContext(ApplicationContext parent) throws BeansException {
 		super(parent);
-		initialise();
+        initialise();
 	}
 
 	private void initialise() {
@@ -76,7 +79,11 @@ public class GrailsWebApplicationContext extends StaticApplicationContext
 		addBeanFactoryPostProcessor(new TransactionManagerPostProcessor());
 	}
 
-	/**
+    public ClassLoader getClassLoader() {
+        return grailsClassLoader != null ? grailsClassLoader : super.getClassLoader();
+    }
+
+    /**
 	 * Set the ServletContext that this WebApplicationContext runs in.
 	 */
 	public void setServletContext(ServletContext servletContext) {
@@ -144,7 +151,19 @@ public class GrailsWebApplicationContext extends StaticApplicationContext
 		this.themeSource = UiApplicationContextUtils.initThemeSource(this);
 	}
 
-	public Theme getTheme(String themeName) {
+    public void refresh() throws BeansException, IllegalStateException {
+        ApplicationContext parent = getParent();
+        if(parent != null && parent.containsBean(GrailsApplication.APPLICATION_ID)) {
+            final GrailsApplication application = (GrailsApplication) parent.getBean(GrailsApplication.APPLICATION_ID);
+            this.grailsClassLoader = application.getClassLoader();
+        }
+
+
+        
+        super.refresh();
+    }
+
+    public Theme getTheme(String themeName) {
 		return this.themeSource.getTheme(themeName);
 	}
 
@@ -180,7 +199,11 @@ public class GrailsWebApplicationContext extends StaticApplicationContext
 
 	public void setProperty(String property, Object newValue) {
 		if(newValue instanceof BeanDefinition) {
-			registerBeanDefinition(property, (BeanDefinition)newValue);
+            if(containsBean(property)) {
+                removeBeanDefinition(property);
+            }
+            
+            registerBeanDefinition(property, (BeanDefinition)newValue);
 		}
 		else {
 			metaClass.setProperty(this, property, newValue);

@@ -53,7 +53,7 @@ class ServicesGrailsPlugin {
 				props."*"="PROPAGATION_REQUIRED"
 				"${serviceClass.propertyName}"(TransactionProxyFactoryBean) { bean ->
 				    if(scope) bean.scope = scope
-					target = { innerBean ->
+					target = { innerBean ->   
 						innerBean.factoryBean = "${serviceClass.fullName}ServiceClass"
 						innerBean.factoryMethod = "newInstance"
 						innerBean.autowire = "byName"
@@ -61,7 +61,7 @@ class ServicesGrailsPlugin {
 					}
 					proxyTargetClass = true
 					transactionAttributes = props
-					transactionManager = ref("transactionManager")
+					transactionManager = ref("transactionManager")					       
 				}
 			}
 			else {
@@ -105,13 +105,15 @@ class ServicesGrailsPlugin {
 						transactionManager = ref("transactionManager")
 					}
 				}     
-				if(event.ctx) {  
+				if(event.ctx) {         
+					event.ctx.removeBeanDefinition("${serviceClass.fullName}ServiceClass")					
 					event.ctx.registerBeanDefinition("${serviceClass.fullName}ServiceClass", beans.getBeanDefinition("${serviceClass.fullName}ServiceClass"))					
+   					event.ctx.removeBeanDefinition(serviceName )
 					event.ctx.registerBeanDefinition(serviceName, beans.getBeanDefinition(serviceName))
 				}				
 			}
 			else {
-			   
+			                                             
 				def beans = beans {
 					"$serviceName"(serviceClass.getClazz()) { bean ->
 						bean.autowire =  true
@@ -120,9 +122,10 @@ class ServicesGrailsPlugin {
                         }
 					}					
 				}
-				if(event.ctx) {
+				if(event.ctx) {     
+					event.ctx.removeBeanDefinition(serviceName)
 					event.ctx.registerBeanDefinition(serviceName, beans.getBeanDefinition(serviceName))
-				}
+				}     
 			}
 		}
 	}

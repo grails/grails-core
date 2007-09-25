@@ -33,6 +33,7 @@ import org.codehaus.groovy.grails.compiler.support.GrailsResourceLoader;
 import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
@@ -66,7 +67,7 @@ import java.util.regex.Pattern;
  *        <p/>
  *        Created: Jul 2, 2005
  */
-public class DefaultGrailsApplication extends GroovyObjectSupport implements GrailsApplication {
+public class DefaultGrailsApplication extends GroovyObjectSupport implements GrailsApplication, BeanClassLoaderAware {
 
     private static final Pattern GETCLASSESPROP_PATTERN = Pattern.compile("(\\w+)(Classes)");
     private static final Pattern GETCLASSESMETH_PATTERN = Pattern.compile("(get)(\\w+)(Classes)");
@@ -92,6 +93,7 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
     private Map applicationMeta;
     private Resource[] resources;
     private boolean initialised = false;
+    private ClassLoader beanClassLoader;
 
     /**
      * Creates a new empty Grails application
@@ -242,8 +244,10 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
     private GroovyClassLoader configureClassLoader(
             final GrailsResourceLoader resourceLoader) {
 
-        final ClassLoader contextLoader = Thread.currentThread().getContextClassLoader();
+        final ClassLoader contextLoader =  Thread.currentThread().getContextClassLoader();
+
         ClassLoader rootLoader = DefaultGroovyMethods.getRootLoader(contextLoader);
+        ClassLoader parentLoader = beanClassLoader != null ? beanClassLoader : contextLoader;
         GroovyClassLoader cl;
         if (rootLoader != null) {
             cl = new GrailsClassLoader(contextLoader, resourceLoader);
@@ -852,4 +856,7 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
         }
     }
 
+    public void setBeanClassLoader(ClassLoader classLoader) {
+        this.beanClassLoader = classLoader;
+    }
 }

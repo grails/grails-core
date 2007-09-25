@@ -720,7 +720,8 @@ class ControllersGrailsPlugin {
 					}					
 				}
 				if(event.ctx) {
-					event.ctx.registerBeanDefinition(beanName, beans.getBeanDefinition(beanName))
+                    event.ctx.removeBeanDefinition(beanName )
+                    event.ctx.registerBeanDefinition(beanName, beans.getBeanDefinition(beanName))
 				}
 			}
 		}  

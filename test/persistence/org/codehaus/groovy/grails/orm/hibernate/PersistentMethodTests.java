@@ -447,17 +447,7 @@ public class PersistentMethodTests extends AbstractDependencyInjectionSpringCont
 		catch(InvokerInvocationException iie) {
 			// great!
 		}
-        // now lets test out some junk and make sure we get errors!
-        try {
-            obj.getMetaClass().invokeStaticMethod(obj, "findAllByLastNameLike", new Object[] {Boolean.FALSE});
-            fail("Should have thrown an exception for invalid arguments");
-        }
-        catch(MissingMethodException mme) {
-            //great!
-        }
-        catch(InvokerInvocationException iie) {
-            // great!
-        }
+
 
         // and the wrong number of arguments!
         try {

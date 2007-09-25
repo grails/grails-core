@@ -182,10 +182,13 @@ class HibernateGrailsPlugin {
             mc.'static'.methodMissing = {String name, args ->
                 initDomainClass()
                 def result
-                if (delegate instanceof Class)
-                    result = mc.invokeStaticMethod(delegate, name, args)
-                else
-                    result = mc.invokeMethod(delegate, name, args)
+                if (delegate instanceof Class) {
+    				result = mc.invokeStaticMethod(delegate, name, args)	
+				}   	                
+                else {
+	            	    result = mc.invokeMethod(delegate, name, args)
+				}
+                
                 result
             }
             addValidationMethods(dc, application, ctx) 

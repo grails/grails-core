@@ -44,11 +44,13 @@ class NonTransactionalService {
 
 
 
-            def newService = appCtx.getBean("nonTransactionalService")
 
-            assertEquals "foo", newService.myMethod()
 
-            newService = ga.getServiceClass("NonTransactionalService").newInstance()
+            def newService = ga.getServiceClass("NonTransactionalService").newInstance()
+
+            assertEquals "foo", newService.myMethod()  
+
+            newService = appCtx.getBean("nonTransactionalService")
 
             assertEquals "foo", newService.myMethod()
     }
