@@ -1,4 +1,3 @@
-
 class @webtest.name.caps@Test extends grails.util.WebTest {
 
     // Unlike unit tests, functional tests are often sequence dependent.
@@ -9,7 +8,7 @@ class @webtest.name.caps@Test extends grails.util.WebTest {
     }
 
     def test@webtest.name.caps@ListNewDelete() {
-        webtest('@webtest.name.caps@ basic operations: view list, create new entry, view, edit, delete, view'){
+        webtest('@webtest.name.caps@ basic operations: view list, create new entry, view, edit, delete, view') {
             invoke(url:'@webtest.name.lower@')
             verifyText(text:'Home')
 
@@ -41,15 +40,15 @@ class @webtest.name.caps@Test extends grails.util.WebTest {
             }
 
             verifyListPage(0)
-
-    }   }
+        }
+    }
 
     String ROW_COUNT_XPATH = "count(//td[@class='actionButtons']/..)"
 
     def verifyListPage(int count) {
-        ant.group(description:"verify @webtest.name.caps@ list view with $count row(s)"){
+        ant.group(description:"verify @webtest.name.caps@ list view with $count row(s)") {
             verifyText(text:'@webtest.name.caps@ List')
             verifyXPath(xpath:ROW_COUNT_XPATH, text:count, description:"$count row(s) of data expected")
-    }   }
-
+        }
+    }
 }

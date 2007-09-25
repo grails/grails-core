@@ -1,7 +1,8 @@
 class ApplicationBootStrap {
 
-     def init = { servletContext ->
-     }
-     def destroy = {
-     }
+    def init = { servletContext ->
+    }
+
+    def destroy = {
+    }
 } 

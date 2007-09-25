@@ -1,9 +1,8 @@
 class @artifact.name@ {
 	
-	boolean transactional = true
-	
-	def serviceMethod() {
-		// TODO
-	}
-}
+    boolean transactional = true
 
+    def serviceMethod() {
+
+    }
+}
