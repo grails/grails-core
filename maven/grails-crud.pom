@@ -1,0 +1,45 @@
+<?xml version="1.0"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>org.grails</groupId>
+	<artifactId>grails-crud</artifactId>
+	<packaging>jar</packaging>
+	<name>Grails CRUD</name>
+	<version>0.6</version>
+	<description>Grails CRUD</description>
+	<url>http://www.grails.org</url>
+	<licenses>
+		<license>
+			<name>The Apache Software License, Version 2.0</name>
+			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+	<scm>
+		<connection>scm:svn:http://svn.codehaus.org/grails/</connection>
+		<developerConnection>scm:svn:https://svn.codehaus.org/grails/</developerConnection>
+		<url>http://svn.grails.codehaus.org/</url>
+	</scm>
+	<dependencies>
+<!-- External Dependencies -->
+		<dependency>
+			<groupId>groovy</groupId>
+			<artifactId>groovy-all</artifactId>
+			<version>1.1-beta-3</version>
+		</dependency>
+<!-- Grails Dependencies -->
+		<dependency>
+			<groupId>org.grails</groupId>
+			<artifactId>grails-core</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+<!-- Runtime Dependencies -->
+		<dependency>
+			<groupId>log4j</groupId>
+			<artifactId>log4j</artifactId>
+			<version>1.2.8</version>
+			<scope>runtime</scope>
+			<optional>true</optional>
+		</dependency>
+	</dependencies>
+</project>
