@@ -25,6 +25,13 @@ class TestUrlMappings {
         grailsApplication.addArtefact(UrlMappingsArtefactHandler.TYPE, urlMappingsClass)
     }
 
+    void testPrototypeWithAsyncProperty() {
+        def template = '<g:remoteFunction controller="bar" action="foo" options="[asynchronous:false]" />'
+        request.setAttribute("org.codehaus.grails.INCLUDED_JS_LIBRARIES", ['prototype'])
+        
+        assertOutputEquals("new Ajax.Request('/bar/foo',{asynchronous:false,evalScripts:true});", template)
+    }
+
 	public void testPrototypeRemoteFunction() throws Exception {
 		StringWriter sw = new StringWriter()
 		PrintWriter pw = new PrintWriter(sw)

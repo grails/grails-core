@@ -385,13 +385,15 @@ class PrototypeProvider implements JavascriptProvider {
         def ajaxOptions = []
 
        // necessary defaults
-       if(options.options?.asynchronous)
-           ajaxOptions << "asynchronous:${options.options.remove('asynchronous')}"
+       def async = options.options?.remove('asynchronous')
+       if( async != null)
+           ajaxOptions << "asynchronous:${async}"
        else
            ajaxOptions << "asynchronous:true"
-           
-       if(options.options?.evalScripts)
-           ajaxOptions << "evalScripts:${options.options?.remove('evalScripts')}"
+
+       def eval = options.options?.remove('evalScripts')
+       if(eval != null)
+           ajaxOptions << "evalScripts:${eval}"
        else
            ajaxOptions << "evalScripts:true" 
            
