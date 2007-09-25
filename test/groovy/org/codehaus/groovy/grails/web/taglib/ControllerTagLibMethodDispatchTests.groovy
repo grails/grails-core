@@ -53,9 +53,9 @@ class SecondTagLib {
  class TestController {
     def foo = {
         // test invoke core tag
-        response << link(controller:'test',action:'foo')
+        response.writer << link(controller:'test',action:'foo')
         // test invoke namespaced tag
-        response << my.test2(foo:"bar") 
+        response.writer << my.test2(foo:"bar") 
     }
  }
  ''')
