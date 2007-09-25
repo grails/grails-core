@@ -8,7 +8,8 @@ import org.codehaus.groovy.grails.plugins.*
 import org.springframework.core.io.*
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
-import org.springframework.mock.web.MockServletContext;
+import org.springframework.mock.web.MockServletContext
+import org.codehaus.groovy.grails.cli.support.CommandLineResourceLoader;
 
 
 Ant.property(environment:"env")                             
@@ -46,7 +47,8 @@ task(loadApp:"Loads the Grails application object") {
 	grailsApp.initialise()	 	
 }                                      
 task(configureApp:"Configures the Grails application and builds an ApplicationContext") {
-	def config = new org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator(grailsApp,appCtx)
+    appCtx.resourceLoader = new  CommandLineResourceLoader()
+    def config = new org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator(grailsApp,appCtx)
 	appCtx = config.configure(new MockServletContext())	
 }                                                                                  
 
