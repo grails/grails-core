@@ -132,8 +132,6 @@ def populateTestSuite = { suite, testFiles, classLoader, ctx, String base ->
 	for(r in testFiles) {
 	    try {
 		    def fileName = r.URL.toString()
-		    println fileName
-		    println base
 		    def className = fileName[fileName.indexOf(base)+base.size()..-8].replace('/' as char, '.' as char)
             def c = classLoader.loadClass(className) 
             if(TestCase.isAssignableFrom(c) && !Modifier.isAbstract(c.modifiers)) {
@@ -153,39 +151,53 @@ def runTests = { suite, TestResult result, Closure callback  ->
 	for(test in suite.tests()) {
 		new File("${testDir}/TEST-${test.name}.xml").withOutputStream { xmlOut ->
 			new File("${testDir}/plain/TEST-${test.name}.txt").withOutputStream { plainOut ->
-				def xmlOutput = new XMLJUnitResultFormatter(output:xmlOut)
-				def plainOutput = new PlainJUnitResultFormatter(output:plainOut)
-				def junitTest = new JUnitTest(test.name)
+			    new File("${testDir}/TEST-${test.name}-out.txt").withOutputStream { stdOut ->
+			        new File("${testDir}/TEST-${test.name}-err.txt").withOutputStream { stdErr ->
+
+                        def savedOut = System.out
+                        def savedErr = System.err
 
 
-				plainOutput.startTestSuite(junitTest)
-				xmlOutput.startTestSuite(junitTest)
-                println "Running test ${test.name}..."
-				for(i in 0..<test.testCount()) {
-                    def thisTest = new TestResult()
-                    thisTest.addListener(xmlOutput)
-                    thisTest.addListener(plainOutput)
-					def t = test.testAt(i)
-					def start = System.currentTimeMillis()
-					callback(test, {
-                        print "                    ${t.name}..."   
-						test.runTest(t, thisTest)					
-						thisTest
-					})
-                    junitTest.setCounts(thisTest.runCount(), thisTest.failureCount(),
-                                         thisTest.errorCount());
-                    junitTest.setRunTime(System.currentTimeMillis() - start)
-                    
-					if(thisTest.errorCount() > 0 || thisTest.failureCount() > 0) {
-						println "FAILURE"
-						thisTest.errors().each { result.addError(t, it.thrownException())  }
-						thisTest.failures().each { result.addFailure(t, it.thrownException()) }
-					}
-					else { println "SUCCESS"}
+                        try {
+                            System.out = new PrintStream(stdOut)
+                            System.err = new PrintStream(stdErr)
+                            def xmlOutput = new XMLJUnitResultFormatter(output: xmlOut)
+                            def plainOutput = new PlainJUnitResultFormatter(output: plainOut)
+                            def junitTest = new JUnitTest(test.name)
+                            plainOutput.startTestSuite(junitTest)
+                            xmlOutput.startTestSuite(junitTest)
+                            savedOut.println "Running test ${test.name}..."
+                            for (i in 0..<test.testCount()) {
+                                def thisTest = new TestResult()
+                                thisTest.addListener(xmlOutput)
+                                thisTest.addListener(plainOutput)
+                                def t = test.testAt(i)
+                                def start = System.currentTimeMillis()
+                                callback(test, {
+                                    savedOut.print "                    ${t.name}..."
+                                    test.runTest (t, thisTest)
+                                    thisTest
+                                })
+                                junitTest.setCounts(thisTest.runCount(), thisTest.failureCount(),
+                                        thisTest.errorCount());
+                                junitTest.setRunTime(System.currentTimeMillis() - start)
 
-				}
-				plainOutput.endTestSuite(junitTest)
-				xmlOutput.endTestSuite(junitTest)				
+                                if (thisTest.errorCount() > 0 || thisTest.failureCount() > 0) {
+                                    savedOut.println "FAILURE"
+                                    thisTest.errors().each {result.addError(t, it.thrownException())}
+                                    thisTest.failures().each {result.addFailure(t, it.thrownException())}
+                                }
+                                else {savedOut.println "SUCCESS"}
+
+                            }
+                            plainOutput.endTestSuite(junitTest)
+                            xmlOutput.endTestSuite(junitTest)
+                        } finally {
+                            System.out = savedOut
+                            System.err = savedErr
+                        }
+                   }
+                }
 			}
 		}
 	}
