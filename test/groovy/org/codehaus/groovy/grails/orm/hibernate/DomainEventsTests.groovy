@@ -13,7 +13,7 @@ class DomainEventsTests extends AbstractGrailsHibernateTests{
 
 
     void testAutoTimestamps() {
-        def personClass = ga.getDomainClass("Person")
+        def personClass = ga.getDomainClass("PersonEvent")
         def p = personClass.newInstance()
 
         p.name = "Fred"
@@ -34,7 +34,7 @@ class DomainEventsTests extends AbstractGrailsHibernateTests{
     }
 
     void testOnloadEvent() {
-        def personClass = ga.getDomainClass("Person")
+        def personClass = ga.getDomainClass("PersonEvent")
         def p = personClass.newInstance()
 
         p.name = "Fred"
@@ -47,7 +47,7 @@ class DomainEventsTests extends AbstractGrailsHibernateTests{
     }
 
     void testBeforeDeleteEvent() {
-        def personClass = ga.getDomainClass("Person")
+        def personClass = ga.getDomainClass("PersonEvent")
         def p = personClass.newInstance()
 
         p.name = "Fred"
@@ -62,7 +62,7 @@ class DomainEventsTests extends AbstractGrailsHibernateTests{
     }
 
     void testBeforeUpdateEvent() {
-        def personClass = ga.getDomainClass("Person")
+        def personClass = ga.getDomainClass("PersonEvent")
         def p = personClass.newInstance()
 
         p.name = "Fred"
@@ -78,7 +78,7 @@ class DomainEventsTests extends AbstractGrailsHibernateTests{
     }
 
     void testBeforeInsertEvent() {
-        def personClass = ga.getDomainClass("Person")
+        def personClass = ga.getDomainClass("PersonEvent")
         def p = personClass.newInstance()
 
         p.name = "Fred"
@@ -92,7 +92,7 @@ class DomainEventsTests extends AbstractGrailsHibernateTests{
 
     void onSetUp() {
 		this.gcl.parseClass('''
-class Person {
+class PersonEvent {
 	Long id
 	Long version
 	String name
