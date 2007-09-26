@@ -108,7 +108,9 @@ public class ConstraintsEvaluatingDynamicProperty extends AbstractDynamicPropert
                     constrainedProperties.put(p.getName(), cp);
                 }
                 // Make sure all fields are required by default, unless specified otherwise by the constraints
-                if(!cp.hasAppliedConstraint(ConstrainedProperty.NULLABLE_CONSTRAINT)) {
+                if(!cp.hasAppliedConstraint(ConstrainedProperty.NULLABLE_CONSTRAINT)
+                        && !p.getName().equals(GrailsDomainClassProperty.DATE_CREATED)
+                        && !p.getName().equals(GrailsDomainClassProperty.LAST_UPDATED)) {
                 	// TODO remove "p.isOptional()" in 0.6
 //                    cp.applyConstraint(ConstrainedProperty.NULLABLE_CONSTRAINT, Boolean.valueOf(p.isAssociation() || p.isOptional()));
                     cp.applyConstraint(ConstrainedProperty.NULLABLE_CONSTRAINT, Boolean.valueOf(
