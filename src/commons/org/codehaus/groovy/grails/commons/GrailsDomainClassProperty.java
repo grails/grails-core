@@ -35,10 +35,12 @@ public interface GrailsDomainClassProperty {
     String BELONGS_TO = "belongsTo";
 	String HAS_MANY = "hasMany";
 	String FETCH_MODE = "fetchMode";
+    String DATE_CREATED = "dateCreated";
+    String LAST_UPDATED = "lastUpdated";
+    
     String EMBEDDED = "embedded";
-
     int FETCH_EAGER = 1;
-	int FETCH_LAZY = 0;
+    int FETCH_LAZY = 0;
 
 
     /**
