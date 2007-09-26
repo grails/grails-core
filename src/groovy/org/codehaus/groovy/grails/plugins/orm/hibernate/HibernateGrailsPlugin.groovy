@@ -131,6 +131,7 @@ class HibernateGrailsPlugin {
                 hibernateProperties = hibernateProperties
                 grailsApplication = ref("grailsApplication", true) 
 				lobHandler = lobHandlerDetector
+				entityInterceptor = new ClosureEventTriggeringInterceptor()
             }
             transactionManager(HibernateTransactionManager) {
                 sessionFactory = sessionFactory
