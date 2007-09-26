@@ -384,7 +384,7 @@ public class Parse implements Tokens {
         text = buf.toString();
 
         String tagName;
-        Map attrs = new HashMap();
+        Map attrs = new TreeMap();
         text = text.replaceAll("[\r\n]", " ");  // this line added TODO query this
         
         if(text.indexOf(' ') > -1) { // ignores carriage returns and new lines

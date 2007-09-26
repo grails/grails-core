@@ -27,6 +27,20 @@ class NamespacedTagLibMethodTests extends AbstractGrailsTagTests {
         assertOutputEquals('foo: hello! bar3', template)
     }
 
+    void testInvokeTagWithUnexistedNamespace() {
+        def template = '''<foaf:Person a="b" c="d">foo</foaf:Person>'''
+
+        println( applyTemplate(template) )
+        // we don't have a 'foaf' namespace, so the output should be equal to template itself
+        assertOutputEquals(template, template)
+
+        // test with nested 'unknown' tags
+        template = '''<foaf:Person a="b" c="d"><foaf:Nested e="f" g="h">Something here.</foaf:Nested></foaf:Person>'''
+
+        println( applyTemplate(template) )
+        assertOutputEquals(template, template)
+    }
+
     void onInit() {
         def tagClass = gcl.parseClass( '''
 class MyTagLib {

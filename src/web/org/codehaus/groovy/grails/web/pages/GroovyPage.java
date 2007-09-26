@@ -37,6 +37,7 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Iterator;
 
 /**
  * NOTE: Based on work done by on the GSP standalone project (https://gsp.dev.java.net/)
@@ -194,39 +195,60 @@ public abstract class GroovyPage extends Script {
 	        if(this.application == null)
 	            initPageState();
 
-	        GroovyObject tagLib = getTagLib(tagName,tagNamespace);
 
-	        if(tagLib != null) {
-	            Object tagLibProp;
-	            BeanWrapper bean = getTagLibraryBean(tagLib, webRequest);
-				if(bean.isReadableProperty(tagName)) {
-	                tagLibProp = tagLib.getProperty(tagName);
-	            } else {
-	                throw new GrailsTagException("Tag ["+tagName+"] does not exist in tag library ["+tagLib.getClass().getName()+"]");
-	            }
-	            if(tagLibProp instanceof Closure) {
-	                Closure tag = setupTagClosure(tagLibProp);
+            if( getTagLibForNamespace(tagNamespace) != null ) {
+                GroovyObject tagLib = getTagLib(tagName,tagNamespace);
+                if(tagLib != null) {
+                    Object tagLibProp;
+                    BeanWrapper bean = getTagLibraryBean(tagLib, webRequest);
+                    if(bean.isReadableProperty(tagName)) {
+                        tagLibProp = tagLib.getProperty(tagName);
+                    } else {
+                        throw new GrailsTagException("Tag ["+tagName+"] does not exist in tag library ["+tagLib.getClass().getName()+"]");
+                    }
+                    if(tagLibProp instanceof Closure) {
+                        Closure tag = setupTagClosure(tagLibProp);
 
-	                if(tag.getParameterTypes().length == 1) {
-	                    tag.call( new Object[]{ attrs });
-	                    if(body != null) {
-	                        body.call();
-	                    }
-	                }
-	                if(tag.getParameterTypes().length == 2) {
-	                    tag.call( new Object[] { attrs, body });
-	                }
-	            }else {
-	               throw new GrailsTagException("Tag ["+tagName+"] does not exist in tag library ["+tagLib.getClass().getName()+"]");
-	            }
-	        }
-	        else {
-	            throw new GrailsTagException("Tag ["+tagName+"] does not exist. No tag library found.");
-	        }	
+                        if(tag.getParameterTypes().length == 1) {
+                            tag.call( new Object[]{ attrs });
+                            if(body != null) {
+                                body.call();
+                            }
+                        }
+                        if(tag.getParameterTypes().length == 2) {
+                            tag.call( new Object[] { attrs, body });
+                        }
+                    }else {
+                       throw new GrailsTagException("Tag ["+tagName+"] does not exist in tag library ["+tagLib.getClass().getName()+"]");
+                    }
+                }
+                else {
+                    throw new GrailsTagException("Tag ["+tagName+"] does not exist. No tag library found for namespace: " + tagNamespace);
+                }
+            } else {
+                StringBuilder plainTag = new StringBuilder();
+                String fullTagName = tagNamespace + ":" + tagName;
+                plainTag.append("<").append(fullTagName);
+                for(Iterator iterator = attrs.entrySet().iterator(); iterator.hasNext();) {
+                    Map.Entry entry = (Map.Entry) iterator.next();
+                    plainTag.append(" ").append(entry.getKey()).append("=\"").append(entry.getValue()).append("\"");
+                }
+                plainTag.append(">");
+                try {
+                    out.write(plainTag.toString());
+                    if(body != null) {
+                        Object bodyOutput = body.call();
+                        if(bodyOutput != null) out.write(bodyOutput.toString());
+                    }
+                    out.write("</" + fullTagName + ">");
+                } catch(IOException e) {
+                    throw new GrailsTagException("I/O error invoking tag library closure as method");
+                }
+            }
 		}
 		finally {       
 			getBinding().setVariable(OUT,out);
-			 webRequest.setOut(out);
+			webRequest.setOut(out);
 		}		
     }
 

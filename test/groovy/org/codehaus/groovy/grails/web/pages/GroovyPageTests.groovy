@@ -121,6 +121,23 @@ public class GroovyPageTests extends AbstractGrailsControllerTests {
 		assertEquals(expectedOutput,result);
 	}
 	
+    public void testInvokeBodyTagWithUnknownNamespace() throws Exception {
+
+        String pageCode = "import org.codehaus.groovy.grails.web.pages.GroovyPage\n" +
+                "import org.codehaus.groovy.grails.web.taglib.*\n"+
+                "\n"+
+                "class test_index_gsp extends GroovyPage {\n"+
+                "public Object run() {\n"+
+                "body1 = { out.print('Boo!') }\n"+
+                "invokeTag('Person','foaf',[a:'b',c:'d'],body1)\n"+
+                "}\n"+
+                "}" ;
+
+        String expectedOutput = "<foaf:Person a=\"b\" c=\"d\">Boo!</foaf:Person>";
+        def result = runPageCode(pageCode)
+        assertEquals(expectedOutput,result);
+    }
+
 	public void testInvokeBodyTagAsMethod() throws Exception {
 		String pageCode = "import org.codehaus.groovy.grails.web.pages.GroovyPage\n" +
         		"import org.codehaus.groovy.grails.web.taglib.*\n"+
