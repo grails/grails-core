@@ -12,6 +12,27 @@ package org.codehaus.groovy.grails.orm.hibernate
 class DomainEventsTests extends AbstractGrailsHibernateTests{
 
 
+    void testAutoTimestamps() {
+        def personClass = ga.getDomainClass("Person")
+        def p = personClass.newInstance()
+
+        p.name = "Fred"
+        p.save()
+        session.flush()
+        session.clear()
+
+        p = personClass.clazz.get(1)
+
+        assert p.dateCreated
+        assertEquals p.dateCreated, p.lastUpdated
+
+        p.name = "Wilma"
+        p.save()
+        session.flush()
+
+        assert p.dateCreated.before(p.lastUpdated)        
+    }
+
     void testOnloadEvent() {
         def personClass = ga.getDomainClass("Person")
         def p = personClass.newInstance()
@@ -49,13 +70,11 @@ class DomainEventsTests extends AbstractGrailsHibernateTests{
         session.flush()
 
         def success = false
-        p.beforeUpdate = {
-            println "CALLED BEFORE UPDATE!"
-            success = true }
+        p.beforeUpdate = { name = "Wilma" }
         p.name = "Bob"
         p.save()
         session.flush()
-        assert success
+        assertEquals "Wilma", p.name
     }
 
     void testBeforeInsertEvent() {
@@ -64,13 +83,11 @@ class DomainEventsTests extends AbstractGrailsHibernateTests{
 
         p.name = "Fred"
         def success = false
-        p.beforeInsert = {
-            println "CALLED BEFORE INSERT!"
-            success = true }
+        p.beforeInsert = { name = "Bob" }
         p.save()
         session.flush()
 
-        assert success
+        assertEquals "Bob", p.name
     }
 
     void onSetUp() {
@@ -79,6 +96,8 @@ class Person {
 	Long id
 	Long version
 	String name
+	Date dateCreated
+	Date lastUpdated
 
 	def onLoad = {
 	    name = "Bob"
