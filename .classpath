@@ -12,7 +12,7 @@
 	<classpathentry kind="src" output="target/eclipse/test-output" path="test/scaffolding"/>
 	<classpathentry kind="lib" path="lib/hibernate3.jar" sourcepath="/HIBERNATE_HOME/src"/>
 	<classpathentry kind="lib" path="lib/spring-2.1-m4.jar" sourcepath="/SPRING_HOME/src"/>
-	<classpathentry kind="lib" path="lib/spring-mock-2.0.2.jar" sourcepath="/SPRING_HOME/mock"/>
+	<classpathentry kind="lib" path="lib/spring-test.jar" sourcepath="/SPRING_HOME/mock"/>
 	<classpathentry kind="lib" path="lib/ant-junit.jar"/>
 	<classpathentry kind="lib" path="lib/ant-nodeps.jar"/>
 	<classpathentry kind="lib" path="lib/ant.jar"/>
