@@ -24,7 +24,7 @@ package org.codehaus.groovy.grails.orm.hibernate.cfg
  */
 class ColumnConfig {
     String name
-    Class type
+    def type
     String index
     boolean lazy = false
     boolean unique = false

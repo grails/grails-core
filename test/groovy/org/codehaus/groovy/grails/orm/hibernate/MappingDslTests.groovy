@@ -117,8 +117,33 @@ class MappingDslTests extends AbstractGrailsHibernateTests {
 
     }
 
+    void testUserTypes() {
+        DataSource ds = (DataSource)applicationContext.getBean('dataSource')
+        def relativeClass = ga.getDomainClass("Relative")
+        def r = relativeClass.newInstance()
+         r.firstName = "Wilma"
+         r.save()
+         session.flush()
+
+         def con
+         try {
+             con = ds.getConnection()
+             def statement = con.prepareStatement("select * from relative")
+             def result = statement.executeQuery()
+             assert result.next()
+             def metadata = result.getMetaData()
+             assertEquals "FIRST_NAME",metadata.getColumnLabel(3)
+             // hsqldb returns -1 for text type, if it wasn't mapped as text it would be 12 so this is an ok test
+             assertEquals( -1, metadata.getColumnType(3) )
+
+
+         } finally {
+             con.close()
+         }
+    }
+
     protected void onSetUp() {
-        gcl.parseClass('''
+        gcl.parseClass('''        
 class PersonDSL {
     Long id
     Long version
@@ -145,6 +170,12 @@ class Relative {
     Long version
 
     String firstName
+
+    static mapping = {
+        columns {
+            firstName type:'text'
+        }
+    }
 }
 
 class PersonDSL2 {

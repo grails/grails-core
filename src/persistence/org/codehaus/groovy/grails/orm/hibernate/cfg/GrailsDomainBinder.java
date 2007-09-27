@@ -1031,7 +1031,7 @@ public final class GrailsDomainBinder {
 	private static Property createProperty(Value value, PersistentClass persistentClass, GrailsDomainClassProperty grailsProperty, Mappings mappings) {
 		// set type
 		value.setTypeUsingReflection( persistentClass.getClassName(), grailsProperty.getName() );
-		
+
 		// if it is a ManyToOne or OneToOne relationship
 		if ( value instanceof ToOne ) {
 			ToOne toOne = (ToOne) value;
@@ -1301,8 +1301,9 @@ w	 * Binds a simple value to the Hibernate metamodel. A simple value is
      */
 	private static void bindSimpleValue(GrailsDomainClassProperty grailsProp, SimpleValue simpleValue, String path, Mappings mappings) {
 		// set type
-		simpleValue.setTypeName(grailsProp.getType().getName());
-		Table table = simpleValue.getTable();
+        ColumnConfig cc = getColumnConfig(grailsProp);
+        setTypeForColumnConfig(grailsProp, simpleValue, cc);
+        Table table = simpleValue.getTable();
 		Column column = new Column();
 		
 		column.setValue(simpleValue);
@@ -1313,7 +1314,17 @@ w	 * Binds a simple value to the Hibernate metamodel. A simple value is
 		simpleValue.addColumn(column);		
 	}
 
-	/**
+    private static void setTypeForColumnConfig(GrailsDomainClassProperty grailsProp, SimpleValue simpleValue, ColumnConfig cc) {
+        if(cc != null && cc.getType() != null) {
+            Object type = cc.getType();
+            simpleValue.setTypeName(type.toString());
+        }
+        else {
+            simpleValue.setTypeName(grailsProp.getType().getName());
+        }
+    }
+
+    /**
 	 * Binds a value for the specified parameters to the meta model.
 	 * 
 	 * @param type The type of the property
@@ -1323,8 +1334,9 @@ w	 * Binds a simple value to the Hibernate metamodel. A simple value is
 	 * @param mappings The mappings
 	 */
 	private static void bindSimpleValue(String type,SimpleValue simpleValue, boolean nullable, String propertyName, Mappings mappings) {
-		simpleValue.setTypeName(type);
-		Table t = simpleValue.getTable();
+
+        simpleValue.setTypeName(type);
+        Table t = simpleValue.getTable();
 		Column column = new Column();
 		column.setNullable(nullable);
 		column.setValue(simpleValue);
