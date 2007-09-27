@@ -4,11 +4,61 @@
 		<delete>
 			<fileset dir="${grails.dist}" includes="*"/>
 		</delete>
-		<jar destfile="${grails.dist}/grails-core-${grails.version}.jar" basedir="${grails.build}/core"/>
-		<jar destfile="${grails.dist}/grails-gorm-${grails.version}.jar" basedir="${grails.build}/gorm"/>		
-		<jar destfile="${grails.dist}/grails-web-${grails.version}.jar" basedir="${grails.build}/web"/>		
-		<jar destfile="${grails.dist}/grails-crud-${grails.version}.jar" basedir="${grails.build}/crud"/>		
-	</target>
+		<jar destfile="${grails.dist}/grails-core-${grails.version}.jar">
+              <fileset dir="${grails.build}">
+                  <include name="grails/spring/**" />
+                  <include name="grails/ui/**" />
+                  <include name="grails/util/**" />
+                  <include name="**/groovy/grails/beans/factory/**" />
+                  <include name="**/groovy/grails/cli/**" />
+                  <include name="**/groovy/grails/commons/**" />
+                  <include name="**/groovy/grails/compiler/**" />
+                  <include name="**/groovy/grails/orm/support/**" />
+                  <include name="**/groovy/grails/plugins/**" />
+                  <exclude name="**/groovy/grails/plugins/orm/hibernate**" />
+                  <exclude name="**/groovy/grails/plugins/web/**" />
+                  <exclude name="**/groovy/grails/plugins/converters/**" />
+                  <exclude name="**/groovy/grails/plugins/webflow/**" />
+                  <exclude name="**/groovy/grails/plugins/scafolding/**" />
+                  <include name="**/groovy/grails/support/**" />
+                  <include name="**/groovy/grails/validation/**" />
+                  <exclude name="**/groovy/grails/validation/Hibernate**" />
+              </fileset>
+        </jar>
+        <jar destfile="${grails.dist}/grails-gorm-${grails.version}.jar" >
+              <fileset dir="${grails.build}">
+                  <include name="grails/orm/**" />
+                  <include name="**/groovy/grails/orm/hibernate/**" />
+                  <include name="**/groovy/grails/validation/Hibernate**" />
+              </fileset>
+        </jar>
+        <jar destfile="${grails.dist}/grails-web-${grails.version}.jar" >
+             <fileset dir="${grails.build}">
+                  <include name="grails/converters/**" />
+                  <include name="grails/util/**" />
+                  <exclude name="grails/util/Generate**" />
+                  <include name="**/groovy/grails/web/**" />
+                 <include name="**/groovy/grails/plugins/web/**" />
+                 <include name="**/groovy/grails/plugins/converters/**" />
+
+                  <include name="**/groovy/grails/webflow/**" />
+              </fileset>               
+        </jar>
+        <jar destfile="${grails.dist}/grails-webflow-${grails.version}.jar" >
+             <fileset dir="${grails.build}">
+                  <include name="**/groovy/grails/webflow/**" />
+                 <include name="**/groovy/grails/plugins/webflow/**" />
+              </fileset>
+        </jar>
+        <jar destfile="${grails.dist}/grails-crud-${grails.version}.jar" >
+            <fileset dir="${grails.build}">
+                 <include name="grails/util/Generate**" />
+                 <include name="**/groovy/grails/scaffolding/**" />
+                <include name="**/groovy/grails/plugins/scafolding/**" />
+             </fileset>
+
+        </jar>
+    </target>
 
     <target name="package" depends="clean,test,jar,javadoc" description="Create the release archives for Grails.">
     	<delete>

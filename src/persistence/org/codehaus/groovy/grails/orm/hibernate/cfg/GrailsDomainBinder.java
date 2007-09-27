@@ -15,12 +15,12 @@
 package org.codehaus.groovy.grails.orm.hibernate.cfg;
 
 
+import groovy.lang.Closure;
 import org.apache.commons.lang.math.NumberUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
-import org.codehaus.groovy.grails.orm.OrmMapping;
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 import org.hibernate.FetchMode;
 import org.hibernate.MappingException;
@@ -61,6 +61,8 @@ public final class GrailsDomainBinder {
     private static final String CASCADE_ALL = "all";
     private static final String CASCADE_SAVE_UPDATE = "save-update";
     private static final String CASCADE_MERGE = "merge";
+    private static final Map MAPPING_CACHE = new HashMap();
+
 
     /**
 	 * A Collection type, for the moment only Set is supported
@@ -567,8 +569,11 @@ public final class GrailsDomainBinder {
 	 * @return The table name
 	 */
 	private static String getTableName(GrailsDomainClass domainClass) {
-        final OrmMapping ormMapping = domainClass.getOrmMapping();
-        String tableName = ormMapping.getTableName();
+        Mapping m = getMapping(domainClass.getFullName());
+        String tableName = null;
+        if(m != null && m.getTableName() != null) {
+            tableName = m.getTableName();
+        }
         if(tableName == null) {
 			tableName = namingStrategy.classToTableName(domainClass.getShortName());
         }
@@ -584,7 +589,8 @@ public final class GrailsDomainBinder {
 		throws MappingException {		
 		//if(domainClass.getClazz().getSuperclass() == java.lang.Object.class) {
 		if(domainClass.isRoot()) {
-			bindRoot(domainClass, mappings);
+            evaluateMapping(domainClass);
+            bindRoot(domainClass, mappings);
 		}
 		//}
 		//else {
@@ -592,7 +598,30 @@ public final class GrailsDomainBinder {
 		//}
 	}
 
-	/**
+    /**
+     * Evaluates a Mapping object from the domain class if it has a mapping closure
+     *
+     * @param domainClass The domain class
+     */
+    private static void evaluateMapping(GrailsDomainClass domainClass) {
+        Object o = domainClass.getPropertyValue(GrailsDomainClassProperty.MAPPING);
+        if(o instanceof Closure) {
+            HibernateMappingBuilder builder = new HibernateMappingBuilder(domainClass.getFullName());
+            Mapping m = builder.evaluate((Closure)o);
+            MAPPING_CACHE.put(domainClass.getFullName(), m);
+        }
+    }
+
+    /**
+     * Obtains a mapping object for the given domain class nam
+     * @param domainClassName The domain class name in question
+     * @return A Mapping object or null
+     */
+    private static Mapping getMapping(String domainClassName) {
+        return (Mapping)MAPPING_CACHE.get(domainClassName);
+    }
+
+    /**
 	 * Binds the specified persistant class to the runtime model based on the 
 	 * properties defined in the domain class
 	 * @param domainClass The Grails domain class
@@ -606,7 +635,8 @@ public final class GrailsDomainBinder {
 		persistentClass.setEntityName(domainClass.getFullName());
 		persistentClass.setProxyInterfaceName( domainClass.getFullName() );
 		persistentClass.setClassName(domainClass.getFullName());
-		// set dynamic insert to false
+        
+        // set dynamic insert to false
 		persistentClass.setDynamicInsert(false);
 		// set dynamic update to false
 		persistentClass.setDynamicUpdate(false);
@@ -631,8 +661,19 @@ public final class GrailsDomainBinder {
 	public static void bindRoot(GrailsDomainClass domainClass, Mappings mappings) {
 		if(mappings.getClass(domainClass.getFullName()) == null) {
 			RootClass root = new RootClass();
-			bindClass(domainClass, root, mappings);		
-			bindRootPersistentClassCommonValues(domainClass, root, mappings);
+			bindClass(domainClass, root, mappings);
+
+            Mapping m = getMapping(domainClass.getName());
+
+            if(m!=null) {
+                CacheConfig cc = m.getCache();
+                if(cc != null && cc.getEnabled()) {
+                    root.setCacheConcurrencyStrategy(cc.getUsage());
+                    root.setLazyPropertiesCacheable(!"non-lazy".equals(cc.getInclude()));
+                }
+            }
+
+            bindRootPersistentClassCommonValues(domainClass, root, mappings);
 			
 			if(!domainClass.getSubClasses().isEmpty()) {
 				// if the root class has children create a discriminator property
@@ -766,9 +807,25 @@ public final class GrailsDomainBinder {
 
 		if(LOG.isDebugEnabled())
 			LOG.debug( "[GrailsDomainBinder] Mapping Grails domain class: " + domainClass.getFullName() + " -> " + root.getTable().getName() );
-		
-		bindSimpleId( domainClass.getIdentifier(), root, mappings );
-		bindVersion( domainClass.getVersion(), root, mappings );
+
+        Mapping m = getMapping(domainClass.getFullName());
+
+        if(m != null) {
+            Identity id = m.getIdentity();
+            bindSimpleId( domainClass.getIdentifier(), root, mappings, id );
+
+        }
+        else {
+            bindSimpleId( domainClass.getIdentifier(), root, mappings, null);
+        }
+
+        if(m != null) {
+            if(m.getVersioned()) {
+                bindVersion( domainClass.getVersion(), root, mappings );
+            }
+        }
+        else
+            bindVersion( domainClass.getVersion(), root, mappings );
 		
 		root.createPrimaryKey();
 		
@@ -1068,21 +1125,30 @@ public final class GrailsDomainBinder {
 
 	/**
 	 * @param identifier
-	 * @param entity
-	 * @param mappings
-	 */
-	private static void bindSimpleId(GrailsDomainClassProperty identifier, RootClass entity, Mappings mappings) {
+     * @param entity
+     * @param mappings
+     * @param mappedId
+     */
+	private static void bindSimpleId(GrailsDomainClassProperty identifier, RootClass entity, Mappings mappings, Identity mappedId) {
 		
 		// create the id value
 		SimpleValue id = new SimpleValue(entity.getTable());
 		// set identifier on entity
-		entity.setIdentifier( id );
-		// configure generator strategy
-		id.setIdentifierGeneratorStrategy( "native" );
-		
-		Properties params = new Properties();
 
-		if ( mappings.getSchemaName() != null ) {
+        Properties params = new Properties();
+        entity.setIdentifier( id );
+
+        if(mappedId != null) {
+            id.setIdentifierGeneratorStrategy(mappedId.getGenerator());            
+            params.putAll(mappedId.getParams());
+        }
+        else {
+            // configure generator strategy
+            id.setIdentifierGeneratorStrategy( "native" );
+
+        }
+
+        if ( mappings.getSchemaName() != null ) {
 			params.setProperty( PersistentIdentifierGenerator.SCHEMA, mappings.getSchemaName() );
 		}
 		if ( mappings.getCatalogName() != null ) {
@@ -1297,8 +1363,15 @@ w	 * Binds a simple value to the Hibernate metamodel. A simple value is
 
     private static String getColumnNameForPropertyAndPath(GrailsDomainClassProperty grailsProp, String path) {
         GrailsDomainClass domainClass = grailsProp.getDomainClass();
-        OrmMapping ormMapping = domainClass.getOrmMapping();
-        String columnName = ormMapping.getColumnName(grailsProp);
+
+        String columnName = null;
+        Mapping m = getMapping(domainClass.getFullName());
+        if(m != null) {
+            ColumnConfig c = m.getColumn(grailsProp.getName());
+            if(c != null && c.getName() != null) {
+                columnName = c.getName();
+            }
+        }
         if(columnName == null) {
             if(StringHelper.isNotEmpty(path)) {
                 columnName = namingStrategy.propertyToColumnName(path) + UNDERSCORE +  namingStrategy.propertyToColumnName(grailsProp.getName());

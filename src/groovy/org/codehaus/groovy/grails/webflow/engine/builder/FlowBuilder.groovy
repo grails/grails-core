@@ -259,7 +259,7 @@ class FlowBuilder extends AbstractFlowBuilder implements GroovyObject, Applicati
 /**
  *  Used to capture details of the flow
  */
-private class FlowInfoCapturer {
+class FlowInfoCapturer {
     private FlowBuilder builder
     private List transitions = []
     private Closure action

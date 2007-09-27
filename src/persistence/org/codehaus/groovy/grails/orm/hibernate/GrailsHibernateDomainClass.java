@@ -25,7 +25,6 @@ import org.codehaus.groovy.grails.commons.metaclass.AbstractDynamicMethodsInterc
 import org.codehaus.groovy.grails.commons.metaclass.DynamicMethods;
 import org.codehaus.groovy.grails.commons.metaclass.Interceptor;
 import org.codehaus.groovy.grails.commons.metaclass.ProxyMetaClass;
-import org.codehaus.groovy.grails.orm.OrmMapping;
 import org.codehaus.groovy.grails.validation.GrailsDomainClassValidator;
 import org.codehaus.groovy.grails.validation.metaclass.ConstraintsEvaluatingDynamicProperty;
 import org.codehaus.groovy.runtime.InvokerHelper;
@@ -209,10 +208,6 @@ public class GrailsHibernateDomainClass extends AbstractGrailsClass implements E
 
     public String getFieldName(String propertyName) {
 	throw new UnsupportedOperationException("Method 'getFieldName' is not supported by implementation");
-    }
-
-    public OrmMapping getOrmMapping() {
-	throw new UnsupportedOperationException("Method 'getOrmMapping' is not supported by implementation");
     }
 
     public boolean hasSubClasses() {

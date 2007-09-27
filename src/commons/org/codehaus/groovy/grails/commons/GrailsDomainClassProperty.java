@@ -36,6 +36,7 @@ public interface GrailsDomainClassProperty {
 	String HAS_MANY = "hasMany";
 	String FETCH_MODE = "fetchMode";
     String DATE_CREATED = "dateCreated";
+    String MAPPING = "mapping";
     String LAST_UPDATED = "lastUpdated";
     
     String EMBEDDED = "embedded";

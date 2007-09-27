@@ -79,6 +79,7 @@ class HibernateGrailsPlugin {
             }
         }
         def ds = application.config.dataSource
+        def hibConfig = application.config.hibernate
 
         BeanDefinition externalDefinition = checkExternalBeans(application, log)
         if (externalDefinition) {
@@ -113,6 +114,10 @@ class HibernateGrailsPlugin {
                 hibProps."hibernate.hbm2ddl.auto" = ds.dbCreate
             }
             log.info "Set db generation strategy to '${hibProps.'hibernate.hbm2ddl.auto'}'"
+
+            if(hibConfig) {
+                hibProps.putAll(hibConfig.flatten().toProperties('hibernate'))
+            }
 
             hibernateProperties(MapToPropertiesFactoryBean) {
                 map = hibProps

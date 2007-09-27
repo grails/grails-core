@@ -13,39 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.orm.hibernate.cfg
+ 
 /**
- * A class that models the mapping from GORM classes to the db 
  * @author Graeme Rocher
  * @since 1.0
-  *
- * Created: Sep 26, 2007
- * Time: 2:26:57 PM
- *
+ * 
+ * Created: Sep 27, 2007
  */
-class Mapping {
+package org.codehaus.groovy.grails.orm.hibernate.cfg
+/**
+ * <p>Defines the identity generation strategy. In the case of a 'composite' identity the properties
+ * array defines the property names that formulate the composite id
+ */
+class Identity {
+    String generator = 'native'
+    String column = 'id'
+    Class type = Long
+    Map params = [:]
 
-    /**
-     * The table name
-     */
-    String tableName
-    /**
-     * Whether the class is versioned for optimistic locking
-     */
-    boolean versioned = true
-    Map columns = [:]
-    /**
-     * The identity definition
-     */
-    Identity identity = new Identity()
-    /**
-     * Caching config
-     */
-    CacheConfig cache
+    String toString() { "id[generator:$generator, column:$id, type:$type]" }
 
-    /**
-     * Obtains a ColumnConfig object for the given name
-     */
-    ColumnConfig getColumn(String name) { columns[name] }
 }
-

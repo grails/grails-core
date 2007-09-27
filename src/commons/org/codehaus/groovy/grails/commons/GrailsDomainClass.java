@@ -15,7 +15,6 @@
 package org.codehaus.groovy.grails.commons;
 
 import org.springframework.validation.Validator;
-import org.codehaus.groovy.grails.orm.OrmMapping;
 
 import java.util.Map;
 import java.util.Set;
@@ -173,8 +172,6 @@ public interface GrailsDomainClass extends GrailsClass {
      * Refreshes the constraint defined on a domain class
      */
     void refreshConstraints();
-
-    OrmMapping getOrmMapping();
 
     /**
      * Returns true if the domain classes has sub classes

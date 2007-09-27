@@ -1,141 +1,57 @@
 <project name="grails-compile">
 
     <taskdef name="groovyc"  classname="org.codehaus.groovy.ant.Groovyc" classpathref="classpath" />
+    <taskdef name="ubercompile" classname="org.codehaus.groovy.ant.UberCompileTask" classpathref="classpath" />
 
     <target name="build-init">
 		<mkdir dir="${grails.build}"/> 
-		<mkdir dir="${grails.build}/core"/>
-		<mkdir dir="${grails.build}/web"/>
-		<mkdir dir="${grails.build}/gorm"/>		
-		<mkdir dir="${grails.build}/crud"/>		
 		<mkdir dir="${grails.test.build}"/>
 		<mkdir dir="${grails.test.reports}"/>
 		<mkdir dir="${grails.dist}"/>
-	</target>
+        <mkdir dir="${grails.stubs}" />
+    </target>
 
 	<target name="build" depends="build-init" description="compile Java and Groovy sources" >
 
-        <javac debug="on" deprecation="on" destdir="${grails.build}/core" source="1.4" target="1.4" encoding="UTF-8">
-			<src path="${grails.src.commons}"/>
-            <classpath refid="classpath"/>
-		</javac>
-		<javac debug="on" deprecation="on" destdir="${grails.build}/web" source="1.4" target="1.4" encoding="UTF-8">
-			<src path="${grails.src.web}"/>
-			<classpath>
-			      <pathelement path="${grails.build}/core"/>			      
-		    </classpath>                                       			
-			<classpath refid="classpath"/>  
-		</javac>
-		<javac debug="on" deprecation="on" destdir="${grails.build}/gorm" source="1.4" target="1.4" encoding="UTF-8">
-			<src path="${grails.src.persistence}"/>
-			<classpath>
-			      <pathelement path="${grails.build}/core"/>			      
-		    </classpath>						
-			<classpath refid="classpath"/>  
-		</javac>                                   
-		<javac debug="on" deprecation="on" destdir="${grails.build}/crud" source="1.4" target="1.4" encoding="UTF-8">
-			<src path="${grails.src.scaffolding}"/>	
-			<classpath>
-			      <pathelement path="${grails.build}/core"/>			      
-			      <pathelement path="${grails.build}/web"/>			      
-			      <pathelement path="${grails.build}/gorm"/>			      						
-		    </classpath>				   
-			<classpath refid="classpath"/>  
-		</javac>
-        <groovyc destdir="${grails.build}/core" encoding="UTF-8">
-			<src path="${grails.src.commons}"/>
-		    <classpath>
-		      <pathelement path="${grails.build}/core"/>
-		    </classpath>  
-			<classpath refid="classpath"/>    
-		</groovyc>                                                                             
-		
-        <groovyc destdir="${grails.build}/core" srcdir="${grails.src.groovy}" encoding="UTF-8">
-             <exclude name="**/orm/**" />
-             <exclude name="**/web/**" />
-             <exclude name="**/webflow/**" />
-             <exclude name="**/scaffolding/**" />	
-   		    <classpath>
-		      <pathelement path="${grails.build}/core"/>			      
-		      <pathelement path="${grails.build}/web"/>			      
-		      <pathelement path="${grails.build}/gorm"/>			      						
-		      <pathelement path="${grails.build}/crud"/>			      							
-   		    </classpath>  
-   			<classpath refid="classpath"/>    
-   		</groovyc>
+        <copy todir="${grails.build}">
+            <fileset dir="${grails.src.commons}" includes="**/*.properties" />
+            <fileset dir="${grails.src.web}" includes="**/*.properties" />
+            <fileset dir="${grails.src.persistence}" includes="**/*.properties" />
+            <fileset dir="${grails.src.scaffolding}" includes="**/*.properties" />
+            <fileset dir="${grails.src.groovy}" includes="**/*.properties" />
+        </copy>
+
+        <ubercompile destdir="${grails.build}">
+            <classpath>
+                <pathelement location="${grails.build}"/>
+                <path refid="classpath"/>
+            </classpath>
+            
+            <src path="${grails.src.commons}"/>
+            <src path="${grails.src.web}"/>
+            <src path="${grails.src.persistence}"/>
+            <src path="${grails.src.scaffolding}"/>
+            <src path="${grails.src.groovy}"/>
+
+            <generatestubs destdir="${grails.stubs}">
+                <configuration targetBytecode="1.4"/>
+            </generatestubs>
+
+            <javac includeantruntime="false" deprecation="on" debug="yes" source="1.4" target="1.4" fork="true"/>
+            <groovyc>
+                <configuration debug="true" verbose="true"/>
+            </groovyc>
+        </ubercompile>
 
 
-	
-        <groovyc destdir="${grails.build}/web" includes="**/web/**,**/webflow/**" encoding="UTF-8">
-   			<src path="${grails.src.groovy}"/>
-   		    <classpath>
-		      <pathelement path="${grails.build}/core"/>			      
-		      <pathelement path="${grails.build}/web"/>			      
-		      <pathelement path="${grails.build}/gorm"/>			      						
-		      <pathelement path="${grails.build}/crud"/>			      							
-   		    </classpath>  
-   			<classpath refid="classpath"/>    
-   		</groovyc>	
-
-        <groovyc destdir="${grails.build}/gorm" includes="**/hibernate/**" encoding="UTF-8">
-   			<src path="${grails.src.groovy}"/>
-   		    <classpath>
-		      <pathelement path="${grails.build}/core"/>			      
-		      <pathelement path="${grails.build}/web"/>			      
-		      <pathelement path="${grails.build}/gorm"/>			      						
-		      <pathelement path="${grails.build}/crud"/>			      							
-   		    </classpath>  
-   			<classpath refid="classpath"/>    
-   		</groovyc> 
-
-        <groovyc destdir="${grails.build}/crud" includes="**/scaffolding/**" encoding="UTF-8">
-   			<src path="${grails.src.groovy}"/>
-   		    <classpath>
-		      <pathelement path="${grails.build}/core"/>			      
-			  <pathelement path="${grails.src.web}"/>  
-			  <pathelement path="${grails.src.scaffolding}"/> 			
-		      <pathelement path="${grails.build}/web"/>			      
-		      <pathelement path="${grails.build}/gorm"/>			      						
-		      <pathelement path="${grails.build}/crud"/>			      							
-   		    </classpath>  
-   			<classpath refid="classpath"/>    
-   		</groovyc>		
-   	
-
-        <mkdir dir="${grails.build}/core/META-INF"  />
-        <manifest file="${grails.build}/core/META-INF/MANIFEST.MF">
+        <mkdir dir="${grails.build}/META-INF"  />
+        <manifest file="${grails.build}/META-INF/MANIFEST.MF">
           <attribute name="Built-By" value="${user.name}"/>
           <attribute name="Implementation-Title" value="Grails"/>
           <attribute name="Implementation-Version" value="${grails.version}"/>
           <attribute name="Implementation-Vendor" value="grails.org"/>
         </manifest>
 
-        <copy file="${grails.build}/core/META-INF/MANIFEST.MF" tofile="${grails.build}/core/META-INF/GRAILS-MANIFEST.MF" />
-        <copy todir="${grails.build}/core">
-			<fileset dir="${grails.src.commons}" excludes="**/*.java" />
-		</copy>
-
-        <mkdir dir="${grails.build}/web/META-INF/" />
-        <copy file="${grails.build}/core/META-INF/MANIFEST.MF" tofile="${grails.build}/web/META-INF/MANIFEST.MF" />
-
-        <copy todir="${grails.build}/web">
-			<fileset dir="${grails.src.web}" excludes="**/*.java" />
-		</copy>
-
-        <mkdir dir="${grails.build}/gorm/META-INF/" />
-        <copy file="${grails.build}/core/META-INF/MANIFEST.MF" tofile="${grails.build}/gorm/META-INF/MANIFEST.MF" />
-
-        <copy todir="${grails.build}/gorm">
-			<fileset dir="${grails.src.persistence}" excludes="**/*.java"/>
-		</copy>
-
-        <mkdir dir="${grails.build}/crud/META-INF/" />
-        <copy file="${grails.build}/core/META-INF/MANIFEST.MF" tofile="${grails.build}/crud/META-INF/MANIFEST.MF" />
-
-        <copy todir="${grails.build}/crud">
-			<fileset dir="${grails.src.scaffolding}" excludes="**/*.java"/>
-		</copy>
-		
         <antcall target="build:java5" />
     </target>
 
@@ -147,12 +63,9 @@
 
     <target name="build:java5" depends="build:checkj5" if="is.java.5">
         <!--build java 5 sources-->
-        <javac srcdir="${grails.src.tiger}" destdir="${grails.build}/gorm" debug="on" deprecation="on" optimize="off">
+        <javac srcdir="${grails.src.tiger}" destdir="${grails.build}" debug="on" deprecation="on" optimize="off">
    		    <classpath>
-		      <pathelement path="${grails.build}/core"/>			      
-		      <pathelement path="${grails.build}/web"/>			      
-		      <pathelement path="${grails.build}/gorm"/>			      						
-		      <pathelement path="${grails.build}/crud"/>			      							
+		      <pathelement path="${grails.build}"/>
    		    </classpath>  
    			<classpath refid="classpath"/>    	
 		</javac>

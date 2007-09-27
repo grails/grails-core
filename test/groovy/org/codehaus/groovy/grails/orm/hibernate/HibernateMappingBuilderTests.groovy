@@ -49,6 +49,19 @@ class HibernateMappingBuilderTests extends GroovyTestCase {
 
      }
 
+
+     void testCustomCacheStrategy2() {
+         def builder = new HibernateMappingBuilder("Foo")
+         def mapping = builder.evaluate {
+             table 'myTable'
+             cache 'read-only'
+         }
+
+         assertEquals 'read-only', mapping.cache.usage
+         assertEquals 'all', mapping.cache.include
+
+     }
+
      void testInvalidCacheValues() {
          def builder = new HibernateMappingBuilder("Foo")
          def mapping = builder.evaluate {
@@ -73,6 +86,19 @@ class HibernateMappingBuilderTests extends GroovyTestCase {
         assertEquals false, mapping.versioned
      }
 
+     void testIdentityColumnMapping() {
+         def builder = new HibernateMappingBuilder("Foo")
+         def mapping = builder.evaluate {
+             table 'myTable'
+             version false
+             id column:'foo_id'
+         }
+
+         assertEquals Long, mapping.identity.type
+         assertEquals 'foo_id', mapping.identity.column
+         assertEquals 'native', mapping.identity.generator
+
+     }
      void testDefaultIdStrategy() {
          def builder = new HibernateMappingBuilder("Foo")
          def mapping = builder.evaluate {

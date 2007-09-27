@@ -26,8 +26,6 @@ import org.codehaus.groovy.grails.commons.metaclass.GroovyDynamicMethodsIntercep
 import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException;
 import org.codehaus.groovy.grails.exceptions.GrailsDomainException;
 import org.codehaus.groovy.grails.exceptions.InvalidPropertyException;
-import org.codehaus.groovy.grails.orm.DefaultOrmMapping;
-import org.codehaus.groovy.grails.orm.OrmMapping;
 import org.codehaus.groovy.grails.validation.metaclass.ConstraintsEvaluatingDynamicProperty;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeanWrapper;
@@ -62,7 +60,6 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
     private boolean root = true;
     private Set subClasses = new HashSet();
     private Collection embedded;
-    private final OrmMapping ormMapping = new DefaultOrmMapping(this);
 
     public DefaultGrailsDomainClass(Class clazz) {
         super(clazz, "");
@@ -111,26 +108,13 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
         // process the constraints
         evaluateConstraints();
 
-        evaluateOrmMapping();
     }
 
-    public OrmMapping getOrmMapping() {
-        return ormMapping;
-    }
 
     public boolean hasSubClasses() {
         return getSubClasses().size() > 0;
     }
 
-    private void evaluateOrmMapping() {
-        Closure ormMappingClosure = (Closure)getPropertyOrStaticPropertyOrFieldValue(
-                ORM_MAPPING, Closure.class );
-
-        if(ormMappingClosure != null) {
-            ormMappingClosure.setDelegate(ormMapping);
-            ormMappingClosure.call();
-        }
-    }
 
 
     /**

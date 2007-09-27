@@ -36,9 +36,7 @@ public class GrailsTemplateGeneratorsTests extends TestCase {
 
         GroovyClassLoader gcl = new GroovyClassLoader(Thread.currentThread().getContextClassLoader());
 
-        generator = (GrailsTemplateGenerator)gcl.parseClass(gcl.getResourceAsStream("org/codehaus/groovy/grails/scaffolding/DefaultGrailsTemplateGenerator.groovy"))
-                                                    .newInstance();
-
+        generator = new DefaultGrailsTemplateGenerator();
 
         Class dc = gcl.parseClass("class Test { \n Long id;\n  Long version;  }");
         GrailsDomainClass domainClass = new DefaultGrailsDomainClass(dc);
@@ -86,9 +84,7 @@ public class GrailsTemplateGeneratorsTests extends TestCase {
 
         GroovyClassLoader gcl = new GroovyClassLoader(Thread.currentThread().getContextClassLoader());
 
-        generator = (GrailsTemplateGenerator)gcl.parseClass(gcl.getResourceAsStream("org/codehaus/groovy/grails/scaffolding/DefaultGrailsTemplateGenerator.groovy"))
-                                                    .newInstance();
-
+        generator = new DefaultGrailsTemplateGenerator();
 
         Class dc = gcl.parseClass("class Test { " +
                                         "\n Long id;" +

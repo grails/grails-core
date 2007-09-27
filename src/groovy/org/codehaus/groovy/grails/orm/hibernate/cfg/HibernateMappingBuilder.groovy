@@ -102,6 +102,28 @@ class HibernateMappingBuilder {
     }
 
     /**
+    * <p>Configures the second-level cache for the class
+    * <code> { cache 'read-only' }
+    *
+    * @param usage The usage type for the cache which is one of CacheConfig.USAGE_OPTIONS
+    */
+    void cache(String usage) {
+        cache(usage:usage)
+    }
+    /**
+    * <p>Configures the second-level cache for the class
+    * <code> { cache 'read-only', include:'all }
+    *
+    * @param usage The usage type for the cache which is one of CacheConfig.USAGE_OPTIONS
+    */
+    void cache(String usage, Map args) {
+        args = args ? args : [:]
+        args.usage = usage
+
+        println "CALLING CACHE WITH ARGS $args"
+        cache(args)        
+    }
+    /**
     * <p>Configures the second-level cache with the default usage of 'read-write' and the default include of 'all' if
     *  the passed argument is true
 
@@ -128,11 +150,18 @@ class HibernateMappingBuilder {
             mapping.identity = new CompositeIdentity(propertyNames:args.composite as String[])                                                
         }
         else {
-            if(args.generator) {
+            if(args?.column) {
+                mapping.identity.column = args.column                
+            }
+            if(args?.generator) {
                 mapping.identity.generator = args.generator
             }
-            if(args.params) {
-                mapping.identity.params = args.params
+            if(args?.params) {
+                def params = args.params
+                for(entry in params) {
+                    params[entry.key] = entry.value?.toString()
+                }
+                mapping.identity.params = params
             }
         }
 
@@ -163,5 +192,9 @@ class HibernateMappingBuilder {
 
         }] as GroovyObjectSupport
         callable.call()
+    }
+
+    void methodMissing(String name, args) {
+        LOG.warn "ORM Mapping Invalid: Specified config option [$name] does not exist for class [$className]!"
     }
 }

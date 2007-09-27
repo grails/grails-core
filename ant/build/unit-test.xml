@@ -13,10 +13,7 @@
 
 	<taskdef resource="tasks.properties">
 		<classpath>
-			<pathelement path="${grails.build}/core" />
-			<pathelement path="${grails.build}/web" />
-			<pathelement path="${grails.build}/gorm" />
-			<pathelement path="${grails.build}/crud" />
+			<pathelement path="${grails.build}" />
 			<fileset dir="cruise/coverage/lib" includes="*.jar" />
 		</classpath>
 		<classpath refid="classpath" />
@@ -67,22 +64,13 @@
 			<src path="${grails.test.src.scaffolding}" />
 			<classpath refid="classpath" />
 			<classpath>
-				<pathelement path="${grails.build}/core" />
-				<pathelement path="${grails.build}/web" />
-				<pathelement path="${grails.build}/gorm" />
-				<pathelement path="${grails.build}/crud" />
+				<pathelement path="${grails.build}" />
 			</classpath>
 		</javac>
 		<groovyc srcdir="test/groovy" destdir="${grails.test.build}"  encoding="UTF-8">
 			<classpath refid="classpath" />
 			<classpath location="${grails.test.build}" />
 			<classpath location="${grails.build}" />
-			<classpath>
-				<pathelement path="${grails.build}/core" />
-				<pathelement path="${grails.build}/web" />
-				<pathelement path="${grails.build}/gorm" />
-				<pathelement path="${grails.build}/crud" />
-			</classpath>
 		</groovyc>
 	</target>
 
@@ -111,12 +99,6 @@
 			<classpath location="cruise/coverage/lib/cobertura.jar" />
 			<!-- only neede for coverage -->
 			<classpath refid="classpath" />
-			<classpath>
-				<pathelement path="${grails.build}/core" />
-				<pathelement path="${grails.build}/web" />
-				<pathelement path="${grails.build}/gorm" />
-				<pathelement path="${grails.build}/crud" />
-			</classpath>
 			<classpath location="${grails.test.build}" />
 			<classpath location="${grails.test.src.web}" />
 			<classpath location="${grails.test.src.commons}" />
