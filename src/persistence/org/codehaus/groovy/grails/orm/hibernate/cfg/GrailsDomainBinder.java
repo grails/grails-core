@@ -265,25 +265,33 @@ public final class GrailsDomainBinder {
 					+ collection.getRole()
 					+ " -> "
 					+ collection.getCollectionTable().getName() );
-		
-		// Configure one-to-many
-		if(collection.isOneToMany() ) {
-			OneToMany oneToMany = (OneToMany)collection.getElement();
-			String associatedClassName = oneToMany.getReferencedEntityName();
-			
-			associatedClass = (PersistentClass)persistentClasses.get(associatedClassName);
-			// if there is no persistent class for the association throw
-			// exception
-			if(associatedClass == null) {
-				throw new MappingException( "Association references unmapped class: " + oneToMany.getReferencedEntityName() );
-			}
-			
-			oneToMany.setAssociatedClass( associatedClass );
-			if(!property.isManyToMany())
-				collection.setCollectionTable( associatedClass.getTable() );
-			
-			collection.setLazy(true);
-			
+
+        ColumnConfig cc = getColumnConfig(property);
+        // Configure one-to-many
+        if(collection.isOneToMany() ) {
+            OneToMany oneToMany = (OneToMany)collection.getElement();
+            String associatedClassName = oneToMany.getReferencedEntityName();
+
+            associatedClass = (PersistentClass)persistentClasses.get(associatedClassName);
+            // if there is no persistent class for the association throw
+            // exception
+            if(associatedClass == null) {
+                throw new MappingException( "Association references unmapped class: " + oneToMany.getReferencedEntityName() );
+            }
+
+            oneToMany.setAssociatedClass( associatedClass );
+            if(!property.isManyToMany()) {
+                collection.setCollectionTable( associatedClass.getTable() );
+            }
+
+            if(cc!=null) {
+                collection.setLazy(cc.getLazy());
+            }
+            else {
+                collection.setLazy(true);
+            }
+
+
 			if(isSorted(property)) {
 				collection.setSorted(true);
 			}	
@@ -317,8 +325,14 @@ public final class GrailsDomainBinder {
 					LOG.debug("[GrailsDomainBinder] Mapping other side "+otherSide.getDomainClass().getName()+"."+otherSide.getName()+" -> "+collection.getCollectionTable().getName()+" as ManyToOne");
 				ManyToOne element = new ManyToOne( collection.getCollectionTable() );
 				bindManyToMany(otherSide, element, mappings);
-				collection.setElement(element);	
-				collection.setLazy(true);
+				collection.setElement(element);
+                if(cc!=null) {
+                    collection.setLazy(cc.getLazy());
+                }
+                else {
+                    collection.setLazy(true);
+                }
+
 			}
 			else {
 				// TODO support unidirectional many-to-many
@@ -330,7 +344,13 @@ public final class GrailsDomainBinder {
 		}		
 	}
 
-	/**
+    private static ColumnConfig getColumnConfig(GrailsDomainClassProperty property) {
+        Mapping m = getMapping(property.getDomainClass().getFullName());
+        ColumnConfig cc = m != null ? m.getColumn(property.getName()) : null;
+        return cc;
+    }
+
+    /**
 	 * Checks whether a property is a unidirectional non-circular one-to-many
 	 * @param property The property to check
 	 * @return True if it is unidirectional and a one-to-many
@@ -1094,8 +1114,15 @@ public final class GrailsDomainBinder {
 		// TODO configure fetching
 		manyToOne.setFetchMode(FetchMode.DEFAULT);
 		// TODO configure lazy loading
-		manyToOne.setLazy(true);
-		
+        ColumnConfig cc = getColumnConfig(property);
+
+        if(cc != null) {
+           manyToOne.setLazy(cc.getLazy());
+        }
+        else {
+            manyToOne.setLazy(true);
+        }
+
 
 		// set referenced entity
 		manyToOne.setReferencedEntityName( property.getReferencedPropertyType().getName() );

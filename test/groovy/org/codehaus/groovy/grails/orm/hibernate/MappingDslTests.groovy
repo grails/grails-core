@@ -97,10 +97,25 @@ class MappingDslTests extends AbstractGrailsHibernateTests {
          }
     }
 
-    void testCompositeId() {
-        
-    }
 
+
+    void testLazyinessControl() {
+        def personClass = ga.getDomainClass("PersonDSL")
+        def p = personClass.newInstance()
+         p.firstName = "Wilma"
+
+         p.addToChildren(firstName:"Dino")
+         p.addToCousins(firstName:"Bob")
+         p.save()
+         session.flush()
+         session.clear()
+
+         p = personClass.clazz.get(1)
+
+         assertTrue p.children.wasInitialized()
+         assertFalse p.cousins.wasInitialized()
+
+    }
 
     protected void onSetUp() {
         gcl.parseClass('''
@@ -108,7 +123,10 @@ class PersonDSL {
     Long id
     Long version
     String firstName
+    Set children
+    Set cousins
 
+    static hasMany = [children:Relative, cousins:Relative]
     static mapping = {
         table 'people'
         version false
@@ -117,8 +135,16 @@ class PersonDSL {
 
         columns {
             firstName name:'First_Name'
+            children lazy:false
         }
     }
+}
+
+class Relative {
+    Long id
+    Long version
+
+    String firstName
 }
 
 class PersonDSL2 {
