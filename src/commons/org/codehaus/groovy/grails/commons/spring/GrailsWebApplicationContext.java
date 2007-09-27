@@ -62,7 +62,6 @@ public class GrailsWebApplicationContext extends StaticApplicationContext
 	private ServletConfig servletConfig;
 	private MetaClass metaClass;
 	private BeanWrapper ctxBean = new BeanWrapperImpl(this);
-    private GroovyClassLoader grailsClassLoader;
 
     public GrailsWebApplicationContext() throws BeansException {
 		super();
@@ -80,7 +79,13 @@ public class GrailsWebApplicationContext extends StaticApplicationContext
 	}
 
     public ClassLoader getClassLoader() {
-        return grailsClassLoader != null ? grailsClassLoader : super.getClassLoader();
+        ApplicationContext parent = getParent();
+        if(parent != null && parent.containsBean(GrailsApplication.APPLICATION_ID)) {
+            final GrailsApplication application = (GrailsApplication) parent.getBean(GrailsApplication.APPLICATION_ID);
+            return application.getClassLoader();
+        }
+        else
+            return super.getClassLoader();
     }
 
     /**
@@ -152,14 +157,6 @@ public class GrailsWebApplicationContext extends StaticApplicationContext
 	}
 
     public void refresh() throws BeansException, IllegalStateException {
-        ApplicationContext parent = getParent();
-        if(parent != null && parent.containsBean(GrailsApplication.APPLICATION_ID)) {
-            final GrailsApplication application = (GrailsApplication) parent.getBean(GrailsApplication.APPLICATION_ID);
-            this.grailsClassLoader = application.getClassLoader();
-        }
-
-
-        
         super.refresh();
     }
 
