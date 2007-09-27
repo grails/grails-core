@@ -163,14 +163,14 @@ public class DefaultGrailsDomainClassTests extends TestCase {
             oneToManyClass.getName());
 		
 		// test relationship property
-		assertEquals( c1dc.getPropertyByName("ones").getOtherSide(), c2dc.getPropertyByName("other") );
+
 		assertTrue( c1dc.getPropertyByName( "ones" ).isOneToMany() );
 		assertTrue( c1dc.getPropertyByName( "ones" ).isPersistent() );
 		assertFalse( c1dc.getPropertyByName( "ones" ).isManyToMany() );
 		assertFalse( c1dc.getPropertyByName( "ones" ).isManyToOne() );
 		assertFalse( c1dc.getPropertyByName( "ones" ).isOneToOne() );		
 		
-		assertEquals( c2dc.getPropertyByName("other").getOtherSide(), c1dc.getPropertyByName("ones") );
+		
 		assertTrue( c2dc.getPropertyByName( "other" ).isPersistent() );
 		assertTrue( c2dc.getPropertyByName( "other" ).isManyToOne() );	
 		assertFalse( c2dc.getPropertyByName( "other" ).isManyToMany() );

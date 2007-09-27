@@ -1389,8 +1389,10 @@ w	 * Binds a simple value to the Hibernate metamodel. A simple value is
                 }
             }
 		}
-		
-		if(!grailsProp.getDomainClass().isRoot()) {
+
+        bindIndex(grailsProp, column, table);
+
+        if(!grailsProp.getDomainClass().isRoot()) {
 			if(LOG.isDebugEnabled())
 				LOG.debug("[GrailsDomainBinder] Sub class property [" + grailsProp.getName() + "] for column name ["+column.getName()+"] in table ["+table.getName()+"] set to nullable");			
 			column.setNullable(true);
@@ -1399,6 +1401,20 @@ w	 * Binds a simple value to the Hibernate metamodel. A simple value is
 		if(LOG.isDebugEnabled())
 			LOG.debug("[GrailsDomainBinder] bound property [" + grailsProp.getName() + "] to column name ["+column.getName()+"] in table ["+table.getName()+"]");		
 	}
+
+    private static void bindIndex(GrailsDomainClassProperty grailsProp, Column column, Table table) {
+        ColumnConfig cc = getColumnConfig(grailsProp);
+        if(cc!=null) {
+            String indexDefinition = cc.getIndex();
+            if(indexDefinition != null) {
+                String[] tokens = indexDefinition.split(",");
+                for (int i = 0; i < tokens.length; i++) {
+                    String index = tokens[i];
+                    table.getOrCreateIndex(index).addColumn(column);
+                }
+            }
+        }
+    }
 
     private static String getColumnNameForPropertyAndPath(GrailsDomainClassProperty grailsProp, String path) {
         GrailsDomainClass domainClass = grailsProp.getDomainClass();

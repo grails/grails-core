@@ -104,8 +104,8 @@ class MappingDslTests extends AbstractGrailsHibernateTests {
         def p = personClass.newInstance()
          p.firstName = "Wilma"
 
-         p.addToChildren(firstName:"Dino")
-         p.addToCousins(firstName:"Bob")
+         p.addToChildren(firstName:"Dino", lastName:'Dinosaur')
+         p.addToCousins(firstName:"Bob", lastName:'The Builder')
          p.save()
          session.flush()
          session.clear()
@@ -122,6 +122,7 @@ class MappingDslTests extends AbstractGrailsHibernateTests {
         def relativeClass = ga.getDomainClass("Relative")
         def r = relativeClass.newInstance()
          r.firstName = "Wilma"
+         r.lastName = 'Flintstone'
          r.save()
          session.flush()
 
@@ -170,10 +171,12 @@ class Relative {
     Long version
 
     String firstName
+    String lastName
 
     static mapping = {
         columns {
-            firstName type:'text'
+            firstName type:'text', index:'name_index'
+            lastName index:'name_index,other_index'
         }
     }
 }
