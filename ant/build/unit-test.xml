@@ -112,13 +112,15 @@
 				<fileset dir="${grails.test.build}">
 					<include name="**/${test}Tests.class" />
 					<exclude name="**/Abstract*" />
-					<!--<exclude name="**/GrailsHibernateConfigurationTests*" />-->
+					<exclude name="**/TransactionalServiceReloadTests*" />					
+					<!--<exclude name="**/TransactionalServiceReloadTests*" />-->
 <!--					<exclude name="**/ClassReloadingTests*" />
 					<exclude name="**/MessageTagTests*" />
 					<exclude name="**/FormTagLib*Tests*" />
 					<exclude name="**/CodecsGrailsPluginTests*" />-->
 				</fileset>
 			</batchtest>
+			<test todir="${grails.test.reports}" name="org.codehaus.groovy.grails.reload.TransactionalServiceReloadTests" fork="true" if="test.isolated" />
 			<!-- GrailsHibernateConfigurationTests needs it's own VM -->
 		    <!--<test todir="${grails.test.reports}" name="org.codehaus.groovy.grails.orm.hibernate.GrailsHibernateConfigurationTests" fork="true" if="test.isolated" />-->
 		   <!-- <test todir="${grails.test.reports}" name="org.codehaus.groovy.grails.plugins.web.CodecsGrailsPluginTests" fork="true" if="test.isolated" />
