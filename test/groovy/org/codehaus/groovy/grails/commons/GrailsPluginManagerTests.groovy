@@ -15,6 +15,29 @@ public class GrailsPluginManagerTests extends AbstractGrailsMockTests {
 
 	private static final String RESOURCE_PATH = "classpath:org/codehaus/groovy/grails/plugins/ClassEditorGrailsPlugin.groovy";
 
+    protected void onSetUp() {
+        super.onSetUp();
+
+        gcl.parseClass('''
+dataSource {
+	pooled = false
+	driverClassName = "org.hsqldb.jdbcDriver"
+	username = "sa"
+	password = ""
+    dbCreate = "create-drop" // one of 'create', 'create-drop','update'
+    url = "jdbc:hsqldb:mem:devDB"
+
+}
+hibernate {
+    cache.use_second_level_cache=true
+    cache.use_query_cache=true
+    hibernate.cache.provider_class='org.hibernate.cache.EhCacheProvider'
+}
+        ''')
+    }
+
+
+
     public void testObservablePlugin() {
          def manager = new DefaultGrailsPluginManager([MyGrailsPlugin,AnotherGrailsPlugin, ObservingGrailsPlugin] as Class[], ga)
 
