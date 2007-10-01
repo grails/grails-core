@@ -166,8 +166,58 @@ class MappingDslTests extends AbstractGrailsHibernateTests {
         assertEquals "Flintstone", cp1.lastName
     }
 
+    void testTablePerSubclassInheritance() {
+        DataSource ds = (DataSource)applicationContext.getBean('dataSource')
+
+         def con
+         try {
+             con = ds.getConnection()
+             def statement = con.prepareStatement("select * from payment")
+             statement.execute()
+             statement = con.prepareStatement("select * from credit_card_payment")
+             statement.execute()
+
+         } finally {
+             con.close()
+         }
+
+         def p = ga.getDomainClass("Payment").newInstance()
+
+         p.amount = 10
+         p.save()
+         session.flush()
+
+         def ccp = ga.getDomainClass("CreditCardPayment").newInstance()
+         ccp.amount = 20
+         ccp.cardNumber = "43438094834380"
+         ccp.save()
+         session.flush()
+
+         session.clear()
+
+         ccp = ga.getDomainClass("CreditCardPayment").clazz.findByAmount(20)
+
+         assert ccp
+         assertEquals 20, ccp.amount
+         assertEquals  "43438094834380", ccp.cardNumber
+    }
+
+
     protected void onSetUp() {
         gcl.parseClass('''
+class Payment {
+    Long id
+    Long version
+    Integer amount
+
+    static mapping = {
+        tablePerHierarchy false
+    }
+}
+class CreditCardPayment extends Payment  {
+    String cardNumber
+}
+
 class CompositePerson implements Serializable {
     Long id
     Long version

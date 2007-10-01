@@ -24,4 +24,5 @@ package org.codehaus.groovy.grails.orm.hibernate.cfg
  */
 public class CompositeIdentity {
     String[] propertyNames
+    Class compositeClass
 }

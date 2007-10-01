@@ -33,6 +33,12 @@ class Mapping {
      * Whether the class is versioned for optimistic locking
      */
     boolean versioned = true
+
+    /**
+     * Sets whether to use table-per-hierarchy or table-per-subclass mapping
+     */
+    boolean tablePerHierarchy = true
+
     Map columns = [:]
     /**
      * The identity definition

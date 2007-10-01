@@ -15,11 +15,19 @@ import org.codehaus.groovy.grails.orm.hibernate.cfg.HibernateMappingBuilder
 
 class HibernateMappingBuilderTests extends GroovyTestCase {
 
+    void testCustomInheritanceStrategy() {
+        def builder = new HibernateMappingBuilder("Foo")
+        def mapping = builder.evaluate {
+            table 'myTable'
+            tablePerHierarchy false
+        }
+
+        assertEquals false, mapping.tablePerHierarchy
+    }
     void testCustomAssociationCachingConfig1() {
         def builder = new HibernateMappingBuilder("Foo")
         def mapping = builder.evaluate {
             table 'myTable'
-
             columns {
                 firstName cache:[usage:'read-only', include:'non-lazy']
             }
@@ -176,12 +184,13 @@ class HibernateMappingBuilderTests extends GroovyTestCase {
          def mapping = builder.evaluate {
              table 'myTable'
              version false
-             id composite:['one','two']
+             id composite:['one','two'], compositeClass:HibernateMappingBuilder.class
          }
 
          assert mapping.identity instanceof CompositeIdentity
          assertEquals "one", mapping.identity.propertyNames[0]
          assertEquals "two", mapping.identity.propertyNames[1]
+         assertEquals HibernateMappingBuilder, mapping.identity.compositeClass
      }
 
      void testSimpleColumnMappings() {

@@ -119,10 +119,13 @@ class HibernateMappingBuilder {
     void cache(String usage, Map args) {
         args = args ? args : [:]
         args.usage = usage
-
-        println "CALLING CACHE WITH ARGS $args"
         cache(args)        
     }
+
+    void tablePerHierarchy(boolean b) {
+        mapping.tablePerHierarchy = b
+    }
+
     /**
     * <p>Configures the second-level cache with the default usage of 'read-write' and the default include of 'all' if
     *  the passed argument is true
@@ -147,7 +150,10 @@ class HibernateMappingBuilder {
     */
     void id(Map args) {
         if(args.composite) {
-            mapping.identity = new CompositeIdentity(propertyNames:args.composite as String[])                                                
+            mapping.identity = new CompositeIdentity(propertyNames:args.composite as String[])
+            if(args.compositeClass) {
+                mapping.identity.compositeClass = args.compositeClass
+            }
         }
         else {
             if(args?.column) {

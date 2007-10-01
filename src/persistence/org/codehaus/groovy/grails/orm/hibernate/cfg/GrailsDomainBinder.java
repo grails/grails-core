@@ -33,8 +33,11 @@ import org.hibernate.id.PersistentIdentifierGenerator;
 import org.hibernate.mapping.*;
 import org.hibernate.mapping.Collection;
 import org.hibernate.persister.entity.SingleTableEntityPersister;
+import org.hibernate.persister.entity.JoinedSubclassEntityPersister;
 import org.hibernate.usertype.UserType;
 import org.hibernate.util.StringHelper;
+import org.dom4j.Element;
+import org.dom4j.Attribute;
 
 import java.util.*;
 import java.util.List;
@@ -706,8 +709,11 @@ public final class GrailsDomainBinder {
             bindRootPersistentClassCommonValues(domainClass, root, mappings);
 			
 			if(!domainClass.getSubClasses().isEmpty()) {
-				// if the root class has children create a discriminator property
-				bindDiscriminatorProperty(root.getTable(), root, mappings);
+                boolean tablePerHierarchy = m == null || m.getTablePerHierarchy();
+                if(tablePerHierarchy) {
+                    // if the root class has children create a discriminator property
+                    bindDiscriminatorProperty(root.getTable(), root, mappings);
+                }
 				// bind the sub classes
 				bindSubClasses(domainClass,root,mappings);
 			}
@@ -745,25 +751,95 @@ public final class GrailsDomainBinder {
      * @param mappings The mappings instance
      */
 	private static void bindSubClass(GrailsDomainClass sub, PersistentClass parent, Mappings mappings) {
-		Subclass subClass = new SingleTableSubclass(parent);
 
+        Mapping m = getMapping(parent.getClassName());
+        Subclass subClass;
+        boolean tablePerSubclass = m != null && !m.getTablePerHierarchy();
+        if(tablePerSubclass) {
+            subClass = new JoinedSubclass(parent);
+        }
+        else {
+            subClass = new SingleTableSubclass(parent);
+            // set the descriminator value as the name of the class. This is the
+            // value used by Hibernate to decide what the type of the class is
+            // to perform polymorphic queries
+            subClass.setDiscriminatorValue(sub.getFullName());
 
-        bindSubClass(sub,subClass,mappings);
-		// set the descriminator value as the name of the class. This is the 
-		// value used by Hibernate to decide what the type of the class is
-		// to perform polymorphic queries
-		subClass.setDiscriminatorValue(sub.getFullName());
-		                                                  
-		parent.addSubclass( subClass );
-		mappings.addClass( subClass );
+        }
+        parent.addSubclass( subClass );
+        mappings.addClass( subClass );
+
+        if(tablePerSubclass)
+            bindJoinedSubClass(sub, (JoinedSubclass)subClass, mappings, m);
+        else
+            bindSubClass(sub,subClass,mappings);
+
 
         if(!sub.getSubClasses().isEmpty()) {
             // bind the sub classes
             bindSubClasses(sub,subClass,mappings);
         }
+
     }
 
-	/**
+    /**
+     * Binds a joined sub-class mapping using table-per-subclass
+     * @param sub The Grails sub class
+     * @param joinedSubclass The Hibernate Subclass object
+     * @param mappings The mappings Object
+     * @param gormMapping The GORM mapping object
+     */
+    private static void bindJoinedSubClass(GrailsDomainClass sub, JoinedSubclass joinedSubclass, Mappings mappings, Mapping gormMapping) {
+        bindClass( sub, joinedSubclass, mappings );
+
+        if ( joinedSubclass.getEntityPersisterClass() == null ) {
+            joinedSubclass.getRootClass()
+                .setEntityPersisterClass( JoinedSubclassEntityPersister.class );
+        }
+
+		Table mytable = mappings.addTable(
+				mappings.getSchemaName(),
+				mappings.getCatalogName(),
+				getClassTableName( joinedSubclass,  null, mappings ),
+				null,
+				false
+			);
+
+
+        joinedSubclass.setTable( mytable );
+		LOG.info(
+				"Mapping joined-subclass: " + joinedSubclass.getEntityName() +
+				" -> " + joinedSubclass.getTable().getName()
+			);
+
+
+
+
+
+        SimpleValue key = new DependantValue( mytable, joinedSubclass.getIdentifier() );
+		joinedSubclass.setKey( key );
+        bindSimpleValue( sub.getIdentifier().getType().getName(), key, false, sub.getIdentifier().getName(), mappings );
+
+        joinedSubclass.createPrimaryKey();
+        
+        // properties
+		createClassProperties( sub, joinedSubclass, mappings);        
+    }
+
+	private static String getClassTableName(
+			PersistentClass model, Table denormalizedSuperTable,
+			Mappings mappings
+	) {
+
+		String logicalTableName = StringHelper.unqualify( model.getEntityName() );
+		String physicalTableName = namingStrategy.classToTableName( model.getEntityName() );
+
+
+		mappings.addTableBinding( mappings.getSchemaName(), mappings.getCatalogName(), logicalTableName, physicalTableName, denormalizedSuperTable );
+		return physicalTableName;
+	}
+
+    /**
 	 * Binds a sub-class using table-per-heirarchy in heritance mapping
 	 * 
 	 * @param sub The Grails domain class instance representing the sub-class
