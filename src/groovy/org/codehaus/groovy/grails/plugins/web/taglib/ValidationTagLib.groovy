@@ -27,7 +27,7 @@ import org.codehaus.groovy.grails.commons.ApplicationHolder
 * @since 17-Jan-2006
 */
 
-class ValidationTagLib {     
+class ValidationTagLib {
    /**
     * Obtains the value of a field either from the original errors
     *
@@ -195,6 +195,14 @@ class ValidationTagLib {
           }
           if (text) {
               if(attrs.encodeAs) {
+                  // TODO
+                  /*
+                   Use a logger instead of println...
+                   Why isn't the log property being injected into this class
+                   when tests are run?...
+                   */
+//                  log.error('The encodeAs attribute on the message tag has been deprecated and will be removed in a future release.  Use the encoding attribute.')
+                  println 'The encodeAs attribute on the message tag has been deprecated and will be removed in a future release.  Use the encoding attribute.'
                   text = text."encodeAs${attrs.encodeAs}"()
               }
               if(attrs.encoding) {
