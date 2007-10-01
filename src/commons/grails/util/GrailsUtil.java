@@ -76,7 +76,7 @@ public class GrailsUtil {
         PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
         String version = null;
         try {
-            Resource[] manifests = resolver.getResources("classpath*:META-INF/GRAILS-MANIFEST.MF");
+            Resource[] manifests = resolver.getResources("classpath*:META-INF/MANIFEST.MF");
             Manifest grailsManifest = null;
             for (int i = 0; i < manifests.length; i++) {
                 Resource r = manifests[i];
