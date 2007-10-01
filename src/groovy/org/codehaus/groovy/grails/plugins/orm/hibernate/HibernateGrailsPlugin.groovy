@@ -545,7 +545,11 @@ class HibernateGrailsPlugin {
                 value = value.toLong()
             }
             else {
-                value = typeConverter.convertIfNecessary(value, targetType);
+                try {
+                    value = typeConverter.convertIfNecessary(value, targetType)
+                } catch (org.springframework.beans.TypeMismatchException e) {
+                    // ignore
+                };
             }
         }
         return value

@@ -15,6 +15,51 @@ import org.codehaus.groovy.grails.orm.hibernate.cfg.HibernateMappingBuilder
 
 class HibernateMappingBuilderTests extends GroovyTestCase {
 
+    void testCustomAssociationCachingConfig1() {
+        def builder = new HibernateMappingBuilder("Foo")
+        def mapping = builder.evaluate {
+            table 'myTable'
+
+            columns {
+                firstName cache:[usage:'read-only', include:'non-lazy']
+            }
+        }
+
+        def cc = mapping.getColumn('firstName')
+        assertEquals 'read-only', cc.cache.usage
+        assertEquals 'non-lazy', cc.cache.include
+    }
+
+    void testCustomAssociationCachingConfig2() {
+        def builder = new HibernateMappingBuilder("Foo")
+        def mapping = builder.evaluate {
+            table 'myTable'
+
+            columns {
+                firstName cache:'read-only'
+            }
+        }
+
+        def cc = mapping.getColumn('firstName')
+        assertEquals 'read-only', cc.cache.usage
+        
+    }
+
+    void testAssociationCachingConfig() {
+        def builder = new HibernateMappingBuilder("Foo")
+        def mapping = builder.evaluate {
+            table 'myTable'
+
+            columns {
+                firstName cache:true
+            }
+        }
+
+        def cc = mapping.getColumn('firstName')
+        assertEquals 'read-write', cc.cache.usage
+        assertEquals 'all', cc.cache.include
+    }
+
      void testEvaluateTableName() {
         def builder = new HibernateMappingBuilder("Foo")
         def mapping = builder.evaluate {

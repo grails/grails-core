@@ -187,6 +187,34 @@ class HibernateMappingBuilder {
                 column.precision = namedArgs.precision ? namedArgs.precision : -1
                 column.scale = namedArgs.scale ? namedArgs.scale : -1
 
+                if(namedArgs.cache instanceof String) {
+                    CacheConfig cc = new CacheConfig()
+                    if(CacheConfig.USAGE_OPTIONS.contains(namedArgs.cache))
+                        cc.usage = namedArgs.cache
+                    else
+                        LOG.warn("ORM Mapping Invalid: Specified [usage] of [cache] with value [$args.usage] for association [$name] in class [$className] is not valid")
+                    column.cache = cc
+                }
+                else if(namedArgs.cache == true) {
+                    column.cache = new CacheConfig()
+                }
+                else if(namedArgs.cache instanceof Map) {
+                    def cacheArgs = namedArgs.cache
+                    CacheConfig cc = new CacheConfig()
+                    if(CacheConfig.USAGE_OPTIONS.contains(cacheArgs.usage))
+                        cc.usage = cacheArgs.usage
+                    else
+                        LOG.warn("ORM Mapping Invalid: Specified [usage] of [cache] with value [$args.usage] for association [$name] in class [$className] is not valid")
+
+                    if(CacheConfig.INCLUDE_OPTIONS.contains(cacheArgs.include))
+                        cc.include = cacheArgs.include
+                    else
+                        LOG.warn("ORM Mapping Invalid: Specified [include] of [cache] with value [$args.include] for association [$name] in class [$className] is not valid")            
+
+                    column.cache = cc
+
+                }
+
                 mapping.columns[name] = column
             }
 

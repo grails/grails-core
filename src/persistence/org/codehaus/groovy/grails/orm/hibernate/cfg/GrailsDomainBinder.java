@@ -16,6 +16,7 @@ package org.codehaus.groovy.grails.orm.hibernate.cfg;
 
 
 import groovy.lang.Closure;
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.math.NumberUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -315,8 +316,17 @@ public final class GrailsDomainBinder {
 		}				
 		collection.setKey( key );
 
-		
-		// if we have a many-to-many
+        // get cache config
+        if(cc != null) {
+            CacheConfig cacheConfig = cc.getCache();
+            if(cacheConfig != null) {
+                collection.setCacheConcurrencyStrategy(cacheConfig.getUsage());
+            }
+        }
+
+
+
+        // if we have a many-to-many
 		if(property.isManyToMany() ) {
 			GrailsDomainClassProperty otherSide = property.getOtherSide();
 			
@@ -830,14 +840,7 @@ public final class GrailsDomainBinder {
 
         Mapping m = getMapping(domainClass.getFullName());
 
-        if(m != null) {
-            Identity id = m.getIdentity();
-            bindSimpleId( domainClass.getIdentifier(), root, mappings, id );
-
-        }
-        else {
-            bindSimpleId( domainClass.getIdentifier(), root, mappings, null);
-        }
+        bindIdentity(domainClass, root, mappings, m);
 
         if(m != null) {
             if(m.getVersioned()) {
@@ -852,7 +855,48 @@ public final class GrailsDomainBinder {
 		createClassProperties(domainClass,root,mappings);
 	}
 
-	/**
+    private static void bindIdentity(GrailsDomainClass domainClass, RootClass root, Mappings mappings, Mapping gormMapping) {
+        if(gormMapping != null) {
+            Identity id = gormMapping.getIdentity();
+            if(id instanceof CompositeIdentity){
+                bindCompositeId(domainClass, root, (CompositeIdentity)id, gormMapping, mappings);
+            }
+            else {
+                bindSimpleId( domainClass.getIdentifier(), root, mappings, id );
+            }
+
+        }
+        else {
+            bindSimpleId( domainClass.getIdentifier(), root, mappings, null);
+        }
+    }
+
+    private static void bindCompositeId(GrailsDomainClass domainClass, RootClass root, CompositeIdentity compositeIdentity, Mapping gormMapping, Mappings mappings) {
+        Component id = new Component(root);
+        root.setIdentifier(id);
+        root.setEmbeddedIdentifier(true);
+        id.setComponentClassName( domainClass.getFullName() );
+        id.setKey(true);
+        id.setEmbedded(true);
+
+        String path = StringHelper.qualify(
+                root.getEntityName(),
+                "id");
+
+        id.setRoleName(path);
+
+        String[] props = compositeIdentity.getPropertyNames();
+        for (int i = 0; i < props.length; i++) {
+            String propName = props[i];
+            GrailsDomainClassProperty property = domainClass.getPropertyByName(propName);
+            if(property == null) throw new MappingException("Property ["+propName+"] referenced in composite-id mapping of class ["+domainClass.getFullName()+"] is not a valid property!");
+
+
+            bindComponentProperty(id, property, root, "", root.getTable(), mappings);
+        }
+    }
+
+    /**
 	 * Creates and binds the properties for the specified Grails domain class and PersistantClass
 	 * and binds them to the Hibernate runtime meta model
 	 * 
@@ -864,8 +908,10 @@ public final class GrailsDomainBinder {
 		
 		GrailsDomainClassProperty[] persistentProperties = domainClass.getPersistentProperties();
 		Table table = persistentClass.getTable();
-		
-		for(int i = 0; i < persistentProperties.length;i++) {
+
+        Mapping gormMapping = getMapping(domainClass.getFullName());
+
+        for(int i = 0; i < persistentProperties.length;i++) {
 			
 			GrailsDomainClassProperty currentGrailsProp = persistentProperties[i];
 			// if its inherited skip
@@ -875,9 +921,9 @@ public final class GrailsDomainBinder {
                 continue;
             /*if(currentGrailsProp.isManyToMany() && !currentGrailsProp.isOwningSide())
 				continue;*/
+            if (isCompositeIdProperty(gormMapping, currentGrailsProp)) continue;
 
-						
-			if(LOG.isDebugEnabled()) 
+            if(LOG.isDebugEnabled())
 				LOG.debug("[GrailsDomainBinder] Binding persistent property [" + currentGrailsProp.getName() + "]");
 			
 			Value value = null;
@@ -931,6 +977,18 @@ public final class GrailsDomainBinder {
 		}		
 	}
 
+    private static boolean isCompositeIdProperty(Mapping gormMapping, GrailsDomainClassProperty currentGrailsProp) {
+        if(gormMapping != null && gormMapping.getIdentity() != null) {
+            Identity id = gormMapping.getIdentity();
+            if(id instanceof CompositeIdentity) {
+                CompositeIdentity cid = (CompositeIdentity)id;
+                if(ArrayUtils.contains(cid.getPropertyNames(), currentGrailsProp.getName()))
+                    return true;
+            }
+        }
+        return false;
+    }
+
     private static boolean isBidirectionalManyToOne(GrailsDomainClassProperty currentGrailsProp) {
         return (currentGrailsProp.isBidirectional() && currentGrailsProp.isManyToOne());
     }
@@ -954,71 +1012,77 @@ public final class GrailsDomainBinder {
         GrailsDomainClassProperty[] properties = domainClass.getPersistentProperties();
         Table table = component.getOwner().getTable();
         PersistentClass persistentClass = component.getOwner();
+        String path = property.getName();
+        Class propertyType = property.getDomainClass().getClazz();
 
         for (int i = 0; i < properties.length; i++) {
             GrailsDomainClassProperty currentGrailsProp = properties[i];
             if(currentGrailsProp.isIdentity()) continue;
             if(currentGrailsProp.getName().equals(GrailsDomainClassProperty.VERSION)) continue;
 
-            if(currentGrailsProp.getType().equals(property.getDomainClass().getClazz())) {
+            if(currentGrailsProp.getType().equals(propertyType)) {
                 component.setParentProperty(currentGrailsProp.getName());
                 continue;
             }
 
-            Value value = null;
-            // see if its a collection type
-			CollectionType collectionType = CollectionType.collectionTypeForClass( currentGrailsProp.getType() );
-			if(collectionType != null) {
-				// create collection
-
-                Collection collection = collectionType.create(
-						currentGrailsProp,
-                        persistentClass,
-                        property.getName(),
-                        mappings
-                );
-				mappings.addCollection(collection);
-				value = collection;
-			}
-			// work out what type of relationship it is and bind value
-			else if ( currentGrailsProp.isManyToOne() ) {
-				if(LOG.isDebugEnabled())
-					LOG.debug("[GrailsDomainBinder] Binding property [" + currentGrailsProp.getName() + "] as ManyToOne");
-
-				value = new ManyToOne( table );
-				bindManyToOne( currentGrailsProp, (ManyToOne) value, property.getName(), mappings );
-			}
-			else if ( currentGrailsProp.isOneToOne()) {
-				if(LOG.isDebugEnabled())
-					LOG.debug("[GrailsDomainBinder] Binding property [" + currentGrailsProp.getName() + "] as OneToOne");
-
-				//value = new OneToOne( table, persistentClass );
-				//bindOneToOne( currentGrailsProp, (OneToOne)value, mappings );
-				value = new ManyToOne( table );
-				bindManyToOne( currentGrailsProp, (ManyToOne) value, property.getName(), mappings );
-			}
-/*
-            else if ( currentGrailsProp.isEmbedded() ) {
-                value = new Component( persistentClass );
-
-                bindComponent((Component)value, currentGrailsProp, true, mappings);
-            }
-*/
-            else {
-				if(LOG.isDebugEnabled())
-					LOG.debug("[GrailsDomainBinder] Binding property [" + currentGrailsProp.getName() + "] as SimpleValue");
-
-				value = new SimpleValue( table );
-				bindSimpleValue( currentGrailsProp, (SimpleValue) value, property.getName(), mappings );
-			}
-
-			if(value != null) {
-				Property persistentProperty = createProperty( value, persistentClass, currentGrailsProp, mappings );
-				component.addProperty( persistentProperty );
-			}
+            bindComponentProperty(component, currentGrailsProp, persistentClass, path, table, mappings);
 
         }
         
+    }
+
+    private static void bindComponentProperty(Component component, GrailsDomainClassProperty property, PersistentClass persistentClass, String path, Table table, Mappings mappings) {
+        Value value = null;
+        // see if its a collection type
+        CollectionType collectionType = CollectionType.collectionTypeForClass( property.getType() );
+        if(collectionType != null) {
+            // create collection
+
+            Collection collection = collectionType.create(
+                    property,
+                    persistentClass,
+                    path,
+                    mappings
+            );
+            mappings.addCollection(collection);
+            value = collection;
+        }
+        // work out what type of relationship it is and bind value
+        else if ( property.isManyToOne() ) {
+            if(LOG.isDebugEnabled())
+                LOG.debug("[GrailsDomainBinder] Binding property [" + property.getName() + "] as ManyToOne");
+
+            value = new ManyToOne( table );
+            bindManyToOne(property, (ManyToOne) value, path, mappings );
+        }
+        else if ( property.isOneToOne()) {
+            if(LOG.isDebugEnabled())
+                LOG.debug("[GrailsDomainBinder] Binding property [" + property.getName() + "] as OneToOne");
+
+            //value = new OneToOne( table, persistentClass );
+            //bindOneToOne( currentGrailsProp, (OneToOne)value, mappings );
+            value = new ManyToOne( table );
+            bindManyToOne(property, (ManyToOne) value, path, mappings );
+        }
+/*
+        else if ( currentGrailsProp.isEmbedded() ) {
+            value = new Component( persistentClass );
+
+            bindComponent((Component)value, currentGrailsProp, true, mappings);
+        }
+*/
+        else {
+            if(LOG.isDebugEnabled())
+                LOG.debug("[GrailsDomainBinder] Binding property [" + property.getName() + "] as SimpleValue");
+
+            value = new SimpleValue( table );
+            bindSimpleValue(property, (SimpleValue) value, path, mappings );
+        }
+
+        if(value != null) {
+            Property persistentProperty = createProperty( value, persistentClass, property, mappings );
+            component.addProperty( persistentProperty );
+        }
     }
 
     /**

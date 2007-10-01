@@ -31,6 +31,7 @@ class ColumnConfig {
     int length = -1
     int precision = -1
     int scale = -1
+    CacheConfig cache
 
     String toString() {
         "column[name:$name, type:$type, index:$index, lazy:$lazy, unique:$unique, length:$length, precision:$precision, scale:$scale]"

@@ -143,8 +143,41 @@ class MappingDslTests extends AbstractGrailsHibernateTests {
          }
     }
 
+
+    void testCompositeIdMapping() {
+        def compositePersonClass = ga.getDomainClass("CompositePerson")
+        def cp = compositePersonClass.newInstance()
+
+        cp.firstName = "Fred"
+        cp.lastName = "Flintstone"
+        cp.save()
+        session.flush()
+        session.clear()
+
+        cp = compositePersonClass.newInstance()
+
+        cp.firstName = "Fred"
+        cp.lastName = "Flintstone"
+
+        def cp1 = compositePersonClass.clazz.get(cp)
+
+        assert cp1
+        assertEquals "Fred", cp1.firstName
+        assertEquals "Flintstone", cp1.lastName
+    }
+
     protected void onSetUp() {
-        gcl.parseClass('''        
+        gcl.parseClass('''
+class CompositePerson implements Serializable {
+    Long id
+    Long version
+    String firstName
+    String lastName
+
+    static mapping = {
+        id composite:['firstName', 'lastName']
+    }
+}
 class PersonDSL {
     Long id
     Long version
@@ -161,7 +194,7 @@ class PersonDSL {
 
         columns {
             firstName name:'First_Name'
-            children lazy:false
+            children lazy:false, cache:'read-write\'
         }
     }
 }
