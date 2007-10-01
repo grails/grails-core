@@ -19,8 +19,6 @@ import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.GrailsDispatcherServlet;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
-import org.mortbay.jetty.MimeTypes;
-import org.mortbay.util.ByteArrayISO8859Writer;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 import org.springframework.web.util.WebUtils;
@@ -29,7 +27,7 @@ import javax.servlet.RequestDispatcher;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.io.OutputStream;
+import java.io.Writer;
 
 /**
  * A servlet for handling errors
@@ -38,6 +36,8 @@ import java.io.OutputStream;
  * @since 1.0-RC1
  */
 public class ErrorHandlingServlet extends GrailsDispatcherServlet {
+    private static final String TEXT_HTML = "text/html";
+
     protected void doDispatch(HttpServletRequest request, HttpServletResponse response) throws Exception {
         int statusCode;
 
@@ -81,9 +81,10 @@ public class ErrorHandlingServlet extends GrailsDispatcherServlet {
 
     private void renderDefaultResponse(HttpServletResponse response, int statusCode, String title, String text) throws IOException {
         response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-        response.setContentType(MimeTypes.TEXT_HTML);
+        response.setContentType(TEXT_HTML);
 
-        ByteArrayISO8859Writer writer = new ByteArrayISO8859Writer(1500);
+        Writer writer = response.getWriter();
+
 
         writer.write("<HTML>\n<HEAD>\n<TITLE>Error " + statusCode + " - " + title);
         writer.write("</TITLE>\n<BODY>\n<H2>Error " + statusCode + " - " + title + ".</H2>\n");
@@ -94,10 +95,6 @@ public class ErrorHandlingServlet extends GrailsDispatcherServlet {
 
         writer.write("\n</BODY>\n</HTML>\n");
         writer.flush();
-        response.setContentLength(writer.size());
-        OutputStream out = response.getOutputStream();
-        writer.writeTo(out);
-        out.close();
     }
 
     private UrlMappingsHolder lookupUrlMappings() {
