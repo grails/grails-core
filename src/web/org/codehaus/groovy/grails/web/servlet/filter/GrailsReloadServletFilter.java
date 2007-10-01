@@ -104,25 +104,11 @@ public class GrailsReloadServletFilter extends OncePerRequestFilter {
       }
 
       if(copyScript == null) {
-          GroovyClassLoader gcl = new GroovyClassLoader(getClass().getClassLoader());
-
-          Class groovyClass;
-          try {
-              groovyClass = gcl.parseClass(gcl.getResource("org/codehaus/groovy/grails/web/servlet/filter/GrailsResourceCopier.groovy").openStream());
-              copyScript = (ResourceCopier)groovyClass.newInstance();
-          } catch (IllegalAccessException e) {
-              LOG.error("Illegal access creating resource copier. Save/reload disabled: " + e.getMessage(), e);
-          } catch (InstantiationException e) {
-              LOG.error("Error instantiating resource copier. Save/reload disabled: " + e.getMessage(), e);
-          } catch (CompilationFailedException e) {
-               LOG.error("Error compiling resource copier. Save/reload disabled: " + e.getMessage(), e);
-          } catch(Exception e) {
-             LOG.error("Error loading resource copier. Save/reload disabled: " + e.getMessage(), e);
-          }
+          copyScript = new GrailsResourceCopier();
+      }
+        if(LOG.isDebugEnabled()) {
+              LOG.debug("Running copy script...");
         }
-	if(LOG.isDebugEnabled()) {
-	      LOG.debug("Running copy script...");
-	}	
         if(copyScript != null) {
             copyScript.copyResourceBundles();
         } 
