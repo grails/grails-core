@@ -22,6 +22,6 @@ package org.codehaus.groovy.grails.orm.hibernate.cfg
  *
  * Created: Sep 27, 2007
  */
-public class CompositeIdentity extends Identity {
+public class CompositeIdentity {
     String[] propertyNames
 }

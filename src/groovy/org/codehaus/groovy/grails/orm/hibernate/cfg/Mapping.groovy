@@ -37,7 +37,7 @@ class Mapping {
     /**
      * The identity definition
      */
-    Identity identity = new Identity()
+    def identity = new Identity()
     /**
      * Caching config
      */
