@@ -194,7 +194,13 @@ class ValidationTagLib {
                 }
           }
           if (text) {
-                out << (attrs.encodeAs ? text."encodeAs${attrs.encodeAs}"() : text)
+              if(attrs.encodeAs) {
+                  text = text."encodeAs${attrs.encodeAs}"()
+              }
+              if(attrs.encoding) {
+                  text = text."encodeAs${attrs.encoding}"()
+              }
+              out << text
           }
     }
     // Maps out how Grails contraints map to Apache commons validators
