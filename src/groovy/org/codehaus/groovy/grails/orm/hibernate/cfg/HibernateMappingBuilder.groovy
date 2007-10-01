@@ -184,7 +184,7 @@ class HibernateMappingBuilder {
             if(args && args[0] instanceof Map) {
                 def namedArgs = args[0]
                 def column = new ColumnConfig()
-                column.name = namedArgs.name
+                column.column = namedArgs.column
                 column.type = namedArgs.type
                 column.index = namedArgs.index
                 column.lazy = namedArgs.lazy ? true : false

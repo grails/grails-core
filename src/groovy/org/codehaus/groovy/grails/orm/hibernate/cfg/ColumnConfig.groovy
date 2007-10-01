@@ -23,7 +23,7 @@ package org.codehaus.groovy.grails.orm.hibernate.cfg
  * Created: Sep 27, 2007
  */
 class ColumnConfig {
-    String name
+    String column
     def type
     String index
     boolean lazy = false

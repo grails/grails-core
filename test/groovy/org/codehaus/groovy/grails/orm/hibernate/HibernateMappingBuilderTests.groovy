@@ -199,14 +199,14 @@ class HibernateMappingBuilderTests extends GroovyTestCase {
              table 'myTable'
              version false
              columns {
-                 firstName name:'First_Name'
-                 lastName name:'Last_Name'
+                 firstName column:'First_Name'
+                 lastName column:'Last_Name'
              }
          }
 
         
-        assertEquals "First_Name",mapping.getColumn('firstName').name
-        assertEquals "Last_Name",mapping.getColumn('lastName').name
+        assertEquals "First_Name",mapping.getColumn('firstName').column
+        assertEquals "Last_Name",mapping.getColumn('lastName').column
      }
 
      void testComplexColumnMappings() {
@@ -215,25 +215,25 @@ class HibernateMappingBuilderTests extends GroovyTestCase {
              table 'myTable'
              version false
              columns {
-                 firstName  name:'First_Name',
+                 firstName  column:'First_Name',
                             lazy:true,
                             unique:true,
                             type: java.sql.Clob,
                             length:255,
                             index:'foo'
                             
-                 lastName name:'Last_Name'
+                 lastName column:'Last_Name'
              }
          }
 
 
-        assertEquals "First_Name",mapping.columns.firstName.name
+        assertEquals "First_Name",mapping.columns.firstName.column
         assertEquals true,mapping.columns.firstName.lazy
         assertEquals true,mapping.columns.firstName.unique
         assertEquals java.sql.Clob,mapping.columns.firstName.type
         assertEquals 255,mapping.columns.firstName.length
         assertEquals 'foo',mapping.columns.firstName.index
-        assertEquals "Last_Name",mapping.columns.lastName.name
+        assertEquals "Last_Name",mapping.columns.lastName.column
 
      }
 }

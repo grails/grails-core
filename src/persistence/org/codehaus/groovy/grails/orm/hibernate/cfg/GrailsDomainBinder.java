@@ -766,6 +766,7 @@ public final class GrailsDomainBinder {
             subClass.setDiscriminatorValue(sub.getFullName());
 
         }
+        subClass.setEntityName(sub.getFullName());
         parent.addSubclass( subClass );
         mappings.addClass( subClass );
 
@@ -1563,8 +1564,8 @@ w	 * Binds a simple value to the Hibernate metamodel. A simple value is
         Mapping m = getMapping(domainClass.getFullName());
         if(m != null) {
             ColumnConfig c = m.getColumn(grailsProp.getName());
-            if(c != null && c.getName() != null) {
-                columnName = c.getName();
+            if(c != null && c.getColumn() != null) {
+                columnName = c.getColumn();
             }
         }
         if(columnName == null) {
