@@ -18,6 +18,8 @@ package org.codehaus.groovy.grails.orm.hibernate.support
 import org.hibernate.EmptyInterceptor
 import org.hibernate.type.Type
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty
+import org.codehaus.groovy.grails.orm.hibernate.cfg.Mapping
+import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsDomainBinder
 
 /**
  * <p>An interceptor that invokes closure events on domain entities such as beforeInsert, beforeUpdate and beforeDelete
@@ -42,8 +44,11 @@ class ClosureEventTriggeringInterceptor extends EmptyInterceptor {
         def modified = triggerEvent(BEFORE_INSERT_EVENT, entity, state, propertyList)
 
         def metaClass = entity.metaClass
+        Mapping m = GrailsDomainBinder.getMapping(entity.getClass().name)
+        boolean shouldTimestamp = m && !m.autoTimestamp ? false : true
+
         MetaProperty property = metaClass.hasProperty(entity, GrailsDomainClassProperty.DATE_CREATED)
-        if(property) {
+        if(property && shouldTimestamp) {
             def now = property.getType().newInstance([System.currentTimeMillis()] as Object[] )
             modifyStateForProperty(propertyList, property.name, state, now)
             modified = true
@@ -69,8 +74,10 @@ class ClosureEventTriggeringInterceptor extends EmptyInterceptor {
     public boolean onFlushDirty(Object entity, Serializable id, Object[] currentState, Object[] previousState, String[] propertyNames, Type[] types)  {
         List propertyList = propertyNames.toList()
         boolean modified = triggerEvent(BEFORE_UPDATE_EVENT, entity, currentState, propertyList)
+        Mapping m = GrailsDomainBinder.getMapping(entity.getClass().name)
+        boolean shouldTimestamp = m && !m.autoTimestamp ? false : true
         MetaProperty property = entity.metaClass.hasProperty(entity, GrailsDomainClassProperty.LAST_UPDATED)
-        if(property) {
+        if(property && shouldTimestamp) {
             def now = property.getType().newInstance([System.currentTimeMillis()] as Object[] )
             modifyStateForProperty(propertyList, GrailsDomainClassProperty.LAST_UPDATED, currentState, now)
             modified = true                

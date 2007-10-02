@@ -70,6 +70,13 @@ class HibernateMappingBuilder {
     }
 
     /**
+     * Set whether auto time stamping should occur for last_updated and date_created columns 
+     */
+    void autoTimestamp(boolean b) {
+        mapping.autoTimestamp = b
+    }
+
+    /**
     * <p>Configures whether to use versioning for optimistic locking
     * <code> { version false }
     *

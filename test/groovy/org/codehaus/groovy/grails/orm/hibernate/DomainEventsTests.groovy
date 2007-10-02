@@ -11,6 +11,27 @@
 package org.codehaus.groovy.grails.orm.hibernate
 class DomainEventsTests extends AbstractGrailsHibernateTests{
 
+   void testDisabledAutoTimestamps() {
+        def personClass = ga.getDomainClass("PersonEvent2")
+        def p = personClass.newInstance()
+
+        p.name = "Fred"
+        p.save()
+        session.flush()
+        session.clear()
+
+        p = personClass.clazz.get(1)
+
+        assert !p.dateCreated
+        assert !p.lastUpdated
+
+        p.name = "Wilma"
+        p.save()
+        session.flush()
+
+        assert !p.dateCreated
+        assert !p.lastUpdated
+    }
 
     void testAutoTimestamps() {
         def personClass = ga.getDomainClass("PersonEvent")
@@ -105,6 +126,20 @@ class PersonEvent {
 	def beforeDelete = {}
 	def beforeUpdate = {}
 	def beforeInsert = {}
+}
+class PersonEvent2 {
+	Long id
+	Long version
+	String name
+	Date dateCreated
+	Date lastUpdated
+	static mapping = {
+	    autoTimestamp false
+	}
+	static constraints = {
+	    dateCreated nullable:true
+	    lastUpdated nullable:true
+	}
 }
 '''
 		)

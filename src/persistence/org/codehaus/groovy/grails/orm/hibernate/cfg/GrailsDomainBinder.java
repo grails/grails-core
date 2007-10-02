@@ -65,6 +65,7 @@ public final class GrailsDomainBinder {
     private static final String CASCADE_ALL = "all";
     private static final String CASCADE_SAVE_UPDATE = "save-update";
     private static final String CASCADE_MERGE = "merge";
+
     private static final Map MAPPING_CACHE = new HashMap();
 
 
@@ -650,7 +651,7 @@ public final class GrailsDomainBinder {
      * @param domainClassName The domain class name in question
      * @return A Mapping object or null
      */
-    private static Mapping getMapping(String domainClassName) {
+    public static Mapping getMapping(String domainClassName) {
         return (Mapping)MAPPING_CACHE.get(domainClassName);
     }
 

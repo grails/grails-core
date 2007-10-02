@@ -24,6 +24,17 @@ class HibernateMappingBuilderTests extends GroovyTestCase {
 
         assertEquals false, mapping.tablePerHierarchy
     }
+
+    void testAutoTimeStamp() {
+        def builder = new HibernateMappingBuilder("Foo")
+        def mapping = builder.evaluate {
+            table 'myTable'
+            autoTimestamp false
+        }
+
+        assertEquals false, mapping.autoTimestamp
+    }
+
     void testCustomAssociationCachingConfig1() {
         def builder = new HibernateMappingBuilder("Foo")
         def mapping = builder.evaluate {

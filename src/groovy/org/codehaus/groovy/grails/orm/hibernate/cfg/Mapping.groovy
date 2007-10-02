@@ -39,6 +39,11 @@ class Mapping {
      */
     boolean tablePerHierarchy = true
 
+    /**
+     * Sets whether automatic timestamping should occur for columns like last_updated and date_created
+     */
+    boolean autoTimestamp = true
+
     Map columns = [:]
     /**
      * The identity definition
