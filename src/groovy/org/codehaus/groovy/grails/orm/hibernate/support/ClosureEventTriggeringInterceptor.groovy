@@ -67,14 +67,11 @@ class ClosureEventTriggeringInterceptor extends EmptyInterceptor {
     }
 
     public boolean onFlushDirty(Object entity, Serializable id, Object[] currentState, Object[] previousState, String[] propertyNames, Type[] types)  {
-        println "EXECUTING FLUSH DIRTY!"
         List propertyList = propertyNames.toList()
         boolean modified = triggerEvent(BEFORE_UPDATE_EVENT, entity, currentState, propertyList)
         MetaProperty property = entity.metaClass.hasProperty(entity, GrailsDomainClassProperty.LAST_UPDATED)
-        println "HAS PROPERTY $property FOR LAST MODIFIED UPDATING!"
         if(property) {
             def now = property.getType().newInstance([System.currentTimeMillis()] as Object[] )
-            println "UPDATING TO $now"
             modifyStateForProperty(propertyList, GrailsDomainClassProperty.LAST_UPDATED, currentState, now)
             modified = true                
         }
