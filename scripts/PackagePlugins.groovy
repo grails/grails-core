@@ -49,7 +49,7 @@ task( packagePlugins : "Packages any Grails plugins that are installed for this 
 		}                        
 
 		pluginResources += resolveResources("file:${basedir}/plugins/*/*GrailsPlugin.groovy").toList()
-	   	pluginResources?.each { p ->  	   
+	   	for(p in pluginResources) {
 	   		def pluginBase = p.file.parentFile.canonicalFile
 	     	def pluginPath = pluginBase.absolutePath
 			def pluginName = pluginBase.name
@@ -60,9 +60,14 @@ task( packagePlugins : "Packages any Grails plugins that are installed for this 
 		   			copy(todir:"${basedir}/web-app/WEB-INF/lib", failonerror:false) {
 		   				fileset(dir:"${pluginBase}/lib", includes:"**")
 		   			}   			                     					
-				}*/                                           
+				}*/                
+				if(new File("${pluginBase}/grails-app/conf/hibernate").exists()) {
+		   			copy(todir:classesDirPath, failonerror:false) {
+		   				fileset(dir:"${pluginBase}/grails-app/conf/hibernate", includes:"**", excludes:"*.groovy")
+		   			}   			                     															
+				}                           
 				if(new File("${pluginBase}/grails-app/conf").exists()) {
-		   			copy(todir:"${basedir}/web-app/WEB-INF/classes", failonerror:false) {
+		   			copy(todir:classesDirPath, failonerror:false) {
 		   				fileset(dir:"${pluginBase}/grails-app/conf", includes:"*", excludes:"*.groovy")
 		   			}   			                     										
 				}
