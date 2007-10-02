@@ -18,6 +18,8 @@ package org.codehaus.groovy.grails.plugins.datasource;
 import org.codehaus.groovy.grails.plugins.support.GrailsPluginUtils
 import org.apache.commons.dbcp.BasicDataSource
 import org.springframework.jdbc.datasource.DriverManagerDataSource
+import org.springframework.jndi.JndiObjectFactoryBean
+import javax.sql.DataSource
 
 /**
  * A plug-in that handles the configuration of Hibernate within Grails 
@@ -35,26 +37,34 @@ class DataSourceGrailsPlugin {
 	def doWithSpring = {
 		def ds = application.config.dataSource
 		if(ds || application.domainClasses.size() > 0) {
-            def properties = {
+            if(ds.jndiName) {
+                dataSource(JndiObjectFactoryBean) {
+                    jndiName = ds.jndiName
+                    expectedType = DataSource
+                }
+            }
+            else {
+                def properties = {
                     driverClassName = ds?.driverClassName ? ds.driverClassName : "org.hsqldb.jdbcDriver"
                     url = ds?.url ? ds.url : "jdbc:hsqldb:mem:grailsDB"
                     username = ds?.username ? ds.username : "sa"
                     password = ds?.password ? ds.password : ""
-            }
-            if(ds && !parentCtx?.containsBean("dataSource")) {
-                log.info("[RuntimeConfiguration] Configuring data source for environment: ${grails.util.GrailsUtil.getEnvironment()}");
-                if(ds.pooled) {
+                }
+                if(ds && !parentCtx?.containsBean("dataSource")) {
+                    log.info("[RuntimeConfiguration] Configuring data source for environment: ${grails.util.GrailsUtil.getEnvironment()}");
+                    if(ds.pooled) {
+                        def bean = dataSource(BasicDataSource, properties)
+                        bean.destroyMethod = "close"
+                    }
+                    else {
+                        dataSource(DriverManagerDataSource, properties)
+                    }
+                }
+                else if(!parentCtx?.containsBean("dataSource")) {
                     def bean = dataSource(BasicDataSource, properties)
                     bean.destroyMethod = "close"
                 }
-                else {
-                    dataSource(DriverManagerDataSource, properties)
-                }
             }
-            else if(!parentCtx?.containsBean("dataSource")) {
-                def bean = dataSource(BasicDataSource, properties)
-                bean.destroyMethod = "close"
-            }				
         }
         else {
             log.info "No data source or domain classes found. Data source configuration skipped"
