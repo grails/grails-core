@@ -43,14 +43,6 @@ class MessageTagTests extends AbstractGrailsTagTests {
 			tag.call( attrs )
 			assertEquals "&gt;&gt;&amp;&amp;", sw.toString()
 		}
-        sw = new StringWriter()
-		withTag("message", sw) { tag ->
-
-			def attrs = [code:"test.code", encoding:'HTML']	
-			messageSource.addMessage("test.code", new Locale("en"), ">>&&")
-			tag.call( attrs )
-			assertEquals "&gt;&gt;&amp;&amp;", sw.toString()
-		}
 
 	}
 

@@ -194,21 +194,7 @@ class ValidationTagLib {
                 }
           }
           if (text) {
-              if(attrs.encodeAs) {
-                  // TODO
-                  /*
-                   Use a logger instead of println...
-                   Why isn't the log property being injected into this class
-                   when tests are run?...
-                   */
-//                  log.error('The encodeAs attribute on the message tag has been deprecated and will be removed in a future release.  Use the encoding attribute.')
-                  println 'The encodeAs attribute on the message tag has been deprecated and will be removed in a future release.  Use the encoding attribute.'
-                  text = text."encodeAs${attrs.encodeAs}"()
-              }
-              if(attrs.encoding) {
-                  text = text."encodeAs${attrs.encoding}"()
-              }
-              out << text
+                out << (attrs.encodeAs ? text."encodeAs${attrs.encodeAs}"() : text)
           }
     }
     // Maps out how Grails contraints map to Apache commons validators
