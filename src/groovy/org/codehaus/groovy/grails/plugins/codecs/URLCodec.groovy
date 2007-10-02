@@ -36,7 +36,7 @@ class URLCodec {
     }
 
 	private static def getEncoding() {
-		def request = RequestContextHolder.currentRequestAttributes().currentRequest
+		def request = RequestContextHolder.getRequestAttributes()?.currentRequest
 		def encoding = "UTF-8"
 		if (request?.characterEncoding) {
 			encoding = request?.characterEncoding
