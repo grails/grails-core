@@ -59,10 +59,12 @@ class ValidationTagLib {
 	def extractErrors(attrs) {
         def model = attrs['model']
         def checkList = []
-        if (attrs['bean']) {
-            checkList << attrs['bean']
-        } else if (model) {
-            checkList = model.findAll {it.value?.errors instanceof Errors}.collect {it.value}
+        if (attrs?.containsKey('bean')) {
+            if(attrs.bean)
+                checkList << attrs.bean
+        } else if (attrs.containsKey('model')) {
+            if(model)
+                checkList = model.findAll {it.value?.errors instanceof Errors}.collect {it.value}
         } else {
             request.attributeNames.each {
                 def ra = request[it]
