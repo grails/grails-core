@@ -41,25 +41,13 @@ public class FormTagLibTests extends AbstractGrailsTagTests {
     private static final Collection DATE_PRECISIONS_INCLUDING_MONTH = Collections.unmodifiableCollection(Arrays.asList(["month", "day", "hour", "minute", null] as String[] ))
 
     public void testTextFieldTag() {
-    	StringWriter sw = new StringWriter();
-    	PrintWriter pw = new PrintWriter(sw);
-    	withTag("textField", pw) { tag ->
-	    	// use sorted map to be able to predict the order in which tag attributes are generated
-			def attributes = new TreeMap([name: "testField", value: "1"])
-			tag.call(attributes)
+        def template = '<g:textField name="testField" value="1" />'
 
-			assertEquals '<input type="text" id="testField" name="testField" value="1" />', sw.toString()
-		}
+        assertOutputEquals('<input type="text" name="testField" value="1" id="testField" />', template)
 
-    	sw = new StringWriter();
-    	pw = new PrintWriter(sw);
-    	withTag("textField", pw) { tag ->
-	    	// use sorted map to be able to predict the order in which tag attributes are generated
-			def attributes = new TreeMap([name: "testField"])
-			attributes.value = /foo > " & < '/
-   			tag.call(attributes)
-			assertEquals '<input type="text" id="testField" name="testField" value="foo &gt; &quot; &amp; &lt; \'" />', sw.toString()
-		}
+        template = '<g:textField name="testField" value="${value}" />'
+
+        assertOutputEquals('<input type="text" name="testField" value="foo &gt; &quot; &amp; &lt; \'" id="testField" />', template, [value:/foo > " & < '/])
 	}
     
 

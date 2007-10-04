@@ -414,7 +414,10 @@ class ControllersGrailsPlugin {
             }
             mc.invokeMethod = { String name, args ->
                 args = args == null ? [] as Object[] : args
-                def metaMethod = mc.getMetaMethod(name, args)
+                def metaMethod
+                synchronized(mc) {
+                    metaMethod = mc.getMetaMethod(name, args)
+                }
                 def result
                 if(metaMethod) result = metaMethod.invoke(delegate, args)
                 else if(args.size() > 0 && args[0] instanceof Map) {
@@ -424,7 +427,9 @@ class ControllersGrailsPlugin {
 	                                                    TagLibArtefactHandler.TYPE, tagName.toString())
 
                     if(tagLibraryClass) {
-                         WebMetaUtils.registerMethodMissingForTags(mc, ctx, tagLibraryClass, name)
+                         synchronized(mc) {
+                             WebMetaUtils.registerMethodMissingForTags(mc, ctx, tagLibraryClass, name)
+                         }
                          result = mc.invokeMethod(delegate, name, args)
                     }
                     else {
@@ -575,7 +580,9 @@ class ControllersGrailsPlugin {
 
             def result
             if(tagLibraryClass) {
-                WebMetaUtils.registerMethodMissingForTags(mc, ctx, tagLibraryClass, name)
+                synchronized(mc) {
+                    WebMetaUtils.registerMethodMissingForTags(mc, ctx, tagLibraryClass, name)
+                }
                 result = mc.invokeMethod(delegate, name, args)
             }
             else {

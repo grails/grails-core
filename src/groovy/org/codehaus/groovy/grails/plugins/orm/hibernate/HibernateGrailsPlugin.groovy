@@ -231,8 +231,10 @@ class HibernateGrailsPlugin {
             StaticMethodInvocation method = dynamicMethods.find {it.isMethodMatch(methodName)}
             if (method) {
                 // register the method invocation for next time
-                mc.'static'."$methodName" = {List varArgs ->
-                    method.invoke(dc.clazz, methodName, varArgs)
+                synchronized(this) {
+                    mc.'static'."$methodName" = {List varArgs ->
+                        method.invoke(dc.clazz, methodName, varArgs)
+                    }
                 }
                 result = method.invoke(dc.clazz, methodName, args)
             }
