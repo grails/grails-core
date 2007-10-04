@@ -59,6 +59,23 @@ class Address {
 	String number
 	String postCode
 }
+class StoreItem {
+	Long id
+	Long version
+
+    String name
+    String description
+    Price price
+    static embedded = ['price']
+}
+
+class Price {
+	Long id
+	Long version
+ 
+    BigDecimal amount
+    Integer quantity
+}
 '''
 		)
 	}
