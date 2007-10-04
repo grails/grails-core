@@ -11,9 +11,15 @@
 package org.codehaus.groovy.grails.web.taglib
 
 import org.codehaus.groovy.grails.commons.TagLibArtefactHandler
+import org.springframework.validation.MapBindingResult
 
 class NamespacedTagLibMethodTests extends AbstractGrailsTagTests {
 
+    void testStringAsBodyDispatch() {
+        def template = '<g:tag bean="${foo}"/>'
+
+        assertOutputEquals('errors', template,[foo:new NSTestBean()])
+    }
     void testInvokeTagWithNamespace() {
 
         def template = '<my:test1>foo: <my:test2 foo="bar1" /> one: ${my.test2(foo:"bar2")} two: ${my.test2()}</my:test1>'
@@ -64,7 +70,19 @@ class SecondTagLib {
 
 }
        ''')
+       def tagClass3 = gcl.parseClass('''
+class HasErrorTagLib {
+    def tag = { attr, body ->
+        out << hasErrors('bean': attr.bean, field: 'bar', 'errors')
+    }
+}
+       ''')
         grailsApplication.addArtefact(TagLibArtefactHandler.TYPE,tagClass)
         grailsApplication.addArtefact(TagLibArtefactHandler.TYPE,tagClass2)
+        grailsApplication.addArtefact(TagLibArtefactHandler.TYPE,tagClass3)
     }
+}
+class NSTestBean {
+    def errors = [hasErrors:{true}, hasFieldErrors:{String name->true}] // mock errors object
+    def hasErrors() { true }
 }

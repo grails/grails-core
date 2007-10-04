@@ -49,6 +49,22 @@ class WebMetaUtils {
                 }
                 capturedOutput
         }
+        mc."$name" = { Map attrs, String body ->
+                def webRequest = RCH.currentRequestAttributes()
+                def tagLibrary = ctx.getBean(tagLibraryClass.fullName)
+                def tagBean = new BeanWrapperImpl(tagLibrary)
+                def originalOut = webRequest.out
+                def capturedOutput
+                try {
+                    Closure bodyClosure = {out << body}
+                    bodyClosure.delegate = tagLibrary
+                    bodyClosure.resolveStrategy = Closure.DELEGATE_ONLY
+                    capturedOutput = GroovyPage.captureTagOutput(tagLibrary, name, attrs,bodyClosure, webRequest, tagBean)
+                } finally {
+                    webRequest.out = originalOut
+                }
+                capturedOutput
+        }
         mc."$name" = { Map attrs ->
                 def webRequest = RCH.currentRequestAttributes()
                 def tagLibrary = ctx.getBean(tagLibraryClass.fullName)
