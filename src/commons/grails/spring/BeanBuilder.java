@@ -421,8 +421,9 @@ public class BeanBuilder extends GroovyObjectSupport {
 			if(args.length >= 1) {
 				if(args[args.length-1] instanceof Closure) {
 					if(args.length-1 != 1) {
-						Object[] constructorArgs = ArrayUtils.subarray(args, 1, args.length-1);				
-						currentBeanConfig = springConfig.addSingletonBean(name, beanClass, Arrays.asList(constructorArgs));
+						Object[] constructorArgs = ArrayUtils.subarray(args, 1, args.length-1);
+                        filterGStringReferences(constructorArgs);
+                        currentBeanConfig = springConfig.addSingletonBean(name, beanClass, Arrays.asList(constructorArgs));
 					}
 					else {
 						currentBeanConfig = springConfig.addSingletonBean(name, beanClass);
@@ -430,7 +431,8 @@ public class BeanBuilder extends GroovyObjectSupport {
 				}
 				else  {
 					Object[] constructorArgs = ArrayUtils.subarray(args, 1, args.length);
-					currentBeanConfig = springConfig.addSingletonBean(name, beanClass, Arrays.asList(constructorArgs));
+                    filterGStringReferences(constructorArgs);
+                    currentBeanConfig = springConfig.addSingletonBean(name, beanClass, Arrays.asList(constructorArgs));
 				}
 
 			}			
@@ -456,6 +458,7 @@ public class BeanBuilder extends GroovyObjectSupport {
             else {
                 constructorArgs= ArrayUtils.subarray(args, 0, args.length);
             }
+            filterGStringReferences(constructorArgs);
             currentBeanConfig = new DefaultBeanConfiguration(name, null, Arrays.asList(constructorArgs));
             springConfig.addBeanConfiguration(name,currentBeanConfig);
         }
@@ -470,7 +473,14 @@ public class BeanBuilder extends GroovyObjectSupport {
 		return currentBeanConfig;
 	}
 
-	/**
+    private void filterGStringReferences(Object[] constructorArgs) {
+        for (int i = 0; i < constructorArgs.length; i++) {
+            Object constructorArg = constructorArgs[i];
+            if(constructorArg instanceof GString) constructorArgs[i] = constructorArg.toString();
+        }
+    }
+
+    /**
 	 * When an methods argument is only a closure it is a set of bean definitions
 	 * 
 	 * @param arg The closure argument

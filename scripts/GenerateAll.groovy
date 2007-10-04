@@ -26,7 +26,8 @@ import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
 import groovy.text.SimpleTemplateEngine
 import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator;
 import org.codehaus.groovy.grails.scaffolding.*
-import org.springframework.mock.web.MockServletContext;
+import org.springframework.mock.web.MockServletContext
+import org.springframework.core.io.Resource;
 
 
 Ant.property(environment:"env")                             
@@ -54,6 +55,12 @@ task(generateAll:"The implementation task") {
 		grailsResourceLoader(org.codehaus.groovy.grails.commons.GrailsResourceLoaderFactoryBean) {
 			grailsResourceHolder = resourceHolder
 		}
+		def pluginResources = [] as Resource[]
+        if(new File("${basedir}/plugins/*/plugin.xml").exists()) {
+            pluginResources = "file:${basedir}/plugins/*/plugin.xml"
+        }
+
+		pluginMetaManager(org.codehaus.groovy.grails.plugins.DefaultPluginMetaManager, pluginResources) 
 		grailsApplication(org.codehaus.groovy.grails.commons.DefaultGrailsApplication.class, ref("grailsResourceLoader"))
 	}
                                                     
@@ -63,7 +70,8 @@ task(generateAll:"The implementation task") {
 	
 
 	grailsApp.initialise()
-	def name = GCU.getClassNameRepresentation(args.trim())
+	def name = args.trim()
+    name = name.indexOf('.') > -1 ? name : GCU.getClassNameRepresentation(name)
     def domainClass = grailsApp.getDomainClass(name)
 	
 	if(!domainClass) {
