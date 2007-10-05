@@ -42,12 +42,6 @@ public class InListConstraintTests extends AbstractConstraintTests {
                 null
         );
 
-        // empty string value should always pass validation
-        testConstraintPassed(
-                getConstraint( "testString", avail ),
-                ""
-        );
-
         testConstraintDefaultMessage(
                 getConstraint( "testString", avail ),
                 "a",

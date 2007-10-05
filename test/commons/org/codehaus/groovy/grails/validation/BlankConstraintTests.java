@@ -23,13 +23,7 @@ public class BlankConstraintTests extends AbstractConstraintTests {
                 "someData"
         );
 
-        // always should pass for 'null' value
-        testConstraintPassed(
-                getConstraint( "testString", Boolean.FALSE ),
-                null
-        );
-
-        testConstraintPassed(
+        testConstraintPassedAndVetoed(
                 getConstraint( "testString", Boolean.TRUE ),
                 ""
         );
@@ -37,6 +31,11 @@ public class BlankConstraintTests extends AbstractConstraintTests {
         testConstraintPassed(
                 getConstraint( "testString", Boolean.TRUE ),
                 "someData"
+        );
+
+        testConstraintFailedAndVetoed(
+                getConstraint( "testString", Boolean.FALSE ),
+                ""
         );
 
         testConstraintDefaultMessage(

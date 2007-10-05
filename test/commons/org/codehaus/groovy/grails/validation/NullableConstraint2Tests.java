@@ -23,7 +23,7 @@ public class NullableConstraint2Tests extends AbstractConstraintTests {
                 "test"
         );
 
-        testConstraintPassed(
+        testConstraintPassedAndVetoed(
                 getConstraint( "testString", Boolean.TRUE ),
                 null
         );
@@ -31,6 +31,11 @@ public class NullableConstraint2Tests extends AbstractConstraintTests {
         testConstraintPassed(
                 getConstraint( "testString", Boolean.TRUE ),
                 ""
+        );
+
+        testConstraintFailedAndVetoed(
+                getConstraint( "testString", Boolean.FALSE ),
+                null
         );
 
         testConstraintDefaultMessage(

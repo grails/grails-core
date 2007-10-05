@@ -56,10 +56,6 @@ class ValidatorConstraint extends AbstractConstraint {
         return false;
     }
 
-    protected boolean skipEmptyStrings() {
-        return false;
-    }
-
     protected void processValidate(Object target, Object propertyValue, Errors errors) {
         if(validator != null) {
 

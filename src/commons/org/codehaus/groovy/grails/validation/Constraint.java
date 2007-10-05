@@ -79,5 +79,14 @@ public interface Constraint {
      */
 	void setMessageSource(MessageSource source);
 
+    /**
+     * Vetoing constraints are those which might throw ConstraintVetoingException to
+     * prevent any additional validation of the property. These constraints are proceeded
+     * before any other constraints, and validation continues only if no one of vetoing
+     * constraint hadn't thrown a ConstraintVetoingException.
+     *
+     * @return true if this constraint is a vetoing constraint, false otherwise
+     */
+    boolean isVetoing();
     
 }

@@ -44,12 +44,6 @@ public class RangeConstraintTests extends AbstractConstraintTests {
                 null
         );
 
-        // empty string value should always pass validation
-        testConstraintPassed(
-                getConstraint( "testString", new ObjectRange("abca","abcf") ),
-                ""
-        );
-
         testConstraintDefaultMessage(
                 getConstraint( "testInteger", new IntRange( 1, 5 ) ),
                 new Integer( 7 ),

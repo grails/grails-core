@@ -29,12 +29,6 @@ public class MatchesConstraintTests extends AbstractConstraintTests {
                 null
         );
 
-        // empty string value should always pass validation
-        testConstraintPassed(
-                getConstraint( "testString", "[a-zA-Z]+" ),
-                ""
-        );
-
         testConstraintDefaultMessage(
                 getConstraint( "testString", "[a-zA-Z]+" ),
                 "$",

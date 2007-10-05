@@ -6,6 +6,7 @@ import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.validation.Errors;
 import org.springframework.validation.BindException;
 import org.springframework.validation.FieldError;
+import org.codehaus.groovy.grails.validation.exceptions.ConstraintVetoingException;
 
 /**
  * Abstract class for all constraint tests.
@@ -54,21 +55,45 @@ public abstract class AbstractConstraintTests extends TestCase {
     }
 
     protected Errors testConstraintFailed( Constraint constraint, Object value ) {
-        Errors errors = validateConstraint( constraint, value );
+        Errors errors = validateConstraint( constraint, value, false );
+        assertEquals( true, errors.hasErrors() );
+        return errors;
+    }
+
+    protected Errors testConstraintFailedAndVetoed( Constraint constraint, Object value ) {
+        Errors errors = validateConstraint( constraint, value, true, false );
         assertEquals( true, errors.hasErrors() );
         return errors;
     }
 
     protected void testConstraintPassed( Constraint constraint, Object value ) {
-        Errors errors = validateConstraint( constraint, value );
+        Errors errors = validateConstraint( constraint, value, false );
         assertEquals( false, errors.hasErrors() );
     }
 
-    protected Errors validateConstraint( Constraint constraint, Object value ) {
+    protected void testConstraintPassedAndVetoed( Constraint constraint, Object value ) {
+        Errors errors = validateConstraint( constraint, value, true, false);
+        assertEquals( false, errors.hasErrors() );
+    }
+
+    protected Errors validateConstraint( Constraint constraint, Object value) {
+        return validateConstraint(constraint,value,false,true);
+    }
+
+    protected Errors validateConstraint( Constraint constraint, Object value, boolean shouldVeto) {
+        return validateConstraint(constraint,value,shouldVeto,true);
+    }
+
+    protected Errors validateConstraint( Constraint constraint, Object value, boolean shouldVeto, boolean skipVetoingErrors ) {
         BeanWrapper constrainedBean = new BeanWrapperImpl( new TestClass() );
         constrainedBean.setPropertyValue( constraint.getPropertyName(), value );
         Errors errors = new BindException( constrainedBean.getWrappedInstance(), constrainedBean.getWrappedClass().getName() );
-        constraint.validate( constrainedBean.getWrappedInstance(), value, errors );
+        try {
+            constraint.validate( constrainedBean.getWrappedInstance(), value, errors );
+            if(shouldVeto && !skipVetoingErrors) fail("Constraint should throw ConstraintVetoingException");
+        } catch( ConstraintVetoingException cve ) {
+            if(!shouldVeto && !skipVetoingErrors) fail("Constraint shouldn't throw ConstraintVetoingException");
+        }
         return errors;
     }
 

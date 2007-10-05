@@ -21,6 +21,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.validation.exceptions.ConstraintException;
+import org.codehaus.groovy.grails.validation.exceptions.ConstraintVetoingException;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.context.MessageSource;
@@ -916,11 +917,24 @@ public class ConstrainedProperty   {
      * @param errors The Errors instances to report errors to
      */
     public void validate(Object target, Object propertyValue, Errors errors) {
-
         for (Iterator i = this.appliedConstraints.values().iterator(); i.hasNext();) {
             Constraint c = (Constraint) i.next();
-            c.setMessageSource( this.messageSource );
-            c.validate(target, propertyValue, errors);
+            if(c.isVetoing()) {
+                c.setMessageSource( this.messageSource );
+                try {
+                    c.validate(target, propertyValue, errors);
+                } catch(ConstraintVetoingException cve) {
+                    // stop validation process when constraint vetoes
+                    return;
+                }
+            }
+        }
+        for (Iterator i = this.appliedConstraints.values().iterator(); i.hasNext();) {
+            Constraint c = (Constraint) i.next();
+            if(!c.isVetoing()) {
+                c.setMessageSource( this.messageSource );
+                c.validate(target, propertyValue, errors);
+            }
         }
     }
 

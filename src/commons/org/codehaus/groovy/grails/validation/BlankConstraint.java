@@ -16,6 +16,7 @@ package org.codehaus.groovy.grails.validation;
 
 import org.springframework.validation.Errors;
 import org.apache.commons.lang.StringUtils;
+import org.codehaus.groovy.grails.validation.exceptions.ConstraintVetoingException;
 
 /**
  * A Constraint that validates a string is not blank
@@ -59,18 +60,17 @@ class BlankConstraint extends AbstractConstraint {
         return ConstrainedProperty.BLANK_CONSTRAINT;
     }
 
-    protected boolean skipEmptyStrings() {
-        return false;
+    public boolean isVetoing() {
+        return true;
     }
 
     protected void processValidate(Object target, Object propertyValue, Errors errors) {
-        if(!blank) {
-            if(propertyValue instanceof String) {
-                if(StringUtils.isBlank((String)propertyValue)) {
-                    Object[] args = new Object[] { constraintPropertyName, constraintOwningClass };
-                    super.rejectValue( target,errors, ConstrainedProperty.DEFAULT_BLANK_MESSAGE_CODE, ConstrainedProperty.BLANK_CONSTRAINT, args );
-                }
+        if(propertyValue instanceof String && StringUtils.isBlank((String)propertyValue)) {
+            if(!blank) {
+                Object[] args = new Object[] { constraintPropertyName, constraintOwningClass };
+                super.rejectValue( target,errors, ConstrainedProperty.DEFAULT_BLANK_MESSAGE_CODE, ConstrainedProperty.BLANK_CONSTRAINT, args );
             }
+            throw new ConstraintVetoingException("empty string is catched by 'blank' constraint, no addition validation needed");
         }
     }
 }

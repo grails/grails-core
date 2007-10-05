@@ -81,22 +81,12 @@ public abstract class AbstractConstraint implements Constraint {
         if(constraintParameter == null)
             throw new IllegalStateException("Property 'constraintParameter' must be set on the constraint");
 
-        if( propertyValue == null ) {
-            if( skipNullValues() ) return;
-        } else if ("".equals( propertyValue.toString() ) ) {
-            if( skipEmptyStrings() ) return;
-        }
-
+        if(propertyValue == null && skipNullValues()) return;
         processValidate(target, propertyValue, errors);
     }
 
     protected boolean skipNullValues() {
         // a null is not a value we should even check in most cases
-        return true;
-    }
-
-    protected boolean skipEmptyStrings() {
-        // an empty string is not a value we should even check in most cases
         return true;
     }
 
@@ -188,6 +178,10 @@ public abstract class AbstractConstraint implements Constraint {
             defaultMessage = (String)ConstrainedProperty.DEFAULT_MESSAGES.get(code);
         }
         return defaultMessage;
+    }
+
+    public boolean isVetoing() {
+        return false;
     }
 
     protected abstract void processValidate(Object target, Object propertyValue, Errors errors);

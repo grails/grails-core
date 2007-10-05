@@ -30,12 +30,6 @@ public class EmailConstraintTests extends AbstractConstraintTests {
                 null
         );
 
-        // empty string value should always pass validation
-        testConstraintPassed(
-                getConstraint( "testString", Boolean.TRUE ),
-                ""
-        );
-
         testConstraintDefaultMessage(
                 getConstraint( "testString", Boolean.TRUE ),
                 "wrong_email",

@@ -54,12 +54,6 @@ public class MaxSizeConstraintTests extends AbstractConstraintTests {
                 null
         );
 
-        // empty string value should always pass validation
-        testConstraintPassed(
-                getConstraint( "testString", new Integer(5) ),
-                ""
-        );
-
         testConstraintDefaultMessage(
                 getConstraint( "testString", new Integer(5) ),
                 "123456",
