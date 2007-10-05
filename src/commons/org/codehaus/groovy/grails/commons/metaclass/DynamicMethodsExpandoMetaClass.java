@@ -68,8 +68,8 @@ public class DynamicMethodsExpandoMetaClass extends ExpandoMetaClass {
      * @throws IntrospectionException Thrown if an error occurs introspecting the class
      */
     public DynamicMethodsExpandoMetaClass(Class aClass) throws IntrospectionException {
-        super(aClass);
-        setAllowChangesAfterInit(true);
+        super(aClass, false, true);
+
         this.dynamicMethods = new DefaultDynamicMethods(aClass);
     }
 
@@ -81,8 +81,7 @@ public class DynamicMethodsExpandoMetaClass extends ExpandoMetaClass {
      * @throws IntrospectionException Thrown if an error occurs introspecting the class
      */
     public DynamicMethodsExpandoMetaClass(Class aClass, boolean inReg) throws IntrospectionException {
-        super(aClass);
-		setAllowChangesAfterInit(true);
+        super(aClass, false, true);
         this.dynamicMethods = new DefaultDynamicMethods(aClass);
         if(inReg) {
             registry.setMetaClass(aClass, this);

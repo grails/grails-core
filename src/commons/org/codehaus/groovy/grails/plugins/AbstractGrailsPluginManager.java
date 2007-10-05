@@ -129,8 +129,7 @@ public abstract class AbstractGrailsPluginManager implements GrailsPluginManager
 			ExpandoMetaClass[] metaClasses = new ExpandoMetaClass[allClasses.length];
 			for (int i = 0; i < allClasses.length; i++) {
 				Class c = allClasses[i];
-                ExpandoMetaClass emc = new ExpandoMetaClass(c,true);
-                emc.setAllowChangesAfterInit(true);
+                ExpandoMetaClass emc = new ExpandoMetaClass(c,true, true);
                 emc.initialize();
                 metaClasses[i] = emc;
 			}

@@ -82,8 +82,8 @@ public class GrailsMetaClassUtils {
         }
 
         List metaMethods = emc.getExpandoMethods();
-        ExpandoMetaClass replacement = new ExpandoMetaClass(toClass, true);
-        replacement.setAllowChangesAfterInit(true);
+        ExpandoMetaClass replacement = new ExpandoMetaClass(toClass, true, true);
+
         for (Iterator i = metaMethods.iterator(); i.hasNext();) {
             Object obj = i.next();
             if(obj instanceof ClosureInvokingMethod) {
