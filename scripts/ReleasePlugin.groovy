@@ -138,7 +138,7 @@ task(importToSVN:"Imports a plug-in project to Grails' remote SVN repository") {
 This plug-in project is not currently in the repository, this command will now:
 * Perform an SVN import into the repository                             
 * Tag the plug-in project as the LATEST_RELEASE
-* Checkout the imported version of the project from SVN '${checkOutDir}'
+* Checkout the imported version of the project from SVN to '${checkOutDir}'
 Are you sure you wish to proceed?   		
 	""")
 	if(result == 'n') exit(0)

@@ -148,8 +148,18 @@ task(installPlugin:"Implementation task") {
                 def instrumentedInstallScript = "def pluginBasedir = '${pluginsBase}/${fullPluginName}'\n" + installScript.text
                 // we are using text form of script here to prevent Gant caching
                 includeTargets << instrumentedInstallScript
-            }
+            }     
+            def providedScripts = resolveResources("file:${pluginsBase}/${fullPluginName}/scripts/*.groovy").findAll { !it.filename.startsWith('_')}
             event("StatusFinal", [ "Plugin ${fullPluginName} installed"])
+			if(providedScripts) { 
+				println "Plug-in provides the following new scripts:"
+				println "------------------------------------------"
+			    providedScripts.file.each { file ->
+					def scriptName = GCU.getScriptName(file.name)  
+					println "grails ${scriptName}"   
+				}				
+			}
+
             event("PluginInstalled", [ fullPluginName ])
         }
     }
