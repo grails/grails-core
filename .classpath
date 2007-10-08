@@ -33,7 +33,7 @@
 	<classpathentry kind="lib" path="lib/dom4j-1.6.1.jar"/>
 	<classpathentry kind="lib" path="lib/ehcache-1.2.4.jar"/>
 	<classpathentry kind="lib" path="lib/ejb3-persistence.jar"/>
-	<classpathentry kind="lib" path="lib/gant-0.2.5-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="lib/gant-0.3.3-SNAPSHOT.jar"/>
 	<classpathentry kind="lib" path="lib/groovy-all-1.1-rc-1-SNAPSHOT.jar"/>
 	<classpathentry kind="lib" path="lib/hibernate-annotations.jar"/>
 	<classpathentry kind="lib" path="lib/hsqldb-1.8.0.5.jar"/>
@@ -50,7 +50,7 @@
 	<classpathentry kind="lib" path="lib/jstl-2.4.jar"/>
 	<classpathentry kind="lib" path="lib/jta.jar"/>
 	<classpathentry kind="lib" path="lib/junit-3.8.1.jar"/>
-	<classpathentry kind="lib" path="lib/log4j-1.2.8.jar"/>
+	<classpathentry kind="lib" path="lib/log4j-1.2.15.jar"/>
 	<classpathentry kind="lib" path="lib/ognl-2.6.9.jar"/>
 	<classpathentry kind="lib" path="lib/oro-2.0.8.jar"/>
 	<classpathentry kind="lib" path="lib/serializer.jar"/>

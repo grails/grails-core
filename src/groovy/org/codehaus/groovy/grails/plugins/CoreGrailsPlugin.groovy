@@ -67,9 +67,8 @@ class CoreGrailsPlugin {
 				if(registry.metaClassCreationHandler instanceof ExpandoMetaClassCreationHandle)				
 					return registry.getMetaClass(delegate)
 			   	else {
-				 	def emc = new ExpandoMetaClass(delegate)
+				 	def emc = new ExpandoMetaClass(delegate, false, true)
 					emc.initialize()
-					emc.allowChangesAfterInit = true
 					registry.setMetaClass(delegate, emc)    
 					return emc
 				}					

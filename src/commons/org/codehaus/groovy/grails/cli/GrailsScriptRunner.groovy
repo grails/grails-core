@@ -187,8 +187,8 @@ Grails home is set to: ${grailsHome}
 			potentialScripts = potentialScripts.unique()
             if(potentialScripts.size() == 1) {
 				println "Running script ${potentialScripts[0].absolutePath}"
-                                                               
-				Gant.main(["-c","-d","${userHome}/.grails/${version}/scriptCache","-f", potentialScripts[0].absolutePath] as String[])																		
+
+				Gant.main(["-f", potentialScripts[0].absolutePath,"-c","-m","${userHome}/.grails/${version}/scriptCache"] as String[])																		
 			}                                      
 			else {
 				println "Multiple options please select:"  
