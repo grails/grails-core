@@ -36,7 +36,6 @@ Ant.property(environment:"env")
 grailsHome = Ant.antProject.properties."env.GRAILS_HOME"    
 
 includeTargets << new File ( "${grailsHome}/scripts/Init.groovy" ) 
-includeTargets << new File ( "${grailsHome}/scripts/GetDependencies.groovy" )    
        
 if(!Ant.antProject.properties."groovyJarSet") {
 	Ant.path ( id : 'groovyJarSet' ) { 
@@ -79,14 +78,6 @@ compilerClasspath = { testSources ->
 	}
 }
 task(compile : "Implementation of compilation phase") {   
-	if(System.getProperty('skipDependencies') == 'true') {
-		depends(classpath)           		
-	} 
-	else {
-		depends(dependencies, classpath)           
-	}
-
-	
     event("CompileStart", ['source'])
 
 	Ant.mkdir(dir:classesDirPath)
