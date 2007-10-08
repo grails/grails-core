@@ -53,26 +53,7 @@ class TestUrlMappings {
 		}
 	}
 	
-	public void testDojoRemoteFunction() throws Exception {
-		StringWriter sw = new StringWriter()
-		PrintWriter pw = new PrintWriter(sw)
-		
-		withTag("remoteFunction",pw) { tag ->
-			GroovyObject tagLibrary = (GroovyObject)tag.getOwner()
-			def request = tagLibrary.getProperty("request")
-			def includedLibrary = ['dojo']
-			request.setAttribute("org.codehaus.grails.INCLUDED_JS_LIBRARIES", includedLibrary)
-			
-			def attrs = [action:'action',controller:'test']
-			tag.call(attrs)
-			assertEquals("dojo.io.bind({url:'/test/action',load:function(type,data,evt) {},error:function(type,error) { }});",sw.toString());
-			
-			sw.getBuffer().delete(0,sw.getBuffer().length())
-			attrs = [action:'action',controller:'test',update:[success:'updateMe']]
-			tag.call(attrs)
-			assertEquals("dojo.io.bind({url:'/test/action',load:function(type,data,evt) {dojo.html.textContent( dojo.byId('updateMe'),data);},error:function(type,error) { }});",sw.toString())
-		}
-	}	
+
 	
 
     public void testRemoteField() {
