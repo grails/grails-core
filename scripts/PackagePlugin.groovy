@@ -41,6 +41,7 @@ pluginIncludes = [
     "scripts/**",
 	"web-app/**",
 	"src/**",
+    "test/**"
 ]
 
 pluginExcludes = [
