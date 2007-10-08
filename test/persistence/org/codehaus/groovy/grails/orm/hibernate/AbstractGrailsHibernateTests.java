@@ -90,6 +90,7 @@ public abstract class AbstractGrailsHibernateTests extends TestCase {
                 "dataSource {\n" +
                 "dbCreate = \"create-drop\" \n" +
                 "url = \"jdbc:hsqldb:mem:devDB\"\n" +
+                "logSql = true\n" +
                 "pooling = false                          \n" +
                 "driverClassName = \"org.hsqldb.jdbcDriver\"\t\n" +
                 "username = \"sa\"\n" +

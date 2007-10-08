@@ -12,8 +12,43 @@ package org.codehaus.groovy.grails.orm.hibernate
 
 import org.codehaus.groovy.grails.orm.hibernate.cfg.CompositeIdentity
 import org.codehaus.groovy.grails.orm.hibernate.cfg.HibernateMappingBuilder
+import org.codehaus.groovy.grails.orm.hibernate.cfg.ColumnConfig
 
 class HibernateMappingBuilderTests extends GroovyTestCase {
+
+    void testJoinTableMapping() {
+        def builder = new HibernateMappingBuilder("Foo")
+        def mapping = builder.evaluate {
+            columns {
+                things joinTable:true
+            }
+        }
+
+        assert mapping.getColumn('things')?.joinTable
+
+        mapping = builder.evaluate {
+            columns {
+                things joinTable:'foo'
+            }
+        }
+
+        ColumnConfig column = mapping.getColumn('things')
+        assert column?.joinTable
+        assertEquals "foo", column.joinTable.name
+
+        mapping = builder.evaluate {
+            columns {
+                things joinTable:[name:'foo', key:'foo_id', column:'bar_id']
+            }
+        }
+
+        column = mapping.getColumn('things')
+        assert column?.joinTable
+        assertEquals "foo", column.joinTable.name
+        assertEquals "foo_id", column.joinTable.key
+        assertEquals "bar_id", column.joinTable.column
+    }
+
 
     void testCustomInheritanceStrategy() {
         def builder = new HibernateMappingBuilder("Foo")

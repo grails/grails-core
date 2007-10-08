@@ -228,6 +228,20 @@ class HibernateMappingBuilder {
 
                 }
 
+                if(namedArgs.joinTable) {
+                    def join = new JoinTable()
+                    def joinArgs = namedArgs.joinTable
+                    if(joinArgs instanceof String) {
+                        join.name = joinArgs
+                    }
+                    else if(joinArgs instanceof Map) {
+                        if(joinArgs.name) join.name = joinArgs.name
+                        if(joinArgs.key) join.key = joinArgs.key
+                        if(joinArgs.column) join.column = joinArgs.column
+                    }
+                    column.joinTable = join
+                }
+
                 mapping.columns[name] = column
             }
 
