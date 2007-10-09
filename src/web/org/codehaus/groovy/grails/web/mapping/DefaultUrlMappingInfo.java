@@ -42,16 +42,30 @@ public class DefaultUrlMappingInfo implements UrlMappingInfo {
     private static final String ID_PARAM = "id";
     private String id;
     private UrlMappingData urlData;
+    private Object viewName;
 
-    public DefaultUrlMappingInfo(Object controllerName, Object actionName, Map params, UrlMappingData urlData) {
-        if(controllerName == null) throw new IllegalArgumentException("Argument [controllerName] cannot be null or blank");
-        if(params == null) throw new IllegalArgumentException("Argument [params] cannot be null");
-
+    private DefaultUrlMappingInfo(Map params, UrlMappingData urlData) {
         this.params = Collections.unmodifiableMap(params);
-        this.controllerName = controllerName;
-        this.actionName = actionName;
+        populateParamsForMapping(this.params);
         this.id = (String)params.get(ID_PARAM);
         this.urlData = urlData;
+    }
+
+    public DefaultUrlMappingInfo(Object controllerName, Object actionName, Object viewName,Map params, UrlMappingData urlData) {
+        this(params, urlData);
+        if(controllerName == null) throw new IllegalArgumentException("Argument [controllerName] cannot be null or blank");
+        if(params == null) throw new IllegalArgumentException("Argument [params] cannot be null");
+        this.controllerName = controllerName;
+        this.actionName = actionName;
+        if(actionName == null)
+            this.viewName = viewName;
+    }
+
+    public DefaultUrlMappingInfo(Object viewName, Map params, UrlMappingData urlData) {
+        this(params, urlData);
+        this.viewName = viewName;
+        if(viewName == null) throw new IllegalArgumentException("Argument [viewName] cannot be null or blank");
+
     }
 
     public String toString() {
@@ -86,13 +100,17 @@ public class DefaultUrlMappingInfo implements UrlMappingInfo {
     }
 
     public String getControllerName() {        
-        String ctrlName = evaluateNameForValue(this.controllerName);
-        if(ctrlName == null) throw new UrlMappingException("Unable to establish controller name to dispatch for ["+this.controllerName+"]. Dynamic closure invocation returned null. Check your mapping file is correct, when assigning the controller name as a request parameter it cannot be an optional token!");
-        return ctrlName;
+        String controllerName = evaluateNameForValue(this.controllerName);
+        if(controllerName == null && getViewName() == null) throw new UrlMappingException("Unable to establish controller name to dispatch for ["+this.controllerName+"]. Dynamic closure invocation returned null. Check your mapping file is correct, when assigning the controller name as a request parameter it cannot be an optional token!");
+        return controllerName;
     }
 
     public String getActionName() {
         return  evaluateNameForValue(this.actionName);
+    }
+
+    public String getViewName() {
+        return evaluateNameForValue(this.viewName);
     }
 
     public String getId() {

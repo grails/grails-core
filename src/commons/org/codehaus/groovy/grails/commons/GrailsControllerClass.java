@@ -54,6 +54,11 @@ public interface GrailsControllerClass extends InjectableGrailsClass {
     public String ACTION = "action";
 
     /**
+     * The general name to use when referring to action view
+     */
+    public String VIEW = "view";
+
+    /**
      * Checks to see if an action is accessible via a particular
      * http method
      * 

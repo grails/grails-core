@@ -53,6 +53,9 @@ mappings {
         controller = "product"
         action = "show"
   }
+  "/book/$name" {
+        view = "book.gsp"
+  }
 }
 '''
  def defaultMappings = '''
@@ -90,18 +93,34 @@ class OtherController {
 }
 '''
 
+    def webRequest
+    def servletContext
+    def appCtx
+    def evaluator
+    def gcl
+    def request
+    def response
+    def filter
+
+    void setUp() {
+        super.setUp()
+
+        webRequest = grails.util.GrailsWebUtil.bindMockWebRequest()
+        servletContext = new MockServletContext();
+        appCtx = new MockApplicationContext();
+        evaluator = new DefaultUrlMappingEvaluator();
+        gcl = new GroovyClassLoader()
+        request = new MockHttpServletRequest();
+        response = new MockHttpServletResponse()
+        filter = new UrlMappingsFilter();
+        filter.init(new MockFilterConfig(servletContext));
+    }
+
+
     void testUrlMappingFilter() {
-
-        def webRequest = grails.util.GrailsWebUtil.bindMockWebRequest()
-        def servletContext = new MockServletContext();
-
-        def appCtx = new MockApplicationContext();
-
-        def evaluator = new DefaultUrlMappingEvaluator();
-
         def mappings = evaluator.evaluateMappings(new ByteArrayResource(mappingScript.getBytes()));
         appCtx.registerMockBean(UrlMappingsHolder.BEAN_ID, new DefaultUrlMappingsHolder(mappings));
-        def gcl = new GroovyClassLoader()
+
         gcl.parseClass(testController1)
         gcl.parseClass(testController2)
                                                      
@@ -111,13 +130,7 @@ class OtherController {
 
         servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE,appCtx);
 
-        def request = new MockHttpServletRequest();
-        def response = new MockHttpServletResponse()
         request.setRequestURI("/my_entry/2007/06/01");
-
-        def filter = new UrlMappingsFilter();
-
-        filter.init(new MockFilterConfig(servletContext));
 
         filter.doFilterInternal(request, response,null);
 
@@ -129,16 +142,9 @@ class OtherController {
     }
 
     void testFilterWithControllerWithNoIndex(){
-        def webRequest = grails.util.GrailsWebUtil.bindMockWebRequest()
-        def servletContext = new MockServletContext();
-
-        def appCtx = new MockApplicationContext();
-
-        def evaluator = new DefaultUrlMappingEvaluator();
-
         def mappings = evaluator.evaluateMappings(new ByteArrayResource(defaultMappings.getBytes()));
         appCtx.registerMockBean(UrlMappingsHolder.BEAN_ID, new DefaultUrlMappingsHolder(mappings));
-        def gcl = new GroovyClassLoader()
+
         gcl.parseClass(testController3)
         gcl.parseClass(testController4)
                                              
@@ -149,13 +155,8 @@ class OtherController {
 
         servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE,appCtx);
 
-        def request = new MockHttpServletRequest();
-        def response = new MockHttpServletResponse()
         request.setRequestURI("/noIndex/myAction");
 
-        def filter = new UrlMappingsFilter();
-
-        filter.init(new MockFilterConfig(servletContext));
 
         filter.doFilterInternal(request, response,null);
 
@@ -165,9 +166,6 @@ class OtherController {
         response = new MockHttpServletResponse()
         request.setRequestURI("/other/myAction");
 
-        filter = new UrlMappingsFilter();
-
-        filter.init(new MockFilterConfig(servletContext));
 
         filter.doFilterInternal(request, response,null);
 
@@ -184,16 +182,10 @@ class IndexAndActionController {
 '''
 
 void testFilterWithControllerWithIndexAndAction(){
-        def webRequest = grails.util.GrailsWebUtil.bindMockWebRequest()
-        def servletContext = new MockServletContext();
-
-        def appCtx = new MockApplicationContext();
-
-        def evaluator = new DefaultUrlMappingEvaluator();
 
         def mappings = evaluator.evaluateMappings(new ByteArrayResource(defaultMappings.getBytes()));
         appCtx.registerMockBean(UrlMappingsHolder.BEAN_ID, new DefaultUrlMappingsHolder(mappings));
-        def gcl = new GroovyClassLoader()
+
         gcl.parseClass(testController5)
                                           
 		def app =  new DefaultGrailsApplication(gcl.loadedClasses,gcl)
@@ -203,13 +195,8 @@ void testFilterWithControllerWithIndexAndAction(){
 
         servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE,appCtx);
 
-        def request = new MockHttpServletRequest();
-        def response = new MockHttpServletResponse()
         request.setRequestURI("/indexAndAction/");
 
-        def filter = new UrlMappingsFilter();
-
-        filter.init(new MockFilterConfig(servletContext));
 
         filter.doFilterInternal(request, response,null);
 
@@ -229,4 +216,24 @@ void testFilterWithControllerWithIndexAndAction(){
 
         }
 
+    void testViewMapping() {
+        def mappings = evaluator.evaluateMappings(new ByteArrayResource(mappingScript.getBytes()));
+        appCtx.registerMockBean(UrlMappingsHolder.BEAN_ID, new DefaultUrlMappingsHolder(mappings));
+
+        gcl.parseClass(testController1)
+        gcl.parseClass(testController2)
+
+		def app =  new DefaultGrailsApplication(gcl.loadedClasses,gcl)
+		app.initialise()
+        appCtx.registerMockBean("grailsApplication", app)
+
+        servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE,appCtx);
+
+        request.setRequestURI("/book/joel");
+
+        filter.doFilterInternal(request, response,null);
+
+        assertEquals "/book.gsp", response.forwardedUrl
+        assertEquals "joel", webRequest.params.name
+    }
 }

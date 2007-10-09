@@ -19,11 +19,12 @@ import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.GrailsDispatcherServlet;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequestFilter;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 import org.springframework.web.util.WebUtils;
 
-import javax.servlet.RequestDispatcher;
+import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -38,7 +39,7 @@ import java.io.Writer;
 public class ErrorHandlingServlet extends GrailsDispatcherServlet {
     private static final String TEXT_HTML = "text/html";
 
-    protected void doDispatch(HttpServletRequest request, HttpServletResponse response) throws Exception {
+    protected void doDispatch(final HttpServletRequest request, final HttpServletResponse response) throws Exception {
         int statusCode;
 
         if (request.getAttribute("javax.servlet.error.status_code") != null) {
@@ -54,15 +55,23 @@ public class ErrorHandlingServlet extends GrailsDispatcherServlet {
         final UrlMappingInfo urlMappingInfo = urlMappingsHolder.matchStatusCode(statusCode);
 
         if (urlMappingInfo != null) {
-            String url = UrlMappingsFilter.buildDispatchUrlForMapping(request, urlMappingInfo);
+
+            GrailsWebRequestFilter filter = new GrailsWebRequestFilter();
+            filter.setServletContext(getServletContext());
+            filter.doFilter(request, response, new FilterChain() {
+                public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse) throws IOException, ServletException {
+                    String url = UrlMappingsFilter.buildDispatchUrlForMapping(request, urlMappingInfo);
 
 
-            GrailsWebRequest webRequest = (GrailsWebRequest)request.getAttribute(GrailsApplicationAttributes.WEB_REQUEST);
-            RequestDispatcher dispatcher = request.getRequestDispatcher(url);
-            UrlMappingsFilter.populateWebRequestWithInfo(webRequest, urlMappingInfo);
+                    GrailsWebRequest webRequest = (GrailsWebRequest)request.getAttribute(GrailsApplicationAttributes.WEB_REQUEST);
+                    RequestDispatcher dispatcher = request.getRequestDispatcher(url);
+                    UrlMappingsFilter.populateWebRequestWithInfo(webRequest, urlMappingInfo);
 
-            WebUtils.exposeForwardRequestAttributes(request);
-            dispatcher.forward(request, response);
+                    WebUtils.exposeForwardRequestAttributes(request);
+                    dispatcher.forward(request, response);
+
+                }
+            });
         }
         else {
             renderDefaultResponse(response, statusCode);

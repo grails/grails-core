@@ -87,4 +87,10 @@ public interface UrlMapping extends Comparable, UrlCreator {
      * @return The action name as a Closure or String
      */
     Object getActionName();
+
+    /**
+     * Returns the name of the view to map to
+     * @return The view name
+     */
+    Object getViewName();
 }

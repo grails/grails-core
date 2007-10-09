@@ -48,7 +48,10 @@ import java.util.Locale;
 public class GrailsViewResolver extends InternalResourceViewResolver implements ResourceLoaderAware, ApplicationContextAware {
     private String localPrefix;
     private static final Log LOG = LogFactory.getLog(GrailsViewResolver.class);
-    private static final String GSP_SUFFIX = ".gsp";
+
+    public static final String GSP_SUFFIX = ".gsp";
+    public static final String JSP_SUFFIX = ".jsp";
+    
     private ResourceLoader resourceLoader;
     private GroovyPagesTemplateEngine templateEngine;
     private PluginMetaManager pluginMetaManager;

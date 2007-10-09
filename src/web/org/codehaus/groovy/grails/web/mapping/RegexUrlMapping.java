@@ -80,8 +80,12 @@ public class RegexUrlMapping extends AbstractUrlMapping implements UrlMapping {
      *
      * @see org.codehaus.groovy.grails.validation.ConstrainedProperty
      */
-    public RegexUrlMapping(UrlMappingData data, Object controllerName, Object actionName, ConstrainedProperty[] constraints) {
-        super(controllerName, actionName, constraints != null ? constraints : new ConstrainedProperty[0]);
+    public RegexUrlMapping(UrlMappingData data, Object controllerName, Object actionName, Object viewName, ConstrainedProperty[] constraints) {
+        super(controllerName, actionName, viewName, constraints != null ? constraints : new ConstrainedProperty[0]);
+        parse(data, constraints);
+    }
+
+    private void parse(UrlMappingData data, ConstrainedProperty[] constraints) {
         if(data == null) throw new IllegalArgumentException("Argument [pattern] cannot be null");
 
         String[] urls = data.getLogicalUrls();
@@ -105,7 +109,6 @@ public class RegexUrlMapping extends AbstractUrlMapping implements UrlMapping {
                 }
             }
         }
-
     }
 
 
@@ -311,7 +314,16 @@ public class RegexUrlMapping extends AbstractUrlMapping implements UrlMapping {
             this.actionName = createRuntimeConstraintEvaluator(GrailsControllerClass.ACTION, this.constraints);
         }
 
-        return new DefaultUrlMappingInfo(this.controllerName, this.actionName, params,this.urlData);
+        if(viewName == null) {
+            this.viewName = createRuntimeConstraintEvaluator(GrailsControllerClass.VIEW, this.constraints);
+        }
+
+        if (viewName != null && this.controllerName == null) {
+           return new DefaultUrlMappingInfo(viewName, params,this.urlData);
+        }
+        else {
+            return new DefaultUrlMappingInfo(this.controllerName, this.actionName,getViewName(), params,this.urlData);
+        }
     }
 
     /**

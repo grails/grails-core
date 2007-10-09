@@ -13,6 +13,7 @@ mappings {
         controller = "errors"
         action = "error404"
     }
+    "500"(controller:"errors", action:"error500")
 }
 '''
     def UrlMappingsHolder holder
@@ -44,8 +45,15 @@ mappings {
         assertEquals("error404", info.getActionName());
     }
 
-    void testMissingForwardMapping() {
+    void testForwardMappingWithNamedArgs() {
         def info = holder.matchStatusCode(500)
+        assertNotNull info
+        assertEquals("errors", info.getControllerName());
+        assertEquals("error500", info.getActionName());
+    }
+
+    void testMissingForwardMapping() {
+        def info = holder.matchStatusCode(501)
         assertNull info
     }
 

@@ -73,26 +73,10 @@ public class UrlMappingsHolderFactoryBean implements FactoryBean, InitializingBe
             urlMappings.addAll(grailsClassMappings);
         }
 
-        //mapDefaultControllerUris(urlMappings);
+
 
         this.urlMappingsHolder = new DefaultUrlMappingsHolder(urlMappings);
 
-    }
-
-    private void mapDefaultControllerUris(List urlMappings) {
-        GrailsControllerClass[] controllers = (GrailsControllerClass[])grailsApplication.getArtefacts(ControllerArtefactHandler.TYPE);
-        for (int i = 0; i < controllers.length; i++) {
-            GrailsControllerClass controller = controllers[i];
-            String[] uris = controller.getURIs();
-            for (int j = 0; j < uris.length; j++) {
-                String uri = uris[j];
-                UrlMappingData data = urlParser.parse(uri);
-
-                urlMappings.add(new RegexUrlMapping(    data,
-                                                        controller.getPropertyName(),
-                                                        controller.getClosurePropertyName(uri), null));
-            }
-        }
     }
 
     public void setGrailsApplication(GrailsApplication grailsApplication) {

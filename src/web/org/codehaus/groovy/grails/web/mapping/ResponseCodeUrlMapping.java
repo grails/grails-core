@@ -30,11 +30,13 @@ public class ResponseCodeUrlMapping implements UrlMapping {
     private final Object controllerName;
     private final Object actionName;
     private final ConstrainedProperty[] constraints = new ConstrainedProperty[0];
+    private final Object viewName;
 
-    public ResponseCodeUrlMapping(UrlMappingData urlData, Object controllerName, Object actionName, ConstrainedProperty[] constraints) {
+    public ResponseCodeUrlMapping(UrlMappingData urlData, Object controllerName, Object actionName, Object viewName,ConstrainedProperty[] constraints) {
         this.urlData = (ResponseCodeMappingData) urlData;
         this.controllerName = controllerName;
         this.actionName = actionName;
+        this.viewName = viewName;
 
         if (constraints != null && constraints.length > 0) {
             throw new IllegalArgumentException("Constraints can't be used for response code url mapping");
@@ -61,8 +63,12 @@ public class ResponseCodeUrlMapping implements UrlMapping {
         return actionName;
     }
 
+    public Object getViewName() {
+        return this.viewName;
+    }
+
     public int compareTo(Object o) {
-        throw new UnsupportedOperationException("Method compareTo not implemented in " + getClass());
+        return 0;
     }
 
     public String createURL(Map parameterValues, String encoding) {
@@ -77,6 +83,7 @@ public class ResponseCodeUrlMapping implements UrlMapping {
         if (responseCode == urlData.getResponseCode()) return new DefaultUrlMappingInfo(
                 controllerName,
                 actionName,
+                viewName,
                 new HashMap(),
                 urlData);
         return null;

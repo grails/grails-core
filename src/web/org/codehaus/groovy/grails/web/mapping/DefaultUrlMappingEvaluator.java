@@ -15,6 +15,8 @@
 package org.codehaus.groovy.grails.web.mapping;
 
 import groovy.lang.*;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsControllerClass;
 import org.codehaus.groovy.grails.commons.GrailsMetaClassUtils;
 import org.codehaus.groovy.grails.plugins.GrailsPlugin;
@@ -29,10 +31,7 @@ import org.springframework.core.io.Resource;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * <p>A UrlMapping evaluator that evaluates Groovy scripts that are in the form:</p>
@@ -62,6 +61,8 @@ import java.util.Map;
  */
 public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoaderAware {
 
+    private static final Log LOG = LogFactory.getLog(UrlMappingBuilder.class);
+    
     private GroovyClassLoader classLoader = new GroovyClassLoader();
     private UrlMappingParser urlParser = new DefaultUrlMappingParser();
 
@@ -191,6 +192,8 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
         private Binding binding;
         private Object actionName = null;
         private String controllerName = null;
+        private String viewName = null;
+
 
         public UrlMappingBuilder(Binding b) {
         	this.binding = b;
@@ -224,8 +227,17 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
         public void setController(String controller) {
         	controllerName = controller;
         }
+
         public String getController() {
         	return controllerName;
+        }
+
+        public String getView() {
+            return viewName;
+        }
+
+        public void setView(String viewName) {
+            this.viewName = viewName;
         }
 
         public Object invokeMethod(String methodName, Object arg) {
@@ -249,62 +261,68 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
             if(methodName.startsWith(SLASH) || isResponseCode) {
                 try {
                     urlDefiningMode = false;
-                    if(args.length > 0) {
-                        if(args[0] instanceof Closure) {
-                            UrlMappingData urlData;
-                            if (!isResponseCode) {
-                                urlData = urlParser.parse(methodName);
-                            }
-                            else {
-                                urlData = new ResponseCodeMappingData(methodName);
-                            }
+                    args = args != null && args.length > 0 ? args : new Object[] {Collections.EMPTY_MAP};                    
+                    if(args[0] instanceof Closure) {
+                        UrlMappingData urlData = createUrlMappingData(methodName, isResponseCode);
 
-                            Closure callable = (Closure)args[0];
-                            if (delegate != null) callable.setDelegate(delegate);
-                            callable.call();
+                        Closure callable = (Closure)args[0];
+                        if (delegate != null) callable.setDelegate(delegate);
+                        callable.call();
 
-                            Object controllerName;
-                            Object actionName;
-                            if (binding != null) {
-                                controllerName = binding.getVariables().get(GrailsControllerClass.CONTROLLER);
-                                actionName = binding.getVariables().get(GrailsControllerClass.ACTION);
-                            }
-                            else {
-                                controllerName = this.controllerName;
-                                actionName = this.actionName;
-                            }
+                        Object controllerName;
+                        Object actionName;
+                        Object viewName;
 
-                            ConstrainedProperty[] constraints = (ConstrainedProperty[])previousConstraints.toArray(new ConstrainedProperty[previousConstraints.size()]);
-                            UrlMapping urlMapping;
-                            if (!isResponseCode) {
-                                urlMapping = new RegexUrlMapping(urlData, controllerName, actionName, constraints);
-                            }
-                            else {
-                                urlMapping = new ResponseCodeUrlMapping(urlData, controllerName, actionName, constraints);
-                            }
-                            urlMappings.add(urlMapping);
-                            return urlMapping;
-                        } if(args[0] instanceof Map) {
-                            Map namedArguments = (Map) args[0];
-                            UrlMappingData urlData = urlParser.parse(methodName);
-                            if(args.length > 1 && args[1] instanceof Closure) {
-                                Closure callable = (Closure)args[1];
-                                callable.call();
-                            }
-
-                        return getURLMapping(namedArguments, urlData);
+                        if (binding != null) {
+                            controllerName = binding.getVariables().get(GrailsControllerClass.CONTROLLER);
+                            actionName = binding.getVariables().get(GrailsControllerClass.ACTION);
+                            viewName = binding.getVariables().get(GrailsControllerClass.VIEW);
                         }
+                        else {
+                            controllerName = this.controllerName;
+                            actionName = this.actionName;
+                            viewName = this.viewName;
+                        }
+
+                        ConstrainedProperty[] constraints = (ConstrainedProperty[])previousConstraints.toArray(new ConstrainedProperty[previousConstraints.size()]);
+                        UrlMapping urlMapping;
+                        if (!isResponseCode) {
+                            if(actionName != null && viewName !=null) {
+                                viewName = null;
+                                LOG.warn("Both [action] and [view] specified in URL mapping ["+methodName+"]. The action takes precendence!");
+                            }
+
+                            urlMapping = new RegexUrlMapping(urlData, controllerName, actionName, viewName, constraints);
+                        }
+                        else {
+                            urlMapping = new ResponseCodeUrlMapping(urlData, controllerName, actionName, viewName, constraints);
+                        }
+                        urlMappings.add(urlMapping);
+                        return urlMapping;
+                    } if(args[0] instanceof Map) {
+                        Map namedArguments = (Map) args[0];
+                        UrlMappingData urlData = createUrlMappingData(methodName, isResponseCode);
+                        if(args.length > 1 && args[1] instanceof Closure) {
+                            Closure callable = (Closure)args[1];
+                            callable.call();
+                        }
+
+                        UrlMapping urlMapping = getURLMapping(namedArguments, urlData, methodName, isResponseCode);
+                        urlMappings.add(urlMapping);
+                        return urlMapping;
                     }
-                    throw new UrlMappingException("No controller or action defined for URL mapping ["+ methodName +"]");
+                    return null;
                 }
                 finally {
                     if (binding != null) {
                         binding.getVariables().remove(GrailsControllerClass.CONTROLLER);
                         binding.getVariables().remove(GrailsControllerClass.ACTION);
+                        binding.getVariables().remove(GrailsControllerClass.VIEW);
                     }
                     else {
                         controllerName = null;
                         actionName = null;
+                        viewName = null;
                     }
                     previousConstraints.clear();
                     urlDefiningMode = true;
@@ -329,6 +347,17 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
             }
         }
 
+        private UrlMappingData createUrlMappingData(String methodName, boolean responseCode) {
+            UrlMappingData urlData;
+            if (!responseCode) {
+                urlData = urlParser.parse(methodName);
+            }
+            else {
+                urlData = new ResponseCodeMappingData(methodName);
+            }
+            return urlData;
+        }
+
         private boolean isResponseCode(String s) {
             for (int i = 0; i < s.length(); i++) {
                 if (!Character.isDigit(s.charAt(i))) return false;
@@ -338,7 +367,7 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
         }
 
         private UrlMapping getURLMapping(Map namedArguments,
-                UrlMappingData urlData) {
+                                         UrlMappingData urlData, String mapping, boolean isResponseCode) {
             Object controllerName = namedArguments
                     .get(GrailsControllerClass.CONTROLLER);
             if (controllerName == null) {
@@ -352,12 +381,31 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
                         GrailsControllerClass.ACTION) : null;
             }
 
-            ConstrainedProperty[] constraints = (ConstrainedProperty[]) previousConstraints
-                    .toArray(new ConstrainedProperty[previousConstraints.size()]);
-            UrlMapping urlMapping = new RegexUrlMapping(urlData,
-                    controllerName, actionName, constraints);
-            urlMappings.add(urlMapping);
-            return urlMapping;
+            Object viewName = namedArguments
+                    .get(GrailsControllerClass.VIEW);
+            if (viewName == null) {
+                viewName = binding != null ? binding.getVariables().get(
+                        GrailsControllerClass.VIEW) : null;
+            }
+
+            if(actionName != null && viewName !=null) {
+                viewName = null;
+                LOG.warn("Both [action] and [view] specified in URL mapping ["+mapping+"]. The action takes precendence!");
+            }
+
+            if(!isResponseCode) {
+
+                ConstrainedProperty[] constraints = (ConstrainedProperty[]) previousConstraints
+                        .toArray(new ConstrainedProperty[previousConstraints.size()]);
+                UrlMapping urlMapping = new RegexUrlMapping(urlData,
+                        controllerName, actionName,viewName, constraints);
+                urlMappings.add(urlMapping);
+                return urlMapping;
+            }
+            else {
+                return new ResponseCodeUrlMapping(urlData, controllerName, actionName, viewName, null);
+            }
+
         }
     }
 }

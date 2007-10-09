@@ -61,15 +61,15 @@ mappings {
 
     void testComparable() {
         def parser = new DefaultUrlMappingParser()
-        def m1 = new RegexUrlMapping(parser.parse("/foo/"), "test", null)
-        def m2 = new RegexUrlMapping(parser.parse("/foo/(*)"), "test", null)
-        def m3 = new RegexUrlMapping(parser.parse("/foo/(*)/bar"), "test", null)
-        def m4 = new RegexUrlMapping(parser.parse("/(*)/foo/bar"), "test", null)
-        def m5 = new RegexUrlMapping(parser.parse("/foo/bar/(*)"), "test", null)
-        def m6 = new RegexUrlMapping(parser.parse("/(*)/(*)/bar"), "test", null)
-        def m7 = new RegexUrlMapping(parser.parse("/foo/(*)/(*)"), "test", null)
-        def m8 = new RegexUrlMapping(parser.parse("/(*)/(*)/(*)"), "test", null)
-        def m9 = new RegexUrlMapping(parser.parse("/"), "test", null)
+        def m1 = new RegexUrlMapping(parser.parse("/foo/"), "test",null, null)
+        def m2 = new RegexUrlMapping(parser.parse("/foo/(*)"), "test",null, null)
+        def m3 = new RegexUrlMapping(parser.parse("/foo/(*)/bar"), "test",null, null)
+        def m4 = new RegexUrlMapping(parser.parse("/(*)/foo/bar"), "test", null,null)
+        def m5 = new RegexUrlMapping(parser.parse("/foo/bar/(*)"), "test", null,null)
+        def m6 = new RegexUrlMapping(parser.parse("/(*)/(*)/bar"), "test",null, null)
+        def m7 = new RegexUrlMapping(parser.parse("/foo/(*)/(*)"), "test", null,null)
+        def m8 = new RegexUrlMapping(parser.parse("/(*)/(*)/(*)"), "test",null, null)
+        def m9 = new RegexUrlMapping(parser.parse("/"), "test",null, null)
 
         // root url
         assertEquals( 0, m9.compareTo(m1) )
@@ -141,7 +141,7 @@ mappings {
         // mapping would be "/foo/$hello/bar
         def parser = new DefaultUrlMappingParser()
 
-        def m = new RegexUrlMapping(parser.parse('/foo/(*)/bar'), "test", "action", [cp] as ConstrainedProperty[])
+        def m = new RegexUrlMapping(parser.parse('/foo/(*)/bar'), "test", "action", null,[cp] as ConstrainedProperty[])
 
         def info = m.match("/foo/world/bar")
         assert info
@@ -159,7 +159,7 @@ mappings {
 
         // mapping would be "/foo/$hello/bar
         def parser = new DefaultUrlMappingParser()
-        def m = new RegexUrlMapping(parser.parse('/foo/(*)/bar'), "test", "action", [cp] as ConstrainedProperty[])
+        def m = new RegexUrlMapping(parser.parse('/foo/(*)/bar'), "test", "action", null,[cp] as ConstrainedProperty[])
 
         def info = m.match("/foo/2007/bar")
         assert info
@@ -175,13 +175,13 @@ mappings {
 
     void testInit() {
         def parser = new DefaultUrlMappingParser()
-        def m = new RegexUrlMapping(parser.parse("/(*)/hello"), "test", [] as ConstrainedProperty[])
+        def m = new RegexUrlMapping(parser.parse("/(*)/hello"), "test", null, null,[] as ConstrainedProperty[])
 
     }
 
     void testMatchUriNoConstraints() {
         def parser = new DefaultUrlMappingParser()  
-        def m = new RegexUrlMapping(parser.parse("/foo/(*)/bar"), "test", [] as ConstrainedProperty[])
+        def m = new RegexUrlMapping(parser.parse("/foo/(*)/bar"), "test", null,null, [] as ConstrainedProperty[])
 
         def info = m.match("/foo/test/bar")
         assert info

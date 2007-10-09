@@ -48,6 +48,13 @@ public interface UrlMappingInfo {
     String getActionName();
 
     /**
+     * The name of the view that the URL mappping maps to
+     *
+     * @return The name of the view or null if not known
+     */
+    String getViewName();
+
+    /**
      * The id part of the URL mapping if any
      * 
      * @return The id or null

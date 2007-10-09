@@ -30,6 +30,7 @@ public abstract class AbstractUrlMapping implements UrlMapping {
     protected final ConstrainedProperty[] constraints;
     protected Object controllerName;
     protected Object actionName;
+    protected Object viewName;
 
     /**
      * Base constructor required to construct a UrlMapping instance
@@ -38,11 +39,17 @@ public abstract class AbstractUrlMapping implements UrlMapping {
      * @param actionName The name of the action
      * @param constraints Any constraints that apply to the mapping
      */
-    public AbstractUrlMapping(Object controllerName, Object actionName, ConstrainedProperty[] constraints) {
+    public AbstractUrlMapping(Object controllerName, Object actionName, Object viewName,ConstrainedProperty[] constraints) {
         this.controllerName = controllerName;
         this.actionName = actionName;
         this.constraints = constraints;
+        this.viewName = viewName;
 
+    }
+
+    protected AbstractUrlMapping(Object viewName, ConstrainedProperty[] constraints) {
+        this.viewName = viewName;
+        this.constraints = constraints;
     }
 
     /**
@@ -64,5 +71,13 @@ public abstract class AbstractUrlMapping implements UrlMapping {
      */
     public Object getActionName() {
         return actionName;
+    }
+
+    /**
+     * @see org.codehaus.groovy.grails.web.mapping.UrlMapping#getViewName()
+     *
+     */
+    public Object getViewName() {
+        return viewName;
     }
 }
