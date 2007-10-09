@@ -29,7 +29,7 @@ grailsHome = Ant.antProject.properties."env.GRAILS_HOME"
 
 includeTargets << new File ( "${grailsHome}/scripts/Init.groovy" )
 
-task ('default': "Generates basic stats for a Grails project") {
+target ('default': "Generates basic stats for a Grails project") {
 
 	// maps file path to 
 	def pathToInfo = [

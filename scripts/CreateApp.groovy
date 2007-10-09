@@ -33,11 +33,11 @@ includeTargets << new File ( "${grailsHome}/scripts/Clean.groovy" )
 includeTargets << new File ( "${grailsHome}/scripts/Package.groovy" )
 
 
-task ( "default" : "Creates a Grails project, including the necessary directory structure and commons files") {
+target ( "default" : "Creates a Grails project, including the necessary directory structure and commons files") {
    createApp()
 }     
 
-task( createApp: "The implementation task")  {
+target( createApp: "The implementation target")  {
     depends( appName, createStructure, updateAppProperties, init )
 	
 	createIDESupportFiles()
@@ -55,7 +55,7 @@ task( createApp: "The implementation task")  {
     event("StatusFinal", ["Created Grails Application at $basedir"])
 }                         
 
-task( createIDESupportFiles: "Creates the IDE suppot files (Eclipse, TextMate etc.) project files") {
+target( createIDESupportFiles: "Creates the IDE suppot files (Eclipse, TextMate etc.) project files") {
 	Ant.copy(todir:"${basedir}") {
 		fileset(dir:"${grailsHome}/src/grails/templates/ide-support/eclipse",
 				includes:"*.*",
@@ -84,7 +84,7 @@ task( createIDESupportFiles: "Creates the IDE suppot files (Eclipse, TextMate et
 				token:"@grails.project.key@", value:"${appKey}" )				
 }
     
-task ( appName : "Evaluates the application name") {
+target ( appName : "Evaluates the application name") {
 	if(!args) {
 		Ant.input(message:"Application name not specified. Please enter:", 
 				  addProperty:"grails.app.name")

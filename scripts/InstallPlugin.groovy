@@ -42,13 +42,13 @@ For example:
 or
 'grails install-plugin ${BINARY_PLUGIN_DIST}/grails-acegi-0.1.zip"""
 
-task ( "default" : "Installs a plug-in for the given URL or name and version") {
+target ( "default" : "Installs a plug-in for the given URL or name and version") {
    depends(checkVersion)
 
    installPlugin()
 }     
                 
-task(cachePlugin:"Implementation task") {
+target(cachePlugin:"Implementation target") {
     depends(configureProxy,updatePluginsList)
     def pluginDistName
     def plugin
@@ -84,7 +84,7 @@ task(cachePlugin:"Implementation task") {
     }
 }
 
-task(installPlugin:"Implementation task") {
+target(installPlugin:"Implementation target") {
     depends( configureProxy )
     // fix for Windows-style path with backslashes
     def pluginsBase = "${basedir}/plugins".toString().replaceAll('\\\\','/')

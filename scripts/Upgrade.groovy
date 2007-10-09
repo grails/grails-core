@@ -29,20 +29,20 @@ grailsHome = Ant.antProject.properties."env.GRAILS_HOME"
 
 includeTargets << new File ( "${grailsHome}/scripts/CreateApp.groovy" )
 
-task( upgrade: "main upgrade task") {
+target( upgrade: "main upgrade target") {
 
 	depends( createStructure )
    
     if (appGrailsVersion != grailsVersion) {
         def gv = appGrailsVersion == null ? "pre-0.5" : appGrailsVersion
         event("StatusUpdate", [ "NOTE: Your application currently expects grails version [$gv], "+
-	        "this task will upgrade it to Grails ${grailsVersion}"])
+	        "this target will upgrade it to Grails ${grailsVersion}"])
     }
 
     Ant.input(message: """
-	WARNING: This task will upgrade an older Grails application to ${grailsVersion}.
+	WARNING: This target will upgrade an older Grails application to ${grailsVersion}.
 	However, tag libraries provided by earlier versions of Grails found in grails-app/taglib will be removed. 
-	The task will not, however, delete tag libraries developed by yourself.
+	The target will not, however, delete tag libraries developed by yourself.
 	Are you sure you want to continue? 
 			   """,
 			validargs:"y,n", 
@@ -183,7 +183,7 @@ move it to the new location of '${basedir}/test/integration'. Please move the di
     event("StatusFinal", [ "Project upgraded"])
 }
 
-task("default": "Upgrades a Grails application from a previous version of Grails") {
+target("default": "Upgrades a Grails application from a previous version of Grails") {
 	depends( upgrade )
 }  
 

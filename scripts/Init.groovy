@@ -222,7 +222,7 @@ confirmInput = { String message ->
 	Ant.antProject.properties."confirm.message"	
 }
 
-task ( createStructure: "Creates the application directory structure") {
+target ( createStructure: "Creates the application directory structure") {
 	Ant.sequential {
 	    mkdir(dir:"${basedir}/src")
 	    mkdir(dir:"${basedir}/src/java")
@@ -253,7 +253,7 @@ task ( createStructure: "Creates the application directory structure") {
 	}
 }  
 
-task (checkVersion: "Stops build if app expects different Grails version") {
+target (checkVersion: "Stops build if app expects different Grails version") {
     if (new File("${basedir}/application.properties").exists()) {
         if (appGrailsVersion != grailsVersion) {
             event("StatusFinal", ["Application expects grails version [$appGrailsVersion], but GRAILS_HOME is version " +
@@ -268,7 +268,7 @@ task (checkVersion: "Stops build if app expects different Grails version") {
     }
 }
 
-task( updateAppProperties: "Updates default application.properties")  {
+target( updateAppProperties: "Updates default application.properties")  {
     Ant.propertyfile(file:"${basedir}/application.properties",
         comment:"Do not edit app.grails.* properties, they may change automatically. "+
             "DO NOT put application configuration in here, it is not the right place!") {
@@ -279,7 +279,7 @@ task( updateAppProperties: "Updates default application.properties")  {
     appGrailsVersion = grailsVersion
 }
 
-task ( copyBasics: "Copies the basic resources required for a Grails app to function") {
+target ( copyBasics: "Copies the basic resources required for a Grails app to function") {
     def libs = getGrailsLibs()
     def jars =  getGrailsJar()
 
@@ -311,7 +311,7 @@ task ( copyBasics: "Copies the basic resources required for a Grails app to func
 		}			 			
 	}
 }
-task( init: "main init task") {
+target( init: "main init target") {
 	depends( createStructure, copyBasics )
 
 	Ant.sequential {
@@ -338,11 +338,11 @@ task( init: "main init task") {
 	}
 }
 
-task("default": "Initializes a Grails application. Warning: This task will overwrite artifacts,use the 'upgrade' task for upgrades.") {
+target("default": "Initializes a Grails application. Warning: This target will overwrite artifacts,use the 'upgrade' target for upgrades.") {
 	depends( init )
 }  
 
-task (createArtifact: "Creates a specific Grails artifact") {
+target (createArtifact: "Creates a specific Grails artifact") {
 	depends( promptForName)
 	
 	Ant.mkdir(dir:"${basedir}/${artifactPath}")
@@ -378,14 +378,14 @@ task (createArtifact: "Creates a specific Grails artifact") {
 	event("CreatedArtefact", [typeName, className])
 }  
 
-task(promptForName:"Prompts the user for the name of the Artifact if it isn't specified as an argument") {
+target(promptForName:"Prompts the user for the name of the Artifact if it isn't specified as an argument") {
 	if(!args) {
 		Ant.input(addProperty:"artifact.name", message:"${typeName} name not specified. Please enter:")
 		args = Ant.antProject.properties."artifact.name"
 	}          	
 }
 
-task(classpath:"Sets the Grails classpath") {    
+target(classpath:"Sets the Grails classpath") {
     setClasspath()
 }
 
@@ -472,7 +472,7 @@ populateRootLoader = { rootLoader, jarFiles ->
 	rootLoader?.addURL(new File("${basedir}/web-app/WEB-INF").toURL())
 }
 
-task( configureProxy: "The implementation task")  {
+target( configureProxy: "The implementation target")  {
     def scriptFile = new File("${userHome}/.grails/scripts/ProxyConfig.groovy")
     if(scriptFile.exists()) {
         includeTargets << scriptFile.text

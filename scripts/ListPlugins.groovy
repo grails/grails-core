@@ -71,11 +71,11 @@ def parseRemoteXML = { url ->
     DOMBuilder.parse(new URL(url).openStream().newReader())
 }
 
-task ( "default" : "Lists plug-ins that are hosted by the Grails server") {
+target ( "default" : "Lists plug-ins that are hosted by the Grails server") {
     listPlugins()
 }
 
-task(listPlugins:"Implementation task") {
+target(listPlugins:"Implementation target") {
     depends(updatePluginsList)
     println '''
 Plug-ins available in the Grails repository are listed below:
@@ -210,7 +210,7 @@ def buildBinaryPluginInfo = {root, pluginName ->
     }
 }
 
-task(updatePluginsList:"Implementation tast. Updates list of plugins hosted at Grails site if needed") {
+target(updatePluginsList:"Implementation tast. Updates list of plugins hosted at Grails site if needed") {
     depends(configureProxy)
     try {
         def localRevision = pluginsList ? new Integer(pluginsList.getAttribute('revision')) : -1

@@ -30,15 +30,15 @@ grailsHome = Ant.antProject.properties."env.GRAILS_HOME"
 
 includeTargets << new File ( "${grailsHome}/scripts/Package.groovy" )
 
-task ('default': "Cleans a Grails project") {
+target ('default': "Cleans a Grails project") {
 	clean()
 }   
 
-task ( clean: "Implementation of clean") {
+target ( clean: "Implementation of clean") {
 	depends( cleanCompiledSources, cleanGrailsApp)
 }
 
-task ( cleanCompiledSources : "Cleans compiled Java and Groovy sources") {
+target ( cleanCompiledSources : "Cleans compiled Java and Groovy sources") {
 	def webInf = "${basedir}/web-app/WEB-INF"
 	Ant.delete(dir:"${webInf}/classes")
 	Ant.delete(dir:"${basedir}/test/classes", failonerror:false)	
@@ -50,7 +50,7 @@ task ( cleanCompiledSources : "Cleans compiled Java and Groovy sources") {
 	Ant.mkdir(dir:"${webInf}/lib")	
 }   
 
-task (cleanGrailsApp : "Cleans the Grails application sources") {
+target (cleanGrailsApp : "Cleans the Grails application sources") {
 	def appDir = "${basedir}/web-app/WEB-INF/grails-app"
 	Ant.delete(dir:appDir)
 	Ant.mkdir(dir:appDir)	

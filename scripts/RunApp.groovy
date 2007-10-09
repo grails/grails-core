@@ -45,12 +45,12 @@ includeTargets << new File ( "${grailsHome}/scripts/PackagePlugins.groovy" )
 
 shouldPackageTemplates=true
 
-task ('default': "Run's a Grails application in Jetty") {
+target ('default': "Run's a Grails application in Jetty") {
 	depends( checkVersion, configureProxy, packagePlugins, packageApp )
 	runApp()
 	watchContext()
 }
-task ( runApp : "Main implementation that executes a Grails application") {
+target ( runApp : "Main implementation that executes a Grails application") {
 	System.setProperty('org.mortbay.xml.XmlParser.NotValidating', 'true')
     try {
 		println "Running Grails application.."
@@ -64,7 +64,7 @@ task ( runApp : "Main implementation that executes a Grails application") {
         event("StatusFinal", ["Server failed to start: $t"])
     }
 }
-task( watchContext: "Watches the WEB-INF/classes directory for changes and restarts the server if necessary") {
+target( watchContext: "Watches the WEB-INF/classes directory for changes and restarts the server if necessary") {
     long lastModified = classesDir.lastModified()
     while(true && autoRecompile) {
         try {
@@ -109,7 +109,7 @@ task( watchContext: "Watches the WEB-INF/classes directory for changes and resta
     }
 }
 
-task( configureHttpServer : "Returns a jetty server configured with an HTTP connector") {
+target( configureHttpServer : "Returns a jetty server configured with an HTTP connector") {
     def server = new Server()
     grailsServer = server
     def connectors = [new SelectChannelConnector()]
@@ -132,7 +132,7 @@ task( configureHttpServer : "Returns a jetty server configured with an HTTP conn
     return server
 }
 
-task( stopServer : "Stops the Grails Jetty server") {
+target( stopServer : "Stops the Grails Jetty server") {
 	if(grailsServer) {
 		grailsServer.stop()		
 	}	

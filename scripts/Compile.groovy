@@ -50,7 +50,7 @@ Ant.taskdef ( 	name : 'groovyc' ,
 
 
 
-task ('default': "Performs compilation on any source files (Java or Groovy) in the 'src' tree") {
+target ('default': "Performs compilation on any source files (Java or Groovy) in the 'src' tree") {
 	compile()
 }            
   
@@ -77,7 +77,7 @@ compilerClasspath = { testSources ->
          src(path:"${basedir}/test/integration")
 	}
 }
-task(compile : "Implementation of compilation phase") {   
+target(compile : "Implementation of compilation phase") {
     event("CompileStart", ['source'])
 
 	Ant.mkdir(dir:classesDirPath)

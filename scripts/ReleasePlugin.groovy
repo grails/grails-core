@@ -21,11 +21,11 @@ trunk = null
 latestRelease = null
 versionedRelease = null
 
-task ('default': "A task for plug-in developers that uploads and commits the current plug-in as the latest revision. The command will prompt for your SVN login details.") {	
+target ('default': "A target for plug-in developers that uploads and commits the current plug-in as the latest revision. The command will prompt for your SVN login details.") {
 	releasePlugin()
 }
   
-task(processAuth:"Prompts user for login details to create authentication manager") {
+target(processAuth:"Prompts user for login details to create authentication manager") {
 	if(!authManager) {
 		Ant.input(message:"Please enter your SVN username:", addproperty:"user.svn.username")
 		Ant.input(message:"Please enter your SVN password:", addproperty:"user.svn.password") 
@@ -36,7 +36,7 @@ task(processAuth:"Prompts user for login details to create authentication manage
 	 	authManager = SVNWCUtil.createDefaultAuthenticationManager( username , password )			
 	}
 }
-task(releasePlugin: "The implementation task") {    
+target(releasePlugin: "The implementation target") {
 	//depends(packagePlugin)
 	depends(packagePlugin, processAuth)                       
 	 
@@ -75,7 +75,7 @@ task(releasePlugin: "The implementation task") {
 	}
 }
      
-task(checkInPluginZip:"Checks in the plug-in zip if it has not been checked in already") {
+target(checkInPluginZip:"Checks in the plug-in zip if it has not been checked in already") {
 	def statusClient = new SVNStatusClient((ISVNAuthenticationManager)authManager,null)		 	
 	def wcClient = new SVNWCClient((ISVNAuthenticationManager)authManager,null)			
 	def pluginFile = new File(pluginZip)	
@@ -100,7 +100,7 @@ task(checkInPluginZip:"Checks in the plug-in zip if it has not been checked in a
 	}                       
 	if(addPluginFile) wcClient.doAdd(pluginXml, true, false,false,false)
 }
-task(updateAndCommitLatest:"Commits the latest revision of the Plug-in") {
+target(updateAndCommitLatest:"Commits the latest revision of the Plug-in") {
    def result = confirmInput("""
 This command will perform the following steps to release your plug-in into Grails' SVN repository:
 * Update your sources to the HEAD revision
@@ -131,7 +131,7 @@ Are you sure you wish to proceed?
 	println "Committed revision ${commit.newRevision}."
 }  
 
-task(importToSVN:"Imports a plug-in project to Grails' remote SVN repository") {
+target(importToSVN:"Imports a plug-in project to Grails' remote SVN repository") {
 	checkOutDir = new File("${baseFile.parentFile.absolutePath}/checkout/${baseFile.name}")                                         
 		
 	def result = confirmInput("""
@@ -174,7 +174,7 @@ cd ${checkOutDir}
 Future changes should be made to the SVN controlled sources!"""])	
 }                      
 
-task(tagPluginRelease:"Tags a plugin-in with the LATEST_RELEASE tag and version tag within the /tags area of SVN") {
+target(tagPluginRelease:"Tags a plugin-in with the LATEST_RELEASE tag and version tag within the /tags area of SVN") {
 	
 
 	copyClient = new SVNCopyClient((ISVNAuthenticationManager)authManager, null)
@@ -226,7 +226,7 @@ task(tagPluginRelease:"Tags a plugin-in with the LATEST_RELEASE tag and version 
 	println "Copied trunk to ${versionedRelease} with revision ${commit.newRevision} on ${commit.date}"    	
 }  
 
-task(askForMessage:"Asks for the users commit message") {
+target(askForMessage:"Asks for the users commit message") {
 	Ant.input(message:"Enter a SVN commit message:", addproperty:"commit.message")
  	message = Ant.antProject.properties."commit.message"	
 }

@@ -46,12 +46,12 @@ includeTargets << new File ( "${grailsHome}/scripts/Init.groovy" )
 includeTargets << new File ( "${grailsHome}/scripts/Package.groovy" )
 includeTargets << new File ( "${grailsHome}/scripts/RunApp.groovy" )
 
-task ('default': "Run's a Grails application in Jetty with HTTPS listener") {
+target ('default': "Run's a Grails application in Jetty with HTTPS listener") {
 	depends( checkVersion, configureProxy, packagePlugins, packageApp, generateWebXml )
 	runAppHttps()
 	watchContext()
 }                 
-task ( runAppHttps : "Main implementation that executes a Grails application with ans HTTPS listener") {
+target ( runAppHttps : "Main implementation that executes a Grails application with ans HTTPS listener") {
 	System.setProperty('org.mortbay.xml.XmlParser.NotValidating', 'true')
     def server = configureHttpServer()
     try {
@@ -76,7 +76,7 @@ task ( runAppHttps : "Main implementation that executes a Grails application wit
     }
 }
 
-task(createCert:"Creates a keystore and SSL cert for use with HTTPS"){
+target(createCert:"Creates a keystore and SSL cert for use with HTTPS"){
  	println 'Creating SSL Cert...'
     if(!keystoreFile.getParentFile().exists() &&
         !keystoreFile.getParentFile().mkdir()){

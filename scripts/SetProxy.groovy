@@ -26,12 +26,12 @@ Ant.property(environment:"env")
 grailsHome = Ant.antProject.properties."env.GRAILS_HOME"
 includeTargets << new File ( "${grailsHome}/scripts/Init.groovy" )
 
-task ( "default" : "Sets HTTP proxy configuration for Grails") {
+target ( "default" : "Sets HTTP proxy configuration for Grails") {
    depends(configureProxy)
    setProxy()
 }
 
-task(setProxy:"Implementation task") {
+target(setProxy:"Implementation target") {
     Ant.mkdir( dir:"${userHome}/.grails/scripts" )
     def scriptFile = new File("${userHome}/.grails/scripts/ProxyConfig.groovy")
     Ant.input(addProperty:"proxy.use", message:"Do you wish to use HTTP proxy?",validargs:'y,n',defaultvalue:'y')

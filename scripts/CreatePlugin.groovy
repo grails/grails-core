@@ -31,11 +31,11 @@ grailsHome = Ant.antProject.properties."env.GRAILS_HOME"
 
 includeTargets << new File ( "${grailsHome}/scripts/CreateApp.groovy" )
 
-task ( "default" : "Creates a Grails plug-in project, including the necessary directory structure and commons files") {
+target ( "default" : "Creates a Grails plug-in project, including the necessary directory structure and commons files") {
    createPlugin()
 }     
 
-task( createPlugin: "The implementation task")  {            
+target( createPlugin: "The implementation target")  {
 	depends( appName, createStructure, updateAppProperties, copyBasics, createIDESupportFiles )
 	pluginName = GCU.getNameFromScript(grailsAppName)
  	new File("${basedir}/${pluginName}GrailsPlugin.groovy") <<

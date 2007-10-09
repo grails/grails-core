@@ -31,11 +31,11 @@ grailsHome = Ant.antProject.properties."env.GRAILS_HOME"
 includeTargets << new File ( "${grailsHome}/scripts/Init.groovy" ) 
 pluginResources = []
 
-task ( "default" : "Performs packaging of Grails plugins for when they are distributed as part of a WAR") {
+target ( "default" : "Performs packaging of Grails plugins for when they are distributed as part of a WAR") {
    packagePlugins()                                                      
 }     
                 
-task( packagePlugins : "Packages any Grails plugins that are installed for this project") {
+target( packagePlugins : "Packages any Grails plugins that are installed for this project") {
 	depends( classpath )   
 	Ant.mkdir(dir:"${basedir}/web-app/WEB-INF/lib")
 	try {

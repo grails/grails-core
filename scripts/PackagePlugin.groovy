@@ -57,11 +57,11 @@ includeTargets << new File ( "${grailsHome}/scripts/Compile.groovy" )
 includeTargets << new File ( "${grailsHome}/scripts/CreateApp.groovy" )
 includeTargets << new File ( "${grailsHome}/scripts/Package.groovy" )
 
-task ( "default" : "Packages a Grails plugin into a zip for distribution") {
+target ( "default" : "Packages a Grails plugin into a zip for distribution") {
    packagePlugin()
 }
 
-task(packagePlugin:"Implementation task") {
+target(packagePlugin:"Implementation target") {
     depends (packagePlugins, packageApp,compile)
 
     def pluginFile

@@ -46,13 +46,13 @@ webXmlFile = new File("${userHome}/.grails/${grailsVersion}/projects/${baseName}
 log4jFile = new File("${basedir}/web-app/WEB-INF/classes/log4j.properties")
 generateLog4jFile = false
 
-task ('default': "Packages a Grails application. Note: To create WAR use 'grails war'") {
+target ('default': "Packages a Grails application. Note: To create WAR use 'grails war'") {
      depends( checkVersion)
 	 packagePlugins()	 
      packageApp()                           
 }                     
   
-task( createConfig: "Creates the configuration object") {
+target( createConfig: "Creates the configuration object") {
    def configSlurper = new ConfigSlurper(grailsEnv)
    if(configFile.exists()) { 
 		try {              
@@ -85,7 +85,7 @@ task( createConfig: "Creates the configuration object") {
 		}
    }
 }    
-task( packageApp : "Implementation of package task") {
+target( packageApp : "Implementation of package target") {
 	depends(createStructure)
 
 	try {
@@ -155,7 +155,7 @@ task( packageApp : "Implementation of package task") {
     generateWebXml()
 }
 
-task(generateLog4j:"Generates the Log4j config File") {
+target(generateLog4j:"Generates the Log4j config File") {
     profile("log4j-generation") {
         def log4jConfig = config.log4j
         try {
@@ -231,7 +231,7 @@ JAVA_5_DEPENDENCIES = [
 "ejb3-persistence.jar",	
 ]                                      
 
-task( copyDependencies : "Copies the necessary dependencies (jar files) into the lib dir") {
+target( copyDependencies : "Copies the necessary dependencies (jar files) into the lib dir") {
 	Ant.sequential {
 		mkdir(dir:"${basedir}/web-app/WEB-INF/lib")
 		mkdir(dir:"${basedir}/web-app/WEB-INF/spring")
@@ -252,7 +252,7 @@ task( copyDependencies : "Copies the necessary dependencies (jar files) into the
 	}
 }
 
-task(loadPlugins:"Loads Grails' plugins") {              
+target(loadPlugins:"Loads Grails' plugins") {
 	compConfig.setTargetDirectory(classesDir)
     def unit = new CompilationUnit ( compConfig , null , new GroovyClassLoader(classLoader) )	          
 	def pluginFiles = pluginResources.file
@@ -288,7 +288,7 @@ task(loadPlugins:"Loads Grails' plugins") {
 		exit(1)
     }
 }
-task( generateWebXml : "Generates the web.xml file") {                
+target( generateWebXml : "Generates the web.xml file") {
 	depends(classpath)
 
     def webXml = new FileSystemResource("${basedir}/src/templates/war/web.xml")
@@ -317,7 +317,7 @@ task( generateWebXml : "Generates the web.xml file") {
 
 }      
 
-task(packageTemplates: "Packages templates into the app") {  
+target(packageTemplates: "Packages templates into the app") {
 	Ant.mkdir(dir:scaffoldDir)
 	if(new File("${basedir}/src/templates/scaffolding").exists()) {
 		Ant.copy(todir:scaffoldDir, overwrite:true) {

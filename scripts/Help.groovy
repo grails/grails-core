@@ -31,7 +31,7 @@ includeTargets << new File ( "${grailsHome}/scripts/Init.groovy" )
     
 class HelpEvaluatingCategory {     
 	static defaultTask = ""
-	static task(Object obj, Map args, Closure callable) {
+	static target(Object obj, Map args, Closure callable) {
 		def e = args.find { e -> e.key == "default" }?.value
 		if(e) {
 			defaultTask = e
@@ -55,7 +55,7 @@ boolean shouldGenerateHelp(File script) {
 }
                                 
 
-task ( 'default' : "Prints out the help for each script") { 
+target ( 'default' : "Prints out the help for each script") {
 	Ant.mkdir(dir:grailsTmp)    	
 	def scripts = []   
     resolveResources("file:${grailsHome}/scripts/**.groovy").each { scripts << it.file }	
@@ -122,7 +122,7 @@ grails [environment]*
 	}  
 }                                               
 
-task( showHelp: "Show help for a particular command") {
+target( showHelp: "Show help for a particular command") {
 	def gcl = new GroovyClassLoader()    				
 	use(HelpEvaluatingCategory.class) {    
 		if (shouldGenerateHelp(file)) {

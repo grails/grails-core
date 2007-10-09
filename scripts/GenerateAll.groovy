@@ -38,14 +38,14 @@ includeTargets << new File ( "${grailsHome}/scripts/Package.groovy" )
 generateViews = true
 generateController = true
 
-task ('default': "Generates a CRUD interface (contoroller + views) for a domain class") {
+target ('default': "Generates a CRUD interface (contoroller + views) for a domain class") {
 	depends( checkVersion, packageApp )
 	typeName = "Domain Class"
 	promptForName()
 	generateAll()
 }            
 
-task(generateAll:"The implementation task") {  
+target(generateAll:"The implementation target") {
 	                                     
 	rootLoader.addURL(classesDir.toURL())
 	def beans = new grails.spring.BeanBuilder().beans {

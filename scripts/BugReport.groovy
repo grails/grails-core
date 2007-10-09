@@ -39,7 +39,7 @@ artifactNames = [
     'views' 
 ]
 
-task ('default': "Creates a ZIP containing source artifacts for reporting bugs") {
+target ('default': "Creates a ZIP containing source artifacts for reporting bugs") {
     depends( checkVersion )
     
 	def fileName = new File(basedir).name

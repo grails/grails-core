@@ -53,7 +53,7 @@ includeTargets << new File ( "${grailsHome}/scripts/Bootstrap.groovy" )
 
 generateLog4jFile = true
 
-task ('default': "Run a Grails applications unit tests") {
+target ('default': "Run a Grails applications unit tests") {
   depends( classpath, checkVersion, configureProxy, packagePlugins )
   grailsEnv = "test"                                                
 
@@ -82,7 +82,7 @@ def processResults = {
 	}	
 }
 
-task(testApp:"The test app implementation task") {
+target(testApp:"The test app implementation target") {
 
 	Ant.mkdir(dir:testDir)
 	Ant.mkdir(dir:"${testDir}/html")
@@ -100,7 +100,7 @@ task(testApp:"The test app implementation task") {
 		processResults()
 	}
 }
-task(compileTests:"Compiles the test cases") {            
+target(compileTests:"Compiles the test cases") {
 	def destDir = "${basedir}/test/classes"	
 	Ant.mkdir(dir:destDir)
 	try {                         
@@ -118,7 +118,7 @@ task(compileTests:"Compiles the test cases") {
 	rootLoader?.addURL(new File(destDir).toURL())
 }    
 
-task(produceReports:"Outputs aggregated xml and html reports") {
+target(produceReports:"Outputs aggregated xml and html reports") {
 	Ant.junitreport {
 		fileset(dir:testDir) {
 			include(name:"TEST-*.xml")
@@ -203,7 +203,7 @@ def runTests = { suite, TestResult result, Closure callback  ->
 	}
 	
 }   
-task(runUnitTests:"Run Grails' unit tests under the test/unit directory") {         
+target(runUnitTests:"Run Grails' unit tests under the test/unit directory") {
    try {    
 		loadApp()
 		
@@ -241,7 +241,7 @@ task(runUnitTests:"Run Grails' unit tests under the test/unit directory") {
         }
 }
 
-task(runIntegrationTests:"Runs Grails' tests under the test/integration directory") {
+target(runIntegrationTests:"Runs Grails' tests under the test/integration directory") {
 	try {
     // allow user to specify test to run like this...
     //   grails test-app Author

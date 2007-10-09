@@ -36,38 +36,41 @@ links = [
 
 
 
-task ('default': "Produces documentation for a Grails project") {
+target ('default': "Produces documentation for a Grails project") {
     compile()
     depends(javadoc, groovydoc)
 }
 
-task(setupDoc:"Sets up the doc directories") {
+target(setupDoc:"Sets up the doc directories") {
     Ant.mkdir(dir:"${basedir}/docs")
-    Ant.mkdir(dir:javadocDir)
     Ant.mkdir(dir:groovydocDir)
+    Ant.mkdir(dir:javadocDir)
 }
-task(groovydoc:"Produces groovydoc documentation") {
+target(groovydoc:"Produces groovydoc documentation") {
     Ant.taskdef(classpathref:"grails.classpath",name:"groovydoc", classname:"org.codehaus.groovy.ant.Groovydoc")
     Ant.groovydoc(destdir:groovydocDir, sourcepath:".", use:"true", windowtitle:grailsAppName,'private':"true")
 }
-task(javadoc:"Produces javadoc documentation") {
+target(javadoc:"Produces javadoc documentation") {
    depends(setupDoc)
-   Ant.javadoc( access:"protected",
-                destdir:javadocDir,
-                encoding:docEncoding,
-                classpathref:"grails.classpath",
-                use:"yes",
-                windowtitle:grailsAppName,
-                docencoding:docEncoding,
-                charset:docEncoding,
-                source:docSourceLevel,
-                useexternalfile:"yes",
-                breakiterator:"true",
-                linksource:"yes",
-                maxmemory:"128m") {
-       fileset(dir:"${basedir}/src/java")
-       for(i in links) {
-           link(href:i)
-       }
+   if(new File("${basedir}/src/java").listFiles().find{ !it.name.startsWith(".")}) {
+	   Ant.javadoc( access:"protected",
+	                destdir:javadocDir,
+	                encoding:docEncoding,
+	                classpathref:"grails.classpath",
+	                use:"yes",
+	                windowtitle:grailsAppName,
+	                docencoding:docEncoding,
+	                charset:docEncoding,
+	                source:docSourceLevel,
+	                useexternalfile:"yes",
+	                breakiterator:"true",
+	                linksource:"yes",
+	                maxmemory:"128m") {
+	       fileset(dir:"${basedir}/src/java")
+	       for(i in links) {
+	           link(href:i)
+	       }
+	   }	
    }
+
 }

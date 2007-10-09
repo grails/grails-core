@@ -29,7 +29,7 @@ grailsHome = Ant.antProject.properties."env.GRAILS_HOME"
 
 includeTargets << new File ( "${grailsHome}/scripts/Init.groovy" )  
 
-task ('default': "Installs the artifact and scaffolding templates") {
+target ('default': "Installs the artifact and scaffolding templates") {
     depends(checkVersion) 
 
 	targetDir = "${basedir}/src/templates"

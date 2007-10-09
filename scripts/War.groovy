@@ -44,7 +44,7 @@ grails prod war
 
 generateLog4jFile = true
 
-task (war: "The implementation task") {
+target (war: "The implementation target") {
 	depends( clean, packagePlugins, packageApp, generateWebXml )
 	 
 	try {
@@ -116,7 +116,7 @@ task (war: "The implementation task") {
     event("StatusFinal", ["Created WAR ${warName}"])
 }                                                                    
   
-task(createDescriptor:"Creates the WEB-INF/grails.xml file used to load Grails classes in WAR mode") {
+target(createDescriptor:"Creates the WEB-INF/grails.xml file used to load Grails classes in WAR mode") {
      def resourceList = GrailsResourceLoaderHolder.resourceLoader.getResources()
      def pluginList = resolveResources("file:${basedir}/plugins/*/*GrailsPlugin.groovy")
       
@@ -142,11 +142,11 @@ task(createDescriptor:"Creates the WEB-INF/grails.xml file used to load Grails c
 	 
 }
 
-task(cleanUpAfterWar:"Cleans up after performing a WAR") {
+target(cleanUpAfterWar:"Cleans up after performing a WAR") {
 	Ant.delete(dir:"${basedir}/staging", failonerror:true)
 }
 
-task(warPlugins:"Includes the plugins in the WAR") {  
+target(warPlugins:"Includes the plugins in the WAR") {
 	Ant.sequential {
 		mkdir(dir:"${basedir}/staging/WEB-INF/plugins")
 		copy(todir:"${basedir}/staging/WEB-INF/plugins", failonerror:false) {

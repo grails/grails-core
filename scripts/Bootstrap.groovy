@@ -17,11 +17,11 @@ grailsHome = Ant.antProject.properties."env.GRAILS_HOME"
 
 includeTargets << new File ( "${grailsHome}/scripts/Init.groovy" )  
 
-task ('default': "This task will load the Grails application context into the command window with a variable named 'ctx'") {
+target ('default': "This target will load the Grails application context into the command window with a variable named 'ctx'") {
 	bootstrap()
 }
        
-task(loadApp:"Loads the Grails application object") {
+target(loadApp:"Loads the Grails application object") {
 	def beans = new grails.spring.BeanBuilder().beans {
 		resourceHolder(org.codehaus.groovy.grails.commons.spring.GrailsResourceHolder) {
 			resources = "file:${basedir}/**/grails-app/**/*.groovy"
@@ -46,13 +46,13 @@ task(loadApp:"Loads the Grails application object") {
 	pluginManager.doArtefactConfiguration()
 	grailsApp.initialise()	 	
 }                                      
-task(configureApp:"Configures the Grails application and builds an ApplicationContext") {
+target(configureApp:"Configures the Grails application and builds an ApplicationContext") {
     appCtx.resourceLoader = new  CommandLineResourceLoader()
     def config = new org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator(grailsApp,appCtx)
 	appCtx = config.configure(new MockServletContext())	
 }                                                                                  
 
-task(bootstrap: "The implementation task") {  
+target(bootstrap: "The implementation target") {  
 	depends(classpath)
 	
 	def parent = new ClassPathXmlApplicationContext("applicationContext.xml");

@@ -31,7 +31,7 @@ grailsHome = Ant.antProject.properties."env.GRAILS_HOME"
 
 includeTargets << new File ( "${grailsHome}/scripts/ListPlugins.groovy" )
 
-task ( "default" : "Displays info about plugin") {
+target ( "default" : "Displays info about plugin") {
     pluginInfo()
 }
 
@@ -154,7 +154,7 @@ For further info visit http://grails.org/Plugins
 '''
 }
 
-task(pluginInfo:"Implementation task") {
+target(pluginInfo:"Implementation target") {
     if( args ) {
         depends(updatePluginsList)
         displayHeader()

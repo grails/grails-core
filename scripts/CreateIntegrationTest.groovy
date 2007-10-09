@@ -28,12 +28,12 @@ Ant.property(environment:"env")
 grailsHome = Ant.antProject.properties."env.GRAILS_HOME"    
 
 includeTargets << new File ( "${grailsHome}/scripts/Init.groovy" )
-task ('default': "Creates a new Grails integration test which loads the whole Grails environment when run") {
+target ('default': "Creates a new Grails integration test which loads the whole Grails environment when run") {
 	typeName =""
 	depends( checkVersion, createTestSuite )
 }                            
 
-task (createTestSuite: "Implementation of create-test-suite") {
+target (createTestSuite: "Implementation of create-test-suite") {
 	typeName <<= "Tests"   
 	artifactName = "Tests" 		
 	artifactPath = "test/integration"

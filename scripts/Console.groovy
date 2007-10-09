@@ -32,12 +32,12 @@ grailsHome = Ant.antProject.properties."env.GRAILS_HOME"
 includeTargets << new File ( "${grailsHome}/scripts/Package.groovy" )
 includeTargets << new File ( "${grailsHome}/scripts/Bootstrap.groovy" )
 
-task ('default': "Load the Grails interactive Swing console") {
+target ('default': "Load the Grails interactive Swing console") {
 	depends( checkVersion, configureProxy, packageApp, classpath, packagePlugins )
 	console()
 }            
 
-task(console:"The console implementation task") { 
+target(console:"The console implementation target") {
      
 	rootLoader.addURL(classesDir.toURL())
 	loadApp()
