@@ -16,8 +16,9 @@ package org.codehaus.groovy.grails.web.mapping;
 
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 
-import java.util.Map;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * A Url mapping for http response codes
@@ -31,6 +32,7 @@ public class ResponseCodeUrlMapping implements UrlMapping {
     private final Object actionName;
     private final ConstrainedProperty[] constraints = new ConstrainedProperty[0];
     private final Object viewName;
+    private Map parameterValues = Collections.EMPTY_MAP;
 
     public ResponseCodeUrlMapping(UrlMappingData urlData, Object controllerName, Object actionName, Object viewName,ConstrainedProperty[] constraints) {
         this.urlData = (ResponseCodeMappingData) urlData;
@@ -65,6 +67,10 @@ public class ResponseCodeUrlMapping implements UrlMapping {
 
     public Object getViewName() {
         return this.viewName;
+    }
+
+    public void setParameterValues(Map parameterValues) {
+        this.parameterValues = parameterValues;
     }
 
     public int compareTo(Object o) {

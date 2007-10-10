@@ -189,6 +189,7 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
         private boolean urlDefiningMode = true;
         private List previousConstraints = new ArrayList();
         private List urlMappings = new ArrayList();
+        private Map parameterValues = new HashMap();
         private Binding binding;
         private Object actionName = null;
         private String controllerName = null;
@@ -255,9 +256,14 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
             return _invoke(methodName, arg, this);
         }
 
+        void propertyMissing(String name, Object value) {
+             parameterValues.put(name, value);
+        }
+
         private Object _invoke(String methodName, Object arg, Object delegate) {
             Object[] args = (Object[])arg;
             final boolean isResponseCode = isResponseCode(methodName);
+            this.parameterValues.clear();
             if(methodName.startsWith(SLASH) || isResponseCode) {
                 try {
                     urlDefiningMode = false;
@@ -285,19 +291,8 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
                         }
 
                         ConstrainedProperty[] constraints = (ConstrainedProperty[])previousConstraints.toArray(new ConstrainedProperty[previousConstraints.size()]);
-                        UrlMapping urlMapping;
-                        if (!isResponseCode) {
-                            if(actionName != null && viewName !=null) {
-                                viewName = null;
-                                LOG.warn("Both [action] and [view] specified in URL mapping ["+methodName+"]. The action takes precendence!");
-                            }
-
-                            urlMapping = new RegexUrlMapping(urlData, controllerName, actionName, viewName, constraints);
-                        }
-                        else {
-                            urlMapping = new ResponseCodeUrlMapping(urlData, controllerName, actionName, viewName, constraints);
-                        }
-                        urlMappings.add(urlMapping);
+                        UrlMapping urlMapping = createURLMapping(urlData, isResponseCode, controllerName, actionName, viewName, constraints);
+                        configureUrlMapping(urlMapping);
                         return urlMapping;
                     } if(args[0] instanceof Map) {
                         Map namedArguments = (Map) args[0];
@@ -307,17 +302,15 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
                             callable.call();
                         }
 
-                        UrlMapping urlMapping = getURLMapping(namedArguments, urlData, methodName, isResponseCode);
-                        urlMappings.add(urlMapping);
+                        UrlMapping urlMapping = getURLMappingForNamedArgs(namedArguments, urlData, methodName, isResponseCode);
+                        configureUrlMapping(urlMapping);
                         return urlMapping;
                     }
                     return null;
                 }
                 finally {
                     if (binding != null) {
-                        binding.getVariables().remove(GrailsControllerClass.CONTROLLER);
-                        binding.getVariables().remove(GrailsControllerClass.ACTION);
-                        binding.getVariables().remove(GrailsControllerClass.VIEW);
+                        binding.getVariables().clear();
                     }
                     else {
                         controllerName = null;
@@ -347,6 +340,24 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
             }
         }
 
+        private void configureUrlMapping(UrlMapping urlMapping) {
+            Map vars = this.binding.getVariables();
+            for (Iterator i = vars.keySet().iterator(); i.hasNext();) {
+                Object key = i.next();
+                if(isNotCoreMappingKey(key)) {
+                    this.parameterValues.put(key, vars.get(key));
+                }
+            }
+            urlMapping.setParameterValues(this.parameterValues);
+            urlMappings.add(urlMapping);
+        }
+
+        private boolean isNotCoreMappingKey(Object key) {
+            return !GrailsControllerClass.ACTION.equals(key) &&
+                   !GrailsControllerClass.CONTROLLER.equals(key) &&
+                   !GrailsControllerClass.VIEW.equals(key);
+        }
+
         private UrlMappingData createUrlMappingData(String methodName, boolean responseCode) {
             UrlMappingData urlData;
             if (!responseCode) {
@@ -366,7 +377,7 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
             return true;
         }
 
-        private UrlMapping getURLMapping(Map namedArguments,
+        private UrlMapping getURLMappingForNamedArgs(Map namedArguments,
                                          UrlMappingData urlData, String mapping, boolean isResponseCode) {
             Object controllerName = namedArguments
                     .get(GrailsControllerClass.CONTROLLER);
@@ -393,19 +404,22 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
                 LOG.warn("Both [action] and [view] specified in URL mapping ["+mapping+"]. The action takes precendence!");
             }
 
+            ConstrainedProperty[] constraints = (ConstrainedProperty[]) previousConstraints
+                    .toArray(new ConstrainedProperty[previousConstraints.size()]);
+
+            return createURLMapping(urlData, isResponseCode, controllerName, actionName, viewName, constraints);
+
+        }
+
+        private UrlMapping createURLMapping(UrlMappingData urlData, boolean isResponseCode, Object controllerName, Object actionName, Object viewName, ConstrainedProperty[] constraints) {
             if(!isResponseCode) {
 
-                ConstrainedProperty[] constraints = (ConstrainedProperty[]) previousConstraints
-                        .toArray(new ConstrainedProperty[previousConstraints.size()]);
-                UrlMapping urlMapping = new RegexUrlMapping(urlData,
+                return new RegexUrlMapping(urlData,
                         controllerName, actionName,viewName, constraints);
-                urlMappings.add(urlMapping);
-                return urlMapping;
             }
             else {
                 return new ResponseCodeUrlMapping(urlData, controllerName, actionName, viewName, null);
             }
-
         }
     }
 }

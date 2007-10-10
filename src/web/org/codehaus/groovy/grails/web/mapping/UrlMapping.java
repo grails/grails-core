@@ -17,6 +17,8 @@ package org.codehaus.groovy.grails.web.mapping;
 
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 
+import java.util.Map;
+
 /**
  * <p>An interface that defines a URL mapping. A URL mapping is a mapping between a URI such as /book/list and
  * a controller, action and/or id</p>
@@ -93,4 +95,10 @@ public interface UrlMapping extends Comparable, UrlCreator {
      * @return The view name
      */
     Object getViewName();
+
+    /**
+     * Sets any parameter values that should be populated into the request
+     * @param parameterValues The parameter values to set
+     */
+    void setParameterValues(Map parameterValues);
 }

@@ -16,6 +16,9 @@ package org.codehaus.groovy.grails.web.mapping;
 
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 
+import java.util.Collections;
+import java.util.Map;
+
 /**
  * Abstract UrlMapping implementation that provides common basic functionality
  *
@@ -31,6 +34,7 @@ public abstract class AbstractUrlMapping implements UrlMapping {
     protected Object controllerName;
     protected Object actionName;
     protected Object viewName;
+    protected Map parameterValues = Collections.EMPTY_MAP;
 
     /**
      * Base constructor required to construct a UrlMapping instance
@@ -79,5 +83,9 @@ public abstract class AbstractUrlMapping implements UrlMapping {
      */
     public Object getViewName() {
         return viewName;
+    }
+
+    public void setParameterValues(Map parameterValues) {
+        this.parameterValues = Collections.unmodifiableMap(parameterValues);
     }
 }

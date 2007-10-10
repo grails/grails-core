@@ -76,6 +76,7 @@ public class RegexUrlMapping extends AbstractUrlMapping implements UrlMapping {
      * @param data An instance of the UrlMappingData class that holds necessary information of the URL mapping
      * @param controllerName The name of the controller the URL maps to (required)
      * @param actionName The name of the action the URL maps to
+     * @param viewName The name of the view as an alternative to the name of the action. If the action is specified it takes precedence over the view name during mapping
      * @param constraints A list of ConstrainedProperty instances that relate to tokens in the URL
      *
      * @see org.codehaus.groovy.grails.validation.ConstrainedProperty
@@ -305,6 +306,11 @@ public class RegexUrlMapping extends AbstractUrlMapping implements UrlMapping {
 
                 }
             }
+        }
+
+        for (Iterator i = this.parameterValues.keySet().iterator(); i.hasNext();) {
+            Object key =  i.next();
+            params.put(key, this.parameterValues.get(key));            
         }
 
         if(controllerName == null) {
