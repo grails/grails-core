@@ -24,6 +24,7 @@ import org.codehaus.groovy.grails.commons.spring.DefaultRuntimeSpringConfigurati
 import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration;
 import org.codehaus.groovy.grails.commons.spring.DefaultBeanConfiguration;
 import org.codehaus.groovy.runtime.InvokerHelper;
+import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.RuntimeBeanReference;
 import org.springframework.beans.factory.support.ManagedList;
@@ -32,6 +33,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.StaticApplicationContext;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+import org.springframework.web.context.WebApplicationContext;
 
 import java.io.IOException;
 import java.util.*;
@@ -340,8 +342,6 @@ public class BeanBuilder extends GroovyObjectSupport {
         else if(BEANS.equals(name) && args.length == 1 && args[0] instanceof Closure) {
             return invokeBeanDefiningClosure(args[0]);
         }
-		
-
         if(args.length == 0)
 			throw new MissingMethodException(name, getClass(),args);
 		
@@ -376,7 +376,12 @@ public class BeanBuilder extends GroovyObjectSupport {
 		else if (args.length > 1 && args[args.length -1] instanceof Closure) {
 			return invokeBeanDefiningMethod(name, args);
 		}
-		return this;
+        WebApplicationContext ctx = springConfig.getUnrefreshedApplicationContext();
+        MetaClass mc = DefaultGroovyMethods.getMetaClass(ctx);
+        if(mc.respondsTo(ctx, name, args)!=null){
+            return mc.invokeMethod(ctx,name, args);
+        }        
+        return this;
 	}
 
 	private void finalizeDeferredProperties() {

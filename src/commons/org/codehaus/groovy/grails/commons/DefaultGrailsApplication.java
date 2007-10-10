@@ -25,6 +25,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.grails.commons.spring.GrailsResourceHolder;
+import org.codehaus.groovy.grails.commons.cfg.ConfigurationHelper;
 import org.codehaus.groovy.grails.compiler.GrailsClassLoader;
 import org.codehaus.groovy.grails.compiler.injection.ClassInjector;
 import org.codehaus.groovy.grails.compiler.injection.DefaultGrailsDomainClassInjector;
@@ -402,6 +403,7 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
                 c = new ConfigObject();
             }
 
+
             try {
                 Class dataSourceClass = getClassLoader()
                         .loadClass(DATA_SOURCE_CLASS);
@@ -412,6 +414,7 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
             }
         }
         if (c == null) c = new ConfigObject();
+        ConfigurationHelper.initConfig(c,null, getClassLoader());        
         ConfigurationHolder.setConfig(c);
         return c;
     }

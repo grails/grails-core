@@ -28,6 +28,7 @@ import org.springframework.core.io.support.PathMatchingResourcePatternResolver
 import org.springframework.core.io.*
 import org.codehaus.groovy.grails.plugins.*
 import org.codehaus.groovy.grails.commons.*
+import org.codehaus.groovy.grails.commons.cfg.*
 import org.codehaus.groovy.control.*
 import org.springframework.util.Log4jConfigurer
 import grails.util.*
@@ -56,11 +57,11 @@ target( createConfig: "Creates the configuration object") {
    def configSlurper = new ConfigSlurper(grailsEnv)
    if(configFile.exists()) { 
 		try {              
-			
+            configSlurper.setBinding(grailsHome:grailsHome, appName:grailsAppName, userHome:userHome, basedir:basedir)			
 			config = configSlurper.parse(classLoader.loadClass("Config"))
 			config.setConfigFile(configFile.toURL())
 
-			ConfigurationHolder.setConfig(config)			
+            ConfigurationHolder.setConfig(config)
 		}   
 		catch(Exception e) {
             e.printStackTrace()
@@ -84,6 +85,8 @@ target( createConfig: "Creates the configuration object") {
 			exit(1)
 		}
    }
+   println "CLASSLOADER $classLoader"
+   ConfigurationHelper.initConfig(config, null, classLoader)
 }    
 target( packageApp : "Implementation of package target") {
 	depends(createStructure)

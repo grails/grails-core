@@ -26,6 +26,7 @@ package grails.config
 
 class  ConfigSlurperTests extends GroovyTestCase { 
 
+
     void testEnvironmentProperties2() {
         def config = new ConfigSlurper("production").parse('''
 dataSource {

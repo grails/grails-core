@@ -169,7 +169,7 @@ public class GrailsWebApplicationContext extends StaticApplicationContext
 	}
 
     public ServletConfig getServletConfig() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return this.servletConfig;
     }
 
     public MetaClass getMetaClass() {
