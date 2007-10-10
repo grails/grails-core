@@ -368,7 +368,7 @@ public class BeanBuilder extends GroovyObjectSupport {
 		
 		if(args[0] instanceof Closure) {
             // abstract bean definition
-            invokeBeanDefiningMethod(name, args);
+            return invokeBeanDefiningMethod(name, args);
 		}
 		else if(args[0] instanceof Class || args[0] instanceof RuntimeBeanReference || args[0] instanceof Map) {
 			return invokeBeanDefiningMethod(name, args);			
@@ -378,7 +378,7 @@ public class BeanBuilder extends GroovyObjectSupport {
 		}
         WebApplicationContext ctx = springConfig.getUnrefreshedApplicationContext();
         MetaClass mc = DefaultGroovyMethods.getMetaClass(ctx);
-        if(mc.respondsTo(ctx, name, args)!=null){
+        if(!mc.respondsTo(ctx, name, args).isEmpty()){
             return mc.invokeMethod(ctx,name, args);
         }        
         return this;
