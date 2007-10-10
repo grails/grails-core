@@ -25,7 +25,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.grails.commons.spring.GrailsResourceHolder;
-import org.codehaus.groovy.grails.commons.cfg.ConfigurationHelper;
 import org.codehaus.groovy.grails.compiler.GrailsClassLoader;
 import org.codehaus.groovy.grails.compiler.injection.ClassInjector;
 import org.codehaus.groovy.grails.compiler.injection.DefaultGrailsDomainClassInjector;
@@ -119,7 +118,7 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
             loadedClasses.add(aClass);
         }
         this.allClasses = classes;
-        this.cl = classLoader; 
+        this.cl = classLoader;
         loadMetadata();
     }
 
@@ -138,8 +137,8 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
     public DefaultGrailsApplication(GrailsResourceLoader resourceLoader) {
         this.resourceLoader = resourceLoader;
 
-        try {                                                                 
-        	loadMetadata();	
+        try {
+        	loadMetadata();
             loadGrailsApplicationFromResources(resourceLoader.getResources());
         } catch (IOException e) {
             throw new GrailsConfigurationException("I/O exception loading Grails: " + e.getMessage(), e);
@@ -403,8 +402,6 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
                 c = new ConfigObject();
             }
 
-            ConfigurationHelper.initConfig(c,null);
-            
             try {
                 Class dataSourceClass = getClassLoader()
                         .loadClass(DATA_SOURCE_CLASS);
