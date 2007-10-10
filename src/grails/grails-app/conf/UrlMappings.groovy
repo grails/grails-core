@@ -5,5 +5,6 @@ class UrlMappings {
 			 // apply constraints here
 		  }
 	  }
+	  "500"(view:'/error')
 	}
 }

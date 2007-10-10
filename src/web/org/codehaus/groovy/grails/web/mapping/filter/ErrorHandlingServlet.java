@@ -20,9 +20,9 @@ import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.GrailsDispatcherServlet;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequestFilter;
+import org.codehaus.groovy.grails.web.util.WebUtils;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
-import org.springframework.web.util.WebUtils;
 
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
@@ -60,16 +60,7 @@ public class ErrorHandlingServlet extends GrailsDispatcherServlet {
             filter.setServletContext(getServletContext());
             filter.doFilter(request, response, new FilterChain() {
                 public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse) throws IOException, ServletException {
-                    String url = UrlMappingsFilter.buildDispatchUrlForMapping(request, urlMappingInfo);
-
-
-                    GrailsWebRequest webRequest = (GrailsWebRequest)request.getAttribute(GrailsApplicationAttributes.WEB_REQUEST);
-                    RequestDispatcher dispatcher = request.getRequestDispatcher(url);
-                    UrlMappingsFilter.populateWebRequestWithInfo(webRequest, urlMappingInfo);
-
-                    WebUtils.exposeForwardRequestAttributes(request);
-                    dispatcher.forward(request, response);
-
+                    WebUtils.forwardRequestForUrlMappingInfo(request, response, urlMappingInfo);
                 }
             });
         }

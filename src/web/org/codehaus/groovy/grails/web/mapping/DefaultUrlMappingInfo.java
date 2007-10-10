@@ -53,7 +53,7 @@ public class DefaultUrlMappingInfo implements UrlMappingInfo {
 
     public DefaultUrlMappingInfo(Object controllerName, Object actionName, Object viewName,Map params, UrlMappingData urlData) {
         this(params, urlData);
-        if(controllerName == null) throw new IllegalArgumentException("Argument [controllerName] cannot be null or blank");
+        if(controllerName == null && viewName == null) throw new IllegalArgumentException("URL mapping must either provide a controller or view name to map to!");
         if(params == null) throw new IllegalArgumentException("Argument [params] cannot be null");
         this.controllerName = controllerName;
         this.actionName = actionName;

@@ -15,17 +15,24 @@
  */ 
 package org.codehaus.groovy.grails.web.errors;
 
-import org.springframework.web.context.ServletContextAware;
-import org.springframework.web.servlet.ModelAndView;
-import org.springframework.web.servlet.handler.SimpleMappingExceptionResolver;
-import org.apache.commons.logging.LogFactory;
+import grails.util.GrailsUtil;
 import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.grails.web.mapping.UrlMappingInfo;
+import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder;
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
+import org.codehaus.groovy.grails.web.util.WebUtils;
+import org.codehaus.groovy.grails.exceptions.GrailsRuntimeException;
+import org.springframework.web.context.ServletContextAware;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.View;
+import org.springframework.web.servlet.ViewResolver;
+import org.springframework.web.servlet.handler.SimpleMappingExceptionResolver;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import grails.util.GrailsUtil;
 
 /**
  *  Exception resolver that wraps any runtime exceptions with a GrailsWrappedException instance
@@ -48,9 +55,41 @@ public class GrailsExceptionResolver  extends SimpleMappingExceptionResolver imp
         GrailsUtil.deepSanitize(ex);
 
         LOG.error(ex.getMessage(), ex);
-        
+
         GrailsWrappedRuntimeException gwrex = new GrailsWrappedRuntimeException(servletContext,ex);
         mv.addObject("exception",gwrex);
+
+        UrlMappingsHolder urlMappings = WebUtils.lookupUrlMappings(servletContext);
+        if(urlMappings != null) {
+            UrlMappingInfo info = urlMappings.matchStatusCode(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            try {
+                if(info != null && info.getViewName() != null) {
+                    ViewResolver viewResolver = WebUtils.lookupViewResolver(servletContext);
+                    View v = WebUtils.resolveView(request, info, info.getViewName(),viewResolver);
+                    if(v != null) {
+                        mv.setView(v);
+                    }
+                }
+                else if(info != null && info.getControllerName() != null) {
+                    String uri;
+                    if(request.getAttribute(WebUtils.FORWARD_REQUEST_URI_ATTRIBUTE) != null) {
+                        uri = (String)request.getAttribute(WebUtils.FORWARD_REQUEST_URI_ATTRIBUTE);
+                    }
+                    else {
+                        uri = request.getRequestURI();
+                    }
+
+                    String forwardUrl = WebUtils.forwardRequestForUrlMappingInfo(request, response, info, mv.getModel());
+                    if(LOG.isDebugEnabled()) {
+                        LOG.debug("Matched URI ["+uri+"] to URL mapping ["+info+"], forwarding to ["+forwardUrl+"] with response ["+response.getClass()+"]");
+                    }
+                }
+            } catch (Exception e) {
+                LOG.error("Unable to render errors view: " + e.getMessage(), e);
+                throw new GrailsRuntimeException(e);
+            }
+        }
+
         return mv;
     }
 

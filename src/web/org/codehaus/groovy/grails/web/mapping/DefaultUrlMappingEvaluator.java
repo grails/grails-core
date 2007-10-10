@@ -260,6 +260,10 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
              parameterValues.put(name, value);
         }
 
+        Object propertyMissing(String name) {
+            return parameterValues.get(name);
+        }
+
         private Object _invoke(String methodName, Object arg, Object delegate) {
             Object[] args = (Object[])arg;
             final boolean isResponseCode = isResponseCode(methodName);
@@ -341,11 +345,13 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
         }
 
         private void configureUrlMapping(UrlMapping urlMapping) {
-            Map vars = this.binding.getVariables();
-            for (Iterator i = vars.keySet().iterator(); i.hasNext();) {
-                Object key = i.next();
-                if(isNotCoreMappingKey(key)) {
-                    this.parameterValues.put(key, vars.get(key));
+            if(this.binding != null) {
+                Map vars = this.binding.getVariables();
+                for (Iterator i = vars.keySet().iterator(); i.hasNext();) {
+                    Object key = i.next();
+                    if(isNotCoreMappingKey(key)) {
+                        this.parameterValues.put(key, vars.get(key));
+                    }
                 }
             }
             urlMapping.setParameterValues(this.parameterValues);

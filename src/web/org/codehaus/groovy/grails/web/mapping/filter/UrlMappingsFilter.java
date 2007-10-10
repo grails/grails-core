@@ -14,7 +14,6 @@
  */
 package org.codehaus.groovy.grails.web.mapping.filter;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
@@ -24,19 +23,15 @@ import org.codehaus.groovy.grails.web.mapping.UrlMappingInfo;
 import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder;
 import org.codehaus.groovy.grails.web.mapping.exceptions.UrlMappingException;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
-import org.codehaus.groovy.grails.web.servlet.GrailsUrlPathHelper;
 import org.codehaus.groovy.grails.web.servlet.WrappedResponseHolder;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
-import org.springframework.web.context.WebApplicationContext;
-import org.springframework.web.context.support.WebApplicationContextUtils;
+import org.codehaus.groovy.grails.web.util.WebUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.servlet.View;
 import org.springframework.web.servlet.ViewResolver;
 import org.springframework.web.util.UrlPathHelper;
-import org.springframework.web.util.WebUtils;
 
 import javax.servlet.FilterChain;
-import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -58,15 +53,14 @@ import java.util.Collections;
 public class UrlMappingsFilter extends OncePerRequestFilter {
 
     private UrlPathHelper urlHelper = new UrlPathHelper();
-    private static final char SLASH = '/';
     private static final Log LOG = LogFactory.getLog(UrlMappingsFilter.class);
     private static final String GSP_SUFFIX = ".gsp";
     private static final String JSP_SUFFIX = ".jsp";
 
 
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        UrlMappingsHolder holder = lookupUrlMappings();
-        GrailsApplication application = lookupApplication();
+        UrlMappingsHolder holder = WebUtils.lookupUrlMappings(getServletContext());
+        GrailsApplication application = WebUtils.lookupApplication(getServletContext());
         GrailsWebRequest webRequest = (GrailsWebRequest)request.getAttribute(GrailsApplicationAttributes.WEB_REQUEST);
 
 
@@ -97,7 +91,7 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
 
                         if (viewName == null) {
                             final String controllerName = info.getControllerName();
-                            GrailsClass controller = application.getArtefactForFeature(ControllerArtefactHandler.TYPE, SLASH + controllerName + SLASH + action);
+                            GrailsClass controller = application.getArtefactForFeature(ControllerArtefactHandler.TYPE, org.codehaus.groovy.grails.web.util.WebUtils.SLASH + controllerName + org.codehaus.groovy.grails.web.util.WebUtils.SLASH + action);
                             if(controller == null)  {
                                 continue;
                             }
@@ -108,36 +102,18 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
                         
 
                         if(viewName == null || viewName.endsWith(GSP_SUFFIX) || viewName.endsWith(JSP_SUFFIX)) {
-                            String forwardUrl = buildDispatchUrlForMapping(request, info);
+                            String forwardUrl = WebUtils.forwardRequestForUrlMappingInfo(request, response, info);
                             if(LOG.isDebugEnabled()) {
                                 LOG.debug("Matched URI ["+uri+"] to URL mapping ["+info+"], forwarding to ["+forwardUrl+"] with response ["+response.getClass()+"]");
                             }
-                            //populateParamsForMapping(info);
-                            RequestDispatcher dispatcher = request.getRequestDispatcher(forwardUrl);
-                            populateWebRequestWithInfo(webRequest, info);
 
-                            WebUtils.exposeForwardRequestAttributes(request);
-                            dispatcher.forward(request, response);
                         }
                         else {
-                            ViewResolver viewResolver = lookupViewResolver();
+                            ViewResolver viewResolver = WebUtils.lookupViewResolver(getServletContext());
                             if(viewResolver != null) {
                                 View v;
                                 try {
-                                    if(viewName.startsWith(String.valueOf(SLASH))) {
-                                        v = viewResolver.resolveViewName(viewName, request.getLocale());
-                                    }
-                                    else {
-                                        String controllerName = info.getControllerName();
-                                        StringBuffer buf = new StringBuffer();
-                                        buf.append(SLASH);
-                                        if(controllerName != null) {
-                                            buf.append(controllerName).append(SLASH);
-                                        }
-                                        buf.append(viewName);
-                                        v = viewResolver.resolveViewName(buf.toString(), request.getLocale());
-
-                                    }
+                                    v = org.codehaus.groovy.grails.web.util.WebUtils.resolveView(request, info, viewName, viewResolver);
                                     v.render(Collections.EMPTY_MAP, request, response);
                                 } catch (Exception e) {
                                     throw new UrlMappingException("Error mapping onto view ["+viewName+"]: " + e.getMessage(),e);
@@ -172,86 +148,5 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
         }
     }
 
-    protected static void populateWebRequestWithInfo(GrailsWebRequest webRequest, UrlMappingInfo info) {
-        if(webRequest != null) {
-            final String viewName = info.getViewName();
-
-            if (viewName == null) {
-                webRequest.setControllerName(info.getControllerName());
-                webRequest.setActionName(info.getActionName());
-            }
-
-            String id = info.getId();
-            if(!StringUtils.isBlank(id))webRequest.getParams().put(GrailsWebRequest.ID_PARAMETER, id);
-        }
-    }
-
-
-    /**
-     * Constructs the URI to forward to using the given request and UrlMappingInfo instance
-     *
-     * @param request The HttpServletRequest
-     * @param info The UrlMappingInfo
-     * @return The URI to forward to
-     */
-    protected static String buildDispatchUrlForMapping(HttpServletRequest request, UrlMappingInfo info) {
-        final StringBuffer forwardUrl = new StringBuffer();
-
-        if (info.getViewName() != null) {
-            String viewName = info.getViewName();
-            forwardUrl.append(SLASH).append(viewName);
-        }
-        else {
-            forwardUrl.append(GrailsUrlPathHelper.GRAILS_SERVLET_PATH);
-            forwardUrl.append(SLASH)
-                              .append(info.getControllerName());
-
-            if(!StringUtils.isBlank(info.getActionName())) {
-                forwardUrl.append(SLASH)
-                          .append(info.getActionName());
-            }
-            forwardUrl.append(GrailsUrlPathHelper.GRAILS_DISPATCH_EXTENSION);
-        }
-
-        return forwardUrl.toString();
-    }
-
-    protected ViewResolver lookupViewResolver() {
-        WebApplicationContext wac =
-                WebApplicationContextUtils.getRequiredWebApplicationContext(getServletContext());
-
-        String[] beanNames = wac.getBeanNamesForType(ViewResolver.class);
-        if(beanNames.length > 0) {
-            String beanName = beanNames[0];
-            return (ViewResolver)wac.getBean(beanName);
-        }
-        return null;
-
-    }
-
-    /**
-     * Looks up the UrlMappingsHolder instance
-     *
-     * @return The UrlMappingsHolder
-     */
-    protected UrlMappingsHolder lookupUrlMappings() {
-        WebApplicationContext wac =
-                WebApplicationContextUtils.getRequiredWebApplicationContext(getServletContext());
-
-        return (UrlMappingsHolder)wac.getBean(UrlMappingsHolder.BEAN_ID);
-    }
-
-    /**
-     * Looks up the GrailsApplication instance
-     *
-     * @return The GrailsApplication instance
-     */
-    protected GrailsApplication lookupApplication() {
-        WebApplicationContext wac =
-                WebApplicationContextUtils.getRequiredWebApplicationContext(getServletContext());
-
-        return (GrailsApplication)wac.getBean(GrailsApplication.APPLICATION_ID);
-
-    }
 
 }
