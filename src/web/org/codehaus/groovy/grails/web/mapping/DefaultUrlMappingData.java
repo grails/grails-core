@@ -29,6 +29,7 @@ import java.util.*;
  */
 public class DefaultUrlMappingData implements UrlMappingData {
     private static final String CAPTURED_WILDCARD = "(*)";
+    private static final String CAPTURED_DOUBLE_WILDCARD = "(**)";
     private static final String QUESTION_MARK = "?";
     private static final String SLASH = "/";
 
@@ -43,7 +44,7 @@ public class DefaultUrlMappingData implements UrlMappingData {
         if(StringUtils.isBlank(urlPattern)) throw new IllegalArgumentException("Argument [urlPattern] cannot be null or blank");
         if(!urlPattern.startsWith(SLASH)) throw new IllegalArgumentException("Argument [urlPattern] is not a valid URL. It must start with '/' !");
 
-        this.urlPattern = urlPattern; // remove starting /
+        this.urlPattern = urlPattern.replace("(*)**", CAPTURED_DOUBLE_WILDCARD); // remove starting /
         this.tokens = this.urlPattern.substring(1).split(SLASH);
         List urls = new ArrayList();
 
@@ -78,6 +79,9 @@ public class DefaultUrlMappingData implements UrlMappingData {
                     optionalTokens.add( Boolean.FALSE);
                 }
             }
+            if(CAPTURED_DOUBLE_WILDCARD.equals(tokens[i])) {
+                optionalTokens.add( Boolean.TRUE);
+            }            
         }
         urls.add(buf.toString());
         Collections.reverse(urls);

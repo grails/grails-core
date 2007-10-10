@@ -66,6 +66,8 @@ public class RegexUrlMapping extends AbstractUrlMapping implements UrlMapping {
     private static final String SLASH = "/";
     private static final char QUESTION_MARK = '?';
     private static final char AMPERSAND = '&';
+    private static final String DOUBLE_WILDCARD = "**";
+    private static final String CAPTURED_DOUBLE_WILDCARD = "(**)";
 
     private static final Log LOG = LogFactory.getLog(RegexUrlMapping.class);
 
@@ -124,7 +126,7 @@ public class RegexUrlMapping extends AbstractUrlMapping implements UrlMapping {
         Pattern regex;
         String pattern = null;
         try {
-            pattern = "^" + url.replaceAll("\\*", "[^/]+");
+            pattern = "^" + url.replaceAll("([^\\*])\\*([^\\*])", "$1[^/]+$2").replaceAll("([^\\*])\\*$", "$1[^/]+").replaceAll("\\*\\*", ".*");
             pattern += "/??$";
             regex = Pattern.compile(pattern);
         } catch (PatternSyntaxException pse) {
@@ -147,7 +149,7 @@ public class RegexUrlMapping extends AbstractUrlMapping implements UrlMapping {
     	for (int i = 0; i < patterns.length; i++) {
             Pattern pattern = patterns[i];
             Matcher m = pattern.matcher(uri);
-            if(m.find()) {
+            if(m.matches()) {
                   UrlMappingInfo urlInfo = createUrlMappingInfo(uri,m);
                   if(urlInfo!=null) {
                       return urlInfo;
@@ -171,7 +173,7 @@ public class RegexUrlMapping extends AbstractUrlMapping implements UrlMapping {
         int paramIndex = 0;
         for (int i = 0; i < tokens.length; i++) {
             String token = tokens[i];
-            if(CAPTURED_WILDCARD.equals(token)) {
+            if(CAPTURED_WILDCARD.equals(token) || CAPTURED_DOUBLE_WILDCARD.equals(token)) {
                 ConstrainedProperty prop = this.constraints[paramIndex++];
                 String propName = prop.getPropertyName();
                 Object value = parameterValues.get(propName);
@@ -420,7 +422,7 @@ public class RegexUrlMapping extends AbstractUrlMapping implements UrlMapping {
     }
 
     private boolean isWildcard(String token) {
-        return WILDCARD.equals(token) || CAPTURED_WILDCARD.equals(token);
+        return WILDCARD.equals(token) || CAPTURED_WILDCARD.equals(token) || DOUBLE_WILDCARD.equals(token) || CAPTURED_DOUBLE_WILDCARD.equals(token);
     }
 
 
