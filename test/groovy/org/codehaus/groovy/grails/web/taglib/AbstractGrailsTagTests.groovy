@@ -22,6 +22,7 @@ import org.springframework.web.context.WebApplicationContext
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.servlet.DispatcherServlet
 import org.springframework.web.servlet.i18n.AcceptHeaderLocaleResolver;
+import org.codehaus.groovy.grails.commons.ApplicationHolder
 
 abstract class AbstractGrailsTagTests extends GroovyTestCase {
 
@@ -84,6 +85,7 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
         grailsApplication = new DefaultGrailsApplication(gcl.loadedClasses, gcl)
         ga = grailsApplication
         grailsApplication.initialise()
+        ApplicationHolder.application = ga
         mockManager = new MockGrailsPluginManager(grailsApplication)
         mockManager.registerProvidedArtefacts(grailsApplication)
         onInit()

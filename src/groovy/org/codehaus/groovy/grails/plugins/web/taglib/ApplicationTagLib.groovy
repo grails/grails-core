@@ -28,6 +28,7 @@ import org.springframework.web.servlet.support.RequestContextUtils as RCU;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
 import org.springframework.context.ApplicationContextAware
 import org.springframework.context.ApplicationContext;
+import org.codehaus.groovy.grails.commons.ApplicationHolder; 
 
 class ApplicationTagLib implements ApplicationContextAware {
 
@@ -158,5 +159,12 @@ class ApplicationTagLib implements ApplicationContextAware {
 		writer << '>'  
 		writer << body()
 		writer << "</${attrs.name}>"			
-	}	
+	}
+
+	/**
+	 * Output application metadata that is loaded from application.properties
+	 */
+    def meta = { attrs ->
+        out << ApplicationHolder.application.metadata[attrs.name]
+    }
 }

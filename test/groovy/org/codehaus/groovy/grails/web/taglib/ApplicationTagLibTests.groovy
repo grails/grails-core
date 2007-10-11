@@ -1,6 +1,7 @@
 package org.codehaus.groovy.grails.web.taglib;
 
 import org.codehaus.groovy.runtime.InvokerHelper
+import org.codehaus.groovy.grails.commons.ApplicationHolder
 
 class ApplicationTagLibTests extends AbstractGrailsTagTests {
 
@@ -16,6 +17,12 @@ class ApplicationTagLibTests extends AbstractGrailsTagTests {
         assertOutputEquals('one: two', template)		
 	}
 	
+	void testMetaTag() {
+        def template = '<g:meta name="app.version"/>'
+
+        assertOutputEquals('0.9.9.1', template)
+	}
+
 	void testCreateLinkTo() {
 		StringWriter sw = new StringWriter();
 		withTag("createLinkTo", sw) { tag ->
