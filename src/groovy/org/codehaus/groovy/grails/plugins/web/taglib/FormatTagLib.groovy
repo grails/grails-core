@@ -74,4 +74,11 @@ class FormatTagLib {
 
         out << new java.text.DecimalFormat(format).format((Double)number)
     }
+
+    def encodeAs = { attrs, body ->
+        if (!attrs.codec)
+            throwTagError("Tag [encodeAs] requires a codec name in the [codec] attribute")
+
+        out << body()."encodeAs${attrs.codec}"()
+    }
 }

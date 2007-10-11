@@ -27,4 +27,11 @@ class FormatTagLibTests extends AbstractGrailsTagTests {
 
     }
 
+    void testEncodeAs() {
+        def template = '<g:encodeAs codec="HTML">Coheed & Cambria</g:encodeAs>'
+
+        assertOutputEquals('Coheed &amp; Cambria', template, [:])
+
+    }
+
 }
