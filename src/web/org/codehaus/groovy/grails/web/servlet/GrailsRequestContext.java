@@ -79,4 +79,21 @@ public interface GrailsRequestContext {
      */
     Writer getOut();
 
+
+    /**
+     * @return The Action name
+     */
+    String getActionName();
+
+
+    /**
+     * @return The Controller Name
+     */
+    String getControllerName();
+
+    /**
+     * @return The Request URI
+     */
+    String getRequestURI();
+
 }
