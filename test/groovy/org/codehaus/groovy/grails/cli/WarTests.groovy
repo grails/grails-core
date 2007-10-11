@@ -5,11 +5,11 @@ import gant.Gant
 class WarTests  extends AbstractCliTests {
 
 	void testWAR() {
-		Gant.main(["-f", "scripts/CreateApp.groovy"] as String[])
+		new Gant().process ( ["-f", "scripts/CreateApp.groovy"] as String[])
 		
 		
 		System.setProperty("base.dir", appBase + File.separatorChar + System.getProperty("grails.cli.args"))
-		Gant.main(["-f", "scripts/War.groovy"] as String[])
+		new Gant().process ( ["-f", "scripts/War.groovy"] as String[])
 		
 		assert new File("${appBase}/testapp/testapp-0.1.war").exists()
 		

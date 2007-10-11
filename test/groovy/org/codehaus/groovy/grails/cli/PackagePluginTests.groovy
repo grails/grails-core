@@ -6,10 +6,10 @@ class PackagePluginTests extends AbstractCliTests {
 
 	void testPackagePlugin() {
         System.setProperty("grails.cli.args", "MyTest")
-		Gant.main(["-f", "scripts/CreatePlugin.groovy"] as String[])
+		new Gant().process ( ["-f", "scripts/CreatePlugin.groovy"] as String[])
         def appDir = appBase + File.separatorChar + System.getProperty("grails.cli.args")
 		System.setProperty("base.dir", appDir)
-        Gant.main(["-f", "scripts/PackagePlugin.groovy"] as String[])
+        new Gant().process ( ["-f", "scripts/PackagePlugin.groovy"] as String[])
         assertTrue new File("${appDir}/grails-my-test-0.1.zip").exists()
         assertTrue new File("${appDir}/plugin.xml").exists()
         ant.unzip(src:"${appDir}/grails-my-test-0.1.zip", dest:"${appBase}/unzipped")

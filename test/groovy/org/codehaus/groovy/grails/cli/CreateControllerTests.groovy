@@ -8,7 +8,7 @@ class CreateControllerTests extends AbstractCliTests {
 	void testCreateControllerCreatesViewDirectory() {
 	    println "CREATE APP"
 
-		Gant.main(["-f", "scripts/CreateApp.groovy"] as String[])
+		new Gant().process ( ["-f", "scripts/CreateApp.groovy"] as String[])
 
         // Correct the base dir now
         def appDir = appBase + File.separatorChar + System.getProperty("grails.cli.args")
@@ -21,7 +21,7 @@ class CreateControllerTests extends AbstractCliTests {
 	    println "CREATE CONTROLLER"
 
 		System.setProperty("grails.cli.args", "Book")
-		Gant.main(["-f", "scripts/CreateController.groovy"] as String[])
+		new Gant().process ( ["-f", "scripts/CreateController.groovy"] as String[])
 
 		assertTrue "${bookViewDirectory} does not exist", new File(bookViewDirectory).exists()
 	}

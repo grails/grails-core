@@ -7,7 +7,7 @@ class CreatePluginTests extends AbstractCliTests {
 	
 	void testCreatePlugin() {
         System.setProperty("grails.cli.args", "MyTest")
-		Gant.main(["-f", "scripts/CreatePlugin.groovy"] as String[])
+		new Gant().process ( ["-f", "scripts/CreatePlugin.groovy"] as String[])
 		
 		// test basic structure
 		assertTrue new File("${appBase}/MyTest").exists()

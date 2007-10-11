@@ -88,10 +88,12 @@
 
 	<target name="run-test" depends="defineTestingScope, build-test" unless="_skipTests_">
 		<delete dir="${grails.test.reports}" />
-		<mkdir dir="${grails.test.reports}" />
-		<junit fork="true" maxmemory="512m" forkmode="once">
+        <mkdir dir="${grails.test.reports}" />
+        <echo>Test being run ${test} from ${grails.test.build}</echo>
+        <junit fork="true" maxmemory="512m" forkmode="once">
 			<!-- only fork VMs as needed -->
-			<jvmarg value="-server" />
+            <sysproperty key="grails.cli.testing" value="true"/>
+            <jvmarg value="-server" />
 			<jvmarg value="-Xmx512M" />
 			<jvmarg value="-XX:MaxPermSize=256m"/>
 			<classpath location="${coverage.build}" />
@@ -106,29 +108,16 @@
 			<classpath location="${grails.test.src.scaffolding}" />
 			<classpath location="${grails.test.src.groovy}" />
 			<!-- needed to load codecs -->
-			<classpath location="${grails.src.codecs}" />
-			<formatter type="xml" />
-			<batchtest todir="${grails.test.reports}" failureproperty="grails.test.failure">
+            <classpath location="${grails.src.codecs}" />
+            <formatter type="xml" />
+            <batchtest todir="${grails.test.reports}" failureproperty="grails.test.failure">
 				<fileset dir="${grails.test.build}">
 					<include name="**/${test}Tests.class" />
-					<exclude name="**/Abstract*" />
-					<exclude name="**/TransactionalServiceReloadTests*" />					
-					<!--<exclude name="**/TransactionalServiceReloadTests*" />-->
-<!--					<exclude name="**/ClassReloadingTests*" />
-					<exclude name="**/MessageTagTests*" />
-					<exclude name="**/FormTagLib*Tests*" />
-					<exclude name="**/CodecsGrailsPluginTests*" />-->
+					<exclude name="**/Abstract*" />                    
+                    <exclude name="**/TransactionalServiceReloadTests*" />
 				</fileset>
 			</batchtest>
 			<test todir="${grails.test.reports}" name="org.codehaus.groovy.grails.reload.TransactionalServiceReloadTests" fork="true" if="test.isolated" />
-			<!-- GrailsHibernateConfigurationTests needs it's own VM -->
-		    <!--<test todir="${grails.test.reports}" name="org.codehaus.groovy.grails.orm.hibernate.GrailsHibernateConfigurationTests" fork="true" if="test.isolated" />-->
-		   <!-- <test todir="${grails.test.reports}" name="org.codehaus.groovy.grails.plugins.web.CodecsGrailsPluginTests" fork="true" if="test.isolated" />
-			<test todir="${grails.test.reports}" name="org.codehaus.groovy.grails.commons.ClassReloadingTests" fork="true" if="test.isolated" />
-			<test todir="${grails.test.reports}" name="org.codehaus.groovy.grails.web.taglib.MessageTagTests" fork="true" if="test.isolated" />
-			<test todir="${grails.test.reports}" name="org.codehaus.groovy.grails.web.taglib.FormTagLibTests" fork="true" if="test.isolated" />
-			<test todir="${grails.test.reports}" name="org.codehaus.groovy.grails.web.taglib.FormTagLib2Tests" fork="true" if="test.isolated" />
-			<test todir="${grails.test.reports}" name="org.codehaus.groovy.grails.web.taglib.FormTagLib3Tests" fork="true" if="test.isolated" />    -->
 
 		</junit>
 	</target>
