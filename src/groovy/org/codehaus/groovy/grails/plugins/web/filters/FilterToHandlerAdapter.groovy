@@ -15,16 +15,15 @@
  */
 package org.codehaus.groovy.grails.plugins.web.filters
 
-import org.springframework.web.servlet.HandlerInterceptor
+import java.util.regex.Pattern
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
-import org.springframework.web.servlet.ModelAndView
 import org.apache.commons.logging.LogFactory
-import java.util.regex.Pattern
-import org.springframework.web.util.UrlPathHelper
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
-import org.codehaus.groovy.grails.web.servlet.WebRequestDelegatingRequestContext
 import org.codehaus.groovy.grails.web.util.WebUtils
+import org.springframework.web.servlet.HandlerInterceptor
+import org.springframework.web.servlet.ModelAndView
+import org.springframework.web.util.UrlPathHelper
 
 /**
  * @author mike
@@ -107,7 +106,7 @@ class FilterToHandlerAdapter implements HandlerInterceptor {
         }
     }
 
-    private renderModelAndView(FilterActionDelegate delegate, request, response, controllerName) {
+    private renderModelAndView(delegate, request, response, controllerName) {
         def viewResolver = WebUtils.lookupViewResolver(delegate.servletContext)
         def view
         ModelAndView modelAndView = delegate.modelAndView
