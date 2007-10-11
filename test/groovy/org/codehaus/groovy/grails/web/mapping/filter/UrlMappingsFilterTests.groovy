@@ -25,7 +25,8 @@ import org.codehaus.groovy.grails.web.mapping.UrlMappingEvaluator;
 import org.codehaus.groovy.grails.web.mapping.DefaultUrlMappingEvaluator;
 import org.codehaus.groovy.grails.web.mapping.DefaultUrlMappingsHolder;
 
-import java.util.List;
+import java.util.List
+import grails.util.GrailsWebUtil;
 
 /**
  * Tests for the UrlMappingsFilter
@@ -110,8 +111,8 @@ class OtherController {
         appCtx = new MockApplicationContext();
         evaluator = new DefaultUrlMappingEvaluator();
         gcl = new GroovyClassLoader()
-        request = new MockHttpServletRequest();
-        response = new MockHttpServletResponse()
+        request = webRequest.currentRequest
+        response = webRequest.currentResponse
         filter = new UrlMappingsFilter();
         filter.init(new MockFilterConfig(servletContext));
     }
@@ -162,8 +163,9 @@ class OtherController {
 
         assertEquals "/grails/noIndex/myAction.dispatch", response.forwardedUrl
 
-        request = new MockHttpServletRequest();
-        response = new MockHttpServletResponse()
+        webRequest = GrailsWebUtil.bindMockWebRequest()
+        request = webRequest.currentRequest
+        response = webRequest.currentResponse
         request.setRequestURI("/other/myAction");
 
 
@@ -202,8 +204,9 @@ void testFilterWithControllerWithIndexAndAction(){
 
         assertEquals "/grails/indexAndAction.dispatch", response.forwardedUrl
 
-        request = new MockHttpServletRequest();
-        response = new MockHttpServletResponse()
+        webRequest = GrailsWebUtil.bindMockWebRequest()
+        request = webRequest.currentRequest
+        response = webRequest.currentResponse
         request.setRequestURI("/indexAndAction");
 
         filter = new UrlMappingsFilter();

@@ -26,6 +26,7 @@ import org.codehaus.groovy.grails.plugins.support.aware.ClassLoaderAware;
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 import org.codehaus.groovy.grails.validation.ConstrainedPropertyBuilder;
 import org.codehaus.groovy.grails.web.mapping.exceptions.UrlMappingException;
+import org.codehaus.groovy.grails.web.plugins.support.WebMetaUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.core.io.Resource;
 
@@ -130,7 +131,7 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
             GrailsPlugin controllerPlugin = manager.getGrailsPlugin("controllers");
             GroovyObject pluginInstance = controllerPlugin.getInstance();
 
-            pluginInstance.invokeMethod("registerCommonObjects", new Object[]{GrailsMetaClassUtils.getExpandoMetaClass(script.getClass()), null});
+            WebMetaUtils.registerCommonWebProperties(GrailsMetaClassUtils.getExpandoMetaClass(script.getClass()), null);            
 
         }
     }
@@ -141,7 +142,7 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
             GrailsPlugin controllerPlugin = manager.getGrailsPlugin("controllers");
             GroovyObject pluginInstance = controllerPlugin.getInstance();
 
-            pluginInstance.invokeMethod("registerCommonObjects", new Object[]{GrailsMetaClassUtils.getExpandoMetaClass(object.getClass()), null});
+            WebMetaUtils.registerCommonWebProperties(GrailsMetaClassUtils.getExpandoMetaClass(object.getClass()), null);
 
         }
     }

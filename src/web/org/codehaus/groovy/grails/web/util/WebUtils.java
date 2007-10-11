@@ -89,13 +89,37 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
 
     }
 
+
+    /**
+     * Resolves a view for the given view and UrlMappingInfo instance
+     *
+     * @param request The request
+     * @param info The info
+     * @param viewName The view name
+     * @param viewResolver The view resolver
+     * @return The view or null
+     * @throws Exception
+     */
     public static View resolveView(HttpServletRequest request, UrlMappingInfo info, String viewName, ViewResolver viewResolver) throws Exception {
+        String controllerName = info.getControllerName();
+        return resolveView(request, viewName, controllerName, viewResolver);
+    }
+
+    /**
+     * Resolves a view for the given view name and controller name
+     * @param request The request
+     * @param viewName The view name
+     * @param controllerName The controller name
+     * @param viewResolver The resolver
+     * @return A View or null
+     * @throws Exception Thrown if an error occurs
+     */
+    public static View resolveView(HttpServletRequest request, String viewName, String controllerName, ViewResolver viewResolver) throws Exception {
         View v;
         if(viewName.startsWith(String.valueOf(SLASH))) {
             v = viewResolver.resolveViewName(viewName, request.getLocale());
         }
         else {
-            String controllerName = info.getControllerName();
             StringBuffer buf = new StringBuffer();
             buf.append(SLASH);
             if(controllerName != null) {

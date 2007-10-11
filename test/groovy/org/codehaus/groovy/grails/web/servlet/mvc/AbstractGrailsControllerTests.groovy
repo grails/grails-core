@@ -46,27 +46,36 @@ abstract class AbstractGrailsControllerTests extends GroovyTestCase {
         ctx = new MockApplicationContext();
         onSetUp();
         ga = new DefaultGrailsApplication(gcl.getLoadedClasses(),gcl);
-        ga.initialise()
-        ga.setApplicationContext(ctx);
-        ctx.registerMockBean(GrailsApplication.APPLICATION_ID, ga);
-        ctx.registerMockBean(PluginMetaManager.BEAN_ID, new DefaultPluginMetaManager(new Resource[0]));        
-		
-		mockManager = new MockGrailsPluginManager(ga)
-		ctx.registerMockBean("manager", mockManager )
-		PluginManagerHolder.setPluginManager(mockManager)
-		
+        mockManager = new MockGrailsPluginManager(ga)
+        mockManager = new MockGrailsPluginManager(ga)
+        ctx.registerMockBean("manager", mockManager )
+        PluginManagerHolder.setPluginManager(mockManager)
+
 		def dependantPluginClasses = []
-		dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.CoreGrailsPlugin")					
+		dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.CoreGrailsPlugin")
 		dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.CodecsGrailsPlugin")
         dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.DomainClassGrailsPlugin")
         dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.i18n.I18nGrailsPlugin")
         dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.web.ServletsGrailsPlugin")
         dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.web.mapping.UrlMappingsGrailsPlugin")
 		dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.web.ControllersGrailsPlugin")
-		dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.converters.ConvertersGrailsPlugin")
+        dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.web.filters.FiltersGrailsPlugin")
+        dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.converters.ConvertersGrailsPlugin")        
+        def dependentPlugins = dependantPluginClasses.collect { new DefaultGrailsPlugin(it, ga)}
+
+        dependentPlugins.each{ mockManager.registerMockPlugin(it); it.manager = mockManager }
+        mockManager.doArtefactConfiguration();
+        ctx.registerMockBean(PluginMetaManager.BEAN_ID, new DefaultPluginMetaManager(new Resource[0]));
+
+        ga.initialise()
+        ga.setApplicationContext(ctx);
+        ctx.registerMockBean(GrailsApplication.APPLICATION_ID, ga);
+
+
+
 
 		
-		def dependentPlugins = dependantPluginClasses.collect { new DefaultGrailsPlugin(it, ga)}
+
 		def springConfig = new DefaultRuntimeSpringConfiguration(ctx)
         webRequest = GrailsWebUtil.bindMockWebRequest()
         request = webRequest.currentRequest
@@ -79,9 +88,10 @@ abstract class AbstractGrailsControllerTests extends GroovyTestCase {
 		
 		dependentPlugins*.doWithRuntimeConfiguration(springConfig)
 		dependentPlugins.each{ mockManager.registerMockPlugin(it); it.manager = mockManager }
-			
-		appCtx = springConfig.getApplicationContext()
-		servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, appCtx)
+
+        appCtx = springConfig.getApplicationContext()
+        dependentPlugins*.doWithApplicationContext(appCtx)
+        servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, appCtx)
 
 		mockManager.applicationContext = appCtx
 		servletContext.setAttribute( GrailsApplicationAttributes.APPLICATION_CONTEXT, appCtx)

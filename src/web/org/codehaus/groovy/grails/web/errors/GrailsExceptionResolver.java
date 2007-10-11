@@ -59,7 +59,12 @@ public class GrailsExceptionResolver  extends SimpleMappingExceptionResolver imp
         GrailsWrappedRuntimeException gwrex = new GrailsWrappedRuntimeException(servletContext,ex);
         mv.addObject("exception",gwrex);
 
-        UrlMappingsHolder urlMappings = WebUtils.lookupUrlMappings(servletContext);
+        UrlMappingsHolder urlMappings = null;
+        try {
+            urlMappings = WebUtils.lookupUrlMappings(servletContext);
+        } catch (Exception e) {
+            // ignore, no app ctx in this case.
+        }
         if(urlMappings != null) {
             UrlMappingInfo info = urlMappings.matchStatusCode(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             try {

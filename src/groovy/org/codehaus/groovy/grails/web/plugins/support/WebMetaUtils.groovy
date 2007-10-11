@@ -20,6 +20,7 @@ import org.codehaus.groovy.grails.commons.GrailsTagLibClass
 import org.springframework.beans.BeanWrapperImpl
 import org.codehaus.groovy.grails.web.pages.GroovyPage
 import org.springframework.web.context.request.RequestContextHolder as RCH
+import org.codehaus.groovy.grails.commons.GrailsApplication
 
 /**
  * Provides utility methods used to support meta-programming. In particular commons methods to
@@ -33,6 +34,52 @@ import org.springframework.web.context.request.RequestContextHolder as RCH
  *
  */
 class WebMetaUtils {
+
+
+    /**
+     * This creates the difference dynamic methods and properties on the controllers. Most methods
+     * are implemented by looking up the current request from the RequestContextHolder (RCH)
+     */
+    static registerCommonWebProperties(MetaClass mc, GrailsApplication application) {
+           def paramsObject = {->
+                RCH.currentRequestAttributes().params
+            }
+            def flashObject = {->
+                RCH.currentRequestAttributes().flashScope
+            }
+               def sessionObject = {->
+                RCH.currentRequestAttributes().session
+            }
+               def requestObject = {->
+                RCH.currentRequestAttributes().currentRequest
+            }
+               def responseObject = {->
+                RCH.currentRequestAttributes().currentResponse
+            }
+               def servletContextObject = {->
+                    RCH.currentRequestAttributes().servletContext
+            }
+               def grailsAttrsObject = {->
+                    RCH.currentRequestAttributes().attributes
+            }
+
+           // the params object
+           mc.getParams = paramsObject
+           // the flash object
+           mc.getFlash = flashObject
+           // the session object
+            mc.getSession = sessionObject
+           // the request object
+            mc.getRequest = requestObject
+           // the servlet context
+           mc.getServletContext = servletContextObject
+           // the response object
+            mc.getResponse = responseObject
+           // The GrailsApplicationAttributes object
+           mc.getGrailsAttributes = grailsAttrsObject
+           // The GrailsApplication object
+           mc.getGrailsApplication = {-> RCH.currentRequestAttributes().attributes.grailsApplication }
+    }
 
 
     static registerMethodMissingForTags(MetaClass mc, ApplicationContext ctx, GrailsTagLibClass tagLibraryClass, String name) {

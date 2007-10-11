@@ -34,6 +34,8 @@ public interface GrailsApplicationAttributes extends ApplicationAttributes {
     String PAGE_SCOPE = "org.codehaus.groovy.grails.PAGE_SCOPE";
     String GSP_TMP_WRITER = "org.codehaus.groovy.grails.GSP_TMP_WRITER";
     String REQUEST_REDIRECTED_ATTRIBUTE = "org.codehaus.groovy.grails.request_redirected";
+    String ACTION_NAME_ATTRIBUTE = "org.codehaus.groovy.grails.ACTION_NAME_ATTRIBUTE";
+    String CONTROLLER_NAME_ATTRIBUTE = "org.codehaus.groovy.grails.CONTROLLER_NAME_ATTRIBUTE";
 
 
     /**

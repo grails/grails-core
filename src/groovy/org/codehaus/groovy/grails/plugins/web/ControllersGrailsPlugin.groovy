@@ -352,7 +352,7 @@ class ControllersGrailsPlugin {
 	   		String namespace = taglib.namespace
             namespaces << namespace
 
-	   		registerCommonObjects(mc, application)
+	   		WebMetaUtils.registerCommonWebProperties(mc, application)
 
 	   		mc.throwTagError = { String message ->
 	   			throw new org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException(message)
@@ -458,7 +458,7 @@ class ControllersGrailsPlugin {
         for(GrailsClass controller in application.controllerClasses ) {
 		   MetaClass mc = controller.metaClass
 		   Class controllerClass = controller.clazz
-			registerCommonObjects(mc, application)
+			WebMetaUtils.registerCommonWebProperties(mc, application)
 			registerControllerMethods(mc, ctx)
 			registerMethodMissing(mc, application, ctx)
             Class superClass = controller.clazz.superclass
@@ -482,7 +482,7 @@ class ControllersGrailsPlugin {
             // deal with abstract super classes
             while(superClass != Object.class) {
                 if(Modifier.isAbstract(superClass.getModifiers())) {
-                    registerCommonObjects(superClass.metaClass, application)
+                    WebMetaUtils.registerCommonWebProperties(superClass.metaClass, application)
                     registerControllerMethods(superClass.metaClass, ctx)
                     registerMethodMissing(superClass.metaClass, application, ctx)                    
                 }

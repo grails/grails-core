@@ -185,15 +185,19 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
             else if(argMap.containsKey(ARGUMENT_VIEW)) {
                String viewName = argMap.get(ARGUMENT_VIEW).toString();
 
-               String viewUri;
+                GrailsControllerClass controllerClass = (GrailsControllerClass) application.getArtefact(ControllerArtefactHandler.TYPE,
+                        target.getClass().getName());
+                if(controllerClass == null && webRequest.getControllerName() != null) {
+                    controllerClass = (GrailsControllerClass)application.getArtefactByLogicalPropertyName(ControllerArtefactHandler.TYPE, webRequest.getControllerName());
+                }
+                String viewUri;
                 if(viewName.indexOf('/') > -1) {
-                    if(!viewName.startsWith("/"))
-                       viewName = '/' + viewName;
+                    if(!viewName.startsWith("/")) {
+                        viewName = '/' + viewName;
+                    }
                     viewUri = viewName;
                 }
                 else {
-                    GrailsControllerClass controllerClass = (GrailsControllerClass) application.getArtefact(ControllerArtefactHandler.TYPE,
-                        target.getClass().getName());
                     viewUri = controllerClass.getViewByName(viewName);
                 }
 
@@ -203,9 +207,13 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
                 if(modelObject instanceof Map) {
                     model = (Map)modelObject;
                 }
-                else {
+                else if(controllerClass.getClazz().isInstance(target)) {
                     model = new BeanMap(target);
                 }
+                else {
+                    model = new HashMap();
+                }
+
                 controller.setProperty( ControllerDynamicMethods.MODEL_AND_VIEW_PROPERTY, new ModelAndView(viewUri,model) );
             }
             else if(argMap.containsKey(ARGUMENT_TEMPLATE)) {

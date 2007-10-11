@@ -46,7 +46,6 @@ public class DefaultUrlMappingInfo implements UrlMappingInfo {
 
     private DefaultUrlMappingInfo(Map params, UrlMappingData urlData) {
         this.params = Collections.unmodifiableMap(params);
-        populateParamsForMapping(this.params);
         this.id = (String)params.get(ID_PARAM);
         this.urlData = urlData;
     }
@@ -80,14 +79,9 @@ public class DefaultUrlMappingInfo implements UrlMappingInfo {
      * @param dispatchParams The Map instance
      */
     protected void populateParamsForMapping(Map dispatchParams) {
-        GrailsWebRequest webRequest = (GrailsWebRequest) RequestContextHolder.getRequestAttributes();
-        if(webRequest != null) {
-            GrailsParameterMap params = webRequest.getParams();
-            for (Iterator j = dispatchParams.keySet().iterator(); j.hasNext();) {
-                String name = (String) j.next();
-                params.put(name, dispatchParams.get(name));
-            }
-
+        for (Iterator j = this.params.keySet().iterator(); j.hasNext();) {
+            String name = (String) j.next();
+            dispatchParams.put(name, this.params.get(name));
         }
     }
 
@@ -96,7 +90,7 @@ public class DefaultUrlMappingInfo implements UrlMappingInfo {
     }
 
     public void configure(GrailsWebRequest webRequest) {
-        populateParamsForMapping(this.params);
+        populateParamsForMapping(webRequest.getParams());
     }
 
     public String getControllerName() {        

@@ -41,29 +41,30 @@ abstract class AbstractGrailsPluginTests extends GroovyTestCase {
         ctx = new MockApplicationContext();
         onSetUp();
         ga = new DefaultGrailsApplication(gcl.getLoadedClasses(),gcl);
+        mockManager = new MockGrailsPluginManager(ga)
+        def dependentPlugins = pluginsToLoad.collect { new DefaultGrailsPlugin(it, ga)}
+        dependentPlugins.each{ mockManager.registerMockPlugin(it); it.manager = mockManager }
+        mockManager.doArtefactConfiguration();
         ga.initialise()
         ApplicationHolder.application = ga
         ga.setApplicationContext(ctx);
         ctx.registerMockBean(GrailsApplication.APPLICATION_ID, ga);
         ctx.registerMockBean(GrailsRuntimeConfigurator.CLASS_LOADER_BEAN, gcl)
         ctx.registerMockBean(PluginMetaManager.BEAN_ID, new DefaultPluginMetaManager(new Resource[0]));
-        
-		mockManager = new MockGrailsPluginManager(ga)
-		ctx.registerMockBean("manager", mockManager )
+
+        ctx.registerMockBean("manager", mockManager )
 
         def configurator = new GrailsRuntimeConfigurator(ga)
         configurator.pluginManager = mockManager
         ctx.registerMockBean(GrailsRuntimeConfigurator.BEAN_ID, configurator )
 
-		
-		def dependentPlugins = pluginsToLoad.collect { new DefaultGrailsPlugin(it, ga)}
-		springConfig = new DefaultRuntimeSpringConfiguration(ctx)
-		servletContext = new MockServletContext(new MockResourceLoader())
-		springConfig.servletContext = servletContext		
-		
-		dependentPlugins*.doWithRuntimeConfiguration(springConfig)
-		dependentPlugins.each{ mockManager.registerMockPlugin(it); it.manager = mockManager }
-			
+        springConfig = new DefaultRuntimeSpringConfiguration(ctx)
+        servletContext = new MockServletContext(new MockResourceLoader())
+        springConfig.servletContext = servletContext
+
+        dependentPlugins*.doWithRuntimeConfiguration(springConfig)
+
+
 		appCtx = springConfig.getApplicationContext()
 		mockManager.applicationContext = appCtx
 		servletContext.setAttribute( GrailsApplicationAttributes.APPLICATION_CONTEXT, appCtx)

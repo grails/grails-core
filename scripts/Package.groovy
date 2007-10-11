@@ -85,7 +85,6 @@ target( createConfig: "Creates the configuration object") {
 			exit(1)
 		}
    }
-   println "CLASSLOADER $classLoader"
    ConfigurationHelper.initConfig(config, null, classLoader)
 }    
 target( packageApp : "Implementation of package target") {

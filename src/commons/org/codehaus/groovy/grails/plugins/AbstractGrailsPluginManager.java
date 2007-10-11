@@ -176,4 +176,11 @@ public abstract class AbstractGrailsPluginManager implements GrailsPluginManager
         return application.getClassForName(shortName) != null || application.getClassForName(artefact.getName()) != null;
     }
 
+    public void doArtefactConfiguration() {
+        checkInitialised();
+        for (Iterator i = pluginList.iterator(); i.hasNext();) {
+            GrailsPlugin plugin = (GrailsPlugin) i.next();
+            plugin.doArtefactConfiguration();
+        }
+    }
 }

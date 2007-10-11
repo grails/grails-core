@@ -49,8 +49,6 @@ public class GrailsWebRequest extends DispatcherServletWebRequest {
 	private HttpServletResponse response;
 	private GrailsHttpSession session;
 	private boolean renderView = true;
-    private static final String ACTION_NAME_ATTRIBUTE = "org.codehaus.groovy.grails.ACTION_NAME_ATTRIBUTE";
-    private static final String CONTROLLER_NAME_ATTRIBUTE = "org.codehaus.groovy.grails.CONTROLLER_NAME_ATTRIBUTE";
     public static final String ID_PARAMETER = "id";
 
 
@@ -149,25 +147,25 @@ public class GrailsWebRequest extends DispatcherServletWebRequest {
 	}
 
 	public void setActionName(String actionName) {
-		getCurrentRequest().setAttribute(ACTION_NAME_ATTRIBUTE, actionName);
+		getCurrentRequest().setAttribute(GrailsApplicationAttributes.ACTION_NAME_ATTRIBUTE, actionName);
 	}
 
 	public void setControllerName(String controllerName) {
-		getCurrentRequest().setAttribute(CONTROLLER_NAME_ATTRIBUTE, controllerName);
+		getCurrentRequest().setAttribute(GrailsApplicationAttributes.CONTROLLER_NAME_ATTRIBUTE, controllerName);
 	}
 
 	/**
 	 * @return the actionName
 	 */
 	public String getActionName() {
-		return (String)getCurrentRequest().getAttribute(ACTION_NAME_ATTRIBUTE);
+		return (String)getCurrentRequest().getAttribute(GrailsApplicationAttributes.ACTION_NAME_ATTRIBUTE);
 	}
 
 	/**
 	 * @return the controllerName
 	 */
 	public String getControllerName() {
-		return (String)getCurrentRequest().getAttribute(CONTROLLER_NAME_ATTRIBUTE);
+		return (String)getCurrentRequest().getAttribute(GrailsApplicationAttributes.CONTROLLER_NAME_ATTRIBUTE);
 	}
 
 	public void setRenderView(boolean renderView) {

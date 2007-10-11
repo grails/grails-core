@@ -1,13 +1,14 @@
 package org.codehaus.groovy.grails.commons.spring;
 
+import grails.util.GrailsWebUtil;
 import groovy.lang.ExpandoMetaClass;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyObject;
 import junit.framework.TestCase;
 import org.codehaus.groovy.grails.commons.*;
 import org.codehaus.groovy.grails.plugins.DefaultGrailsPluginManager;
-import org.codehaus.groovy.grails.plugins.PluginMetaManager;
 import org.codehaus.groovy.grails.plugins.DefaultPluginMetaManager;
+import org.codehaus.groovy.grails.plugins.PluginMetaManager;
 import org.codehaus.groovy.grails.support.ClassEditor;
 import org.codehaus.groovy.grails.support.MockApplicationContext;
 import org.codehaus.groovy.grails.web.errors.GrailsExceptionResolver;
@@ -15,12 +16,12 @@ import org.codehaus.groovy.grails.web.servlet.mvc.GrailsUrlHandlerMapping;
 import org.springframework.aop.target.HotSwappableTargetSource;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.MessageSource;
+import org.springframework.core.io.Resource;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.mock.web.MockServletContext;
 import org.springframework.web.multipart.commons.CommonsMultipartResolver;
 import org.springframework.web.servlet.ModelAndView;
-import org.springframework.core.io.Resource;
 
 import java.util.Properties;
 
@@ -49,6 +50,7 @@ public class GrailsRuntimeConfiguratorTests extends TestCase {
       * Test method for 'org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator.configure()'
       */
     public void testConfigure() throws Exception {
+
         GroovyClassLoader gcl = new GroovyClassLoader();
         Class dc = gcl.parseClass("class Test { Long id; Long version; }");
         
