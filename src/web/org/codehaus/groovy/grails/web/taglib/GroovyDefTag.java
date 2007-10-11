@@ -16,6 +16,7 @@ package org.codehaus.groovy.grails.web.taglib;
 
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
+import grails.util.GrailsUtil;
 
 /**
  * Allows defining of variables within the page context
@@ -35,6 +36,7 @@ public class GroovyDefTag extends GroovySyntaxTag {
         if(StringUtils.isBlank(expr))
             throw new GrailsTagException("Tag ["+TAG_NAME+"] missing required attribute ["+ATTRIBUTE_VALUE +"]");
 
+        GrailsUtil.deprecated("The tag <g:def> is deprecated and will be removed in a future release. Use <g:set> instead.");
         out.print("def ");
         out.print(var.substring(1,var.length() -1));
         out.print('=');

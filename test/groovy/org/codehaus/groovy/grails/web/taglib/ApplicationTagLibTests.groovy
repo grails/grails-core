@@ -16,6 +16,12 @@ class ApplicationTagLibTests extends AbstractGrailsTagTests {
 
         assertOutputEquals('one: two', template)		
 	}
+
+	void testIteration() {
+        def template = '''<g:set var="counter" value="${1}" />
+<g:each in="${[10,11,12]}" var="myVal"><g:set var="counter" value="${myVal+counter}" />${counter}</g:each>'''
+        assertOutputEquals('112234', template)
+    }
 	
 	void testMetaTag() {
         def template = '<g:meta name="app.version"/>'
