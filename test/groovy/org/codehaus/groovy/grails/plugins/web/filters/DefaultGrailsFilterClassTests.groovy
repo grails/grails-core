@@ -10,7 +10,7 @@ class DefaultGrailsFilterClassTests extends GroovyTestCase {
      void testBasicFilterParsing() {
          def filterClass = new DefaultGrailsFiltersClass(FirstFilters)
 
-         def configs = filterClass.configs
+         def configs = filterClass.getConfigs(filterClass.newInstance())
          def first = configs[0]
 
          assertEquals "all", first.name

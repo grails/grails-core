@@ -61,12 +61,6 @@ class FiltersGrailsPlugin {
         }
 	}
 
-	def doWithDynamicMethods = {
-        for(filter in application.getArtefacts(TYPE)) {
-            def mc = filter.metaClass
-            WebMetaUtils.registerCommonWebProperties(mc, application)                            
-        }
-    }
 	def doWithApplicationContext = { applicationContext ->
         reloadFilters(application, applicationContext)
 	}
