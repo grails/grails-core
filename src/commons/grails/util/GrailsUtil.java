@@ -269,11 +269,16 @@ public class GrailsUtil {
                     newTrace.add( stackTraceElement);
                 }
             }
-            // We don't want to lose anything, so log it
-            STACK_LOG.error("Sanitizing stacktrace:", t);
-            StackTraceElement[] clean = new StackTraceElement[newTrace.size()];
-            newTrace.toArray(clean);
-            t.setStackTrace(clean);
+
+            // Only trim the trace if there was some application trace on the stack
+            // if not we will just skip sanitizing and leave it as is
+            if (newTrace.size() > 0) {
+                // We don't want to lose anything, so log it
+                STACK_LOG.error("Sanitizing stacktrace:", t);
+                StackTraceElement[] clean = new StackTraceElement[newTrace.size()];
+                newTrace.toArray(clean);
+                t.setStackTrace(clean);
+            }
         }
         return t;
     }
