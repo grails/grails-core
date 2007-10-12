@@ -38,7 +38,6 @@ input, select, textarea {
     background-color: #fcfcfc;
     border: 1px solid #ccc;
     font: 11px verdana, arial, helvetica, sans-serif;
-    height: 20px;
     margin: 2px 0;
     padding: 2px 4px;
 }
@@ -247,7 +246,6 @@ th.desc a {
     cursor: pointer;
     font-size: 10px;
     font-weight: bold;
-    height: 23px;
     margin-left: 3px;
     overflow: visible;
     padding: 2px 6px;
