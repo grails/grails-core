@@ -54,7 +54,16 @@ class ConstraintsBuilderTests extends AbstractGrailsMockTests {
         def instance = theClass.newInstance()
         def validator = configureValidator(theClass, instance)
 
+        instance.anotherURL = "http://grails.org"
         def errors = validateInstance(instance, validator)
+        assert !errors.hasErrors()
+        
+        instance.anotherURL = "a_bad_url"
+        errors = validateInstance(instance, validator)
+        assert errors.hasErrors()
+
+        instance.anotherURL = "http://grails.org"
+        errors = validateInstance(instance, validator)
 
         assert !errors.hasErrors()
 
@@ -65,6 +74,9 @@ class ConstraintsBuilderTests extends AbstractGrailsMockTests {
         instance.url = new URL("http://localhost:8080/tau_gwi_00/clif/cb/19")
         errors = validateInstance(instance, validator)
         assert !errors.hasErrors()
+
+
+
                       
     }
 
@@ -106,8 +118,10 @@ class Site {
     Long id
     Long version
     URL url
+    String anotherURL
     static constraints = {
         url(url:true, nullable:true)
+        anotherURL(url:true, nullable:true)
     }
 }
         ''')

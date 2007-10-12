@@ -162,16 +162,20 @@ target(generateLog4j:"Generates the Log4j config File") {
         def log4jConfig = config.log4j
         try {
             if(log4jConfig) {
-                def props = log4jConfig.toProperties("log4j")
-                log4jFile.withOutputStream { out ->
-                    props.store(out, "Grails' Log4j Configuration")
+                if(log4jConfig instanceof ConfigObject) {
+                    def props = log4jConfig.toProperties("log4j")
+                    log4jFile.withOutputStream { out ->
+                        props.store(out, "Grails' Log4j Configuration")
+                    }
+                }
+                else {
+                    log4jFile.write(log4jConfig.toString())
                 }
             }
             else {
                 // default log4j settings
                 createDefaultLog4J(log4jFile)
             }
-
         }
         catch(Exception e) {
             event("StatusFinal", [ "Error creating Log4j config: " + e.message ])
