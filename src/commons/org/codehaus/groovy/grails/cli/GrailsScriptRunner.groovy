@@ -71,16 +71,11 @@ Grails home is set to: ${grailsHome}
             println "Base Directory: ${baseDir.absolutePath}"
 		         		    
 		    def rootLoader = getClass().classLoader ? getClass().classLoader.rootLoader : Thread.currentThread().getContextClassLoader().rootLoader
-		                        
-		   /*def appDir = new File("${baseDir.absolutePath}/grails-app")
-			Adding the grails-app folders to the root loader causes re-load issues as
-            root loader returns old class before the grails GCL attempts to recompile it
-			if(appDir.exists()) {
-				appDir.eachDir { dir ->
-					rootLoader?.addURL(dir.toURL())
-				}
-			}*/
-
+			def baseName = new File(baseDir.absolutePath).name
+		    def classesDir = new File("${userHome}/.grails/${grailsVersion}/projects/${baseName}/classes")
+			if(classesDir.exists()) {
+				rootLoader.addURL(classesDir.toURL())
+			}
 			def allArgs = args[0].trim()
 
             allArgs = processSystemArguments(allArgs).trim().split(" ")

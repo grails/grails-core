@@ -45,7 +45,8 @@ or
 target ( "default" : "Installs a plug-in for the given URL or name and version") {
    depends(checkVersion)
 
-   installPlugin()
+   installPlugin() 
+   compile()
 }     
                 
 target(cachePlugin:"Implementation target") {
