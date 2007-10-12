@@ -4,10 +4,10 @@ grailsHome = Ant.project.properties."environment.GRAILS_HOME"
 
 includeTargets << new File ( "${grailsHome}/scripts/Init.groovy" )  
 
-task ('default': "The description of the script goes here!") {
+target('default': "The description of the script goes here!") {
     doStuff()
 }
 
-task(doStuff: "The implementation task") {
+target(doStuff: "The implementation task") {
 
 }
