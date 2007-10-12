@@ -17,10 +17,7 @@ package org.codehaus.groovy.grails.commons;
 
 import groovy.lang.*;
 import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.BeanWrapper;
-import org.springframework.beans.BeanWrapperImpl;
-import org.springframework.beans.BeansException;
+import org.springframework.beans.*;
 import org.springframework.util.Assert;
 
 import java.beans.PropertyDescriptor;
@@ -100,8 +97,14 @@ public class GrailsClassUtils {
         if(clazz == null || StringUtils.isBlank(propertyName))
             return null;
 
-        Object instance = BeanUtils.instantiateClass(clazz);
-        
+        Object instance = null;
+        try {
+            instance = BeanUtils.instantiateClass(clazz);
+        } catch (BeanInstantiationException e) {
+            return null;
+        }
+
+
         return getPropertyOrStaticPropertyOrFieldValue(instance, propertyName);
     }
 

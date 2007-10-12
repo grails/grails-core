@@ -504,7 +504,7 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
 
             // if there is only one property on many-to-one side of the relationship then
             // try to establish if it is bidirectional
-            if(descriptors.length == 1) {
+            if(descriptors.length == 1 && isNotMappedToDifferentProperty(property,relatedClassPropertyName, mappedBy)) {
                 if(!StringUtils.isBlank(relatedClassPropertyName)) {
                     property.setReferencePropertyName(relatedClassPropertyName);
                     // get the type of the property
@@ -545,8 +545,15 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
         //	establish relationship based on this type
         establishDomainClassRelationshipToType( property, relatedClassPropertyType );
     }
+  
+    private boolean isNotMappedToDifferentProperty(GrailsDomainClassProperty property, String relatedClassPropertyName, Map mappedBy) {
+        String mappedByForRelation = (String)mappedBy.get(relatedClassPropertyName);
+        if(mappedByForRelation == null) return true;
+        else if(!property.getName().equals(mappedByForRelation)) return false;
+        return true;
+    }
 
-	private String findOneToManyThatMatchesType(DefaultGrailsDomainClassProperty property, Map relatedClassRelationships) {
+    private String findOneToManyThatMatchesType(DefaultGrailsDomainClassProperty property, Map relatedClassRelationships) {
 		String relatedClassPropertyName = null;
 		for(Iterator i = relatedClassRelationships.keySet().iterator();i.hasNext();) {
 		    String currentKey = (String)i.next();
@@ -719,5 +726,9 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
 
     public void refreshConstraints() {
         evaluateConstraints();
+    }
+
+    public Map getMappedBy() {
+        return mappedBy;
     }
 }

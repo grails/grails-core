@@ -214,6 +214,10 @@ public class GrailsHibernateDomainClass extends AbstractGrailsClass implements E
         return false;  
     }
 
+    public Map getMappedBy() {
+        return Collections.EMPTY_MAP;
+    }
+
     public boolean isOneToMany(String propertyName) {
 	GrailsDomainClassProperty prop = getPropertyByName(propertyName);
 	return prop != null && prop.isOneToMany();

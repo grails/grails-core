@@ -178,4 +178,9 @@ public interface GrailsDomainClass extends GrailsClass {
      * @return True if it does
      */
     boolean hasSubClasses();
+
+    /**
+     * @return The map that defines association mappings
+     */
+    Map getMappedBy();
 }

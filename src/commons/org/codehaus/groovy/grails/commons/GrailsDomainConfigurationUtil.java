@@ -99,10 +99,11 @@ public class GrailsDomainConfigurationUtil {
                             for (int k = 0; k < referencedProperties.length; k++) {
                             	// for bi-directional circular dependencies we don't want the other side 
                             	// to be equal to self 
-                            	if(prop.equals(referencedProperties[k]) && prop.isBidirectional())
+                                GrailsDomainClassProperty referencedProp = referencedProperties[k];
+                                if(prop.equals(referencedProp) && prop.isBidirectional())
                             		continue;
-                                if(domainClasses[i].getClazz().equals(referencedProperties[k].getReferencedPropertyType())) {
-                                    prop.setOtherSide(referencedProperties[k]);
+                                if(isCandidateForOtherSide(domainClass, prop, referencedProp)) {
+                                    prop.setOtherSide(referencedProp);
                                     break;
                                 }
                             }                    		
@@ -112,6 +113,15 @@ public class GrailsDomainConfigurationUtil {
             }
 
         }
+    }
+
+    private static boolean isCandidateForOtherSide(GrailsDomainClass domainClass, GrailsDomainClassProperty prop, GrailsDomainClassProperty referencedProp) {
+        boolean isTypeCompatible = domainClass.getClazz().equals(referencedProp.getReferencedPropertyType());
+        Map mappedBy = domainClass.getMappedBy();
+
+        Object propertyMapping = mappedBy.get(prop.getName());
+        return !(propertyMapping != null && !propertyMapping.equals(referencedProp.getName())) && isTypeCompatible;
+
     }
 
     /**
