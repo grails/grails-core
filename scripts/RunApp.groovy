@@ -68,7 +68,13 @@ target( watchContext: "Watches the WEB-INF/classes directory for changes and res
     long lastModified = classesDir.lastModified()
     while(true && autoRecompile) {
         try {
-	        Ant.groovyc(destdir:classesDirPath,
+            def ant = new AntBuilder()
+            ant.taskdef ( 	name : 'groovyc' ,
+				            classname : 'org.codehaus.groovy.grails.compiler.GrailsCompiler' )
+            def grailsDir = resolveResources("file:${basedir}/grails-app/*")
+            def pluginLibs = resolveResources("file:${basedir}/plugins/*/lib")
+            ant.path(id:"grails.classpath",grailsClasspath.curry(pluginLibs, grailsDir))				            
+            ant.groovyc(destdir:classesDirPath,
 	                    classpathref:"grails.classpath",
 					    resourcePattern:"file:${basedir}/**/grails-app/**/*.groovy",
 						projectName:baseName) {
@@ -76,7 +82,7 @@ target( watchContext: "Watches the WEB-INF/classes directory for changes and res
 						src(path:"${basedir}/src/groovy")
 						src(path:"${basedir}/grails-app/domain")
 					}
-
+            ant = null
 		}
         catch(Exception e) {
             compilationError = true
@@ -105,7 +111,7 @@ target( watchContext: "Watches the WEB-INF/classes directory for changes and res
                lastModified = classesDir.lastModified()
             }
         }
-        sleep(2500)
+        sleep(5)
     }
 }
 

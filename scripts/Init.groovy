@@ -389,35 +389,36 @@ target(classpath:"Sets the Grails classpath") {
     setClasspath()
 }
 
-void setClasspath() {
-    if (classpathSet) return
-
-    def grailsDir = resolveResources("file:${basedir}/grails-app/*")
-	def pluginLibs = resolveResources("file:${basedir}/plugins/*/lib")
-
-	Ant.path(id:"grails.classpath")  {       
+grailsClasspath = { pluginLibs, grailsDir ->
 		pathelement(location:"${classesDir.absolutePath}")
 		pathelement(location:"${basedir}")
 		pathelement(location:"${basedir}/test/unit")
-		pathelement(location:"${basedir}/test/integration")		
+		pathelement(location:"${basedir}/test/integration")
 		pathelement(location:"${basedir}/web-app")
 		pathelement(location:"${basedir}/web-app/WEB-INF")
 		pathelement(location:"${basedir}/web-app/WEB-INF/classes")
-		for(pluginLib in pluginLibs) {                      
+		for(pluginLib in pluginLibs) {
 			fileset(dir:pluginLib.file.absolutePath)
 		}
 		if (new File("${basedir}/web-app/WEB-INF/lib").exists()) {
 		    fileset(dir:"${basedir}/web-app/WEB-INF/lib")
 		}
 		fileset(dir:"${grailsHome}/lib")
-		fileset(dir:"${grailsHome}/dist") 
+		fileset(dir:"${grailsHome}/dist")
 		if(new File("${basedir}/lib").exists()) {
 			fileset(dir:"${basedir}/lib")
 		}
 		for(d in grailsDir) {
 			pathelement(location:"${d.file.absolutePath}")
 		}
-	}
+}
+void setClasspath() {
+    if (classpathSet) return
+
+    def grailsDir = resolveResources("file:${basedir}/grails-app/*")
+	def pluginLibs = resolveResources("file:${basedir}/plugins/*/lib")
+
+	Ant.path(id:"grails.classpath",grailsClasspath.curry(pluginLibs, grailsDir))
     StringBuffer cpath = new StringBuffer("")
 
     def jarFiles = getJarFiles()
