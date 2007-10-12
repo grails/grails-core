@@ -111,7 +111,7 @@ target( watchContext: "Watches the WEB-INF/classes directory for changes and res
                lastModified = classesDir.lastModified()
             }
         }
-        sleep(5)
+        sleep(3000)
     }
 }
 
