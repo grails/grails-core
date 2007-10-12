@@ -192,7 +192,7 @@ public abstract class AbstractGrailsClass implements GrailsClass {
      * @param type
      * @return The property value or null
      */
-    protected Object getPropertyValue(String name, Class type) {
+    public Object getPropertyValue(String name, Class type) {
 
         // Handle standard java beans normal or static properties
         BeanWrapper ref = getReference();
@@ -228,9 +228,10 @@ public abstract class AbstractGrailsClass implements GrailsClass {
 	public Object getPropertyValue(String name) {
 		return getPropertyOrStaticPropertyOrFieldValue(name, Object.class);
 	}
-	
-	
-	/* (non-Javadoc)
+
+    
+
+    /* (non-Javadoc)
 	 * @see org.codehaus.groovy.grails.commons.GrailsClass#hasProperty(java.lang.String)
 	 */
 	public boolean hasProperty(String name) {

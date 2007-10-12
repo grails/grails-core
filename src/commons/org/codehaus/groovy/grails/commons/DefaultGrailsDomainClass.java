@@ -164,7 +164,7 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
 
             PropertyDescriptor descriptor = propertyDescriptors[i];
                 // ignore certain properties
-                if(isNotConfigurational(descriptor) )  {
+                if(GrailsDomainConfigurationUtil.isNotConfigurational(descriptor) )  {
 
 
                     GrailsDomainClassProperty property = new DefaultGrailsDomainClassProperty(this, descriptor);
@@ -207,25 +207,6 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
         return Collections.EMPTY_LIST;
     }
 
-
-    /**
-     * Checks whether is property is configurational
-     *
-     * @param descriptor The descriptor
-     * @return True if it is configurational
-     */
-    private boolean isNotConfigurational(PropertyDescriptor descriptor) {
-        return !descriptor.getName().equals( GrailsDomainClassProperty.META_CLASS ) &&
-           !descriptor.getName().equals( GrailsDomainClassProperty.CLASS ) &&
-           !descriptor.getName().equals( GrailsDomainClassProperty.TRANSIENT) &&
-           !descriptor.getName().equals( GrailsDomainClassProperty.RELATES_TO_MANY) &&
-           !descriptor.getName().equals( GrailsDomainClassProperty.HAS_MANY) &&
-           !descriptor.getName().equals( GrailsDomainClassProperty.EVANESCENT) &&
-           !descriptor.getName().equals( GrailsDomainClassProperty.CONSTRAINTS )&&
-           !descriptor.getName().equals( GrailsDomainClassProperty.MAPPING_STRATEGY ) &&
-           !descriptor.getName().equals( GrailsDomainClassProperty.MAPPED_BY ) &&
-           !descriptor.getName().equals( GrailsDomainClassProperty.BELONGS_TO );
-    }
 
     /**
      * Evaluates the constraints closure to build the list of constraints

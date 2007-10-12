@@ -7,7 +7,7 @@ class ComponentMappingTests extends AbstractGrailsHibernateTests {
 
 	void testComponentMapping() {
 		def personClass = ga.getDomainClass("Person")
-		def addressClass = ga.getDomainClass("Address")
+		def addressClass = ga.classLoader.loadClass("Address")
 
 		def p = personClass.newInstance()
 
@@ -53,8 +53,6 @@ class Person {
 	static embedded = ['homeAddress', 'workAddress']
 }
 class Address {
-	Long id
-	Long version
 	Person person
 	String number
 	String postCode

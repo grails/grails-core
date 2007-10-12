@@ -183,4 +183,5 @@ public interface GrailsDomainClass extends GrailsClass {
      * @return The map that defines association mappings
      */
     Map getMappedBy();
+
 }

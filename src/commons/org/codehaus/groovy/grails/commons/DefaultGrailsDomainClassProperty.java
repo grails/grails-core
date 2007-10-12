@@ -33,7 +33,7 @@ import java.util.*;
 public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProperty {
 
 	
-	private DefaultGrailsDomainClass domainClass;
+	private GrailsDomainClass domainClass;
     private boolean persistant;
 	private boolean identity;
 	private boolean oneToMany;
@@ -56,7 +56,7 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
     private boolean embedded;
 
 
-    public DefaultGrailsDomainClassProperty(DefaultGrailsDomainClass domainClass, PropertyDescriptor descriptor)  {
+    public DefaultGrailsDomainClassProperty(GrailsDomainClass domainClass, PropertyDescriptor descriptor)  {
         this.domainClass = domainClass;
         // persistant by default
         this.persistant = true;
@@ -64,17 +64,19 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
         this.naturalName = GrailsClassUtils.getNaturalName(descriptor.getName());
         this.type = descriptor.getPropertyType();
         this.identity = descriptor.getName().equals( IDENTITY );
-        // figure out if this property is inherited
-        if(!domainClass.isRoot()) {
-        	this.inherited = GrailsClassUtils.isPropertyInherited(domainClass.getClazz(), this.name);
-        }        
 
         // establish if property is persistant
-        List transientProps = getTransients(domainClass);
-        checkIfTransient(transientProps);
+        if(domainClass != null) {
+            // figure out if this property is inherited
+            if(!domainClass.isRoot()) {
+                this.inherited = GrailsClassUtils.isPropertyInherited(domainClass.getClazz(), this.name);
+            }
+            List transientProps = getTransients(domainClass);
+            checkIfTransient(transientProps);
 
-        establishFetchMode();                
+            establishFetchMode();
 
+        }
     }
 
     /**
@@ -82,7 +84,8 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
      *
      */
 	private void establishFetchMode() {
-		Map fetchMap = (Map)domainClass.getPropertyOrStaticPropertyOrFieldValue(FETCH_MODE, Map.class);
+
+        Map fetchMap = (Map) domainClass.getPropertyValue(GrailsDomainClassProperty.FETCH_MODE, Map.class);
 		if(fetchMap != null && fetchMap.containsKey(this.name)) {
 			if("eager".equals(fetchMap.get(this.name))) {
 				this.fetchMode = FETCH_EAGER;				
@@ -121,12 +124,12 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
 	 * @param domainClass The owning domain class
 	 * @return A list of transient properties
 	 */
-	private List getTransients(DefaultGrailsDomainClass domainClass) {
+	private List getTransients(GrailsDomainClass domainClass) {
 		List transientProps;
-		transientProps= (List)domainClass.getPropertyOrStaticPropertyOrFieldValue( TRANSIENT, List.class );
+		transientProps= (List)domainClass.getPropertyValue( TRANSIENT, List.class );
 
         // Undocumented feature alert! Steve insisted on this :-)
-        List evanescent = (List)domainClass.getPropertyOrStaticPropertyOrFieldValue( EVANESCENT, List.class );
+        List evanescent = (List)domainClass.getPropertyValue(EVANESCENT, List.class );
         if(evanescent != null) {
             if(transientProps == null)
                 transientProps = new ArrayList();

@@ -116,4 +116,11 @@ public interface GrailsClass {
     public MetaClass getMetaClass();
 
     BeanWrapper getReference();
+
+    /**
+     * Obtains a property value for the given name and type
+     * @param name The name
+     * @param type The type
+     */
+    Object getPropertyValue(String name, Class type);
 }
