@@ -42,35 +42,32 @@ class DefaultGrailsFiltersClass  extends AbstractInjectableGrailsClass implement
 
         return loader.filters;
     }
-
-    static {
-        Loader.metaClass.methodMissing = { String methodName, args ->
-            if(args) {
-
-                def fc = new FilterConfig(name:methodName)
-                delegate.filters << fc
-
-                if(args[0] instanceof Closure) {
-                    def closure = args[0]
-                    closure.delegate = fc
-                    closure.call()
-                }
-                else if(args[0] instanceof Map) {
-                    fc.scope = args[0]
-                    if(args.size() > 1 && args[1] instanceof Closure) {
-                        def closure = args[1]
-                        closure.delegate = fc
-                        closure.resolveStrategy = Closure.DELEGATE_FIRST
-                        closure.call()
-                    }
-                }
-            }
-        }
-    }
 }
-
 class Loader {
 	def filters = []
+	
+	def methodMissing(String name, args) {
+        if(args) {
+
+            def fc = new FilterConfig(name:methodName)
+            delegate.filters << fc
+
+            if(args[0] instanceof Closure) {
+                def closure = args[0]
+                closure.delegate = fc
+                closure.call()
+            }
+            else if(args[0] instanceof Map) {
+                fc.scope = args[0]
+                if(args.size() > 1 && args[1] instanceof Closure) {
+                    def closure = args[1]
+                    closure.delegate = fc
+                    closure.resolveStrategy = Closure.DELEGATE_FIRST
+                    closure.call()
+                }
+            }
+        }		
+	}
 }
 
 
