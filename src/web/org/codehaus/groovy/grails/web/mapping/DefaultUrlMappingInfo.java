@@ -16,13 +16,11 @@ package org.codehaus.groovy.grails.web.mapping;
 
 import groovy.lang.Closure;
 import org.codehaus.groovy.grails.web.mapping.exceptions.UrlMappingException;
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
+import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.springframework.web.context.request.RequestContextHolder;
 
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 
 /**
  * A Class that implements the UrlMappingInfo interface and holds information established from a matched
@@ -39,14 +37,14 @@ public class DefaultUrlMappingInfo implements UrlMappingInfo {
     private Map params = Collections.EMPTY_MAP;
     private Object controllerName;
     private Object actionName;
+    private Object id;
     private static final String ID_PARAM = "id";
-    private String id;
     private UrlMappingData urlData;
     private Object viewName;
 
     private DefaultUrlMappingInfo(Map params, UrlMappingData urlData) {
         this.params = Collections.unmodifiableMap(params);
-        this.id = (String)params.get(ID_PARAM);
+        this.id = params.get(ID_PARAM);
         this.urlData = urlData;
     }
 
@@ -79,9 +77,31 @@ public class DefaultUrlMappingInfo implements UrlMappingInfo {
      * @param dispatchParams The Map instance
      */
     protected void populateParamsForMapping(Map dispatchParams) {
-        for (Iterator j = this.params.keySet().iterator(); j.hasNext();) {
+        Collection keys = this.params.keySet();
+        keys = DefaultGroovyMethods.toList(keys);
+        Collections.sort((List)keys, new Comparator() {
+
+            public int compare(Object leftKey, Object rightKey) {
+                Object leftValue = params.get(leftKey);
+                Object rightValue = params.get(rightKey);
+                boolean leftIsClosure = leftValue instanceof Closure;
+                boolean rightIsClosure = rightValue instanceof Closure;
+                if(leftIsClosure && rightIsClosure) return 0;
+                else if(leftIsClosure && !rightIsClosure) return 1;
+                else if(rightIsClosure && !leftIsClosure) return -1;
+                return 0;
+            }
+        });
+        for (Iterator j = keys.iterator(); j.hasNext();) {
+
             String name = (String) j.next();
-            dispatchParams.put(name, this.params.get(name));
+            Object param = this.params.get(name);
+            if(param instanceof Closure) {
+                param = evaluateNameForValue(param);
+            }
+
+            dispatchParams.put(name, param);
+
         }
     }
 
@@ -108,7 +128,7 @@ public class DefaultUrlMappingInfo implements UrlMappingInfo {
     }
 
     public String getId() {
-        return id;
+        return evaluateNameForValue(this.id);
     }
 
     private String evaluateNameForValue(Object value) {

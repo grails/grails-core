@@ -2,7 +2,8 @@ package org.codehaus.groovy.grails.validation
 
 import  org.codehaus.groovy.grails.commons.test.*
 import  org.codehaus.groovy.grails.commons.metaclass.*
-import org.springframework.validation.BindException;
+import org.springframework.validation.BindException
+import org.springframework.validation.Errors;
 
 class ConstraintsBuilderTests extends AbstractGrailsMockTests {
 
@@ -46,6 +47,48 @@ class ConstraintsBuilderTests extends AbstractGrailsMockTests {
          assert !errors.hasErrors()
     }
 
+
+    void testURLValidation() {
+        def theClass = ga.getDomainClass("Site")
+
+        def instance = theClass.newInstance()
+        def validator = configureValidator(theClass, instance)
+
+        def errors = validateInstance(instance, validator)
+
+        assert !errors.hasErrors()
+
+        instance.url = new URL("http://grails.org")
+        errors = validateInstance(instance, validator)
+        assert !errors.hasErrors()
+
+        instance.url = new URL("http://localhost:8080/tau_gwi_00/clif/cb/19")
+        errors = validateInstance(instance, validator)
+        assert !errors.hasErrors()
+                      
+    }
+
+    Errors validateInstance(instance, validator) {
+        def errors = new BindException(instance, instance.class.name)
+        validator.validate(instance, errors, true)
+        return errors
+    }
+
+    GrailsDomainClassValidator configureValidator(theClass, instance) {
+        def metaClass = new ExpandoMetaClass(theClass.clazz)
+        def errorsProp = null
+        def setter = { Object obj -> errorsProp = obj }
+        metaClass.setErrors = setter
+        metaClass.initialize()
+        instance.metaClass = metaClass
+        def validator = new GrailsDomainClassValidator()
+
+        validator.domainClass = theClass
+        validator.messageSource = createMessageSource()
+        theClass.validator = validator
+        return validator
+    }
+
     public void onSetUp() {
         gcl.parseClass('''
 class Book {
@@ -57,6 +100,14 @@ class Book {
        title(blank:false, size:1..255)
        totalSales(min:0)
 
+    }
+}
+class Site {
+    Long id
+    Long version
+    URL url
+    static constraints = {
+        url(url:true, nullable:true)
     }
 }
         ''')

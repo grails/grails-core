@@ -46,11 +46,11 @@ class DefaultGrailsFiltersClass  extends AbstractInjectableGrailsClass implement
 class Loader {
 	def filters = []
 	
-	def methodMissing(String name, args) {
+	def methodMissing(String methodName, args) {
         if(args) {
 
             def fc = new FilterConfig(name:methodName)
-            delegate.filters << fc
+            filters << fc
 
             if(args[0] instanceof Closure) {
                 def closure = args[0]

@@ -12,9 +12,9 @@ mappings {
       action = { "${params.test}" }
   }
   "/$controller/$action?/$id?" {
-      controller = { params.controller }
-      action = { params.action }
-      id = { params.id }
+      ctrl = { params.controller }
+      act = { params.action }
+      identity = { params.id }
   }    
 }
 '''
@@ -84,8 +84,11 @@ mappings {
              assert info
              info.configure(webRequest)
              assertEquals "book", info.controllerName
+             assertEquals "book", webRequest.params.ctrl
              assertEquals "show", info.actionName
+             assertEquals "show", webRequest.params.act
              assertEquals "1", info.id
+             assertEquals "1", webRequest.params.identity             
 
         }
 
