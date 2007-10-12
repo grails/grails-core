@@ -57,5 +57,10 @@ target(console:"The console implementation target") {
 			v.destroy()
 		}
 	}       
-	c.run()
+	try {
+        c.run()
+        while(true) { sleep(Long.MAX_VALUE) }
+    } catch (Exception e) {
+        event("StatusFinal", ["Error starting console: ${e.message}"])
+    }
 }
