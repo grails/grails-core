@@ -46,7 +46,6 @@ target ( "default" : "Installs a plug-in for the given URL or name and version")
    depends(checkVersion)
 
    installPlugin() 
-   compile()
 }     
                 
 target(cachePlugin:"Implementation target") {
@@ -151,6 +150,8 @@ target(installPlugin:"Implementation target") {
                 includeTargets << instrumentedInstallScript
             }     
             def providedScripts = resolveResources("file:${pluginsBase}/${fullPluginName}/scripts/*.groovy").findAll { !it.filename.startsWith('_')}
+			event("StatusUpdate", [ "Compiling plugin ${fullPluginName} ..."])
+   			compile()
             event("StatusFinal", [ "Plugin ${fullPluginName} installed"])
 			if(providedScripts) { 
 				println "Plug-in provides the following new scripts:"
