@@ -135,9 +135,17 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
                     LOG.debug( "Dynamic method [redirect] no URL mapping found for params [" + params + "]" );
                 }
 
+                // The reverse mapping process requires a character
+                // encoding. We take the one from the request, but if
+                // that is null, then we default to 'UTF-8'.
+                String encoding = request.getCharacterEncoding();
+                if (encoding == null) {
+                	encoding = "UTF-8";
+                }
+
                 String action = actionName != null ? actionName : webRequest.getActionName();
                 actualUri = attrs.getApplicationUri(request) +
-                            urlMapping.createURL( controllerName, action, params, request.getCharacterEncoding() );
+                            urlMapping.createURL( controllerName, action, params, encoding );
 
                 if( LOG.isDebugEnabled() ) {
                     LOG.debug( "Dynamic method [redirect] mapped to URL [" + actualUri + "]" );
