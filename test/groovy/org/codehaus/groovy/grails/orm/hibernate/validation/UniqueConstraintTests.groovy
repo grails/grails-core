@@ -229,7 +229,7 @@ class UniqueConstraintTests extends AbstractGrailsHibernateTests {
 
     void testRelationships() {
         def userClass = ga.getDomainClass("User").clazz
-        def linkClass = ga.getDomainClass("Link").clazz
+        def linkClass = ga.getDomainClass("Link1").clazz
 
         def user1 = userClass.newInstance()
         user1.code = "1"
@@ -286,7 +286,7 @@ class UniqueConstraintTests extends AbstractGrailsHibernateTests {
                 String organization
                 String code
 
-                static belongsTo = Link
+                static belongsTo = Link1
 
                 static constraints = {
                     login(unique:['grp','department'])
@@ -294,7 +294,7 @@ class UniqueConstraintTests extends AbstractGrailsHibernateTests {
                     code(unique:true)
                 }
             }
-            class Link {
+            class Link1 {
                 Long id
                 Long version
 
