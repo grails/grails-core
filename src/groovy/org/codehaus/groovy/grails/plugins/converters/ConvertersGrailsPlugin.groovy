@@ -15,12 +15,14 @@
  */
 package org.codehaus.groovy.grails.plugins.converters
 
-import grails.converters.*
-import org.codehaus.groovy.grails.commons.ControllerArtefactHandler
+import grails.converters.JSON
+import grails.converters.XML
 import grails.util.GrailsUtil
-import org.codehaus.groovy.grails.plugins.converters.codecs.JSONCodec
+import javax.servlet.http.HttpServletRequest
 import org.codehaus.groovy.grails.web.converters.Converter
 import org.codehaus.groovy.grails.web.converters.ConverterUtil
+import org.codehaus.groovy.grails.web.json.JSONArray
+import org.codehaus.groovy.grails.web.json.JSONObject
 
 /**
  * A plug-in that allows the obj as XML syntax
@@ -33,74 +35,100 @@ import org.codehaus.groovy.grails.web.converters.ConverterUtil
  *
  */
 class ConvertersGrailsPlugin {
-	def version = GrailsUtil.getGrailsVersion()
+    def version = GrailsUtil.getGrailsVersion()
 
-	def author = "Siegfried Puchbauer"
-	def title = "Provides JSON and XML Conversion for common Objects (Domain Classes, Lists, Maps, POJO)"
-	def description = """
+    def author = "Siegfried Puchbauer"
+    def title = "Provides JSON and XML Conversion for common Objects (Domain Classes, Lists, Maps, POJO)"
+    def description = """
 		The grails-converters plugin aims to give you the ability to convert your domain objects, maps and lists to JSON or XML very quickly, to ease development for AJAX based applications. The plugin leverages the the groovy "as" operator and extends the render method in grails controllers to directly send the result to the output stream. It also adds the Grails Codecs mechanism for XML and JSON.
 	"""
-	def documentation = "http://grails.org/Converters+Plugin"
-	def providedArtefacts = [ JSONCodec]
-	def observe = ["controllers"]
+    def documentation = "http://grails.org/Converters+Plugin"
+    def providedArtefacts = [org.codehaus.groovy.grails.plugins.converters.codecs.JSONCodec, org.codehaus.groovy.grails.plugins.converters.codecs.XMLCodec]
+    def observe = ["controllers"]
 
-	def dependsOn = [
-	    controllers: GrailsUtil.getGrailsVersion(),
-	    domainClass: GrailsUtil.getGrailsVersion()
-	]
+    def dependsOn = [
+            controllers: GrailsUtil.getGrailsVersion(),
+            domainClass: GrailsUtil.getGrailsVersion()
+            ]
 
-    def renderMethod = { Converter converter ->
-                converter.render(delegate.response);
+    def renderMethod = {Converter converter ->
+        converter.render(delegate.response);
     }
-    def headerMethod = { String key, def value ->
-            if(value) delegate.response?.setHeader(key, value.toString())
+    def headerMethod = {String key, def value ->
+        if (value) delegate.response?.setHeader(key, value.toString())
     }
-    def jsonHeaderMethod = { def value ->
-            if(value) delegate.response?.setHeader("X-JSON", value.toString())
+    def jsonHeaderMethod = {def value ->
+        def json = (value instanceof JSON || value instanceof JSONObject || value instanceof JSONArray) ? value : (new JSON(value));
+        if (value) delegate.response?.setHeader("X-JSON", value.toString())
     }
 
-    def onChange = { event ->
+    def onChange = {event ->
         def mc = event.source.metaClass
         mc.render = renderMethod
         mc.header = headerMethod
         mc.jsonHeader = jsonHeaderMethod
     }
 
-	def doWithDynamicMethods = { applicationContext ->
-        ConverterUtil.setGrailsApplication(application);
+    def doWithDynamicMethods = {applicationContext ->
+        try {
+            ConverterUtil.setGrailsApplication(application);
 
-		def controllerClasses = application.controllerClasses
-        for(controller in controllerClasses) {
-            def mc = controller.metaClass
-			mc.render = renderMethod
-			mc.header = headerMethod
-			mc.jsonHeader = jsonHeaderMethod
-		}
+            log.debug "Applying new header and render methods to all Controllers..."
+            def controllerClasses = application.controllerClasses
+            for (controller in controllerClasses) {
+                def mc = controller.metaClass
+                mc.render = renderMethod
+                mc.header = headerMethod
+                mc.jsonHeader = jsonHeaderMethod
+            }
 
-        def asTypeMethod = { Class clazz ->
-                if(ConverterUtil.isConverterClass(clazz)) {
+            def asTypeMethod = {java.lang.Class clazz ->
+                if (ConverterUtil.isConverterClass(clazz)) {
                     return ConverterUtil.createConverter(clazz, delegate)
                 } else {
                     return ConverterUtil.invokeOriginalAsTypeMethod(delegate, clazz)
                 }
-        }
+            }
 
-        for(dc in application.domainClasses) {
-            def mc = dc.metaClass
-            mc.asType = asTypeMethod
-            XML.addAlias(dc.propertyName, dc.clazz);
-            log.debug "Adding XStream alias ${dc.propertyName} for class ${dc.clazz.getName()}"
-        }
+            for (dc in application.domainClasses) {
+                def mc = dc.metaClass
+                mc.asType = asTypeMethod
+                ConverterUtil.addAlias(dc.propertyName, dc.clazz);
+                log.debug "Adding XStream alias ${dc.propertyName} for class ${dc.clazz.getName()}"
+            }
 
-        [Collection,List,Set,ArrayList,HashSet,TreeSet, Object].each { collectionClass ->
-			collectionClass.metaClass.asType = { Class clazz ->
-				if(ConverterUtil.isConverterClass(clazz)) {
-					return ConverterUtil.createConverter(clazz, delegate);
-				} else {
-					return ConverterUtil.invokeOriginalAsTypeMethod(delegate, clazz)
-				}
-			}
-		}
-		log.debug "Converters Plugin configured successfully"
-	}
+
+            // Override GDK asType for some common Interfaces and Classes
+                    [java.util.ArrayList, java.util.TreeSet, java.util.HashSet, java.util.List, java.util.Set, java.util.Collection, groovy.lang.GroovyObject, java.lang.Object].each {Class clazz ->
+                def mc = GroovySystem.metaClassRegistry.getMetaClass(clazz)
+                if (!mc instanceof ExpandoMetaClass) {
+                    log.warn "Unable to add Converter Functionality to Class ${className}"
+                    return;
+                }
+                log.debug "Adding Converter asType Method to Class ${clazz} [${clazz.class}] -> [${mc.class}]"
+                mc.asType = asTypeMethod
+                mc.initialize()
+            }
+
+            // Methods for Reading JSON/XML from Requests
+            def getXMLMethod = {->
+                return XML.parse((HttpServletRequest) delegate)
+            }
+            def getJSONMethod = {->
+                return JSON.parse((HttpServletRequest) delegate)
+            }
+            def requestMc = GroovySystem.metaClassRegistry.getMetaClass(HttpServletRequest)
+            requestMc.getXML = getXMLMethod
+            requestMc.getJSON = getJSONMethod
+            requestMc.initialize()
+
+            // TODO:
+            // add asType Method to XmlSlurper to unmarshalling
+            // of XML Content and implement unmarshalling in JSONObject/Array...
+
+            log.debug "Converters Plugin configured successfully"
+        } catch (Exception e) {
+            log.error(e)
+        }
+    }
 }

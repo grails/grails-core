@@ -16,6 +16,7 @@ package grails.converters;
 
 import groovy.lang.GString;
 import groovy.lang.GroovyObject;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
@@ -24,17 +25,17 @@ import org.codehaus.groovy.grails.web.converters.AbstractConverter;
 import org.codehaus.groovy.grails.web.converters.Converter;
 import org.codehaus.groovy.grails.web.converters.ConverterUtil;
 import org.codehaus.groovy.grails.web.converters.exceptions.ConverterException;
-import org.codehaus.groovy.grails.web.json.JSONException;
-import org.codehaus.groovy.grails.web.json.JSONObject;
-import org.codehaus.groovy.grails.web.json.JSONWriter;
+import org.codehaus.groovy.grails.web.json.*;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.beans.BeanInfo;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Writer;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
@@ -44,6 +45,8 @@ import java.net.URL;
 import java.util.*;
 
 /**
+ * A converter that converts domain classes, Maps, Lists, Arrays, POJOs and POGOs to JSON
+ *
  * @author Siegfried Puchbauer
  */
 public class JSON extends AbstractConverter implements Converter {
@@ -96,6 +99,7 @@ public class JSON extends AbstractConverter implements Converter {
      *
      * @param out the Writer
      * @throws org.codehaus.groovy.grails.web.converters.exceptions.ConverterException
+     *
      */
     public void render(Writer out) throws ConverterException {
         this.writer = new JSONWriter(out);
@@ -134,7 +138,7 @@ public class JSON extends AbstractConverter implements Converter {
      * @param idProperty   The GrailsDomainClassProperty
      * @return
      */
-    private Object extractIdValue(Object domainObject, GrailsDomainClassProperty idProperty) {
+    protected Object extractIdValue(Object domainObject, GrailsDomainClassProperty idProperty) {
         BeanWrapper beanWrapper = new BeanWrapperImpl(domainObject);
         return beanWrapper.getPropertyValue(idProperty.getName());
     }
@@ -334,25 +338,73 @@ public class JSON extends AbstractConverter implements Converter {
     public String toString(boolean prettyPrint) throws JSONException {
         String json = super.toString();
         if (prettyPrint) {
-            return new JSONObject(json).toString(3);
+            Object jsonObject = new JSONTokener(json).nextValue();
+            if (jsonObject instanceof JSONObject)
+                return ((JSONObject) jsonObject).toString(3);
+            else if (jsonObject instanceof JSONArray)
+                return ((JSONArray) jsonObject).toString(3);
         }
         return json;
     }
 
     /**
-     * @param target
+     * Parses the given JSON String and returns ether a JSONObject or a JSONArry
+     *
+     * @param source A string containing some JSON
+     * @return ether a JSONObject or a JSONArray - depending on the given JSON
+     * @throws ConverterException when the JSON content is not valid
+     */
+    public static Object parse(String source) throws ConverterException {
+        try {
+            return new JSONTokener(source).nextValue();
+        } catch (JSONException e) {
+            throw new ConverterException("Error parsing JSON", e);
+        }
+    }
+
+    /**
+     * Parses the given JSON and returns ether a JSONObject or a JSONArry
+     *
+     * @param is       An InputStream which delivers some JSON
+     * @param encoding the Character Encoding to use
+     * @return ether a JSONObject or a JSONArray - depending on the given JSON
+     * @throws ConverterException when the JSON content is not valid
+     */
+    public static Object parse(InputStream is, String encoding) throws ConverterException {
+        try {
+            return parse(IOUtils.toString(is, encoding));
+        } catch (IOException e) {
+            throw new ConverterException("Error parsing JSON", e);
+        }
+    }
+
+    /**
+     * Parses the given request's InputStream and returns ether a JSONObject or a JSONArry
+     *
+     * @param request the JSON Request
+     * @return ether a JSONObject or a JSONArray - depending on the given JSON
+     * @throws ConverterException when the JSON content is not valid
+     */
+    public static Object parse(HttpServletRequest request) throws ConverterException {
+        String encoding = request.getCharacterEncoding();
+        if (encoding == null)
+            encoding = Converter.DEFAULT_REQUEST_ENCODING;
+        try {
+            return parse(request.getInputStream(), encoding);
+        } catch (IOException e) {
+            throw new ConverterException("Error parsing JSON", e);
+        }
+    }
+
+    /**
+     * Sets the Object which is later converted to JSON
+     *
+     * @param target the Object
+     * @see org.codehaus.groovy.grails.web.converters.Converter
      */
     public void setTarget(Object target) {
         this.target = target;
 
-    }
-
-    /**
-     * @param type
-     * @return
-     */
-    public Object asType(Class type) {
-        return null;
     }
 
 }

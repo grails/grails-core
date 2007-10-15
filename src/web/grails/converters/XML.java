@@ -16,15 +16,20 @@ package grails.converters;
 
 
 import com.thoughtworks.xstream.XStream;
+import groovy.util.XmlSlurper;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.web.converters.AbstractConverter;
 import org.codehaus.groovy.grails.web.converters.Converter;
+import org.codehaus.groovy.grails.web.converters.ConverterUtil;
 import org.codehaus.groovy.grails.web.converters.exceptions.ConverterException;
 import org.codehaus.groovy.grails.web.converters.xtream.DomainClassConverter;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.Writer;
 
 /**
@@ -38,38 +43,50 @@ public class XML extends AbstractConverter implements Converter {
 
     private Object target;
 
-    private static XStream xstream;
-
-    public static XStream getXStream() {
-        if (xstream == null) {
-            xstream = setupXStream();
-        }
-        return xstream;
+    /**
+     * Configures the XStream instance
+     *
+     * @param xs an XStream instance
+     */
+    public void configureXStream(XStream xs) {
+        DomainClassConverter dcConverter = new DomainClassConverter();
+        dcConverter.setRenderDomainClassRelations(false);
+        xs.registerConverter(dcConverter);
     }
 
-    public static void addAlias(String alias, Class clazz) {
-        getXStream().alias(alias, clazz);
-    }
-
-    public static XStream setupXStream() {
-        XStream xstream = new XStream();
-        xstream.registerConverter(new DomainClassConverter(), XStream.PRIORITY_VERY_HIGH);
-        xstream.setMode(XStream.XPATH_ABSOLUTE_REFERENCES);
-        return xstream;
-    }
-
+    /**
+     * Default Constructor
+     */
     public XML() {
 
     }
 
+    /**
+     * Initializes the Converter with the target
+     *
+     * @param target the target object to convert
+     */
     public XML(Object target) {
         this.target = target;
     }
 
+    /**
+     * Renders the XML to the given Writer
+     *
+     * @param out the Writer
+     * @throws org.codehaus.groovy.grails.web.converters.exceptions.ConverterException
+     *
+     */
     public void render(Writer out) throws ConverterException {
-        getXStream().toXML(target, out);
+        ConverterUtil.getXStream(getClass()).toXML(target, out);
     }
 
+    /**
+     * Renders the XML to the HttpServletResponse, also setting the the Content-Type (text/xml)
+     *
+     * @param response the HttpServletResponse
+     * @throws ConverterException
+     */
     public void render(HttpServletResponse response) throws ConverterException {
         response.setContentType("text/xml");
         try {
@@ -82,12 +99,62 @@ public class XML extends AbstractConverter implements Converter {
         }
     }
 
-    public void setTarget(Object target) {
-        this.target = target;
+    /**
+     * Parses the given XML
+     *
+     * @param source a String containing some XML
+     * @return a groovy.util.XmlSlurper
+     * @throws ConverterException
+     */
+    public static Object parse(String source) throws ConverterException {
+        try {
+            return new XmlSlurper().parse(source);
+        } catch (Exception e) {
+            throw new ConverterException("Error parsing XML", e);
+        }
     }
 
-    public Object asType(Class type) {
-        return null;
+    /**
+     * Parses the given XML
+     *
+     * @param is       an InputStream to read from
+     * @param encoding the Character Encoding to use
+     * @return a groovy.util.XmlSlurper
+     * @throws ConverterException
+     */
+    public static Object parse(InputStream is, String encoding) throws ConverterException {
+        try {
+            InputStreamReader reader = new InputStreamReader(is, encoding);
+            return new XmlSlurper().parse(reader);
+        } catch (Exception e) {
+            throw new ConverterException("Error parsing XML", e);
+        }
+    }
+
+    /**
+     * Parses the give XML (read from the POST Body of the Request)
+     *
+     * @param request an HttpServletRequest
+     * @return a groovy.util.XmlSlurper
+     * @throws ConverterException
+     */
+    public static Object parse(HttpServletRequest request) throws ConverterException {
+        String encoding = request.getCharacterEncoding();
+        if (encoding == null)
+            encoding = Converter.DEFAULT_REQUEST_ENCODING;
+        try {
+            return parse(request.getInputStream(), encoding);
+        } catch (IOException e) {
+            throw new ConverterException("Error parsing XML", e);
+        }
+    }
+
+    /**
+     * @param target the target to convert
+     * @see org.codehaus.groovy.grails.web.converters.Converter
+     */
+    public void setTarget(Object target) {
+        this.target = target;
     }
 
 }

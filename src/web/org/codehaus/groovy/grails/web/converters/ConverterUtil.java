@@ -19,12 +19,13 @@ package org.codehaus.groovy.grails.web.converters;
  *
  * @author Siegfried Puchbauer
  * @since 0.6
- *        <p/>
- *        Created: Aug 3, 2007
- *        Time: 6:10:44 PM
  */
 
+import com.thoughtworks.xstream.XStream;
+import grails.converters.XML;
 import groovy.lang.Closure;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
@@ -33,10 +34,14 @@ import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.hsqldb.lib.Collection;
 
 import java.io.File;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
 public class ConverterUtil {
+
+    private final static Log log = LogFactory.getLog(ConverterUtil.class);
 
     private static ConverterUtil INSTANCE;
 
@@ -49,6 +54,50 @@ public class ConverterUtil {
             throw new ConverterException("Initialization of Converter Object " + converterClass.getName()
                     + " failed for target " + target.getClass().getName(), e);
         }
+    }
+
+    private static Map XSTREAM_MAP = new HashMap();
+    private static Map ALIAS_MAP = new HashMap();
+
+    public static XStream getXStream(Class clazz) {
+        XStream xs = (XStream) XSTREAM_MAP.get(clazz);
+        if (xs == null) {
+            xs = setupXStream(clazz);
+        }
+        return xs;
+    }
+
+    protected static XStream setupXStream(Class converter) {
+        XStream xs = new XStream();
+        xs.setMode(XStream.XPATH_ABSOLUTE_REFERENCES);
+        for (Iterator iterator = ALIAS_MAP.keySet().iterator(); iterator.hasNext();) {
+            Class cls = (Class) iterator.next();
+            String alias = (String) ALIAS_MAP.get(cls);
+            xs.alias(alias, cls);
+        }
+        try {
+            XML instance = (XML) converter.newInstance();
+            instance.configureXStream(xs);
+            XSTREAM_MAP.put(converter, xs);
+        } catch (Exception e) {
+            log.error("Error configuring XStream for Converter " + converter.getName(), e);
+        }
+        return xs;
+    }
+
+    public static void addAlias(String alias, Class clazz) {
+        ALIAS_MAP.put(clazz, alias);
+        XSTREAM_MAP.clear();
+    }
+
+    public static String getAlias(Class cls) {
+        return (String) ALIAS_MAP.get(cls);
+    }
+
+    public static String resolveAlias(Class cls) {
+        String alias = (String) ALIAS_MAP.get(cls);
+        if (alias == null) return cls.getName();
+        else return alias;
     }
 
     public static GrailsDomainClass getDomainClass(String name) {

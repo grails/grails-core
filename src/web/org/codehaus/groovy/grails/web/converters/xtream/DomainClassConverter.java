@@ -22,12 +22,11 @@ import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
 import org.codehaus.groovy.grails.web.converters.ConverterUtil;
+import org.hibernate.collection.AbstractPersistentCollection;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
 
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 
 /**
  * An XStream converter for converting Grails domain classes to XML
@@ -36,6 +35,20 @@ import java.util.Map;
  */
 public class DomainClassConverter implements Converter {
 
+    private boolean renderDomainClassRelations = false;
+
+    public boolean isRenderDomainClassRelations() {
+        return renderDomainClassRelations;
+    }
+
+    /**
+     * Configure wheter DomainClass Relations should be fully rendered or on the referenced ID's
+     *
+     * @param renderDomainClassRelations true to render nested DomainClass Instances, false to render their ID's
+     */
+    public void setRenderDomainClassRelations(boolean renderDomainClassRelations) {
+        this.renderDomainClassRelations = renderDomainClassRelations;
+    }
 
     public void marshal(Object value, HierarchicalStreamWriter writer,
                         MarshallingContext context) {
@@ -66,43 +79,67 @@ public class DomainClassConverter implements Converter {
                 }
             } else {
                 Object referenceObject = beanWrapper.getPropertyValue(property.getName());
-
-                if (referenceObject == null) {
-                    writer.startNode("null");
-                    writer.endNode();
-                } else {
-                    GrailsDomainClass referencedDomainClass = property.getReferencedDomainClass();
-                    GrailsDomainClassProperty referencedIdProperty = referencedDomainClass.getIdentifier();
-                    if (property.isOneToOne() || property.isManyToOne() || property.isEmbedded()) {
-                        // Property contains 1 foreign Domain Object
-                        writer.startNode(referencedDomainClass.getPropertyName());
-                        writer.addAttribute("id", String.valueOf(extractIdValue(referenceObject, referencedIdProperty)));
+                if (isRenderDomainClassRelations()) {
+                    if (referenceObject == null) {
+                        writer.startNode("null");
                         writer.endNode();
                     } else {
-                        String refPropertyName = referencedDomainClass.getPropertyName();
-                        if (referenceObject instanceof Collection) {
-                            Collection o = (Collection) referenceObject;
-                            for (Iterator it = o.iterator(); it.hasNext();) {
-                                Object el = (Object) it.next();
-                                writer.startNode(refPropertyName);
-                                writer.addAttribute("id", String.valueOf(extractIdValue(el, referencedIdProperty)));
-                                writer.endNode();
+                        if (referenceObject instanceof AbstractPersistentCollection) {
+                            // Force initialisation and get a non-persistent Collection Type
+                            AbstractPersistentCollection acol = (AbstractPersistentCollection) referenceObject;
+                            acol.forceInitialization();
+                            if (referenceObject instanceof SortedMap) {
+                                referenceObject = new TreeMap((SortedMap) referenceObject);
+                            } else if (referenceObject instanceof SortedSet) {
+                                referenceObject = new TreeSet((SortedSet) referenceObject);
+                            } else if (referenceObject instanceof Set) {
+                                referenceObject = new HashSet((Set) referenceObject);
+                            } else if (referenceObject instanceof Map) {
+                                referenceObject = new HashMap((Map) referenceObject);
+                            } else {
+                                referenceObject = new ArrayList((Collection) referenceObject);
                             }
+                        }
+                        context.convertAnother(referenceObject);
+                    }
+                } else {
+                    if (referenceObject == null) {
+                        writer.startNode("null");
+                        writer.endNode();
+                    } else {
+                        GrailsDomainClass referencedDomainClass = property.getReferencedDomainClass();
+                        GrailsDomainClassProperty referencedIdProperty = referencedDomainClass.getIdentifier();
+                        if (property.isOneToOne() || property.isManyToOne() || property.isEmbedded()) {
+                            // Property contains 1 foreign Domain Object
+                            writer.startNode(referencedDomainClass.getPropertyName());
+                            writer.addAttribute("id", String.valueOf(extractIdValue(referenceObject, referencedIdProperty)));
+                            writer.endNode();
+                        } else {
+                            String refPropertyName = referencedDomainClass.getPropertyName();
+                            if (referenceObject instanceof Collection) {
+                                Collection o = (Collection) referenceObject;
+                                for (Iterator it = o.iterator(); it.hasNext();) {
+                                    Object el = (Object) it.next();
+                                    writer.startNode(refPropertyName);
+                                    writer.addAttribute("id", String.valueOf(extractIdValue(el, referencedIdProperty)));
+                                    writer.endNode();
+                                }
 
-                        } else if (referenceObject instanceof Map) {
-                            Map map = (Map) referenceObject;
-                            Iterator iterator = map.keySet().iterator();
-                            while (iterator.hasNext()) {
-                                String key = String.valueOf(iterator.next());
-                                Object o = map.get(key);
-                                writer.startNode("entry");
-                                writer.startNode("string"); // key of map entry has to be a string
-                                writer.setValue(key);
-                                writer.endNode(); // end string
-                                writer.startNode(refPropertyName);
-                                writer.addAttribute("id", String.valueOf(extractIdValue(o, referencedIdProperty)));
-                                writer.endNode(); // end refPropertyName
-                                writer.endNode(); // end entry
+                            } else if (referenceObject instanceof Map) {
+                                Map map = (Map) referenceObject;
+                                Iterator iterator = map.keySet().iterator();
+                                while (iterator.hasNext()) {
+                                    String key = String.valueOf(iterator.next());
+                                    Object o = map.get(key);
+                                    writer.startNode("entry");
+                                    writer.startNode("string"); // key of map entry has to be a string
+                                    writer.setValue(key);
+                                    writer.endNode(); // end string
+                                    writer.startNode(refPropertyName);
+                                    writer.addAttribute("id", String.valueOf(extractIdValue(o, referencedIdProperty)));
+                                    writer.endNode(); // end refPropertyName
+                                    writer.endNode(); // end entry
+                                }
                             }
                         }
                     }
