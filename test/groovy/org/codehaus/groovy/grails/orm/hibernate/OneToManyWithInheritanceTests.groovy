@@ -5,9 +5,12 @@
  * Created: Sep 21, 2007
  */
 package org.codehaus.groovy.grails.orm.hibernate
+
+import org.springframework.util.Log4jConfigurer
+
 class OneToManyWithInheritanceTests extends AbstractGrailsHibernateTests {
 
-    protected void onSetUp() {
+    protected void onSetUp() {        
         gcl.parseClass('''
 class OwnerObject {
     Long id

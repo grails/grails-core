@@ -289,6 +289,13 @@ public final class GrailsDomainBinder {
         ColumnConfig cc = getColumnConfig(property);
         // Configure one-to-many
         if(collection.isOneToMany() ) {
+
+            GrailsDomainClass referenced = property.getReferencedDomainClass();
+            if(referenced != null && !referenced.isRoot()) {
+                // NOTE: Work around for http://opensource.atlassian.com/projects/hibernate/browse/HHH-2855
+                collection.setWhere(RootClass.DEFAULT_DISCRIMINATOR_COLUMN_NAME + " = '"+referenced.getFullName()+"'");
+            }
+
             OneToMany oneToMany = (OneToMany)collection.getElement();
             String associatedClassName = oneToMany.getReferencedEntityName();
 
@@ -1090,16 +1097,12 @@ public final class GrailsDomainBinder {
 			// if its inherited skip
 			if(currentGrailsProp.isInherited() && !isBidirectionalManyToOne(currentGrailsProp))
 				continue;
-            else if(domainClass.hasSubClasses() && (currentGrailsProp.isOneToOne() || currentGrailsProp.isManyToOne()))
-                continue;
-            /*if(currentGrailsProp.isManyToMany() && !currentGrailsProp.isOwningSide())
-				continue;*/
             if (isCompositeIdProperty(gormMapping, currentGrailsProp)) continue;
 
             if(LOG.isDebugEnabled())
 				LOG.debug("[GrailsDomainBinder] Binding persistent property [" + currentGrailsProp.getName() + "]");
 
-			Value value = null;
+			Value value;
 
 			// see if its a collection type
 			CollectionType collectionType = CollectionType.collectionTypeForClass( currentGrailsProp.getType() );
