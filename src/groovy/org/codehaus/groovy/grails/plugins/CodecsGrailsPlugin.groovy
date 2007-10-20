@@ -15,10 +15,9 @@
  */ 
 package org.codehaus.groovy.grails.plugins
 
-import org.codehaus.groovy.grails.plugins.support.GrailsPluginUtils
-import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
 import grails.util.GrailsUtil
 import org.codehaus.groovy.grails.plugins.codecs.*
+import org.codehaus.groovy.grails.commons.*
 
 /**
  * A plug-in that configures pluggable codecs 
