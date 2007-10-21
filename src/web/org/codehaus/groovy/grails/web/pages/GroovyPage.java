@@ -226,7 +226,7 @@ public abstract class GroovyPage extends Script {
                     throw new GrailsTagException("Tag ["+tagName+"] does not exist. No tag library found for namespace: " + tagNamespace);
                 }
             } else {
-                StringBuilder plainTag = new StringBuilder();
+                StringBuffer plainTag = new StringBuffer();
                 String fullTagName = tagNamespace + ":" + tagName;
                 plainTag.append("<").append(fullTagName);
                 for(Iterator iterator = attrs.entrySet().iterator(); iterator.hasNext();) {

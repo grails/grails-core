@@ -260,7 +260,7 @@ public class GrailsUtil {
      */
     public static Throwable sanitize(Throwable t) {
         // Note that this getProperty access may well be synced...
-        if (!Boolean.parseBoolean(System.getProperty("grails.full.stacktrace"))) {
+        if (!Boolean.valueOf(System.getProperty("grails.full.stacktrace")).booleanValue()) {
             StackTraceElement[] trace = t.getStackTrace();
             List newTrace = new ArrayList();
             for (int i = 0; i < trace.length; i++) {

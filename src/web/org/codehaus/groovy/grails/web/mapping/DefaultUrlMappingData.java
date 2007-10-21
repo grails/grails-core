@@ -44,7 +44,7 @@ public class DefaultUrlMappingData implements UrlMappingData {
         if(StringUtils.isBlank(urlPattern)) throw new IllegalArgumentException("Argument [urlPattern] cannot be null or blank");
         if(!urlPattern.startsWith(SLASH)) throw new IllegalArgumentException("Argument [urlPattern] is not a valid URL. It must start with '/' !");
 
-        this.urlPattern = urlPattern.replace("(*)**", CAPTURED_DOUBLE_WILDCARD); // remove starting /
+        this.urlPattern = StringUtils.replace(urlPattern, "(*)**", CAPTURED_DOUBLE_WILDCARD); // remove starting /
         this.tokens = this.urlPattern.substring(1).split(SLASH);
         List urls = new ArrayList();
 
