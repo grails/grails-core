@@ -328,10 +328,10 @@
     <library name="Spring">
       <CLASSES>
         <root url="jar://$PROJECT_DIR$/lib/springmodules-sandbox.jar!/" />
-        <root url="jar://$PROJECT_DIR$/lib/spring-mock-2.0.2.jar!/" />
-        <root url="jar://$PROJECT_DIR$/lib/spring-2.0.2.jar!/" />
         <root url="jar://$PROJECT_DIR$/lib/spring-binding-2.0-m1.jar!/" />
         <root url="jar://$PROJECT_DIR$/lib/spring-webflow-2.0-m1.jar!/" />
+        <root url="jar://$PROJECT_DIR$/lib/spring-test.jar!/" />
+        <root url="jar://$PROJECT_DIR$/lib/spring-2.1-m4.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES>
