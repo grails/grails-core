@@ -16,7 +16,6 @@ package org.codehaus.groovy.grails.web.taglib;
 
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
-import grails.util.GrailsUtil;
 
 /**
  * @author Graeme Rocher

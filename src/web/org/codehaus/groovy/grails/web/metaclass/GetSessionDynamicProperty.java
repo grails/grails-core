@@ -15,16 +15,6 @@
  */
 package org.codehaus.groovy.grails.web.metaclass;
 
-import groovy.lang.GroovyObject;
-import groovy.lang.MetaClass;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-
-import org.codehaus.groovy.runtime.InvokerHelper;
-
-import java.util.*;
 /**
  * A dynamic property that adds a "session" map to a controller for accessing the Http Session
  * 

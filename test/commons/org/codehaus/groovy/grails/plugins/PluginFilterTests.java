@@ -4,7 +4,6 @@ import groovy.lang.GroovyClassLoader;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 
@@ -13,8 +12,6 @@ import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator;
 import org.codehaus.groovy.grails.commons.test.AbstractGrailsMockTests;
 import org.codehaus.groovy.grails.support.MockApplicationContext;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 
 public class PluginFilterTests extends AbstractGrailsMockTests {
 

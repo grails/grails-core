@@ -21,7 +21,6 @@ import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 
 import java.io.StringWriter;
 import java.io.Writer;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Iterator;
 

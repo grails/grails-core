@@ -15,12 +15,10 @@
  */
 package org.codehaus.groovy.grails.web.servlet.filter;
 
-import groovy.lang.GroovyClassLoader;
 import groovy.lang.Writable;
 import groovy.text.Template;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator;
 import org.codehaus.groovy.grails.commons.spring.GrailsWebApplicationContext;

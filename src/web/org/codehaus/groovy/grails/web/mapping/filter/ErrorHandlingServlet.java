@@ -16,9 +16,7 @@ package org.codehaus.groovy.grails.web.mapping.filter;
 
 import org.codehaus.groovy.grails.web.mapping.UrlMappingInfo;
 import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder;
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.GrailsDispatcherServlet;
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequestFilter;
 import org.codehaus.groovy.grails.web.util.WebUtils;
 import org.springframework.web.context.WebApplicationContext;

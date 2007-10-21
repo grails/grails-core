@@ -16,7 +16,6 @@
 package grails.orm;
 
 import groovy.lang.*;
-import org.apache.commons.lang.ArrayUtils;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.hibernate.Criteria;
 import org.hibernate.FetchMode;

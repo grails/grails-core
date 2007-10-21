@@ -1,6 +1,5 @@
 package org.codehaus.groovy.grails.commons.spring;
 
-import grails.util.GrailsWebUtil;
 import groovy.lang.ExpandoMetaClass;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyObject;

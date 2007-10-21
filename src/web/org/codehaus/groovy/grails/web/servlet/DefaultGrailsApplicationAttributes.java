@@ -18,7 +18,6 @@ import groovy.lang.GroovyObject;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.GrailsResourceUtils;
 import org.codehaus.groovy.grails.commons.GrailsTagLibClass;
 import org.codehaus.groovy.grails.commons.TagLibArtefactHandler;
 import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods;
@@ -27,7 +26,6 @@ import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
 import org.codehaus.groovy.grails.web.pages.exceptions.GroovyPagesException;
 import org.codehaus.groovy.grails.plugins.PluginMetaManager;
 import org.springframework.context.ApplicationContext;
-import org.springframework.core.io.Resource;
 import org.springframework.validation.Errors;
 import org.springframework.web.util.UrlPathHelper;
 

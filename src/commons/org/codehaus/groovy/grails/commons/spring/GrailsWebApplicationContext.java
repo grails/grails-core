@@ -17,7 +17,6 @@ package org.codehaus.groovy.grails.commons.spring;
 
 import groovy.lang.GroovyObject;
 import groovy.lang.MetaClass;
-import groovy.lang.GroovyClassLoader;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.orm.support.TransactionManagerPostProcessor;
 import org.codehaus.groovy.runtime.InvokerHelper;

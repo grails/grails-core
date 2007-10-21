@@ -17,7 +17,6 @@ package org.codehaus.groovy.grails.orm.hibernate.metaclass;
 
 import groovy.lang.GString;
 import groovy.lang.MissingMethodException;
-import org.apache.commons.lang.ArrayUtils;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.orm.hibernate.exceptions.GrailsQueryException;
 import org.hibernate.*;

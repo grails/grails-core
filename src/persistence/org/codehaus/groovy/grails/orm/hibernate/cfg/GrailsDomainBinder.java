@@ -16,8 +16,6 @@ package org.codehaus.groovy.grails.orm.hibernate.cfg;
 
 
 import groovy.lang.Closure;
-import groovy.lang.GroovySystem;
-import groovy.lang.MetaClass;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.math.NumberUtils;
 import org.apache.commons.logging.Log;
@@ -37,7 +35,6 @@ import org.hibernate.persister.entity.JoinedSubclassEntityPersister;
 import org.hibernate.persister.entity.SingleTableEntityPersister;
 import org.hibernate.usertype.UserType;
 import org.hibernate.util.StringHelper;
-import org.springframework.beans.BeanWrapper;
 import org.springframework.validation.Validator;
 
 import java.beans.IntrospectionException;
