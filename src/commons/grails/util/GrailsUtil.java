@@ -30,7 +30,6 @@ import org.springframework.mock.web.MockServletContext;
 import org.springframework.util.Assert;
 
 import java.io.IOException;
-import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.Map;
