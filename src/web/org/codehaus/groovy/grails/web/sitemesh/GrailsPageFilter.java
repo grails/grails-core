@@ -54,7 +54,8 @@ public class GrailsPageFilter extends PageFilter {
 	 * @see com.opensymphony.module.sitemesh.filter.PageFilter#applyDecorator(com.opensymphony.module.sitemesh.Page, com.opensymphony.module.sitemesh.Decorator, javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
 	 */
 	protected void applyDecorator(Page page, Decorator decorator, HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-    	if(decorator.getURIPath().endsWith(".gsp")) {
+        final String uriPath = decorator.getURIPath();
+        if(uriPath != null && uriPath.endsWith(".gsp")) {
     		request.setAttribute(PAGE, page);
             ServletContext context = filterConfig.getServletContext();
             // see if the URI path (webapp) is set
