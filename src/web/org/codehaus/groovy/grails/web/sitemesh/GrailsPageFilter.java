@@ -24,7 +24,6 @@ import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 
 import javax.servlet.FilterConfig;
 import javax.servlet.RequestDispatcher;
-import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -40,8 +39,7 @@ import java.io.IOException;
 public class GrailsPageFilter extends PageFilter {
 
 	private static final Log LOG = LogFactory.getLog( GrailsPageFilter.class );
-	private FilterConfig filterConfig;
-	
+
 	
 	public void init(FilterConfig filterConfig) {
 		super.init(filterConfig);
@@ -57,15 +55,6 @@ public class GrailsPageFilter extends PageFilter {
         final String uriPath = decorator.getURIPath();
         if(uriPath != null && uriPath.endsWith(".gsp")) {
     		request.setAttribute(PAGE, page);
-            ServletContext context = filterConfig.getServletContext();
-            // see if the URI path (webapp) is set
-            if (decorator.getURIPath() != null) {
-                // in a security conscious environment, the servlet container
-                // may return null for a given URL
-                if (context.getContext(decorator.getURIPath()) != null) {
-                    context = context.getContext(decorator.getURIPath());
-                }
-            }    		
                       
             RequestDispatcher rd = request.getRequestDispatcher(decorator.getURIPath());
             if(!response.isCommitted()) {
