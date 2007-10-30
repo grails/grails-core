@@ -56,7 +56,6 @@ import java.util.regex.Pattern;
  * <p/>
  * New ArtefactHandler instances can be registed with the GrailsApplication thus allowing application extensibility.
  *
- *
  * @author Marc Palmer
  * @author Steven Devijver
  * @author Graeme Rocher
