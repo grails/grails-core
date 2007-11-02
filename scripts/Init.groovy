@@ -135,6 +135,13 @@ void loadEventHooks() {
         loadEventScript(f)
     }
 
+    // Look for app-supplied scripts
+    f = new File( basedir, "scripts/Events.groovy")
+    if (f.exists()) {
+        println "Found application events script"
+        loadEventScript(f) 
+    }
+
     // Look for plugin-supplied scripts
     def pluginsDir = new File( basedir, "plugins")
     if (pluginsDir.exists()) {
