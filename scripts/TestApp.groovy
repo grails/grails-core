@@ -171,6 +171,8 @@ def runTests = {suite, TestResult result, Closure callback ->
                         thisTest.addListener(xmlOutput)
                         thisTest.addListener(plainOutput)
                         def t = test.testAt(i)
+                        System.out.println "--Output from ${t.name}--"
+                        System.err.println "--Output from ${t.name}--"
                         def start = System.currentTimeMillis()
                         callback(test, {
                             savedOut.print "                    ${t.name}..."
