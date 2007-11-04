@@ -149,7 +149,7 @@
 
     private renderNoSelection(property) {
         if(property.optional) {
-            if(property.manyToOne) {
+            if(property.manyToOne || property.oneToOne) {
                 return "noSelection=\"['null':'']\""				
             }
             else {
