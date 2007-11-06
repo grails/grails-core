@@ -1,5 +1,7 @@
 package org.codehaus.groovy.grails.cli;
 
+import org.codehaus.groovy.tools.RootLoader
+import org.codehaus.groovy.tools.LoaderConfiguration
 
 abstract class AbstractCliTests extends GroovyTestCase {
 
@@ -19,4 +21,22 @@ abstract class AbstractCliTests extends GroovyTestCase {
 		ant = null
 	}
 
+	protected void gantRun(final String[] args) {
+
+	    LoaderConfiguration loaderConfig = new LoaderConfiguration()
+	    loaderConfig.setRequireMain(false);
+	    
+	    def libDir = new File('lib')
+	    assert libDir.exists()
+	    assert libDir.isDirectory()
+
+	    libDir.eachFileMatch(~/gant.*\.jar/) {jarFile ->
+	        loaderConfig.addFile(jarFile)
+	    }
+
+	    def rootLoader = new RootLoader(loaderConfig)
+	    def gant = rootLoader.loadClass('gant.Gant', false).newInstance()
+
+	    gant.process(args)
+	}
 }

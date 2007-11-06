@@ -1,14 +1,12 @@
 package org.codehaus.groovy.grails.cli;
 
-import gant.Gant
-
 class CreateControllerTests extends AbstractCliTests {
 	
 	
 	void testCreateControllerCreatesViewDirectory() {
 	    println "CREATE APP"
 
-		new Gant().process ( ["-f", "scripts/CreateApp.groovy"] as String[])
+		gantRun( ["-f", "scripts/CreateApp.groovy"] as String[])
 
         // Correct the base dir now
         def appDir = appBase + File.separatorChar + System.getProperty("grails.cli.args")
@@ -21,7 +19,7 @@ class CreateControllerTests extends AbstractCliTests {
 	    println "CREATE CONTROLLER"
 
 		System.setProperty("grails.cli.args", "Book")
-		new Gant().process ( ["-f", "scripts/CreateController.groovy"] as String[])
+		gantRun( ["-f", "scripts/CreateController.groovy"] as String[])
 
 		assertTrue "${bookViewDirectory} does not exist", new File(bookViewDirectory).exists()
 	}

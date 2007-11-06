@@ -1,14 +1,13 @@
 package org.codehaus.groovy.grails.cli;
 
-import gant.Gant
-
 class CreateAppTests extends AbstractCliTests {
 	
 	
-	void testCreateApp() {				
-		new Gant().process ( ["-f", "scripts/CreateApp.groovy"] as String[])
-		
-		// test basic structure
+	void testCreateApp() {
+	    
+	    gantRun(['-f', 'scripts/CreateApp.groovy'] as String[])
+
+	    // test basic structure
 		assert new File("${appBase}/testapp").exists()
 		assert new File("${appBase}/testapp/grails-app/conf/hibernate").exists()
 		assert new File("${appBase}/testapp/grails-app/conf/spring").exists()
@@ -41,5 +40,4 @@ class CreateAppTests extends AbstractCliTests {
 		assert new File("${appBase}/testapp/grails-app/views/layouts/main.gsp").exists()
 		
 	}
-
 }

@@ -1,15 +1,13 @@
 package org.codehaus.groovy.grails.cli;
 
-import gant.Gant
-
 class WarTests  extends AbstractCliTests {
 
 	void testWAR() {
-		new Gant().process ( ["-f", "scripts/CreateApp.groovy"] as String[])
+	    gantRun( ["-f", "scripts/CreateApp.groovy"] as String[])
 		
 		
 		System.setProperty("base.dir", appBase + File.separatorChar + System.getProperty("grails.cli.args"))
-		new Gant().process ( ["-f", "scripts/War.groovy"] as String[])
+		gantRun( ["-f", "scripts/War.groovy"] as String[])
 		
 		assert new File("${appBase}/testapp/testapp-0.1.war").exists()
 		

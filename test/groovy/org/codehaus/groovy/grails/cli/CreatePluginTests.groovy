@@ -1,13 +1,11 @@
 package org.codehaus.groovy.grails.cli;
 
-import gant.Gant
-
 class CreatePluginTests extends AbstractCliTests {
 	
 	
 	void testCreatePlugin() {
         System.setProperty("grails.cli.args", "MyTest")
-		new Gant().process ( ["-f", "scripts/CreatePlugin.groovy"] as String[])
+		gantRun( ["-f", "scripts/CreatePlugin.groovy"] as String[])
 		
 		// test basic structure
 		assertTrue new File("${appBase}/MyTest").exists()

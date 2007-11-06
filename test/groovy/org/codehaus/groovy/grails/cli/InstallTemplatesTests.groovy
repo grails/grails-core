@@ -1,12 +1,10 @@
 package org.codehaus.groovy.grails.cli;
 
-import gant.Gant
-
 class InstallTemplatesTests extends AbstractCliTests {
 	
 	
 	void testInstallTemplatesCreatesTemplates() {				
-		new Gant().process ( ["-f", "scripts/CreateApp.groovy"] as String[])
+	    gantRun( ["-f", "scripts/CreateApp.groovy"] as String[])
 
         def appDir = appBase + File.separatorChar + System.getProperty("grails.cli.args")
 		System.setProperty("base.dir", appDir)
@@ -14,7 +12,7 @@ class InstallTemplatesTests extends AbstractCliTests {
         
 		assertFalse "${templatesDirectory} exists, but should not", new File(templatesDirectory).exists()
 
-		new Gant().process ( ["-f", "scripts/InstallTemplates.groovy"] as String[])
+		gantRun( ["-f", "scripts/InstallTemplates.groovy"] as String[])
 
 		assertTrue "${templatesDirectory} does not exist", new File(templatesDirectory).exists()
 		
