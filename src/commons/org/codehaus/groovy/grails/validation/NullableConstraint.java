@@ -21,13 +21,10 @@ import org.codehaus.groovy.grails.validation.exceptions.ConstraintVetoingExcepti
  * A Constraint that validates not equal to something
  *
  * @author Graeme Rocher
+ * @author Sergey Nebolsin
  * @since 0.4
- *
- *        <p/>
- *        Created: Jan 19, 2007
- *        Time: 8:08:26 AM
  */
-class NullableConstraint extends AbstractConstraint {
+class NullableConstraint extends AbstractVetoingConstraint {
 
     private boolean nullable;
 
@@ -62,18 +59,15 @@ class NullableConstraint extends AbstractConstraint {
         return false;
     }
 
-    public boolean isVetoing() {
-        return true;
-    }
-
-    protected void processValidate(Object target, Object propertyValue, Errors errors) {
+    protected boolean processValidateWithVetoing(Object target, Object propertyValue, Errors errors) {
         if(propertyValue == null) {
             if(!nullable) {
                 Object[] args = new Object[] { constraintPropertyName, constraintOwningClass};
                 super.rejectValue(target, errors, ConstrainedProperty.DEFAULT_NULL_MESSAGE_CODE, ConstrainedProperty.NULLABLE_CONSTRAINT,args );
-            } 
-            throw new ConstraintVetoingException("'null' value is catched by 'nullable' constraint, no addition validation needed");
+            }
+            // null value is catched by 'blank' constraint, no addition validation needed
+            return true;
         }
+        return false;
     }
-
 }

@@ -30,8 +30,10 @@ public interface Constraint {
 	 * @return True if the constraint can be applied against the specified type
 	 */
 	boolean supports(Class type);
+
 	/**
-	 * Validate this constraint against a property value
+	 * Validate this constraint against a property value. If implementation is vetoing (isVetoing() method
+     * returns true), then it could return 'true' to stop further validation.
 	 * 
 	 * @param target
      * @param propertyValue The property value to validate
@@ -78,15 +80,4 @@ public interface Constraint {
      * @param source
      */
 	void setMessageSource(MessageSource source);
-
-    /**
-     * Vetoing constraints are those which might throw ConstraintVetoingException to
-     * prevent any additional validation of the property. These constraints are proceeded
-     * before any other constraints, and validation continues only if no one of vetoing
-     * constraint hadn't thrown a ConstraintVetoingException.
-     *
-     * @return true if this constraint is a vetoing constraint, false otherwise
-     */
-    boolean isVetoing();
-    
 }

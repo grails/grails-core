@@ -917,24 +917,25 @@ public class ConstrainedProperty   {
      * @param errors The Errors instances to report errors to
      */
     public void validate(Object target, Object propertyValue, Errors errors) {
-        for (Iterator i = this.appliedConstraints.values().iterator(); i.hasNext();) {
+        List delayedConstraints = new ArrayList();
+
+        // validate only vetoing constraints first, putting non-vetoing into delayedConstraints
+        for(Iterator i = this.appliedConstraints.values().iterator(); i.hasNext();) {
             Constraint c = (Constraint) i.next();
-            if(c.isVetoing()) {
-                c.setMessageSource( this.messageSource );
-                try {
-                    c.validate(target, propertyValue, errors);
-                } catch(ConstraintVetoingException cve) {
-                    // stop validation process when constraint vetoes
-                    return;
-                }
+            if(c instanceof VetoingConstraint) {
+                c.setMessageSource(this.messageSource);
+                // stop validation process when constraint vetoes
+                if(((VetoingConstraint)c).validateWithVetoing(target, propertyValue, errors)) return;
+            } else {
+                delayedConstraints.add(c);
             }
         }
-        for (Iterator i = this.appliedConstraints.values().iterator(); i.hasNext();) {
+
+        // process non-vetoing constraints
+        for(Iterator i = delayedConstraints.iterator(); i.hasNext();) {
             Constraint c = (Constraint) i.next();
-            if(!c.isVetoing()) {
-                c.setMessageSource( this.messageSource );
-                c.validate(target, propertyValue, errors);
-            }
+            c.setMessageSource(this.messageSource);
+            c.validate(target, propertyValue, errors);
         }
     }
 

@@ -27,7 +27,7 @@ import org.codehaus.groovy.grails.validation.exceptions.ConstraintVetoingExcepti
  *        Created: Jan 19, 2007
  *        Time: 8:10:01 AM
  */
-class BlankConstraint extends AbstractConstraint {
+class BlankConstraint extends AbstractVetoingConstraint {
 
     private boolean blank;
 
@@ -60,17 +60,15 @@ class BlankConstraint extends AbstractConstraint {
         return ConstrainedProperty.BLANK_CONSTRAINT;
     }
 
-    public boolean isVetoing() {
-        return true;
-    }
-
-    protected void processValidate(Object target, Object propertyValue, Errors errors) {
+    protected boolean processValidateWithVetoing(Object target, Object propertyValue, Errors errors) {
         if(propertyValue instanceof String && StringUtils.isBlank((String)propertyValue)) {
             if(!blank) {
                 Object[] args = new Object[] { constraintPropertyName, constraintOwningClass };
                 super.rejectValue( target,errors, ConstrainedProperty.DEFAULT_BLANK_MESSAGE_CODE, ConstrainedProperty.BLANK_CONSTRAINT, args );
             }
-            throw new ConstraintVetoingException("empty string is catched by 'blank' constraint, no addition validation needed");
+            // empty string is catched by 'blank' constraint, no addition validation needed
+            return true;
         }
+        return false;
     }
 }

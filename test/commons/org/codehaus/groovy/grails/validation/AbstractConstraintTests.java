@@ -54,45 +54,42 @@ public abstract class AbstractConstraintTests extends TestCase {
         checkArguments( args, fieldError.getArguments() );
     }
 
-    protected Errors testConstraintFailed( Constraint constraint, Object value ) {
-        Errors errors = validateConstraint( constraint, value, false );
-        assertEquals( true, errors.hasErrors() );
+    protected Errors testConstraintFailed(Constraint constraint, Object value) {
+        Errors errors = validateConstraint(constraint, value);
+        assertEquals(true, errors.hasErrors());
         return errors;
     }
 
-    protected Errors testConstraintFailedAndVetoed( Constraint constraint, Object value ) {
-        Errors errors = validateConstraint( constraint, value, true, false );
-        assertEquals( true, errors.hasErrors() );
+    protected Errors testConstraintFailedAndVetoed(Constraint constraint, Object value) {
+        Errors errors = validateConstraint(constraint, value, Boolean.TRUE);
+        assertEquals(true, errors.hasErrors());
         return errors;
     }
 
-    protected void testConstraintPassed( Constraint constraint, Object value ) {
-        Errors errors = validateConstraint( constraint, value, false );
-        assertEquals( false, errors.hasErrors() );
+    protected void testConstraintPassed(Constraint constraint, Object value) {
+        Errors errors = validateConstraint(constraint, value);
+        assertEquals(false, errors.hasErrors());
     }
 
-    protected void testConstraintPassedAndVetoed( Constraint constraint, Object value ) {
-        Errors errors = validateConstraint( constraint, value, true, false);
-        assertEquals( false, errors.hasErrors() );
+    protected void testConstraintPassedAndVetoed(Constraint constraint, Object value) {
+        Errors errors = validateConstraint(constraint, value, Boolean.TRUE);
+        assertEquals(false, errors.hasErrors());
     }
 
-    protected Errors validateConstraint( Constraint constraint, Object value) {
-        return validateConstraint(constraint,value,false,true);
+    protected Errors validateConstraint(Constraint constraint, Object value) {
+        return validateConstraint(constraint, value, null);
     }
 
-    protected Errors validateConstraint( Constraint constraint, Object value, boolean shouldVeto) {
-        return validateConstraint(constraint,value,shouldVeto,true);
-    }
-
-    protected Errors validateConstraint( Constraint constraint, Object value, boolean shouldVeto, boolean skipVetoingErrors ) {
-        BeanWrapper constrainedBean = new BeanWrapperImpl( new TestClass() );
-        constrainedBean.setPropertyValue( constraint.getPropertyName(), value );
-        Errors errors = new BindException( constrainedBean.getWrappedInstance(), constrainedBean.getWrappedClass().getName() );
-        try {
-            constraint.validate( constrainedBean.getWrappedInstance(), value, errors );
-            if(shouldVeto && !skipVetoingErrors) fail("Constraint should throw ConstraintVetoingException");
-        } catch( ConstraintVetoingException cve ) {
-            if(!shouldVeto && !skipVetoingErrors) fail("Constraint shouldn't throw ConstraintVetoingException");
+    protected Errors validateConstraint(Constraint constraint, Object value, Boolean shouldVeto) {
+        BeanWrapper constrainedBean = new BeanWrapperImpl(new TestClass());
+        constrainedBean.setPropertyValue(constraint.getPropertyName(), value);
+        Errors errors = new BindException(constrainedBean.getWrappedInstance(), constrainedBean.getWrappedClass().getName());
+        if(!(constraint instanceof VetoingConstraint) || shouldVeto == null) {
+            constraint.validate(constrainedBean.getWrappedInstance(), value, errors);
+        } else {
+            boolean vetoed = ((VetoingConstraint) constraint).validateWithVetoing(constrainedBean.getWrappedInstance(), value, errors);
+            if(shouldVeto.booleanValue() && !vetoed) fail("Constraint should veto");
+            else if(!shouldVeto.booleanValue() && vetoed) fail("Constraint shouldn't veto");
         }
         return errors;
     }

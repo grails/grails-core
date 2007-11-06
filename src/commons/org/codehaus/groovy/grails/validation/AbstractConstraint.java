@@ -72,15 +72,18 @@ public abstract class AbstractConstraint implements Constraint {
     public void setParameter(Object constraintParameter) {
         this.constraintParameter = constraintParameter;
     }
-    public void validate(Object target, Object propertyValue, Errors errors) {
-        //ValidationUtils.rejectIfEmpty( errors, constraintPropertyName, constraintPropertyName+".empty" );
+
+    protected void checkState() {
         if(StringUtils.isBlank(this.constraintPropertyName))
             throw new IllegalStateException("Property 'propertyName' must be set on the constraint");
         if(constraintOwningClass == null)
             throw new IllegalStateException("Property 'owningClass' must be set on the constraint");
         if(constraintParameter == null)
             throw new IllegalStateException("Property 'constraintParameter' must be set on the constraint");
-
+    }
+    
+    public void validate(Object target, Object propertyValue, Errors errors) {
+        checkState();
         if(propertyValue == null && skipNullValues()) return;
         processValidate(target, propertyValue, errors);
     }
@@ -180,20 +183,10 @@ public abstract class AbstractConstraint implements Constraint {
         return defaultMessage;
     }
 
-    public boolean isVetoing() {
-        return false;
-    }
-
     protected abstract void processValidate(Object target, Object propertyValue, Errors errors);
 
-    /* (non-Javadoc)
-     * @see java.lang.Object#toString()
-     */
     public String toString() {
-        return new ToStringBuilder(this)
-                        .append( constraintParameter )
-                        .toString();
+        return new ToStringBuilder(this).append( constraintParameter ).toString();
     }
-
 
 }
