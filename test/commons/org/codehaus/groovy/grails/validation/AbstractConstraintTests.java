@@ -6,7 +6,6 @@ import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.validation.Errors;
 import org.springframework.validation.BindException;
 import org.springframework.validation.FieldError;
-import org.codehaus.groovy.grails.validation.exceptions.ConstraintVetoingException;
 
 /**
  * Abstract class for all constraint tests.

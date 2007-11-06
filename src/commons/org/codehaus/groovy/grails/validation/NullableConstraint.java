@@ -15,7 +15,6 @@
 package org.codehaus.groovy.grails.validation;
 
 import org.springframework.validation.Errors;
-import org.codehaus.groovy.grails.validation.exceptions.ConstraintVetoingException;
 
 /**
  * A Constraint that validates not equal to something
