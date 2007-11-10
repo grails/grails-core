@@ -18,7 +18,13 @@ package org.codehaus.groovy.grails.orm.hibernate.cfg;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.IntRange;
 import groovy.lang.ObjectRange;
+
+import java.math.BigDecimal;
+import java.util.Arrays;
+import java.util.List;
+
 import junit.framework.TestCase;
+
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
 import org.codehaus.groovy.grails.commons.DefaultGrailsDomainClass;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
@@ -29,10 +35,6 @@ import org.hibernate.mapping.Column;
 import org.hibernate.mapping.PersistentClass;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
-
-import java.math.BigDecimal;
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * @author Jason Rudolph
@@ -82,6 +84,47 @@ public class GrailsDomainBinderTests extends TestCase {
         assertFalse("Property [comment] must be required", domainClass.getPropertyByName("comment").isOptional());
         assertTrue("Property [age] must be optional", domainClass.getPropertyByName("age").isOptional());
         
+	}
+	
+	public void testForeignKeyColumnBinding() {
+		GroovyClassLoader cl = new GroovyClassLoader();
+		GrailsDomainClass oneClass = new DefaultGrailsDomainClass(
+				cl.parseClass(
+						"class TestOneSide {\n" +
+			            "    Long id \n" +
+			            "    Long version \n" +
+			            "    String name \n" +
+			            "    String description \n" +
+			            "}")
+		);
+		GrailsDomainClass domainClass = new DefaultGrailsDomainClass(
+				cl.parseClass(
+						"class TestManySide {\n" +
+			            "    Long id \n" +
+			            "    Long version \n" +
+						"    String name \n" +
+			            "    TestOneSide testOneSide \n" +
+			            "\n" +
+			            "    static mapping = {\n" +
+			            "        columns {\n" +
+			            "            testOneSide column:'EXPECTED_COLUMN_NAME'" +
+			            "        }\n" +
+			            "    }\n" +
+			            "}")
+		);
+
+		GrailsApplication grailsApplication = new DefaultGrailsApplication(
+        		new Class[]{ oneClass.getClazz(), domainClass.getClazz() }, cl);
+
+        grailsApplication.initialise();
+        DefaultGrailsDomainConfiguration config = new DefaultGrailsDomainConfiguration();
+        config.setGrailsApplication(grailsApplication);
+        config.buildMappings();
+
+        PersistentClass persistentClass = config.getClassMapping("TestManySide");
+
+        Column column = (Column) persistentClass.getProperty("testOneSide").getColumnIterator().next();
+        assertEquals("EXPECTED_COLUMN_NAME", column.getName());
 	}
 	
 	/**

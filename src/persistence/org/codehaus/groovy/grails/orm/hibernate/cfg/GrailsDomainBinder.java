@@ -1556,6 +1556,11 @@ w	 * Binds a simple value to the Hibernate metamodel. A simple value is
         Table table = simpleValue.getTable();
 		Column column = new Column();
 
+		// Check for explicitly mapped column name.
+		if (cc != null && cc.getColumn() != null) {
+			column.setName(cc.getColumn());
+		}
+
 		column.setValue(simpleValue);
 		bindColumn(grailsProp, column, path, table);
 
@@ -1605,23 +1610,24 @@ w	 * Binds a simple value to the Hibernate metamodel. A simple value is
      */
 	private static void bindColumn(GrailsDomainClassProperty grailsProp, Column column, String path, Table table) {
 		if(grailsProp.isAssociation()) {
-			if(!grailsProp.isBidirectional() && grailsProp.isOneToMany()) {
-				String prefix = namingStrategy.classToTableName(grailsProp.getDomainClass().getName());
-                String columnName = getColumnNameForPropertyAndPath(grailsProp, path);
-                column.setName(prefix+ UNDERSCORE +columnName + FOREIGN_KEY_SUFFIX);
-			}
-			else {
-                if(grailsProp.isInherited() && isBidirectionalManyToOne(grailsProp)) {
-                    column.setName( namingStrategy.propertyToColumnName(grailsProp.getDomainClass().getName()) + '_'+ namingStrategy.propertyToColumnName(grailsProp.getName()) + FOREIGN_KEY_SUFFIX );
-                }
-                else {
-                    column.setName( namingStrategy.propertyToColumnName(grailsProp.getName()) + FOREIGN_KEY_SUFFIX );
+			// Only use conventional naming when the column has not been explicitly mapped.
+			if (column.getName() == null) {
+                if(!grailsProp.isBidirectional() && grailsProp.isOneToMany()) {
+                    String prefix = namingStrategy.classToTableName(grailsProp.getDomainClass().getName());
+                    String columnName = getColumnNameForPropertyAndPath(grailsProp, path);
+                    column.setName(prefix+ UNDERSCORE +columnName + FOREIGN_KEY_SUFFIX);
+                } else {
+                    if(grailsProp.isInherited() && isBidirectionalManyToOne(grailsProp)) {
+                        column.setName( namingStrategy.propertyToColumnName(grailsProp.getDomainClass().getName()) + '_'+ namingStrategy.propertyToColumnName(grailsProp.getName()) + FOREIGN_KEY_SUFFIX );
+                    }
+                    else {
+                        column.setName( namingStrategy.propertyToColumnName(grailsProp.getName()) + FOREIGN_KEY_SUFFIX );
+                    }
+
                 }
             }
-			column.setNullable(true);
-
-		}
-		else {
+            column.setNullable(true);
+		} else {
             String columnName = getColumnNameForPropertyAndPath(grailsProp, path);
             column.setName(columnName);
 			column.setNullable(grailsProp.isOptional());
