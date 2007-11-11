@@ -241,7 +241,7 @@ class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants 
 		if(currentstep > firststep) {
 			linkTagAttrs.class = 'prevLink'
 			writer << link(linkTagAttrs.clone()) {
-				(attrs.prev ? attrs.prev : '<')
+				(attrs.prev ? attrs.prev : '&lt;')
 			 }
 		}
 
@@ -296,7 +296,7 @@ class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants 
 			linkTagAttrs.class = 'nextLink'
 			linkParams.offset = offset + max
 			writer << link(linkTagAttrs.clone()) {
-				(attrs.next ? attrs.next : '>')
+				(attrs.next ? attrs.next : '&gt;')
 			}
 		}
 
