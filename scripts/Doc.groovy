@@ -38,6 +38,7 @@ links = [
 
 target ('default': "Produces documentation for a Grails project") {
     compile()
+
     depends(javadoc, groovydoc)
 }
 
@@ -48,10 +49,13 @@ target(setupDoc:"Sets up the doc directories") {
 }
 target(groovydoc:"Produces groovydoc documentation") {
     Ant.taskdef(classpathref:"grails.classpath",name:"groovydoc", classname:"org.codehaus.groovy.ant.Groovydoc")
+    event("DocStart", ['groovydoc'])
     Ant.groovydoc(destdir:groovydocDir, sourcepath:".", use:"true", windowtitle:grailsAppName,'private':"true")
+    event("DocEnd", ['groovydoc'])
 }
 target(javadoc:"Produces javadoc documentation") {
    depends(setupDoc)
+    event("DocStart", ['javadoc'])
    if(new File("${basedir}/src/java").listFiles().find{ !it.name.startsWith(".")}) {
 	   Ant.javadoc( access:"protected",
 	                destdir:javadocDir,
@@ -72,5 +76,6 @@ target(javadoc:"Produces javadoc documentation") {
 	       }
 	   }	
    }
+    event("DocEnd", ['javadoc'])
 
 }
