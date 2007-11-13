@@ -39,6 +39,8 @@ class GrailsScriptRunner {
 	static baseDir 
 	static userHome = System.properties.'user.home'       
 	static version = GrailsUtil.getGrailsVersion()
+	static classesDir
+	static rootLoader
 	
 	static main(String[] args) {
 		MetaClassRegistry registry = InvokerHelper
@@ -70,12 +72,10 @@ Grails home is set to: ${grailsHome}
 			baseDir = establishBaseDir()
             println "Base Directory: ${baseDir.absolutePath}"
 		         		    
-		    def rootLoader = getClass().classLoader ? getClass().classLoader.rootLoader : Thread.currentThread().getContextClassLoader().rootLoader
+		    rootLoader = getClass().classLoader ? getClass().classLoader.rootLoader : Thread.currentThread().getContextClassLoader().rootLoader
 			def baseName = new File(baseDir.absolutePath).name
-		    def classesDir = new File("${userHome}/.grails/${grailsVersion}/projects/${baseName}/classes")
-			if(classesDir.exists()) {
-				rootLoader.addURL(classesDir.toURL())
-			}
+		    classesDir = new File("${userHome}/.grails/${grailsVersion}/projects/${baseName}/classes")
+		
 			def allArgs = args[0].trim()
 
             allArgs = processSystemArguments(allArgs).trim().split(" ")
@@ -182,8 +182,9 @@ Grails home is set to: ${grailsHome}
 			potentialScripts = potentialScripts.unique()
             if(potentialScripts.size() == 1) {
 				println "Running script ${potentialScripts[0].absolutePath}"
-
-				Gant.main(["-f", potentialScripts[0].absolutePath,"-c","-d","${userHome}/.grails/${version}/scriptCache"] as String[])																		
+				
+				def gant = new Gant(null,new URLClassLoader([classesDir.toURL()] as URL[], rootLoader))
+				System.exit(gant.process(["-f", potentialScripts[0].absolutePath,"-c","-d","${userHome}/.grails/${version}/scriptCache"] as String[]))
 			}                                      
 			else {
 				println "Multiple options please select:"  
@@ -196,7 +197,8 @@ Grails home is set to: ${grailsHome}
                 def number = ANT.antProject.properties."grails.script.number".toInteger()        
 
 				println "Running script ${potentialScripts[number-1].absolutePath}"				
-				Gant.main(["-f", potentialScripts[number-1].absolutePath] as String[])																						
+				def gant = new Gant(null,new URLClassLoader([classesDir.toURL()] as URL[], rootLoader))
+				System.exit(gant.process(["-f", potentialScripts[number-1].absolutePath] as String[]))
 			}
 		}
 		else {
