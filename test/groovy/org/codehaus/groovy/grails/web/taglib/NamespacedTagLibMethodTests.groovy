@@ -33,7 +33,7 @@ class NamespacedTagLibMethodTests extends AbstractGrailsTagTests {
         assertOutputEquals('foo: hello! bar3', template)
     }
 
-    void testInvokeTagWithUnexistedNamespace() {
+    void testInvokeTagWithNonExistantNamespace() {
         def template = '''<foaf:Person a="b" c="d">foo</foaf:Person>'''
 
         println( applyTemplate(template) )
@@ -45,6 +45,23 @@ class NamespacedTagLibMethodTests extends AbstractGrailsTagTests {
 
         println( applyTemplate(template) )
         assertOutputEquals(template, template)
+    }
+
+    void testInvokeDefaultNamespaceFromNamespacedTag() {
+        def template = '''<alt:showme />'''
+
+        
+
+        assertOutputEquals("/test/foo", template )
+
+        template = '''<alt:showmeToo />'''
+        
+        assertOutputEquals("/test/foo", template )
+
+        template = '''<alt:showmeThree />'''
+
+        assertOutputEquals("hello! bar", template )
+
     }
 
     void onInit() {
@@ -77,9 +94,27 @@ class HasErrorTagLib {
     }
 }
        ''')
+       def tagClass4 = gcl.parseClass('''
+class AlternateTagLib {
+    static namespace = "alt"
+
+    def showme = { attrs, body ->
+        out << createLink(controller:'test',action:'foo')
+    }
+
+    def showmeToo = { attrs, body ->
+        out << g.createLink(controller:'test',action:'foo')
+    }
+
+    def showmeThree = { attrs, body ->
+       out << my.test2(foo:"bar")
+    }
+}
+''')
         grailsApplication.addArtefact(TagLibArtefactHandler.TYPE,tagClass)
         grailsApplication.addArtefact(TagLibArtefactHandler.TYPE,tagClass2)
         grailsApplication.addArtefact(TagLibArtefactHandler.TYPE,tagClass3)
+        grailsApplication.addArtefact(TagLibArtefactHandler.TYPE,tagClass4)
     }
 }
 class NSTestBean {

@@ -424,7 +424,13 @@ class ControllersGrailsPlugin {
                     def ns = namespace ? namespace : GroovyPage.DEFAULT_NAMESPACE
                     def tagName = "${ns}:$name"
                     GrailsClass tagLibraryClass = application.getArtefactForFeature(
-	                                                    TagLibArtefactHandler.TYPE, tagName.toString())
+
+	                                                       TagLibArtefactHandler.TYPE, tagName.toString())
+
+                    if(!tagLibraryClass) {
+                        tagName = "${GroovyPage.DEFAULT_NAMESPACE}:$name"
+                        tagLibraryClass = application.getArtefactForFeature(TagLibArtefactHandler.TYPE, tagName.toString())
+                    }
 
                     if(tagLibraryClass) {
                          synchronized(mc) {
@@ -432,7 +438,7 @@ class ControllersGrailsPlugin {
                          }
                          result = mc.invokeMethod(delegate, name, args)
                     }
-                    else {
+                    else {                                                                    
                         throw new MissingMethodException(name, delegate.class, args)
                     }
                 }else {
