@@ -341,8 +341,8 @@ class ControllersGrailsPlugin {
             def setProps = new SetPropertiesDynamicProperty()
             mc.setProperties = { Object o ->
                 setProps.set(delegate, o)
-            }                               
-			mc.getProperties = {-> org.codehaus.groovy.runtime.DefaultGroovyMethods.getProperties(delegate) }
+            }
+			//mc.getProperties = {-> org.codehaus.groovy.runtime.DefaultGroovyMethods.getProperties(delegate) }
         }
 
         def namespaces = [] as HashSet
