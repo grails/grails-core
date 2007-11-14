@@ -152,10 +152,7 @@ class ScaffoldingGrailsPlugin {
 
                     }
 
-                    for(bean in beans.beanDefinitions) {
-                        ctx.removeBeanDefinition(bean.key )
-                        ctx.registerBeanDefinition(bean.key, bean.value)
-                    }
+                	beans.registerBeans(ctx)   														
 
                     registerScaffoldedActions(event.application, ctx)
                     // configure scaffolders
