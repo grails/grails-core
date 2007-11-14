@@ -31,6 +31,33 @@ class ScaffoldingGrailsPlugin {
 	def dependsOn = [hibernate:version, controllers:version]
 	def observe = ['controllers']
 	
+	static BEAN_DEFINITIONS = { scaffoldClass, controllerClass ->
+        "${scaffoldClass.name}Domain"(	GrailsScaffoldDomain,
+                                        scaffoldClass,
+                                        ref("sessionFactory"))
+        // setup the default response handler that simply delegates to a view
+        "${scaffoldClass.name}ResponseHandler"(TemplateGeneratingResponseHandler) {
+            templateGenerator = {DefaultGrailsTemplateGenerator bean->}
+            viewResolver = ref("jspViewResolver")
+            grailsApplication = ref("grailsApplication", true)
+            scaffoldedClass = scaffoldClass
+        }
+        // setup a response handler factory which can be used to output different
+        // responses based on the model returned by the scaffold domain
+
+        "${scaffoldClass.name}ResponseHandlerFactory"(	DefaultGrailsResponseHandlerFactory,
+                                ref("grailsApplication",true),
+                                ref("${scaffoldClass.name}ResponseHandler") )
+
+        "${controllerClass.fullName}Scaffolder" (DefaultGrailsScaffolder) {
+            scaffoldRequestHandler = { DefaultScaffoldRequestHandler dsrh ->
+                scaffoldDomain = ref("${scaffoldClass.name}Domain")
+            }
+            scaffoldResponseHandlerFactory = ref( "${scaffoldClass.name}ResponseHandlerFactory")
+        }
+		
+	}
+		
 	def doWithSpring = {
 		application.controllerClasses.each { controller ->
 			log.debug("Checking controller ${controller.name} for scaffolding settings")
@@ -46,32 +73,9 @@ class ScaffoldingGrailsPlugin {
 				if(scaffoldClass) {				   
 					
 					log.debug("Configuring scaffolding for class [$scaffoldClass]")
-					// create the scaffold domain which is used to interact with persistence
-					"${scaffoldClass.name}Domain"(	GrailsScaffoldDomain, 
-													scaffoldClass,
-													sessionFactory)
-
-					// setup the default response handler that simply delegates to a view
-					"${scaffoldClass.name}ResponseHandler"(TemplateGeneratingResponseHandler) { 
-						templateGenerator = {DefaultGrailsTemplateGenerator bean->}
-						viewResolver = jspViewResolver
-						grailsApplication = ref("grailsApplication", true)
-						scaffoldedClass = scaffoldClass
-					}
-					// setup a response handler factory which can be used to output different 
-					// responses based on the model returned by the scaffold domain
-
-					"${scaffoldClass.name}ResponseHandlerFactory"(	DefaultGrailsResponseHandlerFactory,
-											ref("grailsApplication",true),
-											ref("${scaffoldClass.name}ResponseHandler") )										
-
-					log.debug "Registering new scaffolder [${controller.fullName}Scaffolder]"
-					"${controller.fullName}Scaffolder" (DefaultGrailsScaffolder) {
-						scaffoldRequestHandler = { DefaultScaffoldRequestHandler dsrh ->
-							scaffoldDomain = ref("${scaffoldClass.name}Domain")
-						}
-						scaffoldResponseHandlerFactory = ref( "${scaffoldClass.name}ResponseHandlerFactory")
-					}
+					def beans = BEAN_DEFINITIONS.curry(scaffoldClass, controller)
+					beans.delegate = delegate
+					beans.call()
 				}
 				
 			}
@@ -107,6 +111,7 @@ class ScaffoldingGrailsPlugin {
 			
 	}	
 	
+
 	def onChange = { event ->		
 	    if(application.isControllerClass(event.source)) {
 			def controllerClass = application.getControllerClass(event.source.name)
@@ -123,34 +128,7 @@ class ScaffoldingGrailsPlugin {
 
                     log.info "Re-configuring scaffolding for reloaded class ${event.source}"
 
-                    def beans = beans {
-
-                        "${scaffoldClass.name}Domain"(	GrailsScaffoldDomain,
-                                                        scaffoldClass,
-                                                        ref("sessionFactory"))
-                        // setup the default response handler that simply delegates to a view
-                        "${scaffoldClass.name}ResponseHandler"(TemplateGeneratingResponseHandler) {
-                            templateGenerator = {DefaultGrailsTemplateGenerator bean->}
-                            viewResolver = ref("jspViewResolver")
-                            grailsApplication = ref("grailsApplication", true)
-                            scaffoldedClass = scaffoldClass
-                        }
-                        // setup a response handler factory which can be used to output different
-                        // responses based on the model returned by the scaffold domain
-
-                        "${scaffoldClass.name}ResponseHandlerFactory"(	DefaultGrailsResponseHandlerFactory,
-                                                ref("grailsApplication",true),
-                                                ref("${scaffoldClass.name}ResponseHandler") )
-
-                        log.debug "Registering new scaffolder [${controllerClass.fullName}Scaffolder]"
-                        "${controllerClass.fullName}Scaffolder" (DefaultGrailsScaffolder) {
-                            scaffoldRequestHandler = { DefaultScaffoldRequestHandler dsrh ->
-                                scaffoldDomain = ref("${scaffoldClass.name}Domain")
-                            }
-                            scaffoldResponseHandlerFactory = ref( "${scaffoldClass.name}ResponseHandlerFactory")
-                        }
-
-                    }
+                    def beans = beans(BEAN_DEFINITIONS.curry(scaffoldClass,controllerClass))
 
                 	beans.registerBeans(ctx)   														
 
