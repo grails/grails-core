@@ -112,12 +112,11 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
     	}
     	else {
             webContext = GrailsConfigUtils.configureWebApplicationContext(getServletContext(), parent);
-    	}
+            GrailsConfigUtils.executeGrailsBootstraps(application, webContext, getServletContext());
+        }
 
         initGrailsController(webContext);
-
         this.interceptors = establishInterceptors(webContext);
-        GrailsConfigUtils.executeGrailsBootstraps(application, webContext, getServletContext());
 
         return webContext;
     }
@@ -144,12 +143,11 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
 
         int j = 0;
         for (int i = 0; i < interceptorNames.length; i++) {
-            interceptors[i] = (HandlerInterceptor)webContext.getBean(interceptorNames[i]);
-            j = i+1;
+            interceptors[j++] = (HandlerInterceptor)webContext.getBean(interceptorNames[i]);
         }
         for (int i = 0; i < webRequestInterceptors.length; i++) {
-            j = i+j;
-            interceptors[j] = new WebRequestHandlerInterceptorAdapter((WebRequestInterceptor)webContext.getBean(webRequestInterceptors[i]));
+
+            interceptors[j++] = new WebRequestHandlerInterceptorAdapter((WebRequestInterceptor)webContext.getBean(webRequestInterceptors[i]));
         }
         return interceptors;
     }
