@@ -83,7 +83,7 @@ class DomainClassGrailsPlugin {
             metaClass.'static'.create = {-> BeanUtils.instantiateClass(domainClass.getClazz()) }
             metaClass.hasErrors = {-> delegate.errors?.hasErrors() }
 			metaClass.getErrors = {->      
-				def request = RCH.getRequestAttributes()?.currentRequest
+				def request = RCH.getRequestAttributes()?.request
 				def errors
 				def storage = request ? request : PROPERTY_INSTANCE_MAP.get()
 				def key = "org.codehaus.groovy.grails.ERRORS_${delegate.class.name}_${System.identityHashCode(delegate)}"
@@ -95,7 +95,7 @@ class DomainClassGrailsPlugin {
 				errors
 		   	}                                                                                                          
 			metaClass.setErrors = { Errors errors -> 
-				def request = RCH.getRequestAttributes()?.currentRequest
+				def request = RCH.getRequestAttributes()?.request
 				def storage = request ? request : PROPERTY_INSTANCE_MAP.get()
 				def key = "org.codehaus.groovy.grails.ERRORS_${delegate.class.name}_${System.identityHashCode(delegate)}"
 				storage[key] = errors
