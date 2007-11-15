@@ -14,16 +14,20 @@
  */
 package org.codehaus.groovy.grails.web.binding;
 
-import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.ServletRequestDataBinder;
-import org.springframework.beans.MutablePropertyValues;
+import groovy.lang.GroovySystem;
+import groovy.lang.MetaClass;
+import org.apache.commons.collections.CollectionUtils;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap;
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
+import org.springframework.beans.MutablePropertyValues;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.context.request.RequestContextHolder;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
-
-import groovy.lang.MetaClass;
-import groovy.lang.GroovySystem;
 
 /**
  * Utility methods to perform data binding from Grails objects
@@ -45,27 +49,52 @@ public class DataBindingUtils {
      * @return A BindingResult or null if it wasn't successful
      */
     public static BindingResult bindObjectToInstance(Object object, Object source) {
+        return bindObjectToInstance(object, source, Collections.EMPTY_LIST,Collections.EMPTY_LIST, null);
+    }
+
+    /**
+     * Binds the given source object to the given target object performing type conversion if necessary
+     *
+     * @param object The object to bind to
+     * @param source The source object
+     * @param include The list of properties to include
+     * @param exclude The list of properties to exclude
+     *
+     * @return A BindingResult or null if it wasn't successful
+     */
+    public static BindingResult bindObjectToInstance(Object object, Object source, List include, List exclude, String filter) {
         BindingResult bindingResult = null;
         if(source instanceof GrailsParameterMap) {
 			GrailsParameterMap parameterMap = (GrailsParameterMap)source;
 			HttpServletRequest request = parameterMap.getRequest();
-			GrailsDataBinder dataBinder = GrailsDataBinder.createBinder(object, object.getClass().getName(),request);
+			GrailsDataBinder dataBinder = createDataBinder(object, include, exclude, request);
 			dataBinder.bind(parameterMap);
             bindingResult = dataBinder.getBindingResult();
         }
         else if (source instanceof HttpServletRequest) {
             HttpServletRequest request = (HttpServletRequest)source;
-            ServletRequestDataBinder dataBinder = GrailsDataBinder.createBinder(object, object.getClass().getName(),request);
+            GrailsDataBinder dataBinder = createDataBinder(object, include, exclude, request);
             dataBinder.bind(request);
+            performBindFromRequest(dataBinder, request,filter);
             bindingResult = dataBinder.getBindingResult();
         }
         else if(source instanceof Map) {
-
 			Map propertyMap = (Map)source;
             propertyMap = convertPotentialGStrings(propertyMap);
-            GrailsDataBinder binder = GrailsDataBinder.createBinder(object, object.getClass().getName());
-            binder.bind(new MutablePropertyValues(propertyMap));
+            GrailsDataBinder binder = createDataBinder(object, include, exclude, null);
+            
+            performBindFromPropertyValues(binder, new MutablePropertyValues(propertyMap),filter);
             bindingResult = binder.getBindingResult();
+        }
+        else {
+        	GrailsWebRequest webRequest = (GrailsWebRequest) RequestContextHolder.getRequestAttributes();
+            if(webRequest != null) {
+                GrailsDataBinder binder = createDataBinder(object, include, exclude, webRequest.getCurrentRequest());
+                HttpServletRequest request = webRequest.getCurrentRequest();
+                performBindFromRequest(binder, request,filter);
+            }
+
+
         }
         MetaClass mc = GroovySystem.getMetaClassRegistry().getMetaClass(object.getClass());
         if(mc.hasProperty(object, "errors")!=null && bindingResult!=null) {
@@ -74,7 +103,38 @@ public class DataBindingUtils {
         return bindingResult;
     }
 
-	private static Map convertPotentialGStrings(Map args) {
+    private static void performBindFromPropertyValues(GrailsDataBinder binder, MutablePropertyValues mutablePropertyValues, String filter) {
+        if(filter!=null) {
+            binder.bind(mutablePropertyValues,filter);
+        }
+        else {
+            binder.bind(mutablePropertyValues);
+        }
+    }
+
+    private static void performBindFromRequest(GrailsDataBinder binder, HttpServletRequest request,String filter) {
+        if(filter!=null) {
+            binder.bind(request,filter);
+        }
+        else {
+            binder.bind(request);
+        }
+    }
+
+    private static GrailsDataBinder createDataBinder(Object object, List include, List exclude, HttpServletRequest request) {
+
+        GrailsDataBinder binder;
+        if(request!=null) {
+            binder = GrailsDataBinder.createBinder(object, object.getClass().getName(), request);
+        }
+        else {
+            binder = GrailsDataBinder.createBinder(object, object.getClass().getName());            
+        }
+        includeExcludeFields(binder, include, exclude);
+        return binder;
+    }
+
+    private static Map convertPotentialGStrings(Map args) {
 		Map newArgs = new java.util.HashMap();
 		for(java.util.Iterator i = args.keySet().iterator(); i.hasNext();) {
 			Object key = i.next();
@@ -89,4 +149,31 @@ public class DataBindingUtils {
 		}
 		return newArgs;
 	}
+
+    private static void includeExcludeFields(GrailsDataBinder dataBinder, List allowed, List disallowed) {
+        updateAllowed( dataBinder, allowed);
+        updateDisallowed( dataBinder, disallowed);
+    }
+
+    private static void updateAllowed(GrailsDataBinder binder, List allowed) {
+          if (allowed != null) {
+            String[] currentAllowed = binder.getAllowedFields();
+            List newAllowed = new ArrayList(allowed);
+            CollectionUtils.addAll( newAllowed, currentAllowed);
+            String[] value = new String[newAllowed.size()];
+            newAllowed.toArray(value);
+            binder.setAllowedFields(value);
+        }
+    }
+
+    private static void updateDisallowed( GrailsDataBinder binder, List disallowed) {
+        if (disallowed != null) {
+            String[] currentDisallowed = binder.getDisallowedFields();
+            List newDisallowed = new ArrayList(disallowed);
+            CollectionUtils.addAll( newDisallowed, currentDisallowed);
+            String[] value = new String[newDisallowed.size()];
+            newDisallowed.toArray(value);
+            binder.setDisallowedFields(value);
+        }
+    }
 }
