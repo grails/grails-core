@@ -40,6 +40,7 @@ import org.springframework.mock.web.MockServletContext;
 import org.springframework.orm.hibernate3.SessionFactoryUtils;
 import org.springframework.orm.hibernate3.SessionHolder;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
+import org.springframework.util.Log4jConfigurer;
 import org.springframework.web.context.WebApplicationContext;
 
 
@@ -79,6 +80,7 @@ public abstract class AbstractGrailsHibernateTests extends TestCase {
     protected final void setUp() throws Exception {
         super.setUp();
 
+         Log4jConfigurer.initLogging("file:./test/persistence/log4j.properties");
         ExpandoMetaClass.enableGlobally();
         PluginManagerHolder.setPluginManager(null);
 
@@ -87,6 +89,8 @@ public abstract class AbstractGrailsHibernateTests extends TestCase {
         ConfigObject config = new ConfigSlurper().parse("hibernate.cache.use_second_level_cache=true\n" +
                 "hibernate.cache.use_query_cache=true\n" +
                 "hibernate.cache.provider_class='org.hibernate.cache.EhCacheProvider'\n" +
+                "hibernate.show_sql=true\n" +
+                "hibernate.use_sql_comments=true\n" +                
                 "dataSource {\n" +
                 "dbCreate = \"create-drop\" \n" +
                 "url = \"jdbc:hsqldb:mem:devDB\"\n" +
