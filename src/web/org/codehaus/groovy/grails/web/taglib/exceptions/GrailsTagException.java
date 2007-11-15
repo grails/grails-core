@@ -15,12 +15,16 @@
 package org.codehaus.groovy.grails.web.taglib.exceptions;
 
 import org.codehaus.groovy.grails.exceptions.GrailsException;
+import org.codehaus.groovy.grails.exceptions.SourceCodeAware;
 
 /**
  * @author Graeme Rocher
  * @since 11-Jan-2006
  */
-public class GrailsTagException extends GrailsException {
+public class GrailsTagException extends GrailsException implements SourceCodeAware {
+    private String fileName;
+    private int lineNumber;
+
     public GrailsTagException(String s) {
         super(s);
     }
@@ -31,5 +35,19 @@ public class GrailsTagException extends GrailsException {
 
     public GrailsTagException(Throwable arg0) {
         super(arg0);
+    }
+
+    public GrailsTagException(String message, String pageName, int lineNumber) {
+        super(message);
+        this.fileName = pageName;
+        this.lineNumber = lineNumber;
+    }
+
+    public String getFileName() {
+        return fileName;
+    }
+
+    public int getLineNumber() {
+        return lineNumber;
     }
 }

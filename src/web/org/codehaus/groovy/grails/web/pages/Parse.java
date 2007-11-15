@@ -64,8 +64,9 @@ public class Parse implements Tokens {
     private static final String END_MULTILINE_STRING = "'''";
     private Map constants = new TreeMap();
     private int constantCount = 0;
-    private static final String EMPTY_MULTILINE_STRING = "''''''";
+    private final String pageName;
 
+    private static final String EMPTY_MULTILINE_STRING = "''''''";
     public static final String[] DEFAULT_IMPORTS = new String[] {
         "org.codehaus.groovy.grails.web.pages.GroovyPage",
         "org.codehaus.groovy.grails.web.taglib.*",
@@ -86,14 +87,16 @@ public class Parse implements Tokens {
         Object instance;
         boolean isDynamic;
         boolean hasAttributes;
+        int lineNumber;
 
         public String toString() {
             return "<"+namespace+":"+name+">";
         }
     }
 
-    public Parse(String name, InputStream in) throws IOException {
+    public Parse(String name, String filename, InputStream in) throws IOException {
         scan = new Scan(readStream(in));
+        this.pageName = filename;
         makeName(name);
     } // Parse()
 
@@ -300,7 +303,8 @@ public class Parse implements Tokens {
 
         if (finalPass) {
             if(!tagMetaStack.isEmpty()) {
-                throw new GrailsTagException("Grails tags were not closed! ["+tagMetaStack+"]");
+                TagMeta tag = (TagMeta)tagMetaStack.iterator().next();
+                throw new GrailsTagException("Grails tags were not closed! ["+tagMetaStack+"] in GSP ["+pageName+"]", pageName, tag.lineNumber);
             }
 
 
@@ -413,6 +417,7 @@ public class Parse implements Tokens {
         tm.name = tagName;
         tm.namespace = ns;
         tm.hasAttributes = !attrs.isEmpty();
+        tm.lineNumber = getCurrentOutputLineNumber();
         tagMetaStack.add(tm);
 
         if (GroovyPage.DEFAULT_NAMESPACE.equals(ns) && tagRegistry.isSyntaxTag(tagName)) {

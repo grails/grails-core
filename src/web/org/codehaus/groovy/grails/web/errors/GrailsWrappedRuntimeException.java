@@ -22,6 +22,7 @@ import org.codehaus.groovy.control.MultipleCompilationErrorsException;
 import org.codehaus.groovy.control.messages.SyntaxErrorMessage;
 import org.codehaus.groovy.grails.commons.*;
 import org.codehaus.groovy.grails.exceptions.GrailsException;
+import org.codehaus.groovy.grails.exceptions.SourceCodeAware;
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
 import org.codehaus.groovy.grails.web.servlet.DefaultGrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
@@ -49,7 +50,7 @@ public class GrailsWrappedRuntimeException extends GrailsException {
     private static final Pattern PARSE_GSP_DETAILS_STEP1 = Pattern.compile("(\\S+?)_\\S+?_gsp.run\\((\\S+?\\.gsp):(\\d+)\\)");
     public static final String URL_PREFIX = "/WEB-INF/grails-app/";
     private static final Log LOG  = LogFactory.getLog(GrailsWrappedRuntimeException.class);
-    private String className = "Unknown";
+    private String className = UNKNOWN;
     private int lineNumber = - 1;
     private String stackTrace;
     private String[] codeSnippet = new String[0];
@@ -57,6 +58,7 @@ public class GrailsWrappedRuntimeException extends GrailsException {
 	private Throwable cause;
     private PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
     private String[] stackTraceLines;
+    private static final String UNKNOWN = "Unknown";
 
 
     /**
@@ -125,6 +127,10 @@ public class GrailsWrappedRuntimeException extends GrailsException {
         }
         LineNumberReader reader = null;
         try {
+            if(cause instanceof SourceCodeAware && className.equals(UNKNOWN)) {
+                className = ((SourceCodeAware)cause).getFileName();
+            }
+
             if(getLineNumber() > -1) {
                 String url;
                 String fileName = this.className.replace('.', '/') + ".groovy";

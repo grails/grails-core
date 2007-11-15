@@ -262,8 +262,13 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
             if (mv != null && !mv.wasCleared()) {
                 // If an exception occurs in here, like a bad closing tag,
                 // we have nothing to render.
-                // @todo instead of re-throwing later, render our error page
-                render(mv, processedRequest, response);
+
+                try {
+                    render(mv, processedRequest, response);
+                } catch (Exception e) {
+                    mv = super.processHandlerException(processedRequest, response, mappedHandler, e);
+                    render(mv, processedRequest, response);
+                }
             }
             else {
                 if (logger.isDebugEnabled()) {
@@ -279,14 +284,12 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
         catch (Exception ex) {
             // Trigger after-completion for thrown exception.
             triggerAfterCompletion(mappedHandler, interceptorIndex, processedRequest, response, ex);
-            System.out.println("Exception handler in doDispatch took the crash");
             throw ex;
         }
         catch (Error err) {
             ServletException ex = new NestedServletException("Handler processing failed", err);
             // Trigger after-completion for thrown exception.
             triggerAfterCompletion(mappedHandler, interceptorIndex, processedRequest, response, ex);
-            System.out.println("Error handler in doDispatch took the crash");
             throw ex;
         }
 

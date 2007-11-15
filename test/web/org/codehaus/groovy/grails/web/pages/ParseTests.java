@@ -84,7 +84,7 @@ public class ParseTests extends TestCase {
 		StringWriter sw = new StringWriter();
 		PrintWriter pw = new PrintWriter(sw);
 		InputStream gspIn = new ByteArrayInputStream(gsp.getBytes());
-        Parse parse = new Parse(uri, gspIn);
+        Parse parse = new Parse(uri, uri, gspIn);
         InputStream in = parse.parse();
         send(in, pw);
 
