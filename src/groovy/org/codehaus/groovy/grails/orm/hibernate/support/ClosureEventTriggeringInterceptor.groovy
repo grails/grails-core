@@ -91,6 +91,7 @@ class ClosureEventTriggeringInterceptor extends EmptyInterceptor {
              def callable = entity."$event"
              callable.resolveStrategy = Closure.DELEGATE_FIRST
              def capturedProperties = [:]
+             capturedProperties.putAll(entity.properties)
              callable.delegate = capturedProperties
              callable.call()
              boolean stateModified = false
