@@ -26,4 +26,8 @@ public class ServiceArtefactHandler extends ArtefactHandlerAdapter {
         super(TYPE, GrailsServiceClass.class, DefaultGrailsServiceClass.class, DefaultGrailsServiceClass.SERVICE,
             false);
     }
+
+    public boolean isArtefactClass(Class clazz) {
+        return super.isArtefactClass(clazz) && !DomainClassArtefactHandler.isDomainClass(clazz);
+    }
 }
