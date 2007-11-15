@@ -30,8 +30,8 @@ log4j {
             codehaus.groovy.grails.commons="info,stdout" // core / classloading
             codehaus.groovy.grails.plugins="error,stdout" // plugins
             codehaus.groovy.grails.orm.hibernate="error,stdout" // hibernate integration
-            springframework="off,stdout"
-            hibernate="off,stdout"
+            springframework="error,stdout"
+            hibernate="error,stdout"
         }
     }
 	additivity.'default' = false
