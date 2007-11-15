@@ -391,7 +391,7 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
 
         Parse parse;
         try {
-            parse = new Parse(name, res.getFilename(), inputStream);
+            parse = new Parse(name, res.getDescription(), inputStream);
         } catch (IOException e) {
             throw new GroovyPagesException("I/O parsing Groovy page ["+(res != null ? res.getDescription() : name)+"]: " + e.getMessage(),e);
         }

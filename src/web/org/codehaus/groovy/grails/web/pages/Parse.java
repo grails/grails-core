@@ -304,7 +304,7 @@ public class Parse implements Tokens {
         if (finalPass) {
             if(!tagMetaStack.isEmpty()) {
                 TagMeta tag = (TagMeta)tagMetaStack.iterator().next();
-                throw new GrailsTagException("Grails tags were not closed! ["+tagMetaStack+"] in GSP ["+pageName+"]", pageName, tag.lineNumber);
+                throw new GrailsTagException("Grails tags were not closed! ["+tagMetaStack+"] in GSP "+pageName+"", pageName, tag.lineNumber);
             }
 
 
