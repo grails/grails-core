@@ -118,7 +118,7 @@ class FilterToHandlerAdapter implements HandlerInterceptor {
     }
 
     void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object o, Exception e) throws java.lang.Exception {
-        if (filterConfig.afterComplete) {
+        if (filterConfig.afterView) {
 
             String controllerName = controllerName(request)
             String actionName = actionName(request)
