@@ -171,9 +171,14 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator  {
     
     private canWrite(testFile) {
         if(!overwrite && testFile.exists()) {
-			ant.input(message: "File ${testFile} already exists. Overwrite?","y,n,a", addproperty:"overwrite.${testFile.name}")
-			overwrite = (ant.antProject.properties."overwrite.${testFile.name}" == "a") ? true : overwrite
-			return overwrite || ((ant.antProject.properties."overwrite.${testFile.name}" == "y") ? true : false) 
+			try {
+                ant.input(message: "File ${testFile} already exists. Overwrite?", "y,n,a", addproperty: "overwrite.${testFile.name}")
+                overwrite = (ant.antProject.properties."overwrite.${testFile.name}" == "a") ? true : overwrite
+                return overwrite || ((ant.antProject.properties."overwrite.${testFile.name}" == "y") ? true : false)
+            } catch (Exception e) {
+                // failure to read from standard in means we're probably running from an automation tool like a build server
+                return true
+            }
         }
         return true
     }
