@@ -78,8 +78,8 @@ event = {String name, def args ->
         setClasspath()
         if (!hooksLoaded) {
             loadEventHooks()
-            hooksLoaded = true
         }
+        hooksLoaded = true
         // Give scripts a chance to modify classpath
         event('setClasspath', [getClass().classLoader.rootLoader])
     }
