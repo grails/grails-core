@@ -518,6 +518,22 @@ public final class GrailsDomainBinder {
 	}
 
 
+	private static Property getProperty(PersistentClass associatedClass,
+										String propertyName) 
+	throws MappingException {
+		try {
+			return associatedClass.getProperty(propertyName);
+		} catch (MappingException e) {
+			//check inside composite primary key
+			if (associatedClass.getKey() instanceof Component) {
+				return ((Component)associatedClass.getKey()).getProperty(propertyName);
+			} else {
+				throw e;
+			}
+		}
+	}
+
+
 	/**
 	 * Links a bidirectional one-to-many, configuring the inverse side and using a column copy to perform the link
 	 *
@@ -528,7 +544,10 @@ public final class GrailsDomainBinder {
 	 */
 	private static void linkBidirectionalOneToMany(Collection collection, PersistentClass associatedClass, DependantValue key, GrailsDomainClassProperty otherSide) {
 		collection.setInverse(true);
-		Iterator mappedByColumns = associatedClass.getProperty( otherSide.getName() ).getValue().getColumnIterator();
+
+		//		Iterator mappedByColumns = associatedClass.getProperty( otherSide.getName() ).getValue().getColumnIterator();
+		Iterator mappedByColumns = getProperty(associatedClass, otherSide.getName())
+			.getValue().getColumnIterator();
 		while(mappedByColumns.hasNext()) {
 			Column column = (Column)mappedByColumns.next();
 			linkValueUsingAColumnCopy(otherSide,column,key);
