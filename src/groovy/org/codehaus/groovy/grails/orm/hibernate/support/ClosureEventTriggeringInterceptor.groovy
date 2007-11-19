@@ -48,13 +48,16 @@ class ClosureEventTriggeringInterceptor extends EmptyInterceptor {
         boolean shouldTimestamp = m && !m.autoTimestamp ? false : true
 
         MetaProperty property = metaClass.hasProperty(entity, GrailsDomainClassProperty.DATE_CREATED)
+        def time = System.currentTimeMillis()
         if(property && shouldTimestamp) {
-            def now = property.getType().newInstance([System.currentTimeMillis()] as Object[] )
+            def now = property.getType().newInstance([time] as Object[] )
             modifyStateForProperty(propertyList, property.name, state, now)
             modified = true
-            if(metaClass.hasProperty(entity,GrailsDomainClassProperty.LAST_UPDATED)) {
-                modifyStateForProperty(propertyList, GrailsDomainClassProperty.LAST_UPDATED, state, now)    
-            }
+        }
+        property = metaClass.hasProperty(entity,GrailsDomainClassProperty.LAST_UPDATED)
+        if(property && shouldTimestamp) {
+            def now = property.getType().newInstance([time] as Object[] )
+            modifyStateForProperty(propertyList, GrailsDomainClassProperty.LAST_UPDATED, state, now)
         }
         modified
     }
@@ -91,7 +94,9 @@ class ClosureEventTriggeringInterceptor extends EmptyInterceptor {
              def callable = entity."$event"
              callable.resolveStrategy = Closure.DELEGATE_FIRST
              def capturedProperties = [:]
-             capturedProperties.putAll(entity.properties)
+             for(i in 0..<propertyList.size()) {
+                 capturedProperties[propertyList[i]] = state[i]
+             }
              callable.delegate = capturedProperties
              callable.call()
              boolean stateModified = false

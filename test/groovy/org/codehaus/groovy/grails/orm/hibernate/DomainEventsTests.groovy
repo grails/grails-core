@@ -44,7 +44,6 @@ class DomainEventsTests extends AbstractGrailsHibernateTests{
 
         p = personClass.clazz.get(1)
 
-        assert p.dateCreated
         assertEquals p.dateCreated, p.lastUpdated
 
         p.name = "Wilma"
