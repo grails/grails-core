@@ -15,12 +15,13 @@
  */ 
 package org.codehaus.groovy.grails.plugins.web.mapping;
 
-import grails.util.GrailsUtil
-import org.codehaus.groovy.grails.web.mapping.*
-import org.codehaus.groovy.grails.commons.*
-import org.springframework.context.ApplicationContext
-import org.springframework.aop.target.HotSwappableTargetSource
+
+import org.codehaus.groovy.grails.commons.UrlMappingsArtefactHandler
+import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolderFactoryBean
 import org.springframework.aop.framework.ProxyFactoryBean
+import org.springframework.aop.target.HotSwappableTargetSource
+import org.springframework.context.ApplicationContext
+import org.springframework.core.io.Resource
 
 /**
 * A plug-in that handles the configuration of URL mappings for Grails
@@ -50,6 +51,38 @@ class UrlMappingsGrailsPlugin {
         def beans = beans(doWithSpring)
         beans.registerBeans(ctx)        	
 	}
+
+	def doWithWebDescriptor = { webXml ->
+        // here we augment web.xml with all the error codes contained within the UrlMapping definitions
+        def filters = webXml.filter
+        def lastFilter = filters[filters.size()-1]
+
+        lastFilter + {
+            'servlet' {
+                'servlet-name'("grails-errorhandler")
+                'servlet-class'(org.codehaus.groovy.grails.web.mapping.filter.ErrorHandlingServlet.getName())
+            }
+             for(Resource r in watchedResources) {
+                    r.file.eachLine { line ->
+                       def matcher = line =~ /\s*"(\d+?)"\(.+?\)/
+                       if(matcher) {
+                          def errorCode = matcher[0][1]
+                           'error-page' {
+                               'error-code'(errorCode)
+                               'location'("/grails-errorhandler")
+                           }
+
+                       }
+                    }
+             }
+            'servlet-mapping' {
+                'servlet-name'("grails-errorhandler")
+                'url-pattern'("/grails-errorhandler")
+            }
+        }
+
+
+    }
 	
 	def onChange = { event ->
 	    if(application.isUrlMappingsClass(event.source)) {

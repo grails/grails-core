@@ -380,6 +380,7 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
     public void doWithWebDescriptor(GPathResult webXml) {
         if(this.pluginBean.isReadableProperty(DO_WITH_WEB_DESCRIPTOR)) {
             Closure c = (Closure)this.plugin.getProperty(DO_WITH_WEB_DESCRIPTOR);
+            c.setResolveStrategy(Closure.DELEGATE_FIRST);
             c.setDelegate(this);
              c.call(webXml);
         }

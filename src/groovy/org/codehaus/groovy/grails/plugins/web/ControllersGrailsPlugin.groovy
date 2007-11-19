@@ -189,29 +189,6 @@ class ControllersGrailsPlugin {
 
 		// add the Grails web request filter
 		lastFilter + {
-            'servlet' {
-                'servlet-name'("grails-errorhandler")
-                'servlet-class'(org.codehaus.groovy.grails.web.mapping.filter.ErrorHandlingServlet.getName())
-            }
-
-             for ( i in 400..417) {
-                 'error-page' {
-                     'error-code'(i)
-                     'location'("/grails-errorhandler")
-                 }
-             }
-
-             for ( i in 500..505) {
-                 'error-page' {
-                     'error-code'(i)
-                     'location'("/grails-errorhandler")
-                 }
-             }
-
-            'servlet-mapping' {
-                'servlet-name'("grails-errorhandler")
-                'url-pattern'("/grails-errorhandler")
-            }
  			filter {
 				'filter-name'('grailsWebRequest')
 				'filter-class'(org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequestFilter.getName())
@@ -458,7 +435,7 @@ class ControllersGrailsPlugin {
                 result
             }
             ctx.getBean(taglib.fullName).metaClass = mc
-	   	}    
+	   	}
         def bind = new BindDynamicMethod()	
 		// add commons objects and dynamic methods like render and redirect to controllers
         for(GrailsClass controller in application.controllerClasses ) {
