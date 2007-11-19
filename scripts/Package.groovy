@@ -50,7 +50,8 @@ generateLog4jFile = false
 target ('default': "Packages a Grails application. Note: To create WAR use 'grails war'") {
      depends( checkVersion)
 	 packagePlugins()	 
-     packageApp()                           
+     packageApp()
+     event("PackagingEnd",[])
 }                     
   
 target( createConfig: "Creates the configuration object") {

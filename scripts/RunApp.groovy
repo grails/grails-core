@@ -133,8 +133,8 @@ target( configureHttpServer : "Returns a jetty server configured with an HTTP co
     webContext.setDefaultsDescriptor("${grailsHome}/conf/webdefault.xml")
     webContext.setClassLoader(classLoader)
     webContext.setDescriptor(webXmlFile.absolutePath)
-    grailsHandler = webContext
     server.setHandler( webContext )
+    event("ConfigureJetty", [server])
     return server
 }
 

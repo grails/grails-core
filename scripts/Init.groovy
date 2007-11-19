@@ -74,12 +74,9 @@ profile = { String name , Closure callable ->
 // Send a scripting event notification to any and all event hooks in plugins/user scripts
 event = { String name, def args ->
     if (!hooksLoaded) {
-        setClasspath()
-
-        loadEventHooks()
-
         hooksLoaded = true
-
+        setClasspath()
+        loadEventHooks()
         // Give scripts a chance to modify classpath
         event('setClasspath', [getClass().classLoader.rootLoader])
     }
@@ -88,7 +85,7 @@ event = { String name, def args ->
         try {
             def handler = it."event$name"
             if( handler ) {
-                handler.delegate = binding
+                handler.delegate = this
                 handler(*args)
             }
         } catch (MissingPropertyException e) {
@@ -158,7 +155,7 @@ void loadEventHooks() {
 void loadEventScript(theFile) {
     try {
         def script = eventsClassLoader.parseClass( theFile).newInstance()
-        script.delegate = binding
+        script.delegate = this
         script.run()
         hookScripts << script
     } catch (Throwable t) {
