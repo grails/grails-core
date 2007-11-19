@@ -75,11 +75,9 @@ profile = {String name, Closure callable ->
 // Send a scripting event notification to any and all event hooks in plugins/user scripts
 event = {String name, def args ->
     if (!hooksLoaded) {
-        setClasspath()
-        if (!hooksLoaded) {
-            loadEventHooks()
-        }
         hooksLoaded = true
+        setClasspath()
+        loadEventHooks()
         // Give scripts a chance to modify classpath
         event('setClasspath', [getClass().classLoader.rootLoader])
     }
