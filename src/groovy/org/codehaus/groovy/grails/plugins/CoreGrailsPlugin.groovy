@@ -22,7 +22,8 @@ import org.springframework.beans.factory.config.CustomEditorConfigurer
 import org.springframework.beans.factory.config.MethodInvokingFactoryBean
 import org.codehaus.groovy.runtime.InvokerHelper
 import org.codehaus.groovy.grails.commons.cfg.GrailsOverrideConfigurer
-import org.codehaus.groovy.grails.commons.cfg.GrailsPlaceholderConfigurer;
+import org.codehaus.groovy.grails.commons.cfg.GrailsPlaceholderConfigurer
+import org.codehaus.groovy.grails.orm.support.TransactionManagerPostProcessor;
 
 /**
  * A plug-in that configures the core shared beans within the Grails application context 
@@ -39,6 +40,7 @@ class CoreGrailsPlugin {
 	def doWithSpring = {
         addBeanFactoryPostProcessor(new GrailsOverrideConfigurer())
         addBeanFactoryPostProcessor(new GrailsPlaceholderConfigurer())
+        addBeanFactoryPostProcessor(new TransactionManagerPostProcessor())
         
         classLoader(MethodInvokingFactoryBean) {
 			targetObject = ref("grailsApplication", true)

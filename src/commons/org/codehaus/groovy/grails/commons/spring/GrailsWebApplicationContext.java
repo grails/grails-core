@@ -74,7 +74,6 @@ public class GrailsWebApplicationContext extends StaticApplicationContext
 
 	private void initialise() {
 		this.metaClass = InvokerHelper.getMetaClass(this);
-		addBeanFactoryPostProcessor(new TransactionManagerPostProcessor());
 	}
 
     public ClassLoader getClassLoader() {
