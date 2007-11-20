@@ -202,9 +202,149 @@ class MappingDslTests extends AbstractGrailsHibernateTests {
          assertEquals  "43438094834380", ccp.cardNumber
     }
 
+    void testOneToOneForeignKeyMapping() {
+        def personClass = ga.getDomainClass("MappedPerson").clazz
+        def addressClass = ga.getDomainClass("MappedAddress").clazz
+
+        def p = personClass.newInstance(name:"John")
+        p.address = addressClass.newInstance()
+
+
+        assert p.save()
+        session.flush()
+
+        DataSource ds = (DataSource)applicationContext.getBean('dataSource')
+
+         def con
+         try {
+             con = ds.getConnection()
+             def statement = con.prepareStatement("select PERSON_ADDRESS_COLUMN from mapped_person")
+             def resultSet = statement.executeQuery()
+             assert resultSet.next()
+         } finally {
+             con.close()
+         }
+    }
+
+    void testManyToOneForeignKeyMapping() {
+        def personClass = ga.getDomainClass("MappedPerson").clazz
+        def groupClass = ga.getDomainClass("MappedGroup").clazz
+
+        def g = groupClass.newInstance()
+
+        g.addToPeople name:"John"
+
+        assert g.save()
+
+        session.flush()
+        session.clear()
+
+        g = groupClass.get(1)
+
+        assert g
+        assertEquals 1, g.people.size()
+
+        DataSource ds = (DataSource)applicationContext.getBean('dataSource')
+
+         def con
+         try {
+             con = ds.getConnection()
+             def statement = con.prepareStatement("select PERSON_GROUP_COLUMN from mapped_person")
+             def resultSet = statement.executeQuery()
+             assert resultSet.next()
+         } finally {
+             con.close()
+         }
+
+    }
+
+    void testManyToManyForeignKeyMapping() {
+        def partnerClass = ga.getDomainClass("MappedPartner").clazz
+        def groupClass = ga.getDomainClass("MappedGroup").clazz
+
+        def g = groupClass.newInstance()
+
+        g.addToPartners(partnerClass.newInstance())
+
+        assert g.save()
+        session.flush()
+        session.clear()
+
+        g = groupClass.get(1)
+
+        assert g
+        assertEquals 1, g.partners.size()
+
+        DataSource ds = (DataSource)applicationContext.getBean('dataSource')
+
+         def con
+         try {
+             con = ds.getConnection()
+             def statement = con.prepareStatement("select PARTNER_JOIN_COLUMN,GROUP_JOIN_COLUMN from PARTNER_GROUP_ASSOCIATIONS")
+             def resultSet = statement.executeQuery()
+             assert resultSet.next()
+         } finally {
+             con?.close()
+         }
+    }
 
     protected void onSetUp() {
         gcl.parseClass('''
+class MappedPerson {
+    Long id
+    Long version
+    String name
+    MappedAddress address
+    MappedGroup group
+
+    static belongsTo = MappedGroup
+    static mapping = {
+        columns {
+            address column:'PERSON_ADDRESS_COLUMN'
+            group column:'PERSON_GROUP_COLUMN'
+        }
+    }
+    static constraints = {
+        group(nullable:true)
+        address(nullable:true)
+    }
+
+}
+class MappedAddress {
+    Long id
+    Long version
+
+    static belongsTo = MappedPerson
+
+}
+class MappedGroup {
+    Long id
+    Long version
+
+    Set people
+    Set partners
+    static hasMany = [people:MappedPerson, partners:MappedPartner]
+    static mapping = {
+        columns {
+            partners column:'PARTNER_JOIN_COLUMN', joinTable:'PARTNER_GROUP_ASSOCIATIONS'
+        }
+    }
+
+}
+class MappedPartner {
+    Long id
+    Long version
+
+    Set groups
+    static belongsTo = MappedGroup
+    static hasMany = [groups:MappedGroup]
+    static mapping = {
+        columns {
+            groups column:'GROUP_JOIN_COLUMN', joinTable:'PARTNER_GROUP_ASSOCIATIONS'
+        }
+    }
+
+}
 class Payment {
     Long id
     Long version

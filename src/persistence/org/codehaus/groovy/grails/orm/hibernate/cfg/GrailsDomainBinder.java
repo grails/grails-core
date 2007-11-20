@@ -693,22 +693,29 @@ public final class GrailsDomainBinder {
 
         }
         else {
-            String left = getTableName(property.getDomainClass());
-            String right = getTableName(property.getReferencedDomainClass());
+            ColumnConfig cc = getColumnConfig(property);
+            JoinTable jt = cc != null ? cc.getJoinTable() : null;
 
-            if(property.isOwningSide()) {
-                return left+ UNDERSCORE +right;
-            }
-            else if(shouldCollectionBindWithJoinColumn(property)) {
-                ColumnConfig cc = getColumnConfig(property);
-                JoinTable jt = cc != null ? cc.getJoinTable() : null;
-                if(jt != null && jt.getName() != null) {
-                    return jt.getName();
-                }
-                return left+ UNDERSCORE +right;
+            if(property.isManyToMany() && jt != null) {
+                 return jt.getName();
             }
             else {
-                return right+ UNDERSCORE +left;
+
+                String left = getTableName(property.getDomainClass());
+                String right = getTableName(property.getReferencedDomainClass());
+
+                if(property.isOwningSide()) {
+                    return left+ UNDERSCORE +right;
+                }
+                else if(shouldCollectionBindWithJoinColumn(property)) {
+                    if(jt != null && jt.getName() != null) {
+                        return jt.getName();
+                    }
+                    return left+ UNDERSCORE +right;
+                }
+                else {
+                    return right+ UNDERSCORE +left;
+                }
             }
         }
 	}
