@@ -79,7 +79,7 @@ event = {String name, def args ->
         setClasspath()
         loadEventHooks()
         // Give scripts a chance to modify classpath
-        event('setClasspath', [getClass().classLoader.rootLoader])
+        event('SetClasspath', [getClass().classLoader.rootLoader])
     }
 
     hookScripts.each() {
@@ -452,7 +452,7 @@ void setClasspath() {
     parentLoader = getClass().getClassLoader()
     classpathSet = true
 
-    event('setClasspath', [rootLoader])
+    event('SetClasspath', [rootLoader])
 }
 
 getJarFiles = {->
