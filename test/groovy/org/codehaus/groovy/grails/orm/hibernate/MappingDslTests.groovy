@@ -288,6 +288,43 @@ class MappingDslTests extends AbstractGrailsHibernateTests {
          }
     }
 
+    void testUnidirectionalOneToManyForeignKeyMapping() {
+     def personClass = ga.getDomainClass("MappedPerson").clazz
+     def childClass = ga.getDomainClass("MappedChild").clazz
+
+        def p = personClass.newInstance(name:"John")
+
+        p.addToChildren(childClass.newInstance())
+        p.addToCousins(childClass.newInstance())
+        p.save()
+
+
+        assert p.save()
+        session.flush()
+
+        DataSource ds = (DataSource)applicationContext.getBean('dataSource')
+
+         def con
+         try {
+             con = ds.getConnection()
+             def statement = con.prepareStatement("select PERSON_ID,COUSIN_ID from COUSINS_TABLE")
+             def resultSet = statement.executeQuery()
+             assert resultSet.next()
+         } finally {
+             con.close()
+         }
+
+        try {
+            con = ds.getConnection()
+            def statement = con.prepareStatement("select PERSON_CHILD_ID from mapped_child")
+            def resultSet = statement.executeQuery()
+            assert resultSet.next()
+        } finally {
+            con.close()
+        }
+        
+    }
+
     protected void onSetUp() {
         gcl.parseClass('''
 class MappedPerson {
@@ -296,12 +333,17 @@ class MappedPerson {
     String name
     MappedAddress address
     MappedGroup group
+    Set children
+    Set cousins
 
+    static hasMany = [children:MappedChild, cousins:MappedChild]
     static belongsTo = MappedGroup
     static mapping = {
         columns {
             address column:'PERSON_ADDRESS_COLUMN'
             group column:'PERSON_GROUP_COLUMN'
+            children column:'PERSON_CHILD_ID'
+            cousins joinTable:[name:'COUSINS_TABLE', key:'PERSON_ID', column:'COUSIN_ID']
         }
     }
     static constraints = {
@@ -309,6 +351,10 @@ class MappedPerson {
         address(nullable:true)
     }
 
+}
+class MappedChild {
+    Long id
+    Long version
 }
 class MappedAddress {
     Long id

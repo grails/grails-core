@@ -330,7 +330,12 @@ public final class GrailsDomainBinder {
 			}
 		}
 		else {
-			bindDependentKeyValue(property,key,mappings);
+            if(cc != null && cc.getJoinTable() != null && cc.getJoinTable().getKey() != null) {                   
+                bindSimpleValue("long", key,false, cc.getJoinTable().getKey(), mappings);
+            }
+            else {
+                bindDependentKeyValue(property,key,mappings);
+            }
 		}
 		collection.setKey( key );
 
@@ -379,7 +384,12 @@ public final class GrailsDomainBinder {
 
         bindUnidirectionalOneToManyInverseValues(property, element);
 
-        String columnName = namingStrategy.propertyToColumnName(property.getReferencedDomainClass().getPropertyName()) + FOREIGN_KEY_SUFFIX;
+        String columnName;
+        JoinTable jt = cc.getJoinTable();
+        if(jt != null && jt.getKey()!=null)
+            columnName = jt.getColumn();
+        else
+            columnName = namingStrategy.propertyToColumnName(property.getReferencedDomainClass().getPropertyName()) + FOREIGN_KEY_SUFFIX;
         
         bindSimpleValue("long", element,false, columnName, mappings);
         // we make the other side of the join unique so that it because a unidirectional one-to-many with a join instead of a many-to-many
