@@ -27,6 +27,20 @@ class FormatTagLibTests extends AbstractGrailsTagTests {
 
     }
 
+    void testFormatDateFromBundle() {
+        def calender = new GregorianCalendar(1980,1,3)
+        def template = '<g:formatDate formatName="format.date" date="${date}"/>'
+        messageSource.addMessage("format.date", request.locale, "yyyy-MM-dd")
+
+        assertOutputEquals("1980-02-03", template, [date:calender.getTime()])
+    }
+
+    void testFormatNumberFromBundle() {
+       def template = '<g:formatNumber number="${myNumber}" formatName="format.number" />'
+       messageSource.addMessage("format.number", request.locale, '\$###,##0')
+        assertOutputEquals('$10', template, [myNumber:10])
+    }
+
     void testEncodeAs() {
         def template = '<g:encodeAs codec="HTML">Coheed & Cambria</g:encodeAs>'
 

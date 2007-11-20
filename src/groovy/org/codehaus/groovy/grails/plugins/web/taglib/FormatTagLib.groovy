@@ -15,6 +15,8 @@ package org.codehaus.groovy.grails.plugins.web.taglib
  * limitations under the License.
  */
 
+import org.springframework.web.servlet.support.RequestContextUtils as RCU;
+
  /**
  * The base application tag library for Grails many of which take inspiration from Rails helpers (thanks guys! :)
  * This tag library tends to get extended by others as tags within here can be re-used in said libraries
@@ -38,12 +40,20 @@ class FormatTagLib {
     def formatDate = { attrs ->
         def date = attrs.get('date')
 
+
+
         if (!date) {
-                date = new Date()
+            date = new Date()
         }
 
+        def formatName = attrs.get('formatName')
         def format = attrs.get('format')
-        if (!format) {
+        
+        if(!format && formatName) {
+            format = message(code:formatName)
+            if(!format) throwTagError("Attribute [formatName] of Tag [formatDate] specifies a format key [$formatName] that does not exist within a message bundle!")
+        }
+        else if (!format) {
                 format = "yyyy-MM-dd HH:mm:ss z"
         }
 
@@ -67,8 +77,13 @@ class FormatTagLib {
                 number = new Double(0)
         }
 
+        def formatName = attrs.get('formatName')
         def format = attrs.get('format')
-        if (!format) {
+        if(!format && formatName) {
+            format = message(code:formatName)
+            if(!format) throwTagError("Attribute [formatName] of Tag [formatDate] specifies a format key [$formatName] that does not exist within a message bundle!")
+        }
+        else if (!format) {
                 format = "0"
         }
 
