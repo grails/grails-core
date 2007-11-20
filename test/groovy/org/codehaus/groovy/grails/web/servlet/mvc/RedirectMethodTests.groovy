@@ -25,6 +25,10 @@ class RedirectController {
         redirect(controller:'test', action:'foo')
     }
 
+    def toControllerAndActionWithFragment = {
+        redirect(controller:'test', action:'foo', fragment:"frag")
+    }
+
     def toControllerWithParams = {
         redirect(controller:'test',action:'foo', params:[one:'two', two:'three'])
     }
@@ -46,6 +50,13 @@ class UrlMappings {
 	}
 }
         ''')
+    }
+
+    void testRedirectWithFragment() {
+       def c = ga.getControllerClass("RedirectController").newInstance()
+        webRequest.controllerName = 'redirect'
+        c.toControllerAndActionWithFragment.call()
+        assertEquals "/test/foo#frag", response.redirectedUrl
     }
 
     void testRedirectToAction() {

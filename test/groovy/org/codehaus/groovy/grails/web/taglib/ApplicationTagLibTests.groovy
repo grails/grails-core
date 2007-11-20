@@ -5,7 +5,14 @@ import org.codehaus.groovy.grails.commons.ApplicationHolder
 
 class ApplicationTagLibTests extends AbstractGrailsTagTests {
 
-	void testSetTag() {
+    void testLinkWithFragment() {
+        def template = '<g:link controller="foo" action="bar" fragment="test">link</g:link>'
+
+        assertOutputEquals('<a href="/foo/bar#test">link</a>', template)
+
+    }
+
+    void testSetTag() {
         def template = '<g:set var="one" value="two" />one: ${one}'
 
         assertOutputEquals('one: two', template)	

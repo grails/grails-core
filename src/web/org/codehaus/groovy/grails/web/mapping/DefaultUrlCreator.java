@@ -55,6 +55,12 @@ public class DefaultUrlCreator implements UrlCreator {
         return createURLWithWebRequest(parameterValues, webRequest);
     }
 
+    public String createURL(Map parameterValues, String encoding, String fragment) {
+        String url = createURL( parameterValues, encoding);
+        return createUrlWithFragment(encoding, fragment, url);
+
+    }
+
     private String createURLWithWebRequest(Map parameterValues, GrailsWebRequest webRequest) {
         HttpServletRequest request = webRequest.getCurrentRequest();
 
@@ -108,6 +114,24 @@ public class DefaultUrlCreator implements UrlCreator {
         }
     }
 
+    public String createURL(String controller, String action, Map parameterValues, String encoding, String fragment) {
+        String url = createURL(controller, action, parameterValues, encoding);
+        return createUrlWithFragment(encoding, fragment, url);
+    }
+
+    private String createUrlWithFragment(String encoding, String fragment, String url) {
+        if(fragment != null) {
+            try {
+                return url + '#' + URLEncoder.encode(fragment, encoding);
+            } catch (UnsupportedEncodingException ex) {
+                throw new ControllerExecutionException("Error creating URL  ["+url +"], problem encoding URL fragment ["+fragment +"]: " + ex.getMessage(),ex);
+            }
+        }
+        else {
+            return url;
+        }
+    }
+
     /*
      * Appends all the requeset parameters to the URI buffer
      */
@@ -146,7 +170,7 @@ public class DefaultUrlCreator implements UrlCreator {
                      .append('=')
                      .append(URLEncoder.encode(value.toString(),request.getCharacterEncoding()));
         } catch (UnsupportedEncodingException ex) {
-            throw new ControllerExecutionException("Error redirecting request for url ["+name+":"+value +"]: " + ex.getMessage(),ex);
+            throw new ControllerExecutionException("Error creating URL, encoding problem appending parameter to url ["+name+":"+value +"]: " + ex.getMessage(),ex);
         }
     }
 

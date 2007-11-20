@@ -59,6 +59,25 @@ mappings {
              shouldFail { m.createURL([:], "utf-8") }
     }
 
+    void testCreateUrlWithFragment() {
+             def res = new ByteArrayResource(mappingScript.bytes)
+
+             def evaluator = new DefaultUrlMappingEvaluator()
+             def mappings = evaluator.evaluateMappings(res)
+
+
+             def m = mappings[0]
+             assert m
+
+             assertEquals "/book/dierk/gina/foo#testfrag", m.createURL(author:"dierk", title:"gina", test:"foo", "utf-8", "testfrag")
+
+             m = mappings[1]
+             assert m
+
+             assertEquals "/blog/foo/2007/10/24#testfrag2", m.createURL(entry:"foo", year:2007, month:10, day:24, "utf-8", "testfrag2")
+
+    }
+
     void testComparable() {
         def parser = new DefaultUrlMappingParser()
         def m1 = new RegexUrlMapping(parser.parse("/foo/"), "test",null, null)

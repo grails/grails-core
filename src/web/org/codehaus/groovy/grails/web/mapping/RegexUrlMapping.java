@@ -198,6 +198,53 @@ public class RegexUrlMapping extends AbstractUrlMapping implements UrlMapping {
         return  uri.toString();
     }
 
+    public String createURL(Map parameterValues, String encoding, String fragment) {
+        String url = createURL(parameterValues, encoding);
+        return createUrlWithFragment(url, fragment, encoding);
+    }
+
+    public String createURL(String controller, String action, Map parameterValues, String encoding) {
+        if(parameterValues == null) parameterValues = new HashMap();
+
+        boolean hasController = !StringUtils.isBlank(controller);
+        boolean hasAction = !StringUtils.isBlank(action);
+
+        try {
+
+            if(hasController)
+                parameterValues.put(CONTROLLER, controller);
+            if(hasAction)
+                parameterValues.put(ACTION, action);
+
+            return createURL(parameterValues, encoding);
+        } finally {
+            if(hasController)
+                parameterValues.remove(CONTROLLER);
+            if(hasAction)
+                parameterValues.remove(ACTION);
+
+        }
+    }
+
+    public String createURL(String controller, String action, Map parameterValues, String encoding, String fragment) {
+        String url = createURL(controller, action, parameterValues, encoding);
+        return createUrlWithFragment(url, fragment, encoding);
+    }
+
+    private String createUrlWithFragment(String url, String fragment, String encoding) {
+        if(fragment != null) {
+            try {
+                return url + '#' + URLEncoder.encode(fragment, encoding);
+            } catch (UnsupportedEncodingException ex) {
+                throw new ControllerExecutionException("Error creating URL  ["+url +"], problem encoding URL fragment ["+fragment +"]: " + ex.getMessage(),ex);
+            }
+        }
+        else {
+            return url;
+        }
+    }
+
+
     private void populateParameterList(Map parameterValues, String encoding, StringBuffer uri, Set usedParams) {
         boolean addedParams = false;
         usedParams.add( "controller" );
@@ -248,29 +295,6 @@ public class RegexUrlMapping extends AbstractUrlMapping implements UrlMapping {
                     .append(URLEncoder.encode(value != null ? value.toString() : "",encoding));
         } catch (UnsupportedEncodingException e) {
             throw new ControllerExecutionException("Error redirecting request for url ["+name+":"+value +"]: " + e.getMessage(),e);
-        }
-    }
-
-    public String createURL(String controller, String action, Map parameterValues, String encoding) {
-        if(parameterValues == null) parameterValues = new HashMap();
-
-        boolean hasController = !StringUtils.isBlank(controller);
-        boolean hasAction = !StringUtils.isBlank(action);
-
-        try {
-
-            if(hasController)
-                parameterValues.put(CONTROLLER, controller);
-            if(hasAction)
-                parameterValues.put(ACTION, action);
-
-            return createURL(parameterValues, encoding);
-        } finally {
-            if(hasController)
-                parameterValues.remove(CONTROLLER);
-            if(hasAction)
-                parameterValues.remove(ACTION);
-
         }
     }
 

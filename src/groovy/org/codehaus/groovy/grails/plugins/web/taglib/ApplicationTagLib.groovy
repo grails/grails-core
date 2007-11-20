@@ -119,6 +119,7 @@ class ApplicationTagLib implements ApplicationContextAware {
 		def controller = attrs.containsKey("controller") ? attrs.remove("controller") : grailsAttributes.getController(request)?.controllerName
 		def action = attrs.remove("action")
         def id = attrs.remove("id")
+        def frag = attrs.remove('fragment')
         def params = attrs.params && attrs.params instanceof Map ? attrs.remove('params') : [:]
         
 		if(attrs.event) {       
@@ -128,7 +129,7 @@ class ApplicationTagLib implements ApplicationContextAware {
         if(id != null) params.id = id
         def urlMappings = applicationContext.getBean("grailsUrlMappingsHolder")
         def mapping = urlMappings.getReverseMapping(controller,action,params)
-        url = mapping.createURL(controller, action, params, request.characterEncoding)
+        url = mapping.createURL(controller, action, params, request.characterEncoding, frag)
         out << response.encodeURL(url)
     }
 

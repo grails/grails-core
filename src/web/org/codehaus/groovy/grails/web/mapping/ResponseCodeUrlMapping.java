@@ -81,7 +81,15 @@ public class ResponseCodeUrlMapping implements UrlMapping {
         throw new UnsupportedOperationException("Method createURL not implemented in " + getClass());
     }
 
+    public String createURL(Map parameterValues, String encoding, String fragment) {
+        throw new UnsupportedOperationException("Method createURL not implemented in " + getClass());
+    }
+
     public String createURL(String controller, String action, Map parameterValues, String encoding) {
+        throw new UnsupportedOperationException("Method createURL not implemented in " + getClass());
+    }
+
+    public String createURL(String controller, String action, Map parameterValues, String encoding, String fragment) {
         throw new UnsupportedOperationException("Method createURL not implemented in " + getClass());
     }
 

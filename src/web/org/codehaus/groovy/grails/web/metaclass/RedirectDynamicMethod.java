@@ -62,10 +62,11 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
     public static final String ARGUMENT_ACTION = "action";
     public static final String ARGUMENT_ID = "id";
     public static final String ARGUMENT_PARAMS = "params";
+    private static final String ARGUMENT_FRAGMENT = "fragment";
+
     public static final String ARGUMENT_ERRORS = "errors";
 
     private static final Log LOG = LogFactory.getLog(RedirectDynamicMethod.class);
-    
     private UrlMappingsHolder urlMappingsHolder;
 
     public RedirectDynamicMethod(ApplicationContext applicationContext) {
@@ -88,6 +89,7 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
         String controllerName = argMap.containsKey(ARGUMENT_CONTROLLER) ? argMap.get(ARGUMENT_CONTROLLER).toString() : null;
 
         Object id = argMap.get(ARGUMENT_ID);
+        String frag = argMap.get(ARGUMENT_FRAGMENT) != null ? argMap.get(ARGUMENT_FRAGMENT).toString() : null;
         Object uri = argMap.get(ARGUMENT_URI);
         String url = argMap.containsKey(ARGUMENT_URL) ? argMap.get(ARGUMENT_URL).toString() : null;
         Map params = (Map)argMap.get(ARGUMENT_PARAMS);
@@ -145,7 +147,7 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
 
                 String action = actionName != null ? actionName : webRequest.getActionName();
                 actualUri = attrs.getApplicationUri(request) +
-                            urlMapping.createURL( controllerName, action, params, encoding );
+                            urlMapping.createURL( controllerName, action, params, encoding, frag );
 
                 if( LOG.isDebugEnabled() ) {
                     LOG.debug( "Dynamic method [redirect] mapped to URL [" + actualUri + "]" );
