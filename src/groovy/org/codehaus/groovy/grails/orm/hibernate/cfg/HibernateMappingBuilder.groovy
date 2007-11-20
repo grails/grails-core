@@ -199,6 +199,7 @@ class HibernateMappingBuilder {
                 column.length = namedArgs.length ? namedArgs.length : -1
                 column.precision = namedArgs.precision ? namedArgs.precision : -1
                 column.scale = namedArgs.scale ? namedArgs.scale : -1
+                column.cascade = namedArgs.cascade ? namedArgs.cascade : null 
 
                 if(namedArgs.cache instanceof String) {
                     CacheConfig cc = new CacheConfig()

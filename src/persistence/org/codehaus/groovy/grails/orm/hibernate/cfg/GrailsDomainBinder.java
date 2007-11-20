@@ -1500,12 +1500,24 @@ public final class GrailsDomainBinder {
 		prop.setUpdateable(true);
 		prop.setPropertyAccessorName( mappings.getDefaultAccess() );
 		prop.setOptional( grailsProperty.isOptional() );
+
+        setCascadeBehaviour(grailsProperty, prop);
+
+        // lazy to true
+		prop.setLazy(true);
+
+	}
+
+    private static void setCascadeBehaviour(GrailsDomainClassProperty grailsProperty, Property prop) {
         String cascadeStrategy = "none";
         // set to cascade all for the moment
         GrailsDomainClass domainClass = grailsProperty.getDomainClass();
-        if(grailsProperty.isAssociation()) {
-            GrailsDomainClass referenced = grailsProperty.getReferencedDomainClass();
-
+        ColumnConfig cc = getColumnConfig(grailsProperty);
+        GrailsDomainClass referenced = grailsProperty.getReferencedDomainClass();
+        if(cc!=null && cc.getCascade() != null) {
+            cascadeStrategy = cc.getCascade();
+        }
+        else if(grailsProperty.isAssociation()) {
             if(grailsProperty.isOneToOne()) {
                 if(referenced!=null&&referenced.isOwningClass(domainClass.getClazz()))
                     cascadeStrategy = CASCADE_ALL;
@@ -1526,28 +1538,19 @@ public final class GrailsDomainBinder {
                 else
                     cascadeStrategy = CASCADE_MERGE;
             }
-
-            logCascadeMapping(grailsProperty, cascadeStrategy, referenced);
-            prop.setCascade(cascadeStrategy);
         }
         else if( Map.class.isAssignableFrom(grailsProperty.getType())) {
-            GrailsDomainClass referenced = grailsProperty.getReferencedDomainClass();
+            referenced = grailsProperty.getReferencedDomainClass();
             if(referenced!=null&&referenced.isOwningClass(grailsProperty.getDomainClass().getClazz())) {
                 cascadeStrategy = CASCADE_ALL;
             }
             else {
                 cascadeStrategy = CASCADE_SAVE_UPDATE;
             }
-            logCascadeMapping(grailsProperty, cascadeStrategy, referenced);
-            prop.setCascade(cascadeStrategy);
-
         }
-
-
-        // lazy to true
-		prop.setLazy(true);
-
-	}
+        logCascadeMapping(grailsProperty, cascadeStrategy, referenced);
+        prop.setCascade(cascadeStrategy);
+    }
 
     private static void logCascadeMapping(GrailsDomainClassProperty grailsProperty, String cascadeStrategy, GrailsDomainClass referenced) {
         if(LOG.isDebugEnabled()) {

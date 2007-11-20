@@ -24,6 +24,7 @@ package org.codehaus.groovy.grails.orm.hibernate.cfg
  */
 class ColumnConfig {
     String column
+    String cascade
     def type
     String index
     boolean lazy = false

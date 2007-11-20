@@ -16,6 +16,18 @@ import org.codehaus.groovy.grails.orm.hibernate.cfg.ColumnConfig
 
 class HibernateMappingBuilderTests extends GroovyTestCase {
 
+    void testCascades() {
+        def builder = new HibernateMappingBuilder("Foo")
+        def mapping = builder.evaluate {
+            columns {
+                things cascade:'save-update'
+            }
+        }
+
+        assertEquals 'save-update',mapping.getColumn('things').cascade
+
+    }
+
     void testJoinTableMapping() {
         def builder = new HibernateMappingBuilder("Foo")
         def mapping = builder.evaluate {
