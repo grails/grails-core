@@ -20,30 +20,20 @@ log4j {
     appender.'errors.File'="stacktrace.log"
     rootLogger="error,stdout"
     logger {
-        grails="error,stdout"
+        grails="error"
         StackTrace="error,errors"
         org {
-            codehaus.groovy.grails.web.servlet="error,stdout"  //  controllers
-            codehaus.groovy.grails.web.pages="error,stdout" //  GSP
-            codehaus.groovy.grails.web.sitemesh="error,stdout" //  layouts
-            codehaus.groovy.grails."web.mapping.filter"="error,stdout" // URL mapping
-            codehaus.groovy.grails."web.mapping"="error,stdout" // URL mapping
-            codehaus.groovy.grails.commons="info,stdout" // core / classloading
-            codehaus.groovy.grails.plugins="error,stdout" // plugins
-            codehaus.groovy.grails.orm.hibernate="error,stdout" // hibernate integration
-            springframework="off,stdout"
-            hibernate="off,stdout"
+            codehaus.groovy.grails.web.servlet="error"  //  controllers
+            codehaus.groovy.grails.web.pages="error" //  GSP
+            codehaus.groovy.grails.web.sitemesh="error" //  layouts
+            codehaus.groovy.grails."web.mapping.filter"="error" // URL mapping
+            codehaus.groovy.grails."web.mapping"="error" // URL mapping
+            codehaus.groovy.grails.commons="info" // core / classloading
+            codehaus.groovy.grails.plugins="error" // plugins
+            codehaus.groovy.grails.orm.hibernate="error" // hibernate integration
+            springframework="off"
+            hibernate="off"
         }
     }
-
-    additivity.'default' = false
-    additivity {
-        grails=false
-        StackTrace=false
-        org {
-            codehaus.groovy.grails=false
-            springframework=false
-            hibernate=false
-        }
-    }
+    additivity.StackTrace=false
 }

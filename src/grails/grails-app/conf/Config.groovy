@@ -19,29 +19,19 @@ log4j {
  	appender.'stdout.layout.ConversionPattern'='[%r] %c{2} %m%n'
     rootLogger="error,stdout"
     logger {
-        grails="error,stdout"
+        grails="error"
         org {
-            codehaus.groovy.grails.web.servlet="error,stdout"  //  controllers
-            codehaus.groovy.grails.web.errors="error,stdout"  //  web layer errors            
-			codehaus.groovy.grails.web.pages="error,stdout" //  GSP
-        	codehaus.groovy.grails.web.sitemesh="error,stdout" //  layouts
-        	codehaus.groovy.grails."web.mapping.filter"="error,stdout" // URL mapping
-        	codehaus.groovy.grails."web.mapping"="error,stdout" // URL mapping
-            codehaus.groovy.grails.commons="info,stdout" // core / classloading
-            codehaus.groovy.grails.plugins="error,stdout" // plugins
-            codehaus.groovy.grails.orm.hibernate="error,stdout" // hibernate integration
-            springframework="error,stdout"
-            hibernate="error,stdout"
+            codehaus.groovy.grails.web.servlet="error"  //  controllers
+            codehaus.groovy.grails.web.errors="error"  //  web layer errors            
+			codehaus.groovy.grails.web.pages="error" //  GSP
+        	codehaus.groovy.grails.web.sitemesh="error" //  layouts
+        	codehaus.groovy.grails."web.mapping.filter"="error" // URL mapping
+        	codehaus.groovy.grails."web.mapping"="error" // URL mapping
+            codehaus.groovy.grails.commons="info" // core / classloading
+            codehaus.groovy.grails.plugins="error" // plugins
+            codehaus.groovy.grails.orm.hibernate="error" // hibernate integration
+            springframework="error"
+            hibernate="error"
         }
     }
-	additivity.'default' = false
-    additivity {
-		grails=false
-		org {
-           codehaus.groovy.grails=false
-           springframework=false
-		   hibernate=false
-		}
-    }
 }
-
