@@ -310,13 +310,13 @@ public final class GrailsDomainBinder {
 
             bindCollectionForColumnConfig(collection, cc);
 
-
-			if(isSorted(property)) {
-				collection.setSorted(true);
-			}
 		}
 
-		// setup the primary key references
+        if(isSorted(property)) {
+            collection.setSorted(true);
+        }
+
+        // setup the primary key references
 		DependantValue key = createPrimaryKeyValue(property, collection,persistentClasses);
 
 		// link a bidirectional relationship
