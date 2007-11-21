@@ -40,6 +40,9 @@ import org.springframework.core.io.*
 import org.springframework.web.context.request.RequestContextHolder;
 import org.codehaus.groovy.grails.plugins.*
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
+import org.springframework.transaction.support.TransactionTemplate
+import org.springframework.transaction.support.TransactionCallback
+import org.springframework.transaction.TransactionStatus
 
 Ant.property(environment: "env")
 grailsHome = Ant.antProject.properties."env.GRAILS_HOME"
@@ -294,24 +297,20 @@ target(runIntegrationTests: "Runs Grails' tests under the test/integration direc
                     if (name.endsWith("Controller")) {
                         webRequest.controllerName = GCU.getLogicalPropertyName(name, "Controller")
                     }
-
-                    def result = invocation()
-                    // don't flush the session if there are errors
-                    if (result.errorCount() > 0) {
-                        interceptor?.clear()
-                    }
-                    else {
-                        interceptor?.flush()
-                    }
+                    def template = new TransactionTemplate(appCtx.transactionManager)
+                    template.execute( { TransactionStatus status ->
+                        def result = invocation()
+                        // don't flush the session if there are errors
+                        if (result.errorCount() > 0) {
+                            interceptor?.clear()
+                        }
+                        else {
+                            interceptor?.flush()
+                        }
+                        status.setRollbackOnly()
+                    } as TransactionCallback )
 
                     RequestContextHolder.setRequestAttributes(null);
-                    if (test.cleaningOrder) {
-                        grails.util.GrailsUtil.deprecated "'cleaningOrder' property for integration tests is not in use anymore since now we make Hibernate manage the cleaning order. You can just remove it from your tests."
-                    }
-                    app.domainClasses.each {dc ->
-                        dc.clazz.list()*.delete()
-                    }
-                    interceptor?.flush()
                 }
                 def end = new Date()
                 println "Integration Tests Completed in ${end.time - start.time}ms"
