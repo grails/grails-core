@@ -43,6 +43,7 @@ public class DefaultUrlCreator implements UrlCreator {
     private final String controllerName;
     private final String actionName;
     public static final String ARGUMENT_ID = "id";
+    private static final String ENTITY_AMPERSAND = "&amp;";
 
     public DefaultUrlCreator(String controller, String action) {
         this.controllerName = controller;
@@ -150,7 +151,7 @@ public class DefaultUrlCreator implements UrlCreator {
                     querySeparator = true;
             }
             else {
-                actualUriBuf.append('&');
+                actualUriBuf.append(ENTITY_AMPERSAND);
             }
             Object value = params.get(name);
             appendRequestParam(actualUriBuf, name, value,request);

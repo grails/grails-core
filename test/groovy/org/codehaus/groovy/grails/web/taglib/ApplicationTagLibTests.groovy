@@ -5,6 +5,18 @@ import org.codehaus.groovy.grails.commons.ApplicationHolder
 
 class ApplicationTagLibTests extends AbstractGrailsTagTests {
 
+    void testClonedUrlFromVariable() {
+        def template = '''<g:set var="urlMap" value="${[controller: 'test', action: 'justdoit']}"/>${urlMap}<g:link url="${urlMap}">test</g:link>${urlMap}'''
+
+        assertOutputEquals('{controller=test, action=justdoit}<a href="/test/justdoit">test</a>{controller=test, action=justdoit}', template)
+    }
+
+    void testLinkWithMultipleParameters() {
+        def template = '<g:link controller="foo" action="action" params="[test: \'test\', test2: \'test2\']">test</g:link>'
+
+        assertOutputEquals('<a href="/foo/action?test=test&amp;test2=test2">test</a>', template)
+    }
+
     void testLinkWithFragment() {
         def template = '<g:link controller="foo" action="bar" fragment="test">link</g:link>'
 

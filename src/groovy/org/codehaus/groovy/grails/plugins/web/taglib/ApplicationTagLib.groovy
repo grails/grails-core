@@ -113,7 +113,7 @@ class ApplicationTagLib implements ApplicationContextAware {
         out << grailsAttributes.getApplicationUri(request)
         // prefer a URL attribute
         if(attrs['url']) {
-             attrs = attrs.remove('url')
+             attrs = attrs.remove('url').clone()
         }
 
 		def controller = attrs.containsKey("controller") ? attrs.remove("controller") : grailsAttributes.getController(request)?.controllerName

@@ -65,10 +65,11 @@ public class RegexUrlMapping extends AbstractUrlMapping implements UrlMapping {
     private static final String CAPTURED_WILDCARD = "(*)";
     private static final String SLASH = "/";
     private static final char QUESTION_MARK = '?';
+    private static final String ENTITY_AMPERSAND = "&amp;";
     private static final char AMPERSAND = '&';
     private static final String DOUBLE_WILDCARD = "**";
-    private static final String CAPTURED_DOUBLE_WILDCARD = "(**)";
 
+    private static final String CAPTURED_DOUBLE_WILDCARD = "(**)";
     private static final Log LOG = LogFactory.getLog(RegexUrlMapping.class);
 
 
@@ -258,7 +259,7 @@ public class RegexUrlMapping extends AbstractUrlMapping implements UrlMapping {
                     addedParams = true;
                 }
                 else {
-                    uri.append(AMPERSAND);
+                    uri.append(ENTITY_AMPERSAND);
                 }
                 Object value = parameterValues.get(name);
                 if(value != null && value instanceof Collection) {
@@ -267,7 +268,7 @@ public class RegexUrlMapping extends AbstractUrlMapping implements UrlMapping {
                         Object o = j.next();
                         appendValueToURI(encoding, uri, name, o);
                         if(j.hasNext()) {
-                            uri.append(AMPERSAND);
+                            uri.append(ENTITY_AMPERSAND);
                         }
                     }
                 }
@@ -277,7 +278,7 @@ public class RegexUrlMapping extends AbstractUrlMapping implements UrlMapping {
                         Object o = multiValues[j];
                         appendValueToURI(encoding, uri, name, o);
                         if(j+1 < multiValues.length) {
-                            uri.append(AMPERSAND);
+                            uri.append(ENTITY_AMPERSAND);
                         }
                     }
                 }
