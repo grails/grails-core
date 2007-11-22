@@ -177,6 +177,7 @@ def runTests = {suite, TestResult result, Closure callback ->
                         System.out.println "--Output from ${t.name}--"
                         System.err.println "--Output from ${t.name}--"
                         def start = System.currentTimeMillis()
+
                         callback(test, {
                             savedOut.print "                    ${t.name}..."
                             test.runTest (t, thisTest)
@@ -236,8 +237,13 @@ target(runUnitTests: "Run Grails' unit tests under the test/unit directory") {
             println "Running ${testCases} Unit Test${testCases > 1 ? 's' : ''}..."
 
             def start = new Date()
-            runTests(suite, result) {test, invocation ->
+            runTests(suite, result) {test, invocation ->            
                 invocation()
+                for(cls in grailsApp.allArtefacts) {
+                    def emc = new ExpandoMetaClass(cls, true, true)
+                    emc.initialize()
+                    GroovySystem.metaClassRegistry.setMetaClass(cls, emc)
+                }
             }
             def end = new Date()
 
