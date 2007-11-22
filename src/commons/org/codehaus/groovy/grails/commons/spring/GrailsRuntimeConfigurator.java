@@ -233,15 +233,17 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
   }
 
   public WebApplicationContext configure(ServletContext context, boolean loadExternalBeans) {
-      RuntimeSpringConfiguration springConfig = parent != null ? new DefaultRuntimeSpringConfiguration(parent) : new DefaultRuntimeSpringConfiguration();
+      Assert.notNull(application);
+
+      RuntimeSpringConfiguration springConfig = new DefaultRuntimeSpringConfiguration(parent, application.getClassLoader());
       if(context != null) {
           springConfig.setServletContext(context);
           this.pluginManager.setServletContext(context);
       }
-      if(!this.pluginManager.isInitialised())
+      if(!this.pluginManager.isInitialised()) {
           this.pluginManager.loadPlugins();
+      }
 
-      Assert.notNull(application);
       if(!application.isInitialised()) {
           pluginManager.doArtefactConfiguration();
           application.initialise();

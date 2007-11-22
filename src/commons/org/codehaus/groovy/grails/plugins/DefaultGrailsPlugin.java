@@ -300,7 +300,7 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
     }
 
     public BeanBuilder beans(Closure closure) {
-        BeanBuilder bb = new BeanBuilder(getParentCtx());
+        BeanBuilder bb = new BeanBuilder(getParentCtx(), new GroovyClassLoader(application.getClassLoader()));
         bb.invokeMethod("beans", new Object[]{closure});
         return bb;
     }

@@ -20,16 +20,17 @@ import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.spring.BeanConfiguration;
+import org.codehaus.groovy.grails.commons.spring.DefaultBeanConfiguration;
 import org.codehaus.groovy.grails.commons.spring.DefaultRuntimeSpringConfiguration;
 import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration;
-import org.codehaus.groovy.grails.commons.spring.DefaultBeanConfiguration;
-import org.codehaus.groovy.runtime.InvokerHelper;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
+import org.codehaus.groovy.runtime.InvokerHelper;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.RuntimeBeanReference;
 import org.springframework.beans.factory.support.ManagedList;
 import org.springframework.beans.factory.support.ManagedMap;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.context.support.StaticApplicationContext;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
@@ -80,7 +81,7 @@ public class BeanBuilder extends GroovyObjectSupport {
     private static final String REGISTER_BEANS = "registerBeans";
     private static final String BEANS = "beans";
     private static final String REF = "ref";
-    private RuntimeSpringConfiguration springConfig = new DefaultRuntimeSpringConfiguration();
+    private RuntimeSpringConfiguration springConfig;
     private BeanConfiguration currentBeanConfig;
     private Map deferredProperties = new HashMap();
     private ApplicationContext parentCtx;
@@ -89,26 +90,23 @@ public class BeanBuilder extends GroovyObjectSupport {
 
 
     public BeanBuilder() {
-		super();
+		this(null,null);
 	}
     
     public BeanBuilder(ClassLoader classLoader) {
-		super();
-		this.classLoader = classLoader;
+		this(null, classLoader);
 	}    
 	
 	public BeanBuilder(ApplicationContext parent) {
-		super();
-		this.parentCtx = parent;
-		this.springConfig = new DefaultRuntimeSpringConfiguration(parent);
+        this(parent, null);
 	}	
 	
 	public BeanBuilder(ApplicationContext parent,ClassLoader classLoader) {
 		super();
-		this.parentCtx = parent;
-		this.springConfig = new DefaultRuntimeSpringConfiguration(parent);
-		this.classLoader = classLoader;
-	}		
+        this.classLoader = classLoader == null ? getClass().getClassLoader() : classLoader;
+        this.parentCtx = parent;
+        this.springConfig = new DefaultRuntimeSpringConfiguration(parent, classLoader);		
+    }
 
 	public Log getLog() {
 		return LOG;
@@ -301,12 +299,12 @@ public class BeanBuilder extends GroovyObjectSupport {
 	/**
 	 * Loads a set of given beans
 	 * @param resources The resources to load
-	 * @throws IOException 
+	 * @throws IOException Thrown if there is an error reading one of the passes resources
 	 */
 	public void loadBeans(Resource[] resources) throws IOException {
 		Closure beans = new Closure(this){
 			public Object call(Object[] args) {
-				invokeBeanDefiningClosure(args[0]);
+				invokeBeanDefiningClosure((Closure)args[0]);
 				return null;
 			}			
 		};
@@ -320,8 +318,18 @@ public class BeanBuilder extends GroovyObjectSupport {
 		}
 	}
 
+    /**
+     * Register a set of beans with the given
+     * @param ctx  The GenericApplicationContext instance
+     */
+    public void registerBeans(GenericApplicationContext ctx) {
+            finalizeDeferredProperties();
+            ctx.setClassLoader(this.classLoader);
+            ctx.getBeanFactory().setBeanClassLoader(this.classLoader);
+            springConfig.registerBeansWithContext(ctx);        
+    }
 
-	/**
+    /**
 	 * This method overrides method invocation to create beans for each method name that
 	 * takes a class argument
 	 */
@@ -329,18 +337,14 @@ public class BeanBuilder extends GroovyObjectSupport {
         Object[] args = (Object[])arg;
         
         if(CREATE_APPCTX.equals(name)) {
-			finalizeDeferredProperties();
-			return springConfig.getApplicationContext();
+            return createApplicationContext();
 		}
-        else if(REGISTER_BEANS.equals(name) && args.length == 1 && args[0] instanceof StaticApplicationContext) {
-            finalizeDeferredProperties();
-
-            StaticApplicationContext ctx = (StaticApplicationContext)args[0];
-            springConfig.registerBeansWithContext(ctx);
+        else if(REGISTER_BEANS.equals(name) && args.length == 1 && args[0] instanceof GenericApplicationContext) {
+            registerBeans((GenericApplicationContext)args[0]);
             return null;
         }
         else if(BEANS.equals(name) && args.length == 1 && args[0] instanceof Closure) {
-            return invokeBeanDefiningClosure(args[0]);
+            return beans((Closure)args[0]);
         }
         if(args.length == 0)
 			throw new MissingMethodException(name, getClass(),args);
@@ -384,7 +388,27 @@ public class BeanBuilder extends GroovyObjectSupport {
         return this;
 	}
 
-	private void finalizeDeferredProperties() {
+
+    /**
+     * Defines a set of beans for the given block or closure.
+     *
+     * @param c The block or closure
+     * @return This BeanBuilder instance
+     */
+    public BeanBuilder beans(Closure c) {
+        return invokeBeanDefiningClosure(c);
+    }
+
+    /**
+     * Creates an ApplicationContext from the current state of the BeanBuilder
+     * @return The ApplicationContext instance
+     */
+    public ApplicationContext createApplicationContext() {
+        finalizeDeferredProperties();
+        return springConfig.getApplicationContext();
+    }
+
+    private void finalizeDeferredProperties() {
 		for (Iterator i = deferredProperties.values().iterator(); i.hasNext();) {
 			DeferredProperty dp = (DeferredProperty) i.next();
 			
@@ -488,10 +512,11 @@ public class BeanBuilder extends GroovyObjectSupport {
     /**
 	 * When an methods argument is only a closure it is a set of bean definitions
 	 * 
-	 * @param arg The closure argument
+	 * @param callable The closure argument
+     * @return This BeanBuilder instance
 	 */
-	private BeanBuilder invokeBeanDefiningClosure(Object arg) {
-		Closure callable = (Closure)arg;
+	private BeanBuilder invokeBeanDefiningClosure(Closure callable) {
+
 		callable.setDelegate(this);
   //      callable.setResolveStrategy(Closure.DELEGATE_FIRST);
         callable.call();
@@ -553,7 +578,9 @@ public class BeanBuilder extends GroovyObjectSupport {
 			}						
 		}
 		if(containsRuntimeRefs) {
-			return new ManagedMap(map);
+            Map managedMap = new ManagedMap();
+            managedMap.putAll(map);
+            return managedMap; 
 		}
 		return value;
 	}

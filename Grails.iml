@@ -3,7 +3,7 @@
   <component name="FacetManager">
     <facet type="hibernate" name="Hibernate">
       <configuration>
-        <option name="myHibernateValidationEnabled" value="true" />
+        <setting name="validation-enabled" value="false" />
         <datasource-map />
         <deploymentDescriptor name="hibernate.cfg.xml" url="file://$MODULE_DIR$/test/persistence/hibernate.cfg.xml" optional="false" version="3.0" />
       </configuration>

@@ -106,10 +106,7 @@ class ServicesGrailsPlugin {
 					}
 				}     
 				if(event.ctx) {         
-					event.ctx.removeBeanDefinition("${serviceClass.fullName}ServiceClass")					
-					event.ctx.registerBeanDefinition("${serviceClass.fullName}ServiceClass", beans.getBeanDefinition("${serviceClass.fullName}ServiceClass"))					
-   					event.ctx.removeBeanDefinition(serviceName )
-					event.ctx.registerBeanDefinition(serviceName, beans.getBeanDefinition(serviceName))
+                    beans.registerBeans(event.ctx)
 				}				
 			}
 			else {
@@ -122,10 +119,7 @@ class ServicesGrailsPlugin {
                         }
 					}					
 				}
-				if(event.ctx) {     
-					event.ctx.removeBeanDefinition(serviceName)
-					event.ctx.registerBeanDefinition(serviceName, beans.getBeanDefinition(serviceName))
-				}     
+	            beans.registerBeans(event.ctx)
 			}
 		}
 	}

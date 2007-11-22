@@ -18,7 +18,7 @@ package org.codehaus.groovy.grails.commons.spring;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
-import org.springframework.context.support.StaticApplicationContext;
+import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.web.context.ServletContextAware;
 import org.springframework.web.context.WebApplicationContext;
 
@@ -192,7 +192,7 @@ public interface RuntimeSpringConfiguration extends ServletContextAware {
      *
      * @param applicationContext The ApplicationContext instance
      */
-    void registerBeansWithContext(StaticApplicationContext applicationContext);
+    void registerBeansWithContext(GenericApplicationContext applicationContext);
 
     /**
      * Adds an abstract bean definition to the bean factory and returns the BeanConfiguration object

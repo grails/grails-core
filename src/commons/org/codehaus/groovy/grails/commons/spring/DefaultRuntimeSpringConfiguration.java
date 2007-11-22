@@ -18,12 +18,11 @@ package org.codehaus.groovy.grails.commons.spring;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.PropertyValue;
-import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.StaticApplicationContext;
+import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.web.context.WebApplicationContext;
 
 import javax.servlet.ServletContext;
@@ -54,24 +53,36 @@ public class DefaultRuntimeSpringConfiguration implements
     }
 
     public DefaultRuntimeSpringConfiguration(ApplicationContext parent) {
+        this(parent, null);
+    }
+
+    public DefaultRuntimeSpringConfiguration(ApplicationContext parent, ClassLoader cl) {
         super();
         this.context = new GrailsWebApplicationContext(parent);
-        if(parent != null){
+        if(parent != null && cl == null){
             trySettingClassLoaderOnContextIfFoundInParent(parent);
+        }
+        else if(cl != null)  {
+            setClassLoaderOnContext(cl);
         }
     }
 
+
     private void trySettingClassLoaderOnContextIfFoundInParent(ApplicationContext parent) {
-        try{
+        if(parent.containsBean(GrailsRuntimeConfigurator.CLASS_LOADER_BEAN)) {
             Object classLoader = parent.getBean(GrailsRuntimeConfigurator.CLASS_LOADER_BEAN);
             if(classLoader instanceof ClassLoader){
-            //    this.context.setClassLoader((ClassLoader) classLoader);
+                ClassLoader cl = (ClassLoader) classLoader;
+                setClassLoaderOnContext(cl);
             }
-        }catch(NoSuchBeanDefinitionException nsbde){
-            //ignore, we tried our best
         }
     }
-   
+
+    private void setClassLoaderOnContext(ClassLoader cl) {
+        this.context.setClassLoader(cl);
+        this.context.getBeanFactory().setBeanClassLoader(cl);
+    }
+
 
     public BeanConfiguration addSingletonBean(String name, Class clazz) {
         BeanConfiguration bc = new DefaultBeanConfiguration(name,clazz);
@@ -176,7 +187,7 @@ public class DefaultRuntimeSpringConfiguration implements
         return beanNames;
     }
 
-    public void registerBeansWithContext(StaticApplicationContext applicationContext) {
+    public void registerBeansWithContext(GenericApplicationContext applicationContext) {
         for (Iterator i = beanConfigs.values().iterator(); i.hasNext();) {
             BeanConfiguration bc = (BeanConfiguration) i.next();
             if(LOG.isDebugEnabled()) {

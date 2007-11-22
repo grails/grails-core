@@ -9,10 +9,10 @@
       <maximumHeapSize value="128" />
       <properties />
       <executeOn event="beforeRun" target="jar" runConfigurationType="JUnit" runConfigurationName="All ORM Tests" />
-      <executeOn event="beforeRun" target="jar" runConfigurationType="JUnit" runConfigurationName="PluginMetaManagerTests" />
+      <executeOn event="beforeRun" target="jar" runConfigurationType="JUnit" runConfigurationName="DefaultGrailsDomainClassTest" />
       <executeOn event="beforeRun" target="jar" runConfigurationType="JUnit" runConfigurationName="Grails Test Case" />
       <executeOn event="beforeRun" target="jar" runConfigurationType="JUnit" runConfigurationName="GroovyPageResourceLoaderTests" />
-      <executeOn event="beforeRun" target="jar" runConfigurationType="JUnit" runConfigurationName="DefaultGrailsDomainClassTest" />
+      <executeOn event="beforeRun" target="jar" runConfigurationType="JUnit" runConfigurationName="PluginMetaManagerTests" />
     </buildFile>
   </component>
   <component name="BuildJarProjectSettings">
@@ -276,6 +276,7 @@
   <component name="VcsDirectoryMappings">
     <mapping directory="" vcs="svn" />
   </component>
+  <component name="WebServicesPlugin" addRequiredLibraries="true" />
   <component name="com.intellij.jsf.UserDefinedFacesConfigs">
     <option name="USER_DEFINED_CONFIGS">
       <value>
@@ -314,6 +315,7 @@
       <JAVADOC />
       <SOURCES>
         <root url="file:///Developer/hibernate-3.2/src" />
+        <root url="file:///Developer/cglib-src-2.1_3/src/proxy" />
       </SOURCES>
     </library>
     <library name="SiteMesh">
@@ -331,13 +333,14 @@
         <root url="jar://$PROJECT_DIR$/lib/spring-binding-2.0-m1.jar!/" />
         <root url="jar://$PROJECT_DIR$/lib/spring-webflow-2.0-m1.jar!/" />
         <root url="jar://$PROJECT_DIR$/lib/spring-test.jar!/" />
-        <root url="jar://$PROJECT_DIR$/lib/spring-2.1-m4.jar!/" />
+        <root url="jar://$PROJECT_DIR$/lib/spring-webmvc.jar!/" />
+        <root url="jar://$PROJECT_DIR$/lib/spring-2.5.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES>
-        <root url="file:///Developer/spring-framework-2.0/src" />
         <root url="file:///Developer/spring-webflow/trunk/spring-webflow/src/main/java" />
         <root url="file:///Developer/spring-webflow/trunk/spring-binding/src/main/java" />
+        <root url="file:///Developer/spring-framework-2.5/src" />
       </SOURCES>
     </library>
     <library name="dom4j">
