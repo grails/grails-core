@@ -50,8 +50,9 @@ public abstract class AbstractStaticPersistentMethod extends
 	protected static final String ORDER_DESC = "desc";
 	protected static final String ORDER_ASC = "asc";
 	protected static final String ARGUMENT_FETCH = "fetch";
-		
-	public AbstractStaticPersistentMethod(SessionFactory sessionFactory, ClassLoader classLoader, Pattern pattern) {
+    protected static final String ARGUMENT_IGNORE_CASE = "ignoreCase";
+
+    public AbstractStaticPersistentMethod(SessionFactory sessionFactory, ClassLoader classLoader, Pattern pattern) {
 		super();
 		setPattern(pattern);
 		this.sessionFactory = sessionFactory;
@@ -105,11 +106,16 @@ public abstract class AbstractStaticPersistentMethod extends
 		if(offset > -1)
 			c.setFirstResult(offset);
 		if(sort != null) {
-			if(ORDER_DESC.equals(order)) {
-				c.addOrder( Order.desc(sort) );
+            boolean ignoreCase = true;
+            Object caseArg = argMap.get(ARGUMENT_IGNORE_CASE);
+            if(caseArg instanceof Boolean) {
+                ignoreCase = ((Boolean)caseArg).booleanValue();
+            }
+            if(ORDER_DESC.equals(order)) {
+				c.addOrder( ignoreCase ? Order.desc(sort).ignoreCase() : Order.desc(sort));
 			}
 			else {
-				c.addOrder( Order.asc(sort) );
+				c.addOrder( ignoreCase ? Order.asc(sort).ignoreCase() : Order.asc(sort) );
 			}
 		}		
 	}
