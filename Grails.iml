@@ -75,7 +75,6 @@
         <SOURCES />
       </library>
     </orderEntry>
-    <orderEntry type="library" name="GROOVY" level="application" />
     <orderEntry type="module-library">
       <library>
         <CLASSES>
@@ -87,6 +86,19 @@
         <JAVADOC />
         <SOURCES>
           <root url="file://$MODULE_DIR$/../groovy/src/main" />
+        </SOURCES>
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="Groovy">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/gant-0.3.4-SNAPSHOT.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/groovy-all-1.1-rc-1.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES>
+          <root url="file://$MODULE_DIR$/../../groovy/src/main" />
+          <root url="file://$MODULE_DIR$/../../gant/src/main/java" />
         </SOURCES>
       </library>
     </orderEntry>
