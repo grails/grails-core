@@ -44,7 +44,7 @@ class UrlMappings {
     }
 
     void testLinkWithPaginationParams() {
-        def expected = '<a href="/authors?max=10&offset=20">link1</a>'
+        def expected = '<a href="/authors?max=10&amp;offset=20">link1</a>'
         assertOutputEquals(expected, '<g:link controller="author" action="list" params="[max:10,offset:20]">link1</g:link>')
     }
 }

@@ -43,7 +43,7 @@ public class DefaultUrlCreator implements UrlCreator {
     private final String controllerName;
     private final String actionName;
     public static final String ARGUMENT_ID = "id";
-    private static final String ENTITY_AMPERSAND = "&amp;";
+    private static final String ENTITY_AMPERSAND = "&";
 
     public DefaultUrlCreator(String controller, String action) {
         this.controllerName = controller;

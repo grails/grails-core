@@ -88,7 +88,7 @@ class ApplicationTagLib implements ApplicationContextAware {
 			attrs.params."_flowExecutionKey" = request['flowExecutionKey']
 		}
 
-        writer << createLink(attrs)
+        writer << createLink(attrs).encodeAsHTML()
         writer << '"'
         // process remaining attributes
         attrs.each { k,v ->

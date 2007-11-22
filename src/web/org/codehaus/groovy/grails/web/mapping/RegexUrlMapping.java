@@ -259,7 +259,7 @@ public class RegexUrlMapping extends AbstractUrlMapping implements UrlMapping {
                     addedParams = true;
                 }
                 else {
-                    uri.append(ENTITY_AMPERSAND);
+                    uri.append(AMPERSAND);
                 }
                 Object value = parameterValues.get(name);
                 if(value != null && value instanceof Collection) {
@@ -268,7 +268,7 @@ public class RegexUrlMapping extends AbstractUrlMapping implements UrlMapping {
                         Object o = j.next();
                         appendValueToURI(encoding, uri, name, o);
                         if(j.hasNext()) {
-                            uri.append(ENTITY_AMPERSAND);
+                            uri.append(AMPERSAND);
                         }
                     }
                 }
@@ -278,7 +278,7 @@ public class RegexUrlMapping extends AbstractUrlMapping implements UrlMapping {
                         Object o = multiValues[j];
                         appendValueToURI(encoding, uri, name, o);
                         if(j+1 < multiValues.length) {
-                            uri.append(ENTITY_AMPERSAND);
+                            uri.append(AMPERSAND);
                         }
                     }
                 }
