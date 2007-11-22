@@ -109,14 +109,18 @@ target( packageApp : "Implementation of package target") {
 //        copyDependencies()
 //    }
 	Ant.mkdir(dir:"${basedir}/web-app/WEB-INF/grails-app/i18n")
-	
+
+	Ant.mkdir(dir:"${basedir}/web-app/WEB-INF/grails-app/views")
 	if(!GrailsUtil.isDevelopmentEnv() && shouldPackageTemplates) {
-		Ant.mkdir(dir:"${basedir}/web-app/WEB-INF/grails-app/views")		
 	    Ant.copy(todir:"${basedir}/web-app/WEB-INF/grails-app/views") {
 			fileset(dir:"${basedir}/grails-app/views", includes:"**")
 		} 
 		packageTemplates()   						
-	}	   
+	}
+    Ant.copy(todir:"${basedir}/web-app/WEB-INF/grails-app/views") {
+        fileset(dir:"${basedir}/grails-app/views", includes:"**/*.jsp")
+    }
+
 	if(config.grails.enable.native2ascii == true) {
 		profile("converting native message bundles to ascii") {
 			Ant.native2ascii(src:"${basedir}/grails-app/i18n",
