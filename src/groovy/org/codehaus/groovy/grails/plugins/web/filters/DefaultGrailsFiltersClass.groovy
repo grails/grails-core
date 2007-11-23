@@ -66,6 +66,7 @@ class Loader {
                     closure.call()
                 }
             }
+            fc.initialised = true
         }		
 	}
 }

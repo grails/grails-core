@@ -29,9 +29,12 @@ class FilterConfig {
     Closure before
     Closure after
     Closure afterView
+    boolean initialised = false
 
     void propertyMissing(String name, value) {
-       LOG.warn "Setting $name is invalid for filter config $name"
+        if(!initialised) {
+            LOG.warn "Setting $name is invalid for filter config $name"
+        }
     }
     public String toString() {"FilterConfig[$name, scope=$scope]"}
 }
