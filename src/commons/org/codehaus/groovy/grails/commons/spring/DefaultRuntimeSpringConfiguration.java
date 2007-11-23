@@ -264,7 +264,7 @@ public class DefaultRuntimeSpringConfiguration implements
     private void removeBeanDefinition(GenericApplicationContext applicationContext, String beanName) {
         MetaClass mc = GroovySystem.getMetaClassRegistry().getMetaClass(applicationContext.getClass());
         if(mc.respondsTo(applicationContext, "removeBeanDefinition").size()>0) {
-            applicationContext.removeBeanDefinition(beanName);
+            mc.invokeMethod(applicationContext,"removeBeanDefinition",new Object[]{beanName});
         }
     }
 
