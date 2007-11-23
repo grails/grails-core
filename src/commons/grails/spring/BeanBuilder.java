@@ -31,10 +31,8 @@ import org.springframework.beans.factory.support.ManagedList;
 import org.springframework.beans.factory.support.ManagedMap;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.GenericApplicationContext;
-import org.springframework.context.support.StaticApplicationContext;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
-import org.springframework.web.context.WebApplicationContext;
 
 import java.io.IOException;
 import java.util.*;
@@ -105,10 +103,14 @@ public class BeanBuilder extends GroovyObjectSupport {
 		super();
         this.classLoader = classLoader == null ? getClass().getClassLoader() : classLoader;
         this.parentCtx = parent;
-        this.springConfig = new DefaultRuntimeSpringConfiguration(parent, classLoader);		
+        this.springConfig = createRuntimeSpringConfiguration(parent, classLoader);
     }
 
-	public Log getLog() {
+    protected RuntimeSpringConfiguration createRuntimeSpringConfiguration(ApplicationContext parent, ClassLoader classLoader) {
+        return new DefaultRuntimeSpringConfiguration(parent, classLoader);
+    }
+
+    public Log getLog() {
 		return LOG;
 	}
 	
@@ -380,7 +382,7 @@ public class BeanBuilder extends GroovyObjectSupport {
 		else if (args.length > 1 && args[args.length -1] instanceof Closure) {
 			return invokeBeanDefiningMethod(name, args);
 		}
-        WebApplicationContext ctx = springConfig.getUnrefreshedApplicationContext();
+        ApplicationContext ctx = springConfig.getUnrefreshedApplicationContext();
         MetaClass mc = DefaultGroovyMethods.getMetaClass(ctx);
         if(!mc.respondsTo(ctx, name, args).isEmpty()){
             return mc.invokeMethod(ctx,name, args);

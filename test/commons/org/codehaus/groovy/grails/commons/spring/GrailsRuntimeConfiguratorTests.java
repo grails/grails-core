@@ -155,7 +155,7 @@ public class GrailsRuntimeConfiguratorTests extends TestCase {
         parent.registerMockBean(PluginMetaManager.BEAN_ID, new DefaultPluginMetaManager(new Resource[0]));
 
         GrailsRuntimeConfigurator conf = new GrailsRuntimeConfigurator(app,parent);
-        GrailsWebApplicationContext ctx = (GrailsWebApplicationContext)conf.configure(new MockServletContext());
+        GrailsApplicationContext ctx = (GrailsApplicationContext)conf.configure(new MockServletContext());
         assertNotNull(ctx);
 
         ctx.registerSingleton("Test", dc);
@@ -182,7 +182,7 @@ public class GrailsRuntimeConfiguratorTests extends TestCase {
         parent.registerMockBean(PluginMetaManager.BEAN_ID, new DefaultPluginMetaManager(new Resource[0]));
 
         GrailsRuntimeConfigurator conf = new GrailsRuntimeConfigurator(app,parent);
-        GrailsWebApplicationContext ctx = (GrailsWebApplicationContext)conf.configure(new MockServletContext());
+        GrailsApplicationContext ctx = (GrailsApplicationContext)conf.configure(new MockServletContext());
         assertNotNull(ctx);
 
         Class tag = gcl.parseClass("class TestTagLib { def myTag = { attrs -> } }");
@@ -204,7 +204,7 @@ public class GrailsRuntimeConfiguratorTests extends TestCase {
         parent.registerMockBean(PluginMetaManager.BEAN_ID, new DefaultPluginMetaManager(new Resource[0]));
 
         GrailsRuntimeConfigurator conf = new GrailsRuntimeConfigurator(app,parent);
-        GrailsWebApplicationContext ctx = (GrailsWebApplicationContext)conf.configure(new MockServletContext());
+        GrailsApplicationContext ctx = (GrailsApplicationContext)conf.configure(new MockServletContext());
         assertNotNull(ctx);
 
         Class service = gcl.parseClass("class TestService { boolean transactional = false;def serviceMethod() { 'hello' } }");
@@ -271,7 +271,7 @@ public class GrailsRuntimeConfiguratorTests extends TestCase {
 
         GrailsRuntimeConfigurator conf = new GrailsRuntimeConfigurator(app,parent);
         conf.setLoadExternalPersistenceConfig(false);
-        GrailsWebApplicationContext ctx = (GrailsWebApplicationContext)conf.configure(new MockServletContext());
+        GrailsApplicationContext ctx = (GrailsApplicationContext)conf.configure(new MockServletContext());
         assertNotNull(ctx);
 
     }
@@ -289,7 +289,7 @@ public class GrailsRuntimeConfiguratorTests extends TestCase {
 
         GrailsRuntimeConfigurator conf = new GrailsRuntimeConfigurator(app,parent);
         conf.setLoadExternalPersistenceConfig(false);
-        GrailsWebApplicationContext ctx = (GrailsWebApplicationContext)conf.configure(new MockServletContext(), false);
+        GrailsApplicationContext ctx = (GrailsApplicationContext)conf.configure(new MockServletContext(), false);
         assertNotNull(ctx);
 
         GroovyObject anotherService = (GroovyObject)ctx.getBean("anotherService");
@@ -309,7 +309,7 @@ public class GrailsRuntimeConfiguratorTests extends TestCase {
 
         GrailsRuntimeConfigurator conf = new GrailsRuntimeConfigurator(app,parent);
         conf.setLoadExternalPersistenceConfig(false);
-        GrailsWebApplicationContext ctx = (GrailsWebApplicationContext)conf.configure(new MockServletContext());
+        GrailsApplicationContext ctx = (GrailsApplicationContext)conf.configure(new MockServletContext());
         assertNotNull(ctx);
 
         assertEquals( s1, ctx.getBean("testService").getClass());
@@ -330,7 +330,7 @@ public class GrailsRuntimeConfiguratorTests extends TestCase {
 
         GrailsRuntimeConfigurator conf = new GrailsRuntimeConfigurator(app,parent);
         conf.setLoadExternalPersistenceConfig(false);
-        GrailsWebApplicationContext ctx = (GrailsWebApplicationContext)conf.configure(new MockServletContext());
+        GrailsApplicationContext ctx = (GrailsApplicationContext)conf.configure(new MockServletContext());
         assertNotNull(ctx);
         
         GrailsMockDependantObject gdo = (GrailsMockDependantObject)ctx.getBean("grailsDependent");

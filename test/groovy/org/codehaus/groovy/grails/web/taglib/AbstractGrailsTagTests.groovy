@@ -23,6 +23,7 @@ import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.servlet.DispatcherServlet
 import org.springframework.web.servlet.i18n.AcceptHeaderLocaleResolver;
 import org.codehaus.groovy.grails.commons.ApplicationHolder
+import org.codehaus.groovy.grails.commons.spring.WebRuntimeSpringConfiguration
 
 abstract class AbstractGrailsTagTests extends GroovyTestCase {
 
@@ -126,7 +127,7 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
 
 		dependentPlugins.each{ mockManager.registerMockPlugin(it); it.manager = mockManager }
 		mockManager.registerProvidedArtefacts(grailsApplication)
-		def springConfig = new DefaultRuntimeSpringConfiguration(ctx)
+		def springConfig = new WebRuntimeSpringConfiguration(ctx)
         webRequest = GrailsWebUtil.bindMockWebRequest()
 
         servletContext =  webRequest.servletContext

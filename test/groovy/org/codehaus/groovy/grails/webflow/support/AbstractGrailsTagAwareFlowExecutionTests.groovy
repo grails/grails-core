@@ -27,6 +27,7 @@ import org.springframework.core.io.Resource
 import org.springframework.web.context.WebApplicationContext
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.webflow.test.execution.AbstractFlowExecutionTests
+import org.codehaus.groovy.grails.commons.spring.WebRuntimeSpringConfiguration
 
 abstract class AbstractGrailsTagAwareFlowExecutionTests extends AbstractFlowExecutionTests {
     
@@ -92,7 +93,7 @@ abstract class AbstractGrailsTagAwareFlowExecutionTests extends AbstractFlowExec
 
 		dependentPlugins.each{ mockManager.registerMockPlugin(it); it.manager = mockManager }
 		mockManager.registerProvidedArtefacts(grailsApplication)
-		def springConfig = new DefaultRuntimeSpringConfiguration(ctx)
+		def springConfig = new WebRuntimeSpringConfiguration(ctx)
         webRequest = GrailsWebUtil.bindMockWebRequest()
 
         servletContext =  webRequest.servletContext

@@ -23,9 +23,8 @@ import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.GenericApplicationContext;
-import org.springframework.web.context.WebApplicationContext;
+import org.springframework.util.Assert;
 
-import javax.servlet.ServletContext;
 import java.util.*;
 /**
  * A programmable runtime Spring configuration that allows a spring ApplicationContext
@@ -42,14 +41,27 @@ public class DefaultRuntimeSpringConfiguration implements
         RuntimeSpringConfiguration {
 
     private static final Log LOG = LogFactory.getLog(DefaultRuntimeSpringConfiguration.class);
-    private GrailsWebApplicationContext context;
+    protected GenericApplicationContext context;
     private Map beanConfigs = new HashMap();
     private Map beanDefinitions = new HashMap();
     private List beanNames = new ArrayList();
+    protected ApplicationContext parent;
+    protected ClassLoader classLoader;
 
     public DefaultRuntimeSpringConfiguration() {
         super();
-        this.context = new GrailsWebApplicationContext();
+    }
+
+    /**
+     * Creates the ApplicationContext instance. Subclasses can override to customise the used ApplicationContext
+     *
+     * @param parent The parent ApplicationContext instance. Can be null.
+     *
+     * @return An instance of GenericApplicationContext
+     */
+    protected GenericApplicationContext createApplicationContext(ApplicationContext parent) {
+        if(parent != null) return new GrailsApplicationContext(parent);
+        return new GrailsWebApplicationContext();
     }
 
     public DefaultRuntimeSpringConfiguration(ApplicationContext parent) {
@@ -58,13 +70,8 @@ public class DefaultRuntimeSpringConfiguration implements
 
     public DefaultRuntimeSpringConfiguration(ApplicationContext parent, ClassLoader cl) {
         super();
-        this.context = new GrailsWebApplicationContext(parent);
-        if(parent != null && cl == null){
-            trySettingClassLoaderOnContextIfFoundInParent(parent);
-        }
-        else if(cl != null)  {
-            setClassLoaderOnContext(cl);
-        }
+        this.parent = parent;
+        this.classLoader = cl;
     }
 
 
@@ -83,6 +90,23 @@ public class DefaultRuntimeSpringConfiguration implements
         this.context.getBeanFactory().setBeanClassLoader(cl);
     }
 
+    /**
+     * Initialises the ApplicationContext instance
+     */
+    protected void initialiseApplicationContext() {
+        if(this.context == null) {
+            this.context = createApplicationContext(this.parent);
+            if(parent != null && classLoader == null){
+                trySettingClassLoaderOnContextIfFoundInParent(parent);
+            }
+            else if(classLoader != null)  {
+                setClassLoaderOnContext(classLoader);
+            }
+
+            Assert.notNull(context);
+        }
+    }
+
 
     public BeanConfiguration addSingletonBean(String name, Class clazz) {
         BeanConfiguration bc = new DefaultBeanConfiguration(name,clazz);
@@ -96,13 +120,15 @@ public class DefaultRuntimeSpringConfiguration implements
         return bc;
     }
 
-    public WebApplicationContext getApplicationContext() {
+    public ApplicationContext getApplicationContext() {
+        initialiseApplicationContext();
         registerBeansWithContext(context);
         context.refresh();
         return context;
     }
 
-    public WebApplicationContext getUnrefreshedApplicationContext() {
+    public ApplicationContext getUnrefreshedApplicationContext() {
+        initialiseApplicationContext();
         return context;
     }
     
@@ -137,9 +163,6 @@ public class DefaultRuntimeSpringConfiguration implements
         return new DefaultBeanConfiguration(clazz, constructorArguments);
     }
 
-    public void setServletContext(ServletContext context) {
-        this.context.setServletContext(context);
-    }
 
     public BeanConfiguration createPrototypeBean(String name) {
         return new DefaultBeanConfiguration(name,true);
@@ -178,6 +201,7 @@ public class DefaultRuntimeSpringConfiguration implements
     }
 
     public void registerPostProcessor(BeanFactoryPostProcessor processor) {
+        initialiseApplicationContext();
         this.context.addBeanFactoryPostProcessor(processor);
     }
 

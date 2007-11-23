@@ -52,15 +52,12 @@ import javax.servlet.ServletContext;
  * @since 0.3
  *
  */
-public class GrailsWebApplicationContext extends StaticApplicationContext
-		implements ConfigurableWebApplicationContext, GroovyObject, ThemeSource {
+public class GrailsWebApplicationContext extends GrailsApplicationContext
+        implements ConfigurableWebApplicationContext, GroovyObject, ThemeSource {
 
 	private ServletContext servletContext;
 	private String namespace;
-	private ThemeSource themeSource;
-	private ServletConfig servletConfig;
-	private MetaClass metaClass;
-	private BeanWrapper ctxBean = new BeanWrapperImpl(this);
+    private ServletConfig servletConfig;
 
     public GrailsWebApplicationContext() throws BeansException {
 		super();
@@ -147,22 +144,11 @@ public class GrailsWebApplicationContext extends StaticApplicationContext
 		return new ServletContextResourcePatternResolver(this);
 	}
 
-	/**
-	 * Initialize the theme capability.
-	 */
-	protected void onRefresh() {
-		this.themeSource = UiApplicationContextUtils.initThemeSource(this);
-	}
-
     public void refresh() throws BeansException, IllegalStateException {
         super.refresh();
     }
 
-    public Theme getTheme(String themeName) {
-		return this.themeSource.getTheme(themeName);
-	}
-
-	public void setServletConfig(ServletConfig servletConfig) {
+    public void setServletConfig(ServletConfig servletConfig) {
 		this.servletConfig = servletConfig;
 	}
 
@@ -170,29 +156,7 @@ public class GrailsWebApplicationContext extends StaticApplicationContext
         return this.servletConfig;
     }
 
-    public MetaClass getMetaClass() {
-		return this.metaClass;
-	}
-
-	public Object getProperty(String property) {
-		if(containsBean(property)) {
-			return getBean(property);
-		}
-		else if(ctxBean.isReadableProperty(property)) {
-			return ctxBean.getPropertyValue(property);
-		}
-		return null;
-	}
-
-	public Object invokeMethod(String name, Object args) {
-		return metaClass.invokeMethod(this, name, args);
-	}
-
-	public void setMetaClass(MetaClass metaClass) {
-		this.metaClass = metaClass;
-	}
-
-	public void setProperty(String property, Object newValue) {
+    public void setProperty(String property, Object newValue) {
 		if(newValue instanceof BeanDefinition) {
             if(containsBean(property)) {
                 removeBeanDefinition(property);

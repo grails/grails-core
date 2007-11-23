@@ -27,8 +27,7 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.grails.commons.ConfigurationHolder;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.spring.DefaultRuntimeSpringConfiguration;
-import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration;
+import org.codehaus.groovy.grails.commons.spring.WebRuntimeSpringConfiguration;
 import org.codehaus.groovy.grails.plugins.exceptions.PluginException;
 import org.codehaus.groovy.grails.support.ParentApplicationContextAware;
 import org.springframework.beans.BeansException;
@@ -596,7 +595,8 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager impl
     private void reloadPlugin(GrailsPlugin plugin) {
         plugin.doArtefactConfiguration();
 
-        RuntimeSpringConfiguration springConfig = new DefaultRuntimeSpringConfiguration(this.parentCtx);
+        WebRuntimeSpringConfiguration springConfig = new WebRuntimeSpringConfiguration(this.parentCtx);
+        springConfig.setServletContext(getServletContext());
 
         this.doRuntimeConfiguration(plugin.getName(), springConfig);
         springConfig.registerBeansWithContext((StaticApplicationContext)this.applicationContext);

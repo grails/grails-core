@@ -44,7 +44,7 @@ class TestController {
 		dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.orm.hibernate.HibernateGrailsPlugin")
 		
 		def dependentPlugins = dependantPluginClasses.collect { new DefaultGrailsPlugin(it, ga)}
-		def springConfig = new DefaultRuntimeSpringConfiguration(ctx)
+		def springConfig = new WebRuntimeSpringConfiguration(ctx)
 		springConfig.servletContext = createMockServletContext()
 		
 		dependentPlugins.each{

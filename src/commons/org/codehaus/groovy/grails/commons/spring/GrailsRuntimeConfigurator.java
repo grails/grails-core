@@ -110,7 +110,7 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
    * @param grailsServiceClass The service class to register
    * @param context The app context to register with
    */
-  public void registerService(GrailsServiceClass grailsServiceClass, GrailsWebApplicationContext context) {
+  public void registerService(GrailsServiceClass grailsServiceClass, GrailsApplicationContext context) {
       RuntimeSpringConfiguration springConfig = new DefaultRuntimeSpringConfiguration();
 
       BeanConfiguration serviceClassBean = springConfig
@@ -165,7 +165,7 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
    * @param tagLibClass That tag library class
    * @param context The application context
    */
-  public static void registerTagLibrary(GrailsTagLibClass tagLibClass, GrailsWebApplicationContext context) {
+  public static void registerTagLibrary(GrailsTagLibClass tagLibClass, GrailsApplicationContext context) {
       RuntimeSpringConfiguration springConfig = new DefaultRuntimeSpringConfiguration();
       BeanConfiguration tagLibClassBean = springConfig.createSingletonBean(MethodInvokingFactoryBean.class);
       tagLibClassBean
@@ -209,7 +209,7 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
    * @param domainClass The domain class to update
    * @param context The context
    */
-  public void updateDomainClass(GrailsDomainClass domainClass, GrailsWebApplicationContext context) {
+  public void updateDomainClass(GrailsDomainClass domainClass, GrailsApplicationContext context) {
       HotSwappableTargetSource ts = (HotSwappableTargetSource)context.getBean(domainClass.getFullName() + "TargetSource");
       ts.swap(domainClass);
   }
@@ -235,7 +235,7 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
   public WebApplicationContext configure(ServletContext context, boolean loadExternalBeans) {
       Assert.notNull(application);
 
-      RuntimeSpringConfiguration springConfig = new DefaultRuntimeSpringConfiguration(parent, application.getClassLoader());
+      WebRuntimeSpringConfiguration springConfig = new WebRuntimeSpringConfiguration(parent, application.getClassLoader());
       if(context != null) {
           springConfig.setServletContext(context);
           this.pluginManager.setServletContext(context);
@@ -260,7 +260,7 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
           doPostResourceConfiguration(springConfig);
 
       // TODO GRAILS-720 this causes plugin beans to be re-created - should get getApplicationContext always call refresh?
-      WebApplicationContext ctx = springConfig.getApplicationContext();
+      WebApplicationContext ctx = (WebApplicationContext)springConfig.getApplicationContext();
 
       this.pluginManager.setApplicationContext(ctx);
 
@@ -276,7 +276,7 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
       return ctx;
   }
 
-  public void reconfigure(GrailsWebApplicationContext current, ServletContext servletContext, boolean loadExternalBeans) {
+  public void reconfigure(GrailsApplicationContext current, ServletContext servletContext, boolean loadExternalBeans) {
       RuntimeSpringConfiguration springConfig = parent != null ? new DefaultRuntimeSpringConfiguration(parent) : new DefaultRuntimeSpringConfiguration();
       if(!this.pluginManager.isInitialised())
           throw new IllegalStateException("Cannot re-configure Grails application when it hasn't even been configured yet!");
@@ -308,7 +308,7 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
   }
 
   public WebApplicationContext configureDomainOnly() {
-      RuntimeSpringConfiguration springConfig = parent != null ? new DefaultRuntimeSpringConfiguration(parent) : new DefaultRuntimeSpringConfiguration();
+      WebRuntimeSpringConfiguration springConfig =new WebRuntimeSpringConfiguration(parent, application.getClassLoader());
       springConfig.setServletContext(new MockServletContext());
 
       if(!this.pluginManager.isInitialised())
@@ -318,7 +318,7 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
       if(pluginManager.hasGrailsPlugin("hibernate"))
           pluginManager.doRuntimeConfiguration("hibernate", springConfig);
 
-      WebApplicationContext ctx = springConfig.getApplicationContext();
+      WebApplicationContext ctx = (WebApplicationContext)springConfig.getApplicationContext();
 
       performPostProcessing(ctx);
       application.refreshConstraints();

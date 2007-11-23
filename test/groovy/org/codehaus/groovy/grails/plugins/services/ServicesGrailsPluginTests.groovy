@@ -42,7 +42,7 @@ class ApplicationDataSource {
 		def hibernatePluginClass = gcl.loadClass("org.codehaus.groovy.grails.plugins.orm.hibernate.HibernateGrailsPlugin")
 		def hibernatePlugin = new DefaultGrailsPlugin(hibernatePluginClass, ga)
 		
-		def springConfig = new DefaultRuntimeSpringConfiguration(ctx)
+		def springConfig = new WebRuntimeSpringConfiguration(ctx)
 		springConfig.servletContext = createMockServletContext()
 		
 		corePlugin.doWithRuntimeConfiguration(springConfig)

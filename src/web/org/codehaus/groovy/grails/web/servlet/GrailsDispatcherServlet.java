@@ -21,7 +21,7 @@ import javax.servlet.ServletException;
 
 import org.codehaus.groovy.grails.commons.*;
 import org.codehaus.groovy.grails.commons.GrailsControllerClass;
-import org.codehaus.groovy.grails.commons.spring.GrailsWebApplicationContext;
+import org.codehaus.groovy.grails.commons.spring.GrailsApplicationContext;
 import org.codehaus.groovy.grails.web.servlet.mvc.SimpleGrailsController;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.springframework.beans.BeansException;
@@ -107,7 +107,7 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
         this.application = (GrailsApplication) parent.getBean(GrailsApplication.APPLICATION_ID, GrailsApplication.class);
 
 
-        if(wac instanceof GrailsWebApplicationContext) {
+        if(wac instanceof GrailsApplicationContext) {
     		webContext = wac;
     	}
     	else {

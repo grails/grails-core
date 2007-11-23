@@ -14,7 +14,7 @@ class CoreGrailsPluginTests extends AbstractGrailsMockTests {
 		
 		def plugin = new DefaultGrailsPlugin(pluginClass, ga)
 		
-		def springConfig = new DefaultRuntimeSpringConfiguration(ctx)
+		def springConfig = new WebRuntimeSpringConfiguration(ctx)
 		springConfig.servletContext = createMockServletContext()
 		
 		plugin.doWithRuntimeConfiguration(springConfig)

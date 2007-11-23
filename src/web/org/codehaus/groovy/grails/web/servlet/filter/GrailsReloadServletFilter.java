@@ -21,7 +21,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator;
-import org.codehaus.groovy.grails.commons.spring.GrailsWebApplicationContext;
+import org.codehaus.groovy.grails.commons.spring.GrailsApplicationContext;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.codehaus.groovy.grails.plugins.PluginManagerHolder;
 import org.codehaus.groovy.grails.web.errors.GrailsWrappedRuntimeException;
@@ -57,7 +57,7 @@ public class GrailsReloadServletFilter extends OncePerRequestFilter {
     private static final int BUFFER_SIZE = 8024;
 
     ResourceCopier copyScript;
-    GrailsWebApplicationContext context;
+    GrailsApplicationContext context;
     GrailsApplication application;
 
     private GrailsRuntimeConfigurator config;
@@ -74,7 +74,7 @@ public class GrailsReloadServletFilter extends OncePerRequestFilter {
 
 
       GrailsApplicationAttributes attrs = new DefaultGrailsApplicationAttributes(getServletContext());
-      context = (GrailsWebApplicationContext)attrs.getApplicationContext();
+      context = (GrailsApplicationContext)attrs.getApplicationContext();
 
       if(LOG.isDebugEnabled()) {
 	      LOG.debug("Executing Grails reload filter...");

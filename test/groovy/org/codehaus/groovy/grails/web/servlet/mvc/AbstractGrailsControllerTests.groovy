@@ -76,7 +76,7 @@ abstract class AbstractGrailsControllerTests extends GroovyTestCase {
 
 		
 
-		def springConfig = new DefaultRuntimeSpringConfiguration(ctx)
+		def springConfig = new WebRuntimeSpringConfiguration(ctx)
         webRequest = GrailsWebUtil.bindMockWebRequest()
         request = webRequest.currentRequest
         request.characterEncoding = "utf-8"

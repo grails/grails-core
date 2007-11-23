@@ -65,7 +65,8 @@ public final class GrailsDomainBinder {
     private static final String CASCADE_ALL = "all";
     private static final String CASCADE_SAVE_UPDATE = "save-update";
     private static final String CASCADE_MERGE = "merge";
-
+    private static final String CASCADE_NONE = "none";
+    
     private static final Map MAPPING_CACHE = new HashMap();
 
 
@@ -204,7 +205,7 @@ public final class GrailsDomainBinder {
 
         SimpleValue value = new SimpleValue( map.getCollectionTable() );
 
-        bindSimpleValue(STRING_TYPE, value, false, columnName + UNDERSCORE + IndexedCollection.DEFAULT_INDEX_COLUMN_NAME,mappings);
+        bindSimpleValue(STRING_TYPE, value, true, columnName + UNDERSCORE + IndexedCollection.DEFAULT_INDEX_COLUMN_NAME,mappings);
 
         if ( !value.isTypeSpecified() ) {
             throw new MappingException( "map index element must specify a type: "
@@ -245,7 +246,7 @@ public final class GrailsDomainBinder {
         String columnName = namingStrategy.propertyToColumnName(property.getName()+ UNDERSCORE +IndexedCollection.DEFAULT_INDEX_COLUMN_NAME);
 
         SimpleValue iv = new SimpleValue( list.getCollectionTable() );
-        bindSimpleValue("integer", iv, false,columnName, mappings);
+        bindSimpleValue("integer", iv, true,columnName, mappings);
         iv.setTypeName( "integer" );
         list.setIndex( iv );
         String entityName;
@@ -266,9 +267,8 @@ public final class GrailsDomainBinder {
         ib.setCollectionRole( list.getRole() );
         ib.setEntityName( list.getOwner().getEntityName() );
         ib.setValue( list.getIndex() );
-         ( (Column) ( (SimpleValue) list.getIndex() ).getColumnIterator().next()
-         ).setNullable(true);
         referenced.addProperty( ib );
+        list.setInverse(false);
 
     }
 

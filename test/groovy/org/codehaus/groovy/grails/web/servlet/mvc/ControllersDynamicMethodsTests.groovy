@@ -52,7 +52,7 @@ class ControllersDynamicMethodsTests extends AbstractGrailsMockTests {
 
 		
 		def dependentPlugins = dependantPluginClasses.collect { new DefaultGrailsPlugin(it, ga)}
-		def springConfig = new DefaultRuntimeSpringConfiguration(ctx)
+		def springConfig = new WebRuntimeSpringConfiguration(ctx)
 		def servletContext =  createMockServletContext()
 		springConfig.servletContext = servletContext		
 		

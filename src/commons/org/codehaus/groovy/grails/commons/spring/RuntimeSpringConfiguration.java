@@ -18,11 +18,9 @@ package org.codehaus.groovy.grails.commons.spring;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.GenericApplicationContext;
-import org.springframework.web.context.ServletContextAware;
-import org.springframework.web.context.WebApplicationContext;
 
-import javax.servlet.ServletContext;
 import java.util.Collection;
 import java.util.List;
 
@@ -37,7 +35,7 @@ import java.util.List;
  * @since 0.3
  *
  */
-public interface RuntimeSpringConfiguration extends ServletContextAware {
+public interface RuntimeSpringConfiguration {
 
     /**
      * Adds a singleton bean definition
@@ -48,7 +46,7 @@ public interface RuntimeSpringConfiguration extends ServletContextAware {
      */
     public BeanConfiguration addSingletonBean(String name, Class clazz);
     
-    public WebApplicationContext getUnrefreshedApplicationContext();
+    public ApplicationContext getUnrefreshedApplicationContext();
     /**
      * Adds a prototype bean definition
      *
@@ -63,7 +61,7 @@ public interface RuntimeSpringConfiguration extends ServletContextAware {
      *
      * @return The ApplicationContext instance
      */
-    WebApplicationContext getApplicationContext();
+    ApplicationContext getApplicationContext();
 
     /**
      * Adds an empty singleton bean configuration
@@ -112,12 +110,6 @@ public interface RuntimeSpringConfiguration extends ServletContextAware {
      */
     public BeanConfiguration createSingletonBean(Class clazz, Collection constructorArguments);
 
-    /**
-     * Sets the servlet context
-     *
-     * @param context The servlet Context
-     */
-    public void setServletContext(ServletContext context);
 
     /**
      * Creates a new prototype bean configuration. Differs from addPrototypeBean in that
