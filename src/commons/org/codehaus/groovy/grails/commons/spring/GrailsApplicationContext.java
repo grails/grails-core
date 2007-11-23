@@ -14,21 +14,26 @@
  */
 package org.codehaus.groovy.grails.commons.spring;
 
-import org.springframework.context.support.StaticApplicationContext;
+import groovy.lang.GroovyObject;
+import groovy.lang.MetaClass;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
-import org.springframework.ui.context.support.UiApplicationContextUtils;
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.context.support.StaticApplicationContext;
 import org.springframework.ui.context.Theme;
 import org.springframework.ui.context.ThemeSource;
-import groovy.lang.MetaClass;
+import org.springframework.ui.context.support.UiApplicationContextUtils;
 
 /**
+ * An ApplicationContext that extends StaticApplicationContext and implements GroovyObject such that beans can be retrieved with the dot
+ * de-reference syntax instead of using getBean('name')
+ *
  * @author Graeme Rocher
  * @since 1.0
  *        <p/>
  *        Created: Nov 23, 2007
  */
-public class GrailsApplicationContext extends StaticApplicationContext {
+public class GrailsApplicationContext extends StaticApplicationContext implements GroovyObject {
     protected MetaClass metaClass;
     private BeanWrapper ctxBean = new BeanWrapperImpl(this);
     private ThemeSource themeSource;
@@ -72,5 +77,18 @@ public class GrailsApplicationContext extends StaticApplicationContext {
 
     public Theme getTheme(String themeName) {
 		return this.themeSource.getTheme(themeName);
+	}
+
+    public void setProperty(String property, Object newValue) {
+		if(newValue instanceof BeanDefinition) {
+            if(containsBean(property)) {
+                removeBeanDefinition(property);
+            }
+
+            registerBeanDefinition(property, (BeanDefinition)newValue);
+		}
+		else {
+			metaClass.setProperty(this, property, newValue);
+		}
 	}
 }

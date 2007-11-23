@@ -156,16 +156,4 @@ public class GrailsWebApplicationContext extends GrailsApplicationContext
         return this.servletConfig;
     }
 
-    public void setProperty(String property, Object newValue) {
-		if(newValue instanceof BeanDefinition) {
-            if(containsBean(property)) {
-                removeBeanDefinition(property);
-            }
-            
-            registerBeanDefinition(property, (BeanDefinition)newValue);
-		}
-		else {
-			metaClass.setProperty(this, property, newValue);
-		}
-	}
 }
