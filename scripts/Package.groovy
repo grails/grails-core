@@ -279,6 +279,7 @@ target(loadPlugins:"Loads Grails' plugins") {
 		profile("compiling plugins") {
     		unit.compile ()								
 		}
+		def application
 		profile("construct plugin manager") {
 			def pluginClasses = []
 			for(plugin in pluginFiles) {
@@ -288,11 +289,14 @@ target(loadPlugins:"Loads Grails' plugins") {
 			if(pluginClasses) {
 				event("StatusUpdate", ["Loading with installed plug-ins: ${pluginClasses.name}"])				
 			}                    
-	        pluginManager = new DefaultGrailsPluginManager(pluginClasses as Class[], new DefaultGrailsApplication(new Class[0], new GroovyClassLoader(classLoader)))
-	        PluginManagerHolder.setPluginManager(pluginManager)			
-		}
+	        application = new DefaultGrailsApplication(new Class[0], new GroovyClassLoader(classLoader))
+	        application.initialise()
+            pluginManager = new DefaultGrailsPluginManager(pluginClasses as Class[], application)
+            PluginManagerHolder.setPluginManager(pluginManager)            
+        }
         profile("loading plugins") {
             pluginManager.loadPlugins()
+            pluginManager.doArtefactConfiguration()
         } 
     } catch (Exception e) {
         event("StatusFinal", [ "Error loading plugin manager: " + e.message ])
