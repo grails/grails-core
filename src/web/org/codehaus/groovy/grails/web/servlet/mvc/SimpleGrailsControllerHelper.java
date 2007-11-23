@@ -381,30 +381,6 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
             Closure action;
             try {
                 action = (Closure)controller.getProperty(actionName);
-                // Step 7: process the action
-                Object returnValue = handleAction( controller,action,request,response,params );
-
-
-                // Step 8: determine return value type and handle accordingly
-                initChainModel(controller);
-                if(response.isCommitted()) {
-                    if(LOG.isDebugEnabled()) {
-                        LOG.debug("Response has been redirected, returning null model and view");
-                    }
-                    return null;
-                }
-                else {
-
-                    if(LOG.isDebugEnabled()) {
-                        LOG.debug("Action ["+actionName+"] executed with result ["+returnValue+"] and view name ["+viewName+"]");
-                    }
-                    ModelAndView mv = handleActionResponse(controller,returnValue,actionName,viewName);
-                    if(LOG.isDebugEnabled()) {
-                        LOG.debug("Action ["+actionName+"] handled, created Spring model and view ["+mv+"]");
-                    }
-                    return mv;
-                }
-
             }
             catch(MissingPropertyException mpe) {
                 if(controllerClass.isScaffolding())
@@ -418,6 +394,30 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
                     }
                 }
             }
+            
+            // Step 7: process the action
+            Object returnValue = handleAction( controller,action,request,response,params );
+
+            // Step 8: determine return value type and handle accordingly
+            initChainModel(controller);
+            if(response.isCommitted()) {
+                if(LOG.isDebugEnabled()) {
+                    LOG.debug("Response has been redirected, returning null model and view");
+                }
+                return null;
+            }
+            else {
+
+                if(LOG.isDebugEnabled()) {
+                    LOG.debug("Action ["+actionName+"] executed with result ["+returnValue+"] and view name ["+viewName+"]");
+                }
+                ModelAndView mv = handleActionResponse(controller,returnValue,actionName,viewName);
+                if(LOG.isDebugEnabled()) {
+                    LOG.debug("Action ["+actionName+"] handled, created Spring model and view ["+mv+"]");
+                }
+                return mv;
+            }
+
         } finally {
             Thread.currentThread().setContextClassLoader(cl);
         }
