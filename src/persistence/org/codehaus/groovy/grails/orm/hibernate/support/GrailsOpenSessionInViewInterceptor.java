@@ -21,8 +21,10 @@ import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.springframework.dao.DataAccessException;
 import org.springframework.orm.hibernate3.support.OpenSessionInViewInterceptor;
+import org.springframework.orm.hibernate3.SessionHolder;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 /**
  * An interceptor that extends the default spring OSIVI and doesn't flush the session if it has been set
@@ -52,14 +54,23 @@ public class GrailsOpenSessionInViewInterceptor extends OpenSessionInViewInterce
 
     public void postHandle(WebRequest request, ModelMap model) throws DataAccessException {
         final boolean isWebRequest = request.getAttribute(IS_FLOW_REQUEST_ATTRIBUTE, WebRequest.SCOPE_REQUEST) != null;
-        if(!isWebRequest)
+        if(!isWebRequest) {
+
             super.postHandle(request, model);
+            SessionHolder sessionHolder =
+                    (SessionHolder) TransactionSynchronizationManager.getResource(getSessionFactory());
+
+            Session session = sessionHolder.getSession();
+            session.setFlushMode(FlushMode.MANUAL);
+
+        }
     }
 
     public void afterCompletion(WebRequest request, Exception ex) throws DataAccessException {
         final boolean isWebRequest = request.getAttribute(IS_FLOW_REQUEST_ATTRIBUTE, WebRequest.SCOPE_REQUEST) != null;
-        if(!isWebRequest)
-            super.afterCompletion(request, ex);   
+        if(!isWebRequest) {
+            super.afterCompletion(request, ex);
+        }
     }
 
     protected void flushIfNecessary(Session session, boolean existingTransaction) throws HibernateException {
