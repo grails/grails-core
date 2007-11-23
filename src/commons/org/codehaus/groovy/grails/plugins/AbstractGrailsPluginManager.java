@@ -39,7 +39,12 @@ public abstract class AbstractGrailsPluginManager implements GrailsPluginManager
 		
 		this.application = application;
 	}
-	/**
+
+    public GrailsPlugin[] getAllPlugins() {
+        return (GrailsPlugin[])pluginList.toArray(new GrailsPlugin[pluginList.size()]);
+    }
+
+    /**
 	 * @return the initialised
 	 */
 	public boolean isInitialised() {

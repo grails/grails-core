@@ -66,7 +66,13 @@ public interface GrailsPluginManager extends ApplicationContextAware, ServletCon
 
 	String BEAN_NAME = "grailsPluginManager";
 
-	/**
+    /**
+     * Returns an array of all the loaded plug-ins
+     * @return An array of plug-ins
+     */
+    GrailsPlugin[] getAllPlugins();
+
+    /**
 	 * Performs the initial load of plug-ins throwing an exception if any dependencies
 	 * don't resolve 
 	 * 
