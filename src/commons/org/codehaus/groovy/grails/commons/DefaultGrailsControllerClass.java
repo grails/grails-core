@@ -17,11 +17,9 @@ package org.codehaus.groovy.grails.commons;
 
 import groovy.lang.Closure;
 import groovy.lang.GroovyObject;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.WordUtils;
 import org.codehaus.groovy.grails.scaffolding.GrailsScaffolder;
-import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.springframework.util.AntPathMatcher;
 
 import java.beans.PropertyDescriptor;
@@ -231,9 +229,8 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass
     }
 
 	public boolean isInterceptedBefore(GroovyObject controller, String action) {
-		final Map controllerProperties = DefaultGroovyMethods.getProperties(controller);
-		return isIntercepted(controllerProperties.get(BEFORE_INTERCEPTOR),action);
-	}
+        return controller.getMetaClass().hasProperty(controller, BEFORE_INTERCEPTOR) != null && isIntercepted(controller.getProperty(BEFORE_INTERCEPTOR), action);
+    }
 
 	private boolean isIntercepted(Object bip, String action) {
 		if(bip instanceof Map) {
@@ -271,8 +268,10 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass
 
 	public boolean isHttpMethodAllowedForAction(GroovyObject controller, String httpMethod, String actionName) {
 		boolean isAllowed = true;
-		final Map controllerProperties = DefaultGroovyMethods.getProperties(controller);
-		Object methodRestrictionsProperty = controllerProperties.get(ALLOWED_HTTP_METHODS_PROPERTY);
+		Object methodRestrictionsProperty = null;
+        if(controller.getMetaClass().hasProperty(controller, ALLOWED_HTTP_METHODS_PROPERTY) != null) {
+            methodRestrictionsProperty = controller.getProperty(ALLOWED_HTTP_METHODS_PROPERTY);
+        }
 		if(methodRestrictionsProperty instanceof Map) {
 			Map map = (Map)methodRestrictionsProperty;
 			if(map.containsKey(actionName)) {
@@ -289,8 +288,7 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass
 	}
 
 	public boolean isInterceptedAfter(GroovyObject controller, String action) {
-		final Map controllerProperties = DefaultGroovyMethods.getProperties(controller);
-		return isIntercepted(controllerProperties.get(AFTER_INTERCEPTOR),action);
+        return controller.getMetaClass().hasProperty(controller, AFTER_INTERCEPTOR) != null && isIntercepted(controller.getProperty(AFTER_INTERCEPTOR), action);
 	}
 
 	public Closure getBeforeInterceptor(GroovyObject controller) {
