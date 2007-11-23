@@ -166,7 +166,6 @@ public class GrailsRuntimeConfiguratorTests extends TestCase {
         // now test override bean
         gcl = new GroovyClassLoader();
         dc = gcl.parseClass("class Test { Long id; Long version;String updatedProp = 'hello'; }");
-        ctx.removeBeanDefinition("Test");
         ctx.registerSingleton("Test",dc);
         testInstance = (GroovyObject)ctx.getBean("Test");
         assertNotNull(testInstance);

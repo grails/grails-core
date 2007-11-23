@@ -68,8 +68,6 @@ class FiltersGrailsPlugin {
 	    if (log.isDebugEnabled()) log.debug("onChange: ${event}")
         def newFilter = event.application.addArtefact(TYPE, event.source)
         def ctx = event.ctx
-        ctx.removeBeanDefinition("${newFilter.fullName}Class")
-        ctx.removeBeanDefinition("${newFilter.fullName}")
         beans(BEANS.curry(newFilter)).registerBeans(event.ctx)
         
         reloadFilters(event.application, event.ctx)

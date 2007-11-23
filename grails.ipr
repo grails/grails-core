@@ -50,6 +50,7 @@
       <file url="file:///Users/graemerocher/Library/Caches/IntelliJIDEA70/compiler/grails.grailsd7d2b0b8/.generated/Groovy_to_java_source_code_generator/Grails.4ea48c75/org/codehaus/groovy/grails/web/servlet/filter/GrailsResourceCopier.java" />
       <file url="file:///Users/graemerocher/Library/Caches/IntelliJIDEA70/compiler/grails.grailsd7d2b0b8/.generated/Groovy_to_java_source_code_generator/Grails.4ea48c75/production/org/codehaus/groovy/grails/webflow/engine/builder/ActionDelegate.java" />
       <file url="file:///Users/graemerocher/Library/Caches/IntelliJIDEA70/compiler/grails.grailsad1ec4b3/.generated/Groovy_to_java_source_code_generator/Grails.23f0a070/production/org/codehaus/groovy/grails/compiler/GrailsCompiler.java" />
+      <file url="file:///Users/graemerocher/Library/Caches/IntelliJIDEA70/compiler/grails.grailsad1ec4b3/.generated/Groovy_to_java_source_code_generator/Grails.23f0a070/production/org/codehaus/groovy/grails/web/pages/GroovyPageCodecTests.java" />
     </excludeFromCompile>
     <resourceExtensions>
       <entry name=".+\.(properties|xml|html|dtd|tld)" />

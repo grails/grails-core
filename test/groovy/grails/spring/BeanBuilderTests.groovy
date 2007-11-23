@@ -15,7 +15,6 @@
  */
 package grails.spring;
 
-import org.codehaus.groovy.grails.commons.*
 /**
  * @author Graeme Rocher
  * @since 0.4
@@ -133,7 +132,7 @@ class BeanBuilderTests extends GroovyTestCase {
 		}
 		
 		def ctx = bb.createApplicationContext()
-		
+        assert ctx != null		
 		assert ctx.containsBean("bart")
 		def bart = ctx.getBean("bart")
 		assertEquals "homer",bart.parent?.person

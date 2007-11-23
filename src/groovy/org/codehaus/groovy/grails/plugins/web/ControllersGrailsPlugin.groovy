@@ -709,10 +709,7 @@ class ControllersGrailsPlugin {
 						bean.autowire =  true
 					}					
 				}
-				if(event.ctx) {
-                    event.ctx.removeBeanDefinition(beanName )
-                    event.ctx.registerBeanDefinition(beanName, beans.getBeanDefinition(beanName))
-				}
+				beans.registerBeans(event.ctx)
 			}
 		}  
 		

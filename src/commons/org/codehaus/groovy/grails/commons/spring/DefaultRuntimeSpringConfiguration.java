@@ -15,6 +15,8 @@
                  */
 package org.codehaus.groovy.grails.commons.spring;
 
+import groovy.lang.GroovySystem;
+import groovy.lang.MetaClass;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.PropertyValue;
@@ -26,6 +28,7 @@ import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.util.Assert;
 
 import java.util.*;
+
 /**
  * A programmable runtime Spring configuration that allows a spring ApplicationContext
  * to be constructed at runtime
@@ -228,9 +231,10 @@ public class DefaultRuntimeSpringConfiguration implements
             }
 
             
-            if(applicationContext.containsBeanDefinition(bc.getName()))
-                applicationContext.removeBeanDefinition(bc.getName());
-            
+            if(applicationContext.containsBeanDefinition(bc.getName())) {
+                removeBeanDefinition(applicationContext, bc.getName());
+            }
+
             applicationContext.registerBeanDefinition(bc.getName(),
                                                 bc.getBeanDefinition()	);
         }
@@ -249,11 +253,18 @@ public class DefaultRuntimeSpringConfiguration implements
             }
             final String beanName = key.toString();
             if(applicationContext.containsBean(beanName)) {
-                applicationContext.removeBeanDefinition(beanName);
+                removeBeanDefinition(applicationContext, beanName);
             }
 
             applicationContext.registerBeanDefinition(beanName, bd);
 
+        }
+    }
+
+    private void removeBeanDefinition(GenericApplicationContext applicationContext, String beanName) {
+        MetaClass mc = GroovySystem.getMetaClassRegistry().getMetaClass(applicationContext.getClass());
+        if(mc.respondsTo(applicationContext, "removeBeanDefinition").size()>0) {
+            applicationContext.removeBeanDefinition(beanName);
         }
     }
 

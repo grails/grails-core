@@ -15,6 +15,7 @@
 package org.codehaus.groovy.grails.commons.spring;
 
 import groovy.lang.GroovyObject;
+import groovy.lang.GroovySystem;
 import groovy.lang.MetaClass;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
@@ -40,10 +41,12 @@ public class GrailsApplicationContext extends StaticApplicationContext implement
 
     public GrailsApplicationContext(org.springframework.context.ApplicationContext parent) throws org.springframework.beans.BeansException {
         super(parent);
+        this.metaClass = GroovySystem.getMetaClassRegistry().getMetaClass(getClass());
     }
 
     public GrailsApplicationContext() throws org.springframework.beans.BeansException {
         super();
+        this.metaClass = GroovySystem.getMetaClassRegistry().getMetaClass(getClass());
     }
 
     public MetaClass getMetaClass() {

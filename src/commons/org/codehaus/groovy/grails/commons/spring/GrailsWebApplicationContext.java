@@ -61,16 +61,10 @@ public class GrailsWebApplicationContext extends GrailsApplicationContext
 
     public GrailsWebApplicationContext() throws BeansException {
 		super();
-		initialise();
 	}
 
 	public GrailsWebApplicationContext(ApplicationContext parent) throws BeansException {
 		super(parent);
-        initialise();
-	}
-
-	private void initialise() {
-		this.metaClass = InvokerHelper.getMetaClass(this);
 	}
 
     public ClassLoader getClassLoader() {
