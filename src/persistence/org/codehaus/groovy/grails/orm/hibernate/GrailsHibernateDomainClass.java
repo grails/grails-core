@@ -93,9 +93,9 @@ public class GrailsHibernateDomainClass extends AbstractGrailsClass implements E
 	    this.identifier = new GrailsHibernateDomainClassProperty(this, ident);
 	    this.identifier.setIdentity(true);
 	    this.identifier.setType(identType);
-	}
+        propertyMap.put(ident, identifier);
+    }
 
-	propertyMap.put(ident, identifier);
 
 	// configure remaining properties
 	String[] propertyNames = metaData.getPropertyNames();
