@@ -31,12 +31,12 @@
         }
         else {
             if("textarea" == cp.widget || (cp.maxSize > 250 && !cp.password && !cp.inList)) {
-                return "<textarea rows='5' cols='40' name='${property.name}'>\${${domainClass.propertyName}?.${property.name}?.encodeAsHTML()}</textarea>"
+                return "<textarea rows='5' cols='40' name='${property.name}'>\${${domainClass.propertyName}?.${property.name}}</textarea>"
             }
              else {
                 if(cp.inList) {
                     def sb = new StringBuffer('<g:select ')
-                    sb << "id='${property.name}' name='${property.name}' from='\${${domainClass.propertyName}.constraints.${property.name}.inList.collect{it.encodeAsHTML()}}' value=\"\${fieldValue(bean:${domainClass.propertyName},field:'${property.name}')}\" ${renderNoSelection(property)}>"
+                    sb << "id='${property.name}' name='${property.name}' from='\${${domainClass.propertyName}.constraints.${property.name}.inList.collect{it}}' value=\"\${fieldValue(bean:${domainClass.propertyName},field:'${property.name}')}\" ${renderNoSelection(property)}>"
                     sb << '</g:select>'
                     return sb.toString()
                 }

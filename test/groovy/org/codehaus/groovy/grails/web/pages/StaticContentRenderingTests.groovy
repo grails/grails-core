@@ -14,6 +14,21 @@ import org.codehaus.groovy.grails.web.taglib.AbstractGrailsTagTests
 
 class StaticContentRenderingTests extends AbstractGrailsTagTests {
 
+
+    void testDefaultHtmlEscaping() {
+        def template = '${test}'
+
+        assertOutputEquals('&lt;html&gt;&lt;body&gt;hello&lt;/body&gt;&lt;/html&gt;', template, [test:"<html><body>hello</body></html>"])
+    }
+
+    void testNotHtmlEscaping() {
+        def template = '<%@ contentType="text/plain" %> ${test}'
+
+        assertOutputEquals('<html><body>hello</body></html>', template, [test:"<html><body>hello</body></html>"])
+
+    }
+
+    
     void testStaticContent() {
 
 

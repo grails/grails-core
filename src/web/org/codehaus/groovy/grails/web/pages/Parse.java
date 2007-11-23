@@ -15,10 +15,11 @@
  */
 package org.codehaus.groovy.grails.web.pages;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.commons.lang.StringUtils;
-import org.codehaus.groovy.grails.web.taglib.*;
+import org.codehaus.groovy.grails.web.taglib.GrailsTagRegistry;
+import org.codehaus.groovy.grails.web.taglib.GroovySyntaxTag;
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
 
 import java.io.*;
@@ -57,19 +58,21 @@ public class Parse implements Tokens {
 
     private StringBuffer whiteSpaceBuffer = new StringBuffer();
     private int currentOutputLine = 1;
-    private String contentType = "text/html;charset=UTF-8";
+    private String contentType = DEFAULT_CONTENT_TYPE;
     private boolean doNextScan = true;
     private int state;
     private static final String START_MULTILINE_STRING = "'''";
     private static final String END_MULTILINE_STRING = "'''";
+    private static final String DEFAULT_CONTENT_TYPE = "text/html;charset=UTF-8";
     private Map constants = new TreeMap();
     private int constantCount = 0;
-    private final String pageName;
 
+    private final String pageName;
     private static final String EMPTY_MULTILINE_STRING = "''''''";
     public static final String[] DEFAULT_IMPORTS = new String[] {
         "org.codehaus.groovy.grails.web.pages.GroovyPage",
         "org.codehaus.groovy.grails.web.taglib.*",
+        "org.springframework.web.util.*",
         "grails.util.GrailsUtil"
     };
 
@@ -135,12 +138,11 @@ public class Parse implements Tokens {
         if (LOG.isDebugEnabled()) LOG.debug("parse: direct");
         String text = scan.getToken();
         text = text.trim();
-//		LOG.debug("direct(" + text + ')');
-        if (text.startsWith("page ")) directPage(text);
+        directPage(text);
     } // direct()
 
     private void directPage(String text) {
-        text = text.substring(5).trim();
+        text = text.trim();
 //		LOG.debug("directPage(" + text + ')');
         Pattern pat = Pattern.compile("(\\w+)\\s*=\\s*\"([^\"]*)\"");
         Matcher mat = pat.matcher(text);
@@ -163,7 +165,12 @@ public class Parse implements Tokens {
         if (LOG.isDebugEnabled()) LOG.debug("parse: expr");
 
         String text = scan.getToken().trim();
-        out.printlnToResponse(GroovyPage.fromHtml(text));
+        if(contentType.indexOf("text/html") > -1) {
+            out.printlnToResponse("HtmlUtils.htmlEscape("+text+"?.toString())");            
+        }
+        else {
+            out.printlnToResponse(text);
+        }
     } // expr()
 
 
