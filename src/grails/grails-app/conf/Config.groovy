@@ -10,7 +10,8 @@
 //    grails.config.locations << "file:" + System.properties["${appName}.config.location"]
 // }
 grails.mime.file.extensions = true // enables the parsing of file extensions from URLs into the request format
-grails.mime.types = [ xml: ['text/xml', 'application/xml'],
+grails.mime.types = [ html: ['text/html','application/xhtml+xml'],
+                      xml: ['text/xml', 'application/xml'],
                       text: 'text-plain',
                       js: 'text/javascript',
                       rss: 'application/rss+xml',
@@ -18,8 +19,7 @@ grails.mime.types = [ xml: ['text/xml', 'application/xml'],
                       css: 'text/css',
                       cvs: 'text/csv',
                       all: '*/*',
-                      json: 'text/json',
-                      html: ['text/html','application/xhtml+xml']
+                      json: 'text/json'
                     ]
 // enabled native2ascii conversion of i18n properties files
 grails.enable.native2ascii = true
