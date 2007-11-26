@@ -42,8 +42,8 @@ class ContentController {
 
     def testWithFormatAndModel = {
         withFormat {
-            html hello:'world'
             js { render "alert('hello')" }
+            html hello:'world'
         }
     }
 
@@ -63,6 +63,33 @@ class ContentController {
     }
 
 
+    void testAllFormat() {
+        request.addHeader "Accept", "*/*"
+        def c = ga.getControllerClass("ContentController").newInstance()
+         webRequest.controllerName = 'content'
+         c.testFormat.call()
+         assertEquals "all", response.contentAsString
+    }
+
+    void testWithFormatAndAll() {
+       request.addHeader "Accept", "*/*"
+        def c = ga.getControllerClass("ContentController").newInstance()
+         webRequest.controllerName = 'content'
+         assertEquals "all", request.format
+         c.testWithFormat.call()
+         assertEquals "<html></html>", response.contentAsString
+         assertEquals "html", request.format
+    }
+
+    void testWithFormatAndAll2() {
+       request.addHeader "Accept", "*/*"
+        def c = ga.getControllerClass("ContentController").newInstance()
+         webRequest.controllerName = 'content'
+         assertEquals "all", request.format
+         c.testWithFormatAndModel.call()
+         assertEquals "alert('hello')", response.contentAsString
+         assertEquals "js", request.format
+    }
 
     void testDefaultFormat() {
         def c = ga.getControllerClass("ContentController").newInstance()

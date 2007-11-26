@@ -98,16 +98,24 @@ class MimeTypesGrailsPlugin {
             def req = request
             def mimeTypes = req.mimeTypes
             def format = req.format
-            // if the format has been specified then use that
-            if(formats.containsKey(format)) {
-                result = getResponseForFormat(formats[format], format, req)
-            }
-            // otherwise look for the best match
-            else {
-                for(mime in req.mimeTypes) {
-                    if(formats.containsKey(mime.extension)) {
-                        result = getResponseForFormat(formats[mime.extension], mime.extension, req)
-                        break
+            if(formats) {
+                if(format == 'all') {
+                    def first = formats.entrySet().iterator().next()
+                    result = getResponseForFormat(first.value, first.key, req)
+                }
+                else {
+                    // if the format has been specified then use that
+                    if(formats.containsKey(format)) {
+                        result = getResponseForFormat(formats[format], format, req)
+                    }
+                    // otherwise look for the best match
+                    else {
+                        for(mime in req.mimeTypes) {
+                            if(formats.containsKey(mime.extension)) {
+                                result = getResponseForFormat(formats[mime.extension], mime.extension, req)
+                                break
+                            }
+                        }
                     }
                 }
             }
