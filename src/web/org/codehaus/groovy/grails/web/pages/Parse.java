@@ -21,6 +21,8 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.web.taglib.GrailsTagRegistry;
 import org.codehaus.groovy.grails.web.taglib.GroovySyntaxTag;
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
+import org.codehaus.groovy.grails.commons.ConfigurationHolder;
+import org.codehaus.groovy.runtime.typehandling.DefaultTypeTransformation;
 
 import java.io.*;
 import java.util.*;
@@ -75,6 +77,8 @@ public class Parse implements Tokens {
         "org.springframework.web.util.*",
         "grails.util.GrailsUtil"
     };
+    private static final String AUTO_ESCAPE_HTML = "grails.views.autoEscapeHtml";
+    private boolean escapeHTML = true;
 
     public String getContentType() {
         return this.contentType;
@@ -101,6 +105,12 @@ public class Parse implements Tokens {
         scan = new Scan(readStream(in));
         this.pageName = filename;
         makeName(name);
+        Map config = ConfigurationHolder.getFlatConfig();
+        Object o = config.get(AUTO_ESCAPE_HTML);
+        if(o!=null) {
+            this.escapeHTML = DefaultTypeTransformation.castToBoolean(o);
+        }
+
     } // Parse()
 
     public int[] getLineNumberMatrix() {
@@ -165,7 +175,7 @@ public class Parse implements Tokens {
         if (LOG.isDebugEnabled()) LOG.debug("parse: expr");
 
         String text = scan.getToken().trim();
-        if(contentType.indexOf("text/html") > -1) {
+        if(contentType.indexOf("text/html") > -1 && escapeHTML) {
             out.printlnToResponse("HtmlUtils.htmlEscape("+text+"?.toString())");            
         }
         else {

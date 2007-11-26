@@ -14,7 +14,6 @@
  */
 package org.codehaus.groovy.grails.web.util;
 
-import groovy.util.ConfigObject;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -223,13 +222,8 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
      * @return True if file extensions are enabled
      */
     public static boolean areFileExtensionsEnabled() {
-        ConfigObject co = ConfigurationHolder.getConfig();
-        if(co != null) {
-            Object o = co.flatten().get(ENABLE_FILE_EXTENSIONS);
-            if(o != null && o instanceof Boolean) {
-                return ((Boolean)o).booleanValue();
-            }
-        }
-        return true;
+        Map config = ConfigurationHolder.getFlatConfig();
+        Object o = config.get(ENABLE_FILE_EXTENSIONS);
+        return !(o != null && o instanceof Boolean) || ((Boolean) o).booleanValue();
     }
 }

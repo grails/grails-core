@@ -16,6 +16,9 @@ package org.codehaus.groovy.grails.commons;
 
 import groovy.util.ConfigObject;
 
+import java.util.Collections;
+import java.util.Map;
+
 /**
  * A class that holds a reference to the grails.config.ConfigObject instance
  *
@@ -29,6 +32,7 @@ import groovy.util.ConfigObject;
 public class ConfigurationHolder {
 
     private static ConfigObject config;
+    private static Map flatConfig;
 
     public static synchronized ConfigObject getConfig() {
         return config;
@@ -36,5 +40,23 @@ public class ConfigurationHolder {
 
     public static synchronized void setConfig(ConfigObject newConfig) {
         config = newConfig;
+        // reset flat config
+        flatConfig = null;
+    }
+
+    /**
+     * Returns the ConfigObject has a flattened map for easy access from Java in a properties file like way
+     *
+     * @return The flattened ConfigObject
+     */
+    public static Map getFlatConfig() {
+        if(flatConfig == null) {
+            ConfigObject config = getConfig();
+            if(config!=null)
+                flatConfig = config.flatten();
+            else
+                flatConfig = Collections.EMPTY_MAP;
+        }
+        return flatConfig;
     }
 }

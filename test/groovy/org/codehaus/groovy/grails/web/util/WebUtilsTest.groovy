@@ -27,7 +27,10 @@ grails.mime.file.extensions=false
     void testAreFileExtensionsEnabled() {
          assert !WebUtils.areFileExtensionsEnabled()
 
-         ConfigurationHolder.config.grails.mime.file.extensions=true
+        def config = new ConfigSlurper().parse( """
+grails.mime.file.extensions=true
+        """)
+         ConfigurationHolder.config = config
          
          assert WebUtils.areFileExtensionsEnabled()
     }

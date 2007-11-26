@@ -11,6 +11,7 @@
 package org.codehaus.groovy.grails.web.pages
 
 import org.codehaus.groovy.grails.web.taglib.AbstractGrailsTagTests
+import org.codehaus.groovy.grails.commons.ConfigurationHolder
 
 class StaticContentRenderingTests extends AbstractGrailsTagTests {
 
@@ -26,6 +27,21 @@ class StaticContentRenderingTests extends AbstractGrailsTagTests {
 
         assertOutputEquals('<html><body>hello</body></html>', template, [test:"<html><body>hello</body></html>"])
 
+    }
+
+    void testDisabledHtmlEscaping() {
+        def config = new ConfigSlurper().parse('grails.views.autoEscapeHtml=false')
+        try {
+            ConfigurationHolder.config = config
+            def template = '${test}'
+            assertOutputEquals('<html><body>hello</body></html>', template, [test: "<html><body>hello</body></html>"])
+        } finally {
+            ConfigurationHolder.config = null
+        }
+
+
+
+        
     }
 
     
