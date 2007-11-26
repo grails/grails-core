@@ -90,6 +90,7 @@ public class CorePluginFinder {
 		loadCorePlugin("org.codehaus.groovy.grails.plugins.web.ControllersGrailsPlugin");
         loadCorePlugin("org.codehaus.groovy.grails.plugins.web.mapping.UrlMappingsGrailsPlugin");
         loadCorePlugin("org.codehaus.groovy.grails.plugins.web.filters.FiltersGrailsPlugin");
+        loadCorePlugin("org.codehaus.groovy.grails.plugins.web.mimes.MimeTypesGrailsPlugin");
         loadCorePlugin("org.codehaus.groovy.grails.plugins.webflow.WebFlowGrailsPlugin");
         loadCorePlugin("org.codehaus.groovy.grails.plugins.orm.hibernate.HibernateGrailsPlugin");
         loadCorePlugin("org.codehaus.groovy.grails.plugins.services.ServicesGrailsPlugin");

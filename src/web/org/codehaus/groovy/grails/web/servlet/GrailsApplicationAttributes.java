@@ -21,6 +21,8 @@ public interface GrailsApplicationAttributes extends ApplicationAttributes {
 
 	String PATH_TO_VIEWS = "/WEB-INF/grails-app/views";
     String GSP_TEMPLATE_ENGINE = "org.codehaus.groovy.grails.GSP_TEMPLATE_ENGINE";
+    String CONTENT_FORMAT = "org.codehaus.groovy.grails.CONTENT_FORMAT";
+    String REQUEST_FORMATS = "org.codehaus.groovy.grails.REQUEST_FORMATS";
     String FLASH_SCOPE = "org.codehaus.groovy.grails.FLASH_SCOPE";
     String PARAMS_OBJECT = "org.codehaus.groovy.grails.PARAMS_OBJECT";
     String CONTROLLER = "org.codehaus.groovy.grails.CONTROLLER";

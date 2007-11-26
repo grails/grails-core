@@ -22,6 +22,7 @@ import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsResourceUtils;
 import org.codehaus.groovy.grails.plugins.PluginMetaManager;
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
+import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -57,6 +58,7 @@ public class GrailsViewResolver extends InternalResourceViewResolver implements 
     private PluginMetaManager pluginMetaManager;
     
     private static final String GROOVY_PAGE_RESOURCE_LOADER = "groovyPageResourceLoader";
+    private static final char DOT = '.';
 
 
     public GrailsViewResolver() {
@@ -105,24 +107,29 @@ public class GrailsViewResolver extends InternalResourceViewResolver implements 
                                             .getGrailsApplication();
 
 
-        String gspView = localPrefix + viewName + GSP_SUFFIX;
+        String format = request.getAttribute(GrailsApplicationAttributes.CONTENT_FORMAT) != null ? request.getAttribute(GrailsApplicationAttributes.CONTENT_FORMAT).toString() : null;
+        String gspView = localPrefix + viewName + DOT + format + GSP_SUFFIX;
+        Resource res = null;
 
-
-        Resource res = resourceLoader.getResource(gspView);
-        if(!res.exists()) {
-            gspView = resolveViewForController(controller, application, viewName, resourceLoader);
+        if(format != null) {
             res = resourceLoader.getResource(gspView);
-        }
-        
-        if(res.exists()) {
-            if(LOG.isDebugEnabled()) {
-                LOG.debug("Resolved GSP view at URI ["+gspView+"]");
+            if(!res.exists()) {
+                gspView = resolveViewForController(controller, application, viewName, resourceLoader);
+                res = resourceLoader.getResource(gspView);
             }
-            GroovyPageView gspSpringView = new GroovyPageView();
-            gspSpringView.setServletContext(webRequest.getServletContext());
-            gspSpringView.setUrl(gspView);
-            gspSpringView.setApplicationContext(this.getApplicationContext());
-            return gspSpringView;
+        }
+
+        if(res == null || !res.exists()) {
+            gspView = localPrefix + viewName + GSP_SUFFIX;
+            res = resourceLoader.getResource(gspView);
+            if(!res.exists()) {
+                gspView = resolveViewForController(controller, application, viewName, resourceLoader);
+                res = resourceLoader.getResource(gspView);
+            }
+        }
+
+        if(res.exists()) {
+            return createGroovyPageView(webRequest, gspView);
         }
         else {
             AbstractUrlBasedView view = buildView(viewName);
@@ -130,6 +137,17 @@ public class GrailsViewResolver extends InternalResourceViewResolver implements 
             view.afterPropertiesSet();
             return view;
         }
+    }
+
+    private View createGroovyPageView(GrailsWebRequest webRequest, String gspView) {
+        if(LOG.isDebugEnabled()) {
+            LOG.debug("Resolved GSP view at URI ["+gspView+"]");
+        }
+        GroovyPageView gspSpringView = new GroovyPageView();
+        gspSpringView.setServletContext(webRequest.getServletContext());
+        gspSpringView.setUrl(gspView);
+        gspSpringView.setApplicationContext(this.getApplicationContext());
+        return gspSpringView;
     }
 
     /**

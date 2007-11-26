@@ -22,8 +22,8 @@ abstract class AbstractGrailsControllerTests extends GroovyTestCase {
 		
 	def servletContext
 	def webRequest
-	def request
-	def response
+	MockHttpServletRequest request
+	MockHttpServletResponse response
 	GroovyClassLoader gcl = new GroovyClassLoader()
     GrailsApplication ga;
 	def mockManager
@@ -59,6 +59,7 @@ abstract class AbstractGrailsControllerTests extends GroovyTestCase {
         dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.web.ServletsGrailsPlugin")
         dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.web.mapping.UrlMappingsGrailsPlugin")
 		dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.web.ControllersGrailsPlugin")
+		dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.web.mimes.MimeTypesGrailsPlugin")
         dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.web.filters.FiltersGrailsPlugin")
         dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.converters.ConvertersGrailsPlugin")        
         def dependentPlugins = dependantPluginClasses.collect { new DefaultGrailsPlugin(it, ga)}

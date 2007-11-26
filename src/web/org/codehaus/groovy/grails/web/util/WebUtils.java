@@ -14,9 +14,11 @@
  */
 package org.codehaus.groovy.grails.web.util;
 
+import groovy.util.ConfigObject;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.grails.commons.ConfigurationHolder;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.web.mapping.UrlMappingInfo;
 import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder;
@@ -49,6 +51,7 @@ import java.util.Map;
 public class WebUtils extends org.springframework.web.util.WebUtils {
     public static final char SLASH = '/';
     private static final Log LOG = LogFactory.getLog(WebUtils.class);
+    public static final String ENABLE_FILE_EXTENSIONS = "grails.mime.file.extensions";
 
     public static ViewResolver lookupViewResolver(ServletContext servletContext) {
         WebApplicationContext wac =
@@ -191,5 +194,42 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
         exposeRequestAttributes(request, model);
         dispatcher.forward(request, response);
         return forwardUrl;
+    }
+
+    /**
+     * Obtains the format from the URI. The format is the string following the . file extension in the last token of the URI
+     *
+     * @param uri The URI
+     * @return The format or null if none
+     */
+    public static String getFormatFromURI(String uri) {
+        if(uri.endsWith("/")) {
+            return null;
+        }
+        int idx = uri.lastIndexOf('/');
+        if(idx > -1) {
+            String lastToken = uri.substring(idx+1, uri.length());
+            idx = lastToken.lastIndexOf('.');
+            if(idx > -1) {
+                return lastToken.substring(idx+1, lastToken.length());
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Returns the value of the "grails.mime.file.extensions" setting configured in COnfig.groovy
+     *
+     * @return True if file extensions are enabled
+     */
+    public static boolean areFileExtensionsEnabled() {
+        ConfigObject co = ConfigurationHolder.getConfig();
+        if(co != null) {
+            Object o = co.flatten().get(ENABLE_FILE_EXTENSIONS);
+            if(o != null && o instanceof Boolean) {
+                return ((Boolean)o).booleanValue();
+            }
+        }
+        return true;
     }
 }

@@ -14,12 +14,12 @@
  * limitations under the License.
  */ 
 package org.codehaus.groovy.grails.plugins.web;
-                                                 
+
+
 import javax.servlet.http.HttpServletRequest
-import grails.util.GrailsUtil as GU
 import javax.servlet.http.HttpServletResponse
 import javax.servlet.http.HttpSession
-import org.springframework.web.util.*
+import org.springframework.web.util.WebUtils
 
 /**
 * <p>This plug-in adds methods to the Servlet API interfaces to make them more Grailsy. For example all classes that implement
@@ -73,7 +73,7 @@ class ServletsGrailsPlugin {
             result
 	    }
 
-		// enables access to request attributes with request["foo"] syntax
+        // enables access to request attributes with request["foo"] syntax
 	    HttpServletRequest.metaClass.getAt = { String key ->
 	        delegate.getAttribute(key)
 	    }         

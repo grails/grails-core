@@ -440,6 +440,7 @@ class ControllersGrailsPlugin {
 		// add commons objects and dynamic methods like render and redirect to controllers
         for(GrailsClass controller in application.controllerClasses ) {
 		   MetaClass mc = controller.metaClass
+		   
 		   Class controllerClass = controller.clazz
 			WebMetaUtils.registerCommonWebProperties(mc, application)
 			registerControllerMethods(mc, ctx)
@@ -550,6 +551,7 @@ class ControllersGrailsPlugin {
         	   	}
 			}
 		}
+
 	}
 
     def registerMethodMissing(MetaClass mc, GrailsApplication application, ApplicationContext ctx) {

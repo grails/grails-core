@@ -58,6 +58,10 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
     private static final String JSP_SUFFIX = ".jsp";
 
 
+    protected void initFilterBean() throws ServletException {
+        super.initFilterBean();
+    }
+
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         UrlMappingsHolder holder = WebUtils.lookupUrlMappings(getServletContext());
         GrailsApplication application = WebUtils.lookupApplication(getServletContext());
@@ -77,6 +81,13 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
 
 
         String uri = urlHelper.getPathWithinApplication(request);
+        if(WebUtils.areFileExtensionsEnabled()) {
+            String format = WebUtils.getFormatFromURI(uri);
+            if(format!=null) {
+                request.setAttribute(GrailsApplicationAttributes.CONTENT_FORMAT, format);
+                uri = uri.substring(0, (uri.length()-format.length()-1));
+            }
+        }
 
         UrlMappingInfo[] urlInfos = holder.matchAll(uri);
         WrappedResponseHolder.setWrappedResponse(response);
