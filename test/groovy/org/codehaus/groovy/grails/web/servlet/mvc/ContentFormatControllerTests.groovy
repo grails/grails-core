@@ -99,6 +99,19 @@ class ContentController {
 
     }
 
+    void testWithContentTypeAndAcceptHeader() {
+        // should favour content type header
+        request.addHeader "Accept", "text/javascript, text/html, application/xml, text/xml, */*"
+        request.addHeader "Content-Type", "text/html"
+        
+        def c = ga.getControllerClass("ContentController").newInstance()
+         webRequest.controllerName = 'content'
+         c.testFormat.call()
+         assertEquals "html", response.contentAsString
+    }
+
+
+
     void testPrototypeFormat() {
         request.addHeader "Accept", "text/javascript, text/html, application/xml, text/xml, */*"
         def c = ga.getControllerClass("ContentController").newInstance()

@@ -63,7 +63,9 @@ class MimeTypesGrailsPlugin {
             if(!result) {
 
                 def parser = new DefaultAcceptHeaderParser()
-                result = parser.parse(delegate.getHeader(HttpHeaders.ACCEPT))
+                def header = delegate.getHeader(HttpHeaders.CONTENT_TYPE)
+                if(!header) header = delegate.getHeader(HttpHeaders.ACCEPT)
+                result = parser.parse(header)
 
                 delegate.setAttribute(GrailsApplicationAttributes.REQUEST_FORMATS, result)
             }
