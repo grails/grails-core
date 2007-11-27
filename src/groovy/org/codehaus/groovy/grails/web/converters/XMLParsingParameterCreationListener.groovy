@@ -28,7 +28,7 @@ import groovy.util.slurpersupport.GPathResult
 *
 * Created: Nov 27, 2007
 */
-class XMLParsingParameterCreationListener implements ParameterCreationListener {
+class XMLParsingParameterCreationListener extends AbstractParsingParameterCreationListener {
 
     static final LOG = LogFactory.getLog(XMLParsingParameterCreationListener)
 
@@ -43,14 +43,14 @@ class XMLParsingParameterCreationListener implements ParameterCreationListener {
                 params[name] = map
                 populateParamsFromXML(xml, map)
                 def target = [:]
-                createFlattenedKeys(map, map, target)
+                super.createFlattenedKeys(map, map, target)
                 for(entry in target) {
                     if(!map[entry.key]) {
                         map[entry.key] = entry.value
                     }
                 }
 
-            } catch (org.codehaus.groovy.grails.web.converters.exceptions.ConverterException e) {
+            } catch (Exception e) {
                 LOG.debug "Error parsing incoming XML request: ${e.message}", e
             }
         }
@@ -71,17 +71,5 @@ class XMLParsingParameterCreationListener implements ParameterCreationListener {
         }
 
     }
-
-    private createFlattenedKeys(root, map, target, prefix ='') {
-
-        for(entry in map) {
-            if(entry.value instanceof Map) {
-                createFlattenedKeys(root,entry.value, target, "${entry.key}.")
-            }
-            else if(prefix) {
-                target["${prefix}${entry.key}"] = entry.value
-            }
-        }
-    }
-
+  
 }

@@ -24,6 +24,7 @@ import org.codehaus.groovy.grails.web.converters.ConverterUtil
 import org.codehaus.groovy.grails.web.json.JSONArray
 import org.codehaus.groovy.grails.web.json.JSONObject
 import org.codehaus.groovy.grails.web.converters.XMLParsingParameterCreationListener
+import org.codehaus.groovy.grails.web.converters.JSONParsingParameterCreationListener
 
 /**
  * A plug-in that allows the obj as XML syntax
@@ -54,7 +55,8 @@ class ConvertersGrailsPlugin {
 
 
     def doWithSpring = {
-        xmlParsingParameterCreationListener(XMLParsingParameterCreationListener)        
+        xmlParsingParameterCreationListener(XMLParsingParameterCreationListener)
+        jsonParsingParameterCreationListener(JSONParsingParameterCreationListener)
     }
 
     def renderMethod = {Converter converter ->
