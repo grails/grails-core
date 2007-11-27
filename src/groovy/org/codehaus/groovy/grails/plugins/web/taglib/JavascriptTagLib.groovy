@@ -384,13 +384,14 @@ class PrototypeProvider implements JavascriptProvider {
         def ajaxOptions = []
 
        // necessary defaults
-       def async = options.options?.remove('asynchronous')
+       def optionsAttr = options.remove('options')
+       def async = optionsAttr?.remove('asynchronous')
        if( async != null)
            ajaxOptions << "asynchronous:${async}"
        else
            ajaxOptions << "asynchronous:true"
 
-       def eval = options.options?.remove('evalScripts')
+       def eval = optionsAttr?.remove('evalScripts')
        if(eval != null)
            ajaxOptions << "evalScripts:${eval}"
        else
@@ -418,7 +419,7 @@ class PrototypeProvider implements JavascriptProvider {
 				}
             }
             // remaining options
-            options.options?.each { k, v ->
+            optionsAttr?.each { k, v ->
             	if(k!='url') {
 	                 switch(v) {
 	                    case 'true': ajaxOptions << "${k}:${v}"; break;
