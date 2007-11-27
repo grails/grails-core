@@ -111,9 +111,7 @@ public class DomainClassConverter implements Converter {
                         GrailsDomainClassProperty referencedIdProperty = referencedDomainClass.getIdentifier();
                         if (property.isOneToOne() || property.isManyToOne() || property.isEmbedded()) {
                             // Property contains 1 foreign Domain Object
-                            writer.startNode(referencedDomainClass.getPropertyName());
                             writer.addAttribute("id", String.valueOf(extractIdValue(referenceObject, referencedIdProperty)));
-                            writer.endNode();
                         } else {
                             String refPropertyName = referencedDomainClass.getPropertyName();
                             if (referenceObject instanceof Collection) {
