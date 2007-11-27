@@ -78,19 +78,20 @@ abstract class AbstractGrailsControllerTests extends GroovyTestCase {
 		
 
 		def springConfig = new WebRuntimeSpringConfiguration(ctx)
-        webRequest = GrailsWebUtil.bindMockWebRequest()
+		servletContext = new MockServletContext()
+
+
+        springConfig.servletContext = servletContext
+
+
+        dependentPlugins*.doWithRuntimeConfiguration(springConfig)
+        dependentPlugins.each{ mockManager.registerMockPlugin(it); it.manager = mockManager }
+
+        appCtx = springConfig.getApplicationContext()
+        webRequest = GrailsWebUtil.bindMockWebRequest(appCtx)
         request = webRequest.currentRequest
         request.characterEncoding = "utf-8"
         response = webRequest.currentResponse
-
-		servletContext =  webRequest.servletContext
-		springConfig.servletContext = servletContext
-
-		
-		dependentPlugins*.doWithRuntimeConfiguration(springConfig)
-		dependentPlugins.each{ mockManager.registerMockPlugin(it); it.manager = mockManager }
-
-        appCtx = springConfig.getApplicationContext()
         dependentPlugins*.doWithApplicationContext(appCtx)
         servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, appCtx)
 

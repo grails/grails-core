@@ -33,6 +33,14 @@ grails.mime.types = [ xml: ['text/xml', 'application/xml'],
     }
 
 
+    void testXmlContentTypeWithCharset() {
+        def mimes = new DefaultAcceptHeaderParser().parse("text/xml; charset=UTF-8")
+
+        assertEquals 1, mimes.size()
+        assertEquals "text/xml", mimes[0].name
+        assertEquals "xml", mimes[0].extension
+        assertEquals( [charset:'UTF-8'], mimes[0].parameters )
+    }
 
 
     void testAcceptHeaderOrdering() {

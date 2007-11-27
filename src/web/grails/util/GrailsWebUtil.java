@@ -15,14 +15,15 @@
 package grails.util;
 
 import groovy.lang.GroovyObject;
+import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.grails.commons.spring.GrailsWebApplicationContext;
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
+import org.codehaus.groovy.grails.web.servlet.mvc.ParameterCreationListener;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.mock.web.MockServletContext;
 import org.springframework.web.context.request.RequestContextHolder;
-import org.apache.commons.lang.StringUtils;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -47,6 +48,11 @@ public class GrailsWebUtil {
                                                 ctx.getServletContext()
                                             );
         request.setAttribute(GrailsApplicationAttributes.WEB_REQUEST, webRequest);
+        String[] paramListenerBeans = ctx.getBeanNamesForType(ParameterCreationListener.class);
+        for (int i = 0; i < paramListenerBeans.length; i++) {
+            ParameterCreationListener creationListenerBean = (ParameterCreationListener)ctx.getBean(paramListenerBeans[i]);
+            webRequest.addParameterListener(creationListenerBean);
+        }
         RequestContextHolder.setRequestAttributes(webRequest);
         return webRequest;
     }

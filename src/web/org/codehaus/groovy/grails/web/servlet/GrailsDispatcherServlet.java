@@ -15,37 +15,35 @@
  */
 package org.codehaus.groovy.grails.web.servlet;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.ServletException;
-
+import grails.util.GrailsUtil;
 import org.codehaus.groovy.grails.commons.*;
-import org.codehaus.groovy.grails.commons.GrailsControllerClass;
 import org.codehaus.groovy.grails.commons.spring.GrailsApplicationContext;
-import org.codehaus.groovy.grails.web.servlet.mvc.SimpleGrailsController;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
+import org.codehaus.groovy.grails.web.servlet.mvc.SimpleGrailsController;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
-import org.springframework.web.context.WebApplicationContext;
-import org.springframework.web.context.request.WebRequestInterceptor;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.support.WebApplicationContextUtils;
-import org.springframework.web.servlet.*;
-import org.springframework.web.servlet.handler.WebRequestHandlerInterceptorAdapter;
-import org.springframework.web.util.UrlPathHelper;
-import org.springframework.web.util.WebUtils;
-import org.springframework.web.util.NestedServletException;
-import org.springframework.web.multipart.MultipartResolver;
-import org.springframework.web.multipart.MultipartHttpServletRequest;
-import org.springframework.web.multipart.MultipartException;
 import org.springframework.context.i18n.LocaleContext;
 import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.util.Assert;
+import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.WebRequestInterceptor;
+import org.springframework.web.context.support.WebApplicationContextUtils;
+import org.springframework.web.multipart.MultipartException;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
+import org.springframework.web.multipart.MultipartResolver;
+import org.springframework.web.servlet.*;
+import org.springframework.web.servlet.handler.WebRequestHandlerInterceptorAdapter;
+import org.springframework.web.util.NestedServletException;
+import org.springframework.web.util.UrlPathHelper;
+import org.springframework.web.util.WebUtils;
 
-import java.util.Map;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.util.Iterator;
 import java.util.Locale;
-
-import grails.util.GrailsUtil;
+import java.util.Map;
 
 /**
  * <p>Servlet that handles incoming requests for Grails.
@@ -104,6 +102,7 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
     	WebApplicationContext wac = WebApplicationContextUtils.getWebApplicationContext(getServletContext());
     	WebApplicationContext webContext;
         // construct the SpringConfig for the container managed application
+        Assert.notNull(parent, "Grails requires a parent ApplicationContext, is the /WEB-INF/applicationContext.xml file missing?");
         this.application = (GrailsApplication) parent.getBean(GrailsApplication.APPLICATION_ID, GrailsApplication.class);
 
 

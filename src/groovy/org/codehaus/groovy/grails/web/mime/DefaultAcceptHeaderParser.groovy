@@ -61,7 +61,7 @@ class DefaultAcceptHeaderParser implements AcceptHeaderParser{
                     def params = [:]
                     t[1..-1].each {
                         def i = it.indexOf('=')
-                        params[it[0..i-1]] = it[i+1..-1]
+                        params[it[0..i-1].trim()] = it[i+1..-1].trim()
                     }
                     def mimeList = params.q ? qualifiedMimes : mimes
                     createMimeTypeAndAddToList(t[0].trim(),mimeConfig, mimeList, params)

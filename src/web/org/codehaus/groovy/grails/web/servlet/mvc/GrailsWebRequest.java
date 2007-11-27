@@ -30,7 +30,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.Writer;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import java.util.Iterator;
 
 /**
  * A class the encapsulates a Grails request. An instance of this class is bound to the current thread using
@@ -42,7 +45,7 @@ import java.util.Map;
  * @since 0.4
  *
  */
-public class GrailsWebRequest extends DispatcherServletWebRequest {
+public class GrailsWebRequest extends DispatcherServletWebRequest implements ParameterInitializationCallback {
 
 	private GrailsApplicationAttributes attributes;
 	private GrailsParameterMap params;
@@ -50,6 +53,7 @@ public class GrailsWebRequest extends DispatcherServletWebRequest {
 	private GrailsHttpSession session;
 	private boolean renderView = true;
     public static final String ID_PARAMETER = "id";
+    private List parameterCreationListeners = new ArrayList();
 
 
     public GrailsWebRequest(HttpServletRequest request,  HttpServletResponse response, ServletContext servletContext) {
@@ -66,7 +70,10 @@ public class GrailsWebRequest extends DispatcherServletWebRequest {
      * @return An instance of GrailsParameterMap
      */
     public Map getParameterMap() {
-        if(this.params == null) this.params = new GrailsParameterMap(getCurrentRequest());
+        if(this.params == null) {
+            this.params = new GrailsParameterMap(getCurrentRequest());
+            fireParametersCreated();            
+        }
         return this.params;
     }
 
@@ -124,11 +131,21 @@ public class GrailsWebRequest extends DispatcherServletWebRequest {
 	 * @return The Grails params object
 	 */
 	public GrailsParameterMap getParams() {
-        if(this.params == null) this.params = new GrailsParameterMap(getCurrentRequest());
+        if(this.params == null) {
+            this.params = new GrailsParameterMap(getCurrentRequest());
+            fireParametersCreated();
+        }
         return this.params;
 	}
-	
-	/**
+
+    private void fireParametersCreated() {
+        for (Iterator i = parameterCreationListeners.iterator(); i.hasNext();) {
+            ParameterCreationListener parameterCreationListener = (ParameterCreationListener) i.next();
+            parameterCreationListener.paramsCreated(this.params);
+        }
+    }
+
+    /**
 	 * 
 	 * @return The Grails session object
 	 */
@@ -196,5 +213,9 @@ public class GrailsWebRequest extends DispatcherServletWebRequest {
         GrailsControllerClass controllerClass = (GrailsControllerClass)application.getArtefactByLogicalPropertyName(ControllerArtefactHandler.TYPE,getControllerName());
         if(controllerClass != null && controllerClass.isFlowAction(actionName)) return true;
         return false;
+    }
+
+    public void addParameterListener(ParameterCreationListener creationListener) {
+        this.parameterCreationListeners.add(creationListener);
     }
 }

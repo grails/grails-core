@@ -358,6 +358,7 @@
         <root url="file:///Developer/spring-webflow/trunk/spring-webflow/src/main/java" />
         <root url="file:///Developer/spring-webflow/trunk/spring-binding/src/main/java" />
         <root url="file:///Developer/spring-framework-2.5/src" />
+        <root url="file:///Developer/spring-framework-2.5/mock" />
       </SOURCES>
     </library>
     <library name="dom4j">

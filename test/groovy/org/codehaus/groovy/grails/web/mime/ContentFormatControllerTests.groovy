@@ -4,9 +4,10 @@
  * 
  * Created: Nov 26, 2007
  */
-package org.codehaus.groovy.grails.web.servlet.mvc
+package org.codehaus.groovy.grails.web.mime
 
 import org.codehaus.groovy.grails.commons.ConfigurationHolder
+import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
 
 class ContentFormatControllerTests extends AbstractGrailsControllerTests {
 
