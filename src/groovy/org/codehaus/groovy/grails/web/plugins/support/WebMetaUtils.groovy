@@ -79,6 +79,15 @@ class WebMetaUtils {
            mc.getGrailsAttributes = grailsAttrsObject
            // The GrailsApplication object
            mc.getGrailsApplication = {-> RCH.currentRequestAttributes().attributes.grailsApplication }
+
+            mc.getActionName = {->
+                RCH.currentRequestAttributes().actionName
+            }
+            mc.getControllerName = {->
+                RCH.currentRequestAttributes().controllerName
+            }
+
+
     }
 
 

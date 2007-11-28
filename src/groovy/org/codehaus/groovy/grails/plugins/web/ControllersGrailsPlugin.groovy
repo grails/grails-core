@@ -251,51 +251,6 @@ class ControllersGrailsPlugin {
 
 	}
 
-	/**
-	 * This creates the difference dynamic methods and properties on the controllers. Most methods
-	 * are implemented by looking up the current request from the RequestContextHolder (RCH)
-	 */
-
-	def registerCommonObjects(mc, application) {
-	   	def paramsObject = {->
-			RCH.currentRequestAttributes().params
-		}
-	    def flashObject = {->
-				RCH.currentRequestAttributes().flashScope
-		}
-	   	def sessionObject = {->
-			RCH.currentRequestAttributes().session
-		}
-	   	def requestObject = {->
-			RCH.currentRequestAttributes().currentRequest
-		}
-	   	def responseObject = {->
-			RCH.currentRequestAttributes().currentResponse
-		}
-	   	def servletContextObject = {->
-				RCH.currentRequestAttributes().servletContext
-		}
-	   	def grailsAttrsObject = {->
-				RCH.currentRequestAttributes().attributes
-		}
-
-		   // the params object
-		   mc.getParams = paramsObject
-		   // the flash object
-		   mc.getFlash = flashObject
-		   // the session object
-			mc.getSession = sessionObject
-		   // the request object
-			mc.getRequest = requestObject
-		   // the servlet context
-		   mc.getServletContext = servletContextObject
-		   // the response object
-			mc.getResponse = responseObject
-		   // The GrailsApplicationAttributes object
-		   mc.getGrailsAttributes = grailsAttrsObject
-		   // The GrailsApplication object
-		   mc.getGrailsApplication = {-> RCH.currentRequestAttributes().attributes.grailsApplication }
-	}
 
 
 	def doWithDynamicMethods = { ApplicationContext ctx ->
@@ -590,13 +545,6 @@ class ControllersGrailsPlugin {
             def webRequest = RCH.currentRequestAttributes()
             webRequest.attributes.getViewUri(name, webRequest.currentRequest)
         }
-        mc.getActionName = {->
-            RCH.currentRequestAttributes().actionName
-        }
-        mc.getControllerName = {->
-            RCH.currentRequestAttributes().controllerName
-        }
-
         mc.setErrors = { Errors errors ->
             RCH.currentRequestAttributes().setAttribute( GrailsApplicationAttributes.ERRORS, errors, 0)
         }
