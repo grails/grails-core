@@ -93,7 +93,7 @@
       <library name="Groovy">
         <CLASSES>
           <root url="jar://$MODULE_DIR$/lib/gant-0.3.4-SNAPSHOT.jar!/" />
-          <root url="jar://$MODULE_DIR$/lib/groovy-all-1.1-rc-1.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/groovy-all-1.1-rc-3.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES>
