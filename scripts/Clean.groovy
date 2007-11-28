@@ -35,7 +35,7 @@ target ('default': "Cleans a Grails project") {
 }   
 
 target ( clean: "Implementation of clean") {
-	depends( cleanCompiledSources, cleanGrailsApp)
+    depends( cleanCompiledSources, cleanGrailsApp, cleanWarFile)
 }
 
 target ( cleanCompiledSources : "Cleans compiled Java and Groovy sources") {
@@ -54,4 +54,16 @@ target (cleanGrailsApp : "Cleans the Grails application sources") {
 	def appDir = "${basedir}/web-app/WEB-INF/grails-app"
 	Ant.delete(dir:appDir)
 	Ant.mkdir(dir:appDir)	
+}
+
+target (cleanWarFile : "Cleans the deployable .war file") {
+    def fileName = grailsAppName
+    def version = Ant.antProject.properties.'app.version'
+    if (version) {
+        version = '-'+version
+    } else {
+        version = ''
+    }
+    warName = "${basedir}/${fileName}${version}.war"
+    Ant.delete(file:warName, failonerror:false)
 }
