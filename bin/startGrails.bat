@@ -118,7 +118,7 @@ set CMD_LINE_ARGS=%$
 
 :execute
 @rem Setup the command line
-set STARTER_CLASSPATH=%GRAILS_HOME%\lib\groovy-all-1.1-rc-1.jar
+set STARTER_CLASSPATH=%GRAILS_HOME%\lib\groovy-all-1.1-rc-3.jar;%GRAILS_HOME%\lib\endorsed\jaxen-1.1-beta-11.jar
 
 if exist "%USERPROFILE%/.groovy/init.bat" call "%USERPROFILE%/.groovy/init.bat"
 
@@ -127,13 +127,15 @@ if exist "%USERPROFILE%/.groovy/init.bat" call "%USERPROFILE%/.groovy/init.bat"
 @rem interpreter
 if "x" == "x%CP%" goto empty_cp
 :non_empty_cp
-set CP=%STARTER_CLASSPATH%;%CP%;.
+set CP=%CP%;.
 goto after_cp
 :empty_cp
-set CP=%STARTER_CLASSPATH%;.
-if "x" == "x%CLASSPATH%" goto after_cp
-set STARTER_CLASSPATH=%STARTER_CLASSPATH%;%CLASSPATH%
+set CP=.
 :after_cp
+
+if "x" == "x%CLASSPATH%" goto after_classpath
+set CP=%CP%;%CLASSPATH%
+:after_classpath
 
 set STARTER_MAIN_CLASS=org.codehaus.groovy.tools.GroovyStarter
 set STARTER_CONF=%GRAILS_HOME%\conf\groovy-starter.conf

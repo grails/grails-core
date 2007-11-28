@@ -110,7 +110,7 @@ fi
 if [ -z "$GROOVY_CONF" ]; then
     GROOVY_CONF="$GRAILS_HOME/conf/groovy-starter.conf"
 fi
-STARTER_CLASSPATH="$GRAILS_HOME/lib/groovy-all-1.1-rc-1.jar"
+STARTER_CLASSPATH="$GRAILS_HOME/lib/groovy-all-1.1-rc-3.jar:$GRAILS_HOME/lib/endorsed/jaxen-1.1-beta-11.jar"
 
 # Allow access to Cocoa classes on OS X
 if $darwin; then
@@ -121,13 +121,12 @@ fi
 # Setting a classpath using the -cp or -classpath option means not to use
 # the global classpath. Groovy behaves then the same as the java 
 # interpreter
-if [ -n "$CP" ]; then
-  CP=$CP:$STARTER_CLASSPATH:.
-  if [ -n "$CLASSPATH" ]; then
-    STARTER_CLASSPATH=$STARTER_CLASSPATH:$CLASSPATH
-  fi
+if [ -n "$CP" ] ; then
+    CP="$CP":.
+elif [ -n "$CLASSPATH" ] ; then
+    CP="$CLASSPATH":.
 else
-  CP=$STARTER_CLASSPATH:.
+    CP=.
 fi
 
 # Determine the Java command to use to start the JVM
