@@ -107,10 +107,8 @@ public abstract class AbstractClausedStaticPersistentMethod extends
 				throw new IllegalArgumentException("Property "+propertyName+" doesn't exist for method expression '"+this.type+"'");
 
 			for (int i = 0; i < args.length; i++) {
-				if(args[i] == null)
-					throw new IllegalArgumentException("Argument " + args[0] + " cannot be null");
-
-				// convert GStrings to strings
+                if(args[i] == null) continue;
+                // convert GStrings to strings
 				if(prop.getType() == String.class && (args[i] instanceof GString)) {
 					args[i] = args[i].toString();
 				}
@@ -173,7 +171,8 @@ public abstract class AbstractClausedStaticPersistentMethod extends
 						1, // argument count
 						isNegation(queryParameter, LESS_THAN) ) {
 					Criterion createCriterion() {
-						return Expression.lt( this.propertyName, arguments[0] );
+                        if(arguments[0] == null) return Expression.isNull(this.propertyName);
+                        return Expression.lt( this.propertyName, arguments[0] );
 					}
 				};
 			}
@@ -186,7 +185,8 @@ public abstract class AbstractClausedStaticPersistentMethod extends
 						1,
 						isNegation(queryParameter, GREATER_THAN_OR_EQUAL) ) {
 					Criterion createCriterion() {
-						return Expression.ge( this.propertyName, arguments[0] );
+                        if(arguments[0] == null) return Expression.isNull(this.propertyName);
+                        return Expression.ge( this.propertyName, arguments[0] );
 					}
 				};
 			}
@@ -199,7 +199,8 @@ public abstract class AbstractClausedStaticPersistentMethod extends
 						1,
 						isNegation(queryParameter, GREATER_THAN) ) {
 					Criterion createCriterion() {
-						return Expression.gt( this.propertyName, arguments[0] );
+                        if(arguments[0] == null) return Expression.isNull(this.propertyName);
+                        return Expression.gt( this.propertyName, arguments[0] );
 					}
 
 				};
@@ -213,7 +214,8 @@ public abstract class AbstractClausedStaticPersistentMethod extends
 						1,
 						isNegation(queryParameter, LIKE) ) {
 					Criterion createCriterion() {
-						return Expression.like( this.propertyName, arguments[0] );
+                        if(arguments[0] == null) return Expression.isNull(this.propertyName);
+                        return Expression.like( this.propertyName, arguments[0] );
 					}
 
 				};
@@ -227,6 +229,7 @@ public abstract class AbstractClausedStaticPersistentMethod extends
                         1,
                         isNegation(queryParameter, ILIKE) ) {
                     Criterion createCriterion() {
+                        if(arguments[0] == null) return Expression.isNull(this.propertyName);
                         return Expression.ilike( this.propertyName, arguments[0] );
                     }
 
@@ -241,7 +244,7 @@ public abstract class AbstractClausedStaticPersistentMethod extends
 						0,
 						isNegation(queryParameter, IS_NOT_NULL) ) {
 					Criterion createCriterion() {
-							return Expression.isNotNull( this.propertyName );
+                            return Expression.isNotNull( this.propertyName );
 					}
 
 				};
@@ -284,7 +287,8 @@ public abstract class AbstractClausedStaticPersistentMethod extends
 						1,
 						isNegation(queryParameter, NOT_EQUAL) ) {
 					Criterion createCriterion() {
-						return Expression.ne( this.propertyName,this.arguments[0]);
+                        if(arguments[0] == null) return Expression.isNotNull(this.propertyName);
+                        return Expression.ne( this.propertyName,this.arguments[0]);
 					}
 
 				};
@@ -299,7 +303,8 @@ public abstract class AbstractClausedStaticPersistentMethod extends
 						1,
 						isNegation(queryParameter, EQUAL) ) {
 					Criterion createCriterion() {
-						return Expression.eq( this.propertyName,this.arguments[0]);
+                        if(arguments[0] == null) return Expression.isNull(this.propertyName);
+                        return Expression.eq( this.propertyName,this.arguments[0]);
 					}
 				};
 			}
