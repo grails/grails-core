@@ -17,6 +17,21 @@ class ConstructorAutowiringTests extends AbstractGrailsHibernateTests {
 	    assertEquals "foo", b.talkToService()
 	}
 
+	void testAutowiringFromGet() {
+        def bookClass = ga.getDomainClass("Book").clazz
+
+        assert bookClass.newInstance(title:"The Stand").save(flush:true)
+
+        assertEquals 1, bookClass.count()
+        session.clear()
+
+        def b = bookClass.get(1)
+	    assert b.bookService
+	    assertEquals "The Stand", b.title
+	    assertEquals "foo", b.talkToService()        
+
+    }
+
 	void onSetUp() {
 		this.gcl.parseClass('''
 class Book {

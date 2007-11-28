@@ -20,6 +20,9 @@ import org.hibernate.type.Type
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty
 import org.codehaus.groovy.grails.orm.hibernate.cfg.Mapping
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsDomainBinder
+import org.springframework.context.ApplicationContextAware
+import org.springframework.context.ApplicationContext
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory
 
 /**
  * <p>An interceptor that invokes closure events on domain entities such as beforeInsert, beforeUpdate and beforeDelete
@@ -29,14 +32,23 @@ import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsDomainBinder
  * @author Graeme Rocher
  * @since 1.0
  */
-class ClosureEventTriggeringInterceptor extends EmptyInterceptor {
+class ClosureEventTriggeringInterceptor extends EmptyInterceptor implements ApplicationContextAware {
 
     static final String ONLOAD_EVENT = 'onLoad'
     static final String BEFORE_INSERT_EVENT = 'beforeInsert'
     static final String BEFORE_UPDATE_EVENT = 'beforeUpdate'
     static final String BEFORE_DELETE_EVENT = 'beforeDelete'
 
+    private ApplicationContext applicationContext
+
+    public void setApplicationContext(ApplicationContext applicationContext) {
+        this.applicationContext = applicationContext
+    }
+
     public boolean onLoad(Object entity, Serializable id, Object[] state, String[] propertyNames, Type[] types)  {
+        if(applicationContext) {
+            applicationContext.autowireCapableBeanFactory.autowireBeanProperties(entity,AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false)
+        }
         return triggerEvent(ONLOAD_EVENT, entity, state, propertyNames.toList())
     }
     public boolean onSave(Object entity, Serializable id, Object[] state, String[] propertyNames, Type[] types) {
@@ -112,5 +124,7 @@ class ClosureEventTriggeringInterceptor extends EmptyInterceptor {
         return false
 
     }
+
+
 
 }

@@ -125,6 +125,7 @@ class HibernateGrailsPlugin {
 			lobHandlerDetector(SpringLobHandlerDetectorFactoryBean) {
 				dataSource = dataSource
 			}
+			eventTriggeringInterceptor(ClosureEventTriggeringInterceptor)
             sessionFactory(ConfigurableLocalSessionFactoryBean) {
                 dataSource = dataSource
                 if (application.classLoader.getResource("hibernate.cfg.xml")) {
@@ -136,8 +137,9 @@ class HibernateGrailsPlugin {
                 hibernateProperties = hibernateProperties
                 grailsApplication = ref("grailsApplication", true) 
 				lobHandler = lobHandlerDetector
-				entityInterceptor = new ClosureEventTriggeringInterceptor()
+				entityInterceptor = eventTriggeringInterceptor
             }
+
             transactionManager(HibernateTransactionManager) {
                 sessionFactory = sessionFactory
             }
