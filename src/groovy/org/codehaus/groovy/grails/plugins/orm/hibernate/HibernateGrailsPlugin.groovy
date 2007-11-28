@@ -352,6 +352,18 @@ class HibernateGrailsPlugin {
         metaClass.'static'.executeUpdate = {String query, Collection args ->
             template.bulkUpdate(query, GrailsClassUtils.collectionToObjectArray(args))
         }
+        metaClass.'static'.executeUpdate = {String query, Map argMap ->
+            template.execute(  { session ->
+                                    Query queryObject = session.createQuery(query)
+                                    SessionFactoryUtils.applyTransactionTimeout(queryObject, template.sessionFactory);
+                                    for (entry in argMap) {
+                                        queryObject.setParameter(entry.key, entry.value)
+                                    }
+                                    queryObject.executeUpdate()
+                                } as HibernateCallback
+                            , true);
+        }
+
 
         def listMethod = new ListPersistentMethod(sessionFactory, classLoader)
         metaClass.'static'.list = {-> listMethod.invoke(domainClassType, "list", [] as Object[])}
