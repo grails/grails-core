@@ -21,8 +21,9 @@ grails.mime.types = [ html: ['text/html','application/xhtml+xml'],
                       all: '*/*',
                       json: 'text/json'
                     ]
-// disables HTML escaping globally (not recommended)                    
-grails.views.autoEscapeHtml=true
+// The default codec used to encode data with ${}
+grails.views.default.codec="none" // none, html, base64
+
 // enabled native2ascii conversion of i18n properties files
 grails.enable.native2ascii = true
 

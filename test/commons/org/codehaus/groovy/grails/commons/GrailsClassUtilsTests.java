@@ -44,6 +44,7 @@ public class GrailsClassUtilsTests extends TestCase {
 
     public void testGetLogicalPropertyName() {
         assertEquals("myFunky", GrailsClassUtils.getLogicalPropertyName("MyFunkyController", "Controller"));
+        assertEquals("HTML", GrailsClassUtils.getLogicalPropertyName("HTMLCodec", "Codec"));
     }
 
     public void testBooleanMatchesboolean()

@@ -18,11 +18,10 @@ package org.codehaus.groovy.grails.web.pages;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.grails.commons.*;
 import org.codehaus.groovy.grails.web.taglib.GrailsTagRegistry;
 import org.codehaus.groovy.grails.web.taglib.GroovySyntaxTag;
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
-import org.codehaus.groovy.grails.commons.ConfigurationHolder;
-import org.codehaus.groovy.runtime.typehandling.DefaultTypeTransformation;
 
 import java.io.*;
 import java.util.*;
@@ -77,8 +76,12 @@ public class Parse implements Tokens {
         "org.springframework.web.util.*",
         "grails.util.GrailsUtil"
     };
-    private static final String AUTO_ESCAPE_HTML = "grails.views.autoEscapeHtml";
-    private boolean escapeHTML = true;
+    private static final String DEFAULT_CODEC = "grails.views.default.codec";
+    
+    private String codecName;
+    private static final String IMPORT_DIRECTIVE = "import";
+    private static final String CONTENT_TYPE_DIRECTIVE = "contentType";
+    private static final String DEFAULT_CODEC_DIRECTIVE = "defaultCodec";
 
     public String getContentType() {
         return this.contentType;
@@ -106,12 +109,24 @@ public class Parse implements Tokens {
         this.pageName = filename;
         makeName(name);
         Map config = ConfigurationHolder.getFlatConfig();
-        Object o = config.get(AUTO_ESCAPE_HTML);
-        if(o!=null) {
-            this.escapeHTML = DefaultTypeTransformation.castToBoolean(o);
-        }
+        Object o = config.get(DEFAULT_CODEC);
+        lookupCodec(o);
 
     } // Parse()
+
+    private void lookupCodec(Object o) {
+        if(o!=null) {
+            String codecName = o.toString();
+            GrailsApplication app = ApplicationHolder.getApplication();
+            if(app != null) {
+                GrailsClass codecClass = app.getArtefactByLogicalPropertyName(CodecArtefactHandler.TYPE, codecName);
+                if(codecClass == null) codecClass = app.getArtefactByLogicalPropertyName(CodecArtefactHandler.TYPE, codecName.toUpperCase());
+                if(codecClass != null) {
+                    this.codecName = codecClass.getFullName();
+                }
+            }
+        }
+    }
 
     public int[] getLineNumberMatrix() {
         return out.getLineNumbers();
@@ -160,8 +175,9 @@ public class Parse implements Tokens {
             if (!mat.find(ix)) return;
             String name = mat.group(1);
             String value = mat.group(2);
-            if (name.equals("import")) pageImport(value);
-            if (name.equals("contentType")) contentType(value);
+            if (name.equals(IMPORT_DIRECTIVE)) pageImport(value);
+            if (name.equals(CONTENT_TYPE_DIRECTIVE)) contentType(value);
+            if (name.equals(DEFAULT_CODEC_DIRECTIVE)) lookupCodec(value);
             ix = mat.end();
         }
     } // directPage()
@@ -170,13 +186,21 @@ public class Parse implements Tokens {
         this.contentType = value;
     }
 
+    private void scriptletExpr() {
+        if (!finalPass) return;
+        if (LOG.isDebugEnabled()) LOG.debug("parse: expr");
+
+        String text = scan.getToken().trim();
+        out.printlnToResponse(text);
+    }
+
     private void expr() {
         if (!finalPass) return;
         if (LOG.isDebugEnabled()) LOG.debug("parse: expr");
 
         String text = scan.getToken().trim();
-        if(contentType.indexOf("text/html") > -1 && escapeHTML) {
-            out.printlnToResponse("HtmlUtils.htmlEscape("+text+"?.toString())");            
+        if(codecName != null) {
+            out.printlnToResponse("Codec.encode("+text+")");            
         }
         else {
             out.printlnToResponse(text);
@@ -289,13 +313,8 @@ public class Parse implements Tokens {
             out.println(" extends GroovyPage {");
             out.println("public Object run() {");            
 
-        } else {
-            for (int i = 0; i < DEFAULT_IMPORTS.length; i++) {
-                out.print("import ");
-                out.println(DEFAULT_IMPORTS[i]);
-
-            }
         }
+
         loop: for (;;) {
             if(doNextScan)
                 state = scan.nextToken();
@@ -305,7 +324,7 @@ public class Parse implements Tokens {
             switch (state) {
                 case EOF: break loop;
                 case HTML: html(); break;
-                case JEXPR: expr(); break;
+                case JEXPR: scriptletExpr(); break;
                 case JSCRIPT: script(false); break;
                 case JDIRECT: direct(); break;
                 case JDECLAR: declare(false); break;
@@ -332,7 +351,20 @@ public class Parse implements Tokens {
             }
             out.println("}");
         }
+        else {
+            for (int i = 0; i < DEFAULT_IMPORTS.length; i++) {
+                out.print("import ");
+                out.println(DEFAULT_IMPORTS[i]);
+
+            }
+            if(codecName != null) {
+                out.print("import ");
+                out.print(codecName);
+                out.println(" as Codec");
+            }            
+        }
     } // page()
+
 
     private void endTag() {
         if (!finalPass) return;

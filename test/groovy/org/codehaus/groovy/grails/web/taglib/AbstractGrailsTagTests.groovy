@@ -24,6 +24,7 @@ import org.springframework.web.servlet.DispatcherServlet
 import org.springframework.web.servlet.i18n.AcceptHeaderLocaleResolver;
 import org.codehaus.groovy.grails.commons.ApplicationHolder
 import org.codehaus.groovy.grails.commons.spring.WebRuntimeSpringConfiguration
+import org.codehaus.groovy.grails.commons.ConfigurationHolder
 
 abstract class AbstractGrailsTagTests extends GroovyTestCase {
 
@@ -44,7 +45,16 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
 	StaticMessageSource messageSource;
 
 
+    def withConfig(String text, Closure callable) {
+        def config = new ConfigSlurper().parse(text)
+        try {
+            ConfigurationHolder.config = config
+            callable()
 
+        }finally {
+            ConfigurationHolder.config = null            
+        }
+    }
 
 	def withTag(String tagName, Writer out, Closure callable) {
 		def result = null

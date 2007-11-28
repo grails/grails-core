@@ -255,12 +255,19 @@ public class GrailsClassUtils {
      * @return The property name representation
      */
     public static String getPropertyNameRepresentation(String name) {
-        String propertyName = name.substring(0,1).toLowerCase(Locale.ENGLISH) + name.substring(1);
-        if(propertyName.indexOf(' ') > -1) {
-            propertyName = propertyName.replaceAll("\\s", "");
+
+        if(name.length() > 1 && Character.isUpperCase(name.charAt(0)) && Character.isUpperCase(name.charAt(1)))  {
+            return name;
         }
-        return propertyName;
-    }  
+        else {
+
+            String propertyName = name.substring(0,1).toLowerCase(Locale.ENGLISH) + name.substring(1);
+            if(propertyName.indexOf(' ') > -1) {
+                propertyName = propertyName.replaceAll("\\s", "");
+            }
+            return propertyName;
+        }
+    }
        
     /**
      * Returns the class name representation of the given name

@@ -15,12 +15,44 @@ import org.codehaus.groovy.grails.commons.ConfigurationHolder
 
 class StaticContentRenderingTests extends AbstractGrailsTagTests {
 
+    void testExpressionVsScriptletOutput() {
+        withConfig("grails.views.default.codec='HTML'") {
 
-    void testDefaultHtmlEscaping() {
-        def template = '${test}'
+            def template = '${test}<%=test%>'
 
+            assertOutputEquals('&lt;html&gt;&lt;body&gt;hello&lt;/body&gt;&lt;/html&gt;<html><body>hello</body></html>', template, [test:"<html><body>hello</body></html>"])
+        }
+    }
+
+    void testImports() {
+        def template = '<%@page import="java.text.SimpleDateFormat"%><% format = new SimpleDateFormat() %> ${format.getClass()}'
+
+        assertOutputEquals('class java.text.SimpleDateFormat', template)
+    }
+
+    void testHtmlEscaping() {
+        withConfig("grails.views.default.codec='HTML'") {
+
+            def template = '${test}'
+
+            assertOutputEquals('&lt;html&gt;&lt;body&gt;hello&lt;/body&gt;&lt;/html&gt;', template, [test:"<html><body>hello</body></html>"])
+        }
+    }
+
+    void testHtmlEscapingLowerCase() {
+        withConfig("grails.views.default.codec='html'") {
+
+            def template = '${test}'
+
+            assertOutputEquals('&lt;html&gt;&lt;body&gt;hello&lt;/body&gt;&lt;/html&gt;', template, [test:"<html><body>hello</body></html>"])
+        }
+    }
+
+    void testHtmlEscapingWithPageDirective() {
+        def template = '<%@ defaultCodec="HTML" %> ${test}'
         assertOutputEquals('&lt;html&gt;&lt;body&gt;hello&lt;/body&gt;&lt;/html&gt;', template, [test:"<html><body>hello</body></html>"])
     }
+
 
     void testNotHtmlEscaping() {
         def template = '<%@ contentType="text/plain" %> ${test}'
@@ -30,18 +62,10 @@ class StaticContentRenderingTests extends AbstractGrailsTagTests {
     }
 
     void testDisabledHtmlEscaping() {
-        def config = new ConfigSlurper().parse('grails.views.autoEscapeHtml=false')
-        try {
-            ConfigurationHolder.config = config
-            def template = '${test}'
-            assertOutputEquals('<html><body>hello</body></html>', template, [test: "<html><body>hello</body></html>"])
-        } finally {
-            ConfigurationHolder.config = null
+        withConfig("grails.views.default.codec='none'") {
+                def template = '${test}'
+                assertOutputEquals('<html><body>hello</body></html>', template, [test: "<html><body>hello</body></html>"])
         }
-
-
-
-        
     }
 
     

@@ -418,17 +418,17 @@ class PrototypeProvider implements JavascriptProvider {
 					ajaxOptions << "parameters:${params}"
 				}
             }
-            // remaining options
-            optionsAttr?.each { k, v ->
-            	if(k!='url') {
-	                 switch(v) {
-	                    case 'true': ajaxOptions << "${k}:${v}"; break;
-	                    case 'false': ajaxOptions << "${k}:${v}"; break;
-	                    case ~/\s*function(\w*)\s*/: ajaxOptions << "${k}:${v}"; break;
-	                    case ~/Insertion\..*/: ajaxOptions << "${k}:${v}"; break;
-	                    default:ajaxOptions << "${k}:'${v}'"; break;
-	                 }            	
-            	}
+        }
+        // remaining options
+        optionsAttr?.each { k, v ->
+            if(k!='url') {
+                switch(v) {
+                    case 'true': ajaxOptions << "${k}:${v}"; break;
+                    case 'false': ajaxOptions << "${k}:${v}"; break;
+                    case ~/\s*function(\w*)\s*/: ajaxOptions << "${k}:${v}"; break;
+                    case ~/Insertion\..*/: ajaxOptions << "${k}:${v}"; break;
+                    default:ajaxOptions << "${k}:'${v}'"; break;
+                }
             }
         }
 
