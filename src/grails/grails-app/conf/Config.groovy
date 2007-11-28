@@ -29,10 +29,10 @@ grails.enable.native2ascii = true
 
 // log4j configuration
 log4j = '''
-appender.stdout = org.apache.log4j.ConsoleAppender
-appender.stdout.layout=org.apache.log4j.PatternLayout
-appender.stdout.layout.ConversionPattern=[%r] %c{2} %m%n
-rootLogger=error,stdout
+log4j.appender.stdout = org.apache.log4j.ConsoleAppender
+log4j.appender.stdout.layout=org.apache.log4j.PatternLayout
+log4j.appender.stdout.layout.ConversionPattern=[%r] %c{2} %m%n
+log4j.rootLogger=error,stdout
 
 # This logger is for your own application artefact logs
 # Artefacts are logged by their type and optionally class name i.e:
@@ -51,7 +51,7 @@ rootLogger=error,stdout
 log4j.logger.grails.app=error
 
 # This logger is for Grails' public APIs within the grails. package
-logger.grails=error
+log4j.logger.grails=error
 
 # This logger is useful if you just want to see what Grails
 # configures with Spring at runtime. Setting to debug will show
