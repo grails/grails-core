@@ -8,7 +8,10 @@
         <fileset dir="${grails.lib}">
             <include name="*.jar"/>
         </fileset>
-	    <fileset dir="${env.JAVA_HOME}/lib">
+        <fileset dir="${grails.lib}/endorsed">
+            <include name="*.jar"/>
+        </fileset>        
+        <fileset dir="${env.JAVA_HOME}/lib">
 	        <include name="tools.jar"/>
 	    </fileset>	
         <pathelement location="${grails.src.war}/WEB-INF"/> 
