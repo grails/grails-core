@@ -38,13 +38,15 @@ class FormatTagLib {
      * @see java.text.SimpleDateFormat
      */
     def formatDate = { attrs ->
-        def date = attrs.get('date')
-
-
-
-        if (!date) {
+    
+    	def date
+    	if (attrs.containsKey('date')) {
+        	date = attrs.get('date')
+        	if(date == null) return
+    	}
+    	else {
             date = new Date()
-        }
+    	}
 
         def formatName = attrs.get('formatName')
         def format = attrs.get('format')
@@ -54,15 +56,14 @@ class FormatTagLib {
             if(!format) throwTagError("Attribute [formatName] of Tag [formatDate] specifies a format key [$formatName] that does not exist within a message bundle!")
         }
         else if (!format) {
-                format = "yyyy-MM-dd HH:mm:ss z"
+            format = "yyyy-MM-dd HH:mm:ss z"
         }
 
         out << new java.text.SimpleDateFormat(format).format(date)
     }
 
     /**
-     * Outputs the given number in the specified format.  If no
-     * <code>number</code> is given, then zero is used.  If the
+     * Outputs the given number in the specified format.  If the
      * <code>format</code> option is not given, then the number is output
      * using the default format.
      *
@@ -71,17 +72,19 @@ class FormatTagLib {
      * @see java.text.DecimalFormat
      */
     def formatNumber = { attrs ->
-        def number = attrs.get('number')
 
-        if (!number) {
-                number = new Double(0)
-        }
-
+		if (!attrs.containsKey('number'))
+			throwTagError("Tag [formatNumber] is missing required attribute [number]")
+		
+    	def number = attrs.get('number')
+    	if (number == null) return
+    	
         def formatName = attrs.get('formatName')
         def format = attrs.get('format')
+        
         if(!format && formatName) {
             format = message(code:formatName)
-            if(!format) throwTagError("Attribute [formatName] of Tag [formatDate] specifies a format key [$formatName] that does not exist within a message bundle!")
+            if(!format) throwTagError("Attribute [formatName] of Tag [formatNumber] specifies a format key [$formatName] that does not exist within a message bundle!")
         }
         else if (!format) {
                 format = "0"
