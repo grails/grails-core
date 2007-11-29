@@ -97,7 +97,12 @@ public class DefaultPluginMetaManager implements PluginMetaManager {
                     if(StringUtils.isBlank(pluginName)) throw new GrailsConfigurationException("Plug-in descriptor ["+pluginDescriptor+"] doesn't specify a plug-in name. It must be corrupted, try re-install the plug-in");
                     if(StringUtils.isBlank(pluginVersion)) throw new GrailsConfigurationException("Plug-in descriptor ["+pluginDescriptor+"] with name ["+pluginName+"] doesn't specify a plug-in version. It must be corrupted, try re-install the plug-in");
 
-                    List grailsClasses = doc.selectNodes("/plugin/resources/resource");
+                    List grailsClasses = new ArrayList();
+                    try{
+                        grailsClasses = doc.selectNodes("/plugin/resources/resource");
+                    }catch(Exception e){
+                        //ignore missing nodes
+                    }
                     List pluginResources = new ArrayList();
                     for (Iterator j = grailsClasses.iterator(); j.hasNext();) {
                         Node node = (Node) j.next();
