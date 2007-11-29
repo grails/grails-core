@@ -70,8 +70,6 @@ Grails home is set to: ${grailsHome}
             println "Base Directory: ${baseDir.absolutePath}"
 		         		    
 		    rootLoader = getClass().classLoader ? getClass().classLoader.rootLoader : Thread.currentThread().getContextClassLoader().rootLoader
-
-		    println "ROOTLOADER IS $rootLoader"
 			def baseName = new File(baseDir.absolutePath).name
 		    classesDir = new File("${userHome}/.grails/${grailsVersion}/projects/${baseName}/classes")
 		
