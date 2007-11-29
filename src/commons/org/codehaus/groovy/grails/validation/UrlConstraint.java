@@ -14,8 +14,11 @@
  */
 package org.codehaus.groovy.grails.validation;
 
+import org.codehaus.groovy.grails.validation.routines.RegexValidator;
+import org.codehaus.groovy.grails.validation.routines.UrlValidator;
 import org.springframework.validation.Errors;
-import org.apache.commons.validator.UrlValidator;
+
+import java.util.List;
 
 /**
  * A Constraint that validates a url
@@ -29,6 +32,7 @@ import org.apache.commons.validator.UrlValidator;
 class UrlConstraint extends AbstractConstraint {
 
     private boolean url;
+    private UrlValidator validator;
 
 
     /* (non-Javadoc)
@@ -43,10 +47,26 @@ class UrlConstraint extends AbstractConstraint {
      * @see org.codehaus.groovy.grails.validation.ConstrainedProperty.AbstractConstraint#setParameter(java.lang.Object)
      */
     public void setParameter(Object constraintParameter) {
-        if(!(constraintParameter instanceof Boolean))
-            throw new IllegalArgumentException("Parameter for constraint ["+ConstrainedProperty.URL_CONSTRAINT+"] of property ["+constraintPropertyName+"] of class ["+constraintOwningClass+"] must be a boolean value");
+        RegexValidator domainValidator = null;
 
-        this.url = ((Boolean)constraintParameter).booleanValue();
+        if (constraintParameter instanceof Boolean) {
+            this.url = ((Boolean) constraintParameter).booleanValue();
+        } else if (constraintParameter instanceof String) {
+            this.url = true;
+            domainValidator = new RegexValidator((String) constraintParameter);
+        } else if (constraintParameter instanceof List) {
+            this.url = true;
+            List regexpList = (List) constraintParameter;
+            domainValidator = new RegexValidator((String[]) regexpList.toArray(new String[regexpList.size()]));
+        } else {
+            throw new IllegalArgumentException("Parameter for constraint [" + ConstrainedProperty.URL_CONSTRAINT + "] of property [" + constraintPropertyName + "] of class [" + constraintOwningClass + "] must be a boolean, string, or list value");
+        }
+
+        validator = new UrlValidator(
+                domainValidator,
+                UrlValidator.ALLOW_ALL_SCHEMES + UrlValidator.ALLOW_2_SLASHES
+        );
+
         super.setParameter(constraintParameter);
     }
 
@@ -55,12 +75,10 @@ class UrlConstraint extends AbstractConstraint {
     }
 
     protected void processValidate(Object target, Object propertyValue, Errors errors) {
-        if(url) {
-            UrlValidator urlValidator = new UrlValidator(UrlValidator.ALLOW_ALL_SCHEMES + UrlValidator.ALLOW_2_SLASHES);
-
-            if( !urlValidator.isValid(propertyValue.toString())) {
-                Object[] args = new Object[] { constraintPropertyName, constraintOwningClass, propertyValue };
-                super.rejectValue(target,errors,ConstrainedProperty.DEFAULT_INVALID_URL_MESSAGE_CODE, ConstrainedProperty.URL_CONSTRAINT + ConstrainedProperty.INVALID_SUFFIX,args );
+        if (url) {
+            if (!validator.isValid(propertyValue.toString())) {
+                Object[] args = new Object[]{constraintPropertyName, constraintOwningClass, propertyValue};
+                super.rejectValue(target, errors, ConstrainedProperty.DEFAULT_INVALID_URL_MESSAGE_CODE, ConstrainedProperty.URL_CONSTRAINT + ConstrainedProperty.INVALID_SUFFIX, args);
             }
         }
     }
