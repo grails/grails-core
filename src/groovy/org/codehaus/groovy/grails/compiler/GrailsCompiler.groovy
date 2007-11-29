@@ -40,23 +40,20 @@ import org.codehaus.groovy.control.*
 class GrailsCompiler extends Groovyc {
 
     GrailsCompiler() {
-        jointCompilationOptions = "-j"
     }
 
 
 	def resolver = new org.springframework.core.io.support.PathMatchingResourcePatternResolver()
-	def compileList = []
+	
 	private destList = []
 
 	String resourcePattern
 	String projectName  
 	boolean cleanJavaCompile = false
 
-	void resetFileLists() { compileList.clear() }
-
-	File[] getFileList() { compileList as File[] }
 
 	void scanDir(File srcDir, File destDir, String[] files) {
+        def srcList = []
         def srcPath = srcDir.absolutePath
         def destPath = destDir.absolutePath
         for(f in files) {
@@ -79,10 +76,11 @@ class GrailsCompiler extends Groovyc {
             }
                        
             if(sf.lastModified() > df.lastModified()) {
-                compileList << sf
+                srcList << sf
                 destList << df
             }            
         }
+        addToCompileList(srcList as File[])
     }
 
     File createTempDir()  {
@@ -101,64 +99,37 @@ class GrailsCompiler extends Groovyc {
     }
 
     void compile() {
-        setJointCompilationOptions("-j -Jclasspath=\"${getClasspath()}\"")
 
-        def resources = resourcePattern ? resolveResources(resourcePattern) : [] as Resource[]
-		def resourceLoader = new GrailsResourceLoader(resources)
-        GrailsResourceLoaderHolder.resourceLoader = resourceLoader
-	
-		if(compileList) {                                      
-			// if there are Java sources do a complete re-compile
-			if(cleanJavaCompile && compileList.find { it.name.endsWith(".java") }) {
-				compileList.clear()
-			    def m = new IdentityMapper()
-        		def sfs = new SourceFileScanner(this);
-				for(srcPath in src.list()) {
-					def srcDir = getProject().resolveFile(srcPath)
-					def files = getDirectoryScanner(srcDir).getIncludedFiles()
-					files = sfs.restrictAsFiles(files, srcDir, destDir, m)					
-					for(f in files) {
-						if(f.name.endsWith(".groovy") || f.name.endsWith(".java"))
-							compileList << f
-					}
-						
-				}
-			} 
-	        println "Compiling ${compileList.size()} source file${compileList ? 's' : ''} to ${destdir}"
-	        if(classpath) configuration.classpath = classpath.toString()
-            configuration.targetDirectory = destdir
-	        if(encoding)configuration.sourceEncoding = encoding
-
-
-			def classInjectors = [new DefaultGrailsDomainClassInjector()] as ClassInjector[]
-
-	        def unit = new JavaAwareCompilationUnit(configuration, buildClassLoaderFor(configuration, resourceLoader, classInjectors));
-			def injectionOperation = new GrailsAwareInjectionOperation(resourceLoader, classInjectors)
-	        unit.addPhaseOperation(injectionOperation, Phases.CONVERSION)
-	        unit.addSources(compileList as File[])
-
+        if(compileList) {
 
             long now = System.currentTimeMillis()
             try {
-                unit.compile()
+                super.compile()
                 getDestdir().setLastModified(now)
-	        }
-	        catch(Exception e) {
-                def ErrorReporter reporter = new org.codehaus.groovy.tools.ErrorReporter(e, false)
-	            def sw = new StringWriter()
-				reporter.write( new PrintWriter(sw) );
-	            throw new BuildException(sw.toString(), e, getLocation())
-	        }
-	        finally {
+            }
+            finally {
                 // set the destination files as modified so recompile doesn't happen continuously
                 for(f in destList) {
                     f.setLastModified(now)
-                }                
+                }
             }
-		}
+        }
+
     }
 
-    private GroovyClassLoader buildClassLoaderFor(CompilerConfiguration configuration, def resourceLoader, ClassInjector[] classInjectors) {
+    protected CompilationUnit makeCompileUnit() {
+        def resources = resourcePattern ? resolveResources(resourcePattern) : [] as Resource[]
+        def resourceLoader = new GrailsResourceLoader(resources)
+        GrailsResourceLoaderHolder.resourceLoader = resourceLoader
+        
+        def unit = super.makeCompileUnit();
+        def classInjectors = [new DefaultGrailsDomainClassInjector()] as ClassInjector[]
+        def injectionOperation = new GrailsAwareInjectionOperation(resourceLoader, classInjectors)
+        unit.addPhaseOperation(injectionOperation, Phases.CONVERSION)
+        return unit        
+    }
+
+    protected GroovyClassLoader buildClassLoaderFor(CompilerConfiguration configuration, def resourceLoader, ClassInjector[] classInjectors) {
         ClassLoader parent = this.getClass().getClassLoader()
         if (parent instanceof AntClassLoader) {
             AntClassLoader antLoader = parent;
@@ -181,9 +152,6 @@ class GrailsCompiler extends Groovyc {
                     antLoader.addPathElement(cpEntry);
             }
         }
-
-
-
         def classLoader = new GrailsAwareClassLoader(	parent,
 												 		configuration	)
 
@@ -192,6 +160,7 @@ class GrailsCompiler extends Groovyc {
 
 		return classLoader
     }
+
 	def resolveResources(String pattern) {
 		try {
 			return resolver.getResources(pattern)

@@ -69,9 +69,10 @@ compilerClasspath = { testSources ->
 	if(!excludedPaths.contains(dir.name) && dir.isDirectory()) {
 		src(path:"${dir}")
 	}
-	}
-	src(path:"${basedir}/src/java")
-	src(path:"${basedir}/src/groovy")   
+	}	
+	src(path:"${basedir}/src/groovy")
+    src(path:"${basedir}/src/java")
+    javac(classpathref:"grails.classpath") 
 	if(testSources) {
          src(path:"${basedir}/test/unit")
          src(path:"${basedir}/test/integration")
