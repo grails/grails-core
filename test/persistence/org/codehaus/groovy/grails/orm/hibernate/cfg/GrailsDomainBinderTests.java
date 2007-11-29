@@ -18,13 +18,7 @@ package org.codehaus.groovy.grails.orm.hibernate.cfg;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.IntRange;
 import groovy.lang.ObjectRange;
-
-import java.math.BigDecimal;
-import java.util.Arrays;
-import java.util.List;
-
 import junit.framework.TestCase;
-
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
 import org.codehaus.groovy.grails.commons.DefaultGrailsDomainClass;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
@@ -32,9 +26,16 @@ import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 import org.codehaus.groovy.grails.validation.TestClass;
 import org.hibernate.mapping.Column;
+import org.hibernate.mapping.ForeignKey;
 import org.hibernate.mapping.PersistentClass;
+import org.hibernate.mapping.Table;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
+
+import java.math.BigDecimal;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * @author Jason Rudolph
@@ -44,6 +45,93 @@ import org.springframework.beans.BeanWrapperImpl;
  * Created: 06-Jan-2007
  */
 public class GrailsDomainBinderTests extends TestCase {
+    
+    public void testOneToOneBinding() {
+        GroovyClassLoader cl = new GroovyClassLoader();
+        cl.parseClass(
+            "class Species {\n" +
+            "    Long id \n" +
+            "    Long version \n" +
+            "    String name \n" +
+            "} \n" +
+            "class Pet {\n" +
+            "    Long id \n" +
+            "    Long version \n" +
+            "    Species species \n" +
+            "}");
+
+        DefaultGrailsDomainConfiguration config = getDomainConfig(cl, 
+                cl.getLoadedClasses());
+
+        PersistentClass petClass = config.getClassMapping("Pet");        
+        Iterator fks = petClass.getTable().getForeignKeyIterator();        
+        assertTrue("PET table has a FK", fks.hasNext());
+        if (fks.hasNext()) {
+            ForeignKey fk = (ForeignKey) fks.next();
+            assertEquals("FK references table", "species", fk.getReferencedTable().getName());
+        }
+    }
+
+    public void testOneToManyBinding() {
+        GroovyClassLoader cl = new GroovyClassLoader();
+        cl.parseClass(
+            "class Visit {\n" +
+            "    Long id \n" +
+            "    Long version \n" +
+            "    String description \n" +
+            "} \n" +
+            "class Pet {\n" +
+            "    Long id \n" +
+            "    Long version \n" +
+            "    Set visits \n" +
+            "    static hasMany = [visits:Visit] \n" +
+            "}");
+        DefaultGrailsDomainConfiguration config = getDomainConfig(cl, 
+            cl.getLoadedClasses());
+
+        PersistentClass visitClass = config.getClassMapping("Visit");        
+        Iterator fks = visitClass.getTable().getForeignKeyIterator();         
+        assertTrue("VISIT table has a FK", fks.hasNext());
+        if (fks.hasNext()) {
+            ForeignKey fk = (ForeignKey) fks.next();
+            assertEquals("FK references table", "pet", fk.getReferencedTable().getName());
+        }
+    }
+    
+    public void testManyToManyBinding() {
+        GroovyClassLoader cl = new GroovyClassLoader();
+        cl.parseClass(
+            "class Specialty {\n" +
+            "    Long id \n" +
+            "    Long version \n" +
+            "    String name \n" +
+            "    Set vets \n" +
+            "    static hasMany = [vets:Vet] \n" +
+            "    static belongsTo = Vet \n" +
+            "} \n" +
+            "class Vet {\n" +
+            "    Long id \n" +
+            "    Long version \n" +
+            "    Set specialities \n" +
+            "    static hasMany = [specialities:Specialty] \n" +
+            "}");
+        DefaultGrailsDomainConfiguration config = getDomainConfig(cl, 
+            cl.getLoadedClasses());
+        
+        int totalTables = 0;
+        for (Iterator tableMappings = config.getTableMappings(); tableMappings.hasNext(); ) {
+            totalTables++;
+            Table table = (Table) tableMappings.next();
+            if ("vet_specialty".equals(table.getName())) {
+                int vetSpecialtyFks = 0;
+                for (Iterator fks = table.getForeignKeyIterator(); fks.hasNext(); fks.next() ) {
+                    vetSpecialtyFks++;
+                }
+                assertEquals("VET_SPECIALTY table has FK's", 2, vetSpecialtyFks);
+            }
+        }
+        assertEquals("Number of tables", 3, totalTables);
+    }
 
 	public void testDomainClassBinding() {
 		GroovyClassLoader cl = new GroovyClassLoader();
@@ -66,11 +154,8 @@ public class GrailsDomainBinderTests extends TestCase {
 			            "    }\n" +
 			            "}")
 		);
-        GrailsApplication grailsApplication = new DefaultGrailsApplication(new Class[]{domainClass.getClazz()},cl);
-		grailsApplication.initialise();
-        DefaultGrailsDomainConfiguration config = new DefaultGrailsDomainConfiguration();
-        config.setGrailsApplication(grailsApplication);
-        config.buildMappings();
+        DefaultGrailsDomainConfiguration config = getDomainConfig(cl, new Class[]{domainClass.getClazz()});
+
         // Test database mappings
         PersistentClass persistentClass = config.getClassMapping("BinderTestClass");
         assertTrue("Property [firstName] must be optional in db mapping", persistentClass.getProperty("firstName").isOptional());
@@ -113,13 +198,8 @@ public class GrailsDomainBinderTests extends TestCase {
 			            "}")
 		);
 
-		GrailsApplication grailsApplication = new DefaultGrailsApplication(
-        		new Class[]{ oneClass.getClazz(), domainClass.getClazz() }, cl);
-
-        grailsApplication.initialise();
-        DefaultGrailsDomainConfiguration config = new DefaultGrailsDomainConfiguration();
-        config.setGrailsApplication(grailsApplication);
-        config.buildMappings();
+        DefaultGrailsDomainConfiguration config = getDomainConfig(cl, 
+            new Class[]{ oneClass.getClazz(), domainClass.getClazz() });
 
         PersistentClass persistentClass = config.getClassMapping("TestManySide");
 
@@ -223,6 +303,16 @@ public class GrailsDomainBinderTests extends TestCase {
         constrainedProperty = getConstrainedBigDecimalProperty();
         constrainedProperty.applyConstraint(ConstrainedProperty.MIN_CONSTRAINT, new BigDecimal("-12345678901234567890.4567"));
         assertColumnPrecisionAndScale(constrainedProperty, 24, Column.DEFAULT_SCALE);
+    }
+
+    private DefaultGrailsDomainConfiguration getDomainConfig(GroovyClassLoader cl, Class[] classes) {
+        GrailsApplication grailsApplication = new DefaultGrailsApplication(
+                classes, cl);
+        grailsApplication.initialise();
+        DefaultGrailsDomainConfiguration config = new DefaultGrailsDomainConfiguration();
+        config.setGrailsApplication(grailsApplication);
+        config.buildMappings();
+        return config;
     }
 
     private void assertColumnLength(ConstrainedProperty constrainedProperty, int expectedLength) {

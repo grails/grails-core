@@ -159,11 +159,40 @@ public final class GrailsDomainBinder {
 
 		public void doSecondPass(Map persistentClasses, Map inheritedMetas) throws MappingException {
 			bindCollectionSecondPass( this.property, mappings, persistentClasses, collection,inheritedMetas );
-		}
+            createCollectionKeys();
+        }
 
-		public void doSecondPass(Map persistentClasses) throws MappingException {
+        private void createCollectionKeys() {
+            collection.createAllKeys();
+
+            if ( LOG.isDebugEnabled() ) {
+                String msg = "Mapped collection key: " + columns( collection.getKey() );
+                if ( collection.isIndexed() )
+                    msg += ", index: " + columns( ( (IndexedCollection) collection ).getIndex() );
+                if ( collection.isOneToMany() ) {
+                    msg += ", one-to-many: "
+                        + ( (OneToMany) collection.getElement() ).getReferencedEntityName();
+                }
+                else {
+                    msg += ", element: " + columns( collection.getElement() );
+                }
+                LOG.debug( msg );
+            }
+        }
+
+        private static String columns(Value val) {
+            StringBuffer columns = new StringBuffer();
+            Iterator iter = val.getColumnIterator();
+            while ( iter.hasNext() ) {
+                columns.append( ( (Selectable) iter.next() ).getText() );
+                if ( iter.hasNext() ) columns.append( ", " );
+            }
+            return columns.toString();
+        }
+        public void doSecondPass(Map persistentClasses) throws MappingException {
 			bindCollectionSecondPass( this.property, mappings, persistentClasses, collection,Collections.EMPTY_MAP );
-		}
+            createCollectionKeys();
+        }
 
 	}
 
@@ -507,9 +536,12 @@ public final class GrailsDomainBinder {
 	 */
 	private static void bindUnidirectionalOneToMany(GrailsDomainClassProperty property, Mappings mappings, Collection collection) {
 		Value v = collection.getElement();
+        v.createForeignKey();
             String entityName;
             if(v instanceof ManyToOne) {
-                entityName = ((ManyToOne)v).getReferencedEntityName();
+                ManyToOne manyToOne = (ManyToOne) v;
+
+                entityName = manyToOne.getReferencedEntityName();
             }
             else {
                 entityName = ((OneToMany)v).getReferencedEntityName();
