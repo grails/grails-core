@@ -100,11 +100,10 @@ public class GrailsWebApplicationContext extends GrailsApplicationContext
 	}
 
 	public void setConfigLocations(String[] configLocations) {
-		throw new UnsupportedOperationException("StaticWebApplicationContext does not support configLocations");
 	}
 
     public String[] getConfigLocations() {
-        throw new UnsupportedOperationException("StaticWebApplicationContext does not support configLocations");
+        return new String[0];
     }
 
 
