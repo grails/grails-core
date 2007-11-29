@@ -118,7 +118,7 @@ set CMD_LINE_ARGS=%$
 
 :execute
 @rem Setup the command line
-set STARTER_CLASSPATH=%GRAILS_HOME%\lib\groovy-all-1.1-rc-3.jar;%GRAILS_HOME%\lib\endorsed\jaxen-1.1-beta-11.jar
+set STARTER_CLASSPATH=%GRAILS_HOME%\lib\groovy-all-1.1-rc-3.jar;%GRAILS_HOME%\dist\grails-cli-1.0-RC2-SNAPSHOT.jar
 
 if exist "%USERPROFILE%/.groovy/init.bat" call "%USERPROFILE%/.groovy/init.bat"
 
@@ -137,7 +137,7 @@ if "x" == "x%CLASSPATH%" goto after_classpath
 set CP=%CP%;%CLASSPATH%
 :after_classpath
 
-set STARTER_MAIN_CLASS=org.codehaus.groovy.tools.GroovyStarter
+set STARTER_MAIN_CLASS=org.codehaus.groovy.grails.cli.support.GrailsStarter
 set STARTER_CONF=%GRAILS_HOME%\conf\groovy-starter.conf
 
 set JAVA_EXE=%JAVA_HOME%\bin\java.exe
