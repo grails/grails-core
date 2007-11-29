@@ -46,6 +46,7 @@ class GrailsCompiler extends Groovyc {
 
 	def resolver = new org.springframework.core.io.support.PathMatchingResourcePatternResolver()
 	def compileList = []
+	private destList = []
 
 	String resourcePattern
 	String projectName  
@@ -79,6 +80,7 @@ class GrailsCompiler extends Groovyc {
                        
             if(sf.lastModified() > df.lastModified()) {
                 compileList << sf
+                destList << df
             }            
         }
     }
@@ -136,17 +138,23 @@ class GrailsCompiler extends Groovyc {
 	        unit.addSources(compileList as File[])
 
 
-	        try {
-	            unit.compile()
-	            getDestdir().setLastModified(System.currentTimeMillis())
+            long now = System.currentTimeMillis()
+            try {
+                unit.compile()
+                getDestdir().setLastModified(now)
 	        }
 	        catch(Exception e) {
-	            def ErrorReporter reporter = new org.codehaus.groovy.tools.ErrorReporter(e, false)
+                def ErrorReporter reporter = new org.codehaus.groovy.tools.ErrorReporter(e, false)
 	            def sw = new StringWriter()
 				reporter.write( new PrintWriter(sw) );
 	            throw new BuildException(sw.toString(), e, getLocation())
 	        }
-			
+	        finally {
+                // set the destination files as modified so recompile doesn't happen continuously
+                for(f in destList) {
+                    f.setLastModified(now)
+                }                
+            }
 		}
     }
 

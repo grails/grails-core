@@ -80,7 +80,9 @@ target( watchContext: "Watches the WEB-INF/classes directory for changes and res
 						projectName:baseName) {
 						src(path:"${basedir}/src/java")
 						src(path:"${basedir}/src/groovy")
-						src(path:"${basedir}/grails-app/domain")
+						src(path:"${basedir}/grails-app/domain") {
+                                                        
+                        }
 					}
             ant = null
 		}

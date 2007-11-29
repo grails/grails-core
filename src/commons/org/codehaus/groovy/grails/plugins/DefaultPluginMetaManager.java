@@ -125,9 +125,9 @@ public class DefaultPluginMetaManager implements PluginMetaManager {
                         inputStream.close();
                 }
             } catch (IOException e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                throw new GrailsConfigurationException("Error loading plug-in descriptor [" + pluginDescriptor+ "]:" + e.getMessage(),e);
             } catch (DocumentException e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                throw new GrailsConfigurationException("Error loading plug-in descriptor [" + pluginDescriptor+ "]:" + e.getMessage(),e);
             }
 
         }

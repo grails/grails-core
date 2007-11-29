@@ -17,11 +17,10 @@
 package org.codehaus.groovy.grails.cli;
         
 import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
-import org.codehaus.groovy.grails.commons.metaclass.*
-import org.springframework.core.io.support.PathMatchingResourcePatternResolver  
-import org.codehaus.groovy.runtime.InvokerHelper;
-import gant.Gant        
+
+import gant.Gant
 import grails.util.GrailsUtil
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver
 
 /**
  * Class that handles Grails command line interface for running scripts
@@ -43,13 +42,11 @@ class GrailsScriptRunner {
 	static rootLoader
 	
 	static main(String[] args) {
-		MetaClassRegistry registry = InvokerHelper
-										.getInstance()
-										.getMetaRegistry();
-
+		MetaClassRegistry registry = GroovySystem.metaClassRegistry
+		
 		if(!(registry.getMetaClassCreationHandler() instanceof ExpandoMetaClassCreationHandle))
 			registry.setMetaClassCreationHandle(new ExpandoMetaClassCreationHandle());
-                              
+
 		ANT.property(environment:"env")
 		grailsHome = ANT.antProject.properties.'env.GRAILS_HOME'
 		
@@ -73,6 +70,8 @@ Grails home is set to: ${grailsHome}
             println "Base Directory: ${baseDir.absolutePath}"
 		         		    
 		    rootLoader = getClass().classLoader ? getClass().classLoader.rootLoader : Thread.currentThread().getContextClassLoader().rootLoader
+
+		    println "ROOTLOADER IS $rootLoader"
 			def baseName = new File(baseDir.absolutePath).name
 		    classesDir = new File("${userHome}/.grails/${grailsVersion}/projects/${baseName}/classes")
 		
