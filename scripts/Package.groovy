@@ -51,7 +51,6 @@ target ('default': "Packages a Grails application. Note: To create WAR use 'grai
      depends( checkVersion)
 	 packagePlugins()	 
      packageApp()
-     event("PackagingEnd",[])
 }                     
   
 target( createConfig: "Creates the configuration object") {
@@ -160,6 +159,7 @@ target( packageApp : "Implementation of package target") {
         
     loadPlugins()
     generateWebXml()
+    event("PackagingEnd",[])
 }
 
 target(generateLog4j:"Generates the Log4j config File") {
