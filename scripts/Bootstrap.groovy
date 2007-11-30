@@ -22,7 +22,7 @@ target ('default': "This target will load the Grails application context into th
 }
        
 target(loadApp:"Loads the Grails application object") {
-	def beans = new grails.spring.BeanBuilder().beans {
+	def beans = new grails.spring.WebBeanBuilder().beans {
 		resourceHolder(org.codehaus.groovy.grails.commons.spring.GrailsResourceHolder) {
 			resources = "file:${basedir}/**/grails-app/**/*.groovy"
 		}
