@@ -133,7 +133,15 @@ public interface GrailsPluginManager extends ApplicationContextAware, ServletCon
 	 */
 	public boolean hasGrailsPlugin(String name);
 
-	/**
+    /**
+     * Retrieves a plug-in that failed to load, or null if it doesn't exist
+     *
+     * @param name The name of the plugin
+     * @return A GrailsPlugin or null
+     */
+    public GrailsPlugin getFailedPlugin(String name);
+
+    /**
 	 * Retrieves a plug-in for its name and version
 	 * 
 	 * @param name The name of the plugin

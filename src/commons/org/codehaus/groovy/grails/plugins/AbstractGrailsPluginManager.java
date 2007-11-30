@@ -30,9 +30,10 @@ public abstract class AbstractGrailsPluginManager implements GrailsPluginManager
 	protected Class[] pluginClasses = new Class[0];
 	protected boolean initialised = false;
 	protected ApplicationContext applicationContext;
-	
-	
-	public AbstractGrailsPluginManager(GrailsApplication application) {
+    protected Map failedPlugins = new HashMap();
+
+
+    public AbstractGrailsPluginManager(GrailsApplication application) {
 		super();
 		if(application == null)
 			throw new IllegalArgumentException("Argument [application] cannot be null!");
@@ -54,8 +55,12 @@ public abstract class AbstractGrailsPluginManager implements GrailsPluginManager
 		if(!initialised)
 			throw new IllegalStateException("Must call loadPlugins() before invoking configurational methods on GrailsPluginManager");
 	}
-	
-	/**
+
+    public GrailsPlugin getFailedPlugin(String name) {
+        return (GrailsPlugin)this.failedPlugins.get(name);
+    }
+
+    /**
 	 * Base implementation that simply goes through the list of plugins and calls doWithRuntimeConfiguration on each
 	 * @param springConfig The RuntimeSpringConfiguration instance
 	 */

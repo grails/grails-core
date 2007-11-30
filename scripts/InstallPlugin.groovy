@@ -32,6 +32,7 @@ Ant.property(environment:"env")
 grailsHome = Ant.antProject.properties."env.GRAILS_HOME"    
 
 includeTargets << new File ( "${grailsHome}/scripts/ListPlugins.groovy" )
+includeTargets << new File ( "${grailsHome}/scripts/Clean.groovy" )
 includeTargets << new File ( "${grailsHome}/scripts/Package.groovy" )
 
 ERROR_MESSAGE = """
@@ -124,11 +125,14 @@ target(installPlugin:"Implementation target") {
             def resourceList = resolveResources("file:${pluginsBase}/${fullPluginName}/grails-app/**/*.groovy")
             def pluginXml = "${pluginsBase}/${fullPluginName}/plugin.xml"
             def xml = new XmlSlurper().parse(new File(pluginXml))
+            def pluginVersion = xml.@version.text()
+            def pluginName = xml.@name.text()
+            
             def resourceElements = xml.resources.resource
             if(resourceElements.size()==0) {
                 def writer = new IndentPrinter( new PrintWriter( new FileWriter(pluginXml)))
                 def mkp = new MarkupBuilder(writer)
-                mkp.plugin(name:xml.@name, version:xml.@version) {
+                mkp.plugin(name:pluginName, version:pluginVersion) {
                     resources {
                         for(r in resourceList) {
                              def matcher = r.URL.toString() =~ /\S+?\/grails-app\/\S+?\/(\S+?).groovy/
@@ -140,29 +144,43 @@ target(installPlugin:"Implementation target") {
 
             }
 
-            // proceed _Install.groovy plugin script if exists
-            def installScript = new File ( "${pluginsBase}/${fullPluginName}/scripts/_Install.groovy" )
-            if( installScript.exists() ) {
-                event("StatusUpdate", [ "Executing ${fullPluginName} plugin post-install script"])
-                // instrumenting plugin scripts adding 'pluginBasedir' variable
-                def instrumentedInstallScript = "def pluginBasedir = '${pluginsBase}/${fullPluginName}'\n" + installScript.text
-                // we are using text form of script here to prevent Gant caching
-                includeTargets << instrumentedInstallScript
-            }     
-            def providedScripts = resolveResources("file:${pluginsBase}/${fullPluginName}/scripts/*.groovy").findAll { !it.filename.startsWith('_')}
-			event("StatusUpdate", [ "Compiling plugin ${fullPluginName} ..."])
-   			compile()
-            event("StatusFinal", [ "Plugin ${fullPluginName} installed"])
-			if(providedScripts) { 
-				println "Plug-in provides the following new scripts:"
-				println "------------------------------------------"
-			    providedScripts.file.each { file ->
-					def scriptName = GCU.getScriptName(file.name)  
-					println "grails ${scriptName}"   
-				}				
-			}
+            event("StatusUpdate", [ "Compiling plugin ${fullPluginName} ..."])
+            compile()
 
-            event("PluginInstalled", [ fullPluginName ])
+            packagePlugins()   
+            loadPlugins()
+
+            if(!pluginManager.hasGrailsPlugin(pluginName)) {
+                Ant.delete(dir:"${pluginsBase}/${fullPluginName}")
+                clean()
+                def plugin = pluginManager.getFailedPlugin(pluginName)
+                println "Failed to install plug-in [${fullPluginName}]. Missing depedencies: ${plugin.dependencyNames.inspect()}"
+                event("PluginInstallFailed", [ "Plugin ${fullPluginName} failed to install"])
+            }
+            else {
+                // proceed _Install.groovy plugin script if exists
+                def installScript = new File ( "${pluginsBase}/${fullPluginName}/scripts/_Install.groovy" )
+                if( installScript.exists() ) {
+                    event("StatusUpdate", [ "Executing ${fullPluginName} plugin post-install script"])
+                    // instrumenting plugin scripts adding 'pluginBasedir' variable
+                    def instrumentedInstallScript = "def pluginBasedir = '${pluginsBase}/${fullPluginName}'\n" + installScript.text
+                    // we are using text form of script here to prevent Gant caching
+                    includeTargets << instrumentedInstallScript
+                }
+                def providedScripts = resolveResources("file:${pluginsBase}/${fullPluginName}/scripts/*.groovy").findAll { !it.filename.startsWith('_')}
+                event("StatusFinal", [ "Plugin ${fullPluginName} installed"])
+                if(providedScripts) {
+                    println "Plug-in provides the following new scripts:"
+                    println "------------------------------------------"
+                    providedScripts.file.each { file ->
+                        def scriptName = GCU.getScriptName(file.name)
+                        println "grails ${scriptName}"
+                    }
+                }
+
+                event("PluginInstalled", [ fullPluginName ])
+            }
+
         }
     }
 	else {

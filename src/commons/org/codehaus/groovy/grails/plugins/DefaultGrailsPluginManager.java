@@ -386,6 +386,7 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager impl
               if(foundInDelayed)
                   delayedLoadPlugins.add(plugin);
               else {
+                  failedPlugins.put(plugin.getName(),plugin);
                   LOG.warn("WARNING: Plugin ["+plugin.getName()+"] cannot be loaded because its dependencies ["+ArrayUtils.toString(plugin.getDependencyNames())+"] cannot be resolved");
               }
 
