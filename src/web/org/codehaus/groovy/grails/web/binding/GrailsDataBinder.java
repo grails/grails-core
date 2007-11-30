@@ -14,10 +14,7 @@
  */
 package org.codehaus.groovy.grails.web.binding;
 
-import groovy.lang.GroovyObject;
-import groovy.lang.GroovyRuntimeException;
-import groovy.lang.MetaClass;
-import groovy.lang.MissingMethodException;
+import groovy.lang.*;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -25,9 +22,11 @@ import org.codehaus.groovy.grails.commons.ApplicationHolder;
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.metaclass.CreateDynamicMethod;
+import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap;
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.springframework.beans.*;
+import org.springframework.beans.PropertyValue;
 import org.springframework.beans.propertyeditors.CustomDateEditor;
 import org.springframework.beans.propertyeditors.CustomNumberEditor;
 import org.springframework.beans.propertyeditors.LocaleEditor;
@@ -75,6 +74,8 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
     public static final String   NULL_ASSOCIATION = "null";
     private static final String PREFIX_SEPERATOR = ".";
     private static final String[] ALL_OTHER_FIELDS_ALLOWED_BY_DEFAULT = new String[0];
+    private static final String CONSTRAINTS_PROPERTY = "constraints";
+    private static final String BLANK = "";
 
     /**
      * Create a new GrailsDataBinder instance.
@@ -191,8 +192,29 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
 
     protected void doBind(MutablePropertyValues mpvs) {
         filterNestedParameterMaps(mpvs);
+        filterBlankValuesWhenTargetIsNullable(mpvs);
         autoCreateIfPossible(mpvs);
         super.doBind(mpvs);
+    }
+
+    private void filterBlankValuesWhenTargetIsNullable(MutablePropertyValues mpvs) {
+        Object target = getTarget();
+        MetaClass mc = GroovySystem.getMetaClassRegistry().getMetaClass(target.getClass());
+        if(mc.hasProperty(target, CONSTRAINTS_PROPERTY) != null) {
+            Map constrainedProperties = (Map)mc.getProperty(target, CONSTRAINTS_PROPERTY);
+            PropertyValue[] valueArray = mpvs.getPropertyValues();
+            for (int i = 0; i < valueArray.length; i++) {
+                PropertyValue propertyValue = valueArray[i];
+                ConstrainedProperty cp = (ConstrainedProperty)constrainedProperties.get(propertyValue.getName());
+                if(shouldNullifyBlankString(propertyValue, cp)) {
+                   propertyValue.setConvertedValue(null); 
+                }
+            }
+        }
+    }
+
+    private boolean shouldNullifyBlankString(PropertyValue propertyValue, ConstrainedProperty cp) {
+        return cp!= null && cp.isNullable() && BLANK.equals(propertyValue.getValue());
     }
 
     private void filterNestedParameterMaps(MutablePropertyValues mpvs) {

@@ -25,14 +25,35 @@ class Book {
     String title
     Author author
     URL site
+
+
 }
 class Author {
     Long id
     Long version
     String name
     String hairColour
+
+    static constraints = {
+        name(nullable:true)
+    }
 }
         ''')
+    }
+
+    void testBindBlankToNullWhenNullable() {
+        def c = ga.getControllerClass("TestController").newInstance()
+        def a = ga.getDomainClass("Author").newInstance()
+
+        def params = c.params
+        params.name =  ''
+        params.hairColour = ''
+
+        a.properties = params
+
+        assertNull a.name
+        assertEquals '', a.hairColour
+
     }
 
     void testTypeConversionErrorsWithNestedAssociations() {
