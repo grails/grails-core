@@ -16,9 +16,13 @@ package org.codehaus.groovy.grails.cli.support;
 
 import org.codehaus.groovy.tools.LoaderConfiguration;
 
+import java.io.File;
 import java.io.FileInputStream;
+import java.io.InputStream;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.URL;
 
 /**
  * @author Graeme Rocher
@@ -87,7 +91,40 @@ public class GrailsStarter {
             }
         }
         // create loader and execute main class
-        ClassLoader loader = new GrailsRootLoader(lc);
+        GrailsRootLoader loader = new GrailsRootLoader(lc);
+
+        String javaVersion = System.getProperty("java.version");
+        String grailsHome = System.getProperty("grails.home");
+
+        if(javaVersion != null && grailsHome != null) {
+            javaVersion = javaVersion.substring(0,3);
+            File vmConfig = new File(grailsHome +"/conf/groovy-starter-java-"+javaVersion+".conf");
+            if(vmConfig.exists()) {
+                InputStream in = null;
+                try {
+                    in = new FileInputStream(vmConfig);
+                    LoaderConfiguration vmLoaderConfig = new LoaderConfiguration();
+                    vmLoaderConfig.setRequireMain(false);
+                    vmLoaderConfig.configure(in);
+                    URL[] vmSpecificClassPath = vmLoaderConfig.getClassPathUrls();
+                    for (int i = 0; i < vmSpecificClassPath.length; i++) {
+                        URL url = vmSpecificClassPath[i];
+                        loader.addURL(url);
+                    }
+                } catch (IOException e) {
+                    System.out.println("WARNING: I/O error reading VM specific classpath ["+vmConfig+"]: " + e.getMessage() );
+                }
+                finally {
+                    try {
+                        if(in != null) in.close();
+                    } catch (IOException e) {
+                        // ignore
+                    }
+                }
+            }
+
+        }
+
         Method m=null;
         try {
             Class c = loader.loadClass(lc.getMainClass());

@@ -81,6 +81,11 @@ target (war: "The implementation target") {
                     }
                 }
             }
+            if(antProject.properties."ant.java.version" == "1.4") {
+                fileset(dir:"${basedir}/lib/endorsed") {
+                        include(name:"*.jar")
+                }
+            }
 		}                 
 		Ant.copy(file:webXmlFile.absolutePath, tofile:"${basedir}/staging/WEB-INF/web.xml")
 		Ant.copy(file:log4jFile.absolutePath, tofile:"${basedir}/staging/WEB-INF/log4j.properties")
