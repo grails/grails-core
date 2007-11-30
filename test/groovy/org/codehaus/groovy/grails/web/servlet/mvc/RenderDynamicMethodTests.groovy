@@ -33,6 +33,14 @@ class RenderDynamicMethodTests extends AbstractGrailsControllerTests {
                     }
                 }
             }
+
+            def renderJSON() {
+                render(contentType:"text/json") {
+                    foo {
+                        bar("hello")
+                    }
+                }
+            }
 		}
 		""")
 	}
@@ -61,5 +69,13 @@ class RenderDynamicMethodTests extends AbstractGrailsControllerTests {
         assertEquals "text/xml", response.contentType
         assertEquals "<foo><bar>hello</bar></foo>", response.contentAsString
 
+    }
+
+    void testRenderJSON() {
+        def testCtrl = ga.getControllerClass("TestController").newInstance()
+
+        testCtrl.renderJSON()
+        assertEquals "text/json", response.contentType
+        assertEquals '{"foo":[{"bar":"hello"}]}', response.contentAsString
     }
 }

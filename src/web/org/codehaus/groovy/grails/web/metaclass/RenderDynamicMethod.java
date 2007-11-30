@@ -144,7 +144,7 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
                     }
                     orb.invokeMethod("ajax", new Object[]{ arguments[arguments.length - 1] });
                 }
-                else if(BUILDER_TYPE_JSON.equals(argMap.get(ARGUMENT_BUILDER))){
+                else if(BUILDER_TYPE_JSON.equals(argMap.get(ARGUMENT_BUILDER)) || isJSONResponse(response)){
                     JSonBuilder jsonBuilder;
                     try{
                         jsonBuilder = new JSonBuilder(response);
@@ -303,5 +303,9 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
         }
         webRequest.setRenderView(renderView);
         return null;
+    }
+
+    private boolean isJSONResponse(HttpServletResponse response) {
+        return response.getContentType() != null && response.getContentType().indexOf("text/json")>-1;
     }
 }
