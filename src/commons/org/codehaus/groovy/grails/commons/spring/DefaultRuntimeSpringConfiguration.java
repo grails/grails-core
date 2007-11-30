@@ -64,7 +64,7 @@ public class DefaultRuntimeSpringConfiguration implements
      */
     protected GenericApplicationContext createApplicationContext(ApplicationContext parent) {
         if(parent != null) return new GrailsApplicationContext(parent);
-        return new GrailsWebApplicationContext();
+        return new GrailsApplicationContext();
     }
 
     public DefaultRuntimeSpringConfiguration(ApplicationContext parent) {

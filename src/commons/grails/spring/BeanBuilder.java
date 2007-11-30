@@ -16,7 +16,6 @@
 package grails.spring;
 
 import groovy.lang.*;
-import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.spring.BeanConfiguration;
@@ -452,7 +451,7 @@ public class BeanBuilder extends GroovyObjectSupport {
 			if(args.length >= 1) {
 				if(args[args.length-1] instanceof Closure) {
 					if(args.length-1 != 1) {
-						Object[] constructorArgs = ArrayUtils.subarray(args, 1, args.length-1);
+						Object[] constructorArgs = subarray(args, 1, args.length-1);
                         filterGStringReferences(constructorArgs);
                         currentBeanConfig = springConfig.addSingletonBean(name, beanClass, Arrays.asList(constructorArgs));
 					}
@@ -461,7 +460,7 @@ public class BeanBuilder extends GroovyObjectSupport {
 					}				
 				}
 				else  {
-					Object[] constructorArgs = ArrayUtils.subarray(args, 1, args.length);
+					Object[] constructorArgs = subarray(args, 1, args.length);
                     filterGStringReferences(constructorArgs);
                     currentBeanConfig = springConfig.addSingletonBean(name, beanClass, Arrays.asList(constructorArgs));
 				}
@@ -484,10 +483,10 @@ public class BeanBuilder extends GroovyObjectSupport {
         else {
             Object[] constructorArgs;
             if(args[args.length-1] instanceof Closure) {
-                constructorArgs= ArrayUtils.subarray(args, 0, args.length-1);
+                constructorArgs= subarray(args, 0, args.length-1);
             }
             else {
-                constructorArgs= ArrayUtils.subarray(args, 0, args.length);
+                constructorArgs= subarray(args, 0, args.length);
             }
             filterGStringReferences(constructorArgs);
             currentBeanConfig = new DefaultBeanConfiguration(name, null, Arrays.asList(constructorArgs));
@@ -503,6 +502,17 @@ public class BeanBuilder extends GroovyObjectSupport {
 
 		return currentBeanConfig;
 	}
+
+    private Object[] subarray(Object[] args, int i, int j) {
+        if(j > args.length) throw new IllegalArgumentException("Upper bound can't be greater than array length");
+        Object[] b = new Object[j-i];
+        int n = 0;
+        for (int k = i;  k < j; k++,n++) {
+            b[n] = args[k];
+            
+        }
+        return b;
+    }
 
     private void filterGStringReferences(Object[] constructorArgs) {
         for (int i = 0; i < constructorArgs.length; i++) {

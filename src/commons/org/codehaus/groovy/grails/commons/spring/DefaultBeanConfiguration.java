@@ -16,7 +16,6 @@
 package org.codehaus.groovy.grails.commons.spring;
 
 import groovy.lang.GroovyObjectSupport;
-import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
@@ -197,7 +196,7 @@ public class DefaultBeanConfiguration extends GroovyObjectSupport implements Bea
 			for (Iterator i = constructorArgs.iterator(); i.hasNext();) {
 				cav.addGenericArgumentValue(i.next());
 			}
-            if(StringUtils.isBlank(parentName)) {
+            if(parentName == null) {
                 bd = new RootBeanDefinition(clazz,cav,null);
             }
             else {
@@ -206,7 +205,7 @@ public class DefaultBeanConfiguration extends GroovyObjectSupport implements Bea
             bd.setSingleton(singleton);
 		}
 		else {
-            if(StringUtils.isBlank(parentName)) {
+            if(parentName == null) {
                 bd = new RootBeanDefinition(clazz,singleton);
             }
             else {
