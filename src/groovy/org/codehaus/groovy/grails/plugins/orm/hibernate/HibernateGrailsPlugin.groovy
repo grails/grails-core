@@ -183,6 +183,13 @@ class HibernateGrailsPlugin {
             //    registerDynamicMethods(dc, application, ctx)
             MetaClass mc = dc.metaClass
             def initDomainClass = lazyInit.curry(dc)
+            // these need to be eagerly initialised here, otherwise Groovy's findAll from the DGM is called
+            def findAllMethod = new FindAllPersistentMethod(sessionFactory, application.classLoader)
+            mc.'static'.findAll = {->
+                findAllMethod.invoke(mc.javaClass, "findAll", [] as Object[])
+            }
+            mc.'static'.findAll = {Object example -> findAllMethod.invoke(mc.javaClass, "findAll", [example] as Object[])}
+                        
             mc.methodMissing = { String name, args ->
                 initDomainClass()
                 mc.invokeMethod(delegate, name, args)
@@ -296,10 +303,6 @@ class HibernateGrailsPlugin {
 
         def GroovyClassLoader classLoader = application.classLoader
 
-        def findAllMethod = new FindAllPersistentMethod(sessionFactory, classLoader)
-        metaClass.'static'.findAll = {->
-            findAllMethod.invoke(domainClassType, "findAll", [] as Object[])
-        }
         metaClass.'static'.findAll = {String query ->
             findAllMethod.invoke(domainClassType, "findAll", [query] as Object[])
         }
@@ -315,7 +318,6 @@ class HibernateGrailsPlugin {
         metaClass.'static'.findAll = {String query, Map namedArgs, Map paginateParams ->
             findAllMethod.invoke(domainClassType, "findAll", [query, namedArgs, paginateParams] as Object[])
         }
-        metaClass.'static'.findAll = {Object example -> findAllMethod.invoke(domainClassType, "findAll", [example] as Object[])}
 
         def findMethod = new FindPersistentMethod(sessionFactory, classLoader)
         metaClass.'static'.find = {String query ->
