@@ -113,7 +113,7 @@ public class ParseTests extends TestCase {
 		"</tbody>");
  		System.out.println("|"+trimAndRemoveCR(output)+"|");
          System.out.println("|"+trimAndRemoveCR(expected)+"|");
-         assertEquals(trimAndRemoveCR(expected), trimAndRemoveCR(output));
+         assertTrue( "should have call to tag with 'tt' namespace", output.indexOf("invokeTag('form','tt',[:],body1)") > -1);
  	}
 
     /**

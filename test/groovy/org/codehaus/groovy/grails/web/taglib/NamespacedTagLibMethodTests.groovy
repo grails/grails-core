@@ -30,7 +30,7 @@ class NamespacedTagLibMethodTests extends AbstractGrailsTagTests {
     void testInvokeTagWithNamespaceFromTagLib() {
         def template = '<my:test1>foo: <two:test1 /> </my:test1>'
 
-        assertOutputEquals('foo: hello! bar3', template)
+        assertOutputEquals('foo: hello! bar3 ', template)
     }
 
     void testInvokeTagWithNonExistantNamespace() {

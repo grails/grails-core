@@ -4,7 +4,7 @@ import org.codehaus.groovy.grails.web.pages.*;
 
 class GroovyEachParseTests extends ParseTests {
                               
-	void testEachOutput() {
+	void testEachOutput() {        
 		String output = parseCode("myTest", """
 <g:each var="t" in="${'blah'}">
 </g:each>
