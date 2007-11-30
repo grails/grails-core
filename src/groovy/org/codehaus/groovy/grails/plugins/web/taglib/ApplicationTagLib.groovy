@@ -29,6 +29,9 @@ import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
 import org.springframework.context.ApplicationContextAware
 import org.springframework.context.ApplicationContext;
 import org.codehaus.groovy.grails.commons.ApplicationHolder; 
+import org.codehaus.groovy.grails.commons.ConfigurationHolder;
+import org.codehaus.groovy.grails.commons.GrailsApplication;
+import grails.util.GrailsUtil;
 
 class ApplicationTagLib implements ApplicationContextAware {
 
@@ -58,19 +61,53 @@ class ApplicationTagLib implements ApplicationContextAware {
 	}
 
     /**
+     * Get the declared URL of the server from config, or guess at localhost for non-production
+     */
+    String makeServerURL() {
+        def u = ConfigurationHolder.config.grails.serverURL
+        if (!u) {
+            // Leave it null if we're in production so we can throw
+            if (GrailsUtil.environment != GrailsApplication.ENV_PRODUCTION) {
+                u = "http://localhost:" +(System.getProperty('server.port') ? System.getProperty('server.port') : "8080")
+            }
+        }
+        return u
+    }
+
+    /**
+     * Check for "absolute" attribute and render server URL if available from Config or deducible in non-production
+     */
+    private handleAbsolute(attrs) {
+        def abs = attrs.remove("absolute")
+        if (Boolean.valueOf(abs)) {
+            def u = makeServerURL()
+            if (u) {
+                out << u
+            } else {
+                throwTagError("Attribute absolute='true' specified but no grails.serverURL set in Config")
+            }
+        }
+    }
+
+    /**
      * Creates a link to a resource, generally used as a method rather than a tag.
      *
      * eg. <link type="text/css" href="${createLinkTo(dir:'css',file:'main.css')}" />
      */
     def createLinkTo = { attrs -> 
 		def writer = out
-         writer << grailsAttributes.getApplicationUri(request) + "/";
-         if(attrs['dir'] ) {
-            writer << "${attrs['dir']}" + ( attrs['file'] ? "/" :"");
-         }
-         if(attrs['file']) {
-            writer << "${attrs['file']}"
-         }
+		if (attrs.base) {
+		    writer << attrs.remove('base')
+		} else {
+		    handleAbsolute(attrs)
+	    }
+        writer << grailsAttributes.getApplicationUri(request) + "/";
+        if(attrs['dir'] ) {
+           writer << "${attrs['dir']}" + ( attrs['file'] ? "/" :"");
+        }
+        if(attrs['file']) {
+           writer << "${attrs['file']}"
+        }
     }
 
     /**
@@ -130,6 +167,11 @@ class ApplicationTagLib implements ApplicationContextAware {
         def urlMappings = applicationContext.getBean("grailsUrlMappingsHolder")
         def mapping = urlMappings.getReverseMapping(controller,action,params)
         url = mapping.createURL(controller, action, params, request.characterEncoding, frag)
+		if (attrs.base) {
+		    out << attrs.remove('base')
+		} else {
+    	    handleAbsolute(attrs)
+    	}
         out << response.encodeURL(url)
     }
 

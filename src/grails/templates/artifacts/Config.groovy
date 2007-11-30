@@ -6,6 +6,8 @@
 //                             "file:${userHome}/.grails/${appName}-config.properties",
 //                             "file:${userHome}/.grails/${appName}-config.groovy"]
 
+// You can set, per-environment, an absolute URL prefix with no trailing slash
+// grails.serverURL = "http://www.yourdomain.com"
 
 // enabled native2ascii conversion of i18n properties files
 grails.enable.native2ascii = true

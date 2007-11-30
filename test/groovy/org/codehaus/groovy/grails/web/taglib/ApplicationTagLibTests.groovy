@@ -100,4 +100,24 @@ class ApplicationTagLibTests extends AbstractGrailsTagTests {
 		}
 	}
 
+	void testCreateLinkWithBase() {
+		StringWriter sw = new StringWriter();
+		withTag("createLink", sw) { tag ->
+			// test URL encoding. Params unordered to have to try one test at a time
+			def attrs = [base:"http://www128.myhost.com:3495", action:'testAction', controller: 'testController']
+			tag.call( attrs )
+			assertEquals 'http://www128.myhost.com:3495/testController/testAction', sw.toString()
+		}
+	}
+
+	void testCreateLinkWithAbsolute() {
+		StringWriter sw = new StringWriter();
+		withTag("createLink", sw) { tag ->
+			// test URL encoding. Params unordered to have to try one test at a time
+			def attrs = [absolute:"true", action:'testAction', controller: 'testController']
+			tag.call( attrs )
+			assertEquals 'http://localhost:8080/testController/testAction', sw.toString()
+		}
+	}
+
 }
