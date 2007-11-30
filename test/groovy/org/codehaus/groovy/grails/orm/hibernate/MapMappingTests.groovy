@@ -5,8 +5,8 @@ import org.codehaus.groovy.grails.commons.*
 class MapMappingTests extends AbstractGrailsHibernateTests {
 
     void testAssociationMapMapping() {
-		def bookClass = ga.getDomainClass("Book")
-        def authorClass = ga.getDomainClass("Author")
+		def bookClass = ga.getDomainClass("MapBook")
+        def authorClass = ga.getDomainClass("MapAuthor")
 
         def a1 = authorClass.newInstance()
         a1.name = "Stephen King"
@@ -45,7 +45,7 @@ class MapMappingTests extends AbstractGrailsHibernateTests {
     }
 
 	void testBasicMapMapping() {
-		def bookClass = ga.getDomainClass("Book")
+		def bookClass = ga.getDomainClass("MapBook")
 
         def map = ["Stephen":"King",
                    "James": "Patterson",
@@ -72,14 +72,14 @@ class MapMappingTests extends AbstractGrailsHibernateTests {
 
 	void onSetUp() {
 		this.gcl.parseClass('''
-class Book {
+class MapBook {
 	Long id
 	Long version
 	Map authorNameSurname
 	Map authors
-	static hasMany = [authors:Author]
+	static hasMany = [authors:MapAuthor]
 }
-class Author {
+class MapAuthor {
     Long id
     Long version
     String name
