@@ -6,11 +6,27 @@
 //                             "file:${userHome}/.grails/${appName}-config.properties",
 //                             "file:${userHome}/.grails/${appName}-config.groovy"]
 
-// You can set, per-environment, an absolute URL prefix with no trailing slash
-// grails.serverURL = "http://www.yourdomain.com"
+// if(System.properties["${appName}.config.location"]) {
+//    grails.config.locations << "file:" + System.properties["${appName}.config.location"]
+// }
+grails.mime.file.extensions = true // enables the parsing of file extensions from URLs into the request format
+grails.mime.types = [ html: ['text/html','application/xhtml+xml'],
+                      xml: ['text/xml', 'application/xml'],
+                      text: 'text-plain',
+                      js: 'text/javascript',
+                      rss: 'application/rss+xml',
+                      atom: 'application/atom+xml',
+                      css: 'text/css',
+                      csv: 'text/csv',
+                      all: '*/*',
+                      json: 'text/json'
+                    ]
+// The default codec used to encode data with ${}
+grails.views.default.codec="none" // none, html, base64
 
 // enabled native2ascii conversion of i18n properties files
 grails.enable.native2ascii = true
+
 // log4j configuration
 log4j {
     appender.stdout = "org.apache.log4j.ConsoleAppender"
@@ -39,3 +55,5 @@ log4j {
     }
     additivity.StackTrace=false
 }
+
+
