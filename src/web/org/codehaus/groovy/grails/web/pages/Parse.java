@@ -230,7 +230,7 @@ public class Parse implements Tokens {
             for (int i = 0; i < lines.length; i++) {
                 String line = lines[i];
                 final String content = escapeGroovy(line);
-                if(!StringUtils.isBlank(content)) {
+                if(!StringUtils.isEmpty(content)) {
                     if(!hasContent) {
                         hasContent = true;
                     }

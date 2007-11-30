@@ -15,6 +15,12 @@ import org.codehaus.groovy.grails.commons.ConfigurationHolder
 
 class StaticContentRenderingTests extends AbstractGrailsTagTests {
 
+    void testExpressionSpaces() {
+        def template = '${x} ${y}'
+
+        assertOutputEquals('1 2', template, [x:1, y:2])
+    }
+
     void testExpressionVsScriptletOutput() {
         withConfig("grails.views.default.codec='HTML'") {
 
@@ -25,7 +31,7 @@ class StaticContentRenderingTests extends AbstractGrailsTagTests {
     }
 
     void testImports() {
-        def template = '<%@page import="java.text.SimpleDateFormat"%><% format = new SimpleDateFormat() %> ${format.getClass()}'
+        def template = '<%@page import="java.text.SimpleDateFormat"%><% format = new SimpleDateFormat() %>${format.getClass()}'
 
         assertOutputEquals('class java.text.SimpleDateFormat', template)
     }
@@ -49,13 +55,13 @@ class StaticContentRenderingTests extends AbstractGrailsTagTests {
     }
 
     void testHtmlEscapingWithPageDirective() {
-        def template = '<%@ defaultCodec="HTML" %> ${test}'
+        def template = '<%@ defaultCodec="HTML" %>${test}'
         assertOutputEquals('&lt;html&gt;&lt;body&gt;hello&lt;/body&gt;&lt;/html&gt;', template, [test:"<html><body>hello</body></html>"])
     }
 
 
     void testNotHtmlEscaping() {
-        def template = '<%@ contentType="text/plain" %> ${test}'
+        def template = '<%@ contentType="text/plain" %>${test}'
 
         assertOutputEquals('<html><body>hello</body></html>', template, [test:"<html><body>hello</body></html>"])
 
@@ -78,7 +84,11 @@ class StaticContentRenderingTests extends AbstractGrailsTagTests {
   </g:each>
 </div>'''
 
-        assertOutputEquals('<div>    <p>1</p>    <p>2</p>    <p>3</p></div>', template, [numbers:[1,2,3]])
+    assertOutputEquals('''<div>
+      <p>1</p>
+      <p>2</p>
+      <p>3</p>
+  </div>''', template, [numbers:[1,2,3]])
     }
 
     void testGspComments() {
