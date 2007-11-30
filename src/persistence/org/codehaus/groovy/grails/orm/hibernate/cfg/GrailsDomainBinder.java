@@ -1585,7 +1585,7 @@ public final class GrailsDomainBinder {
     }
 
     private static void logCascadeMapping(GrailsDomainClassProperty grailsProperty, String cascadeStrategy, GrailsDomainClass referenced) {
-        if(LOG.isDebugEnabled()) {
+        if(LOG.isDebugEnabled() && grailsProperty.isAssociation()) {
             String assType = getAssociationDescription(grailsProperty);
             LOG.debug("Mapping cascade strategy for "+assType+" property "+grailsProperty.getDomainClass().getFullName()+"." + grailsProperty.getName() + " referencing type ["+referenced.getClazz()+"] -> [CASCADE: "+cascadeStrategy+"]");
         }
