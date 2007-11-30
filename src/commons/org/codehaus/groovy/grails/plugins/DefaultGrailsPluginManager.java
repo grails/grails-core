@@ -103,6 +103,7 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager impl
 
     private long configLastModified;
     private PluginFilter pluginFilter;
+    private static final String GRAILS_PLUGIN_SUFFIX = "GrailsPlugin";
 
     public DefaultGrailsPluginManager(String resourcePath, GrailsApplication application) throws IOException {
           super(application);
@@ -297,20 +298,36 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager impl
           Resource r = pluginResources[i];
 
           Class pluginClass = loadPluginClass(gcl, r);
-          GrailsPlugin plugin = new DefaultGrailsPlugin(pluginClass, r, application);
-          //attemptPluginLoad(plugin);
-          grailsUserPlugins.add(plugin);
+
+          if(isGrailsPlugin(pluginClass)) {
+              GrailsPlugin plugin = new DefaultGrailsPlugin(pluginClass, r, application);
+              //attemptPluginLoad(plugin);
+              grailsUserPlugins.add(plugin);
+          }
+          else {
+              LOG.warn("Class ["+pluginClass+"] not loaded as plug-in. Grails plug-ins must end with the convention 'GrailsPlugin'!");
+          }
       }
       for (int i = 0; i < pluginClasses.length; i++) {
           Class pluginClass = pluginClasses[i];
-          GrailsPlugin plugin = new DefaultGrailsPlugin(pluginClass, application);
-          //attemptPluginLoad(plugin);
-          grailsUserPlugins.add(plugin);
+          if(isGrailsPlugin(pluginClass)) {
+              GrailsPlugin plugin = new DefaultGrailsPlugin(pluginClass, application);
+              //attemptPluginLoad(plugin);
+              grailsUserPlugins.add(plugin);
+          }
+          else {
+              LOG.warn("Class ["+pluginClass+"] not loaded as plug-in. Grails plug-ins must end with the convention 'GrailsPlugin'!");
+          }
+          
       }
 	return grailsUserPlugins;
   }
 
-  private void processDelayedEvictions() {
+    private boolean isGrailsPlugin(Class pluginClass) {
+        return pluginClass != null && pluginClass.getName().endsWith(GRAILS_PLUGIN_SUFFIX);
+    }
+
+    private void processDelayedEvictions() {
       for (Iterator i = delayedEvictions.keySet().iterator(); i.hasNext();) {
           GrailsPlugin plugin = (GrailsPlugin) i.next();
           String[] pluginToEvict = (String[])delayedEvictions.get(plugin);
