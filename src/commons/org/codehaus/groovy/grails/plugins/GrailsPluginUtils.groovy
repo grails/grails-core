@@ -74,7 +74,7 @@ public class GrailsPluginUtils {
     private static trimTag(pluginVersion) {
         def i = pluginVersion.indexOf('-')
         if(i>-1)
-            pluginVersion = pluginVersion.substring(0,i)
+            pluginVersion = pluginVersion[0..i-1]
         pluginVersion
     }
 
