@@ -100,6 +100,11 @@ class GrailsCompiler extends Groovyc {
 
     void compile() {
 
+        def resources = resourcePattern ? resolveResources(resourcePattern) : [] as Resource[]
+        def resourceLoader = new GrailsResourceLoader(resources)
+        GrailsResourceLoaderHolder.resourceLoader = resourceLoader
+
+
         if(compileList) {
 
             long now = System.currentTimeMillis()
@@ -118,13 +123,10 @@ class GrailsCompiler extends Groovyc {
     }
 
     protected CompilationUnit makeCompileUnit() {
-        def resources = resourcePattern ? resolveResources(resourcePattern) : [] as Resource[]
-        def resourceLoader = new GrailsResourceLoader(resources)
-        GrailsResourceLoaderHolder.resourceLoader = resourceLoader
-        
+
         def unit = super.makeCompileUnit();
         def classInjectors = [new DefaultGrailsDomainClassInjector()] as ClassInjector[]
-        def injectionOperation = new GrailsAwareInjectionOperation(resourceLoader, classInjectors)
+        def injectionOperation = new GrailsAwareInjectionOperation(GrailsResourceLoaderHolder.resourceLoader, classInjectors)
         unit.addPhaseOperation(injectionOperation, Phases.CONVERSION)
         return unit        
     }
