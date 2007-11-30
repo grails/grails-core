@@ -6,9 +6,9 @@ import org.codehaus.groovy.grails.commons.test.*
 class SavePersistentMethodTests extends AbstractGrailsHibernateTests {     
 
     void testFlush() {
-        def bookClass = ga.getDomainClass("Book")
-        def authorClass = ga.getDomainClass("Author")
-        def addressClass = ga.getDomainClass("Address")
+        def bookClass = ga.getDomainClass("SaveBook")
+        def authorClass = ga.getDomainClass("SaveAuthor")
+        def addressClass = ga.getDomainClass("SaveAddress")
 
         def book = bookClass.newInstance()
         book.title = "Foo"
@@ -23,9 +23,9 @@ class SavePersistentMethodTests extends AbstractGrailsHibernateTests {
         assert book.id
     }
 	void testToOneCascadingValidation() {
-        def bookClass = ga.getDomainClass("Book")
-        def authorClass = ga.getDomainClass("Author")
-        def addressClass = ga.getDomainClass("Address")
+        def bookClass = ga.getDomainClass("SaveBook")
+        def authorClass = ga.getDomainClass("SaveAuthor")
+        def addressClass = ga.getDomainClass("SaveAddress")
 
         def book = bookClass.newInstance()
 
@@ -65,9 +65,9 @@ class SavePersistentMethodTests extends AbstractGrailsHibernateTests {
 	}
 
 	void testToManyCascadingValidation() {
-        def bookClass = ga.getDomainClass("Book")
-        def authorClass = ga.getDomainClass("Author")
-        def addressClass = ga.getDomainClass("Address")
+        def bookClass = ga.getDomainClass("SaveBook")
+        def authorClass = ga.getDomainClass("SaveAuthor")
+        def addressClass = ga.getDomainClass("SaveAddress")
 
         def author = authorClass.newInstance()
 
@@ -100,35 +100,35 @@ class SavePersistentMethodTests extends AbstractGrailsHibernateTests {
 
 	void onSetUp() {
 		this.gcl.parseClass('''
-class Book {
+class SaveBook {
     Long id
     Long version
     String title
-    Author author
-    static belongsTo = Author
+    SaveAuthor author
+    static belongsTo = SaveAuthor
     static constraints = {
        title(blank:false, size:1..255)
        author(nullable:false)
     }
 }
-class Author {
+class SaveAuthor {
    Long id
    Long version
    String name
-   Address address
+   SaveAddress address
    Set books = new HashSet()
-   static hasMany = [books:Book]
+   static hasMany = [books:SaveBook]
    static constraints = {
         address(nullable:false)
         name(size:1..255, blank:false)
    }
 }
-class Address {
+class SaveAddress {
     Long id
     Long version
-    Author author
+    SaveAuthor author
     String location
-    static belongsTo = Author
+    static belongsTo = SaveAuthor
     static constraints = {
        author(nullable:false)
        location(blank:false)
