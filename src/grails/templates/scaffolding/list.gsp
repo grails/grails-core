@@ -35,9 +35,9 @@
                         <tr class="\${(i % 2) == 0 ? 'odd' : 'even'}">
                         <%  props.eachWithIndex { p,i ->
                                 if(i == 0) { %>
-                            <td><g:link action="show" id="\${${propertyName}.id}">\${${propertyName}.${p.name}}</g:link></td>
+                            <td><g:link action="show" id="\${${propertyName}.id}">\${${propertyName}.${p.name}?.encodeAsHTML()}</g:link></td>
                         <%      } else if(i < 6) { %>
-                            <td>\${${propertyName}.${p.name}}</td>
+                            <td>\${${propertyName}.${p.name}?.encodeAsHTML()}</td>
                         <%  }   } %>
                         </tr>
                     </g:each>
