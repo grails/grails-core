@@ -53,6 +53,7 @@ System.setProperty("grails.classes.dir", classesDirPath)
 
 resolver = new PathMatchingResourcePatternResolver()
 grailsAppName = null
+grailsAppVersion = null
 appGrailsVersion = null
 hookScripts = [this]
 shouldPackageTemplates = false
@@ -182,6 +183,7 @@ if (new File("${basedir}/application.properties").exists()) {
 
     def props = Ant.antProject.properties
     grailsAppName = props.'app.name'
+    grailsAppVersion = props.'app.version'
     appGrailsVersion = props.'app.grails.version'
     servletVersion = props.'app.servlet.version' ? props.'app.servlet.version' : servletVersion
 }

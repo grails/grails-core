@@ -95,6 +95,10 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
     private Resource[] resources;
     private boolean initialised = false;
     private ClassLoader beanClassLoader;
+    private static final String CONFIG_BINDING_USER_HOME = "userHome";
+    private static final String CONFIG_BINDING_GRAILS_HOME = "grailsHome";
+    private static final String CONFIG_BINDING_APP_NAME = "appName";
+    private static final String CONFIG_BINDING_APP_VERSION = "appVersion";
 
     /**
      * Creates a new empty Grails application
@@ -392,6 +396,15 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
         ConfigObject c = ConfigurationHolder.getConfig();
         if (c == null) {
             ConfigSlurper configSlurper = new ConfigSlurper(GrailsUtil.getEnvironment());
+            Map binding = new HashMap();
+
+            // configure config slurper binding
+            binding.put(CONFIG_BINDING_USER_HOME, System.getProperty("user.home"));
+            binding.put(CONFIG_BINDING_GRAILS_HOME, System.getProperty("grails.home"));
+            binding.put(CONFIG_BINDING_APP_NAME, getMetadata().get("app.name"));
+            binding.put(CONFIG_BINDING_APP_VERSION, getMetadata().get("app.version"));
+
+            configSlurper.setBinding(binding);
             try {
                 Class scriptClass = getClassLoader()
                         .loadClass(CONFIG_CLASS);

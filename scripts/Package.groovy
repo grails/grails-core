@@ -57,7 +57,7 @@ target( createConfig: "Creates the configuration object") {
    def configSlurper = new ConfigSlurper(grailsEnv)
    if(configFile.exists()) { 
 		try {              
-            configSlurper.setBinding(grailsHome:grailsHome, appName:grailsAppName, userHome:userHome, basedir:basedir)			
+            configSlurper.setBinding(grailsHome:grailsHome, appName:grailsAppName, appVersion:grailsAppVersion, userHome:userHome, basedir:basedir)			
 			config = configSlurper.parse(classLoader.loadClass("Config"))
 			config.setConfigFile(configFile.toURL())
 
