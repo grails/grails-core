@@ -104,10 +104,12 @@ class MappingDslTests extends AbstractGrailsHibernateTests {
         def p = personClass.newInstance()
          p.firstName = "Wilma"
 
-         p.addToChildren(firstName:"Dino", lastName:'Dinosaur')
-         p.addToCousins(firstName:"Bob", lastName:'The Builder')
-         p.save()
-         session.flush()
+        println "SAVING PERSON"
+        p.save(flush:true)
+        p.addToChildren(firstName:"Dino", lastName:'Dinosaur')
+        p.addToCousins(firstName:"Bob", lastName:'The Builder')
+        println "SAVING RELATIONS"
+        p.save(flush:true) 
          session.clear()
 
          p = personClass.clazz.get(1)
@@ -314,14 +316,6 @@ class MappingDslTests extends AbstractGrailsHibernateTests {
              con.close()
          }
 
-        try {
-            con = ds.getConnection()
-            def statement = con.prepareStatement("select PERSON_CHILD_ID from mapped_child")
-            def resultSet = statement.executeQuery()
-            assert resultSet.next()
-        } finally {
-            con.close()
-        }
         
     }
 

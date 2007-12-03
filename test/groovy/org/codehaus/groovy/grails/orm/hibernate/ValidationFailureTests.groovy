@@ -8,17 +8,17 @@ class ValidationFailureTests extends AbstractGrailsHibernateTests {
 	void onSetUp() {
 		gcl.parseClass(
 """
-class Book {
+class ValidationFailureBook {
   Long id
   Long version
   String title
 }
-class Author {
+class ValidationFailureAuthor {
     Long id
     Long version
     String name
     Set books
-    static hasMany = [books: Book]
+    static hasMany = [books: ValidationFailureBook]
     static constraints = {
         name(size:8..16)
     }
@@ -29,8 +29,8 @@ class Author {
 
 
 	void testValidationFailure() {
-	    def authorClass = ga.getDomainClass("Author")
-	    def bookClass = ga.getDomainClass("Book")
+	    def authorClass = ga.getDomainClass("ValidationFailureAuthor")
+	    def bookClass = ga.getDomainClass("ValidationFailureBook")
 
 	    def a = authorClass.newInstance()
 	    a.name = "123456789"

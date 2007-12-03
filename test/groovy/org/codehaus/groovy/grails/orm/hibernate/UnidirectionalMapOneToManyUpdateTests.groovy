@@ -5,7 +5,7 @@
  * Created: Dec 3, 2007
  */
 package org.codehaus.groovy.grails.orm.hibernate
-class UnidirectionalOneToManyUpdateTests extends AbstractGrailsHibernateTests {
+class UnidirectionalMapOneToManyUpdateTests extends AbstractGrailsHibernateTests {
 
     protected void onSetUp() {
         gcl.parseClass '''
@@ -13,7 +13,7 @@ class Customer
 {
     Long id
     Long version
-    Set orders
+    Map orders
 	static hasMany = [ orders : Order]
 	String email
 	String password
@@ -46,16 +46,17 @@ class  Order
         def cust = custClass.get(1)
         def order = orderClass.get(1)
 
-        cust.addToOrders(order)
+        cust.orders = [order1:order]
 
-        
+
         cust.save(flush:true)
 
         session.clear()
 
         cust = custClass.get(1)
 
-        assertEquals 1, cust.orders.size()                
+        assertEquals 1, cust.orders.size()
+        assert cust.orders.order1
     }
 
 }

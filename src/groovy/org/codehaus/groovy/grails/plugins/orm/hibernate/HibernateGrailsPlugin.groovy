@@ -302,7 +302,7 @@ class HibernateGrailsPlugin {
         def Class domainClassType = dc.clazz
 
         def GroovyClassLoader classLoader = application.classLoader
-
+        def findAllMethod = new FindAllPersistentMethod(sessionFactory, classLoader)
         metaClass.'static'.findAll = {String query ->
             findAllMethod.invoke(domainClassType, "findAll", [query] as Object[])
         }

@@ -231,7 +231,7 @@ public final class GrailsDomainBinder {
 
     private static void bindMapSecondPass(GrailsDomainClassProperty property, Mappings mappings, Map persistentClasses, org.hibernate.mapping.Map map, Map inheritedMetas) {
         bindCollectionSecondPass(property, mappings, persistentClasses, map, inheritedMetas);
-        String columnName = namingStrategy.propertyToColumnName(property.getName());
+        String columnName = getColumnNameForPropertyAndPath(property, "");
 
         SimpleValue value = new SimpleValue( map.getCollectionTable() );
 
@@ -244,29 +244,21 @@ public final class GrailsDomainBinder {
         map.setIndex( value );
 
         if(!property.isOneToMany()) {
-
             SimpleValue elt = new SimpleValue( map.getCollectionTable() );
             map.setElement( elt );
-            map.setInverse(false);
 
             bindSimpleValue(STRING_TYPE, elt, false, columnName + UNDERSCORE + IndexedCollection.DEFAULT_ELEMENT_COLUMN_NAME,mappings);
             elt.setTypeName(STRING_TYPE);
+            map.setInverse(false);
         }
         else {
-            Value element = map.getElement();
-            String entityName= ( (OneToMany) element).getReferencedEntityName();
-			PersistentClass referenced = mappings.getClass( entityName );
-			IndexBackref ib = new IndexBackref();
-			ib.setName( UNDERSCORE + property.getName() + "IndexBackref" );
-			ib.setUpdateable( false );
-			ib.setSelectable( false );
-			ib.setCollectionRole( map.getRole() );
-			ib.setEntityName( map.getOwner().getEntityName() );
-			ib.setValue( map.getIndex() );
-			// ( (Column) ( (SimpleValue) ic.getIndex() ).getColumnIterator().next()
-			// ).setNullable(false);
-			referenced.addProperty( ib );
+            if(property.isBidirectional())
+                map.setInverse(true);
+            else
+                map.setInverse(false);
         }
+
+
     }
 
 
@@ -279,26 +271,29 @@ public final class GrailsDomainBinder {
         bindSimpleValue("integer", iv, true,columnName, mappings);
         iv.setTypeName( "integer" );
         list.setIndex( iv );
-        String entityName;
-        Value element = list.getElement();
-        if(element instanceof ManyToOne) {
-            ManyToOne manyToOne = (ManyToOne) element;
-            entityName = manyToOne.getReferencedEntityName();
-        }
-        else {
-            entityName = ( (OneToMany) element).getReferencedEntityName();
-        }
-
-        PersistentClass referenced = mappings.getClass( entityName );
-        IndexBackref ib = new IndexBackref();
-        ib.setName( UNDERSCORE + property.getName() + "IndexBackref" );
-        ib.setUpdateable( false );
-        ib.setSelectable( false );
-        ib.setCollectionRole( list.getRole() );
-        ib.setEntityName( list.getOwner().getEntityName() );
-        ib.setValue( list.getIndex() );
-        referenced.addProperty( ib );
         list.setInverse(false);
+
+        if(property.isBidirectional()) {
+            String entityName;
+            Value element = list.getElement();
+            if(element instanceof ManyToOne) {
+                ManyToOne manyToOne = (ManyToOne) element;
+                entityName = manyToOne.getReferencedEntityName();
+            }
+            else {
+                entityName = ( (OneToMany) element).getReferencedEntityName();
+            }
+
+            PersistentClass referenced = mappings.getClass( entityName );
+            IndexBackref ib = new IndexBackref();
+            ib.setName( UNDERSCORE + property.getName() + "IndexBackref" );
+            ib.setUpdateable( false );
+            ib.setSelectable( false );
+            ib.setCollectionRole( list.getRole() );
+            ib.setEntityName( list.getOwner().getEntityName() );
+            ib.setValue( list.getIndex() );
+            referenced.addProperty( ib );
+        }
 
     }
 
@@ -349,7 +344,7 @@ public final class GrailsDomainBinder {
         // setup the primary key references
 		DependantValue key = createPrimaryKeyValue(property, collection,persistentClasses);
 
-		// link a bidirectional relationship
+        // link a bidirectional relationship
 		if(property.isBidirectional()) {
 			GrailsDomainClassProperty otherSide = property.getOtherSide();
 			if(otherSide.isManyToOne()) {
@@ -366,7 +361,7 @@ public final class GrailsDomainBinder {
             else {
                 bindDependentKeyValue(property,key,mappings);
             }
-		}
+        }
 		collection.setKey( key );
 
         // get cache config
@@ -417,7 +412,7 @@ public final class GrailsDomainBinder {
         collection.setInverse(false);
         
         String columnName;
-        JoinTable jt = cc.getJoinTable();
+        JoinTable jt = cc != null ? cc.getJoinTable() : null;
         if(jt != null && jt.getKey()!=null) {
             columnName = jt.getColumn();
         }
@@ -425,19 +420,13 @@ public final class GrailsDomainBinder {
             columnName = namingStrategy.propertyToColumnName(property.getReferencedDomainClass().getPropertyName()) + FOREIGN_KEY_SUFFIX;
         }
 
-        bindSimpleValue("long", element,false, columnName, mappings);
-        // we make the other side of the join unique so that it because a unidirectional one-to-many with a join instead of a many-to-many
-        ((Column)element.getColumnIterator().next()).setUnique(true);
-
+        bindSimpleValue("long", element,true, columnName, mappings);
         collection.setElement(element);
         bindCollectionForColumnConfig(collection, cc);
     }
 
     private static boolean shouldCollectionBindWithJoinColumn(GrailsDomainClassProperty property) {
-        ColumnConfig cc = getColumnConfig(property);
-        boolean join = cc != null && cc.getJoinTable() != null;
-
-        return isUnidirectionalOneToMany(property) && !isListOrMapCollection(property) && join;
+        return isUnidirectionalOneToMany(property);
     }
 
 
@@ -694,11 +683,8 @@ public final class GrailsDomainBinder {
      * that is
      */
     private static boolean shouldBindCollectionWithForeignKey(GrailsDomainClassProperty property) {
-        ColumnConfig cc = getColumnConfig(property);
-        boolean join = cc != null && cc.getJoinTable() != null;
-        return (property.isOneToMany() && property.isBidirectional()) || 
-                (isUnidirectionalOneToMany(property) && !join)   ||
-                (property.isOneToMany() && isListOrMapCollection(property));
+        return (property.isOneToMany() && property.isBidirectional() ||
+                !shouldCollectionBindWithJoinColumn(property)) && !Map.class.isAssignableFrom(property.getType()) && !property.isManyToMany();
     }
 
     private static boolean isListOrMapCollection(GrailsDomainClassProperty property) {
@@ -743,7 +729,7 @@ public final class GrailsDomainBinder {
             ColumnConfig cc = getColumnConfig(property);
             JoinTable jt = cc != null ? cc.getJoinTable() : null;
 
-            if(property.isManyToMany() && jt != null) {
+            if(property.isManyToMany() && jt != null && jt.getName()!=null) {
                  return jt.getName();
             }
             else {
@@ -754,12 +740,12 @@ public final class GrailsDomainBinder {
                 if(property.isOwningSide()) {
                     return left+ UNDERSCORE +right;
                 }
-                else if(shouldCollectionBindWithJoinColumn(property)) {
-                    left = trimBackTigs(left);
-                    right = trimBackTigs(right);
+                else if(shouldCollectionBindWithJoinColumn(property)) {                    
                     if(jt != null && jt.getName() != null) {
                         return jt.getName();
                     }
+                    left = trimBackTigs(left);
+                    right = trimBackTigs(right);
                     return left+ UNDERSCORE +right;
                 }
                 else {
@@ -770,7 +756,7 @@ public final class GrailsDomainBinder {
 	}
 
     private static String trimBackTigs(String tableName) {
-        if(tableName.startsWith(BACKTICK)) return tableName.substring(1, tableName.length()-2);
+        if(tableName.startsWith(BACKTICK)) return tableName.substring(1, tableName.length()-1);
         return tableName;
     }
 

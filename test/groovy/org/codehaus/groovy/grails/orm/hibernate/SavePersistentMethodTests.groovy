@@ -18,6 +18,7 @@ class SavePersistentMethodTests extends AbstractGrailsHibernateTests {
         def address = addressClass.newInstance()
         author.address = address
         address.location = "Foo Bar"
+        assert author.save()
 
         assert book.save(flush:true)
         assert book.id

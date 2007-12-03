@@ -4,9 +4,9 @@ package org.codehaus.groovy.grails.orm.hibernate;
 class InheritanceQueryingTests extends AbstractGrailsHibernateTests {
 
 	void testPolymorphicQuerying() {
-		def cityClass = ga.getDomainClass("City")
-		def countryClass = ga.getDomainClass("Country")
-		def locationClass = ga.getDomainClass("Location")
+		def cityClass = ga.getDomainClass("InheritanceQueryingCity")
+		def countryClass = ga.getDomainClass("InheritanceQueryingCountry")
+		def locationClass = ga.getDomainClass("InheritanceQueryingLocation")
 		
 		def city = cityClass.newInstance()
 		city.properties = [code: "LON", name: "London", longitude: 49.1, latitude:
@@ -27,18 +27,18 @@ class InheritanceQueryingTests extends AbstractGrailsHibernateTests {
 	}
 	void onSetUp() {
 		this.gcl.parseClass('''
-class City extends Location {
+class InheritanceQueryingCity extends InheritanceQueryingLocation {
     BigDecimal latitude
     BigDecimal longitude
 }         
-class Country extends Location {
+class InheritanceQueryingCountry extends InheritanceQueryingLocation {
     int population
 }	
-class Location extends Versioned{	
+class InheritanceQueryingLocation extends InheritanceQueryingVersioned{
     String name
     String code
 }	
-abstract class Versioned {
+abstract class InheritanceQueryingVersioned {
 	Long id
 	Long version
 }

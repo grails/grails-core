@@ -89,8 +89,9 @@ public class GrailsDomainBinderTests extends TestCase {
         DefaultGrailsDomainConfiguration config = getDomainConfig(cl, 
             cl.getLoadedClasses());
 
-        PersistentClass visitClass = config.getClassMapping("Visit");        
-        Iterator fks = visitClass.getTable().getForeignKeyIterator();         
+        PersistentClass visitClass = config.getClassMapping("Visit");
+
+        Iterator fks = config.getCollectionMapping("Pet.visits").getCollectionTable().getForeignKeyIterator();         
         assertTrue("VISIT table has a FK", fks.hasNext());
         if (fks.hasNext()) {
             ForeignKey fk = (ForeignKey) fks.next();

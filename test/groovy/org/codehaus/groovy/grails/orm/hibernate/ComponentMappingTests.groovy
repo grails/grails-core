@@ -6,8 +6,8 @@ import org.codehaus.groovy.grails.commons.test.*
 class ComponentMappingTests extends AbstractGrailsHibernateTests {
 
 	void testComponentMapping() {
-		def personClass = ga.getDomainClass("Person")
-		def addressClass = ga.classLoader.loadClass("Address")
+		def personClass = ga.getDomainClass("ComponentMappingPerson")
+		def addressClass = ga.classLoader.loadClass("ComponentMappingAddress")
 
 		def p = personClass.newInstance()
 
@@ -19,7 +19,7 @@ class ComponentMappingTests extends AbstractGrailsHibernateTests {
 
 		p.homeAddress = a1
 		p.workAddress = a2
-
+                                                                                                        
         p.save()
         session.flush()
 
@@ -43,31 +43,31 @@ class ComponentMappingTests extends AbstractGrailsHibernateTests {
 
 	void onSetUp() {
 		this.gcl.parseClass('''
-class Person {
+class ComponentMappingPerson {
 	Long id
 	Long version
 	String name
-	Address homeAddress
-	Address workAddress
+	ComponentMappingAddress homeAddress
+	ComponentMappingAddress workAddress
 
 	static embedded = ['homeAddress', 'workAddress']
 }
-class Address {
-	Person person
+class ComponentMappingAddress {
+	ComponentMappingPerson person
 	String number
 	String postCode
 }
-class StoreItem {
+class ComponentMappingStoreItem {
 	Long id
 	Long version
 
     String name
     String description
-    Price price
+    ComponentMappingPrice price
     static embedded = ['price']
 }
 
-class Price {
+class ComponentMappingPrice {
 	Long id
 	Long version
  

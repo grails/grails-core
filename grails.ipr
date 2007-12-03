@@ -51,6 +51,7 @@
       <file url="file:///Users/graemerocher/Library/Caches/IntelliJIDEA70/compiler/grails.grailsd7d2b0b8/.generated/Groovy_to_java_source_code_generator/Grails.4ea48c75/production/org/codehaus/groovy/grails/webflow/engine/builder/ActionDelegate.java" />
       <file url="file:///Users/graemerocher/Library/Caches/IntelliJIDEA70/compiler/grails.grailsad1ec4b3/.generated/Groovy_to_java_source_code_generator/Grails.23f0a070/production/org/codehaus/groovy/grails/compiler/GrailsCompiler.java" />
       <file url="file:///Users/graemerocher/Library/Caches/IntelliJIDEA70/compiler/grails.grailsad1ec4b3/.generated/Groovy_to_java_source_code_generator/Grails.23f0a070/production/org/codehaus/groovy/grails/web/pages/GroovyPageCodecTests.java" />
+      <file url="file:///Users/graemerocher/Library/Caches/IntelliJIDEA70/compiler/grails.grailsad1ec4b3/.generated/Groovy_to_java_source_code_generator/Grails.23f0a070/production/org/codehaus/groovy/grails/webflow/engine/builder/ControllerFlowRegistry.java" />
     </excludeFromCompile>
     <resourceExtensions>
       <entry name=".+\.(properties|xml|html|dtd|tld)" />
@@ -95,6 +96,19 @@
     <option name="PRINT_LINE_NUMBERS" value="false" />
     <option name="OPEN_IN_BROWSER" value="false" />
     <option name="OUTPUT_DIRECTORY" />
+  </component>
+  <component name="FacetAutodetectingManager">
+    <autodetection-disabled>
+      <facet-type id="web">
+        <modules>
+          <module name="Grails">
+            <files>
+              <file url="file://$PROJECT_DIR$/test/cliTestApp/testapp/staging/WEB-INF/web.xml" />
+            </files>
+          </module>
+        </modules>
+      </facet-type>
+    </autodetection-disabled>
   </component>
   <component name="IdProvider" IDEtalkID="094372AACB9649246F599517414513BF" />
   <component name="InspectionProjectProfileManager">
@@ -347,18 +361,18 @@
     <library name="Spring">
       <CLASSES>
         <root url="jar://$PROJECT_DIR$/lib/springmodules-sandbox.jar!/" />
-        <root url="jar://$PROJECT_DIR$/lib/spring-binding-2.0-m1.jar!/" />
-        <root url="jar://$PROJECT_DIR$/lib/spring-webflow-2.0-m1.jar!/" />
         <root url="jar://$PROJECT_DIR$/lib/spring-test.jar!/" />
         <root url="jar://$PROJECT_DIR$/lib/spring-webmvc.jar!/" />
         <root url="jar://$PROJECT_DIR$/lib/spring-2.5.jar!/" />
+        <root url="jar://$PROJECT_DIR$/lib/spring-webflow-2.0-m1.jar!/" />
+        <root url="jar://$PROJECT_DIR$/lib/spring-binding-2.0-m1.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES>
-        <root url="file:///Developer/spring-webflow/trunk/spring-webflow/src/main/java" />
-        <root url="file:///Developer/spring-webflow/trunk/spring-binding/src/main/java" />
         <root url="file:///Developer/spring-framework-2.5/src" />
         <root url="file:///Developer/spring-framework-2.5/mock" />
+        <root url="file:///Developer/spring-webflow-2.0-m2/projects/spring-binding/src/main/java" />
+        <root url="file:///Developer/spring-webflow-2.0-m2/projects/spring-webflow/src/main/java" />
       </SOURCES>
     </library>
     <library name="dom4j">
@@ -367,7 +381,9 @@
         <root url="jar://$PROJECT_DIR$/lib/jaxen-1.1-beta-11.jar!/" />
       </CLASSES>
       <JAVADOC />
-      <SOURCES />
+      <SOURCES>
+        <root url="file:///Developer/dom4j-1.6.1/src/java" />
+      </SOURCES>
     </library>
     <library name="Jetty">
       <CLASSES>
@@ -403,7 +419,7 @@
     </library>
     <library name="HSQLDB">
       <CLASSES>
-        <root url="jar://$PROJECT_DIR$/lib/hsqldb-1.8.0.5.jar!/" />
+        <root url="jar://$PROJECT_DIR$/lib/hsqldb-1.8.0.9.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES />

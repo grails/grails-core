@@ -5,8 +5,8 @@ import org.codehaus.groovy.grails.commons.*
 class UnidirectionalListMappingTests extends AbstractGrailsHibernateTests {
 
 	void testUniListMapping() {
-		def personClass = ga.getDomainClass("Person")
-		def emailClass = ga.getDomainClass("EmailAddress")
+		def personClass = ga.getDomainClass("UnidirectionalListMappingPerson")
+		def emailClass = ga.getDomainClass("UnidirectionalListMappingEmailAddress")
 
 		def p = personClass.newInstance()
 
@@ -37,19 +37,19 @@ class UnidirectionalListMappingTests extends AbstractGrailsHibernateTests {
 
 	void onSetUp() {
 		this.gcl.parseClass('''
-class EmailAddress {
+class UnidirectionalListMappingEmailAddress {
     Long id
     Long version
         String email
 }
 
-class Person {
+class UnidirectionalListMappingPerson {
     Long id
     Long version
         String firstName
         String lastName
         List emailAddresses
-        static hasMany = [emailAddresses:EmailAddress]
+        static hasMany = [emailAddresses:UnidirectionalListMappingEmailAddress]
 }
 class ApplicationDataSource {
 	   boolean pooling = true

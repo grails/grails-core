@@ -6,7 +6,7 @@ import org.hibernate.LazyInitializationException
 class URLMappingTests extends AbstractGrailsHibernateTests {
 
 	void testURLMapping() {
-		def b = ga.getDomainClass("Bookmark").newInstance()
+		def b = ga.getDomainClass("testUniListMappingBookmark").newInstance()
 		
 		b.url = new URL("http://grails.org")
 		b.publisherSite = new URI("http://apress.com")
@@ -18,7 +18,7 @@ class URLMappingTests extends AbstractGrailsHibernateTests {
 		b.discard()
 		b=null
 		
-		b = ga.getDomainClass("Bookmark").clazz.get(1)
+		b = ga.getDomainClass("testUniListMappingBookmark").clazz.get(1)
 		
 		
 		assertEquals "http://grails.org", b.url.toString()
@@ -28,7 +28,7 @@ class URLMappingTests extends AbstractGrailsHibernateTests {
 	
 	void onSetUp() {
 		this.gcl.parseClass('''
-class Bookmark { 
+class testUniListMappingBookmark {
 	Long id
 	Long version
 	URL url 

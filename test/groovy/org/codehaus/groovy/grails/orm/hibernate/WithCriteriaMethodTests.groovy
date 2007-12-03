@@ -5,7 +5,7 @@ class WithCriteriaMethodTests extends AbstractGrailsHibernateTests {
 
 	void testWithCriteriaMethod() {
 		def authors = []
-		def domainClass = ga.getDomainClass("Author")
+		def domainClass = ga.getDomainClass("WithCriteriaMethodAuthor")
 		authors << domainClass.newInstance()
 		authors << domainClass.newInstance()
 		authors << domainClass.newInstance()
@@ -27,11 +27,11 @@ class WithCriteriaMethodTests extends AbstractGrailsHibernateTests {
 	void onSetUp() {
 		gcl.parseClass(
 """
-class Book {
+class WithCriteriaMethodBook {
   Long id
   Long version
-  def belongsTo = Author
-  Author author
+  def belongsTo = WithCriteriaMethodAuthor
+  WithCriteriaMethodAuthor author
   String title
   boolean equals(obj) { title == obj?.title }
   int hashCode() { title ? title.hashCode() : super.hashCode() }
@@ -41,12 +41,12 @@ class Book {
       author(nullable:true)
   }
 }
-class Author {
+class WithCriteriaMethodAuthor {
   Long id
   Long version
   String name
   Set books
-  def relatesToMany = [books:Book]
+  def relatesToMany = [books:WithCriteriaMethodBook]
   boolean equals(obj) { name == obj?.name }
   int hashCode() { name ? name.hashCode() : super.hashCode() }
   String toString() { name }
