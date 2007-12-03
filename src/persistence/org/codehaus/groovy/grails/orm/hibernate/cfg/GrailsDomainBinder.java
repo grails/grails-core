@@ -265,7 +265,7 @@ public final class GrailsDomainBinder {
     private static void bindListSecondPass(GrailsDomainClassProperty property, Mappings mappings, Map persistentClasses, org.hibernate.mapping.List list, Map inheritedMetas) {
         bindCollectionSecondPass( property, mappings, persistentClasses, list,inheritedMetas );
 
-        String columnName = namingStrategy.propertyToColumnName(property.getName()+ UNDERSCORE +IndexedCollection.DEFAULT_INDEX_COLUMN_NAME);
+        String columnName = getColumnNameForPropertyAndPath(property, "")+ UNDERSCORE +IndexedCollection.DEFAULT_INDEX_COLUMN_NAME;
 
         SimpleValue iv = new SimpleValue( list.getCollectionTable() );
         bindSimpleValue("integer", iv, true,columnName, mappings);
