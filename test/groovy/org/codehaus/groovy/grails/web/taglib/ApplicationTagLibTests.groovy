@@ -36,6 +36,12 @@ class ApplicationTagLibTests extends AbstractGrailsTagTests {
         assertOutputEquals('one: two', template)		
 	}
 
+	void testSetTagWithMap() {
+        def template = '<g:set var="e" value="${c.a}"/>${e?.b}'
+
+        assertOutputEquals('foo', template, [c:[a:[b:'foo']]])                        
+    }
+
 	void testIteration() {
         def template = '''<g:set var="counter" value="${1}" />
 <g:each in="${[10,11,12]}" var="myVal"><g:set var="counter" value="${myVal+counter}" />${counter}</g:each>'''
