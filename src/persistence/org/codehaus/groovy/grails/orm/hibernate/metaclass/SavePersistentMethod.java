@@ -16,7 +16,6 @@
 package org.codehaus.groovy.grails.orm.hibernate.metaclass;
 
 import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.hibernate.FlushMode;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -53,7 +52,7 @@ public class SavePersistentMethod extends AbstractSavePersistentMethod {
         ht.execute(new HibernateCallback() {
             public Object doInHibernate(Session session) throws HibernateException, SQLException {
                 session.saveOrUpdate(target);
-                if(flush && FlushMode.isManualFlushMode(session.getFlushMode()))
+                if(flush)
                     getHibernateTemplate().flush();
                 return target;
             }

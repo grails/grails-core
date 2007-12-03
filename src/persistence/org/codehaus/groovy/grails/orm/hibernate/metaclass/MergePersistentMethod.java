@@ -15,13 +15,16 @@
  */ 
 package org.codehaus.groovy.grails.orm.hibernate.metaclass;
 
-import java.util.regex.Pattern;
-import java.sql.SQLException;
-
 import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.hibernate.*;
+import org.hibernate.HibernateException;
+import org.hibernate.LockMode;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
 import org.springframework.orm.hibernate3.HibernateCallback;
 import org.springframework.orm.hibernate3.HibernateTemplate;
+
+import java.sql.SQLException;
+import java.util.regex.Pattern;
 
 /**
  * The merge() method follows the semantics of merge which attempts to "merge" an object
@@ -52,7 +55,7 @@ public class MergePersistentMethod extends AbstractSavePersistentMethod {
                 session.merge(target);
                 session.lock(target, LockMode.NONE);
 
-                if(flush && FlushMode.isManualFlushMode(session.getFlushMode()))
+                if(flush)
                     getHibernateTemplate().flush();
                 return target;
             }

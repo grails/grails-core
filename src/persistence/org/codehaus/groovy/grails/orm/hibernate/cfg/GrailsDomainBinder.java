@@ -66,6 +66,7 @@ public final class GrailsDomainBinder {
     private static final String CASCADE_SAVE_UPDATE = "save-update";
     private static final String CASCADE_MERGE = "merge";
     private static final String CASCADE_NONE = "none";
+    private static final String BACKTICK = "`";
     
     private static final Map MAPPING_CACHE = new HashMap();
 
@@ -413,19 +414,22 @@ public final class GrailsDomainBinder {
 
         bindUnidirectionalOneToManyInverseValues(property, element);
 
+        collection.setInverse(false);
+        
         String columnName;
         JoinTable jt = cc.getJoinTable();
-        if(jt != null && jt.getKey()!=null)
+        if(jt != null && jt.getKey()!=null) {
             columnName = jt.getColumn();
-        else
+        }
+        else {
             columnName = namingStrategy.propertyToColumnName(property.getReferencedDomainClass().getPropertyName()) + FOREIGN_KEY_SUFFIX;
-        
+        }
+
         bindSimpleValue("long", element,false, columnName, mappings);
         // we make the other side of the join unique so that it because a unidirectional one-to-many with a join instead of a many-to-many
         ((Column)element.getColumnIterator().next()).setUnique(true);
 
         collection.setElement(element);
-        collection.setInverse(false);
         bindCollectionForColumnConfig(collection, cc);
     }
 
@@ -546,18 +550,19 @@ public final class GrailsDomainBinder {
             else {
                 entityName = ((OneToMany)v).getReferencedEntityName();
             }
-			PersistentClass referenced = mappings.getClass( entityName );
-			Backref prop = new Backref();
-		    prop.setEntityName(property.getDomainClass().getFullName());
-		    prop.setName(UNDERSCORE + property.getDomainClass().getShortName() + UNDERSCORE + property.getName() + "Backref" );
-			prop.setUpdateable( false );
-			prop.setInsertable( true );
-			prop.setCollectionRole( collection.getRole() );
-			prop.setValue( collection.getKey() );
-			prop.setOptional( true );
+        collection.setInverse(false);
+        PersistentClass referenced = mappings.getClass( entityName );
+        Backref prop = new Backref();
+        prop.setEntityName(property.getDomainClass().getFullName());
+        prop.setName(UNDERSCORE + property.getDomainClass().getShortName() + UNDERSCORE + property.getName() + "Backref" );
+        prop.setUpdateable( false );
+        prop.setInsertable( true );
+        prop.setCollectionRole( collection.getRole() );
+        prop.setValue( collection.getKey() );
+        prop.setOptional( true );
 
-			referenced.addProperty( prop );
-	}
+        referenced.addProperty( prop );
+    }
 
 
 	private static Property getProperty(PersistentClass associatedClass,
@@ -750,6 +755,8 @@ public final class GrailsDomainBinder {
                     return left+ UNDERSCORE +right;
                 }
                 else if(shouldCollectionBindWithJoinColumn(property)) {
+                    left = trimBackTigs(left);
+                    right = trimBackTigs(right);
                     if(jt != null && jt.getName() != null) {
                         return jt.getName();
                     }
@@ -762,7 +769,12 @@ public final class GrailsDomainBinder {
         }
 	}
 
-	/**
+    private static String trimBackTigs(String tableName) {
+        if(tableName.startsWith(BACKTICK)) return tableName.substring(1, tableName.length()-2);
+        return tableName;
+    }
+
+    /**
 	 * Evaluates the table name for the given property
 	 *
 	 * @param domainClass The domain class to evaluate
