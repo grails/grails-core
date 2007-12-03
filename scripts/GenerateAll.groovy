@@ -48,7 +48,7 @@ target ('default': "Generates a CRUD interface (contoroller + views) for a domai
 target(generateAll:"The implementation target") {
 	                                     
 	rootLoader.addURL(classesDir.toURL())
-	def beans = new grails.spring.BeanBuilder().beans {
+	def beans = new grails.spring.WebBeanBuilder().beans {
 		resourceHolder(org.codehaus.groovy.grails.commons.spring.GrailsResourceHolder) {
 			resources = "file:${basedir}/grails-app/domain/**/*.groovy"
 		}

@@ -62,7 +62,8 @@ target (war: "The implementation target") {
 		              
 		scaffoldDir = "${basedir}/staging/WEB-INF/templates/scaffolding"
 		packageTemplates()
-		
+
+		println "DEPENDENCIES = $config.grails.war.dependencies"
 
 		Ant.copy(todir:"${basedir}/staging/WEB-INF/lib") {
 			fileset(dir:"${grailsHome}/dist") {
@@ -72,11 +73,11 @@ target (war: "The implementation target") {
 					include(name:"*.jar")
 			}
             fileset(dir:"${grailsHome}/lib") {
-                for(d in DEPENDENCIES) {
+                for(d in config.grails.war.dependencies) {
                     include(name:d)
                 }
                 if(antProject.properties."ant.java.version" == "1.5") {
-                    for(d in JAVA_5_DEPENDENCIES) {
+                    for(d in config.grails.war.java5.dependencies) {
                         include(name:d)
                     }
                 }

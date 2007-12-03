@@ -104,9 +104,6 @@ target( packageApp : "Implementation of package target") {
         createConfig()
     }
 
-//	profile("dependencies") {
-//        copyDependencies()
-//    }
 	Ant.mkdir(dir:"${basedir}/web-app/WEB-INF/grails-app/i18n")
 
 	Ant.mkdir(dir:"${basedir}/web-app/WEB-INF/grails-app/views")
@@ -197,70 +194,6 @@ log4j.rootLogger=error,stdout
 log4j.logger.org.codehaus.groovy.grails.plugins=info,stdout
 log4j.logger.org.codehaus.groovy.grails.commons=info,stdout'''
 	
-}
-
-DEPENDENCIES = [
-"ejb-3.0-persistence.jar",
-"ant.jar",  
-"hibernate3.jar",
-"jdbc2_0-stdext.jar",
-"jta.jar",
-"groovy-all-*.jar",
-"springmodules-sandbox.jar",
-"spring-webflow.jar",
-"spring-binding.jar",
-"standard-${servletVersion}.jar",
-"jstl-${servletVersion}.jar",          
-"antlr-*.jar",
-"cglib-*.jar",
-"dom4j-*.jar", 
-"ehcache-*.jar", 
-"junit-*.jar", 
-"commons-logging-*.jar",
-"sitemesh-*.jar",
-"spring-*.jar",
-"commons-lang-*.jar",
-"log4j-*.jar",
-"ognl-*.jar",
-"hsqldb-*.jar",
-"commons-collections-*.jar",
-"commons-beanutils-*.jar",
-"commons-pool-*.jar",
-"commons-dbcp-*.jar",
-"commons-cli-*.jar",
-"commons-validator-*.jar",
-"commons-fileupload-*.jar",
-"commons-io-*.jar", 
-"commons-io-*.jar",  
-"*oro-*.jar",    
-"jaxen-*.jar",
-"xstream-1.2.1.jar",
-"xpp3_min-1.1.3.4.O.jar"
-]    
-JAVA_5_DEPENDENCIES = [        
-"hibernate-annotations.jar",
-"ejb3-persistence.jar",	
-]                                      
-
-target( copyDependencies : "Copies the necessary dependencies (jar files) into the lib dir") {
-	Ant.sequential {
-		mkdir(dir:"${basedir}/web-app/WEB-INF/lib")
-		mkdir(dir:"${basedir}/web-app/WEB-INF/spring")
-		mkdir(dir:"${basedir}/web-app/WEB-INF/tld")
-		copy(todir:"${basedir}/web-app/WEB-INF/lib") {
-			fileset(dir:"${grailsHome}/lib") {
-				for(d in DEPENDENCIES) {
-					include(name:d)
-				}
-				if(antProject.properties."ant.java.version" == "1.5") {
-					for(d in JAVA_5_DEPENDENCIES) {
-						include(name:d)
-					}
-				}				
-			}  
-			fileset(dir:"${basedir}/lib")
-		}   
-	}
 }
 
 target(loadPlugins:"Loads Grails' plugins") {
