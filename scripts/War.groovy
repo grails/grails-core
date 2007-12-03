@@ -59,11 +59,18 @@ target (war: "The implementation target") {
 		Ant.copy(todir:"${basedir}/staging/WEB-INF/classes") {
             fileset(dir:classesDirPath)
         }
+
+        Ant.copy(todir:"${basedir}/staging/WEB-INF/classes", failonerror:false) {
+            fileset(dir:"${basedir}/grails-app/conf", includes:"**", excludes:"*.groovy, log4j*, hibernate, spring")
+            fileset(dir:"${basedir}/grails-app/conf/hibernate", includes:"**/**")
+            fileset(dir:"${basedir}/src/java") {
+                include(name:"**/**")
+                exclude(name:"**/*.java")
+            }
+        }
 		              
 		scaffoldDir = "${basedir}/staging/WEB-INF/templates/scaffolding"
 		packageTemplates()
-
-		println "DEPENDENCIES = $config.grails.war.dependencies"
 
 		Ant.copy(todir:"${basedir}/staging/WEB-INF/lib") {
 			fileset(dir:"${grailsHome}/dist") {
@@ -117,7 +124,7 @@ target (war: "The implementation target") {
 		
 	}   
 	finally {
-		cleanUpAfterWar()
+		//cleanUpAfterWar()
 	}
     event("StatusFinal", ["Created WAR ${warName}"])
 }                                                                    
