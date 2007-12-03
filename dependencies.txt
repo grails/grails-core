@@ -1,12 +1,13 @@
 The following libraries are included in Grails because they are required either for building the framework or for running the command line tools or for running Grails applications themselves.
 
-* ant.jar, ant-nodeps.jar, ant-junit.jar
+* ant.jar, ant-nodeps.jar, ant-junit.jar, ant-launcher.jar, ant-trax.jar
 - Ant 1.6.5 (http://ant.apache.org)
 - used to build the framework and for the command line tools (Gant)
+- required for running Grails applications when using AntBuilder 
 
 * antlr-2.7.6.jar
 - ANTLR 2.7.6 (http://www.antlr.org)
-- required for running Grails appliations (Hibernate)
+- required for running Grails applications (Hibernate)
 
 * bsf-2.3.0.jar
 - Bean Scripting Framework 2.3.0 (http://jakarta.apache.org/bsf/)
@@ -78,12 +79,12 @@ The following libraries are included in Grails because they are required either 
 - EJB 3.0 Final Release
 - required for running Grails applications (When using Hibernate EJB3 annotations)
 
-* gant-0.2.5-SNAPSHOT.jar
-- Gant 0.2.5 Snapshot build (http://groovy.codehaus.org/Gant)
+* gant-0.3.4-SNAPSHOT.jar
+- Gant 0.3.4 Snapshot build (http://groovy.codehaus.org/Gant)
 - required for the command line tools (Gant)
 
-* groovy-all-1.1-beta-3-SNAPSHOT.jar
-- Groovy 1.1 beta 3 Snapshot build (http://groovy.codehaus.org)
+* groovy-all-1.1-final-SNAPSHOT.jar
+- Groovy 1.1 final Snapshot build (http://groovy.codehaus.org)
 - required for the command line tools (Gant)
 - required for building Grails core
 - required for running Grails applications
@@ -118,7 +119,7 @@ The following libraries are included in Grails because they are required either 
 Jetty Container 6.1.4 (http://www.mortbay.org)
 - required for running Grails applications (with embedded Jetty container, not a WAR depedency)
 
-* jetty-naming-6.1.4.jar,jetty-plus-6.1.4.jar
+* jetty-naming-6.1.4.jar, jetty-plus-6.1.4.jar, jetty-util-6.1.4.jar
 Jetty JNDI Support 6.1.4 (http://www.mortbay.org)
 - required for running Grails applications (When -Denable.jndi=true)
 
@@ -144,8 +145,8 @@ Jetty JNDI Support 6.1.4 (http://www.mortbay.org)
 - required for building Grails core
 - required for the command line tools (Gant)
 
-* log4j-1.2.8.jar
-- Log4J 1.2.8 (http://logging.apache.org/log4j/)
+* log4j-1.2.15.jar
+- Log4J 1.2.15 (http://logging.apache.org/log4j/)
 - required for running Grails applications
 
 * ognl-2.6.9.jar
@@ -160,7 +161,7 @@ Jetty JNDI Support 6.1.4 (http://www.mortbay.org)
 - required for building Grails core
 - required for running Grails applications
 
-* spring-2.0.2.jar, spring-mock-2.0.2.jar
+* spring-2.5.jar, spring-test.jar, spring-webmvc.jar
 - required for building Grails core
 - required for the command line tools (Gant)
 - required for running Grails applications
@@ -188,10 +189,12 @@ Jetty JNDI Support 6.1.4 (http://www.mortbay.org)
 - required for the command line tools (Gant)
 - required for running Grails applications
 
+* xpp3_min-1.1.3.4.O.jar
+- XML Pull Parser (XPP) 1.1.3.4.O (http://www.extreme.indiana.edu/xgws/xsoap/xpp/)
+- required for running Grails applications (dependency of XStream 1.2.1)
+
 * xstream-1.2.1.jar
 - XStream 1.2.1 (http://xstream.codehaus.org/)
 - required for building Grails core
 - required for running Grails applications
-
-- XML Pull Parser (XPP) 1.1.3.4.O (http://www.extreme.indiana.edu/xgws/xsoap/xpp/)
-- required for running Grails applications (dependency of XStream 1.2.1)
+                                              
