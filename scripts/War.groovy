@@ -120,13 +120,14 @@ target (war: "The implementation target") {
 		warName = "${basedir}/${fileName}${version}.war"
 		warPlugins()		    
 		createDescriptor()
+    	event("WarStart", ["Creating WAR ${warName}"])		
 		Ant.jar(destfile:warName, basedir:"${basedir}/staging")
-		
+    	event("WarEnd", ["Created WAR ${warName}"])				
 	}   
 	finally {
-		//cleanUpAfterWar()
+		cleanUpAfterWar()
 	}
-    event("StatusFinal", ["Created WAR ${warName}"])
+    event("StatusFinal", ["Done creating WAR ${warName}"])
 }                                                                    
   
 target(createDescriptor:"Creates the WEB-INF/grails.xml file used to load Grails classes in WAR mode") {
