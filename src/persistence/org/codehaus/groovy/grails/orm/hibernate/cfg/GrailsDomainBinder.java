@@ -252,10 +252,7 @@ public final class GrailsDomainBinder {
             map.setInverse(false);
         }
         else {
-            if(property.isBidirectional())
-                map.setInverse(true);
-            else
-                map.setInverse(false);
+           map.setInverse(false);
         }
 
 
@@ -347,10 +344,10 @@ public final class GrailsDomainBinder {
         // link a bidirectional relationship
 		if(property.isBidirectional()) {
 			GrailsDomainClassProperty otherSide = property.getOtherSide();
-			if(otherSide.isManyToOne()) {
+			if(otherSide.isManyToOne() && shouldBindCollectionWithForeignKey(property)) {
 				linkBidirectionalOneToMany(collection, associatedClass, key, otherSide);
 			}
-			else if(property.isManyToMany() /*&& property.isOwningSide()*/) {
+			else if(property.isManyToMany() || Map.class.isAssignableFrom(property.getType())) {
 				bindDependentKeyValue(property,key,mappings);
 			}
 		}
@@ -375,7 +372,7 @@ public final class GrailsDomainBinder {
 
 
         // if we have a many-to-many
-		if(property.isManyToMany() ) {
+		if(property.isManyToMany() || isBidirectionalOneToManyMap(property)) {
 			GrailsDomainClassProperty otherSide = property.getOtherSide();
 
 			if(property.isBidirectional()) {
@@ -401,6 +398,10 @@ public final class GrailsDomainBinder {
             // TODO change this when HHH-1268 is resolved
             bindUnidirectionalOneToMany(property, mappings, collection);
         }
+    }
+
+    private static boolean isBidirectionalOneToManyMap(GrailsDomainClassProperty property) {
+        return Map.class.isAssignableFrom(property.getType()) && property.isBidirectional();
     }
 
     private static void bindCollectionWithJoinTable(GrailsDomainClassProperty property, Mappings mappings, Collection collection, ColumnConfig cc) {
