@@ -82,7 +82,7 @@ target( watchContext: "Watches the WEB-INF/classes directory for changes and res
 						src(path:"${basedir}/src/groovy")
 						src(path:"${basedir}/grails-app/domain")
 					    src(path:"${basedir}/src/java")
-                        javac(classpathref:"grails.classpath")
+    					javac(classpathref:"grails.classpath", debug:"yes") 
 
 					}
             ant = null

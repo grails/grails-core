@@ -72,7 +72,7 @@ compilerClasspath = { testSources ->
 	}	
 	src(path:"${basedir}/src/groovy")
     src(path:"${basedir}/src/java")
-    javac(classpathref:"grails.classpath") 
+    javac(classpathref:"grails.classpath", debug:"yes") 
 	if(testSources) {
          src(path:"${basedir}/test/unit")
          src(path:"${basedir}/test/integration")
