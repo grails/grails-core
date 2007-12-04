@@ -31,6 +31,7 @@ import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
+import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -290,7 +291,12 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
                 }
             }
             else {
-                throw new MissingMethodException(METHOD_SIGNATURE,target.getClass(),arguments);
+                try {
+                    out.write(DefaultGroovyMethods.inspect(arguments[0]));
+                    renderView = false;
+                } catch (IOException e) {
+                    throw new ControllerExecutionException("I/O error obtaining response writer: " + e.getMessage(), e);
+                }
             }
             try {
                 if(!renderView) out.flush();

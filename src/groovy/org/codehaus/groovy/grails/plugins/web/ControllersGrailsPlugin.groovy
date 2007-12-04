@@ -576,6 +576,10 @@ class ControllersGrailsPlugin {
             chain.invoke(delegate, "chain",args)
         }
         // the render method
+        mc.render = { Object o ->
+            render.invoke(delegate, "render",[o?.inspect()] as Object[])
+        }
+
         mc.render = { String txt ->
             render.invoke(delegate, "render",[txt] as Object[])
         }

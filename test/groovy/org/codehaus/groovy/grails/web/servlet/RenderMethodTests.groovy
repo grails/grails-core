@@ -25,7 +25,32 @@ import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
  */
 class RenderMethodTests extends AbstractGrailsControllerTests {
 
-	void testRenderText() {
+    void testRenderObject() {
+        def mockController = ga.getControllerClass("RenderController").newInstance()
+        mockController.renderObject.call()
+
+        def response = mockController.response
+        assertEquals "bar", response.contentAsString
+
+    }
+
+    void testRenderList() {
+      def mockController = ga.getControllerClass("RenderController").newInstance()
+        mockController.renderList.call()
+
+        def response = mockController.response
+        assertEquals "[1, 2, 3]", response.contentAsString
+    }
+
+    void testRenderMap() {
+      def mockController = ga.getControllerClass("RenderController").newInstance()
+        mockController.renderMap.call()
+
+        def response = mockController.response
+        assertEquals '["a":1, "b":2]', response.contentAsString
+    }
+
+    void testRenderText() {
 		runTest {
 			def mockController = ga.getControllerClass("RenderController").newInstance()
 			mockController.renderText.call()
@@ -81,6 +106,15 @@ class RenderMethodTests extends AbstractGrailsControllerTests {
 		gcl.parseClass(
 '''
 class RenderController {
+    def renderObject = {
+        render new RenderTest(foo:"bar")
+    }
+    def renderList = {
+        render( [1,2,3] )
+    }
+    def renderMap = {
+        render( [a:1, b:2] )
+    }
 	def renderText = {
 		render "test render"
 	}
@@ -92,6 +126,11 @@ class RenderController {
 	def renderTemplate = {
 		render(template:"testTemplate", model:[hello:"world"])
 	}
+}
+class RenderTest {
+    String foo
+
+    String toString() { foo }
 }
 '''				
 		)
