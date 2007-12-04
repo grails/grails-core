@@ -101,8 +101,11 @@ target( watchContext: "Watches the WEB-INF/classes directory for changes and res
 	            grailsServer.stop()
 	            compile()
                 ClassLoader contextLoader = Thread.currentThread().getContextClassLoader()
-                def classLoader = new URLClassLoader([classesDir.toURL()] as URL[], contextLoader)
-	            webContext.setClassLoader(classLoader)
+                classLoader = new URLClassLoader([classesDir.toURL()] as URL[], contextLoader)
+				// reload plugins
+				loadPlugins()
+				setupWebContext()
+			    grailsServer.setHandler( webContext )
             	grailsServer.start()
 			}
             catch(Exception e) {
@@ -124,21 +127,23 @@ target( configureHttpServer : "Returns a jetty server configured with an HTTP co
     def connectors = [new SelectChannelConnector()]
     connectors[0].setPort(serverPort)
     server.setConnectors( (Connector [])connectors )
-    webContext = new WebAppContext("${basedir}/web-app", "/${grailsAppName}")
-    if (enableJndi) { 
-        def confClassList = ["org.mortbay.jetty.webapp.WebInfConfiguration", 
-                             "org.mortbay.jetty.plus.webapp.EnvConfiguration", 
-                             "org.mortbay.jetty.plus.webapp.Configuration", 
-                             "org.mortbay.jetty.webapp.JettyWebXmlConfiguration", 
-                             "org.mortbay.jetty.webapp.TagLibConfiguration"] 
-        webContext.setConfigurationClasses((String[])confClassList ) 
-    }
-    webContext.setDefaultsDescriptor("${grailsHome}/conf/webdefault.xml")
-    webContext.setClassLoader(classLoader)
-    webContext.setDescriptor(webXmlFile.absolutePath)
+	setupWebContext()
     server.setHandler( webContext )
     event("ConfigureJetty", [server])
     return server
+}
+
+target( setupWebContext: "Sets up the Jetty web context") {
+    webContext = new WebAppContext("${basedir}/web-app", "/${grailsAppName}")
+    def confClassList = ["org.mortbay.jetty.webapp.WebInfConfiguration", 
+                         "org.mortbay.jetty.plus.webapp.EnvConfiguration", 
+                         "org.mortbay.jetty.plus.webapp.Configuration", 
+                         "org.mortbay.jetty.webapp.JettyWebXmlConfiguration", 
+                         "org.mortbay.jetty.webapp.TagLibConfiguration"] 
+    webContext.setConfigurationClasses((String[])confClassList ) 
+    webContext.setDefaultsDescriptor("${grailsHome}/conf/webdefault.xml")
+    webContext.setClassLoader(classLoader)
+    webContext.setDescriptor(webXmlFile.absolutePath)	
 }
 
 target( stopServer : "Stops the Grails Jetty server") {
