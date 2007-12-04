@@ -145,6 +145,10 @@ target(installPlugin:"Implementation target") {
             }
 
             event("StatusUpdate", [ "Compiling plugin ${fullPluginName} ..."])
+			// reset the classpath so that plug-in is recognised
+			classpathSet = false
+			classpath()
+			
             compile()
 
             packagePlugins()   
