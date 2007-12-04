@@ -157,7 +157,7 @@ public class GSPResponseWriter extends PrintWriter {
 	 * @param max
 	 * @return  A GSPResponseWriter instance
 	 */
-	static GSPResponseWriter getInstance(Writer target, int max) {
+	public static GSPResponseWriter getInstance(Writer target, int max) {
 		return new GSPResponseWriter(target, new CharArrayWriter(max), max);
 	} // getInstance()
 

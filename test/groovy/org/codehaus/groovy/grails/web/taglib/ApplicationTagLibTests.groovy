@@ -1,6 +1,5 @@
 package org.codehaus.groovy.grails.web.taglib;
 
-import org.codehaus.groovy.runtime.InvokerHelper
 import org.codehaus.groovy.grails.commons.ApplicationHolder
 
 class ApplicationTagLibTests extends AbstractGrailsTagTests {
@@ -39,7 +38,17 @@ class ApplicationTagLibTests extends AbstractGrailsTagTests {
 	void testSetTagWithMap() {
         def template = '<g:set var="e" value="${c.a}"/>${e?.b}'
 
-        assertOutputEquals('foo', template, [c:[a:[b:'foo']]])                        
+        assertOutputEquals('null', template, [c:[:]])
+        assertOutputEquals('foo', template, [c:[a:[b:'foo']]])
+
+    }
+
+    void testNullToBlankConversion() {
+        def template = 'foo=${test}'
+
+        assertOutputEquals('foo=bar', template, [test:'bar'])
+        assertOutputEquals('foo=', template, [test:''])
+        assertOutputEquals('foo=', template)
     }
 
 	void testIteration() {

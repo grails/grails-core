@@ -41,7 +41,7 @@ class ApplicationTagLib implements ApplicationContextAware {
 
                                                         
 	static final SCOPES = [page:'pageScope',
-						   application:'servleContext',						   
+						   application:'servletContext',						   
 						   request:'request',
 						   session:'session',
 						   flash:'flash']
@@ -52,10 +52,11 @@ class ApplicationTagLib implements ApplicationContextAware {
 		def scope = attrs.scope ? SCOPES[attrs.scope] : 'pageScope'
 		def var = attrs.var
 		def value = attrs.value
+		def containsValue = attrs.containsKey('value')
 		if(!scope) throw new IllegalArgumentException("Invalid [scope] attribute for tag <g:set>!")
 		if(!var) throw new IllegalArgumentException("[var] attribute must be specified to for <g:set>!")
 		
-		if(value == null && body) value = body()
+		if(!containsValue && body) value = body()
 
 		this."$scope"."$var" = value
 	}
