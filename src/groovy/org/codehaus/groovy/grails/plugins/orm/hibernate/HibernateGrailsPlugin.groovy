@@ -577,7 +577,8 @@ class HibernateGrailsPlugin {
         dc.persistantProperties.each {prop ->
             if (prop.oneToMany || prop.manyToMany) {
                 if (dc.metaClass instanceof ExpandoMetaClass) {
-                    def collectionName = "${prop.name[0].toUpperCase()}${prop.name[1..-1]}"
+                    def propertyName = prop.name
+                    def collectionName = propertyName.size() == 1 ? propertyName.toUpperCase() : "${propertyName[0].toUpperCase()}${propertyName[1..-1]}"
                     def otherDomainClass = prop.referencedDomainClass
 
                     dc.metaClass."addTo${collectionName}" = {Object arg ->
