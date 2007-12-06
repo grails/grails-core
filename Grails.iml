@@ -28,7 +28,6 @@
       <sourceFolder url="file://$MODULE_DIR$/test/persistence" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/test/scaffolding" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/test/web" isTestSource="true" />
-      <excludeFolder url="file://$MODULE_DIR$/bin" />
       <excludeFolder url="file://$MODULE_DIR$/cruise" />
       <excludeFolder url="file://$MODULE_DIR$/samples" />
       <excludeFolder url="file://$MODULE_DIR$/sandbox" />
@@ -44,8 +43,6 @@
     <orderEntry type="library" name="JUnit" level="project" />
     <orderEntry type="library" name="SiteMesh" level="project" />
     <orderEntry type="library" name="Spring" level="project" />
-    <orderEntry type="library" name="Apache Commons" level="project" />
-    <orderEntry type="library" name="Apache Commons" level="project" />
     <orderEntry type="library" name="HSQLDB" level="project" />
     <orderEntry type="module-library">
       <library>
@@ -93,13 +90,26 @@
       <library name="Groovy">
         <CLASSES>
           <root url="jar://$MODULE_DIR$/lib/gant-0.3.4-SNAPSHOT.jar!/" />
-          <root url="jar://$MODULE_DIR$/lib/groovy-all-1.1-rc-3.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/groovy-all-1.1-final-SNAPSHOT.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES>
           <root url="file://$MODULE_DIR$/../../groovy/src/main" />
           <root url="file://$MODULE_DIR$/../../gant/src/main/java" />
         </SOURCES>
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="Apache Ant">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/ant-junit.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/ant-launcher.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/ant-trax.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/ant.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/ant-nodeps.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
       </library>
     </orderEntry>
     <orderEntryProperties />

@@ -52,6 +52,10 @@
       <file url="file:///Users/graemerocher/Library/Caches/IntelliJIDEA70/compiler/grails.grailsad1ec4b3/.generated/Groovy_to_java_source_code_generator/Grails.23f0a070/production/org/codehaus/groovy/grails/compiler/GrailsCompiler.java" />
       <file url="file:///Users/graemerocher/Library/Caches/IntelliJIDEA70/compiler/grails.grailsad1ec4b3/.generated/Groovy_to_java_source_code_generator/Grails.23f0a070/production/org/codehaus/groovy/grails/web/pages/GroovyPageCodecTests.java" />
       <file url="file:///Users/graemerocher/Library/Caches/IntelliJIDEA70/compiler/grails.grailsad1ec4b3/.generated/Groovy_to_java_source_code_generator/Grails.23f0a070/production/org/codehaus/groovy/grails/webflow/engine/builder/ControllerFlowRegistry.java" />
+      <file url="file:///Users/graemerocher/Library/Caches/IntelliJIDEA70/compiler/grails.grailsad1ec4b3/.generated/Groovy_to_java_source_code_generator/searchable.e2a8b521/production/org/codehaus/groovy/grails/plugins/searchable/compass/mapping/ClosureSearchableGrailsDomainClassCompassClassMapper.java" />
+      <file url="file:///Users/graemerocher/Library/Caches/IntelliJIDEA70/compiler/grails.grailsad1ec4b3/.generated/Groovy_to_java_source_code_generator/searchable.e2a8b521/production/org/codehaus/groovy/grails/plugins/searchable/compass/mapping/DefaultSearchableCompassClassMappingXmlBuilder.java" />
+      <file url="file://$PROJECT_DIR$/src/tiger/org/codehaus/groovy/grails/commons/AnnotationDomainClassArtefactHandler.java" />
+      <file url="file://$PROJECT_DIR$/src/tiger/org/codehaus/groovy/grails/orm/hibernate/cfg/GrailsAnnotationConfiguration.java" />
     </excludeFromCompile>
     <resourceExtensions>
       <entry name=".+\.(properties|xml|html|dtd|tld)" />
@@ -286,6 +290,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/Grails.iml" filepath="$PROJECT_DIR$/Grails.iml" />
+      <module fileurl="file:///Developer/grails-dev/plugins/searchable/searchable.iml" filepath="/Developer/grails-dev/plugins/searchable/searchable.iml" />
     </modules>
   </component>
   <component name="ProjectRootManager" version="2" assert-keyword="true" jdk-15="false" project-jdk-name="1.5" project-jdk-type="JavaSDK" />
@@ -427,6 +432,14 @@
     <library name="Jaxen">
       <CLASSES>
         <root url="jar://$PROJECT_DIR$/lib/jaxen-1.1-beta-11.jar!/" />
+      </CLASSES>
+      <JAVADOC />
+      <SOURCES />
+    </library>
+    <library name="Groovy">
+      <CLASSES>
+        <root url="jar://$PROJECT_DIR$/lib/gant-0.3.4-SNAPSHOT.jar!/" />
+        <root url="jar://$PROJECT_DIR$/lib/groovy-all-1.1-final-SNAPSHOT.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES />

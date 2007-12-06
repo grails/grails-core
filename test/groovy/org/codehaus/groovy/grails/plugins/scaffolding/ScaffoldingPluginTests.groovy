@@ -9,14 +9,17 @@ import org.springframework.core.io.Resource
 class ScaffoldingPluginTests extends AbstractGrailsMockTests {
 
 	void onSetUp() {
-        gcl.parseClass("dataSource {\n" +
-                "dbCreate = \"create-drop\" \n" +
-                "url = \"jdbc:hsqldb:mem:devDB\"\n" +
-                "pooling = false                          \n" +
-                "driverClassName = \"org.hsqldb.jdbcDriver\"\t\n" +
-                "username = \"sa\"\n" +
-                "password = \"\"\n" +
-                "}", "DataSource")
+        def config = new ConfigSlurper().parse('''
+            dataSource {
+                pooled = true
+                driverClassName = "org.hsqldb.jdbcDriver"
+                username = "sa"
+                password = ""
+                dbCreate = "create-drop"
+            }
+''')
+
+        ConfigurationHolder.config = config
         gcl.parseClass(
 """
 class Test {
@@ -28,6 +31,12 @@ class TestController {
 }
 """)
 	}
+
+    protected void onTearDown() {
+        ConfigurationHolder.config = null
+    }
+
+
 	
 	void testScaffoldingPlugin() {
 		

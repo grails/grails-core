@@ -24,19 +24,24 @@ class HibernateGrailsPluginTests extends AbstractGrailsMockTests {
     }
 
     void testHibernatePluginWithDataSource() {
-        gcl.parseClass(
-                """
-                dataSource {
-                    pooled = false
-                    driverClassName = "org.hsqldb.jdbcDriver"
-                    username = "sa"
-                    password = ""
-                    dbCreate = "create-drop" // one of 'create', 'create-drop','update'
-                    url = "jdbc:hsqldb:mem:devDB"
+      def config = new ConfigSlurper().parse('''
+            dataSource {
+                pooled = true
+                driverClassName = "org.hsqldb.jdbcDriver"
+                username = "sa"
+                password = ""
+                dbCreate = "create-drop"
+            }
+''')
 
-                }
-                """, "DataSource")
-       loadPluginCheckCanSaveDomainClass()
+        ConfigurationHolder.config = config
+        try {
+            loadPluginCheckCanSaveDomainClass()
+        }
+        finally {
+
+            ConfigurationHolder.config = null
+        }
     }
 
     void testConfiguresHibernateWhenDataSourceInExternalSpringXml() {
