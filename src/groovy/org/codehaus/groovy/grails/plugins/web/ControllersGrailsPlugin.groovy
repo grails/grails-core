@@ -352,7 +352,7 @@ class ControllersGrailsPlugin {
                 }
                 def result
                 if(metaMethod) result = metaMethod.invoke(delegate, args)
-                else if(args.size() > 0 && args[0] instanceof Map) {
+                else  {
                     def ns = namespace ? namespace : GroovyPage.DEFAULT_NAMESPACE
                     def tagName = "${ns}:$name"
                     GrailsClass tagLibraryClass = application.getArtefactForFeature(
@@ -368,23 +368,23 @@ class ControllersGrailsPlugin {
                          synchronized(mc) {
                              WebMetaUtils.registerMethodMissingForTags(mc, ctx, tagLibraryClass, name)
                          }
-                         result = mc.invokeMethod(delegate, name, args)
                     }
-                    else {                                                                    
-                        throw new MissingMethodException(name, delegate.class, args)
-                    }
-                }else {
-                    // deal with the case where there is a closure property that could be invoked
-                    MetaProperty metaProperty = mc.getMetaProperty(name)
-                    def callable = metaProperty?.getProperty(delegate)
-                    if(callable instanceof Closure) {
-                        mc."$name" = { Object[] varArgs ->
-                            varArgs ? callable.call(*varArgs) : callable.call()
-                        }
-                        result = args ? callable.call(*args) : callable.call()
+                    if(mc.respondsTo(delegate,name, args)) {
+                        result = mc.invokeMethod(delegate, name, args)
                     }
                     else {
-                        throw new MissingMethodException(name, delegate.class, args)
+                        // deal with the case where there is a closure property that could be invoked
+                        MetaProperty metaProperty = mc.getMetaProperty(name)
+                        def callable = metaProperty?.getProperty(delegate)
+                        if(callable instanceof Closure) {
+                            mc."$name" = { Object[] varArgs ->
+                                varArgs ? callable.call(*varArgs) : callable.call()
+                            }
+                            result = args ? callable.call(*args) : callable.call()
+                        }
+                        else {
+                            throw new MissingMethodException(name, delegate.class, args)
+                        }
                     }
                 }
                 result

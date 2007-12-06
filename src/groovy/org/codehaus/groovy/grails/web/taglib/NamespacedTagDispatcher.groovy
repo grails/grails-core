@@ -47,7 +47,8 @@ class NamespacedTagDispatcher {
         def tagLibClass = application.getArtefactForFeature(TagLibArtefactHandler.TYPE, tag.toString())
         if(tagLibClass) {
             def tagBean = applicationContext.getBean(tagLibClass.fullName)
-            return tagBean.invokeMethod(name, args)
+            Object result = tagBean.invokeMethod(name, args)
+            return result
         }
         else {
             throw new groovy.lang.MissingMethodException(name,type, args )

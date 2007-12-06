@@ -43,14 +43,7 @@ class ApplicationTagLibTests extends AbstractGrailsTagTests {
 
     }
 
-    void testNullToBlankConversion() {
-        def template = 'foo=${test}'
-
-        assertOutputEquals('foo=bar', template, [test:'bar'])
-        assertOutputEquals('foo=', template, [test:''])
-        assertOutputEquals('foo=', template)
-    }
-
+    
 	void testIteration() {
         def template = '''<g:set var="counter" value="${1}" />
 <g:each in="${[10,11,12]}" var="myVal"><g:set var="counter" value="${myVal+counter}" />${counter}</g:each>'''
