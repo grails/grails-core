@@ -10,7 +10,6 @@
 
 PROGNAME=`basename "$0"`
 DIRNAME=`dirname "$0"`
-ARGUMENTS=$@
 
 # Use the maximum available, or set MAX_FD != -1 to use that
 MAX_FD="maximum"
@@ -55,6 +54,8 @@ if [ "$1" = "-cp" ] || [ "$1" = "-classpath" ]; then
   CP=$2
   shift 2
 fi
+
+ARGUMENTS=$@
 
 # Attempt to set JAVA_HOME if it's not already set
 if [ -z "$JAVA_HOME" ]; then
@@ -226,7 +227,7 @@ lateInit
 startGrails() {
   CLASS=$1
   shift
-  JAVA_OPTS="-server -Xmx256M $JAVA_OPTS"
+  JAVA_OPTS="-server -Xmx512M $JAVA_OPTS"
   # Start the Profiler or the JVM
   if $useprofiler; then
       runProfiler
