@@ -51,7 +51,8 @@ File getHelpFile(File script) {
 }
 
 boolean shouldGenerateHelp(File script) {
-	return (getHelpFile(script).lastModified() < script.lastModified() )
+	File file = getHelpFile(script)
+    return (!file.exists() || file.lastModified() < script.lastModified() )
 }
                                 
 
