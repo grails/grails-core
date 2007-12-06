@@ -34,7 +34,7 @@ class DefaultAcceptHeaderParser implements AcceptHeaderParser{
         def qualifiedMimes = []
         def mimeConfig = config?.grails?.mime?.types
         if(!mimeConfig) {
-            LOG.warn "No mime types configured, defaulting to 'text/html'"
+            LOG.debug "No mime types configured, defaulting to 'text/html'"
             return createDefaultMimeTypeConfig()
         }
         else if(!header) {
@@ -70,7 +70,7 @@ class DefaultAcceptHeaderParser implements AcceptHeaderParser{
             }
 
             if(!mimes) {
-               LOG.warn "No configured mime types found for Accept header: $header"
+               LOG.debug "No configured mime types found for Accept header: $header"
                return createDefaultMimeTypeConfig()
             }
         }
