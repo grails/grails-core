@@ -45,10 +45,19 @@ class DataSourceGrailsPlugin {
             }
             else {
                 def properties = {
-                    driverClassName = ds?.driverClassName ? ds.driverClassName : "org.hsqldb.jdbcDriver"
+                    def driver = ds?.driverClassName ? ds.driverClassName : "org.hsqldb.jdbcDriver"
+                    driverClassName = driver
                     url = ds?.url ? ds.url : "jdbc:hsqldb:mem:grailsDB"
-                    username = ds?.username ? ds.username : "sa"
-                    password = ds?.password ? ds.password : ""
+                    if(driver == "org.hsqldb.jdbcDriver") {
+                        username = ds?.username ? ds.username : "sa"
+                        password = ds?.password ? ds.password : ""
+                    }
+                    else {
+                        if(ds?.username)
+                            username = ds?.username
+                        if(ds?.password)
+                            password = ds?.password                         
+                    }
                 }
                 if(ds && !parentCtx?.containsBean("dataSource")) {
                     log.info("[RuntimeConfiguration] Configuring data source for environment: ${grails.util.GrailsUtil.getEnvironment()}");

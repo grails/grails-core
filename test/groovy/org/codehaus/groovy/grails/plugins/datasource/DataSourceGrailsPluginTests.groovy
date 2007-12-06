@@ -9,57 +9,205 @@ import javax.sql.DataSource
 
 class DataSourceGrailsPluginTests extends AbstractGrailsMockTests {
 
-	void onSetUp() {
-		def config = new ConfigSlurper("test").parse(
-'''
-dataSource {
-	pooling = false                          
-	driverClassName = "org.hsqldb.jdbcDriver"	
-	username = "sa"
-	password = ""				
-}
-environments {
-	development {
-		dataSource {
-			dbCreate = "create-drop" 
-			url = "jdbc:hsqldb:mem:devDB"
-		}
-	}   
-	test {
-		dataSource {
-			dbCreate = "update"
-			url = "jdbc:hsqldb:mem:testDb"
-		}
-	}   
-	production {
-		dataSource {
-			dbCreate = "update"
-			url = "jdbc:hsqldb:file:prodDb;shutdown=true"
-		}
+	void testDataSourcePluginOtherDriverWithUserAndPass() {
+
+            def config = new ConfigSlurper("test").parse(
+            '''
+            dataSource {
+                pooled = true
+                driverClassName = "com.oracle.jdbcDriver"
+                url = "jdbc:oracle::someserver"
+                username = "foo"
+                password = "blah"
+            }
+            ''')
+
+        def mock = [application:[config:config]]
+        def plugin = new DataSourceGrailsPlugin()
+
+        def beans = plugin.doWithSpring
+
+        def bb = new BeanBuilder()
+        bb.setBinding(new Binding(mock))
+        bb.beans(beans)
+
+        def beanDef = bb.getBeanDefinition('dataSource')
+
+        assertEquals "org.apache.commons.dbcp.BasicDataSource",beanDef.beanClassName
+
+        assertNotNull beanDef.getPropertyValues().getPropertyValue('username')
+        assertNotNull  beanDef.getPropertyValues().getPropertyValue('password')
+        assertEquals  "foo",beanDef.getPropertyValues().getPropertyValue('username').getValue()
+        assertEquals  "blah",beanDef.getPropertyValues().getPropertyValue('password').getValue()
+
+        assertEquals  "com.oracle.jdbcDriver",beanDef.getPropertyValues().getPropertyValue('driverClassName').getValue()
+        assertEquals  "jdbc:oracle::someserver",beanDef.getPropertyValues().getPropertyValue('url').getValue()
 	}
-}
-''')
-        ConfigurationHolder.setConfig(config)
-	} 
-	
-	void onTearDown() {
-		ConfigurationHolder.setConfig(null)
+
+    void testDataSourcePluginOtherDriverNoUserAndPass() {
+
+            def config = new ConfigSlurper("test").parse(
+            '''
+            dataSource {
+                pooled = true
+                driverClassName = "com.oracle.jdbcDriver"
+                url = "jdbc:oracle::someserver"
+
+            }
+            ''')
+
+        def mock = [application:[config:config]]
+        def plugin = new DataSourceGrailsPlugin()
+
+        def beans = plugin.doWithSpring
+
+        def bb = new BeanBuilder()
+        bb.setBinding(new Binding(mock))
+        bb.beans(beans)
+
+        def beanDef = bb.getBeanDefinition('dataSource')
+
+        assertEquals "org.apache.commons.dbcp.BasicDataSource",beanDef.beanClassName
+
+        assertNull beanDef.getPropertyValues().getPropertyValue('username')
+        assertNull  beanDef.getPropertyValues().getPropertyValue('password')
+        assertEquals  "com.oracle.jdbcDriver",beanDef.getPropertyValues().getPropertyValue('driverClassName').getValue()
+        assertEquals  "jdbc:oracle::someserver",beanDef.getPropertyValues().getPropertyValue('url').getValue()
 	}
-	
-	void testDataSourcePlugin() {
-            def pluginClass = gcl.loadClass("org.codehaus.groovy.grails.plugins.datasource.DataSourceGrailsPlugin")
 
-            def plugin = new DefaultGrailsPlugin(pluginClass, ga)
+    void testDataSourcePluginHSQLDBNoUserAndPass() {
 
-            def springConfig = new WebRuntimeSpringConfiguration(ctx)
-            springConfig.servletContext = createMockServletContext()
+            def config = new ConfigSlurper("test").parse(
+            '''
+            dataSource {
+                pooled = true
+                driverClassName = "org.hsqldb.jdbcDriver"
+            }
+            ''')
 
-            plugin.doWithRuntimeConfiguration(springConfig)
+        def mock = [application:[config:config]]
+        def plugin = new DataSourceGrailsPlugin()
 
-            def appCtx = springConfig.getApplicationContext()
+        def beans = plugin.doWithSpring
+
+        def bb = new BeanBuilder()
+        bb.setBinding(new Binding(mock))
+        bb.beans(beans)
+
+        def beanDef = bb.getBeanDefinition('dataSource')
+
+        assertEquals "org.apache.commons.dbcp.BasicDataSource",beanDef.beanClassName
+
+        assertEquals  "org.hsqldb.jdbcDriver",beanDef.getPropertyValues().getPropertyValue('driverClassName').getValue()
+        assertEquals  "sa",beanDef.getPropertyValues().getPropertyValue('username').getValue()
+        assertEquals  "",beanDef.getPropertyValues().getPropertyValue('password').getValue()
+        assertEquals  "jdbc:hsqldb:mem:grailsDB",beanDef.getPropertyValues().getPropertyValue('url').getValue()
+	}
+
+	void testDataSourcePluginPoolingOn() {
+
+            def config = new ConfigSlurper("test").parse(
+            '''
+            dataSource {
+                pooled = true
+                driverClassName = "org.hsqldb.jdbcDriver"
+                username = "sa"
+                password = ""
+            }
+            environments {
+                development {
+                    dataSource {
+                        dbCreate = "create-drop"
+                        url = "jdbc:hsqldb:mem:devDB"
+                    }
+                }
+                test {
+                    dataSource {
+                        dbCreate = "update"
+                        url = "jdbc:hsqldb:mem:testDb"
+                    }
+                }
+                production {
+                    dataSource {
+                        dbCreate = "update"
+                        url = "jdbc:hsqldb:file:prodDb;shutdown=true"
+                    }
+                }
+            }
+            ''')
+
+        def mock = [application:[config:config]]
+        def plugin = new DataSourceGrailsPlugin()
+
+        def beans = plugin.doWithSpring
+
+        def bb = new BeanBuilder()
+        bb.setBinding(new Binding(mock))
+        bb.beans(beans)
+
+        def beanDef = bb.getBeanDefinition('dataSource')
+
+        assertEquals "org.apache.commons.dbcp.BasicDataSource",beanDef.beanClassName
+
+        assertEquals  "org.hsqldb.jdbcDriver",beanDef.getPropertyValues().getPropertyValue('driverClassName').getValue()
+        assertEquals  "sa",beanDef.getPropertyValues().getPropertyValue('username').getValue()
+        assertEquals  "",beanDef.getPropertyValues().getPropertyValue('password').getValue()
+        assertEquals  "jdbc:hsqldb:mem:testDb",beanDef.getPropertyValues().getPropertyValue('url').getValue()
 
 
-            assert appCtx.containsBean("dataSource")
+	}
+
+	void testDataSourcePluginPoolingOff() {
+
+            def config = new ConfigSlurper("test").parse(
+            '''
+            dataSource {
+                pooled = false
+                driverClassName = "org.hsqldb.jdbcDriver"
+                username = "sa"
+                password = ""
+            }
+            environments {
+                development {
+                    dataSource {
+                        dbCreate = "create-drop"
+                        url = "jdbc:hsqldb:mem:devDB"
+                    }
+                }
+                test {
+                    dataSource {
+                        dbCreate = "update"
+                        url = "jdbc:hsqldb:mem:testDb"
+                    }
+                }
+                production {
+                    dataSource {
+                        dbCreate = "update"
+                        url = "jdbc:hsqldb:file:prodDb;shutdown=true"
+                    }
+                }
+            }
+            ''')
+
+        def mock = [application:[config:config]]
+        def plugin = new DataSourceGrailsPlugin()
+
+        def beans = plugin.doWithSpring
+
+        def bb = new BeanBuilder()
+        bb.setBinding(new Binding(mock))
+        bb.beans(beans)
+
+        def beanDef = bb.getBeanDefinition('dataSource')
+
+        assertEquals "org.springframework.jdbc.datasource.DriverManagerDataSource",beanDef.beanClassName
+
+        assertEquals  "org.hsqldb.jdbcDriver",beanDef.getPropertyValues().getPropertyValue('driverClassName').getValue()
+        assertEquals  "sa",beanDef.getPropertyValues().getPropertyValue('username').getValue()
+        assertEquals  "",beanDef.getPropertyValues().getPropertyValue('password').getValue()
+        assertEquals  "jdbc:hsqldb:mem:testDb",beanDef.getPropertyValues().getPropertyValue('url').getValue()
+        
+
 	}
 
 	void testJndiDataSource() {
@@ -83,7 +231,7 @@ dataSource {
 
         assertEquals "org.springframework.jndi.JndiObjectFactoryBean",beanDef.beanClassName
         assertEquals "java:comp/env/myDataSource",beanDef.getPropertyValues().getPropertyValue('jndiName').getValue()
-         assertEquals DataSource,beanDef.getPropertyValues().getPropertyValue('expectedType').getValue()
+        assertEquals DataSource,beanDef.getPropertyValues().getPropertyValue('expectedType').getValue()
 
     }
 }
