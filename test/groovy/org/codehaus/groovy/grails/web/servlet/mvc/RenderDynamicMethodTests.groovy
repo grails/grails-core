@@ -50,6 +50,7 @@ class RenderDynamicMethodTests extends AbstractGrailsControllerTests {
         def testCtrl = ga.getControllerClass("TestController").newInstance()
 
         testCtrl.renderText()
+        assertEquals "text/html", response.contentType
         assertEquals "text", response.contentAsString
     }
 
