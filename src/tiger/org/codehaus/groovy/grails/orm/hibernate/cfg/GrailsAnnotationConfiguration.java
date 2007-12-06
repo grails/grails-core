@@ -14,20 +14,17 @@
  */
 package org.codehaus.groovy.grails.orm.hibernate.cfg;
 
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.GrailsDomainClass;
-import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
-import org.codehaus.groovy.grails.commons.GrailsClass;
+import org.codehaus.groovy.grails.commons.*;
 import org.hibernate.HibernateException;
 import org.hibernate.MappingException;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.AnnotationConfiguration;
+
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 
 /**
  * Allows configuring Grails' hibernate support to work in conjuntion with Hibernate's annotation
@@ -68,6 +65,7 @@ public class GrailsAnnotationConfiguration  extends AnnotationConfiguration impl
       * @see org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsDomainConfiguration#setGrailsApplication(org.codehaus.groovy.grails.commons.GrailsApplication)
       */
     public void setGrailsApplication(GrailsApplication application) {
+        application.registerArtefactHandler(new AnnotationDomainClassArtefactHandler());
         this.grailsApplication = application;
         if(this.grailsApplication != null) {
             GrailsClass[] existingDomainClasses = this.grailsApplication.getArtefacts(DomainClassArtefactHandler.TYPE);
