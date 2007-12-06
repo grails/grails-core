@@ -86,8 +86,9 @@ public class DefaultGrailsApplicationAttributes implements GrailsApplicationAttr
         GroovyObject controller = getController(request);
         if(controller != null)
             return (String)controller.getProperty(ControllerDynamicMethods.CONTROLLER_URI_PROPERTY);
-        else
-            return null;
+        else {
+            return "/" + request.getAttribute(GrailsApplicationAttributes.CONTROLLER_NAME_ATTRIBUTE);
+        }
     }
 
     public String getApplicationUri(ServletRequest request) {

@@ -105,11 +105,35 @@ class GroovyPageWritable implements Writable {
                 response.setContentType(metaInfo.getContentType()); // must come before response.getWriter()
             }
 
-            Binding binding = formulateBinding(request, response, out);
+            // Set up the script context
+            Binding binding = (Binding)request.getAttribute(GrailsApplicationAttributes.PAGE_SCOPE);
+            Binding oldBinding = null;
+
+            if(binding == null) {
+                binding = createBinding();
+            }
+            else {
+                // if the Binding already exists then we're a template being included/rendered as part of a larger template
+                // in this case we need our own Binding and the old Binding needs to be restored after rendering
+                oldBinding = binding;
+                binding = createBinding();
+            }
+            formulateBinding(request, response, binding, out);
+
             Script page = InvokerHelper.createScript(metaInfo.getPageClass(), binding);
             page.run();
+            if(oldBinding!=null) {
+                request.setAttribute(GrailsApplicationAttributes.PAGE_SCOPE, oldBinding);        
+            }
         }
         return out;
+    }
+
+    private Binding createBinding() {
+        Binding binding = new Binding();
+        request.setAttribute(GrailsApplicationAttributes.PAGE_SCOPE, binding);
+        binding.setVariable(GroovyPage.PAGE_SCOPE, binding);
+        return binding;
     }
 
     /**
@@ -140,20 +164,11 @@ class GroovyPageWritable implements Writable {
      * @param request The HttpServletRequest instance
      * @param response The HttpServletResponse instance
      * @param out The response out
-     * @return the Bindings
      * @throws java.io.IOException Thrown when an IO error occurs creating the binding
      */
-    protected Binding formulateBinding(HttpServletRequest request, HttpServletResponse response, Writer out)
+    protected void formulateBinding(HttpServletRequest request, HttpServletResponse response, Binding binding, Writer out)
             throws IOException {
-        // Set up the script context
-        Binding binding = (Binding)request.getAttribute(GrailsApplicationAttributes.PAGE_SCOPE);
 
-        if(binding == null) {
-            binding = new Binding();
-            request.setAttribute(GrailsApplicationAttributes.PAGE_SCOPE, binding);
-        }
-
-        binding.setVariable(GroovyPage.PAGE_SCOPE, binding);
 
         GroovyObject controller = (GroovyObject)request.getAttribute(GrailsApplicationAttributes.CONTROLLER);
 
@@ -170,8 +185,6 @@ class GroovyPageWritable implements Writable {
         }
         populateViewModel(request, binding);
 
-
-        return binding;
     }
 
     protected void populateViewModel(HttpServletRequest request, Binding binding) {

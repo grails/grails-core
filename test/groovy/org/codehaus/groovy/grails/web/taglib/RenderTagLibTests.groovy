@@ -15,7 +15,8 @@
  */
 package org.codehaus.groovy.grails.web.taglib;
 
-import org.springframework.web.servlet.support.RequestContextUtils as RCU;
+import org.springframework.web.servlet.support.RequestContextUtils as RCU
+import org.codehaus.groovy.grails.support.MockStringResourceLoader;
 
 /**
  * Tests for the RenderTagLib.groovy file which contains tags for rendering
@@ -25,7 +26,20 @@ import org.springframework.web.servlet.support.RequestContextUtils as RCU;
  */
 class RenderTagLibTests extends AbstractGrailsTagTests {
 
-	void testSortableColumnTag() {
+    void testRenderTagBeforeAndAfterModel() {
+
+        def resourceLoader = new MockStringResourceLoader()
+        resourceLoader.registerMockResource("/foo/_part.gsp", "test")
+        appCtx.groovyPagesTemplateEngine.resourceLoader = resourceLoader
+        webRequest.controllerName = "foo"
+        def template = '''<p>id: ${foo1.id},name: ${foo1.name}</p><g:render template="part" model="['foo1':foo2]" /><p>id: ${foo1.id},name: ${foo1.name}</p>'''
+
+
+        assertOutputEquals('<p>id: 1,name: foo</p>test<p>id: 1,name: foo</p>', template, [foo1:[id:1, name:'foo'], foo2:[id:2, name:'bar']])
+
+    }
+
+    void testSortableColumnTag() {
     	final StringWriter sw = new StringWriter();
     	final PrintWriter pw = new PrintWriter(sw);
 
