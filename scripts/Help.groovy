@@ -93,11 +93,14 @@ grails [environment]*
 					def scriptName = GCU.getScriptName(file.name)
 
 					helpText = "grails ${scriptName} -- ${getDefaultTask()}"					
-					getHelpFile(file).write(helpText) 		  		
+					File helpFile = getHelpFile(file)
+					if(!helpFile.exists())
+					    helpFile.createNewFile()
+                    helpFile.write(helpText)
 				}                                                      
 				catch(Throwable t) {
-					println "Error creating help for ${file}: ${t.message}"
-					t.printStackTrace(System.out)
+					println "Warning: Error caching created help for ${file}: ${t.message}"
+					println helpText
 				}
 			} else {
 				helpText = getHelpFile(file).text
