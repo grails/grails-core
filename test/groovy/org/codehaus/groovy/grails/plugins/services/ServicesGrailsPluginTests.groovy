@@ -8,7 +8,18 @@ import org.codehaus.groovy.grails.plugins.*
 class ServicesGrailsPluginTests extends AbstractGrailsMockTests {
 
 	void onSetUp() {
-		gcl.parseClass(
+        def config = new ConfigSlurper().parse('''
+            dataSource {
+                pooled = true
+                driverClassName = "org.hsqldb.jdbcDriver"
+                username = "sa"
+                password = ""
+                dbCreate = "create-drop"
+            }
+''')
+
+        ConfigurationHolder.config = config
+        gcl.parseClass(
 """
 class SomeTransactionalService {
 	boolean transactional = true
@@ -22,17 +33,14 @@ class NonTransactionalService {
 		return "goodbye"
     }
 } 
-class ApplicationDataSource {
-   boolean pooling = true
-   String dbCreate = 'create-drop'
-   String url = 'jdbc:hsqldb:mem:devDB'
-   String driverClassName = 'org.hsqldb.jdbcDriver'
-   String username = 'sa'
-   String password = ''
-}
 """)
 	}
-	
+
+    protected void onTearDown() {
+        ConfigurationHolder.config = null
+    }
+
+
 	void testServicesPlugin() {
 		
 		def corePluginClass = gcl.loadClass("org.codehaus.groovy.grails.plugins.CoreGrailsPlugin")
