@@ -332,6 +332,7 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
            if(springResources.exists()) {
               LOG.debug("[RuntimeConfiguration] Configuring additional beans from " +springResources.getURL());
               XmlBeanFactory xmlBf = new XmlBeanFactory(springResources);
+              xmlBf.setBeanClassLoader(Thread.currentThread().getContextClassLoader());
               String[] beanNames = xmlBf.getBeanDefinitionNames();
               LOG.debug("[RuntimeConfiguration] Found ["+beanNames.length+"] beans to configure");
               for (int k = 0; k < beanNames.length; k++) {
