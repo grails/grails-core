@@ -105,6 +105,7 @@ target (war: "The implementation target") {
 		  
 	    Ant.propertyfile(file:"${basedir}/staging/WEB-INF/classes/application.properties") {
 	        entry(key:"grails.env", value:grailsEnv)
+	        entry(key:"grails.war.deployed", value:"true")
 	    }		
 		
 		Ant.replace(file:"${basedir}/staging/WEB-INF/applicationContext.xml", 

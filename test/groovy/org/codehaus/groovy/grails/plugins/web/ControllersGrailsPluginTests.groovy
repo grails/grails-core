@@ -5,6 +5,8 @@ import org.codehaus.groovy.grails.commons.*
 import org.codehaus.groovy.grails.commons.spring.*
 import org.codehaus.groovy.grails.plugins.*
 import org.codehaus.groovy.grails.web.plugins.*
+import grails.spring.BeanBuilder
+import org.springframework.core.io.FileSystemResource
 
 class ControllersGrailsPluginTests extends AbstractGrailsPluginTests {
 	
@@ -58,6 +60,47 @@ class TestController {
 	    assertEquals("beanName", bean.name)
 	    assertNull(bean.address)
 	}
+
+	void testBeansWhenNotWarDeployedAndDevelopmentEnv() {
+        try {
+            System.setProperty("grails.env", "development")
+            def mock = [application: [config: new ConfigObject(), warDeployed: false]]
+            def plugin = new ControllersGrailsPlugin()
+            def beans = plugin.doWithSpring
+            def bb = new BeanBuilder()
+            bb.setBinding(new Binding(mock))
+            bb.beans(beans)
+            def beanDef = bb.getBeanDefinition('groovyPageResourceLoader')
+            assertEquals "org.codehaus.groovy.grails.web.pages.GroovyPageResourceLoader", beanDef.beanClassName
+            assertNotNull beanDef.getPropertyValues().getPropertyValue('baseResource')
+
+            assertEquals new FileSystemResource("."), beanDef.getPropertyValues().getPropertyValue('baseResource').getValue()
+
+            beanDef = bb.getBeanDefinition("groovyPagesTemplateEngine")
+            assertEquals "groovyPageResourceLoader", beanDef.getPropertyValues().getPropertyValue("resourceLoader").getValue()?.beanName
+
+            beanDef = bb.getBeanDefinition("jspViewResolver")
+            assertEquals "groovyPageResourceLoader", beanDef.getPropertyValues().getPropertyValue("resourceLoader").getValue()?.beanName
+            
+        } finally {
+            System.setProperty("grails.env", "")
+        }
+    }
+
+    void testBeansWhenWarDeployedAndDevelopmentEnv() {
+      try {
+            System.setProperty("grails.env", "development")
+            def mock = [application: [config: new ConfigObject(), warDeployed: true]]
+            def plugin = new ControllersGrailsPlugin()
+            def beans = plugin.doWithSpring
+            def bb = new BeanBuilder()
+            bb.setBinding(new Binding(mock))
+            bb.beans(beans)
+            assertNull bb.getBeanDefinition('groovyPageResourceLoader')
+        } finally {
+            System.setProperty("grails.env", "")
+        }
+    }
 
 	Class parseTestBean(){
 	    return gcl.parseClass(

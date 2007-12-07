@@ -268,4 +268,11 @@ public interface GrailsApplication extends ApplicationContextAware {
      * @param artefact The artefact to add
      */
     void addArtefact(Class artefact);
+
+    /**
+     * Returns true if this application has been deployed as a WAR file
+     *
+     * @return True if the application is WAR deployed
+     */
+    boolean isWarDeployed();
 }

@@ -99,6 +99,7 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
     private static final String CONFIG_BINDING_GRAILS_HOME = "grailsHome";
     private static final String CONFIG_BINDING_APP_NAME = "appName";
     private static final String CONFIG_BINDING_APP_VERSION = "appVersion";
+    private static final String META_GRAILS_WAR_DEPLOYED = "grails.war.deployed";
 
     /**
      * Creates a new empty Grails application
@@ -124,7 +125,7 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
         }
         this.allClasses = classes;
         this.cl = classLoader;
-        loadMetadata();
+        this.applicationMeta = loadMetadata();
     }
 
 
@@ -143,7 +144,7 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
         this.resourceLoader = resourceLoader;
 
         try {
-        	loadMetadata();
+        	this.applicationMeta = loadMetadata();
             loadGrailsApplicationFromResources(resourceLoader.getResources());
         } catch (IOException e) {
             throw new GrailsConfigurationException("I/O exception loading Grails: " + e.getMessage(), e);
@@ -206,7 +207,7 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
         }
     }
 
-    private void loadMetadata() {
+    protected Map loadMetadata() {
         final Properties meta = new Properties();
         Resource r = new ClassPathResource(PROJECT_META_FILE);
         try {
@@ -218,7 +219,7 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
         if (System.getProperty(GrailsApplication.ENVIRONMENT) != null) {
         	meta.setProperty(GrailsApplication.ENVIRONMENT, System.getProperty(GrailsApplication.ENVIRONMENT));
         }
-        applicationMeta = Collections.unmodifiableMap(meta);
+        return Collections.unmodifiableMap(meta);
     }
 
     /**
@@ -870,6 +871,17 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
                 addArtefact(artefactHandler.getType(), artefact);
             }
         }
+    }
+
+    public boolean isWarDeployed() {
+        Map metadata = getMetadata();        
+        if(metadata != null) {
+            Object val = metadata.get(META_GRAILS_WAR_DEPLOYED);
+            if(val != null && val.equals("true")) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public void setBeanClassLoader(ClassLoader classLoader) {
