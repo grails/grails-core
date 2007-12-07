@@ -227,7 +227,11 @@ public class FindAllPersistentMethod
 					Criteria crit = session.createCriteria(clazz);
 					crit.add(example);
 
-					return crit.list();
+                    if(arguments.length > 1 && arguments[0] instanceof Map) {
+                        populateArgumentsForCriteria(crit, (Map)arguments[0] );
+                    }
+
+                    return crit.list();
 				}
 
 			});
