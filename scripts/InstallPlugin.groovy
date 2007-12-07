@@ -25,6 +25,7 @@
 import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU  
 import groovy.xml.dom.DOMCategory
 import groovy.xml.MarkupBuilder
+import org.springframework.util.Assert
 
 appName = ""
 
@@ -158,6 +159,9 @@ target(installPlugin:"Implementation target") {
                 Ant.delete(dir:"${pluginsBase}/${fullPluginName}")
                 clean()
                 def plugin = pluginManager.getFailedPlugin(pluginName)
+
+                Assert.notNull plugin, "Grails Bug: If the plugin wasn't loaded it should be in the failed plugins list, but is not. Please report the issue."
+                
                 println "Failed to install plug-in [${fullPluginName}]. Missing depedencies: ${plugin.dependencyNames.inspect()}"
                 event("PluginInstallFailed", [ "Plugin ${fullPluginName} failed to install"])
             }

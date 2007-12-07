@@ -547,10 +547,6 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager impl
       }
   }
 
-  public boolean hasGrailsPlugin(String name) {
-      return this.plugins.containsKey(name);
-  }
-
   public void setParentApplicationContext(ApplicationContext parent) {
       this.parentCtx = parent;
   }

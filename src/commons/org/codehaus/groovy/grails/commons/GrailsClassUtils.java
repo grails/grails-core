@@ -336,21 +336,39 @@ public class GrailsClassUtils {
      * @return A class name
      */
     public static String getNameFromScript(String scriptName) {
-    	if(scriptName.indexOf('-') > -1) {
-    		StringBuffer buf = new StringBuffer();
-    		String[] tokens = scriptName.split("-");
-    		for (int i = 0; i < tokens.length; i++) {
-				String token = tokens[i];
-				buf.append(token.substring(0,1).toUpperCase())
-				   .append(token.substring(1));				
-			}
-    		return buf.toString();
-    	}
-    	else {
-    		return scriptName.substring(0,1).toUpperCase() + scriptName.substring(1);
-    	}
-    	
-    	
+        return getClassNameForLowerCaseHyphenSeparatedName(scriptName);
+    }
+
+    /**
+     * Converts foo-bar into fooBar
+     *
+     * @param name The lower case hyphen separated name
+     * @return The property name equivalent
+     */
+    public static String getPropertyNameForLowerCaseHyphenSeparatedName(String name) {
+        return getPropertyName(getClassNameForLowerCaseHyphenSeparatedName(name));
+    }
+
+    /**
+     * Converts foo-bar into FooBar
+     *
+     * @param name The lower case hyphen separated name
+     * @return The class name equivalent
+     */
+    private static String getClassNameForLowerCaseHyphenSeparatedName(String name) {
+        if(name.indexOf('-') > -1) {
+            StringBuffer buf = new StringBuffer();
+            String[] tokens = name.split("-");
+            for (int i = 0; i < tokens.length; i++) {
+                String token = tokens[i];
+                buf.append(token.substring(0,1).toUpperCase())
+                   .append(token.substring(1));
+            }
+            return buf.toString();
+        }
+        else {
+            return name.substring(0,1).toUpperCase() + name.substring(1);
+        }
     }
 
     /**

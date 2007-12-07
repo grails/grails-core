@@ -119,10 +119,12 @@ public abstract class AbstractGrailsPluginManager implements GrailsPluginManager
 		return this.pluginResources;
 	}
 	public GrailsPlugin getGrailsPlugin(String name) {
-		return (GrailsPlugin)this.plugins.get(name);
+        if(name.indexOf('-') > -1) name = GrailsClassUtils.getPropertyNameForLowerCaseHyphenSeparatedName(name);
+        return (GrailsPlugin)this.plugins.get(name);
 	}
 	public GrailsPlugin getGrailsPlugin(String name, Object version) {
-		GrailsPlugin plugin = (GrailsPlugin)this.plugins.get(name);
+      if(name.indexOf('-') > -1) name = GrailsClassUtils.getPropertyNameForLowerCaseHyphenSeparatedName(name);
+        GrailsPlugin plugin = (GrailsPlugin)this.plugins.get(name);
 		if(plugin != null) {
 			if(GrailsPluginUtils.isValidVersion(plugin.getVersion(), version.toString()))
 				return plugin;
@@ -130,7 +132,8 @@ public abstract class AbstractGrailsPluginManager implements GrailsPluginManager
 		return null;
 	}
 	public boolean hasGrailsPlugin(String name) {
-		return this.plugins.containsKey(name);
+        if(name.indexOf('-') > -1) name = GrailsClassUtils.getPropertyNameForLowerCaseHyphenSeparatedName(name);
+        return this.plugins.containsKey(name);
 	}
 	public void doDynamicMethods() {
 		checkInitialised();
