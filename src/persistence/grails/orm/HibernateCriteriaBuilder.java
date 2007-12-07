@@ -95,22 +95,23 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
     public static final String ORDER_ASCENDING = "asc";
 
 
-    private static final String ROOT_CALL = "doCall";
+    private static final String ROOT_DO_CALL = "doCall";
+    private static final String ROOT_CALL = "call";
     private static final String LIST_CALL = "list";
     private static final String LIST_DISTINCT_CALL = "listDistinct";
     private static final String COUNT_CALL = "count";
     private static final String GET_CALL = "get";
     private static final String SCROLL_CALL = "scroll";
+
+
     private static final String PROJECTIONS = "projections";
-
-
     private SessionFactory sessionFactory;
     private Session session;
     private Class targetClass;
     private Criteria criteria;
     private MetaClass criteriaMetaClass;
-    private boolean uniqueResult = false;
 
+    private boolean uniqueResult = false;
     private Stack logicalExpressionStack = new Stack();
     private boolean participate;
     private boolean scroll;
@@ -120,7 +121,6 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
     private List aliasStack = new ArrayList();
     private static final String ALIAS = "_alias";
     private ResultTransformer resultTransformer;
-
 
 
     public HibernateCriteriaBuilder(Class targetClass, SessionFactory sessionFactory) {
@@ -679,15 +679,9 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
 
     public Object invokeMethod(String name, Object obj) {
         Object[] args = obj.getClass().isArray() ? (Object[])obj : new Object[]{obj};
-        if(this.criteria != null)
-            this.criteriaMetaClass = GroovySystem.getMetaClassRegistry().getMetaClass(criteria.getClass());
+
         
-        if(name.equals(ROOT_CALL) ||
-                name.equals(LIST_CALL) ||
-                name.equals(LIST_DISTINCT_CALL) ||
-                name.equals(GET_CALL) ||
-                name.equals(COUNT_CALL) ||
-                name.equals(SCROLL_CALL) && args.length == 1 && args[0] instanceof Closure) {
+        if(isCriteriaConstructionMethod(name, args)) {
 
             if(this.criteria != null) {
                 throwRuntimeException( new IllegalArgumentException("call to [" + name + "] not supported here"));
@@ -707,14 +701,7 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
                 this.resultTransformer = CriteriaSpecification.DISTINCT_ROOT_ENTITY;
             }
 
-            if(TransactionSynchronizationManager.hasResource(sessionFactory)) {
-                this.participate = true;
-                this.session = ((SessionHolder)TransactionSynchronizationManager.getResource(sessionFactory)).getSession();
-            }
-            else {
-                this.session = sessionFactory.openSession();
-            }
-            this.criteria = this.session.createCriteria(targetClass);
+            createCriteriaInstance();
 
             invokeClosureNode(args);
 
@@ -745,6 +732,8 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
 
         }
         else {
+
+            if(criteria==null) createCriteriaInstance();
 
            MetaMethod metaMethod = getMetaClass().getMetaMethod(name, args);
             if(metaMethod != null) {
@@ -844,6 +833,29 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
 
         closeSessionFollowingException();
         throw new MissingMethodException(name, getClass(), args) ;
+    }
+
+    private boolean isCriteriaConstructionMethod(String name, Object[] args) {
+        return name.equals(ROOT_CALL) ||
+                name.equals(ROOT_DO_CALL) ||
+                name.equals(LIST_CALL) ||
+                name.equals(LIST_DISTINCT_CALL) ||
+                name.equals(GET_CALL) ||
+                name.equals(COUNT_CALL) ||
+                name.equals(SCROLL_CALL) && args.length == 1 && args[0] instanceof Closure;
+    }
+
+    private void createCriteriaInstance() {
+        if(TransactionSynchronizationManager.hasResource(sessionFactory)) {
+            this.participate = true;
+            this.session = ((SessionHolder)TransactionSynchronizationManager.getResource(sessionFactory)).getSession();
+        }
+        else {
+            this.session = sessionFactory.openSession();
+        }
+        
+        this.criteria = this.session.createCriteria(targetClass);
+        this.criteriaMetaClass = GroovySystem.getMetaClassRegistry().getMetaClass(criteria.getClass());
     }
 
     private void invokeClosureNode(Object[] args) {
