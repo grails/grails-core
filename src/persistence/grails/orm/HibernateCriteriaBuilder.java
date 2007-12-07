@@ -678,7 +678,10 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
 
 
     public Object invokeMethod(String name, Object obj) {
-        Object[] args = obj.getClass().isArray() ? (Object[])obj : new Object[]{obj};        
+        Object[] args = obj.getClass().isArray() ? (Object[])obj : new Object[]{obj};
+        if(this.criteria != null)
+            this.criteriaMetaClass = GroovySystem.getMetaClassRegistry().getMetaClass(criteria.getClass());
+        
         if(name.equals(ROOT_CALL) ||
                 name.equals(LIST_CALL) ||
                 name.equals(LIST_DISTINCT_CALL) ||
@@ -686,8 +689,10 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
                 name.equals(COUNT_CALL) ||
                 name.equals(SCROLL_CALL) && args.length == 1 && args[0] instanceof Closure) {
 
-            if(this.criteria != null)
+            if(this.criteria != null) {
                 throwRuntimeException( new IllegalArgumentException("call to [" + name + "] not supported here"));
+            }
+
 
             if (name.equals(GET_CALL)) {
                 this.uniqueResult = true;
@@ -699,7 +704,7 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
                 this.count = true;
             }
             else if (name.equals(LIST_DISTINCT_CALL)) {
-	            this.resultTransformer = CriteriaSpecification.DISTINCT_ROOT_ENTITY;
+                this.resultTransformer = CriteriaSpecification.DISTINCT_ROOT_ENTITY;
             }
 
             if(TransactionSynchronizationManager.hasResource(sessionFactory)) {
@@ -710,7 +715,6 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
                 this.session = sessionFactory.openSession();
             }
             this.criteria = this.session.createCriteria(targetClass);
-            this.criteriaMetaClass = GroovySystem.getMetaClassRegistry().getMetaClass(criteria.getClass());
 
             invokeClosureNode(args);
 
