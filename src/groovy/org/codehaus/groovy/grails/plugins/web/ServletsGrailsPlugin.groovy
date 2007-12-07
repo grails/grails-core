@@ -20,6 +20,7 @@ import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 import javax.servlet.http.HttpSession
 import org.springframework.web.util.WebUtils
+import javax.servlet.ServletContext
 
 /**
 * <p>This plug-in adds methods to the Servlet API interfaces to make them more Grailsy. For example all classes that implement
@@ -54,17 +55,27 @@ class ServletsGrailsPlugin {
                 delegate.setAttribute(name, value)
             }
         }
+
+        def getAttributeSubscript = { String key ->
+	        delegate.getAttribute(key)
+	    }
+	    def setAttributeSubScript = { String key, Object val ->
+	        delegate.setAttribute(key, val)
+	    }
+
+        // enables acces to servlet context with servletContext.foo syntax
+        ServletContext.metaClass.getProperty = getAttributeClosure
+        ServletContext.metaClass.setProperty = setAttributeClosure
+        ServletContext.metaClass.getAt = getAttributeSubscript
+        ServletContext.metaClass.putAt = setAttributeSubScript
+
         // enables access to session attributes using session.foo syntax
         HttpSession.metaClass.getProperty = getAttributeClosure
         HttpSession.metaClass.setProperty = setAttributeClosure
 		// enables access to session attributes with session["foo"] syntax
-	    HttpSession.metaClass.getAt = { String key ->
-	        delegate.getAttribute(key)
-	    }
+	    HttpSession.metaClass.getAt =  getAttributeSubscript
 	    // enables setting of session attributes with session["foo"] = "bar" syntax
-	    HttpSession.metaClass.putAt = { String key, Object val ->
-	        delegate.setAttribute(key, val)
-	    }
+	    HttpSession.metaClass.putAt =  setAttributeSubScript
 
         // retrieve the forwardURI for the request
 	    HttpServletRequest.metaClass.getForwardURI = {->

@@ -16,6 +16,21 @@ class ServletsGrailsPluginTests extends AbstractGrailsPluginTests {
 		pluginsToLoad << gcl.loadClass("org.codehaus.groovy.grails.plugins.web.ServletsGrailsPlugin")
 	}
 
+	void testServletContextObject() {
+        def context = new MockServletContext()
+
+       context["foo"] = "bar"
+        assertEquals "bar", context["foo"]
+
+        context.foo = "fred"
+        assertEquals "fred", context.foo
+
+
+        assertEquals "fred", context.getAttribute('foo')        
+
+        context.removeAttribute("foo")
+    }
+
     void testHttpSessionObject() {
         def session = new MockHttpSession()
 
