@@ -100,7 +100,9 @@ public class FindAllPersistentMethod
 		if (arguments.length == 0)
 			return getHibernateTemplate().loadAll(clazz);
 
-		final Object arg = arguments[0] instanceof GString ? arguments[0].toString() : arguments[0];
+
+
+        final Object arg = arguments[0] instanceof GString ? arguments[0].toString() : arguments[0];
 
 		// if the arg is an instance of the class find by example
 		if (arg instanceof String) {
@@ -228,7 +230,7 @@ public class FindAllPersistentMethod
 					crit.add(example);
 
                     if(arguments.length > 1 && arguments[0] instanceof Map) {
-                        populateArgumentsForCriteria(crit, (Map)arguments[0] );
+                        populateArgumentsForCriteria(crit, (Map)arguments[1] );
                     }
 
                     return crit.list();
@@ -237,7 +239,18 @@ public class FindAllPersistentMethod
 			});
 		}
 
-		throw new MissingMethodException(methodName, clazz, arguments);
+        else if(arguments[0] instanceof Map) {
+			return super.getHibernateTemplate().executeFind(new HibernateCallback() {
+				public Object doInHibernate(Session session) throws HibernateException, SQLException {
+					Criteria crit = session.createCriteria(clazz);
+                        populateArgumentsForCriteria(crit, (Map)arguments[0] );
+                    return crit.list();
+				}
+
+			});
+        }
+
+        throw new MissingMethodException(methodName, clazz, arguments);
 	}
 
 }

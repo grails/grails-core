@@ -189,6 +189,7 @@ class HibernateGrailsPlugin {
                 findAllMethod.invoke(mc.javaClass, "findAll", [] as Object[])
             }
             mc.'static'.findAll = {Object example -> findAllMethod.invoke(mc.javaClass, "findAll", [example] as Object[])}
+            mc.'static'.findAll = {Object example, Map args -> findAllMethod.invoke(mc.javaClass, "findAll", [example, args] as Object[])}
                         
             mc.methodMissing = { String name, args ->
                 initDomainClass()
