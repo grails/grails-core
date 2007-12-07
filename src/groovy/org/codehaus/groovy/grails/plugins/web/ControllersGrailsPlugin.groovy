@@ -44,6 +44,7 @@ import org.springframework.validation.BindException
 import org.springframework.validation.Errors
 import org.springframework.web.multipart.commons.CommonsMultipartResolver
 import org.springframework.web.servlet.ModelAndView
+import org.codehaus.groovy.grails.web.multipart.ContentLengthAwareCommonsMultipartResolver
 
 /**
 * A plug-in that handles the configuration of controllers for Grails
@@ -72,7 +73,7 @@ class ControllersGrailsPlugin {
         exceptionHandler(GrailsExceptionResolver) {
             exceptionMappings = ['java.lang.Exception': '/error']
         }
-        multipartResolver(CommonsMultipartResolver)
+        multipartResolver(ContentLengthAwareCommonsMultipartResolver)
         def urlMappings = [:]
         grailsUrlMappings(UrlMappingFactoryBean) {
             mappings = urlMappings
