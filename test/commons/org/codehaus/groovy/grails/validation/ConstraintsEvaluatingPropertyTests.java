@@ -3,6 +3,7 @@ package org.codehaus.groovy.grails.validation;
 import groovy.lang.GroovyClassLoader;
 import junit.framework.TestCase;
 import org.codehaus.groovy.grails.commons.DefaultGrailsDomainClass;
+import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.validation.metaclass.ConstraintsEvaluatingDynamicProperty;
 
 import java.util.Collection;
@@ -17,10 +18,14 @@ public class ConstraintsEvaluatingPropertyTests extends TestCase {
         GroovyClassLoader gcl = new GroovyClassLoader();
         Class groovyClass = gcl.parseClass("package org.codehaus.groovy.grails.validation\n" +
                 "class Test {\n" +
+                "   Long id\n"+  // WE NEED this even though GORM 2 doesn't, as we're not a "domain" class within grails-app
+                "   Long version\n"+ // WE NEED this even though GORM 2 doesn't, as we're not a "domain" class within grails-app
                 " String name\n" +
                 "}");
 
-        ConstraintsEvaluatingDynamicProperty cp = new ConstraintsEvaluatingDynamicProperty();
+        GrailsDomainClass domainClass = new DefaultGrailsDomainClass(groovyClass);
+
+        ConstraintsEvaluatingDynamicProperty cp = new ConstraintsEvaluatingDynamicProperty(domainClass.getPersistentProperties());
 
         Map constraints = (Map)cp.get(groovyClass.newInstance());
 
@@ -138,7 +143,7 @@ public class ConstraintsEvaluatingPropertyTests extends TestCase {
                 "      name( size:5..20)\n" +
                 "   }" +
                 "}";
-        ensureConstraintsPresent(new String[] { classSource, descendentSource}, 1, 3); // Must have nullable and validator
+        ensureConstraintsPresent(new String[] { classSource, descendentSource}, 1, 2); // Must have nullable and validator
     }
 
     private void ensureConstraintsPresent(String[] classSource, int classIndexToTest, int constraintCount)

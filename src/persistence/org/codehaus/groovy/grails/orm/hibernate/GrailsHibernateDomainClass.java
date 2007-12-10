@@ -14,6 +14,7 @@
  */
 package org.codehaus.groovy.grails.orm.hibernate;
 
+import groovy.lang.GroovySystem;
 import groovy.lang.MetaClass;
 import groovy.lang.MetaClassRegistry;
 import org.apache.commons.logging.Log;
@@ -27,7 +28,6 @@ import org.codehaus.groovy.grails.commons.metaclass.Interceptor;
 import org.codehaus.groovy.grails.commons.metaclass.ProxyMetaClass;
 import org.codehaus.groovy.grails.validation.GrailsDomainClassValidator;
 import org.codehaus.groovy.grails.validation.metaclass.ConstraintsEvaluatingDynamicProperty;
-import org.codehaus.groovy.runtime.InvokerHelper;
 import org.hibernate.EntityMode;
 import org.hibernate.MappingException;
 import org.hibernate.SessionFactory;
@@ -155,7 +155,7 @@ public class GrailsHibernateDomainClass extends AbstractGrailsClass implements E
 		};
 
 		interceptor.addDynamicProperty(new ConstraintsEvaluatingDynamicProperty());
-		MetaClassRegistry metaRegistry = InvokerHelper.getInstance().getMetaRegistry();
+		MetaClassRegistry metaRegistry = GroovySystem.getMetaClassRegistry();
 		MetaClass meta = metaRegistry.getMetaClass(instance.getClass());
 
 		try {

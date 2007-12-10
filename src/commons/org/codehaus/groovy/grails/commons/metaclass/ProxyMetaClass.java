@@ -14,8 +14,6 @@
  */
 package org.codehaus.groovy.grails.commons.metaclass;
 
-import org.codehaus.groovy.runtime.InvokerHelper;
-
 import groovy.lang.*;
 
 import java.beans.IntrospectionException;
@@ -60,7 +58,7 @@ public class ProxyMetaClass extends MetaClassImpl implements AdaptingMetaClass {
      * @throws java.beans.IntrospectionException When the class canot be introspected
      */
     public static ProxyMetaClass getInstance(Class theClass) throws IntrospectionException {
-        MetaClassRegistry metaRegistry = InvokerHelper.getInstance().getMetaRegistry();
+        MetaClassRegistry metaRegistry = GroovySystem.getMetaClassRegistry();
         MetaClass meta = metaRegistry.getMetaClass(theClass);
         ProxyMetaClass pmc =  new ProxyMetaClass(metaRegistry, theClass, meta);
         pmc.initialize();

@@ -263,10 +263,8 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
                     if(bean.getPropertyValue(propertyName) == null) {
                         if(bean.isWritableProperty(propertyName)) {
                             try {
-                                MetaClass mc = InvokerHelper
-                                                    .getInstance()
-                                                    .getMetaRegistry()
-                                                    .getMetaClass(type);
+                                MetaClass mc = GroovySystem.getMetaClassRegistry()
+                                                             .getMetaClass(type);
                                 if(mc!=null) {
                                     Object created = mc.invokeStaticMethod(type,CreateDynamicMethod.METHOD_NAME, new Object[0]);
                                     bean.setPropertyValue(propertyName,created);

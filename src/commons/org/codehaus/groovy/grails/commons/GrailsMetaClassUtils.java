@@ -17,7 +17,6 @@ package org.codehaus.groovy.grails.commons;
 import groovy.lang.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.runtime.InvokerHelper;
 import org.codehaus.groovy.runtime.metaclass.ThreadManagedMetaBeanProperty;
 import org.springframework.beans.BeanUtils;
 
@@ -45,7 +44,7 @@ public class GrailsMetaClassUtils {
      * @return The registry
      */
     public static MetaClassRegistry getRegistry() {
-        return InvokerHelper.getInstance().getMetaRegistry();
+        return GroovySystem.getMetaClassRegistry();
     }
 
     /**
