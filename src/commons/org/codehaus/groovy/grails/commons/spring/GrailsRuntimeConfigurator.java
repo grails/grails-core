@@ -353,10 +353,13 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
                   BeanDefinition bd = xmlBf.getBeanDefinition(beanNames[k]);
 
                   springConfig.addBeanDefinition(beanNames[k], bd);
-                  Class beanClass = ClassUtils.forName(bd.getBeanClassName(), classLoader);
-                  if(BeanFactoryPostProcessor.class.isAssignableFrom(beanClass)) {
-                       ((ConfigurableApplicationContext)springConfig.getUnrefreshedApplicationContext())
-                               .addBeanFactoryPostProcessor((BeanFactoryPostProcessor)xmlBf.getBean(beanNames[k]));                                           
+                  final String className = bd.getBeanClassName();
+                  if(className!=null) {
+                      Class beanClass = ClassUtils.forName(className, classLoader);
+                      if(BeanFactoryPostProcessor.class.isAssignableFrom(beanClass)) {
+                          ((ConfigurableApplicationContext)springConfig.getUnrefreshedApplicationContext())
+                                  .addBeanFactoryPostProcessor((BeanFactoryPostProcessor)xmlBf.getBean(beanNames[k]));
+                      }
                   }
               }
 
