@@ -39,11 +39,76 @@ grailsServer = null
 grailsContext = null 
 autoRecompile = System.getProperty("disable.auto.recompile") ? !(System.getProperty("disable.auto.recompile").toBoolean()) : true
 
+// How often should recompilation occur while the application is running (in seconds)?
+// Defaults to 3s.
+recompileFrequency = System.getProperty("recompile.frequency")
+recompileFrequency = recompileFrequency ? recompileFrequency.toInteger() : 3
+
 
 includeTargets << new File ( "${grailsHome}/scripts/Package.groovy" )
 includeTargets << new File ( "${grailsHome}/scripts/PackagePlugins.groovy" )
 
 shouldPackageTemplates=true
+
+
+// Checks whether the project's sources have changed since the last
+// compilation, and then performs a recompilation if this is the case.
+// Returns the updated 'lastModified' value.
+recompileCheck = { lastModified ->
+    try {
+        def ant = new AntBuilder()
+        ant.taskdef ( 	name : 'groovyc' ,
+                        classname : 'org.codehaus.groovy.grails.compiler.GrailsCompiler' )
+        def grailsDir = resolveResources("file:${basedir}/grails-app/*")
+        def pluginLibs = resolveResources("file:${basedir}/plugins/*/lib")
+        ant.path(id:"grails.classpath",grailsClasspath.curry(pluginLibs, grailsDir))
+
+        ant.groovyc(destdir:classesDirPath,
+                    classpathref:"grails.classpath",
+                    resourcePattern:"file:${basedir}/**/grails-app/**/*.groovy",
+                    projectName:baseName) {
+                    src(path:"${basedir}/src/groovy")
+                    src(path:"${basedir}/grails-app/domain")
+                    src(path:"${basedir}/src/java")
+                    javac(classpathref:"grails.classpath", debug:"yes")
+
+                }
+        ant = null
+    }
+    catch(Exception e) {
+        compilationError = true
+        event("StatusUpdate", ["Error automatically restarting container: ${e.message}"])
+        e.printStackTrace()
+
+    }
+
+    def tmp = classesDir.lastModified()
+    if(lastModified < tmp) {
+
+        // run another compile JIT
+        try {
+            grailsServer.stop()
+            compile()
+            ClassLoader contextLoader = Thread.currentThread().getContextClassLoader()
+            classLoader = new URLClassLoader([classesDir.toURL()] as URL[], contextLoader)
+            // reload plugins
+            loadPlugins()
+            setupWebContext()
+            grailsServer.setHandler( webContext )
+            grailsServer.start()
+        }
+        catch(Exception e) {
+            event("StatusUpdate", ["Error automatically restarting container: ${e.message}"])
+            e.printStackTrace()
+        }
+
+        finally {
+           lastModified = classesDir.lastModified()
+        }
+    }
+
+    return lastModified
+}
 
 target ('default': "Run's a Grails application in Jetty") {
 	depends( checkVersion, configureProxy, packagePlugins, packageApp )
@@ -66,58 +131,11 @@ target ( runApp : "Main implementation that executes a Grails application") {
 }
 target( watchContext: "Watches the WEB-INF/classes directory for changes and restarts the server if necessary") {
     long lastModified = classesDir.lastModified()
-    while(true && autoRecompile) {
-        try {
-            def ant = new AntBuilder()
-            ant.taskdef ( 	name : 'groovyc' ,
-				            classname : 'org.codehaus.groovy.grails.compiler.GrailsCompiler' )
-            def grailsDir = resolveResources("file:${basedir}/grails-app/*")
-            def pluginLibs = resolveResources("file:${basedir}/plugins/*/lib")
-            ant.path(id:"grails.classpath",grailsClasspath.curry(pluginLibs, grailsDir))				            
-
-            ant.groovyc(destdir:classesDirPath,
-	                    classpathref:"grails.classpath",
-					    resourcePattern:"file:${basedir}/**/grails-app/**/*.groovy",
-						projectName:baseName) {
-						src(path:"${basedir}/src/groovy")
-						src(path:"${basedir}/grails-app/domain")
-					    src(path:"${basedir}/src/java")
-    					javac(classpathref:"grails.classpath", debug:"yes") 
-
-					}
-            ant = null
-		}
-        catch(Exception e) {
-            compilationError = true
-            event("StatusUpdate", ["Error automatically restarting container: ${e.message}"])
-            e.printStackTrace()
-
+    while(true) {
+        if (autoRecompile) {
+            lastModified = recompileCheck(lastModified)
         }
-        def tmp = classesDir.lastModified()
-        if(lastModified < tmp) {
-
-            // run another compile JIT
-			try {
-	            grailsServer.stop()
-	            compile()
-                ClassLoader contextLoader = Thread.currentThread().getContextClassLoader()
-                classLoader = new URLClassLoader([classesDir.toURL()] as URL[], contextLoader)
-				// reload plugins
-				loadPlugins()
-				setupWebContext()
-			    grailsServer.setHandler( webContext )
-            	grailsServer.start()
-			}
-            catch(Exception e) {
-                event("StatusUpdate", ["Error automatically restarting container: ${e.message}"])
-                e.printStackTrace()
-            }
-
-			finally {
-               lastModified = classesDir.lastModified()
-            }
-        }
-        sleep(3000)
+        sleep(recompileFrequency * 1000)
     }
 }
 
