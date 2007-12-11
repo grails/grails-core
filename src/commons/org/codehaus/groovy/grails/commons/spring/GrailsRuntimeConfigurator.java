@@ -20,29 +20,35 @@ import grails.spring.BeanBuilder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.*;
+import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException;
 import org.codehaus.groovy.grails.plugins.DefaultGrailsPluginManager;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.codehaus.groovy.grails.plugins.PluginManagerHolder;
-import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException;
 import org.springframework.aop.framework.ProxyFactoryBean;
 import org.springframework.aop.target.HotSwappableTargetSource;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.MethodInvokingFactoryBean;
 import org.springframework.beans.factory.config.RuntimeBeanReference;
 import org.springframework.beans.factory.support.ManagedList;
 import org.springframework.beans.factory.xml.XmlBeanFactory;
-import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.io.Resource;
 import org.springframework.mock.web.MockServletContext;
 import org.springframework.transaction.interceptor.TransactionProxyFactoryBean;
 import org.springframework.util.Assert;
+import org.springframework.util.ClassUtils;
 import org.springframework.web.context.WebApplicationContext;
 
 import javax.servlet.ServletContext;
 import java.io.IOException;
-import java.util.*;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Properties;
 
 /**
 * A class that handles the runtime configuration of the Grails ApplicationContext
@@ -76,8 +82,9 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
   private ApplicationContext parent;
   private boolean parentDataSource;
   private GrailsPluginManager pluginManager;
+  private boolean loadExternalPersistenceConfig;
 
-  public GrailsRuntimeConfigurator(GrailsApplication application) {
+    public GrailsRuntimeConfigurator(GrailsApplication application) {
       this(application, null);
   }
 
@@ -332,7 +339,8 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
            if(springResources.exists()) {
               LOG.debug("[RuntimeConfiguration] Configuring additional beans from " +springResources.getURL());
               XmlBeanFactory xmlBf = new XmlBeanFactory(springResources);
-              xmlBf.setBeanClassLoader(Thread.currentThread().getContextClassLoader());
+               ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+               xmlBf.setBeanClassLoader(classLoader);
               String[] beanNames = xmlBf.getBeanDefinitionNames();
               LOG.debug("[RuntimeConfiguration] Found ["+beanNames.length+"] beans to configure");
               for (int k = 0; k < beanNames.length; k++) {
@@ -345,7 +353,14 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
                   BeanDefinition bd = xmlBf.getBeanDefinition(beanNames[k]);
 
                   springConfig.addBeanDefinition(beanNames[k], bd);
+                  Class beanClass = ClassUtils.forName(bd.getBeanClassName(), classLoader);
+                  if(BeanFactoryPostProcessor.class.isAssignableFrom(beanClass)) {
+                       ((ConfigurableApplicationContext)springConfig.getUnrefreshedApplicationContext())
+                               .addBeanFactoryPostProcessor((BeanFactoryPostProcessor)xmlBf.getBean(beanNames[k]));                                           
+                  }
               }
+
+
 
            }
            else if(LOG.isDebugEnabled()) {
@@ -357,12 +372,15 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
                bb.setSpringConfig(springConfig);
                bb.loadBeans(groovySpringResources);
            }
+
+           
       } catch (Exception ex) {
           LOG.warn("[RuntimeConfiguration] Unable to perform post initialization config: " + SPRING_RESOURCES_XML , ex);
       }
   }
 
   public void setLoadExternalPersistenceConfig(boolean b) {
+      this.loadExternalPersistenceConfig = b;
   }
 
   public void setPluginManager(GrailsPluginManager manager) {

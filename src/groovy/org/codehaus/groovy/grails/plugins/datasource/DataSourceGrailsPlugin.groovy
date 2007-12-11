@@ -20,6 +20,7 @@ import org.apache.commons.dbcp.BasicDataSource
 import org.springframework.jdbc.datasource.DriverManagerDataSource
 import org.springframework.jndi.JndiObjectFactoryBean
 import javax.sql.DataSource
+import org.codehaus.groovy.grails.orm.support.TransactionManagerPostProcessor
 
 /**
  * A plug-in that handles the configuration of Hibernate within Grails 
@@ -35,7 +36,9 @@ class DataSourceGrailsPlugin {
 	def watchedResources = "**/grails-app/conf/DataSource.groovy"
 		
 	def doWithSpring = {
-		def ds = application.config.dataSource
+        addBeanFactoryPostProcessor(new TransactionManagerPostProcessor())
+                
+        def ds = application.config.dataSource
 		if(ds || application.domainClasses.size() > 0) {
             if(ds.jndiName) {
                 dataSource(JndiObjectFactoryBean) {
