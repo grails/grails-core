@@ -83,8 +83,8 @@ The following libraries are included in Grails because they are required either 
 - Gant 0.3.4 Snapshot build (http://groovy.codehaus.org/Gant)
 - required for the command line tools (Gant)
 
-* groovy-all-1.1-final-SNAPSHOT.jar
-- Groovy 1.1 final Snapshot build (http://groovy.codehaus.org)
+* groovy-all-1.5.jar
+- Groovy 1.5 (http://groovy.codehaus.org)
 - required for the command line tools (Gant)
 - required for building Grails core
 - required for running Grails applications
