@@ -1642,7 +1642,12 @@ w	 * Binds a simple value to the Hibernate metamodel. A simple value is
     private static void setTypeForColumnConfig(GrailsDomainClassProperty grailsProp, SimpleValue simpleValue, ColumnConfig cc) {
         if(cc != null && cc.getType() != null) {
             Object type = cc.getType();
-            simpleValue.setTypeName(type.toString());
+            if(type instanceof Class) {
+                simpleValue.setTypeName(((Class)type).getName());                
+            }
+            else {
+                simpleValue.setTypeName(type.toString());
+            }
         }
         else {
             simpleValue.setTypeName(grailsProp.getType().getName());
