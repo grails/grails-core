@@ -44,7 +44,7 @@ class HelpEvaluatingCategory {
 }
 
 File getHelpFile(File script) {
-    File helpDir = new File(script.getParentFile(), "help")
+    File helpDir = new File(grailsTmp, "help")
     if (!helpDir.exists()) helpDir.mkdir()
     String scriptname = script.getName()
 	return new File(helpDir, scriptname.substring(0, scriptname.lastIndexOf('.')) + ".txt")
