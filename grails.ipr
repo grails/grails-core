@@ -290,7 +290,6 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/Grails.iml" filepath="$PROJECT_DIR$/Grails.iml" />
-      <module fileurl="file:///Developer/grails-dev/plugins/searchable/searchable.iml" filepath="/Developer/grails-dev/plugins/searchable/searchable.iml" />
     </modules>
   </component>
   <component name="ProjectRootManager" version="2" assert-keyword="true" jdk-15="false" project-jdk-name="1.5" project-jdk-type="JavaSDK" />
@@ -424,7 +423,7 @@
     </library>
     <library name="HSQLDB">
       <CLASSES>
-        <root url="jar://$PROJECT_DIR$/lib/hsqldb-1.8.0.9.jar!/" />
+        <root url="jar://$PROJECT_DIR$/lib/hsqldb-1.8.0.5.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES />

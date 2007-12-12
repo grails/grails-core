@@ -33,7 +33,8 @@
       <excludeFolder url="file://$MODULE_DIR$/sandbox" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
     </content>
-    <orderEntry type="jdk" jdkName="1.5" jdkType="JavaSDK" />
+    <orderEntry type="library" name="GROOVY" level="application" />
+    <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="Apache Commons" level="project" />
     <orderEntry type="library" name="dom4j" level="project" />
@@ -94,8 +95,8 @@
         </CLASSES>
         <JAVADOC />
         <SOURCES>
-          <root url="file://$MODULE_DIR$/../../groovy/src/main" />
           <root url="file://$MODULE_DIR$/../../gant/src/main/java" />
+          <root url="file://$MODULE_DIR$/../../groovy-core/src/main" />
         </SOURCES>
       </library>
     </orderEntry>

@@ -3,6 +3,8 @@
                                 	
 	<property file="build.properties"/>
 	<property environment="env" />
+
+
 	
     <path id="classpath">
         <fileset dir="${grails.lib}">
@@ -19,6 +21,7 @@
     </path>
 
     <target name="clean" description="Clean the build directory.">
+	<echo>JAVA HOME IS ${env.JAVA_HOME}</echo>
         <delete dir="${grails.dist}"/>
         <delete dir="${grails.target}"/>
         <delete dir="${grails.doc}"/>
