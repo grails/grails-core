@@ -16,6 +16,7 @@
 package org.codehaus.groovy.grails.web.servlet;
 
 import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
+import org.codehaus.groovy.grails.support.MockStringResourceLoader
 
 /**
  * Tests for the render method
@@ -82,30 +83,75 @@ class RenderMethodTests extends AbstractGrailsControllerTests {
 			assertEquals "text/xml", response.contentType
 		}		
 	}
+
+	void testRenderView() {
+        def mockController = ga.getControllerClass("RenderController").newInstance()
+
+        mockController.renderView.call()
+
+        assert mockController.modelAndView
+
+        assertEquals '/render/testView', mockController.modelAndView.viewName
+    }
+
+	void testRenderViewWithContentType() {
+        def mockController = ga.getControllerClass("RenderController").newInstance()
+
+        mockController.renderXmlView.call()
+
+        assert mockController.modelAndView
+
+        assertEquals '/render/xmlView', mockController.modelAndView.viewName
+        assertEquals 'text/xml', response.contentType
+    }
+
 	
-	void testRenderJSON() {
-		// TODO	
+   void testRenderTemplate() {
+        def mockController = ga.getControllerClass("RenderController").newInstance()
+
+        request.setAttribute( GrailsApplicationAttributes.CONTROLLER, mockController)
+       def resourceLoader = new MockStringResourceLoader()
+       resourceLoader.registerMockResource "/render/_testTemplate.gsp", 'hello ${hello}!'
+       appCtx.groovyPagesTemplateEngine.resourceLoader = resourceLoader
+       webRequest.controllerName = "render"
+       mockController.renderTemplate.call()
+
+
+
+        def response = mockController.response
+
+        assertEquals "hello world!", response.contentAsString
+        assertEquals "text/html", response.contentType
 	}
-	
-   /* void testRenderTemplate() {
-		
-		runTest {
-			def mockController = ga.getControllerClass("RenderController").newInstance()
-			
-			request.setAttribute( GrailsApplicationAttributes.CONTROLLER, mockController)
-			webRequest.controllerName = "render"
-			mockController.renderTemplate.call()
-			
-			def response = mockController.response
-			
-			assertEquals "hello world!", response.contentAsString
-		}
-	}*/
+
+	void testRenderTemplateWithContentType() {
+       def mockController = ga.getControllerClass("RenderController").newInstance()
+
+        request.setAttribute( GrailsApplicationAttributes.CONTROLLER, mockController)
+       def resourceLoader = new MockStringResourceLoader()
+       resourceLoader.registerMockResource "/render/_xmlTemplate.gsp", '<hello>world</hello>'
+       appCtx.groovyPagesTemplateEngine.resourceLoader = resourceLoader
+       webRequest.controllerName = "render"
+       mockController.renderXmlTemplate.call()
+
+
+
+        def response = mockController.response
+
+        assertEquals "<hello>world</hello>", response.contentAsString
+        assertEquals "text/xml", response.contentType
+    }
 
 	void onSetUp() {
 		gcl.parseClass(
 '''
 class RenderController {
+    def renderView = {
+        render(view:'testView')
+    }
+    def renderXmlView = {
+        render(view:'xmlView', contentType:'text/xml')
+    }
     def renderObject = {
         render new RenderTest(foo:"bar")
     }
@@ -125,6 +171,9 @@ class RenderController {
 	}
 	def renderTemplate = {
 		render(template:"testTemplate", model:[hello:"world"])
+	}
+	def renderXmlTemplate = {
+		render(template:"xmlTemplate",contentType:"text/xml")
 	}
 }
 class RenderTest {
