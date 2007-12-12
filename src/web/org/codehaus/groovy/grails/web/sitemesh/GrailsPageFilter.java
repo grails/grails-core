@@ -16,18 +16,18 @@
 package org.codehaus.groovy.grails.web.sitemesh;
 
 import com.opensymphony.module.sitemesh.Decorator;
+import com.opensymphony.module.sitemesh.DecoratorMapper;
 import com.opensymphony.module.sitemesh.Page;
 import com.opensymphony.module.sitemesh.filter.PageFilter;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 
-import javax.servlet.FilterConfig;
-import javax.servlet.RequestDispatcher;
-import javax.servlet.ServletException;
+import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.PrintWriter;
 
 /**
  * Extends the default page filter to overide the apply decorator behaviour
@@ -47,8 +47,78 @@ public class GrailsPageFilter extends PageFilter {
         FactoryHolder.setFactory(this.factory);        
     }
 
+   /*
+     * TODO: This method has been copied from the parent to fix a bug in sitemesh 2.3. When sitemesh 2.4 is release this method and the two private methods below can removed
 
-	/* (non-Javadoc)
+     * Main method of the Filter.
+     *
+     * <p>Checks if the Filter has been applied this request. If not, parses the page
+     * and applies {@link com.opensymphony.module.sitemesh.Decorator} (if found).
+     */
+    public void doFilter(ServletRequest rq, ServletResponse rs, FilterChain chain)
+            throws IOException, ServletException {
+
+        HttpServletRequest request = (HttpServletRequest) rq;
+
+        if (rq.getAttribute(FILTER_APPLIED) != null || factory.isPathExcluded(extractRequestPath(request))) {
+            // ensure that filter is only applied once per request
+            chain.doFilter(rq, rs);
+        }
+        else {
+            request.setAttribute(FILTER_APPLIED, Boolean.TRUE);
+
+            factory.refresh();
+            DecoratorMapper decoratorMapper = factory.getDecoratorMapper();
+            HttpServletResponse response = (HttpServletResponse) rs;
+
+            // parse data into Page object (or continue as normal if Page not parseable)
+            Page page = parsePage(request, response, chain);
+
+            if (page != null) {
+                page.setRequest(request);
+
+                Decorator decorator = decoratorMapper.getDecorator(request, page);
+                if (decorator != null && decorator.getPage() != null) {
+                    applyDecorator(page, decorator, request, response);
+                    return;
+                }
+                // if we got here, an exception occured or the decorator was null,
+                // what we don't want is an exception printed to the user, so
+                // we write the original page
+                writeOriginal(request, response, page);
+            }
+        }
+    }
+
+    private String extractRequestPath(HttpServletRequest request) {
+        String servletPath = request.getServletPath();
+        String pathInfo = request.getPathInfo();
+        String query = request.getQueryString();
+        return (servletPath == null ? "" : servletPath)
+                + (pathInfo == null ? "" : pathInfo)
+                + (query == null ? "" : ("?" + query));
+    }
+
+    /** Write the original page data to the response. */
+    private void writeOriginal(HttpServletRequest request, HttpServletResponse response, Page page) throws IOException {
+        response.setContentLength(page.getContentLength());
+        if (request.getAttribute(USING_STREAM).equals(Boolean.TRUE))
+        {
+            PrintWriter writer = new PrintWriter(response.getOutputStream());
+            page.writePage(writer);
+            //flush writer to underlying outputStream
+            writer.flush();
+            response.getOutputStream().flush();
+        }
+        else
+        {
+            page.writePage(response.getWriter());
+            response.getWriter().flush();
+        }
+    }
+
+
+    /* (non-Javadoc)
 	 * @see com.opensymphony.module.sitemesh.filter.PageFilter#applyDecorator(com.opensymphony.module.sitemesh.Page, com.opensymphony.module.sitemesh.Decorator, javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
 	 */
 	protected void applyDecorator(Page page, Decorator decorator, HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
