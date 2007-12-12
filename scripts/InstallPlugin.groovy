@@ -162,7 +162,7 @@ target(installPlugin:"Implementation target") {
 
                 Assert.notNull plugin, "Grails Bug: If the plugin wasn't loaded it should be in the failed plugins list, but is not. Please report the issue."
                 
-                println "Failed to install plug-in [${fullPluginName}]. Missing depedencies: ${plugin.dependencyNames.inspect()}"
+                println "Failed to install plug-in [${fullPluginName}]. Missing dependencies: ${plugin.dependencyNames.inspect()}"
                 event("PluginInstallFailed", [ "Plugin ${fullPluginName} failed to install"])
             }
             else {
