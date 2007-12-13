@@ -42,6 +42,7 @@ serverHost = System.getProperty('server.host') ? System.getProperty('server.host
 enableJndi = System.getProperty('enable.jndi') == "true" ? true : false
 basedir = System.getProperty("base.dir")
 baseFile = new File(basedir)
+isPluginProject = baseFile.listFiles().find { it.name.endsWith("GrailsPlugin.groovy") }
 baseName = baseFile.name
 userHome = Ant.antProject.properties."user.home"
 grailsTmp = "${userHome}/.grails/${grailsVersion}/tmp"
@@ -328,13 +329,10 @@ target(init: "main init target") {
                 exclude(name: "WEB-INF/**")
             }
         }
-        copy(file: "${grailsHome}/src/grails/templates/artifacts/UrlMappings.groovy",
-                tofile: "${basedir}/grails-app/conf/UrlMappings.groovy")
 
         copy(todir: "${basedir}/grails-app") {
-            fileset(dir: "${grailsHome}/src/grails/grails-app", excludes: "**/taglib/**, **/utils/**")
+            fileset(dir: "${grailsHome}/src/grails/grails-app",  includes: "**/**", excludes: "**/taglib/**, **/utils/**")
         }
-
 
         copy(todir: "${basedir}/grails-app/conf/spring") {
             fileset(dir: "${grailsHome}/src/war/WEB-INF/spring") {

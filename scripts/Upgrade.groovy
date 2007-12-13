@@ -28,6 +28,7 @@ Ant.property(environment:"env")
 grailsHome = Ant.antProject.properties."env.GRAILS_HOME"   
 
 includeTargets << new File ( "${grailsHome}/scripts/CreateApp.groovy" )
+includeTargets << new File ( "${grailsHome}/scripts/Init.groovy" )
 
 target( upgrade: "main upgrade target") {
 
@@ -92,29 +93,40 @@ move it to the new location of '${basedir}/test/integration'. Please move the di
 		copy(file:"${grailsHome}/src/war/WEB-INF/applicationContext.xml",
 			 tofile:"${basedir}/web-app/WEB-INF/applicationContext.xml", overwrite:true)
 
-		// These will still overwrite as the src name differs from target and the src name is not in target		                
-		if(!new File("${basedir}/grails-app/conf/UrlMappings.groovy").exists()) {
-	        copy(tofile:"${basedir}/grails-app/conf/UrlMappings.groovy") {
-	            fileset(file:"${grailsHome}/src/grails/templates/artifacts/UrlMappings.groovy") {
-	                present(present:"srconly", targetdir:"${basedir}/grails-app/conf")
-	            }
-	        }
-		}
-		if(!new File("${basedir}/grails-app/conf/Config.groovy").exists()) {
-	        copy(tofile:"${basedir}/grails-app/conf/Config.groovy") {
-	            fileset(file:"${grailsHome}/src/grails/grails-app/conf/Config.groovy") {
-	                present(present:"srconly", targetdir:"${basedir}/grails-app/conf")
-	            }
-	        }
-		}
-		if(!new File("${basedir}/grails-app/conf/DataSource.groovy").exists()) {
-	        copy(tofile:"${basedir}/grails-app/conf/DataSource.groovy") {
-	            fileset(file:"${grailsHome}/src/grails/grails-app/conf/DataSource.groovy") {
-	                present(present:"srconly", targetdir:"${basedir}/grails-app/conf")
-	            }
-	        }
-		}
-		
+        if (!isPluginProject) {
+            // Install application-only files if needed, exact "one file only" matches
+            ['Config.groovy'].each() { template ->
+                if(!new File(baseFile, '/grails-app/conf').listFiles().find { it.name.equals(template) } ) {
+                    copy(tofile:"${basedir}/grails-app/conf/${template}") {
+                        fileset(file:"${grailsHome}/src/grails/grails-app/conf/${template}") {
+                            present(present:"srconly", targetdir:"${basedir}/grails-app/conf")
+                        }
+                    }
+                }
+            }
+
+            // Install application-only files if needed, with suffix matching
+            ['DataSource.groovy'].each() { template ->
+                if(!new File(baseFile, '/grails-app/conf').listFiles().find { it.name.startsWith(template) } ) {
+                    copy(tofile:"${basedir}/grails-app/conf/${template}") {
+                        fileset(file:"${grailsHome}/src/grails/grails-app/conf/${template}") {
+                            present(present:"srconly", targetdir:"${basedir}/grails-app/conf")
+                        }
+                    }
+                }
+            }
+        }
+
+        // Both applications and plugins can have UrlMappings, but only install default if there is nothing already
+        ['UrlMappings.groovy'].each() { template ->
+            if(!new File(baseFile, '/grails-app/conf').listFiles().find { it.name.endsWith(template) } ) {
+                copy(tofile:"${basedir}/grails-app/conf/${template}") {
+                    fileset(file:"${grailsHome}/src/grails/grails-app/conf/${template}") {
+                        present(present:"srconly", targetdir:"${basedir}/grails-app/conf")
+                    }
+                }
+            }
+        }
 
         if(new File("${basedir}/spring").exists()) {
             move(file:"${basedir}/spring", todir:"${basedir}/grails-app/conf")
