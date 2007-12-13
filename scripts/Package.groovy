@@ -79,10 +79,7 @@ target( createConfig: "Creates the configuration object") {
 		   ConfigurationHolder.setConfig(config)
 		}
 		catch(Exception e) {
-            e.printStackTrace()
-            
-            event("StatusFinal", ["Failed to compile data source file $dataSourceFile: ${e.message}"])
-			exit(1)
+			println "WARNING: DataSource.groovy not found, assuming dataSource bean is configured by Spring..."
 		}
    }
    ConfigurationHelper.initConfig(config, null, classLoader)
@@ -239,7 +236,7 @@ target(loadPlugins:"Loads Grails' plugins") {
 target( generateWebXml : "Generates the web.xml file") {
 	depends(classpath)
 
-    def webXml = new FileSystemResource("${basedir}/src/templates/war/web.xml")
+    webXml = new FileSystemResource("${basedir}/src/templates/war/web.xml")
     if(!webXml.exists()) {
     	def tmpWebXml = "${userHome}/.grails/${grailsVersion}/projects/${baseName}/web.xml.tmp"
     	Ant.copy(file:"${grailsHome}/src/war/WEB-INF/web${servletVersion}.template.xml", tofile:tmpWebXml)
@@ -252,10 +249,12 @@ target( generateWebXml : "Generates the web.xml file") {
 
     try {
         profile("generating web.xml from $webXml") {
+			event("WebXmlStart", [webXml.filename])
             pluginManager.doWebDescriptor(webXml, sw)
             webXmlFile.withWriter {
                 it << sw.toString()
             }         
+			event("WebXmlEnd", [webXml.filename])
         }
     }
     catch(Exception e) {
