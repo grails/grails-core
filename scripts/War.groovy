@@ -45,7 +45,7 @@ grails prod war
 generateLog4jFile = true
 
 target (war: "The implementation target") {
-	depends( clean, packagePlugins, packageApp, generateWebXml )
+	depends( clean, packagePlugins, packageApp)
 	 
 	try {
 		Ant.mkdir(dir:"${basedir}/staging")
