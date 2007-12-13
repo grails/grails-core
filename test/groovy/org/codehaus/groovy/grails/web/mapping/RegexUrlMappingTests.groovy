@@ -21,61 +21,65 @@ mappings {
 }
 '''
     void testNullableConstraintsInMapping() {
-             def res = new ByteArrayResource(mappingScript.bytes)
+        def res = new ByteArrayResource(mappingScript.bytes)
 
-             def evaluator = new DefaultUrlMappingEvaluator()
-             def mappings = evaluator.evaluateMappings(res)
+        def evaluator = new DefaultUrlMappingEvaluator()
+        def mappings = evaluator.evaluateMappings(res)
 
 
-             def m = mappings[2]
+        def m = mappings[2]
 
-             assert m.urlData.isOptional(0)
-             
+        assert m.urlData.isOptional(0)
 
-             assertEquals 1, m.constraints.length
-             assertTrue m.constraints[0].nullable
+
+        assertEquals 1, m.constraints.length
+        assertTrue m.constraints[0].nullable
 
     }
 
     void testCreateUrlFromMapping() {
-             def res = new ByteArrayResource(mappingScript.bytes)
+        def res = new ByteArrayResource(mappingScript.bytes)
 
-             def evaluator = new DefaultUrlMappingEvaluator()
-             def mappings = evaluator.evaluateMappings(res)
+        def evaluator = new DefaultUrlMappingEvaluator()
+        def mappings = evaluator.evaluateMappings(res)
 
 
-             def m = mappings[0]
-             assert m
+        def m = mappings[0]
+        assert m
 
-             assertEquals "/book/dierk/gina/foo", m.createURL(author:"dierk", title:"gina", test:"foo", "utf-8")
+        assertEquals "/book/dierk/gina/foo", m.createURL(author:"dierk", title:"gina", test:"foo", "utf-8")
 
-             m = mappings[1]
-             assert m
+        m = mappings[1]
+        assert m
 
-             assertEquals "/blog/foo/2007/10/24", m.createURL(entry:"foo", year:2007, month:10, day:24, "utf-8")
-             assertEquals "/blog/foo/2007/10", m.createURL(entry:"foo", year:2007, month:10, "utf-8")
-             assertEquals "/blog/foo/2007", m.createURL(entry:"foo", year:2007, "utf-8")
-             assertEquals "/blog/foo", m.createURL(entry:"foo", "utf-8")
-             shouldFail { m.createURL([:], "utf-8") }
+        assertEquals "/blog/foo/2007/10/24", m.createURL(entry:"foo", year:2007, month:10, day:24, "utf-8")
+        assertEquals "/blog/foo/2007/10", m.createURL(entry:"foo", year:2007, month:10, "utf-8")
+        assertEquals "/blog/foo/2007", m.createURL(entry:"foo", year:2007, "utf-8")
+        assertEquals "/blog/foo/2007", m.createURL(entry:"foo", year:2007, null)
+        assertEquals "/blog/foo", m.createURL(entry:"foo", "utf-8")
+        assertEquals "/blog/foo", m.createURL(entry:"foo", null)
+        shouldFail { m.createURL([:], "utf-8") }
     }
 
     void testCreateUrlWithFragment() {
-             def res = new ByteArrayResource(mappingScript.bytes)
+        def res = new ByteArrayResource(mappingScript.bytes)
 
-             def evaluator = new DefaultUrlMappingEvaluator()
-             def mappings = evaluator.evaluateMappings(res)
+        def evaluator = new DefaultUrlMappingEvaluator()
+        def mappings = evaluator.evaluateMappings(res)
 
 
-             def m = mappings[0]
-             assert m
+        def m = mappings[0]
+        assert m
 
-             assertEquals "/book/dierk/gina/foo#testfrag", m.createURL(author:"dierk", title:"gina", test:"foo", "utf-8", "testfrag")
+        assertEquals "/book/dierk/gina/foo#testfrag", m.createURL(author:"dierk", title:"gina", test:"foo", "utf-8", "testfrag")
 
-             m = mappings[1]
-             assert m
+        m = mappings[1]
+        assert m
 
-             assertEquals "/blog/foo/2007/10/24#testfrag2", m.createURL(entry:"foo", year:2007, month:10, day:24, "utf-8", "testfrag2")
+        assertEquals "/blog/foo/2007/10/24#testfrag2", m.createURL(entry:"foo", year:2007, month:10, day:24, "utf-8", "testfrag2")
 
+         // Test the behaviour of a null encoding.
+        assertEquals "/blog/foo/2007/10/24#testfrag2", m.createURL(entry:"foo", year:2007, month:10, day:24, null, "testfrag2")
     }
 
     void testComparable() {

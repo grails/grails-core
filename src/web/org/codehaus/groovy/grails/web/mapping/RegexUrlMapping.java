@@ -68,6 +68,7 @@ public class RegexUrlMapping extends AbstractUrlMapping implements UrlMapping {
     private static final String ENTITY_AMPERSAND = "&amp;";
     private static final char AMPERSAND = '&';
     private static final String DOUBLE_WILDCARD = "**";
+    private static final String DEFAULT_ENCODING = "UTF-8";
 
     private static final String CAPTURED_DOUBLE_WILDCARD = "(**)";
     private static final Log LOG = LogFactory.getLog(RegexUrlMapping.class);
@@ -234,6 +235,11 @@ public class RegexUrlMapping extends AbstractUrlMapping implements UrlMapping {
 
     private String createUrlWithFragment(String url, String fragment, String encoding) {
         if(fragment != null) {
+            // A 'null' encoding will cause an exception, so default to 'UTF-8'.
+            if (encoding == null) {
+                encoding = DEFAULT_ENCODING;
+            }
+
             try {
                 return url + '#' + URLEncoder.encode(fragment, encoding);
             } catch (UnsupportedEncodingException ex) {
@@ -250,6 +256,11 @@ public class RegexUrlMapping extends AbstractUrlMapping implements UrlMapping {
         boolean addedParams = false;
         usedParams.add( "controller" );
         usedParams.add( "action" );
+
+        // A 'null' encoding will cause an exception, so default to 'UTF-8'.
+        if (encoding == null) {
+            encoding = DEFAULT_ENCODING;
+        }
 
         for (Iterator i = parameterValues.keySet().iterator(); i.hasNext();) {
             String name = i.next().toString();
