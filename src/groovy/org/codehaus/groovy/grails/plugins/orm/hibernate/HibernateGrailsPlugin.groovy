@@ -83,14 +83,10 @@ class HibernateGrailsPlugin {
 
         BeanDefinition externalDefinition = checkExternalBeans(application, log)
         if (externalDefinition) {
-            // TODO copy properties from extrnal defintion into an expando placeholder? e.g. driverClass, user etc
             ds = new Expando()
             application.config.dataSource = ds
-            //copy dataSource definition to allow references to resolve correctly
-            //(it will be overidden later anyway)
-            dataSource(application.classLoader.loadClass(externalDefinition.getBeanClassName()))
         }
-        if (ds || application.domainClasses.size() > 0) {
+        if (!externalDefinition && ds || application.domainClasses.size() > 0) {
             hibConfigClass = ds?.configClass
 
             if (ds && ds.loggingSql) {
