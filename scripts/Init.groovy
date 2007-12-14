@@ -46,8 +46,9 @@ isPluginProject = baseFile.listFiles().find { it.name.endsWith("GrailsPlugin.gro
 baseName = baseFile.name
 userHome = Ant.antProject.properties."user.home"
 grailsTmp = "${userHome}/.grails/${grailsVersion}/tmp"
+grailsApp = null
 eventsClassLoader = new GroovyClassLoader(getClass().classLoader)
-classesDirPath = "${userHome}/.grails/${grailsVersion}/projects/${baseName}/classes"
+classesDirPath = System.getProperty("grails.project.class.dir") ?: "${userHome}/.grails/${grailsVersion}/projects/${baseName}/classes"
 classesDir = new File(classesDirPath)
 System.setProperty("grails.classes.dir", classesDirPath)
 
@@ -158,7 +159,7 @@ void loadEventHooks() {
 void loadEventScript(theFile) {
     try {
         def script = eventsClassLoader.parseClass(theFile).newInstance()
-        script.delegate = this
+        script.setBinding(getBinding())
         script.run()
         hookScripts << script
     } catch (Throwable t) {

@@ -188,12 +188,12 @@ def createDefaultLog4J(logDest) {
 log4j.appender.stdout=org.apache.log4j.ConsoleAppender
 log4j.appender.stdout.layout=org.apache.log4j.PatternLayout
 log4j.rootLogger=error,stdout
-log4j.logger.org.codehaus.groovy.grails.plugins=info,stdout
-log4j.logger.org.codehaus.groovy.grails.commons=info,stdout'''
+'''
 	
 }
 
 target(loadPlugins:"Loads Grails' plugins") {
+	
 	compConfig.setTargetDirectory(classesDir)
     def unit = new CompilationUnit ( compConfig , null , new GroovyClassLoader(classLoader) )	          
 	def pluginFiles = pluginResources.file
@@ -219,14 +219,18 @@ target(loadPlugins:"Loads Grails' plugins") {
 			if(pluginClasses) {
 				event("StatusUpdate", ["Loading with installed plug-ins: ${pluginClasses.name}"])				
 			}                    
-	        application = new DefaultGrailsApplication(new Class[0], new GroovyClassLoader(classLoader))
-	        application.initialise()
-            pluginManager = new DefaultGrailsPluginManager(pluginClasses as Class[], application)
+			if(grailsApp == null) {				
+		        grailsApp = new DefaultGrailsApplication(new Class[0], new GroovyClassLoader(classLoader))
+		        grailsApp.initialise()
+			}
+            pluginManager = new DefaultGrailsPluginManager(pluginClasses as Class[], grailsApp)
             PluginManagerHolder.setPluginManager(pluginManager)            
         }
         profile("loading plugins") {
+			event("PluginLoadStart", [pluginManager])
             pluginManager.loadPlugins()
             pluginManager.doArtefactConfiguration()
+			event("PluginLoadEnd", [pluginManager])
         } 
     } catch (Exception e) {
         event("StatusFinal", [ "Error loading plugin manager: " + e.message ])

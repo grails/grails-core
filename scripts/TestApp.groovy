@@ -57,11 +57,9 @@ includeTargets << new File("${grailsHome}/scripts/Bootstrap.groovy")
 generateLog4jFile = true
 
 target('default': "Run a Grails applications unit tests") {
-    depends(classpath, checkVersion, configureProxy, packagePlugins)
+    depends(classpath, checkVersion, configureProxy)
     grailsEnv = "test"
 
-
-    packageApp()
     testApp()
 }
 
