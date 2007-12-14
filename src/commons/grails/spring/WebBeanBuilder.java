@@ -28,6 +28,22 @@ import org.springframework.context.ApplicationContext;
  */
 public class WebBeanBuilder extends BeanBuilder {
 
+    public WebBeanBuilder() {
+        super();
+    }
+
+    public WebBeanBuilder(ClassLoader classLoader) {
+        super(classLoader);
+    }
+
+    public WebBeanBuilder(ApplicationContext parent) {
+        super(parent);
+    }
+
+    public WebBeanBuilder(ApplicationContext parent, ClassLoader classLoader) {
+        super(parent, classLoader);
+    }
+
     protected RuntimeSpringConfiguration createRuntimeSpringConfiguration(ApplicationContext parent, ClassLoader classLoader) {
         return new WebRuntimeSpringConfiguration(parent, classLoader);
     }
