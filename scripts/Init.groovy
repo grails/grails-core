@@ -128,7 +128,7 @@ eventExiting = { returnCode ->
 }
 */
 
-void loadEventHooks() {
+loadEventHooks = {
     // Look for user script
     def f = new File(userHome, ".grails/scripts/Events.groovy")
     if (f.exists()) {

@@ -88,6 +88,7 @@ target(cachePlugin:"Implementation target") {
 
 target(installPlugin:"Implementation target") {
     depends( configureProxy )
+
     // fix for Windows-style path with backslashes
     def pluginsBase = "${basedir}/plugins".toString().replaceAll('\\\\','/')
 	if(args) {      
@@ -117,6 +118,7 @@ target(installPlugin:"Implementation target") {
         }
 
         if( fullPluginName ) {
+			event("InstallPluginStart", [fullPluginName])
             Ant.delete(dir:"${pluginsBase}/${fullPluginName}", failonerror:false)
             Ant.mkdir(dir:"${pluginsBase}/${fullPluginName}")
             Ant.unzip(dest:"${pluginsBase}/${fullPluginName}", src:"${pluginsBase}/grails-${fullPluginName}.zip")
@@ -149,7 +151,7 @@ target(installPlugin:"Implementation target") {
 			// reset the classpath so that plug-in is recognised
 			classpathSet = false
 			classpath()
-			
+			loadEventHooks()			
             compile()
 
             packagePlugins()   
