@@ -665,9 +665,9 @@ class HibernateGrailsPlugin {
             def groovySpringResources = parent?.getResource(GrailsRuntimeConfigurator.SPRING_RESOURCES_GROOVY);
             if (groovySpringResources  && groovySpringResources.exists()) {
                 BeanBuilder bb = new BeanBuilder(application.getClassLoader());
-                def emptyConfig = new WebRuntimeSpringConfiguration(parent, application.getClassLoader)
-                bb.setSpringConfig(emptyConfig);
-                bb.loadBeans(groovySpringResources);
+                def emptyConfig = new WebRuntimeSpringConfiguration(parent, application.classLoader)
+                bb.setSpringConfig(emptyConfig)
+                bb.loadBeans(groovySpringResources)
                 if (emptyConfig.getBeanNames().contains("dataSource")) {
                     log.info("Using dataSource bean definition from ${GrailsRuntimeConfigurator.SPRING_RESOURCES_GROOVY}")
                     return emptyConfig.getBeanConfig("dataSource").getBeanDefinition()
