@@ -102,6 +102,8 @@ target(testApp: "The test app implementation target") {
     }
 }
 target(compileTests: "Compiles the test cases") {
+    event("CompileTestsStart", ['source'])
+
     def destDir = "${basedir}/test/classes"
     Ant.mkdir(dir: destDir)
     try {
@@ -117,6 +119,8 @@ target(compileTests: "Compiles the test cases") {
 
     def rootLoader = getClass().classLoader.rootLoader
     rootLoader?.addURL(new File(destDir).toURL())
+
+    event("CompileTestsEnd", ['source'])
 }
 
 target(produceReports: "Outputs aggregated xml and html reports") {
