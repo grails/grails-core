@@ -158,8 +158,15 @@ loadEventHooks = {
 
 void loadEventScript(theFile) {
     try {
+        // Load up the given events script.
         def script = eventsClassLoader.parseClass(theFile).newInstance()
-        script.setBinding(getBinding())
+
+        // This ugly bit of code allows us to provide the events script
+        // with its own copy of Init's binding. We exclude the events
+        // provided by Init itself, since otherwise all events scripts
+        // will appear to have those event handlers. This would result
+        // in messages repeating themselves, and similar oddities.
+        script.binding = new Binding(getBinding().variables.findAll { key, value -> !(key ==~ /event[A-Z]\w*/) })
         script.run()
         hookScripts << script
     } catch (Throwable t) {
