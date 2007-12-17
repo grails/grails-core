@@ -91,6 +91,7 @@ target(testApp: "The test app implementation target") {
 
 
     compileTests()
+	packageTests()
 
     try {
         runUnitTests()
@@ -100,6 +101,20 @@ target(testApp: "The test app implementation target") {
     finally {
         processResults()
     }
+}
+target(packageTests:"Puts some useful things on the classpath") {
+    Ant.copy(todir:"${basedir}/test/classes") {
+		fileset(dir:"${basedir}", includes:"application.properties")
+	}					
+	Ant.copy(todir:"${basedir}/test/classes", failonerror:false) {
+		fileset(dir:"${basedir}/grails-app/conf", includes:"**", excludes:"*.groovy, log4j*, hibernate, spring")
+		fileset(dir:"${basedir}/grails-app/conf/hibernate", includes:"**/**")
+		fileset(dir:"${basedir}/src/java") {
+			include(name:"**/**")
+			exclude(name:"**/*.java")
+		}
+	}           
+	
 }
 target(compileTests: "Compiles the test cases") {
     event("CompileTestsStart", ['source'])
