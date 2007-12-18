@@ -41,7 +41,6 @@ includeTargets << new File ( "${grailsHome}/scripts/Compile.groovy" )
 includeTargets << new File ( "${grailsHome}/scripts/PackagePlugins.groovy" ) 
 
 scaffoldDir = "${basedir}/web-app/WEB-INF/templates/scaffolding"     
-config = new ConfigObject()
 configFile = new File("${basedir}/grails-app/conf/Config.groovy")
 webXmlFile = new File("${userHome}/.grails/${grailsVersion}/projects/${baseName}/web.xml")
 log4jFile = new File("${basedir}/web-app/WEB-INF/classes/log4j.properties")
@@ -54,10 +53,8 @@ target ('default': "Packages a Grails application. Note: To create WAR use 'grai
 }                     
   
 target( createConfig: "Creates the configuration object") {
-   def configSlurper = new ConfigSlurper(grailsEnv)
    if(configFile.exists()) { 
 		try {              
-            configSlurper.setBinding(grailsHome:grailsHome, appName:grailsAppName, appVersion:grailsAppVersion, userHome:userHome, basedir:basedir)			
 			config = configSlurper.parse(classLoader.loadClass("Config"))
 			config.setConfigFile(configFile.toURL())
 
@@ -239,16 +236,27 @@ target(loadPlugins:"Loads Grails' plugins") {
 }
 target( generateWebXml : "Generates the web.xml file") {
 	depends(classpath)
+	
+	if(config.grails.config.base.webXml) {
+		def customWebXml =resolveResources(config.grails.config.base.webXml) 
+		if(customWebXml)
+			webXml = customWebXml[0]
+		else {
+			event("StatusError", [ "Custom web.xml defined in config [${config.grails.config.base.webXml}] could not be found." ])
+			exit(1)			
+		}        
+	}
+	else {
+	    webXml = new FileSystemResource("${basedir}/src/templates/war/web.xml")
+	    if(!webXml.exists()) {
+	    	def tmpWebXml = "${userHome}/.grails/${grailsVersion}/projects/${baseName}/web.xml.tmp"
+	    	Ant.copy(file:"${grailsHome}/src/war/WEB-INF/web${servletVersion}.template.xml", tofile:tmpWebXml)
 
-    webXml = new FileSystemResource("${basedir}/src/templates/war/web.xml")
-    if(!webXml.exists()) {
-    	def tmpWebXml = "${userHome}/.grails/${grailsVersion}/projects/${baseName}/web.xml.tmp"
-    	Ant.copy(file:"${grailsHome}/src/war/WEB-INF/web${servletVersion}.template.xml", tofile:tmpWebXml)
-    	
-		Ant.replace(file:tmpWebXml, token:"@grails.project.key@", value:"${baseName}")
-    	
-       webXml = new FileSystemResource(tmpWebXml)
-    }
+			Ant.replace(file:tmpWebXml, token:"@grails.project.key@", value:"${baseName}")
+
+	       webXml = new FileSystemResource(tmpWebXml)
+	    }		
+	}
 	def sw = new StringWriter()
 
     try {
@@ -263,7 +271,7 @@ target( generateWebXml : "Generates the web.xml file") {
     }
     catch(Exception e) {
         event("StatusError", [ e.message ])
-        e.printStackTrace(System.out)
+		exit(1)
     }
 
 }      

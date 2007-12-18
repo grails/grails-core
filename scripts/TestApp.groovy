@@ -84,6 +84,11 @@ def processResults = {
 }
 
 target(testApp: "The test app implementation target") {
+    depends(packageApp)
+
+    if(config.grails.testing.reports.destDir) {
+        testDir = config.grails.testing.reports.destDir
+    }
 
     Ant.mkdir(dir: testDir)
     Ant.mkdir(dir: "${testDir}/html")
@@ -103,10 +108,10 @@ target(testApp: "The test app implementation target") {
     }
 }
 target(packageTests:"Puts some useful things on the classpath") {
-    Ant.copy(todir:"${basedir}/test/classes") {
+    Ant.copy(todir:testDirPath) {
 		fileset(dir:"${basedir}", includes:"application.properties")
 	}					
-	Ant.copy(todir:"${basedir}/test/classes", failonerror:false) {
+	Ant.copy(todir:testDirPath, failonerror:false) {
 		fileset(dir:"${basedir}/grails-app/conf", includes:"**", excludes:"*.groovy, log4j*, hibernate, spring")
 		fileset(dir:"${basedir}/grails-app/conf/hibernate", includes:"**/**")
 		fileset(dir:"${basedir}/src/java") {
@@ -119,10 +124,11 @@ target(packageTests:"Puts some useful things on the classpath") {
 target(compileTests: "Compiles the test cases") {
     event("CompileTestsStart", ['source'])
 
-    def destDir = "${basedir}/test/classes"
+    def destDir = testDirPath
     Ant.mkdir(dir: destDir)
     try {
         Ant.groovyc(destdir: destDir,
+                projectName:grailsAppName,
                 classpathref: "grails.classpath",
                 resourcePattern: "file:${basedir}/**/grails-app/**/*.groovy",
                 compilerClasspath.curry(true))

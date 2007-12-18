@@ -40,12 +40,12 @@ target ( clean: "Implementation of clean") {
 
 target ( cleanCompiledSources : "Cleans compiled Java and Groovy sources") {
 	def webInf = "${basedir}/web-app/WEB-INF"
-	Ant.delete(dir:"${webInf}/classes")
-	Ant.delete(dir:"${basedir}/test/classes", failonerror:false)	
+	Ant.delete(dir:"${webInf}/classes")		
 	Ant.delete(dir:"${basedir}/test/reports", failonerror:false)		
 	Ant.delete(file:webXmlFile.absolutePath, failonerror:false)
 	Ant.delete(dir:"${webInf}/lib")
-	Ant.delete(dir:"${classesDirPath}")
+	Ant.delete(dir:classesDirPath)
+	Ant.delete(dir:testDirPath)
 	Ant.mkdir(dir:"${webInf}/classes")
 	Ant.mkdir(dir:"${webInf}/lib")	
 }   

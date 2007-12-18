@@ -25,6 +25,7 @@
 import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver
 import org.codehaus.groovy.control.*
+import org.springframework.core.io.FileSystemResource
 
 Ant.property(environment: "env")
 
@@ -49,6 +50,7 @@ grailsTmp = "${userHome}/.grails/${grailsVersion}/tmp"
 grailsApp = null
 eventsClassLoader = new GroovyClassLoader(getClass().classLoader)
 classesDirPath = System.getProperty("grails.project.class.dir") ?: "${userHome}/.grails/${grailsVersion}/projects/${baseName}/classes"
+testDirPath = System.getProperty("grails.project.class.dir") ?: "${userHome}/.grails/${grailsVersion}/projects/${baseName}/test-classes"
 classesDir = new File(classesDirPath)
 System.setProperty("grails.classes.dir", classesDirPath)
 
@@ -62,6 +64,30 @@ shouldPackageTemplates = false
 hooksLoaded = false
 classpathSet = false
 enableProfile = System.getProperty("grails.script.profile") ? true : false
+config = new ConfigObject()
+
+// Get App's metadata if there is any
+if (new File("${basedir}/application.properties").exists()) {
+    // We know we have an app
+    Ant.property(file: "${basedir}/application.properties")
+
+    def props = Ant.antProject.properties
+    grailsAppName = props.'app.name'
+    grailsAppVersion = props.'app.version'
+    appGrailsVersion = props.'app.grails.version'
+    servletVersion = props.'app.servlet.version' ? props.'app.servlet.version' : servletVersion
+}
+
+// If no app name property (upgraded/new/edited project) default to basedir
+if (!grailsAppName) {
+    grailsAppName = baseName
+}
+appClassName = GCU.getClassNameRepresentation(grailsAppName)
+
+configSlurper = new ConfigSlurper(grailsEnv)
+configSlurper.setBinding(grailsHome:grailsHome, appName:grailsAppName, appVersion:grailsAppVersion, userHome:userHome, basedir:basedir)
+
+
 profile = {String name, Closure callable ->
     if (enableProfile) {
         def now = System.currentTimeMillis()
@@ -185,23 +211,7 @@ exit = {
     }
 }
 
-// Get App's metadata if there is any
-if (new File("${basedir}/application.properties").exists()) {
-    // We know we have an app
-    Ant.property(file: "${basedir}/application.properties")
 
-    def props = Ant.antProject.properties
-    grailsAppName = props.'app.name'
-    grailsAppVersion = props.'app.version'
-    appGrailsVersion = props.'app.grails.version'
-    servletVersion = props.'app.servlet.version' ? props.'app.servlet.version' : servletVersion
-}
-
-// If no app name property (upgraded/new/edited project) default to basedir
-if (!grailsAppName) {
-    grailsAppName = baseName
-}
-appClassName = GCU.getClassNameRepresentation(grailsAppName)
 
 
 // a resolver that doesn't throw exceptions when resolving resources
@@ -424,9 +434,23 @@ grailsClasspath = {pluginLibs, grailsDir ->
     for (d in grailsDir) {
         pathelement(location: "${d.file.absolutePath}")
     }
+
+	if(config.grails.compiler.dependencies) {
+		def callable = config.grails.compiler.dependencies
+		callable.delegate = delegate
+		callable.resolveStrategy = Closure.DELEGATE_FIRST
+		callable()
+	}
 }
 void setClasspath() {
     if (classpathSet) return
+
+	def preInitFile = new File("./grails-app/conf/PreInit.groovy")
+	if(preInitFile.exists()) {
+		config = configSlurper.parse(preInitFile.toURL())
+		config.setConfigFile(preInitFile.toURL())		
+	}
+
 
     def grailsDir = resolveResources("file:${basedir}/grails-app/*")
     def pluginLibs = resolveResources("file:${basedir}/plugins/*/lib")
@@ -448,6 +472,7 @@ void setClasspath() {
     for (jar in jarFiles) {
         cpath << jar.file.absolutePath << File.pathSeparator
     }
+
 
     compConfig = new CompilerConfiguration()
     compConfig.setClasspath(cpath.toString());
@@ -475,6 +500,15 @@ getJarFiles = {->
     for (userJar in userJars) {
         jarFiles.add(userJar)
     }
+
+	if(config.grails.compiler.dependencies) {
+        
+        def extraDeps = Ant.fileScanner(config.grails.compiler.dependencies)
+		for(jar in extraDeps) {
+            jarFiles << new FileSystemResource(jar)
+		}
+	}
+
     jarFiles
 }
 

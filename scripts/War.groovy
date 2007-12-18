@@ -79,21 +79,29 @@ target (war: "The implementation target") {
 			fileset(dir:"${basedir}/lib") {
 					include(name:"*.jar")
 			}
-            fileset(dir:"${grailsHome}/lib") {
-                for(d in config.grails.war.dependencies) {
-                    include(name:d)
-                }
-                if(antProject.properties."ant.java.version" == "1.5") {
-                    for(d in config.grails.war.java5.dependencies) {
-                        include(name:d)
-                    }
-                }
-            }
-            if(antProject.properties."ant.java.version" == "1.4") {
-                fileset(dir:"${basedir}/lib/endorsed") {
-                        include(name:"*.jar")
-                }
-            }
+			if(config.grails.war.dependencies instanceof Closure) {
+				def fileset = config.grails.war.dependencies
+				fileset.delegate = delegate
+				fileset.resolveStrategy = Closure.DELEGATE_FIRST
+				fileset()
+			}
+			else {
+	            fileset(dir:"${grailsHome}/lib") {
+	                for(d in config.grails.war.dependencies) {
+	                    include(name:d)
+	                }
+	                if(antProject.properties."ant.java.version" == "1.5") {
+	                    for(d in config.grails.war.java5.dependencies) {
+	                        include(name:d)
+	                    }
+	                }
+	            }
+	            if(antProject.properties."ant.java.version" == "1.4") {
+	                fileset(dir:"${basedir}/lib/endorsed") {
+	                        include(name:"*.jar")
+	                }
+	            }				
+			}
 		}                 
 		Ant.copy(file:webXmlFile.absolutePath, tofile:"${basedir}/staging/WEB-INF/web.xml")
 		Ant.copy(file:log4jFile.absolutePath, tofile:"${basedir}/staging/WEB-INF/log4j.properties")
