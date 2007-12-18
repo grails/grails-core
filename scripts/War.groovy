@@ -48,19 +48,37 @@ target (war: "The implementation target") {
 	depends( clean, packagePlugins, packageApp)
 	 
 	try {
-		Ant.mkdir(dir:"${basedir}/staging")
+        if(config.grails.war.destFile) {
+            warName = config.grails.war.destFile
+            String parentDir = new File(warName).parentFile.absolutePath
+            stagingDir = "${parentDir}/staging"
+        }
+        else {
+            warName = "${basedir}/${fileName}${version}.war"
+            def fileName = grailsAppName
+            def version = Ant.antProject.properties.'app.version'
+            if (version) {
+                version = '-'+version
+            } else {
+                version = ''
+            }
+            warName = "${basedir}/${fileName}${version}.war"
+            
+            stagingDir = "${basedir}/staging"
+        }
+        Ant.mkdir(dir:stagingDir)
 
-		Ant.copy(todir:"${basedir}/staging", overwrite:true) {
+		Ant.copy(todir:stagingDir, overwrite:true) {
 			fileset(dir:"${basedir}/web-app", includes:"**") 
 		}       
-		Ant.copy(todir:"${basedir}/staging/WEB-INF/grails-app", overwrite:true) {
+		Ant.copy(todir:"${stagingDir}/WEB-INF/grails-app", overwrite:true) {
 			fileset(dir:"${basedir}/grails-app", includes:"views/**")
 		}
-		Ant.copy(todir:"${basedir}/staging/WEB-INF/classes") {
+		Ant.copy(todir:"${stagingDir}/WEB-INF/classes") {
             fileset(dir:classesDirPath)
         }
 
-        Ant.copy(todir:"${basedir}/staging/WEB-INF/classes", failonerror:false) {
+        Ant.copy(todir:"${stagingDir}/WEB-INF/classes", failonerror:false) {
             fileset(dir:"${basedir}/grails-app/conf", includes:"**", excludes:"*.groovy, log4j*, hibernate, spring")
             fileset(dir:"${basedir}/grails-app/conf/hibernate", includes:"**/**")
             fileset(dir:"${basedir}/src/java") {
@@ -69,10 +87,10 @@ target (war: "The implementation target") {
             }
         }
 		              
-		scaffoldDir = "${basedir}/staging/WEB-INF/templates/scaffolding"
+		scaffoldDir = "${stagingDir}/WEB-INF/templates/scaffolding"
 		packageTemplates()
 
-		Ant.copy(todir:"${basedir}/staging/WEB-INF/lib") {
+		Ant.copy(todir:"${stagingDir}/WEB-INF/lib") {
 			fileset(dir:"${grailsHome}/dist") {
 					include(name:"grails-*.jar")
 			}
@@ -103,34 +121,26 @@ target (war: "The implementation target") {
 	            }				
 			}
 		}                 
-		Ant.copy(file:webXmlFile.absolutePath, tofile:"${basedir}/staging/WEB-INF/web.xml")
-		Ant.copy(file:log4jFile.absolutePath, tofile:"${basedir}/staging/WEB-INF/log4j.properties")
-        Ant.copy(todir:"${basedir}/staging/WEB-INF/lib", flatten:true, failonerror:false) {
+		Ant.copy(file:webXmlFile.absolutePath, tofile:"${stagingDir}/WEB-INF/web.xml")
+		Ant.copy(file:log4jFile.absolutePath, tofile:"${stagingDir}/WEB-INF/log4j.properties")
+        Ant.copy(todir:"${stagingDir}/WEB-INF/lib", flatten:true, failonerror:false) {
 			fileset(dir:"${basedir}/plugins") {
                 include(name:"*/lib/*.jar")
             }
         }
 		  
-	    Ant.propertyfile(file:"${basedir}/staging/WEB-INF/classes/application.properties") {
+	    Ant.propertyfile(file:"${stagingDir}/WEB-INF/classes/application.properties") {
 	        entry(key:"grails.env", value:grailsEnv)
 	        entry(key:"grails.war.deployed", value:"true")
 	    }		
 		
-		Ant.replace(file:"${basedir}/staging/WEB-INF/applicationContext.xml", 
+		Ant.replace(file:"${stagingDir}/WEB-INF/applicationContext.xml",
 				token:"classpath*:", value:"" ) 
 
-		def fileName = grailsAppName
-		def version = Ant.antProject.properties.'app.version'
-		if (version) {
-		    version = '-'+version
-		} else {
-		    version = ''
-		}
-		warName = "${basedir}/${fileName}${version}.war"
-		warPlugins()		    
+		warPlugins()
 		createDescriptor()
     	event("WarStart", ["Creating WAR ${warName}"])		
-		Ant.jar(destfile:warName, basedir:"${basedir}/staging")
+		Ant.jar(destfile:warName, basedir:stagingDir)
     	event("WarEnd", ["Created WAR ${warName}"])				
 	}   
 	finally {
@@ -143,7 +153,7 @@ target(createDescriptor:"Creates the WEB-INF/grails.xml file used to load Grails
      def resourceList = GrailsResourceLoaderHolder.resourceLoader.getResources()
      def pluginList = resolveResources("file:${basedir}/plugins/*/*GrailsPlugin.groovy")
       
-	 new File("${basedir}/staging/WEB-INF/grails.xml").withWriter { writer ->
+	 new File("${stagingDir}/WEB-INF/grails.xml").withWriter { writer ->
 		def xml = new groovy.xml.MarkupBuilder(writer)
 		xml.grails {
 			resources {
@@ -166,13 +176,13 @@ target(createDescriptor:"Creates the WEB-INF/grails.xml file used to load Grails
 }
 
 target(cleanUpAfterWar:"Cleans up after performing a WAR") {
-	Ant.delete(dir:"${basedir}/staging", failonerror:true)
+	Ant.delete(dir:"${stagingDir}", failonerror:true)
 }
 
 target(warPlugins:"Includes the plugins in the WAR") {
 	Ant.sequential {
-		mkdir(dir:"${basedir}/staging/WEB-INF/plugins")
-		copy(todir:"${basedir}/staging/WEB-INF/plugins", failonerror:false) {
+		mkdir(dir:"${stagingDir}/WEB-INF/plugins")
+		copy(todir:"${stagingDir}/WEB-INF/plugins", failonerror:false) {
 			fileset(dir:"${basedir}/plugins")  {    
 				include(name:"**/*plugin.xml")
 			}
