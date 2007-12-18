@@ -120,9 +120,7 @@ abstract class AbstractGrailsTagAwareFlowExecutionTests extends AbstractFlowExec
 
     final void tearDown() {
         RequestContextHolder.setRequestAttributes(null)
-		InvokerHelper.getInstance()
-		.getMetaRegistry()
-		.setMetaClassCreationHandle(originalHandler);
+		GroovySystem.metaClassRegistry.setMetaClassCreationHandle(originalHandler);
 
         onDestroy()
 

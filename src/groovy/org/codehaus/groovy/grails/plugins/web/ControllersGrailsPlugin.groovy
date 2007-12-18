@@ -45,6 +45,7 @@ import org.springframework.validation.Errors
 import org.springframework.web.multipart.commons.CommonsMultipartResolver
 import org.springframework.web.servlet.ModelAndView
 import org.codehaus.groovy.grails.web.multipart.ContentLengthAwareCommonsMultipartResolver
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory
 
 /**
 * A plug-in that handles the configuration of controllers for Grails
@@ -458,6 +459,7 @@ class ControllersGrailsPlugin {
 
                                 if (!commandObject) {
                                     commandObject = paramType.newInstance()
+                                    ctx.autowireCapableBeanFactory.autowireBeanProperties(commandObject,AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false)
                                     commandObjects << commandObject
                                 }
                                 def params = RCH.currentRequestAttributes().params

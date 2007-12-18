@@ -31,6 +31,7 @@ import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
 import org.springframework.web.context.request.RequestContextHolder as RCH
 import org.codehaus.groovy.grails.validation.metaclass.ConstraintsEvaluatingDynamicProperty
 import org.springframework.validation.Errors
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory
 
 import java.util.Map;
 
@@ -53,10 +54,11 @@ public class ClosureInvokingAction extends AbstractAction implements GroovyObjec
     def commandClasses
     def noOfParams
     boolean hasCommandObjects
+    def applicationContext
 
     public ClosureInvokingAction(Closure callable) {
         this.callable = callable;
-        this.metaClass = InvokerHelper.getMetaClass(this);
+        this.metaClass = InvokerHelper.getMetaClass(this)
         this.commandClasses = callable.parameterTypes
         this.noOfParams = commandClasses.size()
         this.hasCommandObjects = noOfParams > 1 || (noOfParams == 1 && commandClasses[0] != Object.class && commandClasses[0] != RequestContext.class)
@@ -76,16 +78,22 @@ public class ClosureInvokingAction extends AbstractAction implements GroovyObjec
                     errors = new org.springframework.validation.BeanPropertyBindingResult(delegate, delegate.class.name)
                     def localErrors = errors
 
-                    def webRequest = RCH.currentRequestAttributes()
-                    def ctx = webRequest.attributes.applicationContext
+                    checkAppContext()
                     for(prop in constrainedProperties.values()) {
-                        prop.messageSource = ctx.getBean("messageSource")
+                        prop.messageSource = applicationContext.getBean("messageSource")
                         prop.validate(delegate, delegate.getProperty( prop.getPropertyName() ),localErrors);
                     }
                     !localErrors.hasErrors()
                 }
             }
         }
+    }
+
+    def checkAppContext() {
+        if(!applicationContext) {
+            def webRequest = RCH.currentRequestAttributes()
+            applicationContext = webRequest.attributes.applicationContext
+        }        
     }
 
     protected Event doExecute(RequestContext context) throws Exception {
@@ -98,9 +106,13 @@ public class ClosureInvokingAction extends AbstractAction implements GroovyObjec
             cloned.resolveStrategy = Closure.DELEGATE_FIRST
 
             if(hasCommandObjects) {
+                checkAppContext()
                 def commandInstances = []
                 for(p in commandClasses) {
                     def instance = p.newInstance()
+
+                    applicationContext.autowireCapableBeanFactory.autowireBeanProperties(instance,AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false)
+
                     def params = noOfParams > 1 ? actionDelegate.params[GCU.getPropertyName(instance.class)] : actionDelegate.params
                     if(params) {
                         def binder = GrailsDataBinder.createBinder(instance, instance.class.name, actionDelegate.request)

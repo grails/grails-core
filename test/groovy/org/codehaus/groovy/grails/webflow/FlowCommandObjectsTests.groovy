@@ -57,6 +57,18 @@ class FlowCommandObjectsTests extends AbstractGrailsTagAwareFlowExecutionTests{
        assertEquals "yes2", c1.one2
 
    }
+
+   void testCommandObjectAutowiringInFlow() {
+       def vs = startFlow()
+
+       vs = signalEvent("else")
+       vs = signalEvent("go")
+
+       def cmd = vs.model.cmd
+
+       assert cmd
+       assert cmd.groovyPagesTemplateEngine
+   }
    
    FlowDefinition getFlowDefinition() {
         new FlowBuilder("myFlow").flow {
@@ -66,16 +78,28 @@ class FlowCommandObjectsTests extends AbstractGrailsTagAwareFlowExecutionTests{
                 }
                 on("success").to "two"
 
+
             }
             two {
                 on("go") { Command1 c1 ->
                     flow.put('stuff',[one2:c1])
                 }.to "end"
+                on("else").to "three"
+
+            }
+            three {
+               on("go") { AutoWireCommand1 c1 ->
+                    flow.put('cmd', c1)
+               }.to "end"
+               
             }
             end()
         }
     }
 
+}
+class AutoWireCommand1 {
+    def groovyPagesTemplateEngine
 }
 class Command1 {
     String one1

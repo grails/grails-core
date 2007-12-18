@@ -29,9 +29,15 @@ class CommandObjectsTests extends AbstractGrailsControllerTests {
            def action3 = { Command command, ConstrainedCommand command2 ->
                 [command:command, command2:command2, someProperty:someProperty]
            }
+           def action4 = { AutoWireCapableCommand c ->
+                [command:c]
+            }
         }
         class Command {
             String name
+        }
+        class AutoWireCapableCommand {
+            def groovyPagesTemplateEngine
         }
         class ConstrainedCommand {
             String data
@@ -42,6 +48,15 @@ class CommandObjectsTests extends AbstractGrailsControllerTests {
         ''')
     }
 
+
+    void testCommandObjectAutoWiring() {
+        // no command objects
+        def testCtrl = ga.getControllerClass("TestController").newInstance()
+        def result = testCtrl.action4()
+
+
+        assert result.command.groovyPagesTemplateEngine
+    }
 
     void testBinding() {
         // no command objects
