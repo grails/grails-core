@@ -25,6 +25,7 @@
 import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
 import groovy.text.SimpleTemplateEngine   
 import org.codehaus.groovy.grails.support.* 
+import org.codehaus.groovy.tools.shell.*
 
 Ant.property(environment:"env")                             
 grailsHome = Ant.antProject.properties."env.GRAILS_HOME"    
@@ -44,18 +45,27 @@ target(shell:"The shell implementation target") {
 	def b = new Binding()
 	b.ctx = appCtx
 	b.grailsApplication = grailsApp
-	def c = new groovy.ui.InteractiveShell(grailsApp.classLoader, b,System.in,System.out,System.err)
-	c.beforeExecution = {
-		appCtx.getBeansOfType(PersistenceContextInterceptor).each { k,v ->
-			v.init()
+	
+	def original = Groovysh.metaClass.getMetaMethod("execute", [String] as Object[])
+	Groovysh.metaClass.execute = { String line ->
+		try {
+			def listeners = appCtx.getBeansOfType(PersistenceContextInterceptor)
+			listeners.each { k,v ->
+				v.init()
+			}		
+		   
+			original.invoke(delegate, line)
+			listeners.each { k,v ->
+				v.flush()
+			}		   
 		}
-	}           
-	c.afterExecution = {
-		appCtx.getBeansOfType(PersistenceContextInterceptor).each { k,v ->
-			v.flush()
-			v.destroy()
-		}
-	}       
-	c.run()
+		finally {
+			listeners.each { k,v ->
+				v.destroy()
+			}
+		}		
+	}
+	shell = new Groovysh(b, new IO(System.in, System.out, System.err))
+	shell.run([] as String[])
  	
 }
