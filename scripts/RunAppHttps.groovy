@@ -47,7 +47,7 @@ includeTargets << new File ( "${grailsHome}/scripts/Package.groovy" )
 includeTargets << new File ( "${grailsHome}/scripts/RunApp.groovy" )
 
 target ('default': "Run's a Grails application in Jetty with HTTPS listener") {
-	depends( checkVersion, configureProxy, packagePlugins, packageApp, generateWebXml )
+	depends( checkVersion, configureProxy, packageApp, generateWebXml )
 	runAppHttps()
 	watchContext()
 }                 

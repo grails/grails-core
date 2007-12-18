@@ -33,7 +33,7 @@ includeTargets << new File ( "${grailsHome}/scripts/Package.groovy" )
 includeTargets << new File ( "${grailsHome}/scripts/Bootstrap.groovy" )
 
 target ('default': "Load the Grails interactive Swing console") {
-	depends( checkVersion, configureProxy, packageApp, classpath, packagePlugins )
+	depends( checkVersion, configureProxy, packageApp, classpath)
 	console()
 }            
 

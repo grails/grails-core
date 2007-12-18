@@ -45,17 +45,18 @@ grails prod war
 generateLog4jFile = true
 
 target (war: "The implementation target") {
-	depends( clean, packagePlugins, packageApp)
+	depends( clean,  packageApp)
 	 
 	try {
-        if(config.grails.war.destFile) {
-            warName = config.grails.war.destFile
+        stagingDir = "${basedir}/staging"		
+
+        if(config.grails.war.destFile || args) {
+            warName = args ? args.trim() : config.grails.war.destFile
             String parentDir = new File(warName).parentFile.absolutePath
             stagingDir = "${parentDir}/staging"
-        }
+        }		
         else {
-            warName = "${basedir}/${fileName}${version}.war"
-            def fileName = grailsAppName
+            def fileName = grailsAppName	
             def version = Ant.antProject.properties.'app.version'
             if (version) {
                 version = '-'+version
@@ -63,8 +64,6 @@ target (war: "The implementation target") {
                 version = ''
             }
             warName = "${basedir}/${fileName}${version}.war"
-            
-            stagingDir = "${basedir}/staging"
         }
         Ant.mkdir(dir:stagingDir)
 

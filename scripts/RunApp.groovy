@@ -46,7 +46,7 @@ recompileFrequency = recompileFrequency ? recompileFrequency.toInteger() : 3
 
 
 includeTargets << new File ( "${grailsHome}/scripts/Package.groovy" )
-includeTargets << new File ( "${grailsHome}/scripts/PackagePlugins.groovy" )
+
 
 shouldPackageTemplates=true
 
@@ -111,7 +111,7 @@ recompileCheck = { lastModified ->
 }
 
 target ('default': "Run's a Grails application in Jetty") {
-	depends( checkVersion, configureProxy, packagePlugins, packageApp )
+	depends( checkVersion, configureProxy, packageApp )
 	runApp()
 	watchContext()
 }
