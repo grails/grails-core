@@ -42,7 +42,7 @@ serverPortHttps = System.getProperty('server.port.https') ? System.getProperty('
 serverHost = System.getProperty('server.host') ? System.getProperty('server.host') : null
 enableJndi = System.getProperty('enable.jndi') == "true" ? true : false
 basedir = System.getProperty("base.dir")
-baseFile = new File(basedir)
+baseFile = new File(basedir).canonicalFile
 isPluginProject = baseFile.listFiles().find { it.name.endsWith("GrailsPlugin.groovy") }
 baseName = baseFile.name
 userHome = Ant.antProject.properties."user.home"
