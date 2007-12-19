@@ -59,12 +59,20 @@ resolver = new PathMatchingResourcePatternResolver()
 grailsAppName = null
 grailsAppVersion = null
 appGrailsVersion = null
-hookScripts = [this]
 shouldPackageTemplates = false
 hooksLoaded = false
 classpathSet = false
 enableProfile = System.getProperty("grails.script.profile") ? true : false
 config = new ConfigObject()
+
+// A map of events to lists of handlers. The handlers provided by plugin
+// and application Events scripts are put in here.
+globalEventHooks = [
+    StatusFinal: [ {message -> println message } ],
+    StatusUpdate: [ {message -> println message + ' ...' } ],
+    StatusError: [ {message -> System.err.println message } ],
+    CreatedArtefact: [ {artefactType, artefactName -> println "Created $artefactType for $artefactName" } ]
+]
 
 // Get App's metadata if there is any
 if (new File("${basedir}/application.properties").exists()) {
@@ -111,32 +119,13 @@ event = {String name, def args ->
         event('SetClasspath', [getClass().classLoader.rootLoader])
     }
 
-    hookScripts.each() {
+    globalEventHooks[name].each() { handler ->
         try {
-            def handler = it."event$name"
-            if (handler) {
-                handler.delegate = this
-                handler(* args)
-            }
+            handler.delegate = this
+            handler(* args)
         } catch (MissingPropertyException e) {
         }
     }
-}
-
-eventStatusFinal = {message ->
-    println message
-}
-
-eventStatusUpdate = {message ->
-    println message + ' ...'
-}
-
-eventStatusError = {message ->
-    System.err.println message
-}
-
-eventCreatedArtefact = {artefactType, artefactName ->
-    println "Created $artefactType for $artefactName"
 }
 
 /* Standard handlers not handled by Init
@@ -187,14 +176,39 @@ void loadEventScript(theFile) {
         // Load up the given events script.
         def script = eventsClassLoader.parseClass(theFile).newInstance()
 
-        // This ugly bit of code allows us to provide the events script
-        // with its own copy of Init's binding. We exclude the events
-        // provided by Init itself, since otherwise all events scripts
-        // will appear to have those event handlers. This would result
-        // in messages repeating themselves, and similar oddities.
-        script.binding = new Binding(getBinding().variables.findAll { key, value -> !(key ==~ /event[A-Z]\w*/) })
+        // Pass the global binding to the script.
+        script.binding = getBinding()
+
+        // Execute the script.
         script.run()
-        hookScripts << script
+
+        // The binding should now contain the event hooks provided by
+        // script, so we remove them and add them to the 'eventHooks'
+        // map.
+        def entriesToRemove = []
+        script.binding.variables.each {key, value ->
+            // Check whether this binding variable is an event hook.
+            def m = key =~ /event([A-Z]\w*)/
+            if (m.matches()) {
+                // It is, so add the hook to the global map of event
+                // hooks.
+                def eventName = m[0][1]
+                def hooks = globalEventHooks[eventName]
+                if (hooks == null) {
+                    hooks = []
+                    globalEventHooks[eventName] = hooks
+                }
+
+                hooks << value
+
+                // This entry should now be removed from the global
+                // binding.
+                entriesToRemove << key
+            }
+        }
+
+        // Remove the event hooks from the global binding.
+        entriesToRemove.each { script.binding.variables.remove(it) }
     } catch (Throwable t) {
         println "Unable to load event script $theFile: ${t.message}"
         t.printStackTrace()
