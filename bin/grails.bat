@@ -13,4 +13,3 @@ set DIRNAME=%~dp0
 if "%DIRNAME%" == "" set DIRNAME=.\
 
 CALL "%DIRNAME%\startGrails.bat" "%DIRNAME%" org.codehaus.groovy.grails.cli.GrailsScriptRunner %*
-
