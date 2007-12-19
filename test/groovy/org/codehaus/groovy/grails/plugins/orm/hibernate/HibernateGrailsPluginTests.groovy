@@ -1,6 +1,5 @@
 package org.codehaus.groovy.grails.plugins.orm.hibernate;
 
-import groovy.mock.interceptor.MockFor
 import org.springframework.core.io.*
 import org.codehaus.groovy.grails.commons.test.*
 import org.codehaus.groovy.grails.commons.*
@@ -45,38 +44,42 @@ class HibernateGrailsPluginTests extends AbstractGrailsMockTests {
     }
 
     void testConfiguresHibernateWhenDataSourceInExternalSpringXml() {
-        def mocker = new MockFor(ApplicationContext.class)
-        ctx.registerMockResource(GrailsRuntimeConfigurator.SPRING_RESOURCES_XML, """
-            <?xml version="1.0" encoding="UTF-8"?>
-            <!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
-            <beans>
-	            <bean name="dataSource"
-		            class="org.springframework.jdbc.datasource.DriverManagerDataSource">
-		            <property name="driverClassName" value="org.hsqldb.jdbcDriver"/>
-                    <property name="url" value="jdbc:hsqldb:mem:devDB"/>
-                    <property name="username" value="sa"/>
-                    <property name="password" value=""/>
-                </bean>
-            </beans>
+        ctx.registerIgnoredClassPathLocation(GrailsRuntimeConfigurator.SPRING_RESOURCES_GROOVY)
+        ctx.registerMockResource(GrailsRuntimeConfigurator.SPRING_RESOURCES_XML, """\
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
+<beans>
+    <bean name="dataSource"
+        class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+        <property name="driverClassName" value="org.hsqldb.jdbcDriver"/>
+        <property name="url" value="jdbc:hsqldb:mem:devDB"/>
+        <property name="username" value="sa"/>
+        <property name="password" value=""/>
+    </bean>
+</beans>
         """)
 
         loadPluginCheckCanSaveDomainClass();
+        ctx.unregisterMockResource(GrailsRuntimeConfigurator.SPRING_RESOURCES_XML)
+        ctx.unregisterIgnoredClassPathLocation(GrailsRuntimeConfigurator.SPRING_RESOURCES_GROOVY)
     }
 
     void testConfiguresHibernateWhenDataSourceInExternalSpringGroovy() {
-        def mocker = new MockFor(ApplicationContext.class)
-        ctx.registerMockResource(GrailsRuntimeConfigurator.SPRING_RESOURCES_XML, """
+        ctx.registerIgnoredClassPathLocation(GrailsRuntimeConfigurator.SPRING_RESOURCES_XML)
+        ctx.registerMockResource(GrailsRuntimeConfigurator.SPRING_RESOURCES_GROOVY, """
           beans {
-            dataSawks(org.springframework.jdbc.datasource.DriverManagerDataSource){
-                driverClassName="com.mysql.jdbc.Driver"
-                url="jdbc:mysql://localhost:3307/grails"
-                username="grails"
-                password="grails"
+            dataSource(org.springframework.jdbc.datasource.DriverManagerDataSource) {
+                driverClassName="org.hsqldb.jdbcDriver"
+                url="jdbc:hsqldb:mem:devDB"
+                username="sa"
+                password=""
             }
         }
         """)
 
         loadPluginCheckCanSaveDomainClass();
+        ctx.unregisterMockResource(GrailsRuntimeConfigurator.SPRING_RESOURCES_GROOVY)
+        ctx.unregisterIgnoredClassPathLocation(GrailsRuntimeConfigurator.SPRING_RESOURCES_XML)
     }
 
     private loadPluginCheckCanSaveDomainClass() {

@@ -1,16 +1,6 @@
 package org.codehaus.groovy.grails.support;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.ByteArrayInputStream;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-
+import groovy.lang.GroovyObjectSupport;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanCreationException;
@@ -18,28 +8,28 @@ import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationEvent;
-import org.springframework.context.MessageSource;
-import org.springframework.context.MessageSourceResolvable;
-import org.springframework.context.NoSuchMessageException;
+import org.springframework.context.*;
+import org.springframework.core.io.AbstractResource;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
-import org.springframework.core.io.AbstractResource;
-import org.springframework.web.context.WebApplicationContext;
 import org.springframework.mock.web.MockServletContext;
-import org.springframework.util.PathMatcher;
 import org.springframework.util.AntPathMatcher;
-import groovy.lang.GroovyObjectSupport;
+import org.springframework.util.PathMatcher;
+import org.springframework.web.context.WebApplicationContext;
 
 import javax.servlet.ServletContext;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.*;
 
 public class MockApplicationContext extends GroovyObjectSupport implements WebApplicationContext {
 
 	Date startupDate = new Date();
 	Map beans = new HashMap();
 	List resources = new ArrayList();
-	PathMatcher pathMatcher = new AntPathMatcher();
+    List ignoredClassLocations = new ArrayList();
+    PathMatcher pathMatcher = new AntPathMatcher();
 
 	public void registerMockBean(String name, Object instance) {
 		beans.put(name,instance);
@@ -50,7 +40,7 @@ public class MockApplicationContext extends GroovyObjectSupport implements WebAp
 	 * @param location the location of the resource. Example: /WEB-INF/grails-app/i18n/messages.properties
 	 */
 	public void registerMockResource(String location) {
-		resources.add(new ClassPathResource(location));
+		resources.add(new ClassPathResource(StringUtils.removeStart(location, "/")));
 	}
 
 	/**
@@ -58,8 +48,37 @@ public class MockApplicationContext extends GroovyObjectSupport implements WebAp
 	 * @param location the location of the resource. Example: /WEB-INF/grails-app/i18n/messages.properties
 	 */
 	public void registerMockResource(String location, String contents) {
-		resources.add(new MockResource(location, contents));
+		resources.add(new MockResource(StringUtils.removeStart(location, "/"), contents));
 	}
+
+	/**
+	 * Unregisters a mock resource. Path separator: "/"
+	 * @param location the location of the resource. Example: /WEB-INF/grails-app/i18n/messages.properties
+	 */
+	public void unregisterMockResource(String location) {
+        for (Iterator it = resources.iterator(); it.hasNext();) {
+            MockResource mockResource = (MockResource) it.next();
+            if (mockResource.location.equals(location)) {
+                it.remove();
+            }
+        }
+	}
+
+    /**
+     * Registers a resource that should not be found on the classpath. Path separator: "/"
+     * @param location the location of the resource. Example: /WEB-INF/grails-app/i18n/messages.properties
+     */
+    public void registerIgnoredClassPathLocation(String location) {
+        ignoredClassLocations.add(location);
+    }
+
+    /**
+     * Unregisters a resource that should not be found on the classpath. Path separator: "/"
+     * @param location the location of the resource. Example: /WEB-INF/grails-app/i18n/messages.properties
+     */
+    public void unregisterIgnoredClassPathLocation(String location) {
+        ignoredClassLocations.remove(location);
+    }
 
     public ApplicationContext getParent() {
 		throw new UnsupportedOperationException("Method not supported by implementation");
@@ -218,7 +237,8 @@ public class MockApplicationContext extends GroovyObjectSupport implements WebAp
 		List result = new ArrayList();
 		for (Iterator i = resources.iterator(); i.hasNext();) {
 			Resource res = (Resource)i.next();
-			if (pathMatcher.match(res.getDescription(), StringUtils.removeStart(res.getDescription(), "/"))) {
+            String path = res instanceof ClassPathResource ? ((ClassPathResource) res).getPath() : res.getDescription();
+            if (pathMatcher.match(locationPattern, path)) {
 				result.add(res);
 			}
 		}
@@ -230,6 +250,14 @@ public class MockApplicationContext extends GroovyObjectSupport implements WebAp
             Resource mockResource = (Resource) i.next();
             if (pathMatcher.match(mockResource.getDescription(), StringUtils.removeStart(location, "/"))) {
                 return mockResource;
+            }
+
+        }
+        // Check for ignored resources and return null instead of a classpath resource in that case.
+        for (Iterator i = ignoredClassLocations.iterator(); i.hasNext();) {
+            String resourceLocation = (String) i.next();
+            if (pathMatcher.match(StringUtils.removeStart(location, "/"), resourceLocation)) {
+                return null;
             }
 
         }
