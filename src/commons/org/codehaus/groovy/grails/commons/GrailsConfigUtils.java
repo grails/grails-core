@@ -103,7 +103,8 @@ public class GrailsConfigUtils {
 	    WebApplicationContext webContext = configurator.configure( servletContext );
 	    configurator.getPluginManager().setApplicationContext(webContext);
 	    servletContext.setAttribute(ApplicationAttributes.APPLICATION_CONTEXT,webContext );
-	    LOG.info("[GrailsContextLoader] Grails application loaded.");
+        servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, webContext);
+        LOG.info("[GrailsContextLoader] Grails application loaded.");
 		return webContext;
 	}
 }

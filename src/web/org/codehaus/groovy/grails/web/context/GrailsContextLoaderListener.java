@@ -7,7 +7,9 @@ import org.springframework.web.context.ContextLoader;
 import org.springframework.web.context.ContextLoaderListener;
 
 /**
- * @author graemerocher
+ * Extends the Spring default ContextLoader to load GrailsApplicationContext
+ * 
+ * @author Graeme Rocher
  *
  */
 public class GrailsContextLoaderListener extends ContextLoaderListener {
