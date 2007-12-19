@@ -363,7 +363,7 @@ def resolveTestResources(patternResolver) {
     def testNames = getTestNames(args)
 
     if (!testNames) {
-        testNames = ['**/*']
+        testNames = config.grails.testing.patterns ?: ['**/*']
     }
 
     def testResources = []
