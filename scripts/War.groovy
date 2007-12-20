@@ -134,7 +134,14 @@ target (war: "The implementation target") {
 	    }		
 		
 		Ant.replace(file:"${stagingDir}/WEB-INF/applicationContext.xml",
-				token:"classpath*:", value:"" ) 
+				token:"classpath*:", value:"" )
+				
+	    if(config.grails.war.resources) {
+			def callable = config.grails.war.resources
+			callable.delegate = Ant
+			callable.resolveStrategy = Closure.DELEGATE_FIRST
+			callable(stagingDir)
+		}
 
 		warPlugins()
 		createDescriptor()
