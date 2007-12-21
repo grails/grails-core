@@ -90,8 +90,8 @@
     <orderEntry type="module-library">
       <library name="Groovy">
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/gant-0.3.4-SNAPSHOT.jar!/" />
-          <root url="jar://$MODULE_DIR$/lib/groovy-all-1.1-final-SNAPSHOT.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/groovy-all-1.5.0.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/gant-1.0.0.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES>
