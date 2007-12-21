@@ -153,12 +153,19 @@ target( configureHttpServer : "Returns a jetty server configured with an HTTP co
 
 target( setupWebContext: "Sets up the Jetty web context") {
     webContext = new WebAppContext("${basedir}/web-app", "/${grailsAppName}")
-    def confClassList = ["org.mortbay.jetty.webapp.WebInfConfiguration", 
-                         "org.mortbay.jetty.plus.webapp.EnvConfiguration", 
-                         "org.mortbay.jetty.plus.webapp.Configuration", 
-                         "org.mortbay.jetty.webapp.JettyWebXmlConfiguration", 
-                         "org.mortbay.jetty.webapp.TagLibConfiguration"] 
-    webContext.setConfigurationClasses((String[])confClassList ) 
+    def configurations = [org.mortbay.jetty.webapp.WebInfConfiguration, 
+                          org.mortbay.jetty.plus.webapp.Configuration, 
+                          org.mortbay.jetty.webapp.JettyWebXmlConfiguration, 
+                          org.mortbay.jetty.webapp.TagLibConfiguration]*.newInstance() 
+    def jndiConfig = new org.mortbay.jetty.plus.webapp.EnvConfiguration()						
+	if(config.grails.development.jetty.env) {
+		def res = resolveResources(config.grails.development.jetty.env)
+		if(res) {
+			jndiConfig.setJettyEnvXml(res[0].URL)			
+		}
+	}
+	configurations.add(1,jndiConfig)
+    webContext.configurations = configurations
     webContext.setDefaultsDescriptor("${grailsHome}/conf/webdefault.xml")
     webContext.setClassLoader(classLoader)
     webContext.setDescriptor(webXmlFile.absolutePath)	
