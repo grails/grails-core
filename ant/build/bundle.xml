@@ -83,15 +83,44 @@
         </jar>
     </target>
 
+    <target name="package-minimal" depends="clean,jar" description="Creates a minimal archive that can be used for integrating a Grails project with an existing build system.">
+        <property name="archive" value="grails-${grails.version}-minimal"/>
+
+        <delete failonerror="true">
+            <fileset dir="${grails.dist}">
+                <include name="*-minimal.zip"/>
+                <include name="*-minimal.tar.gz"/>
+            </fileset>
+        </delete>
+
+        <zip basedir="${basedir}" destfile="${grails.dist}/${archive}.zip">
+            <include name="${grails.dist}/*.jar"/>
+            <include name="${grails.lib}/*.jar"/>
+                <include name="build.properties"/>
+            <include name="bin/**/*"/>
+            <include name="conf/**/*"/>
+            <include name="scripts/**/*"/>
+        </zip>
+
+        <tar destfile="${grails.dist}/${archive}.tar.gz" compression="gzip" longfile="gnu">
+            <tarfileset dir="${basedir}">
+                <include name="${grails.dist}/*.jar"/>
+                <include name="${grails.lib}/*.jar"/>
+                <include name="build.properties"/>
+                <include name="bin/**/*"/>
+                <include name="conf/**/*"/>
+                <include name="scripts/**/*"/>
+            </tarfileset>
+        </tar>
+    </target>
+
     <target name="package" depends="clean,test,jar,javadoc" description="Create the release archives for Grails.">
-    	<delete>
-		  <fileset dir="${grails.dist}">
-		  		<include name="*.zip"/>
-     	  		<include name="*.tar.gz"/>
-		  </fileset>
+    	<delete failonerror="true">
+		    <fileset dir="${grails.dist}">
+                <include name="*.zip"/>
+                <include name="*.tar.gz"/>
+		    </fileset>
 		</delete>
-        <delete  file="${grails.dist}/${archive}.zip" failonerror="true"/>
-        <delete file="${grails.dist}/${archive}.tar.gz" failonerror="true"/>
         <delete dir="tmp" failonerror="true"/>
         <antcall target="create-binary-release"/>
         <antcall target="create-source-release"/>
