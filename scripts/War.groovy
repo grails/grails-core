@@ -51,7 +51,6 @@ target (war: "The implementation target") {
         stagingDir = "${basedir}/staging"		
 
         if(config.grails.war.destFile || args) {
-            println ">>> WAR: grails.war.destFile = ${config.grails.war.destFile}"
             // Pick up the name of the WAR to create from the command-line
             // argument or the 'grails.war.destFile' configuration option.
             // The command-line argument takes precedence.

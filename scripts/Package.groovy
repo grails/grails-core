@@ -59,7 +59,6 @@ target( createConfig: "Creates the configuration object") {
 			config.setConfigFile(configFile.toURL())
 
             ConfigurationHolder.setConfig(config)
-            println ">>> Config: grails.war.destFile = ${config.grails.war.destFile}"
 		}   
 		catch(Exception e) {
             e.printStackTrace()
