@@ -107,9 +107,11 @@ class JavascriptTagLib  {
     	def requestPluginContext = request[CONTROLLER]?.pluginContextPath
 		out << '<script type="text/javascript" src="'
 		if (!attrs.base) {
-			out << grailsAttributes.getApplicationUri(request)
-			out << (requestPluginContext ? "/${requestPluginContext}" : "")
-			out << '/js/'
+            def baseUri = grailsAttributes.getApplicationUri(request)
+            out << baseUri
+            out << (baseUri.endsWith('/') ? '' : '/')
+			out << (requestPluginContext ? "${requestPluginContext}/" : "")
+			out << 'js/'
 		} else {
 			out << attrs.base
 		}

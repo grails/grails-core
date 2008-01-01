@@ -28,33 +28,33 @@ class TestUrlMappings {
     void testPrototypeWithAsyncProperty() {
         def template = '<g:remoteFunction controller="bar" action="foo" options="[asynchronous:false]" />'
         request.setAttribute("org.codehaus.grails.INCLUDED_JS_LIBRARIES", ['prototype'])
-        
+
         assertOutputEquals("new Ajax.Request('/bar/foo',{asynchronous:false,evalScripts:true});", template)
     }
 
 	public void testPrototypeRemoteFunction() throws Exception {
 		StringWriter sw = new StringWriter()
 		PrintWriter pw = new PrintWriter(sw)
-		
+
 		withTag("remoteFunction",pw) { tag ->
 			GroovyObject tagLibrary = (GroovyObject)tag.getOwner()
 			def request = tagLibrary.getProperty("request")
 			def includedLibrary = ['prototype']
 			request.setAttribute("org.codehaus.grails.INCLUDED_JS_LIBRARIES", includedLibrary)
-			
+
 			def attrs = [action:'action',controller:'test']
 			tag.call(attrs)
 			assertEquals("new Ajax.Request('/test/action',{asynchronous:true,evalScripts:true});",sw.toString())
-			
+
 			sw.getBuffer().delete(0,sw.getBuffer().length())
 			attrs = [action:'action',controller:'test',update:[success:'updateMe'],options:[insertion:'Insertion.Bottom']]
 			tag.call(attrs)
 			assertEquals("new Ajax.Updater({success:'updateMe'},'/test/action',{asynchronous:true,evalScripts:true,insertion:Insertion.Bottom});",sw.toString())
 		}
 	}
-	
 
-	
+
+
 
     public void testRemoteField() {
         // <g:remoteField action="changeTitle" update="titleDiv"  name="title" value="${book?.title}"/>
@@ -103,6 +103,18 @@ class TestUrlMappings {
            tag.call(attrs) { }
            assertEquals("<script type=\"text/javascript\" src=\"/myapp/plugins/myplugin/js/lib.js\"></script>" + System.getProperty("line.separator"),sw.toString())
         }
+     }
+
+    public void testPluginAwareJSSrcTrailingSlash() {
+        StringWriter sw = new StringWriter()
+        PrintWriter pw = new PrintWriter(sw)
+        withTag("javascript",pw) { tag ->
+           setupPluginController(tag)
+           setRequestContext('/otherapp/')
+           def attrs = [src:'lib.js']
+           tag.call(attrs) { }
+           assertEquals("<script type=\"text/javascript\" src=\"/otherapp/plugins/myplugin/js/lib.js\"></script>" + System.getProperty("line.separator"),sw.toString())
+        }
    }
 
    public void testPluginAwareJSLib (){
@@ -125,8 +137,19 @@ class TestUrlMappings {
            tag.call(attrs) { }
            assertEquals("<script type=\"text/javascript\" src=\"/myapp/js/lib.js\"></script>" + System.getProperty("line.separator"),sw.toString())
         }
+     }
+
+    public void testJSSrcTrailingSlash() {
+        StringWriter sw = new StringWriter()
+        PrintWriter pw = new PrintWriter(sw)
+        withTag("javascript",pw) { tag ->
+           def attrs = [src:'lib.js']
+           setRequestContext('/otherapp/')
+           tag.call(attrs) { }
+           assertEquals("<script type=\"text/javascript\" src=\"/otherapp/js/lib.js\"></script>" + System.getProperty("line.separator"),sw.toString())
+        }
    }
-   
+
     public void testJSSrcWithNoController (){
         StringWriter sw = new StringWriter()
         PrintWriter pw = new PrintWriter(sw)
@@ -147,6 +170,17 @@ class TestUrlMappings {
            setRequestContext()
            tag.call(attrs) {  }
            assertEquals("<script type=\"text/javascript\" src=\"/myapp/js/lib.js\"></script>" + System.getProperty("line.separator"), sw.toString())
+        }
+     }
+
+    public void testJSLibTrailingSlash() {
+        StringWriter sw = new StringWriter()
+        PrintWriter pw = new PrintWriter(sw)
+        withTag("javascript",pw) { tag ->
+           def attrs = [library:'lib']
+           setRequestContext('/otherapp/')
+           tag.call(attrs) {  }
+           assertEquals("<script type=\"text/javascript\" src=\"/otherapp/js/lib.js\"></script>" + System.getProperty("line.separator"), sw.toString())
         }
     }
 
@@ -184,8 +218,12 @@ class TestUrlMappings {
         }
     }
 
-    def setRequestContext(){
-        request.setAttribute(WebUtils.INCLUDE_CONTEXT_PATH_ATTRIBUTE, "/myapp")
+    def setRequestContext() {
+        setRequestContext("/myapp")
+    }
+
+    def setRequestContext(path) {
+        request.setAttribute(WebUtils.INCLUDE_CONTEXT_PATH_ATTRIBUTE, path)
     }
 
     def setupPluginController(tag){
