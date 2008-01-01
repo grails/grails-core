@@ -31,7 +31,7 @@ grailsHome = Ant.antProject.properties."env.GRAILS_HOME"
 includeTargets << new File ( "${grailsHome}/scripts/Clean.groovy" ) 
 includeTargets << new File ( "${grailsHome}/scripts/Package.groovy" )
 
-task ('default':'''Creates a WAR archive for deployment onto a Java EE application server.
+target ('default':'''Creates a WAR archive for deployment onto a Java EE application server.
 
 Examples: 
 grails war
@@ -51,8 +51,22 @@ target (war: "The implementation target") {
         stagingDir = "${basedir}/staging"		
 
         if(config.grails.war.destFile || args) {
+            println ">>> WAR: grails.war.destFile = ${config.grails.war.destFile}"
+            // Pick up the name of the WAR to create from the command-line
+            // argument or the 'grails.war.destFile' configuration option.
+            // The command-line argument takes precedence.
             warName = args ? args.trim() : config.grails.war.destFile
-            String parentDir = new File(warName).parentFile.absolutePath
+
+            // Find out whether WAR name is an absolute file path or a
+            // relative one.
+            def warFile = new File(warName)
+            if (!warFile.absolute) {
+                // It's a relative path, so adjust it for 'basedir'.
+                warFile = new File(basedir, warFile.path)
+                warName = warFile.canonicalPath
+            }
+
+            String parentDir = warFile.parentFile.absolutePath
             stagingDir = "${parentDir}/staging"
         }		
         else {
