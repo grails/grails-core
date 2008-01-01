@@ -256,7 +256,9 @@ public class MockApplicationContext extends GroovyObjectSupport implements WebAp
         // Check for ignored resources and return null instead of a classpath resource in that case.
         for (Iterator i = ignoredClassLocations.iterator(); i.hasNext();) {
             String resourceLocation = (String) i.next();
-            if (pathMatcher.match(StringUtils.removeStart(location, "/"), resourceLocation)) {
+            if (pathMatcher.match(
+                    StringUtils.removeStart(location, "/"),
+                    StringUtils.removeStart(resourceLocation, "/"))) {
                 return null;
             }
 
