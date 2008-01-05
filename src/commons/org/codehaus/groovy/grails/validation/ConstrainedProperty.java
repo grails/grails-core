@@ -159,7 +159,7 @@ public class ConstrainedProperty   {
     protected String propertyName;
     protected Class propertyType;
 
-    protected Map appliedConstraints = new HashMap();
+    protected Map appliedConstraints = new LinkedHashMap();
     protected Class owningClass;
     private BeanWrapper bean;
 

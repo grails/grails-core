@@ -14,6 +14,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Collection;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.Map;
 
 public class ConstrainedPropertyTests extends TestCase {
@@ -280,9 +281,11 @@ public class ConstrainedPropertyTests extends TestCase {
                         "Long id\n" +
                         "Long version\n" +
                         "String login\n" +
+                        "String other\n" +
                         "String email\n" +
                         "static constraints = {\n" +
                             "login(size:5..15,nullable:false,blank:false)\n" +
+                            "other(blank:false,size:5..15,nullable:false)\n" +
                             "email(email:true)\n" +
                         "}\n" +
                         "}" );
@@ -290,10 +293,30 @@ public class ConstrainedPropertyTests extends TestCase {
         GrailsDomainClass domainClass = new DefaultGrailsDomainClass(groovyClass);
 
         Map constrainedProperties = domainClass.getConstrainedProperties();
-        assertTrue(constrainedProperties.size() == 2);
+        assertTrue(constrainedProperties.size() == 3);
         ConstrainedProperty loginConstraint = (ConstrainedProperty)constrainedProperties.get("login");
-        assertTrue(loginConstraint.getAppliedConstraints().size() == 3);
+        Collection appliedConstraints = loginConstraint.getAppliedConstraints();
+        assertTrue(appliedConstraints.size() == 3);
 
+        // Check the order of the constraints for the 'login' property...
+        int index = 0;
+        String[] constraintNames = new String[] { "size", "nullable", "blank" };
+        for (Iterator iter = appliedConstraints.iterator(); iter.hasNext();) {
+            Constraint c = (Constraint) iter.next();
+            assertEquals(constraintNames[index], c.getName());
+            index++;
+        }
+
+        // ...and for the 'other' property.
+        appliedConstraints = ((ConstrainedProperty) constrainedProperties.get("other")).getAppliedConstraints();
+        index = 0;
+        constraintNames = new String[] { "blank", "size", "nullable" };
+        for (Iterator iter = appliedConstraints.iterator(); iter.hasNext();) {
+            Constraint c = (Constraint) iter.next();
+            assertEquals(constraintNames[index], c.getName());
+            index++;
+        }
+        
         ConstrainedProperty emailConstraint = (ConstrainedProperty)constrainedProperties.get("email");
         assertEquals(2,emailConstraint.getAppliedConstraints().size());
 
