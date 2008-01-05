@@ -100,6 +100,7 @@
             <include name="bin/**/*"/>
             <include name="conf/**/*"/>
             <include name="scripts/**/*"/>
+            <include name="src/grails/templates/scaffolding/**/*"/>
         </zip>
 
         <tar destfile="${grails.dist}/${archive}.tar.gz" compression="gzip" longfile="gnu">
@@ -110,6 +111,7 @@
                 <include name="bin/**/*"/>
                 <include name="conf/**/*"/>
                 <include name="scripts/**/*"/>
+                <include name="src/templates/scaffolding/**/*"/>
             </tarfileset>
         </tar>
     </target>
