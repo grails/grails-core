@@ -86,6 +86,17 @@
     <target name="package-minimal" depends="clean,jar" description="Creates a minimal archive that can be used for integrating a Grails project with an existing build system.">
         <property name="archive" value="grails-${grails.version}-minimal"/>
 
+        <!-- The files to include in the minimal distribution. -->
+        <patternset id="files.pkg.minimal">
+            <include name="${grails.dist}/*.jar"/>
+            <include name="${grails.lib}/*.jar"/>
+            <include name="build.properties"/>
+            <include name="bin/**/*"/>
+            <include name="conf/**/*"/>
+            <include name="scripts/**/*"/>
+            <include name="src/grails/templates/scaffolding/**/*"/>
+        </patternset>
+
         <delete failonerror="true">
             <fileset dir="${grails.dist}">
                 <include name="*-minimal.zip"/>
@@ -93,25 +104,15 @@
             </fileset>
         </delete>
 
+        <!-- Create a ZIP distribution... -->
         <zip basedir="${basedir}" destfile="${grails.dist}/${archive}.zip">
-            <include name="${grails.dist}/*.jar"/>
-            <include name="${grails.lib}/*.jar"/>
-                <include name="build.properties"/>
-            <include name="bin/**/*"/>
-            <include name="conf/**/*"/>
-            <include name="scripts/**/*"/>
-            <include name="src/grails/templates/scaffolding/**/*"/>
+            <patternset refid="files.pkg.minimal"/>
         </zip>
 
+        <!-- ... and a tarball one. -->
         <tar destfile="${grails.dist}/${archive}.tar.gz" compression="gzip" longfile="gnu">
             <tarfileset dir="${basedir}">
-                <include name="${grails.dist}/*.jar"/>
-                <include name="${grails.lib}/*.jar"/>
-                <include name="build.properties"/>
-                <include name="bin/**/*"/>
-                <include name="conf/**/*"/>
-                <include name="scripts/**/*"/>
-                <include name="src/templates/scaffolding/**/*"/>
+                <patternset refid="files.pkg.minimal"/>
             </tarfileset>
         </tar>
     </target>
