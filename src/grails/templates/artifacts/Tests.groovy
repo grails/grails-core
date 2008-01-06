@@ -1,4 +1,4 @@
-class @artifact.name@ extends GroovyTestCase {
+@artifact.package@class @artifact.name@ extends GroovyTestCase {
 
     void testSomething() {
 

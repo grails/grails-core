@@ -2,13 +2,9 @@ package org.codehaus.groovy.grails.cli;
  
 class WarTests  extends AbstractCliTests {
 	void testWAR() {
-	    gantRun( ["-f", "scripts/CreateApp.groovy"] as String[])
-		
-		
-		System.setProperty("base.dir", appBase + File.separatorChar + System.getProperty("grails.cli.args"))
+        createTestApp()
 
-		// Clear the command-line arguments before calling the War script.
-        System.setProperty("grails.cli.args", "")
+        // Call the War script.
         gantRun( ["-f", "scripts/War.groovy"] as String[])
 		
 		checkWarFile("testapp-0.1.war")
@@ -19,9 +15,7 @@ class WarTests  extends AbstractCliTests {
      * the name of the WAR file to create.
      */
     void testWARWithArg() {
-	    gantRun( ["-f", "scripts/CreateApp.groovy"] as String[])
-
-		System.setProperty("base.dir", appBase + File.separatorChar + System.getProperty("grails.cli.args"))
+        createTestApp()
 
 		// Pass the name of the WAR file to the script.
         def warName = "myapp.war"
@@ -35,19 +29,14 @@ class WarTests  extends AbstractCliTests {
      * Test the configuration property 'grails.war.destFile'.
      */
     void testWARWithConfigOption() {
-        gantRun( ["-f", "scripts/CreateApp.groovy"] as String[])
-
-		System.setProperty("base.dir", appBase + File.separatorChar + System.getProperty("grails.cli.args"))
+        createTestApp()
 
 		// Add the 'grails.war.destFile' configuration option to the
         // test application's Config.
         def warName = "config.war"
         new File("${appBase}/testapp/grails-app/conf", "Config.groovy") << "\ngrails.war.destFile = '${warName}'\n"
 
-        println new File("${appBase}/testapp/grails-app/conf", "Config.groovy").text
-
         // Clear the command-line arguments before calling the War script.
-        System.setProperty("grails.cli.args", "")
         gantRun( ["-f", "scripts/War.groovy"] as String[])
 
         checkWarFile(warName)
@@ -57,9 +46,7 @@ class WarTests  extends AbstractCliTests {
      * Test an absolute path passed to the script.
      */
     void testWARWithAbsolutePath() {
-	    gantRun( ["-f", "scripts/CreateApp.groovy"] as String[])
-
-		System.setProperty("base.dir", appBase + File.separatorChar + System.getProperty("grails.cli.args"))
+        createTestApp()
 
 		// Pass the name of the WAR file to the script.
         def warPath = new File(File.tempDir, "myapp.war").absolutePath

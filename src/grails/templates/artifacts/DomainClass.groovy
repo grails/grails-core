@@ -1,3 +1,3 @@
-class @artifact.name@ { 
+@artifact.package@class @artifact.name@ {
 
 }

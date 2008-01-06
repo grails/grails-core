@@ -1,5 +1,5 @@
-class @artifact.name@ {
-	
+@artifact.package@class @artifact.name@ {
+
     boolean transactional = true
 
     def serviceMethod() {

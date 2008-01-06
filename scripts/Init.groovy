@@ -384,14 +384,38 @@ target(createArtifact: "Creates a specific Grails artifact") {
 
     Ant.mkdir(dir: "${basedir}/${artifactPath}")
 
-    className = GCU.getClassNameRepresentation(args)
-    propertyName = GCU.getPropertyNameRepresentation(args)
-    artifactFile = "${basedir}/${artifactPath}/${className}${typeName}.groovy"
+    // Extract the package name if one is given.
+    def name = args
+    def pkg = null
+    def pos = args.lastIndexOf('.')
+    if (pos != -1) {
+        pkg = name[0..<pos]
+        name = name[(pos + 1)..-1]
+    }
+
+    // Convert the package into a file path.
+    def pkgPath = ''
+    if (pkg) {
+        pkgPath = pkg.replace('.' as char, '/' as char)
+
+        // Make sure that the package path exists! Otherwise we won't
+        // be able to create a file there.
+        Ant.mkdir(dir: "${basedir}/${artifactPath}/${pkgPath}")
+
+        // Future use of 'pkgPath' requires a trailing slash.
+        pkgPath += '/'
+    }
+
+    // Convert the given name into class name and property name
+    // representations.
+    className = GCU.getClassNameRepresentation(name)
+    propertyName = GCU.getPropertyNameRepresentation(name)
+    artifactFile = "${basedir}/${artifactPath}/${pkgPath}${className}${typeName}.groovy"
 
 
     if (new File(artifactFile).exists()) {
-        Ant.input(addProperty: "${args}.${typeName}.overwrite", message: "${artifactName} ${className}${typeName}.groovy already exists. Overwrite? [y/n]")
-        if (Ant.antProject.properties."${args}.${typeName}.overwrite" == "n")
+        Ant.input(addProperty: "${name}.${typeName}.overwrite", message: "${artifactName} ${className}${typeName}.groovy already exists. Overwrite? [y/n]")
+        if (Ant.antProject.properties."${name}.${typeName}.overwrite" == "n")
             return
     }
 
@@ -410,6 +434,12 @@ target(createArtifact: "Creates a specific Grails artifact") {
     Ant.copy(file: templateFile, tofile: artifactFile, overwrite: true)
     Ant.replace(file: artifactFile,
             token: "@artifact.name@", value: "${className}${typeName}")
+    if (pkg) {
+        Ant.replace(file: artifactFile, token: "@artifact.package@", value: "package ${pkg}\n\n")
+    }
+    else {
+        Ant.replace(file: artifactFile, token: "@artifact.package@", value: "")
+    }
 
     event("CreatedFile", [artifactFile])
     event("CreatedArtefact", [typeName, className])

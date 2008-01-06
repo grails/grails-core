@@ -21,6 +21,25 @@ abstract class AbstractCliTests extends GroovyTestCase {
 		ant = null
 	}
 
+	protected String createTestApp() {
+        // Pass the name of the test project to the create-app script.
+        def appName = "testapp"
+        System.setProperty("grails.cli.args", appName)
+
+        // Create the application.
+	    gantRun( ["-f", "scripts/CreateApp.groovy"] as String[])
+
+	    // Update the base directory to the application dir.
+        def appDir = appBase + File.separator + appName
+        System.setProperty("base.dir", appDir)
+
+		// Finally, clear the CLI arguments.
+        System.setProperty("grails.cli.args", "")
+
+        // Return the path to the new app.
+        return appDir
+    }
+
 	protected void gantRun(final String[] args) {
 
 	    LoaderConfiguration loaderConfig = new LoaderConfiguration()
