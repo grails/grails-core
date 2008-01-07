@@ -14,15 +14,16 @@
  */
 package org.codehaus.groovy.grails.orm.hibernate.metaclass;
 
-import java.sql.SQLException;
-import java.util.Map;
-import java.util.regex.Pattern;
-
+import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil;
 import org.hibernate.Criteria;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.springframework.orm.hibernate3.HibernateCallback;
+
+import java.sql.SQLException;
+import java.util.Map;
+import java.util.regex.Pattern;
 
 /**
  * The "list" persistent static method. This method lists of of the persistent
@@ -63,7 +64,7 @@ public class ListPersistentMethod extends AbstractStaticPersistentMethod {
 						if(arguments.length > 0) {
 							if(arguments[0] instanceof Map) {
 								Map argMap = (Map)arguments[0];
-								populateArgumentsForCriteria(c,argMap);										
+								GrailsHibernateUtil.populateArgumentsForCriteria(c,argMap);
 							}
 						}	
 						return c.list();

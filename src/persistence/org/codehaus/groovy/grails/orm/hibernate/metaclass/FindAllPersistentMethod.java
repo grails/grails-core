@@ -19,6 +19,7 @@ import groovy.lang.GString;
 import groovy.lang.MissingMethodException;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.orm.hibernate.exceptions.GrailsQueryException;
+import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil;
 import org.hibernate.*;
 import org.hibernate.criterion.Example;
 import org.springframework.orm.hibernate3.HibernateCallback;
@@ -146,7 +147,7 @@ public class FindAllPersistentMethod
 										+ queryNamedArgs.toString());
 							String stringKey = (String) entry.getKey();
 							// Won't try to bind these parameters since they are proceeded separately
-							if( ARGUMENT_MAX.equals(stringKey) || ARGUMENT_OFFSET.equals(stringKey) ) continue; 
+							if( GrailsHibernateUtil.ARGUMENT_MAX.equals(stringKey) || GrailsHibernateUtil.ARGUMENT_OFFSET.equals(stringKey) ) continue;
 							Object value = entry.getValue();
 							if (value instanceof GString) {
 								q.setParameter(stringKey, value.toString());
@@ -172,9 +173,9 @@ public class FindAllPersistentMethod
 				private int retrieveMaxValue(Object[] arguments) {
 					int result = -1;
 					if( arguments.length > 1) { 
-						result = retrieveInt(arguments[1], ARGUMENT_MAX);
+						result = retrieveInt(arguments[1], GrailsHibernateUtil.ARGUMENT_MAX);
 						if( arguments.length > 2 && result == -1 ) {
-							result = retrieveInt(arguments[2], ARGUMENT_MAX);
+							result = retrieveInt(arguments[2], GrailsHibernateUtil.ARGUMENT_MAX);
 						}
 					}
 					return result;
@@ -183,12 +184,12 @@ public class FindAllPersistentMethod
 				private int retrieveOffsetValue(Object[] arguments) {
 					int result = -1;
 					if( arguments.length > 1) {
-						if( isMapWithValue(arguments[1], ARGUMENT_OFFSET) ) {
-							result = ((Number)((Map)arguments[1]).get(ARGUMENT_OFFSET)).intValue();
+						if( isMapWithValue(arguments[1], GrailsHibernateUtil.ARGUMENT_OFFSET) ) {
+							result = ((Number)((Map)arguments[1]).get(GrailsHibernateUtil.ARGUMENT_OFFSET)).intValue();
 						}
 						if( arguments.length > 2 && result == -1 ) {
-							if( isMapWithValue(arguments[2], ARGUMENT_OFFSET) ) {
-								result = ((Number)((Map)arguments[2]).get(ARGUMENT_OFFSET)).intValue();
+							if( isMapWithValue(arguments[2], GrailsHibernateUtil.ARGUMENT_OFFSET) ) {
+								result = ((Number)((Map)arguments[2]).get(GrailsHibernateUtil.ARGUMENT_OFFSET)).intValue();
 							} else if( isIntegerOrLong(arguments[1]) && isIntegerOrLong(arguments[2])) {	
 								result = ((Number)arguments[2]).intValue();
 							}
@@ -230,7 +231,7 @@ public class FindAllPersistentMethod
 					crit.add(example);
 
                     if(arguments.length > 1 && arguments[0] instanceof Map) {
-                        populateArgumentsForCriteria(crit, (Map)arguments[1] );
+                        GrailsHibernateUtil.populateArgumentsForCriteria(crit, (Map)arguments[1] );
                     }
 
                     return crit.list();
@@ -243,7 +244,7 @@ public class FindAllPersistentMethod
 			return super.getHibernateTemplate().executeFind(new HibernateCallback() {
 				public Object doInHibernate(Session session) throws HibernateException, SQLException {
 					Criteria crit = session.createCriteria(clazz);
-                        populateArgumentsForCriteria(crit, (Map)arguments[0] );
+                        GrailsHibernateUtil.populateArgumentsForCriteria(crit, (Map)arguments[0] );
                     return crit.list();
 				}
 

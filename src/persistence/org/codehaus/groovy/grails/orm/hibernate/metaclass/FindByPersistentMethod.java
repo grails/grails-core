@@ -15,6 +15,7 @@
 package org.codehaus.groovy.grails.orm.hibernate.metaclass;
 
 import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil;
 import org.hibernate.Criteria;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
@@ -65,7 +66,7 @@ public class FindByPersistentMethod extends AbstractClausedStaticPersistentMetho
 				if(arguments.length > 0) {
 					if(arguments[0] instanceof Map) {
 						Map argMap = (Map)arguments[0];
-						populateArgumentsForCriteria(crit,argMap);										
+						GrailsHibernateUtil.populateArgumentsForCriteria(crit,argMap);
 					}
 				}
                 if(operator.equals(OPERATOR_OR)) {

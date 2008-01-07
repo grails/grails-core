@@ -17,6 +17,7 @@ package grails.orm;
 
 import groovy.lang.*;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
+import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil;
 import org.hibernate.Criteria;
 import org.hibernate.FetchMode;
 import org.hibernate.Session;
@@ -701,9 +702,17 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
                 this.resultTransformer = CriteriaSpecification.DISTINCT_ROOT_ENTITY;
             }
 
+            boolean paginationEnabledList = false;
+
             createCriteriaInstance();
 
-            invokeClosureNode(args);
+            // Check for pagination params
+            if(name.equals(LIST_CALL) && args.length == 2) {
+                paginationEnabledList = true;
+                invokeClosureNode(args[1]);
+            } else {
+                invokeClosureNode(args[0]);
+            }
 
 
            if(resultTransformer != null) {
@@ -717,8 +726,16 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
                 else if(count) {
                     this.criteria.setProjection(Projections.rowCount());
                     result = this.criteria.uniqueResult();
-                }
-                else {
+                } else if(paginationEnabledList) {
+                    GrailsHibernateUtil.populateArgumentsForCriteria(this.criteria, (Map)args[0]);
+                    PagedResultList pagedRes = new PagedResultList(this.criteria.list());
+                    this.criteria.setFirstResult(0);
+                    this.criteria.setMaxResults(Integer.MAX_VALUE);
+                    this.criteria.setProjection(Projections.rowCount());
+                    int totalCount = ((Integer)this.criteria.uniqueResult()).intValue();
+                    pagedRes.setTotalCount(totalCount);
+                    result = pagedRes;
+                } else {
                     result = this.criteria.list();
                 }
             }
@@ -836,13 +853,14 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
     }
 
     private boolean isCriteriaConstructionMethod(String name, Object[] args) {
-        return name.equals(ROOT_CALL) ||
+        return (name.equals(LIST_CALL) && args.length == 2 && args[0] instanceof Map && args[1] instanceof Closure) ||
+               (name.equals(ROOT_CALL) ||
                 name.equals(ROOT_DO_CALL) ||
                 name.equals(LIST_CALL) ||
                 name.equals(LIST_DISTINCT_CALL) ||
                 name.equals(GET_CALL) ||
                 name.equals(COUNT_CALL) ||
-                name.equals(SCROLL_CALL) && args.length == 1 && args[0] instanceof Closure;
+                name.equals(SCROLL_CALL) && args.length == 1 && args[0] instanceof Closure);
     }
 
     private void createCriteriaInstance() {
@@ -858,8 +876,8 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
         this.criteriaMetaClass = GroovySystem.getMetaClassRegistry().getMetaClass(criteria.getClass());
     }
 
-    private void invokeClosureNode(Object[] args) {
-        Closure callable = (Closure)args[0];
+    private void invokeClosureNode(Object args) {
+        Closure callable = (Closure)args;
         callable.setDelegate(this);
         callable.call();
     }

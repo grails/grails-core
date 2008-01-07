@@ -17,6 +17,7 @@ package org.codehaus.groovy.grails.orm.hibernate.metaclass;
 import groovy.lang.MissingMethodException;
 import groovy.lang.GString;
 import org.codehaus.groovy.grails.orm.hibernate.exceptions.GrailsQueryException;
+import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil;
 import org.hibernate.HibernateException;
 import org.hibernate.Query;
 import org.hibernate.Session;
@@ -61,11 +62,11 @@ public class ExecuteQueryPersistentMethod
             public Object doInHibernate( Session session ) throws HibernateException, SQLException {
                 Query q = session.createQuery( query );
                 // process paginate params
-                if( paginateParams.containsKey( ARGUMENT_MAX ) ) {
-                    q.setMaxResults( ((Number)paginateParams.get( ARGUMENT_MAX ) ).intValue() );
+                if( paginateParams.containsKey( GrailsHibernateUtil.ARGUMENT_MAX ) ) {
+                    q.setMaxResults( ((Number)paginateParams.get( GrailsHibernateUtil.ARGUMENT_MAX ) ).intValue() );
                 }
-                if( paginateParams.containsKey( ARGUMENT_OFFSET ) ) {
-                    q.setFirstResult( ((Number)paginateParams.remove( ARGUMENT_OFFSET )).intValue() );
+                if( paginateParams.containsKey( GrailsHibernateUtil.ARGUMENT_OFFSET ) ) {
+                    q.setFirstResult( ((Number)paginateParams.remove( GrailsHibernateUtil.ARGUMENT_OFFSET )).intValue() );
                 }
                 // process positional HQL params
                 int index = 0;
@@ -111,8 +112,8 @@ public class ExecuteQueryPersistentMethod
         else if( arguments.length == 3 ) paginateParamsIndex = 2;
         if( paginateParamsIndex > 0 ) {
             Map sourceMap = (Map) arguments[paginateParamsIndex];
-            if( sourceMap.containsKey( ARGUMENT_MAX )) result.put( ARGUMENT_MAX, sourceMap.get(ARGUMENT_MAX));
-            if( sourceMap.containsKey( ARGUMENT_OFFSET )) result.put( ARGUMENT_OFFSET, sourceMap.get(ARGUMENT_OFFSET));
+            if( sourceMap.containsKey( GrailsHibernateUtil.ARGUMENT_MAX )) result.put( GrailsHibernateUtil.ARGUMENT_MAX, sourceMap.get(GrailsHibernateUtil.ARGUMENT_MAX));
+            if( sourceMap.containsKey( GrailsHibernateUtil.ARGUMENT_OFFSET )) result.put( GrailsHibernateUtil.ARGUMENT_OFFSET, sourceMap.get(GrailsHibernateUtil.ARGUMENT_OFFSET));
         }
         return result;
     }
@@ -137,8 +138,8 @@ public class ExecuteQueryPersistentMethod
         if( arguments.length < 2 || !(arguments[1] instanceof Map) ) return result;
         result.putAll( (Map) arguments[1] );
         // max and offset are processed by paginate params
-        result.remove( ARGUMENT_MAX );
-        result.remove( ARGUMENT_OFFSET );
+        result.remove( GrailsHibernateUtil.ARGUMENT_MAX );
+        result.remove( GrailsHibernateUtil.ARGUMENT_OFFSET );
         return result;
     }
 }

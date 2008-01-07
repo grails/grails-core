@@ -26,8 +26,12 @@ import org.codehaus.groovy.grails.orm.hibernate.GrailsHibernateDomainClass;
 import org.codehaus.groovy.grails.orm.hibernate.metaclass.DomainClassMethods;
 import org.hibernate.EntityMode;
 import org.hibernate.SessionFactory;
+import org.hibernate.Criteria;
+import org.hibernate.FetchMode;
+import org.hibernate.criterion.Order;
 import org.hibernate.metadata.ClassMetadata;
 import org.springframework.context.ApplicationContext;
+import org.springframework.beans.SimpleTypeConverter;
 
 import java.beans.IntrospectionException;
 import java.lang.reflect.Modifier;
@@ -47,6 +51,15 @@ import java.util.Map;
  */
 public class GrailsHibernateUtil {
     private static final Log LOG = LogFactory.getLog(GrailsHibernateUtil.class);
+    public static SimpleTypeConverter converter = new SimpleTypeConverter();
+    public static final String ARGUMENT_MAX = "max";
+    public static final String ARGUMENT_OFFSET = "offset";
+    public static final String ARGUMENT_ORDER = "order";
+    public static final String ARGUMENT_SORT = "sort";
+    public static final String ORDER_DESC = "desc";
+    public static final String ORDER_ASC = "asc";
+    public static final String ARGUMENT_FETCH = "fetch";
+    public static final String ARGUMENT_IGNORE_CASE = "ignoreCase";
 
     public static void configureDynamicMethods(SessionFactory sessionFactory, GrailsApplication application) {
         LOG.trace("Configuring dynamic methods");
@@ -140,5 +153,66 @@ public class GrailsHibernateUtil {
                 dc = (GrailsDomainClass) application.addArtefact(DomainClassArtefactHandler.TYPE, ghdc);
             }
         }
+    }
+
+    public static void populateArgumentsForCriteria(Criteria c, Map argMap) {
+
+        Integer maxParam = null;
+        Integer offsetParam = null;
+        if(argMap.containsKey(ARGUMENT_MAX)) {
+            maxParam = (Integer)converter.convertIfNecessary(argMap.get(ARGUMENT_MAX),Integer.class);
+        }
+        if(argMap.containsKey(ARGUMENT_OFFSET)) {
+            offsetParam = (Integer)converter.convertIfNecessary(argMap.get(ARGUMENT_OFFSET),Integer.class);
+        }
+        String orderParam = (String)argMap.get(ARGUMENT_ORDER);
+        Object fetchObj = argMap.get(ARGUMENT_FETCH);
+        if(fetchObj instanceof Map) {
+            Map fetch = (Map)fetchObj;
+            for (Iterator i = fetch.keySet().iterator(); i.hasNext();) {
+                String associationName = (String) i.next();
+                c.setFetchMode(associationName, getFetchMode(fetch.get(i)));
+            }
+        }
+
+        final String sort = (String)argMap.get(ARGUMENT_SORT);
+        final String order = ORDER_DESC.equalsIgnoreCase(orderParam) ? ORDER_DESC : ORDER_ASC;
+        final int max = maxParam == null ? -1 : maxParam.intValue();
+        final int offset = offsetParam == null ? -1 : offsetParam.intValue();
+        if(max > -1)
+            c.setMaxResults(max);
+        if(offset > -1)
+            c.setFirstResult(offset);
+        if(sort != null) {
+boolean ignoreCase = true;
+Object caseArg = argMap.get(ARGUMENT_IGNORE_CASE);
+if(caseArg instanceof Boolean) {
+ignoreCase = ((Boolean)caseArg).booleanValue();
+}
+if(ORDER_DESC.equals(order)) {
+                c.addOrder( ignoreCase ? Order.desc(sort).ignoreCase() : Order.desc(sort));
+            }
+            else {
+                c.addOrder( ignoreCase ? Order.asc(sort).ignoreCase() : Order.asc(sort) );
+            }
+        }
+    }
+
+    /**
+	 * Will retrieve the fetch mode for the specified instance other wise return the
+     * default FetchMode
+     *
+     * @param object The object, converted to a string
+     * @return The FetchMode
+     */
+    public static FetchMode getFetchMode(Object object) {
+        String name = object != null ? object.toString() : "default";
+        if(name.equals(FetchMode.JOIN.toString()) || name.equals("eager")) {
+            return FetchMode.JOIN;
+        }
+        else if(name.equals(FetchMode.SELECT.toString()) || name.equals("lazy")) {
+            return FetchMode.SELECT;
+        }
+        return FetchMode.DEFAULT;
     }
 }

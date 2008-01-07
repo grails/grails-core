@@ -1,6 +1,7 @@
 package org.codehaus.groovy.grails.orm.hibernate.metaclass;
 
 import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil;
 import org.hibernate.Criteria;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
@@ -54,7 +55,7 @@ public class FindAllByPersistentMethod extends
 				if(arguments.length > 0) {
 					if(arguments[0] instanceof Map) {
 						Map argMap = (Map)arguments[0];
-						populateArgumentsForCriteria(c,argMap);										
+						GrailsHibernateUtil.populateArgumentsForCriteria(c,argMap);
 					}
 				}				
 								

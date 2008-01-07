@@ -3,18 +3,19 @@
  */
 package org.codehaus.groovy.grails.orm.hibernate.metaclass;
 
-import java.sql.SQLException;
-import java.util.Map;
-import java.util.Locale;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
+import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil;
 import org.hibernate.Criteria;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.criterion.Order;
 import org.springframework.orm.hibernate3.HibernateCallback;
+
+import java.sql.SQLException;
+import java.util.Locale;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * The "listOrderBy*" static persistent method. This method allows
@@ -58,8 +59,8 @@ public class ListOrderByPersistentMethod extends AbstractStaticPersistentMethod 
 				if(arguments != null && arguments.length > 0) {
 					if(arguments[0] instanceof Map) {
 						Map argMap = (Map)arguments[0];
-						argMap.put(ARGUMENT_SORT,propertyName);
-						populateArgumentsForCriteria(crit,argMap);										
+						argMap.put(GrailsHibernateUtil.ARGUMENT_SORT,propertyName);
+						GrailsHibernateUtil.populateArgumentsForCriteria(crit,argMap);
 					}
 					else {
 						crit.addOrder( Order.asc( propertyName ) );												
