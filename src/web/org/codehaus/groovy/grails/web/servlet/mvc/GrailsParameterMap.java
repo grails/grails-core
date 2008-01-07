@@ -15,14 +15,13 @@
  */
 package org.codehaus.groovy.grails.web.servlet.mvc;
 
-import java.util.Collection;
-import java.util.HashMap;
-//import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
+import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
+import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.util.*;
 /**
  * A parameter map class that allows mixing of request parameters and controller parameters. If a controller
  * parameter is set with the same name as a request parameter the controller parameter value is retrieved.
@@ -173,6 +172,55 @@ public class GrailsParameterMap implements Map {
 
 	public Set entrySet() {
 		return parameterMap.entrySet();
-	}		
+	}
 
+    /**
+     * Converts this parameter map into a query String. Note that this will flatten nested keys separating them with the
+     * . character and URL encode the result
+     *
+     * @return A query String starting with the ? character
+     */
+    public String toQueryString() {
+
+        String encoding = request.getCharacterEncoding();
+        if(encoding == null) encoding = "UTF-8";
+        StringBuffer queryString = new StringBuffer("?");
+
+        for (Iterator i = entrySet().iterator(); i.hasNext();) {
+            Entry entry = (Entry) i.next();
+            boolean hasMore = i.hasNext();
+            boolean wasAppended = appendEntry(entry, queryString, encoding, "");
+            if(hasMore && wasAppended) queryString.append('&');
+        }
+        return queryString.toString();
+    }
+
+    private boolean appendEntry(Entry entry, StringBuffer queryString, String encoding, String path) {
+        String name = entry.getKey().toString();
+        if(name.indexOf(".") > -1) return false; // multi-d params handled by recursion
+        Object value = entry.getValue();
+        if(value == null) value = "";
+        else if(value instanceof GrailsParameterMap) {
+            GrailsParameterMap child = (GrailsParameterMap)value;
+            Set nestedEntrySet = child.entrySet();
+            for (Iterator i = nestedEntrySet.iterator(); i.hasNext();) {
+                Entry childEntry = (Entry) i.next();
+                appendEntry(childEntry, queryString, encoding, entry.getKey().toString()+'.');
+            }
+        }
+        else {
+            try {
+                queryString.append(URLEncoder.encode(path+name, encoding))
+                        .append('=')
+                        .append(URLEncoder.encode(value.toString(), encoding));
+            } catch (UnsupportedEncodingException e) {
+                throw new ControllerExecutionException("Unable to convert parameter map ["+this+"] to a query string: " + e.getMessage(),e);
+            }
+        }
+        return true;
+    }
+
+    public String toString() {
+        return DefaultGroovyMethods.inspect(this.parameterMap);
+    }
 }

@@ -11,6 +11,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.mock.web.MockServletContext
 import org.codehaus.groovy.grails.cli.support.CommandLineResourceLoader;
 import grails.spring.*
+import org.springframework.web.context.WebApplicationContext
 
 Ant.property(environment:"env")                             
 grailsHome = Ant.antProject.properties."env.GRAILS_HOME"    
@@ -41,7 +42,8 @@ target(loadApp:"Loads the Grails application object") {
                                                     
 	appCtx = beanDefinitions.createApplicationContext()
 	def ctx = appCtx
-	ctx.servletContext = new MockServletContext()
+	servletContext = new MockServletContext()
+    ctx.servletContext = servletContext
 	grailsApp = ctx.grailsApplication 
 	ApplicationHolder.application = grailsApp
 	
@@ -54,7 +56,9 @@ target(configureApp:"Configures the Grails application and builds an Application
     appCtx.resourceLoader = new  CommandLineResourceLoader()
 	profile("Performing runtime Spring configuration") {
 	    def config = new org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator(grailsApp,appCtx)
-		appCtx = config.configure(new MockServletContext())			
+        appCtx = config.configure(servletContext)
+        servletContext.setAttribute(ApplicationAttributes.APPLICATION_CONTEXT,appCtx );
+        servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, appCtx);
 	}
 }                                                                                  
 

@@ -4,6 +4,12 @@
 		<delete>
 			<fileset dir="${grails.dist}" includes="*"/>
 		</delete>
+        <jar destfile="${grails.dist}/grails-test-${grails.version}.jar" manifest="${grails.build}/META-INF/MANIFEST.MF">
+            <fileset dir="${grails.build}">
+                  <include name="META-INF/**" />
+                  <include name="grails/test/**" />
+              </fileset>
+        </jar>
         <jar destfile="${grails.dist}/grails-spring-${grails.version}.jar" manifest="${grails.build}/META-INF/MANIFEST.MF">
             <fileset dir="${grails.build}">
                   <include name="META-INF/**" />
