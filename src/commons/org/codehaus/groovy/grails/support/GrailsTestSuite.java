@@ -19,13 +19,14 @@ import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestResult;
 import junit.framework.TestSuite;
-
-import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
-import org.springframework.util.Assert;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.util.Assert;
 
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * IoC class to inject properties of Grails test case classes.
@@ -38,13 +39,13 @@ public class GrailsTestSuite extends TestSuite {
 
     private static final String CLEANING_ORDER_PROPERTY = "cleaningOrder";
 
-	private AutowireCapableBeanFactory beanFactory = null;
+	private ApplicationContext applicationContext = null;
     private List cleaningOrder;
 
-    public GrailsTestSuite(AutowireCapableBeanFactory beanFactory, Class clazz) {
+    public GrailsTestSuite(ApplicationContext applicationContext, Class clazz) {
 		super(clazz);
-        Assert.notNull(beanFactory, "Bean factory should not be null!");
-		this.beanFactory = beanFactory;
+        Assert.notNull(applicationContext, "Bean factory should not be null!");
+		this.applicationContext = applicationContext;
         Object order = GrailsClassUtils.getStaticPropertyValue( clazz, CLEANING_ORDER_PROPERTY );
         if( order != null && List.class.isAssignableFrom( order.getClass())) {
             cleaningOrder = (List) order;
@@ -52,10 +53,20 @@ public class GrailsTestSuite extends TestSuite {
 	}
 
 	public void runTest(Test test, TestResult result) {
-		if (test instanceof TestCase) {
-			beanFactory.autowireBeanProperties(test, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
+        // Auto-wire the test
+        if (test instanceof TestCase) {
+			applicationContext.getAutowireCapableBeanFactory().autowireBeanProperties(
+                    test,
+                    AutowireCapableBeanFactory.AUTOWIRE_BY_NAME,
+                    false);
 		}
-		test.run(result);
+
+        // If the test is ApplicationContextAware, wire the context in now.
+        if (test instanceof ApplicationContextAware) {
+            ((ApplicationContextAware) test).setApplicationContext(this.applicationContext);
+        }
+
+        test.run(result);
 	}
 
     public List getCleaningOrder() {

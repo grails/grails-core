@@ -15,19 +15,18 @@
  */ 
 package grails.util;
 
-import java.lang.reflect.Modifier;
-
 import junit.framework.TestCase;
 import junit.framework.TestResult;
 import junit.framework.TestSuite;
 import junit.textui.TestRunner;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.support.GrailsTestSuite;
 import org.codehaus.groovy.grails.support.PersistenceContextInterceptor;
 import org.springframework.context.ConfigurableApplicationContext;
+
+import java.lang.reflect.Modifier;
 
 /**
  * 
@@ -57,7 +56,7 @@ public class RunTests {
 				Class clazz = allClasses[i];
 				if (TestCase.class.isAssignableFrom(clazz) && !Modifier.isAbstract(clazz.getModifiers())) {
 					log.debug("Adding test [" + clazz.getName() + "]");
-					s.addTest(new GrailsTestSuite(appCtx.getBeanFactory(), clazz));
+					s.addTest(new GrailsTestSuite(appCtx, clazz));
 				} else {
 					log.debug("[" + clazz.getName() + "] is not a test case.");
 				}

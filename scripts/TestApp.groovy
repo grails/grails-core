@@ -160,7 +160,7 @@ def populateTestSuite = {suite, testFiles, classLoader, ctx, String base ->
             def className = fileName[fileName.indexOf(base) + base.size()..-8].replace('/' as char, '.' as char)
             def c = classLoader.loadClass(className)
             if (TestCase.isAssignableFrom(c) && !Modifier.isAbstract(c.modifiers)) {
-                suite.addTest(new GrailsTestSuite(ctx.beanFactory, c))
+                suite.addTest(new GrailsTestSuite(ctx, c))
             }
             else {
                 event("StatusUpdate", ["Test ${r.filename} is not a valid test case. It does not implement junit.framework.TestCase or is abstract!"])
