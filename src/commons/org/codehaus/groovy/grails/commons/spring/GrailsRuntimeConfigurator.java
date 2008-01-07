@@ -344,18 +344,25 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
               String[] beanNames = xmlBf.getBeanDefinitionNames();
               LOG.debug("[RuntimeConfiguration] Found ["+beanNames.length+"] beans to configure");
               for (int k = 0; k < beanNames.length; k++) {
-                if(SESSION_FACTORY_BEAN.equals(beanNames[k])) {
-                    LOG.warn("[RuntimeConfiguration] Found custom Hibernate SessionFactory bean defined in " + springResources.getURL() +
-                            ". The bean will not be configured as Grails needs to use its own specialized Hibernate SessionFactoryBean " +
-                            " internally in order to inject dynamic bahavior into domain classes");
-                    continue;
-                }
                   BeanDefinition bd = xmlBf.getBeanDefinition(beanNames[k]);
+                  final String beanClassName = bd.getBeanClassName();
+                  Class beanClass = beanClassName == null ? null : ClassUtils.forName(beanClassName, classLoader);
+                  if(SESSION_FACTORY_BEAN.equals(beanNames[k])) {
+                      Class configurableLocalSessionFactoryBeanClass = org.codehaus.groovy.grails.orm.hibernate.ConfigurableLocalSessionFactoryBean.class;
+                      if (beanClass == null || !configurableLocalSessionFactoryBeanClass.isAssignableFrom(beanClass)) {
+                          LOG.warn("[RuntimeConfiguration] Found custom Hibernate SessionFactory bean defined in " + springResources.getURL() +
+                                  ". The bean will not be configured as Grails needs to use its own specialized Hibernate SessionFactoryBean" +
+                                  " in order to inject dynamic bahavior into domain classes." +
+                                  " Use specialized Hibernate SessionFactoryBean '" + configurableLocalSessionFactoryBeanClass +
+                                  "' for custom Hibernate SessionFactory bean defined in '" + springResources.getURL() +
+                                  "' instead of '" + beanClassName + "' in order to configure custom Hibernate SessionFactory bean.");
+                          continue;
+                      }
+                  }
 
                   springConfig.addBeanDefinition(beanNames[k], bd);
-                  final String className = bd.getBeanClassName();
-                  if(className!=null) {
-                      Class beanClass = ClassUtils.forName(className, classLoader);
+
+                  if(beanClass!=null) {
                       if(BeanFactoryPostProcessor.class.isAssignableFrom(beanClass)) {
                           ((ConfigurableApplicationContext)springConfig.getUnrefreshedApplicationContext())
                                   .addBeanFactoryPostProcessor((BeanFactoryPostProcessor)xmlBf.getBean(beanNames[k]));
