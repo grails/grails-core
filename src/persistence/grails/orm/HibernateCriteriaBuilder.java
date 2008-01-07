@@ -773,7 +773,7 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
                         throwRuntimeException( new IllegalArgumentException("call to [" + name + "] not supported here"));
 
                     this.logicalExpressionStack.add(new LogicalExpression(name));
-                    invokeClosureNode(args);
+                    invokeClosureNode(args[0]);
 
                     LogicalExpression logicalExpression = (LogicalExpression) logicalExpressionStack.pop();
                     addToCriteria(logicalExpression.toCriterion());
@@ -784,7 +784,7 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
                         throwRuntimeException( new IllegalArgumentException("call to [" + name + "] not supported here"));
 
                     this.projectionList = Projections.projectionList();
-                    invokeClosureNode(args);
+                    invokeClosureNode(args[0]);
 
                     if(this.projectionList != null && this.projectionList.getLength() > 0) {
                         this.criteria.setProjection(this.projectionList);
@@ -798,7 +798,7 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
                     this.aliasStack.add(name.toString()+ALIAS);
                     // the criteria within an association node are grouped with an implicit AND
                     logicalExpressionStack.push(new LogicalExpression(AND));
-                    invokeClosureNode(args);
+                    invokeClosureNode(args[0]);
                     aliasStack.remove(aliasStack.size()-1);
                     LogicalExpression logicalExpression = (LogicalExpression) logicalExpressionStack.pop();
                     if (!logicalExpression.args.isEmpty()) {
