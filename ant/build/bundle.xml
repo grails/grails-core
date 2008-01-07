@@ -101,6 +101,7 @@
             <include name="conf/**/*"/>
             <include name="scripts/**/*"/>
             <include name="src/grails/templates/scaffolding/**/*"/>
+            <include name="src/war/WEB-INF/web*.template.xml"/>
         </patternset>
 
         <delete failonerror="true">
