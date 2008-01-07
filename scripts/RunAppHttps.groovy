@@ -65,6 +65,7 @@ target ( runAppHttps : "Main implementation that executes a Grails application w
     	secureListener.setKeyPassword("${keyPassword}")
     	secureListener.setKeystore("${keystore}")
     	secureListener.setNeedClientAuth(false)
+    	secureListener.setWantClientAuth(true)
     	def connectors = server.getConnectors().toList()
     	connectors.add(secureListener)
         server.setConnectors(connectors.toArray(new Connector[0]))
