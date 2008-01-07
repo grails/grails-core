@@ -268,7 +268,7 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
         private Object _invoke(String methodName, Object arg, Object delegate) {
             Object[] args = (Object[])arg;
             final boolean isResponseCode = isResponseCode(methodName);
-            this.parameterValues.clear();
+            this.parameterValues = new HashMap();
             if(methodName.startsWith(SLASH) || isResponseCode) {
                 try {
                     urlDefiningMode = false;
@@ -354,6 +354,7 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
                         this.parameterValues.put(key, vars.get(key));
                     }
                 }
+                this.binding.getVariables().clear();
             }
             urlMapping.setParameterValues(this.parameterValues);
             urlMappings.add(urlMapping);
