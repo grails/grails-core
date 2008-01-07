@@ -233,7 +233,14 @@ public class Parse implements Tokens {
                 if(!StringUtils.isEmpty(content)) {
                     if(!hasContent) {
                         hasContent = true;
+                        break;
                     }
+                }
+            }
+            if(hasContent) {
+                for (int i = 0; i < lines.length; i++) {
+                    String line = lines[i];
+                    final String content = escapeGroovy(line);
                     if(firstLine) {
                         pw.print(content);
                         firstLine = false;
@@ -242,6 +249,7 @@ public class Parse implements Tokens {
                         pw.println();
                         pw.print(content);
                     }
+
                 }
             }
             pw.print(END_MULTILINE_STRING);
