@@ -16,9 +16,6 @@ package org.codehaus.groovy.grails.validation;
 
 import groovy.lang.Closure;
 import org.springframework.validation.Errors;
-import org.springframework.beans.BeanWrapper;
-import org.springframework.beans.BeanWrapperImpl;
-import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 
 import java.util.Collection;
 
@@ -143,37 +140,6 @@ class ValidatorConstraint extends AbstractConstraint {
         }
 
         numValidatorParams = params.length;
-
-        BeanWrapper wr = new BeanWrapperImpl(constraintOwningClass);
-        Class propType = wr.getPropertyType(constraintPropertyName);
-
-        if (!GrailsClassUtils.isGroovyAssignableFrom(params[0], propType))
-        {
-            throw new IllegalArgumentException("Parameter for constraint ["+ConstrainedProperty.VALIDATOR_CONSTRAINT+"] of " +
-                "property ["+constraintPropertyName+"] of class ["+constraintOwningClass+"] must be a Closure " +
-                "taking with the first parameter (value) compatible with the type of the " +
-                "property ["+propType+"], but the parameter is of type ["+params[0]+"]");
-        }
-        if (params.length > 1)
-        {
-            if (!GrailsClassUtils.isGroovyAssignableFrom(params[1], constraintOwningClass))
-            {
-                throw new IllegalArgumentException("Parameter for constraint ["+ConstrainedProperty.VALIDATOR_CONSTRAINT+"] of " +
-                    "property ["+constraintPropertyName+"] of class ["+constraintOwningClass+"] must be a Closure " +
-                    "taking with the second parameter (object) compatible with the type of the object being " +
-                    "constrained ["+constraintOwningClass+"], but the parameter is of type ["+params[1]+"]");
-            }
-        }
-        if (params.length > 2)
-        {
-            if (!GrailsClassUtils.isGroovyAssignableFrom(params[2], Errors.class))
-            {
-                throw new IllegalArgumentException("Parameter for constraint ["+ConstrainedProperty.VALIDATOR_CONSTRAINT+"] of " +
-                    "property ["+constraintPropertyName+"] of class ["+constraintOwningClass+"] must be a Closure " +
-                    "taking with the third parameter (object) compatible with the type of the spring " +
-                    "org.springframework.validation.Errors interface, but the parameter is of type ["+params[2]+"]");
-            }
-        }
 
         super.setParameter(constraintParameter);
     }
