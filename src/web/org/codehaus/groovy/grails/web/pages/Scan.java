@@ -31,8 +31,9 @@ class Scan implements Tokens {
 	private int end1, begin1, end2, begin2, state = HTML, len, level;
 	private boolean str1, str2;
 	private String lastNamespace;
+    private int exprBracketCount = 0;
 
-	Scan(String text) {
+    Scan(String text) {
 		Strip strip = new Strip(text);
 		strip.strip(0);
 		this.text = strip.toString();
@@ -176,8 +177,15 @@ class Scan implements Tokens {
                     }
                     break;
                 case GTAG_EXPR:
-                    if(c == '}')
-                        return found(GSTART_TAG,1);
+                    if(c == '{') exprBracketCount++;
+                    else if(c == '}') {
+                        if(exprBracketCount>0) {
+                            exprBracketCount--;
+                        }
+                        else {
+                            return found(GSTART_TAG,1);
+                        }
+                    }
                     break;
                 case GEXPR:
 				case GDIRECT:

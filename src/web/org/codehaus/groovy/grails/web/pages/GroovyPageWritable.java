@@ -85,6 +85,14 @@ class GroovyPageWritable implements Writable {
     }
 
     /**
+     * Set to true if the generated source should be output instead
+     * @param showSource True if source output should be output
+     */
+    public void setShowSource(boolean showSource) {
+        this.showSource = showSource;
+    }
+
+    /**
      * Writes the template to the specified Writer
      *
      * @param out The Writer to write to, normally the HttpServletResponse
