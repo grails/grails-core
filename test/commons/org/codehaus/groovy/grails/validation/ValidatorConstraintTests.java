@@ -105,18 +105,5 @@ public class ValidatorConstraintTests extends AbstractConstraintTests {
             // Great since validator constraint only applicable for Closure's with 1, 2 or 3 params
         }
 
-        try {
-            getConstraint( "{ Long param1, param2 -> return true}" );
-            fail("ValidatorConstraint must throw exception about wrong closure param type");
-        } catch ( IllegalArgumentException iae ) {
-            // Great
-        }
-
-        try {
-            getConstraint( "{ param1, String param2 -> return true}" );
-            fail("ValidatorConstraint must throw exception about wrong closure param type");
-        } catch ( IllegalArgumentException iae ) {
-            // Great
-        }
     }
 }
