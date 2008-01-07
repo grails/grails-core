@@ -16,6 +16,15 @@ mappings {
 }
 '''
 
+    def mappingScript2 = '''
+mappings  {
+    "/"(view:"/index")
+
+    "/signin"(controller: "authentication") {
+            action = [GET: "loginForm", POST: "handleLogin"]
+    }
+}
+'''
 
 	void testRestfulMappings() {
            def res = new ByteArrayResource(mappingScript.bytes)
@@ -50,6 +59,30 @@ mappings {
              assertEquals "book", info.controllerName
              assertEquals "save", info.actionName
 
+
+    }
+
+    void testRestfulMappings2() {
+        def res = new ByteArrayResource(mappingScript2.bytes)
+
+        def evaluator = new DefaultUrlMappingEvaluator()
+        def mappings = evaluator.evaluateMappings(res)
+
+        def holder = new DefaultUrlMappingsHolder(mappings)
+        assert webRequest
+        webRequest.currentRequest.method = "GET"
+
+        def info = holder.match("/signin")
+
+        assertEquals "authentication", info.controllerName
+        assertEquals "loginForm", info.actionName
+
+        webRequest.currentRequest.method = "POST"
+
+        info = holder.match("/signin")
+
+        assertEquals "authentication", info.controllerName
+        assertEquals "handleLogin", info.actionName
 
     }
 

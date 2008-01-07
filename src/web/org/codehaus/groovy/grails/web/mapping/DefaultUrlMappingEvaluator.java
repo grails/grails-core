@@ -390,20 +390,20 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
                     .get(GrailsControllerClass.CONTROLLER);
             if (controllerName == null) {
                 controllerName = binding != null ? binding.getVariables().get(
-                        GrailsControllerClass.CONTROLLER) : null;
+                        GrailsControllerClass.CONTROLLER) : this.controllerName;
             }
             Object actionName = namedArguments
                     .get(GrailsControllerClass.ACTION);
             if (actionName == null) {
                 actionName = binding != null ? binding.getVariables().get(
-                        GrailsControllerClass.ACTION) : null;
+                        GrailsControllerClass.ACTION) : this.actionName;
             }
 
             Object viewName = namedArguments
                     .get(GrailsControllerClass.VIEW);
             if (viewName == null) {
                 viewName = binding != null ? binding.getVariables().get(
-                        GrailsControllerClass.VIEW) : null;
+                        GrailsControllerClass.VIEW) : this.viewName;
             }
 
             if(actionName != null && viewName !=null) {
