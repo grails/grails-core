@@ -210,6 +210,40 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
 		  callable.call()
 	}
 
+    def printCompiledSource(template, params = [:]) {
+        def text =  getCompiledSource(template, params)
+        println "----- GSP SOURCE -----"
+        println text
+
+    }
+
+    def getCompiledSource(template, params = [:]) {
+        def engine = appCtx.groovyPagesTemplateEngine
+
+        assert engine
+        def t = engine.createTemplate(template, "test_"+ System.currentTimeMillis())
+
+        def w = t.make(params)
+        w.showSource = true
+
+        def sw = new StringWriter()
+        def out = new PrintWriter(sw)
+        webRequest.out = out
+        w.writeTo(out)
+
+        String text = sw.toString()
+    }
+
+    def assertCompiledSourceContains(expected, template, params = [:]) {
+        def text =  getCompiledSource(template, params)
+        return text.indexOf(expected) > -1        
+    }
+
+    def assertOutputContains(expected, template, params = [:]) {
+        def result = applyTemplate(template, params)
+        return result.indexOf(expected) > -1
+    }
+
     def assertOutputEquals(expected, template, params = [:], Closure transform = { it.toString() }) {
 
         def engine = appCtx.groovyPagesTemplateEngine
