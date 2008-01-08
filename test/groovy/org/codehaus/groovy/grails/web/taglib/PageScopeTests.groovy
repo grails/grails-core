@@ -25,8 +25,7 @@ class PageScopeTests extends AbstractGrailsTagTests {
         def template = '''
 <g:set var="one" scope="request" value="two" />
 <g:set var="two" scope="page" value="three" />
-<g:set var="three" scope="session" value="four" />
-one: ${request.one} two: ${two} three: ${session.three}
+<g:set var="three" scope="session" value="four" />one: ${request.one} two: ${two} three: ${session.three}
 '''
 
         assertOutputEquals('one: two two: three three: four', template)
