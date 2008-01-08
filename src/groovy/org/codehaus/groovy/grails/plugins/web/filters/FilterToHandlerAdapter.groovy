@@ -24,6 +24,7 @@ import org.codehaus.groovy.grails.web.util.WebUtils
 import org.springframework.web.servlet.HandlerInterceptor
 import org.springframework.web.servlet.ModelAndView
 import org.springframework.web.util.UrlPathHelper
+import org.springframework.util.AntPathMatcher
 
 /**
  * @author mike
@@ -35,7 +36,7 @@ class FilterToHandlerAdapter implements HandlerInterceptor {
 
     def controllerRegex;
     def actionRegex;
-    def uriRegex;
+    def uriPattern;
     def urlPathHelper = new UrlPathHelper()
 
     private static final LOG = LogFactory.getLog(FilterToHandlerAdapter)
@@ -133,6 +134,7 @@ class FilterToHandlerAdapter implements HandlerInterceptor {
         }
     }
 
+    def pathMatcher = new AntPathMatcher()
     boolean accept(String controllerName, String actionName, String uri) {
         if (controllerRegex == null || actionRegex == null) {
             def scope = filterConfig.scope
@@ -152,18 +154,16 @@ class FilterToHandlerAdapter implements HandlerInterceptor {
             }
 
             if (scope.uri) {
-                uriRegex = Pattern.compile(
-                        scope.uri.
-                                replaceAll("\\*\\*", ".*").
-                                replaceAll("\\*", "[^/]*")
-                        )
-            }
-            else {
-                uriRegex = Pattern.compile(".*")
+                uriPattern = scope.uri.toString()
             }
         }
 
-        return controllerRegex.matcher(controllerName).matches() && actionRegex.matcher(actionName).matches() && uriRegex.matcher(uri).matches()
+        if(uriPattern) {
+            return pathMatcher.match(uriPattern, uri)
+        }
+        else if(controllerRegex && actionRegex) {
+            return controllerRegex.matcher(controllerName).matches() && actionRegex.matcher(actionName).matches()
+        }
     }
 
     String toString() {
