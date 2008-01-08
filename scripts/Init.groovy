@@ -93,7 +93,7 @@ if (!grailsAppName) {
 appClassName = GCU.getClassNameRepresentation(grailsAppName)
 
 configSlurper = new ConfigSlurper(grailsEnv)
-configSlurper.setBinding(grailsHome:grailsHome, appName:grailsAppName, appVersion:grailsAppVersion, userHome:userHome, basedir:basedir)
+configSlurper.setBinding(grailsHome:grailsHome, appName:grailsAppName, appVersion:grailsAppVersion, userHome:userHome, basedir:basedir, servletVersion:servletVersion)
 
 
 profile = {String name, Closure callable ->
