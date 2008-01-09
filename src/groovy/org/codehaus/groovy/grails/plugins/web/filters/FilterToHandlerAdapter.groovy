@@ -25,6 +25,7 @@ import org.springframework.web.servlet.HandlerInterceptor
 import org.springframework.web.servlet.ModelAndView
 import org.springframework.web.util.UrlPathHelper
 import org.springframework.util.AntPathMatcher
+import org.codehaus.groovy.grails.web.servlet.view.NullView
 
 /**
  * @author mike
@@ -94,8 +95,15 @@ class FilterToHandlerAdapter implements HandlerInterceptor {
             callable.delegate = delegate
             callable.resolveStrategy = Closure.DELEGATE_FIRST
 
-            callable.call(modelAndView?.getModel());
-            if(delegate.modelAndView && modelAndView) {
+            def result = callable.call(modelAndView?.getModel());
+            if(result instanceof Boolean) {
+                // if false is returned don't render a view
+                if(!result) {
+                    modelAndView.viewName = null
+                    modelAndView.view = new NullView(response.contentType)
+                }
+            }
+            else if(delegate.modelAndView && modelAndView) {
                 if(delegate.modelAndView.viewName) {
                     modelAndView.viewName = delegate.modelAndView.viewName
                 }
@@ -104,6 +112,7 @@ class FilterToHandlerAdapter implements HandlerInterceptor {
             else if(delegate.modelAndView?.viewName) {
                 renderModelAndView(delegate, request, response, controllerName)
             }
+
         }
     }
 
