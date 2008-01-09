@@ -92,7 +92,8 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
 
         boolean renderView = true;
         GroovyObject controller = (GroovyObject)target;
-        response.setContentType("text/html");
+        if(response.getContentType() == null)
+            response.setContentType("text/html");
         if((arguments[0] instanceof String)||(arguments[0] instanceof GString)) {
             try {
                 response.getWriter().write(arguments[0].toString());
