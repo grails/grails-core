@@ -118,6 +118,13 @@ class ApplicationTagLibTests extends AbstractGrailsTagTests {
 		}
 	}
 
+    void testAbsoluteWithContextPath() {
+        request.contextPath = "/foo"
+        def template = '<g:createLink action="testAction" controller="testController" absolute="true" />'
+
+        assertOutputEquals 'http://localhost:8080/foo/testController/testAction', template    
+    }
+
 	void testCreateLinkWithAbsolute() {
 		StringWriter sw = new StringWriter();
 		withTag("createLink", sw) { tag ->

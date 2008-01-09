@@ -166,9 +166,9 @@ public class RegexUrlMapping extends AbstractUrlMapping implements UrlMapping {
      * @see org.codehaus.groovy.grails.web.mapping.UrlMapping
      */
     public String createURL(Map parameterValues, String encoding) {
-
+        GrailsWebRequest webRequest = (GrailsWebRequest) RequestContextHolder.currentRequestAttributes();
         if(parameterValues==null)parameterValues=Collections.EMPTY_MAP;
-    	StringBuffer uri = new StringBuffer();
+    	StringBuffer uri = new StringBuffer(webRequest.getAttributes().getApplicationUri(webRequest.getCurrentRequest()));
         Set usedParams = new HashSet();
 
         String[] tokens = urlData.getTokens();

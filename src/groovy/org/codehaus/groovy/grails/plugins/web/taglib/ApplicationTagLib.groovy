@@ -147,8 +147,7 @@ class ApplicationTagLib implements ApplicationContextAware {
      *
      *  <a href="${createLink(action:'list')}">List</a>
      */
-    def createLink = { attrs -> 
-        out << grailsAttributes.getApplicationUri(request)
+    def createLink = { attrs ->
         // prefer a URL attribute
         def urlAttrs = attrs
         if(attrs['url'] instanceof Map) {
