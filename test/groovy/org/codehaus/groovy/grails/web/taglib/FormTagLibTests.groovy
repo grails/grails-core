@@ -40,6 +40,12 @@ public class FormTagLibTests extends AbstractGrailsTagTests {
     private static final Collection DATE_PRECISIONS_INCLUDING_DAY = Collections.unmodifiableCollection(Arrays.asList(["day", "hour", "minute", null] as String[] ))
     private static final Collection DATE_PRECISIONS_INCLUDING_MONTH = Collections.unmodifiableCollection(Arrays.asList(["month", "day", "hour", "minute", null] as String[] ))
 
+
+    void testFormTagWithStringURL() {
+        def template = '<g:form url="/foo/bar"></g:form>'
+        assertOutputEquals('<form action="/foo/bar" method="post" ></form>', template)
+    }
+
     public void testTextFieldTag() {
         def template = '<g:textField name="testField" value="1" />'
 

@@ -150,30 +150,40 @@ class ApplicationTagLib implements ApplicationContextAware {
     def createLink = { attrs -> 
         out << grailsAttributes.getApplicationUri(request)
         // prefer a URL attribute
-        if(attrs['url']) {
-             attrs = attrs.remove('url').clone()
+        def urlAttrs = attrs
+        if(attrs['url'] instanceof Map) {
+            urlAttrs = attrs.remove('url').clone()
+        }
+        else if(attrs['url']) {
+            urlAttrs = attrs.remove('url').toString()
         }
 
-		def controller = attrs.containsKey("controller") ? attrs.remove("controller") : grailsAttributes.getController(request)?.controllerName
-		def action = attrs.remove("action")
-        def id = attrs.remove("id")
-        def frag = attrs.remove('fragment')
-        def params = attrs.params && attrs.params instanceof Map ? attrs.remove('params') : [:]
-        
-		if(attrs.event) {       
-			params."_eventId" = attrs.event
-		}
-        def url
-        if(id != null) params.id = id
-        def urlMappings = applicationContext.getBean("grailsUrlMappingsHolder")
-        def mapping = urlMappings.getReverseMapping(controller,action,params)
-        url = mapping.createURL(controller, action, params, request.characterEncoding, frag)
-		if (attrs.base) {
-		    out << attrs.remove('base')
-		} else {
-    	    handleAbsolute(attrs)
-    	}
-        out << response.encodeURL(url)
+        if(urlAttrs instanceof String) {
+            out << response.encodeURL(urlAttrs)
+        }
+        else {
+            def controller = urlAttrs.containsKey("controller") ? urlAttrs.remove("controller") : grailsAttributes.getController(request)?.controllerName
+            def action = urlAttrs.remove("action")
+            def id = urlAttrs.remove("id")
+            def frag = urlAttrs.remove('fragment')
+            def params = urlAttrs.params && urlAttrs.params instanceof Map ? urlAttrs.remove('params') : [:]
+
+            if(urlAttrs.event) {
+                params."_eventId" = urlAttrs.event
+            }
+            def url
+            if(id != null) params.id = id
+            def urlMappings = applicationContext.getBean("grailsUrlMappingsHolder")
+            def mapping = urlMappings.getReverseMapping(controller,action,params)
+            url = mapping.createURL(controller, action, params, request.characterEncoding, frag)
+            if (attrs.base) {
+                out << attrs.remove('base')
+            } else {
+                handleAbsolute(attrs)
+            }
+            out << response.encodeURL(url)
+        }
+
     }
 
 	/**
