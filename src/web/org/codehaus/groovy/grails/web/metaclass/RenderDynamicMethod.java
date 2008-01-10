@@ -159,7 +159,8 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
                 }
                 else {
                     StreamingMarkupBuilder b = new StreamingMarkupBuilder();
-                    Writable markup = (Writable)b.bind(arguments[arguments.length - 1]);
+                    Closure callable = (Closure)arguments[arguments.length - 1];
+                    Writable markup = (Writable)b.bind(callable);
                     try {
                         markup.writeTo(out);
                     } catch (IOException e) {

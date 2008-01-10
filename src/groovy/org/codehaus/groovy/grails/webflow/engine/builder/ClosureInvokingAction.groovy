@@ -121,7 +121,7 @@ public class ClosureInvokingAction extends AbstractAction implements GroovyObjec
                     instance.validate()
                     commandInstances << instance
                 }
-                result = cloned.call(commandInstances)
+                result = cloned.call(*commandInstances)
             }
             else {
                 result = cloned.call(context)

@@ -34,8 +34,8 @@
 	<classpathentry kind="lib" path="lib/dom4j-1.6.1.jar"/>
 	<classpathentry kind="lib" path="lib/ehcache-1.2.4.jar"/>
 	<classpathentry kind="lib" path="lib/ejb3-persistence.jar"/>
-	<classpathentry kind="lib" path="lib/gant-1.0.0.jar"/>
-	<classpathentry kind="lib" path="lib/groovy-all-1.5.0.jar"/>
+	<classpathentry kind="lib" path="lib/gant-1.0.2_groovy-1.5.0.jar"/>
+	<classpathentry kind="lib" path="lib/groovy-all-1.6-beta-1-SNAPSHOT.jar"/>
 	<classpathentry kind="lib" path="lib/hibernate-annotations.jar"/>
 	<classpathentry kind="lib" path="lib/hsqldb-1.8.0.5.jar"/>
 	<classpathentry kind="lib" path="lib/jasper-compiler-5.5.15.jar"/>

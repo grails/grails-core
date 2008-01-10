@@ -143,7 +143,7 @@ public class ConstraintsEvaluatingPropertyTests extends TestCase {
                 "      name( size:5..20)\n" +
                 "   }" +
                 "}";
-        ensureConstraintsPresent(new String[] { classSource, descendentSource}, 1, 2); // Must have nullable and validator
+        ensureConstraintsPresent(new String[] { classSource, descendentSource}, 1, 3); // Must have nullable and validator
     }
 
     private void ensureConstraintsPresent(String[] classSource, int classIndexToTest, int constraintCount)

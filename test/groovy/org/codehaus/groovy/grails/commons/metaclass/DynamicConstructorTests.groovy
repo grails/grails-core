@@ -21,7 +21,7 @@ class Test {
 		pmc.interceptor = i
 		i.addDynamicConstructor( new org.codehaus.groovy.grails.web.metaclass.DataBindingDynamicConstructor() )
 		
-		def registry = InvokerHelper.getInstance().getMetaRegistry()
+		def registry = GroovySystem.metaClassRegistry
 		registry.setMetaClass(clz, pmc)
 		
 		def script = gcl.parseClass("""

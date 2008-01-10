@@ -47,7 +47,7 @@ class LoggingGrailsPluginTests extends AbstractGrailsPluginTests {
 	}
 
 	void testLogAvailableToController() {
-        def registry = InvokerHelper.getInstance().getMetaRegistry()
+        def registry = GroovySystem.metaClassRegistry
 
         registry.removeMetaClass(controllerClass)
 
@@ -56,7 +56,7 @@ class LoggingGrailsPluginTests extends AbstractGrailsPluginTests {
 	}
 
 	void testLogAvailableToService() {
-        def registry = InvokerHelper.getInstance().getMetaRegistry()
+        def registry = GroovySystem.metaClassRegistry
 
         registry.removeMetaClass(serviceClass)
 
@@ -65,7 +65,7 @@ class LoggingGrailsPluginTests extends AbstractGrailsPluginTests {
 	}
 
 	void testLogAvailableToTagLib() {
-        def registry = InvokerHelper.getInstance().getMetaRegistry()
+        def registry = GroovySystem.metaClassRegistry
 
         registry.removeMetaClass(serviceClass)
 

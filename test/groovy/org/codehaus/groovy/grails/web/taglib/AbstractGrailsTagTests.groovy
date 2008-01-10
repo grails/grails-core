@@ -164,9 +164,7 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
     
     void tearDown() {
         RequestContextHolder.setRequestAttributes(null)
-		InvokerHelper.getInstance()
-		.getMetaRegistry()
-		.setMetaClassCreationHandle(originalHandler);
+		GroovySystem.metaClassRegistry.setMetaClassCreationHandle(originalHandler);
     	
         onDestroy()
 

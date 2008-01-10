@@ -33,7 +33,7 @@ class CodecsGrailsPluginTests extends AbstractGrailsPluginTests {
 	}
 	
 	void testCodecsPlugin() {
-        def registry = InvokerHelper.getInstance().getMetaRegistry()
+        def registry = GroovySystem.metaClassRegistry
 
         registry.removeMetaClass(String.class)                
 	    
