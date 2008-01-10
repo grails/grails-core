@@ -109,7 +109,7 @@ public class FindAllPersistentMethod
 		if (arg instanceof String) {
 			final String query = ((String) arg).trim();
 			final String shortName = GrailsClassUtils.getShortName(clazz);
-			if (!query.matches("from [" + clazz.getName() + "|" + shortName
+			if (!query.matches("(?i)from(?-i)\\s+[" + clazz.getName() + "|" + shortName
 					+ "].*")) {
 				throw new GrailsQueryException("Invalid query [" + query + "] for domain class [" + clazz + "]");
 			}

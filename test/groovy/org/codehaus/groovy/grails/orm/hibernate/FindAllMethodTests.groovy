@@ -29,6 +29,24 @@ class FindAllTest {
 
     }
 
+    void testMixedCaseHQL() {
+        def theClass = ga.getDomainClass("FindAllTest").clazz
+
+        assertEquals 0, theClass.findAll().size()
+
+
+        theClass.newInstance(name:"Foo").save()
+        theClass.newInstance(name:"Fred").save()
+        theClass.newInstance(name:"Bar").save()
+        theClass.newInstance(name:"Stuff").save(flush:true)
+
+
+
+        assertEquals 2, theClass.findAll("from FindAllTest as t where t.name like ? ", ['F%']).size()
+        assertEquals 2, theClass.findAll("FROM FindAllTest AS t WHERE t.name LIKE ? ", ['F%']).size()
+
+    }
+
 
     void testWithSort() {
         def theClass = ga.getDomainClass("FindAllTest").clazz
