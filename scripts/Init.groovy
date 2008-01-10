@@ -545,21 +545,26 @@ getJarFiles = {->
         jarFiles.add(userJar)
     }
 
-	if(config.grails.compiler.dependencies) {
-        
-        def extraDeps = Ant.fileScanner(config.grails.compiler.dependencies)
-		for(jar in extraDeps) {
-            jarFiles << new FileSystemResource(jar)
-		}
-	}
+	jarFiles.addAll(getExtraDependencies())
 
     jarFiles
 }
 
+getExtraDependencies = {
+	def jarFiles =[]
+	if(config.grails.compiler.dependencies) {        
+        def extraDeps = Ant.fileScanner(config.grails.compiler.dependencies)
+		for(jar in extraDeps) {
+            jarFiles << new FileSystemResource(jar)
+		}
+	}	
+	jarFiles
+}
+
 populateRootLoader = {rootLoader, jarFiles ->
-    for (jar in jarFiles) {
-        rootLoader?.addURL(jar.URL)
-    }
+	for(jar in getExtraDependencies()) {
+    	rootLoader?.addURL(jar.URL)		
+	}
     rootLoader?.addURL(new File("${basedir}/web-app/WEB-INF/classes").toURL())
     rootLoader?.addURL(new File("${basedir}/web-app/WEB-INF").toURL())
 }
