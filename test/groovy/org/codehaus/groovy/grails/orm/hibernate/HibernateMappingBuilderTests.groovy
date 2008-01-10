@@ -28,6 +28,14 @@ class HibernateMappingBuilderTests extends GroovyTestCase {
 
     }
 
+    void testCascadesWithColumnsBlock() {
+        def builder = new HibernateMappingBuilder("Foo")
+        def mapping = builder.evaluate {
+             things cascade:'save-update'
+        }
+        assertEquals 'save-update',mapping.getColumn('things').cascade
+    }
+
     void testJoinTableMapping() {
         def builder = new HibernateMappingBuilder("Foo")
         def mapping = builder.evaluate {
@@ -52,6 +60,33 @@ class HibernateMappingBuilderTests extends GroovyTestCase {
             columns {
                 things joinTable:[name:'foo', key:'foo_id', column:'bar_id']
             }
+        }
+
+        column = mapping.getColumn('things')
+        assert column?.joinTable
+        assertEquals "foo", column.joinTable.name
+        assertEquals "foo_id", column.joinTable.key
+        assertEquals "bar_id", column.joinTable.column
+    }
+
+    void testJoinTableMappingWithoutColumnsBlock() {
+        def builder = new HibernateMappingBuilder("Foo")
+        def mapping = builder.evaluate {
+            things joinTable:true
+        }
+
+        assert mapping.getColumn('things')?.joinTable
+
+        mapping = builder.evaluate {
+            things joinTable:'foo'
+        }
+
+        ColumnConfig column = mapping.getColumn('things')
+        assert column?.joinTable
+        assertEquals "foo", column.joinTable.name
+
+        mapping = builder.evaluate {
+            things joinTable:[name:'foo', key:'foo_id', column:'bar_id']
         }
 
         column = mapping.getColumn('things')
@@ -96,6 +131,19 @@ class HibernateMappingBuilderTests extends GroovyTestCase {
         assertEquals 'non-lazy', cc.cache.include
     }
 
+    void testCustomAssociationCachingConfig1WithoutColumnsBlock() {
+        def builder = new HibernateMappingBuilder("Foo")
+        def mapping = builder.evaluate {
+            table 'myTable'
+            firstName cache:[usage:'read-only', include:'non-lazy']
+        }
+
+        def cc = mapping.getColumn('firstName')
+        assertEquals 'read-only', cc.cache.usage
+        assertEquals 'non-lazy', cc.cache.include
+    }
+
+
     void testCustomAssociationCachingConfig2() {
         def builder = new HibernateMappingBuilder("Foo")
         def mapping = builder.evaluate {
@@ -111,6 +159,18 @@ class HibernateMappingBuilderTests extends GroovyTestCase {
         
     }
 
+    void testCustomAssociationCachingConfig2WithoutColumnsBlock() {
+        def builder = new HibernateMappingBuilder("Foo")
+        def mapping = builder.evaluate {
+            table 'myTable'
+            firstName cache:'read-only'
+        }
+
+        def cc = mapping.getColumn('firstName')
+        assertEquals 'read-only', cc.cache.usage
+    }
+
+
     void testAssociationCachingConfig() {
         def builder = new HibernateMappingBuilder("Foo")
         def mapping = builder.evaluate {
@@ -125,6 +185,19 @@ class HibernateMappingBuilderTests extends GroovyTestCase {
         assertEquals 'read-write', cc.cache.usage
         assertEquals 'all', cc.cache.include
     }
+
+    void testAssociationCachingConfigWithoutColumnsBlock() {
+        def builder = new HibernateMappingBuilder("Foo")
+        def mapping = builder.evaluate {
+            table 'myTable'
+            firstName cache:true
+        }
+
+        def cc = mapping.getColumn('firstName')
+        assertEquals 'read-write', cc.cache.usage
+        assertEquals 'all', cc.cache.include
+    }
+
 
      void testEvaluateTableName() {
         def builder = new HibernateMappingBuilder("Foo")
@@ -202,11 +275,12 @@ class HibernateMappingBuilderTests extends GroovyTestCase {
          def mapping = builder.evaluate {
              table 'myTable'
              version false
-             id column:'foo_id'
+             id column:'foo_id', type:Integer
          }
 
          assertEquals Long, mapping.identity.type
-         assertEquals 'foo_id', mapping.identity.column
+         assertEquals 'foo_id', mapping.getColumn("id").column
+         assertEquals Integer, mapping.getColumn("id").type
          assertEquals 'native', mapping.identity.generator
 
      }
@@ -251,6 +325,20 @@ class HibernateMappingBuilderTests extends GroovyTestCase {
          assertEquals HibernateMappingBuilder, mapping.identity.compositeClass
      }
 
+     void testSimpleColumnMappingsWithoutColumnsBlock() {
+         def builder = new HibernateMappingBuilder("Foo")
+         def mapping = builder.evaluate {
+             table 'myTable'
+             version false
+             firstName column:'First_Name'
+             lastName column:'Last_Name'
+         }
+
+
+        assertEquals "First_Name",mapping.getColumn('firstName').column
+        assertEquals "Last_Name",mapping.getColumn('lastName').column
+     }
+
      void testSimpleColumnMappings() {
          def builder = new HibernateMappingBuilder("Foo")
          def mapping = builder.evaluate {
@@ -267,6 +355,7 @@ class HibernateMappingBuilderTests extends GroovyTestCase {
         assertEquals "Last_Name",mapping.getColumn('lastName').column
      }
 
+
      void testComplexColumnMappings() {
          def builder = new HibernateMappingBuilder("Foo")
          def mapping = builder.evaluate {
@@ -282,6 +371,32 @@ class HibernateMappingBuilderTests extends GroovyTestCase {
                             
                  lastName column:'Last_Name'
              }
+         }
+
+
+        assertEquals "First_Name",mapping.columns.firstName.column
+        assertEquals true,mapping.columns.firstName.lazy
+        assertEquals true,mapping.columns.firstName.unique
+        assertEquals java.sql.Clob,mapping.columns.firstName.type
+        assertEquals 255,mapping.columns.firstName.length
+        assertEquals 'foo',mapping.columns.firstName.index
+        assertEquals "Last_Name",mapping.columns.lastName.column
+
+     }
+
+     void testComplexColumnMappingsWithoutColumnsBlock() {
+         def builder = new HibernateMappingBuilder("Foo")
+         def mapping = builder.evaluate {
+             table 'myTable'
+             version false
+             firstName  column:'First_Name',
+                        lazy:true,
+                        unique:true,
+                        type: java.sql.Clob,
+                        length:255,
+                        index:'foo'
+
+             lastName column:'Last_Name'
          }
 
 

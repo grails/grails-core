@@ -163,19 +163,84 @@ class HibernateMappingBuilder {
             }
         }
         else {
-            if(args?.column) {
-                mapping.identity.column = args.column                
-            }
             if(args?.generator) {
-                mapping.identity.generator = args.generator
+                mapping.identity.generator = args.remove('generator')
             }
             if(args?.params) {
-                def params = args.params
+                def params = args.remove('params')
                 for(entry in params) {
                     params[entry.key] = entry.value?.toString()
                 }
                 mapping.identity.params = params
             }
+            // still more arguments?
+            if(args) {
+                handleMethodMissing("id", [args] as Object[])
+            }
+        }
+
+    }
+
+    /**
+     * A closure used by methodMissing to create column definitions
+     */
+    private handleMethodMissing = { String name, args ->
+        if(args && args[0] instanceof Map) {
+            def namedArgs = args[0]
+            def column = new ColumnConfig()
+            column.column = namedArgs.column
+            column.type = namedArgs.type
+            column.index = namedArgs.index
+            column.lazy = namedArgs.lazy ? true : false
+            column.unique = namedArgs.unique ? true : false
+            column.length = namedArgs.length ? namedArgs.length : -1
+            column.precision = namedArgs.precision ? namedArgs.precision : -1
+            column.scale = namedArgs.scale ? namedArgs.scale : -1
+            column.cascade = namedArgs.cascade ? namedArgs.cascade : null
+
+            if(namedArgs.cache instanceof String) {
+                CacheConfig cc = new CacheConfig()
+                if(CacheConfig.USAGE_OPTIONS.contains(namedArgs.cache))
+                    cc.usage = namedArgs.cache
+                else
+                    LOG.warn("ORM Mapping Invalid: Specified [usage] of [cache] with value [$args.usage] for association [$name] in class [$className] is not valid")
+                column.cache = cc
+            }
+            else if(namedArgs.cache == true) {
+                column.cache = new CacheConfig()
+            }
+            else if(namedArgs.cache instanceof Map) {
+                def cacheArgs = namedArgs.cache
+                CacheConfig cc = new CacheConfig()
+                if(CacheConfig.USAGE_OPTIONS.contains(cacheArgs.usage))
+                    cc.usage = cacheArgs.usage
+                else
+                    LOG.warn("ORM Mapping Invalid: Specified [usage] of [cache] with value [$args.usage] for association [$name] in class [$className] is not valid")
+
+                if(CacheConfig.INCLUDE_OPTIONS.contains(cacheArgs.include))
+                    cc.include = cacheArgs.include
+                else
+                    LOG.warn("ORM Mapping Invalid: Specified [include] of [cache] with value [$args.include] for association [$name] in class [$className] is not valid")
+
+                column.cache = cc
+
+            }
+
+            if(namedArgs.joinTable) {
+                def join = new JoinTable()
+                def joinArgs = namedArgs.joinTable
+                if(joinArgs instanceof String) {
+                    join.name = joinArgs
+                }
+                else if(joinArgs instanceof Map) {
+                    if(joinArgs.name) join.name = joinArgs.name
+                    if(joinArgs.key) join.key = joinArgs.key
+                    if(joinArgs.column) join.column = joinArgs.column
+                }
+                column.joinTable = join
+            }
+
+            mapping.columns[name] = column
         }
 
     }
@@ -187,70 +252,16 @@ class HibernateMappingBuilder {
      */
     void columns(Closure callable) {
         callable.resolveStrategy = Closure.DELEGATE_ONLY
-        callable.delegate = [invokeMethod:{String name, args ->
-            if(args && args[0] instanceof Map) {
-                def namedArgs = args[0]
-                def column = new ColumnConfig()
-                column.column = namedArgs.column
-                column.type = namedArgs.type
-                column.index = namedArgs.index
-                column.lazy = namedArgs.lazy ? true : false
-                column.unique = namedArgs.unique ? true : false
-                column.length = namedArgs.length ? namedArgs.length : -1
-                column.precision = namedArgs.precision ? namedArgs.precision : -1
-                column.scale = namedArgs.scale ? namedArgs.scale : -1
-                column.cascade = namedArgs.cascade ? namedArgs.cascade : null 
-
-                if(namedArgs.cache instanceof String) {
-                    CacheConfig cc = new CacheConfig()
-                    if(CacheConfig.USAGE_OPTIONS.contains(namedArgs.cache))
-                        cc.usage = namedArgs.cache
-                    else
-                        LOG.warn("ORM Mapping Invalid: Specified [usage] of [cache] with value [$args.usage] for association [$name] in class [$className] is not valid")
-                    column.cache = cc
-                }
-                else if(namedArgs.cache == true) {
-                    column.cache = new CacheConfig()
-                }
-                else if(namedArgs.cache instanceof Map) {
-                    def cacheArgs = namedArgs.cache
-                    CacheConfig cc = new CacheConfig()
-                    if(CacheConfig.USAGE_OPTIONS.contains(cacheArgs.usage))
-                        cc.usage = cacheArgs.usage
-                    else
-                        LOG.warn("ORM Mapping Invalid: Specified [usage] of [cache] with value [$args.usage] for association [$name] in class [$className] is not valid")
-
-                    if(CacheConfig.INCLUDE_OPTIONS.contains(cacheArgs.include))
-                        cc.include = cacheArgs.include
-                    else
-                        LOG.warn("ORM Mapping Invalid: Specified [include] of [cache] with value [$args.include] for association [$name] in class [$className] is not valid")            
-
-                    column.cache = cc
-
-                }
-
-                if(namedArgs.joinTable) {
-                    def join = new JoinTable()
-                    def joinArgs = namedArgs.joinTable
-                    if(joinArgs instanceof String) {
-                        join.name = joinArgs
-                    }
-                    else if(joinArgs instanceof Map) {
-                        if(joinArgs.name) join.name = joinArgs.name
-                        if(joinArgs.key) join.key = joinArgs.key
-                        if(joinArgs.column) join.column = joinArgs.column
-                    }
-                    column.joinTable = join
-                }
-
-                mapping.columns[name] = column
-            }
-
-        }] as GroovyObjectSupport
+        callable.delegate = [invokeMethod:handleMethodMissing] as GroovyObjectSupport
         callable.call()
     }
 
     void methodMissing(String name, args) {
-        LOG.warn "ORM Mapping Invalid: Specified config option [$name] does not exist for class [$className]!"
+        if(args && args[0] instanceof Map) {
+            handleMethodMissing(name, args)
+        }
+        else {
+            LOG.warn "ORM Mapping Invalid: Specified config option [$name] does not exist for class [$className]!"
+        }
     }
 }
