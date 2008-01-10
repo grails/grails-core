@@ -127,7 +127,7 @@ target (war: "The implementation target") {
 	                }
 	            }
 	            if(antProject.properties."ant.java.version" == "1.4") {
-	                fileset(dir:"${basedir}/lib/endorsed") {
+	                fileset(dir:"${grailsHome}/lib/endorsed") {
 	                        include(name:"*.jar")
 	                }
 	            }				
