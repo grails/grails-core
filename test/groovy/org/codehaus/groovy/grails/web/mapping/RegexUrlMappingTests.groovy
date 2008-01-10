@@ -2,6 +2,7 @@ package org.codehaus.groovy.grails.web.mapping
 
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 import org.springframework.core.io.*
+import grails.util.GrailsWebUtil
 
 class RegexUrlMappingTests extends GroovyTestCase {
 
@@ -21,6 +22,8 @@ mappings {
 }
 '''
     void testNullableConstraintsInMapping() {
+
+
         def res = new ByteArrayResource(mappingScript.bytes)
 
         def evaluator = new DefaultUrlMappingEvaluator()
@@ -38,6 +41,8 @@ mappings {
     }
 
     void testCreateUrlFromMapping() {
+
+        GrailsWebUtil.bindMockWebRequest()
         def res = new ByteArrayResource(mappingScript.bytes)
 
         def evaluator = new DefaultUrlMappingEvaluator()
@@ -62,6 +67,8 @@ mappings {
     }
 
     void testCreateUrlWithFragment() {
+        GrailsWebUtil.bindMockWebRequest()
+        
         def res = new ByteArrayResource(mappingScript.bytes)
 
         def evaluator = new DefaultUrlMappingEvaluator()
