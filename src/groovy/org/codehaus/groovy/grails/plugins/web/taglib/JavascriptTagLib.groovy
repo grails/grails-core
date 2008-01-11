@@ -194,7 +194,7 @@ class JavascriptTagLib  {
 		
 		out << "<input type=\"text\" name=\"${attrs.remove('name')}\" value=\"${value}\" onkeyup=\""
 		if(attrs.params) {
-			if(attrs instanceof Map) {
+			if(attrs.params instanceof Map) {
 				attrs.params.put(paramName, 'this.value')
 			}
 			else {

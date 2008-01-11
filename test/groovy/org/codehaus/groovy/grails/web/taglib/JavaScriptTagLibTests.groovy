@@ -26,6 +26,12 @@ class TestUrlMappings {
         assertOutputEquals("new Ajax.Request('/bar/foo',{asynchronous:false,evalScripts:true});", template)
     }
 
+
+    void testRemoteFieldWithAdditionalArgs() {
+        def template = '<g:remoteField controller="bar" action="storeField" id="2" name="nv" paramName="pnv" params="\'a=b&\'+" />'
+        assertOutputEquals '<input type="text" name="nv" value="" onkeyup="new Ajax.Request(\'/bar/storeField/2\',{asynchronous:true,evalScripts:true,parameters:\'a=b&\'+\'pnv=\'+this.value});" />', template
+    }
+
     public void testPrototypeRemoteFunction() throws Exception {
         StringWriter sw = new StringWriter()
         PrintWriter pw = new PrintWriter(sw)
