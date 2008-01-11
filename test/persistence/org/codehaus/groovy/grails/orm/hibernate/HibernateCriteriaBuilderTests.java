@@ -7,19 +7,19 @@ import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator;
-import org.codehaus.groovy.grails.support.MockApplicationContext;
-import org.codehaus.groovy.grails.plugins.PluginMetaManager;
 import org.codehaus.groovy.grails.plugins.DefaultPluginMetaManager;
+import org.codehaus.groovy.grails.plugins.PluginMetaManager;
+import org.codehaus.groovy.grails.support.MockApplicationContext;
 import org.codehaus.groovy.runtime.InvokerInvocationException;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.StaticMessageSource;
+import org.springframework.core.io.Resource;
 import org.springframework.mock.web.MockServletContext;
 import org.springframework.orm.hibernate3.SessionHolder;
 import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
-import org.springframework.core.io.Resource;
 
 import java.util.List;
 
@@ -60,19 +60,25 @@ public class HibernateCriteriaBuilderTests extends
                 "\tdriverClassName = \"org.hsqldb.jdbcDriver\"\n" +
                 "\tusername = \"sa\"\n" +
                 "\tpassword = \"\"\n" +
-                "}", "DataSource");        
+                "}", "DataSource");
+         Class groovyClass2 = cl.parseClass("public class CriteriaBuilderTestClass2 {\n" +
+                "\n" +
+                "\tLong id; \n" +
+                "\tLong version; \n" +
+                "\tString firstName; \n" +                
+                "}");
         Class groovyClass = cl.parseClass("public class CriteriaBuilderTestClass {\n" +
                 "\n" +
                 "\tLong id; \n" +
                 "\tLong version; \n" +
-                "\tdef relatesToMany = [children:CriteriaBuilderTestClass]; \n" +
+                "\tdef hasMany = [children:CriteriaBuilderTestClass, children2:CriteriaBuilderTestClass2]; \n" +
                 "\t\n" +
                 "\tString firstName; \n" +
                 "\tString lastName; \n" +
                 "\tInteger age;\n" +
                 "\tSet children;\n" +
+                "\tSet children2;\n" +
                 "\tCriteriaBuilderTestClass parent;\n" +
-
                  "\t\n" +
                 "\tstatic constraints = {\n" +
                 "\t\tfirstName(size:4..15)\n" +
@@ -80,7 +86,8 @@ public class HibernateCriteriaBuilderTests extends
                 "\t\tparent(nullable:true)\n" +
                 "\t}\n" +
                 "}");
-        grailsApplication = new DefaultGrailsApplication(new Class[]{groovyClass},cl);
+
+        grailsApplication = new DefaultGrailsApplication(new Class[]{groovyClass,groovyClass2},cl);
 
 
 
@@ -104,7 +111,7 @@ public class HibernateCriteriaBuilderTests extends
 
 
         super.onSetUp();
-    }		
+    }
 
     private Object parse(String groovy,String testClassName, String criteriaClassName, boolean uniqueResult) throws Exception {
 
@@ -134,11 +141,11 @@ public class HibernateCriteriaBuilderTests extends
 
 
     }
-    
+
     private Object parse(String groovy,String testClassName, String criteriaClassName) throws Exception {
         return parse(groovy,testClassName,criteriaClassName,false);
     }
-    
+
     public void testWithGString() throws Exception {
         GrailsDomainClass domainClass = (GrailsDomainClass) this.grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE,
             "CriteriaBuilderTestClass");
@@ -188,7 +195,6 @@ public class HibernateCriteriaBuilderTests extends
         obj3.setProperty( "parent", obj) ;
         obj3.invokeMethod("save", null);
 
-        Proxy p = null;
         List results = (List)parse(	".list { " +
                     "children { " +
                         "eq('firstName','bart');" +
@@ -197,6 +203,49 @@ public class HibernateCriteriaBuilderTests extends
         assertEquals(1 , results.size());
 
 
+    }
+
+    public void testNestedAssociations() throws Exception {
+        GrailsDomainClass domainClass =  (GrailsDomainClass) this.grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE,
+            "CriteriaBuilderTestClass");
+
+        assertNotNull(domainClass);
+
+        GroovyObject obj = (GroovyObject)domainClass.newInstance();
+        obj.setProperty( "firstName", "homer" );
+        obj.setProperty( "lastName", "simpson" );
+        obj.setProperty( "age", new Integer(45));
+        obj.invokeMethod("save", null);
+
+        GroovyObject obj2 = (GroovyObject)domainClass.newInstance();
+        obj2.setProperty( "firstName", "bart" );
+        obj2.setProperty( "lastName", "simpson" );
+        obj2.setProperty( "age", new Integer(11));
+        obj2.setProperty( "parent", obj) ;
+        obj2.invokeMethod("save", null);
+
+        GroovyObject obj3 = (GroovyObject)domainClass.newInstance();
+        obj3.setProperty( "firstName", "lisa" );
+        obj3.setProperty( "lastName", "simpson" );
+        obj3.setProperty( "age", new Integer(9));
+        obj3.setProperty( "parent", obj2) ;
+        obj3.invokeMethod("save", null);
+
+        GroovyObject obj4 = (GroovyObject)domainClass.newInstance();
+        obj4.setProperty( "firstName", "maggie" );
+        obj4.setProperty( "lastName", "simpson" );
+        obj4.setProperty( "age", new Integer(9));
+        obj4.invokeMethod("save", null);
+
+        List results = (List)parse(	".list { " +
+                    "children { " +
+                        "eq('firstName','bart');" +
+                         "children { " +
+                              "eq('firstName','lisa');" +
+                          "}" +
+                    "}" +
+                "}", "Test1","CriteriaBuilderTestClass");
+        assertEquals(1 , results.size());
     }
 
     public void testUniqueResult() throws Exception {
@@ -212,7 +261,7 @@ public class HibernateCriteriaBuilderTests extends
         obj.setProperty( "age", new Integer(45));
 
         obj.invokeMethod("save", null);
-        
+
 	// check that calling uniqueResult version of constructor
 	// returns a single object
 
@@ -642,7 +691,7 @@ public class HibernateCriteriaBuilderTests extends
                 "}", "Test1","CriteriaBuilderTestClass");
         assertEquals(new Integer(45), (Integer)results.get(0));
    }
-   
+
    public void testProjectionMin() throws Exception {
         GrailsDomainClass domainClass =  (GrailsDomainClass) this.grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE,
             "CriteriaBuilderTestClass");
@@ -671,7 +720,7 @@ public class HibernateCriteriaBuilderTests extends
                 "}", "Test1","CriteriaBuilderTestClass");
         assertEquals(new Integer(35), (Integer)results.get(0));
    }
-   
+
    public void testProjectionRowCount() throws Exception {
         GrailsDomainClass domainClass =  (GrailsDomainClass) this.grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE,
             "CriteriaBuilderTestClass");
@@ -700,7 +749,7 @@ public class HibernateCriteriaBuilderTests extends
                 "}", "Test1","CriteriaBuilderTestClass");
         assertEquals(new Integer(2), (Integer)results.get(0));
    }
-   
+
    public void testProjectionSum() throws Exception {
         GrailsDomainClass domainClass =  (GrailsDomainClass) this.grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE,
             "CriteriaBuilderTestClass");
@@ -729,7 +778,7 @@ public class HibernateCriteriaBuilderTests extends
                 "}", "Test1","CriteriaBuilderTestClass");
         assertEquals(new Integer(80), (Integer)results.get(0));
    }
-   
+
    public void testOrderAsc() throws Exception {
         GrailsDomainClass domainClass =  (GrailsDomainClass) this.grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE,
             "CriteriaBuilderTestClass");
@@ -759,7 +808,7 @@ public class HibernateCriteriaBuilderTests extends
                 "}", "Test1","CriteriaBuilderTestClass");
         System.out.println(results.get(0));
    }
-   
+
    public void testOrderDesc() throws Exception {
         GrailsDomainClass domainClass =  (GrailsDomainClass) this.grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE,
             "CriteriaBuilderTestClass");
@@ -1184,7 +1233,7 @@ public class HibernateCriteriaBuilderTests extends
 
         obj2.invokeMethod("save", null);
 
-        
+
         List results = (List)parse(	"{ " +
                         "'in'('firstName',['fred','donkey']);" +
                 "}", "Test1","CriteriaBuilderTestClass");
@@ -1228,7 +1277,7 @@ public class HibernateCriteriaBuilderTests extends
                 "}", "Test1","CriteriaBuilderTestClass");
 
         assertEquals(1, results.size());
-	
+
         try {
             results = (List)parse(	"{ " +
                     "not{" +

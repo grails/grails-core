@@ -18,12 +18,13 @@ package grails.orm;
 import groovy.lang.*;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil;
-import org.hibernate.Criteria;
-import org.hibernate.FetchMode;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
+import org.hibernate.*;
 import org.hibernate.criterion.*;
+import org.hibernate.engine.SessionFactoryImplementor;
+import org.hibernate.metadata.ClassMetadata;
 import org.hibernate.transform.ResultTransformer;
+import org.hibernate.type.AssociationType;
+import org.hibernate.type.Type;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
@@ -114,6 +115,7 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
 
     private boolean uniqueResult = false;
     private Stack logicalExpressionStack = new Stack();
+    private Stack associationStack = new Stack();
     private boolean participate;
     private boolean scroll;
     private boolean count;
@@ -794,18 +796,38 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
                     return name;
                 }
                 else if(targetBean.isReadableProperty(name.toString())) {
-                    this.criteria.createAlias(name.toString(), name.toString()+ALIAS,CriteriaSpecification.LEFT_JOIN);
-                    this.aliasStack.add(name.toString()+ALIAS);
-                    // the criteria within an association node are grouped with an implicit AND
-                    logicalExpressionStack.push(new LogicalExpression(AND));
-                    invokeClosureNode(args[0]);
-                    aliasStack.remove(aliasStack.size()-1);
-                    LogicalExpression logicalExpression = (LogicalExpression) logicalExpressionStack.pop();
-                    if (!logicalExpression.args.isEmpty()) {
-                        addToCriteria(logicalExpression.toCriterion());
+                    ClassMetadata meta = sessionFactory.getClassMetadata(targetBean.getWrappedClass());
+                    Type type = meta.getPropertyType(name.toString());
+                    if (type.isAssociationType()) {
+                        String otherSideEntityName =
+                                ((AssociationType) type).getAssociatedEntityName((SessionFactoryImplementor) sessionFactory);
+                        Class oldTargetClass = targetClass;
+                        targetClass = sessionFactory.getClassMetadata(otherSideEntityName).getMappedClass(EntityMode.POJO);
+                        BeanWrapper oldTargetBean = targetBean;
+                        targetBean = new BeanWrapperImpl(BeanUtils.instantiateClass(targetClass));
+                        associationStack.push(name.toString());
+                        String newAlias = name.toString() + ALIAS + aliasStack.size();
+                        StringBuffer fullPath = new StringBuffer();
+                        for (Iterator i = associationStack.iterator(); i.hasNext();) {
+                            String propertyName = (String) i.next();
+                            if(fullPath.length() > 0 ) fullPath.append(".");
+                            fullPath.append(propertyName);
+                        }
+                        this.criteria.createAlias(fullPath.toString(), newAlias, CriteriaSpecification.LEFT_JOIN);
+                        this.aliasStack.add(newAlias);
+                        // the criteria within an association node are grouped with an implicit AND
+                        logicalExpressionStack.push(new LogicalExpression(AND));
+                        invokeClosureNode(args[0]);
+                        aliasStack.remove(aliasStack.size() - 1);
+                        LogicalExpression logicalExpression = (LogicalExpression) logicalExpressionStack.pop();
+                        if (!logicalExpression.args.isEmpty()) {
+                            addToCriteria(logicalExpression.toCriterion());
+                        }
+                        associationStack.pop();
+                        targetClass = oldTargetClass;
+                        targetBean = oldTargetBean;
+                        return name;
                     }
-
-                    return name;
                 }
             }
             else if(args.length == 1 && args[0] != null) {
