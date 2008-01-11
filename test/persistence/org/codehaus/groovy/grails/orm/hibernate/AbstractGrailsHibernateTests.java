@@ -21,7 +21,7 @@ import groovy.lang.GroovySystem;
 import groovy.lang.MetaClassRegistry;
 import groovy.util.ConfigObject;
 import groovy.util.ConfigSlurper;
-import junit.framework.TestCase;
+import groovy.util.GroovyTestCase;
 import org.apache.commons.lang.ArrayUtils;
 import org.codehaus.groovy.grails.commons.ApplicationHolder;
 import org.codehaus.groovy.grails.commons.ConfigurationHolder;
@@ -56,7 +56,7 @@ import org.springframework.web.context.WebApplicationContext;
  *         Date: Sep 19, 2006
  *         Time: 7:26:52 AM
  */
-public abstract class AbstractGrailsHibernateTests extends TestCase {
+public abstract class AbstractGrailsHibernateTests extends GroovyTestCase {
 
     /**
      * A GroovyClassLoader instance
