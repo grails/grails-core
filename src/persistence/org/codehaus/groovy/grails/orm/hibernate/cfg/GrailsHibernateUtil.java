@@ -145,9 +145,7 @@ public class GrailsHibernateUtil {
                 GrailsHibernateDomainClass ghdc = new
                         GrailsHibernateDomainClass(persistentClass, sessionFactory, cmd);
 
-                hibernateDomainClassMap.put(persistentClass
-                        .getClass()
-                        .getName(),
+                hibernateDomainClassMap.put(persistentClass.getName(),
                         ghdc);
 
                 dc = (GrailsDomainClass) application.addArtefact(DomainClassArtefactHandler.TYPE, ghdc);
