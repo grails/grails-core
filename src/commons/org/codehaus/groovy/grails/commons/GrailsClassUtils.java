@@ -255,7 +255,13 @@ public class GrailsClassUtils {
      * @return The property name representation
      */
     public static String getPropertyNameRepresentation(String name) {
+        // Strip any package from the name.
+        int pos = name.lastIndexOf('.');
+        if (pos != -1) {
+            name = name.substring(pos + 1);
+        }
 
+        // Check whether the name begins with two upper case letters.
         if(name.length() > 1 && Character.isUpperCase(name.charAt(0)) && Character.isUpperCase(name.charAt(1)))  {
             return name;
         }

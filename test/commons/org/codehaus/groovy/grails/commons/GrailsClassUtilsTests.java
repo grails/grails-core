@@ -26,6 +26,7 @@ public class GrailsClassUtilsTests extends TestCase {
 
     public void testGetClassNameRepresentation() {
         assertEquals("MyClass", GrailsClassUtils.getClassNameRepresentation("my-class"));
+        assertEquals("MyClass", GrailsClassUtils.getClassNameRepresentation("MyClass"));
     }
 
     public void testGetNaturalName() throws Exception
@@ -38,13 +39,14 @@ public class GrailsClassUtilsTests extends TestCase {
 
 
     public void testGetLogicalName() {
-
         assertEquals("Test", GrailsClassUtils.getLogicalName("TestController", "Controller"));
+        assertEquals("Test", GrailsClassUtils.getLogicalName("org.music.TestController", "Controller"));
     }
 
     public void testGetLogicalPropertyName() {
         assertEquals("myFunky", GrailsClassUtils.getLogicalPropertyName("MyFunkyController", "Controller"));
         assertEquals("HTML", GrailsClassUtils.getLogicalPropertyName("HTMLCodec", "Codec"));
+        assertEquals("payRoll", GrailsClassUtils.getLogicalPropertyName("org.something.PayRollController", "Controller"));
     }
 
     public void testBooleanMatchesboolean()
