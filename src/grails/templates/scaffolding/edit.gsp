@@ -32,11 +32,11 @@
                                 cp = domainClass.constrainedProperties[p.name]
                                 display = (cp ? cp.display : true)        
                                 if(display) { %>
-                            <tr class='prop'>
-                                <td valign='top' class='name'>
-                                    <label for='${p.name}'>${p.naturalName}:</label>
+                            <tr class="prop">
+                                <td valign="top" class="name">
+                                    <label for="${p.name}">${p.naturalName}:</label>
                                 </td>
-                                <td valign='top' class='value \${hasErrors(bean:${domainClass.propertyName},field:'${p.name}','errors')}'>
+                                <td valign="top" class="value \${hasErrors(bean:${domainClass.propertyName},field:'${p.name}','errors')}">
                                     ${renderEditor(p)}
                                 </td>
                             </tr> 
