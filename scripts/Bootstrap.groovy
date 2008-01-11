@@ -48,8 +48,10 @@ target(loadApp:"Loads the Grails application object") {
 	ApplicationHolder.application = grailsApp
 	
 	packageApp()
-	
-	grailsApp.initialise()	 	
+    pluginManager = PluginManagerHolder.pluginManager
+	grailsApp.initialise()
+    pluginManager.application = grailsApp
+    pluginManager.doArtefactConfiguration()
 	event("AppLoadEnd", ["Loading Grails Application"])	
 }                                      
 target(configureApp:"Configures the Grails application and builds an ApplicationContext") {
