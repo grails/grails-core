@@ -17,9 +17,12 @@ package org.codehaus.groovy.grails.orm.hibernate.validation;
 import org.codehaus.groovy.grails.validation.AbstractConstraint;
 import org.springframework.orm.hibernate3.HibernateTemplate;
 import org.springframework.validation.Errors;
+import org.springframework.context.ApplicationContext;
+import org.springframework.beans.BeansException;
+import org.hibernate.SessionFactory;
 
 /**
- * Class description here.
+ * Constraints that require access to the HibernateTemplate should subclass this class
  *
  * @author Graeme Rocher
  * @since 0.4
@@ -29,20 +32,26 @@ import org.springframework.validation.Errors;
  */
 abstract class AbstractPersistentConstraint extends AbstractConstraint implements PersistentConstraint {
 
-    protected HibernateTemplate constraintHibernateTemplate;
+    private ApplicationContext applicationContext;
 
-    /* (non-Javadoc)
-     * @see org.codehaus.groovy.grails.orm.hibernate.validation.PersistentConstraint#setHibernateTemplate(org.springframework.orm.hibernate3.HibernateTemplate)
-     */
-    public void setHibernateTemplate(HibernateTemplate template) {
-        this.constraintHibernateTemplate = template;
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        this.applicationContext = applicationContext;
+    }
+
+    public HibernateTemplate getHibernateTemplate() {
+        if(this.applicationContext == null) throw new IllegalStateException("AbstractPersistentConstraint requires an instance of ApplicationContext, but it was null");
+
+        if(applicationContext.containsBean("sessionFactory")) {
+            return new HibernateTemplate((SessionFactory) applicationContext.getBean("sessionFactory"),true);
+        }
+        return null;
     }
 
     /* (non-Javadoc)
      * @see org.codehaus.groovy.grails.validation.ConstrainedProperty.AbstractConstraint#validate(java.lang.Object, org.springframework.validation.Errors)
      */
     public void validate(Object target, Object propertyValue, Errors errors) {
-        if(constraintHibernateTemplate == null)
+        if(getHibernateTemplate() == null)
             throw new IllegalStateException("PersistentConstraint requires an instance of HibernateTemplate.");
 
         super.validate(target, propertyValue, errors);

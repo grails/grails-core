@@ -173,6 +173,7 @@ public class ConstrainedProperty   {
     private boolean password; // whether the property is a password
     private Map attributes = Collections.EMPTY_MAP; // a map of attributes of property
     protected MessageSource messageSource;
+    private Map metaConstraints = new HashMap();
 
 
     /**
@@ -220,6 +221,16 @@ public class ConstrainedProperty   {
     public Collection getAppliedConstraints() {
         return appliedConstraints.values();
     }
+
+    /**
+     * Obtains an applied constraint by name
+     * @param name The name of the constraint
+     * @return The applied constraint
+     */
+    public Constraint getAppliedConstraint(String name) {
+        return (Constraint)appliedConstraints.get(name);
+    }
+
 
     /**
      * @return Returns true if the specified constraint name is being applied to this property
@@ -1019,6 +1030,25 @@ public class ConstrainedProperty   {
                         .append( this.propertyType )
                         .append( this.appliedConstraints )
                         .toString();
+    }
+
+    /**
+     * Adds a meta constraints which is a non-validating informational constraint
+     *
+     * @param name The name of the constraint
+     * @param value The value
+     */
+    public void addMetaConstraint(String name, Object value) {
+        this.metaConstraints.put(name, value);
+    }
+
+    /**
+     * Obtains the value of the named meta constraint
+     * @param name The name of the constraint
+     * @return The value
+     */
+    public Object getMetaConstraintValue(String name) {
+        return this.metaConstraints.get(name);
     }
 }
 

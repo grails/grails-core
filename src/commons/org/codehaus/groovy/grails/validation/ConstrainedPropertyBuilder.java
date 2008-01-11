@@ -14,18 +14,18 @@
  */ 
 package org.codehaus.groovy.grails.validation;
 
+import grails.util.GrailsUtil;
+import groovy.lang.MissingMethodException;
+import groovy.util.BuilderSupport;
+import org.springframework.beans.BeanWrapper;
+import org.springframework.beans.BeanWrapperImpl;
+import org.springframework.beans.InvalidPropertyException;
+
 import java.beans.PropertyDescriptor;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import org.springframework.beans.BeanWrapper;
-import org.springframework.beans.BeanWrapperImpl;
-import org.springframework.beans.InvalidPropertyException;
-
-import groovy.lang.MissingMethodException;
-import groovy.util.BuilderSupport;
-import grails.util.GrailsUtil;
 
 /**
  * Builder used as a delegate within the "constraints" closure of GrailsDomainClass instances 
@@ -71,6 +71,11 @@ public class ConstrainedPropertyBuilder extends BuilderSupport {
                     if( ConstrainedProperty.hasRegisteredConstraint( constraintName ) ) {
                         // constraint is registered but doesn't support this property's type
                         GrailsUtil.warn( "Property [" + cp.getPropertyName() + "] of domain class " + this.target.getClass().getName() + " has type [" + cp.getPropertyType().getName() + "] and doesn't support constraint [" + constraintName + "]. This constraint will not be checked during validation." );
+                    }
+                    else {
+                        // in the case where the constraint is not supported we still retain meta data
+                        // about the constraint in case its needed for other things
+                        cp.addMetaConstraint(constraintName, attributes.get(constraintName));
                     }
                 }
 			}				

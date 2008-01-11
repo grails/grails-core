@@ -44,7 +44,7 @@ class CustomCascadeMappingTwo {
                     .addToFoos(name:"foo2")
                     .save(flush:true)
         }
-
+        one.foos.clear()
        one.addToBars(name:"bar1")
             .addToBars(name:"bar2")
             .save(flush:true)

@@ -15,18 +15,21 @@
 package org.codehaus.groovy.grails.orm.hibernate.validation;
 
 import org.codehaus.groovy.grails.validation.Constraint;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.orm.hibernate3.HibernateTemplate;
+
 /**
  * Interface that defines a persistent constraint that evaluates the database.
  * 
  * @author Graeme Rocher
  * @since 10-Nov-2005
  */
-public interface PersistentConstraint extends Constraint {
+public interface PersistentConstraint extends Constraint, ApplicationContextAware {
 
-	/**
-	 * Sets the hibernate template to use for the persistent constraint
-	 * @param template
-	 */
-	void setHibernateTemplate(HibernateTemplate template);
+    /**
+     * Obtains the HibernateTemplate
+     *
+     * @return The HibernateTemplate instance
+     */
+    HibernateTemplate getHibernateTemplate();
 }

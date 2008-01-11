@@ -14,11 +14,10 @@
  */
 package org.codehaus.groovy.grails.orm.hibernate.validation;
 
-import org.codehaus.groovy.grails.validation.ConstraintFactory;
-import org.codehaus.groovy.grails.validation.Constraint;
 import org.codehaus.groovy.grails.exceptions.GrailsDomainException;
-import org.hibernate.SessionFactory;
-import org.springframework.orm.hibernate3.HibernateTemplate;
+import org.codehaus.groovy.grails.validation.Constraint;
+import org.codehaus.groovy.grails.validation.ConstraintFactory;
+import org.springframework.context.ApplicationContext;
 
 /**
  * A factory that creates PersistentConstraint instances ensuring that dependencies are provided
@@ -30,23 +29,23 @@ import org.springframework.orm.hibernate3.HibernateTemplate;
  *        Time: 3:04:34 PM
  */
 public class PersistentConstraintFactory implements ConstraintFactory {
-    private SessionFactory sessionFactory;
     private Class constraintClass;
+    private ApplicationContext applicationContext;
 
 
-    public PersistentConstraintFactory(SessionFactory sf, Class persistentConstraint) {
-        if(sf == null) throw new IllegalArgumentException("Argument [sessionFactory] cannot be null");
+    public PersistentConstraintFactory(ApplicationContext applicationContext, Class persistentConstraint) {
+        if(applicationContext == null) throw new IllegalArgumentException("Argument [applicationContext] cannot be null");
         if(persistentConstraint == null || !PersistentConstraint.class.isAssignableFrom(persistentConstraint))
             throw new IllegalArgumentException("Argument [persistentConstraint] must be an instance of " + PersistentConstraint.class);
 
-        this.sessionFactory = sf;
+        this.applicationContext = applicationContext;
         this.constraintClass = persistentConstraint;
     }
 
     public Constraint newInstance() {
         try {
             PersistentConstraint instance = (PersistentConstraint)constraintClass.newInstance();
-            instance.setHibernateTemplate(new HibernateTemplate(sessionFactory,false));
+            instance.setApplicationContext(applicationContext);
             return instance;
         } catch (InstantiationException e) {
             throw new GrailsDomainException("Error instantiating constraint ["+constraintClass+"] during validation: " + e.getMessage(),e );

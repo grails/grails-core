@@ -14,14 +14,17 @@
  */
 package org.codehaus.groovy.grails.orm.hibernate.validation;
 
-import org.springframework.validation.Errors;
-import org.springframework.orm.hibernate3.HibernateCallback;
-import org.codehaus.groovy.runtime.InvokerHelper;
-import org.codehaus.groovy.grails.commons.*;
-import org.hibernate.*;
-import org.hibernate.criterion.Restrictions;
-
 import groovy.lang.GString;
+import org.codehaus.groovy.grails.commons.GrailsClassUtils;
+import org.codehaus.groovy.runtime.InvokerHelper;
+import org.hibernate.Criteria;
+import org.hibernate.FlushMode;
+import org.hibernate.HibernateException;
+import org.hibernate.Session;
+import org.hibernate.criterion.Restrictions;
+import org.springframework.orm.hibernate3.HibernateCallback;
+import org.springframework.orm.hibernate3.HibernateTemplate;
+import org.springframework.validation.Errors;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -55,6 +58,13 @@ public class UniqueConstraint extends AbstractPersistentConstraint {
      */
     public boolean isUnique() {
         return unique;
+    }
+
+    /**
+     * @return Whether the property is unique within a group
+     */
+    public boolean isUniqueWithinGroup() {
+        return uniquenessGroup.size() > 0;
     }
 
     /* (non-Javadoc)
@@ -104,7 +114,9 @@ public class UniqueConstraint extends AbstractPersistentConstraint {
 
         if(unique) {
         	final Object id = InvokerHelper.invokeMethod(target, "ident",null);
-            List results = this.constraintHibernateTemplate.executeFind( new HibernateCallback() {
+            HibernateTemplate hibernateTemplate = getHibernateTemplate();
+            if(hibernateTemplate == null) throw new IllegalStateException("Unable use [unique] constraint, no Hibernate SessionFactory found!");
+            List results = hibernateTemplate.executeFind( new HibernateCallback() {
                 public Object doInHibernate(Session session) throws HibernateException {
                     session.setFlushMode(FlushMode.MANUAL);
 

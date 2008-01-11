@@ -347,8 +347,6 @@ public class BeanBuilder extends GroovyObjectSupport {
         else if(BEANS.equals(name) && args.length == 1 && args[0] instanceof Closure) {
             return beans((Closure)args[0]);
         }
-        if(args.length == 0)
-			throw new MissingMethodException(name, getClass(),args);
 		
 		if(REF.equals(name)) {
 			String refName;
@@ -371,11 +369,11 @@ public class BeanBuilder extends GroovyObjectSupport {
 			return new RuntimeBeanReference(refName, parentRef);
 		}
 		
-		if(args[0] instanceof Closure) {
+		if(args.length > 0 && args[0] instanceof Closure) {
             // abstract bean definition
             return invokeBeanDefiningMethod(name, args);
 		}
-		else if(args[0] instanceof Class || args[0] instanceof RuntimeBeanReference || args[0] instanceof Map) {
+		else if(args.length > 0 && args[0] instanceof Class || args.length > 0 && args[0] instanceof RuntimeBeanReference || args.length > 0 &&args[0] instanceof Map) {
 			return invokeBeanDefiningMethod(name, args);			
 		}
 		else if (args.length > 1 && args[args.length -1] instanceof Closure) {
@@ -385,7 +383,8 @@ public class BeanBuilder extends GroovyObjectSupport {
         MetaClass mc = DefaultGroovyMethods.getMetaClass(ctx);
         if(!mc.respondsTo(ctx, name, args).isEmpty()){
             return mc.invokeMethod(ctx,name, args);
-        }        
+        }
+        
         return this;
 	}
 

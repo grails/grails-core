@@ -62,7 +62,10 @@ class HibernateGrailsPlugin {
     def hibProps = [:]
     def hibConfigClass
 
-    def doWithSpring = {
+    def doWithSpring = {        
+        def factory = new PersistentConstraintFactory(getSpringConfig().getUnrefreshedApplicationContext(), UniqueConstraint.class)
+        ConstrainedProperty.registerNewConstraint(UniqueConstraint.UNIQUE_CONSTRAINT, factory);
+
         application.domainClasses.each {dc ->
             "${dc.fullName}Validator"(HibernateDomainClassValidator) {
                 messageSource = ref("messageSource")
@@ -155,12 +158,6 @@ class HibernateGrailsPlugin {
 
     }
 
-    def doWithApplicationContext = {ctx ->
-        if (ctx.containsBean('sessionFactory')) {
-            def factory = new PersistentConstraintFactory(ctx.sessionFactory, UniqueConstraint.class)
-            ConstrainedProperty.registerNewConstraint(UniqueConstraint.UNIQUE_CONSTRAINT, factory);
-        }
-    }
 
     def doWithDynamicMethods = {ctx ->
 
