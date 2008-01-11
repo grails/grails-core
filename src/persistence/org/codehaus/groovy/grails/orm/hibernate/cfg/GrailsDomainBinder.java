@@ -22,6 +22,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.*;
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
+import org.codehaus.groovy.grails.orm.hibernate.validation.UniqueConstraint;
 import org.hibernate.FetchMode;
 import org.hibernate.MappingException;
 import org.hibernate.cfg.ImprovedNamingStrategy;
@@ -1721,6 +1722,21 @@ w	 * Binds a simple value to the Hibernate metamodel. A simple value is
                 }
             }
 		}
+
+        ConstrainedProperty cp = getConstrainedProperty(grailsProp);
+        if(cp!=null&&cp.hasAppliedConstraint(UniqueConstraint.UNIQUE_CONSTRAINT)) {
+            UniqueConstraint uc = (UniqueConstraint)cp.getAppliedConstraint(UniqueConstraint.UNIQUE_CONSTRAINT);
+            if(uc != null && uc.isUnique() && !uc.isUniqueWithinGroup()) {
+                column.setUnique(true);
+            }
+        }
+        else {
+            Object val =  cp != null ? cp.getMetaConstraintValue(UniqueConstraint.UNIQUE_CONSTRAINT) : null;
+            if(val instanceof Boolean) {
+                column.setUnique(((Boolean)val).booleanValue());
+            }
+        }
+
 
         bindIndex(grailsProp, column, table);
 
