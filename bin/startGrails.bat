@@ -70,28 +70,17 @@ if "%GRAILS_HOME:~-1%"=="\" SET GRAILS_HOME=%GRAILS_HOME:~0,-1%
 
 @rem Slurp the command line arguments.  
 set CMD_LINE_ARGS=
-set SERVER_PORT=
-set SERVER_PORT_HTTPS=
-set GRAILS_ENV=
 set CP=
+set GRAILS_OPTIONS=
 
 :win9xME_args_slurp
 if "x%~1" == "x" goto execute
-if "%~1" == "-Dserver.port" (
-	set SERVER_PORT=%~1=%~2
+set CURR_ARG=%~1
+if "%CURR_ARG:~0,2%" == "-D" (
+	set GRAILS_OPTIONS=%GRAILS_OPTIONS% %~1=%~2
 	shift
 	shift	
 	goto win9xME_args_slurp
-) else if "%~1" == "-Dserver.port.https" (
-	set SERVER_PORT_HTTPS=%~1=%~2
-	shift
-	shift
-	goto win9xME_args_slurp
- ) else if "%~1" == "-Dgrails.env" (
-       set GRAILS_ENV=%~1=%~2
-       shift
-       shift
-       goto win9xME_args_slurp
 ) else (
 	if "x%~1" == "x-cp" (
 		set CP=%~2
@@ -153,7 +142,7 @@ set JAVA_OPTS=%JAVA_OPTS% -Dgroovy.starter.conf="%STARTER_CONF%"
 if exist "%USERPROFILE%/.groovy/postinit.bat" call "%USERPROFILE%/.groovy/postinit.bat"
 
 @rem Execute Groovy
-CALL "%JAVA_EXE%" %JAVA_OPTS% %SERVER_PORT% %SERVER_PORT_HTTPS% %GRAILS_ENV% -classpath "%STARTER_CLASSPATH%" %STARTER_MAIN_CLASS% --main %CLASS% --conf "%STARTER_CONF%" --classpath "%CP%" "%CMD_LINE_ARGS%"
+CALL "%JAVA_EXE%" %JAVA_OPTS% %GRAILS_OPTIONS% -classpath "%STARTER_CLASSPATH%" %STARTER_MAIN_CLASS% --main %CLASS% --conf "%STARTER_CONF%" --classpath "%CP%" "%CMD_LINE_ARGS%"
 :end
 @rem End local scope for the variables with windows NT shell
 if "%OS%"=="Windows_NT" endlocal
