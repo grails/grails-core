@@ -552,7 +552,7 @@ getJarFiles = {->
 
 getExtraDependencies = {
 	def jarFiles =[]
-	if(config.grails.compiler.dependencies) {        
+	if(config?.grails?.compiler?.dependencies) {        
         def extraDeps = Ant.fileScanner(config.grails.compiler.dependencies)
 		for(jar in extraDeps) {
             jarFiles << new FileSystemResource(jar)
