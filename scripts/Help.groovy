@@ -59,15 +59,15 @@ boolean shouldGenerateHelp(File script) {
 target ( 'default' : "Prints out the help for each script") {
 	Ant.mkdir(dir:grailsTmp)    	
 	def scripts = []   
-    resolveResources("file:${grailsHome}/scripts/**.groovy").each { scripts << it.file }	
-	resolveResources("file:${basedir}/scripts/*.groovy").each { scripts << it.file }		
+    resolveResources("file:${grailsHome}/scripts/**.groovy").each { if (!it.file.name.startsWith('_')) scripts << it.file }
+	resolveResources("file:${basedir}/scripts/*.groovy").each { if (!it.file.name.startsWith('_')) scripts << it.file }
 	
 	if(new File("${basedir}/plugins").exists()) {	
-		resolveResources("file:${basedir}/plugins/*/scripts/*.groovy").each { scripts << it.file }  
+		resolveResources("file:${basedir}/plugins/*/scripts/*.groovy").each { if (!it.file.name.startsWith('_')) scripts << it.file }
 	}
 
 	if(new File("${userHome}/.grails/scripts/").exists()) {
-		resolveResources("file:${userHome}/.grails/scripts/*.groovy").each { scripts << it.file }
+		resolveResources("file:${userHome}/.grails/scripts/*.groovy").each { if (!it.file.name.startsWith('_')) scripts << it.file }
 	}
         
 	def helpText = ""
