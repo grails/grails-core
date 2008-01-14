@@ -18,6 +18,11 @@ class Book {
         releaseDate(nullable:true)
     }
 }
+class User {
+    Long id
+    Long version
+    String firstName
+}
 '''
     }
 
@@ -30,6 +35,19 @@ class Book {
         assert bookClass.findByReleaseDate(null)
         assert bookClass.findByTitleAndReleaseDate("The Stand", null)
 
+    }
+
+    void testFindByIsNotNull() {
+        def userClass = ga.getDomainClass("User").clazz
+
+        userClass.newInstance(firstName:"Bob").save()
+        userClass.newInstance(firstName:"Jerry").save()
+        userClass.newInstance(firstName:"Fred").save(flush:true)
+
+        def users = userClass.findAllByFirstNameIsNotNull()
+        users = userClass.findAllByFirstNameIsNotNull()
+
+        assertEquals 3, users.size()
     }
 
 }

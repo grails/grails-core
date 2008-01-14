@@ -358,7 +358,8 @@ public abstract class AbstractClausedStaticPersistentMethod extends
 	protected Object doInvokeInternal(final Class clazz, String methodName,
 			Object[] arguments) {
 		List expressions = new ArrayList();
-		Matcher match = super.getPattern().matcher( methodName );
+        if(arguments == null) arguments = new Object[0];
+        Matcher match = super.getPattern().matcher( methodName );
 		// find match
 		match.find();
 
