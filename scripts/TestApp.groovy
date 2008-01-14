@@ -144,7 +144,7 @@ target(compileTests: "Compiles the test cases") {
 }
 
 target(produceReports: "Outputs aggregated xml and html reports") {
-    Ant.junitreport {
+    Ant.junitreport(todir: "${testDir}") {
         fileset(dir: testDir) {
             include(name: "TEST-*.xml")
         }
