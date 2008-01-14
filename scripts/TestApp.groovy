@@ -325,8 +325,8 @@ target(runIntegrationTests: "Runs Grails' tests under the test/integration direc
                     if (name.endsWith("Controller")) {
                         webRequest.controllerName = GCU.getLogicalPropertyName(name, "Controller")
                     }
-                    def template = new TransactionTemplate(appCtx.transactionManager)
-                    template.execute( { TransactionStatus status ->
+
+					def callable = { status ->
                         def result = invocation()
                         // don't flush the session if there are errors
                         if (result.errorCount() > 0) {
@@ -335,9 +335,17 @@ target(runIntegrationTests: "Runs Grails' tests under the test/integration direc
                         else {
                             interceptor?.flush()
                         }
-                        status.setRollbackOnly()
-                    } as TransactionCallback )
-
+                        status?.setRollbackOnly()
+                    }
+					if(test.isTransactional()) {
+						println "RUNNING TRANSACTIONAL TEST"						
+	                    def template = new TransactionTemplate(appCtx.transactionManager)						
+                    	template.execute( callable as TransactionCallback )						
+					}
+					else {
+						println "RUNNING NON-TRANSACTIONAL TEST"
+						callable.call()
+					}
                     RequestContextHolder.setRequestAttributes(null);
                 }
                 def end = new Date()

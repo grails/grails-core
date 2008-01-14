@@ -38,9 +38,11 @@ import java.util.List;
 public class GrailsTestSuite extends TestSuite {
 
     private static final String CLEANING_ORDER_PROPERTY = "cleaningOrder";
+    private static final String TRANSACTIONAL = "transactional";
 
-	private ApplicationContext applicationContext = null;
+    private ApplicationContext applicationContext = null;
     private List cleaningOrder;
+    private Class testClass;
 
     public GrailsTestSuite(ApplicationContext applicationContext, Class clazz) {
 		super(clazz);
@@ -49,8 +51,9 @@ public class GrailsTestSuite extends TestSuite {
         Object order = GrailsClassUtils.getStaticPropertyValue( clazz, CLEANING_ORDER_PROPERTY );
         if( order != null && List.class.isAssignableFrom( order.getClass())) {
             cleaningOrder = (List) order;
-        } 
-	}
+        }
+        this.testClass = clazz;
+    }
 
 	public void runTest(Test test, TestResult result) {
         // Auto-wire the test
@@ -71,5 +74,10 @@ public class GrailsTestSuite extends TestSuite {
 
     public List getCleaningOrder() {
         return (cleaningOrder != null) ? cleaningOrder : new ArrayList();
+    }
+
+    public boolean isTransactional() {
+        Object val = GrailsClassUtils.getPropertyValueOfNewInstance(testClass, TRANSACTIONAL);
+        return !(val instanceof Boolean) || ((Boolean) val).booleanValue();
     }
 }

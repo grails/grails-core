@@ -108,6 +108,30 @@ public class GrailsClassUtils {
         return getPropertyOrStaticPropertyOrFieldValue(instance, propertyName);
     }
 
+    /**
+     * Returns the value of the specified property and type from an instance of the specified Grails class
+     *
+     * @param clazz The name of the class which contains the property
+     * @param propertyName The property name
+     *
+     * @return The value of the property or null if none exists
+     */
+    public static Object getPropertyValueOfNewInstance(Class clazz, String propertyName) {
+        // validate
+        if(clazz == null || StringUtils.isBlank(propertyName))
+            return null;
+
+        Object instance = null;
+        try {
+            instance = BeanUtils.instantiateClass(clazz);
+        } catch (BeanInstantiationException e) {
+            return null;
+        }
+
+
+        return getPropertyOrStaticPropertyOrFieldValue(instance, propertyName);
+    }
+
 
     /**
      * Retrieves a PropertyDescriptor for the specified instance and property value
