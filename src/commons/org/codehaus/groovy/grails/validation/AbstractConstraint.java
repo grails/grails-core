@@ -171,9 +171,10 @@ public abstract class AbstractConstraint implements Constraint {
 
     protected String getDefaultMessage(String code, Object[] args) {
         String defaultMessage;
+
         try {
             if(messageSource != null)
-                defaultMessage = messageSource.getMessage(code,args, Locale.getDefault());
+                defaultMessage = messageSource.getMessage(code,null, Locale.getDefault());
             else
                 defaultMessage = (String)ConstrainedProperty.DEFAULT_MESSAGES.get(code);
         }
