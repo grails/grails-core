@@ -87,11 +87,21 @@ target (war: "The implementation target") {
 			fileset(dir:"${basedir}/grails-app", includes:"views/**")
 		}
 		Ant.copy(todir:"${stagingDir}/WEB-INF/classes") {
-            fileset(dir:classesDirPath)
+            fileset(dir:classesDirPath) {
+				exclude(name:"hibernate")
+				exclude(name:"spring")	
+				exclude(name:"hibernate/*")
+				exclude(name:"spring/*")
+			}
         }
 
         Ant.copy(todir:"${stagingDir}/WEB-INF/classes", failonerror:false) {
-            fileset(dir:"${basedir}/grails-app/conf", includes:"**", excludes:"*.groovy, log4j*, hibernate, spring")
+            fileset(dir:"${basedir}/grails-app/conf") {
+				exclude(name:"*.groovy")
+				exclude(name:"log4j.*")
+				exclude(name:"**/hibernate/**")
+				exclude(name:"**/spring/**")
+			}
             fileset(dir:"${basedir}/grails-app/conf/hibernate", includes:"**/**")
             fileset(dir:"${basedir}/src/java") {
                 include(name:"**/**")
@@ -134,7 +144,6 @@ target (war: "The implementation target") {
 			}
 		}                 
 		Ant.copy(file:webXmlFile.absolutePath, tofile:"${stagingDir}/WEB-INF/web.xml")
-		Ant.copy(file:log4jFile.absolutePath, tofile:"${stagingDir}/WEB-INF/log4j.properties")
         Ant.copy(todir:"${stagingDir}/WEB-INF/lib", flatten:true, failonerror:false) {
 			fileset(dir:"${basedir}/plugins") {
                 include(name:"*/lib/*.jar")
