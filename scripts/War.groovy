@@ -44,6 +44,45 @@ grails prod war
 
 generateLog4jFile = true
 
+
+DEFAULT_DEPS = [
+    "ant.jar",
+    "ant-launcher.jar",
+    "hibernate3.jar",
+    "jdbc2_0-stdext.jar",
+    "jta.jar",
+    "groovy-all-*.jar",
+    "springmodules-sandbox.jar",
+    "standard-${servletVersion}.jar",
+    "jstl-${servletVersion}.jar",
+    "antlr-*.jar",
+    "cglib-*.jar",
+    "dom4j-*.jar",
+    "ehcache-*.jar",
+    "junit-*.jar",
+    "commons-logging-*.jar",
+    "sitemesh-*.jar",
+    "spring-*.jar",
+    "log4j-*.jar",
+    "ognl-*.jar",
+    "hsqldb-*.jar",
+    "commons-lang-*.jar",
+    "commons-collections-*.jar",
+    "commons-beanutils-*.jar",
+    "commons-pool-*.jar",
+    "commons-dbcp-*.jar",
+    "commons-cli-*.jar",
+    "commons-validator-*.jar",
+    "commons-fileupload-*.jar",
+    "commons-io-*.jar",
+    "commons-io-*.jar",
+    "*oro-*.jar",
+    "jaxen-*.jar",
+    "xercesImpl.jar",
+    "xstream-1.2.1.jar",
+    "xpp3_min-1.1.3.4.O.jar"
+]
+
 target (war: "The implementation target") {
 	depends( clean,  packageApp)
 	 
@@ -127,7 +166,8 @@ target (war: "The implementation target") {
 			}
 			else {
 	            fileset(dir:"${grailsHome}/lib") {
-	                for(d in config.grails.war.dependencies) {
+                    def deps = config.grails.war.dependencies ?: DEFAULT_DEPS
+                    for(d in deps) {
 	                    include(name:d)
 	                }
 	                if(antProject.properties."ant.java.version" == "1.5") {
