@@ -41,15 +41,18 @@ public class GrailsFlashScope implements FlashScope {
         current.clear();
         current = (HashMap)next.clone();
         next.clear();
-        reassociateObjectsWithErrors();
+        reassociateObjectsWithErrors(current);
     }
 
-    private void reassociateObjectsWithErrors() {
-        for (Iterator i = current.keySet().iterator(); i.hasNext();) {
+    private void reassociateObjectsWithErrors(Map scope) {
+        for (Iterator i = scope.keySet().iterator(); i.hasNext();) {
             Object key =  i.next();
-            Object value = current.get(key);
+            Object value = scope.get(key);
+            if(value instanceof Map) {
+                reassociateObjectsWithErrors((Map)value);
+            }
             String errorsKey = ERRORS_PREFIX + System.identityHashCode(value);
-            Object errors = current.get(errorsKey);
+            Object errors = scope.get(errorsKey);
             if(value!=null && errors != null) {
                 MetaClass mc = GroovySystem.getMetaClassRegistry().getMetaClass(value.getClass());
                 if(mc.hasProperty(value, ERRORS_PROPERTY)!=null) {
