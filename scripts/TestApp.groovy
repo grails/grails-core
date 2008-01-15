@@ -338,12 +338,10 @@ target(runIntegrationTests: "Runs Grails' tests under the test/integration direc
                         status?.setRollbackOnly()
                     }
 					if(test.isTransactional()) {
-						println "RUNNING TRANSACTIONAL TEST"						
 	                    def template = new TransactionTemplate(appCtx.transactionManager)						
                     	template.execute( callable as TransactionCallback )						
 					}
 					else {
-						println "RUNNING NON-TRANSACTIONAL TEST"
 						callable.call()
 					}
                     RequestContextHolder.setRequestAttributes(null);
