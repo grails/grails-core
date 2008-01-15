@@ -62,7 +62,34 @@ target(configureApp:"Configures the Grails application and builds an Application
         servletContext.setAttribute(ApplicationAttributes.APPLICATION_CONTEXT,appCtx );
         servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, appCtx);
 	}
-}                                                                                  
+}
+
+monitorCallback = {}
+
+target(monitorApp:"Monitors an application for changes using the PluginManager and reloads changes") {
+    long lastModified = classesDir.lastModified()
+    while(true) {
+        sleep(3500)
+        try {
+            pluginManager.checkForChanges()
+
+            lastModified = recompileCheck(lastModified) {
+                compile()
+                ClassLoader contextLoader = Thread.currentThread().getContextClassLoader()
+                classLoader = new URLClassLoader([classesDir.toURL()] as URL[], contextLoader.rootLoader)
+                Thread.currentThread().setContextClassLoader(classLoader)
+                // reload plugins
+                loadPlugins()
+                loadApp()
+                configureApp()
+                monitorCallback()
+            }
+
+        } catch (Exception e) {
+            println e.message
+        }
+    }
+}
 
 target(bootstrap: "The implementation target") {  
 	depends(loadApp, configureApp)

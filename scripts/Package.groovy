@@ -299,3 +299,54 @@ target(packageTemplates: "Packages templates into the app") {
 	
 }
 
+
+// Checks whether the project's sources have changed since the last
+// compilation, and then performs a recompilation if this is the case.
+// Returns the updated 'lastModified' value.
+recompileCheck = { lastModified, callback ->
+    try {
+        def ant = new AntBuilder()
+        ant.taskdef ( 	name : 'groovyc' ,
+                        classname : 'org.codehaus.groovy.grails.compiler.GrailsCompiler' )
+        def grailsDir = resolveResources("file:${basedir}/grails-app/*")
+        def pluginLibs = resolveResources("file:${basedir}/plugins/*/lib")
+        ant.path(id:"grails.classpath",grailsClasspath.curry(pluginLibs, grailsDir))
+
+        ant.groovyc(destdir:classesDirPath,
+                    classpathref:"grails.classpath",
+                    resourcePattern:"file:${basedir}/**/grails-app/**/*.groovy",
+                    projectName:baseName) {
+                    src(path:"${basedir}/src/groovy")
+                    src(path:"${basedir}/grails-app/domain")
+                    src(path:"${basedir}/src/java")
+                    javac(classpathref:"grails.classpath", debug:"yes")
+
+                }
+        ant = null
+    }
+    catch(Exception e) {
+        compilationError = true
+        event("StatusUpdate", ["Error automatically restarting container: ${e.message}"])
+        e.printStackTrace()
+
+    }
+
+    def tmp = classesDir.lastModified()
+    if(lastModified < tmp) {
+
+        // run another compile JIT
+        try {
+            callback()
+        }
+        catch(Exception e) {
+            event("StatusUpdate", ["Error automatically restarting container: ${e.message}"])
+            e.printStackTrace()
+        }
+
+        finally {
+           lastModified = classesDir.lastModified()
+        }
+    }
+
+    return lastModified
+}

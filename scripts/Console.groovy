@@ -38,29 +38,43 @@ target ('default': "Load the Grails interactive Swing console") {
 }            
 
 target(console:"The console implementation target") {
-     
-	rootLoader.addURL(classesDir.toURL())
+
+    classLoader = new URLClassLoader([classesDir.toURL()] as URL[], rootLoader)
+    Thread.currentThread().setContextClassLoader(classLoader)
 	loadApp()
 	configureApp()
-	def b = new Binding()
-	b.ctx = appCtx
-	b.grailsApplication = grailsApp
-	def c = new groovy.ui.Console(grailsApp.classLoader, b)
-	c.beforeExecution = {
-		appCtx.getBeansOfType(PersistenceContextInterceptor).each { k,v ->
-			v.init()
-		}
-	}           
-	c.afterExecution = {
-		appCtx.getBeansOfType(PersistenceContextInterceptor).each { k,v ->
-			v.flush()
-			v.destroy()
-		}
-	}       
-	try {
-        c.run()
-        while(true) { sleep(Long.MAX_VALUE) }
+    createConsole()
+    try {
+        console.run()
+        monitorCallback = {
+            println "Exiting console"
+            console.exit()
+            createConsole()
+            println "Restarting console"
+            console.run()
+        }
+        monitorApp()
+        //while(true) { sleep(Long.MAX_VALUE) }
     } catch (Exception e) {
         event("StatusFinal", ["Error starting console: ${e.message}"])
     }
+}
+
+target(createConsole:"Creates a new console") {
+    def b = new Binding()
+    b.ctx = appCtx
+    b.grailsApplication = grailsApp
+    console = new groovy.ui.Console(grailsApp.classLoader, b)
+    console.beforeExecution = {
+        appCtx.getBeansOfType(PersistenceContextInterceptor).each { k,v ->
+            v.init()
+        }
+    }
+    console.afterExecution = {
+        appCtx.getBeansOfType(PersistenceContextInterceptor).each { k,v ->
+            v.flush()
+            v.destroy()
+        }
+    }
+
 }
