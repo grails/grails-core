@@ -35,8 +35,7 @@ class SavePersistentMethodTests extends AbstractGrailsHibernateTests {
 
         book.title = "Foo"
 
-        assert !book.save()
-        assert !book.save(deepValidate:false)
+        assert book.save()
 
         def author = authorClass.newInstance()        
         author.name = "Bar"
@@ -75,8 +74,8 @@ class SavePersistentMethodTests extends AbstractGrailsHibernateTests {
         assert !author.save()
         author.name = "Foo"
 
-        assert !author.save()
-        assert !author.save(deepValidate:false)
+        assert author.save()
+
 
         def address = addressClass.newInstance()
         author.address = address
@@ -109,7 +108,7 @@ class SaveBook {
     static belongsTo = SaveAuthor
     static constraints = {
        title(blank:false, size:1..255)
-       author(nullable:false)
+       author(nullable:true)
     }
 }
 class SaveAuthor {
@@ -120,7 +119,7 @@ class SaveAuthor {
    Set books = new HashSet()
    static hasMany = [books:SaveBook]
    static constraints = {
-        address(nullable:false)
+        address(nullable:true)
         name(size:1..255, blank:false)
    }
 }
@@ -131,7 +130,7 @@ class SaveAddress {
     String location
     static belongsTo = SaveAuthor
     static constraints = {
-       author(nullable:false)
+       author(nullable:true)
        location(blank:false)
     }
 }

@@ -23,6 +23,10 @@ class Link {
     static belongsTo = Root
 
     Root root
+
+    static constraints = {
+        root(nullable:true)
+    }
 }
 class LinkToA extends Link {
     Long id

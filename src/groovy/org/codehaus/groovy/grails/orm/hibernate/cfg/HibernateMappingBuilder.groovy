@@ -239,6 +239,9 @@ class HibernateMappingBuilder {
                 }
                 column.joinTable = join
             }
+            else if(namedArgs.containsKey('joinTable') && namedArgs.joinTable == false) {
+                column.joinTable = null
+            }
 
             mapping.columns[name] = column
         }

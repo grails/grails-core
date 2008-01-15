@@ -40,6 +40,10 @@ class Route {
 	
 	Airport airport
 	Airport destination
+
+    static constraints = {
+        airport nullable:true
+    }
 }
 '''
 		)

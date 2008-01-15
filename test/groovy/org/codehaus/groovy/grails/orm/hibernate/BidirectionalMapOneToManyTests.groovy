@@ -27,6 +27,10 @@ class Stockpile
   String product
   Float quantity
   StockLocation stockLocation
+
+    static constraints = {
+        stockLocation(nullable:true)
+    }
 }
 '''
     }

@@ -428,7 +428,10 @@ public final class GrailsDomainBinder {
     }
 
     private static boolean shouldCollectionBindWithJoinColumn(GrailsDomainClassProperty property) {
-        return isUnidirectionalOneToMany(property);
+        ColumnConfig cc = getColumnConfig(property);
+        JoinTable jt = cc != null ? cc.getJoinTable() : new JoinTable();
+        
+        return isUnidirectionalOneToMany(property) && jt!=null;
     }
 
 
@@ -818,7 +821,7 @@ public final class GrailsDomainBinder {
      * @return A Mapping object or null
      */
     public static Mapping getMapping(String domainClassName) {
-        return (Mapping)MAPPING_CACHE.get(domainClassName);
+        return (Mapping) MAPPING_CACHE.get(domainClassName);
     }
 
     /**
@@ -1703,8 +1706,13 @@ w	 * Binds a simple value to the Hibernate metamodel. A simple value is
 
                 }
             }
-            column.setNullable(true);
-		} else {
+            if(grailsProp.isManyToMany())
+                column.setNullable(false);
+            else {
+
+                column.setNullable(grailsProp.isOptional());
+            }
+        } else {
             String columnName = getColumnNameForPropertyAndPath(grailsProp, path);
             column.setName(columnName);
 			column.setNullable(grailsProp.isOptional());

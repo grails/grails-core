@@ -18,8 +18,8 @@ class CustomCascadeMappingOne {
     static hasMany = [foos:CustomCascadeMappingTwo, bars:CustomCascadeMappingTwo]
 
     static mapping = {
-        foos cascade:'none'
-        bars cascade:'all'
+        foos cascade:'none', joinTable:'foos'
+        bars cascade:'all', joinTable:'bars'
     }
 }
 

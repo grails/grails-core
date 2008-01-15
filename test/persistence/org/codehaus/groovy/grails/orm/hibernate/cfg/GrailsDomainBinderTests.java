@@ -46,116 +46,124 @@ import java.util.List;
  */
 public class GrailsDomainBinderTests extends TestCase {
     
-    public void testOneToOneBinding() {
-        GroovyClassLoader cl = new GroovyClassLoader();
-        cl.parseClass(
-            "class Species {\n" +
-            "    Long id \n" +
-            "    Long version \n" +
-            "    String name \n" +
-            "} \n" +
-            "class Pet {\n" +
-            "    Long id \n" +
-            "    Long version \n" +
-            "    Species species \n" +
-            "}");
+    private static final String ONE_TO_ONE_CLASSES_DEFINITION = 
+        "class Species {\n" +
+        "    Long id \n" +
+        "    Long version \n" +
+        "    String name \n" +
+        "} \n" +
+        "class Pet {\n" +
+        "    Long id \n" +
+        "    Long version \n" +
+        "    Species species \n" +
+        "}";
 
-        DefaultGrailsDomainConfiguration config = getDomainConfig(cl, 
-                cl.getLoadedClasses());
+    private static final String ONE_TO_MANY_CLASSES_DEFINITION =
+        "class Visit {\n" +
+        "    Long id \n" +
+        "    Long version \n" +
+        "    String description \n" +
+        "} \n" +
+        "class Pet {\n" +
+        "    Long id \n" +
+        "    Long version \n" +
+        "    Set visits \n" +
+        "    static hasMany = [visits:Visit] \n" +
+        "    static mapping = { visits joinTable:false, nullable:false }" +                
+        "}";
+        
+    private static final String MANY_TO_MANY_CLASSES_DEFINITION =
+        "class Specialty {\n" +
+        "    Long id \n" +
+        "    Long version \n" +
+        "    String name \n" +
+        "    Set vets \n" +
+        "    static hasMany = [vets:Vet] \n" +
+        "    static belongsTo = Vet \n" +
+        "} \n" +
+        "class Vet {\n" +
+        "    Long id \n" +
+        "    Long version \n" +
+        "    Set specialities \n" +
+        "    static hasMany = [specialities:Specialty] \n" +
+        "}";
 
-        PersistentClass petClass = config.getClassMapping("Pet");        
-        Iterator fks = petClass.getTable().getForeignKeyIterator();        
-        assertTrue("PET table has a FK", fks.hasNext());
-        if (fks.hasNext()) {
-            ForeignKey fk = (ForeignKey) fks.next();
-            assertEquals("FK references table", "species", fk.getReferencedTable().getName());
-        }
+    public void testOneToOneBindingTables() {
+        DefaultGrailsDomainConfiguration config = getDomainConfig(ONE_TO_ONE_CLASSES_DEFINITION);        
+        assertEquals("Tables created", 2, getTableCount(config));
     }
 
-    public void testOneToManyBinding() {
-        GroovyClassLoader cl = new GroovyClassLoader();
-        cl.parseClass(
-            "class Visit {\n" +
-            "    Long id \n" +
-            "    Long version \n" +
-            "    String description \n" +
-            "} \n" +
-            "class Pet {\n" +
-            "    Long id \n" +
-            "    Long version \n" +
-            "    Set visits \n" +
-            "    static hasMany = [visits:Visit] \n" +
-            "}");
-        DefaultGrailsDomainConfiguration config = getDomainConfig(cl, 
-            cl.getLoadedClasses());
+    public void testOneToOneBindingFk() {
+        DefaultGrailsDomainConfiguration config = getDomainConfig(ONE_TO_ONE_CLASSES_DEFINITION);        
+        assertForeignKey("species", "pet", config);
+    }
 
-        PersistentClass visitClass = config.getClassMapping("Visit");
+    public void testOneToOneBindingFkColumn() {
+        DefaultGrailsDomainConfiguration config = getDomainConfig(ONE_TO_ONE_CLASSES_DEFINITION);
+        assertColumnNotNullable("pet", "species_id", config);
+    }
 
-        Iterator fks = config.getCollectionMapping("Pet.visits").getCollectionTable().getForeignKeyIterator();         
-        assertTrue("VISIT table has a FK", fks.hasNext());
-        if (fks.hasNext()) {
-            ForeignKey fk = (ForeignKey) fks.next();
-            assertEquals("FK references table", "pet", fk.getReferencedTable().getName());
-        }
+    public void testOneToManyBindingTables() {
+        DefaultGrailsDomainConfiguration config = getDomainConfig(ONE_TO_MANY_CLASSES_DEFINITION);        
+        assertEquals("Tables created", 2, getTableCount(config));
+    }
+
+    public void testOneToManyBindingFk() {
+        DefaultGrailsDomainConfiguration config = getDomainConfig(ONE_TO_MANY_CLASSES_DEFINITION);       
+        assertForeignKey("pet", "visit", config);
     }
     
-    public void testManyToManyBinding() {
-        GroovyClassLoader cl = new GroovyClassLoader();
-        cl.parseClass(
-            "class Specialty {\n" +
-            "    Long id \n" +
-            "    Long version \n" +
-            "    String name \n" +
-            "    Set vets \n" +
-            "    static hasMany = [vets:Vet] \n" +
-            "    static belongsTo = Vet \n" +
-            "} \n" +
-            "class Vet {\n" +
-            "    Long id \n" +
-            "    Long version \n" +
-            "    Set specialities \n" +
-            "    static hasMany = [specialities:Specialty] \n" +
-            "}");
-        DefaultGrailsDomainConfiguration config = getDomainConfig(cl, 
-            cl.getLoadedClasses());
-        
-        int totalTables = 0;
-        for (Iterator tableMappings = config.getTableMappings(); tableMappings.hasNext(); ) {
-            totalTables++;
-            Table table = (Table) tableMappings.next();
-            if ("vet_specialty".equals(table.getName())) {
-                int vetSpecialtyFks = 0;
-                for (Iterator fks = table.getForeignKeyIterator(); fks.hasNext(); fks.next() ) {
-                    vetSpecialtyFks++;
-                }
-                assertEquals("VET_SPECIALTY table has FK's", 2, vetSpecialtyFks);
-            }
-        }
-        assertEquals("Number of tables", 3, totalTables);
+/*    public void testOneToManyBindingFkColumn() {
+        DefaultGrailsDomainConfiguration config = getDomainConfig(ONE_TO_MANY_CLASSES_DEFINITION);
+        assertColumnNotNullable("visit", "pet_visits_id", config);
+    }*/
+    
+    public void testManyToManyBindingTables() {
+        DefaultGrailsDomainConfiguration config = getDomainConfig(MANY_TO_MANY_CLASSES_DEFINITION);       
+        assertEquals("Tables created", 3, getTableCount(config));
     }
 
+    public void testManyToManyBindingPk() {
+        DefaultGrailsDomainConfiguration config = getDomainConfig(MANY_TO_MANY_CLASSES_DEFINITION);        
+        Table table = getTableMapping("vet_specialty", config);
+        assertNotNull("VET_SPECIALTY table has a PK", table.getPrimaryKey());
+        assertEquals("VET_SPECIALTY table has a 2 column PK", 2, table.getPrimaryKey().getColumns().size());
+    }
+    
+    public void testManyToManyBindingFk() {
+        DefaultGrailsDomainConfiguration config = getDomainConfig(MANY_TO_MANY_CLASSES_DEFINITION);        
+        assertForeignKey("specialty", "vet_specialty", config);
+        assertForeignKey("vet", "vet_specialty", config);
+    }
+
+    public void testManyToManyBindingFkColumn() {
+        DefaultGrailsDomainConfiguration config = getDomainConfig(MANY_TO_MANY_CLASSES_DEFINITION);        
+        assertColumnNotNullable("vet_specialty", "vets_id", config);
+        assertColumnNotNullable("vet_specialty", "specialities_id", config);
+    }
+    
 	public void testDomainClassBinding() {
 		GroovyClassLoader cl = new GroovyClassLoader();
 		GrailsDomainClass domainClass = new DefaultGrailsDomainClass(
-				cl.parseClass(
-						"public class BinderTestClass {\n" +
-			            "    Long id; \n" +
-			            "    Long version; \n" +
-			            "\n" +
-			            "    String firstName; \n" +
-			            "    String lastName; \n" +
-			            "    String comment; \n" +
-			            "    Integer age;\n" +
-			            "    boolean active = true" +
-			            "\n" +
-			            "    static constraints = {\n" +
-			            "        firstName(nullable:true,size:4..15)\n" +
-			            "        lastName(nullable:false)\n" +
-                        "        age(nullable:true)\n" +
-			            "    }\n" +
-			            "}")
+			cl.parseClass(
+				"public class BinderTestClass {\n" +
+	            "    Long id; \n" +
+	            "    Long version; \n" +
+	            "\n" +
+	            "    String firstName; \n" +
+	            "    String lastName; \n" +
+	            "    String comment; \n" +
+	            "    Integer age;\n" +
+	            "    boolean active = true" +
+	            "\n" +
+	            "    static constraints = {\n" +
+	            "        firstName(nullable:true,size:4..15)\n" +
+	            "        lastName(nullable:false)\n" +
+                "        age(nullable:true)\n" +
+	            "    }\n" +
+	            "}")
 		);
-        DefaultGrailsDomainConfiguration config = getDomainConfig(cl, new Class[]{domainClass.getClazz()});
+        DefaultGrailsDomainConfiguration config = getDomainConfig(cl, cl.getLoadedClasses());
 
         // Test database mappings
         PersistentClass persistentClass = config.getClassMapping("BinderTestClass");
@@ -306,6 +314,12 @@ public class GrailsDomainBinderTests extends TestCase {
         assertColumnPrecisionAndScale(constrainedProperty, 24, Column.DEFAULT_SCALE);
     }
 
+    private DefaultGrailsDomainConfiguration getDomainConfig(String classesDefinition) {
+        GroovyClassLoader cl = new GroovyClassLoader();
+        cl.parseClass(classesDefinition);
+        return getDomainConfig(cl, cl.getLoadedClasses());
+    }
+
     private DefaultGrailsDomainConfiguration getDomainConfig(GroovyClassLoader cl, Class[] classes) {
         GrailsApplication grailsApplication = new DefaultGrailsApplication(
                 classes, cl);
@@ -316,6 +330,43 @@ public class GrailsDomainBinderTests extends TestCase {
         return config;
     }
 
+    private Table getTableMapping(String tablename, DefaultGrailsDomainConfiguration config) {
+        Table result = null;
+        for (Iterator tableMappings = config.getTableMappings(); tableMappings.hasNext(); ) {
+            Table table = (Table) tableMappings.next();
+            if (tablename.equals(table.getName())) {
+                result = table;
+            }
+        }
+        return result;
+    }
+    
+    private int getTableCount(DefaultGrailsDomainConfiguration config) {
+        int count = 0;
+        for (Iterator tables = config.getTableMappings(); tables.hasNext(); tables.next()) {
+            count++;
+        }
+        return count;
+    }
+
+    private void assertForeignKey(String parentTablename, String childTablename, DefaultGrailsDomainConfiguration config) {
+        boolean fkFound = false;
+        Table childTable = getTableMapping(childTablename, config);
+        for (Iterator fks = childTable.getForeignKeyIterator(); fks.hasNext(); ) {
+            ForeignKey fk = (ForeignKey) fks.next();            
+            if (parentTablename.equals(fk.getReferencedTable().getName())) {
+                fkFound = true;
+            }
+        }
+        assertTrue("FK exists " + childTablename + "->" + parentTablename, fkFound);
+    }
+
+    private void assertColumnNotNullable(String tablename, String columnName, DefaultGrailsDomainConfiguration config) {
+        Table table = getTableMapping(tablename, config);
+        assertTrue(table.getName() + "." + columnName +  " is not nullable",
+            !table.getColumn(new Column(columnName)).isNullable());        
+    }
+    
     private void assertColumnLength(ConstrainedProperty constrainedProperty, int expectedLength) {
         Column column = new Column();
         GrailsDomainBinder.bindStringColumnConstraints(column, constrainedProperty);
