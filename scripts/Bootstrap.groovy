@@ -42,7 +42,11 @@ target(loadApp:"Loads the Grails application object") {
                                                     
 	appCtx = beanDefinitions.createApplicationContext()
 	def ctx = appCtx
-	servletContext = new MockServletContext()
+
+    // The mock servlet context needs to resolve resources relative to the 'web-app'
+    // directory. We also need to use a FileSystemResourceLoader, otherwise paths are
+    // evaluated against the classpath - not what we want!
+    servletContext = new MockServletContext('web-app', new FileSystemResourceLoader())
     ctx.servletContext = servletContext
 	grailsApp = ctx.grailsApplication 
 	ApplicationHolder.application = grailsApp
