@@ -17,7 +17,6 @@ package org.codehaus.groovy.grails.web.context;
 import groovy.lang.ExpandoMetaClass;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.commons.GrailsConfigUtils;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;

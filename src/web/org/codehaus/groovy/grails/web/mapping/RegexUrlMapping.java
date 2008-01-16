@@ -20,6 +20,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsControllerClass;
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
+import org.codehaus.groovy.grails.web.context.ServletContextHolder;
 import org.codehaus.groovy.grails.web.mapping.exceptions.UrlMappingException;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
@@ -27,12 +28,13 @@ import org.springframework.validation.Errors;
 import org.springframework.validation.MapBindingResult;
 import org.springframework.web.context.request.RequestContextHolder;
 
+import javax.servlet.ServletContext;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
-import java.net.URLEncoder;
-import java.io.UnsupportedEncodingException;
 
 /**
  * <p>A UrlMapping implementation that takes a Grails URL pattern and turns it into a regex matcher so that
@@ -166,9 +168,17 @@ public class RegexUrlMapping extends AbstractUrlMapping implements UrlMapping {
      * @see org.codehaus.groovy.grails.web.mapping.UrlMapping
      */
     public String createURL(Map parameterValues, String encoding) {
-        GrailsWebRequest webRequest = (GrailsWebRequest) RequestContextHolder.currentRequestAttributes();
+        ServletContext servletContext = ServletContextHolder.getServletContext();
+        String contextPath;
+        if(servletContext != null) {
+            contextPath = servletContext.getContextPath();
+        }
+        else {
+            GrailsWebRequest webRequest = (GrailsWebRequest) RequestContextHolder.currentRequestAttributes();
+            contextPath = webRequest.getAttributes().getApplicationUri(webRequest.getCurrentRequest());
+        }
         if(parameterValues==null)parameterValues=Collections.EMPTY_MAP;
-    	StringBuffer uri = new StringBuffer(webRequest.getAttributes().getApplicationUri(webRequest.getCurrentRequest()));
+        StringBuffer uri = new StringBuffer(contextPath);
         Set usedParams = new HashSet();
 
         String[] tokens = urlData.getTokens();
