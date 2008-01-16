@@ -102,6 +102,9 @@ target(testApp: "The test app implementation target") {
         runIntegrationTests()
         produceReports()
     }
+    catch (Exception ex) {
+        ex.printStackTrace()
+    }
     finally {
         processResults()
     }
@@ -380,5 +383,23 @@ def resolveTestResources(patternResolver) {
 }
 
 def getTestNames(testNamesString) {
-    testNamesString ? testNamesString.tokenize().collect {"${it}Tests"} : null
+    // If a list of test class names is provided, split it into ant
+    // file patterns.
+    if (testNamesString) {
+        testNamesString = testNamesString.split(/\s+/).collect {
+            // If the test name includes a package, replace it with the
+            // corresponding file path.
+            if (it.indexOf('.') != -1) {
+                it = it.replace('.' as char, '/' as char)
+            }
+            else {
+                // Allow the test class to be in any package.
+                it = "**/$it"
+            }
+
+            return "${it}Tests"
+        }
+    }
+
+    return testNamesString
 }
