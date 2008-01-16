@@ -217,11 +217,7 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
                 throw new NoClosurePropertyForURIException("Could not find closure property for URI [" + uri + "] for controller [" + controllerClass.getFullName() + "]!");
         }
 
-        // set the flash scope instance to its next state and set on controller
-        FlashScope fs = this.grailsAttributes.getFlashScope(request);
-        fs.next();
-
-        // Step 4b: Set grails attributes in request scope
+        // Step 4: Set grails attributes in request scope
         request.setAttribute(GrailsApplicationAttributes.REQUEST_SCOPE_ID,this.grailsAttributes);
 
         // Step 5: get the view name for this URI.

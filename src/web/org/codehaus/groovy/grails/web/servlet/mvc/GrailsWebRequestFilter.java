@@ -16,6 +16,7 @@
 package org.codehaus.groovy.grails.web.servlet.mvc;
 
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
+import org.codehaus.groovy.grails.web.servlet.FlashScope;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -55,6 +56,15 @@ public class GrailsWebRequestFilter extends OncePerRequestFilter {
 		}
 		try {
             request.setAttribute(GrailsApplicationAttributes.WEB_REQUEST, webRequest);
+
+            // Set the flash scope instance to its next state. We do
+            // this here so that the flash is available from Grails
+            // filters in a valid state.
+            FlashScope fs = webRequest.getAttributes().getFlashScope(request);
+            fs.next();
+
+            // Pass control on to the next filter (or the servlet if
+            // there are no more filters in the chain).
             filterChain.doFilter(request, response);
 		}
 		finally {
