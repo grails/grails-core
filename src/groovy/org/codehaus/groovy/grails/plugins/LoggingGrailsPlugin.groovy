@@ -31,7 +31,7 @@ class LoggingGrailsPlugin {
 
     def version = grails.util.GrailsUtil.getGrailsVersion()
     def dependsOn = [core: version]
-    def observe = ['controllers', 'services', 'hibernate', 'taglib', 'codecs', 'converters']
+    def observe = ['controllers', 'services', 'hibernate', 'taglib', 'codecs', 'converters', 'filters']
 
     def doWithWebDescriptor = {xml ->
         def log4j = xml.'context-param'.find {it.'param-name'.text() == 'log4jConfigLocation'}
