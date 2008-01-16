@@ -53,7 +53,7 @@ public class DefaultUrlCreator implements UrlCreator {
     public String createURL(Map parameterValues, String encoding) {
         if(parameterValues == null) parameterValues = Collections.EMPTY_MAP;
         GrailsWebRequest webRequest = (GrailsWebRequest) RequestContextHolder.currentRequestAttributes();
-        return createURLWithWebRequest(parameterValues, webRequest);
+        return createURLWithWebRequest(parameterValues, webRequest, true);
     }
 
     public String createURL(Map parameterValues, String encoding, String fragment) {
@@ -62,7 +62,7 @@ public class DefaultUrlCreator implements UrlCreator {
 
     }
 
-    private String createURLWithWebRequest(Map parameterValues, GrailsWebRequest webRequest) {
+    private String createURLWithWebRequest(Map parameterValues, GrailsWebRequest webRequest, boolean includeContextPath) {
         HttpServletRequest request = webRequest.getCurrentRequest();
 
         String id = null;
@@ -70,7 +70,7 @@ public class DefaultUrlCreator implements UrlCreator {
             id = parameterValues.get(ARGUMENT_ID).toString();
         }
 
-        StringBuffer actualUriBuf = new StringBuffer(webRequest.getAttributes().getApplicationUri(request));
+        StringBuffer actualUriBuf = includeContextPath ? new StringBuffer(webRequest.getAttributes().getApplicationUri(request)) : new StringBuffer();
         if(actionName != null) {
 
             if(actionName.indexOf(SLASH) > -1) {
@@ -94,10 +94,14 @@ public class DefaultUrlCreator implements UrlCreator {
     }
 
     public String createURL(String controller, String action, Map parameterValues, String encoding) {
+        return createURLInternal(controller, action, parameterValues, true );
+    }
+
+    private String createURLInternal(String controller, String action, Map parameterValues, boolean includeContextPath) {
         GrailsWebRequest webRequest = (GrailsWebRequest) RequestContextHolder.currentRequestAttributes();
         boolean blankController = StringUtils.isBlank(controller);
         boolean blankAction = StringUtils.isBlank(action);
-        
+
         if(!blankController) {
             parameterValues.put( GrailsControllerClass.CONTROLLER, controller );
         }
@@ -105,7 +109,7 @@ public class DefaultUrlCreator implements UrlCreator {
             parameterValues.put( GrailsControllerClass.ACTION, action );
 
         try {
-            return createURLWithWebRequest(parameterValues, webRequest);
+            return createURLWithWebRequest(parameterValues, webRequest, includeContextPath);
         }
         finally {
             if(!blankController)
@@ -113,6 +117,10 @@ public class DefaultUrlCreator implements UrlCreator {
             if(!blankAction)
                 parameterValues.remove(GrailsControllerClass.ACTION);
         }
+    }
+
+    public String createRelativeURL(String controller, String action, Map parameterValues, String encoding) {
+         return createURLInternal(controller, action, parameterValues, false );
     }
 
     public String createURL(String controller, String action, Map parameterValues, String encoding, String fragment) {

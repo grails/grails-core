@@ -168,16 +168,22 @@ public class RegexUrlMapping extends AbstractUrlMapping implements UrlMapping {
      * @see org.codehaus.groovy.grails.web.mapping.UrlMapping
      */
     public String createURL(Map parameterValues, String encoding) {
+        return createURLInternal(parameterValues, encoding, true);
+    }
+
+    private String createURLInternal(Map parameterValues, String encoding, boolean includeContextPath) {
         ServletContext servletContext = ServletContextHolder.getServletContext();
-        String contextPath;
-        if(servletContext != null) {
-            contextPath = servletContext.getContextPath();
+        String contextPath = "";
+        if(includeContextPath) {
+            if(servletContext != null) {
+                contextPath = servletContext.getContextPath();
+            }
+            else {
+                GrailsWebRequest webRequest = (GrailsWebRequest) RequestContextHolder.currentRequestAttributes();
+                contextPath = webRequest.getAttributes().getApplicationUri(webRequest.getCurrentRequest());
+            }
         }
-        else {
-            GrailsWebRequest webRequest = (GrailsWebRequest) RequestContextHolder.currentRequestAttributes();
-            contextPath = webRequest.getAttributes().getApplicationUri(webRequest.getCurrentRequest());
-        }
-        if(parameterValues==null)parameterValues=Collections.EMPTY_MAP;
+        if(parameterValues==null)parameterValues= Collections.EMPTY_MAP;
         StringBuffer uri = new StringBuffer(contextPath);
         Set usedParams = new HashSet();
 
@@ -206,7 +212,7 @@ public class RegexUrlMapping extends AbstractUrlMapping implements UrlMapping {
 
         if(LOG.isDebugEnabled()) {
             LOG.debug("Created reverse URL mapping ["+uri.toString()+"] for parameters ["+parameterValues+"]");
-        }        
+        }
         return  uri.toString();
     }
 
@@ -216,6 +222,10 @@ public class RegexUrlMapping extends AbstractUrlMapping implements UrlMapping {
     }
 
     public String createURL(String controller, String action, Map parameterValues, String encoding) {
+        return createURLInternal(controller, action, parameterValues, encoding, true);
+    }
+
+    private String createURLInternal(String controller, String action, Map parameterValues, String encoding, boolean includeContextPath) {
         if(parameterValues == null) parameterValues = new HashMap();
 
         boolean hasController = !StringUtils.isBlank(controller);
@@ -228,7 +238,7 @@ public class RegexUrlMapping extends AbstractUrlMapping implements UrlMapping {
             if(hasAction)
                 parameterValues.put(ACTION, action);
 
-            return createURL(parameterValues, encoding);
+            return createURLInternal(parameterValues, encoding, includeContextPath);
         } finally {
             if(hasController)
                 parameterValues.remove(CONTROLLER);
@@ -236,6 +246,10 @@ public class RegexUrlMapping extends AbstractUrlMapping implements UrlMapping {
                 parameterValues.remove(ACTION);
 
         }
+    }
+
+    public String createRelativeURL(String controller, String action, Map parameterValues, String encoding) {
+        return createURLInternal(controller, action, parameterValues, encoding, false);
     }
 
     public String createURL(String controller, String action, Map parameterValues, String encoding, String fragment) {

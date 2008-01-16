@@ -319,7 +319,7 @@ class FlowInfoCapturer {
                 if(args.id) params.id = args.id
 
                 UrlCreator urlCreator = urlMapper.getReverseMapping( controller, args.action, params );
-                def url = urlCreator.createURL(controller, args.action, params, 'utf-8')
+                def url = urlCreator.createRelativeURL(controller, args.action, params, 'utf-8')
                 redirectUrl = "externalRedirect:$url"                
             }
         }   
