@@ -11,6 +11,15 @@
     <facet type="Groovy" name="Groovy">
       <configuration />
     </facet>
+    <facet type="Spring" name="Spring" implicit="true">
+      <configuration>
+        <options>
+          <option name="enableValidation" value="true" />
+          <option name="reportErrorsAsWarnings" value="true" />
+        </options>
+        <customNs />
+      </configuration>
+    </facet>
   </component>
   <component name="NewModuleRootManager" inherit-compiler-output="false">
     <output url="file://$MODULE_DIR$/target/classes" />
@@ -29,9 +38,12 @@
       <sourceFolder url="file://$MODULE_DIR$/test/scaffolding" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/test/web" isTestSource="true" />
       <excludeFolder url="file://$MODULE_DIR$/cruise" />
+      <excludeFolder url="file://$MODULE_DIR$/doc" />
+      <excludeFolder url="file://$MODULE_DIR$/media" />
       <excludeFolder url="file://$MODULE_DIR$/samples" />
       <excludeFolder url="file://$MODULE_DIR$/sandbox" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
+      <excludeFolder url="file://$MODULE_DIR$/tmp" />
     </content>
     <orderEntry type="library" name="GROOVY" level="application" />
     <orderEntry type="inheritedJdk" />
@@ -90,8 +102,8 @@
     <orderEntry type="module-library">
       <library name="Groovy">
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/groovy-all-1.5.0.jar!/" />
-          <root url="jar://$MODULE_DIR$/lib/gant-1.0.0.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/groovy-all-1.6-beta-1-SNAPSHOT.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/gant-1.0.2_groovy-1.5.0.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES>
@@ -108,6 +120,17 @@
           <root url="jar://$MODULE_DIR$/lib/ant-trax.jar!/" />
           <root url="jar://$MODULE_DIR$/lib/ant.jar!/" />
           <root url="jar://$MODULE_DIR$/lib/ant-nodeps.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="XML APIs">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/xalan.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/serializer.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/xercesImpl.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />

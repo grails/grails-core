@@ -56,6 +56,20 @@
       <file url="file:///Users/graemerocher/Library/Caches/IntelliJIDEA70/compiler/grails.grailsad1ec4b3/.generated/Groovy_to_java_source_code_generator/searchable.e2a8b521/production/org/codehaus/groovy/grails/plugins/searchable/compass/mapping/DefaultSearchableCompassClassMappingXmlBuilder.java" />
       <file url="file://$PROJECT_DIR$/src/tiger/org/codehaus/groovy/grails/commons/AnnotationDomainClassArtefactHandler.java" />
       <file url="file://$PROJECT_DIR$/src/tiger/org/codehaus/groovy/grails/orm/hibernate/cfg/GrailsAnnotationConfiguration.java" />
+      <file url="file:///Developer/grails-dev/plugins/searchable/src/test/java/org/codehaus/groovy/grails/plugins/searchable/test/domain/annotated/AnnotatedSearchable.java" />
+      <file url="file:///Users/graemerocher/Library/Caches/IntelliJIDEA70/compiler/grails.grailsad1ec4b3/.generated/Groovy_to_java_source_code_generator/Grails_Docs.2adb568b/production/org/grails/doc/filters/HeaderFilter.java" />
+      <file url="file:///Users/graemerocher/Library/Caches/IntelliJIDEA70/compiler/grails.grailsad1ec4b3/.generated/Groovy_to_java_source_code_generator/Grails_Docs.2adb568b/production/org/grails/doc/filters/LinkTestFilter.java" />
+      <file url="file:///Users/graemerocher/Library/Caches/IntelliJIDEA70/compiler/grails.grailsad1ec4b3/.generated/Groovy_to_java_source_code_generator/Grails_Docs.2adb568b/production/org/grails/doc/CodeFilter.java" />
+      <file url="file:///Users/graemerocher/Library/Caches/IntelliJIDEA70/compiler/grails.grailsad1ec4b3/.generated/Groovy_to_java_source_code_generator/Grails_Docs.2adb568b/production/org/grails/doc/ItalicFilter.java" />
+      <file url="file:///Users/graemerocher/Library/Caches/IntelliJIDEA70/compiler/grails.grailsad1ec4b3/.generated/Groovy_to_java_source_code_generator/Grails_Docs.2adb568b/production/org/grails/doc/TextileLinkFilter.java" />
+      <file url="file:///Users/graemerocher/Library/Caches/IntelliJIDEA70/compiler/grails.grailsad1ec4b3/.generated/Groovy_to_java_source_code_generator/Grails_Docs.2adb568b/production/org/grails/doc/BoldFilter.java" />
+      <file url="file:///Users/graemerocher/Library/Caches/IntelliJIDEA70/compiler/grails.grailsad1ec4b3/.generated/Groovy_to_java_source_code_generator/Grails_Docs.2adb568b/production/org/grails/doc/BlockQuoteFilter.java" />
+      <file url="file:///Users/graemerocher/Library/Caches/IntelliJIDEA70/compiler/grails.grailsad1ec4b3/.generated/Groovy_to_java_source_code_generator/Grails_Docs.2adb568b/production/org/grails/doc/ImageFilter.java" />
+      <file url="file:///Users/graemerocher/Library/Caches/IntelliJIDEA70/compiler/grails.grailsad1ec4b3/.generated/Groovy_to_java_source_code_generator/Grails_Docs.2adb568b/production/org/grails/doc/WarningMacro.java" />
+      <file url="file:///Users/graemerocher/Library/Caches/IntelliJIDEA70/compiler/grails.grailsad1ec4b3/.generated/Groovy_to_java_source_code_generator/Grails_Docs.2adb568b/production/org/grails/doc/NoteMacro.java" />
+      <file url="file:///Users/graemerocher/Library/Caches/IntelliJIDEA70/compiler/grails.grailsad1ec4b3/.generated/Groovy_to_java_source_code_generator/Grails_Docs.2adb568b/production/org/grails/doc/filters/ListFilter.java" />
+      <file url="file:///Users/graemerocher/Library/Caches/IntelliJIDEA70/compiler/grails.grailsad1ec4b3/.generated/Groovy_to_java_source_code_generator/Grails_Docs.2adb568b/production/org/grails/doc/SourceMacro.java" />
+      <file url="file:///Users/graemerocher/Library/Caches/IntelliJIDEA70/compiler/grails.grailsad1ec4b3/.generated/Groovy_to_java_source_code_generator/Grails_Docs.2adb568b/production/org/grails/doc/DocEngine.java" />
     </excludeFromCompile>
     <resourceExtensions>
       <entry name=".+\.(properties|xml|html|dtd|tld)" />
@@ -108,6 +122,27 @@
           <module name="Grails">
             <files>
               <file url="file://$PROJECT_DIR$/test/cliTestApp/testapp/staging/WEB-INF/web.xml" />
+            </files>
+          </module>
+          <module name="groovy-grails-build">
+            <files>
+              <file url="file:///Developer/grails-dev/groovy-grails-build/checkout/groovy/cruise/reporting-app/WEB-INF/web.xml" />
+              <file url="file:///Developer/grails-dev/groovy-grails-build/checkout/groovy/src/examples/webapps/groovlet-examples/WEB-INF/web.xml" />
+              <file url="file:///Developer/grails-dev/groovy-grails-build/checkout/groovy/src/examples/webapps/template-examples/WEB-INF/web.xml" />
+            </files>
+          </module>
+          <module name="Grails Docs">
+            <files>
+              <file url="file:///Developer/grails-dev/doc/checkout/grails/cruise/reporting-app/WEB-INF/web.xml" />
+            </files>
+          </module>
+        </modules>
+      </facet-type>
+      <facet-type id="hibernate">
+        <modules>
+          <module name="Grails Docs">
+            <files>
+              <file url="file:///Developer/grails-dev/doc/checkout/grails/test/persistence/hibernate.cfg.xml" />
             </files>
           </module>
         </modules>
@@ -290,6 +325,8 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/Grails.iml" filepath="$PROJECT_DIR$/Grails.iml" />
+      <module fileurl="file:///Developer/grails-dev/doc/Grails Docs.iml" filepath="/Developer/grails-dev/doc/Grails Docs.iml" />
+      <module fileurl="file:///Developer/grails-dev/groovy-grails-build/Groovy + Grails Build.iml" filepath="/Developer/grails-dev/groovy-grails-build/Groovy + Grails Build.iml" />
     </modules>
   </component>
   <component name="ProjectRootManager" version="2" assert-keyword="true" jdk-15="false" project-jdk-name="1.5" project-jdk-type="JavaSDK" />
@@ -367,9 +404,9 @@
         <root url="jar://$PROJECT_DIR$/lib/springmodules-sandbox.jar!/" />
         <root url="jar://$PROJECT_DIR$/lib/spring-test.jar!/" />
         <root url="jar://$PROJECT_DIR$/lib/spring-webmvc.jar!/" />
-        <root url="jar://$PROJECT_DIR$/lib/spring-2.5.jar!/" />
         <root url="jar://$PROJECT_DIR$/lib/spring-webflow-2.0-m1.jar!/" />
         <root url="jar://$PROJECT_DIR$/lib/spring-binding-2.0-m1.jar!/" />
+        <root url="jar://$PROJECT_DIR$/lib/spring-2.5.1.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES>
