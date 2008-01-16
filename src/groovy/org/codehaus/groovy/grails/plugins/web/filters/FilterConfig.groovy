@@ -15,26 +15,26 @@
  */
 package org.codehaus.groovy.grails.plugins.web.filters
 
-import org.apache.commons.logging.*
+import org.springframework.web.servlet.ModelAndView
 
 /**
  * @author mike
  * @author Graeme Rocher
  */
 class FilterConfig {
-    static final LOG = LogFactory.getLog(FilterConfig)
     String name
     Map scope
-    def filter
     Closure before
     Closure after
     Closure afterView
+    ModelAndView modelAndView
     boolean initialised = false
 
-    void propertyMissing(String name, value) {
+    void propertyMissing(String propertyName, value) {
         if(!initialised) {
-            LOG.warn "Setting $name is invalid for filter config $name"
+            log.warn "Setting $propertyName is invalid for filter config $name"
         }
     }
+    
     public String toString() {"FilterConfig[$name, scope=$scope]"}
 }

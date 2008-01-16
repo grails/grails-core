@@ -20,6 +20,8 @@ import org.apache.commons.logging.LogFactory
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.springframework.beans.factory.config.MethodInvokingFactoryBean
 import org.codehaus.groovy.grails.web.plugins.support.WebMetaUtils
+import org.codehaus.groovy.grails.web.metaclass.RedirectDynamicMethod
+import org.codehaus.groovy.grails.web.metaclass.RenderDynamicMethod
 
 /**
  * @author Mike
@@ -61,15 +63,57 @@ class FiltersGrailsPlugin {
         }
 	}
 
+    def doWithDynamicMethods = { applicationContext ->
+        def mc = FilterConfig.metaClass
+
+        // Add the standard dynamic properties for web requests to all
+        // the filters, i.e. 'params', 'flash', 'request', etc.
+        WebMetaUtils.registerCommonWebProperties(mc, application)
+
+        // Also make the application context available.
+        mc.getApplicationContext = {-> applicationContext }
+
+        // Add redirect and render methods (copy and pasted from the
+        // controllers plugin).
+        def redirect = new RedirectDynamicMethod(applicationContext)
+        def render = new RenderDynamicMethod()
+
+        mc.redirect = {Map args ->
+            redirect.invoke(delegate, "redirect", args)
+        }
+
+        mc.render = {Object o ->
+            render.invoke(delegate, "render", [o?.inspect()] as Object[])
+        }
+
+        mc.render = {String txt ->
+            render.invoke(delegate, "render", [txt] as Object[])
+        }
+
+        mc.render = {Map args ->
+            render.invoke(delegate, "render", [args] as Object[])
+        }
+
+        mc.render = {Closure c ->
+            render.invoke(delegate, "render", [c] as Object[])
+        }
+
+        mc.render = {Map args, Closure c ->
+            render.invoke(delegate, "render", [args, c] as Object[])
+        }
+    }
+
 	def doWithApplicationContext = { applicationContext ->
         reloadFilters(application, applicationContext)
 	}
+
 	def onChange = { event ->
-	    if (log.isDebugEnabled()) log.debug("onChange: ${event}")
+	    if (log.debugEnabled) log.debug("onChange: ${event}")
+
+        // Get the new or modified filter and (re-)register the associated
+        // beans.
         def newFilter = event.application.addArtefact(TYPE, event.source)
-        def ctx = event.ctx
         beans(BEANS.curry(newFilter)).registerBeans(event.ctx)
-        
         reloadFilters(event.application, event.ctx)
 	}
 

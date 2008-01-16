@@ -18,7 +18,6 @@ package org.codehaus.groovy.grails.plugins.web.filters
 import java.util.regex.Pattern
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
-import org.apache.commons.logging.LogFactory
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.util.WebUtils
 import org.springframework.web.servlet.HandlerInterceptor
@@ -28,6 +27,7 @@ import org.springframework.util.AntPathMatcher
 import org.codehaus.groovy.grails.web.servlet.view.NullView
 
 /**
+ * Adapter between a FilterConfig object and a Spring HandlerInterceptor.
  * @author mike
  * @author Graeme Rocher
  */
@@ -40,12 +40,16 @@ class FilterToHandlerAdapter implements HandlerInterceptor {
     def uriPattern;
     def urlPathHelper = new UrlPathHelper()
 
-    private static final LOG = LogFactory.getLog(FilterToHandlerAdapter)
-
+    /**
+     * Returns the name of the controller targeted by the given request.
+     */
     String controllerName(request) {
         return request.getAttribute(GrailsApplicationAttributes.CONTROLLER_NAME_ATTRIBUTE).toString()
     }
 
+    /**
+     * Returns the name of the action targeted by the given request.
+     */
     String actionName(request) {
         return request.getAttribute(GrailsApplicationAttributes.ACTION_NAME_ATTRIBUTE).toString()
     }
@@ -66,13 +70,10 @@ class FilterToHandlerAdapter implements HandlerInterceptor {
             if (!accept(controllerName, actionName, uri)) return true;
 
             def callable = filterConfig.before.clone()
-            FilterActionDelegate delegate = new FilterActionDelegate()
-            callable.delegate = delegate
-            callable.resolveStrategy = Closure.DELEGATE_FIRST
             def result = callable.call();
             if(result instanceof Boolean) {
-                if(!result && delegate.modelAndView) {
-                    renderModelAndView(delegate, request, response, controllerName)
+                if(!result && filterConfig.modelAndView) {
+                    renderModelAndView(filterConfig, request, response, controllerName)
                 }
                 return result
             }
@@ -91,11 +92,7 @@ class FilterToHandlerAdapter implements HandlerInterceptor {
             if (!accept(controllerName, actionName, uri)) return;
 
             def callable = filterConfig.after.clone()
-            FilterActionDelegate delegate = new FilterActionDelegate()
-            callable.delegate = delegate
-            callable.resolveStrategy = Closure.DELEGATE_FIRST
-
-            def result = callable.call(modelAndView?.getModel());
+            def result = callable.call(modelAndView?.model);
             if(result instanceof Boolean) {
                 // if false is returned don't render a view
                 if(!result) {
@@ -103,14 +100,14 @@ class FilterToHandlerAdapter implements HandlerInterceptor {
                     modelAndView.view = new NullView(response.contentType)
                 }
             }
-            else if(delegate.modelAndView && modelAndView) {
-                if(delegate.modelAndView.viewName) {
-                    modelAndView.viewName = delegate.modelAndView.viewName
+            else if(filterConfig.modelAndView && modelAndView) {
+                if(filterConfig.modelAndView.viewName) {
+                    modelAndView.viewName = filterConfig.modelAndView.viewName
                 }
-                modelAndView.getModel().putAll(delegate.modelAndView.getModel())
+                modelAndView.model.putAll(filterConfig.modelAndView.model)
             }
-            else if(delegate.modelAndView?.viewName) {
-                renderModelAndView(delegate, request, response, controllerName)
+            else if(filterConfig.modelAndView?.viewName) {
+                renderModelAndView(filterConfig, request, response, controllerName)
             }
 
         }
@@ -124,7 +121,7 @@ class FilterToHandlerAdapter implements HandlerInterceptor {
             view = WebUtils.resolveView(request, modelAndView.viewName, controllerName, viewResolver)
         else if (modelAndView.view)
             view = modelAndView.view
-        view?.render(modelAndView.getModel(), request, response)
+        view?.render(modelAndView.model, request, response)
     }
 
     void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object o, Exception e) throws java.lang.Exception {
@@ -136,9 +133,6 @@ class FilterToHandlerAdapter implements HandlerInterceptor {
 
             if (!accept(controllerName, actionName, uri)) return;
             def callable = filterConfig.afterView.clone()
-            callable.delegate = new FilterActionDelegate()
-            callable.resolveStrategy = Closure.DELEGATE_FIRST
-            
             callable.call(e);
         }
     }

@@ -17,6 +17,7 @@ package org.codehaus.groovy.grails.plugins.web.filters
 
 import org.codehaus.groovy.grails.commons.AbstractInjectableGrailsClass
 import org.codehaus.groovy.grails.web.filters.GrailsFiltersClass
+
 /**
  * Loads filter definitions into a set of FilterConfig instances
  *
@@ -35,24 +36,24 @@ class DefaultGrailsFiltersClass  extends AbstractInjectableGrailsClass implement
         if (!filters) return [];
 
         def loader = new Loader()
-        def filters_closure = filters.filters
-
-        filters_closure.delegate = loader
-        filters_closure.call()
+        def filtersClosure = filters.filters
+        filtersClosure.delegate = loader
+        filtersClosure.call()
 
         return loader.filters;
     }
 }
+
 class Loader {
-	def filters = []
+    def filters = []
 	
 	def methodMissing(String methodName, args) {
         if(args) {
-
-            def fc = new FilterConfig(name:methodName)
+            def fc = new FilterConfig(name: methodName)
             filters << fc
 
             if(args[0] instanceof Closure) {
+                fc.scope = [ uri: '/**' ]
                 def closure = args[0]
                 closure.delegate = fc
                 closure.call()
@@ -70,6 +71,3 @@ class Loader {
         }		
 	}
 }
-
-
-
