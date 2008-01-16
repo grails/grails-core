@@ -61,8 +61,7 @@ if "%GROOVY_HOME%" == "" set GROOVY_HOME=%DIRNAME%..
  
 :init
 @rem Get command-line arguments, handling Windowz variants
-if not "%OS%" == "Windows_NT" goto win9xME_args
-if "%eval[2+2]" == "4" goto 4NT_args
+if "%@eval[2+2]" == "4" goto 4NT_args
 
 :win9xME_args
 @rem remove trailing slash from GRAILS_HOME
