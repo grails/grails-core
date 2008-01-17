@@ -15,6 +15,7 @@ class DefaultUrlCreatorTests extends GroovyTestCase {
         assertEquals "/foo/index", creator.createURL(null, "utf-8")
         assertEquals "/foo/index/1", creator.createURL(id:1, "utf-8")
         assertEquals "/foo/index/1?hello=world", creator.createURL(id:1, hello:"world", "utf-8")
+        assertEquals "/foo/index/hello+world", creator.createURL(id:"hello world", "utf-8")
         assertEquals "/foo/index?hello=world", creator.createURL(hello:"world", "utf-8")
         assertEquals "/foo/index?hello=world&fred=flintstone", creator.createURL(hello:"world", fred:"flintstone", "utf-8")
     }

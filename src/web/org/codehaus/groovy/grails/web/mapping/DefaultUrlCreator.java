@@ -21,6 +21,7 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.apache.commons.lang.StringUtils;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.ServletRequest;
 import java.util.Map;
 import java.util.Iterator;
 import java.util.Collections;
@@ -78,16 +79,16 @@ public class DefaultUrlCreator implements UrlCreator {
             }
             else {
                 if(controllerName != null) {
-                    appendUrlToken(actualUriBuf, controllerName);
+                    appendUrlToken(actualUriBuf, controllerName, request);
                 }
                 else {
                     actualUriBuf.append(webRequest.getAttributes().getControllerUri(request));
                 }
             }
-            appendUrlToken(actualUriBuf, actionName);
+            appendUrlToken(actualUriBuf, actionName, request);
         }
         if(id != null) {
-            appendUrlToken(actualUriBuf, id);
+            appendUrlToken(actualUriBuf, id, request);
         }
         appendRequestParams(actualUriBuf, parameterValues, request);
         return actualUriBuf.toString();
@@ -174,19 +175,23 @@ public class DefaultUrlCreator implements UrlCreator {
         if (value==null)
             value = "";
 
+        actualUriBuf.append(urlEncode(name, request))
+                 .append('=')
+                 .append(urlEncode(value, request));
+    }
+
+    private String urlEncode(Object obj, ServletRequest request) {
         try {
-            actualUriBuf.append(URLEncoder.encode(name.toString(),request.getCharacterEncoding()))
-                     .append('=')
-                     .append(URLEncoder.encode(value.toString(),request.getCharacterEncoding()));
+            return URLEncoder.encode(obj.toString(),request.getCharacterEncoding());
         } catch (UnsupportedEncodingException ex) {
-            throw new ControllerExecutionException("Error creating URL, encoding problem appending parameter to url ["+name+":"+value +"]: " + ex.getMessage(),ex);
+            throw new ControllerExecutionException("Error creating URL, cannot URLEncode to the client's character encoding: "+ ex.getMessage(),ex);
         }
     }
 
     /*
      * Appends a URL token to the buffer
      */
-    private void appendUrlToken(StringBuffer actualUriBuf, Object token) {
-        actualUriBuf.append(SLASH).append(token);
+    private void appendUrlToken(StringBuffer actualUriBuf, Object token, ServletRequest request) {
+        actualUriBuf.append(SLASH).append(urlEncode(token, request));
     }
 }

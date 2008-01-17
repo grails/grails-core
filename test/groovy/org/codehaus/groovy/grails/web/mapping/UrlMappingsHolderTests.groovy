@@ -91,6 +91,8 @@ mappings {
     /**
       TODO: This test is currently failing, whether we actually need the ability to specify excess arguments
       that aren't part of the URL mapping definition is up for debate.
+
+      See http://jira.codehaus.org/browse/GRAILS-2202
       
      void testGetReverseMappingWithExcessArgs() {
         runTest {
