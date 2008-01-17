@@ -1,5 +1,8 @@
 package org.codehaus.groovy.grails.plugins.web.taglib
 
+import org.springframework.web.servlet.support.RequestContextUtils as RCU;
+import java.text.*
+
 /* Copyright 2004-2005 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -59,7 +62,12 @@ class FormatTagLib {
             format = "yyyy-MM-dd HH:mm:ss z"
         }
 
-        out << new java.text.SimpleDateFormat(format).format(date)
+        def locale = RCU.getLocale(request)
+        def simpleDateFormat = locale ?
+        new SimpleDateFormat(format, locale) :
+        new SimpleDateFormat(format)
+        
+        out << simpleDateFormat.format(date)
     }
 
     /**
@@ -90,7 +98,14 @@ class FormatTagLib {
                 format = "0"
         }
 
-        out << new java.text.DecimalFormat(format).format((Double)number)
+        final def locale = RCU.getLocale(request)
+        def dcfs = locale ?
+        new DecimalFormatSymbols( locale ) :
+        new DecimalFormatSymbols()
+
+        def decimalFormat = new java.text.DecimalFormat( format, dcfs )
+
+        out << decimalFormat.format((Double)number)
     }
 
     def encodeAs = { attrs, body ->
