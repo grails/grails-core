@@ -76,12 +76,15 @@ public class Parse implements Tokens {
         "org.springframework.web.util.*",
         "grails.util.GrailsUtil"
     };
-    private static final String DEFAULT_CODEC = "grails.views.default.codec";
-    
+    private static final String CONFIG_PROPERTY_DEFAULT_CODEC = "grails.views.default.codec";
+    private static final String CONFIG_PROPERTY_GSP_ENCODING = "grails.views.gsp.encoding";
+
     private String codecName;
     private static final String IMPORT_DIRECTIVE = "import";
     private static final String CONTENT_TYPE_DIRECTIVE = "contentType";
     private static final String DEFAULT_CODEC_DIRECTIVE = "defaultCodec";
+    private String gspEncoding;
+    public static final String GROOVY_SOURCE_CHAR_ENCODING = "UTF-8";
 
     public String getContentType() {
         return this.contentType;
@@ -105,11 +108,24 @@ public class Parse implements Tokens {
     }
 
     public Parse(String name, String filename, InputStream in) throws IOException {
+        Map config = ConfigurationHolder.getFlatConfig();
+
+        // Get the GSP file encoding from Config, or fall back to system file.encoding if none set
+        Object gspEnc = config.get(CONFIG_PROPERTY_GSP_ENCODING);
+        if ((gspEnc != null) && (gspEnc.toString().trim().length() > 0)) {
+            gspEncoding = gspEnc.toString();
+        } else {
+            gspEncoding = System.getProperty("file.encoding", "us-ascii");
+        }
+
+        if(LOG.isDebugEnabled()) {
+            LOG.debug("GSP file encoding set to: " + gspEncoding);
+        }
+        
         scan = new Scan(readStream(in));
         this.pageName = filename;
         makeName(name);
-        Map config = ConfigurationHolder.getFlatConfig();
-        Object o = config.get(DEFAULT_CODEC);
+        Object o = config.get(CONFIG_PROPERTY_DEFAULT_CODEC);
         lookupCodec(o);
 
     } // Parse()
@@ -140,7 +156,13 @@ public class Parse implements Tokens {
         scan.reset();
         page();
 
-        InputStream in = new ByteArrayInputStream(sw.toString().getBytes());
+        // This gets bytes in system's default encoding
+        InputStream in = null;
+        try {
+            in = new ByteArrayInputStream(sw.toString().getBytes(GROOVY_SOURCE_CHAR_ENCODING));
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException("Grails cannot run unless your environment supports UTF-8!");
+        }
         //System.out.println("Compiled GSP into Groovy code: " + sw.toString());
         if(LOG.isDebugEnabled()) {
             LOG.debug("Compiled GSP into Groovy code: " + sw.toString());
@@ -148,6 +170,7 @@ public class Parse implements Tokens {
         scan = null;
         return in;
     } 
+
 
     private void declare(boolean gsp) {
         if (finalPass) return;
@@ -350,7 +373,6 @@ public class Parse implements Tokens {
                 TagMeta tag = (TagMeta)tagMetaStack.iterator().next();
                 throw new GrailsTagException("Grails tags were not closed! ["+tagMetaStack+"] in GSP "+pageName+"", pageName, tag.lineNumber);
             }
-
 
             out.println("}");
             for (Iterator i = constants.keySet().iterator(); i.hasNext();) {
@@ -573,7 +595,7 @@ public class Parse implements Tokens {
                 if (read <= 0) break;
                 out.write(buf, 0, read);
             }
-            return out.toString();
+            return out.toString( gspEncoding);
         } finally {
             out.close();
             in.close();

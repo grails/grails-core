@@ -2,7 +2,12 @@ package org.codehaus.groovy.grails.web.pages;
 
 import junit.framework.TestCase;
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
+import org.codehaus.groovy.grails.commons.ConfigurationHolder;
+
 import java.io.*;
+
+import groovy.util.ConfigSlurper;
+import groovy.util.ConfigObject;
 
 
 /**
@@ -65,6 +70,69 @@ public class ParseTests extends TestCase {
 
     }
 
+    public void testParseWithUTF8() throws IOException {
+        // This is some unicode Chinese (who knows what it says!)
+        String src = "Chinese text: \u3421\u3437\u343f\u3443\u3410\u3405\u38b3\u389a\u395e\u3947\u3adb\u3b5a\u3b67";
+        // Sanity check the string loaded OK as unicode - it won't look right if you output it, default stdout is not UTF-8
+        // on many OSes
+        assertFalse(src.contains("?"));
+
+
+        ConfigObject config = new ConfigSlurper().parse("grails.views.gsp.encoding = \"UTF-8\"");
+
+        ConfigurationHolder.setConfig( config);
+        String output = null;
+        try {
+            output = parseCode("myTest", src);
+        }
+        finally {
+            ConfigurationHolder.setConfig(null);
+        }
+        String expected = makeImports() +
+            "\n"+
+            "class myTest extends GroovyPage {\n"+
+            "public Object run() {\n"+
+            "out.print('"+src+"')\n"+
+            "}\n"+
+            "}";
+        assertEquals(trimAndRemoveCR(expected), trimAndRemoveCR(output));
+
+    }
+
+    public void testParseWithLocalEncoding() throws IOException {
+        String src = "This is just plain ASCII to make sure test works on all platforms";
+        // Sanity check the string loaded OK as unicode - it won't look right if you output it, default stdout is not UTF-8
+        // on many OSes
+        assertFalse(src.contains("?"));
+
+
+        ConfigObject config = new ConfigSlurper().parse("grails.views.gsp.encoding = \"\"");
+
+        ConfigurationHolder.setConfig( config);
+        String output = null;
+        try {
+            output = parseCode("myTest", src);
+        }
+        finally {
+            ConfigurationHolder.setConfig(null);
+        }
+        String expected = makeImports() +
+            "\n"+
+            "class myTest extends GroovyPage {\n"+
+            "public Object run() {\n"+
+            "out.print('"+src+"')\n"+
+            "}\n"+
+            "}";
+        assertEquals(trimAndRemoveCR(expected), trimAndRemoveCR(output));
+
+    }
+
+    private void dumpCharValues(String str) {
+        for (int i = 0; i < str.length(); i++) {
+            System.out.println("char "+i+" is: "+(int) str.charAt(i));
+        }
+    }
+
     /**
 	 * Eliminate potential issues caused by operating system differences
 	 * and minor output differences that we don't care about.
@@ -83,10 +151,17 @@ public class ParseTests extends TestCase {
 	public String parseCode(String uri, String gsp) throws IOException {
 		StringWriter sw = new StringWriter();
 		PrintWriter pw = new PrintWriter(sw);
-		InputStream gspIn = new ByteArrayInputStream(gsp.getBytes());
+
+        // Simulate what the parser does so we get it in the encoding expected
+        Object enc = ConfigurationHolder.getFlatConfig().get("grails.views.gsp.encoding");
+        if ((enc == null) || (enc.toString().trim().length() == 0)) {
+            enc = System.getProperty("file.encoding", "us-ascii");
+        }
+
+        InputStream gspIn = new ByteArrayInputStream(gsp.getBytes(enc.toString()));
         Parse parse = new Parse(uri, uri, gspIn);
         InputStream in = parse.parse();
-        send(in, pw);
+        send(in, pw, enc.toString());
 
 		return sw.toString();
 	}
@@ -112,19 +187,20 @@ public class ParseTests extends TestCase {
  		"  <tt:form />\n" +
 		"</tbody>");
  		System.out.println("|"+trimAndRemoveCR(output)+"|");
-         System.out.println("|"+trimAndRemoveCR(expected)+"|");
-         assertTrue( "should have call to tag with 'tt' namespace", output.indexOf("invokeTag('form','tt',[:],body1)") > -1);
+        System.out.println("|"+trimAndRemoveCR(expected)+"|");
+        assertTrue( "should have call to tag with 'tt' namespace", output.indexOf("invokeTag('form','tt',[:],body1)") > -1);
  	}
 
     /**
      * Copy all of input to output.
      * @param in
      * @param out
+     * @param encoding
      * @throws IOException
      */
-    public static void send(InputStream in, Writer out) throws IOException {
+    public static void send(InputStream in, Writer out, String encoding) throws IOException {
         try {
-            Reader reader = new InputStreamReader(in);
+            Reader reader = new InputStreamReader(in, encoding);
             char[] buf = new char[8192];
             for (;;) {
                 int read = reader.read(buf);

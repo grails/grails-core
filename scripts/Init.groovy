@@ -520,6 +520,7 @@ void setClasspath() {
 
     compConfig = new CompilerConfiguration()
     compConfig.setClasspath(cpath.toString());
+    compConfig.sourceEncoding = "UTF-8"
     rootLoader = getClass().classLoader.rootLoader
     populateRootLoader(rootLoader, jarFiles)
 
