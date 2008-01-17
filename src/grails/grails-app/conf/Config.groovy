@@ -25,6 +25,7 @@ grails.mime.types = [ html: ['text/html','application/xhtml+xml'],
                     ]
 // The default codec used to encode data with ${}
 grails.views.default.codec="none" // none, html, base64
+grails.views.gsp.encoding="UTF-8"
 
 // enabled native2ascii conversion of i18n properties files
 grails.enable.native2ascii = true
