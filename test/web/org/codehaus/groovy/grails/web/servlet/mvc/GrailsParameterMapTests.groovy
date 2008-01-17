@@ -27,6 +27,13 @@ class GrailsParameterMapTests extends GroovyTestCase {
         assertEquals "?dob=01%2F01%2F1970&name=Dierk+Koenig", theMap.toQueryString()
     }
 
+    void testSimpleMappings() {
+        mockRequest.addParameter("test", "1")
+        theMap = new GrailsParameterMap(mockRequest);
+
+        assertEquals "1", theMap['test']
+    }
+
     void testToQueryStringWithMultiD() {
         mockRequest.addParameter("name", "Dierk Koenig")
         mockRequest.addParameter("dob", "01/01/1970")

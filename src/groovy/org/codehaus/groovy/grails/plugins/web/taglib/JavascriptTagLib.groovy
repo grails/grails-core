@@ -365,7 +365,7 @@ class PrototypeProvider implements JavascriptProvider {
 		}
 		out << "'"						
 		
-		def pms = attrs.get('params')   
+		//def pms = attrs.remove('params') 
 		if(attrs.url) {
 			out << taglib.createLink(attrs.url)			
 		}
@@ -373,8 +373,11 @@ class PrototypeProvider implements JavascriptProvider {
 			out << taglib.createLink(attrs)
 		}
 		out << "',"
-		if(pms)
+        /* We have removed these currently and are using full URLs to prevent duplication of parameters
+            as per GRAILS-2045
+        if(pms)
 		    attrs.params = pms
+		*/
 		// process options
 		out << getAjaxOptions(attrs)
 		// close
@@ -408,12 +411,11 @@ class PrototypeProvider implements JavascriptProvider {
                 ajaxOptions << "${k}:function(e){${v}}"
                 options.remove(k)
             }
-
             if(options.params) {
 				def params = options.remove('params')
 				if (params instanceof Map) {
 					ajaxOptions << "parameters:'" +
-										params.collect { k, v -> "${k.encodeAsHTML()}=${v.encodeAsHTML()}" }.join('&').encodeAsJavaScript() +
+										params.collect { k, v -> "${k.encodeAsURL()}=${v.encodeAsURL()}" }.join('&').encodeAsJavaScript() +
 									"'"				
 				} 
 				else {

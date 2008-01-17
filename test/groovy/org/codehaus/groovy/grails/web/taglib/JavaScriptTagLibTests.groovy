@@ -47,6 +47,11 @@ class TestUrlMappings {
             assertEquals("new Ajax.Request('/test/action',{asynchronous:true,evalScripts:true});", sw.toString())
 
             sw.getBuffer().delete(0, sw.getBuffer().length())
+            attrs = [action: 'action', controller: 'test', params: [test:'<hello>']]
+            tag.call(attrs)
+            assertEquals("new Ajax.Request('/test/action?test=%3Chello%3E',{asynchronous:true,evalScripts:true});", sw.toString())
+
+            sw.getBuffer().delete(0, sw.getBuffer().length())
             attrs = [action: 'action', controller: 'test', update: [success: 'updateMe'], options: [insertion: 'Insertion.Bottom']]
             tag.call(attrs)
             assertEquals("new Ajax.Updater({success:'updateMe'},'/test/action',{asynchronous:true,evalScripts:true,insertion:Insertion.Bottom});", sw.toString())
@@ -78,7 +83,7 @@ class TestUrlMappings {
         // test for GRAILS-1304
         // Tag: <g:remoteLink controller="person" action="show" update="async" params="[var1:'0']">Show async</g:remoteLink>
         // Expected result: <a href="/people/details/0" onclick="new Ajax.Updater('async','/people/details/0',{asynchronous:true,evalScripts:true,parameters:'var1=0'});return false;">Show async</a>
-        StringWriter sw = new StringWriter()
+        StringWriter sw = new StringWriter()   
         PrintWriter pw = new PrintWriter(sw)
 
         withTag("remoteLink", pw) {tag ->
@@ -87,10 +92,16 @@ class TestUrlMappings {
             def includedLibrary = ['prototype']
             request.setAttribute("org.codehaus.grails.INCLUDED_JS_LIBRARIES", includedLibrary)
 
-            def attrs = [controller: 'person', action: 'show', params: [var1: '0'], update: 'async']
+            def attrs = [controller: 'person', action: 'show', params: [var1: "0"], update: 'async']
             tag.call(attrs) {"Show async"}
             println sw.toString()
-            assertEquals("<a href=\"/people/details/0\" onclick=\"new Ajax.Updater('async','/people/details/0',{asynchronous:true,evalScripts:true,parameters:'var1=0'});return false;\">Show async</a>", sw.toString())
+            assertEquals("<a href=\"/people/details/0\" onclick=\"new Ajax.Updater('async','/people/details/0',{asynchronous:true,evalScripts:true});return false;\">Show async</a>", sw.toString())
+
+            sw.getBuffer().delete(0, sw.getBuffer().length())
+            attrs = [controller: 'person', action: 'show', params: [var1: "unsafe ID 0", test: '<hello>'], update: 'async']
+            tag.call(attrs) {"Show async"}
+            println sw.toString()
+            assertEquals("<a href=\"/person/show?var1=unsafe+ID+0&test=%3Chello%3E\" onclick=\"new Ajax.Updater('async','/person/show?var1=unsafe+ID+0&test=%3Chello%3E',{asynchronous:true,evalScripts:true});return false;\">Show async</a>", sw.toString())
         }
     }
 

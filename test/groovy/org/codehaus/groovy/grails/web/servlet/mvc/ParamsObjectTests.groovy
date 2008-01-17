@@ -20,6 +20,7 @@ class ParamsObjectTests extends GroovyTestCase {
     void testMultiDHashBehaviour() {
         def request = new MockHttpServletRequest()
 
+        request.addParameter("test", "1")
         request.addParameter("firstName", "Fred")
         request.addParameter("lastName", "Flintstone")
         request.addParameter("book.title", "The Stand")
@@ -32,6 +33,7 @@ class ParamsObjectTests extends GroovyTestCase {
 
         def params = new GrailsParameterMap(request)
 
+        assertEquals "1", params.test
         assertEquals "Fred", params.firstName
         assertEquals "Flintstone", params.lastName
         assertEquals "The Stand", params.'book.title'
