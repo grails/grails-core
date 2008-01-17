@@ -1379,26 +1379,23 @@ public final class GrailsDomainBinder {
 		// set type
 		value.setTypeUsingReflection( persistentClass.getClassName(), grailsProperty.getName() );
 
-		// if it is a ManyToOne or OneToOne relationship
-		if ( value instanceof ToOne ) {
-			ToOne toOne = (ToOne) value;
-			String propertyRef = toOne.getReferencedPropertyName();
-			if ( propertyRef != null ) {
-				// TODO: Hmm this method has package visibility. Why?
 
-				//mappings.addUniquePropertyReference( toOne.getReferencedEntityName(), propertyRef );
-			}
-		}
-		else if( value instanceof Collection ) {
-			//Collection collection = (Collection)value;
-			//String propertyRef = collection.getReferencedPropertyName();
-		}
-
-		if(value.getTable() != null)
+        if(value.getTable() != null)
 			value.createForeignKey();
 
 		Property prop = new Property();
-		prop.setValue( value );
+
+        ColumnConfig cc = getColumnConfig(grailsProperty);
+
+        if(cc != null) {
+           prop.setLazy(cc.getLazy());
+        }
+        else if(grailsProperty.isManyToOne() || grailsProperty.isOneToOne()) {
+            prop.setLazy(true);
+        }
+
+
+        prop.setValue( value );
 
 		bindProperty( grailsProperty, prop, mappings );
 		return prop;
@@ -1467,13 +1464,13 @@ public final class GrailsDomainBinder {
            manyToOne.setLazy(cc.getLazy());
         }
         else {
-            manyToOne.setLazy(true);
+            manyToOne.setLazy(false);
         }
-
-
-		// set referenced entity
+        // set referenced entity
 		manyToOne.setReferencedEntityName( property.getReferencedPropertyType().getName() );
-		manyToOne.setIgnoreNotFound(true);
+        if(manyToOne.isLazy()) {            
+            manyToOne.setIgnoreNotFound(false);
+        }
 	}
 
 	/**
