@@ -24,6 +24,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.control.CompilationFailedException;
+import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.grails.commons.spring.GrailsResourceHolder;
 import org.codehaus.groovy.grails.commons.cfg.ConfigurationHelper;
 import org.codehaus.groovy.grails.compiler.GrailsClassLoader;
@@ -252,13 +253,18 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
 
         final ClassLoader contextLoader =  Thread.currentThread().getContextClassLoader();
 
+        CompilerConfiguration config = CompilerConfiguration.DEFAULT;
+        config.setSourceEncoding("UTF-8");
+
         ClassLoader rootLoader = DefaultGroovyMethods.getRootLoader(contextLoader);
-        ClassLoader parentLoader = beanClassLoader != null ? beanClassLoader : contextLoader;
+        //ClassLoader parentLoader = beanClassLoader != null ? beanClassLoader : contextLoader;
         GroovyClassLoader cl;
         if (rootLoader != null) {
-            cl = new GrailsClassLoader(contextLoader, resourceLoader);
+            // This is for when we are using run-app
+            cl = new GrailsClassLoader(contextLoader, config, resourceLoader);
         } else {
-            GrailsAwareClassLoader gcl = new GrailsAwareClassLoader(contextLoader);
+            // This is when we are in WAR
+            GrailsAwareClassLoader gcl = new GrailsAwareClassLoader(contextLoader, config);
             if (resourceLoader != null)
                 gcl.setResourceLoader(resourceLoader);
             gcl.setClassInjectors(new ClassInjector[]{new DefaultGrailsDomainClassInjector()});

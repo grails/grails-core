@@ -20,6 +20,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.compiler.injection.GrailsInjectionOperation;
 import org.codehaus.groovy.grails.compiler.support.GrailsResourceLoader;
+import org.codehaus.groovy.control.CompilerConfiguration;
 import org.dom4j.Document;
 import org.dom4j.Node;
 import org.dom4j.io.SAXReader;
@@ -67,7 +68,11 @@ public class GrailsApplicationFactoryBean implements FactoryBean, InitializingBe
 
 	public void afterPropertiesSet() throws Exception {
         if(descriptor != null && descriptor.exists()) {
-            GroovyClassLoader classLoader = new GroovyClassLoader(Thread.currentThread().getContextClassLoader());
+            // Enforce UTF-8 on source code for reloads
+            CompilerConfiguration config = CompilerConfiguration.DEFAULT;
+            config.setSourceEncoding("UTF-8");
+
+            GroovyClassLoader classLoader = new GroovyClassLoader(Thread.currentThread().getContextClassLoader(), config);
             List classes = new ArrayList();
             SAXReader reader = new SAXReader();
             InputStream inputStream = null;

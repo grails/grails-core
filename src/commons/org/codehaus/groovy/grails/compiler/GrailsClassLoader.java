@@ -18,6 +18,7 @@ import groovy.lang.GroovyClassLoader;
 import org.codehaus.groovy.grails.compiler.support.GrailsResourceLoader;
 import org.codehaus.groovy.grails.compiler.injection.GrailsAwareClassLoader;
 import org.codehaus.groovy.grails.exceptions.CompilationFailedException;
+import org.codehaus.groovy.control.CompilerConfiguration;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -42,8 +43,8 @@ public class GrailsClassLoader extends GroovyClassLoader {
     private GrailsResourceLoader grailsResourceLoader;
     private Map innerClassLoaderMap = new HashMap();
 
-    public GrailsClassLoader(ClassLoader parent, GrailsResourceLoader resourceLoader) {
-        super(parent);
+    public GrailsClassLoader(ClassLoader parent, CompilerConfiguration config, GrailsResourceLoader resourceLoader) {
+        super(parent, config);
         this.parent = parent;
         this.grailsResourceLoader = resourceLoader;
     }

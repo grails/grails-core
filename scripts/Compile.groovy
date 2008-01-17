@@ -87,7 +87,7 @@ target(compile : "Implementation of compilation phase") {
 	                   projectName:baseName,
 	                   classpathref:"grails.classpath",
 				       resourcePattern:"file:${basedir}/**/grails-app/**/*.groovy",
-                       //encoding:"UTF-8",
+                       encoding:"UTF-8",
                        compilerClasspath.curry(false))
 		}   
 		catch(Exception e) {
