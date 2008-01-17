@@ -4,10 +4,10 @@
     <istrue value="${skipTests}"/>
   </condition>
 
-	<target name="test-with-coverage" depends="build-test, instrument-for-coverage, run-test, coverage-report" description="Compile and Run the unit tests while measuring coverage">
+	<target name="test-with-coverage" depends="build-test, instrument-for-coverage, run-test,test-report,coverage-report" description="Compile and Run the unit tests while measuring coverage">
 		<fail if="grails.test.failure">The tests failed. Have a look at ${grails.test.reports}</fail>
 	</target>
-	<target name="test" depends="clean-instrumented, run-test" unless="_skipTests_" description="Compile and Run the unit tests plainly">
+	<target name="test" depends="clean-instrumented, run-test,test-report" unless="_skipTests_" description="Compile and Run the unit tests plainly">
 		<fail if="grails.test.failure">The tests failed. Have a look at ${grails.test.reports}</fail>
 	</target>
 
