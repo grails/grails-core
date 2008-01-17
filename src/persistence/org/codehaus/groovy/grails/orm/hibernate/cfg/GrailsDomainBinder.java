@@ -1174,7 +1174,10 @@ public final class GrailsDomainBinder {
 
 			// see if its a collection type
 			CollectionType collectionType = CollectionType.collectionTypeForClass( currentGrailsProp.getType() );
-			if(collectionType != null) {
+
+            Class userType = getUserType(currentGrailsProp);
+
+            if(collectionType != null) {
 				// create collection
 				Collection collection = collectionType.create(
 						currentGrailsProp,
@@ -1192,7 +1195,7 @@ public final class GrailsDomainBinder {
 				value = new ManyToOne( table );
                 bindManyToOne( currentGrailsProp, (ManyToOne) value, EMPTY_PATH, mappings );
 			}
-			else if ( currentGrailsProp.isOneToOne() && !UserType.class.isAssignableFrom(currentGrailsProp.getType())) {
+			else if ( currentGrailsProp.isOneToOne() && !isUserType(userType)) {
 				if(LOG.isDebugEnabled())
 					LOG.debug("[GrailsDomainBinder] Binding property [" + currentGrailsProp.getName() + "] as OneToOne");
 
@@ -1220,6 +1223,29 @@ public final class GrailsDomainBinder {
 			}
 		}
 	}
+
+    private static boolean isUserType(Class userType) {
+        if(userType == null) return false;
+        return UserType.class.isAssignableFrom(userType);
+    }
+
+    private static Class getUserType(GrailsDomainClassProperty currentGrailsProp) {
+        Class userType = null;
+        ColumnConfig cc = getColumnConfig(currentGrailsProp);
+        Object typeObj = cc != null ? cc.getType() : null;
+        if(typeObj instanceof Class) {
+            userType = (Class)typeObj;
+        }
+        else if(typeObj != null) {
+            String typeName = typeObj.toString();
+            try {
+                userType = Class.forName(typeName);
+            } catch (ClassNotFoundException e) {
+                // ignore
+            }
+        }
+        return userType;
+    }
 
     private static boolean isCompositeIdProperty(Mapping gormMapping, GrailsDomainClassProperty currentGrailsProp) {
         if(gormMapping != null && gormMapping.getIdentity() != null) {
