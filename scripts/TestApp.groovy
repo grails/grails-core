@@ -82,6 +82,9 @@ def processResults = {
     }
 }
 
+unitOnly = false
+integrationOnly = false
+
 target(testApp: "The test app implementation target") {
     depends(packageApp)
 
@@ -93,13 +96,24 @@ target(testApp: "The test app implementation target") {
     Ant.mkdir(dir: "${testDir}/html")
     Ant.mkdir(dir: "${testDir}/plain")
 
+    if(args?.indexOf('-unit') >-1) {
+        args -= '-unit'
+        unitOnly = true
+    }
+    if(args?.indexOf('-integration') >-1) {
+        args -= '-integration'
+        integrationOnly = true
+    }
+
 
     compileTests()
 	packageTests()
 
     try {
-        runUnitTests()
-        runIntegrationTests()
+        if(!integrationOnly)
+            runUnitTests()
+        if(!unitOnly)
+            runIntegrationTests()
         produceReports()
     }
     catch (Exception ex) {
@@ -294,7 +308,9 @@ target(runIntegrationTests: "Runs Grails' tests under the test/integration direc
             return
         }
 
-
+        if(integrationOnly) {
+            loadApp()
+        }
         configureApp()
         def app = appCtx.getBean(GrailsApplication.APPLICATION_ID)
         if (app.parentContext == null) {
