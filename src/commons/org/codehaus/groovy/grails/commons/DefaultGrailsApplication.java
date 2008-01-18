@@ -417,6 +417,7 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
                         .loadClass(CONFIG_CLASS);
 
                 c = configSlurper.parse(scriptClass);
+                ConfigurationHolder.setConfig(c);
             } catch (ClassNotFoundException e) {
                 log.debug("Could not find config class [" + CONFIG_CLASS + "]. This is probably nothing to worry about, it is not required to have a config: " + e.getMessage(), e);
                 // ignore, it is ok not to have a configuration file
