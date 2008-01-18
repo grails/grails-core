@@ -83,6 +83,11 @@ DEFAULT_DEPS = [
     "xpp3_min-1.1.3.4.O.jar"
 ]
 
+DEFAULT_J5_DEPS = [
+    "hibernate-annotations.jar",
+    "ejb3-persistence.jar",
+]
+
 target (war: "The implementation target") {
 	depends( clean,  packageApp)
 	 
@@ -170,8 +175,9 @@ target (war: "The implementation target") {
                     for(d in deps) {
 	                    include(name:d)
 	                }
-	                if(antProject.properties."ant.java.version" == "1.5") {
-	                    for(d in config.grails.war.java5.dependencies) {
+	                if(antProject.properties."ant.java.version" != "1.4") {
+                        deps = config.grails.war.java5.dependencies ?: DEFAULT_J5_DEPS
+                        for(d in deps) {
 	                        include(name:d)
 	                    }
 	                }
