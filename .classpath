@@ -49,7 +49,7 @@
 	<classpathentry kind="lib" path="lib/jstl-2.3.jar"/>
 	<classpathentry kind="lib" path="lib/jstl-2.4.jar"/>
 	<classpathentry kind="lib" path="lib/jta.jar"/>
-	<classpathentry kind="lib" path="lib/junit-3.8.1.jar"/>
+	<classpathentry kind="lib" path="lib/junit-3.8.2.jar"/>
 	<classpathentry kind="lib" path="lib/log4j-1.2.15.jar"/>
 	<classpathentry kind="lib" path="lib/ognl-2.6.9.jar"/>
 	<classpathentry kind="lib" path="lib/oro-2.0.8.jar"/>
