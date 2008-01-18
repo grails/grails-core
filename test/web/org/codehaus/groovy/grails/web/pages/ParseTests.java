@@ -75,7 +75,7 @@ public class ParseTests extends TestCase {
         String src = "Chinese text: \u3421\u3437\u343f\u3443\u3410\u3405\u38b3\u389a\u395e\u3947\u3adb\u3b5a\u3b67";
         // Sanity check the string loaded OK as unicode - it won't look right if you output it, default stdout is not UTF-8
         // on many OSes
-        assertFalse(src.contains("?"));
+        assertEquals(src.indexOf('?'), -1);
 
 
         ConfigObject config = new ConfigSlurper().parse("grails.views.gsp.encoding = \"UTF-8\"");
@@ -103,7 +103,7 @@ public class ParseTests extends TestCase {
         String src = "This is just plain ASCII to make sure test works on all platforms";
         // Sanity check the string loaded OK as unicode - it won't look right if you output it, default stdout is not UTF-8
         // on many OSes
-        assertFalse(src.contains("?"));
+        assertEquals(src.indexOf('?'), -1);
 
 
         ConfigObject config = new ConfigSlurper().parse("grails.views.gsp.encoding = \"\"");
