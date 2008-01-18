@@ -90,7 +90,11 @@ if (new File("${basedir}/application.properties").exists()) {
 if (!grailsAppName) {
     grailsAppName = baseName
 }
-appClassName = GCU.getClassNameRepresentation(grailsAppName)
+if(grailsAppName.indexOf('/') >-1)
+    appClassName = grailsAppName[grailsAppName.lastIndexOf('/')..-1]
+else
+    appClassName = GCU.getClassNameRepresentation(grailsAppName)
+
 
 configSlurper = new ConfigSlurper(grailsEnv)
 configSlurper.setBinding(grailsHome:grailsHome, appName:grailsAppName, appVersion:grailsAppVersion, userHome:userHome, basedir:basedir, servletVersion:servletVersion)
