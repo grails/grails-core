@@ -21,27 +21,19 @@
             <fileset dir="${grails.src.groovy}" includes="**/*.properties" />
         </copy>
 
-        <ubercompile destdir="${grails.build}">
+        <groovyc destdir="${grails.build}"  encoding="UTF-8">
             <classpath>
                 <pathelement location="${grails.build}"/>
                 <path refid="classpath"/>
             </classpath>
-            
             <src path="${grails.src.commons}"/>
             <src path="${grails.src.web}"/>
             <src path="${grails.src.persistence}"/>
             <src path="${grails.src.scaffolding}"/>
             <src path="${grails.src.groovy}"/>
 
-            <generatestubs destdir="${grails.stubs}">
-                <configuration targetBytecode="1.4"/>
-            </generatestubs>
-
-            <javac includeantruntime="false" deprecation="on" debug="yes" source="1.4" target="1.4" fork="true"/>
-            <groovyc>
-                <configuration debug="true" verbose="true"/>
-            </groovyc>
-        </ubercompile>
+            <javac includeantruntime="false" deprecation="on" debug="yes" source="1.4" target="1.4" />
+        </groovyc>
 
 
         <mkdir dir="${grails.build}/META-INF"  />

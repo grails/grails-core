@@ -57,18 +57,15 @@
 	</target>
 
 	<target name="build-test" depends="build">
-		<javac debug="on" deprecation="on" destdir="${grails.test.build}" source="1.4" target="1.4" includes="**/*" encoding="UTF-8">
-			<src path="${grails.test.src.commons}" />
-			<src path="${grails.test.src.web}" />
-			<src path="${grails.test.src.persistence}" />
-			<src path="${grails.test.src.scaffolding}" />
-			<classpath refid="classpath" />
-			<classpath>
-				<pathelement path="${grails.build}" />
-			</classpath>
-		</javac>
+
 		<groovyc srcdir="test/groovy" destdir="${grails.test.build}"  encoding="UTF-8">
-			<classpath refid="classpath" />
+            <src path="${grails.test.src.commons}" />
+            <src path="${grails.test.src.web}" />
+            <src path="${grails.test.src.persistence}" />
+            <src path="${grails.test.src.scaffolding}" />
+            <src path="test/groovy" />
+            <javac debug="on" deprecation="on" encoding="UTF-8"/>
+            <classpath refid="classpath" />
 			<classpath location="${grails.test.build}" />
 			<classpath location="${grails.build}" />
 		</groovyc>
