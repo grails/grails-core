@@ -370,11 +370,6 @@ target(init: "main init target") {
             fileset(dir: "${grailsHome}/src/grails/grails-app",  includes: "**/**", excludes: "**/taglib/**, **/utils/**")
         }
 
-        copy(todir: "${basedir}/grails-app/conf/spring") {
-            fileset(dir: "${grailsHome}/src/war/WEB-INF/spring") {
-                include(name: "*.xml")
-            }
-        }
         touch(file: "${basedir}/grails-app/i18n/messages.properties")
     }
 }
