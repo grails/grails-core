@@ -20,7 +20,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsControllerClass;
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
-import org.codehaus.groovy.grails.web.context.ServletContextHolder;
 import org.codehaus.groovy.grails.web.mapping.exceptions.UrlMappingException;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
@@ -28,7 +27,6 @@ import org.springframework.validation.Errors;
 import org.springframework.validation.MapBindingResult;
 import org.springframework.web.context.request.RequestContextHolder;
 
-import javax.servlet.ServletContext;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.*;
@@ -172,14 +170,11 @@ public class RegexUrlMapping extends AbstractUrlMapping implements UrlMapping {
     }
 
     private String createURLInternal(Map parameterValues, String encoding, boolean includeContextPath) {
-        ServletContext servletContext = ServletContextHolder.getServletContext();
+
         String contextPath = "";
         if(includeContextPath) {
-            if(servletContext != null) {
-                contextPath = servletContext.getContextPath();
-            }
-            else {
-                GrailsWebRequest webRequest = (GrailsWebRequest) RequestContextHolder.currentRequestAttributes();
+            GrailsWebRequest webRequest = (GrailsWebRequest) RequestContextHolder.getRequestAttributes();
+            if(webRequest != null) {
                 contextPath = webRequest.getAttributes().getApplicationUri(webRequest.getCurrentRequest());
             }
         }
