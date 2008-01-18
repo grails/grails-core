@@ -53,7 +53,6 @@ mappings {
 '''
 
 	void testGetReverseMappingWithNamedArgsAndClosure() {
-       runTest {
            def res = new ByteArrayResource(mappingWithNamedArgsAndClosure.bytes)
 
            def evaluator = new DefaultUrlMappingEvaluator()
@@ -66,12 +65,9 @@ mappings {
            assertNotNull "getReverseMapping returned null", m
            
            assertEquals "/author/Winter/Johnny", m.createURL(params, "utf-8")
-           
-      }
-                 
     }
-
-	void testGetReverseMappingWithNamedArgs() {
+            
+	void testGetReverseMappingWithNamedArgs() { 
        runTest {
            def res = new ByteArrayResource(mappingWithNamedArgs.bytes)
 
@@ -88,31 +84,25 @@ mappings {
       }
                  
     }
-    /**
-      TODO: This test is currently failing, whether we actually need the ability to specify excess arguments
-      that aren't part of the URL mapping definition is up for debate.
-
-      See http://jira.codehaus.org/browse/GRAILS-2202
-      
      void testGetReverseMappingWithExcessArgs() {
-        runTest {
-             def res = new ByteArrayResource(mappingScript.bytes)
+         def res = new ByteArrayResource(mappingScript.bytes)
 
-             def evaluator = new DefaultUrlMappingEvaluator()
-             def mappings = evaluator.evaluateMappings(res)
+         def evaluator = new DefaultUrlMappingEvaluator()
+         def mappings = evaluator.evaluateMappings(res)
 
-             def holder = new DefaultUrlMappingsHolder(mappings)
+         def holder = new DefaultUrlMappingsHolder(mappings)
 
-             // test with exact argument match
-             def m = holder.getReverseMapping("blog", "show", [entry:"foo", year:2007, month:3, day:17, some:"other"])
+         // test with exact argument match
+         Map vars = [entry: "foo", year: 2007, month: 3, day: 17, some: "other"]
+        def m = holder.getReverseMapping("blog", "show", vars)
 
-             assert m
-             assertEquals "blog", m.controllerName
-             assertEquals "show", m.actionName
+         assert m
+         assertEquals "blog", m.controllerName
+         assertEquals "show", m.actionName
 
-        }
-
-    }*/
+         def url = m.createRelativeURL("blog", "show", vars, "utf-8")
+         assertEquals("/blog/foo/2007/3/17?some=other", url)
+    }
 
     void testGetReverseMappingWithVariables() {
              def res = new ByteArrayResource(mappingScript2.bytes)
