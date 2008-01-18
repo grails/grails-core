@@ -218,7 +218,6 @@ target(loadPlugins:"Loads Grails' plugins") {
 				}                    
 				if(grailsApp == null) {				
 			        grailsApp = new DefaultGrailsApplication(new Class[0], new GroovyClassLoader(classLoader))
-			        grailsApp.initialise()
 				}
 	            pluginManager = new DefaultGrailsPluginManager(pluginClasses as Class[], grailsApp)
 	            PluginManagerHolder.setPluginManager(pluginManager)            
@@ -227,8 +226,9 @@ target(loadPlugins:"Loads Grails' plugins") {
 				event("PluginLoadStart", [pluginManager])
 	            pluginManager.loadPlugins()
 	            pluginManager.doArtefactConfiguration()
-				event("PluginLoadEnd", [pluginManager])
-	        } 
+                grailsApp.initialise()
+                event("PluginLoadEnd", [pluginManager])
+            }
 	    }
         catch (Exception e) {
 	        event("StatusFinal", [ "Error loading plugin manager: " + e.message ])

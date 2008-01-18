@@ -53,10 +53,10 @@ target(loadApp:"Loads the Grails application object") {
 	
 	packageApp()
     pluginManager = PluginManagerHolder.pluginManager
-	grailsApp.initialise()
     pluginManager.application = grailsApp
     pluginManager.doArtefactConfiguration()
-	event("AppLoadEnd", ["Loading Grails Application"])	
+    grailsApp.initialise()
+	event("AppLoadEnd", ["Loading Grails Application"])
 }                                      
 target(configureApp:"Configures the Grails application and builds an ApplicationContext") {
     appCtx.resourceLoader = new  CommandLineResourceLoader()
