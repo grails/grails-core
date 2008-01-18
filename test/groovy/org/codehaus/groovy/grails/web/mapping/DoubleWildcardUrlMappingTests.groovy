@@ -24,6 +24,45 @@ mappings {
 }
     '''
 
+    def mappingScript2 = '''
+mappings  {
+    "/$controller/$action?/$id?"()
+
+    "/images/$image**.jpg" (controller: 'userImage', action: 'download')
+}
+'''
+
+    void testDoubleWildCardMappingWithSuffix() {
+        def res = new ByteArrayResource(mappingScript2.bytes)
+
+        def evaluator = new DefaultUrlMappingEvaluator()
+        def mappings = evaluator.evaluateMappings(res)
+
+
+        def m = mappings[1]
+
+        assert m
+
+        def info = m.match("/images/foo.jpg")
+        //assert !mappings[1].match("/stuff/image")
+        assert info
+        info.configure(webRequest)
+
+        assertEquals "userImage", info.controllerName
+        assertEquals "download", info.actionName
+        assertEquals "foo", info.params.image
+
+        info = m.match("/images/foo/bar.jpg")
+        //assert !mappings[1].match("/stuff/image")
+        assert info
+        info.configure(webRequest)
+
+        assertEquals "userImage", info.controllerName
+        assertEquals "download", info.actionName
+        assertEquals "foo/bar", info.params.image
+
+    }
+
     void testDoubleWildCardMatching() {
 
              def res = new ByteArrayResource(mappingScript.bytes)
