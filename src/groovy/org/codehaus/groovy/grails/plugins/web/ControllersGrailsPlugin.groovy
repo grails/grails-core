@@ -275,11 +275,15 @@ class ControllersGrailsPlugin {
             mc.constructor = consructorNoArgs.curry(domainClass)
             mc.constructor = constructorMapArg.curry(domainClass)
 
+            def original = mc.getMetaProperty("properties")
             def setProps = new SetPropertiesDynamicProperty()
             mc.setProperties = {Object o ->
                 setProps.set(delegate, o)
             }
-            //mc.getProperties = {-> org.codehaus.groovy.runtime.DefaultGroovyMethods.getProperties(delegate) }
+
+            def newOne  = mc.getMetaProperty("properties")
+            // re-instate getter:
+            newOne.getter = original.getter
         }
 
         def namespaces = [] as HashSet
