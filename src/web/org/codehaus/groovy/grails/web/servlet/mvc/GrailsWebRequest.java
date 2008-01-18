@@ -23,6 +23,7 @@ import org.codehaus.groovy.grails.web.servlet.DefaultGrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.servlet.FlashScope;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
+import org.springframework.context.ApplicationContext;
 import org.springframework.web.servlet.handler.DispatcherServletWebRequest;
 
 import javax.servlet.ServletContext;
@@ -31,9 +32,9 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Iterator;
 
 /**
  * A class the encapsulates a Grails request. An instance of this class is bound to the current thread using
@@ -217,5 +218,14 @@ public class GrailsWebRequest extends DispatcherServletWebRequest implements Par
 
     public void addParameterListener(ParameterCreationListener creationListener) {
         this.parameterCreationListeners.add(creationListener);
+    }
+
+    /**
+     * Obtains the ApplicationContext object
+     *
+     * @return The ApplicationContext
+     */
+    public ApplicationContext getApplicationContext() {
+        return getAttributes().getApplicationContext();
     }
 }

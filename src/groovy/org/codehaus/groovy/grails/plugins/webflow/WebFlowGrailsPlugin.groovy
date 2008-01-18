@@ -54,9 +54,10 @@ class WebFlowGrailsPlugin {
         boolean hasExecutionListener = false
         if(manager.hasGrailsPlugin('hibernate') ) {
             try {
-                hibernateConversationListener(org.springframework.webflow.support.persistence.HibernateSessionPerConversationListener, sessionFactory)
+                hibernateConversationListener(org.springframework.webflow.persistence.HibernateFlowExecutionListener, sessionFactory, transactionManager)
                 executionListenerLoader(org.springframework.webflow.execution.factory.StaticFlowExecutionListenerLoader, hibernateConversationListener)
                 hasExecutionListener = true
+                sessionFactory.currentSessionContextClass = org.codehaus.groovy.grails.webflow.persistence.FlowAwareCurrentSessionContext                
             } catch (MissingPropertyException mpe) {
                 // no session factory, this is ok
             }

@@ -22,6 +22,7 @@ import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil;
 import org.hibernate.HibernateException;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
+import org.hibernate.cfg.Environment;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
@@ -43,7 +44,21 @@ public class ConfigurableLocalSessionFactoryBean extends
 	private GrailsApplication grailsApplication;
     private Class configClass = DefaultGrailsDomainConfiguration.class;
 	private ApplicationContext applicationContext;
+    private Class currentSessionContextClass;
 
+    /**
+     * Sets class to be used for the Hibernate CurrentSessionContext
+     *
+     * @param currentSessionContextClass An implementation of the CurrentSessionContext interface
+     */
+    public void setCurrentSessionContextClass(Class currentSessionContextClass) {
+        this.currentSessionContextClass = currentSessionContextClass;
+    }
+
+    /**
+     * Sets the class to be used for Hibernate Configuration
+     * @param configClass A subclass of the Hibernate Configuration class
+     */
     public void setConfigClass(Class configClass) {
         this.configClass = configClass;
     }
@@ -75,6 +90,11 @@ public class ConfigurableLocalSessionFactoryBean extends
 	protected Configuration newConfiguration() {
 		GrailsDomainConfiguration config = (GrailsDomainConfiguration)BeanUtils.instantiateClass(configClass);
 		config.setGrailsApplication(grailsApplication);
+        if(currentSessionContextClass != null) {
+            ((Configuration)config).setProperty(Environment.CURRENT_SESSION_CONTEXT_CLASS, currentSessionContextClass.getName());
+            // don't allow Spring's LocaalSessionFactoryBean to override setting
+            setExposeTransactionAwareSessionFactory(false);
+        }
         return (Configuration)config;
 	}
 
