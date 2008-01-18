@@ -9,7 +9,7 @@ class DefaultGrailsDomainClassTests extends GroovyTestCase {
 
 	def gcl 
 	
-	void setUp() {
+	void setUp() {         
 		gcl = new GroovyClassLoader()
 	}
 
@@ -178,7 +178,7 @@ class OneToOneTest1 {
 		Class a = gcl.parseClass("class A { \n" +
 									" Long id\n" +
 									" Long version\n" +
-									" def relatesToMany = [ children : A]\n" +
+									" def hasMany = [ children : A]\n" +
 									" A parent\n" +
 									" Set children\n" +
 									"}");

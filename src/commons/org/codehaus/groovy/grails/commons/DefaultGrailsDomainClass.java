@@ -185,11 +185,19 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
 	 * Retrieves the association map
 	 */
     public Map getAssociationMap() {
-        this.relationshipMap = (Map)getPropertyOrStaticPropertyOrFieldValue( GrailsDomainClassProperty.RELATES_TO_MANY, Map.class );
         if(this.relationshipMap == null) {
             relationshipMap = (Map)getPropertyOrStaticPropertyOrFieldValue( GrailsDomainClassProperty.HAS_MANY, Map.class );
             if(relationshipMap == null)
-                this.relationshipMap = Collections.EMPTY_MAP;
+                this.relationshipMap = new HashMap();
+
+            Class theClass = getClazz();
+            while(theClass != Object.class) {
+                theClass = theClass.getSuperclass();
+                Map superRelationshipMap = (Map)GrailsClassUtils.getStaticPropertyValue(theClass, GrailsDomainClassProperty.HAS_MANY);
+                if(superRelationshipMap != null && !superRelationshipMap.equals(relationshipMap)) {
+                    relationshipMap.putAll(superRelationshipMap);
+                }
+            }
         }
         return this.relationshipMap;
     }
