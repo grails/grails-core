@@ -22,6 +22,7 @@ import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.web.mapping.UrlMappingInfo;
 import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder;
 import org.codehaus.groovy.grails.web.servlet.GrailsUrlPathHelper;
+import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -117,9 +118,11 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
      * @throws Exception Thrown if an error occurs
      */
     public static View resolveView(HttpServletRequest request, String viewName, String controllerName, ViewResolver viewResolver) throws Exception {
+        GrailsWebRequest webRequest = (GrailsWebRequest)request.getAttribute(GrailsApplicationAttributes.WEB_REQUEST);
+
         View v;
         if(viewName.startsWith(String.valueOf(SLASH))) {
-            v = viewResolver.resolveViewName(viewName, request.getLocale());
+            v = viewResolver.resolveViewName(viewName, webRequest.getLocale());
         }
         else {
             StringBuffer buf = new StringBuffer();
@@ -128,7 +131,7 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
                 buf.append(controllerName).append(SLASH);
             }
             buf.append(viewName);
-            v = viewResolver.resolveViewName(buf.toString(), request.getLocale());
+            v = viewResolver.resolveViewName(buf.toString(), webRequest.getLocale());
 
         }
         return v;
