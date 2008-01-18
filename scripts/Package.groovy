@@ -315,6 +315,7 @@ recompileCheck = { lastModified, callback ->
         ant.groovyc(destdir:classesDirPath,
                     classpathref:"grails.classpath",
                     resourcePattern:"file:${basedir}/**/grails-app/**/*.groovy",
+                    encoding:"UTF-8",
                     projectName:baseName) {
                     src(path:"${basedir}/src/groovy")
                     src(path:"${basedir}/grails-app/domain")
@@ -327,8 +328,8 @@ recompileCheck = { lastModified, callback ->
     catch(Exception e) {
         compilationError = true
         event("StatusUpdate", ["Error automatically restarting container: ${e.message}"])
+        GrailsUtil.sanitizeStackTrace(e)
         e.printStackTrace()
-
     }
 
     def tmp = classesDir.lastModified()

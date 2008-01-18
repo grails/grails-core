@@ -59,9 +59,10 @@ public class GrailsUtil {
     private static final String[] GRAILS_PACKAGES = new String[] {
             "org.codehaus.groovy.grails.",
             "org.codehaus.groovy.runtime.",
-            "org.codehaus.groovy.reflecton.",
+            "org.codehaus.groovy.reflection.",
+            "org.codehaus.gant.",
             "grails.",
-            "groovy.lang.",
+            "groovy.",
             "org.mortbay.",
             "sun.",
             "java.lang.reflect.",

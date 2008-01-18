@@ -25,6 +25,8 @@ import org.springframework.web.context.WebApplicationContext;
 
 import javax.servlet.ServletContext;
 
+import grails.util.GrailsUtil;
+
 /**
  * @author graemerocher
  *
@@ -40,11 +42,17 @@ public class GrailsContextLoader extends ContextLoader {
         if(LOG.isDebugEnabled()) {
 			LOG.debug("[GrailsContextLoader] Loading context. Creating parent application context");
 		}
-		WebApplicationContext  ctx =  super.createWebApplicationContext(servletContext, parent);
-		
-        GrailsApplication application = (GrailsApplication) ctx.getBean(GrailsApplication.APPLICATION_ID, GrailsApplication.class);		
-		ctx =  GrailsConfigUtils.configureWebApplicationContext(servletContext, ctx);
-        GrailsConfigUtils.executeGrailsBootstraps(application, ctx, servletContext);
+        WebApplicationContext  ctx = null;
+        try {
+            ctx = super.createWebApplicationContext(servletContext, parent);
+
+            GrailsApplication application = (GrailsApplication) ctx.getBean(GrailsApplication.APPLICATION_ID, GrailsApplication.class);
+            ctx =  GrailsConfigUtils.configureWebApplicationContext(servletContext, ctx);
+            GrailsConfigUtils.executeGrailsBootstraps(application, ctx, servletContext);
+        } catch (BeansException e) {
+            GrailsUtil.deepSanitize(e);
+            throw e; // rethrow sanitized version, as we have nowhere above us on stack that catches
+        }
         return ctx;
     }
 

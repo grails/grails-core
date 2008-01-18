@@ -77,15 +77,20 @@ target( watchContext: "Watches the WEB-INF/classes directory for changes and res
     while(true) {
         if (autoRecompile) {
             lastModified = recompileCheck(lastModified) {
-                grailsServer.stop()
-                compile()
-                ClassLoader contextLoader = Thread.currentThread().getContextClassLoader()
-                classLoader = new URLClassLoader([classesDir.toURL()] as URL[], contextLoader)
-                // reload plugins
-                loadPlugins()
-                setupWebContext()
-                grailsServer.setHandler( webContext )
-                grailsServer.start()
+                try {
+                    grailsServer.stop()
+                    compile()
+                    ClassLoader contextLoader = Thread.currentThread().getContextClassLoader()
+                    classLoader = new URLClassLoader([classesDir.toURL()] as URL[], contextLoader)
+                    // reload plugins
+                    loadPlugins()
+                    setupWebContext()
+                    grailsServer.setHandler( webContext )
+                    grailsServer.start()
+                } catch (Throwable e) {
+                    GrailsUtil.sanitizeStackTrace(e)
+                    e.printStackTrace()
+                }
             }
         }
         sleep(recompileFrequency * 1000)
