@@ -34,12 +34,27 @@ class ItemController {
 }
 ''')
 
-        gcl.parseClass('''
+        gcl.parseClass('''\
+import junit.framework.Assert
+
 class AuthorController {
     def index = {}
     def list = {}
 }
 class Filters {
+    // Test property on the filters definition.
+    def myName = "John Doe"
+
+    // Test method that returns a string.
+    def sum(list) {
+        return list.sum()
+    }
+
+    // Test multi-argument method.
+    def fullName(String firstName, String lastName) {
+        return "$firstName $lastName".toString()
+    }
+
 	def beforeClosure = { ctx ->
 		println "***beforeClosure: $ctx.uri"
 		return true
@@ -56,6 +71,14 @@ class Filters {
     def filters = {
       "default"(controller:"*", action:"*") {
             before = {
+                // Check that the filters property is available. This
+                // tests that FilterConfig's propertyMissing handling
+                // is working.
+                Assert.assertEquals("Filters property 'myName' not available.", "John Doe", myName)
+
+                // And check the multi-arg method.
+                Assert.assertEquals("Multi-arg method 'fullName' not available.", "Jane Doe", fullName('Jane', 'Doe'))
+
                 request.beforeOne = "one"
             }
             after = afterClosure
@@ -64,6 +87,11 @@ class Filters {
 
 		author(controller:"author") {
 			before = {
+                // Check that the filters method is available. This
+                // tests that FilterConfig's methodMissing handling
+                // is working.
+                Assert.assertEquals("Filters method 'sum' not available.", 10, sum([ 1, 2, 3, 4 ]))
+
                 request.beforeTwo = "two"
 			}
 		}

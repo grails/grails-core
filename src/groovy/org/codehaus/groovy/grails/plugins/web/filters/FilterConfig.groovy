@@ -16,6 +16,7 @@
 package org.codehaus.groovy.grails.plugins.web.filters
 
 import org.springframework.web.servlet.ModelAndView
+import org.codehaus.groovy.grails.commons.GrailsClassUtils
 
 /**
  * @author mike
@@ -30,9 +31,43 @@ class FilterConfig {
     ModelAndView modelAndView
     boolean initialised = false
 
-    void propertyMissing(String propertyName, value) {
+    /**
+     * Redirects attempt to access an 'errors' property, so we provide
+     * one here with a null value.
+     */
+    def errors = null
+
+    /**
+     * This is the filters definition bean that declared the filter
+     * config. Since it may contain injected services, etc., we
+     * delegate any missing properties or methods to it.
+     */
+    def filtersDefinition
+
+    def propertyMissing(String propertyName) {
         if(!initialised) {
             log.warn "Setting $propertyName is invalid for filter config $name"
+        }
+
+        // Delegate to the parent definition if it has this property.
+        if (this.filtersDefinition.metaClass.hasProperty(this.filtersDefinition, propertyName)) {
+            def getterName = GrailsClassUtils.getGetterName(propertyName)
+            this.metaClass."$getterName" = {-> this.filtersDefinition."$propertyName" }
+            return this.filtersDefinition."$propertyName"
+        }
+        else {
+            throw new MissingPropertyException(propertyName, this.class)
+        }
+    }
+
+    def methodMissing(String methodName, args) {
+        // Delegate to the parent definition if it has this method.
+        if (this.filtersDefinition.metaClass.respondsTo(this.filtersDefinition, methodName)) {
+            this.metaClass."$methodName" = { varArgs -> this.filtersDefinition."$methodName"(varArgs) }
+            return this.filtersDefinition."$methodName"(args)
+        }
+        else {
+            throw new MissingMethodException(methodName, this.class, args)
         }
     }
     

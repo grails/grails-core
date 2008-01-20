@@ -35,7 +35,7 @@ class DefaultGrailsFiltersClass  extends AbstractInjectableGrailsClass implement
 
         if (!filters) return [];
 
-        def loader = new Loader()
+        def loader = new Loader(filters)
         def filtersClosure = filters.filters
         filtersClosure.delegate = loader
         filtersClosure.call()
@@ -45,11 +45,16 @@ class DefaultGrailsFiltersClass  extends AbstractInjectableGrailsClass implement
 }
 
 class Loader {
+    def filtersDefinition
     def filters = []
+
+    Loader(filtersDefinition) {
+        this.filtersDefinition = filtersDefinition
+    }
 	
 	def methodMissing(String methodName, args) {
         if(args) {
-            def fc = new FilterConfig(name: methodName)
+            def fc = new FilterConfig(name: methodName, filtersDefinition: filtersDefinition)
             filters << fc
 
             if(args[0] instanceof Closure) {
