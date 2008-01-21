@@ -101,7 +101,7 @@ class TestUrlMappings {
             attrs = [controller: 'person', action: 'show', params: [var1: "unsafe ID 0", test: '<hello>'], update: 'async']
             tag.call(attrs) {"Show async"}
             println sw.toString()
-            assertEquals("<a href=\"/person/show?var1=unsafe+ID+0&test=%3Chello%3E\" onclick=\"new Ajax.Updater('async','/person/show?var1=unsafe+ID+0&test=%3Chello%3E',{asynchronous:true,evalScripts:true});return false;\">Show async</a>", sw.toString())
+            assertEquals("<a href=\"/people/details/unsafe+ID+0?test=%3Chello%3E\" onclick=\"new Ajax.Updater('async','/people/details/unsafe+ID+0?test=%3Chello%3E',{asynchronous:true,evalScripts:true});return false;\">Show async</a>", sw.toString())
         }
     }
 

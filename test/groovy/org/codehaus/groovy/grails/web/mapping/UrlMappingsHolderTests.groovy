@@ -97,8 +97,7 @@ mappings {
         def m = holder.getReverseMapping("blog", "show", vars)
 
          assert m
-         assertEquals "blog", m.controllerName
-         assertEquals "show", m.actionName
+         println m.controllerName
 
          def url = m.createRelativeURL("blog", "show", vars, "utf-8")
          assertEquals("/blog/foo/2007/3/17?some=other", url)

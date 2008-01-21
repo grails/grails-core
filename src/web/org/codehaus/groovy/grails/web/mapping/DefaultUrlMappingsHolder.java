@@ -110,7 +110,7 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
     public UrlCreator getReverseMapping(final String controller, final String action, Map params) {
         if(params == null) params = Collections.EMPTY_MAP;
 
-        UrlMapping mapping = (UrlMapping)mappingsLookup.get(new UrlMappingKey(controller, action, params.keySet()));
+        UrlMapping mapping = lookupMapping(controller, action, params);
         if(mapping == null || (mapping instanceof ResponseCodeUrlMapping)) {
             mapping = (UrlMapping)mappingsLookup.get(new UrlMappingKey(controller, action, Collections.EMPTY_SET));                   
         }
@@ -126,6 +126,18 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
         else {
             return mapping;
         }
+    }
+
+    private UrlMapping lookupMapping(String controller, String action, Map params) {
+        Set paramSet = params.keySet();
+        List paramList = new ArrayList(paramSet);
+        UrlMapping mapping = (UrlMapping) mappingsLookup.get(new UrlMappingKey(controller, action, paramSet));
+        while(!paramList.isEmpty() && mapping == null) {
+            paramList.remove(paramList.size()-1);
+            paramSet = new HashSet(paramList);
+            mapping = (UrlMapping) mappingsLookup.get(new UrlMappingKey(controller, action, paramSet));
+        }
+        return mapping;
     }
 
     /**
@@ -203,10 +215,10 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
     class UrlMappingKey {
         String controller;
         String action;
-        Set paramNames = Collections.EMPTY_SET;
+        Collection paramNames = Collections.EMPTY_SET;
 
 
-        public UrlMappingKey(String controller, String action, Set paramNames) {
+        public UrlMappingKey(String controller, String action, Collection paramNames) {
             this.controller = controller;
             this.action = action;
             this.paramNames = paramNames;

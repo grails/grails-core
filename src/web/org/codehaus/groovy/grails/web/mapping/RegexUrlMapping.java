@@ -196,7 +196,11 @@ public class RegexUrlMapping extends AbstractUrlMapping implements UrlMapping {
                 else if(value == null)
                     break;
 
-                uri.append(SLASH).append(value);
+                try {
+                    uri.append(SLASH).append(URLEncoder.encode(value.toString(), encoding));
+                } catch (UnsupportedEncodingException e) {
+                    throw new ControllerExecutionException("Error creating URL for parameters ["+parameterValues +"], problem encoding URL part ["+value +"]: " + e.getMessage(),e);
+                }
             }
             else {
                 uri.append(SLASH).append(token);
