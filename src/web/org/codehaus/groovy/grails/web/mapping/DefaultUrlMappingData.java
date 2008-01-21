@@ -100,7 +100,7 @@ public class DefaultUrlMappingData implements UrlMappingData {
     }
 
     public boolean isOptional(int index) {
-        if(optionalTokens.size() >= index) return true;
+        if(index >= optionalTokens.size()) return true;
         return optionalTokens.get(index).equals(Boolean.TRUE);
     }
 }
