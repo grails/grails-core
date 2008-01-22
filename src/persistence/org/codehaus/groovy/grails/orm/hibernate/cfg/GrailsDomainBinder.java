@@ -25,6 +25,7 @@ import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 import org.codehaus.groovy.grails.orm.hibernate.validation.UniqueConstraint;
 import org.hibernate.FetchMode;
 import org.hibernate.MappingException;
+import org.hibernate.type.ForeignKeyDirection;
 import org.hibernate.cfg.ImprovedNamingStrategy;
 import org.hibernate.cfg.Mappings;
 import org.hibernate.cfg.NamingStrategy;
@@ -1200,9 +1201,9 @@ public final class GrailsDomainBinder {
 					LOG.debug("[GrailsDomainBinder] Binding property [" + currentGrailsProp.getName() + "] as OneToOne");
 
 				//value = new OneToOne( table, persistentClass );
-				//bindOneToOne( currentGrailsProp, (OneToOne)value, mappings );
+				//bindOneToOne( currentGrailsProp, (OneToOne)value,EMPTY_PATH,mappings );
 				value = new ManyToOne( table );
-				bindManyToOne( currentGrailsProp, (ManyToOne) value, EMPTY_PATH, mappings );
+			    bindManyToOne( currentGrailsProp, (ManyToOne)value, EMPTY_PATH, mappings );
 			}
             else if ( currentGrailsProp.isEmbedded() ) {
                 value = new Component( persistentClass );
@@ -1223,6 +1224,7 @@ public final class GrailsDomainBinder {
 			}
 		}
 	}
+
 
     private static boolean isUserType(Class userType) {
         if(userType == null) return false;
@@ -1450,14 +1452,31 @@ public final class GrailsDomainBinder {
 
 	}
 
-	/**
+    private static void bindOneToOne(GrailsDomainClassProperty property, OneToOne oneToOne, String path, Mappings mappings) {
+        ColumnConfig cc = getColumnConfig(property);
+        oneToOne.setConstrained(!property.isOwningSide());
+        oneToOne.setForeignKeyType( !property.isOwningSide() ?
+                ForeignKeyDirection.FOREIGN_KEY_FROM_PARENT :
+                ForeignKeyDirection.FOREIGN_KEY_TO_PARENT );
+
+        if(cc != null) {
+           oneToOne.setLazy(cc.getLazy());
+        }
+        else {
+            oneToOne.setLazy(false);
+        }
+
+        bindSimpleValue(property,oneToOne, path, mappings);
+
+    }
+
+
+    /**
 	 * @param property
 	 * @param manyToOne
 	 */
 	private static void bindManyToOneValues(GrailsDomainClassProperty property, ManyToOne manyToOne) {
-		// TODO configure fetching
 		manyToOne.setFetchMode(FetchMode.DEFAULT);
-		// TODO configure lazy loading
         ColumnConfig cc = getColumnConfig(property);
 
         if(cc != null) {
@@ -1471,7 +1490,8 @@ public final class GrailsDomainBinder {
         if(manyToOne.isLazy()) {            
             manyToOne.setIgnoreNotFound(false);
         }
-	}
+
+    }
 
 	/**
 	 * @param version
@@ -1731,8 +1751,10 @@ w	 * Binds a simple value to the Hibernate metamodel. A simple value is
             }
             if(grailsProp.isManyToMany())
                 column.setNullable(false);
+            else if((grailsProp.isOneToOne()||grailsProp.isManyToOne()) && grailsProp.isBidirectional() && !grailsProp.isOwningSide()) {
+                column.setNullable(true);                
+            }
             else {
-
                 column.setNullable(grailsProp.isOptional());
             }
         } else {
@@ -2037,6 +2059,14 @@ w	 * Binds a simple value to the Hibernate metamodel. A simple value is
 
         public Map getMappedBy() {
             return Collections.EMPTY_MAP;
+        }
+
+        public boolean hasPersistentProperty(String propertyName) {
+            for (int i = 0; i < properties.length; i++) {
+                GrailsDomainClassProperty persistantProperty = properties[i];
+                if(persistantProperty.getName().equals(propertyName)) return true;
+            }
+            return false;
         }
     }
 }

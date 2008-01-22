@@ -9,7 +9,7 @@ package org.codehaus.groovy.grails.web.converters
 import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
 import org.codehaus.groovy.grails.commons.ConfigurationHolder
 
-class AutoParamsJSONMarshallingTests extends AbstractGrailsControllerTests {
+class AutoParamsJSONMarshallingTests extends AbstractGrailsControllerTests {      
 
     public void onSetUp() {
         def config = new ConfigSlurper().parse( """

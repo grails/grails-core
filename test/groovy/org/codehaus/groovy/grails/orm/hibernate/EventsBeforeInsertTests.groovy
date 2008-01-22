@@ -6,7 +6,7 @@
  */
 package org.codehaus.groovy.grails.orm.hibernate
 class EventsBeforeInsertTests extends AbstractGrailsHibernateTests{
-
+                             
     protected void onSetUp() {
         gcl.parseClass('''
 class BeforeInsertExample {

@@ -184,4 +184,10 @@ public interface GrailsDomainClass extends GrailsClass {
      */
     Map getMappedBy();
 
+    /**
+     * Returns true if this domain class has a persistent property for the given name
+     * @param propertyName The property name
+     * @return True if it does
+     */
+    boolean hasPersistentProperty(String propertyName);
 }

@@ -717,4 +717,12 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
     public Map getMappedBy() {
         return mappedBy;
     }
+
+    public boolean hasPersistentProperty(String propertyName) {
+        for (int i = 0; i < persistantProperties.length; i++) {
+            GrailsDomainClassProperty persistantProperty = persistantProperties[i];
+            if(persistantProperty.getName().equals(propertyName)) return true;
+        }
+        return false;  
+    }
 }

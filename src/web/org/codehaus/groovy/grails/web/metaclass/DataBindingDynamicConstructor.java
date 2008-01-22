@@ -15,15 +15,21 @@
  */
 package org.codehaus.groovy.grails.web.metaclass;
 
+import groovy.lang.GroovySystem;
+import groovy.lang.MetaClass;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.grails.commons.GrailsDomainClass;
+import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
 import org.codehaus.groovy.grails.commons.metaclass.DynamicConstructor;
 import org.codehaus.groovy.grails.exceptions.GrailsDomainException;
 import org.codehaus.groovy.grails.web.binding.DataBindingUtils;
 import org.springframework.context.ApplicationContext;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.Iterator;
 import java.util.Map;
+
 /**
  * A dynamic property that uses a Map of OGNL expressions to sets properties on the target object
  * 
@@ -73,8 +79,40 @@ public class DataBindingDynamicConstructor implements DynamicConstructor {
 
 
         if (map !=null) {
-                DataBindingUtils.bindObjectToInstance(instance, map);
+            DataBindingUtils.bindObjectToInstance(instance, map);
+            GrailsDomainClass domainClass = null;
+            String domainClassBeanName = clazz.getName() + "DomainClass";
+            if(applicationContext != null && applicationContext.containsBean(domainClassBeanName)) {
+                domainClass = (GrailsDomainClass)applicationContext.getBean(domainClassBeanName);
+            }
+            if(map instanceof Map && domainClass != null) {
+                Map theMap = (Map) map;
+                for (Iterator i = theMap.keySet().iterator(); i.hasNext();) {
+                    Object key = i.next();
+                    String propertyName = key.toString();
+                    if(propertyName.indexOf('.') >-1) {
+                        propertyName = propertyName.substring(0,propertyName.indexOf('.'));
+                    }
+                    if(domainClass.hasPersistentProperty(propertyName)) {
+                        GrailsDomainClassProperty prop = domainClass.getPropertyByName(propertyName);
+                        if(prop != null && prop.isOneToOne() && prop.isBidirectional()) {
+                            Object val = theMap.get(key);
+                            GrailsDomainClassProperty otherSide = prop.getOtherSide();
+                            if(val != null && otherSide != null) {
+                                MetaClass mc = GroovySystem.getMetaClassRegistry().getMetaClass(val.getClass());
+                                try {
+                                    mc.setProperty(val,otherSide.getName(), instance);
+                                } catch (Exception e) {
+                                    // ignore
+                                }
+                            }
+                        }                        
+                    }
+
+                }
+            }
         }
+
         return instance;
 	}
 

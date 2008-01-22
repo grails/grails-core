@@ -94,7 +94,7 @@ The following libraries are included in Grails because they are required either 
 - required for running Grails applications (When using Hibernate EJB3 annotations)
 
 * hibernate3.jar
-- Hibernate 3.2.1.GA (http://www.hibernate.org)
+- Hibernate 3.2.5.GA (http://www.hibernate.org)
 - required for building Grails core
 - required for running Grails applications
 
