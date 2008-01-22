@@ -725,4 +725,8 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
         }
         return false;  
     }
+
+    public void setMappingStrategy(String strategy) {
+        this.mappingStrategy = strategy;
+    }
 }

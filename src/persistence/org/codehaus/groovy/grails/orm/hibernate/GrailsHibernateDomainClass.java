@@ -226,6 +226,10 @@ public class GrailsHibernateDomainClass extends AbstractGrailsClass implements E
         return false;
     }
 
+    public void setMappingStrategy(String strategy) {
+        // do nothing, read-only
+    }
+
     public boolean isOneToMany(String propertyName) {
 	GrailsDomainClassProperty prop = getPropertyByName(propertyName);
 	return prop != null && prop.isOneToMany();
@@ -267,7 +271,7 @@ public class GrailsHibernateDomainClass extends AbstractGrailsClass implements E
     }
 
     public String getMappingStrategy() {
-	return HIBERNATE;
+	    return HIBERNATE;
     }
 
     public Set getSubClasses() {

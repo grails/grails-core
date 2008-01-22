@@ -190,4 +190,10 @@ public interface GrailsDomainClass extends GrailsClass {
      * @return True if it does
      */
     boolean hasPersistentProperty(String propertyName);
+
+    /**
+     * Sets the strategy to use for ORM mapping. Default is GORM
+     * @param strategy The mapping strategy
+     */
+    void setMappingStrategy(String strategy);
 }

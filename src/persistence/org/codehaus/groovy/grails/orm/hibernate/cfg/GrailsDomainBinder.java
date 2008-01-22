@@ -2068,5 +2068,9 @@ w	 * Binds a simple value to the Hibernate metamodel. A simple value is
             }
             return false;
         }
+
+        public void setMappingStrategy(String strategy) {
+            // do nothing
+        }
     }
 }
