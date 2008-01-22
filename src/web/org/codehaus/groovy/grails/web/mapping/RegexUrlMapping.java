@@ -171,6 +171,8 @@ public class RegexUrlMapping extends AbstractUrlMapping implements UrlMapping {
 
     private String createURLInternal(Map parameterValues, String encoding, boolean includeContextPath) {
 
+        if(encoding == null) encoding = "utf-8";
+
         String contextPath = "";
         if(includeContextPath) {
             GrailsWebRequest webRequest = (GrailsWebRequest) RequestContextHolder.getRequestAttributes();
