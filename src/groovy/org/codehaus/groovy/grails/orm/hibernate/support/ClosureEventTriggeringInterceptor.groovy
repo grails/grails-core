@@ -39,16 +39,14 @@ class ClosureEventTriggeringInterceptor extends EmptyInterceptor implements Appl
     static final String BEFORE_UPDATE_EVENT = 'beforeUpdate'
     static final String BEFORE_DELETE_EVENT = 'beforeDelete'
 
-    private ApplicationContext applicationContext
+    private transient ApplicationContext applicationContext
 
     public void setApplicationContext(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext
     }
 
     public boolean onLoad(Object entity, Serializable id, Object[] state, String[] propertyNames, Type[] types)  {
-        if(applicationContext) {
-            applicationContext.autowireCapableBeanFactory.autowireBeanProperties(entity,AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false)
-        }
+        applicationContext?.autowireCapableBeanFactory.autowireBeanProperties(entity,AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false)
         return triggerEvent(ONLOAD_EVENT, entity, state, propertyNames.toList())
     }
     public boolean onSave(Object entity, Serializable id, Object[] state, String[] propertyNames, Type[] types) {
