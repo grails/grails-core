@@ -101,6 +101,8 @@ class GrailsCompiler extends Groovyc {
     void compile() {
 
         def resources = resourcePattern ? resolveResources(resourcePattern) : [] as Resource[]
+        resources = resources.findAll { it.file.parentFile.name != 'spring' } as Resource[]
+        
         def resourceLoader = new GrailsResourceLoader(resources)
         GrailsResourceLoaderHolder.resourceLoader = resourceLoader
 

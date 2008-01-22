@@ -231,11 +231,26 @@ target(createDescriptor:"Creates the WEB-INF/grails.xml file used to load Grails
 		def xml = new groovy.xml.MarkupBuilder(writer)
 		xml.grails {
 			resources {
-			   for(r in resourceList) {
-				    def matcher = r.URL.toString() =~ /\S+?\/grails-app\/\S+?\/(\S+?).groovy/
-					def name = matcher[0][1].replaceAll('/', /\./)
+			    for(r in resourceList) {
+                    def matcher = r.URL.toString() =~ /\S+?\/grails-app\/\S+?\/(\S+?).groovy/
+
+                    // Replace the slashes in the capture group with '.' so
+                    // that we get a qualified class name. So for example,
+                    // the file:
+                    //
+                    //    grails-app/domain/org/example/MyFilters.groovy
+                    //
+                    // will result in a capturing group of:
+                    //
+                    //    org/example/MyFilters
+                    //
+                    // which the following step will convert to:
+                    //
+                    //    org.example.MyFilters
+                    //
+                    def name = matcher[0][1].replaceAll('/', /\./)
 					resource(name)
-			   } 
+			    }
 			}
 			plugins {
                 for(p in pluginList) {
