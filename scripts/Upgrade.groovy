@@ -49,10 +49,27 @@ target( upgrade: "main upgrade target") {
 			validargs:"y,n", 
 			addproperty:"grails.upgrade.warning")
 
-       def answer = Ant.antProject.properties."grails.upgrade.warning"        
+    def answer = Ant.antProject.properties."grails.upgrade.warning"
 
 	if(answer == "n") exit(0)
-	
+
+	if ((grailsVersion.startsWith("1.0")) &&
+        !(['utf-8', 'us-ascii'].contains(System.getProperty('file.encoding')?.toLowerCase()) )) {
+            Ant.input(message: """
+        WARNING: This version of Grails requires all source code to be encoded in UTF-8.
+        Your system file encoding indicates that your source code may not be saved in UTF-8.
+        You can re-encode your source code manually after upgrading, but if you have used any
+        non-ASCII chars in your source or GSPs your application may not operate correctly until
+        you re-encode the files as UTF-8.
+
+        Are you sure you want to upgrade your project now?
+                   """,
+                validargs:"y,n",
+                addproperty:"grails.src.encoding.warning")
+        answer = Ant.antProject.properties."grails.src.encoding.warning"
+        if(answer == "n") exit(0)
+    }
+
 	def coreTaglibs = new File("${basedir}/plugins/core")
 
 	Ant.delete(dir:"${coreTaglibs}", failonerror:false)
