@@ -3,7 +3,7 @@ package org.codehaus.groovy.grails.orm.hibernate;
 import org.codehaus.groovy.grails.commons.*
 import org.codehaus.groovy.grails.commons.test.*
 
-class ComponentMappingTests extends AbstractGrailsHibernateTests {
+class ComponentMappingTests extends AbstractGrailsHibernateTests {       
 
 	void testComponentMapping() {
 		def personClass = ga.getDomainClass("ComponentMappingPerson")
@@ -13,14 +13,14 @@ class ComponentMappingTests extends AbstractGrailsHibernateTests {
 
 		p.name = "Homer Simpson"
 		def a1 = addressClass.newInstance()
-		a1.number = "22"; a1.postCode = "3345243"
+		a1.number = "22"; a1.postCode = "3345243" ; a1.person = p
 		def a2 = addressClass.newInstance()
-		a2.number = "454"; a2.postCode = "340854"
+		a2.number = "454"; a2.postCode = "340854" ; a2.person = p
 
 		p.homeAddress = a1
 		p.workAddress = a2
                                                                                                         
-        p.save()
+        assert p.save()
         session.flush()
 
         session.clear()

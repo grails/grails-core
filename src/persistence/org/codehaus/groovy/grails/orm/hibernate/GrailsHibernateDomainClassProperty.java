@@ -199,6 +199,10 @@ public class GrailsHibernateDomainClassProperty implements GrailsDomainClassProp
         return false;
     }
 
+    public GrailsDomainClass getComponent() {
+        throw new UnsupportedOperationException("Method 'getComponent' is not supported by implementation");
+    }
+
     public void setOwningSide(boolean b) {
 		this.owingSide = b;
     }

@@ -3,7 +3,7 @@ package org.codehaus.groovy.grails.orm.hibernate;
 import org.codehaus.groovy.grails.commons.*
 import org.codehaus.groovy.grails.commons.test.*
 
-class ValidatePersistentMethodTests extends AbstractGrailsHibernateTests {
+class ValidatePersistentMethodTests extends AbstractGrailsHibernateTests {      
 
 	void testToOneCascadingValidation() {
         def bookClass = ga.getDomainClass("Book")

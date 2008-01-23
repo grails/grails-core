@@ -202,5 +202,16 @@ public interface GrailsDomainClassProperty {
      */
     boolean isEmbedded();
 
+    /**
+     * If #isEmbedded returns true then this method can be called to obtain a reference to the embedded component, which implements the GrailsDomainClass
+     * interface
+     *
+     * @see org.codehaus.groovy.grails.commons.GrailsDomainClass
+     * @see GrailsDomainClassProperty#isEmbedded() 
+     *
+     * @return The component or null if it is not an embedded component
+     */
+    GrailsDomainClass getComponent();
+
     void setOwningSide(boolean b);
 }

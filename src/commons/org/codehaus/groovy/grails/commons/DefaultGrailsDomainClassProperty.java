@@ -16,9 +16,14 @@ package org.codehaus.groovy.grails.commons;
 
 import org.apache.commons.lang.ClassUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
+import org.hibernate.MappingException;
+import org.springframework.validation.Validator;
 
 import java.beans.PropertyDescriptor;
+import java.beans.IntrospectionException;
 import java.util.*;
 
 /**
@@ -32,8 +37,10 @@ import java.util.*;
  */
 public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProperty {
 
-	
-	private GrailsDomainClass domainClass;
+
+    private static final Log LOG  = LogFactory.getLog(DefaultGrailsDomainClassProperty.class);
+
+    private GrailsDomainClass domainClass;
     private boolean persistant;
 	private boolean identity;
 	private boolean oneToMany;
@@ -54,6 +61,7 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
 	private boolean owningSide;
 	private String referencePropertyName;
     private boolean embedded;
+    private GrailsDomainClass component;
 
 
     public DefaultGrailsDomainClassProperty(GrailsDomainClass domainClass, PropertyDescriptor descriptor)  {
@@ -413,7 +421,159 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
         return embedded;
     }
 
+    public GrailsDomainClass getComponent() {
+        return this.component;
+    }
+
     public void setEmbedded(boolean isEmbedded) {
         this.embedded = isEmbedded;
+        if(isEmbedded) {
+            this.component = new ComponentDomainClass(getType());
+        }
     }
+
+
+    private class ComponentDomainClass extends AbstractGrailsClass implements GrailsDomainClass {
+        private GrailsDomainClassProperty[] properties;
+        private Map constraints = Collections.EMPTY_MAP;
+        private List transients = Collections.EMPTY_LIST;
+
+        public ComponentDomainClass(Class type) {
+            super(type, "");
+
+            PropertyDescriptor[] descriptors;
+
+            try {
+                descriptors = java.beans.Introspector.getBeanInfo(type).getPropertyDescriptors();
+            } catch (IntrospectionException e) {
+                throw new MappingException("Failed to use class ["+type+"] as a component. Cannot introspect! " + e.getMessage());
+            }
+
+            List tmp = (List)getPropertyOrStaticPropertyOrFieldValue(GrailsDomainClassProperty.TRANSIENT, List.class);
+            if(tmp!=null) this.transients = tmp;
+            this.properties = createDomainClassProperties(this,descriptors);
+            try {
+                this.constraints = GrailsDomainConfigurationUtil.evaluateConstraints(getReference().getWrappedInstance(), properties);
+            } catch (IntrospectionException e) {
+                LOG.error("Error reading embedded component ["+getClazz()+"] constraints: " +e .getMessage(), e);
+            }
+        }
+
+        private GrailsDomainClassProperty[] createDomainClassProperties(ComponentDomainClass type, PropertyDescriptor[] descriptors) {
+            List properties = new ArrayList();
+            for (int i = 0; i < descriptors.length; i++) {
+                PropertyDescriptor descriptor = descriptors[i];
+                if(GrailsDomainConfigurationUtil.isNotConfigurational(descriptor) && !transients.contains(descriptor.getName())) {
+                    properties.add(new DefaultGrailsDomainClassProperty(type,descriptor));
+                }
+            }
+            return (GrailsDomainClassProperty[])properties.toArray(new GrailsDomainClassProperty[properties.size()]);
+        }
+
+
+        public boolean isOwningClass(Class domainClass) {
+            return domainClass != null && domainClass.equals(getDomainClass().getClazz());
+        }
+
+        public GrailsDomainClassProperty[] getProperties() {
+            return properties;
+        }
+
+        public GrailsDomainClassProperty[] getPersistantProperties() {
+            return properties;
+        }
+
+        public GrailsDomainClassProperty[] getPersistentProperties() {
+            return properties;
+        }
+
+        public GrailsDomainClassProperty getIdentifier() {
+            return null;  // no identifier for embedded component
+        }
+
+        public GrailsDomainClassProperty getVersion() {
+            return null;  // no version for embedded component
+        }
+
+        public Map getAssociationMap() {
+            return Collections.EMPTY_MAP;
+        }
+
+        public GrailsDomainClassProperty getPropertyByName(String name) {
+            for (int i = 0; i < properties.length; i++) {
+                GrailsDomainClassProperty property = properties[i];
+                if(property.getName().equals(name)) return property;
+            }
+            return null;
+        }
+
+        public String getFieldName(String propertyName) {
+            return null;
+        }
+
+
+        public boolean isOneToMany(String propertyName) {
+            return false;
+        }
+
+        public boolean isManyToOne(String propertyName) {
+            return false;
+        }
+
+        public boolean isBidirectional(String propertyName) {
+            return false;
+        }
+
+        public Class getRelatedClassType(String propertyName) {
+            return getPropertyByName(propertyName).getReferencedPropertyType();
+        }
+
+        public Map getConstrainedProperties() {
+            return this.constraints;
+        }
+
+        public Validator getValidator() {
+            return null;
+        }
+
+        public void setValidator(Validator validator) {
+        }
+
+        public String getMappingStrategy() {
+            return GrailsDomainClass.GORM;
+        }
+
+        public boolean isRoot() {
+            return true;
+        }
+
+        public Set getSubClasses() {
+            return Collections.EMPTY_SET;
+        }
+
+        public void refreshConstraints() {
+            // do nothing
+        }
+
+        public boolean hasSubClasses() {
+            return false;
+        }
+
+        public Map getMappedBy() {
+            return Collections.EMPTY_MAP;
+        }
+
+        public boolean hasPersistentProperty(String propertyName) {
+            for (int i = 0; i < properties.length; i++) {
+                GrailsDomainClassProperty persistantProperty = properties[i];
+                if(persistantProperty.getName().equals(propertyName)) return true;
+            }
+            return false;
+        }
+
+        public void setMappingStrategy(String strategy) {
+            // do nothing
+        }
+    }
+
 }

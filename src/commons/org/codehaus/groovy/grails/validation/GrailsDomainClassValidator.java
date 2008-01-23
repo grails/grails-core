@@ -91,7 +91,7 @@ public class GrailsDomainClassValidator implements Validator, CascadingValidator
                 validatePropertyWithConstraint(propertyName, obj, errors, bean, constrainedProperties);
             }
 
-            if(persistentProperty.isAssociation() && cascade) {
+            if((persistentProperty.isAssociation() || persistentProperty.isEmbedded()) && cascade) {
                 cascadeToAssociativeProperty(errors, bean, persistentProperty);
             }
         }
@@ -122,7 +122,7 @@ public class GrailsDomainClassValidator implements Validator, CascadingValidator
     protected void cascadeToAssociativeProperty(Errors errors, BeanWrapper bean, GrailsDomainClassProperty persistentProperty) {
         String propertyName = persistentProperty.getName();
         if(errors.hasFieldErrors(propertyName)) return;
-        if(persistentProperty.isManyToOne() || persistentProperty.isOneToOne() ) {
+        if(persistentProperty.isManyToOne() || persistentProperty.isOneToOne() || persistentProperty.isEmbedded() ) {
             Object associatedObject = bean.getPropertyValue(propertyName);
             cascadeValidationToOne(errors, bean,associatedObject, persistentProperty, propertyName);
         }
@@ -184,7 +184,7 @@ public class GrailsDomainClassValidator implements Validator, CascadingValidator
 
         if(associatedObject != null) {
 
-            GrailsDomainClass associatedDomainClass = persistentProperty.getReferencedDomainClass();
+            GrailsDomainClass associatedDomainClass = persistentProperty.isEmbedded() ? persistentProperty.getComponent() : persistentProperty.getReferencedDomainClass();
             if(associatedDomainClass != null && associatedDomainClass.isOwningClass(bean.getWrappedClass())) {
                 GrailsDomainClassProperty otherSide = null;
                 if(persistentProperty.isBidirectional()) {

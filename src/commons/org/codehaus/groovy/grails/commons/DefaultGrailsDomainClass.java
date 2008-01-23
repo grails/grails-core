@@ -15,24 +15,18 @@
 package org.codehaus.groovy.grails.commons;
 
 
-import groovy.lang.Closure;
 import groovy.lang.GroovyObject;
 import org.apache.commons.lang.ClassUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.commons.metaclass.DynamicMethods;
-import org.codehaus.groovy.grails.commons.metaclass.GroovyDynamicMethodsInterceptor;
-import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException;
 import org.codehaus.groovy.grails.exceptions.GrailsDomainException;
 import org.codehaus.groovy.grails.exceptions.InvalidPropertyException;
-import org.codehaus.groovy.grails.validation.metaclass.ConstraintsEvaluatingDynamicProperty;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.BeanWrapper;
 import org.springframework.validation.Validator;
 
-import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
+import java.beans.IntrospectionException;
 import java.lang.reflect.Modifier;
 import java.util.*;
 
@@ -106,7 +100,12 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
         // set persistant properties
         establishPersistentProperties();
         // process the constraints
-        evaluateConstraints();
+        try {
+            this.constraints = GrailsDomainConfigurationUtil.evaluateConstraints(getReference().getWrappedInstance(), this.persistantProperties);
+        } catch (IntrospectionException e) {
+            LOG.error("Error reading class ["+getClazz()+"] constraints: " +e .getMessage(), e);
+        }
+
 
     }
 
@@ -217,31 +216,6 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
 
 
     /**
-     * Evaluates the constraints closure to build the list of constraints
-     *
-     */
-    private void evaluateConstraints() {
-        Closure constraintsClosure = (Closure)getPropertyOrStaticPropertyOrFieldValue(
-                GrailsDomainClassProperty.CONSTRAINTS, Closure.class );
-        BeanWrapper reference = getReference();
-
-        if (constraintsClosure != null && !GrailsClassUtils.isStaticProperty(getClazz(), GrailsDomainClassProperty.CONSTRAINTS)) {
-            throw new GrailsConfigurationException(
-                "Domain class ["+getFullName()+"] has non-static constraints. Constraints must be " +
-                "declared static.");
-        }
-
-        GroovyObject instance = (GroovyObject)reference.getWrappedInstance();
-        try {
-            DynamicMethods interceptor = new GroovyDynamicMethodsInterceptor(instance);
-            interceptor.addDynamicProperty( new ConstraintsEvaluatingDynamicProperty(this.persistantProperties) );
-            this.constraints = (Map)instance.getProperty(GrailsDomainClassProperty.CONSTRAINTS);
-        } catch (IntrospectionException e) {
-            LOG.error("Introspection error reading domain class ["+getFullName()+"] constraints: " + e.getMessage(), e);
-        }
-    }
-
-    /**
      * Calculates the relationship type based other types referenced
      *
      */
@@ -274,7 +248,7 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
     /**
      * Establishes a relationship for a java.util.Set
      *
-     * @param property
+     * @param property The collection property
      */
     private void  establishRelationshipForCollection(DefaultGrailsDomainClassProperty property) {
         // is it a relationship
@@ -397,7 +371,7 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
      * @param property The property
      * @param relatedClassType The related type
      * @param relatedClassRelationships The related types relationships
-     * @return
+     * @return True if the relationship is a many-to-many
      */
 	private boolean isRelationshipManyToMany(DefaultGrailsDomainClassProperty property, Class relatedClassType, Map relatedClassRelationships) {
 		return relatedClassRelationships != null &&
@@ -463,7 +437,7 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
     /**
      * Establish relationship with related domain class
      *
-     * @param property
+     * @param property Establishes a relationship between this class and the domain class property
      */
     private void establishDomainClassRelationship(DefaultGrailsDomainClassProperty property) {
         Class propType = property.getType();
@@ -554,10 +528,6 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
 		return relatedClassPropertyName;
 	}
 
-    /**
-     * @param property
-     * @param relatedClassPropertyType
-     */
     private void establishDomainClassRelationshipToType(DefaultGrailsDomainClassProperty property, Class relatedClassPropertyType) {
         // uni-directional one-to-one
         if(relatedClassPropertyType == null) {
@@ -711,7 +681,11 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
     }
 
     public void refreshConstraints() {
-        evaluateConstraints();
+        try {
+            this.constraints = GrailsDomainConfigurationUtil.evaluateConstraints(getReference().getWrappedInstance(), this.persistantProperties);
+        } catch (IntrospectionException e) {
+            LOG.error("Error reading class ["+getClazz()+"] constraints: " +e .getMessage(), e);
+        }
     }
 
     public Map getMappedBy() {

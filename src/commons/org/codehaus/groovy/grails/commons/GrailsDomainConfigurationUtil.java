@@ -14,9 +14,16 @@
  */
 package org.codehaus.groovy.grails.commons;
 
+import groovy.lang.Closure;
 import groovy.lang.GroovyObject;
 import org.apache.commons.lang.StringUtils;
+import org.codehaus.groovy.grails.commons.metaclass.DynamicMethods;
+import org.codehaus.groovy.grails.commons.metaclass.GroovyDynamicMethodsInterceptor;
+import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException;
+import org.codehaus.groovy.grails.validation.metaclass.ConstraintsEvaluatingDynamicProperty;
 
+import java.beans.IntrospectionException;
+import java.beans.PropertyDescriptor;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -27,7 +34,6 @@ import java.sql.Clob;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.*;
-import java.beans.PropertyDescriptor;
 
 /**
  * Utility methods used in configuring the Grails Hibernate integration
@@ -247,5 +253,31 @@ public class GrailsDomainConfigurationUtil {
            !descriptor.getName().equals( GrailsDomainClassProperty.MAPPING_STRATEGY ) &&
            !descriptor.getName().equals( GrailsDomainClassProperty.MAPPED_BY ) &&
            !descriptor.getName().equals( GrailsDomainClassProperty.BELONGS_TO );
+    }
+
+    /**
+     * Evaluates the constraints closure to build the list of constraints
+     *
+     * @param instance The instance to evaluate constraints for
+     * @param properties The properties of the instance
+     * @return A Map of constraints
+     * @throws java.beans.IntrospectionException When the bean cannot be introspected
+     */
+    public static Map evaluateConstraints(Object instance, GrailsDomainClassProperty[] properties) throws IntrospectionException {
+        Closure constraintsClosure = (Closure) GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(instance,GrailsDomainClassProperty.CONSTRAINTS);
+        Class objClass = instance.getClass();
+        String fullName = objClass.getName();
+        if (constraintsClosure != null && !GrailsClassUtils.isStaticProperty(objClass, GrailsDomainClassProperty.CONSTRAINTS)) {
+            throw new GrailsConfigurationException(
+                "Domain class ["+ fullName +"] has non-static constraints. Constraints must be " +
+                "declared static.");
+        }
+
+
+        GroovyObject go = (GroovyObject) instance;
+        DynamicMethods interceptor = new GroovyDynamicMethodsInterceptor(go);
+        interceptor.addDynamicProperty( new ConstraintsEvaluatingDynamicProperty(properties) );
+        
+        return (Map)go.getProperty(GrailsDomainClassProperty.CONSTRAINTS);
     }
 }
