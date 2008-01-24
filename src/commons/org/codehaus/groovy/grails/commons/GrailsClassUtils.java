@@ -391,6 +391,7 @@ public class GrailsClassUtils {
             String[] tokens = name.split("-");
             for (int i = 0; i < tokens.length; i++) {
                 String token = tokens[i];
+                if(token == null || token.length() == 0) continue;
                 buf.append(token.substring(0,1).toUpperCase())
                    .append(token.substring(1));
             }
