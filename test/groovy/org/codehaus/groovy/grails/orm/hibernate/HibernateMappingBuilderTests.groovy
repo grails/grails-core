@@ -105,6 +105,13 @@ class HibernateMappingBuilderTests extends GroovyTestCase {
         }
 
         assertEquals false, mapping.tablePerHierarchy
+
+        mapping = builder.evaluate {
+            table 'myTable'
+            tablePerSubclass true
+        }
+
+        assertEquals false, mapping.tablePerHierarchy                
     }
 
     void testAutoTimeStamp() {

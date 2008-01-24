@@ -22,7 +22,6 @@ import groovy.lang.MetaClassRegistry;
 import groovy.util.ConfigObject;
 import groovy.util.ConfigSlurper;
 import groovy.util.GroovyTestCase;
-import org.apache.commons.lang.ArrayUtils;
 import org.codehaus.groovy.grails.commons.ApplicationHolder;
 import org.codehaus.groovy.grails.commons.ConfigurationHolder;
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
@@ -105,7 +104,6 @@ public abstract class AbstractGrailsHibernateTests extends GroovyTestCase {
             Class aClass = gcl.getLoadedClasses()[i];
             GroovySystem.getMetaClassRegistry().removeMetaClass(aClass);
         }
-        System.out.println("gcl.getLoadedClasses() = " + ArrayUtils.toString(gcl.getLoadedClasses()));
         ga = new DefaultGrailsApplication(gcl.getLoadedClasses(),gcl);
         ApplicationHolder.setApplication(ga);
 
@@ -116,7 +114,7 @@ public abstract class AbstractGrailsHibernateTests extends GroovyTestCase {
        
         GrailsRuntimeConfigurator grc = new GrailsRuntimeConfigurator(ga, mc);
         this.applicationContext = grc.configure(new MockServletContext());
-        this.sessionFactory = (SessionFactory)this.applicationContext.getBean(GrailsRuntimeConfigurator.SESSION_FACTORY_BEAN);        
+        this.sessionFactory = (SessionFactory)this.applicationContext.getBean(GrailsRuntimeConfigurator.SESSION_FACTORY_BEAN);
 
         if(!TransactionSynchronizationManager.hasResource(this.sessionFactory)) {
             this.session = this.sessionFactory.openSession();

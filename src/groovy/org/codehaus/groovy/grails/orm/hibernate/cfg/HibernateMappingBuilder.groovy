@@ -129,8 +129,18 @@ class HibernateMappingBuilder {
         cache(args)        
     }
 
-    void tablePerHierarchy(boolean b) {
-        mapping.tablePerHierarchy = b
+    /**
+     * If true the class and its sub classes will be mapped with table per hierarchy mapping
+     */
+    void tablePerHierarchy(boolean isTablePerHierarchy) {
+        mapping.tablePerHierarchy = isTablePerHierarchy
+    }
+
+    /**
+     * If true the class and its subclasses will be mapped with table per subclass mapping
+     */
+    void tablePerSubclass(boolean isTablePerSubClass) {
+        mapping.tablePerHierarchy = !isTablePerSubClass
     }
 
     /**

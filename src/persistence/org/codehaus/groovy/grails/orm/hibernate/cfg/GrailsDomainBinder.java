@@ -16,12 +16,16 @@ package org.codehaus.groovy.grails.orm.hibernate.cfg;
 
 
 import groovy.lang.Closure;
+import groovy.lang.GroovySystem;
+import groovy.lang.MetaClass;
+import groovy.lang.MissingPropertyException;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.math.NumberUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
+import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.orm.hibernate.validation.UniqueConstraint;
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 import org.hibernate.FetchMode;
@@ -806,11 +810,16 @@ public final class GrailsDomainBinder {
      * @param domainClass The domain class
      */
     private static void evaluateMapping(GrailsDomainClass domainClass) {
-        Object o = domainClass.getPropertyValue(GrailsDomainClassProperty.MAPPING);
-        if(o instanceof Closure) {
-            HibernateMappingBuilder builder = new HibernateMappingBuilder(domainClass.getFullName());
-            Mapping m = builder.evaluate((Closure)o);
-            MAPPING_CACHE.put(domainClass.getFullName(), m);
+
+        try {
+            Object o = GrailsClassUtils.getStaticPropertyValue(domainClass.getClazz(), GrailsDomainClassProperty.MAPPING);
+            if(o instanceof Closure) {
+                HibernateMappingBuilder builder = new HibernateMappingBuilder(domainClass.getFullName());
+                Mapping m = builder.evaluate((Closure)o);
+                MAPPING_CACHE.put(domainClass.getFullName(), m);
+            }
+        } catch (MissingPropertyException e) {
+            // ignore
         }
     }
 
@@ -920,7 +929,7 @@ public final class GrailsDomainBinder {
      * @param mappings The mappings instance
      */
 	private static void bindSubClass(GrailsDomainClass sub, PersistentClass parent, Mappings mappings) {
-
+        evaluateMapping(sub);
         Mapping m = getMapping(parent.getClassName());
         Subclass subClass;
         boolean tablePerSubclass = m != null && !m.getTablePerHierarchy();
