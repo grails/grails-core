@@ -193,4 +193,12 @@ public interface RuntimeSpringConfiguration {
      * @return The BeanConfiguration object
      */
     BeanConfiguration addAbstractBean(String name);
+
+    /**
+     * Adds an alias to a given bean name
+     *
+     * @param alias The alias
+     * @param beanName The bean
+     */
+    void addAlias(String alias, String beanName);
 }

@@ -342,6 +342,7 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
                ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
                xmlBf.setBeanClassLoader(classLoader);
               String[] beanNames = xmlBf.getBeanDefinitionNames();
+
               LOG.debug("[RuntimeConfiguration] Found ["+beanNames.length+"] beans to configure");
               for (int k = 0; k < beanNames.length; k++) {
                   BeanDefinition bd = xmlBf.getBeanDefinition(beanNames[k]);
@@ -361,6 +362,12 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
                   }
 
                   springConfig.addBeanDefinition(beanNames[k], bd);
+                  String[] aliases = xmlBf.getAliases(beanNames[k]);
+                  for (int i = 0; i < aliases.length; i++) {
+                      String alias = aliases[i];
+                      springConfig.addAlias(alias, beanNames[k]);
+
+                  }
 
                   if(beanClass!=null) {
                       if(BeanFactoryPostProcessor.class.isAssignableFrom(beanClass)) {

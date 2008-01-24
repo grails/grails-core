@@ -50,6 +50,7 @@ public class DefaultRuntimeSpringConfiguration implements
     private List beanNames = new ArrayList();
     protected ApplicationContext parent;
     protected ClassLoader classLoader;
+    private Map aliases = new HashMap();
 
     public DefaultRuntimeSpringConfiguration() {
         super();
@@ -217,8 +218,9 @@ public class DefaultRuntimeSpringConfiguration implements
     public void registerBeansWithContext(GenericApplicationContext applicationContext) {
         for (Iterator i = beanConfigs.values().iterator(); i.hasNext();) {
             BeanConfiguration bc = (BeanConfiguration) i.next();
+            String beanName = bc.getName();
             if(LOG.isDebugEnabled()) {
-                LOG.debug("[RuntimeConfiguration] Registering bean [" + bc.getName() + "]");
+                LOG.debug("[RuntimeConfiguration] Registering bean [" + beanName + "]");
                 if(LOG.isTraceEnabled()) {
                     PropertyValue[] pvs = bc.getBeanDefinition()
                                             .getPropertyValues()
@@ -231,12 +233,14 @@ public class DefaultRuntimeSpringConfiguration implements
             }
 
             
-            if(applicationContext.containsBeanDefinition(bc.getName())) {
-                removeBeanDefinition(applicationContext, bc.getName());
+            if(applicationContext.containsBeanDefinition(beanName)) {
+                removeBeanDefinition(applicationContext, beanName);
             }
 
-            applicationContext.registerBeanDefinition(bc.getName(),
+            applicationContext.registerBeanDefinition(beanName,
                                                 bc.getBeanDefinition()	);
+
+            registerBeanAliases(applicationContext, beanName);
         }
         for (Iterator i = beanDefinitions.keySet().iterator(); i.hasNext();) {
             Object key = i.next();
@@ -257,7 +261,19 @@ public class DefaultRuntimeSpringConfiguration implements
             }
 
             applicationContext.registerBeanDefinition(beanName, bd);
+            
+            registerBeanAliases(applicationContext, beanName);
+        }
 
+    }
+
+    private void registerBeanAliases(GenericApplicationContext applicationContext, String beanName) {
+        List beanAliases = (List)aliases.get(beanName);
+        if(beanAliases != null && !beanAliases.isEmpty()) {
+            for (Iterator j = beanAliases.iterator(); j.hasNext();) {
+                String alias = (String) j.next();
+                applicationContext.registerAlias(beanName, alias);
+            }
         }
     }
 
@@ -280,5 +296,14 @@ public class DefaultRuntimeSpringConfiguration implements
         registerBeanConfiguration(name, bc);
 
         return bc;
+    }
+
+    public void addAlias(String alias, String beanName) {
+        List beanAliases = (List)this.aliases.get(beanName);
+        if(beanAliases == null) {
+            beanAliases = new ArrayList();
+            this.aliases.put(beanName, beanAliases);
+        }
+        beanAliases.add(alias);
     }
 }
