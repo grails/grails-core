@@ -97,7 +97,10 @@ class HibernateGrailsPlugin {
                 hibProps."hibernate.format_sql" = "true"
             }
             if (ds && ds.dialect) {
-                hibProps."hibernate.dialect" = ds.dialect.name
+                if(ds.dialect instanceof Class)
+                    hibProps."hibernate.dialect" = ds.dialect.name
+                else
+                    hibProps."hibernate.dialect" = ds.dialect.toString()
             }
             else {
                 dialectDetector(HibernateDialectDetectorFactoryBean) {
