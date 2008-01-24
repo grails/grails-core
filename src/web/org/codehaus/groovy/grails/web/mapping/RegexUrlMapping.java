@@ -345,6 +345,10 @@ public class RegexUrlMapping extends AbstractUrlMapping implements UrlMapping {
         String lastGroup = null;
         for (int i = 0; i < m.groupCount(); i++) {
             lastGroup = m.group(i+1);
+            int j = lastGroup.indexOf('?');
+            if(j >-1) {
+                lastGroup = lastGroup.substring(0,j);
+            }
             if(constraints.length > i) {
                 ConstrainedProperty cp = constraints[i];
                 cp.validate(this,lastGroup, errors);
