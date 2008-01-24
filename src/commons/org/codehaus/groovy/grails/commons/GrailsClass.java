@@ -121,6 +121,8 @@ public interface GrailsClass {
      * Obtains a property value for the given name and type
      * @param name The name
      * @param type The type
+     *
+     * @return  The property value
      */
     Object getPropertyValue(String name, Class type);
 }
