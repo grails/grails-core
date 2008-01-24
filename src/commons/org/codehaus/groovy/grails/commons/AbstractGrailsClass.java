@@ -244,6 +244,8 @@ public abstract class AbstractGrailsClass implements GrailsClass {
 	public MetaClass getMetaClass() {
 		return GrailsClassUtils.getExpandoMetaClass(clazz);
 	}
-    
-     
+
+    public String toString() {
+        return "Artefact > " + getName();
+    }
 }
