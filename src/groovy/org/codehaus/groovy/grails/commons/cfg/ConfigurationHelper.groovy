@@ -66,8 +66,8 @@ class ConfigurationHelper {
                        }
 
                 } catch (Exception e) {
-                        LOG.warn "Unable to load specied config location $location : ${e.message}"
-                        LOG.debug "Unable to load specied config location $location : ${e.message}", e
+                        LOG.warn "Unable to load specified config location $location : ${e.message}"
+                        LOG.debug "Unable to load specified config location $location : ${e.message}", e
                     }
                 }
             }
