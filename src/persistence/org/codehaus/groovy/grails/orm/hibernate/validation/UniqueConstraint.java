@@ -141,7 +141,7 @@ public class UniqueConstraint extends AbstractPersistentConstraint {
                 boolean reject = false;
                 if(id != null) {
                     Object existing = results.get(0);
-                    Object existingId = InvokerHelper.invokeMethod(existing, "ident",null);
+                    Object existingId = InvokerHelper.invokeMethod(existing, "ident", null);
                     if(!id.equals(existingId)) {
                         reject = true;
                     }
@@ -151,7 +151,7 @@ public class UniqueConstraint extends AbstractPersistentConstraint {
                 }
                 if(reject) {
                     Object[] args = new Object[] { constraintPropertyName, constraintOwningClass, propertyValue };
-                    super.rejectValue(target,errors,UNIQUE_CONSTRAINT,args,getDefaultMessage( DEFAULT_NOT_UNIQUE_MESSAGE_CODE, args ));
+                    super.rejectValue(target, errors, UNIQUE_CONSTRAINT, args, getDefaultMessage(DEFAULT_NOT_UNIQUE_MESSAGE_CODE));
                 }
             }
         }

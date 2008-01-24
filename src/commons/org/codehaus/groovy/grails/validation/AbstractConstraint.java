@@ -20,6 +20,7 @@ import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.beans.NotReadablePropertyException;
 import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.Errors;
 import org.springframework.validation.FieldError;
@@ -27,7 +28,6 @@ import org.springframework.validation.FieldError;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Locale;
 
 /**
  * @author Graeme Rocher
@@ -105,7 +105,7 @@ public abstract class AbstractConstraint implements Constraint {
         this.rejectValueWithDefaultMessage(
                 target,
                 errors,
-                getDefaultMessage( defaultMessageCode, args),
+                getDefaultMessage( defaultMessageCode),
                 codes,
                 args
         );
@@ -150,7 +150,7 @@ public abstract class AbstractConstraint implements Constraint {
     }
 
     // For backward compatibility
-    public void rejectValue(Object target,Errors errors, String code, String defaultMessage) {
+    public void rejectValue(Object target, Errors errors, String code, String defaultMessage) {
         this.rejectValueWithDefaultMessage(
                 target, errors,
                 defaultMessage,
@@ -160,7 +160,7 @@ public abstract class AbstractConstraint implements Constraint {
     }
 
     // For backward compatibility
-    public void rejectValue(Object target,Errors errors, String code,Object[] args,String defaultMessage) {
+    public void rejectValue(Object target, Errors errors, String code, Object[] args, String defaultMessage) {
         this.rejectValueWithDefaultMessage(
                 target, errors,
                 defaultMessage,
@@ -169,12 +169,21 @@ public abstract class AbstractConstraint implements Constraint {
         );
     }
 
-    protected String getDefaultMessage(String code, Object[] args) {
+    /**
+     * Returns the default message for the given message code in the
+     * current locale. Note that the string returned includes any
+     * placeholders that the required message has - these must be
+     * expanded by the caller if required.
+     * @param code The i18n message code to look up.
+     * @return The message corresponding to the given code in the
+     * current locale.
+     */
+    protected String getDefaultMessage(String code) {
         String defaultMessage;
 
         try {
-            if(messageSource != null)
-                defaultMessage = messageSource.getMessage(code,null, Locale.getDefault());
+            if (messageSource != null)
+                defaultMessage = messageSource.getMessage(code, null, LocaleContextHolder.getLocale());
             else
                 defaultMessage = (String)ConstrainedProperty.DEFAULT_MESSAGES.get(code);
         }
