@@ -29,7 +29,7 @@ class FormRenderingTagLibTests extends AbstractGrailsTagTests {
 
     }
 
-    def assertOutputEquals(expected, template, params = [:]) {
+    void assertOutputEquals(expected, template, params = [:]) {
         def engine = appCtx.groovyPagesTemplateEngine
 
         assert engine

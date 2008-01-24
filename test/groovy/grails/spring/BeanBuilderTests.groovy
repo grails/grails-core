@@ -385,7 +385,7 @@ bb.createApplicationContext()
 
 }
 class HolyGrailQuest {
-	   def start() { println "lets begin" }
+	   void start() { println "lets begin" }
 }
 class KnightOfTheRoundTable {
    String name
@@ -395,7 +395,7 @@ class KnightOfTheRoundTable {
    }
    HolyGrailQuest quest
 
-   def embarkOnQuest() {
+   void embarkOnQuest() {
        quest.start()
    }
 }
