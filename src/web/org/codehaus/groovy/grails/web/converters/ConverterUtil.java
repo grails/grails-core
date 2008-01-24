@@ -55,7 +55,8 @@ public class ConverterUtil {
     private static Map XSTREAM_MAP = new HashMap();
     private static Map ALIAS_MAP = new HashMap();
 
-    public static XStream getXStream(Class clazz) {
+    public static XStream
+    getXStream(Class clazz) {
         XStream xs = (XStream) XSTREAM_MAP.get(clazz);
         if (xs == null) {
             xs = setupXStream(clazz);
@@ -65,6 +66,7 @@ public class ConverterUtil {
 
     protected static XStream setupXStream(Class converter) {
         XStream xs = new XStream();
+
         xs.setMode(XStream.XPATH_ABSOLUTE_REFERENCES);
         for (Iterator iterator = ALIAS_MAP.keySet().iterator(); iterator.hasNext();) {
             Class cls = (Class) iterator.next();
@@ -74,6 +76,7 @@ public class ConverterUtil {
         try {
             XML instance = (XML) converter.newInstance();
             instance.configureXStream(xs);
+
             XSTREAM_MAP.put(converter, xs);
         } catch (Exception e) {
             log.error("Error configuring XStream for Converter " + converter.getName(), e);
@@ -97,7 +100,17 @@ public class ConverterUtil {
     }
 
     public static GrailsDomainClass getDomainClass(String name) {
+        // deal with proxies
+        name = trimProxySuffix(name);
         return (GrailsDomainClass) getGrailsApplication().getArtefact(DomainClassArtefactHandler.TYPE, name);
+    }
+
+    private static String trimProxySuffix(String name) {
+        int i = name.indexOf("$$");
+        if(i > -1) {
+            name = name.substring(0,i);
+        }
+        return name;
     }
 
     private static GrailsApplication getGrailsApplication() {
@@ -116,7 +129,8 @@ public class ConverterUtil {
     }
 
     public static boolean isDomainClass(Class clazz) {
-        return getGrailsApplication().isArtefactOfType(DomainClassArtefactHandler.TYPE, clazz);
+        String name = trimProxySuffix(clazz.getName());
+        return getGrailsApplication().isArtefactOfType(DomainClassArtefactHandler.TYPE, name);
     }
 
     public static Set getDomainClassNames() {

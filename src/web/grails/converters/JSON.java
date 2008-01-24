@@ -190,59 +190,62 @@ public class JSON extends AbstractConverter implements Converter {
         try {
             BeanWrapper beanWrapper = new BeanWrapperImpl(o);
             GrailsDomainClass domainClass = ConverterUtil.getDomainClass(o.getClass().getName());
-            writer.object();
-            GrailsDomainClassProperty id = domainClass.getIdentifier();
-            property(id.getName(), beanWrapper.getPropertyValue(id.getName()));
-            property("class", domainClass.getName());
-            GrailsDomainClassProperty[] properties = domainClass.getPersistentProperties();
-            for (int i = 0; i < properties.length; i++) {
-                GrailsDomainClassProperty prop = properties[i];
-                if (!prop.isAssociation() || isRenderDomainClassRelations()) {
-                    property(prop.getName(), beanWrapper.getPropertyValue(prop.getName()));
-                } else {
-                    writer.key(prop.getName());
-                    Object refValue = beanWrapper.getPropertyValue(prop.getName());
-                    if (refValue == null) {
-                        Class propClass = prop.getType();
-                        if (Collection.class.isAssignableFrom(propClass)) {
-                            writer.array();
-                            writer.endArray();
-                        } else if (Map.class.isAssignableFrom(propClass)) {
-                            writer.object();
-                            writer.endObject();
-                        } else {
-                            writer.value(null);
-                        }
-                    } else if (prop.isOneToOne() || prop.isManyToOne() || prop.isEmbedded()) {
-                        value(extractIdValue(refValue, prop.getReferencedDomainClass().getIdentifier()));
+            if(domainClass != null) {
+
+                writer.object();
+                GrailsDomainClassProperty id = domainClass.getIdentifier();
+                property(id.getName(), beanWrapper.getPropertyValue(id.getName()));
+                property("class", domainClass.getName());
+                GrailsDomainClassProperty[] properties = domainClass.getPersistentProperties();
+                for (int i = 0; i < properties.length; i++) {
+                    GrailsDomainClassProperty prop = properties[i];
+                    if (!prop.isAssociation() || isRenderDomainClassRelations()) {
+                        property(prop.getName(), beanWrapper.getPropertyValue(prop.getName()));
                     } else {
-                        //Class referenceClass = prop.getType();
-                        GrailsDomainClassProperty refIdProperty = prop.getReferencedDomainClass().getIdentifier();
-                        if (Collection.class.isAssignableFrom(prop.getType())) {
-                            writer.array();
-                            Collection col = (Collection) refValue;
-                            for (Iterator it = col.iterator(); it.hasNext();) {
-                                Object val = it.next();
-                                value(extractIdValue(val, refIdProperty));
+                        writer.key(prop.getName());
+                        Object refValue = beanWrapper.getPropertyValue(prop.getName());
+                        if (refValue == null) {
+                            Class propClass = prop.getType();
+                            if (Collection.class.isAssignableFrom(propClass)) {
+                                writer.array();
+                                writer.endArray();
+                            } else if (Map.class.isAssignableFrom(propClass)) {
+                                writer.object();
+                                writer.endObject();
+                            } else {
+                                writer.value(null);
                             }
-                            writer.endArray();
-                        } else if (Map.class.isAssignableFrom(prop.getType())) {
-                            writer.object();
-                            Map map = (Map) refValue;
-                            Iterator it = map.keySet().iterator();
-                            while (it.hasNext()) {
-                                String key = (String) it.next(); // Key has be a string
-                                property(key, extractIdValue(map.get(key), refIdProperty));
-                            }
-                            writer.endObject();
+                        } else if (prop.isOneToOne() || prop.isManyToOne() || prop.isEmbedded()) {
+                            value(extractIdValue(refValue, prop.getReferencedDomainClass().getIdentifier()));
                         } else {
-                            throw new ConverterException("Unable to convert property \"" + prop.getName() + "\" of Domain Class \""
-                                    + domainClass.getName() + "\": The association class [" + prop.getType().getName() + "] is not a Collection or a Map!");
+                            //Class referenceClass = prop.getType();
+                            GrailsDomainClassProperty refIdProperty = prop.getReferencedDomainClass().getIdentifier();
+                            if (Collection.class.isAssignableFrom(prop.getType())) {
+                                writer.array();
+                                Collection col = (Collection) refValue;
+                                for (Iterator it = col.iterator(); it.hasNext();) {
+                                    Object val = it.next();
+                                    value(extractIdValue(val, refIdProperty));
+                                }
+                                writer.endArray();
+                            } else if (Map.class.isAssignableFrom(prop.getType())) {
+                                writer.object();
+                                Map map = (Map) refValue;
+                                Iterator it = map.keySet().iterator();
+                                while (it.hasNext()) {
+                                    String key = (String) it.next(); // Key has be a string
+                                    property(key, extractIdValue(map.get(key), refIdProperty));
+                                }
+                                writer.endObject();
+                            } else {
+                                throw new ConverterException("Unable to convert property \"" + prop.getName() + "\" of Domain Class \""
+                                        + domainClass.getName() + "\": The association class [" + prop.getType().getName() + "] is not a Collection or a Map!");
+                            }
                         }
                     }
                 }
+                writer.endObject();
             }
-            writer.endObject();
         } catch (ConverterException ce) {
             throw ce;
         } catch (JSONException e) {

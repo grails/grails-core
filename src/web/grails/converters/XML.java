@@ -51,7 +51,8 @@ public class XML extends AbstractConverter implements Converter {
     public void configureXStream(XStream xs) {
         DomainClassConverter dcConverter = new DomainClassConverter();
         dcConverter.setRenderDomainClassRelations(false);
-        xs.registerConverter(dcConverter);
+
+        xs.registerConverter(dcConverter,1);
     }
 
     /**
