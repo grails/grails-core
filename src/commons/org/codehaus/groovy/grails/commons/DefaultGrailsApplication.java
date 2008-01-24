@@ -49,18 +49,18 @@ import java.util.regex.Pattern;
 
 /**
  * Default implementation of the GrailsApplication interface that manages application loading,
- * state, and artifact instances.
+ * state, and artefact instances.
  * <p/>
- * Upon loading this GrailsApplication will insepct each class using its registered ArtefactHandler instances. Each
- * ArtefactHandler provides knownledge about the conventions used to establish its artefact type. For example
+ * Upon loading this GrailsApplication will inspect each class using its registered ArtefactHandler instances. Each
+ * ArtefactHandler provides knowledge about the conventions used to establish its artefact type. For example
  * controllers use the ControllerArtefactHandler to establish this knowledge.
  * <p/>
- * New ArtefactHandler instances can be registed with the GrailsApplication thus allowing application extensibility.
+ * New ArtefactHandler instances can be registered with the GrailsApplication thus allowing application extensibility.
  *
  * @author Marc Palmer
  * @author Steven Devijver
  * @author Graeme Rocher
- * @todo Review all synching on new artefact cache stuff, what is sync policy for grailsapplication?
+ *
  * @see org.codehaus.groovy.grails.plugins.GrailsPluginManager
  * @see org.codehaus.groovy.grails.plugins.DefaultGrailsPluginManager
  * @see org.codehaus.groovy.grails.commons.ArtefactHandler
@@ -422,8 +422,7 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
                 c = configSlurper.parse(scriptClass);
                 ConfigurationHolder.setConfig(c);
             } catch (ClassNotFoundException e) {
-                GrailsUtil.deepSanitize(e);
-                log.debug("Could not find config class [" + CONFIG_CLASS + "]. This is probably nothing to worry about, it is not required to have a config: " + e.getMessage(), e);
+                log.debug("Could not find config class [" + CONFIG_CLASS + "]. This is probably nothing to worry about, it is not required to have a config: " + e.getMessage());
                 // ignore, it is ok not to have a configuration file
                 c = new ConfigObject();
             }
@@ -434,7 +433,6 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
                         .loadClass(DATA_SOURCE_CLASS);
                 c.merge(configSlurper.parse(dataSourceClass));
             } catch (ClassNotFoundException e) {
-                GrailsUtil.deepSanitize(e);
                 log.debug("Cound not find data source class [" + DATA_SOURCE_CLASS + "]. This may be what you are expecting, but will result in Grails loading with an in-memory database");
                 // ignore
             }

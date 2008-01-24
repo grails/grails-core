@@ -16,8 +16,16 @@
 package org.codehaus.groovy.grails.commons;
 
 /**
+ * <p>The ArtefactHandler interface's purpose is to allow the analysis of conventions within a Grails application.
+ * An artefact is represented by the GrailsClass interface and this interface provides methods that allow artefacts to
+ * be identified, created and initialized.
+ *  
  * <p>Artefacts need to provide info about themselves, and some callbacks are required
  * to verify whether or not a class is that kind of artefact/p>
+ *
+ * @see org.codehaus.groovy.grails.commons.GrailsApplication#registerArtefactHandler(ArtefactHandler)
+ *
+ * @author Graeme Rocher
  * @author Marc Palmer (marc@anyware.co.uk)
  */
 public interface ArtefactHandler {

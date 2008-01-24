@@ -24,10 +24,22 @@ import org.springframework.core.io.Resource;
 import java.util.Map;
 
 /**
- *  <p>Exposes all classes for a Grails application.
- * 
- * @author Steven Devijver
+ *  <p>The main interface representing a running Grails application. This interface's
+ * main purpose is to provide a mechanism for analysing the conventions within a Grails
+ * application as well as providing metadata and information about the execution environment.
+ *
+ * <p>The GrailsApplication interface interfacts with {@link org.codehaus.groovy.grails.commons.ArtefactHandler} instances
+ * which are capable of analysing different artefact types (controllers, domain classes etc.) and introspecting
+ * the artefact conventions
+ *
+ * <p>Implementors of this inteface should be aware that a GrailsApplication is only initialised when the initialise() method
+ * is called. In other words GrailsApplication instances are lazily initialised by the Grails runtime.
+ *
+ * @see #initialise()
+ * @see ArtefactHandler
+ *
  * @author Graeme Rocher
+ * @author Steven Devijver
  *
  * @since 0.1
  *
