@@ -183,7 +183,6 @@ public class GrailsUtil {
             envName = System.getProperty(GrailsApplication.ENVIRONMENT);
 
         if(StringUtils.isBlank(envName)) {
-            // for now if no environment specified default to production
             return GrailsApplication.ENV_DEVELOPMENT;
         }
         else {
