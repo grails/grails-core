@@ -46,7 +46,7 @@ class ClosureEventTriggeringInterceptor extends EmptyInterceptor implements Appl
     }
 
     public boolean onLoad(Object entity, Serializable id, Object[] state, String[] propertyNames, Type[] types)  {
-        applicationContext?.autowireCapableBeanFactory.autowireBeanProperties(entity,AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false)
+        applicationContext?.autowireCapableBeanFactory?.autowireBeanProperties(entity,AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false)
         return triggerEvent(ONLOAD_EVENT, entity, state, propertyNames.toList())
     }
     public boolean onSave(Object entity, Serializable id, Object[] state, String[] propertyNames, Type[] types) {
