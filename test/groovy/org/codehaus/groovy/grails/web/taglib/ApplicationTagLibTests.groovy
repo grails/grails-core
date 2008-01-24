@@ -72,7 +72,7 @@ class ApplicationTagLibTests extends AbstractGrailsTagTests {
 			attrs = [dir:'']
 			tag.call( attrs )
 			println sw.toString()
-			assertEquals '/', sw.toString()
+			assertEquals '', sw.toString()
 		}
 	}
 
