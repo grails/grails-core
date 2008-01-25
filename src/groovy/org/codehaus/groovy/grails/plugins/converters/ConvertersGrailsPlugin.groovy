@@ -25,6 +25,7 @@ import org.codehaus.groovy.grails.web.json.JSONArray
 import org.codehaus.groovy.grails.web.json.JSONObject
 import org.codehaus.groovy.grails.web.converters.XMLParsingParameterCreationListener
 import org.codehaus.groovy.grails.web.converters.JSONParsingParameterCreationListener
+import org.springframework.core.JdkVersion
 
 /**
  * A plug-in that allows the obj as XML syntax
@@ -107,7 +108,11 @@ class ConvertersGrailsPlugin {
 
 
             // Override GDK asType for some common Interfaces and Classes
-                    [java.util.ArrayList, java.util.TreeSet, java.util.HashSet, java.util.List, java.util.Set, java.util.Collection, groovy.lang.GroovyObject, java.lang.Object].each {Class clazz ->
+            List targetClasses = [java.util.ArrayList, java.util.TreeSet, java.util.HashSet, java.util.List, java.util.Set, java.util.Collection, groovy.lang.GroovyObject, java.lang.Object]
+            if(JdkVersion.getMajorJavaVersion() >= JdkVersion.JAVA_15) {
+                targetClasses << java.lang.Enum
+            }
+            targetClasses.each {Class clazz ->
                 def mc = GroovySystem.metaClassRegistry.getMetaClass(clazz)
                 if (!mc instanceof ExpandoMetaClass) {
                     log.warn "Unable to add Converter Functionality to Class ${className}"

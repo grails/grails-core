@@ -19,7 +19,8 @@ import org.springframework.validation.Errors;
 import org.springframework.context.NoSuchMessageException;
 import org.springframework.web.servlet.support.RequestContextUtils as RCU;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU;
-import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
+import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler
+import org.springframework.beans.SimpleTypeConverter;
 
  /**
  *  A  tag lib that provides tags for working with form controls
@@ -525,6 +526,9 @@ class FormTagLib {
         def optionKey = attrs.remove('optionKey')
         def optionValue = attrs.remove('optionValue')
         def value = attrs.remove('value')
+        if(value instanceof Collection) {
+            attrs.multiple = true
+        }
         def valueMessagePrefix = attrs.remove('valueMessagePrefix')
 		def noSelection = attrs.remove('noSelection')
         if (noSelection != null) {
@@ -602,9 +606,27 @@ class FormTagLib {
         writer << '</select>'
     }
 
+    def typeConverter = new SimpleTypeConverter()
     private writeValueAndCheckIfSelected(keyValue, value, writer){
+
+        boolean selected = false
+        def keyClass = keyValue?.getClass()
+        if(keyClass.isInstance(value)) {
+            selected = (keyValue == value)
+        }
+        else if(value instanceof Collection) {
+            selected = value.contains(keyValue)
+        }
+        else if(keyClass && value ){
+            try {
+                value = typeConverter.convertIfNecessary(value, keyClass)
+                selected = (keyValue == value)
+            } catch (Exception) {
+                // ignore
+            }
+        }
         writer << "value=\"${keyValue}\" "
-        if(keyValue?.toString() == value?.toString()) {
+        if(selected) {
             writer << 'selected="selected" '
         }
     }
