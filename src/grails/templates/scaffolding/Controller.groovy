@@ -12,7 +12,13 @@ class ${className}Controller {
     }
 
     def show = {
-        [ ${propertyName} : ${className}.get( params.id ) ]
+        def ${propertyName} = ${className}.get( params.id )
+
+        if(!${propertyName}) {
+            flash.message = "${className} not found with id \${params.id}"
+            redirect(action:list)
+        }
+        else { return [ ${propertyName} : book ] }
     }
 
     def delete = {
