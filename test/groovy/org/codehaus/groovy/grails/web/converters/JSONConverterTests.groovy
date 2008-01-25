@@ -16,6 +16,7 @@ import net.sf.cglib.proxy.Enhancer
 import net.sf.cglib.proxy.MethodInterceptor
 import java.lang.reflect.Method
 import net.sf.cglib.proxy.MethodProxy
+import org.springframework.core.JdkVersion
 
 class JSONConverterTests extends AbstractGrailsControllerTests {
 
@@ -49,6 +50,23 @@ class JSONConverterTests extends AbstractGrailsControllerTests {
             assertEquals( '''{"id":null,"class":"Book","author":"Stephen King","title":"The Stand"}''', response.contentAsString)
         }
 
+        void testJSONEnumConverting() {
+            if (JdkVersion.getMajorJavaVersion() >= JdkVersion.JAVA_15) {
+                def enumClass = ga.classLoader.loadClass("Role")
+                def enumInstance = enumClass.HEAD
+
+                def c = ga.getControllerClass("RestController").newInstance()
+
+                c.params.e = enumInstance
+
+                c.testEnum()
+
+                assertEquals( '{"enumType":"Role","name":"HEAD"}', response.contentAsString)
+
+
+            }
+        }
+
     void onSetUp() {
         gcl.parseClass('''
 import grails.converters.*
@@ -62,6 +80,10 @@ class RestController {
      def testProxy = {
         render params.b as JSON
      }
+
+    def testEnum = {
+        render params.e as JSON
+    }
 }
 class Book {
     Long id
@@ -71,8 +93,15 @@ class Book {
 
 }
 
-        ''')
+        '''
 
+                )
+
+        if (JdkVersion.getMajorJavaVersion() >= JdkVersion.JAVA_15) {
+            gcl.parseClass '''
+public enum Role { HEAD, DISPATCHER, ADMIN }
+'''
+        }
 
     }
 

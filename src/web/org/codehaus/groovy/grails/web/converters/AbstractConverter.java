@@ -15,6 +15,7 @@
 package org.codehaus.groovy.grails.web.converters;
 
 import org.apache.commons.lang.UnhandledException;
+import org.springframework.core.JdkVersion;
 
 import java.io.StringWriter;
 
@@ -42,4 +43,13 @@ public abstract class AbstractConverter implements Converter {
         }
         return writer.toString();
     }
+
+
+	protected boolean isJdk5Enum(Class type) {
+		if (JdkVersion.getMajorJavaVersion() >= JdkVersion.JAVA_15) {
+			return type.isEnum();
+		} else {
+			return false;
+		}
+	}
 }

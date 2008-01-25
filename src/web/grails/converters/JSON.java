@@ -28,6 +28,7 @@ import org.codehaus.groovy.grails.web.converters.exceptions.ConverterException;
 import org.codehaus.groovy.grails.web.json.*;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
+import org.springframework.beans.BeanUtils;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -37,10 +38,7 @@ import java.beans.PropertyDescriptor;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Writer;
-import java.lang.reflect.Array;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
+import java.lang.reflect.*;
 import java.net.URL;
 import java.util.*;
 
@@ -281,6 +279,8 @@ public class JSON extends AbstractConverter implements Converter {
                 writer.value(null);
             } else if (o instanceof GroovyObject && ConverterUtil.isDomainClass(o.getClass())) {
                 domain(o);
+            } else if(isJdk5Enum(o.getClass())) {
+                enumeration(o);
             } else if (o instanceof Class) {
                 writer.value(((Class) o).getName());
             } else if (o instanceof Map) {
@@ -324,6 +324,19 @@ public class JSON extends AbstractConverter implements Converter {
         } catch (JSONException e) {
             throw new ConverterException(e);
         }
+    }
+
+    private void enumeration(Object en) throws JSONException {
+        writer.object();
+        Class enumClass = en.getClass();
+        property("enumType", enumClass.getName());
+        Method nameMethod = BeanUtils.findDeclaredMethod(enumClass, "name", null);
+        try {
+            property("name",nameMethod.invoke(en,null));
+        } catch (Exception e) {
+            property("name", "");
+        }
+        writer.endObject();
     }
 
     private void property(String key, Object value) throws JSONException, ConverterException {

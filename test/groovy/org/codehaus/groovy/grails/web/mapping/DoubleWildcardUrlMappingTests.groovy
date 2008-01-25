@@ -63,6 +63,7 @@ class DoubleWildCardController {
            def c = ga.getControllerClass("DoubleWildCardController").newInstance()
 
            assertEquals "doc/",c.params.path
+           assertEquals "1",c.params.d
     }
     
     void testDoubleWildCardMappingWithSuffix() {
