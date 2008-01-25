@@ -53,6 +53,13 @@ class JSONConverterTests extends AbstractGrailsControllerTests {
         void testJSONEnumConverting() {
             if (JdkVersion.getMajorJavaVersion() >= JdkVersion.JAVA_15) {
                 def enumClass = ga.classLoader.loadClass("Role")
+                    enumClass.metaClass.asType = {java.lang.Class clazz ->
+                    if (ConverterUtil.isConverterClass(clazz)) {
+                        return ConverterUtil.createConverter(clazz, delegate)
+                    } else {
+                        return ConverterUtil.invokeOriginalAsTypeMethod(delegate, clazz)
+                    }
+                }
                 def enumInstance = enumClass.HEAD
 
                 def c = ga.getControllerClass("RestController").newInstance()
