@@ -1,4 +1,5 @@
-<%=packageName%>  
+<% import org.codehaus.groovy.grails.orm.hibernate.support.ClosureEventTriggeringInterceptor as Events %>
+<%=packageName%>
 <html>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
@@ -19,7 +20,14 @@
             <div class="dialog">
                 <table>
                     <tbody>
-                    <%  props = domainClass.properties.findAll { it.name != 'version' }
+
+                    <%
+                        excludedProps = ['version',
+                                           Events.ONLOAD_EVENT,
+                                           Events.BEFORE_DELETE_EVENT,
+                                           Events.BEFORE_INSERT_EVENT,
+                                           Events.BEFORE_UPDATE_EVENT]
+                        props = domainClass.properties.findAll { !excludedProps.contains(it.name) }
                         Collections.sort(props, comparator.constructors[0].newInstance([domainClass] as Object[]))
                         props.each { p -> %>
                         <tr class="prop">
