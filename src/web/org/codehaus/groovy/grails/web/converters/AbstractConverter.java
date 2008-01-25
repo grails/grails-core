@@ -15,9 +15,11 @@
 package org.codehaus.groovy.grails.web.converters;
 
 import org.apache.commons.lang.UnhandledException;
+import org.springframework.beans.BeanUtils;
 import org.springframework.core.JdkVersion;
 
 import java.io.StringWriter;
+import java.lang.reflect.Method;
 
 /**
  * Abstract base implementation of the Converter interface that provides a default toString()
@@ -47,7 +49,14 @@ public abstract class AbstractConverter implements Converter {
 
 	protected boolean isJdk5Enum(Class type) {
 		if (JdkVersion.getMajorJavaVersion() >= JdkVersion.JAVA_15) {
-			return type.isEnum();
+            Method m = BeanUtils.findMethod(type.getClass(),"isEnum", null);
+            if(m == null) return false;
+            try {
+                Object result = m.invoke(type, null);
+                return result instanceof Boolean && ((Boolean) result).booleanValue();
+            } catch (Exception e ) {
+                return false;
+            }
 		} else {
 			return false;
 		}
