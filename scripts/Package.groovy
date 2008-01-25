@@ -130,7 +130,7 @@ target( packageApp : "Implementation of package target") {
     Ant.copy(todir:classesDirPath) {
 		fileset(dir:"${basedir}", includes:"application.properties")
 	}					
-	Ant.copy(todir:classesDirPath, failonerror:false) {
+	Ant.copy(todir:resourcesDirPath, failonerror:false) {
 		fileset(dir:"${basedir}/grails-app/conf", includes:"**", excludes:"*.groovy, log4j*, hibernate, spring")
 		fileset(dir:"${basedir}/grails-app/conf/hibernate", includes:"**/**")
 		fileset(dir:"${basedir}/src/java") {

@@ -50,7 +50,9 @@ grailsTmp = "${userHome}/.grails/${grailsVersion}/tmp"
 grailsApp = null
 eventsClassLoader = new GroovyClassLoader(getClass().classLoader)
 classesDirPath = System.getProperty("grails.project.class.dir") ?: "${userHome}/.grails/${grailsVersion}/projects/${baseName}/classes"
-testDirPath = System.getProperty("grails.project.class.dir") ?: "${userHome}/.grails/${grailsVersion}/projects/${baseName}/test-classes"
+resourcesDirPath = System.getProperty("grails.project.resource.dir") ?: "${userHome}/.grails/${grailsVersion}/projects/${baseName}/resources"
+testDirPath = System.getProperty("grails.project.test.class.dir") ?: "${userHome}/.grails/${grailsVersion}/projects/${baseName}/test-classes"
+
 classesDir = new File(classesDirPath)
 System.setProperty("grails.classes.dir", classesDirPath)
 
@@ -525,6 +527,7 @@ void setClasspath() {
 
     rootLoader?.addURL(new File("${basedir}/grails-app/conf/hibernate").toURL())
     rootLoader?.addURL(new File("${basedir}/src/java").toURL())
+    rootLoader?.addURL(new File(resourcesDirPath).toURL())
 
     parentLoader = getClass().getClassLoader()
     classpathSet = true
