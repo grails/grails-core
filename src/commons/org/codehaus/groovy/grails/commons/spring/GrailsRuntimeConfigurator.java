@@ -45,10 +45,7 @@ import org.springframework.web.context.WebApplicationContext;
 
 import javax.servlet.ServletContext;
 import java.io.IOException;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 
 /**
 * A class that handles the runtime configuration of the Grails ApplicationContext
@@ -243,6 +240,13 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
       Assert.notNull(application);
 
       WebRuntimeSpringConfiguration springConfig = new WebRuntimeSpringConfiguration(parent, application.getClassLoader());
+      if(parent!=null) {
+          Map beans = parent.getBeansOfType(BeanFactoryPostProcessor.class);
+          for (Iterator i = beans.values().iterator(); i.hasNext();) {
+              BeanFactoryPostProcessor bfpp = (BeanFactoryPostProcessor) i.next();
+              springConfig.registerPostProcessor(bfpp);
+          }
+      }
       if(context != null) {
           springConfig.setServletContext(context);
           this.pluginManager.setServletContext(context);
