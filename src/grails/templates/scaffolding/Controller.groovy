@@ -18,7 +18,7 @@ class ${className}Controller {
             flash.message = "${className} not found with id \${params.id}"
             redirect(action:list)
         }
-        else { return [ ${propertyName} : book ] }
+        else { return [ ${propertyName} : ${propertyName} ] }
     }
 
     def delete = {
