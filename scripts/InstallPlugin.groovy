@@ -147,6 +147,12 @@ target(installPlugin:"Implementation target") {
 
                 }
 
+                // Add the plugin's directory to the binding so that any event
+                // handlers in the plugin have access to it. Normally, this
+                // variable is added in GrailsScriptRunner, but this plugin
+                // hasn't been installed by that point.
+                binding.setVariable("${pluginName}PluginDir", new File("${pluginsBase}/${fullPluginName}").absoluteFile)
+
                 event("StatusUpdate", [ "Compiling plugin ${fullPluginName} ..."])
                 // reset the classpath so that plug-in is recognised
                 classpathSet = false
@@ -207,5 +213,3 @@ target(installPlugin:"Implementation target") {
         e.printStackTrace()
     }
 }
-
-

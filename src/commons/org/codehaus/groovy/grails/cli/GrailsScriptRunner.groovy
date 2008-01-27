@@ -21,6 +21,7 @@ import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
 import gant.Gant
 import grails.util.GrailsUtil
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver
+import org.codehaus.groovy.grails.commons.GrailsClassUtils
 
 /**
  * Class that handles Grails command line interface for running scripts
@@ -167,20 +168,41 @@ Grails home is set to: ${grailsHome}
 				potentialScripts << scriptFile
 			}
 		}
-		                       
+
 		try {
 			def pluginScripts = RESOLVER.getResources("file:${baseDir.absolutePath}/plugins/**/scripts/${scriptName}.groovy")
 			potentialScripts += pluginScripts.collect { it.file }			
 		}
 		catch(Exception e) {
 			println "Note: No plugin scripts found"
-		} 
-		if(potentialScripts.size()>0) {  
+		}
+
+		// Get the paths of any installed plugins and add them to the
+        // initial binding as '<pluginName>PluginDir'.
+        def binding = new Binding()
+        try {
+            println "Searching for plugins..."
+            def plugins = RESOLVER.getResources("file:${baseDir.absolutePath}/**/*GrailsPlugin.groovy")
+            plugins.each { resource ->
+                def matcher = resource.filename =~ /(\S+)GrailsPlugin.groovy/
+                def pluginName = GrailsClassUtils.getPropertyName(matcher[0][1])
+                println "Found plugin: $pluginName"
+
+                // Add the plugin path to the binding.
+                binding.setVariable("${pluginName}PluginDir", resource.file.parentFile)
+            }
+        }
+        catch(Exception e) {
+            // No plugins found.
+			println "Note: No plugins found"
+        }
+
+        if(potentialScripts.size()>0) {
 			potentialScripts = potentialScripts.unique()
             if(potentialScripts.size() == 1) {
 				println "Running script ${potentialScripts[0].absolutePath}"
 				
-				def gant = new Gant(null,new URLClassLoader([classesDir.toURL()] as URL[], rootLoader))
+				def gant = new Gant(binding, new URLClassLoader([classesDir.toURL()] as URL[], rootLoader))
 				System.exit(gant.process(["-f", potentialScripts[0].absolutePath,"-c","-d","${userHome}/.grails/${version}/scriptCache"] as String[]))
 			}                                      
 			else {
@@ -194,7 +216,7 @@ Grails home is set to: ${grailsHome}
                 def number = ANT.antProject.properties."grails.script.number".toInteger()        
 
 				println "Running script ${potentialScripts[number-1].absolutePath}"				
-				def gant = new Gant(null,new URLClassLoader([classesDir.toURL()] as URL[], rootLoader))
+				def gant = new Gant(binding, new URLClassLoader([classesDir.toURL()] as URL[], rootLoader))
 				System.exit(gant.process(["-f", potentialScripts[number-1].absolutePath] as String[]))
 			}
 		}
