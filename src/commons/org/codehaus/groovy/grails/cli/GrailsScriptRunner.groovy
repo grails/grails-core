@@ -181,12 +181,10 @@ Grails home is set to: ${grailsHome}
         // initial binding as '<pluginName>PluginDir'.
         def binding = new Binding()
         try {
-            println "Searching for plugins..."
             def plugins = RESOLVER.getResources("file:${baseDir.absolutePath}/**/*GrailsPlugin.groovy")
             plugins.each { resource ->
                 def matcher = resource.filename =~ /(\S+)GrailsPlugin.groovy/
                 def pluginName = GrailsClassUtils.getPropertyName(matcher[0][1])
-                println "Found plugin: $pluginName"
 
                 // Add the plugin path to the binding.
                 binding.setVariable("${pluginName}PluginDir", resource.file.parentFile)
@@ -194,7 +192,6 @@ Grails home is set to: ${grailsHome}
         }
         catch(Exception e) {
             // No plugins found.
-			println "Note: No plugins found"
         }
 
         if(potentialScripts.size()>0) {
