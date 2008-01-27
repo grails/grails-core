@@ -23,13 +23,6 @@ import org.springframework.web.context.request.RequestContextHolder
 * @author Graeme Rocher
 */
 class GroovyPagesTestCase extends GroovyTestCase  {
-
-    public GroovyPagesTestCase() {
-        setControllerName "test"
-    }
-
-
-
     /**
      * The GroovyPagesTemplateEngine which gets wired into this GSP
      */

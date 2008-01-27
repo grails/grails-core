@@ -344,6 +344,10 @@ target(runIntegrationTests: "Runs Grails' tests under the test/integration direc
                     if (name.endsWith("Controller")) {
                         webRequest.controllerName = GCU.getLogicalPropertyName(name, "Controller")
                     }
+                    else {
+                        // Provide a default 'current' controller name.
+                        webRequest.controllerName = "test"
+                    }
 
 					def callable = { status ->
                         def result = invocation()
