@@ -40,6 +40,7 @@ import org.springframework.beans.*
 import org.springframework.transaction.support.*
 import org.springframework.context.*
 import org.springframework.core.io.*
+import org.springframework.util.ClassUtils;
 import org.springframework.beans.factory.config.BeanDefinition
 
 
@@ -661,20 +662,13 @@ class HibernateGrailsPlugin {
         } catch (FileNotFoundException fnfe) {
             // that's ok external resources file not required
         }
-        try {
-            def groovySpringResources = parent?.getResource(GrailsRuntimeConfigurator.SPRING_RESOURCES_GROOVY);
-            if (groovySpringResources  && groovySpringResources.exists()) {
-                BeanBuilder bb = new BeanBuilder(application.getClassLoader());
-                def emptyConfig = new WebRuntimeSpringConfiguration(parent, application.classLoader)
-                bb.setSpringConfig(emptyConfig)
-                bb.loadBeans(groovySpringResources)
-                if (emptyConfig.getBeanNames().contains("dataSource")) {
-                    log.info("Using dataSource bean definition from ${GrailsRuntimeConfigurator.SPRING_RESOURCES_GROOVY}")
-                    return emptyConfig.getBeanConfig("dataSource").getBeanDefinition()
-                }
-            }
-        } catch (FileNotFoundException fnfe) {
-            // that's ok external resoucres file not required
+        
+        // Check resources.groovy
+        def emptyConfig = new WebRuntimeSpringConfiguration(parent, application.classLoader)
+        GrailsRuntimeConfigurator.loadSpringGroovyResources(emptyConfig, application.classLoader)
+        if (emptyConfig.getBeanNames().contains("dataSource")) {
+            log.info("Using dataSource bean definition from ${GrailsRuntimeConfigurator.SPRING_RESOURCES_GROOVY}")
+            return emptyConfig.getBeanConfig("dataSource").getBeanDefinition()
         }
         return null
     }

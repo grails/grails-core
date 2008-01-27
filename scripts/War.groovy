@@ -44,6 +44,7 @@ grails prod war
 
 generateLog4jFile = true
 
+warName = null
 
 DEFAULT_DEPS = [
     "ant.jar",

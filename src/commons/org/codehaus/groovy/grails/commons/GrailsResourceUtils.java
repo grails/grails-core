@@ -73,6 +73,14 @@ public class GrailsResourceUtils {
     This pattern will match any resource within a given directory inside grails-app
     */
     public static Pattern RESOURCE_PATH_PATTERN = Pattern.compile(".+?/"+GRAILS_APP_DIR+"/(.+?)/(.+?\\.groovy)");
+
+    public static Pattern SPRING_SCRIPTS_PATH_PATTERN = Pattern.compile(".+?/"+GRAILS_APP_DIR+"/conf/spring/(.+?\\.groovy)");
+
+    public static Pattern[] COMPILER_ROOT_PATTERNS = {
+        SPRING_SCRIPTS_PATH_PATTERN,
+        RESOURCE_PATH_PATTERN
+    };
+
     /*
     Resources are resolved against the platform specific path and must therefore obey the
     specific File.separator.
@@ -80,22 +88,31 @@ public class GrailsResourceUtils {
     public static final Pattern GRAILS_RESOURCE_PATTERN_FIRST_MATCH;
     public static final Pattern GRAILS_RESOURCE_PATTERN_SECOND_MATCH;
     public static final Pattern GRAILS_RESOURCE_PATTERN_THIRD_MATCH;
-
-
     public static final Pattern GRAILS_RESOURCE_PATTERN_FOURTH_MATCH;
+    public static final Pattern GRAILS_RESOURCE_PATTERN_FIFTH_MATCH;
+    public static final Pattern GRAILS_RESOURCE_PATTERN_SIXTH_MATCH;
 
     static {
         String fs = File.separator;
         if (fs.equals("\\")) fs = "\\\\"; // backslashes need escaping in regexes
 
-        GRAILS_RESOURCE_PATTERN_FIRST_MATCH = Pattern.compile(createGrailsResourcePattern(fs, GRAILS_APP_DIR +fs +"\\w+"));
-        GRAILS_RESOURCE_PATTERN_THIRD_MATCH = Pattern.compile(createGrailsResourcePattern(fs, "grails-tests"));
+        GRAILS_RESOURCE_PATTERN_FIRST_MATCH = Pattern.compile(createGrailsResourcePattern(fs, GRAILS_APP_DIR +fs+ "conf" +fs + "spring"));
+        GRAILS_RESOURCE_PATTERN_THIRD_MATCH = Pattern.compile(createGrailsResourcePattern(fs, GRAILS_APP_DIR +fs +"\\w+"));
+        GRAILS_RESOURCE_PATTERN_FIFTH_MATCH = Pattern.compile(createGrailsResourcePattern(fs, "grails-tests"));
         fs = "/";
-        GRAILS_RESOURCE_PATTERN_SECOND_MATCH = Pattern.compile(createGrailsResourcePattern(fs, GRAILS_APP_DIR +fs +"\\w+"));
-        GRAILS_RESOURCE_PATTERN_FOURTH_MATCH = Pattern.compile(createGrailsResourcePattern(fs, "grails-tests"));
+        GRAILS_RESOURCE_PATTERN_SECOND_MATCH = Pattern.compile(createGrailsResourcePattern(fs, GRAILS_APP_DIR +fs+ "conf" +fs + "spring"));
+        GRAILS_RESOURCE_PATTERN_FOURTH_MATCH = Pattern.compile(createGrailsResourcePattern(fs, GRAILS_APP_DIR +fs +"\\w+"));
+        GRAILS_RESOURCE_PATTERN_SIXTH_MATCH = Pattern.compile(createGrailsResourcePattern(fs, "grails-tests"));
     }
 
-    public static final Pattern[] patterns = new Pattern[]{ GRAILS_RESOURCE_PATTERN_FIRST_MATCH, GRAILS_RESOURCE_PATTERN_SECOND_MATCH, GRAILS_RESOURCE_PATTERN_THIRD_MATCH, GRAILS_RESOURCE_PATTERN_FOURTH_MATCH};
+    public static final Pattern[] patterns = new Pattern[]{
+            GRAILS_RESOURCE_PATTERN_FIRST_MATCH,
+            GRAILS_RESOURCE_PATTERN_SECOND_MATCH,
+            GRAILS_RESOURCE_PATTERN_THIRD_MATCH,
+            GRAILS_RESOURCE_PATTERN_FOURTH_MATCH,
+            GRAILS_RESOURCE_PATTERN_FIFTH_MATCH,
+            GRAILS_RESOURCE_PATTERN_SIXTH_MATCH
+    };
     private static final Log LOG = LogFactory.getLog(GrailsResourceUtils.class);
 
 
@@ -287,10 +304,24 @@ public class GrailsResourceUtils {
         return contextPath; 
     }
 
+    /**
+     * Get the path relative to an artefact folder under grails-app i.e:
+     *
+     * Input: /usr/joe/project/grails-app/conf/BootStrap.groovy
+     * Output: BootStrap.groovy
+     *
+     * Input: /usr/joe/project/grails-app/domain/com/mystartup/Book.groovy
+     * Output: com/mystartup/Book.groovy
+     *
+     * @param path
+     * @return
+     */
     public static String getPathFromRoot(String path) {
-        Matcher m = RESOURCE_PATH_PATTERN.matcher(path);
-        if(m.find()) {
-            return m.group(2);            
+        for (int i = 0; i < COMPILER_ROOT_PATTERNS.length; i++) {
+            Matcher m = COMPILER_ROOT_PATTERNS[i].matcher(path);
+            if(m.find()) {
+                return m.group(m.groupCount());
+            }
         }
         return null;
     }

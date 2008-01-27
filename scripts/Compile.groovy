@@ -53,31 +53,41 @@ Ant.taskdef ( 	name : 'groovyc' ,
 target ('default': "Performs compilation on any source files (Java or Groovy) in the 'src' tree") {
 	compile()
 }            
-  
-compilerClasspath = { testSources -> 
 
-	def excludedPaths = ["views", "i18n"]	
+compilerClasspath = { testSources ->
+
+	def excludedPaths = ["views", "i18n", "conf"] // conf gets special handling
 	def pluginResources = resolveResources("file:${basedir}/plugins/*/grails-app/*").toList() +
 						  resolveResources("file:${basedir}/plugins/*/src/java").toList() +
 						  resolveResources("file:${basedir}/plugins/*/src/groovy").toList() 
 	
 	for(dir in new File("${basedir}/grails-app").listFiles()) {
-	if(!excludedPaths.contains(dir.name) && dir.isDirectory())
-	    src(path:"${dir}")
-	} 
-	for(dir in pluginResources.file) {
-	if(!excludedPaths.contains(dir.name) && dir.isDirectory()) {
-		src(path:"${dir}")
-	}
-	}	
-	src(path:"${basedir}/src/groovy")
+        if(!excludedPaths.contains(dir.name) && dir.isDirectory())
+            src(path:"${dir}")
+    }
+    // Handle conf/ separately to exclude subdirs/package misunderstandings
+    src(path: "${basedir}/grails-app/conf")
+    // This stops resources.groovy becoming "spring.resources"
+    src(path: "${basedir}/grails-app/conf/spring")
+    
+    for(dir in pluginResources.file) {
+        if(!excludedPaths.contains(dir.name) && dir.isDirectory()) {
+            src(path:"${dir}")
+        }
+        // Handle conf/ separately to exclude subdirs/package misunderstandings
+        src(path: "${basedir}/grails-app/conf")
+        // This stops resources.groovy becoming "spring.resources"
+        src(path: "${basedir}/grails-app/conf/spring")
+    }
+    src(path:"${basedir}/src/groovy")
     src(path:"${basedir}/src/java")
-    javac(classpathref:"grails.classpath", debug:"yes") 
+    javac(classpathref:"grails.classpath", debug:"yes")
 	if(testSources) {
          src(path:"${basedir}/test/unit")
          src(path:"${basedir}/test/integration")
 	}
 }
+
 target(compile : "Implementation of compilation phase") {
     event("CompileStart", ['source'])
 

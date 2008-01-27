@@ -23,7 +23,10 @@ import org.springframework.beans.factory.config.MethodInvokingFactoryBean
 import org.codehaus.groovy.runtime.InvokerHelper
 import org.codehaus.groovy.grails.commons.cfg.GrailsOverrideConfigurer
 import org.codehaus.groovy.grails.commons.cfg.GrailsPlaceholderConfigurer
-
+import org.springframework.core.io.Resource
+import org.codehaus.groovy.grails.commons.spring.DefaultRuntimeSpringConfiguration
+import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration
+import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator
 /**
  * A plug-in that configures the core shared beans within the Grails application context 
  * 
@@ -33,7 +36,7 @@ import org.codehaus.groovy.grails.commons.cfg.GrailsPlaceholderConfigurer
 class CoreGrailsPlugin {
 	
 	def version = grails.util.GrailsUtil.getGrailsVersion()
-    def watchedResources = "file:./grails-app/conf/spring/resources.xml"
+    def watchedResources = ["file:./grails-app/conf/spring/resources.xml","file:./grails-app/conf/spring/resources.groovy"]
 	
 	
 	def doWithSpring = {
@@ -82,13 +85,17 @@ class CoreGrailsPlugin {
 		}
 	}
 	
-	def onChange = { event -> 
-		if(event.source) {
+	def onChange = { event ->
+	    println "Change event: $event"
+		if(event.source instanceof Resource) {
 			def xmlBeans = new org.springframework.beans.factory.xml.XmlBeanFactory(event.source);
             xmlBeans.beanDefinitionNames.each { name ->                         
 	        	event.ctx.registerBeanDefinition(name, xmlBeans.getBeanDefinition(name))
 			}
-            
-		}		
+		} else if (event.source instanceof Class) {
+            println "Change event was class... reloading spring resources.groovy beans"
+            RuntimeSpringConfiguration springConfig = event.ctx != null ? new DefaultRuntimeSpringConfiguration(event.ctx) : new DefaultRuntimeSpringConfiguration();
+            GrailsRuntimeConfigurator.loadSpringGroovyResourcesIntoContext(springConfig, application.classLoader, event.ctx)
+        }
 	}
 }
