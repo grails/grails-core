@@ -74,11 +74,7 @@ compilerClasspath = { testSources ->
         if(!excludedPaths.contains(dir.name) && dir.isDirectory()) {
             src(path:"${dir}")
         }
-        // Handle conf/ separately to exclude subdirs/package misunderstandings
-        src(path: "${basedir}/grails-app/conf")
-        // This stops resources.groovy becoming "spring.resources"
-        src(path: "${basedir}/grails-app/conf/spring")
-    }
+     }
     src(path:"${basedir}/src/groovy")
     src(path:"${basedir}/src/java")
     javac(classpathref:"grails.classpath", debug:"yes")
