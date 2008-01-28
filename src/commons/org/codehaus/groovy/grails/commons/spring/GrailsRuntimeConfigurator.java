@@ -17,6 +17,8 @@
 package org.codehaus.groovy.grails.commons.spring;
 
 import grails.spring.BeanBuilder;
+import groovy.lang.Closure;
+import groovy.lang.Script;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.*;
@@ -50,9 +52,6 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
-
-import groovy.lang.Script;
-import groovy.lang.Closure;
 
 /**
  * A class that handles the runtime configuration of the Grails ApplicationContext
@@ -396,8 +395,13 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
     private static void doLoadSpringGroovyResources(RuntimeSpringConfiguration config, ClassLoader classLoader,
                                                     GenericApplicationContext context) {
         try {
-            Class groovySpringResourcesClass = ClassUtils.forName(GrailsRuntimeConfigurator.SPRING_RESOURCES_CLASS,
+            Class groovySpringResourcesClass = null;
+            try {
+                groovySpringResourcesClass = ClassUtils.forName(GrailsRuntimeConfigurator.SPRING_RESOURCES_CLASS,
                     classLoader);
+            } catch (ClassNotFoundException e) {
+                // ignore
+            }
             if (groovySpringResourcesClass != null) {
                 final BeanBuilder bb = new BeanBuilder(Thread.currentThread().getContextClassLoader());
                 bb.setSpringConfig(config);

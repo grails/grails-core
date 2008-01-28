@@ -178,8 +178,7 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
                         }
                     }
                     catch (ClassNotFoundException e) {
-                        GrailsUtil.deepSanitize(e);
-                        log.error("Class not found attempting to load class " + e.getMessage(), e);
+                        log.error("The class ["+e.getMessage()+"] was not found when attempting to load Grails application. Skipping.");
                     }
                 } else {
                     Class c = null;
