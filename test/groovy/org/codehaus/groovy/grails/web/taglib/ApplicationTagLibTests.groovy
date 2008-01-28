@@ -1,8 +1,36 @@
 package org.codehaus.groovy.grails.web.taglib;
 
 import org.codehaus.groovy.grails.commons.ApplicationHolder
+import javax.servlet.http.Cookie
 
 class ApplicationTagLibTests extends AbstractGrailsTagTests {
+
+    void testObtainCookieValue() {
+        def cookie = new Cookie("foo", "bar")
+        request.cookies = [cookie] as Cookie[]
+
+        def template = '<g:cookie name="foo" />'
+
+        assertOutputEquals "bar", template
+
+        template = '${cookie(name:"foo")}'
+
+        assertOutputEquals "bar", template
+
+    }
+
+    void testObtainHeaderValue() {
+        request.addHeader "FOO", "BAR"
+        def template = '<g:header name="FOO" />'
+
+        assertOutputEquals "BAR", template
+
+        template = '${header(name:"FOO")}'
+
+        assertOutputEquals "BAR", template
+
+    }
+
 
     void testClonedUrlFromVariable() {
         def template = '''<g:set var="urlMap" value="${[controller: 'test', action: 'justdoit']}"/>${urlMap}<g:link url="${urlMap}">test</g:link>${urlMap}'''

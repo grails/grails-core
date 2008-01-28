@@ -45,6 +45,23 @@ class ApplicationTagLib implements ApplicationContextAware {
 						   request:'request',
 						   session:'session',
 						   flash:'flash']
+
+    /**
+     * Obtains the value of a cookie
+     */
+    def cookie = { attrs ->
+        def cke = request.cookies.find {it.name == attrs['name']}
+        if(cke)
+            out << cke.value
+    }
+
+    def header = { attrs ->
+        if(attrs.name) {
+            def hdr = request.getHeader(attrs.name)
+            if(hdr) out << hdr
+        }
+    }
+
     /**
      * Sets a variable in the pageContext or the specified scope
      */						

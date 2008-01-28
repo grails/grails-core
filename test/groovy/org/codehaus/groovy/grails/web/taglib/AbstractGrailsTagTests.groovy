@@ -25,15 +25,19 @@ import org.springframework.web.servlet.i18n.AcceptHeaderLocaleResolver;
 import org.codehaus.groovy.grails.commons.ApplicationHolder
 import org.codehaus.groovy.grails.commons.spring.WebRuntimeSpringConfiguration
 import org.codehaus.groovy.grails.commons.ConfigurationHolder
+import javax.servlet.http.HttpServletRequest
+import javax.servlet.http.HttpServletResponse
+import org.springframework.mock.web.MockHttpServletRequest
+import org.springframework.mock.web.MockHttpServletResponse
 
 abstract class AbstractGrailsTagTests extends GroovyTestCase {
 
 
 
-	def servletContext
+	MockServletContext servletContext
 	def webRequest
-	def request
-	def response
+	MockHttpServletRequest request
+	MockHttpServletResponse response
 	def ctx
 	def originalHandler
 	def appCtx
