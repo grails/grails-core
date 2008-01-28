@@ -26,6 +26,14 @@ class TestUrlMappings {
         assertOutputEquals("new Ajax.Request('/bar/foo',{asynchronous:false,evalScripts:true});", template)
     }
 
+    void testPrototypeWithExtraParams() {
+        def template = '<g:remoteFunction controller="person" action="show" params="[var1:\'one\', var2:\'two\']" />'
+        request.setAttribute("org.codehaus.grails.INCLUDED_JS_LIBRARIES", ['prototype'])
+
+        assertOutputEquals("new Ajax.Request('/people/details/one?var2=two',{asynchronous:true,evalScripts:true});", template)
+
+    }
+
 
     void testRemoteFieldWithAdditionalArgs() {
         def template = '<g:remoteField controller="bar" action="storeField" id="2" name="nv" paramName="pnv" params="\'a=b&\'+" />'
