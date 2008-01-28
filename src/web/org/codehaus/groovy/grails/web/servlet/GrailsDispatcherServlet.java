@@ -195,23 +195,24 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
             response = useWrappedOrOriginalResponse(response);
         }
 
-
-        processedRequest = checkMultipart(request);
-        // Expose current RequestAttributes to current thread.
-        GrailsWebRequest previousRequestAttributes = (GrailsWebRequest) RequestContextHolder.currentRequestAttributes();
-        GrailsWebRequest requestAttributes = new GrailsWebRequest(processedRequest, response, getServletContext());
-        copyParamsFromPreviousRequest(previousRequestAttributes, requestAttributes);
-
-        RequestContextHolder.setRequestAttributes(requestAttributes);
-
-        if (logger.isDebugEnabled()) {
-            logger.debug("Bound request context to thread: " + request);
-            logger.debug("Using response object: " + response.getClass());
-        }
-
+        GrailsWebRequest requestAttributes = null;
+        GrailsWebRequest previousRequestAttributes = null;
         try {
             ModelAndView mv = null;
             try {
+                processedRequest = checkMultipart(request);
+                // Expose current RequestAttributes to current thread.
+                previousRequestAttributes = (GrailsWebRequest) RequestContextHolder.currentRequestAttributes();
+                requestAttributes = new GrailsWebRequest(processedRequest, response, getServletContext());
+                copyParamsFromPreviousRequest(previousRequestAttributes, requestAttributes);
+
+                RequestContextHolder.setRequestAttributes(requestAttributes);
+
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Bound request context to thread: " + request);
+                    logger.debug("Using response object: " + response.getClass());
+                }
+
 
 
 
@@ -301,18 +302,20 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
             }
 
             // Reset thread-bound RequestAttributes.
-            requestAttributes.requestCompleted();
-            RequestContextHolder.setRequestAttributes(previousRequestAttributes);
+            if(requestAttributes != null) {
 
+                requestAttributes.requestCompleted();
+                RequestContextHolder.setRequestAttributes(previousRequestAttributes);
+            }
             // Reset thread-bound LocaleContext.
             LocaleContextHolder.setLocaleContext(previousLocaleContext);
+
 
             if (logger.isDebugEnabled()) {
                 logger.debug("Cleared thread-bound request context: " + request);
             }
         }
-
-	}
+    }
 
     private HttpServletResponse useWrappedOrOriginalResponse(HttpServletResponse response) {
         HttpServletResponse r = WrappedResponseHolder.getWrappedResponse();
