@@ -42,6 +42,7 @@ public class XML extends AbstractConverter implements Converter {
     public static final Log log = LogFactory.getLog(XML.class);
 
     private Object target;
+    private static final String CACHED_XML = "org.codehaus.groovy.grails.CACHED_XML_REQUEST_CONTENT";
 
     /**
      * Configures the XStream instance
@@ -140,11 +141,15 @@ public class XML extends AbstractConverter implements Converter {
      * @throws ConverterException
      */
     public static Object parse(HttpServletRequest request) throws ConverterException {
+        Object xml = request.getAttribute(CACHED_XML);
+        if(xml!= null) return xml;
         String encoding = request.getCharacterEncoding();
         if (encoding == null)
             encoding = Converter.DEFAULT_REQUEST_ENCODING;
         try {
-            return parse(request.getInputStream(), encoding);
+            xml = parse(request.getInputStream(), encoding);
+            request.setAttribute(CACHED_XML, xml);
+            return xml;
         } catch (IOException e) {
             throw new ConverterException("Error parsing XML", e);
         }

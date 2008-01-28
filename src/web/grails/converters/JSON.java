@@ -56,6 +56,7 @@ public class JSON extends AbstractConverter implements Converter {
     private JSONWriter writer;
 
     private boolean renderDomainClassRelations = false;
+    private static final String CACHED_JSON = "org.codehaus.groovy.grails.CACHED_JSON_REQUEST_CONTENT";
 
     /**
      * Returns true if the JSON Converter is configured to convert referenced Domain Class instances as they are
@@ -402,11 +403,15 @@ public class JSON extends AbstractConverter implements Converter {
      * @throws ConverterException when the JSON content is not valid
      */
     public static Object parse(HttpServletRequest request) throws ConverterException {
+        Object json = request.getAttribute(CACHED_JSON);
+        if(json != null) return json;
         String encoding = request.getCharacterEncoding();
         if (encoding == null)
             encoding = Converter.DEFAULT_REQUEST_ENCODING;
         try {
-            return parse(request.getInputStream(), encoding);
+            json = parse(request.getInputStream(), encoding);
+            request.setAttribute(CACHED_JSON,json);
+            return json;
         } catch (IOException e) {
             throw new ConverterException("Error parsing JSON", e);
         }
