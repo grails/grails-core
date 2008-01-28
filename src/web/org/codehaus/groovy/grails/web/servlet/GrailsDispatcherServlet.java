@@ -61,8 +61,8 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
     private GrailsApplication application;
     private UrlPathHelper urlHelper = new GrailsUrlPathHelper();
     private SimpleGrailsController grailsController;
-    private HandlerInterceptor[] interceptors;
-    private MultipartResolver multipartResolver;
+    protected HandlerInterceptor[] interceptors;
+    protected MultipartResolver multipartResolver;
 
     public GrailsDispatcherServlet() {
         super();
@@ -317,13 +317,13 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
         }
     }
 
-    private HttpServletResponse useWrappedOrOriginalResponse(HttpServletResponse response) {
+    protected HttpServletResponse useWrappedOrOriginalResponse(HttpServletResponse response) {
         HttpServletResponse r = WrappedResponseHolder.getWrappedResponse();
         if(r != null) return r;
         return response;
     }
 
-    private void copyParamsFromPreviousRequest(GrailsWebRequest previousRequestAttributes, GrailsWebRequest requestAttributes) {
+    protected void copyParamsFromPreviousRequest(GrailsWebRequest previousRequestAttributes, GrailsWebRequest requestAttributes) {
         Map previousParams = previousRequestAttributes.getParams();
         Map params =  requestAttributes.getParams();
         for (Iterator i = previousParams.keySet().iterator(); i.hasNext();) {
@@ -341,7 +341,7 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
 	 * @param ex Exception thrown on handler execution, or <code>null</code> if none
 	 * @see HandlerInterceptor#afterCompletion
 	 */
-	private void triggerAfterCompletion(
+	protected void triggerAfterCompletion(
 			HandlerExecutionChain mappedHandler, int interceptorIndex,
 			HttpServletRequest request, HttpServletResponse response, Exception ex)
 			throws Exception {
