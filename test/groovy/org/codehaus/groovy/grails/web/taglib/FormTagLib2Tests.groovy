@@ -1,26 +1,10 @@
-package org.codehaus.groovy.grails.web.taglib;
+package org.codehaus.groovy.grails.web.taglib
 
-import groovy.lang.Closure;
-
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.HashMap;
-import java.util.Map;
-
-import org.dom4j.Attribute;
-import org.dom4j.Document;
-import org.dom4j.DocumentHelper;
-import org.dom4j.Element;
-import org.dom4j.XPath;
-import org.dom4j.xpath.DefaultXPath;
-
-import org.springframework.web.servlet.support.RequestContextUtils as RCU;
+import org.dom4j.Document
+import org.dom4j.DocumentHelper
+import org.dom4j.XPath
+import org.dom4j.xpath.DefaultXPath
+import java.text.DateFormat
 
 /**
  * Tests for the FormTagLib.groovy file which contains tags to help with the
@@ -35,14 +19,14 @@ public class FormTagLib2Tests extends AbstractGrailsTagTests {
     private static final String DATE_PICKER_TAG_NAME = "testDatePicker";
     private static final def SELECT_TAG_NAME = "testSelect";
 
-    private static final Collection DATE_PRECISIONS_INCLUDING_MINUTE = Collections.unmodifiableCollection(Arrays.asList( ["minute", null] as String[] ))
-    private static final Collection DATE_PRECISIONS_INCLUDING_HOUR = Collections.unmodifiableCollection(Arrays.asList(["hour", "minute",null] as String[] ))
-    private static final Collection DATE_PRECISIONS_INCLUDING_DAY = Collections.unmodifiableCollection(Arrays.asList(["day", "hour", "minute", null] as String[] ))
-    private static final Collection DATE_PRECISIONS_INCLUDING_MONTH = Collections.unmodifiableCollection(Arrays.asList(["month", "day", "hour", "minute", null] as String[] ))
+    private static final Collection DATE_PRECISIONS_INCLUDING_MINUTE = Collections.unmodifiableCollection(Arrays.asList(["minute", null] as String[]))
+    private static final Collection DATE_PRECISIONS_INCLUDING_HOUR = Collections.unmodifiableCollection(Arrays.asList(["hour", "minute", null] as String[]))
+    private static final Collection DATE_PRECISIONS_INCLUDING_DAY = Collections.unmodifiableCollection(Arrays.asList(["day", "hour", "minute", null] as String[]))
+    private static final Collection DATE_PRECISIONS_INCLUDING_MONTH = Collections.unmodifiableCollection(Arrays.asList(["month", "day", "hour", "minute", null] as String[]))
 
-    
 
-   public void testDatePickerTagWithDefaultDateAndPrecision() throws Exception {
+
+    public void testDatePickerTagWithDefaultDateAndPrecision() throws Exception {
         testDatePickerTag(null, null);
     }
 
@@ -70,6 +54,31 @@ public class FormTagLib2Tests extends AbstractGrailsTagTests {
         testDatePickerTag(new Date(0), null);
     }
 
+    public void testDatePickerTagWithDefault() throws Exception {
+        def defaultDate = Calendar.getInstance()
+        defaultDate.add(Calendar.DAY_OF_MONTH, 7)
+        Document document = getDatePickerOutput(null, 'day', defaultDate.getTime());
+        assertNotNull(document);
+
+        assertSelectFieldPresentWithSelectedValue(document, DATE_PICKER_TAG_NAME + "_year",
+                defaultDate.get(Calendar.YEAR).toString());
+        assertSelectFieldPresentWithSelectedValue(document, DATE_PICKER_TAG_NAME + "_month",
+                (defaultDate.get(Calendar.MONTH) + 1).toString());
+        assertSelectFieldPresentWithSelectedValue(document, DATE_PICKER_TAG_NAME + "_day",
+                defaultDate.get(Calendar.DAY_OF_MONTH).toString());
+    }
+
+    public void testDatePickerTagThrowsErrorWithInvalidDefault() throws Exception {
+        try {
+            getDatePickerOutput(null, 'day', new Integer());
+            fail()
+        } catch (e) {
+        }
+        DateFormat defaultFormat = DateFormat.getInstance()
+        Document document = getDatePickerOutput(null, 'day', defaultFormat.format(new Date()));
+        assertNotNull(document);
+    }
+
     public void testDatePickerTagWithCustomDateAndPrecision() throws Exception {
         testDatePickerTag(new Date(0), "day");
     }
@@ -83,14 +92,14 @@ public class FormTagLib2Tests extends AbstractGrailsTagTests {
         assertTrue(xpath.booleanValueOf(document));
 
         // validate id attributes
-        String xp = "//select[@name='" + DATE_PICKER_TAG_NAME + "_day' and @id='"+DATE_PICKER_TAG_NAME+"_day']";
+        String xp = "//select[@name='" + DATE_PICKER_TAG_NAME + "_day' and @id='" + DATE_PICKER_TAG_NAME + "_day']";
         xpath = new DefaultXPath(xp);
         assertTrue(xpath.booleanValueOf(document));
 
-        xpath = new DefaultXPath("//select[@name='" + DATE_PICKER_TAG_NAME + "_month' and @id='"+DATE_PICKER_TAG_NAME+"_month']");
+        xpath = new DefaultXPath("//select[@name='" + DATE_PICKER_TAG_NAME + "_month' and @id='" + DATE_PICKER_TAG_NAME + "_month']");
         assertTrue(xpath.booleanValueOf(document));
 
-        xpath = new DefaultXPath("//select[@name='" + DATE_PICKER_TAG_NAME + "_year' and @id='"+DATE_PICKER_TAG_NAME+"_year']");
+        xpath = new DefaultXPath("//select[@name='" + DATE_PICKER_TAG_NAME + "_year' and @id='" + DATE_PICKER_TAG_NAME + "_year']");
         assertTrue(xpath.booleanValueOf(document));
 
         assertSelectFieldPresentWithSelectedValue(document, DATE_PICKER_TAG_NAME + "_year", '');
@@ -110,34 +119,34 @@ public class FormTagLib2Tests extends AbstractGrailsTagTests {
         // if no date was given, default to the current date
         Calendar calendar = new GregorianCalendar();
         if (date != null) {
-                calendar.setTime(date);
+            calendar.setTime(date);
         }
 
         // validate id attributes
         String xp
         if (['day', 'hour', 'minute'].contains(precision)) {
-            xp = "//select[@name='" + DATE_PICKER_TAG_NAME + "_day' and @id='"+DATE_PICKER_TAG_NAME+"_day']";
+            xp = "//select[@name='" + DATE_PICKER_TAG_NAME + "_day' and @id='" + DATE_PICKER_TAG_NAME + "_day']";
             xpath = new DefaultXPath(xp);
             assertTrue(xpath.booleanValueOf(document));
         }
 
         if (['month', 'day', 'hour', 'minute'].contains(precision)) {
-            xpath = new DefaultXPath("//select[@name='" + DATE_PICKER_TAG_NAME + "_month' and @id='"+DATE_PICKER_TAG_NAME+"_month']");
+            xpath = new DefaultXPath("//select[@name='" + DATE_PICKER_TAG_NAME + "_month' and @id='" + DATE_PICKER_TAG_NAME + "_month']");
             assertTrue(xpath.booleanValueOf(document));
         }
 
         if (['minute', 'hour', 'day', 'month', 'year'].contains(precision)) {
-            xpath = new DefaultXPath("//select[@name='" + DATE_PICKER_TAG_NAME + "_year' and @id='"+DATE_PICKER_TAG_NAME+"_year']");
+            xpath = new DefaultXPath("//select[@name='" + DATE_PICKER_TAG_NAME + "_year' and @id='" + DATE_PICKER_TAG_NAME + "_year']");
             assertTrue(xpath.booleanValueOf(document));
         }
 
         if (['hour', 'minute'].contains(precision)) {
-            xpath = new DefaultXPath("//select[@name='" + DATE_PICKER_TAG_NAME + "_hour' and @id='"+DATE_PICKER_TAG_NAME+"_hour']");
+            xpath = new DefaultXPath("//select[@name='" + DATE_PICKER_TAG_NAME + "_hour' and @id='" + DATE_PICKER_TAG_NAME + "_hour']");
             assertTrue(xpath.booleanValueOf(document));
         }
 
         if ('minute' == precision) {
-            xpath = new DefaultXPath("//select[@name='" + DATE_PICKER_TAG_NAME + "_minute' and @id='"+DATE_PICKER_TAG_NAME+"_minute']");
+            xpath = new DefaultXPath("//select[@name='" + DATE_PICKER_TAG_NAME + "_minute' and @id='" + DATE_PICKER_TAG_NAME + "_minute']");
             assertTrue(xpath.booleanValueOf(document));
         }
 
@@ -157,13 +166,13 @@ public class FormTagLib2Tests extends AbstractGrailsTagTests {
         final String FIELD_NAME = DATE_PICKER_TAG_NAME + "_month";
 
         String expectedMonthValue = Integer.toString(1); // January
-        
+
         if (DATE_PRECISIONS_INCLUDING_MONTH.contains(precision)) {
-            expectedMonthValue = Integer.toString(calendar.get(Calendar.MONTH)+1);
+            expectedMonthValue = Integer.toString(calendar.get(Calendar.MONTH) + 1);
             assertSelectFieldPresentWithSelectedValue(document, FIELD_NAME, expectedMonthValue);
         }
         else {
-        	
+
             assertSelectFieldNotPresent(document, FIELD_NAME);
         }
     }
@@ -220,7 +229,7 @@ public class FormTagLib2Tests extends AbstractGrailsTagTests {
     }
 
     private void assertSelectFieldPresentWithValueAndText(Document document, String fieldName, String value, String label) {
-        XPath xpath = new DefaultXPath("//select[@name='" + fieldName + "']/option[@value='" + value + "' and text()='"+label+"']");
+        XPath xpath = new DefaultXPath("//select[@name='" + fieldName + "']/option[@value='" + value + "' and text()='" + label + "']");
         assertTrue(xpath.booleanValueOf(document));
     }
 
@@ -233,31 +242,31 @@ public class FormTagLib2Tests extends AbstractGrailsTagTests {
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
 
-        def document = withTag("datePicker", pw) { tag ->
+        def document = withTag("datePicker", pw) {tag ->
 
-	        assertNotNull(tag);
-	
-	        Map attrs = new HashMap();
-	        attrs.put("name", DATE_PICKER_TAG_NAME);
-	
-	        if (value != null) {
-	            attrs.value = value;
-	        }
-	
+            assertNotNull(tag);
+
+            Map attrs = new HashMap();
+            attrs.put("name", DATE_PICKER_TAG_NAME);
+
+            if (value != null) {
+                attrs.value = value;
+            }
+
             if (xdefault != null) {
                 attrs['default'] = xdefault;
             }
 
-	        if (precision != null) {
-	            attrs.precision = precision;
-	        }
+            if (precision != null) {
+                attrs.precision = precision;
+            }
 
-	        attrs.noSelection = ['':'Please choose']
-	        tag.call(attrs);
-	
-	        String enclosed = "<test>" + sw.toString() + "</test>";
+            attrs.noSelection = ['': 'Please choose']
+            tag.call(attrs);
 
-	        return DocumentHelper.parseText(enclosed);
+            String enclosed = "<test>" + sw.toString() + "</test>";
+
+            return DocumentHelper.parseText(enclosed);
         }
         return document
     }

@@ -14,85 +14,83 @@
  */
 package org.codehaus.groovy.grails.plugins.web.taglib
 
+import org.springframework.web.servlet.support.RequestContextUtils as RCU
 
-import org.springframework.validation.Errors;
-import org.springframework.context.NoSuchMessageException;
-import org.springframework.web.servlet.support.RequestContextUtils as RCU;
-import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU;
+import java.text.DateFormat
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler
-import org.springframework.beans.SimpleTypeConverter;
+import org.springframework.beans.SimpleTypeConverter
 
- /**
- *  A  tag lib that provides tags for working with form controls
- *
- * @author Graeme Rocher
- * @since 17-Jan-2006
- */
+/**
+*  A  tag lib that provides tags for working with form controls
+*
+* @author Graeme Rocher
+* @since 17-Jan-2006
+*/
 
 class FormTagLib {
-	def out // to facilitate testing
-
-	/**
-	 * Creates a new text field
-	 */
-	def textField = { attrs ->
-		attrs.type = "text"  
-		attrs.tagName = "textField" 
-		def result = field(attrs)
-		if(result) {     
-			out << result
-		}
-	}
-	/**
-	 * Creates a hidden field
-	 */
-	def hiddenField = { attrs ->
-		attrs.type = "hidden"
-		attrs.tagName = "hiddenField"
-		out << field(attrs)
-	}
-	/**
-	 * Creates a submit button
-	 */
-	def submitButton = { attrs ->
-		attrs.type = "submit"
-		attrs.tagName = "submitButton"
-		if(request['flowExecutionKey']) {
-			attrs.name = attrs.event ? "_eventId_${attrs.event}" : "_eventId_${attrs.name}"
-		}
-		out << field(attrs)
-	}
-	/**
-	 * A general tag for creating fields
-	 */
-	def field = { attrs ->  
-        resolveAttributes( attrs)
-        attrs.id = attrs.id ? attrs.id : attrs.name
-		out << "<input type=\"${attrs.remove('type')}\" "
-        outputAttributes(attrs)
-		out << "/>"
-	}
-          
+    def out // to facilitate testing
 
     /**
-     * A helper tag for creating checkboxes
-     **/
-    def checkBox = { attrs ->
-          attrs.id = attrs.id ? attrs.id : attrs.name    
-          def value = attrs.remove('value')
-          def name = attrs.remove('name')  
-          def checked = attrs.remove('checked')
-		  if(checked == null) checked = true
-		  if(checked instanceof String) checked = Boolean.valueOf(checked)
-		
-          if(value == null) value = false
-          out << "<input type=\"hidden\" name=\"_${name}\" /><input type=\"checkbox\" name=\"${name}\" "
-          if(value && checked) {
-                out << 'checked="checked" '
-          }  
-		  def outputValue = !(value instanceof Boolean || value?.class == boolean.class)
-		  if(outputValue)
-          	out << "value=\"${value}\" "
+      * Creates a new text field
+      */
+    def textField = {attrs ->
+        attrs.type = "text"
+        attrs.tagName = "textField"
+        def result = field(attrs)
+        if (result) {
+            out << result
+        }
+    }
+    /**
+      * Creates a hidden field
+      */
+    def hiddenField = {attrs ->
+        attrs.type = "hidden"
+        attrs.tagName = "hiddenField"
+        out << field(attrs)
+    }
+    /**
+      * Creates a submit button
+      */
+    def submitButton = {attrs ->
+        attrs.type = "submit"
+        attrs.tagName = "submitButton"
+        if (request['flowExecutionKey']) {
+            attrs.name = attrs.event ? "_eventId_${attrs.event}" : "_eventId_${attrs.name}"
+        }
+        out << field(attrs)
+    }
+    /**
+      * A general tag for creating fields
+      */
+    def field = {attrs ->
+        resolveAttributes(attrs)
+        attrs.id = attrs.id ? attrs.id : attrs.name
+        out << "<input type=\"${attrs.remove('type')}\" "
+        outputAttributes(attrs)
+        out << "/>"
+    }
+
+
+    /**
+    * A helper tag for creating checkboxes
+    **/
+    def checkBox = {attrs ->
+        attrs.id = attrs.id ? attrs.id : attrs.name
+        def value = attrs.remove('value')
+        def name = attrs.remove('name')
+        def checked = attrs.remove('checked')
+        if (checked == null) checked = true
+        if (checked instanceof String) checked = Boolean.valueOf(checked)
+
+        if (value == null) value = false
+        out << "<input type=\"hidden\" name=\"_${name}\" /><input type=\"checkbox\" name=\"${name}\" "
+        if (value && checked) {
+            out << 'checked="checked" '
+        }
+        def outputValue = !(value instanceof Boolean || value?.class == boolean.class)
+        if (outputValue)
+            out << "value=\"${value}\" "
         // process remaining attributes
         outputAttributes(attrs)
 
@@ -100,28 +98,28 @@ class FormTagLib {
         out << ' />'
 
     }
-	/**
-	 * A general tag for creating textareas
-	 */
-	def textArea = { attrs ->
-	    resolveAttributes(attrs)
+    /**
+      * A general tag for creating textareas
+      */
+    def textArea = {attrs ->
+        resolveAttributes(attrs)
         attrs.id = attrs.id ? attrs.id : attrs.name
         // Pull out the value to use as content not attrib
-        def value = attrs.remove( 'value')
+        def value = attrs.remove('value')
         def escapeHtml = true
-		if(attrs.escapeHtml) escapeHtml = Boolean.valueOf(attrs.remove('escapeHtml'))
+        if (attrs.escapeHtml) escapeHtml = Boolean.valueOf(attrs.remove('escapeHtml'))
 
-		out << "<textarea "
+        out << "<textarea "
         outputAttributes(attrs)
-		out << ">" << (escapeHtml ? value.encodeAsHTML() : value) << "</textarea>"
-	}
+        out << ">" << (escapeHtml ? value.encodeAsHTML() : value) << "</textarea>"
+    }
 
     /**
      * Check required attributes, set the id to name if no id supplied, extract bean values etc.
      */
     void resolveAttributes(attrs)
     {
-        if(!attrs.name && !attrs.field) {
+        if (!attrs.name && !attrs.field) {
             throwTagError("Tag [${attrs.tagName}] is missing required attribute [name] or [field]")
         }
         attrs.remove('tagName')
@@ -129,9 +127,9 @@ class FormTagLib {
         attrs.id = (!attrs.id ? attrs.name : attrs.id)
 
         def val = attrs.remove('bean')
-        if(val) {
-            if(attrs.name.indexOf('.'))
-                attrs.name.split('\\.').each { val = val?."$it" }
+        if (val) {
+            if (attrs.name.indexOf('.'))
+                attrs.name.split('\\.').each {val = val?."$it"}
             else {
                 val = val[name]
             }
@@ -145,8 +143,8 @@ class FormTagLib {
      */
     void outputAttributes(attrs)
     {
-        attrs.remove( 'tagName') // Just in case one is left
-        attrs.each { k,v ->
+        attrs.remove('tagName') // Just in case one is left
+        attrs.each {k, v ->
             out << k << "=\"" << v.encodeAsHTML() << "\" "
         }
     }
@@ -154,10 +152,10 @@ class FormTagLib {
     /**
      * Same as <g:form>, except sets the relevant enctype for a file upload form
      */
-	def uploadForm = { attrs, body ->
-		attrs.enctype = "multipart/form-data"
-		out << form(attrs, body)
-	}
+    def uploadForm = {attrs, body ->
+        attrs.enctype = "multipart/form-data"
+        out << form(attrs, body)
+    }
 
     /**
      *  General linking to controllers, actions etc. Examples:
@@ -165,30 +163,30 @@ class FormTagLib {
      *  <g:form action="myaction">...</gr:form>
      *  <g:form controller="myctrl" action="myaction">...</gr:form>
      */
-    def form = { attrs, body ->
+    def form = {attrs, body ->
         out << "<form action=\""
         // create the link
         out << createLink(attrs)
 
         out << '\" '
         // default to post
-        if(!attrs['method']) {
+        if (!attrs['method']) {
             out << 'method="post" '
         }
         // process remaining attributes
         attrs.id = attrs.id ? attrs.id : attrs.name
-        if(attrs.id == null) attrs.remove('id')
-                        
+        if (attrs.id == null) attrs.remove('id')
+
         outputAttributes(attrs)
 
-        out << ">"         
-		if(request['flowExecutionKey']) {
-			out.println()
-			out << hiddenField(name:"_flowExecutionKey", value:request['flowExecutionKey'])
-		}
+        out << ">"
+        if (request['flowExecutionKey']) {
+            out.println()
+            out << hiddenField(name: "_flowExecutionKey", value: request['flowExecutionKey'])
+        }
         // output the body
         def bodyContent = body()
-		out << bodyContent
+        out << bodyContent
 
         // close tag
         out << "</form>"
@@ -203,19 +201,19 @@ class FormTagLib {
      *  <g:actionSubmit action="Edit" value="Some label for editing" />
      *
      */
-    def actionSubmit = { attrs ->
+    def actionSubmit = {attrs ->
         attrs.tagName = "actionSubmit"
-    	if(!attrs.value) {
+        if (!attrs.value) {
             throwTagError("Tag [$attrs.tagName] is missing required attribute [value]")
         }
 
-		// add action and value
-		def value = attrs.remove('value')
-		def action = attrs.action ? attrs.remove('action') : value
-    	
-    	out << "<input type=\"submit\" name=\"_action_${action}\" value=\"${value}\" "
-    	
-    	// process remaining attributes
+        // add action and value
+        def value = attrs.remove('value')
+        def action = attrs.action ? attrs.remove('action') : value
+
+        out << "<input type=\"submit\" name=\"_action_${action}\" value=\"${value}\" "
+
+        // process remaining attributes
         outputAttributes(attrs)
 
         // close tag
@@ -231,23 +229,23 @@ class FormTagLib {
      *  <g:actionSubmitImage src="/images/submitButton.gif" action="Edit" />
      *
      */
-    def actionSubmitImage = { attrs ->
+    def actionSubmitImage = {attrs ->
         attrs.tagName = "actionSubmitImage"
 
-        if(!attrs.value) {
+        if (!attrs.value) {
             throwTagError("Tag [$attrs.tagName] is missing required attribute [value]")
         }
-        
+
         // add action and value
         def value = attrs.remove('value')
-		def action = attrs.action ? attrs.remove('action') : value
-    
+        def action = attrs.action ? attrs.remove('action') : value
+
         out << "<input type=\"image\" name=\"_action_${action}\" value=\"${value}\" "
 
-		// add image src        
+        // add image src
         def src = attrs.remove('src')
-        if(src) {
-             out << "src=\"${src}\" "
+        if (src) {
+            out << "src=\"${src}\" "
         }
 
         // process remaining attributes
@@ -258,19 +256,23 @@ class FormTagLib {
 
     }
 
-   /**
-     * A simple date picker that renders a date as selects
-     * eg. <g:datePicker name="myDate" value="${new Date()}" />
-     */
-    def datePicker = { attrs ->
+    /**
+    * A simple date picker that renders a date as selects
+    * eg. <g:datePicker name="myDate" value="${new Date()}" />
+    */
+    def datePicker = {attrs ->
         def xdefault = attrs['default']
-		if (xdefault == null) {
-			xdefault = new Date()
-		} else if (xdefault != 'none') {
-			xdefault = DateFormat.getInstance().parse(xdefault)
-		} else {
-			xdefault = null
-		}
+        if (xdefault == null) {
+            xdefault = new Date()
+        } else if (xdefault.toString() != 'none') {
+            if (xdefault instanceof String) {
+                xdefault = DateFormat.getInstance().parse(xdefault)
+            }else if(!(xdefault instanceof Date)){
+                throwTagError("Tag [datePicker] requires the default date to be a parseable String or a Date")
+            }
+        } else {
+            xdefault = null
+        }
 
         def value = attrs['value']
         if (value.toString() == 'none') {
@@ -281,15 +283,15 @@ class FormTagLib {
         def name = attrs['name']
         def id = attrs['id'] ? attrs['id'] : name
 
-		def noSelection = attrs['noSelection']
-		if (noSelection != null)
-		{
-		    noSelection = noSelection.entrySet().iterator().next()
-		}
+        def noSelection = attrs['noSelection']
+        if (noSelection != null)
+        {
+            noSelection = noSelection.entrySet().iterator().next()
+        }
 
-		def years = attrs['years']
+        def years = attrs['years']
 
-        final PRECISION_RANKINGS = ["year":0, "month":10, "day":20, "hour":30, "minute":40]
+        final PRECISION_RANKINGS = ["year": 0, "month": 10, "day": 20, "hour": 30, "minute": 40]
         def precision = (attrs['precision'] ? PRECISION_RANKINGS[attrs['precision']] : PRECISION_RANKINGS["minute"])
 
         def day
@@ -300,7 +302,7 @@ class FormTagLib {
         def dfs = new java.text.DateFormatSymbols(RCU.getLocale(request))
 
         def c = null
-        if(value instanceof Calendar) {
+        if (value instanceof Calendar) {
             c = value
         }
         else if (value != null) {
@@ -308,26 +310,26 @@ class FormTagLib {
             c.setTime(value)
         }
 
-		if (c != null) {
-	        day = c.get(GregorianCalendar.DAY_OF_MONTH)
-	        month = c.get(GregorianCalendar.MONTH)
-	        year = c.get(GregorianCalendar.YEAR)
-	        hour = c.get(GregorianCalendar.HOUR_OF_DAY)
-	        minute = c.get(GregorianCalendar.MINUTE)
-		}
+        if (c != null) {
+            day = c.get(GregorianCalendar.DAY_OF_MONTH)
+            month = c.get(GregorianCalendar.MONTH)
+            year = c.get(GregorianCalendar.YEAR)
+            hour = c.get(GregorianCalendar.HOUR_OF_DAY)
+            minute = c.get(GregorianCalendar.MINUTE)
+        }
 
-		if (years == null) {
-			def tempyear
-			if (year == null) {
-				// If no year, we need to get current year to setup a default range... ugly
-            	def tempc = new GregorianCalendar()
-            	tempc.setTime(new Date())
-	        	tempyear = tempc.get(GregorianCalendar.YEAR)
-			} else {
-				tempyear = year
-			}
-			years = (tempyear-100)..(tempyear+100)
-		}
+        if (years == null) {
+            def tempyear
+            if (year == null) {
+                // If no year, we need to get current year to setup a default range... ugly
+                def tempc = new GregorianCalendar()
+                tempc.setTime(new Date())
+                tempyear = tempc.get(GregorianCalendar.YEAR)
+            } else {
+                tempyear = year
+            }
+            years = (tempyear - 100)..(tempyear + 100)
+        }
 
         out << "<input type=\"hidden\" name=\"${name}\" value=\"struct\" />"
 
@@ -336,16 +338,16 @@ class FormTagLib {
             out.println "<select name=\"${name}_day\" id=\"${id}_day\">"
 
             if (noSelection) {
-	    		renderNoSelectionOption( noSelection.key, noSelection.value, '')
+                renderNoSelectionOption(noSelection.key, noSelection.value, '')
                 out.println()
             }
 
-            for(i in 1..31) {
+            for (i in 1..31) {
                 out.println "<option value=\"${i}\""
-				if (i == day) {
-					out.println " selected=\"selected\""
-				}
-				out.println ">${i}</option>"
+                if (i == day) {
+                    out.println " selected=\"selected\""
+                }
+                out.println ">${i}</option>"
             }
             out.println '</select>'
         }
@@ -355,15 +357,15 @@ class FormTagLib {
             out.println "<select name=\"${name}_month\" id=\"${id}_month\">"
 
             if (noSelection) {
-	    		renderNoSelectionOption( noSelection.key, noSelection.value, '')
+                renderNoSelectionOption(noSelection.key, noSelection.value, '')
                 out.println()
             }
 
-            dfs.months.eachWithIndex { m,i ->
-                if(m) {
+            dfs.months.eachWithIndex {m, i ->
+                if (m) {
                     def monthIndex = i + 1
                     out << "<option value=\"${monthIndex}\""
-                    if(month == i) out << " selected=\"selected\""
+                    if (month == i) out << " selected=\"selected\""
                     out << '>'
                     out << m
                     out.println '</option>'
@@ -377,16 +379,16 @@ class FormTagLib {
             out.println "<select name=\"${name}_year\" id=\"${id}_year\">"
 
             if (noSelection) {
-    			renderNoSelectionOption( noSelection.key, noSelection.value, '')
+                renderNoSelectionOption(noSelection.key, noSelection.value, '')
                 out.println()
             }
 
-            for(i in years) {
+            for (i in years) {
                 out.println "<option value=\"${i}\""
-				if (i == year) {
-					out.println " selected=\"selected\""
-				}
-				out.println ">${i}</option>"
+                if (i == year) {
+                    out.println " selected=\"selected\""
+                }
+                out.println ">${i}</option>"
             }
             out.println '</select>'
         }
@@ -396,15 +398,15 @@ class FormTagLib {
             out.println "<select name=\"${name}_hour\" id=\"${id}_hour\">"
 
             if (noSelection) {
-	    		renderNoSelectionOption( noSelection.key, noSelection.value, '')
+                renderNoSelectionOption(noSelection.key, noSelection.value, '')
                 out.println()
             }
 
-            for(i in 0..23) {
+            for (i in 0..23) {
                 def h = '' + i
-                if(i < 10) h = '0' + h
+                if (i < 10) h = '0' + h
                 out << "<option value=\"${h}\" "
-                if(hour == h.toInteger()) out << "selected=\"selected\""
+                if (hour == h.toInteger()) out << "selected=\"selected\""
                 out << '>' << h << '</option>'
                 out.println()
             }
@@ -421,15 +423,15 @@ class FormTagLib {
             out.println "<select name=\"${name}_minute\" id=\"${id}_minute\">"
 
             if (noSelection) {
-	    		renderNoSelectionOption( noSelection.key, noSelection.value, '')
+                renderNoSelectionOption(noSelection.key, noSelection.value, '')
                 out.println()
             }
 
-            for(i in 0..59) {
+            for (i in 0..59) {
                 def m = '' + i
-                if(i < 10) m = '0' + m
+                if (i < 10) m = '0' + m
                 out << "<option value=\"${m}\" "
-                if(minute == m.toInteger()) out << "selected=\"selected\""
+                if (minute == m.toInteger()) out << "selected=\"selected\""
                 out << '>' << m << '</option>'
                 out.println()
             }
@@ -437,39 +439,39 @@ class FormTagLib {
         }
     }
 
-	def renderNoSelectionOption = { noSelectionKey, noSelectionValue, value ->
-		// If a label for the '--Please choose--' first item is supplied, write it out
+    def renderNoSelectionOption = {noSelectionKey, noSelectionValue, value ->
+        // If a label for the '--Please choose--' first item is supplied, write it out
         out << '<option value="' << (noSelectionKey == null ? "" : noSelectionKey) << '"'
-        if(noSelectionKey.equals(value)) {
+        if (noSelectionKey.equals(value)) {
             out << ' selected="selected" '
         }
         out << '>' << noSelectionValue.encodeAsHTML() << '</option>'
-	}
+    }
 
     /**
      *  A helper tag for creating TimeZone selects
      * eg. <g:timeZoneSelect name="myTimeZone" value="${tz}" />
      */
-    def timeZoneSelect = { attrs ->
+    def timeZoneSelect = {attrs ->
         attrs['from'] = TimeZone.getAvailableIDs();
-        attrs['value'] = (attrs['value'] ? attrs['value'].ID : TimeZone.getDefault().ID )
+        attrs['value'] = (attrs['value'] ? attrs['value'].ID : TimeZone.getDefault().ID)
         def date = new Date()
 
         // set the option value as a closure that formats the TimeZone for display
         attrs['optionValue'] = {
             TimeZone tz = TimeZone.getTimeZone(it);
-            def shortName = tz.getDisplayName(tz.inDaylightTime(date),TimeZone.SHORT);
-            def longName = tz.getDisplayName(tz.inDaylightTime(date),TimeZone.LONG);
+            def shortName = tz.getDisplayName(tz.inDaylightTime(date), TimeZone.SHORT);
+            def longName = tz.getDisplayName(tz.inDaylightTime(date), TimeZone.LONG);
 
             def offset = tz.rawOffset;
-            def hour = offset / (60*60*1000);
-            def min = Math.abs(offset / (60*1000)) % 60;
+            def hour = offset / (60 * 60 * 1000);
+            def min = Math.abs(offset / (60 * 1000)) % 60;
 
             return "${shortName}, ${longName} ${hour}:${min}"
         }
 
         // use generic select
-        out << select( attrs )
+        out << select(attrs)
     }
 
     /**
@@ -479,14 +481,14 @@ class FormTagLib {
      */
     def localeSelect = {attrs ->
         attrs['from'] = Locale.getAvailableLocales()
-        attrs['value'] = (attrs['value'] ? attrs['value'] : RCU.getLocale(request) )
+        attrs['value'] = (attrs['value'] ? attrs['value'] : RCU.getLocale(request))
         // set the key as a closure that formats the locale
-        attrs['optionKey'] = { "${it.language}_${it.country}" }
+        attrs['optionKey'] = {"${it.language}_${it.country}"}
         // set the option value as a closure that formats the locale for display
-        attrs['optionValue'] = { "${it.language}, ${it.country},  ${it.displayName}" }
+        attrs['optionValue'] = {"${it.language}, ${it.country},  ${it.displayName}"}
 
         // use generic select
-        out << select( attrs )
+        out << select(attrs)
     }
 
     /**
@@ -494,19 +496,19 @@ class FormTagLib {
      *
      * eg. <g:currencySelect name="myCurrency" value="${currency}" />
      */
-    def currencySelect = { attrs, body ->
-        if(!attrs['from']) {
-            attrs['from'] = ['EUR', 'XCD','USD','XOF','NOK','AUD','XAF','NZD','MAD','DKK','GBP','CHF','XPF','ILS','ROL','TRL']
+    def currencySelect = {attrs, body ->
+        if (!attrs['from']) {
+            attrs['from'] = ['EUR', 'XCD', 'USD', 'XOF', 'NOK', 'AUD', 'XAF', 'NZD', 'MAD', 'DKK', 'GBP', 'CHF', 'XPF', 'ILS', 'ROL', 'TRL']
         }
-		try {
-	        def currency = (attrs['value'] ? attrs['value'] : Currency.getInstance( RCU.getLocale(request) ))
-	        attrs.value = currency.currencyCode
-		}
-		catch(IllegalArgumentException iae) {
-		   	attrs.value = null
-		}
+        try {
+            def currency = (attrs['value'] ? attrs['value'] : Currency.getInstance(RCU.getLocale(request)))
+            attrs.value = currency.currencyCode
+        }
+        catch (IllegalArgumentException iae) {
+            attrs.value = null
+        }
         // invoke generic select
-        out << select( attrs )
+        out << select(attrs)
     }
 
     /**
@@ -516,9 +518,9 @@ class FormTagLib {
      * <g:select name="user.age" from="${18..65}" value="${age}" />
      * <g:select name="user.company.id" from="${Company.list()}" value="${user?.company.id}" optionKey="id" />
      */
-    def select = { attrs ->
-	    def messageSource = grailsAttributes.getApplicationContext().getBean("messageSource")
-		def locale = RCU.getLocale(request)
+    def select = {attrs ->
+        def messageSource = grailsAttributes.getApplicationContext().getBean("messageSource")
+        def locale = RCU.getLocale(request)
         def writer = out
         attrs.id = attrs.id ? attrs.id : attrs.name
         def from = attrs.remove('from')
@@ -526,11 +528,11 @@ class FormTagLib {
         def optionKey = attrs.remove('optionKey')
         def optionValue = attrs.remove('optionValue')
         def value = attrs.remove('value')
-        if(value instanceof Collection) {
+        if (value instanceof Collection) {
             attrs.multiple = true
         }
         def valueMessagePrefix = attrs.remove('valueMessagePrefix')
-		def noSelection = attrs.remove('noSelection')
+        def noSelection = attrs.remove('noSelection')
         if (noSelection != null) {
             noSelection = noSelection.entrySet().iterator().next()
         }
@@ -543,24 +545,24 @@ class FormTagLib {
         writer.println()
 
         if (noSelection) {
-		    renderNoSelectionOption(noSelection.key, noSelection.value, value)
+            renderNoSelectionOption(noSelection.key, noSelection.value, value)
             writer.println()
         }
 
         // create options from list
-        if(from) {
-            from.eachWithIndex { el,i ->
-            	def keyValue = null
+        if (from) {
+            from.eachWithIndex {el, i ->
+                def keyValue = null
                 writer << '<option '
-                if(keys) {
-                    keyValue = keys[i]                     
+                if (keys) {
+                    keyValue = keys[i]
                     writeValueAndCheckIfSelected(keyValue, value, writer)
                 }
-                else if(optionKey) {
-                    if(optionKey instanceof Closure) {
+                else if (optionKey) {
+                    if (optionKey instanceof Closure) {
                         keyValue = optionKey(el)
                     }
-                    else if(el !=null && optionKey == 'id' && grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE, el.getClass().name)) {
+                    else if (el != null && optionKey == 'id' && grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE, el.getClass().name)) {
                         keyValue = el.ident()
                     }
                     else {
@@ -569,34 +571,34 @@ class FormTagLib {
                     writeValueAndCheckIfSelected(keyValue, value, writer)
                 }
                 else {
-                	keyValue = el
+                    keyValue = el
                     writeValueAndCheckIfSelected(keyValue, value, writer)
                 }
                 writer << '>'
-                if(optionValue) {
-                    if(optionValue instanceof Closure) {
-                         writer << optionValue(el).toString().encodeAsHTML()
+                if (optionValue) {
+                    if (optionValue instanceof Closure) {
+                        writer << optionValue(el).toString().encodeAsHTML()
                     }
                     else {
                         writer << el[optionValue].toString().encodeAsHTML()
                     }
                 }
-                else if(valueMessagePrefix) {
-                	def message = messageSource.getMessage("${valueMessagePrefix}.${keyValue}", null, null, locale)
-                	if(message != null) {
-                		writer << message.encodeAsHTML()
-                	}
-                	else if (keyValue) {
-                		writer << keyValue.encodeAsHTML()
-                	}
-					else {
-        	            def s = el.toString()
-    	                if(s) writer << s.encodeAsHTML()
-	                }
+                else if (valueMessagePrefix) {
+                    def message = messageSource.getMessage("${valueMessagePrefix}.${keyValue}", null, null, locale)
+                    if (message != null) {
+                        writer << message.encodeAsHTML()
+                    }
+                    else if (keyValue) {
+                        writer << keyValue.encodeAsHTML()
+                    }
+                    else {
+                        def s = el.toString()
+                        if (s) writer << s.encodeAsHTML()
+                    }
                 }
                 else {
                     def s = el.toString()
-                    if(s) writer << s.encodeAsHTML()
+                    if (s) writer << s.encodeAsHTML()
                 }
                 writer << '</option>'
                 writer.println()
@@ -607,17 +609,17 @@ class FormTagLib {
     }
 
     def typeConverter = new SimpleTypeConverter()
-    private writeValueAndCheckIfSelected(keyValue, value, writer){
+    private writeValueAndCheckIfSelected(keyValue, value, writer) {
 
         boolean selected = false
         def keyClass = keyValue?.getClass()
-        if(keyClass.isInstance(value)) {
+        if (keyClass.isInstance(value)) {
             selected = (keyValue == value)
         }
-        else if(value instanceof Collection) {
+        else if (value instanceof Collection) {
             selected = value.contains(keyValue)
         }
-        else if(keyClass && value ){
+        else if (keyClass && value) {
             try {
                 value = typeConverter.convertIfNecessary(value, keyClass)
                 selected = (keyValue == value)
@@ -626,7 +628,7 @@ class FormTagLib {
             }
         }
         writer << "value=\"${keyValue}\" "
-        if(selected) {
+        if (selected) {
             writer << 'selected="selected" '
         }
     }
@@ -634,44 +636,44 @@ class FormTagLib {
     /**
      * A helper tag for creating radio buttons
      */
-     def radio = { attrs ->
-          def value = attrs.remove('value')
-          attrs.id = attrs.id ? attrs.id : attrs.name
-          def name = attrs.remove('name')
-          def checked = (attrs.remove('checked') ? true : false)
-          out << '<input type="radio" '
-          out << "name=\"${name}\" "
-          if(checked) {
-                out << 'checked="checked" '
-          }
-          out << "value=\"${value.toString().encodeAsHTML()}\" "
+    def radio = {attrs ->
+        def value = attrs.remove('value')
+        attrs.id = attrs.id ? attrs.id : attrs.name
+        def name = attrs.remove('name')
+        def checked = (attrs.remove('checked') ? true : false)
+        out << '<input type="radio" '
+        out << "name=\"${name}\" "
+        if (checked) {
+            out << 'checked="checked" '
+        }
+        out << "value=\"${value.toString().encodeAsHTML()}\" "
         // process remaining attributes
         outputAttributes(attrs)
 
         // close the tag, with no body
         out << ' />'
-     }
+    }
 
-     /**
-     * A helper tag for creating radio button groups
-     */
-     def radioGroup = { attrs, body ->
-          def value = attrs.remove('value')
-          def values = attrs.remove('values')
-          def labels = attrs.remove('labels')
-          def name = attrs.remove('name')
-          values.eachWithIndex{ val, idx ->
-               def it = new Expando();
-                it.radio = "<input type=\"radio\" name=\"${name}\" "
-                if(value?.toString().equals(val.toString())) {
-                    it.radio += 'checked '
-                }
-                it.radio += "value=\"${val.toString().encodeAsHTML()}\" />"
+    /**
+    * A helper tag for creating radio button groups
+    */
+    def radioGroup = {attrs, body ->
+        def value = attrs.remove('value')
+        def values = attrs.remove('values')
+        def labels = attrs.remove('labels')
+        def name = attrs.remove('name')
+        values.eachWithIndex {val, idx ->
+            def it = new Expando();
+            it.radio = "<input type=\"radio\" name=\"${name}\" "
+            if (value?.toString().equals(val.toString())) {
+                it.radio += 'checked '
+            }
+            it.radio += "value=\"${val.toString().encodeAsHTML()}\" />"
 
-                it.label = labels == null ? 'Radio ' + val : labels[idx]
-                
-                out << body(it)
-                out.println()
-          }
-     }
+            it.label = labels == null ? 'Radio ' + val : labels[idx]
+
+            out << body(it)
+            out.println()
+        }
+    }
 }
