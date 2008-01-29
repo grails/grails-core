@@ -58,7 +58,7 @@ class ContentController {
     }
 
     def testWithFormatRenderAs = {
-        def gizmos = Gizmo.list()
+        def gizmos = Gizmo.get()
         withFormat {
 			html {
 				render "<html>hello</html>"
@@ -78,8 +78,8 @@ class Gizmo {
     Long version
     String name
 
-    static list() {
-        [new Gizmo(name:"iPod")]
+    static get() {
+        new Gizmo(name:"iPod")
     }
 }
 '''
@@ -97,11 +97,9 @@ class Gizmo {
          webRequest.controllerName = 'content'
          c.testWithFormatRenderAs.call()
 
-         assertEquals '''<?xml version="1.0" encoding="ISO-8859-1"?><list>
-  <gizmo>
-    <name>iPod</name>
-  </gizmo>
-</list>''', response.contentAsString
+         assertEquals '''<?xml version="1.0" encoding="ISO-8859-1"?><gizmo>
+  <name>iPod</name>
+</gizmo>''', response.contentAsString
 
     }
 
@@ -113,7 +111,7 @@ class Gizmo {
          webRequest.controllerName = 'content'
          c.testWithFormatRenderAs.call()
 
-         assertEquals '[{"id":null,"class":"Gizmo","name":"iPod"}]', response.contentAsString
+         assertEquals '{"id":null,"class":"Gizmo","name":"iPod"}', response.contentAsString
 
     }
 
