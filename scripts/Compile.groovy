@@ -69,12 +69,15 @@ compilerClasspath = { testSources ->
     src(path: "${basedir}/grails-app/conf")
     // This stops resources.groovy becoming "spring.resources"
     src(path: "${basedir}/grails-app/conf/spring")
-    
+
+	excludedPaths.remove("conf")    
     for(dir in pluginResources.file) {
         if(!excludedPaths.contains(dir.name) && dir.isDirectory()) {
             src(path:"${dir}")
         }
      }
+
+
     src(path:"${basedir}/src/groovy")
     src(path:"${basedir}/src/java")
     javac(classpathref:"grails.classpath", debug:"yes")
