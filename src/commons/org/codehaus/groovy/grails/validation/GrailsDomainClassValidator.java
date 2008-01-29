@@ -24,9 +24,7 @@ import org.springframework.context.MessageSource;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
 
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 
 /**
  * A specialised Spring validator that validates a domain class instance using the constraints defined in the
@@ -39,6 +37,12 @@ import java.util.Map;
  * Created: 07-Nov-2005
  */
 public class GrailsDomainClassValidator implements Validator, CascadingValidator {
+
+
+    private static final List EMBEDDED_EXCLUDES = new ArrayList() {{
+            add(GrailsDomainClassProperty.IDENTITY);
+            add(GrailsDomainClassProperty.VERSION);
+    }};
 
     private Class targetClass;
     private GrailsDomainClass domainClass;
@@ -171,6 +175,8 @@ public class GrailsDomainClassValidator implements Validator, CascadingValidator
         c.validate(obj, bean.getPropertyValue(constrainedPropertyName), errors);
     }
 
+
+
     /**
      * Cascades validation to a one-to-one or many-to-one property
      *
@@ -202,6 +208,7 @@ public class GrailsDomainClassValidator implements Validator, CascadingValidator
                     for (int i = 0; i < associatedPersistentProperties.length; i++) {
                         GrailsDomainClassProperty associatedPersistentProperty = associatedPersistentProperties[i];
                         if(associatedPersistentProperty.equals(otherSide)) continue;
+                        if(persistentProperty.isEmbedded() && EMBEDDED_EXCLUDES.contains(associatedPersistentProperty.getName())) continue;
 
 
                         String associatedPropertyName = associatedPersistentProperty.getName();

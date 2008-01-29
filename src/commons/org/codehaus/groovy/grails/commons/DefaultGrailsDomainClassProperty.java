@@ -463,11 +463,16 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
             List properties = new ArrayList();
             for (int i = 0; i < descriptors.length; i++) {
                 PropertyDescriptor descriptor = descriptors[i];
-                if(GrailsDomainConfigurationUtil.isNotConfigurational(descriptor) && !transients.contains(descriptor.getName())) {
+                if(isPersistentProperty(descriptor)) {
                     properties.add(new DefaultGrailsDomainClassProperty(type,descriptor));
                 }
             }
             return (GrailsDomainClassProperty[])properties.toArray(new GrailsDomainClassProperty[properties.size()]);
+        }
+
+        private boolean isPersistentProperty(PropertyDescriptor descriptor) {
+            String propertyName = descriptor.getName();
+            return GrailsDomainConfigurationUtil.isNotConfigurational(descriptor) && !transients.contains(propertyName);
         }
 
 
