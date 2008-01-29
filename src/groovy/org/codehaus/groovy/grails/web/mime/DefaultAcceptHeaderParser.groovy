@@ -28,6 +28,7 @@ import org.apache.commons.logging.*
 class DefaultAcceptHeaderParser implements AcceptHeaderParser{
 
     static final LOG = LogFactory.getLog(DefaultAcceptHeaderParser)
+
     public MimeType[] parse(String header) {
         def config = ConfigurationHolder.getConfig()
         def mimes = []
@@ -35,21 +36,10 @@ class DefaultAcceptHeaderParser implements AcceptHeaderParser{
         def mimeConfig = config?.grails?.mime?.types
         if(!mimeConfig) {
             LOG.debug "No mime types configured, defaulting to 'text/html'"
-            return createDefaultMimeTypeConfig()
+            return MimeType.createDefaults()
         }
         else if(!header) {
-            for(entry in mimeConfig) {
-                if(entry.value instanceof List) {
-                    for(i in entry.value) {
-                        mimes << new MimeType(i)
-                        mimes[-1].extension = entry.key
-                    }
-                }
-                else {
-                    mimes << new MimeType(entry.value)
-                    mimes[-1].extension = entry.key
-                }
-            }
+            return MimeType.getConfiguredMimeTypes()
         }
         else {
             def tokens = header.split(',')
@@ -71,16 +61,10 @@ class DefaultAcceptHeaderParser implements AcceptHeaderParser{
 
             if(!mimes) {
                LOG.debug "No configured mime types found for Accept header: $header"
-               return createDefaultMimeTypeConfig()
+               return MimeType.createDefaults()
             }
         }
         return (qualifiedMimes.sort { it.parameters.q.toBigDecimal() }.reverse() + mimes) as MimeType[]
-    }
-
-    private createDefaultMimeTypeConfig() {
-        def mimes = [ new MimeType('text/html') ]
-        mimes[-1].extension = 'html'
-        return mimes as MimeType[]
     }
 
     private createMimeTypeAndAddToList(name, mimeConfig, mimes, params = null) {

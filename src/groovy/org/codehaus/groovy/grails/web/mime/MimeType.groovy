@@ -15,6 +15,9 @@
  * limitations under the License.
  */
 package org.codehaus.groovy.grails.web.mime
+
+import org.codehaus.groovy.grails.commons.ConfigurationHolder
+
 /**
  * @author Graeme Rocher
  * @since 1.0
@@ -22,6 +25,8 @@ package org.codehaus.groovy.grails.web.mime
  * Created: Nov 23, 2007       
  */
 public class MimeType {
+
+    private static MIMES
 
     MimeType(String n, Map params = null) {
         this.name = n
@@ -32,4 +37,39 @@ public class MimeType {
     String name
     String extension
     Map parameters
+
+
+    static MimeType[] getConfiguredMimeTypes() {
+        if(MIMES) return MIMES
+        else {
+            def config = ConfigurationHolder.getConfig()
+            def mimeConfig = config?.grails?.mime?.types
+            if(!mimeConfig) return createDefaults()
+            def mimes = []
+            for(entry in mimeConfig) {
+                if(entry.value instanceof List) {
+                    for(i in entry.value) {
+                        mimes << new MimeType(i)
+                        mimes[-1].extension = entry.key
+                    }
+                }
+                else {
+                    mimes << new MimeType(entry.value)
+                    mimes[-1].extension = entry.key
+                }
+            }
+            MIMES = mimes as MimeType[]
+            return MIMES 
+        }
+    }
+
+
+    /**
+     * Creates the default MimeType configuration if none exists in Config.groovy
+     */
+    static MimeType[] createDefaults() {
+        def mimes = [ new MimeType('text/html') ]
+        mimes[-1].extension = 'html'
+        return mimes as MimeType[]
+    }
 }

@@ -21,6 +21,7 @@ import org.codehaus.groovy.grails.web.mime.DefaultAcceptHeaderParser
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.servlet.HttpHeaders
 import org.springframework.web.context.request.RequestContextHolder
+import org.codehaus.groovy.grails.web.mime.*
 
 /**
 * A plug-in that provides content negotiation capabilities to Grails via a new withFormat method on controllers
@@ -45,8 +46,9 @@ class MimeTypesGrailsPlugin {
             if(!result) {
                 def formatOverride = RequestContextHolder.currentRequestAttributes().params.format
                 def format
-                if(formatOverride) {                    
-                    def mime = mimeTypes.find { it.extension == formatOverride }
+                if(formatOverride) {
+                    def allMimes = MimeType.getConfiguredMimeTypes()
+                    def mime = allMimes.find { it.extension == formatOverride }
                     format = mime ? mime.extension : mimeTypes[0].extension
 
                 }

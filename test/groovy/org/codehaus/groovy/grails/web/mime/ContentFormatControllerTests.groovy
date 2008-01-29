@@ -29,6 +29,8 @@ grails.mime.types = [ html: ['text/html','application/xhtml+xml'],
         ConfigurationHolder.setConfig config
 
         gcl.parseClass '''
+import grails.converters.*
+
 class ContentController {
     def testFormat = {
         render request.format
@@ -54,6 +56,31 @@ class ContentController {
             xml()
         }
     }
+
+    def testWithFormatRenderAs = {
+        def gizmos = Gizmo.list()
+        withFormat {
+			html {
+				render "<html>hello</html>"
+			}
+			xml {
+				render gizmos as XML
+			}
+			json {
+				render gizmos as JSON
+			}
+		}
+    }
+}
+
+class Gizmo {
+    Long id
+    Long version
+    String name
+
+    static list() {
+        [new Gizmo(name:"iPod")]
+    }
 }
 '''
     }
@@ -61,6 +88,33 @@ class ContentController {
     public void tearDown() {
         super.tearDown();
         ConfigurationHolder.setConfig null
+    }
+
+    void testFormatWithRenderAsXML() {
+        request.setParameter "format", "xml"
+        def c = ga.getControllerClass("ContentController").newInstance()
+
+         webRequest.controllerName = 'content'
+         c.testWithFormatRenderAs.call()
+
+         assertEquals '''<?xml version="1.0" encoding="ISO-8859-1"?><list>
+  <gizmo>
+    <name>iPod</name>
+  </gizmo>
+</list>''', response.contentAsString
+
+    }
+
+
+    void testFormatWithRenderAsJSON() {
+        request.setParameter "format", "json"
+        def c = ga.getControllerClass("ContentController").newInstance()
+
+         webRequest.controllerName = 'content'
+         c.testWithFormatRenderAs.call()
+
+         assertEquals '[{"id":null,"class":"Gizmo","name":"iPod"}]', response.contentAsString
+
     }
 
 
