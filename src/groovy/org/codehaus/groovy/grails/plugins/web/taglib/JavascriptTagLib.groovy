@@ -377,7 +377,11 @@ class PrototypeProvider implements JavascriptProvider {
 
         if(i >-1) {
             if(attrs.params instanceof String) {
-                attrs.params += "+'${url[i+1..-1].encodeAsJavaScript()}'"                
+                attrs.params += "+'&${url[i+1..-1].encodeAsJavaScript()}'"                
+            }
+            else if(attrs.params instanceof Map) {
+                def params = attrs.params.collect { k, v -> "${k.encodeAsURL()}=${v.encodeAsURL()}" }.join('&').encodeAsJavaScript()
+                attrs.params = "'$params&${url[i+1..-1].encodeAsJavaScript()}'"
             }
             else {
                 attrs.params = "'${url[i+1..-1].encodeAsJavaScript()}'"
@@ -456,7 +460,8 @@ class PrototypeProvider implements JavascriptProvider {
 	
     def prepareAjaxForm(attrs) {
 		if(!attrs.forSubmitTag) attrs.forSubmitTag = ""
-	    attrs.params = "Form.serialize(this${attrs.remove('forSubmitTag')})"
+        
+        attrs.params = "Form.serialize(this${attrs.remove('forSubmitTag')})".toString()
     }
 }
 
