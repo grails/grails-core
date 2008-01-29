@@ -198,11 +198,11 @@ class JavascriptTagLib  {
 				attrs.params.put(paramName, 'this.value')
 			}
 			else {
-				attrs.params += "'${paramName}='+this.value"	
+				attrs.params += "+'${paramName}='+this.value"	
 			}
 		}
 		else {
-    		attrs.params = "'${paramName}='+this.value"			
+    		attrs.params = "'${paramName}='+this.value"
 		}
 		out << remoteFunction(attrs)
 		attrs.remove('params')
@@ -365,14 +365,29 @@ class PrototypeProvider implements JavascriptProvider {
 		}
 		out << "'"						
 		
-		//def pms = attrs.remove('params') 
-		if(attrs.url) {
-			out << taglib.createLink(attrs.url)			
+		//def pms = attrs.remove('params')
+        def url
+        if(attrs.url) {
+			url = taglib.createLink(attrs.url)
 		}
 		else {
-			out << taglib.createLink(attrs)
+			url = taglib.createLink(attrs)
 		}
-		out << "',"
+        def i = url?.indexOf('?')
+
+        if(i >-1) {
+            if(attrs.params instanceof String) {
+                attrs.params += "+'${url[i+1..-1].encodeAsJavaScript()}'"                
+            }
+            else {
+                attrs.params = "'${url[i+1..-1].encodeAsJavaScript()}'"
+            }
+            out << url[0..i-1]
+        }
+        else {
+            out << url
+        }
+        out << "',"
         /* We have removed these currently and are using full URLs to prevent duplication of parameters
             as per GRAILS-2045
         if(pms)

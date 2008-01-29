@@ -30,13 +30,21 @@ class TestUrlMappings {
         def template = '<g:remoteFunction controller="person" action="show" params="[var1:\'one\', var2:\'two\']" />'
         request.setAttribute("org.codehaus.grails.INCLUDED_JS_LIBRARIES", ['prototype'])
 
-        assertOutputEquals("new Ajax.Request('/people/details/one?var2=two',{asynchronous:true,evalScripts:true});", template)
+        assertOutputEquals("new Ajax.Request('/people/details/one',{asynchronous:true,evalScripts:true,parameters:'var2=two'});", template)
+    }
+
+
+    void testPrototypeLinkWithExtraParams() {
+        def template = '<g:remoteLink controller="person" action="show" params="[var1:\'one\', var2:\'two\']" >hello</g:remoteLink>'
+        request.setAttribute("org.codehaus.grails.INCLUDED_JS_LIBRARIES", ['prototype'])
+
+        assertOutputEquals('<a href="/people/details/one?var2=two" onclick="new Ajax.Request(\'/people/details/one\',{asynchronous:true,evalScripts:true,parameters:\'var2=two\'});return false;">hello</a>', template)
 
     }
 
 
     void testRemoteFieldWithAdditionalArgs() {
-        def template = '<g:remoteField controller="bar" action="storeField" id="2" name="nv" paramName="pnv" params="\'a=b&\'+" />'
+        def template = '<g:remoteField controller="bar" action="storeField" id="2" name="nv" paramName="pnv" params="\'a=b&\'" />'
         assertOutputEquals '<input type="text" name="nv" value="" onkeyup="new Ajax.Request(\'/bar/storeField/2\',{asynchronous:true,evalScripts:true,parameters:\'a=b&\'+\'pnv=\'+this.value});" />', template
     }
 
@@ -57,7 +65,7 @@ class TestUrlMappings {
             sw.getBuffer().delete(0, sw.getBuffer().length())
             attrs = [action: 'action', controller: 'test', params: [test:'<hello>']]
             tag.call(attrs)
-            assertEquals("new Ajax.Request('/test/action?test=%3Chello%3E',{asynchronous:true,evalScripts:true});", sw.toString())
+            assertEquals("new Ajax.Request('/test/action',{asynchronous:true,evalScripts:true,parameters:'test=%3Chello%3E'});", sw.toString())
 
             sw.getBuffer().delete(0, sw.getBuffer().length())
             attrs = [action: 'action', controller: 'test', update: [success: 'updateMe'], options: [insertion: 'Insertion.Bottom']]
@@ -89,28 +97,9 @@ class TestUrlMappings {
 
     public void testRemoteLink() {
         // test for GRAILS-1304
-        // Tag: <g:remoteLink controller="person" action="show" update="async" params="[var1:'0']">Show async</g:remoteLink>
-        // Expected result: <a href="/people/details/0" onclick="new Ajax.Updater('async','/people/details/0',{asynchronous:true,evalScripts:true,parameters:'var1=0'});return false;">Show async</a>
-        StringWriter sw = new StringWriter()   
-        PrintWriter pw = new PrintWriter(sw)
+        def template = '<g:remoteLink controller="person" action="show" update="async" params="[var1:\'0\']">Show async</g:remoteLink>'
+        assertOutputEquals '<a href="/people/details/0" onclick="new Ajax.Updater(\'async\',\'/people/details/0\',{asynchronous:true,evalScripts:true});return false;">Show async</a>', template
 
-        withTag("remoteLink", pw) {tag ->
-            GroovyObject tagLibrary = (GroovyObject) tag.getOwner()
-            def request = tagLibrary.getProperty("request")
-            def includedLibrary = ['prototype']
-            request.setAttribute("org.codehaus.grails.INCLUDED_JS_LIBRARIES", includedLibrary)
-
-            def attrs = [controller: 'person', action: 'show', params: [var1: "0"], update: 'async']
-            tag.call(attrs) {"Show async"}
-            println sw.toString()
-            assertEquals("<a href=\"/people/details/0\" onclick=\"new Ajax.Updater('async','/people/details/0',{asynchronous:true,evalScripts:true});return false;\">Show async</a>", sw.toString())
-
-            sw.getBuffer().delete(0, sw.getBuffer().length())
-            attrs = [controller: 'person', action: 'show', params: [var1: "unsafe ID 0", test: '<hello>'], update: 'async']
-            tag.call(attrs) {"Show async"}
-            println sw.toString()
-            assertEquals("<a href=\"/people/details/unsafe+ID+0?test=%3Chello%3E\" onclick=\"new Ajax.Updater('async','/people/details/unsafe+ID+0?test=%3Chello%3E',{asynchronous:true,evalScripts:true});return false;\">Show async</a>", sw.toString())
-        }
     }
 
     public void testPluginAwareJSSrc() {
