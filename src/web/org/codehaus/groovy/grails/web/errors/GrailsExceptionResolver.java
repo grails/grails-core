@@ -82,9 +82,11 @@ public class GrailsExceptionResolver  extends SimpleMappingExceptionResolver imp
                         uri = request.getRequestURI();
                     }
 
-                    String forwardUrl = WebUtils.forwardRequestForUrlMappingInfo(request, response, info, mv.getModel());
-                    if(LOG.isDebugEnabled()) {
-                        LOG.debug("Matched URI ["+uri+"] to URL mapping ["+info+"], forwarding to ["+forwardUrl+"] with response ["+response.getClass()+"]");
+                    if(!response.isCommitted()) {
+                        String forwardUrl = WebUtils.forwardRequestForUrlMappingInfo(request, response, info, mv.getModel());
+                        if(LOG.isDebugEnabled()) {
+                            LOG.debug("Matched URI ["+uri+"] to URL mapping ["+info+"], forwarding to ["+forwardUrl+"] with response ["+response.getClass()+"]");
+                        }
                     }
                 }
             } catch (Exception e) {

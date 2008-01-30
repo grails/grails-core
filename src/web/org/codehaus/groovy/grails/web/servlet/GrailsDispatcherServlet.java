@@ -63,6 +63,7 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
     private SimpleGrailsController grailsController;
     protected HandlerInterceptor[] interceptors;
     protected MultipartResolver multipartResolver;
+    private static final String EXCEPTION_ATTRIBUTE = "exception";
 
     public GrailsDispatcherServlet() {
         super();
@@ -200,7 +201,10 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
         try {
             ModelAndView mv = null;
             try {
-                processedRequest = checkMultipart(request);
+                Object exceptionAttribute = request.getAttribute(EXCEPTION_ATTRIBUTE);
+                // only process multipart requests if an exception hasn't occured
+                if(exceptionAttribute == null)
+                    processedRequest = checkMultipart(request);
                 // Expose current RequestAttributes to current thread.
                 previousRequestAttributes = (GrailsWebRequest) RequestContextHolder.currentRequestAttributes();
                 requestAttributes = new GrailsWebRequest(processedRequest, response, getServletContext());

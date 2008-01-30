@@ -21,6 +21,7 @@ import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequestFilter;
 import org.codehaus.groovy.grails.web.util.WebUtils;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
+import org.springframework.web.multipart.MultipartException;
 
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
@@ -36,6 +37,10 @@ import java.io.Writer;
  */
 public class ErrorHandlingServlet extends GrailsDispatcherServlet {
     private static final String TEXT_HTML = "text/html";
+
+    protected HttpServletRequest checkMultipart(HttpServletRequest request) throws MultipartException {
+        return request; // ignore multipart requests when an error occurs
+    }
 
     protected void doDispatch(final HttpServletRequest request, final HttpServletResponse response) throws Exception {
         int statusCode;
