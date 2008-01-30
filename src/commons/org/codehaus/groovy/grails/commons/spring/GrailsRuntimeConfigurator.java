@@ -349,7 +349,6 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
             else {
                 ResourcePatternResolver patternResolver = new PathMatchingResourcePatternResolver();
                 springResources = patternResolver.getResource(DEVELOPMENT_SPRING_RESOURCES_XML);
-                System.out.println("LOADING springResources = " + springResources + " Exists? " + springResources.exists());
             }
 
             if (springResources != null && springResources.exists()) {
