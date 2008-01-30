@@ -319,26 +319,4 @@ public class GrailsRuntimeConfiguratorTests extends TestCase {
         assertEquals("hello",anotherService.invokeMethod("anotherMethod", null));
     }
 
-    public void testAfterConfSet() throws Exception {
-        GroovyClassLoader gcl = new GroovyClassLoader();
-
-        GrailsApplication app = new DefaultGrailsApplication(new Class[0], gcl );
-        MockApplicationContext parent = new MockApplicationContext();
-        parent.registerMockBean(GrailsApplication.APPLICATION_ID, app);
-        parent.registerMockBean(PluginMetaManager.BEAN_ID, new DefaultPluginMetaManager(new Resource[0]));
-
-        GrailsRuntimeConfigurator conf = new GrailsRuntimeConfigurator(app,parent);
-        conf.setLoadExternalPersistenceConfig(false);
-        GrailsApplicationContext ctx = (GrailsApplicationContext)conf.configure(new MockServletContext());
-        assertNotNull(ctx);
-        
-        GrailsMockDependantObject gdo = (GrailsMockDependantObject)ctx.getBean("grailsDependent");
-        assertNotNull(gdo.getApplication());
-
-      //Make sure that the definition of the custom SessionFactory is not allowed.
-        //System.out.println("ctx.getBean(\"sessionFactory\") = " + ctx.getBean("sessionFactory"));
-        //System.out.println("ctx.getBean(\"sessionFactory\") class = " + ctx.getBean("sessionFactory").getClass());
-        assertFalse(ctx.containsBean("sessionFactory"));
-    	
-    }
 }
