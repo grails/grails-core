@@ -56,6 +56,6 @@ abstract class AbstractCliTests extends GroovyTestCase {
 	    def rootLoader = new RootLoader(loaderConfig)
 	    def gant = rootLoader.loadClass('gant.Gant', false).newInstance()
 
-	    gant.process(args)
+	    gant.processArgs(args)
 	}
 }
