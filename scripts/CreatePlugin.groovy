@@ -37,7 +37,11 @@ target ( "default" : "Creates a Grails plug-in project, including the necessary 
 
 target( createPlugin: "The implementation target")  {
 	depends( appName, createStructure, updateAppProperties, copyBasics, createIDESupportFiles )
-	pluginName = GCU.getNameFromScript(grailsAppName)
+
+    Ant.copy(file:"${grailsHome}/src/grails/grails-app/conf/UrlMappings.groovy", todir:"${basedir}/grails-app/conf")
+    Ant.copy(file:"${grailsHome}/src/grails/grails-app/conf/DataSource.groovy", todir:"${basedir}/grails-app/conf")
+    
+    pluginName = GCU.getNameFromScript(grailsAppName)
  	new File("${basedir}/${pluginName}GrailsPlugin.groovy") <<
 """
 class ${pluginName}GrailsPlugin {
