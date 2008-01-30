@@ -47,6 +47,25 @@ import java.util.Map;
  */
 public interface GrailsApplication extends ApplicationContextAware {
     /**
+     * The name of the system property whose value contains the location, during development, of the Grails working directory where temporary files are generated to
+     */
+    String WORK_DIR = "grails.work.dir";
+    /**
+     * The name of the system property whose value contains the location, during development, of the current Grails projects resources directory 
+     */
+    String PROJECT_RESOURCES_DIR = "grails.project.resource.dir";
+
+    /**
+     * The name of the system property whose value contains the location, during development, of the current Grails projects resources directory
+     */
+    String PROJECT_CLASSES_DIR = "grails.project.class.dir";
+    /**
+     * The name of the system property whose value contains the location, during development, of the current Grails projects resources directory
+     */
+    String PROJECT_TEST_CLASSES_DIR = "grails.project.test.class.dir";
+
+
+    /**
      * The id of the grails application within a bean context
      */
     String APPLICATION_ID = "grailsApplication";

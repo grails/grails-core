@@ -15,18 +15,19 @@
  */
 package org.codehaus.groovy.grails.web.servlet.filter;
 
+import grails.util.GrailsUtil;
 import groovy.lang.Writable;
 import groovy.text.Template;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator;
 import org.codehaus.groovy.grails.commons.spring.GrailsApplicationContext;
+import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.codehaus.groovy.grails.plugins.PluginManagerHolder;
 import org.codehaus.groovy.grails.web.errors.GrailsWrappedRuntimeException;
-import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
 import org.codehaus.groovy.grails.web.pages.GSPResponseWriter;
+import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
 import org.codehaus.groovy.grails.web.servlet.DefaultGrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
@@ -44,8 +45,6 @@ import java.io.Writer;
 import java.util.HashMap;
 import java.util.Map;
 
-import grails.util.GrailsUtil;
-
 /**
  * A servlet filter that copies resources from the source on content change and manages reloading if necessary
  *
@@ -55,8 +54,7 @@ import grails.util.GrailsUtil;
 public class GrailsReloadServletFilter extends OncePerRequestFilter {
     public static final Log LOG = LogFactory.getLog(GrailsReloadServletFilter.class);
     private static final int BUFFER_SIZE = 8024;
-
-    ResourceCopier copyScript;
+    
     GrailsApplicationContext context;
     GrailsApplication application;
 
@@ -101,15 +99,6 @@ public class GrailsReloadServletFilter extends OncePerRequestFilter {
           return;
       }
 
-      if(copyScript == null) {
-          copyScript = new GrailsResourceCopier();
-      }
-        if(LOG.isDebugEnabled()) {
-              LOG.debug("Running copy script...");
-        }
-        if(copyScript != null) {
-            copyScript.copyResourceBundles();
-        } 
 
         
         if(manager == null) {

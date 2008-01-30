@@ -98,7 +98,8 @@ target( packageApp : "Implementation of package target") {
         createConfig()
     }
 
-	Ant.mkdir(dir:"${basedir}/web-app/WEB-INF/grails-app/i18n")
+	String i18nDir = "${resourcesDirPath}/grails-app/i18n"
+    Ant.mkdir(dir:i18nDir)
 
 	Ant.mkdir(dir:"${basedir}/web-app/WEB-INF/grails-app/views")
 	if(!GrailsUtil.isDevelopmentEnv() && shouldPackageTemplates) {
@@ -114,13 +115,13 @@ target( packageApp : "Implementation of package target") {
 	if(config.grails.enable.native2ascii == true) {
 		profile("converting native message bundles to ascii") {
 			Ant.native2ascii(src:"${basedir}/grails-app/i18n",
-							 dest:"${basedir}/web-app/WEB-INF/grails-app/i18n",
+							 dest:i18nDir,
 							 includes:"*.properties",
 							 encoding:"UTF-8")   					
 		}
 	}                                        
 	else {
-	    Ant.copy(todir:"${basedir}/web-app/WEB-INF/grails-app/i18n") {
+	    Ant.copy(todir:i18nDir) {
 			fileset(dir:"${basedir}/grails-app/i18n", includes:"*.properties")
 		}							
 	}

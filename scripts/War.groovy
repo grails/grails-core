@@ -130,7 +130,8 @@ target (war: "The implementation target") {
 		}       
 		Ant.copy(todir:"${stagingDir}/WEB-INF/grails-app", overwrite:true) {
 			fileset(dir:"${basedir}/grails-app", includes:"views/**")
-		}
+            fileset(dir:"${resourcesDirPath}/grails-app", includes:"i18n/**")
+        }
 		Ant.copy(todir:"${stagingDir}/WEB-INF/classes") {
             fileset(dir:classesDirPath) {
 				exclude(name:"hibernate")
@@ -255,7 +256,8 @@ target(createDescriptor:"Creates the WEB-INF/grails.xml file used to load Grails
                     //    org.example.MyFilters
                     //
                     def name = matcher[0][1].replaceAll('/', /\./)
-					resource(name)
+                    if(name == 'spring.resources') resource("resources")
+                    else resource(name)
 			    }
 			}
 			plugins {

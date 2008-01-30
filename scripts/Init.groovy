@@ -26,6 +26,7 @@ import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver
 import org.codehaus.groovy.control.*
 import org.springframework.core.io.FileSystemResource
+import org.codehaus.groovy.grails.commons.GrailsApplication
 
 Ant.property(environment: "env")
 
@@ -46,12 +47,23 @@ baseFile = new File(basedir).canonicalFile
 isPluginProject = baseFile.listFiles().find { it.name.endsWith("GrailsPlugin.groovy") }
 baseName = baseFile.name
 userHome = Ant.antProject.properties."user.home"
-grailsTmp = "${userHome}/.grails/${grailsVersion}/tmp"
 grailsApp = null
 eventsClassLoader = new GroovyClassLoader(getClass().classLoader)
-classesDirPath = System.getProperty("grails.project.class.dir") ?: "${userHome}/.grails/${grailsVersion}/projects/${baseName}/classes"
-resourcesDirPath = System.getProperty("grails.project.resource.dir") ?: "${userHome}/.grails/${grailsVersion}/projects/${baseName}/resources"
-testDirPath = System.getProperty("grails.project.test.class.dir") ?: "${userHome}/.grails/${grailsVersion}/projects/${baseName}/test-classes"
+
+
+// common directories and paths
+grailsWorkDir = System.getProperty(GrailsApplication.WORK_DIR) ?: "${userHome}/.grails/${grailsVersion}"
+grailsTmp = "${grailsWorkDir}/tmp"
+classesDirPath = System.getProperty(GrailsApplication.PROJECT_CLASSES_DIR) ?: "${grailsWorkDir}/projects/${baseName}/classes"
+resourcesDirPath = System.getProperty(GrailsApplication.PROJECT_RESOURCES_DIR) ?: "${grailsWorkDir}/projects/${baseName}/resources"
+testDirPath = System.getProperty(GrailsApplication.PROJECT_TEST_CLASSES_DIR) ?: "${grailsWorkDir}/projects/${baseName}/test-classes"
+
+// reset system properties just in case they didn't exist
+System.setProperty(GrailsApplication.WORK_DIR, grailsWorkDir)
+System.setProperty(GrailsApplication.PROJECT_CLASSES_DIR, classesDirPath)
+System.setProperty(GrailsApplication.PROJECT_TEST_CLASSES_DIR, testDirPath)
+System.setProperty(GrailsApplication.PROJECT_RESOURCES_DIR, resourcesDirPath)
+
 
 classesDir = new File(classesDirPath)
 System.setProperty("grails.classes.dir", classesDirPath)
