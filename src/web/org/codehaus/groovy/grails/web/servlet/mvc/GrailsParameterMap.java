@@ -17,6 +17,7 @@ package org.codehaus.groovy.grails.web.servlet.mvc;
 
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.UnsupportedEncodingException;
@@ -45,14 +46,23 @@ public class GrailsParameterMap implements Map {
 
 		this.request = request;
 		this.parameterMap = new HashMap();
-        final Map requestMap = request.getParameterMap();
+        final Map requestMap = new HashMap(request.getParameterMap());
+        if(request instanceof MultipartHttpServletRequest) {
+            MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest)request;
+            Map fileMap = multipartRequest.getFileMap();
+            for (Iterator i = fileMap.keySet().iterator(); i.hasNext();) {
+                Object fileName = i.next();
+                requestMap.put(fileName, multipartRequest.getFile((String) fileName));
+            }
+        }
         for (Iterator it = requestMap.keySet().iterator(); it.hasNext(); ){
 			String key = (String) it.next();
             Object paramValue = getParameterValue(requestMap, key);
             parameterMap.put(key, paramValue);
             processNestedKeys(request, requestMap, key, key ,parameterMap);
         }
-	}
+
+    }
 
     private Object getParameterValue(Map requestMap, String key) {
         Object paramValue = requestMap.get(key);
