@@ -16,10 +16,13 @@ package org.codehaus.groovy.grails.web.converters;
 
 import org.apache.commons.lang.UnhandledException;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.BeanWrapper;
+import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.core.JdkVersion;
 
 import java.io.StringWriter;
 import java.lang.reflect.Method;
+import java.lang.reflect.Constructor;
 
 /**
  * Abstract base implementation of the Converter interface that provides a default toString()
@@ -28,6 +31,7 @@ import java.lang.reflect.Method;
  * @author Siegfried Puchbauer
  */
 public abstract class AbstractConverter implements Converter {
+    private static final String PERSISTENCE_BEAN_WRAPPER_CLASS = "org.codehaus.groovy.grails.orm.hibernate.support.HibernateBeanWrapper";
 
     public abstract void setTarget(Object target);
 
@@ -61,4 +65,16 @@ public abstract class AbstractConverter implements Converter {
 			return false;
 		}
 	}
+
+    protected BeanWrapper createBeanWrapper(Object o) {
+        BeanWrapper beanWrapper;
+        try {
+            Class c = Class.forName(PERSISTENCE_BEAN_WRAPPER_CLASS);
+            Constructor init = c.getConstructor(new Class[]{Object.class});
+            beanWrapper = (BeanWrapper)init.newInstance(new Object[]{o});
+        } catch (Exception e) {
+            beanWrapper = new BeanWrapperImpl(o);
+        }
+        return beanWrapper;
+    }
 }

@@ -26,9 +26,9 @@ import org.codehaus.groovy.grails.web.converters.Converter;
 import org.codehaus.groovy.grails.web.converters.ConverterUtil;
 import org.codehaus.groovy.grails.web.converters.exceptions.ConverterException;
 import org.codehaus.groovy.grails.web.json.*;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
-import org.springframework.beans.BeanUtils;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -187,7 +187,7 @@ public class JSON extends AbstractConverter implements Converter {
      */
     protected void domain(Object o) throws ConverterException {
         try {
-            BeanWrapper beanWrapper = new BeanWrapperImpl(o);
+            BeanWrapper beanWrapper = createBeanWrapper(o);
             GrailsDomainClass domainClass = ConverterUtil.getDomainClass(o.getClass().getName());
             if(domainClass != null) {
 
