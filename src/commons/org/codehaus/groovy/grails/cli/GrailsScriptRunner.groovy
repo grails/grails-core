@@ -200,7 +200,7 @@ Grails home is set to: ${grailsHome}
 				println "Running script ${potentialScripts[0].absolutePath}"
 				
 				def gant = new Gant(binding, new URLClassLoader([classesDir.toURL()] as URL[], rootLoader))
-				System.exit(gant.process(["-f", potentialScripts[0].absolutePath,"-c","-d","${userHome}/.grails/${version}/scriptCache"] as String[]))
+				System.exit(gant.processArgs(["-f", potentialScripts[0].absolutePath,"-c","-d","${userHome}/.grails/${version}/scriptCache"] as String[]))
 			}                                      
 			else {
 				println "Multiple options please select:"  
@@ -214,7 +214,7 @@ Grails home is set to: ${grailsHome}
 
 				println "Running script ${potentialScripts[number-1].absolutePath}"				
 				def gant = new Gant(binding, new URLClassLoader([classesDir.toURL()] as URL[], rootLoader))
-				System.exit(gant.process(["-f", potentialScripts[number-1].absolutePath] as String[]))
+				System.exit(gant.processArgs(["-f", potentialScripts[number-1].absolutePath] as String[]))
 			}
 		}
 		else {
