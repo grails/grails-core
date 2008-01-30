@@ -140,6 +140,11 @@ target (war: "The implementation target") {
 			}
         }
 
+        Ant.mkdir(dir:"${stagingDir}/WEB-INF/spring")
+        Ant.copy(todir:"${stagingDir}/WEB-INF/spring") {
+            fileset(dir:"${basedir}/grails-app/conf/spring", includes:"**/*.xml")            
+        }
+
         Ant.copy(todir:"${stagingDir}/WEB-INF/classes", failonerror:false) {
             fileset(dir:"${basedir}/grails-app/conf") {
 				exclude(name:"*.groovy")

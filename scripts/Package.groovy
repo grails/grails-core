@@ -124,9 +124,6 @@ target( packageApp : "Implementation of package target") {
 			fileset(dir:"${basedir}/grails-app/i18n", includes:"*.properties")
 		}							
 	}
-    Ant.copy(todir:"${basedir}/web-app/WEB-INF/spring", failonerror:false) {
-		fileset(dir:"${basedir}/grails-app/conf/spring", includes:"**")
-	}					
     Ant.copy(todir:classesDirPath) {
 		fileset(dir:"${basedir}", includes:"application.properties")
 	}					

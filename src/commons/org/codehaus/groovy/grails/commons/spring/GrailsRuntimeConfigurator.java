@@ -40,6 +40,8 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.core.io.Resource;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+import org.springframework.core.io.support.ResourcePatternResolver;
 import org.springframework.mock.web.MockServletContext;
 import org.springframework.transaction.interceptor.TransactionProxyFactoryBean;
 import org.springframework.util.Assert;
@@ -87,6 +89,7 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
     private boolean parentDataSource;
     private GrailsPluginManager pluginManager;
     private boolean loadExternalPersistenceConfig;
+    private static final String DEVELOPMENT_SPRING_RESOURCES_XML = "file:./grails-app/conf/spring/resources.xml";
 
     public GrailsRuntimeConfigurator(GrailsApplication application) {
         this(application, null);
@@ -267,7 +270,7 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
         LOG.debug("[RuntimeConfiguration] Proccessing additional external configurations");
 
         if (loadExternalBeans)
-            doPostResourceConfiguration(springConfig);
+            doPostResourceConfiguration(application,springConfig);
 
         // TODO GRAILS-720 this causes plugin beans to be re-created - should get getApplicationContext always call refresh?
         WebApplicationContext ctx = (WebApplicationContext) springConfig.getApplicationContext();
@@ -308,7 +311,7 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
         this.pluginManager.doPostProcessing(current);
 
         if (loadExternalBeans)
-            doPostResourceConfiguration(springConfig);
+            doPostResourceConfiguration(application, springConfig);
 
     }
 
@@ -336,11 +339,20 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
         return ctx;
     }
 
-    private void doPostResourceConfiguration(RuntimeSpringConfiguration springConfig) {
+    private void doPostResourceConfiguration(GrailsApplication application, RuntimeSpringConfiguration springConfig) {
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
         try {
-            Resource springResources = parent.getResource(GrailsRuntimeConfigurator.SPRING_RESOURCES_XML);
-            if (springResources.exists()) {
+            Resource springResources = null;
+            if(application.isWarDeployed()) {
+                springResources = parent.getResource(GrailsRuntimeConfigurator.SPRING_RESOURCES_XML);
+            }
+            else {
+                ResourcePatternResolver patternResolver = new PathMatchingResourcePatternResolver();
+                springResources = patternResolver.getResource(DEVELOPMENT_SPRING_RESOURCES_XML);
+                System.out.println("LOADING springResources = " + springResources + " Exists? " + springResources.exists());
+            }
+
+            if (springResources != null && springResources.exists()) {
                 LOG.debug("[RuntimeConfiguration] Configuring additional beans from " + springResources.getURL());
                 XmlBeanFactory xmlBf = new XmlBeanFactory(springResources);
                 xmlBf.setBeanClassLoader(classLoader);
