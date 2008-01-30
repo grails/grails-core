@@ -39,33 +39,36 @@ target ('default': "Load the Grails interactive shell") {
 }            
 
 target(shell:"The shell implementation target") {
-	rootLoader.addURL(classesDir.toURL())
-	loadApp()
-	configureApp()
-	def b = new Binding()
-	b.ctx = appCtx
-	b.grailsApplication = grailsApp
-	
-	def original = Groovysh.metaClass.getMetaMethod("execute", [String] as Object[])
-	Groovysh.metaClass.execute = { String line ->
-		try {
-			def listeners = appCtx.getBeansOfType(PersistenceContextInterceptor)
-			listeners.each { k,v ->
-				v.init()
-			}		
-		   
-			original.invoke(delegate, line)
-			listeners.each { k,v ->
-				v.flush()
-			}		   
-		}
-		finally {
-			listeners.each { k,v ->
-				v.destroy()
-			}
-		}		
-	}
-	shell = new Groovysh(b, new IO(System.in, System.out, System.err))
+
+    classLoader = new URLClassLoader([classesDir.toURL()] as URL[], rootLoader)
+    Thread.currentThread().setContextClassLoader(classLoader)    
+    loadApp()
+    configureApp()
+    def b = new Binding()
+    b.ctx = appCtx
+    b.grailsApplication = grailsApp
+
+    def original = Groovysh.metaClass.getMetaMethod("execute", [String] as Object[])
+    Groovysh.metaClass.execute = { String line ->
+        try {
+            def listeners = appCtx.getBeansOfType(PersistenceContextInterceptor)
+            listeners.each { k,v ->
+                v.init()
+            }
+
+            original.invoke(delegate, line)
+            listeners.each { k,v ->
+                v.flush()
+            }
+        }
+    finally {
+            listeners.each { k,v ->
+                v.destroy()
+            }
+        }
+    }
+
+    shell = new Groovysh(classLoader,b, new IO(System.in, System.out, System.err))
 	shell.run([] as String[])
  	
 }
