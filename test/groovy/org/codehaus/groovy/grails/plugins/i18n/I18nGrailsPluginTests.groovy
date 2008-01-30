@@ -10,9 +10,10 @@ import org.codehaus.groovy.grails.plugins.*
 class I18nGrailsPluginTests extends AbstractGrailsMockTests {
 
 	
-	void testI18nPlugin() {
-		
-		ctx.registerMockResource("WEB-INF/grails-app/i18n/messages.properties")
+	void testI18nPlugin() {        
+
+        ga.@applicationMeta = ['grails.war.deployed':'true']
+        ctx.registerMockResource("WEB-INF/grails-app/i18n/messages.properties")
 		ctx.registerMockResource("WEB-INF/grails-app/i18n/project.properties")
 		ctx.registerMockResource("WEB-INF/grails-app/i18n/project_nl.properties")
 		ctx.registerMockResource("WEB-INF/grails-app/i18n/nobundle")
