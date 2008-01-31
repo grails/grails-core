@@ -118,6 +118,8 @@ public abstract class AbstractConstraint implements Constraint {
         newCodes.addAll( Arrays.asList( resolved ) );
         for( int i = 0; i < codes.length; i++ ) {
             newCodes.addAll( Arrays.asList( result.resolveMessageCodes( classShortName + '.'  + constraintPropertyName + '.' + codes[i], constraintPropertyName)));
+            //We resolve the error code on it's own last so that a global code doesn't override a class/field specific error
+            newCodes.addAll( Arrays.asList( result.resolveMessageCodes( codes[i], constraintPropertyName)));
         }
 //        for( int i = 0; i < newCodes.size(); i++ )
 //            System.out.println( "Reject: " + newCodes.get(i));

@@ -55,46 +55,46 @@ class CascadingValidationWithInheritanceTestsTechSubject {
     }
 
 
-void testBooksMustHaveUniqueAuthors() {
+    void testBooksMustHaveUniqueAuthors() {
         def bookClass = ga.getDomainClass("CascadingValidationWithInheritanceTestsBook").clazz
         def book = bookClass.newInstance(name: 'Spook Country')
-		book.addToAuthors(name: 'William Gibson')
-		book.addToAuthors(book.authors[0])
+        book.addToAuthors(name: 'William Gibson')
+        book.addToAuthors(book.authors[0])
 
-		assert !book.validate()
+        assert !book.validate()
         println book.errors
         assert book.errors.hasFieldErrors('authors')
-		assert ['cascadingValidationWithInheritanceTestsBook.authors.names.unique'] == book.errors.getFieldErrors('authors').code
+		assert ['names.unique'] == book.errors.getFieldErrors('authors').code
 	}
 
-	void testTechBookCanHaveAuthorsAndSubjects() {
+    void testTechBookCanHaveAuthorsAndSubjects() {
         def bookClass = ga.getDomainClass("CascadingValidationWithInheritanceTestsBook").clazz
         def techBookClass = ga.getDomainClass("CascadingValidationWithInheritanceTestsTechBook").clazz
         def book = techBookClass.newInstance(name: 'The Definitive Guide to Grails')
-		book.addToAuthors(name: 'Graeme Rocher')
-		book.addToAuthors(name: 'Guillaume Laforge')
-		book.addToAuthors(name: 'Dierk K\u00f6nig')
-		book.addToSubjects(name: 'Grails')
-		book.addToSubjects(name: 'Groovy')
+        book.addToAuthors(name: 'Graeme Rocher')
+        book.addToAuthors(name: 'Guillaume Laforge')
+        book.addToAuthors(name: 'Dierk K\u00f6nig')
+        book.addToSubjects(name: 'Grails')
+        book.addToSubjects(name: 'Groovy')
 
-		assert book.validate(), book.errors.allErrors.code
-		assert book.save(flush: true), book.errors.allErrors.code
-		session.clear()
+        assert book.validate(), book.errors.allErrors.code
+        assert book.save(flush: true), book.errors.allErrors.code
+        session.clear()
 
-		book = bookClass.findByName('The Definitive Guide to Grails')
-		assertEquals(['Dierk K\u00f6nig', 'Graeme Rocher', 'Guillaume Laforge'], book.authors.name.sort {it})
-		assertEquals(['Grails', 'Groovy'], book.subjects.name.sort {it})
-	}
+        book = bookClass.findByName('The Definitive Guide to Grails')
+        assertEquals(['Dierk K\u00f6nig', 'Graeme Rocher', 'Guillaume Laforge'], book.authors.name.sort {it})
+        assertEquals(['Grails', 'Groovy'], book.subjects.name.sort {it})
+    }
 
-	void testTechBooksMustHaveUniqueAuthors() {
+    void testTechBooksMustHaveUniqueAuthors() {
         def techBookClass = ga.getDomainClass("CascadingValidationWithInheritanceTestsTechBook").clazz
         def book = techBookClass.newInstance(name: 'Groovy In Action')
-		book.addToAuthors(name: 'Dierk K\u00f6nig')
-		book.addToAuthors(book.authors[0])
-		book.addToSubjects(name: 'Groovy')
+        book.addToAuthors(name: 'Dierk K\u00f6nig')
+        book.addToAuthors(book.authors[0])
+        book.addToSubjects(name: 'Groovy')
 
-		assert !book.validate(), 'Validation should have failed as unique constraint on Book.authors is violated'
-		assert book.errors.hasFieldErrors('authors')
-		assert ['cascadingValidationWithInheritanceTestsTechBook.authors.names.unique'] == book.errors.getFieldErrors('authors').code
-	}
+        assert !book.validate(), 'Validation should have failed as unique constraint on Book.authors is violated'
+        assert book.errors.hasFieldErrors('authors')
+        assert ['names.unique'] == book.errors.getFieldErrors('authors').code
+    }
 }
