@@ -103,6 +103,18 @@ class FilterConfigTests extends GroovyTestCase {
         testFilterConfig.checkArgs('Apples', -3423)
         assert mockDefinition.checkArgsCalled
 
+        // A method that takes a list as an argument.
+        mockDefinition.reset()
+        assert testFilterConfig.sum([1, 2, 3, 4]) == 10
+        assert mockDefinition.sumCalled
+
+        mockDefinition.reset()
+        assert testFilterConfig.sum([4, 5, 1, 10]) == 20
+        assert mockDefinition.sumCalled
+
+        mockDefinition.reset()
+        assert testFilterConfig.sum([12, 26, 3, 41]) == 82
+        assert mockDefinition.sumCalled
 
         // And now make sure the 'run' method is still available.
         mockDefinition.reset()
@@ -122,6 +134,7 @@ class MockFiltersDefinition {
     def runCalled
     def generateNumberCalled
     def checkArgsCalled
+    def sumCalled
     def expectedStringArg
     def expectedIntArg
     def returnValue
@@ -145,10 +158,16 @@ class MockFiltersDefinition {
         assert arg2 == expectedIntArg
     }
 
+    def sum(items) {
+        sumCalled = true
+        items.sum()
+    }
+
     void reset() {
         runCalled = false
         generateNumberCalled = false
         checkArgsCalled = false
+        sumCalled = false
         expectedStringArg = null
         expectedIntArg = null
         returnValue = null

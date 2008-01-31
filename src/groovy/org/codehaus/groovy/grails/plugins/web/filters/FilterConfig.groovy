@@ -79,7 +79,7 @@ class FilterConfig {
             }
             else {
                 FilterConfig.metaClass."$methodName" = { varArgs ->
-                    return this.filtersDefinition."$methodName"(*varArgs)
+                    return this.filtersDefinition."$methodName"(varArgs)
                 }
             }
 
