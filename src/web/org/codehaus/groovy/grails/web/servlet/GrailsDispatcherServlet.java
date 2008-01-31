@@ -18,9 +18,9 @@ package org.codehaus.groovy.grails.web.servlet;
 import grails.util.GrailsUtil;
 import org.codehaus.groovy.grails.commons.*;
 import org.codehaus.groovy.grails.commons.spring.GrailsApplicationContext;
+import org.codehaus.groovy.grails.web.context.GrailsConfigUtils;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.servlet.mvc.SimpleGrailsController;
-import org.codehaus.groovy.grails.web.context.GrailsConfigUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.context.i18n.LocaleContext;
@@ -142,13 +142,20 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
         String[] webRequestInterceptors = webContext.getBeanNamesForType( WebRequestInterceptor.class);
         interceptors = new HandlerInterceptor[interceptorNames.length+webRequestInterceptors.length];
 
+        // Merge the handler and web request interceptors into a single
+        // array. Note that we start with the web request interceptors
+        // to ensure that the OpenSessionInViewInterceptor (which is a
+        // web request interceptor) is invoked before the user-defined
+        // filters (which are attached to a handler interceptor). This
+        // should ensure that the Hibernate session is in the proper
+        // state if and when users access the database within their
+        // filters.
         int j = 0;
+        for (int i = 0; i < webRequestInterceptors.length; i++) {
+            interceptors[j++] = new WebRequestHandlerInterceptorAdapter((WebRequestInterceptor)webContext.getBean(webRequestInterceptors[i]));
+        }
         for (int i = 0; i < interceptorNames.length; i++) {
             interceptors[j++] = (HandlerInterceptor)webContext.getBean(interceptorNames[i]);
-        }
-        for (int i = 0; i < webRequestInterceptors.length; i++) {
-
-            interceptors[j++] = new WebRequestHandlerInterceptorAdapter((WebRequestInterceptor)webContext.getBean(webRequestInterceptors[i]));
         }
         return interceptors;
     }
