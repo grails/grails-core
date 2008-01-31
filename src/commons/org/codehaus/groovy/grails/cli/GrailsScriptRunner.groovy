@@ -96,6 +96,7 @@ Grails home is set to: ${grailsHome}
             if (paramName[0] == '-') {
                 paramName = paramName[1..-1]
             }
+            System.setProperty("current.gant.script", paramName)
             def scriptName = GCU.getNameFromScript(paramName)
 
             if( currentParamIndex < allArgs.size() ) {

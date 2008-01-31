@@ -158,6 +158,7 @@ target (war: "The implementation target") {
                 include(name:"**/**")
                 exclude(name:"**/*.java")
             }
+            fileset(dir:"${resourcesDirPath}", includes:"log4j.properties")
         }
 		              
 		scaffoldDir = "${stagingDir}/WEB-INF/templates/scaffolding"
@@ -195,8 +196,9 @@ target (war: "The implementation target") {
 	                }
 	            }				
 			}
-		}                 
-		Ant.copy(file:webXmlFile.absolutePath, tofile:"${stagingDir}/WEB-INF/web.xml")
+		}
+        Ant.copy(file:webXmlFile.absolutePath, tofile:"${stagingDir}/WEB-INF/web.xml")
+        Ant.delete(file:webXmlFile)
         Ant.copy(todir:"${stagingDir}/WEB-INF/lib", flatten:true, failonerror:false) {
 			fileset(dir:"${basedir}/plugins") {
                 include(name:"*/lib/*.jar")

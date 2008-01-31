@@ -28,6 +28,7 @@ Ant.property(environment:"env")
 grailsHome = Ant.antProject.properties."env.GRAILS_HOME"   
 
 includeTargets << new File ( "${grailsHome}/scripts/CreateApp.groovy" )
+includeTargets << new File ( "${grailsHome}/scripts/Clean.groovy" )
 includeTargets << new File ( "${grailsHome}/scripts/Init.groovy" )
 
 target( upgrade: "main upgrade target") {
@@ -70,6 +71,8 @@ target( upgrade: "main upgrade target") {
         if(answer == "n") exit(0)
     }
 
+	clean()
+	
 	def coreTaglibs = new File("${basedir}/plugins/core")
 
 	Ant.delete(dir:"${coreTaglibs}", failonerror:false)

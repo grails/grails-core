@@ -19,6 +19,7 @@ import org.codehaus.groovy.grails.plugins.support.GrailsPluginUtils
 import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
 import org.apache.commons.logging.LogFactory
 import grails.util.GrailsUtil
+import org.codehaus.groovy.grails.commons.GrailsApplication
 
 /**
  * A plug-in that provides a lazy initialized commons logging log property
@@ -34,7 +35,15 @@ class LoggingGrailsPlugin {
     def observe = ['controllers', 'services', 'hibernate', 'taglib', 'codecs', 'converters', 'filters']
 
     def doWithWebDescriptor = {xml ->
-        def log4j = xml.'context-param'.find {it.'param-name'.text() == 'log4jConfigLocation'}
+        def contextParams = xml.'context-param'
+        def log4j = contextParams.find {it.'param-name'.text() == 'log4jConfigLocation'}
+
+        if(log4j) {
+             if(!application.warDeployed || !['war','run-war'].contains(runningScript)) {
+                 def resources = System.getProperty(GrailsApplication.PROJECT_RESOURCES_DIR)
+                 log4j.'param-value' = "file:$resources/log4j.properties"
+             }
+        }
 
         if (GrailsUtil.isDevelopmentEnv() && log4j) {
             log4j + {

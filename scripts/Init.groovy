@@ -54,9 +54,10 @@ eventsClassLoader = new GroovyClassLoader(getClass().classLoader)
 // common directories and paths
 grailsWorkDir = System.getProperty(GrailsApplication.WORK_DIR) ?: "${userHome}/.grails/${grailsVersion}"
 grailsTmp = "${grailsWorkDir}/tmp"
-classesDirPath = System.getProperty(GrailsApplication.PROJECT_CLASSES_DIR) ?: "${grailsWorkDir}/projects/${baseName}/classes"
-resourcesDirPath = System.getProperty(GrailsApplication.PROJECT_RESOURCES_DIR) ?: "${grailsWorkDir}/projects/${baseName}/resources"
-testDirPath = System.getProperty(GrailsApplication.PROJECT_TEST_CLASSES_DIR) ?: "${grailsWorkDir}/projects/${baseName}/test-classes"
+projectWorkDir = "${grailsWorkDir}/projects/${baseName}"
+classesDirPath = System.getProperty(GrailsApplication.PROJECT_CLASSES_DIR) ?: "$projectWorkDir/classes"
+resourcesDirPath = System.getProperty(GrailsApplication.PROJECT_RESOURCES_DIR) ?: "$projectWorkDir/resources"
+testDirPath = System.getProperty(GrailsApplication.PROJECT_TEST_CLASSES_DIR) ?: "$projectWorkDir/test-classes"
 
 // reset system properties just in case they didn't exist
 System.setProperty(GrailsApplication.WORK_DIR, grailsWorkDir)

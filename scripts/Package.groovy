@@ -42,8 +42,8 @@ includeTargets << new File ( "${grailsHome}/scripts/_PackagePlugins.groovy" )
 
 scaffoldDir = "${basedir}/web-app/WEB-INF/templates/scaffolding"     
 configFile = new File("${basedir}/grails-app/conf/Config.groovy")
-webXmlFile = new File("${userHome}/.grails/${grailsVersion}/projects/${baseName}/web.xml")
-log4jFile = new File("${basedir}/web-app/WEB-INF/classes/log4j.properties")
+webXmlFile = new File("${resourcesDirPath}/web.xml")
+log4jFile = new File("${resourcesDirPath}/log4j.properties")
 generateLog4jFile = false
 
 target ('default': "Packages a Grails application. Note: To create WAR use 'grails war'") {
