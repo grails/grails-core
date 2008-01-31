@@ -179,8 +179,14 @@ public class GrailsLayoutDecoratorMapper extends AbstractDecoratorMapper impleme
     private ResourceLoader establishResourceLoader() {
         ResourceLoader resourceLoader;
         ApplicationContext ctx = WebApplicationContextUtils.getRequiredWebApplicationContext(servletContext);
-        GrailsApplication application = (GrailsApplication)ctx.getBean(GrailsApplication.APPLICATION_ID);
-        if(ctx.containsBean(GroovyPageResourceLoader.BEAN_ID) && !application.isWarDeployed()) {
+        GrailsApplication application = null;
+        if(ctx.containsBean(GrailsApplication.APPLICATION_ID)) {
+            application = (GrailsApplication)ctx.getBean(GrailsApplication.APPLICATION_ID);
+        }
+        if(application == null) {
+            resourceLoader = ctx;
+        }
+        else if(ctx.containsBean(GroovyPageResourceLoader.BEAN_ID) && !application.isWarDeployed()) {
             resourceLoader = (ResourceLoader)ctx.getBean(GroovyPageResourceLoader.BEAN_ID);
         }
         else {
