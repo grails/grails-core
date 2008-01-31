@@ -44,6 +44,10 @@ class FilterConfig {
      */
     def filtersDefinition
 
+    /**
+     * When the filter does not have a particular property, it passes
+     * the request on to the filter definition class.
+     */
     def propertyMissing(String propertyName) {
         if(!initialised) {
             log.warn "Setting $propertyName is invalid for filter config $name"
@@ -52,7 +56,7 @@ class FilterConfig {
         // Delegate to the parent definition if it has this property.
         if (this.filtersDefinition.metaClass.hasProperty(this.filtersDefinition, propertyName)) {
             def getterName = GrailsClassUtils.getGetterName(propertyName)
-            this.metaClass."$getterName" = {-> this.filtersDefinition."$propertyName" }
+            FilterConfig.metaClass."$getterName" = {-> this.filtersDefinition."$propertyName" }
             return this.filtersDefinition."$propertyName"
         }
         else {
@@ -60,16 +64,35 @@ class FilterConfig {
         }
     }
 
+    /**
+     * When the filter does not have a particular method, it passes
+     * the call on to the filter definition class.
+     */
     def methodMissing(String methodName, args) {
         // Delegate to the parent definition if it has this method.
         if (this.filtersDefinition.metaClass.respondsTo(this.filtersDefinition, methodName)) {
-            this.metaClass."$methodName" = { varArgs -> this.filtersDefinition."$methodName"(varArgs) }
-            return this.filtersDefinition."$methodName"(args)
+            if (!args) {
+                // No argument method.
+                FilterConfig.metaClass."$methodName" = {->
+                    return this.filtersDefinition."$methodName"()
+                }
+            }
+            else {
+                FilterConfig.metaClass."$methodName" = { varArgs ->
+                    return this.filtersDefinition."$methodName"(*varArgs)
+                }
+            }
+
+            // We've created the forwarding method now, but we still
+            // need to invoke the target method this time around.
+            return this.filtersDefinition."$methodName"(*args)
         }
         else {
+            // The required method was not found on the parent filter
+            // definition either.
             throw new MissingMethodException(methodName, this.class, args)
         }
     }
-    
+
     public String toString() {"FilterConfig[$name, scope=$scope]"}
 }
