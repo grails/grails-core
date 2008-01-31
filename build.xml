@@ -35,6 +35,7 @@
     <!--<import file="ant/build/checkstyle.xml"   />-->
     <import file="ant/build/release.xml"   />
     <import file="ant/build/eclipse.xml"   />
+    <import file="ant/build/functional-test.xml"   />
 
     <target name="cruise"
             depends="clean,build, test-with-coverage, jar, javadoc, package"
