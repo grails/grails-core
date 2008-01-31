@@ -35,7 +35,7 @@
 	<classpathentry kind="lib" path="lib/ehcache-1.2.4.jar"/>
 	<classpathentry kind="lib" path="lib/ejb3-persistence.jar"/>
 	<classpathentry kind="lib" path="lib/gant-1.1.0_groovy-1.5.2.jar"/>
-	<classpathentry kind="lib" path="lib/groovy-all-1.5.2.jar"/>
+	<classpathentry kind="lib" path="lib/groovy-all-1.5.3.jar"/>
 	<classpathentry kind="lib" path="lib/hibernate-annotations.jar"/>
 	<classpathentry kind="lib" path="lib/hsqldb-1.8.0.5.jar"/>
 	<classpathentry kind="lib" path="lib/jasper-compiler-5.5.15.jar"/>
