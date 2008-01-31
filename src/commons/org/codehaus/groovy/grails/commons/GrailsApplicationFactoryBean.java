@@ -82,7 +82,11 @@ public class GrailsApplicationFactoryBean implements FactoryBean, InitializingBe
                 List grailsClasses = doc.selectNodes("/grails/resources/resource");
                 for (Iterator i = grailsClasses.iterator(); i.hasNext();) {
                     Node node = (Node) i.next();
-                    classes.add(classLoader.loadClass(node.getText()));
+                    try {
+                        classes.add(classLoader.loadClass(node.getText()));
+                    } catch (ClassNotFoundException e) {
+                        LOG.warn("Class with name ["+node.getText()+"] was not found, and hence not loaded. Possible empty class or script definition?");
+                    }
                 }
             } finally {
                 if(inputStream!=null)
