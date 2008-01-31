@@ -30,7 +30,7 @@ target(loadApp:"Loads the Grails application object") {
 		def builder = parentContext ? new WebBeanBuilder(parentContext) :  new WebBeanBuilder()
 		beanDefinitions = builder.beans {
 			resourceHolder(org.codehaus.groovy.grails.commons.spring.GrailsResourceHolder) {
-				resources = "file:${basedir}/**/grails-app/**/*.groovy"
+				this.resources = "file:${basedir}/**/grails-app/**/*.groovy"
 			}
 			grailsResourceLoader(org.codehaus.groovy.grails.commons.GrailsResourceLoaderFactoryBean) {
 				grailsResourceHolder = resourceHolder
