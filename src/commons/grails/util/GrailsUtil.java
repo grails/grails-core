@@ -14,10 +14,12 @@
  */
 package grails.util;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.commons.*;
+import org.codehaus.groovy.grails.commons.ApplicationAttributes;
+import org.codehaus.groovy.grails.commons.ApplicationHolder;
+import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
+import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator;
 import org.codehaus.groovy.grails.support.MockApplicationContext;
 import org.codehaus.groovy.grails.support.MockResourceLoader;
@@ -31,10 +33,10 @@ import org.springframework.util.Assert;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
@@ -82,7 +84,7 @@ public class GrailsUtil {
                 Resource r = manifests[i];
                 Manifest mf = new Manifest(r.getInputStream());
                 String implTitle = mf.getMainAttributes().getValue(Attributes.Name.IMPLEMENTATION_TITLE);
-                if(!StringUtils.isBlank(implTitle) && implTitle.equals(GRAILS_IMPLEMENTATION_TITLE))   {
+                if(!isBlank(implTitle) && implTitle.equals(GRAILS_IMPLEMENTATION_TITLE))   {
                     grailsManifest = mf;
                     break;
                 }
@@ -92,7 +94,7 @@ public class GrailsUtil {
                 version = grailsManifest.getMainAttributes().getValue(Attributes.Name.IMPLEMENTATION_VERSION);
             }
 
-            if(StringUtils.isBlank(version)) {
+            if(version != null && version.length() > 0) {
                 LOG.error("Unable to read Grails version from MANIFEST.MF. Are you sure it the grails-core jar is on the classpath? " );
                 version = "Unknown";
             }
@@ -179,10 +181,10 @@ public class GrailsUtil {
             if(metadata!=null)
                 envName = (String)metadata.get(GrailsApplication.ENVIRONMENT);
         }
-        if(StringUtils.isBlank(envName))
+        if(isBlank(envName))
             envName = System.getProperty(GrailsApplication.ENVIRONMENT);
 
-        if(StringUtils.isBlank(envName)) {
+        if(isBlank(envName)) {
             return GrailsApplication.ENV_DEVELOPMENT;
         }
         else {
@@ -193,6 +195,10 @@ public class GrailsUtil {
                 return envName;
             }
         }
+    }
+
+    private static boolean isBlank(String value) {
+        return value == null || value.length() == 0;
     }
 
     /**
