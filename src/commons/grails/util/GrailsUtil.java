@@ -94,7 +94,7 @@ public class GrailsUtil {
                 version = grailsManifest.getMainAttributes().getValue(Attributes.Name.IMPLEMENTATION_VERSION);
             }
 
-            if(version != null && version.length() > 0) {
+            if(isBlank(version)) {
                 LOG.error("Unable to read Grails version from MANIFEST.MF. Are you sure it the grails-core jar is on the classpath? " );
                 version = "Unknown";
             }
