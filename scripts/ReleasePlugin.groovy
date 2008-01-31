@@ -126,6 +126,8 @@ Are you sure you wish to proceed?
 	
 	if(!message) askForMessage()
 	
+	println "Committing code. Please wait..."
+	
 	def commit = commitClient.doCommit([baseFile] as File[],false,message,true,true)
 	
 	println "Committed revision ${commit.newRevision}."
@@ -181,6 +183,8 @@ target(tagPluginRelease:"Tags a plugin-in with the LATEST_RELEASE tag and versio
 	commitClient = new SVNCommitClient((ISVNAuthenticationManager)authManager, null)
 	
 	if(!message) askForMessage()                                    	
+	
+	println "Tagging release. Please wait..."
 
 	tags = SVNURL.parseURIDecoded("${remoteLocation}/tags")
 	latest = SVNURL.parseURIDecoded(latestRelease)
