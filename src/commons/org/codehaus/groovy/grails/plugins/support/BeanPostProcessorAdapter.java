@@ -15,7 +15,7 @@ public class BeanPostProcessorAdapter implements BeanPostProcessor {
      *
      * @param bean
      * @param beanName
-     * @return
+     * @return The specified bean
      * @throws BeansException
      * @see BeanPostProcessor#postProcessBeforeInitialization(Object, String)
      */
@@ -27,7 +27,7 @@ public class BeanPostProcessorAdapter implements BeanPostProcessor {
      *
      * @param bean
      * @param beanName
-     * @return
+     * @return The specified bean
      * @throws BeansException
      * @see BeanPostProcessor#postProcessAfterInitialization(Object, String)
      */

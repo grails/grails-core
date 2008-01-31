@@ -313,8 +313,8 @@ public class GrailsResourceUtils {
      * Input: /usr/joe/project/grails-app/domain/com/mystartup/Book.groovy
      * Output: com/mystartup/Book.groovy
      *
-     * @param path
-     * @return
+     * @param path The path to evaluate
+     * @return The path relative to the root folder grails-app
      */
     public static String getPathFromRoot(String path) {
         for (int i = 0; i < COMPILER_ROOT_PATTERNS.length; i++) {

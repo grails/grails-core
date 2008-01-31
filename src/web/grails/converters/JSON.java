@@ -135,7 +135,7 @@ public class JSON extends AbstractConverter implements Converter {
      *
      * @param domainObject The domain class instance
      * @param idProperty   The GrailsDomainClassProperty
-     * @return
+     * @return The primary identifier of the specified domain object
      */
     protected Object extractIdValue(Object domainObject, GrailsDomainClassProperty idProperty) {
         BeanWrapper beanWrapper = new BeanWrapperImpl(domainObject);

@@ -151,26 +151,26 @@ public interface ScaffoldDomain {
 	/**
 	 * 	
 	 * @param id
-	 * @return
+	 * @return The instance identified by id, if it existed
 	 */
 	Object delete(Serializable id);
 	
 	/**
 	 * Retrieves an persistent class instance for the specified id
 	 * @param id
-	 * @return
+	 * @return The instance identified by id, if it exists
 	 */
 	Object get(Serializable id);
 	
 	/**
 	 * Returns the plural name of the domain
-	 * @return
+	 * @return The non-null plural name of the domain
 	 */
 	String getPluralName();
 
 	/**
 	 * Returns the singular name of the domain
-	 * @return
+	 * @return The non-null singular name of the domain
 	 */
 	String getSingularName();
 

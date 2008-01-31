@@ -504,7 +504,7 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
     /**
      * Refreshes constraints defined by the DomainClassArtefactHandler
      *
-     * @TODO Move this out of GrailsApplication
+     * @todo Move this out of GrailsApplication
      */
     public void refreshConstraints() {
         ArtefactInfo info = getArtefactInfo(DomainClassArtefactHandler.TYPE, true);

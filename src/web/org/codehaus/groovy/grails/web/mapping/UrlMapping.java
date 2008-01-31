@@ -65,12 +65,11 @@ public interface UrlMapping extends Comparable, UrlCreator {
      * <pre>
      * <code>
      *     /blog/$author/$title/$year?/$month?/$day?
-     * </code>
-     * </pre>
+     * </code></pre>
      *
      * <p>This results in 5 ConstrainedProperty instances called author, title, year, month and day
      *
-     * @return
+     * @return An array containing the ConstrainedProperty objects of this URLMapping
      */
     ConstrainedProperty[] getConstraints();
 
@@ -78,7 +77,7 @@ public interface UrlMapping extends Comparable, UrlCreator {
      * Retrieves the controller name which is either a groovy.lang.Closure that evaluates the controller
      * name at runtime or a java.lang.String that represents the controller name
      *
-     * @return The controller name as a Closure or String
+     * @return The controller name as a {@link groovy.lang.Closure} or {@link java.lang.String}
      */
     Object getControllerName();
 
@@ -86,7 +85,7 @@ public interface UrlMapping extends Comparable, UrlCreator {
      * Retrieves the action name which is either a groovy.lang.Closure that evaluates the action
      * name at runtime or a java.lang.String that represents the action name
      *
-     * @return The action name as a Closure or String
+     * @return The action name as a {@link groovy.lang.Closure} or {@link java.lang.String}
      */
     Object getActionName();
 

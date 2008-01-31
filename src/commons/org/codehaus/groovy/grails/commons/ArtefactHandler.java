@@ -32,7 +32,7 @@ public interface ArtefactHandler {
 
     /**
      * <p>Implementations must return a name such as "Domain" to indicate the type of artefact they represent</p>
-     * @return
+     * @return The aretfact type, as a String
      */
     String getType();
 

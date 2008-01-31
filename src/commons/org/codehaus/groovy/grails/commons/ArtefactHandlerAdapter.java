@@ -74,8 +74,8 @@ public class ArtefactHandlerAdapter implements ArtefactHandler {
     /**
      * <p>Checks that class's name ends in the suffix specified for this handler.</p>
      * <p>Override for more complex criteria</p> 
-     * @param clazz
-     * @return
+     * @param clazz The class to check
+     * @return True if it is an artefact of this type
      */
     public boolean isArtefactClass(Class clazz) {
         if(clazz == null) return false;
@@ -89,8 +89,8 @@ public class ArtefactHandlerAdapter implements ArtefactHandler {
     /**
      * <p>Creates new GrailsClass derived object using the type supplied in constructor. May not perform
      * optimally but is a convenience.</p>
-     * @param artefactClass
-     * @return
+     * @param artefactClass Creates a new artefact for the given class
+     * @return An instance of the GrailsClass interface representing the artefact
      */
     public GrailsClass newArtefactClass(Class artefactClass) {
 
