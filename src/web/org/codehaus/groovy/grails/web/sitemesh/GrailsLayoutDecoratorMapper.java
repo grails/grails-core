@@ -21,12 +21,12 @@ import com.opensymphony.module.sitemesh.DecoratorMapper;
 import com.opensymphony.module.sitemesh.Page;
 import com.opensymphony.module.sitemesh.mapper.AbstractDecoratorMapper;
 import com.opensymphony.module.sitemesh.mapper.DefaultDecorator;
-import grails.util.GrailsUtil;
 import groovy.lang.GroovyObject;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsResourceUtils;
 import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods;
 import org.codehaus.groovy.grails.web.pages.GroovyPageResourceLoader;
@@ -179,7 +179,8 @@ public class GrailsLayoutDecoratorMapper extends AbstractDecoratorMapper impleme
     private ResourceLoader establishResourceLoader() {
         ResourceLoader resourceLoader;
         ApplicationContext ctx = WebApplicationContextUtils.getRequiredWebApplicationContext(servletContext);
-        if(ctx.containsBean(GroovyPageResourceLoader.BEAN_ID) && GrailsUtil.isDevelopmentEnv()) {
+        GrailsApplication application = (GrailsApplication)ctx.getBean(GrailsApplication.APPLICATION_ID);
+        if(ctx.containsBean(GroovyPageResourceLoader.BEAN_ID) && !application.isWarDeployed()) {
             resourceLoader = (ResourceLoader)ctx.getBean(GroovyPageResourceLoader.BEAN_ID);
         }
         else {

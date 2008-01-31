@@ -22,7 +22,8 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.scaffolding.GrailsTemplateGenerator;
-import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU;
+import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
+import org.codehaus.groovy.grails.commons.ApplicationHolder;
 /**
  * Default implementation of the generator that generates grails artifacts (controllers, views etc.)
  * from the domain model
@@ -184,8 +185,9 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator  {
     }
     
     private getTemplateText(String template) {
+        def application = ApplicationHolder.getApplication()
         // first check for presence of template in application               
-		if(resourceLoader) {
+		if(resourceLoader && application?.warDeployed) {
 			return resourceLoader
 					.getResource("/WEB-INF/templates/scaffolding/${template}")
 					.inputStream

@@ -84,7 +84,7 @@ class ControllersGrailsPlugin {
             grailsApplication = ref("grailsApplication", true)
         }
 
-        boolean developmentMode = grails.util.GrailsUtil.isDevelopmentEnv() && !application.warDeployed
+        boolean developmentMode = !application.warDeployed
 
 
         def viewsDir = application.config.grails.gsp.view.dir

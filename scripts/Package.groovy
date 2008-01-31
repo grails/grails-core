@@ -101,15 +101,15 @@ target( packageApp : "Implementation of package target") {
 	String i18nDir = "${resourcesDirPath}/grails-app/i18n"
     Ant.mkdir(dir:i18nDir)
 
-	Ant.mkdir(dir:"${basedir}/web-app/WEB-INF/grails-app/views")
-	if(!GrailsUtil.isDevelopmentEnv() && shouldPackageTemplates) {
-	    Ant.copy(todir:"${basedir}/web-app/WEB-INF/grails-app/views") {
-			fileset(dir:"${basedir}/grails-app/views", includes:"**")
-		} 
-		packageTemplates()   						
-	}
-    Ant.copy(todir:"${basedir}/web-app/WEB-INF/grails-app/views") {
+    def files = Ant.fileScanner {
         fileset(dir:"${basedir}/grails-app/views", includes:"**/*.jsp")
+    }
+
+    if(files.iterator().hasNext()) {
+        Ant.mkdir(dir:"${basedir}/web-app/WEB-INF/grails-app/views")
+        Ant.copy(todir:"${basedir}/web-app/WEB-INF/grails-app/views") {
+            fileset(dir:"${basedir}/grails-app/views", includes:"**/*.jsp")
+        }
     }
 
 	if(config.grails.enable.native2ascii == true) {

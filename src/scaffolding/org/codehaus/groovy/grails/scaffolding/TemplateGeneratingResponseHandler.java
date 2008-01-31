@@ -14,7 +14,6 @@
  */
 package org.codehaus.groovy.grails.scaffolding;
 
-import grails.util.GrailsUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
@@ -77,7 +76,7 @@ public class TemplateGeneratingResponseHandler implements ScaffoldResponseHandle
 
     private GroovyPagesTemplateEngine getTemplateEngine() {
         GroovyPagesTemplateEngine templateEngine = (GroovyPagesTemplateEngine)applicationContext.getBean(GroovyPagesTemplateEngine.BEAN_ID);
-        if(!GrailsUtil.isDevelopmentEnv()) {
+        if(this.grailsApplication.isWarDeployed()) {
             templateEngine.setResourceLoader(this.applicationContext);
         }
         return templateEngine;
@@ -159,7 +158,7 @@ public class TemplateGeneratingResponseHandler implements ScaffoldResponseHandle
             if(LOG.isDebugEnabled()) {
                 LOG.debug("Generating view ["+uri+"] for scaffolded class ["+scaffoldedClass+"]");
             }
-            if(!GrailsUtil.isDevelopmentEnv()) {
+            if(grailsApplication.isWarDeployed()) {
                 templateGenerator.setResourceLoader(this.applicationContext);
             }
             templateGenerator.generateView((GrailsDomainClass)grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE,
