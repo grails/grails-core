@@ -24,7 +24,13 @@ class GrailsParameterMapTests extends GroovyTestCase {
         mockRequest.addParameter("dob", "01/01/1970")
         theMap = new GrailsParameterMap(mockRequest);
 
-        assertEquals "?dob=01%2F01%2F1970&name=Dierk+Koenig", theMap.toQueryString()
+        def queryString = theMap.toQueryString()
+
+        assertTrue queryString.startsWith('?')
+        queryString = queryString[1..-1].split('&')
+
+        assert queryString.find { it == 'name=Dierk+Koenig' }
+        assert queryString.find { it == 'dob=01%2F01%2F1970' }
     }
 
     void testSimpleMappings() {
@@ -40,8 +46,15 @@ class GrailsParameterMapTests extends GroovyTestCase {
         mockRequest.addParameter("address.postCode", "345435")
         theMap = new GrailsParameterMap(mockRequest);
 
-        assertEquals "?address.postCode=345435&dob=01%2F01%2F1970&name=Dierk+Koenig", theMap.toQueryString()                
+        def queryString = theMap.toQueryString()
 
+        assertTrue queryString.startsWith('?')
+        queryString = queryString[1..-1].split('&')
+
+
+        assert queryString.find { it == 'name=Dierk+Koenig' }
+        assert queryString.find { it == 'dob=01%2F01%2F1970' }
+        assert queryString.find { it == 'address.postCode=345435' }
     }
 
 }

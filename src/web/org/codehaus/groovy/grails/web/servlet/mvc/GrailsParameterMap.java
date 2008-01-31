@@ -46,7 +46,7 @@ public class GrailsParameterMap implements Map {
 
 		this.request = request;
 		this.parameterMap = new HashMap();
-        final Map requestMap = new HashMap(request.getParameterMap());
+        final Map requestMap = new LinkedHashMap(request.getParameterMap());
         if(request instanceof MultipartHttpServletRequest) {
             MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest)request;
             Map fileMap = multipartRequest.getFileMap();
