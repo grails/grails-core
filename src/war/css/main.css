@@ -120,6 +120,9 @@ div.errors li {
     padding-left: 30px;
 }
 
+td.errors select {
+    border: 1px solid red;
+}
 td.errors input {
     border: 1px solid red;
 }
