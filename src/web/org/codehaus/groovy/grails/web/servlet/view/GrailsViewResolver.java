@@ -89,8 +89,7 @@ public class GrailsViewResolver extends InternalResourceViewResolver implements 
     protected View loadView(String viewName, Locale locale) throws Exception {
         if(this.templateEngine == null) throw new IllegalStateException("Property [templateEngine] cannot be null");
         if(this.pluginMetaManager == null) throw new IllegalStateException("Property [pluginMetaManager] cannot be null");
-        
-        ResourceLoader resourceLoader = establishResourceLoader();
+
 
 
         // try GSP if res is null
@@ -106,6 +105,7 @@ public class GrailsViewResolver extends InternalResourceViewResolver implements 
                                             .getAttributes()
                                             .getGrailsApplication();
 
+        ResourceLoader resourceLoader = establishResourceLoader(application);
 
         String format = request.getAttribute(GrailsApplicationAttributes.CONTENT_FORMAT) != null ? request.getAttribute(GrailsApplicationAttributes.CONTENT_FORMAT).toString() : null;
         String gspView = localPrefix + viewName + DOT + format + GSP_SUFFIX;
@@ -181,9 +181,10 @@ public class GrailsViewResolver extends InternalResourceViewResolver implements 
         return gspView;
     }
 
-    private ResourceLoader establishResourceLoader() {
+    private ResourceLoader establishResourceLoader(GrailsApplication application) {
         ApplicationContext ctx = getApplicationContext();
-        if(ctx.containsBean(GROOVY_PAGE_RESOURCE_LOADER) && GrailsUtil.isDevelopmentEnv()) {
+
+        if(ctx.containsBean(GROOVY_PAGE_RESOURCE_LOADER) && !application.isWarDeployed()) {
             return (ResourceLoader)ctx.getBean(GROOVY_PAGE_RESOURCE_LOADER);
         }
         return this.resourceLoader;
