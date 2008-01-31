@@ -46,6 +46,7 @@ import org.springframework.web.multipart.commons.CommonsMultipartResolver
 import org.springframework.web.servlet.ModelAndView
 import org.codehaus.groovy.grails.web.multipart.ContentLengthAwareCommonsMultipartResolver
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory
+import org.codehaus.groovy.grails.commons.metaclass.LazyMetaPropertyMap
 
 /**
 * A plug-in that handles the configuration of controllers for Grails
@@ -275,15 +276,13 @@ class ControllersGrailsPlugin {
             mc.constructor = consructorNoArgs.curry(domainClass)
             mc.constructor = constructorMapArg.curry(domainClass)
 
-            def original = mc.getMetaProperty("properties")
             def setProps = new SetPropertiesDynamicProperty()
             mc.setProperties = {Object o ->
                 setProps.set(delegate, o)
             }
-
-            def newOne  = mc.getMetaProperty("properties")
-            // re-instate getter:
-            newOne.getter = original.getter
+            mc.getProperties = {->
+                new LazyMetaPropertyMap(delegate)
+            }
         }
 
         def namespaces = [] as HashSet
