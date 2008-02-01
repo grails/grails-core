@@ -34,42 +34,46 @@ includeTargets << new File ( "${grailsHome}/scripts/Init.groovy" )
 target( upgrade: "main upgrade target") {
 
 	depends( createStructure )
-   
+	
+    boolean force = args?.indexOf('-force') > -1 ? true : false
+
     if (appGrailsVersion != grailsVersion) {
         def gv = appGrailsVersion == null ? "pre-0.5" : appGrailsVersion
         event("StatusUpdate", [ "NOTE: Your application currently expects grails version [$gv], "+
 	        "this target will upgrade it to Grails ${grailsVersion}"])
     }
 
-    Ant.input(message: """
-	WARNING: This target will upgrade an older Grails application to ${grailsVersion}.
-	However, tag libraries provided by earlier versions of Grails found in grails-app/taglib will be removed. 
-	The target will not, however, delete tag libraries developed by yourself.
-	Are you sure you want to continue? 
-			   """,
-			validargs:"y,n", 
-			addproperty:"grails.upgrade.warning")
+	if(!force) {
+	    Ant.input(message: """
+		WARNING: This target will upgrade an older Grails application to ${grailsVersion}.
+		However, tag libraries provided by earlier versions of Grails found in grails-app/taglib will be removed. 
+		The target will not, however, delete tag libraries developed by yourself.
+		Are you sure you want to continue? 
+				   """,
+				validargs:"y,n", 
+				addproperty:"grails.upgrade.warning")
 
-    def answer = Ant.antProject.properties."grails.upgrade.warning"
+	    def answer = Ant.antProject.properties."grails.upgrade.warning"
 
-	if(answer == "n") exit(0)
+		if(answer == "n") exit(0)
 
-	if ((grailsVersion.startsWith("1.0")) &&
-        !(['utf-8', 'us-ascii'].contains(System.getProperty('file.encoding')?.toLowerCase()) )) {
-            Ant.input(message: """
-        WARNING: This version of Grails requires all source code to be encoded in UTF-8.
-        Your system file encoding indicates that your source code may not be saved in UTF-8.
-        You can re-encode your source code manually after upgrading, but if you have used any
-        non-ASCII chars in your source or GSPs your application may not operate correctly until
-        you re-encode the files as UTF-8.
+		if ((grailsVersion.startsWith("1.0")) &&
+	        !(['utf-8', 'us-ascii'].contains(System.getProperty('file.encoding')?.toLowerCase()) )) {
+	            Ant.input(message: """
+	        WARNING: This version of Grails requires all source code to be encoded in UTF-8.
+	        Your system file encoding indicates that your source code may not be saved in UTF-8.
+	        You can re-encode your source code manually after upgrading, but if you have used any
+	        non-ASCII chars in your source or GSPs your application may not operate correctly until
+	        you re-encode the files as UTF-8.
 
-        Are you sure you want to upgrade your project now?
-                   """,
-                validargs:"y,n",
-                addproperty:"grails.src.encoding.warning")
-        answer = Ant.antProject.properties."grails.src.encoding.warning"
-        if(answer == "n") exit(0)
-    }
+	        Are you sure you want to upgrade your project now?
+	                   """,
+	                validargs:"y,n",
+	                addproperty:"grails.src.encoding.warning")
+	        answer = Ant.antProject.properties."grails.src.encoding.warning"
+	        if(answer == "n") exit(0)
+	    }		
+	}
 
 	clean()
 	
