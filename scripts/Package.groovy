@@ -205,25 +205,29 @@ target(loadPlugins:"Loads Grails' plugins") {
 	    		unit.compile ()								
 			}
 			def application
-			profile("construct plugin manager with ${pluginFiles.inspect()}") {
-				def pluginClasses = []
+            def pluginClasses = []
+            profile("construct plugin manager with ${pluginFiles.inspect()}") {
 				for(plugin in pluginFiles) {
 				   def className = plugin.name - '.groovy'
 	               pluginClasses << classLoader.loadClass(className)
 				}                              
-				if(pluginClasses) {
-					event("StatusUpdate", ["Loading with installed plug-ins: ${pluginClasses.name}"])				
-				}                    
-				if(grailsApp == null) {				
-			        grailsApp = new DefaultGrailsApplication(new Class[0], new GroovyClassLoader(classLoader))
-				}
-	            pluginManager = new DefaultGrailsPluginManager(pluginClasses as Class[], grailsApp)
-	            PluginManagerHolder.setPluginManager(pluginManager)            
+				if(grailsApp == null) {
+                    grailsApp = new DefaultGrailsApplication(new Class[0], new GroovyClassLoader(classLoader))
+                }
+                pluginManager = new DefaultGrailsPluginManager(pluginClasses as Class[], grailsApp)
+
+                PluginManagerHolder.setPluginManager(pluginManager)
 	        }
 	        profile("loading plugins") {
 				event("PluginLoadStart", [pluginManager])
 	            pluginManager.loadPlugins()
-	            pluginManager.doArtefactConfiguration()
+
+                
+                def loadedPlugins = pluginManager.allPlugins?.findAll { pluginClasses.contains(it.instance.getClass()) }*.name
+                if(loadedPlugins)
+                    event("StatusUpdate", ["Loading with installed plug-ins: ${loadedPlugins}"])
+
+                pluginManager.doArtefactConfiguration()
                 grailsApp.initialise()
                 event("PluginLoadEnd", [pluginManager])
             }
