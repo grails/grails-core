@@ -332,7 +332,59 @@ public class HibernateCriteriaBuilderTests extends
         assertEquals(2 , results.size());
     }
 
-	public void testResultTransformer() throws Exception {
+
+     public void testNestedAssociationIsNullField() throws Exception {
+        GrailsDomainClass domainClass =  (GrailsDomainClass) this.grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE,
+            "CriteriaBuilderTestClass");
+
+        assertNotNull(domainClass);
+
+        GroovyObject obj = (GroovyObject)domainClass.newInstance();
+        obj.setProperty( "firstName", "homer" );
+        obj.setProperty( "lastName", "simpson" );
+        obj.setProperty( "age", new Integer(45));
+
+        obj.invokeMethod("save", null);
+
+        GroovyObject obj2 = (GroovyObject)domainClass.newInstance();
+        obj2.setProperty( "firstName", "bart" );
+        obj2.setProperty( "lastName", null );
+        obj2.setProperty( "age", new Integer(11));
+        obj2.setProperty( "parent", obj) ;
+        obj2.invokeMethod("save", null);
+
+        GroovyObject obj3 = (GroovyObject)domainClass.newInstance();
+        obj3.setProperty( "firstName", "lisa" );
+        obj3.setProperty( "lastName", "simpson" );
+        obj3.setProperty( "age", new Integer(9));
+        obj3.setProperty( "parent", obj) ;
+        obj3.invokeMethod("save", null);
+
+        // now within or block
+        List results = (List)parse(	".list { " +
+                    "and {" +
+                        "eq('lastName','simpson');" +
+                        "children { " +
+                            "isNull('lastName');" +
+                        "}" +
+                    "}" +
+                "}", "Test1","CriteriaBuilderTestClass");
+
+        assertEquals(1 , results.size());
+
+        results = (List)parse(	".list { " +
+                    "or {" +
+                       "eq('lastName','simpson');" +
+                        "children { " +
+                            "isNotNull('lastName');" +
+                        "}" +
+                    "}" +
+                "}", "Test1","CriteriaBuilderTestClass");
+
+        assertEquals(2 , results.size());
+    }
+    
+    public void testResultTransformer() throws Exception {
         GrailsDomainClass domainClass = (GrailsDomainClass)this.grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE,"CriteriaBuilderTestClass");
         assertNotNull(domainClass);
 

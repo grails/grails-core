@@ -847,18 +847,18 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
                             name.equals( IS_NOT_EMPTY )) {
                         if(!(value instanceof String))
                             throwRuntimeException( new IllegalArgumentException("call to [" + name + "] with value ["+value+"] requires a String value."));
-
+                        String propertyName = calculatePropertyName((String)value);
                         if(name.equals( IS_NULL )) {
-                            c = Restrictions.isNull( (String)value ) ;
+                            c = Restrictions.isNull( propertyName ) ;
                         }
                         else if(name.equals( IS_NOT_NULL )) {
-                            c = Restrictions.isNotNull( (String)value );
+                            c = Restrictions.isNotNull( propertyName );
                         }
                         else if(name.equals( IS_EMPTY )) {
-                            c = Restrictions.isEmpty( (String)value );
+                            c = Restrictions.isEmpty( propertyName );
                         }
                         else if(name.equals( IS_NOT_EMPTY )) {
-                            c = Restrictions.isNotEmpty( (String)value );
+                            c = Restrictions.isNotEmpty(propertyName );
                         }
                     }
                 }
