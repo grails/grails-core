@@ -39,6 +39,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.Writer;
+import java.io.PrintWriter;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -71,8 +72,8 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
     private static final String BUILDER_TYPE_RICO = "rico";
     private static final String BUILDER_TYPE_JSON = "json";
 
-    private static final String ARGUMENT_TO = "to";
     private static final int BUFFER_SIZE = 8192;
+    private static final String TEXT_HTML = "text/html";
 
 
     public RenderDynamicMethod() {
@@ -93,32 +94,19 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
         boolean renderView = true;
         GroovyObject controller = (GroovyObject)target;
         if(response.getContentType() == null)
-            response.setContentType("text/html");
+            response.setContentType(TEXT_HTML);
         if((arguments[0] instanceof String)||(arguments[0] instanceof GString)) {
-            try {
-                response.getWriter().write(arguments[0].toString());
-                renderView = false;
-            } catch (IOException e) {
-                throw new ControllerExecutionException(e.getMessage(),e);
-            }
+            String text = arguments[0].toString();
+            renderView = renderText(text, response);
         }
         else if(arguments[0] instanceof Closure) {
-            StreamingMarkupBuilder b = new StreamingMarkupBuilder();
-            Writable markup = (Writable)b.bind(arguments[arguments.length - 1]);
-            try {
-                markup.writeTo(response.getWriter());
-            } catch (IOException e) {
-                throw new ControllerExecutionException("I/O error executing render method for arguments ["+arguments[0]+"]: " + e.getMessage(),e);
-            }
-            renderView = false;
+            Closure closure = (Closure) arguments[arguments.length - 1];
+            renderView = renderMarkup(closure, response);
         }
         else if(arguments[0] instanceof Map) {
             Map argMap = (Map)arguments[0];
-           Writer out;
-            if(argMap.containsKey(ARGUMENT_TO)) {
-                out = (Writer)argMap.get(ARGUMENT_TO);
-            }
-            else if(argMap.containsKey(ARGUMENT_CONTENT_TYPE) && argMap.containsKey(ARGUMENT_ENCODING)) {
+            Writer out;
+            if(argMap.containsKey(ARGUMENT_CONTENT_TYPE) && argMap.containsKey(ARGUMENT_ENCODING)) {
 
                 String contentType = argMap.get(ARGUMENT_CONTENT_TYPE).toString();
                 String encoding = argMap.get(ARGUMENT_ENCODING).toString();
@@ -137,88 +125,30 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
 
 
             if(arguments[arguments.length - 1] instanceof Closure) {
+                Closure callable = (Closure) arguments[arguments.length - 1];
                 if(BUILDER_TYPE_RICO.equals(argMap.get(ARGUMENT_BUILDER))) {
-                    OpenRicoBuilder orb;
-                    try {
-                        orb = new OpenRicoBuilder(response);
-                        renderView = false;
-                    } catch (IOException e) {
-                        throw new ControllerExecutionException("I/O error executing render method for arguments ["+argMap+"]: " + e.getMessage(),e);
-                    }
-                    orb.invokeMethod("ajax", new Object[]{ arguments[arguments.length - 1] });
+                    renderView = renderRico(callable, response);
                 }
                 else if(BUILDER_TYPE_JSON.equals(argMap.get(ARGUMENT_BUILDER)) || isJSONResponse(response)){
-                    JSonBuilder jsonBuilder;
-                    try{
-                        jsonBuilder = new JSonBuilder(response);
-                        renderView = false;
-                    }catch(IOException e){
-                        throw new ControllerExecutionException("I/O error executing render method for arguments ["+argMap+"]: " + e.getMessage(),e);
-                    }
-                    jsonBuilder.invokeMethod("json", new Object[]{ arguments[arguments.length - 1] });
+                    renderView = renderJSON(callable, response);
                 }
                 else {
-                    StreamingMarkupBuilder b = new StreamingMarkupBuilder();
-                    Closure callable = (Closure)arguments[arguments.length - 1];
-                    Writable markup = (Writable)b.bind(callable);
-                    try {
-                        markup.writeTo(out);
-                    } catch (IOException e) {
-                        throw new ControllerExecutionException("I/O error executing render method for arguments ["+argMap+"]: " + e.getMessage(),e);
-                    }
-                    renderView = false;
+                    renderView = renderMarkup(callable, response);
                 }
             }
             else if(arguments[arguments.length - 1] instanceof String) {
-                try {
-                    out.write((String)arguments[arguments.length - 1]);
-                } catch (IOException e) {
-                    throw new ControllerExecutionException("I/O error executing render method for arguments ["+arguments[arguments.length - 1]+"]: " + e.getMessage(),e);
-                }
-                renderView = false;
+                String text = (String) arguments[arguments.length - 1];
+                renderView = renderText(text, out);
             }
             else if(argMap.containsKey(ARGUMENT_TEXT)) {
                String text = argMap.get(ARGUMENT_TEXT).toString();
-                try {
-                    out.write(text);
-                } catch (IOException e) {
-                    throw new ControllerExecutionException("I/O error executing render method for arguments ["+argMap+"]: " + e.getMessage(),e);
-                }
-                renderView = false;
+               renderView = renderText(text, out);
             }
             else if(argMap.containsKey(ARGUMENT_VIEW)) {
-               String viewName = argMap.get(ARGUMENT_VIEW).toString();
+                String viewName = argMap.get(ARGUMENT_VIEW).toString();
+                Object modelObject = argMap.get(ARGUMENT_MODEL);
 
-                GrailsControllerClass controllerClass = (GrailsControllerClass) application.getArtefact(ControllerArtefactHandler.TYPE,
-                        target.getClass().getName());
-                if(controllerClass == null && webRequest.getControllerName() != null) {
-                    controllerClass = (GrailsControllerClass)application.getArtefactByLogicalPropertyName(ControllerArtefactHandler.TYPE, webRequest.getControllerName());
-                }
-                String viewUri;
-                if(viewName.indexOf('/') > -1) {
-                    if(!viewName.startsWith("/")) {
-                        viewName = '/' + viewName;
-                    }
-                    viewUri = viewName;
-                }
-                else {
-                    viewUri = controllerClass.getViewByName(viewName);
-                }
-
-
-               Map model;
-               Object modelObject = argMap.get(ARGUMENT_MODEL);
-                if(modelObject instanceof Map) {
-                    model = (Map)modelObject;
-                }
-                else if(controllerClass.getClazz().isInstance(target)) {
-                    model = new BeanMap(target);
-                }
-                else {
-                    model = new HashMap();
-                }
-
-                controller.setProperty( ControllerDynamicMethods.MODEL_AND_VIEW_PROPERTY, new ModelAndView(viewUri,model) );
+                renderView(viewName, modelObject, target, webRequest, application, controller);
             }
             else if(argMap.containsKey(ARGUMENT_TEMPLATE)) {
                 String templateName = argMap.get(ARGUMENT_TEMPLATE).toString();
@@ -238,47 +168,16 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
                     Map binding = new HashMap();
 
                     if(argMap.containsKey(ARGUMENT_BEAN)) {
-                        if(StringUtils.isBlank(var))
-                            binding.put(DEFAULT_ARGUMENT, argMap.get(ARGUMENT_BEAN));
-                        else
-                            binding.put(var, argMap.get(ARGUMENT_BEAN));
-                        Writable w = t.make(binding);
-                        w.writeTo(out);
+                        Object bean = argMap.get(ARGUMENT_BEAN);
+                        renderTemplateForBean(t, binding, bean, var, out);
                     }
                     else if(argMap.containsKey(ARGUMENT_COLLECTION)) {
                         Object colObject = argMap.get(ARGUMENT_COLLECTION);
-                        if(colObject instanceof Collection) {
-                             Collection c = (Collection) colObject;
-                            for (Iterator i = c.iterator(); i.hasNext();) {
-                                Object o = i.next();
-                                if(StringUtils.isBlank(var))
-                                    binding.put(DEFAULT_ARGUMENT, o);
-                                else
-                                    binding.put(var, o);
-                                Writable w = t.make(binding);
-                                w.writeTo(out);
-                            }
-                        }
-                        else {
-                            if(StringUtils.isBlank(var))
-                                binding.put(DEFAULT_ARGUMENT, argMap.get(ARGUMENT_BEAN));
-                            else
-                                binding.put(var, colObject);
-
-                            Writable w = t.make(binding);
-                            w.writeTo(out);
-                        }
+                        renderTemplateForCollection(t, binding, colObject, var, out);
                     }
                     else if(argMap.containsKey(ARGUMENT_MODEL)) {
                         Object modelObject = argMap.get(ARGUMENT_MODEL);
-                        if(modelObject instanceof Map) {
-                            Writable w = t.make((Map)argMap.get(ARGUMENT_MODEL));
-                            w.writeTo(out);
-                        }
-                        else {
-                            Writable w = t.make(new BeanMap(target));
-                            w.writeTo(out);
-                        }
+                        renderTemplateForModel(t, modelObject, target, out);
                     }
                     else {
                             Writable w = t.make(new BeanMap(target));
@@ -294,24 +193,168 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
                 }
             }
             else {
-                try {
-                    out.write(DefaultGroovyMethods.inspect(arguments[0]));
-                    renderView = false;
-                } catch (IOException e) {
-                    throw new ControllerExecutionException("I/O error obtaining response writer: " + e.getMessage(), e);
-                }
+                Object object = arguments[0];
+                renderView = renderObject(object, out);
             }
             try {
-                if(!renderView) out.flush();
+                if(!renderView) {
+                        out.flush();
+                }
             } catch (IOException e) {
                 throw new ControllerExecutionException("I/O error executing render method for arguments ["+argMap+"]: " + e.getMessage(),e);
-            }            
+            }
         }
         else {
             throw new MissingMethodException(METHOD_SIGNATURE,target.getClass(),arguments);
         }
         webRequest.setRenderView(renderView);
         return null;
+    }
+
+    private boolean renderObject(Object object, Writer out) {
+        boolean renderView;
+        try {
+            out.write(DefaultGroovyMethods.inspect(object));
+            renderView = false;
+        } catch (IOException e) {
+            throw new ControllerExecutionException("I/O error obtaining response writer: " + e.getMessage(), e);
+        }
+        return renderView;
+    }
+
+    private void renderTemplateForModel(Template template, Object modelObject, Object target, Writer out) throws IOException {
+        if(modelObject instanceof Map) {
+            Writable w = template.make((Map)modelObject);
+            w.writeTo(out);
+        }
+        else {
+            Writable w = template.make(new BeanMap(target));
+            w.writeTo(out);
+        }
+    }
+
+    private void renderTemplateForCollection(Template template, Map binding, Object colObject, String var, Writer out) throws IOException {
+        if(colObject instanceof Collection) {
+             Collection c = (Collection) colObject;
+            for (Iterator i = c.iterator(); i.hasNext();) {
+                Object o = i.next();
+                if(StringUtils.isBlank(var))
+                    binding.put(DEFAULT_ARGUMENT, o);
+                else
+                    binding.put(var, o);
+                Writable w = template.make(binding);
+                w.writeTo(out);
+            }
+        }
+        else {
+            if(StringUtils.isBlank(var))
+                binding.put(DEFAULT_ARGUMENT, colObject);
+            else
+                binding.put(var, colObject);
+
+            Writable w = template.make(binding);
+            w.writeTo(out);
+        }
+    }
+
+    private void renderTemplateForBean(Template template, Map binding, Object bean, String varName, Writer out) throws IOException {
+        if(StringUtils.isBlank(varName)) {
+            binding.put(DEFAULT_ARGUMENT, bean);
+        }
+        else
+            binding.put(varName, bean);
+        Writable w = template.make(binding);
+        w.writeTo(out);
+    }
+
+    private void renderView(String viewName, Object modelObject, Object target, GrailsWebRequest webRequest, GrailsApplication application, GroovyObject controller) {
+        GrailsControllerClass controllerClass = (GrailsControllerClass) application.getArtefact(ControllerArtefactHandler.TYPE,
+                target.getClass().getName());
+        if(controllerClass == null && webRequest.getControllerName() != null) {
+            controllerClass = (GrailsControllerClass)application.getArtefactByLogicalPropertyName(ControllerArtefactHandler.TYPE, webRequest.getControllerName());
+        }
+        String viewUri;
+        if(viewName.indexOf('/') > -1) {
+            if(!viewName.startsWith("/")) {
+                viewName = '/' + viewName;
+            }
+            viewUri = viewName;
+        }
+        else {
+            viewUri = controllerClass.getViewByName(viewName);
+        }
+
+
+        Map model;
+        if(modelObject instanceof Map) {
+            model = (Map)modelObject;
+        }
+        else if(controllerClass.getClazz().isInstance(target)) {
+            model = new BeanMap(target);
+        }
+        else {
+            model = new HashMap();
+        }
+
+        controller.setProperty( ControllerDynamicMethods.MODEL_AND_VIEW_PROPERTY, new ModelAndView(viewUri,model) );
+    }
+
+    private boolean renderJSON(Closure callable, HttpServletResponse response) {
+        boolean renderView;
+        JSonBuilder jsonBuilder;
+        try{
+                        jsonBuilder = new JSonBuilder(response);
+            renderView = false;
+        }catch(IOException e){
+            throw new ControllerExecutionException("I/O error executing render method for arguments ["+callable+"]: " + e.getMessage(),e);
+        }
+        jsonBuilder.invokeMethod("json", new Object[]{ callable });
+        return renderView;
+    }
+
+    private boolean renderRico(Closure callable, HttpServletResponse response) {
+        boolean renderView;
+        OpenRicoBuilder orb;
+        try {
+            orb = new OpenRicoBuilder(response);
+            renderView = false;
+        } catch (IOException e) {
+            throw new ControllerExecutionException("I/O error executing render method for arguments ["+callable+"]: " + e.getMessage(),e);
+        }
+        orb.invokeMethod("ajax", new Object[]{callable});
+        return renderView;
+    }
+
+    private boolean renderMarkup(Closure closure, HttpServletResponse response) {
+        boolean renderView;
+        StreamingMarkupBuilder b = new StreamingMarkupBuilder();
+        Writable markup = (Writable)b.bind(closure);
+        try {
+            markup.writeTo(response.getWriter());
+        } catch (IOException e) {
+            throw new ControllerExecutionException("I/O error executing render method for arguments ["+closure+"]: " + e.getMessage(),e);
+        }
+        renderView = false;
+        return renderView;
+    }
+
+    private boolean renderText(String text, HttpServletResponse response) {
+        try {
+            PrintWriter writer = response.getWriter();
+            return renderText(text, writer);
+
+        } catch (IOException e) {
+            throw new ControllerExecutionException(e.getMessage(),e);
+        }
+    }
+
+    private boolean renderText(String text, Writer writer)  {
+        try {
+            writer.write(text);
+            return false;
+        } catch (IOException e) {
+            throw new ControllerExecutionException(e.getMessage(),e);
+        }
     }
 
     private boolean isJSONResponse(HttpServletResponse response) {
