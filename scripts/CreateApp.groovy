@@ -68,19 +68,19 @@ target( createIDESupportFiles: "Creates the IDE suppot files (Eclipse, TextMate 
 			tofile:"${basedir}/${grailsAppName}.tmproj", overwrite:true)    		
 			
 			
-	Ant.replace(dir:"${basedir}",includes:"**/*.*", 
+	Ant.replace(dir:"${basedir}",includes:"*.*",
 				token:"@grails.libs@", value:"${getGrailsLibs()}" )
-	Ant.replace(dir:"${basedir}", includes:"**/*.*",
+	Ant.replace(dir:"${basedir}", includes:"*.*",
 				token:"@grails.jar@", value:"${getGrailsJar()}" )
-    Ant.replace(dir:"${basedir}", includes:"**/*.*",
+    Ant.replace(dir:"${basedir}", includes:"*.*",
     			token:"@grails.version@", value:"${grailsVersion}" )
 
 
     def appKey = grailsAppName.replaceAll( /\s/, '.' ).toLowerCase()
 
-	Ant.replace(dir:"${basedir}", includes:"**/*.*",
+	Ant.replace(dir:"${basedir}", includes:"*.*",
 				token:"@grails.project.name@", value:"${grailsAppName}" )
-	Ant.replace(dir:"${basedir}", includes:"**/*.*",
+	Ant.replace(dir:"${basedir}", includes:"*.*",
 				token:"@grails.project.key@", value:"${appKey}" )				
 }
     
