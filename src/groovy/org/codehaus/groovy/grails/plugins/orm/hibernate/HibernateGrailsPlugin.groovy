@@ -93,7 +93,7 @@ class HibernateGrailsPlugin {
         if (!externalDefinition && ds || application.domainClasses.size() > 0) {
             hibConfigClass = ds?.configClass
 
-            if (ds && ds.loggingSql) {
+            if (ds && ds.loggingSql || ds && ds.logSql) {
                 hibProps."hibernate.show_sql" = "true"
                 hibProps."hibernate.format_sql" = "true"
             }
