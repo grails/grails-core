@@ -241,9 +241,9 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
         return text.indexOf(expected) > -1        
     }
 
-    def assertOutputContains(expected, template, params = [:]) {
+    void assertOutputContains(expected, template, params = [:]) {
         def result = applyTemplate(template, params)
-        return result.indexOf(expected) > -1
+        assert result.indexOf(expected) > -1
     }
 
     void assertOutputEquals(expected, template, params = [:], Closure transform = { it.toString() }) {
