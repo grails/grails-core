@@ -233,7 +233,8 @@ target(loadPlugins:"Loads Grails' plugins") {
             }
 	    }
         catch (Exception e) {
-	        event("StatusFinal", [ "Error loading plugin manager: " + e.message ])
+            GrailsUtil.deepSanitize(e).printStackTrace()
+            event("StatusFinal", [ "Error loading plugin manager: " + e.message ])
 			exit(1)
 	    }
     }
