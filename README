@@ -1,4 +1,4 @@
-Grails, release 1.0 RC4 (January, 2008)
+Grails, release 1.0 (February, 2008)
 --------------------------------------------------
 http://grails.org
 
@@ -7,7 +7,7 @@ http://grails.org
 =============================================================================
 
 
-Grails is a web based application framework based on the Groovy language that endorses the DRY (don't repeat yourself) and coding-by-convention philosophies. Grails runs on the Java Virtual Machine and thus has access to the entire Java Platform.
+Grails is a web application framework based on the Groovy language that endorses the DRY (don't repeat yourself) and coding-by-convention philosophies. Grails runs on the Java Virtual Machine and thus has access to the entire Java Platform.
 
 With Grails you can easily create web applications thanks to:
 
@@ -21,14 +21,14 @@ With Grails you can easily create web applications thanks to:
 
 - scaffolding on data access classes for rapid development of CRUD (Create, Read, Update, Delete) operations.
 
-- powerful web framework with dynamic tag libraries and support for Groovy Server Pages (GSP)
+- powerful view technology with dynamic tag libraries and support for Groovy Server Pages (GSP)
 
 
 2. GETTING STARTED
 =============================================================================
 
 
-To get started takes these steps: 
+To get started follow these steps:
 
 - create a GRAILS_HOME environment variable that points to the path of the Grails distribution (the folder contain this file).
 
@@ -59,7 +59,7 @@ You can now run the grails command, as follows:
 For more info checkout the Grails homepage at http://grails.org
 
 
-3. UPGRADING / KNOWN ISSUES
+3. UPGRADING
 =============================================================================
 
 
