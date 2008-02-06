@@ -50,7 +50,7 @@ target(generateAll:"The implementation target") {
 	rootLoader.addURL(classesDir.toURL())
 	def beans = new grails.spring.WebBeanBuilder().beans {
 		resourceHolder(org.codehaus.groovy.grails.commons.spring.GrailsResourceHolder) {
-			resources = "file:${basedir}/grails-app/domain/**/*.groovy"
+			this.qresources = "file:${basedir}/grails-app/domain/**/*.groovy"
 		}
 		grailsResourceLoader(org.codehaus.groovy.grails.commons.GrailsResourceLoaderFactoryBean) {
 			grailsResourceHolder = resourceHolder
