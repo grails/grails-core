@@ -7,6 +7,7 @@ import org.codehaus.groovy.runtime.*
 import groovy.mock.interceptor.*
 import org.apache.commons.logging.LogFactory
 import org.apache.commons.logging.impl.NoOpLog
+import org.codehaus.groovy.grails.commons.GrailsApplication
 
 class LoggingGrailsPluginTests extends AbstractGrailsPluginTests {
 
@@ -45,6 +46,32 @@ class LoggingGrailsPluginTests extends AbstractGrailsPluginTests {
 		pluginsToLoad << gcl.loadClass("org.codehaus.groovy.grails.plugins.CoreGrailsPlugin")
 		pluginsToLoad << gcl.loadClass("org.codehaus.groovy.grails.plugins.LoggingGrailsPlugin")
 	}
+
+    void testDoWithWebDescriptor() {
+        String xmlText = '''
+<web-app>
+
+	<context-param>
+		<param-name>log4jConfigLocation</param-name>
+		<param-value>/WEB-INF/classes/log4j.properties</param-value>
+	</context-param>
+</web-app>
+'''
+        def xml = new XmlSlurper().parseText( xmlText  )
+        System.setProperty(GrailsApplication.PROJECT_RESOURCES_DIR, "/test")
+        def plugin = new LoggingGrailsPlugin()
+        plugin.doWithWebDescriptor(xml)
+
+        assertEquals 'file:/test/log4j.properties',xml.'context-param'.'param-value'.text()
+
+        System.setProperty('current.gant.script','war')
+
+        xml = new XmlSlurper().parseText( xmlText  )
+        plugin.doWithWebDescriptor(xml)
+
+        assertEquals '/WEB-INF/classes/log4j.properties',xml.'context-param'.'param-value'.text()
+        
+    }
 
 	void testLogAvailableToController() {
         def registry = GroovySystem.metaClassRegistry
