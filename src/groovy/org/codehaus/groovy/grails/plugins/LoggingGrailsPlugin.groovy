@@ -39,7 +39,9 @@ class LoggingGrailsPlugin {
         def log4j = contextParams.find {it.'param-name'.text() == 'log4jConfigLocation'}
 
         if(log4j) {
-             if(!application.warDeployed || !['war','run-war'].contains(runningScript)) {
+             def runningScript = System.getProperty('current.gant.script')
+
+             if(runningScript != 'war' && runningScript != 'run-war') {
                  def resources = System.getProperty(GrailsApplication.PROJECT_RESOURCES_DIR)
                  log4j.'param-value' = "file:$resources/log4j.properties"
              }
