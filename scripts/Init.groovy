@@ -304,7 +304,6 @@ target(createStructure: "Creates the application directory structure") {
         mkdir(dir: "${basedir}/web-app/js")
         mkdir(dir: "${basedir}/web-app/css")
         mkdir(dir: "${basedir}/web-app/images")
-        mkdir(dir: "${basedir}/web-app/WEB-INF/classes")
         mkdir(dir: "${basedir}/web-app/META-INF")
         mkdir(dir: "${basedir}/lib")
         mkdir(dir: "${basedir}/grails-app/conf/spring")

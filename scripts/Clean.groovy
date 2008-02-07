@@ -47,14 +47,11 @@ target ( cleanCompiledSources : "Cleans compiled Java and Groovy sources") {
 	Ant.delete(dir:classesDirPath)
 	Ant.delete(dir:resourcesDirPath)
 	Ant.delete(dir:testDirPath)
-	Ant.mkdir(dir:"${webInf}/classes")
-	Ant.mkdir(dir:"${webInf}/lib")	
 }   
 
 target (cleanGrailsApp : "Cleans the Grails application sources") {
 	def appDir = "${basedir}/web-app/WEB-INF/grails-app"
 	Ant.delete(dir:appDir)
-	Ant.mkdir(dir:appDir)	
 }
 
 target (cleanWarFile : "Cleans the deployable .war file") {

@@ -33,8 +33,7 @@ pluginResources = []
 
                 
 target( packagePlugins : "Packages any Grails plugins that are installed for this project") {
-	depends( classpath )   
-	Ant.mkdir(dir:"${basedir}/web-app/WEB-INF/lib")
+	depends( classpath )
 	try {
 	  
 	    def basePluginFile = baseFile.listFiles().find { it.name.endsWith("GrailsPlugin.groovy")}
