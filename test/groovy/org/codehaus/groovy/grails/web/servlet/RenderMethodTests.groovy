@@ -80,7 +80,7 @@ class RenderMethodTests extends AbstractGrailsControllerTests {
 			assert response != null
 			
 			assertEquals "<hello>world</hello>", response.contentAsString
-			assertEquals "text/xml", response.contentType
+			assertEquals "text/xml;charset=utf-8", response.contentType
 		}		
 	}
 
@@ -102,7 +102,7 @@ class RenderMethodTests extends AbstractGrailsControllerTests {
         assert mockController.modelAndView
 
         assertEquals '/render/xmlView', mockController.modelAndView.viewName
-        assertEquals 'text/xml', response.contentType
+        assertEquals 'text/xml;charset=utf-8', response.contentType
     }
 
 	
@@ -121,7 +121,7 @@ class RenderMethodTests extends AbstractGrailsControllerTests {
         def response = mockController.response
 
         assertEquals "hello world!", response.contentAsString
-        assertEquals "text/html", response.contentType
+        assertEquals "text/html;charset=utf-8", response.contentType
 	}
 
 	void testRenderTemplateWithContentType() {
@@ -139,7 +139,7 @@ class RenderMethodTests extends AbstractGrailsControllerTests {
         def response = mockController.response
 
         assertEquals "<hello>world</hello>", response.contentAsString
-        assertEquals "text/xml", response.contentType
+        assertEquals "text/xml;charset=utf-8", response.contentType
     }
 
 	void onSetUp() {
