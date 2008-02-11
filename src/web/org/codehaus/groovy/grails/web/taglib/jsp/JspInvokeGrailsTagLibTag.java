@@ -20,6 +20,7 @@ import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsTagLibClass;
 import org.codehaus.groovy.grails.commons.TagLibArtefactHandler;
 import org.codehaus.groovy.grails.web.metaclass.TagLibDynamicMethods;
+import org.codehaus.groovy.grails.web.pages.GroovyPage;
 import org.codehaus.groovy.grails.web.servlet.DefaultGrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
@@ -139,7 +140,8 @@ public class JspInvokeGrailsTagLibTag extends BodyTagSupport implements DynamicA
             pageContext.setAttribute(TAG_LIBS_ATTRIBUTE, tagLibs);
         }
         GrailsTagLibClass tagLibClass = (GrailsTagLibClass) application.getArtefactForFeature(
-            TagLibArtefactHandler.TYPE, tagName);
+            TagLibArtefactHandler.TYPE, GroovyPage.DEFAULT_NAMESPACE+':'+tagName);
+        
         GroovyObject tagLib;
         if(tagLibs.containsKey(tagLibClass.getFullName())) {
              tagLib = (GroovyObject)tagLibs.get(tagLibClass.getFullName());
@@ -192,7 +194,7 @@ public class JspInvokeGrailsTagLibTag extends BodyTagSupport implements DynamicA
                             invocationArgs.add(ZERO_ARGUMENTS);
                         }
                         out.print("<jsp-body-gen"+invocationCount+">");
-                        return null;
+                        return "";
                     }
                 };
                 Closure tag = (Closure)tagLibProp;
