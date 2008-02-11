@@ -15,6 +15,7 @@
  */
 package org.codehaus.groovy.grails.web.servlet.mvc;
 
+import groovy.lang.GString;
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
@@ -23,6 +24,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.*;
+
 /**
  * A parameter map class that allows mixing of request parameters and controller parameters. If a controller
  * parameter is set with the same name as a request parameter the controller parameter value is retrieved.
@@ -157,7 +159,8 @@ public class GrailsParameterMap implements Map {
 	}
 
 	public Object put(Object key, Object value) {
-		return parameterMap.put(key, value);
+        if(value instanceof GString) value = value.toString();
+        return parameterMap.put(key, value);
 	}
 
 	public Object remove(Object key) {
@@ -165,7 +168,10 @@ public class GrailsParameterMap implements Map {
 	}
 
 	public void putAll(Map map) {
-		parameterMap.putAll(map);
+        for (Iterator i = map.keySet().iterator(); i.hasNext();) {
+            Object key = i.next();
+            put(key, map.get(key));
+        }
 	}
 
 	public void clear() {
