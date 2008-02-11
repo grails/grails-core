@@ -49,7 +49,10 @@ class ConfigurationHelper {
                             stream = resource.getInputStream()
                             ConfigSlurper configSlurper = new ConfigSlurper(GrailsUtil.getEnvironment())
                             if(classLoader) {
-                                configSlurper.classLoader = classLoader
+                                if(classLoader instanceof GroovyClassLoader)
+                                    configSlurper.classLoader = classLoader
+                                else
+                                    configSlurper.classLoader = new GroovyClassLoader(classLoader)                                
                             }
                             if(resource.filename.endsWith('.groovy')) {
                                 def newConfig = configSlurper.parse(stream.text)
