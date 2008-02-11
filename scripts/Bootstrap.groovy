@@ -73,16 +73,9 @@ target(configureApp:"Configures the Grails application and builds an Application
 monitorCallback = {}
 
 target(monitorApp:"Monitors an application for changes using the PluginManager and reloads changes") {
-
+    long lastModified = classesDir.lastModified()
     while(true) {
         sleep(3500)
-        checkForChanges()
-    }
-}
-
-target(checkForChanges:"Checks the application for changes and reloads") {
-    profile("Checking for Grails application changes") {
-        long lastModified = classesDir.lastModified()    
         try {
             pluginManager.checkForChanges()
 
