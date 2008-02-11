@@ -43,6 +43,7 @@ import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.springframework.transaction.support.TransactionTemplate
 import org.springframework.transaction.support.TransactionCallback
 import org.springframework.transaction.TransactionStatus
+import org.apache.commons.logging.LogFactory
 
 Ant.property(environment: "env")
 grailsHome = Ant.antProject.properties."env.GRAILS_HOME"
@@ -257,9 +258,6 @@ target(runUnitTests: "Run Grails' unit tests under the test/unit directory") {
     try {
         loadApp()
 
-        pluginManager.getGrailsPlugin("core")?.doWithDynamicMethods(appCtx)
-        pluginManager.getGrailsPlugin("logging")?.doWithDynamicMethods(appCtx)
-
         def testFiles = resolveTestResources {"test/unit/${it}.groovy"}
         testFiles = testFiles.findAll {it.exists()}
         if (testFiles.size() == 0) {
@@ -276,13 +274,15 @@ target(runUnitTests: "Run Grails' unit tests under the test/unit directory") {
             println "Running ${testCases} Unit Test${testCases > 1 ? 's' : ''}..."
 
             def start = new Date()
-            runTests(suite, result) {test, invocation ->            
-                invocation()
+            runTests(suite, result) {test, invocation ->
                 for(cls in grailsApp.allArtefacts) {
                     def emc = new ExpandoMetaClass(cls, true, true)
                     emc.initialize()
+                    def log = LogFactory.getLog(cls)
+                    emc.getLog = {-> log }
                     GroovySystem.metaClassRegistry.setMetaClass(cls, emc)
                 }
+                invocation()
             }
             def end = new Date()
 
