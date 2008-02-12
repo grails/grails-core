@@ -125,7 +125,9 @@ public class GrailsPageFilter extends PageFilter {
         final String uriPath = decorator.getURIPath();
         if(uriPath != null && uriPath.endsWith(".gsp")) {
     		request.setAttribute(PAGE, page);
-                      
+
+            detectContentTypeFromPage(page, response);
+
             RequestDispatcher rd = request.getRequestDispatcher(decorator.getURIPath());
             if(!response.isCommitted()) {
                 if(LOG.isDebugEnabled()) {
@@ -157,5 +159,12 @@ public class GrailsPageFilter extends PageFilter {
     		
     	}
 	}
+
+    private void detectContentTypeFromPage(Page page, HttpServletResponse response) {
+        String contentType = page.getProperty("meta.http-equiv.Content-Type");
+        if(contentType != null && "text/html".equals(response.getContentType())) {
+            response.setContentType(contentType);
+        }
+    }
 
 }
