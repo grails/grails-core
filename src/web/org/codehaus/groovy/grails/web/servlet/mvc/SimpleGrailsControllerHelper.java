@@ -237,7 +237,7 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
             mv = executeAction(controller, controllerClass, viewName, request, response, params);
         }
 
-        boolean returnModelAndView = invokeAfterInterceptor(controllerClass, controller, mv);
+        boolean returnModelAndView = invokeAfterInterceptor(controllerClass, controller, mv) && !response.isCommitted();
         return returnModelAndView ? mv : null;
     }
 
