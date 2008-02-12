@@ -152,6 +152,9 @@ move it to the new location of '${basedir}/test/integration'. Please move the di
             }
         }
 
+        // if Config.groovy exists and it does not contain values for
+        // grails.views.default.codec or grails.views.gsp.encoding then
+        // add reasonable defaults for them
         def configFile = new File(baseFile, '/grails-app/conf/Config.groovy')
         if(configFile.exists()) {
             def configSlurper = new ConfigSlurper()
