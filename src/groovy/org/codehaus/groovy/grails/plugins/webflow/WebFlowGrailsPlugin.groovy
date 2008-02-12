@@ -54,7 +54,7 @@ class WebFlowGrailsPlugin {
         boolean hasExecutionListener = false
         if(manager.hasGrailsPlugin('hibernate') ) {
             try {
-                hibernateConversationListener(org.springframework.webflow.persistence.HibernateFlowExecutionListener, sessionFactory, transactionManager)
+                hibernateConversationListener(org.codehaus.groovy.grails.webflow.persistence.SessionAwareHibernateFlowExecutionListener, sessionFactory, transactionManager)
                 executionListenerLoader(org.springframework.webflow.execution.factory.StaticFlowExecutionListenerLoader, hibernateConversationListener)
                 hasExecutionListener = true
                 sessionFactory.currentSessionContextClass = org.codehaus.groovy.grails.webflow.persistence.FlowAwareCurrentSessionContext                
