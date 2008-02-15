@@ -18,10 +18,14 @@ package org.codehaus.groovy.grails.web.sitemesh;
 import com.opensymphony.module.sitemesh.Decorator;
 import com.opensymphony.module.sitemesh.DecoratorMapper;
 import com.opensymphony.module.sitemesh.Page;
+import com.opensymphony.module.sitemesh.util.Container;
 import com.opensymphony.module.sitemesh.filter.PageFilter;
+import com.opensymphony.module.sitemesh.filter.PageResponseWrapper;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
+import org.codehaus.groovy.grails.commons.ConfigurationHolder;
+import org.springframework.web.util.UrlPathHelper;
 
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
@@ -39,9 +43,12 @@ import java.io.PrintWriter;
 public class GrailsPageFilter extends PageFilter {
 
 	private static final Log LOG = LogFactory.getLog( GrailsPageFilter.class );
+    private static final String HTML_EXT = ".html";
+    private static final String UTF_8_ENCODING = "UTF-8";
+    private static final String CONFIG_OPTION_GSP_ENCODING = "grails.views.gsp.encoding";
 
-	
-	public void init(FilterConfig filterConfig) {
+
+    public void init(FilterConfig filterConfig) {
 		super.init(filterConfig);
 		this.filterConfig = filterConfig;
         FactoryHolder.setFactory(this.factory);        
@@ -87,6 +94,44 @@ public class GrailsPageFilter extends PageFilter {
                 // we write the original page
                 writeOriginal(request, response, page);
             }
+        }
+    }
+
+    /**
+     * Continue in filter-chain, writing all content to buffer and parsing
+     * into returned {@link com.opensymphony.module.sitemesh.Page} object. If
+     * {@link com.opensymphony.module.sitemesh.Page} is not parseable, null is returned.
+     */
+    protected Page parsePage(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException {
+        try {
+            PageResponseWrapper pageResponse = new PageResponseWrapper(response, factory);
+            UrlPathHelper urlHelper = new UrlPathHelper();
+            String requestURI = urlHelper.getOriginatingRequestUri(request);
+            // static content?
+            if(requestURI.endsWith(HTML_EXT))    {
+                String encoding = (String)ConfigurationHolder.getFlatConfig().get(CONFIG_OPTION_GSP_ENCODING);
+                if(encoding == null) encoding = UTF_8_ENCODING;
+                pageResponse.setContentType("text/html;charset="+encoding);
+            }
+
+
+
+            chain.doFilter(request, pageResponse);
+            // check if another servlet or filter put a page object to the request
+            Page result = (Page)request.getAttribute(PAGE);
+            if (result == null) {
+                // parse the page
+                result = pageResponse.getPage();
+            }
+            request.setAttribute(USING_STREAM, pageResponse.isUsingStream() ? Boolean.TRUE : Boolean.FALSE); // JDK 1.3 friendly
+            return result;
+        }
+        catch (IllegalStateException e) {
+            // weblogic throws an IllegalStateException when an error page is served.
+            // it's ok to ignore this, however for all other containers it should be thrown
+            // properly.
+            if (Container.get() != Container.WEBLOGIC) throw e;
+            return null;
         }
     }
 
