@@ -15,6 +15,24 @@ class DefaultGrailsControllerClassTests extends GroovyTestCase {
         gcl = null
     }
 
+    void testScaffoldedingConfig() {
+        gcl.parseClass("""
+class BlogController {
+    def scaffold = Post
+}
+class Post {}
+        """)
+
+        def ga = new DefaultGrailsApplication(gcl.loadedClasses, gcl)
+		ga.initialise()
+
+        GrailsControllerClass blog = ga.getControllerClass("BlogController")
+
+        assertTrue blog.isScaffolding()
+        assertEquals "Post", blog.scaffoldedClass?.name
+
+    }
+
     void testEvaluateFlowDefinitions() {
         gcl.parseClass("""
 class FooController {

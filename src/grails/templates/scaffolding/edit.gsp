@@ -22,7 +22,7 @@
                 <g:renderErrors bean="\${${propertyName}}" as="list" />
             </div>
             </g:hasErrors>
-            <g:form controller="${propertyName}" method="post" <%= multiPart ? ' enctype="multipart/form-data"' : '' %>>
+            <g:form method="post" <%= multiPart ? ' enctype="multipart/form-data"' : '' %>>
                 <input type="hidden" name="id" value="\${${propertyName}?.id}" />
                 <div class="dialog">
                     <table>

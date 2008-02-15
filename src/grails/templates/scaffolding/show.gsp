@@ -51,7 +51,7 @@
                 </table>
             </div>
             <div class="buttons">
-                <g:form controller="${propertyName}">
+                <g:form>
                     <input type="hidden" name="id" value="\${${propertyName}?.id}" />
                     <span class="button"><g:actionSubmit class="edit" value="Edit" /></span>
                     <span class="button"><g:actionSubmit class="delete" onclick="return confirm('Are you sure?');" value="Delete" /></span>
