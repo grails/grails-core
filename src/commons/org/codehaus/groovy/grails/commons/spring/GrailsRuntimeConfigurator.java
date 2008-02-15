@@ -50,10 +50,7 @@ import org.springframework.web.context.WebApplicationContext;
 
 import javax.servlet.ServletContext;
 import java.io.IOException;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 
 /**
  * A class that handles the runtime configuration of the Grails ApplicationContext
@@ -264,13 +261,17 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
 
         this.pluginManager.registerProvidedArtefacts(application);
 
+        registerParentBeanFactoryPostProcessors(springConfig);
+        
         this.pluginManager.doRuntimeConfiguration(springConfig);
 
         // configure scaffolding
         LOG.debug("[RuntimeConfiguration] Proccessing additional external configurations");
 
-        if (loadExternalBeans)
+        if (loadExternalBeans) {
             doPostResourceConfiguration(application,springConfig);
+        }
+
 
         // TODO GRAILS-720 this causes plugin beans to be re-created - should get getApplicationContext always call refresh?
         WebApplicationContext ctx = (WebApplicationContext) springConfig.getApplicationContext();
@@ -287,6 +288,18 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
         application.refreshConstraints();
 
         return ctx;
+    }
+
+    private void registerParentBeanFactoryPostProcessors(WebRuntimeSpringConfiguration springConfig) {
+        if(parent != null) {
+            Map parentPostProcessors = parent.getBeansOfType(BeanFactoryPostProcessor.class);
+            for (Iterator i = parentPostProcessors.values().iterator(); i.hasNext();) {
+                BeanFactoryPostProcessor postProcessor = (BeanFactoryPostProcessor) i.next();
+                ((ConfigurableApplicationContext) springConfig.getUnrefreshedApplicationContext())
+                        .addBeanFactoryPostProcessor(postProcessor);
+
+            }
+        }
     }
 
     public void reconfigure(GrailsApplicationContext current, ServletContext servletContext, boolean loadExternalBeans) {
