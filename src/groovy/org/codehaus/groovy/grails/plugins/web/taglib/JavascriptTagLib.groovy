@@ -34,8 +34,7 @@ class JavascriptTagLib  {
 	static final INCLUDED_JS = "org.codehaus.grails.INCLUDED_JS"
     static final CONTROLLER = "org.codehaus.groovy.grails.CONTROLLER"
 	static final LIBRARY_MAPPINGS = [
-										prototype : ['prototype/prototype'],
-										dojo : [ 'dojo/dojo']
+										prototype : ['prototype/prototype']
 									]
 										
 	static {
