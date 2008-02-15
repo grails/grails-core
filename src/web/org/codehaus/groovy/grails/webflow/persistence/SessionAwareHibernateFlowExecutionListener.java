@@ -18,8 +18,13 @@ import org.springframework.webflow.persistence.HibernateFlowExecutionListener;
 import org.springframework.webflow.execution.RequestContext;
 import org.springframework.webflow.execution.FlowSession;
 import org.springframework.webflow.core.collection.MutableAttributeMap;
+import org.springframework.webflow.core.collection.AttributeMap;
+import org.springframework.webflow.definition.FlowDefinition;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
+import org.springframework.transaction.support.TransactionCallbackWithoutResult;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.orm.hibernate3.SessionHolder;
 import org.hibernate.SessionFactory;
 import org.hibernate.Session;
@@ -35,6 +40,9 @@ import org.hibernate.FlushMode;
  */
 public class SessionAwareHibernateFlowExecutionListener extends HibernateFlowExecutionListener {
     private SessionFactory localSessionFactory;
+    private TransactionTemplate localTransactionTemplate;
+    private static final String HIBERNATE_SESSION_ATTRIBUTE = "session";
+    private static final String PERSISTENCE_CONTEXT_ATTRIBUTE = "persistenceContext";
 
     /**
      * Create a new Hibernate Flow Execution Listener using giving Hibernate session factory and transaction manager.
@@ -45,6 +53,7 @@ public class SessionAwareHibernateFlowExecutionListener extends HibernateFlowExe
     public SessionAwareHibernateFlowExecutionListener(SessionFactory sessionFactory, PlatformTransactionManager transactionManager) {
         super(sessionFactory, transactionManager);
         this.localSessionFactory = sessionFactory;
+        this.localTransactionTemplate = new TransactionTemplate(transactionManager);
     }
 
     public void sessionCreated(RequestContext context, FlowSession session) {
@@ -57,7 +66,47 @@ public class SessionAwareHibernateFlowExecutionListener extends HibernateFlowExe
         
     }
 
-	private Session createSession() {
+    public void sessionEnded(RequestContext context, FlowSession session, AttributeMap output) {
+		if (isPersistenceContext(session.getDefinition())) {
+			final Session hibernateSession = (Session) session.getScope().remove(HIBERNATE_SESSION_ATTRIBUTE);
+			Boolean commitStatus = session.getState().getAttributes().getBoolean("commit");
+			if (Boolean.TRUE.equals(commitStatus)) {
+                try {
+                    if(TransactionSynchronizationManager.hasResource(localSessionFactory)) {
+                        SessionHolder sessionHolder = (SessionHolder) TransactionSynchronizationManager.getResource(localSessionFactory);
+                        sessionHolder.addSession(hibernateSession);
+                    }
+                    localTransactionTemplate.execute(new TransactionCallbackWithoutResult() {
+                        protected void doInTransactionWithoutResult(TransactionStatus status) {
+                            localSessionFactory.getCurrentSession();
+                            // nothing to do; a flush will happen on commit automatically as this is a read-write
+                            // transaction
+                        }
+                    });
+                } finally {
+                    if(TransactionSynchronizationManager.hasResource(localSessionFactory)) {
+                        SessionHolder sessionHolder = (SessionHolder) TransactionSynchronizationManager.getResource(localSessionFactory);
+                        sessionHolder.removeSession(hibernateSession);
+                    }
+
+                }
+            }
+			unbind(hibernateSession);
+			hibernateSession.close();
+		}
+    }
+
+    private boolean isPersistenceContext(FlowDefinition flow) {
+        return flow.getAttributes().contains(PERSISTENCE_CONTEXT_ATTRIBUTE);
+    }
+
+    private void unbind(Session session) {
+		if (TransactionSynchronizationManager.hasResource(localSessionFactory)) {
+			TransactionSynchronizationManager.unbindResource(localSessionFactory);
+		}
+	}
+
+    private Session createSession() {
 		Session session = localSessionFactory.openSession();
 		session.setFlushMode(FlushMode.MANUAL);
 		return session;
@@ -65,10 +114,10 @@ public class SessionAwareHibernateFlowExecutionListener extends HibernateFlowExe
 
     private void obtainCurrentSession(RequestContext context) {
         MutableAttributeMap flowScope = context.getFlowScope();
-        if(flowScope.get("session") == null) {
+        if(flowScope.get(HIBERNATE_SESSION_ATTRIBUTE) == null) {
             SessionHolder sessionHolder = (SessionHolder) TransactionSynchronizationManager.getResource(localSessionFactory);
             if(sessionHolder!=null)
-                flowScope.put("session", sessionHolder.getSession());
+                flowScope.put(HIBERNATE_SESSION_ATTRIBUTE, sessionHolder.getSession());
         }
     }
 

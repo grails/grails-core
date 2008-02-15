@@ -74,7 +74,7 @@ public class GrailsOpenSessionInViewInterceptor extends OpenSessionInViewInterce
     }
 
     protected void flushIfNecessary(Session session, boolean existingTransaction) throws HibernateException {
-        if(session.getFlushMode() != FlushMode.MANUAL) {
+        if(session != null && session.getFlushMode() != FlushMode.MANUAL) {
             super.flushIfNecessary(session, existingTransaction);
         }
     }
