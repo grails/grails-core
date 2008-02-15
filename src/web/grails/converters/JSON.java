@@ -19,6 +19,7 @@ import groovy.lang.GroovyObject;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.grails.commons.ConfigurationHolder;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
 import org.codehaus.groovy.grails.web.converters.AbstractConverter;
@@ -42,6 +43,8 @@ import java.lang.reflect.*;
 import java.net.URL;
 import java.util.*;
 
+import grails.util.GrailsWebUtil;
+
 /**
  * A converter that converts domain classes, Maps, Lists, Arrays, POJOs and POGOs to JSON
  *
@@ -52,11 +55,13 @@ public class JSON extends AbstractConverter implements Converter {
     private final static Log log = LogFactory.getLog(JSON.class);
 
     private Object target;
-
+		private String encoding;
+		
     private JSONWriter writer;
 
     private boolean renderDomainClassRelations = false;
     private static final String CACHED_JSON = "org.codehaus.groovy.grails.CACHED_JSON_REQUEST_CONTENT";
+    private static final String DEFAULT_ENCODING = "utf-8";
 
     /**
      * Returns true if the JSON Converter is configured to convert referenced Domain Class instances as they are
@@ -81,6 +86,13 @@ public class JSON extends AbstractConverter implements Converter {
      * Default Constructor for a JSON Converter
      */
     public JSON() {
+        Map config = ConfigurationHolder.getFlatConfig();
+        Object enc = config.get("grails.converters.encoding");
+        if ((enc != null) && (enc.toString().trim().length() > 0)) {
+            this.encoding = enc.toString();
+        } else {
+            this.encoding = DEFAULT_ENCODING;
+        }    	    		
         this.target = null;
     }
 
@@ -90,6 +102,7 @@ public class JSON extends AbstractConverter implements Converter {
      * @param target the Object to convert
      */
     public JSON(Object target) {
+    		this();
         this.target = target;
     }
 
@@ -121,9 +134,8 @@ public class JSON extends AbstractConverter implements Converter {
      * @throws ConverterException
      */
     public void render(HttpServletResponse response) throws ConverterException {
-
+        response.setContentType(GrailsWebUtil.getContentType("text/json",this.encoding));
         try {
-            response.setContentType("text/json;charset=UTF-8");
             render(response.getWriter());
         } catch (IOException e) {
             throw new ConverterException(e);

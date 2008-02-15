@@ -19,6 +19,7 @@ import com.thoughtworks.xstream.XStream;
 import groovy.util.XmlSlurper;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.grails.commons.ConfigurationHolder;
 import org.codehaus.groovy.grails.web.converters.AbstractConverter;
 import org.codehaus.groovy.grails.web.converters.Converter;
 import org.codehaus.groovy.grails.web.converters.ConverterUtil;
@@ -31,6 +32,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Writer;
+import java.util.*;
+
+import grails.util.GrailsWebUtil;
 
 /**
  * A converter that converts domain classes to XML
@@ -42,7 +46,9 @@ public class XML extends AbstractConverter implements Converter {
     public static final Log log = LogFactory.getLog(XML.class);
 
     private Object target;
+    private String encoding;
     private static final String CACHED_XML = "org.codehaus.groovy.grails.CACHED_XML_REQUEST_CONTENT";
+    private static final String DEFAULT_ENCODING = "utf-8";
 
     /**
      * Configures the XStream instance
@@ -60,7 +66,13 @@ public class XML extends AbstractConverter implements Converter {
      * Default Constructor
      */
     public XML() {
-
+        Map config = ConfigurationHolder.getFlatConfig();
+        Object enc = config.get("grails.converters.encoding");
+        if ((enc != null) && (enc.toString().trim().length() > 0)) {
+            this.encoding = enc.toString();
+        } else {
+            this.encoding = DEFAULT_ENCODING;
+        }    	
     }
 
     /**
@@ -69,6 +81,7 @@ public class XML extends AbstractConverter implements Converter {
      * @param target the target object to convert
      */
     public XML(Object target) {
+    		this();
         this.target = target;
     }
 
@@ -90,7 +103,7 @@ public class XML extends AbstractConverter implements Converter {
      * @throws ConverterException
      */
     public void render(HttpServletResponse response) throws ConverterException {
-        response.setContentType("text/xml");
+        response.setContentType(GrailsWebUtil.getContentType("text/xml",this.encoding));        
         try {
             Writer writer = response.getWriter();
             String encoding = response.getCharacterEncoding();
