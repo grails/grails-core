@@ -179,6 +179,8 @@ class ControllersGrailsPlugin {
         def grailsEnv = GrailsUtil.getEnvironment()
 
         def mappingElement = webXml.'servlet-mapping'
+        mappingElement = mappingElement[mappingElement.size()-1]
+        
         mappingElement + {
             'servlet-mapping' {
                 'servlet-name'("grails")
