@@ -51,6 +51,20 @@ public class GrailsFlashScope implements FlashScope {
             if(value instanceof Map) {
                 reassociateObjectsWithErrors((Map)value);
             }
+            reasssociateObjectWithErrors(scope, value);
+
+        }
+    }
+
+    private void reasssociateObjectWithErrors(Map scope, Object value) {
+        if(value instanceof Collection) {
+             Collection values = (Collection)value;
+            for (Iterator i = values.iterator(); i.hasNext();) {
+                Object current = i.next();
+                reasssociateObjectWithErrors(scope, current);
+            }
+        }
+        else {
             String errorsKey = ERRORS_PREFIX + System.identityHashCode(value);
             Object errors = scope.get(errorsKey);
             if(value!=null && errors != null) {
@@ -59,7 +73,6 @@ public class GrailsFlashScope implements FlashScope {
                     mc.setProperty(value, ERRORS_PROPERTY, errors);
                 }
             }
-
         }
     }
 
@@ -139,13 +152,23 @@ public class GrailsFlashScope implements FlashScope {
     private void storeErrorsIfPossible(Object value) {
         if(value != null) {
 
-            MetaClass mc = GroovySystem.getMetaClassRegistry().getMetaClass(value.getClass());
-            if(mc.hasProperty(value, ERRORS_PROPERTY)!=null) {
-                Object errors = mc.getProperty(value, ERRORS_PROPERTY);
-                if(errors != null) {
-                    next.put(ERRORS_PREFIX + System.identityHashCode(value), errors);
+            if(value instanceof Collection) {
+                Collection values = (Collection)value;
+                for (Iterator i = values.iterator(); i.hasNext();) {
+                    Object current = i.next();
+                    storeErrorsIfPossible(current);
+                }            
+            }
+            else {
+                MetaClass mc = GroovySystem.getMetaClassRegistry().getMetaClass(value.getClass());
+                if(mc.hasProperty(value, ERRORS_PROPERTY)!=null) {
+                    Object errors = mc.getProperty(value, ERRORS_PROPERTY);
+                    if(errors != null) {
+                        next.put(ERRORS_PREFIX + System.identityHashCode(value), errors);
+                    }
                 }
             }
+
         }
     }
 
