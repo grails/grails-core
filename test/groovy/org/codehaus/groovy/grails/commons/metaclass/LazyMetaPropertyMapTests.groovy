@@ -4,6 +4,18 @@ package org.codehaus.groovy.grails.commons.metaclass
  */
 class LazyMetaPropertyMapTests extends GroovyTestCase {
 
+    void testOverridePropertiesRecursionBug() {
+        PropertyMapTest.metaClass.getProperties = {-> new LazyMetaPropertyMap(delegate) }
+
+        def obj = new PropertyMapTest(name:"Homer", age:45)
+
+        assertFalse obj.properties.containsKey('properties')
+        assertEquals 4, obj.properties.size()
+        obj.properties.each {
+            println "${it.key} : ${it.value}"
+        }
+    }
+
     void testSize() {
         def map = new LazyMetaPropertyMap(new PropertyMapTest())
 

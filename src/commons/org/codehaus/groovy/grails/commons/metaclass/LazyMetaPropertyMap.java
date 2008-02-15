@@ -31,6 +31,9 @@ import java.util.*;
 public class LazyMetaPropertyMap implements Map {
     private MetaClass metaClass;
     private Object instance;
+    private static List EXCLUDES = new ArrayList() {{
+        add("properties");
+    }};
 
     /**
      * Constructs the map
@@ -48,13 +51,13 @@ public class LazyMetaPropertyMap implements Map {
      * @see java.util.Map#size()
      */
     public int size() {
-        return metaClass.getProperties().size();
+        return keySet().size();
     }
     /**
      * @see java.util.Map#isEmpty()
      */
     public boolean isEmpty() {
-        return metaClass.getProperties().isEmpty();
+        return false; // will never be empty
     }
 
     /**
@@ -64,6 +67,7 @@ public class LazyMetaPropertyMap implements Map {
         if(propertyName instanceof GString) propertyName = propertyName.toString();
         if(!(propertyName instanceof String)) throw new IllegalArgumentException("This map implementation only supports String based keys!");
 
+        if(EXCLUDES.contains(propertyName)) return false;
         return metaClass.getMetaProperty((String)propertyName) != null;
     }
 
@@ -87,7 +91,7 @@ public class LazyMetaPropertyMap implements Map {
     public Object get(Object propertyName) {
         if(propertyName instanceof GString) propertyName = propertyName.toString();
         if(!(propertyName instanceof String)) throw new IllegalArgumentException("This map implementation only supports String based keys!");
-
+        if(EXCLUDES.contains(propertyName)) return null;
         Object val = null;
         MetaProperty mp = metaClass.getMetaProperty((String)propertyName);
         if(mp != null) {
@@ -135,6 +139,7 @@ public class LazyMetaPropertyMap implements Map {
         Set names = new HashSet();
         for (Iterator i = properties.iterator(); i.hasNext();) {
             MetaProperty mp = (MetaProperty) i.next();
+            if(EXCLUDES.contains(mp.getName()))continue;
             names.add(mp.getName());
         }
         return names;
@@ -145,6 +150,7 @@ public class LazyMetaPropertyMap implements Map {
         Collection values = new ArrayList();
         for (Iterator i = properties.iterator(); i.hasNext();) {
             MetaProperty mp = (MetaProperty) i.next();
+            if(EXCLUDES.contains(mp.getName()))continue;
             values.add(mp.getProperty(instance));
         }
         return values;
@@ -178,6 +184,7 @@ public class LazyMetaPropertyMap implements Map {
         Set entries = new HashSet();
         for (Iterator i = properties.iterator(); i.hasNext();) {
             MetaProperty mp = (MetaProperty) i.next();
+            if(EXCLUDES.contains(mp.getName()))continue;
             entries.add(new MapEntry(mp.getName(), mp.getProperty(instance)));
         }
         return entries;  
