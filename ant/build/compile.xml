@@ -49,7 +49,11 @@
 
     <target name="build:checkj5">
         <condition property="is.java.5">
-              <equals arg1="${ant.java.version}" arg2="1.5"/>
+            <or>
+                <equals arg1="${ant.java.version}" arg2="1.5"/>
+                <equals arg1="${ant.java.version}" arg2="1.6"/>
+                <equals arg1="${ant.java.version}" arg2="1.7"/>
+            </or>
         </condition>
     </target>
 
