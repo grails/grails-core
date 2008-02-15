@@ -24,7 +24,7 @@ class XMLConverterTests extends AbstractGrailsControllerTests {
 
            c.test()
 
-           assertEquals( '''<?xml version="1.0" encoding="ISO-8859-1"?><book>
+           assertEquals( '''<?xml version="1.0" encoding="utf-8"?><book>
   <author>Stephen King</author>
   <title>The Stand</title>
 </book>''', response.contentAsString)
@@ -49,7 +49,7 @@ class XMLConverterTests extends AbstractGrailsControllerTests {
 
             c.testProxy()
             // todo: Get Grails' Xstream stuff to deal with CGlib proxies
-           assertEquals( '''<?xml version="1.0" encoding="ISO-8859-1"?><CGLIB-enhanced-proxy>
+           assertEquals( '''<?xml version="1.0" encoding="utf-8"?><CGLIB-enhanced-proxy>
   <author>Stephen King</author>
   <title>The Stand</title>
 </CGLIB-enhanced-proxy>''', response.contentAsString)

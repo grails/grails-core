@@ -97,7 +97,7 @@ class Gizmo {
          webRequest.controllerName = 'content'
          c.testWithFormatRenderAs.call()
 
-         assertEquals '''<?xml version="1.0" encoding="ISO-8859-1"?><gizmo>
+         assertEquals '''<?xml version="1.0" encoding="utf-8"?><gizmo>
   <name>iPod</name>
 </gizmo>''', response.contentAsString
 
