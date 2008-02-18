@@ -69,30 +69,32 @@ public class SessionAwareHibernateFlowExecutionListener extends HibernateFlowExe
     public void sessionEnded(RequestContext context, FlowSession session, AttributeMap output) {
 		if (isPersistenceContext(session.getDefinition())) {
 			final Session hibernateSession = (Session) session.getScope().remove(HIBERNATE_SESSION_ATTRIBUTE);
-			Boolean commitStatus = session.getState().getAttributes().getBoolean("commit");
-			if (Boolean.TRUE.equals(commitStatus)) {
-                try {
-                    if(TransactionSynchronizationManager.hasResource(localSessionFactory)) {
-                        SessionHolder sessionHolder = (SessionHolder) TransactionSynchronizationManager.getResource(localSessionFactory);
-                        sessionHolder.addSession(hibernateSession);
-                    }
-                    localTransactionTemplate.execute(new TransactionCallbackWithoutResult() {
-                        protected void doInTransactionWithoutResult(TransactionStatus status) {
-                            localSessionFactory.getCurrentSession();
-                            // nothing to do; a flush will happen on commit automatically as this is a read-write
-                            // transaction
+            if(hibernateSession.isOpen()) {
+                Boolean commitStatus = session.getState().getAttributes().getBoolean("commit");
+                if (Boolean.TRUE.equals(commitStatus)) {
+                    try {
+                        if(TransactionSynchronizationManager.hasResource(localSessionFactory)) {
+                            SessionHolder sessionHolder = (SessionHolder) TransactionSynchronizationManager.getResource(localSessionFactory);
+                            sessionHolder.addSession(hibernateSession);
                         }
-                    });
-                } finally {
-                    if(TransactionSynchronizationManager.hasResource(localSessionFactory)) {
-                        SessionHolder sessionHolder = (SessionHolder) TransactionSynchronizationManager.getResource(localSessionFactory);
-                        sessionHolder.removeSession(hibernateSession);
-                    }
+                        localTransactionTemplate.execute(new TransactionCallbackWithoutResult() {
+                            protected void doInTransactionWithoutResult(TransactionStatus status) {
+                                localSessionFactory.getCurrentSession();
+                                // nothing to do; a flush will happen on commit automatically as this is a read-write
+                                // transaction
+                            }
+                        });
+                    } finally {
+                        if(TransactionSynchronizationManager.hasResource(localSessionFactory)) {
+                            SessionHolder sessionHolder = (SessionHolder) TransactionSynchronizationManager.getResource(localSessionFactory);
+                            sessionHolder.removeSession(hibernateSession);
+                        }
 
+                    }
                 }
+                unbind(hibernateSession);
+                hibernateSession.close();
             }
-			unbind(hibernateSession);
-			hibernateSession.close();
 		}
     }
 
