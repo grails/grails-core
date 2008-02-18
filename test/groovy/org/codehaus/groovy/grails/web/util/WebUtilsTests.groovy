@@ -8,7 +8,7 @@ package org.codehaus.groovy.grails.web.util
 
 import org.codehaus.groovy.grails.commons.ConfigurationHolder
 
-class WebUtilsTest extends GroovyTestCase {
+class WebUtilsTests extends GroovyTestCase {
 
     protected void setUp() {
         def config = new ConfigSlurper().parse( """
