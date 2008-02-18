@@ -484,6 +484,9 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
             return properties;
         }
 
+        /** 
+          * @deprecated Use #getPersistentProperties instead
+        	*/
         public GrailsDomainClassProperty[] getPersistantProperties() {
             return properties;
         }

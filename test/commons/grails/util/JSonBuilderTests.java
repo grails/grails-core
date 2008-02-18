@@ -12,7 +12,6 @@ import java.io.Writer;
 import javax.servlet.http.HttpServletResponse;
 
 import org.codehaus.groovy.runtime.InvokerInvocationException;
-import org.springframework.mock.web.MockHttpServletResponse;
 
 import junit.framework.TestCase;
 

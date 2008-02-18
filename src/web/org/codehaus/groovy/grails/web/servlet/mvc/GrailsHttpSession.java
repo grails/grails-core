@@ -18,7 +18,6 @@ package org.codehaus.groovy.grails.web.servlet.mvc;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpSession;
-import javax.servlet.http.HttpSessionContext;
 import javax.servlet.http.HttpServletRequest;
 import java.util.*;
 
@@ -116,7 +115,7 @@ public class GrailsHttpSession implements
 	 * @see javax.servlet.http.HttpSession#getSessionContext()
 	 * @deprecated
 	 */
-	public HttpSessionContext getSessionContext() {
+  public javax.servlet.http.HttpSessionContext getSessionContext() {
         createSessionIfNecessary();
         synchronized (this) {
     		return adaptee.getSessionContext();
@@ -231,5 +230,4 @@ public class GrailsHttpSession implements
         }
         return sb.toString();
     }
-
 }
