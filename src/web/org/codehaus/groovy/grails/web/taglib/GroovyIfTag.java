@@ -27,30 +27,24 @@ public class GroovyIfTag extends GroovySyntaxTag {
     private static final String ATTRIBUTE_ENV = "env";
 
     public void doStartTag() {
-        String env = (String) attributes.get(ATTRIBUTE_ENV);
-        String test = (String) attributes.get(ATTRIBUTE_TEST);
-        env = StringUtils.isBlank(env) ? null : env;
-        test = StringUtils.isBlank(test) ? null : test;
-        if((env == null) && (test == null))
+        String env = attributeValueOrNull(ATTRIBUTE_ENV);
+        String test = attributeValueOrNull(ATTRIBUTE_TEST);
+
+        if((env == null) && (test == null)) {
             throw new GrailsTagException(
                 "Tag ["+TAG_NAME+"] must have one or both of the attributes ["+ATTRIBUTE_TEST+"] or ["+ATTRIBUTE_ENV+"]");
-        if (env != null) {
-            env = calculateExpression(env);
         }
-        if ((env != null) && (test != null)) {
-            out.print("if((GrailsUtil.environment == '"+env+"') && (");
-            out.print(test);
-            out.println(")) {");
-        } else if (env != null) {
-            // double (( is deliberate... to avoid thorny logic
-            out.print("if(GrailsUtil.environment == '"+env+"') {");
-        } else {
-            out.print("if(");
-            out.print(test);
-            out.println(") {");
-        }
-    }
 
+        String envExpression = environmentExpressionOrTrue(env);
+        String testExpression = testExpressionOrTrue(test);
+
+        out.print("if(");
+        out.print(envExpression);
+        out.print(" && ");
+        out.print(testExpression);
+        out.println(") {");
+    }    
+    
     public void doEndTag() {
         out.println("}");
     }
@@ -65,5 +59,26 @@ public class GroovyIfTag extends GroovySyntaxTag {
 
     public boolean hasPrecedingContent() {
         return true;
+    }
+    
+    private String attributeValueOrNull(String attributeName) {
+        String attributeValue = (String) attributes.get(attributeName);
+        return StringUtils.isBlank(attributeValue) ? null : attributeValue;
+    }
+
+    private String environmentExpressionOrTrue(String envAttributeValue) {
+        String expression = "true";
+        if (envAttributeValue != null) {
+            expression = "(GrailsUtil.environment == '" + calculateExpression(envAttributeValue) + "')";
+        }            
+        return expression;
+    }
+
+    private String testExpressionOrTrue(String testAttributeValue) {
+        String expression = "true";
+        if (testAttributeValue != null) {
+            expression = "(" + testAttributeValue + ")";
+        }            
+        return expression;
     }
 }

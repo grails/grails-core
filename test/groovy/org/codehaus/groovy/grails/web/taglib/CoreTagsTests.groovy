@@ -13,6 +13,8 @@ package org.codehaus.groovy.grails.web.taglib
 
 import grails.util.GrailsUtil
 
+import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException
+
 class CoreTagsTests extends AbstractGrailsTagTests {
 
     void testIfElse() {
@@ -55,6 +57,17 @@ bar
 <g:if env="development" test="${foo}">foo</g:if>
 '''
         assertOutputEquals("foo", template2, [foo:true])
+    }
+
+    void testIfWithEnvAndWithoutTestAttribute() {
+        def template = '''<g:if env="development">foo</g:if>'''
+        assertOutputEquals("foo", template)
+    }
+
+    void testIfWithoutEnvAndTestAttributes() {  
+        shouldFail(GrailsTagException) {
+            applyTemplate("<g:if>foo</g:if>")
+        }
     }
 
     void testElseIf() {
