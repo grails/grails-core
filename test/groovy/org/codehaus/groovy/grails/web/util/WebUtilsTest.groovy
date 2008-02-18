@@ -36,9 +36,10 @@ grails.mime.file.extensions=true
     }
 
     void testGetFormatFromURI() {
+        assertNull WebUtils.getFormatFromURI("/foo/bar/")
+        assertNull WebUtils.getFormatFromURI("/foo/bar.suff/bar")
         assertEquals "xml", WebUtils.getFormatFromURI("/foo/bar.xml")
         assertEquals "xml", WebUtils.getFormatFromURI("/foo.xml")
         assertEquals "xml", WebUtils.getFormatFromURI("/foo/bar.suff/bar.xml")
     }
-
 }
