@@ -138,7 +138,8 @@ class FlowBuilder extends AbstractFlowBuilder implements GroovyObject, Applicati
                     state.attributeMap.put("commit", true)
                 }
                 else if(trans.length == 0 && flowInfo.subflow == null) {
-                    state = addEndState(name, name);
+
+                    state = addEndState(name, flowInfo.viewName ?: name);
                     state.attributeMap.put("commit", true)
                 }
                 else if(action) {
