@@ -193,17 +193,13 @@ class ControllersGrailsPlugin {
 
         def lastFilter = filters[filters.size() - 1]
         def lastFilterMapping = filterMappings[filterMappings.size() - 1]
-        def charEncodingFilter = filterMappings.find {it.'filter-name'.text() == 'charEncodingFilter'}
+        def charEncodingFilterMapping = filterMappings.find {it.'filter-name'.text() == 'charEncodingFilter'}
 
         // add the Grails web request filter
         lastFilter + {
             filter {
                 'filter-name'('grailsWebRequest')
                 'filter-class'(org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequestFilter.getName())
-            }
-            filter {
-                'filter-name'('urlMapping')
-                'filter-class'(org.codehaus.groovy.grails.web.mapping.filter.UrlMappingsFilter.getName())
             }
             if (grailsEnv == "development") {
                 filter {
@@ -224,21 +220,13 @@ class ControllersGrailsPlugin {
                 }
             }
         }
-        if (charEncodingFilter) {
-            charEncodingFilter + grailsWebRequestFilter
+        if (charEncodingFilterMapping) {
+            charEncodingFilterMapping + grailsWebRequestFilter
         }
         else {
             lastFilterMapping + grailsWebRequestFilter
         }
-        filterMappings = webXml.'filter-mapping'
-        lastFilterMapping = filterMappings[filterMappings.size() - 1]
 
-        lastFilterMapping + {
-            'filter-mapping' {
-                'filter-name'('urlMapping')
-                'url-pattern'("/*")
-            }
-        }
         // if we're in development environment first add a the reload filter
         // to the web.xml by finding the last filter and appending it after
         if (grailsEnv == "development") {

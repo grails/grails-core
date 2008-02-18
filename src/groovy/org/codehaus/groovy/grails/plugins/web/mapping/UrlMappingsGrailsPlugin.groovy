@@ -53,35 +53,66 @@ class UrlMappingsGrailsPlugin {
 	}
 
 	def doWithWebDescriptor = { webXml ->
-        // here we augment web.xml with all the error codes contained within the UrlMapping definitions
         def filters = webXml.filter
         def lastFilter = filters[filters.size()-1]
-
         lastFilter + {
+            filter {
+                'filter-name'('urlMapping')
+                'filter-class'(org.codehaus.groovy.grails.web.mapping.filter.UrlMappingsFilter.getName())
+            }            
+        }
+        // here we augment web.xml with all the error codes contained within the UrlMapping definitions
+        def servlets = webXml.servlet
+        def lastServlet = servlets[servlets.size()-1]
+
+        lastServlet + {
             'servlet' {
                 'servlet-name'("grails-errorhandler")
                 'servlet-class'(org.codehaus.groovy.grails.web.mapping.filter.ErrorHandlingServlet.getName())
             }
-             for(Resource r in watchedResources) {
-                    r.file.eachLine { line ->
-                       def matcher = line =~ /\s*"(\d+?)"\(.+?\)/
-                       if(matcher) {
-                          def errorCode = matcher[0][1]
-                           'error-page' {
-                               'error-code'(errorCode)
-                               'location'("/grails-errorhandler")
-                           }
+        }
 
-                       }
-                    }
-             }
+        def servletMappings = webXml.'servlet-mapping'
+        def lastMapping = servletMappings[servletMappings.size()-1]
+        lastMapping + {
             'servlet-mapping' {
                 'servlet-name'("grails-errorhandler")
                 'url-pattern'("/grails-errorhandler")
             }
         }
+        def welcomeFileList = webXml.'welcome-file-list'
+        def errorPages = {
+                 for(Resource r in watchedResources) {
+                        r.file.eachLine { line ->
+                           def matcher = line =~ /\s*"(\d+?)"\(.+?\)/
+                           if(matcher) {
+                              def errorCode = matcher[0][1]
+                               'error-page' {
+                                   'error-code'(errorCode)
+                                   'location'("/grails-errorhandler")
+                               }
 
+                           }
+                        }
+                 }
+            }
+        if(welcomeFileList.size() > 0) {
+            welcomeFileList = welcomeFileList[welcomeFileList.size()-1]
+            welcomeFileList + errorPages
+        }
+        else {
+            lastMapping +  errorPages
+        }
 
+        def filterMappings = webXml.'filter-mapping'
+        def lastFilterMapping = filterMappings[filterMappings.size() - 1]
+
+        lastFilterMapping + {
+            'filter-mapping' {
+                'filter-name'('urlMapping')
+                'url-pattern'("/*")
+            }
+        }
     }
 	
 	def onChange = { event ->
