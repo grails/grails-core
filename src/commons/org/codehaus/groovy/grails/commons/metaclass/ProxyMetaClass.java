@@ -15,7 +15,6 @@
 package org.codehaus.groovy.grails.commons.metaclass;
 
 import groovy.lang.*;
-import org.codehaus.groovy.runtime.callsite.*;
 
 import java.beans.IntrospectionException;
 
@@ -24,14 +23,14 @@ import java.beans.IntrospectionException;
  * It enriches MetaClass with the feature of making method invokations interceptable by
  * an Interceptor. To this end, it acts as a decorator (decorator pattern) allowing
  * to add or withdraw this feature at runtime.
- * 
+ *
  * This is based on original code by Dierk Koenig, but uses a callback object for thread
  * safety and supports not only method interception, but property and constructor
  * interception too.
- * 
+ *
  * @author Dierk Koenig
  * @author Graeme Rocher
- * 
+ *
  */
 public class ProxyMetaClass extends MetaClassImpl implements AdaptingMetaClass {
 
@@ -42,8 +41,8 @@ public class ProxyMetaClass extends MetaClassImpl implements AdaptingMetaClass {
     {
         return adaptee;
     }
-    
-    
+
+
 
     /**
 	 * @param adaptee the adaptee to set
@@ -88,7 +87,7 @@ public class ProxyMetaClass extends MetaClassImpl implements AdaptingMetaClass {
      */
     public void use(Closure closure){
         registry.setMetaClass(theClass, this);
-        
+
         try {
             closure.call();
         } finally {
@@ -104,7 +103,7 @@ public class ProxyMetaClass extends MetaClassImpl implements AdaptingMetaClass {
      */
     public void use(GroovyObject object, Closure closure){
         object.setMetaClass(this);
-        
+
         try {
             closure.call();
         } finally {
@@ -196,15 +195,15 @@ public class ProxyMetaClass extends MetaClassImpl implements AdaptingMetaClass {
         return result;
     }
 
-    
-    
+
+
     /**
      * Interceptors the call to getProperty if a PropertyAccessInterceptor is
      * available
-     * 
+     *
      * @param object the object to invoke the getter on
      * @param property the property name
-     * 
+     *
      * @return the value of the property
      */
     public Object getProperty(Class aClass, Object object, String property, boolean b, boolean b1) {
@@ -226,7 +225,7 @@ public class ProxyMetaClass extends MetaClassImpl implements AdaptingMetaClass {
     /**
 	 * Interceptors the call to a property setter if a PropertyAccessInterceptor
 	 * is available
-	 * 
+	 *
 	 * @param object The object to invoke the setter on
 	 * @param property The property name to set
 	 * @param newValue The new value of the property
@@ -246,25 +245,5 @@ public class ProxyMetaClass extends MetaClassImpl implements AdaptingMetaClass {
         else {
             super.setProperty(aClass,object, property, newValue,b,b1);
         }
-    }
-
-    public CallSite createPojoCallSite(CallSite site, Object receiver, Object[] args) {
-      return new PojoMetaClassSite(site, this);
-    }
-
-    public CallSite createPogoCallSite(CallSite site, Object[] args) {
-      return new PogoMetaClassSite(site, this);
-    }
-
-    public CallSite createPogoCallCurrentSite(CallSite site, Class sender, Object[] args) {
-        return new PogoMetaClassSite(site, this);
-    }
-
-    public CallSite createStaticSite(CallSite site, Object[] args) {
-        return new StaticMetaClassSite(site, this);
-    }
-
-    public CallSite createConstructorSite(CallSite site, Object[] args) {
-        return new ConstructorMetaClassSite(site, this);
     }
 }

@@ -1,11 +1,14 @@
 package org.codehaus.groovy.grails.commons.metaclass;
 
+import org.codehaus.groovy.runtime.InvokerHelper
+import org.springframework.mock.web.MockHttpServletRequest
+
 class DynamicConstructorTests extends GroovyTestCase {
 
 	void testDynamicConstructor() {
 		def gcl = new GroovyClassLoader()
 		def clz = gcl.parseClass("""
-class Test239 {
+class Test {
 	byte[] bytes	
 	URL url		
 }
@@ -22,7 +25,7 @@ class Test239 {
 		registry.setMetaClass(clz, pmc)
 		
 		def script = gcl.parseClass("""
-t = new Test239(params)
+t = new Test(params)				
 	    """).newInstance()
 	    script.params = [bytes: 'blah',
 						 url: 'http://grails.org']
