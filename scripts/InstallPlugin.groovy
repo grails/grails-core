@@ -169,7 +169,7 @@ target(installPlugin:"Implementation target") {
                 loadPlugins()
 
                 if(!pluginManager.hasGrailsPlugin(pluginName)) {
-                    Ant.delete(dir:"${pluginsBase}/${fullPluginName}")
+                    Ant.delete(dir:"${pluginsBase}/${fullPluginName}", quiet:true, failOnError:false)
                     clean()
                     def plugin = pluginManager.getFailedPlugin(pluginName)
 
