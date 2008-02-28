@@ -335,6 +335,7 @@ target(runIntegrationTests: "Runs Grails' tests under the test/integration direc
                 interceptor?.init()
 
                 def start = new Date()
+                def savedOut = System.out
                 runTests(suite, result) {test, invocation ->
                     name = test.name[0..-6]
                     def webRequest = GWU.bindMockWebRequest(appCtx)
@@ -361,8 +362,15 @@ target(runIntegrationTests: "Runs Grails' tests under the test/integration direc
                         status?.setRollbackOnly()
                     }
 					if(test.isTransactional()) {
-	                    def template = new TransactionTemplate(appCtx.transactionManager)						
-                    	template.execute( callable as TransactionCallback )						
+                        if (appCtx.transactionManager) {
+                            def template = new TransactionTemplate(appCtx.transactionManager)
+                    	    template.execute( callable as TransactionCallback )
+                        } else {
+                            System.out = savedOut                            
+                            println "Error: There is no test datasource defined and integration test ${test.name} does not set transactional = false"
+                            println "Tests aborted"
+                            exit(1)
+                        }
 					}
 					else {
 						callable.call()
