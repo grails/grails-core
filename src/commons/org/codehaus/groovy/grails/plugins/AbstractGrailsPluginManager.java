@@ -57,6 +57,7 @@ public abstract class AbstractGrailsPluginManager implements GrailsPluginManager
 	}
 
     public GrailsPlugin getFailedPlugin(String name) {
+        if(name.indexOf('-') > -1) name = GrailsClassUtils.getPropertyNameForLowerCaseHyphenSeparatedName(name);
         return (GrailsPlugin)this.failedPlugins.get(name);
     }
 
