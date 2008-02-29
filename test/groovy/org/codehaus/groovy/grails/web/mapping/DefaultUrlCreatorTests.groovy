@@ -8,8 +8,7 @@ class DefaultUrlCreatorTests extends GroovyTestCase {
     void testCreateUrl() {
 
         def webRequest = GrailsWebUtil.bindMockWebRequest()
-        webRequest.currentRequest.characterEncoding = "utf-8"
-        
+
         def creator = new DefaultUrlCreator("foo", "index")
 
         assertEquals "/foo/index", creator.createURL(null, "utf-8")
@@ -20,6 +19,14 @@ class DefaultUrlCreatorTests extends GroovyTestCase {
         assertEquals "/foo/index?hello=world&fred=flintstone", creator.createURL(hello:"world", fred:"flintstone", "utf-8")
     }
 
+    void testCreateUrlNoCharacterEncoding() {
+        def webRequest = GrailsWebUtil.bindMockWebRequest()
+        webRequest.currentRequest.characterEncoding = null
+
+        def creator = new DefaultUrlCreator("foo", "index")
+
+        assertEquals "/foo/index", creator.createURL(null, "utf-8")
+    }
 
 
     void tearDown() {

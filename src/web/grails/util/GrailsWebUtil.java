@@ -37,11 +37,17 @@ import javax.servlet.http.HttpServletRequest;
  *        Time: 6:18:22 PM
  */
 public class GrailsWebUtil {
-    private static final String DEFAULT_ENCODING = "UTF-8";
+    public static final String DEFAULT_ENCODING = "UTF-8";
     private static final String CHARSET_ATTRIBUTE = ";charset=";
 
-    public static GrailsWebRequest bindMockWebRequest(GrailsWebApplicationContext ctx) {
+    public static HttpServletRequest makeMockRequest() {
         MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setCharacterEncoding(DEFAULT_ENCODING);
+        return request;
+    }
+
+    public static GrailsWebRequest bindMockWebRequest(GrailsWebApplicationContext ctx) {
+        HttpServletRequest request = GrailsWebUtil.makeMockRequest();
         GrailsWebRequest webRequest = new GrailsWebRequest(
                                                 request,
                                                 new MockHttpServletResponse(),
@@ -58,7 +64,7 @@ public class GrailsWebUtil {
     }
 
     public static GrailsWebRequest bindMockWebRequest() {
-        MockHttpServletRequest request = new MockHttpServletRequest();
+        HttpServletRequest request = GrailsWebUtil.makeMockRequest();
         GrailsWebRequest webRequest = new GrailsWebRequest(
                                                 request,
                                                 new MockHttpServletResponse(),
