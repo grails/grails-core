@@ -18,6 +18,7 @@
  * Gant script that manages the application version
  *
  * @author Marc Palmer
+ * @author Sergey Nebolsin (nebolsin@gmail.com)
  *
  * @since 0.5
  */
@@ -31,8 +32,15 @@ grailsHome = Ant.antProject.properties."env.GRAILS_HOME"
 includeTargets << new File ( "${grailsHome}/scripts/Init.groovy" )
 
 target ('default': "Sets the current application version") {
-    def newVersion = (args != null) ? args : ""
+    if(args != null) {
+        Ant.property(name:"app.version.new", value: args)
+    } else {
+        Ant.property(file:"${basedir}/application.properties")
+        def oldVersion = Ant.antProject.properties.'app.version'
+        Ant.input(addProperty:"app.version.new", message:"Enter the new version",defaultvalue:oldVersion)
+    }
 
+    def newVersion = Ant.antProject.properties.'app.version.new'
     Ant.propertyfile(file:"${basedir}/application.properties") {
         entry(key:"app.version", value: newVersion)
     }
