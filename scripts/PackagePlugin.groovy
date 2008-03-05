@@ -48,7 +48,6 @@ pluginExcludes = [
 	"web-app/WEB-INF/**",
     "grails-app/conf/spring/resources.groovy",
 	"grails-app/conf/*DataSource.groovy",
-    "grails-app/conf/Config.groovy",
     "grails-app/conf/UrlMappings.groovy",
     "grails-app/conf/log4j.*.properties",
 	"**/.svn/**",

@@ -28,15 +28,13 @@ import java.util.Collections;
 import java.net.URLEncoder;
 import java.io.UnsupportedEncodingException;
 
-import grails.util.GrailsWebUtil;
-
 /**
  * The default implementation of the UrlCreator interface that constructs URLs in Grails
  * default pattern of /controllerName/actionName/id
  *
  * @author Graeme Rocher
  * @since 0.5.5
- * 
+ *
  *        <p/>
  *        Created: May 30, 2007
  *        Time: 8:37:15 AM
@@ -184,8 +182,7 @@ public class DefaultUrlCreator implements UrlCreator {
 
     private String urlEncode(Object obj, ServletRequest request) {
         try {
-            String charset = request.getCharacterEncoding();
-            return URLEncoder.encode(obj.toString(), (charset != null) ? charset : GrailsWebUtil.DEFAULT_ENCODING );
+            return URLEncoder.encode(obj.toString(),request.getCharacterEncoding());
         } catch (UnsupportedEncodingException ex) {
             throw new ControllerExecutionException("Error creating URL, cannot URLEncode to the client's character encoding: "+ ex.getMessage(),ex);
         }
