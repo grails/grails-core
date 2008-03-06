@@ -51,25 +51,26 @@ public class GrailsConfigUtils {
 			interceptor = (PersistenceContextInterceptor)webContext.getBean(beanNames[0]);
 		}
 
-	    if(interceptor != null) {
+	    if(interceptor != null)
 	    	interceptor.init();
-	    	// init the Grails application
-	        try {
-	            GrailsClass[] bootstraps =  application.getArtefacts(BootstrapArtefactHandler.TYPE);
-	            for (int i = 0; i < bootstraps.length; i++) {
-                    final GrailsBootstrapClass bootstrapClass = (GrailsBootstrapClass) bootstraps[i];
-                    final Object instance = bootstrapClass.getReference().getWrappedInstance();
-                    webContext.getAutowireCapableBeanFactory()
-                                .autowireBeanProperties(instance, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
-                    bootstrapClass.callInit(  servletContext );
-                }
-                interceptor.flush();
+        // init the Grails application
+        try {
+            GrailsClass[] bootstraps =  application.getArtefacts(BootstrapArtefactHandler.TYPE);
+            for (int i = 0; i < bootstraps.length; i++) {
+                final GrailsBootstrapClass bootstrapClass = (GrailsBootstrapClass) bootstraps[i];
+                final Object instance = bootstrapClass.getReference().getWrappedInstance();
+                webContext.getAutowireCapableBeanFactory()
+                            .autowireBeanProperties(instance, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
+                bootstrapClass.callInit(  servletContext );
             }
-	        finally {
-	        	interceptor.destroy();
-	        }
+            if(interceptor != null)
+                interceptor.flush();
+        }
+        finally {
+            if(interceptor != null)
+                interceptor.destroy();
+        }
 
-	    }
 	}
 
 	public static WebApplicationContext configureWebApplicationContext(ServletContext servletContext, WebApplicationContext parent) {
