@@ -82,7 +82,7 @@ target( configureHttpServerForWar : "Returns a jetty server configured with an H
     server.setConnectors( (Connector [])connectors )
 
     webContext = new WebAppContext(war:warName, contextPath:"/${grailsAppName}")
-    webContext.setClassLoader(classLoader)
+    
 
     server.setHandler( webContext )
 
