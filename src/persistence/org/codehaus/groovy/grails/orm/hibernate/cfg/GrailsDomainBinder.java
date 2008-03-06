@@ -887,8 +887,8 @@ public final class GrailsDomainBinder {
             bindRootPersistentClassCommonValues(domainClass, root, mappings);
 
 			if(!domainClass.getSubClasses().isEmpty()) {
-                boolean tablePerHierarchy = m == null || m.getTablePerHierarchy();
-                if(tablePerHierarchy) {
+                boolean tablePerSubclass = m != null && !m.getTablePerHierarchy();
+                if(!tablePerSubclass) {
                     // if the root class has children create a discriminator property
                     bindDiscriminatorProperty(root.getTable(), root, mappings);
                 }
