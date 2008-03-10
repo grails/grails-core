@@ -355,6 +355,10 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
     }
 
     private boolean isJSONResponse(HttpServletResponse response) {
-        return response.getContentType() != null && response.getContentType().indexOf("text/json") > -1;
+        String contentType = response.getContentType();
+        if (contentType != null && (contentType.indexOf("application/json") > -1 || contentType.indexOf("text/json") > -1)) {
+            return true;
+        }
+        return false;
     }
 }

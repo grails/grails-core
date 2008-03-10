@@ -34,7 +34,7 @@ import java.util.Stack;
  * content will be written to the HttpServletResponse instance. Also no operations
  * should be performed on the response object prior to passing it to this builder.</p>
  * 
- * <p>This builder will set the content type of the response to "text/json"</p>
+ * <p>This builder will set the content type of the response to "application/json"</p>
  * 
  * <p>Sending a simple key value pair to the client requires this code:</p>
  * 
@@ -56,7 +56,7 @@ public class JSonBuilder extends BuilderSupport {
 	private static final String ARRAY = "a";
 	private static final String JSON_BUILDER = "JSON Builder: ";
 	private static final String OBJECT = "o";
-	private static final String TEXT_JSON = "text/json";
+	private static final String TEXT_JSON = "application/json";
 	private static final String UTF_8 = "UTF-8";
 	
 	

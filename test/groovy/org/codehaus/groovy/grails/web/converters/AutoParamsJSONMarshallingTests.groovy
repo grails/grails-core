@@ -22,7 +22,7 @@ grails.mime.types = [ html: ['text/html','application/xhtml+xml'],
                       css: 'text/css',
                       cvs: 'text/csv',
                       all: '*/*',
-                      json: 'text/json'
+                      json: 'application/json'
                     ]
         """)
 
@@ -66,7 +66,7 @@ class Author {
     void testJSONMarshallingIntoParamsObject() {
         def controller = ga.getControllerClass("TestController").newInstance()
 
-        controller.request.contentType = "text/json"
+        controller.request.contentType = "application/json"
         controller.request.content = '{"id":1,"class":"Book","author":{"id":1,"class":"Author","name":"Stephen King"},"releaseDate":new Date(1196179518015),"title":"The Stand"}'.bytes
 
         def model = controller.create()

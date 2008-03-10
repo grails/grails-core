@@ -22,7 +22,7 @@ grails.mime.types = [ html: ['text/html','application/xhtml+xml'],
                       css: 'text/css',
                       cvs: 'text/csv',
                       all: '*/*',
-                      json: 'text/json'
+                      json: 'application/json'
                     ]
         """)
 

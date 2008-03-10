@@ -128,13 +128,13 @@ public class JSON extends AbstractConverter implements Converter {
     }
 
     /**
-     * Directs the JSON Writer to the Outputstream of the HttpServletResponse and sets the Content-Type to text/json
+     * Directs the JSON Writer to the Outputstream of the HttpServletResponse and sets the Content-Type to application/json
      *
      * @param response a HttpServletResponse
      * @throws ConverterException
      */
     public void render(HttpServletResponse response) throws ConverterException {
-        response.setContentType(GrailsWebUtil.getContentType("text/json",this.encoding));
+        response.setContentType(GrailsWebUtil.getContentType("application/json",this.encoding));
         try {
             render(response.getWriter());
         } catch (IOException e) {
