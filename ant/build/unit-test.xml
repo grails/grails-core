@@ -58,7 +58,7 @@
 
 	<target name="build-test" depends="build">
 
-		<groovyc srcdir="test/groovy" destdir="${grails.test.build}"  encoding="UTF-8">
+		<groovyc srcdir="test/groovy" destdir="${grails.test.build}"  >
             <src path="${grails.test.src.commons}" />
             <src path="${grails.test.src.web}" />
             <src path="${grails.test.src.persistence}" />
@@ -69,9 +69,20 @@
 			<classpath location="${grails.test.build}" />
 			<classpath location="${grails.build}" />
 		</groovyc>
-	</target>
 
-	<target name="defineTestingScope">
+        <antcall target="build-test:java5" />
+    </target>
+
+    <target name="build-test:java5" depends="build:checkj5" if="is.java.5">
+        <!--build java 5 sources-->
+        <groovyc srcdir="${grails.test.src.tiger}" destdir="${grails.test.build}" encoding="UTF-8">
+            <classpath location="${grails.test.build}" />
+            <classpath location="${grails.build}" />
+   			<classpath refid="classpath"/>
+		</groovyc>
+    </target>
+
+    <target name="defineTestingScope">
 		<!--Sets the test value to all tests ('*') if no value is provided-->
 		<condition property="test" value="*">
 			<not>
@@ -104,7 +115,8 @@
 			<classpath location="${grails.test.src.persistence}" />
 			<classpath location="${grails.test.src.scaffolding}" />
 			<classpath location="${grails.test.src.groovy}" />
-			<!-- needed to load codecs -->
+            <classpath location="${grails.test.src.tiger}" />
+            <!-- needed to load codecs -->
             <classpath location="${grails.src.codecs}" />
             <formatter type="xml" />
             <batchtest todir="${grails.test.reports}" failureproperty="grails.test.failure">
