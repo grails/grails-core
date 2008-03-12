@@ -1641,7 +1641,8 @@ public final class GrailsDomainBinder {
                     cascadeStrategy = CASCADE_SAVE_UPDATE;
             }
             else if(grailsProperty.isManyToOne() ) {
-                if(referenced!=null&&referenced.isOwningClass(domainClass.getClazz()))
+
+                if(referenced!=null&&referenced.isOwningClass(domainClass.getClazz()) && !isCircularAssociation(grailsProperty))
                     cascadeStrategy = CASCADE_ALL;
                 else
                     cascadeStrategy = CASCADE_NONE;
@@ -1658,6 +1659,10 @@ public final class GrailsDomainBinder {
         }
         logCascadeMapping(grailsProperty, cascadeStrategy, referenced);
         prop.setCascade(cascadeStrategy);
+    }
+
+    private static boolean isCircularAssociation(GrailsDomainClassProperty grailsProperty) {
+        return grailsProperty.getType().equals(grailsProperty.getDomainClass().getClazz());
     }
 
     private static void logCascadeMapping(GrailsDomainClassProperty grailsProperty, String cascadeStrategy, GrailsDomainClass referenced) {
