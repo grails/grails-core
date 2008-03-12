@@ -122,6 +122,7 @@
           <module name="Grails">
             <files>
               <file url="file://$PROJECT_DIR$/test/cliTestApp/testapp/staging/WEB-INF/web.xml" />
+              <file url="file://$PROJECT_DIR$/test/cliTestApp/unzipped/WEB-INF/web.xml" />
             </files>
           </module>
           <module name="groovy-grails-build">
@@ -143,6 +144,28 @@
           <module name="Grails Docs">
             <files>
               <file url="file:///Developer/grails-dev/doc/checkout/grails/test/persistence/hibernate.cfg.xml" />
+            </files>
+          </module>
+        </modules>
+      </facet-type>
+      <facet-type id="Grails">
+        <modules>
+          <module name="Grails">
+            <files>
+              <file url="file://$PROJECT_DIR$/test/cliTestApp/testapp/grails-app/conf/BootStrap.groovy" />
+              <file url="file://$PROJECT_DIR$/test/cliTestApp/testapp/grails-app/conf/Config.groovy" />
+              <file url="file://$PROJECT_DIR$/test/cliTestApp/testapp/grails-app/conf/DataSource.groovy" />
+              <file url="file://$PROJECT_DIR$/test/cliTestApp/testapp/grails-app/conf/UrlMappings.groovy" />
+            </files>
+          </module>
+        </modules>
+      </facet-type>
+      <facet-type id="Spring">
+        <modules>
+          <module name="Grails">
+            <files>
+              <file url="file://$PROJECT_DIR$/test/cliTestApp/testapp/grails-app/conf/spring/resources.xml" />
+              <file url="file://$PROJECT_DIR$/test/cliTestApp/testapp/web-app/WEB-INF/applicationContext.xml" />
             </files>
           </module>
         </modules>
@@ -326,7 +349,6 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/Grails.iml" filepath="$PROJECT_DIR$/Grails.iml" />
       <module fileurl="file:///Developer/grails-dev/doc/Grails Docs.iml" filepath="/Developer/grails-dev/doc/Grails Docs.iml" />
-      <module fileurl="file:///Developer/grails-dev/groovy-grails-build/Groovy + Grails Build.iml" filepath="/Developer/grails-dev/groovy-grails-build/Groovy + Grails Build.iml" />
     </modules>
   </component>
   <component name="ProjectRootManager" version="2" assert-keyword="true" jdk-15="false" project-jdk-name="1.5" project-jdk-type="JavaSDK" />
@@ -383,11 +405,13 @@
         <root url="jar://$PROJECT_DIR$/lib/antlr-2.7.6.jar!/" />
         <root url="jar://$PROJECT_DIR$/lib/cglib-nodep-2.1_3.jar!/" />
         <root url="jar://$PROJECT_DIR$/lib/ehcache-1.2.4.jar!/" />
+        <root url="jar://$PROJECT_DIR$/lib/hibernate-commons-annotations.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES>
         <root url="file:///Developer/hibernate-3.2/src" />
         <root url="file:///Developer/cglib-src-2.1_3/src/proxy" />
+        <root url="file:///Developer/hibernate-annotations-3.3.0.GA/src" />
       </SOURCES>
     </library>
     <library name="SiteMesh">
@@ -410,10 +434,13 @@
       </CLASSES>
       <JAVADOC />
       <SOURCES>
-        <root url="file:///Developer/spring-framework-2.5/src" />
-        <root url="file:///Developer/spring-framework-2.5/mock" />
-        <root url="file:///Developer/spring-webflow-2.0-m2/projects/spring-binding/src/main/java" />
-        <root url="file:///Developer/spring-webflow-2.0-m2/projects/spring-webflow/src/main/java" />
+        <root url="file:///Developer/spring-webflow-2.0-m1/projects/spring-binding/src/main" />
+        <root url="file:///Developer/spring-webflow-2.0-m1/projects/spring-webflow/src/main" />
+        <root url="file:///Developer/spring-webflow-2.0-m1/projects/spring-webflow/src/main/java" />
+        <root url="file:///Developer/spring-webflow-2.0-m1/projects/spring-binding/src/main/java" />
+        <root url="file:///Developer/spring-framework-2.5.1/src" />
+        <root url="file:///Developer/spring-framework-2.5.1/mock" />
+        <root url="file:///Developer/spring-framework-2.5.1/tiger/src" />
       </SOURCES>
     </library>
     <library name="dom4j">
@@ -446,7 +473,7 @@
     </library>
     <library name="JUnit">
       <CLASSES>
-        <root url="jar://$PROJECT_DIR$/lib/junit-3.8.1.jar!/" />
+        <root url="jar://$PROJECT_DIR$/lib/junit-3.8.2.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES />

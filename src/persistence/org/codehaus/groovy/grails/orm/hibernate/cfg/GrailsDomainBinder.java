@@ -16,16 +16,14 @@ package org.codehaus.groovy.grails.orm.hibernate.cfg;
 
 
 import groovy.lang.Closure;
-import groovy.lang.GroovySystem;
-import groovy.lang.MetaClass;
 import groovy.lang.MissingPropertyException;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.math.NumberUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
-import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.orm.hibernate.validation.UniqueConstraint;
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 import org.hibernate.FetchMode;
@@ -272,9 +270,17 @@ public final class GrailsDomainBinder {
         bindSimpleValue("integer", iv, true,columnName, mappings);
         iv.setTypeName( "integer" );
         list.setIndex( iv );
+        list.setBaseIndex(0);
         list.setInverse(false);
 
+        Value v = list.getElement();
+        v.createForeignKey();
+
+
         if(property.isBidirectional()) {
+
+
+
             String entityName;
             Value element = list.getElement();
             if(element instanceof ManyToOne) {
@@ -286,6 +292,23 @@ public final class GrailsDomainBinder {
             }
 
             PersistentClass referenced = mappings.getClass( entityName );
+
+            Backref prop = new Backref();
+            prop.setEntityName(property.getDomainClass().getFullName());
+            prop.setName(UNDERSCORE + property.getDomainClass().getShortName() + UNDERSCORE + property.getName() + "Backref" );
+            prop.setSelectable( false );
+            prop.setUpdateable( false );
+            prop.setInsertable( true );
+            prop.setCollectionRole( list.getRole() );
+            prop.setValue( list.getKey() );
+
+            DependantValue value = (DependantValue) prop.getValue();
+            value.setNullable(false);
+            value.setUpdateable(true);
+            prop.setOptional( false );
+
+            referenced.addProperty( prop );
+            
             IndexBackref ib = new IndexBackref();
             ib.setName( UNDERSCORE + property.getName() + "IndexBackref" );
             ib.setUpdateable( false );
@@ -1227,7 +1250,7 @@ public final class GrailsDomainBinder {
 
 			if(value != null) {
 				Property property = createProperty( value, persistentClass, persistentProperties[i], mappings );
-				persistentClass.addProperty( property );
+                persistentClass.addProperty( property );
 			}
 		}
 	}
@@ -1570,9 +1593,15 @@ public final class GrailsDomainBinder {
 	private static void bindProperty(GrailsDomainClassProperty grailsProperty, Property prop, Mappings mappings) {
 		// set the property name
 		prop.setName( grailsProperty.getName() );
+        if(isBidirectionalManyToOneWithListMapping(grailsProperty, prop)) {
+            prop.setInsertable(false);
+            prop.setUpdateable(false);
+        }
+        else {
+            prop.setInsertable(true);
+            prop.setUpdateable(true);
+        }
 
-		prop.setInsertable(true);
-		prop.setUpdateable(true);
 		prop.setPropertyAccessorName( mappings.getDefaultAccess() );
 		prop.setOptional( grailsProperty.isOptional() );
 
@@ -1582,6 +1611,10 @@ public final class GrailsDomainBinder {
 		prop.setLazy(true);
 
 	}
+
+    private static boolean isBidirectionalManyToOneWithListMapping(GrailsDomainClassProperty grailsProperty, Property prop) {
+        return grailsProperty.isBidirectional() && prop.getValue() instanceof ManyToOne && List.class.isAssignableFrom(grailsProperty.getOtherSide().getType());
+    }
 
     private static void setCascadeBehaviour(GrailsDomainClassProperty grailsProperty, Property prop) {
         String cascadeStrategy = "none";
@@ -1607,11 +1640,11 @@ public final class GrailsDomainBinder {
                 if(referenced!=null&&referenced.isOwningClass(domainClass.getClazz()))
                     cascadeStrategy = CASCADE_SAVE_UPDATE;
             }
-            else if(grailsProperty.isManyToOne()) {
+            else if(grailsProperty.isManyToOne() ) {
                 if(referenced!=null&&referenced.isOwningClass(domainClass.getClazz()))
                     cascadeStrategy = CASCADE_ALL;
                 else
-                    cascadeStrategy = CASCADE_MERGE;
+                    cascadeStrategy = CASCADE_NONE;
             }
         }
         else if( Map.class.isAssignableFrom(grailsProperty.getType())) {
@@ -1748,8 +1781,8 @@ w	 * Binds a simple value to the Hibernate metamodel. A simple value is
             }
             if(grailsProp.isManyToMany())
                 column.setNullable(false);
-            else if((grailsProp.isOneToOne()||grailsProp.isManyToOne()) && grailsProp.isBidirectional() && !grailsProp.isOwningSide()) {
-                column.setNullable(true);                
+            else if(grailsProp.isOneToOne() && grailsProp.isBidirectional() && !grailsProp.isOwningSide()) {
+                column.setNullable(true);
             }
             else {
                 column.setNullable(grailsProp.isOptional());

@@ -14,6 +14,8 @@ class Bar {
     Long id
     Long version
     String name
+    Foo foo
+    static belongsTo = Foo
 }
 class Foo {
     Long id
@@ -31,16 +33,20 @@ class Foo {
 
     void testReorderList() {
         def fooClass = ga.getDomainClass("Foo").clazz
-        fooClass.newInstance(name:"foo")
+        def foo = fooClass.newInstance(name:"foo")
                             .addToBars(name:"bar1")
                             .addToBars(name:"bar2")
-                            .save()
 
+        assertEquals foo,foo.bars[0].foo
+        assertEquals foo,foo.bars[1].foo
+
+
+        foo.save()
 
         session.flush()
         session.clear()
 
-        def foo = fooClass.get(1)
+        foo = fooClass.get(1)
 
 
         assert foo

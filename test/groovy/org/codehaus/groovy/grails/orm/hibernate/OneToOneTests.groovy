@@ -25,6 +25,7 @@ class Nose {
 '''
     }
 
+    
 
     void testPersistAssociation() {
         def faceClass = ga.getDomainClass("Face").clazz

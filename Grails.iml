@@ -21,7 +21,7 @@
       </configuration>
     </facet>
   </component>
-  <component name="NewModuleRootManager" inherit-compiler-output="false">
+  <component name="NewModuleRootManager" LANGUAGE_LEVEL="JDK_1_5" inherit-compiler-output="false">
     <output url="file://$MODULE_DIR$/target/classes" />
     <exclude-output />
     <output-test url="file://$MODULE_DIR$/target/test-classes" />
@@ -36,6 +36,7 @@
       <sourceFolder url="file://$MODULE_DIR$/test/groovy" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/test/persistence" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/test/scaffolding" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/test/tiger" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/test/web" isTestSource="true" />
       <excludeFolder url="file://$MODULE_DIR$/cruise" />
       <excludeFolder url="file://$MODULE_DIR$/doc" />
@@ -82,7 +83,9 @@
           <root url="jar://$MODULE_DIR$/lib/xstream-1.2.1.jar!/" />
         </CLASSES>
         <JAVADOC />
-        <SOURCES />
+        <SOURCES>
+          <root url="file://$MODULE_DIR$/../../xstream-1.2.1-sources" />
+        </SOURCES>
       </library>
     </orderEntry>
     <orderEntry type="module-library">
@@ -102,8 +105,8 @@
     <orderEntry type="module-library">
       <library name="Groovy">
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/groovy-all-1.6-beta-1-SNAPSHOT.jar!/" />
-          <root url="jar://$MODULE_DIR$/lib/gant-1.0.2_groovy-1.5.0.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/gant-1.1.0_groovy-1.5.2.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/groovy-all-1.5.2.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES>
@@ -131,6 +134,15 @@
           <root url="jar://$MODULE_DIR$/lib/xalan.jar!/" />
           <root url="jar://$MODULE_DIR$/lib/serializer.jar!/" />
           <root url="jar://$MODULE_DIR$/lib/xercesImpl.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="jar://$APPLICATION_HOME_DIR$/lib/javaee.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />

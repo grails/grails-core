@@ -89,8 +89,8 @@ The following libraries are included in Grails because they are required either 
 - required for building Grails core
 - required for running Grails applications
 
-* hibernate-annotations.jar
-- Hibernate Annotations 3.2.1.GA (http://annotations.hibernate.org)
+* hibernate-annotations.jar, hibernate-commons-annotations.jar
+- Hibernate Annotations 3.3.0 GA (http://annotations.hibernate.org)
 - required for running Grails applications (When using Hibernate EJB3 annotations)
 
 * hibernate3.jar

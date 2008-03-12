@@ -88,8 +88,11 @@ public class ConfigurableLocalSessionFactoryBean extends
 	 * Overrides default behaviour to allow for a configurable configuration class 
 	 */
 	protected Configuration newConfiguration() {
-		GrailsDomainConfiguration config = (GrailsDomainConfiguration)BeanUtils.instantiateClass(configClass);
-		config.setGrailsApplication(grailsApplication);
+        Object config = BeanUtils.instantiateClass(configClass);
+        if(config instanceof GrailsDomainConfiguration) {
+            GrailsDomainConfiguration grailsConfig = (GrailsDomainConfiguration) config;
+            grailsConfig.setGrailsApplication(grailsApplication);
+        }
         if(currentSessionContextClass != null) {
             ((Configuration)config).setProperty(Environment.CURRENT_SESSION_CONTEXT_CLASS, currentSessionContextClass.getName());
             // don't allow Spring's LocaalSessionFactoryBean to override setting
@@ -105,7 +108,9 @@ public class ConfigurableLocalSessionFactoryBean extends
 
     protected SessionFactory newSessionFactory(Configuration config) throws HibernateException {
         SessionFactory sf = super.newSessionFactory(config);
-        GrailsHibernateUtil.configureHibernateDomainClasses(sf, getGrailsApplication());
+        GrailsApplication application = getGrailsApplication();
+        if(application!=null)
+            GrailsHibernateUtil.configureHibernateDomainClasses(sf, application);
         return sf;
     }
 

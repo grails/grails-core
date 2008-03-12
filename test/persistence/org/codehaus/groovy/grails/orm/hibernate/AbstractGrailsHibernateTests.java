@@ -88,12 +88,9 @@ public abstract class AbstractGrailsHibernateTests extends GroovyTestCase {
         ConfigObject config = new ConfigSlurper().parse("hibernate.cache.use_second_level_cache=true\n" +
                 "hibernate.cache.use_query_cache=true\n" +
                 "hibernate.cache.provider_class='org.hibernate.cache.EhCacheProvider'\n" +
-                "hibernate.show_sql=true\n" +
-                "hibernate.use_sql_comments=false\n" +                
                 "dataSource {\n" +
                 "dbCreate = \"create-drop\" \n" +
                 "url = \"jdbc:hsqldb:mem:devDB\"\n" +
-                "logSql = true\n" +
                 "pooling = false                          \n" +
                 "driverClassName = \"org.hsqldb.jdbcDriver\"\t\n" +
                 "username = \"sa\"\n" +

@@ -8,7 +8,7 @@ import org.hibernate.Hibernate
 *
 * Created: Jan 17, 2008
 */
-class ManyToOneLazinessTests extends AbstractGrailsHibernateTests{
+class ManyToOneLazinessTests extends AbstractGrailsHibernateTests{   
 
     protected void onSetUp() {
         gcl.parseClass '''
