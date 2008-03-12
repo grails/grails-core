@@ -84,7 +84,14 @@ class FormTagLib {
         if (checked instanceof String) checked = Boolean.valueOf(checked)
 
         if (value == null) value = false
-        out << "<input type=\"hidden\" name=\"_${name}\" /><input type=\"checkbox\" name=\"${name}\" "
+
+        // the hidden field name should begin with an underscore unless it is
+        // a dotted name, then the underscore should be inserted after the last
+        // dot
+        def lastDotInName = name.lastIndexOf('.')
+        def hiddenFieldName = lastDotInName == -1 ? '_' + name : name[0..lastDotInName] + '_' + name[(lastDotInName+1)..-1]
+        
+        out << "<input type=\"hidden\" name=\"${hiddenFieldName}\" /><input type=\"checkbox\" name=\"${name}\" "
         if (value && checked) {
             out << 'checked="checked" '
         }

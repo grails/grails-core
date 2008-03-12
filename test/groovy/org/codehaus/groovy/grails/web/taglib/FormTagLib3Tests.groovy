@@ -296,6 +296,9 @@ public class FormTagLib3Tests extends AbstractGrailsTagTests {
 
         assertOutputEquals('<input type="hidden" name="_foo" /><input type="checkbox" name="foo" checked="checked" value="hello" id="foo"  />', template, [test:"hello"])
 
+        template = '<g:checkBox name="foo.bar" value="${test}" checked="${true}"/>'
+
+        assertOutputEquals('<input type="hidden" name="foo._bar" /><input type="checkbox" name="foo.bar" checked="checked" value="hello" id="foo.bar"  />', template, [test:"hello"])
     }
 
     void testRenderingNoSelectionOption() {
