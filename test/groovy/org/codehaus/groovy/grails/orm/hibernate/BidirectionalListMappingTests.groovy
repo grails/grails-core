@@ -225,7 +225,7 @@ class TestFaqElement
 
 
         assertEquals 1, manyToOne.getConstraintColumns().size()
-        assertEquals FetchMode.JOIN, manyToOne.getFetchMode()
+        assertEquals FetchMode.DEFAULT, manyToOne.getFetchMode()
         assertNull manyToOne.getForeignKeyName()
         assertEquals "assigned", manyToOne.getIdentifierGeneratorStrategy()
         assertNull manyToOne.getNullValue()
