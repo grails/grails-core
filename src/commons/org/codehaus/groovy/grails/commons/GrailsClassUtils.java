@@ -198,7 +198,8 @@ public class GrailsClassUtils {
             PropertyDescriptor[] descriptors = wrapper.getPropertyDescriptors();
 
             for (int i = 0; i < descriptors.length; i++) {
-                if(descriptors[i].getPropertyType().isAssignableFrom(propertyType)) {
+                Class currentPropertyType = descriptors[i].getPropertyType();
+                if(isTypeInstanceOfPropertyType(propertyType, currentPropertyType)) {
                     properties.add(descriptors[i]);
                 }
             }
@@ -208,6 +209,10 @@ public class GrailsClassUtils {
             return new PropertyDescriptor[0];
         }
         return (PropertyDescriptor[])properties.toArray( new PropertyDescriptor[ properties.size() ] );
+    }
+
+    private static boolean isTypeInstanceOfPropertyType(Class type, Class propertyType) {
+        return propertyType.isAssignableFrom(type) && !propertyType.equals(Object.class);
     }
 
     /**
