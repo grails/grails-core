@@ -35,7 +35,6 @@
 		<delete file="cobertura.ser" quiet="true" />
 		<cobertura-instrument todir="${coverage.build}">
 			<fileset dir="${grails.build}" includes="**/*.class" />
-			<fileset dir="${grails.test.build}" includes="**/*.class" />
 		</cobertura-instrument>
 	</target>
 
@@ -46,13 +45,10 @@
 		<mkdir dir="${coverage.report}" />
 		<cobertura-report format="html" destdir="cruise/coverage/report">
 			<fileset dir="${grails.src.commons}" />
+			<fileset dir="${grails.src.groovy}" />
 			<fileset dir="${grails.src.web}" />
 			<fileset dir="${grails.src.persistence}" />
 			<fileset dir="${grails.src.scaffolding}" />
-			<fileset dir="${grails.test.src.commons}" />
-			<fileset dir="${grails.test.src.web}" />
-			<fileset dir="${grails.test.src.persistence}" />
-			<fileset dir="${grails.test.src.scaffolding}" />
 		</cobertura-report>
 	</target>
 
