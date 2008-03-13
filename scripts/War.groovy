@@ -86,6 +86,7 @@ DEFAULT_DEPS = [
 
 DEFAULT_J5_DEPS = [
     "hibernate-annotations.jar",
+    "hibernate-commons-annotations.jar",
     "ejb3-persistence.jar",
 ]
 
