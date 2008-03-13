@@ -31,6 +31,7 @@ import org.mortbay.jetty.plus.naming.*
 import javax.naming.*
 
 import org.codehaus.groovy.tools.RootLoader
+import org.codehaus.groovy.grails.plugins.PluginManagerHolder
 
 
 Ant.property(environment:"env")
@@ -80,8 +81,11 @@ target( watchContext: "Watches the WEB-INF/classes directory for changes and res
                 try {
                     grailsServer.stop()
                     compile()
-                    ClassLoader contextLoader = Thread.currentThread().getContextClassLoader()
+                    Thread currentThread = Thread.currentThread()
+                    ClassLoader contextLoader = currentThread.getContextClassLoader()
                     classLoader = new URLClassLoader([classesDir.toURL()] as URL[], contextLoader)
+                    currentThread.setContextClassLoader classLoader
+                    PluginManagerHolder.pluginManager = null
                     // reload plugins
                     loadPlugins()
                     setupWebContext()
