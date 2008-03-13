@@ -198,7 +198,7 @@ public class GrailsClassUtils {
             PropertyDescriptor[] descriptors = wrapper.getPropertyDescriptors();
 
             for (int i = 0; i < descriptors.length; i++) {
-                if(descriptors[i].getPropertyType().equals( propertyType )  ) {
+                if(descriptors[i].getPropertyType().isAssignableFrom(propertyType)) {
                     properties.add(descriptors[i]);
                 }
             }
