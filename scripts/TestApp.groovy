@@ -135,6 +135,16 @@ target(packageTests:"Puts some useful things on the classpath") {
 			include(name:"**/**")
 			exclude(name:"**/*.java")
 		}
+		fileset(dir:"${basedir}/test/unit") {
+            include(name:"**/**")
+            exclude(name:"**/*.java")
+            exclude(name:"**/*.groovy)")
+        }
+        fileset(dir:"${basedir}/test/integration") {
+            include(name:"**/**")
+            exclude(name:"**/*.java")
+            exclude(name:"**/*.groovy)")
+        }
 	}           
 	
 }
@@ -175,7 +185,11 @@ def populateTestSuite = {suite, testFiles, classLoader, ctx, String base ->
     for (r in testFiles) {
         try {
             def fileName = r.URL.toString()
-            def className = fileName[fileName.indexOf(base) + base.size()..-8].replace('/' as char, '.' as char)
+            def endIndex = -8
+            if (fileName.endsWith(".java")) {
+                endIndex = -6
+            }
+            def className = fileName[fileName.indexOf(base) + base.size()..endIndex].replace('/' as char, '.' as char)
             def c = classLoader.loadClass(className)
             if (TestCase.isAssignableFrom(c) && !Modifier.isAbstract(c.modifiers)) {
                 suite.addTest(new GrailsTestSuite(ctx, c))
@@ -209,6 +223,11 @@ def runTests = {suite, TestResult result, Closure callback ->
                     plainOutput.startTestSuite(junitTest)
                     xmlOutput.startTestSuite(junitTest)
                     savedOut.println "Running test ${test.name}..."
+                    def start = System.currentTimeMillis()
+                    def runCount = 0
+                    def failureCount = 0
+                    def errorCount = 0
+
                     for (i in 0..<test.testCount()) {
                         def thisTest = new TestResult()
                         thisTest.addListener(xmlOutput)
@@ -216,25 +235,26 @@ def runTests = {suite, TestResult result, Closure callback ->
                         def t = test.testAt(i)
                         System.out.println "--Output from ${t.name}--"
                         System.err.println "--Output from ${t.name}--"
-                        def start = System.currentTimeMillis()
-
+                        
                         callback(test, {
                             savedOut.print "                    ${t.name}..."
                             test.runTest (t, thisTest)
                             thisTest
                         })
-                        junitTest.setCounts(thisTest.runCount(), thisTest.failureCount(),
-                                thisTest.errorCount());
-                        junitTest.setRunTime(System.currentTimeMillis() - start)
-
+                        runCount += thisTest.runCount()
+                        failureCount += thisTest.failureCount()
+                        errorCount += thisTest.errorCount()
+                        
                         if (thisTest.errorCount() > 0 || thisTest.failureCount() > 0) {
                             savedOut.println "FAILURE"
                             thisTest.errors().each {result.addError(t, it.thrownException())}
                             thisTest.failures().each {result.addFailure(t, it.thrownException())}
                         }
                         else {savedOut.println "SUCCESS"}
-
-                    }
+                    } 
+                    junitTest.setCounts(runCount, failureCount, errorCount);
+                    junitTest.setRunTime(System.currentTimeMillis() - start)
+                    
                     def outString = outBytes.toString()
                     def errString = errBytes.toString()
                     new File("${testDir}/TEST-${test.name}-out.txt").write(outString)
@@ -256,9 +276,11 @@ def runTests = {suite, TestResult result, Closure callback ->
 }
 target(runUnitTests: "Run Grails' unit tests under the test/unit directory") {
     try {
+        event("TestStarted", ["unit"])
         loadApp()
 
         def testFiles = resolveTestResources {"test/unit/${it}.groovy"}
+        testFiles.addAll(resolveTestResources {"test/unit/${it}.java"})
         testFiles = testFiles.findAll {it.exists()}
         if (testFiles.size() == 0) {
             event("StatusUpdate", ["No tests found in test/unit to execute"])
@@ -298,10 +320,12 @@ target(runUnitTests: "Run Grails' unit tests under the test/unit directory") {
 
 target(runIntegrationTests: "Runs Grails' tests under the test/integration directory") {
     try {
+        event("TestStarted", ["integration"])
         // allow user to specify test to run like this...
         //   grails test-app Author
         //   grails test-app AuthorController
         def testFiles = resolveTestResources {"test/integration/${it}.groovy"}
+        testFiles.addAll(resolveTestResources {"test/integration/${it}.java"})
 
         if (testFiles.size() == 0) {
             event("StatusUpdate", ["No tests found in test/integration to execute"])
@@ -413,6 +437,11 @@ def resolveTestResources(patternResolver) {
 def getTestNames(testNamesString) {
     // If a list of test class names is provided, split it into ant
     // file patterns.
+    def nameSuffix = 'Tests'
+    if (config.grails.testing.nameSuffix != null) {
+        nameSuffix = config.grails.testing.nameSuffix
+    }
+
     if (testNamesString) {
         testNamesString = testNamesString.split(/\s+/).collect {
             // If the test name includes a package, replace it with the
@@ -424,8 +453,7 @@ def getTestNames(testNamesString) {
                 // Allow the test class to be in any package.
                 it = "**/$it"
             }
-
-            return "${it}Tests"
+            return "${it}${nameSuffix}"
         }
     }
 
