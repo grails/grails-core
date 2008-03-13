@@ -30,34 +30,19 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/test/groovy/org/codehaus/groovy/grails/orm/hibernate/BidirectionalListMappingTests.groovy" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/test/groovy/org/codehaus/groovy/grails/orm/hibernate/ManyToOneLazinessTests.groovy" afterPath="$PROJECT_DIR$/test/groovy/org/codehaus/groovy/grails/orm/hibernate/ManyToOneLazinessTests.groovy" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/persistence/org/codehaus/groovy/grails/orm/hibernate/cfg/GrailsDomainBinder.java" afterPath="$PROJECT_DIR$/src/persistence/org/codehaus/groovy/grails/orm/hibernate/cfg/GrailsDomainBinder.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/test/tiger/org" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/test/tiger/org/codehaus/groovy/grails/orm/hibernate/FaqElement.groovy" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/test/groovy/org/codehaus/groovy/grails/orm/hibernate/BidirectionalListPersistTests.groovy" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/dependencies.txt" afterPath="$PROJECT_DIR$/dependencies.txt" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/test/tiger/org/codehaus/groovy/grails" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/test/tiger/org/codehaus/groovy/grails/orm" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Grails.iml" afterPath="$PROJECT_DIR$/Grails.iml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/lib/ejb3-persistence.jar" afterPath="$PROJECT_DIR$/lib/ejb3-persistence.jar" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.project" afterPath="$PROJECT_DIR$/.project" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/test/groovy/org/codehaus/groovy/grails/orm/hibernate/OneToOneTests.groovy" afterPath="$PROJECT_DIR$/test/groovy/org/codehaus/groovy/grails/orm/hibernate/OneToOneTests.groovy" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/test/tiger/org/codehaus/groovy/grails/orm/hibernate/HibernateBidirectionalListMappingTests.groovy" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/test/tiger" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/test/tiger/org/codehaus/groovy/grails/orm/hibernate/hibernate-bidirectional-list-mapping.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/test/tiger/org/codehaus" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/persistence/org/codehaus/groovy/grails/orm/hibernate/ConfigurableLocalSessionFactoryBean.java" afterPath="$PROJECT_DIR$/src/persistence/org/codehaus/groovy/grails/orm/hibernate/ConfigurableLocalSessionFactoryBean.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/test/tiger/org/codehaus/groovy" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/test/persistence/log4j.properties" afterPath="$PROJECT_DIR$/test/persistence/log4j.properties" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/lib/hibernate-annotations.jar" afterPath="$PROJECT_DIR$/lib/hibernate-annotations.jar" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/test/tiger/org/codehaus/groovy/grails/orm/hibernate" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/test/tiger/org/codehaus/groovy/grails/orm/hibernate/FaqSection.groovy" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/test/persistence/org/codehaus/groovy/grails/orm/hibernate/cfg/GrailsDomainConfigurationUtilTest.java" afterPath="$PROJECT_DIR$/test/persistence/org/codehaus/groovy/grails/orm/hibernate/cfg/GrailsDomainConfigurationUtilTest.java" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/test/commons/org/codehaus/groovy/grails/validation/routines/DomainValidatorTests.java" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/test/commons/org/codehaus/groovy/grails/validation/routines/InetAddressValidatorTests.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/test/commons/org/codehaus/groovy/grails/validation/routines/InetAddressValidatorTest.java" afterPath="$PROJECT_DIR$/test/commons/org/codehaus/groovy/grails/validation/routines/InetAddressValidatorTest.java" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/test/commons/org/codehaus/groovy/grails/validation/routines/UrlValidatorTests.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/test/commons/org/codehaus/groovy/grails/validation/routines/UrlValidatorTest.java" afterPath="$PROJECT_DIR$/test/commons/org/codehaus/groovy/grails/validation/routines/UrlValidatorTest.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/test/commons/org/codehaus/groovy/grails/validation/routines/RegexValidatorTest.java" afterPath="$PROJECT_DIR$/test/commons/org/codehaus/groovy/grails/validation/routines/RegexValidatorTest.java" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/test/groovy/org/codehaus/groovy/grails/web/sitemesh" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/test/commons/org/codehaus/groovy/grails/validation/routines/RegexValidatorTests.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/test/commons/org/codehaus/groovy/grails/validation/routines/DomainValidatorTest.java" afterPath="$PROJECT_DIR$/test/commons/org/codehaus/groovy/grails/validation/routines/DomainValidatorTest.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/grails.iws" afterPath="$PROJECT_DIR$/grails.iws" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/test/tiger/org/codehaus/groovy/grails/orm/hibernate/HibernateBidirectionalListPersistTests.groovy" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/test/persistence/org/codehaus/groovy/grails/orm/hibernate/AbstractGrailsHibernateTests.java" afterPath="$PROJECT_DIR$/test/persistence/org/codehaus/groovy/grails/orm/hibernate/AbstractGrailsHibernateTests.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/test/groovy/org/codehaus/groovy/grails/orm/hibernate/ListReorderingTests.groovy" afterPath="$PROJECT_DIR$/test/groovy/org/codehaus/groovy/grails/orm/hibernate/ListReorderingTests.groovy" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/grails.ipr" afterPath="$PROJECT_DIR$/grails.ipr" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/persistence/org/codehaus/groovy/grails/commons/GrailsDomainConfigurationUtilTests.java" afterPath="$PROJECT_DIR$/src/persistence/org/codehaus/groovy/grails/commons/GrailsDomainConfigurationUtilTests.java" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/test/persistence/org/codehaus/groovy/grails/orm/hibernate/cfg/GrailsDomainConfigurationUtilTests.java" />
     </list>
     <list name="Failed commit: Default" comment="fix for GRAILS-1138, GRAILS-1076" />
     <list name="Failed commit: Default (2)" comment="fix for GRAILS-1138, GRAILS-1076" />
@@ -430,7 +415,72 @@
         <option name="CONDITION" value="" />
         <option name="LOG_MESSAGE" value="" />
       </breakpoint>
-      <breakpoint url="file://$PROJECT_DIR$/src/persistence/org/codehaus/groovy/grails/orm/hibernate/cfg/GrailsDomainBinder.java" line="1501" class="org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsDomainBinder" package="org.codehaus.groovy.grails.orm.hibernate.cfg">
+      <breakpoint url="file://$PROJECT_DIR$/src/groovy/org/codehaus/groovy/grails/plugins/orm/hibernate/HibernateGrailsPlugin.groovy" line="599" class="Class at HibernateGrailsPlugin.groovy:599" package="">
+        <option name="ENABLED" value="true" />
+        <option name="LOG_ENABLED" value="false" />
+        <option name="LOG_EXPRESSION_ENABLED" value="false" />
+        <option name="SUSPEND_POLICY" value="SuspendAll" />
+        <option name="COUNT_FILTER_ENABLED" value="false" />
+        <option name="COUNT_FILTER" value="0" />
+        <option name="CONDITION_ENABLED" value="false" />
+        <option name="CLASS_FILTERS_ENABLED" value="false" />
+        <option name="INSTANCE_FILTERS_ENABLED" value="false" />
+        <option name="CONDITION" value="" />
+        <option name="LOG_MESSAGE" value="" />
+      </breakpoint>
+      <breakpoint url="file://$PROJECT_DIR$/test/groovy/org/codehaus/groovy/grails/orm/hibernate/BidirectionalOnetoManyWithInheritanceRelationshipManagementTests.groovy" line="46" class="Class at BidirectionalOnetoManyWithInheritanceRelationshipManagementTests.groovy:46" package="">
+        <option name="ENABLED" value="true" />
+        <option name="LOG_ENABLED" value="false" />
+        <option name="LOG_EXPRESSION_ENABLED" value="false" />
+        <option name="SUSPEND_POLICY" value="SuspendAll" />
+        <option name="COUNT_FILTER_ENABLED" value="false" />
+        <option name="COUNT_FILTER" value="0" />
+        <option name="CONDITION_ENABLED" value="false" />
+        <option name="CLASS_FILTERS_ENABLED" value="false" />
+        <option name="INSTANCE_FILTERS_ENABLED" value="false" />
+        <option name="CONDITION" value="" />
+        <option name="LOG_MESSAGE" value="" />
+      </breakpoint>
+      <breakpoint url="file://$PROJECT_DIR$/src/commons/org/codehaus/groovy/grails/commons/DefaultGrailsDomainClass.java" line="532" class="org.codehaus.groovy.grails.commons.DefaultGrailsDomainClass" package="org.codehaus.groovy.grails.commons">
+        <option name="ENABLED" value="true" />
+        <option name="LOG_ENABLED" value="false" />
+        <option name="LOG_EXPRESSION_ENABLED" value="false" />
+        <option name="SUSPEND_POLICY" value="SuspendAll" />
+        <option name="COUNT_FILTER_ENABLED" value="false" />
+        <option name="COUNT_FILTER" value="0" />
+        <option name="CONDITION_ENABLED" value="false" />
+        <option name="CLASS_FILTERS_ENABLED" value="false" />
+        <option name="INSTANCE_FILTERS_ENABLED" value="false" />
+        <option name="CONDITION" value="" />
+        <option name="LOG_MESSAGE" value="" />
+      </breakpoint>
+      <breakpoint url="file://$PROJECT_DIR$/src/commons/org/codehaus/groovy/grails/commons/DefaultGrailsDomainClass.java" line="418" class="org.codehaus.groovy.grails.commons.DefaultGrailsDomainClass" package="org.codehaus.groovy.grails.commons">
+        <option name="ENABLED" value="true" />
+        <option name="LOG_ENABLED" value="false" />
+        <option name="LOG_EXPRESSION_ENABLED" value="false" />
+        <option name="SUSPEND_POLICY" value="SuspendAll" />
+        <option name="COUNT_FILTER_ENABLED" value="false" />
+        <option name="COUNT_FILTER" value="0" />
+        <option name="CONDITION_ENABLED" value="false" />
+        <option name="CLASS_FILTERS_ENABLED" value="false" />
+        <option name="INSTANCE_FILTERS_ENABLED" value="false" />
+        <option name="CONDITION" value="" />
+        <option name="LOG_MESSAGE" value="" />
+      </breakpoint>
+      <breakpoint url="file://$PROJECT_DIR$/src/commons/org/codehaus/groovy/grails/commons/DefaultGrailsDomainClassProperty.java" line="265" class="org.codehaus.groovy.grails.commons.DefaultGrailsDomainClassProperty" package="org.codehaus.groovy.grails.commons">
+        <option name="ENABLED" value="true" />
+        <option name="LOG_ENABLED" value="false" />
+        <option name="LOG_EXPRESSION_ENABLED" value="false" />
+        <option name="SUSPEND_POLICY" value="SuspendAll" />
+        <option name="COUNT_FILTER_ENABLED" value="false" />
+        <option name="COUNT_FILTER" value="0" />
+        <option name="CONDITION_ENABLED" value="false" />
+        <option name="CLASS_FILTERS_ENABLED" value="false" />
+        <option name="INSTANCE_FILTERS_ENABLED" value="false" />
+        <option name="CONDITION" value="" />
+        <option name="LOG_MESSAGE" value="" />
+      </breakpoint>
+      <breakpoint url="file://$PROJECT_DIR$/src/commons/org/codehaus/groovy/grails/commons/DefaultGrailsDomainClass.java" line="293" class="org.codehaus.groovy.grails.commons.DefaultGrailsDomainClass" package="org.codehaus.groovy.grails.commons">
         <option name="ENABLED" value="true" />
         <option name="LOG_ENABLED" value="false" />
         <option name="LOG_EXPRESSION_ENABLED" value="false" />
@@ -532,35 +582,7 @@
     <option name="myCurrentFavoritesList" value="grails" />
   </component>
   <component name="FileEditorManager">
-    <leaf>
-      <file leaf-file-name="ManyToOneLazinessTests.groovy" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/test/groovy/org/codehaus/groovy/grails/orm/hibernate/ManyToOneLazinessTests.groovy">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="29" column="101" selection-start="594" selection-end="594" vertical-scroll-proportion="1.8031088">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="GrailsDomainBinder.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/persistence/org/codehaus/groovy/grails/orm/hibernate/cfg/GrailsDomainBinder.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="1498" column="48" selection-start="55479" selection-end="55479" vertical-scroll-proportion="1.3947369">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="ListReorderingTests.groovy" pinned="false" current="true" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/test/groovy/org/codehaus/groovy/grails/orm/hibernate/ListReorderingTests.groovy">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="7" column="18" selection-start="143" selection-end="143" vertical-scroll-proportion="0.43523315">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-    </leaf>
+    <leaf />
   </component>
   <component name="FindManager">
     <FindUsagesManager>
@@ -1023,7 +1045,7 @@
       <showLibraryContents />
       <hideEmptyPackages PackagesPane="true" ProjectPane="false" />
       <abbreviatePackageNames />
-      <showStructure PackagesPane="false" J2EEPane="false" Scope="false" Favorites="false" ProjectPane="false" />
+      <showStructure ProjectPane="false" J2EEPane="false" Scope="false" PackagesPane="false" Favorites="false" />
       <autoscrollToSource />
       <autoscrollFromSource />
       <sortByType />
@@ -1032,19 +1054,19 @@
   <component name="PropertiesComponent">
     <property name="vcs_file_view_treeWidth2" value="33" />
     <property name="vcs_file_view_treeOrder4" value="4" />
-    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_treeWidth2" value="204" />
+    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_treeWidth2" value="166" />
     <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_treeOrder2" value="2" />
     <property name="vcs_file_view_flatWidth2" value="84" />
     <property name="TEMP_MODULE_EXPLODED_DIR_FOR_groovy-grails-build/web/Web" value="/private/tmp/webExplodedDir61443tmp" />
     <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_flatOrder4" value="4" />
     <property name="vcs_file_view_flatWidth5" value="83" />
+    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_flatWidth0" value="184" />
     <property name="vcs_file_view_flatOrder3" value="3" />
-    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_flatWidth0" value="224" />
     <property name="MemberChooser.showClasses" value="true" />
     <property name="vcs_file_view_treeWidth0" value="369" />
-    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_flatWidth4" value="999" />
-    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_treeOrder4" value="4" />
+    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_flatWidth4" value="811" />
     <property name="vcs_file_view_treeOrder0" value="0" />
+    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_treeOrder4" value="4" />
     <property name="vcs_file_view_flatOrder4" value="4" />
     <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_flatOrder2" value="2" />
     <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_treeOrder3" value="3" />
@@ -1067,27 +1089,27 @@
     <property name="TEMP_MODULE_EXPLODED_DIR_FOR_Grails Docs/web/Web" value="/private/tmp/webExplodedDir61508tmp" />
     <property name="Web Module Deployment Descriptor Default Version" value="2.3" />
     <property name="GoToFile.includeJavaFiles" value="false" />
-    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_flatWidth2" value="244" />
-    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_flatWidth3" value="35" />
+    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_flatWidth2" value="200" />
+    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_flatWidth3" value="31" />
     <property name="GoToClass.includeLibraries" value="false" />
-    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_treeWidth0" value="199" />
+    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_treeWidth0" value="162" />
     <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_flatOrder1" value="1" />
     <property name="GoToClass.toSaveIncludeLibraries" value="false" />
     <property name="TEMP_MODULE_EXPLODED_DIR_FOR_groovy-grails-build/web/Web2" value="/private/tmp/webExplodedDir61442tmp" />
     <property name="RunManagerConfig.showSettingsBeforeRunnig" value="true" />
-    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_flatWidth1" value="269" />
+    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_flatWidth1" value="220" />
     <property name="vcs_file_view_flatOrder5" value="5" />
     <property name="vcs_file_view_treeOrder3" value="3" />
     <property name="vcs_file_view_treeWidth1" value="34" />
-    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_treeWidth1" value="228" />
-    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_treeWidth4" value="938" />
+    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_treeWidth1" value="185" />
+    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_treeWidth4" value="753" />
     <property name="vcs_file_view_treeOrder2" value="2" />
     <property name="vcs_file_view_flatWidth3" value="84" />
     <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_flatOrder0" value="0" />
     <property name="TEMP_MODULE_EXPLODED_DIR_FOR_Grails/web/Web" value="/private/tmp/webExplodedDir53255tmp" />
     <property name="vcs_file_view_treeOrder1" value="1" />
-    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_treeWidth3" value="202" />
     <property name="Tomcat Context Descriptor Default Version" value="5.x" />
+    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_treeWidth3" value="165" />
   </component>
   <component name="RecentsManager">
     <key name="MoveMembersDialog.RECENTS_KEY">
@@ -1121,19 +1143,110 @@
       <recent name="org.codehaus.groovy.grails.web.servlet.mime" />
     </key>
   </component>
-  <component name="RunManager" selected="JUnit.ListReorderingTests">
-    <tempConfiguration default="false" name="ListReorderingTests" type="JUnit" factoryName="JUnit" enabled="false" merge="false">
+  <component name="RestoreUpdateTree">
+    <UpdateInfo date="3/13/08 3:29 PM" ActionInfo="_Update">
+      <UpdatedFiles>
+        <FILE-GROUP>
+          <option name="myUpdateName" value="Updated from server" />
+          <option name="myStatusName" value="Changed on server" />
+          <option name="mySupportsDeletion" value="false" />
+          <option name="myCanBeAbsent" value="false" />
+          <option name="myId" value="CHANGED_ON_SERVER" />
+          <FILE-GROUP>
+            <option name="myUpdateName" value="Updated" />
+            <option name="myStatusName" value="Changed" />
+            <option name="mySupportsDeletion" value="false" />
+            <option name="myCanBeAbsent" value="false" />
+            <option name="myId" value="UPDATED" />
+          </FILE-GROUP>
+          <FILE-GROUP>
+            <option name="myUpdateName" value="Created" />
+            <option name="myStatusName" value="Created" />
+            <option name="mySupportsDeletion" value="false" />
+            <option name="myCanBeAbsent" value="false" />
+            <option name="myId" value="CREATED" />
+          </FILE-GROUP>
+          <FILE-GROUP>
+            <option name="myUpdateName" value="Deleted" />
+            <option name="myStatusName" value="Deleted" />
+            <option name="mySupportsDeletion" value="false" />
+            <option name="myCanBeAbsent" value="true" />
+            <option name="myId" value="REMOVED_FROM_REPOSITORY" />
+          </FILE-GROUP>
+          <FILE-GROUP>
+            <option name="myUpdateName" value="Restored" />
+            <option name="myStatusName" value="Will be restored" />
+            <option name="mySupportsDeletion" value="false" />
+            <option name="myCanBeAbsent" value="false" />
+            <option name="myId" value="RESTORED" />
+          </FILE-GROUP>
+        </FILE-GROUP>
+        <FILE-GROUP>
+          <option name="myUpdateName" value="Modified" />
+          <option name="myStatusName" value="Modified" />
+          <option name="mySupportsDeletion" value="false" />
+          <option name="myCanBeAbsent" value="false" />
+          <option name="myId" value="MODIFIED" />
+        </FILE-GROUP>
+        <FILE-GROUP>
+          <option name="myUpdateName" value="Skipped" />
+          <option name="myStatusName" value="Skipped" />
+          <option name="mySupportsDeletion" value="false" />
+          <option name="myCanBeAbsent" value="false" />
+          <option name="myId" value="SKIPPED" />
+        </FILE-GROUP>
+        <FILE-GROUP>
+          <option name="myUpdateName" value="Merged with conflicts" />
+          <option name="myStatusName" value="Will be merged with conflicts" />
+          <option name="mySupportsDeletion" value="false" />
+          <option name="myCanBeAbsent" value="false" />
+          <option name="myId" value="MERGED_WITH_CONFLICTS" />
+        </FILE-GROUP>
+        <FILE-GROUP>
+          <option name="myUpdateName" value="Merged" />
+          <option name="myStatusName" value="Will be merged" />
+          <option name="mySupportsDeletion" value="false" />
+          <option name="myCanBeAbsent" value="false" />
+          <option name="myId" value="MERGED" />
+          <PATH vcs="svn" revision="6751">$PROJECT_DIR$/scripts/TestApp.groovy</PATH>
+        </FILE-GROUP>
+        <FILE-GROUP>
+          <option name="myUpdateName" value="Not in repository" />
+          <option name="myStatusName" value="Not in repository" />
+          <option name="mySupportsDeletion" value="true" />
+          <option name="myCanBeAbsent" value="false" />
+          <option name="myId" value="UNKNOWN" />
+        </FILE-GROUP>
+        <FILE-GROUP>
+          <option name="myUpdateName" value="Locally added" />
+          <option name="myStatusName" value="Locally added" />
+          <option name="mySupportsDeletion" value="false" />
+          <option name="myCanBeAbsent" value="false" />
+          <option name="myId" value="LOCALLY_ADDED" />
+        </FILE-GROUP>
+        <FILE-GROUP>
+          <option name="myUpdateName" value="Locally removed" />
+          <option name="myStatusName" value="Locally removed" />
+          <option name="mySupportsDeletion" value="false" />
+          <option name="myCanBeAbsent" value="false" />
+          <option name="myId" value="LOCALLY_REMOVED" />
+        </FILE-GROUP>
+      </UpdatedFiles>
+    </UpdateInfo>
+  </component>
+  <component name="RunManager" selected="JUnit.BidirectionalOnetoManyWithInheritanceRelationshipManagementTests.testRelationshipManagementMethods">
+    <tempConfiguration default="false" name="BidirectionalOnetoManyWithInheritanceRelationshipManagementTests.testRelationshipManagementMethods" type="JUnit" factoryName="JUnit" enabled="false" merge="false">
       <pattern value="org.codehaus.groovy.grails.orm.hibernate.*" />
       <module name="Grails" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
-      <option name="ALTERNATIVE_JRE_PATH" />
+      <option name="ALTERNATIVE_JRE_PATH" value="" />
       <option name="PACKAGE_NAME" value="org.codehaus.groovy.grails.orm.hibernate" />
-      <option name="MAIN_CLASS_NAME" value="org.codehaus.groovy.grails.orm.hibernate.ListReorderingTests" />
-      <option name="METHOD_NAME" />
-      <option name="TEST_OBJECT" value="class" />
-      <option name="VM_PARAMETERS" />
-      <option name="PARAMETERS" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="MAIN_CLASS_NAME" value="org.codehaus.groovy.grails.orm.hibernate.BidirectionalOnetoManyWithInheritanceRelationshipManagementTests" />
+      <option name="METHOD_NAME" value="testRelationshipManagementMethods" />
+      <option name="TEST_OBJECT" value="method" />
+      <option name="VM_PARAMETERS" value="" />
+      <option name="PARAMETERS" value="" />
+      <option name="WORKING_DIRECTORY" value="file://$PROJECT_DIR$" />
       <option name="ENV_VARIABLES" />
       <option name="PASS_PARENT_ENVS" value="true" />
       <option name="ADDITIONAL_CLASS_PATH" />
@@ -1141,12 +1254,72 @@
         <value defaultName="wholeProject" />
       </option>
       <envs />
+      <RunnerSettings RunnerId="Debug">
+        <option name="DEBUG_PORT" value="51288" />
+        <option name="TRANSPORT" value="0" />
+        <option name="LOCAL" value="true" />
+      </RunnerSettings>
       <RunnerSettings RunnerId="Run" />
+      <ConfigurationWrapper RunnerId="Debug" />
       <ConfigurationWrapper RunnerId="Run" />
       <method>
         <option name="Make" value="true" />
       </method>
     </tempConfiguration>
+    <configuration default="true" type="GroovyScriptRunConfigurationType" factoryName="Groovy Script">
+      <module name="" />
+      <setting name="path" value="" />
+      <setting name="vmparams" value="" />
+      <setting name="params" value="" />
+      <setting name="workDir" value="$PROJECT_DIR$/." />
+    </configuration>
+    <configuration default="true" type="Remote" factoryName="Remote">
+      <option name="USE_SOCKET_TRANSPORT" value="true" />
+      <option name="SERVER_MODE" value="false" />
+      <option name="SHMEM_ADDRESS" value="javadebug" />
+      <option name="HOST" value="localhost" />
+      <option name="PORT" value="5005" />
+    </configuration>
+    <configuration default="true" type="#com.intellij.j2ee.web.tomcat.TomcatRunConfigurationFactory" factoryName="Local">
+      <option name="WORKING_DIRECTORY" />
+      <option name="HOST" value="localhost" />
+      <option name="PORT" value="8080" />
+      <option name="LOCAL" value="true" />
+      <option name="OPEN_IN_BROWSER" value="true" />
+      <option name="OPEN_IN_BROWSER_URL" value="/" />
+      <option name="COMMON_VM_ARGUMENTS" value="" />
+      <option name="DEPLOY_TOMCAT_MANAGER" value="false" />
+      <option name="BASE_DIRECTORY_NAME" value="" />
+      <predefined_log_file id="TOMCAT_LOCALHOST_LOG_ID" enabled="true" />
+    </configuration>
+    <configuration default="true" type="Application" factoryName="Application" enabled="false" merge="false">
+      <option name="MAIN_CLASS_NAME" />
+      <option name="VM_PARAMETERS" />
+      <option name="PROGRAM_PARAMETERS" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
+      <option name="ALTERNATIVE_JRE_PATH" />
+      <option name="ENABLE_SWING_INSPECTOR" value="false" />
+      <option name="ENV_VARIABLES" />
+      <option name="PASS_PARENT_ENVS" value="true" />
+      <module name="" />
+      <envs />
+      <method>
+        <option name="Make" value="true" />
+      </method>
+    </configuration>
+    <configuration default="true" type="Applet" factoryName="Applet">
+      <module name="" />
+      <option name="MAIN_CLASS_NAME" />
+      <option name="HTML_FILE_NAME" />
+      <option name="HTML_USED" value="false" />
+      <option name="WIDTH" value="400" />
+      <option name="HEIGHT" value="300" />
+      <option name="POLICY_FILE" value="$APPLICATION_HOME_DIR$/bin/appletviewer.policy" />
+      <option name="VM_PARAMETERS" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
+      <option name="ALTERNATIVE_JRE_PATH" />
+    </configuration>
     <configuration default="true" type="TestNG" factoryName="TestNG" enabled="false" merge="false">
       <module name="" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
@@ -1176,25 +1349,6 @@
         <option name="Make" value="true" />
       </method>
     </configuration>
-    <configuration default="true" type="Applet" factoryName="Applet">
-      <module name="" />
-      <option name="MAIN_CLASS_NAME" />
-      <option name="HTML_FILE_NAME" />
-      <option name="HTML_USED" value="false" />
-      <option name="WIDTH" value="400" />
-      <option name="HEIGHT" value="300" />
-      <option name="POLICY_FILE" value="$APPLICATION_HOME_DIR$/bin/appletviewer.policy" />
-      <option name="VM_PARAMETERS" />
-      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
-      <option name="ALTERNATIVE_JRE_PATH" />
-    </configuration>
-    <configuration default="true" type="GroovyScriptRunConfigurationType" factoryName="Groovy Script">
-      <module name="" />
-      <setting name="path" value="" />
-      <setting name="vmparams" value="" />
-      <setting name="params" value="" />
-      <setting name="workDir" value="$PROJECT_DIR$/." />
-    </configuration>
     <configuration default="true" type="JUnit" factoryName="JUnit" enabled="false" merge="false">
       <module name="" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
@@ -1216,41 +1370,6 @@
       <method>
         <option name="Make" value="true" />
       </method>
-    </configuration>
-    <configuration default="true" type="Application" factoryName="Application" enabled="false" merge="false">
-      <option name="MAIN_CLASS_NAME" />
-      <option name="VM_PARAMETERS" />
-      <option name="PROGRAM_PARAMETERS" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
-      <option name="ALTERNATIVE_JRE_PATH" />
-      <option name="ENABLE_SWING_INSPECTOR" value="false" />
-      <option name="ENV_VARIABLES" />
-      <option name="PASS_PARENT_ENVS" value="true" />
-      <module name="" />
-      <envs />
-      <method>
-        <option name="Make" value="true" />
-      </method>
-    </configuration>
-    <configuration default="true" type="#com.intellij.j2ee.web.tomcat.TomcatRunConfigurationFactory" factoryName="Local">
-      <option name="WORKING_DIRECTORY" />
-      <option name="HOST" value="localhost" />
-      <option name="PORT" value="8080" />
-      <option name="LOCAL" value="true" />
-      <option name="OPEN_IN_BROWSER" value="true" />
-      <option name="OPEN_IN_BROWSER_URL" value="/" />
-      <option name="COMMON_VM_ARGUMENTS" value="" />
-      <option name="DEPLOY_TOMCAT_MANAGER" value="false" />
-      <option name="BASE_DIRECTORY_NAME" value="" />
-      <predefined_log_file id="TOMCAT_LOCALHOST_LOG_ID" enabled="true" />
-    </configuration>
-    <configuration default="true" type="Remote" factoryName="Remote">
-      <option name="USE_SOCKET_TRANSPORT" value="true" />
-      <option name="SERVER_MODE" value="false" />
-      <option name="SHMEM_ADDRESS" value="javadebug" />
-      <option name="HOST" value="localhost" />
-      <option name="PORT" value="5005" />
     </configuration>
     <configuration default="false" name="ManyToManyMappedByTests.testMapping" type="JUnit" factoryName="JUnit" enabled="false" merge="false">
       <pattern value="org.codehaus.groovy.grails.orm.hibernate.*" />
@@ -1498,9 +1617,9 @@
       <item index="3" class="java.lang.String" itemvalue="JUnit.Grails Test Case" />
       <item index="4" class="java.lang.String" itemvalue="JUnit.Expando Tests" />
       <item index="5" class="java.lang.String" itemvalue="JUnit.ORM Tests" />
-      <item index="6" class="java.lang.String" itemvalue="Remote.Grails Remote Debugger" />
-      <item index="7" class="java.lang.String" itemvalue="Tomcat Server.Tomcat 5 Server" />
-      <item index="8" class="java.lang.String" itemvalue="JUnit.ListReorderingTests" />
+      <item index="6" class="java.lang.String" itemvalue="JUnit.BidirectionalOnetoManyWithInheritanceRelationshipManagementTests.testRelationshipManagementMethods" />
+      <item index="7" class="java.lang.String" itemvalue="Remote.Grails Remote Debugger" />
+      <item index="8" class="java.lang.String" itemvalue="Tomcat Server.Tomcat 5 Server" />
     </list>
     <configuration default="true" type="groovy.configuration.type" factoryName="Groovy">
       <option name="SCRIPT_PATH" value="" />
@@ -1616,7 +1735,7 @@
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.19331159" order="0" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.6036644" order="3" x="224" y="85" width="774" height="631" />
       <window_info id="IDEtalk Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" order="4" />
-      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3895238" order="13" />
+      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.38862103" order="13" />
       <window_info id="Duplicates" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" order="10" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" order="7" />
       <window_info id="Favorites" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.13560411" order="7" />
@@ -1642,7 +1761,7 @@
     <option name="PERFORM_EDIT_IN_BACKGROUND" value="true" />
     <option name="PERFORM_ADD_REMOVE_IN_BACKGROUND" value="true" />
     <option name="FORCE_NON_EMPTY_COMMENT" value="false" />
-    <option name="LAST_COMMIT_MESSAGE" value="fix for GRAILS-2607 and GRAILS-1819" />
+    <option name="LAST_COMMIT_MESSAGE" value="fix for GRAILS-2469" />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="REFORMAT_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="REFORMAT_BEFORE_FILE_COMMIT" value="false" />
@@ -1653,17 +1772,6 @@
     <option name="UPDATE_GROUP_BY_CHANGELIST" value="false" />
     <option name="SHOW_FILE_HISTORY_AS_TREE" value="false" />
     <option name="FILE_HISTORY_SPLITTER_PROPORTION" value="1.0" />
-    <MESSAGE value="fix for GRAILS-2440" />
-    <MESSAGE value="fix for GRAILS-2436" />
-    <MESSAGE value="fix for" />
-    <MESSAGE value="fix for GRAILS-2453" />
-    <MESSAGE value="fix for GRAILS-1756" />
-    <MESSAGE value="fix for GRAILS-2438" />
-    <MESSAGE value="fix for GRAILS-2452" />
-    <MESSAGE value="fix for GRAILS-2462" />
-    <MESSAGE value="fix for GRAILS-2470" />
-    <MESSAGE value="fix for GRAILS-2412" />
-    <MESSAGE value="fix for GRAILS-2471" />
     <MESSAGE value="renamed test (missing s so it was not run)" />
     <MESSAGE value="fix for bug where subflow attempted to close already closed hibernate session" />
     <MESSAGE value="forgot to commit file in previous patch" />
@@ -1678,6 +1786,17 @@
     <MESSAGE value="fix for GRAILS-2601" />
     <MESSAGE value="fix for GRAILS-2532" />
     <MESSAGE value="fix for GRAILS-2607 and GRAILS-1819" />
+    <MESSAGE value="fix for failing test" />
+    <MESSAGE value="updated to compile java 5 only tests" />
+    <MESSAGE value="fix for GRAILS-2539" />
+    <MESSAGE value="forgot to commit new build.properties with test/tiger dir" />
+    <MESSAGE value="updated default war dependencies to include hibernate annotations commons jar" />
+    <MESSAGE value="fix for GRAILS-2535" />
+    <MESSAGE value="fix for GRAILS-2586" />
+    <MESSAGE value="fix for GRAILS-2579" />
+    <MESSAGE value="fix for GRAILS-2546" />
+    <MESSAGE value="fix for GRAILS-2527" />
+    <MESSAGE value="fix for GRAILS-2469" />
   </component>
   <component name="VssConfiguration">
     <option name="CLIENT_PATH" value="" />
@@ -1770,114 +1889,114 @@
     <option name="myLastEditedConfigurable" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="jar://$PROJECT_DIR$/lib/spring-test.jar!/org/springframework/test/context/junit38/AbstractJUnit38SpringContextTests.class">
+    <entry file="file://$PROJECT_DIR$/src/commons/org/codehaus/groovy/grails/commons/spring/RuntimeSpringConfiguration.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="9" column="60" selection-start="791" selection-end="791" vertical-scroll-proportion="0.09876543">
+        <state line="37" column="17" selection-start="1639" selection-end="1639" vertical-scroll-proportion="0.2857143">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="jar://$PROJECT_DIR$/lib/junit-3.8.2.jar!/junit/framework/TestCase.class">
+    <entry file="file://$PROJECT_DIR$/src/commons/org/codehaus/groovy/grails/commons/spring/DefaultRuntimeSpringConfiguration.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="5" column="22" selection-start="162" selection-end="162" vertical-scroll-proportion="0.04863222">
+        <state line="115" column="0" selection-start="4351" selection-end="4351" vertical-scroll-proportion="0.2857143">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/test/tiger/org/codehaus/groovy/grails/orm/hibernate/hibernate-bidirectional-list-mapping.xml">
+    <entry file="file://$PROJECT_DIR$/src/commons/org/codehaus/groovy/grails/validation/GrailsDomainClassValidator.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="15" column="0" selection-start="0" selection-end="535" vertical-scroll-proportion="0.1853759">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/test/tiger/org/codehaus/groovy/grails/orm/hibernate/FaqElement.groovy">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="4" column="0" selection-start="112" selection-end="464" vertical-scroll-proportion="0.04863222">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file:///Developer/hibernate-3.2/src/org/hibernate/mapping/ToOne.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="13" column="22" selection-start="391" selection-end="391" vertical-scroll-proportion="0.10942249">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file:///Developer/hibernate-3.2/src/org/hibernate/mapping/OneToOne.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="17" column="32" selection-start="490" selection-end="490" vertical-scroll-proportion="0.0881459">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file:///Developer/hibernate-3.2/src/org/hibernate/Hibernate.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="318" column="26" selection-start="9861" selection-end="9861" vertical-scroll-proportion="0.33333334">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/test/groovy/org/codehaus/groovy/grails/orm/hibernate/OneToOneTests.groovy">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="29" column="43" selection-start="573" selection-end="573" vertical-scroll-proportion="0.3525836">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/test/tiger/org/codehaus/groovy/grails/orm/hibernate/HibernateBidirectionalListPersistTests.groovy">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="54" column="102" selection-start="1484" selection-end="1484" vertical-scroll-proportion="0.65653497">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file:///Developer/hibernate-3.2/src/org/hibernate/mapping/Property.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="229" column="0" selection-start="6325" selection-end="6325" vertical-scroll-proportion="0.16109422">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/commons/org/codehaus/groovy/grails/plugins/DefaultGrailsPluginManager.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="242" column="0" selection-start="9575" selection-end="9575" vertical-scroll-proportion="0.11448835">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file:///Developer/spring-framework-2.5.1/src/org/springframework/orm/hibernate3/LocalSessionFactoryBean.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="606" column="0" selection-start="25391" selection-end="25391" vertical-scroll-proportion="0.11448835">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/persistence/org/codehaus/groovy/grails/orm/hibernate/ConfigurableLocalSessionFactoryBean.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="39" column="23" selection-start="1651" selection-end="1651" vertical-scroll-proportion="0.17021276">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/test/groovy/org/codehaus/groovy/grails/orm/hibernate/ManyToOneLazinessTests.groovy">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="29" column="101" selection-start="594" selection-end="594" vertical-scroll-proportion="1.8031088">
+        <state line="61" column="0" selection-start="2084" selection-end="2084" vertical-scroll-proportion="0.2839196">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/persistence/org/codehaus/groovy/grails/orm/hibernate/cfg/GrailsDomainBinder.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="1498" column="48" selection-start="55479" selection-end="55479" vertical-scroll-proportion="1.3947369">
+        <state line="1644" column="0" selection-start="60432" selection-end="60432" vertical-scroll-proportion="0.17699115">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/test/groovy/org/codehaus/groovy/grails/orm/hibernate/ListReorderingTests.groovy">
+    <entry file="file://$PROJECT_DIR$/src/commons/org/codehaus/groovy/grails/commons/GrailsDomainClassProperty.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="7" column="18" selection-start="143" selection-end="143" vertical-scroll-proportion="0.43523315">
+        <state line="128" column="19" selection-start="3596" selection-end="3596" vertical-scroll-proportion="0.33333334">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/commons/org/codehaus/groovy/grails/commons/GrailsDomainConfigurationUtil.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="123" column="102" selection-start="5627" selection-end="5627" vertical-scroll-proportion="0.40112993">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/groovy/org/codehaus/groovy/grails/plugins/orm/hibernate/HibernateGrailsPlugin.groovy">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="608" column="0" selection-start="28141" selection-end="28141" vertical-scroll-proportion="0.33333334">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/persistence/org/codehaus/groovy/grails/orm/hibernate/metaclass/AbstractSavePersistentMethod.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="71" column="0" selection-start="2882" selection-end="2882" vertical-scroll-proportion="0.33333334">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/persistence/org/codehaus/groovy/grails/validation/HibernateDomainClassValidator.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="46" column="0" selection-start="1845" selection-end="1845" vertical-scroll-proportion="1.0169492">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/scripts/TestApp.groovy">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/groovy/org/codehaus/groovy/grails/orm/hibernate/BidirectionalOnetoManyWithInheritanceRelationshipManagementTests.groovy">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="46" column="0" selection-start="1244" selection-end="1244" vertical-scroll-proportion="0.5592705">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/commons/org/codehaus/groovy/grails/commons/DefaultGrailsDomainClassProperty.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="265" column="0" selection-start="7800" selection-end="7800" vertical-scroll-proportion="0.11955421">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/commons/org/codehaus/groovy/grails/commons/DefaultGrailsDomainClass.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="294" column="0" selection-start="12271" selection-end="12271" vertical-scroll-proportion="0.11625514">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/commons/org/codehaus/groovy/grails/commons/GrailsClassUtils.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="200" column="81" selection-start="6957" selection-end="6957" vertical-scroll-proportion="0.16563787">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/commons/org/codehaus/groovy/grails/commons/AbstractGrailsClass.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="88" column="0" selection-start="2809" selection-end="2809" vertical-scroll-proportion="0.11955421">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/commons/org/codehaus/groovy/grails/validation/routines/DomainValidatorTests.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="-4.7823834">
           <folding />
         </state>
       </provider>

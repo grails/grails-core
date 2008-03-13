@@ -21,7 +21,7 @@ import java.net.URL;
 import java.net.URI;
 
 /**
- * Tests for the GrailsDOmainConfigurationUtil class
+ * Tests for the GrailsDomainConfigurationUtil class
  *
  *
  * @author Graeme Rocher
