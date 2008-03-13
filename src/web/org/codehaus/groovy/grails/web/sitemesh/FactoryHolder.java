@@ -25,7 +25,9 @@ import com.opensymphony.module.sitemesh.Factory;
  *        Created: Jul 24, 2007
  *        Time: 5:05:25 PM
  */
-public class FactoryHolder {
+public class FactoryHolder { 
+    private FactoryHolder() {}
+  
     private static Factory factory;
 
     public static Factory getFactory() {
