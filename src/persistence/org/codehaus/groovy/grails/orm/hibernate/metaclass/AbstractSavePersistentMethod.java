@@ -106,9 +106,7 @@ public abstract class AbstractSavePersistentMethod extends
             autoRetrieveAssocations(domainClass, target);
         }
 
-        performSave(target, shouldFlush(arguments));
-
-        return target;
+        return performSave(target, shouldFlush(arguments));
 	}
 
 	private boolean shouldFlush(Object[] arguments) {
@@ -235,6 +233,6 @@ public abstract class AbstractSavePersistentMethod extends
 		return false;
 	}
 
-	abstract protected void performSave(Object target, boolean b);
+	abstract protected Object performSave(Object target, boolean b);
 
 }

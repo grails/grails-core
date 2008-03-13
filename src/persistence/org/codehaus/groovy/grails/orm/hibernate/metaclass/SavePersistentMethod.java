@@ -47,9 +47,9 @@ public class SavePersistentMethod extends AbstractSavePersistentMethod {
         super(METHOD_PATTERN,sessionFactory, classLoader, application);
     }
 
-	protected void performSave(final Object target, final boolean flush) {
+	protected Object performSave(final Object target, final boolean flush) {
         HibernateTemplate ht = getHibernateTemplate();
-        ht.execute(new HibernateCallback() {
+        return ht.execute(new HibernateCallback() {
             public Object doInHibernate(Session session) throws HibernateException, SQLException {
                 session.saveOrUpdate(target);
                 if(flush)

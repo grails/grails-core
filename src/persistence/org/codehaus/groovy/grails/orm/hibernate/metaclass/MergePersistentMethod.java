@@ -47,17 +47,17 @@ public class MergePersistentMethod extends AbstractSavePersistentMethod {
 	/* (non-Javadoc)
 	 * @see org.codehaus.groovy.grails.orm.hibernate.metaclass.AbstractSavePersistentMethod#performSave(java.lang.Object)
 	 */
-	protected void performSave(final Object target, final boolean flush) {
+	protected Object performSave(final Object target, final boolean flush) {
         HibernateTemplate ht = getHibernateTemplate();
 
-        ht.execute(new HibernateCallback() {
+        return ht.execute(new HibernateCallback() {
             public Object doInHibernate(Session session) throws HibernateException, SQLException {
-                session.merge(target);
-                session.lock(target, LockMode.NONE);
+                Object merged = session.merge(target);
+                session.lock(merged, LockMode.NONE);
 
                 if(flush)
                     getHibernateTemplate().flush();
-                return target;
+                return merged;
             }
         });
     }

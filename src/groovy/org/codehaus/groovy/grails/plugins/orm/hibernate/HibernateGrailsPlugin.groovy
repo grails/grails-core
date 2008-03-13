@@ -54,8 +54,9 @@ class HibernateGrailsPlugin {
 
     def version = grails.util.GrailsUtil.getGrailsVersion()
     def dependsOn = [dataSource: version,
-    i18n: version,
-    core: version]
+                     i18n: version,
+                     core: version,
+                     domainClass: version]
 
     def loadAfter = ['controllers']
 
