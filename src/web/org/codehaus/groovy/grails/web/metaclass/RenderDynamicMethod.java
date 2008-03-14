@@ -107,11 +107,11 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
         boolean renderView = true;
         GroovyObject controller = (GroovyObject) target;
         if ((arguments[0] instanceof String) || (arguments[0] instanceof GString)) {
-            setContentType(response, TEXT_HTML, DEFAULT_ENCODING);
+            setContentType(response, TEXT_HTML, DEFAULT_ENCODING,true);
             String text = arguments[0].toString();
             renderView = renderText(text, response);
         } else if (arguments[0] instanceof Closure) {
-            setContentType(response, TEXT_HTML, DEFAULT_ENCODING);
+            setContentType(response, TEXT_HTML, DEFAULT_ENCODING, true);
             Closure closure = (Closure) arguments[arguments.length - 1];
             renderView = renderMarkup(closure, response);
         } else if (arguments[0] instanceof Map) {
@@ -126,7 +126,7 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
                 setContentType(response, argMap.get(ARGUMENT_CONTENT_TYPE).toString(), DEFAULT_ENCODING);
                 out = GSPResponseWriter.getInstance(response, BUFFER_SIZE);
             } else {
-                setContentType(response, TEXT_HTML, DEFAULT_ENCODING);
+                setContentType(response, TEXT_HTML, DEFAULT_ENCODING, true);
                 out = GSPResponseWriter.getInstance(response, BUFFER_SIZE);
             }
 
@@ -210,7 +210,12 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
     }
 
     private void setContentType(HttpServletResponse response, String contentType, String encoding) {
-        if(response.getContentType()==null)
+        setContentType(response, contentType, encoding, false);
+    }
+
+    private void setContentType(HttpServletResponse response, String contentType, String encoding, boolean contentTypeIsDefault) {
+
+        if(response.getContentType()==null || !contentTypeIsDefault)
                 response.setContentType(GrailsWebUtil.getContentType(contentType,encoding));
     }
 
@@ -356,9 +361,6 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
 
     private boolean isJSONResponse(HttpServletResponse response) {
         String contentType = response.getContentType();
-        if (contentType != null && (contentType.indexOf("application/json") > -1 || contentType.indexOf("text/json") > -1)) {
-            return true;
-        }
-        return false;
+        return contentType != null && (contentType.indexOf("application/json") > -1 || contentType.indexOf("text/json") > -1);
     }
 }
