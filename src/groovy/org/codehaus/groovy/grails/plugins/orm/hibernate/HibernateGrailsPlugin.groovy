@@ -573,14 +573,23 @@ class HibernateGrailsPlugin {
     }
 
     private addRelationshipManagementMethods(GrailsDomainClass dc) {
-        dc.persistantProperties.each {prop ->
-            if (prop.oneToMany || prop.manyToMany) {
-                if (dc.metaClass instanceof ExpandoMetaClass) {
+        for( p in dc.persistantProperties) {
+            def prop = p
+            def metaClass = dc.metaClass
+            if(prop.oneToOne || prop.manyToOne) {
+                def identifierPropertyName = "${prop.name}Id"
+                if(!metaClass.hasProperty(dc.reference.wrappedInstance,identifierPropertyName)) {
+                    def getterName = GrailsClassUtils.getGetterName(identifierPropertyName)
+                    metaClass."$getterName" = {-> GrailsHibernateUtil.getAssociationIdentifier(delegate, prop.name, prop.referencedDomainClass) }
+                }
+            }
+            else if (prop.oneToMany || prop.manyToMany) {
+                if (metaClass instanceof ExpandoMetaClass) {
                     def propertyName = prop.name
                     def collectionName = propertyName.size() == 1 ? propertyName.toUpperCase() : "${propertyName[0].toUpperCase()}${propertyName[1..-1]}"
                     def otherDomainClass = prop.referencedDomainClass
 
-                    dc.metaClass."addTo${collectionName}" = {Object arg ->
+                    metaClass."addTo${collectionName}" = {Object arg ->
                         Object obj
                         if (delegate[prop.name] == null) {
                             delegate[prop.name] = GrailsClassUtils.createConcreteCollection(prop.type)
@@ -611,7 +620,7 @@ class HibernateGrailsPlugin {
                         }
                         delegate
                     }
-                    dc.metaClass."removeFrom${collectionName}" = {Object arg ->
+                    metaClass."removeFrom${collectionName}" = {Object arg ->
                         if (otherDomainClass.clazz.isInstance(arg)) {
                             delegate[prop.name]?.remove(arg)
                             if (prop.bidirectional) {
