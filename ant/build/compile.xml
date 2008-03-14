@@ -48,6 +48,7 @@
     </target>
 
     <target name="build:checkj5">
+        <echo>Building Java 5 code for Java version: ${ant.java.version}</echo>
         <condition property="is.java.5">
             <or>
                 <equals arg1="${ant.java.version}" arg2="1.5"/>
