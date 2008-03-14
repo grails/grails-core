@@ -14,19 +14,20 @@
  */
 package org.codehaus.groovy.grails.web.mapping;
 
-import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
-import org.codehaus.groovy.grails.commons.GrailsControllerClass;
-import org.springframework.web.context.request.RequestContextHolder;
+import grails.util.GrailsWebUtil;
 import org.apache.commons.lang.StringUtils;
+import org.codehaus.groovy.grails.commons.GrailsControllerClass;
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
+import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
+import org.springframework.web.context.request.RequestContextHolder;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.ServletRequest;
-import java.util.Map;
-import java.util.Iterator;
-import java.util.Collections;
-import java.net.URLEncoder;
+import javax.servlet.http.HttpServletRequest;
 import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.Map;
 
 /**
  * The default implementation of the UrlCreator interface that constructs URLs in Grails
@@ -182,7 +183,9 @@ public class DefaultUrlCreator implements UrlCreator {
 
     private String urlEncode(Object obj, ServletRequest request) {
         try {
-            return URLEncoder.encode(obj.toString(),request.getCharacterEncoding());
+            String charset = request.getCharacterEncoding();
+            
+            return URLEncoder.encode(obj.toString(), (charset != null) ? charset : GrailsWebUtil.DEFAULT_ENCODING );
         } catch (UnsupportedEncodingException ex) {
             throw new ControllerExecutionException("Error creating URL, cannot URLEncode to the client's character encoding: "+ ex.getMessage(),ex);
         }

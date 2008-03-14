@@ -37,7 +37,7 @@ import javax.servlet.http.HttpServletRequest;
  *        Time: 6:18:22 PM
  */
 public class GrailsWebUtil {
-    private static final String DEFAULT_ENCODING = "UTF-8";
+    public static final String DEFAULT_ENCODING = "UTF-8";
     private static final String CHARSET_ATTRIBUTE = ";charset=";
 
     public static GrailsWebRequest bindMockWebRequest(GrailsWebApplicationContext ctx) {

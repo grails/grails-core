@@ -106,12 +106,12 @@
       <library name="Groovy">
         <CLASSES>
           <root url="jar://$MODULE_DIR$/lib/gant-1.1.0_groovy-1.5.2.jar!/" />
-          <root url="jar://$MODULE_DIR$/lib/groovy-all-1.5.2.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/groovy-all-1.5.4.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES>
           <root url="file://$MODULE_DIR$/../../gant/src/main/java" />
-          <root url="file://$MODULE_DIR$/../../groovy-core/src/main" />
+          <root url="file://$MODULE_DIR$/../../groovy-1.5.4/src/main" />
         </SOURCES>
       </library>
     </orderEntry>
