@@ -151,7 +151,10 @@ public class DefaultPluginMetaManager implements PluginMetaManager {
     public String getPluginPathForResource(String resourceName) {
         PluginMeta pluginMeta = (PluginMeta)resourceToPluginMap.get(resourceName);
         if(pluginMeta!=null) {
-             return PLUGINS_PATH +pluginMeta.name+'-'+pluginMeta.version;
+             String path = PLUGINS_PATH +pluginMeta.name+'-'+pluginMeta.version;
+             // get rid of leading '/'
+             path = path.substring(1);
+             return path;
         }
         return null;
     }
