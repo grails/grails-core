@@ -554,8 +554,8 @@ class HibernateGrailsPlugin {
         }
     }
 
-    SimpleTypeConverter typeConverter = new SimpleTypeConverter()
     private convertToType(value, targetType) {
+        SimpleTypeConverter typeConverter = new SimpleTypeConverter()
 
         if (!targetType.isAssignableFrom(value.class)) {
             if (value instanceof Number && Long.class.equals(targetType)) {
