@@ -402,7 +402,7 @@ class ControllersGrailsPlugin {
 
             for (ns in namespaces) {
                 def propName = GCU.getGetterName(ns)
-                if (!controller.hasProperty(propName)) {
+                if (!controller.hasProperty(ns)) {
                     def namespaceDispatcher = new NamespacedTagDispatcher(ns, controllerClass, application, ctx)
                     mc."$propName" = {-> namespaceDispatcher}
                 }
