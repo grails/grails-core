@@ -151,10 +151,7 @@ public class DefaultPluginMetaManager implements PluginMetaManager {
     public String getPluginPathForResource(String resourceName) {
         PluginMeta pluginMeta = (PluginMeta)resourceToPluginMap.get(resourceName);
         if(pluginMeta!=null) {
-             String path = PLUGINS_PATH +pluginMeta.name+'-'+pluginMeta.version;
-             // get rid of leading '/'
-             path = path.substring(1);
-             return path;
+             return PLUGINS_PATH +pluginMeta.name+'-'+pluginMeta.version;
         }
         return null;
     }
@@ -162,8 +159,7 @@ public class DefaultPluginMetaManager implements PluginMetaManager {
     public String getPluginViewsPathForResource(String resourceName) {
         PluginMeta pluginMeta = (PluginMeta)resourceToPluginMap.get(resourceName);
         if(pluginMeta!=null) {
-            String path = PLUGINS_PATH +pluginMeta.name+'-'+pluginMeta.version+'/'+ GrailsResourceUtils.GRAILS_APP_DIR+"/views";
-            return path.substring(1);
+             return PLUGINS_PATH +pluginMeta.name+'-'+pluginMeta.version+'/'+ GrailsResourceUtils.GRAILS_APP_DIR+"/views";
         }
         return null;
     }
