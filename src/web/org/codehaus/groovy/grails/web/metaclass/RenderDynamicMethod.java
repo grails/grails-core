@@ -34,6 +34,7 @@ import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
+import org.springframework.core.io.Resource;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -66,6 +67,7 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
     public static final String ARGUMENT_VIEW = "view";
     public static final String ARGUMENT_MODEL = "model";
     public static final String ARGUMENT_TEMPLATE = "template";
+    public static final String ARGUMENT_CONTEXTPATH = "contextPath";
     public static final String ARGUMENT_BEAN = "bean";
     public static final String ARGUMENT_COLLECTION = "collection";
     public static final String ARGUMENT_BUILDER = "builder";
@@ -155,6 +157,8 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
                 renderView(viewName, modelObject, target, webRequest, application, controller);
             } else if (argMap.containsKey(ARGUMENT_TEMPLATE)) {
                 String templateName = argMap.get(ARGUMENT_TEMPLATE).toString();
+                Object cp = argMap.get(ARGUMENT_CONTEXTPATH);
+                String contextPath = (cp != null ? cp.toString() : "");
                 String var = (String) argMap.get(ARGUMENT_VAR);
                 // get the template uri
                 GrailsApplicationAttributes attrs = (GrailsApplicationAttributes) controller.getProperty(ControllerDynamicMethods.GRAILS_ATTRIBUTES);
@@ -163,7 +167,12 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
                 // retrieve gsp engine
                 GroovyPagesTemplateEngine engine = attrs.getPagesTemplateEngine();
                 try {
-                    Template t = engine.createTemplate(templateUri);
+                    Resource r = engine.getResourceForUri(contextPath + templateUri);
+                    if (!r.exists()) {
+                    	r = engine.getResourceForUri(contextPath + "/grails-app/views/"  + templateUri);
+                    }
+                	
+                    Template t = engine.createTemplate(r); //templateUri);
 
                     if (t == null) {
                         throw new ControllerExecutionException("Unable to load template for uri [" + templateUri + "]. Template not found.");
