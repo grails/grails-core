@@ -120,11 +120,13 @@ class ApplicationTagLib implements ApplicationContextAware {
 		    handleAbsolute(attrs)
 	    }
         writer << grailsAttributes.getApplicationUri(request);
-        if(attrs['dir'] ) {
-           writer << "/${attrs['dir']}";
+        def dir = attrs['dir']
+        if(dir) {
+           writer << (dir.startsWith("/") ?  dir : "/${dir}")
         }
-        if(attrs['file']) {
-           writer << "/${attrs['file']}"
+        def file = attrs['file']
+        if(file) {
+           writer << (file.startsWith("/") ?  file : "/${file}")
         }
     }
 

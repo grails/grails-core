@@ -84,7 +84,27 @@ class ApplicationTagLibTests extends AbstractGrailsTagTests {
         assertOutputEquals('0.9.9.1', template)
 	}
 
-	void testCreateLinkTo() {
+    void testCreateLinkToWithDirAndLeadingSlash() {
+        def template = '<g:createLinkTo dir="/images" file="foo.jpg" />'
+
+        assertOutputEquals "/images/foo.jpg", template
+    }
+
+    void testCreateLinkToWithDirAndLeadingNoLeadingSlash() {
+        def template = '<g:createLinkTo dir="images" file="foo.jpg" />'
+
+        assertOutputEquals "/images/foo.jpg", template
+    }
+
+    void testCreateLinkToWithFileAndLeadingSlash() {
+        def template = '<g:createLinkTo dir="/images" file="/foo.jpg" />'
+
+        assertOutputEquals "/images/foo.jpg", template
+    }
+
+
+
+    void testCreateLinkTo() {
 		StringWriter sw = new StringWriter();
 		withTag("createLinkTo", sw) { tag ->
 			def attrs = [dir:'test']
