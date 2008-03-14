@@ -59,4 +59,17 @@ public class SavePersistentMethod extends AbstractSavePersistentMethod {
         });
 	}
 
+    protected Object performInsert(final Object target, final boolean shouldFlush) {
+        HibernateTemplate ht = getHibernateTemplate();
+        return ht.execute(new HibernateCallback() {
+            public Object doInHibernate(Session session) throws HibernateException, SQLException {
+                session.save(target);
+                if(shouldFlush)
+                    getHibernateTemplate().flush();
+                return target;
+            }
+        });
+
+    }
+
 }

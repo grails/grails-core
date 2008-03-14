@@ -62,4 +62,8 @@ public class MergePersistentMethod extends AbstractSavePersistentMethod {
         });
     }
 
+    protected Object performInsert(Object target, boolean shouldFlush) {
+        throw new IllegalArgumentException("The [insert] argument is not supported by the [merge] method");
+    }
+
 }

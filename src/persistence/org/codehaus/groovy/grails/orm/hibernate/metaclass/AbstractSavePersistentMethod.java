@@ -52,6 +52,7 @@ public abstract class AbstractSavePersistentMethod extends
     private static final String ARGUMENT_VALIDATE = "validate";
     private static final String ARGUMENT_DEEP_VALIDATE = "deepValidate";
     private static final String ARGUMENT_FLUSH = "flush";
+    private static final String ARGUMENT_INSERT = "insert";
 
     public AbstractSavePersistentMethod(Pattern pattern, SessionFactory sessionFactory, ClassLoader classLoader, GrailsApplication application) {
 		super(pattern, sessionFactory, classLoader);
@@ -106,10 +107,19 @@ public abstract class AbstractSavePersistentMethod extends
             autoRetrieveAssocations(domainClass, target);
         }
 
-        return performSave(target, shouldFlush(arguments));
+        if(shouldInsert(arguments)) {
+            return performInsert(target, shouldFlush(arguments));
+        }
+        else {
+            return performSave(target, shouldFlush(arguments));
+        }
 	}
 
-	private boolean shouldFlush(Object[] arguments) {
+    private boolean shouldInsert(Object[] arguments) {
+        return arguments.length > 0 && arguments[0] instanceof Map && GrailsClassUtils.getBooleanFromMap(ARGUMENT_INSERT, (Map) arguments[0]);
+    }
+
+    private boolean shouldFlush(Object[] arguments) {
         if(arguments.length > 0) {
             if(arguments[0] instanceof Boolean) {
                 return ((Boolean)arguments[0]).booleanValue();
@@ -127,7 +137,7 @@ public abstract class AbstractSavePersistentMethod extends
         return false;
 	}
 
-	/**
+    /**
 	 * Performs automatic association retrieval
      * @param domainClass The domain class to retrieve associations for
      * @param target The target object
@@ -173,14 +183,14 @@ public abstract class AbstractSavePersistentMethod extends
 		HibernateTemplate t = getHibernateTemplate();
         // if the target is within the session evict it
         // this is so that if validation fails hibernate doesn't save
-        // the object automatically when the session is flushed		
+        // the object automatically when the session is flushed
        t.execute(new HibernateCallback() {
 
             public Object doInHibernate(Session session) throws HibernateException, SQLException {
                 session.setFlushMode(FlushMode.MANUAL);
                 return null;
             }
-        });        
+        });
         setErrorsOnInstance(target, errors);
         return null;
 	}
@@ -208,7 +218,7 @@ public abstract class AbstractSavePersistentMethod extends
      * @param domainClass The domain class
      */
 	private boolean shouldValidate(Object[] arguments, GrailsDomainClass domainClass) {
-		if(domainClass != null) {          
+		if(domainClass != null) {
             if(arguments.length > 0) {
                 if(arguments[0] instanceof Boolean) {
                     return ((Boolean)arguments[0]).booleanValue();
@@ -233,6 +243,22 @@ public abstract class AbstractSavePersistentMethod extends
 		return false;
 	}
 
-	abstract protected Object performSave(Object target, boolean b);
+    /**
+     * Subclasses should override and perform a save operation, flushing the session if the second argument is true
+     *
+     * @param target The target object to save
+     * @param shouldFlush Whether to flush
+     * @return The target object
+     */
+    abstract protected Object performSave(Object target, boolean shouldFlush);
+
+    /**
+     * Subclasses should override and perform an insert operation, flushing the session if the second argument is true
+     *
+     * @param target The target object to save
+     * @param shouldFlush Whether to flush
+     * @return The target object
+     */
+    protected abstract Object performInsert(Object target, boolean shouldFlush);
 
 }
