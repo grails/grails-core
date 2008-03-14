@@ -162,7 +162,8 @@ public class DefaultPluginMetaManager implements PluginMetaManager {
     public String getPluginViewsPathForResource(String resourceName) {
         PluginMeta pluginMeta = (PluginMeta)resourceToPluginMap.get(resourceName);
         if(pluginMeta!=null) {
-             return PLUGINS_PATH +pluginMeta.name+'-'+pluginMeta.version+'/'+ GrailsResourceUtils.GRAILS_APP_DIR+"/views";
+            String path = PLUGINS_PATH +pluginMeta.name+'-'+pluginMeta.version+'/'+ GrailsResourceUtils.GRAILS_APP_DIR+"/views";
+            return path.substring(1);
         }
         return null;
     }

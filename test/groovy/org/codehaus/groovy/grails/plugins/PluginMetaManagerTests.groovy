@@ -57,12 +57,12 @@ class PluginMetaManagerTests extends GroovyTestCase {
     }
 
     void testGetPluginPathForResource() {
-        assertEquals "/plugins/simple-0.1", metaManager.getPluginPathForResource("FooController")
+        assertEquals "plugins/simple-0.1", metaManager.getPluginPathForResource("FooController")
     }
 
     void testGetPluginViewsPathForResource() {
         String viewsPath = metaManager.getPluginViewsPathForResource("FooController")
         println viewsPath
-        assertEquals "/plugins/simple-0.1/grails-app/views", viewsPath
+        assertEquals "plugins/simple-0.1/grails-app/views", viewsPath
     }
 }
