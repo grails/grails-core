@@ -85,6 +85,9 @@ if $cygwin ; then
         CP=`cygpath --path --unix "$CP"`
 fi
 
+# Remove possible trailing slash (after possible cygwin correction)
+GRAILS_HOME=${GRAILS_HOME%/}
+
 # Locate GRAILS_HOME if not it is not set
 if [ -z "$GRAILS_HOME" -o ! -d "$GRAILS_HOME" ] ; then
   # resolve links - $0 may be a link to groovy's home
