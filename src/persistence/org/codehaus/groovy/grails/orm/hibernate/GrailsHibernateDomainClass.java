@@ -61,7 +61,7 @@ public class GrailsHibernateDomainClass extends AbstractGrailsClass implements E
 
     private GrailsDomainClassProperty[] properties;
 
-    private Map propertyMap = new TreeMap();
+    private Map propertyMap = new LinkedHashMap();
 
     private Validator validator;
 
