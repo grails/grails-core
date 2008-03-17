@@ -26,6 +26,7 @@ import org.codehaus.groovy.grails.support.ResourceAwareTemplateEngine;
 import org.codehaus.groovy.grails.web.pages.exceptions.GroovyPagesException;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
+import org.codehaus.groovy.runtime.metaclass.ConcurrentReaderHashMap;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -42,8 +43,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -67,7 +66,7 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
 
 
     private static final Log LOG = LogFactory.getLog(GroovyPagesTemplateEngine.class);
-    private static Map pageCache = Collections.synchronizedMap(new HashMap());
+    private static Map pageCache = new ConcurrentReaderHashMap();
     private GroovyClassLoader classLoader = new GroovyClassLoader();
     private int scriptNameCount;
     private ResourceLoader resourceLoader;
@@ -75,7 +74,8 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
     public static final String BEAN_ID = "groovyPagesTemplateEngine";
     public static final String RESOURCE_LOADER_BEAN_ID = "groovyPagesResourceLoader";
     private boolean reloadEnabled;
-
+    private ServletContext servletContext;
+    private ServletContextResourceLoader servletContextLoader;
 
     public GroovyPagesTemplateEngine() {
     }
@@ -83,6 +83,9 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
     public GroovyPagesTemplateEngine(ServletContext servletContext) {
         if(servletContext == null) throw new IllegalArgumentException("Argument [servletContext] cannot be null");
         this.resourceLoader = new ServletContextResourceLoader(servletContext);
+        this.servletContext = servletContext;
+        this.servletContextLoader = new ServletContextResourceLoader(servletContext);
+
     }
 
     /**
@@ -346,6 +349,8 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
 
     private Resource getResourceWithinContext(String uri) {
         if(resourceLoader == null) throw new IllegalStateException("TemplateEngine not initialised correctly, no [resourceLoader] specified!");
+        Resource r = servletContextLoader.getResource(uri);
+        if(r.exists()) return r;
         return resourceLoader.getResource(uri);
     }
 
@@ -549,6 +554,8 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
     }
 
     public void setServletContext(ServletContext servletContext) {
+        this.servletContext = servletContext;
+        this.servletContextLoader = new ServletContextResourceLoader(servletContext);        
         if(this.resourceLoader == null)
             this.resourceLoader = new ServletContextResourceLoader(servletContext);
     }
