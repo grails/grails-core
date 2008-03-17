@@ -87,11 +87,11 @@ class HibernateGrailsPlugin {
         def hibConfig = application.config.hibernate
 
         BeanDefinition externalDefinition = checkExternalBeans(application, log)
-        if (externalDefinition) {
-            ds = new Expando()
+        if (externalDefinition && !ds) {
+            ds = new ConfigObject()
             application.config.dataSource = ds
         }
-        if (!externalDefinition && ds || application.domainClasses.size() > 0) {
+        if (ds || application.domainClasses.size() > 0) {
             hibConfigClass = ds?.configClass
 
             if (ds && ds.loggingSql || ds && ds.logSql) {
@@ -106,7 +106,7 @@ class HibernateGrailsPlugin {
             }
             else {
                 dialectDetector(HibernateDialectDetectorFactoryBean) {
-                    dataSource = dataSource
+                    dataSource = ref("dataSource")
                     vendorNameDialectMappings = vendorToDialect
                 }
                 hibProps."hibernate.dialect" = dialectDetector
