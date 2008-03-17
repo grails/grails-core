@@ -71,7 +71,10 @@
 
     <target name="build-test:java5" depends="build:checkj5" if="is.java.5">
         <!--build java 5 sources-->
-        <groovyc srcdir="${grails.test.src.tiger}" destdir="${grails.test.build}" encoding="UTF-8">
+        <echo>Building Java 5 Test Sources</echo>
+        <groovyc destdir="${grails.test.build}" encoding="UTF-8">
+            <src path="test/tiger" />
+            <javac debug="on" deprecation="on" encoding="UTF-8"/>
             <classpath location="${grails.test.build}" />
             <classpath location="${grails.build}" />
    			<classpath refid="classpath"/>
