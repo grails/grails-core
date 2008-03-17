@@ -1,12 +1,12 @@
 /*
  * Copyright 2004-2005 the original author or authors.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -44,6 +44,7 @@ import org.springframework.transaction.support.TransactionTemplate
 import org.springframework.transaction.support.TransactionCallback
 import org.springframework.transaction.TransactionStatus
 import org.apache.commons.logging.LogFactory
+
 
 Ant.property(environment: "env")
 grailsHome = Ant.antProject.properties."env.GRAILS_HOME"
@@ -111,10 +112,14 @@ target(testApp: "The test app implementation target") {
 	packageTests()
 
     try {
-        if(!integrationOnly)
+    	event("AllTestsStart", ["Starting test-app"])
+        if(!integrationOnly) {
             runUnitTests()
-        if(!unitOnly)
+        }
+        if(!unitOnly) {
             runIntegrationTests()
+        }   
+        event("AllTestsEnd", ["Finishing test-app"])
         produceReports()
     }
     catch (Exception ex) {
@@ -149,7 +154,7 @@ target(packageTests:"Puts some useful things on the classpath") {
 	
 }
 target(compileTests: "Compiles the test cases") {
-    event("CompileTestsStart", ['source'])
+    event("CompileStart", ['tests'])
 
     def destDir = testDirPath
     Ant.mkdir(dir: destDir)
@@ -168,7 +173,7 @@ target(compileTests: "Compiles the test cases") {
     def rootLoader = getClass().classLoader.rootLoader
     rootLoader?.addURL(new File(destDir).toURL())
 
-    event("CompileTestsEnd", ['source'])
+    event("CompileEnd", ['tests'])
 }
 
 target(produceReports: "Outputs aggregated xml and html reports") {
@@ -205,7 +210,7 @@ def populateTestSuite = {suite, testFiles, classLoader, ctx, String base ->
     }
 }
 def runTests = {suite, TestResult result, Closure callback ->
-    for (test in suite.tests()) {
+    for (TestSuite test in suite.tests()) {
         new File("${testDir}/TEST-${test.name}.xml").withOutputStream {xmlOut ->
             new File("${testDir}/plain/TEST-${test.name}.txt").withOutputStream {plainOut ->
 
@@ -238,7 +243,9 @@ def runTests = {suite, TestResult result, Closure callback ->
                         
                         callback(test, {
                             savedOut.print "                    ${t.name}..."
+                            event("TestStart", [test, t, thisTest])
                             test.runTest (t, thisTest)
+                            event("TestEnd", [test, t, thisTest])
                             thisTest
                         })
                         runCount += thisTest.runCount()
@@ -258,7 +265,7 @@ def runTests = {suite, TestResult result, Closure callback ->
                     def outString = outBytes.toString()
                     def errString = errBytes.toString()
                     new File("${testDir}/TEST-${test.name}-out.txt").write(outString)
-                    new File("${testDir}/TEST-${test.name}-err.txt").write(errString)                    
+                    new File("${testDir}/TEST-${test.name}-err.txt").write(errString)
                     plainOutput.setSystemOutput(outString)
                     plainOutput.setSystemError(errString)
                     plainOutput.endTestSuite(junitTest)
@@ -276,7 +283,6 @@ def runTests = {suite, TestResult result, Closure callback ->
 }
 target(runUnitTests: "Run Grails' unit tests under the test/unit directory") {
     try {
-        event("TestStarted", ["unit"])
         loadApp()
 
         def testFiles = resolveTestResources {"test/unit/${it}.groovy"}
@@ -291,6 +297,8 @@ target(runUnitTests: "Run Grails' unit tests under the test/unit directory") {
         def suite = new TestSuite()
         populateTestSuite(suite, testFiles, classLoader, appCtx, "test/unit/")
         if (suite.testCount() > 0) {
+
+            event("TestSuiteStart", ["unit"])
             int testCases = suite.countTestCases()
             println "-------------------------------------------------------"
             println "Running ${testCases} Unit Test${testCases > 1 ? 's' : ''}..."
@@ -308,6 +316,7 @@ target(runUnitTests: "Run Grails' unit tests under the test/unit directory") {
             }
             def end = new Date()
 
+            event("TestSuiteEnd", ["unit",suite])
             event("StatusUpdate", ["Unit Tests Completed in ${end.time - start.time}ms"])
             println "-------------------------------------------------------"
         }
@@ -320,7 +329,6 @@ target(runUnitTests: "Run Grails' unit tests under the test/unit directory") {
 
 target(runIntegrationTests: "Runs Grails' tests under the test/integration directory") {
     try {
-        event("TestStarted", ["integration"])
         // allow user to specify test to run like this...
         //   grails test-app Author
         //   grails test-app AuthorController
@@ -349,6 +357,7 @@ target(runIntegrationTests: "Runs Grails' tests under the test/integration direc
             println "-------------------------------------------------------"
             println "Running ${testCases} Integration Test${testCases > 1 ? 's' : ''}..."
 
+            event("TestSuiteStart", ["integration"])
 
             def beanNames = appCtx.getBeanNamesForType(PersistenceContextInterceptor)
             def interceptor = null
@@ -359,6 +368,7 @@ target(runIntegrationTests: "Runs Grails' tests under the test/integration direc
                 interceptor?.init()
 
                 def start = new Date()
+                
                 def savedOut = System.out
                 runTests(suite, result) {test, invocation ->
                     name = test.name[0..-6]
@@ -402,6 +412,8 @@ target(runIntegrationTests: "Runs Grails' tests under the test/integration direc
                     RequestContextHolder.setRequestAttributes(null);
                 }
                 def end = new Date()
+                
+                event("TestSuiteEnd", ["integration",suite])
                 println "Integration Tests Completed in ${end.time - start.time}ms"
                 println "-------------------------------------------------------"
 
