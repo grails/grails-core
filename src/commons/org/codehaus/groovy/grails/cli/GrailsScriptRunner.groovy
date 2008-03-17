@@ -171,7 +171,7 @@ Grails home is set to: ${grailsHome}
 		}
 
 		try {
-			def pluginScripts = RESOLVER.getResources("file:${baseDir.absolutePath}/plugins/**/scripts/${scriptName}.groovy")
+			def pluginScripts = RESOLVER.getResources("file:${baseDir.absolutePath}/plugins/*/scripts/${scriptName}.groovy")
 			potentialScripts += pluginScripts.collect { it.file }			
 		}
 		catch(Exception e) {
@@ -182,7 +182,9 @@ Grails home is set to: ${grailsHome}
         // initial binding as '<pluginName>PluginDir'.
         def binding = new Binding()
         try {
-            def plugins = RESOLVER.getResources("file:${baseDir.absolutePath}/**/*GrailsPlugin.groovy")
+
+            def plugins = RESOLVER.getResources("file:${baseDir.absolutePath}/plugins/*/*GrailsPlugin.groovy")
+
             plugins.each { resource ->
                 def matcher = resource.filename =~ /(\S+)GrailsPlugin.groovy/
                 def pluginName = GrailsClassUtils.getPropertyName(matcher[0][1])
