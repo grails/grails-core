@@ -43,8 +43,8 @@ The following libraries are included in Grails because they are required either 
 - Commons File Upload 1.1.1 (http://commons.apache.org/fileupload/)
 - required for running Grails applications (When using file uploads)
 
-* commons-io-1.2.jar
-- Commons I/O 1.2 (http://commons.apache.org/io/)
+* commons-io-1.4.jar
+- Commons I/O 1.4 (http://commons.apache.org/io/)
 - required for running Grails applications (When using file uploads)
 
 * commons-lang-2.1.jar
