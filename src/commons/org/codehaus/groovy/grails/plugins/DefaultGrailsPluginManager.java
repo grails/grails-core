@@ -380,7 +380,7 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager impl
               boolean foundInDelayed = false;
               for (Iterator i = delayedLoadPlugins.iterator(); i.hasNext();) {
                   GrailsPlugin remainingPlugin = (GrailsPlugin) i.next();
-                  if(isDependantOn(plugin, remainingPlugin)) {
+                  if(isDependentOn(plugin, remainingPlugin)) {
                       foundInDelayed = true;
                       break;
                   }
@@ -415,13 +415,14 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager impl
    * @param dependancy The plugin which the first argument may be dependant on
    * @return True if it is
    */
-  private boolean  isDependantOn(GrailsPlugin plugin, GrailsPlugin dependancy) {
+  private boolean isDependentOn(GrailsPlugin plugin, GrailsPlugin dependancy) {
       String[] dependencies = plugin.getDependencyNames();
       for (int i = 0; i < dependencies.length; i++) {
           String name = dependencies[i];
-          String version = plugin.getDependentVersion(name);
+          String requiredVersion = plugin.getDependentVersion(name);
 
-          if(name.equals(dependancy.getName()) && version.equals(dependancy.getVersion()))
+          if(name.equals(dependancy.getName()) &&
+                GrailsPluginUtils.isValidVersion(dependancy.getVersion(), requiredVersion))
               return true;
       }
       return false;
