@@ -338,7 +338,7 @@ public final class GrailsDomainBinder {
 
             GrailsDomainClass referenced = property.getReferencedDomainClass();
             Mapping m = getRootMapping(referenced);
-            boolean tablePerSubclass = m != null && !m.getTablePerHierarchy();
+            boolean tablePerSubclass = m != null && !m.isTablePerHierarchy();
 
             if(referenced != null && !referenced.isRoot() && !tablePerSubclass) {
                 // NOTE: Work around for http://opensource.atlassian.com/projects/hibernate/browse/HHH-2855
@@ -483,7 +483,7 @@ public final class GrailsDomainBinder {
     private static void bindUnidirectionalOneToManyInverseValues(GrailsDomainClassProperty property, ManyToOne manyToOne) {
         ColumnConfig cc = getColumnConfig(property);
         if(cc != null) {
-           manyToOne.setLazy(cc.getLazy());
+           manyToOne.setLazy(cc.isLazy());
         }
         else {
             manyToOne.setLazy(true);
@@ -497,7 +497,7 @@ public final class GrailsDomainBinder {
 
     private static void bindCollectionForColumnConfig(Collection collection, ColumnConfig cc) {
         if(cc!=null) {
-            collection.setLazy(cc.getLazy());
+            collection.setLazy(cc.isLazy());
         }
         else {
             collection.setLazy(true);
@@ -916,7 +916,7 @@ public final class GrailsDomainBinder {
 
             if(m!=null) {
                 CacheConfig cc = m.getCache();
-                if(cc != null && cc.getEnabled()) {
+                if(cc != null && cc.isEnabled()) {
                     root.setCacheConcurrencyStrategy(cc.getUsage());
                     root.setLazyPropertiesCacheable(!"non-lazy".equals(cc.getInclude()));
                 }
@@ -925,7 +925,7 @@ public final class GrailsDomainBinder {
             bindRootPersistentClassCommonValues(domainClass, root, mappings);
 
 			if(!domainClass.getSubClasses().isEmpty()) {
-                boolean tablePerSubclass = m != null && !m.getTablePerHierarchy();
+                boolean tablePerSubclass = m != null && !m.isTablePerHierarchy();
                 if(!tablePerSubclass) {
                     // if the root class has children create a discriminator property
                     bindDiscriminatorProperty(root.getTable(), root, mappings);
@@ -970,7 +970,7 @@ public final class GrailsDomainBinder {
         evaluateMapping(sub);
         Mapping m = getMapping(parent.getClassName());
         Subclass subClass;
-        boolean tablePerSubclass = m != null && !m.getTablePerHierarchy();
+        boolean tablePerSubclass = m != null && !m.isTablePerHierarchy();
         if(tablePerSubclass) {
             subClass = new JoinedSubclass(parent);
         }
@@ -1035,8 +1035,9 @@ public final class GrailsDomainBinder {
 
         SimpleValue key = new DependantValue( mytable, joinedSubclass.getIdentifier() );
 		joinedSubclass.setKey( key );
-        String columnName = namingStrategy.propertyToColumnName(sub.getIdentifier().getName());
-        bindSimpleValue( sub.getIdentifier().getType().getName(), key, false, columnName, mappings );
+        GrailsDomainClassProperty identifier = sub.getIdentifier();
+        String columnName = getColumnNameForPropertyAndPath(identifier, EMPTY_PATH);
+        bindSimpleValue( identifier.getType().getName(), key, false, columnName, mappings );
 
         joinedSubclass.createPrimaryKey();
 
@@ -1137,7 +1138,7 @@ public final class GrailsDomainBinder {
         bindIdentity(domainClass, root, mappings, m);
 
         if(m != null) {
-            if(m.getVersioned()) {
+            if(m.isVersioned()) {
                 bindVersion( domainClass.getVersion(), root, mappings );
             }
         }
@@ -1425,7 +1426,7 @@ public final class GrailsDomainBinder {
         ColumnConfig cc = getColumnConfig(grailsProperty);
 
         if(cc != null) {
-           prop.setLazy(cc.getLazy());
+           prop.setLazy(cc.isLazy());
         }
         else if(grailsProperty.isManyToOne() || grailsProperty.isOneToOne()) {
             prop.setLazy(true);
@@ -1495,7 +1496,7 @@ public final class GrailsDomainBinder {
                 ForeignKeyDirection.FOREIGN_KEY_TO_PARENT );
 
         if(cc != null) {
-           oneToOne.setLazy(cc.getLazy());
+           oneToOne.setLazy(cc.isLazy());
         }
         else {
             oneToOne.setLazy(false);
@@ -1515,7 +1516,7 @@ public final class GrailsDomainBinder {
         ColumnConfig cc = getColumnConfig(property);
 
         if(cc != null) {
-           manyToOne.setLazy(cc.getLazy());
+           manyToOne.setLazy(cc.isLazy());
         }
         else {
             manyToOne.setLazy(false);
