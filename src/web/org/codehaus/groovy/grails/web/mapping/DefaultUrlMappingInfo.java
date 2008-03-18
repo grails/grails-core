@@ -136,7 +136,7 @@ public class DefaultUrlMappingInfo implements UrlMappingInfo {
     }
 
     private String evaluateNameForValue(Object value) {
-        GrailsWebRequest webRequest = (GrailsWebRequest) RequestContextHolder.currentRequestAttributes();
+        GrailsWebRequest webRequest = (GrailsWebRequest) RequestContextHolder.getRequestAttributes();
         if(value == null) {
             return null;
         }
@@ -153,7 +153,7 @@ public class DefaultUrlMappingInfo implements UrlMappingInfo {
         else {
             name = value.toString();
         }
-        if(StringUtils.isBlank(name))
+        if(StringUtils.isBlank(name) && webRequest !=null)
             return checkDispatchAction(webRequest.getRequest(), name);
         else
             return name;

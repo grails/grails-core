@@ -68,62 +68,6 @@ class SimpleGrailsControllerHelperTests extends AbstractGrailsControllerTests {
 	}
 	
 
-	void testCheckDispatchAction() {
-		runTest { 
-			request.addParameter("_action_Edit", "Some label for editing")
-			
-			def helper = new SimpleGrailsControllerHelper(null, null, null)
-			helper.@controllerName = "controller"
-			
-			def uri = helper.checkDispatchAction(request, "/controller/book")
-			
-			assertEquals "edit", helper.@actionName
-			assertEquals "/controller/edit", uri
-		}
-	}
-	
-	// in case of submit image, .x is automatically appended by browser
-	void testCheckDispatchActionX() {
-		runTest { 
-			request.addParameter("_action_Edit.x", "Some label for editing")
-			request.addParameter("_action_Edit.y", "Some other label for editing")
-
-			def helper = new SimpleGrailsControllerHelper(null, null, null)
-			helper.@controllerName = "controller"
-			
-			def uri = helper.checkDispatchAction(request, "/controller/book")
-			
-			assertEquals "edit", helper.@actionName
-			assertEquals "/controller/edit", uri
-		}
-	}
-	
-	// in case of submit image, .y is also automatically appended by browser, sometimes this will appear before the .x in param the hash
-	void testCheckDispatchActionY() {
-		runTest {
-			request.addParameter("_action_Edit.y", "Some other label for editing")
-			request.addParameter("_action_Edit.x", "Some label for editing")
-			
-			def helper = new SimpleGrailsControllerHelper(null, null, null)
-			helper.@controllerName = "controller"
-
-			def uri = helper.checkDispatchAction(request, "/controller/book")
-
-			assertEquals "edit", helper.@actionName
-			assertEquals "/controller/edit", uri
-		}
-	}
-
-	void testCheckDispatchActionWithoutActionParamater() {
-		runTest { 
-			def helper = new SimpleGrailsControllerHelper(null, null, null)
-			def uri = helper.checkDispatchAction(request, "/controller/book")
-			
-			assertNull helper.@actionName
-			assertEquals "/controller/book", uri
-		}
-	}
-
 	void testCallsAfterInterceptorWithModel(){
         runTest {
 			def helper = new SimpleGrailsControllerHelper(ga, appCtx , servletContext)
