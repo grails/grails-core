@@ -11,7 +11,7 @@
 
 package org.codehaus.groovy.grails.orm.hibernate
 
-class CircularRelationshipTests extends AbstractGrailsHibernateTests {
+class CircularRelationshipTests extends AbstractGrailsHibernateTests {   
 
     void testCircularRelationship() {
         def dc = ga.getDomainClass("CircularRelationship")

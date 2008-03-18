@@ -99,8 +99,10 @@ public class GrailsDomainConfigurationUtil {
                             // ignore (to support Hibernate entities)
                         }
                         if(!StringUtils.isBlank(refPropertyName)) {
-                    		prop.setOtherSide(referenced.getPropertyByName(refPropertyName));
-                    	}
+                            GrailsDomainClassProperty otherSide = referenced.getPropertyByName(refPropertyName);                            
+                            prop.setOtherSide(otherSide);
+                            otherSide.setOtherSide(prop);
+                        }
                     	else {
                             GrailsDomainClassProperty[] referencedProperties =  referenced.getPersistentProperties();
                             for (int k = 0; k < referencedProperties.length; k++) {
@@ -123,11 +125,21 @@ public class GrailsDomainConfigurationUtil {
     }
 
     private static boolean isCandidateForOtherSide(GrailsDomainClass domainClass, GrailsDomainClassProperty prop, GrailsDomainClassProperty referencedProp) {
-        boolean isTypeCompatible = domainClass.getClazz().equals(referencedProp.getReferencedPropertyType());
+
+        if(prop.equals(referencedProp)) return false;
+        if(prop.isOneToMany() && referencedProp.isOneToMany() && domainClass.equals(referencedProp.getDomainClass())) return false;
+        boolean isTypeCompatible = referencedProp.getReferencedPropertyType().isAssignableFrom(domainClass.getClazz());
         Map mappedBy = domainClass.getMappedBy();
 
         Object propertyMapping = mappedBy.get(prop.getName());
-        return !(propertyMapping != null && !propertyMapping.equals(referencedProp.getName())) && isTypeCompatible;
+        boolean mappedToDifferentProperty = propertyMapping != null && !propertyMapping.equals(referencedProp.getName());
+
+        mappedBy = referencedProp.getDomainClass().getMappedBy();
+        propertyMapping = mappedBy.get(referencedProp.getName());
+        boolean mappedFromDifferentProperty = propertyMapping != null && !propertyMapping.equals(prop.getName());
+
+
+        return !mappedToDifferentProperty && !mappedFromDifferentProperty && isTypeCompatible;
 
     }
 

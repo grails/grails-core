@@ -5,7 +5,11 @@
  * Created: Dec 5, 2007
  */
 package org.codehaus.groovy.grails.orm.hibernate
-class TwoCircularUnidirectionalOneToManyTests extends AbstractGrailsHibernateTests {
+
+import org.codehaus.groovy.grails.commons.test.AbstractGrailsMockTests
+import org.codehaus.groovy.grails.commons.GrailsDomainClass
+
+class TwoCircularUnidirectionalOneToManyTests extends AbstractGrailsHibernateTests { 
 
     protected void onSetUp() {
         gcl.parseClass '''
@@ -36,12 +40,26 @@ class  TwoCircularUnidirectionalOneToManyUser {
 
 
     void testAssociation() {
-        def userClass = ga.getDomainClass("TwoCircularUnidirectionalOneToManyUser").clazz
+        GrailsDomainClass userDomainClass = ga.getDomainClass("TwoCircularUnidirectionalOneToManyUser")
+
+        assertTrue userDomainClass.getPropertyByName("children").isOneToMany()
+        assertTrue userDomainClass.getPropertyByName("children").isAssociation()
+        assertFalse userDomainClass.getPropertyByName("children").isBidirectional()
+        assertFalse userDomainClass.getPropertyByName("children").isManyToMany()
+        assertTrue userDomainClass.getPropertyByName("parents").isOneToMany()
+        assertTrue userDomainClass.getPropertyByName("parents").isAssociation()
+        assertFalse userDomainClass.getPropertyByName("parents").isBidirectional()
+        assertFalse userDomainClass.getPropertyByName("parents").isManyToMany()
+
+
+        def userClass = userDomainClass.clazz
         def user1 = userClass.newInstance(name:'A')
         def user2 = userClass.newInstance(name:'B')
         def user3 = userClass.newInstance(name:'C')
         def user4 = userClass.newInstance(name:'D')
         def user5 = userClass.newInstance(name:'E')
+
+
 
         user1.addChild(user3)
         user1.addChild(user4)

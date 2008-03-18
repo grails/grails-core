@@ -6,7 +6,7 @@ import org.codehaus.groovy.grails.exceptions.InvalidPropertyException;
  * Note there are more tests for DefaultGrailsDomainClass in test/persistence written in Java
  */
 class DefaultGrailsDomainClassTests extends GroovyTestCase {
-
+                                                                      
 	def gcl 
 	
 	void setUp() {         
@@ -99,6 +99,7 @@ class DefaultGrailsDomainClassTests extends GroovyTestCase {
 					Set routes
 
 					static hasMany = [routes:Route]
+                    static mappedBy = [routes:"airport"]
 				}
 				class Route {
 					Long id

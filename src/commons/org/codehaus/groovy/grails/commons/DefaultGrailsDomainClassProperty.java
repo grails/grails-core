@@ -379,7 +379,14 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
 
 
 	public void setOtherSide(GrailsDomainClassProperty property) {
-		this.otherSide = property;
+        if(!this.equals(property)) {
+            this.bidirectional = true;
+            if(isOneToOne() && property.isOneToMany()) {
+                this.oneToOne = false;
+                this.manyToOne = true;
+            }
+        }
+        this.otherSide = property;
 	}
 
 
