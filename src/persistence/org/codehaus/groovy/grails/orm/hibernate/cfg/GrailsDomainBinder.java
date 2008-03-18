@@ -337,7 +337,10 @@ public final class GrailsDomainBinder {
         if(collection.isOneToMany() ) {
 
             GrailsDomainClass referenced = property.getReferencedDomainClass();
-            if(referenced != null && !referenced.isRoot()) {
+            Mapping m = getRootMapping(referenced);
+            boolean tablePerSubclass = m != null && !m.getTablePerHierarchy();
+
+            if(referenced != null && !referenced.isRoot() && !tablePerSubclass) {
                 // NOTE: Work around for http://opensource.atlassian.com/projects/hibernate/browse/HHH-2855
                 collection.setWhere(RootClass.DEFAULT_DISCRIMINATOR_COLUMN_NAME + " = '"+referenced.getFullName()+"'");
             }
@@ -425,6 +428,18 @@ public final class GrailsDomainBinder {
             // TODO change this when HHH-1268 is resolved
             bindUnidirectionalOneToMany(property, mappings, collection);
         }
+    }
+
+    private static Mapping getRootMapping(GrailsDomainClass referenced) {
+        if(referenced == null) return null;        
+        Class current = referenced.getClazz();
+        while(true) {
+            Class superClass = current.getSuperclass();
+            if(Object.class.equals(superClass)) break;
+            current = superClass;
+        }
+
+        return getMapping(current.getName());
     }
 
     private static boolean isBidirectionalOneToManyMap(GrailsDomainClassProperty property) {
