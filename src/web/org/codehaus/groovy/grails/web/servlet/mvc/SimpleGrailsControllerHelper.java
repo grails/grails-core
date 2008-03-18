@@ -26,7 +26,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.commons.GrailsControllerClass;
 import org.codehaus.groovy.grails.scaffolding.GrailsScaffolder;
 import org.codehaus.groovy.grails.web.metaclass.ChainDynamicMethod;
@@ -42,8 +41,8 @@ import org.codehaus.groovy.grails.webflow.executor.support.GrailsConventionsFlow
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.view.RedirectView;
-import org.springframework.web.util.WebUtils;
 import org.springframework.web.util.UrlPathHelper;
+import org.springframework.web.util.WebUtils;
 import org.springframework.webflow.context.servlet.ServletExternalContext;
 import org.springframework.webflow.execution.support.ApplicationView;
 import org.springframework.webflow.execution.support.ExternalRedirect;
@@ -59,7 +58,10 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 /**
  * <p>This is a helper class that does the main job of dealing with Grails web requests
@@ -83,7 +85,6 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
     
     private static final Log LOG = LogFactory.getLog(SimpleGrailsControllerHelper.class);
     private static final char SLASH = '/';
-    private static final String DISPATCH_ACTION_PARAMETER = "_action_";
 
     private static final String FLOW_EXECUTOR_BEAN = "flowExecutor";
     private String id;
@@ -165,11 +166,6 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
 
         configureStateForWebRequest(webRequest, request);
 
-
-        // if the action name is blank check its included as dispatch parameter
-        if(StringUtils.isBlank(actionName)) {
-            uri = checkDispatchAction(request, uri);
-        }
 
         if(uri.endsWith("/")) {
             uri = uri.substring(0,uri.length() - 1);
@@ -489,24 +485,6 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
         return !(interceptorResult != null && interceptorResult instanceof Boolean) || ((Boolean) interceptorResult).booleanValue();
     }
 
-
-	private String checkDispatchAction(HttpServletRequest request, String uri) {
-    	for(Enumeration e = request.getParameterNames(); e.hasMoreElements();) {
-            String name = (String)e.nextElement();
-            if(name.startsWith(DISPATCH_ACTION_PARAMETER)) {
-            	// remove .x suffix in case of submit image
-                if (name.endsWith(".x") || name.endsWith(".y")) {
-                    name = name.substring(0, name.length()-2);
-                }
-                actionName = GrailsClassUtils.getPropertyNameRepresentation(name.substring((DISPATCH_ACTION_PARAMETER).length()));
-                StringBuffer sb = new StringBuffer();
-                sb.append('/').append(controllerName).append('/').append(actionName);
-                uri = sb.toString();
-            	break;
-            }
-        }
-        return uri;
-	}
 
     public GrailsApplicationAttributes getGrailsAttributes() {
         return this.grailsAttributes;

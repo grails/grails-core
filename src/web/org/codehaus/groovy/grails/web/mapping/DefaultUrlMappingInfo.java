@@ -15,11 +15,15 @@
 package org.codehaus.groovy.grails.web.mapping;
 
 import groovy.lang.Closure;
+import org.apache.commons.lang.StringUtils;
+import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.web.mapping.exceptions.UrlMappingException;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
+import org.codehaus.groovy.grails.web.util.WebUtils;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.springframework.web.context.request.RequestContextHolder;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.*;
 
 /**
@@ -132,7 +136,10 @@ public class DefaultUrlMappingInfo implements UrlMappingInfo {
     }
 
     private String evaluateNameForValue(Object value) {
-        if(value == null)return null;
+        GrailsWebRequest webRequest = (GrailsWebRequest) RequestContextHolder.currentRequestAttributes();
+        if(value == null) {
+            return null;
+        }
         String name;
         if(value instanceof Closure) {
             Closure callable = (Closure)value;
@@ -141,13 +148,31 @@ public class DefaultUrlMappingInfo implements UrlMappingInfo {
         }
         else if(value instanceof Map) {
             Map httpMethods = (Map)value;
-            GrailsWebRequest webRequest = (GrailsWebRequest) RequestContextHolder.currentRequestAttributes();
             name = (String)httpMethods.get(webRequest.getCurrentRequest().getMethod());
         }
         else {
             name = value.toString();
         }
-        return name;
+        if(StringUtils.isBlank(name))
+            return checkDispatchAction(webRequest.getRequest(), name);
+        else
+            return name;
     }
+
+    private String checkDispatchAction(HttpServletRequest request, String actionName) {
+        for(Enumeration e = request.getParameterNames(); e.hasMoreElements();) {
+            String name = (String)e.nextElement();
+            if(name.startsWith(WebUtils.DISPATCH_ACTION_PARAMETER)) {
+                // remove .x suffix in case of submit image
+                if (name.endsWith(".x") || name.endsWith(".y")) {
+                    name = name.substring(0, name.length()-2);
+                }
+                actionName = GrailsClassUtils.getPropertyNameRepresentation(name.substring((WebUtils.DISPATCH_ACTION_PARAMETER).length()));
+                break;
+            }
+        }
+        return actionName;
+    }
+
 
 }

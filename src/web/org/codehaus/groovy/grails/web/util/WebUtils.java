@@ -52,6 +52,7 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
     public static final char SLASH = '/';
     private static final Log LOG = LogFactory.getLog(WebUtils.class);
     public static final String ENABLE_FILE_EXTENSIONS = "grails.mime.file.extensions";
+    public static final String DISPATCH_ACTION_PARAMETER = "_action_";
 
     public static ViewResolver lookupViewResolver(ServletContext servletContext) {
         WebApplicationContext wac =
