@@ -101,6 +101,7 @@
 			<!-- only fork VMs as needed -->
             <sysproperty key="grails.cli.testing" value="true"/>
             <jvmarg value="-server" />
+            <!--<jvmarg value="-verbose" />-->
 			<jvmarg value="-Xmx512M" />
 			<jvmarg value="-XX:MaxPermSize=256m"/>
 			<classpath location="${coverage.build}" />
@@ -120,8 +121,9 @@
             <formatter type="xml" />
             <batchtest todir="${grails.test.reports}" failureproperty="grails.test.failure">
 				<fileset dir="${grails.test.build}">
-					<include name="**/${test}Tests.class" />
-					<exclude name="**/Abstract*" />                    
+					<!--<include name="**/${test}Tests.class" />-->
+                    <include name="**/${test}X239.class" />
+					<exclude name="**/Abstract*" />
                     <exclude name="**/TransactionalServiceReloadTests*" />
 				</fileset>
 			</batchtest>
