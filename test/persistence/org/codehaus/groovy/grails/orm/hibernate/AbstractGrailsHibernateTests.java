@@ -133,7 +133,13 @@ public abstract class AbstractGrailsHibernateTests extends GroovyTestCase {
     protected final void tearDown() throws Exception {
         ConfigurationHolder.setConfig(null);
         ApplicationHolder.setApplication(null);
-        GroovySystem.getMetaClassRegistry().setMetaClassCreationHandle(new MetaClassRegistry.MetaClassCreationHandle());
+        MetaClassRegistry metaClassRegistry = GroovySystem.getMetaClassRegistry();
+        Class[] loadedClasses = gcl.getLoadedClasses();
+        for (int i = 0; i < loadedClasses.length; i++) {
+            Class loadedClass = loadedClasses[i];
+            metaClassRegistry.removeMetaClass(loadedClass);
+        }
+        metaClassRegistry.setMetaClassCreationHandle(new MetaClassRegistry.MetaClassCreationHandle());
         PluginManagerHolder.setPluginManager(null);
         if(TransactionSynchronizationManager.hasResource(this.sessionFactory)) {
 		    SessionHolder holder = (SessionHolder) TransactionSynchronizationManager.getResource(this.sessionFactory);
