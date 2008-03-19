@@ -26,6 +26,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -100,6 +101,7 @@ public class DefaultUrlCreator implements UrlCreator {
     }
 
     private String createURLInternal(String controller, String action, Map parameterValues, boolean includeContextPath) {
+        if(parameterValues == null) parameterValues = new HashMap();
         GrailsWebRequest webRequest = (GrailsWebRequest) RequestContextHolder.currentRequestAttributes();
         boolean blankController = StringUtils.isBlank(controller);
         boolean blankAction = StringUtils.isBlank(action);

@@ -115,10 +115,15 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
             mapping = (UrlMapping)mappingsLookup.get(new UrlMappingKey(controller, action, Collections.EMPTY_SET));                   
         }
         if(mapping == null || (mapping instanceof ResponseCodeUrlMapping)) {
-            mapping = (UrlMapping)mappingsLookup.get(new UrlMappingKey(controller, null, DEFAULT_ACTION_PARAMS));
+            Set lookupParams = new HashSet(params.keySet());
+            lookupParams.addAll(DEFAULT_ACTION_PARAMS);
+            mapping = (UrlMapping)mappingsLookup.get(new UrlMappingKey(controller, null, lookupParams));
         }
         if(mapping == null || (mapping instanceof ResponseCodeUrlMapping)) {
-            mapping = (UrlMapping)mappingsLookup.get(new UrlMappingKey(null, null, DEFAULT_CONTROLLER_PARAMS));
+            Set lookupParams = new HashSet(params.keySet());
+            lookupParams.addAll(DEFAULT_CONTROLLER_PARAMS);
+
+            mapping = (UrlMapping)mappingsLookup.get(new UrlMappingKey(null, null, lookupParams));
         }
         if(mapping == null || (mapping instanceof ResponseCodeUrlMapping)) {
             return new DefaultUrlCreator(controller, action);
