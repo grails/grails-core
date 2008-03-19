@@ -263,7 +263,7 @@ target( generateWebXml : "Generates the web.xml file") {
 	    	def tmpWebXml = "${userHome}/.grails/${grailsVersion}/projects/${baseName}/web.xml.tmp"
 	    	Ant.copy(file:"${grailsHome}/src/war/WEB-INF/web${servletVersion}.template.xml", tofile:tmpWebXml)
 
-			Ant.replace(file:tmpWebXml, token:"@grails.project.key@", value:"${baseName}")
+			Ant.replace(file:tmpWebXml, token:"@grails.project.key@", value:"${grailsAppName}")
 
 	       webXml = new FileSystemResource(tmpWebXml)
 	    }		
