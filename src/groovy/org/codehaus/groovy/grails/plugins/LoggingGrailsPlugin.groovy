@@ -70,8 +70,11 @@ class LoggingGrailsPlugin {
         if (log4jConfig) {
             def props = log4jConfig.toProperties('log4j')
             log.info "Updating Log4j configuration.."
-            new File("./web-app/WEB-INF/classes/log4j.properties").withOutputStream {out ->
-                props.store(out, "Grails' Log4j Configuration")
+            def resourcesDir = System.getProperty(GrailsApplication.PROJECT_RESOURCES_DIR)
+            if(resourcesDir) {
+                new File("$resourcesDir/log4j.properties").withOutputStream {out ->
+                    props.store(out, "Grails' Log4j Configuration")
+                }
             }
         }
     }
