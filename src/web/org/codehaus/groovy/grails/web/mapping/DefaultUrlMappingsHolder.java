@@ -115,15 +115,24 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
             mapping = (UrlMapping)mappingsLookup.get(new UrlMappingKey(controller, action, Collections.EMPTY_SET));                   
         }
         if(mapping == null || (mapping instanceof ResponseCodeUrlMapping)) {
-            Set lookupParams = new HashSet(params.keySet());
-            lookupParams.addAll(DEFAULT_ACTION_PARAMS);
+            Set lookupParams = new HashSet(DEFAULT_ACTION_PARAMS);
+            Set paramKeys = params.keySet();
+            lookupParams.addAll(paramKeys);
             mapping = (UrlMapping)mappingsLookup.get(new UrlMappingKey(controller, null, lookupParams));
+            if(mapping == null) {
+                lookupParams.removeAll(paramKeys);
+                mapping = (UrlMapping)mappingsLookup.get(new UrlMappingKey(controller, null, lookupParams));
+            }
         }
         if(mapping == null || (mapping instanceof ResponseCodeUrlMapping)) {
-            Set lookupParams = new HashSet(params.keySet());
-            lookupParams.addAll(DEFAULT_CONTROLLER_PARAMS);
-
+            Set lookupParams = new HashSet(DEFAULT_CONTROLLER_PARAMS);
+            Set paramKeys = params.keySet();
+            lookupParams.addAll(paramKeys);
             mapping = (UrlMapping)mappingsLookup.get(new UrlMappingKey(null, null, lookupParams));
+            if(mapping == null) {
+                lookupParams.removeAll(paramKeys);
+                mapping = (UrlMapping)mappingsLookup.get(new UrlMappingKey(null, null, lookupParams));
+            }            
         }
         if(mapping == null || (mapping instanceof ResponseCodeUrlMapping)) {
             return new DefaultUrlCreator(controller, action);

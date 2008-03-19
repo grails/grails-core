@@ -9,7 +9,7 @@ import org.apache.commons.logging.LogFactory
 import org.apache.commons.logging.impl.NoOpLog
 import org.codehaus.groovy.grails.commons.GrailsApplication
 
-class LoggingGrailsPluginTests extends AbstractGrailsPluginTests {
+class LoggingGrailsPluginTests extends AbstractGrailsPluginTests {   
 
     def controllerClass
     def serviceClass
@@ -57,6 +57,8 @@ class LoggingGrailsPluginTests extends AbstractGrailsPluginTests {
 	</context-param>
 </web-app>
 '''
+        System.setProperty('current.gant.script','')
+
         def xml = new XmlSlurper().parseText( xmlText  )
         System.setProperty(GrailsApplication.PROJECT_RESOURCES_DIR, "/test")
         def plugin = new LoggingGrailsPlugin()
