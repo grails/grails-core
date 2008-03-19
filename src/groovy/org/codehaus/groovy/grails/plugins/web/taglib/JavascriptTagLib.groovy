@@ -192,9 +192,10 @@ class JavascriptTagLib  {
 		if(!value) value = ''
 		
 		out << "<input type=\"text\" name=\"${attrs.remove('name')}\" value=\"${value}\" onkeyup=\""
-		if(attrs.params) {
+        
+        if(attrs.params) {
 			if(attrs.params instanceof Map) {
-				attrs.params.put(paramName, 'this.value')
+				attrs.params.put(paramName, new JavascriptValue('this.value'))
 			}
 			else {
 				attrs.params += "+'${paramName}='+this.value"	
@@ -332,6 +333,19 @@ interface JavascriptProvider {
 	def prepareAjaxForm(attrs)
 }
 
+class JavascriptValue {
+    def value
+
+    public JavascriptValue(value) {
+        this.value = value
+    }
+
+    public String toString() {
+        return "'+$value+'"
+    }
+
+
+}
 /**
  * Prototype implementation of JavaScript provider
  *
@@ -366,12 +380,23 @@ class PrototypeProvider implements JavascriptProvider {
 		
 		//def pms = attrs.remove('params')
         def url
+        def jsParams = attrs.params?.findAll { it.value instanceof JavascriptValue }
+
+        jsParams?.each { attrs.params?.remove(it.key) }
+
+
+
         if(attrs.url) {
 			url = taglib.createLink(attrs.url)
 		}
 		else {
 			url = taglib.createLink(attrs)
 		}
+
+        if(!attrs.params) attrs.params = [:]
+        jsParams?.each { attrs.params[it.key] = it.value }
+
+        
         def i = url?.indexOf('?')
 
         if(i >-1) {
@@ -379,8 +404,8 @@ class PrototypeProvider implements JavascriptProvider {
                 attrs.params += "+'&${url[i+1..-1].encodeAsJavaScript()}'"                
             }
             else if(attrs.params instanceof Map) {
-                def params = attrs.params.collect { k, v -> "${k.encodeAsURL()}=${v.encodeAsURL()}" }.join('&').encodeAsJavaScript()
-                attrs.params = "'$params&${url[i+1..-1].encodeAsJavaScript()}'"
+                def params = createQueryString(attrs.params)
+                attrs.params = "'${params}${params ? '&' : ''}${url[i+1..-1].encodeAsJavaScript()}'"
             }
             else {
                 attrs.params = "'${url[i+1..-1].encodeAsJavaScript()}'"
@@ -399,9 +424,30 @@ class PrototypeProvider implements JavascriptProvider {
 		// process options
 		out << getAjaxOptions(attrs)
 		// close
-		out << ');'		
-	}
-	
+		out << ');'
+        attrs.remove('params')
+    }
+
+    private String createQueryString(params) {
+        def allParams = []
+        for (entry in params) {
+            def value = entry.value
+            def key = entry.key
+            if (value instanceof JavascriptValue) {
+                allParams << "${key.encodeAsURL()}='+${value.value}+'"
+            }
+            else {
+                allParams << "${key.encodeAsURL()}=${value.encodeAsURL()}".encodeAsJavascript()
+            }
+        }
+        if(allParams.size() == 1) {
+            return allParams[0]
+        }
+        else {
+            return allParams.join('&')
+        }
+    }
+
     // helper function to build ajax options
     def getAjaxOptions(options) {
         def ajaxOptions = []
@@ -432,13 +478,9 @@ class PrototypeProvider implements JavascriptProvider {
             if(options.params) {
 				def params = options.remove('params')
 				if (params instanceof Map) {
-					ajaxOptions << "parameters:'" +
-										params.collect { k, v -> "${k.encodeAsURL()}=${v.encodeAsURL()}" }.join('&').encodeAsJavaScript() +
-									"'"				
-				} 
-				else {
-					ajaxOptions << "parameters:${params}"
+                    params = createQueryString(params)
 				}
+                ajaxOptions << "parameters:${params}"
             }
         }
         // remaining options

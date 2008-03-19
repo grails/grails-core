@@ -19,6 +19,15 @@ class TestUrlMappings {
         grailsApplication.addArtefact(UrlMappingsArtefactHandler.TYPE, urlMappingsClass)
     }
 
+    void testRemoteFieldWithExtraParams() {
+        def template = '<g:remoteField controller="test" action="hello" id="1" params="[var1: \'one\', var2: \'two\']" update="success" name="myname" value="myvalue"/>'
+
+         request.setAttribute("org.codehaus.grails.INCLUDED_JS_LIBRARIES", ['prototype'])
+
+        assertOutputEquals '<input type="text" name="myname" value="myvalue" onkeyup="new Ajax.Updater(\'success\',\'/test/hello/1\',{asynchronous:true,evalScripts:true,parameters:\'value=\'+this.value+\'&var1=one&var2=two\'});" />', template
+
+    }
+
     void testPrototypeSubmitToRemoteWithExtraParams() {
         def template = '<g:submitToRemote name="myButton" url="[controller:\'person\', action:\'show\', params:[var1:\'one\', var2:\'two\']]" ></g:submitToRemote>'
         request.setAttribute("org.codehaus.grails.INCLUDED_JS_LIBRARIES", ['prototype'])
