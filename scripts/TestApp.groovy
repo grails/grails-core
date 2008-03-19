@@ -450,7 +450,7 @@ def getTestNames(testNamesString) {
     // If a list of test class names is provided, split it into ant
     // file patterns.
     def nameSuffix = 'Tests'
-    if (config.grails.testing.nameSuffix != null) {
+    if (config.grails.testing.nameSuffix) {
         nameSuffix = config.grails.testing.nameSuffix
     }
 
