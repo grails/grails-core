@@ -73,6 +73,12 @@ public interface GrailsApplication extends ApplicationContextAware {
      * Constant used to resolve the environment via System.getProperty(ENVIRONMENT)
      */
     String ENVIRONMENT = "grails.env";
+
+    /**
+     * Constants that indicates whether this GrailsApplication is running in the default environment
+     */
+    String ENVIRONMENT_DEFAULT = "grails.env.default";
+
     /**
      * Constant for the development environment
      */

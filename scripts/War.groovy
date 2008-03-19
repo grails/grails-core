@@ -90,8 +90,11 @@ DEFAULT_J5_DEPS = [
     "ejb3-persistence.jar",
 ]
 
+target (configureRunningScript:"Sets the currently running script, in case called directly") {
+    System.setProperty('current.gant.script',"war")
+}
 target (war: "The implementation target") {
-	depends( clean,  packageApp)
+	depends( configureRunningScript, clean,  packageApp)
 	 
 	try {
         stagingDir = "${basedir}/staging"		

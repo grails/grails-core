@@ -143,7 +143,7 @@ Grails home is set to: ${grailsHome}
     private static setDefaultEnvironment(args) {
         if(!System.properties."${GrailsApplication.ENVIRONMENT}") {
             def environment = DEFAULT_ENVS[args.toLowerCase()]
-            environment = environment ? ENV_ARGS[environment] : ENV_ARGS['dev']
+            environment = environment ?: GrailsApplication.ENV_DEVELOPMENT
             System.setProperty(GrailsApplication.ENVIRONMENT, environment )
             System.setProperty(GrailsApplication.ENVIRONMENT_DEFAULT, "true")
         }
