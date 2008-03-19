@@ -22,6 +22,7 @@ import gant.Gant
 import grails.util.GrailsUtil
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver
 import org.codehaus.groovy.grails.commons.GrailsClassUtils
+import org.codehaus.groovy.grails.commons.GrailsApplication
 
 /**
  * Class that handles Grails command line interface for running scripts
@@ -114,10 +115,8 @@ Grails home is set to: ${grailsHome}
             	println "Run 'grails help' for a complete list of available scripts."
             	println 'Exiting.'
             	System.exit(-1)
-            }
-            
-			println "Environment set to ${System.getProperty('grails.env')}"
-                                        
+            }          
+
 			System.setProperty("base.dir", baseDir.absolutePath)
 			
 			try {      
@@ -135,25 +134,26 @@ Grails home is set to: ${grailsHome}
 		}
 	}  
 	    
-	static ENV_ARGS = [dev:"development",prod:"production",test:"test"]
+	static ENV_ARGS = [dev:GrailsApplication.ENV_DEVELOPMENT,prod:GrailsApplication.ENV_PRODUCTION,test:GrailsApplication.ENV_TEST]
     // this map contains default environments for several scripts in form 'script-name':'env-code'
-    static DEFAULT_ENVS = ['war': 'prod','test-app':'test','run-webtest':'test']
+    static DEFAULT_ENVS = ['war': GrailsApplication.ENV_PRODUCTION,'test-app':GrailsApplication.ENV_TEST,'run-webtest':GrailsApplication.ENV_TEST]
     private static isEnvironmentArgs(env) {
 		ENV_ARGS.keySet().contains(env)
 	}
     private static setDefaultEnvironment(args) {
-        if(!System.properties."grails.env") {
+        if(!System.properties."${GrailsApplication.ENVIRONMENT}") {
             def environment = DEFAULT_ENVS[args.toLowerCase()]
-            System.setProperty("grails.env", environment ? ENV_ARGS[environment] : ENV_ARGS['dev'] )
+            environment = environment ? ENV_ARGS[environment] : ENV_ARGS['dev']
+            System.setProperty(GrailsApplication.ENVIRONMENT, environment )
+            System.setProperty(GrailsApplication.ENVIRONMENT_DEFAULT, "true")
         }
     }
     private static calculateEnvironment(env) {
         def environment = ENV_ARGS[env]
         if( environment ) {
-            System.setProperty("grails.env", environment)
+            System.setProperty(GrailsApplication.ENVIRONMENT, environment)
         } else {
-            System.setProperty("grails.env.default", "true")
-            System.setProperty("grails.env", ENV_ARGS['prod'] )
+            setDefaultEnvironment("prod")
         }
     }
 

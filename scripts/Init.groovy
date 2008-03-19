@@ -1,3 +1,4 @@
+
 /*
  * Copyright 2004-2005 the original author or authors.
  * 
@@ -326,6 +327,29 @@ target(checkVersion: "Stops build if app expects different Grails version") {
     }
 }
 
+
+target(setupEnvironment: "Sets up the Grails environment for this script") {
+
+    if(!System.getProperty("grails.env.set")) {
+
+        def defaultEnv = System.getProperty(GrailsApplication.ENVIRONMENT_DEFAULT) ? true : false
+        if(defaultEnv) {
+            def customEnv
+            try {
+                customEnv = getProperty("scriptEnv")
+            } catch (MissingPropertyException mpe) {
+                //ignore, ok
+            }
+            if(customEnv) {
+                System.setProperty(GrailsApplication.ENVIRONMENT, customEnv)
+                System.setProperty(GrailsApplication.ENVIRONMENT_DEFAULT, "")
+            }
+        }
+        println "Environment set to ${System.getProperty(GrailsApplication.ENVIRONMENT)}"
+        System.setProperty("grails.env.set", "true")
+    }
+}
+
 target(updateAppProperties: "Updates default application.properties") {
     Ant.propertyfile(file: "${basedir}/application.properties",
             comment: "Do not edit app.grails.* properties, they may change automatically. " +
@@ -602,3 +626,6 @@ target(configureProxy: "The implementation target") {
         }
     }
 }
+
+
+setupEnvironment()

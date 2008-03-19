@@ -29,7 +29,6 @@ import org.codehaus.groovy.grails.support.*
 Ant.property(environment:"env")                             
 grailsHome = Ant.antProject.properties."env.GRAILS_HOME"    
 
-includeTargets << new File ( "${grailsHome}/scripts/Package.groovy" )
 includeTargets << new File ( "${grailsHome}/scripts/Bootstrap.groovy" )
 
 target ('default': "Load the Grails interactive Swing console") {

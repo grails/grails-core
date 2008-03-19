@@ -28,7 +28,6 @@ GCL = new GroovyClassLoader()
 Ant.property(environment:"env")   
 grailsHome = Ant.antProject.properties."env.GRAILS_HOME"    
 
-includeTargets << new File ( "${grailsHome}/scripts/Init.groovy" ) 
 pluginResources = []
 
                 

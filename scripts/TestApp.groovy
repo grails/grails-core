@@ -53,7 +53,6 @@ appCtx = null
 result = new TestResult()
 compilationFailures = []
 
-includeTargets << new File("${grailsHome}/scripts/Package.groovy")
 includeTargets << new File("${grailsHome}/scripts/Bootstrap.groovy")
 
 generateLog4jFile = true
