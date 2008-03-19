@@ -1,0 +1,101 @@
+<project name="grails-osx">
+    
+
+    <property name="build.command" value=";ant/bin/ant clean build"/>
+    <property name="test.command" value=";ant/bin/ant clean build test"/>
+    <property name="export.prefix" value="export JAVA_HOME="/>
+
+    <property name="jdk14.location" value="/System/Library/Frameworks/JavaVM.framework/Versions/1.4/Home"/>
+    <property name="jdk15.location" value="/System/Library/Frameworks/JavaVM.framework/Versions/1.5/Home"/>
+    <property name="jdk16.location" value="/System/Library/Frameworks/JavaVM.framework/Versions/1.6/Home"/>
+
+    <property name="jdk14.build" value="${export.prefix}${jdk14.location}${build.command}"/>
+    <property name="jdk15.build" value="${export.prefix}${jdk15.location}${build.command}"/>
+    <property name="jdk16.build" value="${export.prefix}${jdk16.location}${build.command}"/>
+
+    <property name="jdk14.test" value="${jdk14.build} test"/>
+    <property name="jdk15.test" value="${jdk15.build} test"/>
+    <property name="jdk16.test" value="${jdk16.build} test"/>
+
+    <available file="${jdk14.location}" property="jdk14.present"/>
+    <available file="${jdk15.location}" property="jdk15.present"/>
+    <available file="${jdk16.location}" property="jdk16.present"/>
+
+    <target name="test-os">
+        <condition property="isOSX" else="isNotOSX">
+	    <and>
+                <os family="mac"/>
+                <and>
+                    <os family="unix"/>
+                </and>
+            </and>
+        </condition>
+	<fail message="You are not running OS X" if="isNotOSX"/>
+	<echo>You are running ${os.name} ${os.arch} ${os.version}</echo>
+    </target>
+
+    <target name="build-with-jdk">
+        <exec executable="bash" failonerror="true">
+            <arg value="-norc"/>
+	    <arg value="-c"/>
+	    <arg value="${export.prefix}${jdk.location}${build.command}"/>
+        </exec>
+    </target>
+    
+    <target name="test-with-jdk">
+        <exec executable="bash" failonerror="true">
+            <arg value="-norc"/>
+	    <arg value="-c"/>
+	    <arg value="${export.prefix}${jdk.location}${build.command} test"/>
+        </exec>
+    </target>
+    
+    <target name="osx-build-with-14" if="jdk14.present">
+        <antcall target="build-with-jdk">
+	    <param name="jdk.location" value="${jdk14.location}"/>
+	</antcall>
+    </target>
+    
+    <target name="osx-build-with-15" if="jdk15.present">
+        <antcall target="build-with-jdk">
+	    <param name="jdk.location" value="${jdk15.location}"/>
+	</antcall>
+    </target>
+    
+    <target name="osx-build-with-16" if="jdk16.present">
+        <antcall target="build-with-jdk">
+	    <param name="jdk.location" value="${jdk16.location}"/>
+	</antcall>
+    </target>
+    
+    <target name="osx-test-with-14" if="jdk14.present">
+        <antcall target="test-with-jdk">
+	    <param name="jdk.location" value="${jdk14.location}"/>
+	</antcall>
+    </target>
+    
+    <target name="osx-test-with-15" if="jdk15.present">
+        <antcall target="test-with-jdk">
+	    <param name="jdk.location" value="${jdk15.location}"/>
+	</antcall>
+    </target>
+    
+    <target name="osx-test-with-16" if="jdk16.present">
+        <antcall target="test-with-jdk">
+	    <param name="jdk.location" value="${jdk16.location}"/>
+	</antcall>
+    </target>
+    
+    <target name="osx-multi-build" depends="test-os">
+        <antcall target="osx-build-with-14"/>
+        <antcall target="osx-build-with-15"/>
+        <antcall target="osx-build-with-16"/>
+    </target>
+
+    <target name="osx-multi-test" depends="test-os">
+        <antcall target="osx-test-with-14"/>
+        <antcall target="osx-test-with-15"/>
+        <antcall target="osx-test-with-16"/>
+    </target>
+
+</project>
