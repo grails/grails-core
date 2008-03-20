@@ -384,14 +384,7 @@ target(runIntegrationTests: "Runs Grails' tests under the test/integration direc
                     }
 
 					def callable = { status ->
-                        def result = invocation()
-                        // don't flush the session if there are errors
-                        if (result.errorCount() > 0) {
-                            interceptor?.clear()
-                        }
-                        else {
-                            interceptor?.flush()
-                        }
+                        invocation()                 
                         status?.setRollbackOnly()
                     }
 					if(test.isTransactional()) {
