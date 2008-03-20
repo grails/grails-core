@@ -14,8 +14,9 @@
  */
 package org.codehaus.groovy.grails.validation;
 
-import org.springframework.validation.Errors;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.validator.EmailValidator;
+import org.springframework.validation.Errors;
 
 /**
  * A Constraint that validates an email address
@@ -57,7 +58,9 @@ class EmailConstraint extends AbstractConstraint {
         if(email) {
             EmailValidator emailValidator = EmailValidator.getInstance();
             Object[] args = new Object[] { constraintPropertyName, constraintOwningClass, propertyValue };
-            if(!emailValidator.isValid(propertyValue.toString())  ) {
+            String value = propertyValue.toString();
+            if(StringUtils.isBlank(value))return;
+            if(!emailValidator.isValid(value)  ) {
                 super.rejectValue(target,errors,ConstrainedProperty.DEFAULT_INVALID_EMAIL_MESSAGE_CODE,ConstrainedProperty.EMAIL_CONSTRAINT + ConstrainedProperty.INVALID_SUFFIX,args);
             }
         }

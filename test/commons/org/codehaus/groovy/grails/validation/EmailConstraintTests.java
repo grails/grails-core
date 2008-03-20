@@ -24,11 +24,6 @@ public class EmailConstraintTests extends AbstractConstraintTests {
                 "test@example.com"
         );
 
-        // must always pass for null value
-        testConstraintPassed(
-                getConstraint( "testString", Boolean.TRUE),
-                null
-        );
 
         testConstraintDefaultMessage(
                 getConstraint( "testString", Boolean.TRUE ),
@@ -36,6 +31,22 @@ public class EmailConstraintTests extends AbstractConstraintTests {
                 "Property [{0}] of class [{1}] with value [{2}] is not a valid e-mail address"
         );
 
+    }
+
+    public void testNullValue() {
+        // must always pass for null value
+        testConstraintPassed(
+                getConstraint( "testString", Boolean.TRUE),
+                null
+        );
+    }
+
+    public void testBlankString() {
+        // must always pass for blank value
+        testConstraintPassed(
+                getConstraint( "testString", Boolean.TRUE),
+                ""
+        );
     }
 
 
