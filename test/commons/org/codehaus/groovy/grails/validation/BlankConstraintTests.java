@@ -23,11 +23,6 @@ public class BlankConstraintTests extends AbstractConstraintTests {
                 "someData"
         );
 
-        testConstraintPassedAndVetoed(
-                getConstraint( "testString", Boolean.TRUE ),
-                ""
-        );
-
         testConstraintPassed(
                 getConstraint( "testString", Boolean.TRUE ),
                 "someData"

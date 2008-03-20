@@ -64,9 +64,9 @@ class BlankConstraint extends AbstractVetoingConstraint {
             if(!blank) {
                 Object[] args = new Object[] { constraintPropertyName, constraintOwningClass };
                 super.rejectValue( target,errors, ConstrainedProperty.DEFAULT_BLANK_MESSAGE_CODE, ConstrainedProperty.BLANK_CONSTRAINT, args );
+                // empty string is catched by 'blank' constraint, no addition validation needed
+                return true;
             }
-            // empty string is catched by 'blank' constraint, no addition validation needed
-            return true;
         }
         return false;
     }

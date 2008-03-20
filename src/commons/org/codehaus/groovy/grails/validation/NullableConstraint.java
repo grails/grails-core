@@ -63,9 +63,9 @@ class NullableConstraint extends AbstractVetoingConstraint {
             if(!nullable) {
                 Object[] args = new Object[] { constraintPropertyName, constraintOwningClass};
                 super.rejectValue(target, errors, ConstrainedProperty.DEFAULT_NULL_MESSAGE_CODE, ConstrainedProperty.NULLABLE_CONSTRAINT,args );
+                // null value is catched by 'blank' constraint, no addition validation needed
+                return true;
             }
-            // null value is catched by 'blank' constraint, no addition validation needed
-            return true;
         }
         return false;
     }
