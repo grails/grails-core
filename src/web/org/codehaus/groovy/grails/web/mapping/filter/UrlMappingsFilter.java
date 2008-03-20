@@ -60,6 +60,7 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
 
     protected void initFilterBean() throws ServletException {
         super.initFilterBean();
+        urlHelper.setUrlDecode(false);
     }
 
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
