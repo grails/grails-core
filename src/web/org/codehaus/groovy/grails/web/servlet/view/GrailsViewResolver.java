@@ -166,7 +166,7 @@ public class GrailsViewResolver extends InternalResourceViewResolver implements 
         if(controller != null && application != null) {            
             String pathToView = this.pluginMetaManager.getPluginViewsPathForResource(controller.getClass().getName());
             if(pathToView!= null) {
-                gspView = GrailsResourceUtils.WEB_INF+ SLASH +pathToView+ SLASH +viewName+GSP_SUFFIX;
+                gspView = GrailsResourceUtils.WEB_INF +pathToView +viewName+GSP_SUFFIX;
 
             }
             else {
