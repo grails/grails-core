@@ -383,7 +383,6 @@
         <root url="jar://$PROJECT_DIR$/lib/commons-lang-2.1.jar!/" />
         <root url="jar://$PROJECT_DIR$/lib/commons-beanutils-1.7.0.jar!/" />
         <root url="jar://$PROJECT_DIR$/lib/commons-el-1.0.jar!/" />
-        <root url="jar://$PROJECT_DIR$/lib/commons-io-1.2.jar!/" />
         <root url="jar://$PROJECT_DIR$/lib/commons-pool-1.2.jar!/" />
         <root url="jar://$PROJECT_DIR$/lib/commons-logging-1.1.jar!/" />
         <root url="jar://$PROJECT_DIR$/lib/commons-cli-1.0.jar!/" />
@@ -393,6 +392,7 @@
         <root url="jar://$PROJECT_DIR$/lib/commons-fileupload-1.1.1.jar!/" />
         <root url="jar://$PROJECT_DIR$/lib/oro-2.0.8.jar!/" />
         <root url="jar://$PROJECT_DIR$/lib/log4j-1.2.15.jar!/" />
+        <root url="jar://$PROJECT_DIR$/lib/commons-io-1.4.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES />
