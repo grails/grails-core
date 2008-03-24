@@ -55,6 +55,11 @@ public class FormTagLibTests extends AbstractGrailsTagTests {
 
         assertOutputEquals('<input type="text" name="testField" value="foo &gt; &quot; &amp; &lt; \'" id="testField" />', template, [value:/foo > " & < '/])
 	}
+
+    void testPasswordTag() {
+        def template = '<g:passwordField name="myPassword" value="foo"/>'
+        assertOutputEquals('<input type="password" name="myPassword" value="foo" id="myPassword" />', template)
+    }
     
 
     void testFormWithURL() {

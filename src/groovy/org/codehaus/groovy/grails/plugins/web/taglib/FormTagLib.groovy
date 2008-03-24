@@ -41,6 +41,19 @@ class FormTagLib {
             out << result
         }
     }
+
+    /**
+     * Creates a new password field
+     */
+    def passwordField = {attrs ->
+        attrs.type = "password"
+        attrs.tagName = "passwordField"
+        def result = field(attrs)
+        if (result) {
+            out << result
+        }
+    }
+
     /**
       * Creates a hidden field
       */
