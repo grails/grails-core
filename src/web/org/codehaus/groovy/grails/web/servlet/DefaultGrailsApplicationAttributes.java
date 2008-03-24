@@ -142,10 +142,18 @@ public class DefaultGrailsApplicationAttributes implements GrailsApplicationAttr
     	   }
        }
        else {
+           String pathToTemplate = "";
+
+           int lastSlash = templateName.lastIndexOf('/');
+           if (lastSlash > -1) {
+               pathToTemplate = templateName.substring(0, lastSlash + 1);
+               templateName = templateName.substring(lastSlash + 1);
+           }
            buf.append(getControllerUri(request))
-           .append("/_")
-           .append(templateName);
-    	   
+                   .append("/")
+                   .append(pathToTemplate)
+                   .append("_")
+                   .append(templateName);
        }
        return buf
        			.append(".gsp")
