@@ -11,19 +11,19 @@ class DefaultGrailsApplicationAttributesTests extends GroovyTestCase {
     void setUp() {
         grailsApplicationAttributes = new DefaultGrailsApplicationAttributes(null)
         def controller = new Expando()
-        controller."${ControllerDynamicMethods.CONTROLLER_URI_PROPERTY}" = 'mycontroller'
+        controller."${ControllerDynamicMethods.CONTROLLER_URI_PROPERTY}" = '/mycontroller'
         request = new MockHttpServletRequest()
         request.setAttribute(GrailsApplicationAttributes.CONTROLLER, controller)
     }
 
     void testGetTemplateUriWithNestedRelativePath() {
         def templateUri = grailsApplicationAttributes.getTemplateUri('one/two/three', request)
-        assertEquals 'wrong template uri', 'mycontroller/one/two/_three.gsp', templateUri
+        assertEquals 'wrong template uri', '/mycontroller/one/two/_three.gsp', templateUri
     }
 
     void testGetTemplateUriWithRelativePath() {
         def templateUri = grailsApplicationAttributes.getTemplateUri('bar', request)
-        assertEquals 'wrong template uri', 'mycontroller/_bar.gsp', templateUri
+        assertEquals 'wrong template uri', '/mycontroller/_bar.gsp', templateUri
     }
 
     void testGetTemplateUriWithAbsoluteNestedPath() {
