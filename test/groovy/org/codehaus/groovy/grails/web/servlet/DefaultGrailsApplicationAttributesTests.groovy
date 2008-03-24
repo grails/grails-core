@@ -25,4 +25,14 @@ class DefaultGrailsApplicationAttributesTests extends GroovyTestCase {
         def templateUri = grailsApplicationAttributes.getTemplateUri('bar', request)
         assertEquals 'wrong template uri', 'mycontroller/_bar.gsp', templateUri
     }
+
+    void testGetTemplateUriWithAbsoluteNestedPath() {
+        def templateUri = grailsApplicationAttributes.getTemplateUri('/uno/dos/tres', request)
+        assertEquals 'wrong template uri', '/uno/dos/_tres.gsp', templateUri
+    }
+
+    void testGetTemplateUriWithAbsolutePath() {
+        def templateUri = grailsApplicationAttributes.getTemplateUri('/mytemplate', request)
+        assertEquals 'wrong template uri', '/_mytemplate.gsp', templateUri
+    }
 }
