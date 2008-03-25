@@ -63,6 +63,7 @@ class Article {
         assertOutputEquals("", '''<g:hasErrors bean="${book}" field="title">success</g:hasErrors>''', [book:b])
         assertOutputEquals("", '''<g:hasErrors model="[book:book]" field="title">success</g:hasErrors>''', [book:b])
 
+        b.clearErrors()
         b.title = "Groovy in Action"
         b.publisherURL = new URL("http://canoo.com/gia")
         b.releaseDate = new Date()
@@ -127,6 +128,7 @@ class Article {
         assertTrue result.startsWith("<ul>")
         assertTrue result.endsWith("</ul>")
 
+        b.clearErrors()
         b.title = "Groovy in Action"
         b.publisherURL = new URL("http://canoo.com/gia")
         b.releaseDate = new Date()
