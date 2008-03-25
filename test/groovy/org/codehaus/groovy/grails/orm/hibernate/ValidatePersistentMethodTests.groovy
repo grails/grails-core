@@ -1,11 +1,24 @@
 package org.codehaus.groovy.grails.orm.hibernate;
 
-import org.codehaus.groovy.grails.commons.*
-import org.codehaus.groovy.grails.commons.test.*
+class ValidatePersistentMethodTests extends AbstractGrailsHibernateTests {
 
-class ValidatePersistentMethodTests extends AbstractGrailsHibernateTests {      
+    void testClearErrorsBetweenValidations() {
+        def personClass = ga.getDomainClass('Person')
+        def person = personClass.newInstance()
+        person.age = 999
+        assertFalse 'validation should have failed for invalid age', person.validate()
+        assertTrue 'person should have had errors because of invalid age', person.hasErrors()
+        person.clearErrors()
+        assertFalse 'person should not have had errors', person.hasErrors()
+        person.age = 9
+        assertTrue 'validation should have succeeded', person.validate()
+        assertFalse 'person should not have had errors', person.hasErrors()
+        person.age = 999
+        assertFalse 'validation should have failed for invalid age', person.validate()
+        assertTrue 'person should have had errors because of invalid age', person.hasErrors()
+    }
 
-	void testToOneCascadingValidation() {
+    void testToOneCascadingValidation() {
         def bookClass = ga.getDomainClass("Book")
         def authorClass = ga.getDomainClass("Author")
         def addressClass = ga.getDomainClass("Address")
@@ -84,6 +97,14 @@ class ValidatePersistentMethodTests extends AbstractGrailsHibernateTests {
 
 	void onSetUp() {
 		this.gcl.parseClass('''
+class Person {
+    Long id
+    Long version
+    Integer age
+    static constraints = {
+      age(max:99)
+    }
+}
 class Book {
     Long id
     Long version
