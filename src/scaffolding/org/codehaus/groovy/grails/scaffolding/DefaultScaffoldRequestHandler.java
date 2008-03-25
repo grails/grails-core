@@ -20,17 +20,20 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.web.binding.GrailsDataBinder;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
+import org.codehaus.groovy.runtime.InvokerHelper;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
+import org.springframework.validation.Errors;
 import org.springframework.web.bind.ServletRequestDataBinder;
 import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.WebRequest;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.io.Serializable;
 
 /**
  * Default implementation of the ScaffoldRequestHandler interface. Uses a ScaffoldDomain to handle
@@ -159,16 +162,18 @@ public class DefaultScaffoldRequestHandler implements ScaffoldRequestHandler {
                           HttpServletResponse reponse, ScaffoldCallback callback) {
 
         Object domainObject = domain.newInstance();
-        ServletRequestDataBinder dataBinder = GrailsDataBinder.createBinder(domainObject, domain.getName(),request);
-        dataBinder.bind(request);
+        WebRequest webRequest = (WebRequest) RequestContextHolder.currentRequestAttributes();
+        InvokerHelper.setProperty(domainObject, "properties", webRequest.getParameterMap());
+
+        Errors domainObjectErrors = (Errors) InvokerHelper.getProperty(domainObject, "errors");
 
         Map model = new HashMap();
-        model.put( domain.getSingularName(), domainObject);
+        model.put(domain.getSingularName(), domainObject);
 
-        if( this.domain.save(domainObject,callback) ) {
+        if (!domainObjectErrors.hasErrors() && this.domain.save(domainObject, callback)) {
             BeanWrapper domainBean = new BeanWrapperImpl(domainObject);
             Object identity = domainBean.getPropertyValue(domain.getIdentityPropertyName());
-            model.put( PARAM_ID, identity );
+            model.put(PARAM_ID, identity);
             callback.setInvoked(true);
         }
         return model;

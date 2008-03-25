@@ -100,15 +100,19 @@ class DomainClassGrailsPlugin {
 				def key = "org.codehaus.groovy.grails.ERRORS_${delegate.class.name}_${System.identityHashCode(delegate)}"
 				storage[key] = errors
 		    }
-		    if(!metaClass.respondsTo(dc.getReference(),"validate")) {
+            if (!metaClass.respondsTo(dc.getReference(), "validate")) {
                 metaClass.validate = {->
-                    errors = new org.springframework.validation.BeanPropertyBindingResult(delegate, delegate.class.name)
-                    def localErrors = errors
-                    for(prop in constraints.values()) {
+                    def localErrors = new org.springframework.validation.BeanPropertyBindingResult(delegate, delegate.class.name)
+                    for (prop in constraints.values()) {
                         prop.messageSource = ctx.getBean("messageSource")
-                        prop.validate(delegate, delegate.getProperty( prop.getPropertyName() ),localErrors);
+                        prop.validate(delegate, delegate.getProperty(prop.getPropertyName()), localErrors);
                     }
-                    !localErrors.hasErrors()
+
+                    if (localErrors.hasErrors()) {
+                        delegate.errors.addAllErrors(localErrors)
+                    }
+
+                    !delegate.errors.hasErrors()
                 }
             }
 

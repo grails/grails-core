@@ -28,6 +28,16 @@ class Book {
 
 
 }
+class MyBean {
+  Long id
+  Long version
+  Integer someIntProperty
+  Integer someOtherIntProperty
+  static constraints = {
+    someIntProperty(min:1, nullable:true)
+    someOtherIntProperty(max:99)
+  }
+}
 class Author {
     Long id
     Long version
@@ -92,8 +102,28 @@ class Author {
         assert b.hasErrors()
 
         def error = b.errors.getFieldError('site')
-                      
 
+
+    }
+
+    void testValidationAfterBindingFails() {
+        def c = ga.getControllerClass("TestController").newInstance()
+
+        // binding should fail for this one...
+        request.addParameter("someIntProperty", "foo")
+
+        // validation should fail for this one...
+        request.addParameter("someOtherIntProperty", "999")
+
+        def params = c.params
+
+        def myBean = ga.getDomainClass("MyBean").newInstance()
+
+        myBean.properties = params
+
+        assertEquals "wrong number of errors before validation", 1, myBean.errors.errorCount
+        assertFalse 'validation should have failed', myBean.validate()
+        assertEquals 'wrong number of errors after validation', 2, myBean.errors.errorCount
     }
 
     void testAssociationAutoCreation() {
