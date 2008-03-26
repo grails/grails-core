@@ -20,7 +20,7 @@ class DefaultScaffoldRequestHandlerTests extends GroovyTestCase {
     void testShowWithNoIdParameter() {
         def numberOfTimesSetInvokedWasCalled = 0
         def valuePassedToSetInvoked = null
-        Map callbackMap = [setInvoked: {arg -> numberOfTimesSetInvokedWasCalled++; valuePassedToSetInvoked = arg}]
+        def callbackMap = [setInvoked: {arg -> numberOfTimesSetInvokedWasCalled++; valuePassedToSetInvoked = arg}]
         def callback = callbackMap as ScaffoldCallback
         def handler = new DefaultScaffoldRequestHandler()
         def returnValue = handler.handleShow(null, null, callback)
@@ -30,12 +30,12 @@ class DefaultScaffoldRequestHandlerTests extends GroovyTestCase {
     }
 
     void testShow() {
-        GrailsWebRequest webRequest = (GrailsWebRequest) RequestContextHolder.currentRequestAttributes();
+        def webRequest = (GrailsWebRequest) RequestContextHolder.currentRequestAttributes();
         webRequest.getParameterMap().put('id', 42)
         def domainObject = new DummyDomainObject()
         def numberOfTimesSetInvokedWasCalled = 0
         def valuePassedToSetInvoked = null
-        Map callbackMap = [setInvoked: {arg -> numberOfTimesSetInvokedWasCalled++; valuePassedToSetInvoked = arg}]
+        def callbackMap = [setInvoked: {arg -> numberOfTimesSetInvokedWasCalled++; valuePassedToSetInvoked = arg}]
         def callback = callbackMap as ScaffoldCallback
         Map scaffoldDomainMap = [:]
         scaffoldDomainMap.getSingularName = {-> 'MySingularName'}
