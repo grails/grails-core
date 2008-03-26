@@ -6,6 +6,7 @@ import org.codehaus.groovy.grails.support.MockApplicationContext
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.validation.Errors
 import org.springframework.web.context.request.RequestContextHolder
+import org.springframework.mock.web.MockHttpServletRequest
 
 class DefaultScaffoldRequestHandlerTests extends GroovyTestCase {
 
@@ -46,6 +47,19 @@ class DefaultScaffoldRequestHandlerTests extends GroovyTestCase {
 
         assertEquals 'setInvoked was called the wrong number of times', 1, numberOfTimesSetInvokedWasCalled
         assertEquals 'the wrong argument was passed to setInvoked', true, valuePassedToSetInvoked
+        assertSame 'return value did not contain expected domain object', domainObject, returnValue['MySingularName']
+    }
+
+    void testCreate() {
+        def scaffoldDomainMap = [:]
+        scaffoldDomainMap.getName = {-> 'MyName'}
+        scaffoldDomainMap.getSingularName = {-> 'MySingularName'}
+        def domainObject = new DummyDomainObject()
+        scaffoldDomainMap.newInstance = {-> domainObject }
+        
+        def handler = new DefaultScaffoldRequestHandler()
+        handler.scaffoldDomain = scaffoldDomainMap as ScaffoldDomain
+        def returnValue = handler.handleCreate(new MockHttpServletRequest(), null, null)
         assertSame 'return value did not contain expected domain object', domainObject, returnValue['MySingularName']
     }
 
