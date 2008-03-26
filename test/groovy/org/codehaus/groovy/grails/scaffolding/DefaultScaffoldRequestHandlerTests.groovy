@@ -66,7 +66,7 @@ class DefaultScaffoldRequestHandlerTests extends GroovyTestCase {
     private void checkThatSaveIsOnlyCalledWhenAppropriate(boolean domainObjectHasErrors) {
         def domainErrors = [hasErrors: {-> domainObjectHasErrors}] as Errors
 
-        Map scaffoldDomainMap = [:]
+        def scaffoldDomainMap = [:]
         scaffoldDomainMap.getSingularName = {-> 'MySingularName'}
         scaffoldDomainMap.newInstance = {-> new DummyDomainObject(errors: domainErrors, id: 42)}
 
