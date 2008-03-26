@@ -37,7 +37,7 @@ class DefaultScaffoldRequestHandlerTests extends GroovyTestCase {
         def valuePassedToSetInvoked = null
         def callbackMap = [setInvoked: {arg -> numberOfTimesSetInvokedWasCalled++; valuePassedToSetInvoked = arg}]
         def callback = callbackMap as ScaffoldCallback
-        Map scaffoldDomainMap = [:]
+        def scaffoldDomainMap = [:]
         scaffoldDomainMap.getSingularName = {-> 'MySingularName'}
         scaffoldDomainMap.get = { domainObject }
         def handler = new DefaultScaffoldRequestHandler()
