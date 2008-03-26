@@ -9,7 +9,7 @@ class GroovyPagesWhitespaceParsingTagTests extends AbstractGrailsTagTests {
 
     void testTagWithTab() {
         // there is a tab (\t) between "if" and test
-        def template = '<g:if	test="${2 > 1}">rechoice</g:if>'
+        def template = '<g:if\ttest="${2 > 1}">rechoice</g:if>'
 
         assertOutputEquals "rechoice", template
     }
