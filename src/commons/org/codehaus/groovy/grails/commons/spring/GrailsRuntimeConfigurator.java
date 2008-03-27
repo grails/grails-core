@@ -266,7 +266,7 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
         this.pluginManager.doRuntimeConfiguration(springConfig);
 
         // configure scaffolding
-        LOG.debug("[RuntimeConfiguration] Proccessing additional external configurations");
+        LOG.debug("[RuntimeConfiguration] Processing additional external configurations");
 
         if (loadExternalBeans) {
             doPostResourceConfiguration(application,springConfig);
