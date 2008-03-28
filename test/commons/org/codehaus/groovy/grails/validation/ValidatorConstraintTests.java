@@ -82,6 +82,16 @@ public class ValidatorConstraintTests extends AbstractConstraintTests {
         }
     }
 
+    /**
+     * Tests that the delegate that provides access to the name of the
+     * constrained property is available to custom validators.
+     */
+    public void testDelegate() {
+        testConstraintPassed(
+                getConstraint("{val, obj -> return propertyName == 'testString'}"),
+                "test");
+    }
+
     public void testConstraintCreation() {
         Constraint validatorConstraint = new ValidatorConstraint();
         assertEquals( ConstrainedProperty.VALIDATOR_CONSTRAINT, validatorConstraint.getName() );

@@ -64,9 +64,16 @@ class ValidatorConstraint extends AbstractConstraint {
             if(numValidatorParams == 3) {
                 params[2] = errors;
             }
-            
-            
 
+            // Provide some extra information via a closure delegate.
+            // The custom validator can access the properties of this
+            // delegate as if they were already defined as local
+            // variables.
+            final ValidatorDelegate delegate = new ValidatorDelegate();
+            delegate.setPropertyName(getPropertyName());
+            validator.setDelegate(delegate);
+
+            // Execute the custom validation.
             final Object result = validator.call(params);
             
             if(numValidatorParams == 3) {
@@ -153,5 +160,17 @@ class ValidatorConstraint extends AbstractConstraint {
             return false;
 
         return true;
+    }
+
+    private static class ValidatorDelegate {
+        private String propertyName;
+
+        public String getPropertyName() {
+            return this.propertyName;
+        }
+
+        public void setPropertyName(String propertyName) {
+            this.propertyName = propertyName;
+        }
     }
 }
