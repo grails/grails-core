@@ -563,7 +563,16 @@ void setClasspath() {
 
     rootLoader?.addURL(new File("${basedir}/grails-app/conf/hibernate").toURL())
     rootLoader?.addURL(new File("${basedir}/src/java").toURL())
-    rootLoader?.addURL(new File(resourcesDirPath).toURL())
+
+    // The resources directory must be created before it is added to
+    // the root loader, otherwise it is quietly ignored. In other words,
+    // if the directory is created after its path has been added to the
+    // root loader, it will not be included in the classpath.
+    def resourcesDir = new File(resourcesDirPath)
+    if (!resourcesDir.exists()) {
+        resourcesDir.mkdirs()
+    }
+    rootLoader?.addURL(resourcesDir.toURL())
 
     parentLoader = getClass().getClassLoader()
     classpathSet = true
