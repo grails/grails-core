@@ -184,7 +184,21 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager impl
         if(plugin == null) throw new IllegalArgumentException("Argument [plugin] cannot be null");
         
         Collection c = (Collection)this.pluginToObserverMap.get(plugin.getName());
+
+        // Add any wildcard observers.
+        Collection wildcardObservers = (Collection)this.pluginToObserverMap.get("*");
+        if(wildcardObservers != null) {
+            if(c != null) {
+                c.addAll(wildcardObservers);
+            }
+            else {
+                c = wildcardObservers;
+            }
+        }
+
         if(c != null) {
+            // Make sure this plugin is not observing itself!
+            c.remove(plugin);
             return c;
         }
         return Collections.EMPTY_SET;

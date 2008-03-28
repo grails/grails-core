@@ -32,7 +32,7 @@ class LoggingGrailsPlugin {
 
     def version = grails.util.GrailsUtil.getGrailsVersion()
     def dependsOn = [core: version]
-    def observe = ['controllers', 'services', 'hibernate', 'taglib', 'codecs', 'converters', 'filters']
+    def observe = ['*']
 
     def doWithWebDescriptor = {xml ->
         def contextParams = xml.'context-param'
