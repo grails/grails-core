@@ -291,8 +291,30 @@ class BeanBuilderTests extends GroovyTestCase {
 		
 		assert "marge", marge.person		
 	}
-	
-	void testBeanWithFactoryBean() {
+
+    void testGetBeanDefinitions() {
+        def bb = new BeanBuilder()
+        bb.beans {
+            jeff(Bean1) {
+                person = 'jeff'
+            }
+            graeme(Bean1) {
+                person = 'graeme'
+            }
+            guillaume(Bean1) {
+                person = 'guillaume'
+            }
+        }
+
+        def beanDefinitions = bb.beanDefinitions
+        assertNotNull 'beanDefinitions was null', beanDefinitions
+        assertEquals 'beanDefinitions was the wrong size', 3, beanDefinitions.size()
+        assertNotNull 'beanDefinitions did not contain jeff', beanDefinitions['jeff']
+        assertNotNull 'beanDefinitions did not contain guillaume', beanDefinitions['guillaume']
+        assertNotNull 'beanDefinitions did not contain graeme', beanDefinitions['graeme']
+    }
+
+    void testBeanWithFactoryBean() {
 		def bb = new BeanBuilder()
 		bb.beans {
 			myFactory(Bean1Factory)
