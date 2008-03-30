@@ -30,16 +30,18 @@ class DefaultScaffoldRequestHandlerTests extends GroovyTestCase {
         def callback = callbackMap as ScaffoldCallback
         def scaffoldDomainMap = [:]
         scaffoldDomainMap.getSingularName = {-> 'MySingularName'}
-        def argumentPassedToGet = null
-        scaffoldDomainMap.get = {arg -> argumentPassedToGet = arg; domainObject}
-        def argumentPassedToDelete = null
-        scaffoldDomainMap.delete = {arg -> argumentPassedToDelete = arg; true}
+        scaffoldDomainMap.get = {arg ->
+            assertEquals 'wrong argument was passed to the get method', 42, arg
+            domainObject
+        }
+        scaffoldDomainMap.delete = {arg ->
+            assertEquals 'wrong argument was passed to delete', 42, arg
+            true
+        }
         def handler = new DefaultScaffoldRequestHandler()
         handler.scaffoldDomain = scaffoldDomainMap as ScaffoldDomain
         def returnValue = handler.handleDelete(null, null, callback)
 
-        assertEquals 'wrong argument was passed to delete', 42, argumentPassedToDelete
-        assertEquals 'wrong argument was passed to the get method', 42, argumentPassedToGet
         assertEquals 'setInvoked was called the wrong number of times', 1, numberOfTimesSetInvokedWasCalled
         assertSame 'return value did not contain expected domain object', domainObject, returnValue['MySingularName']
     }
