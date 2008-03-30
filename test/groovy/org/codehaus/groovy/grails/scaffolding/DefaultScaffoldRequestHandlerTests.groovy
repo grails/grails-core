@@ -91,35 +91,6 @@ class DefaultScaffoldRequestHandlerTests extends GroovyTestCase {
         assertSame 'handleUpdate returned wrong value', Collections.EMPTY_MAP, returnValue
     }
 
-    void testSuccessfulUpdate() {
-        def domainErrors = [hasErrors: {-> false}] as Errors
-        def webRequest = (GrailsWebRequest) RequestContextHolder.currentRequestAttributes()
-        webRequest.getParameterMap().put('id', 42)
-        def domainObject = new DummyDomainObject(errors: domainErrors)
-        def numberOfTimesSetInvokedWasCalled = 0
-        def callbackMap = [setInvoked: {arg ->
-            numberOfTimesSetInvokedWasCalled++
-            assertEquals 'the wrong argument was passed to setInvoked', true, arg
-        }]
-        def callback = callbackMap as ScaffoldCallback
-        def scaffoldDomainMap = [:]
-        scaffoldDomainMap.getSingularName = {-> 'MySingularName'}
-        scaffoldDomainMap.get = {id ->
-            assertEquals 'wrong id was passed to the get method', 42, id
-            domainObject
-        }
-        scaffoldDomainMap.update = {obj, theCallback ->
-            assertSame 'wrong object was passed to update', domainObject, obj
-            true
-        }
-        def handler = new DefaultScaffoldRequestHandler()
-        handler.scaffoldDomain = scaffoldDomainMap as ScaffoldDomain
-        def returnValue = handler.handleUpdate(null, null, callback)
-
-        assertEquals 'setInvoked was called the wrong number of times', 1, numberOfTimesSetInvokedWasCalled
-        assertSame 'return value did not contain expected domain object', domainObject, returnValue['MySingularName']
-    }
-
     void testThatUpdateIsNotCalledIfBindingFails() {
         def domainErrors = [hasErrors: {-> true}] as Errors
 
@@ -149,7 +120,15 @@ class DefaultScaffoldRequestHandlerTests extends GroovyTestCase {
         assertSame 'return value did not contain expected domain object', domainObject, returnValue['MySingularName']
     }
 
+    void testSuccessfulUpdate() {
+        callUpdate true
+    }
+
     void testUnsuccessfulUpdate() {
+        callUpdate false
+    }
+
+    private void callUpdate(boolean updateReturnValue) {
         def domainErrors = [hasErrors: {-> false}] as Errors
         def webRequest = (GrailsWebRequest) RequestContextHolder.currentRequestAttributes()
         webRequest.getParameterMap().put('id', 42)
@@ -157,7 +136,7 @@ class DefaultScaffoldRequestHandlerTests extends GroovyTestCase {
         def numberOfTimesSetInvokedWasCalled = 0
         def callbackMap = [setInvoked: {arg ->
             numberOfTimesSetInvokedWasCalled++
-            assertEquals 'the wrong argument was passed to setInvoked', false, arg
+            assertEquals 'the wrong argument was passed to setInvoked', updateReturnValue, arg
         }]
         def callback = callbackMap as ScaffoldCallback
         def scaffoldDomainMap = [:]
@@ -166,14 +145,17 @@ class DefaultScaffoldRequestHandlerTests extends GroovyTestCase {
             assertEquals 'wrong id was passed to the get method', 42, id
             domainObject
         }
+        def numberOfTimesUpdateWasCalled = 0
         scaffoldDomainMap.update = {obj, theCallback ->
+            numberOfTimesUpdateWasCalled++
             assertSame 'wrong object was passed to update', domainObject, obj
-            false
+            updateReturnValue
         }
         def handler = new DefaultScaffoldRequestHandler()
         handler.scaffoldDomain = scaffoldDomainMap as ScaffoldDomain
         def returnValue = handler.handleUpdate(null, null, callback)
 
+        assertEquals 'update was called the wrong number of times', 1, numberOfTimesUpdateWasCalled
         assertEquals 'setInvoked was called the wrong number of times', 1, numberOfTimesSetInvokedWasCalled
         assertSame 'return value did not contain expected domain object', domainObject, returnValue['MySingularName']
     }
