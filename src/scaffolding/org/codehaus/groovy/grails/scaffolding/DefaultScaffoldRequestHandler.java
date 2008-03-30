@@ -189,16 +189,20 @@ public class DefaultScaffoldRequestHandler implements ScaffoldRequestHandler {
         }
 
         Object domainObject = this.domain.get(id);
-        ServletRequestDataBinder dataBinder = GrailsDataBinder.createBinder(domainObject, domain.getName(),request);
-        dataBinder.bind(request);
+        WebRequest webRequest = (WebRequest) RequestContextHolder.currentRequestAttributes();
+        InvokerHelper.setProperty(domainObject, "properties", webRequest.getParameterMap());
+
+        Errors domainObjectErrors = (Errors) InvokerHelper.getProperty(domainObject, "errors");
 
         Map model = new HashMap();
         model.put(	this.domain.getSingularName(), domainObject);
         model.put( PARAM_ID, id );
         // execute update
-        if(this.domain.update(domainObject,callback))
+        if(!domainObjectErrors.hasErrors() && this.domain.update(domainObject,callback)) {
         	callback.setInvoked(true);
-
+        } else {
+            callback.setInvoked(false);
+        }
         return model;
     }
 
