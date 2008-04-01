@@ -542,7 +542,8 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
         // bi-directional one-to-one
         else if(DomainClassArtefactHandler.isDomainClass(relatedClassPropertyType)) {
             property.setOneToOne(true);
-            property.setBidirectional(true);
+            if(!getClazz().equals(relatedClassPropertyType))
+                property.setBidirectional(true);
         }
     }
 
