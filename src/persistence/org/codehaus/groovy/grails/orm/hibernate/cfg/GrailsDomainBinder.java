@@ -439,7 +439,7 @@ public final class GrailsDomainBinder {
             current = superClass;
         }
 
-        return getMapping(current.getName());
+        return getMapping(current);
     }
 
     private static boolean isBidirectionalOneToManyMap(GrailsDomainClassProperty property) {
@@ -505,7 +505,7 @@ public final class GrailsDomainBinder {
     }
 
     private static ColumnConfig getColumnConfig(GrailsDomainClassProperty property) {
-        Mapping m = getMapping(property.getDomainClass().getFullName());
+        Mapping m = getMapping(property.getDomainClass().getClazz());
         ColumnConfig cc = m != null ? m.getColumn(property.getName()) : null;
         return cc;
     }
@@ -813,7 +813,7 @@ public final class GrailsDomainBinder {
 	 * @return The table name
 	 */
 	private static String getTableName(GrailsDomainClass domainClass) {
-        Mapping m = getMapping(domainClass.getFullName());
+        Mapping m = getMapping(domainClass.getClazz());
         String tableName = null;
         if(m != null && m.getTableName() != null) {
             tableName = m.getTableName();
@@ -863,11 +863,11 @@ public final class GrailsDomainBinder {
 
     /**
      * Obtains a mapping object for the given domain class nam
-     * @param domainClassName The domain class name in question
+     * @param theClass The domain class in question
      * @return A Mapping object or null
      */
-    public static Mapping getMapping(String domainClassName) {
-        return (Mapping) MAPPING_CACHE.get(domainClassName);
+    public static Mapping getMapping(Class theClass) {
+        return (Mapping) MAPPING_CACHE.get(theClass.getName());
     }
 
     /**
@@ -912,7 +912,7 @@ public final class GrailsDomainBinder {
 			RootClass root = new RootClass();
 			bindClass(domainClass, root, mappings);
 
-            Mapping m = getMapping(domainClass.getName());
+            Mapping m = getMapping(domainClass.getClazz());
 
             if(m!=null) {
                 CacheConfig cc = m.getCache();
@@ -968,7 +968,7 @@ public final class GrailsDomainBinder {
      */
 	private static void bindSubClass(GrailsDomainClass sub, PersistentClass parent, Mappings mappings) {
         evaluateMapping(sub);
-        Mapping m = getMapping(parent.getClassName());
+        Mapping m = getMapping(parent.getMappedClass());
         Subclass subClass;
         boolean tablePerSubclass = m != null && !m.getTablePerHierarchy();
         if(tablePerSubclass) {
@@ -1133,7 +1133,7 @@ public final class GrailsDomainBinder {
 		if(LOG.isDebugEnabled())
 			LOG.debug( "[GrailsDomainBinder] Mapping Grails domain class: " + domainClass.getFullName() + " -> " + root.getTable().getName() );
 
-        Mapping m = getMapping(domainClass.getFullName());
+        Mapping m = getMapping(domainClass.getClazz());
 
         bindIdentity(domainClass, root, mappings, m);
 
@@ -1204,7 +1204,7 @@ public final class GrailsDomainBinder {
 		GrailsDomainClassProperty[] persistentProperties = domainClass.getPersistentProperties();
 		Table table = persistentClass.getTable();
 
-        Mapping gormMapping = getMapping(domainClass.getFullName());
+        Mapping gormMapping = getMapping(domainClass.getClazz());
 
         for(int i = 0; i < persistentProperties.length;i++) {
 
@@ -1872,7 +1872,7 @@ w	 * Binds a simple value to the Hibernate metamodel. A simple value is
         GrailsDomainClass domainClass = grailsProp.getDomainClass();
 
         String columnName = null;
-        Mapping m = getMapping(domainClass.getFullName());
+        Mapping m = getMapping(domainClass.getClazz());
         if(m != null) {
             ColumnConfig c = m.getColumn(grailsProp.getName());
             if(c != null && c.getColumn() != null) {

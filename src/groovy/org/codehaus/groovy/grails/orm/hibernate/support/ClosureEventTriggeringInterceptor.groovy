@@ -54,7 +54,7 @@ class ClosureEventTriggeringInterceptor extends EmptyInterceptor implements Appl
         def modified = triggerEvent(BEFORE_INSERT_EVENT, entity, state, propertyList)
 
         def metaClass = entity.metaClass
-        Mapping m = GrailsDomainBinder.getMapping(entity.getClass().name)
+        Mapping m = GrailsDomainBinder.getMapping(entity.getClass())
         boolean shouldTimestamp = m && !m.autoTimestamp ? false : true
 
         MetaProperty property = metaClass.hasProperty(entity, GrailsDomainClassProperty.DATE_CREATED)
@@ -87,7 +87,7 @@ class ClosureEventTriggeringInterceptor extends EmptyInterceptor implements Appl
     public boolean onFlushDirty(Object entity, Serializable id, Object[] currentState, Object[] previousState, String[] propertyNames, Type[] types)  {
         List propertyList = propertyNames.toList()
         boolean modified = triggerEvent(BEFORE_UPDATE_EVENT, entity, currentState, propertyList)
-        Mapping m = GrailsDomainBinder.getMapping(entity.getClass().name)
+        Mapping m = GrailsDomainBinder.getMapping(entity.getClass())
         boolean shouldTimestamp = m && !m.autoTimestamp ? false : true
         MetaProperty property = entity.metaClass.hasProperty(entity, GrailsDomainClassProperty.LAST_UPDATED)
         if(property && shouldTimestamp) {
