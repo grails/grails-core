@@ -277,6 +277,27 @@ getGrailsJar = {args ->
 
 args = System.getProperty("grails.cli.args")
 
+argsMap = [params: []]
+
+target(parseArguments: "Parse the arguments passed on the command line") {
+    args?.tokenize().each {token ->
+        def nameValueSwitch = token =~ "--?(.*)=(.*)"
+        if (nameValueSwitch.matches()) { // this token is a name/value pair (ex: --foo=bar or -z=qux)
+            argsMap[nameValueSwitch[0][1]] = nameValueSwitch[0][2]
+        }
+        else {
+            def nameOnlySwitch = token =~ "--?(.*)"
+            if (nameOnlySwitch.matches()) {  // this token is just a switch (ex: -force or --help)
+                argsMap[nameOnlySwitch[0][1]] = true
+            }
+            else { // single item tokens, append in order to an array of params
+                argsMap["params"] << token
+            }
+        }
+    }
+    event("StatusUpdate", ["Done parsing arguments: $argsMap"])
+}
+
 confirmInput = {String message ->
     Ant.input(message: message, addproperty: "confirm.message", validargs: "y,n")
     Ant.antProject.properties."confirm.message"
