@@ -209,12 +209,12 @@ public class GrailsHibernateUtil {
         if(offset > -1)
             c.setFirstResult(offset);
         if(sort != null) {
-boolean ignoreCase = true;
-Object caseArg = argMap.get(ARGUMENT_IGNORE_CASE);
-if(caseArg instanceof Boolean) {
-ignoreCase = ((Boolean)caseArg).booleanValue();
-}
-if(ORDER_DESC.equals(order)) {
+            boolean ignoreCase = true;
+            Object caseArg = argMap.get(ARGUMENT_IGNORE_CASE);
+            if(caseArg instanceof Boolean) {
+                ignoreCase = ((Boolean)caseArg).booleanValue();
+            }
+            if(ORDER_DESC.equals(order)) {
                 c.addOrder( ignoreCase ? Order.desc(sort).ignoreCase() : Order.desc(sort));
             }
             else {

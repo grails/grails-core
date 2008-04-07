@@ -729,12 +729,23 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
                     this.criteria.setProjection(Projections.rowCount());
                     result = this.criteria.uniqueResult();
                 } else if(paginationEnabledList) {
-                    GrailsHibernateUtil.populateArgumentsForCriteria(this.criteria, (Map)args[0]);
-                    PagedResultList pagedRes = new PagedResultList(this.criteria.list());
+                    // Calculate how many results there are in total. This has been
+                    // moved to before the 'list()' invocation to avoid any "ORDER
+                    // BY" clause added by 'populateArgumentsForCriteria()', otherwise
+                    // an exception is thrown for non-string sort fields (GRAILS-2690).
                     this.criteria.setFirstResult(0);
                     this.criteria.setMaxResults(Integer.MAX_VALUE);
                     this.criteria.setProjection(Projections.rowCount());
                     int totalCount = ((Integer)this.criteria.uniqueResult()).intValue();
+
+                    // Drop the projection, add settings for the pagination parameters,
+                    // and then execute the query.
+                    this.criteria.setProjection(null);
+                    GrailsHibernateUtil.populateArgumentsForCriteria(this.criteria, (Map)args[0]);
+                    PagedResultList pagedRes = new PagedResultList(this.criteria.list());
+
+                    // Updated the paged results with the total number of records
+                    // calculated previously.
                     pagedRes.setTotalCount(totalCount);
                     result = pagedRes;
                 } else {
