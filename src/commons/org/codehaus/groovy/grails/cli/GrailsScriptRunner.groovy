@@ -68,42 +68,19 @@ Grails home is set to: ${grailsHome}
 		if(args.size() && args[0].trim()) {         
                
 
-			baseDir = establishBaseDir()
+			baseDir = establishBaseDir()			
             println "Base Directory: ${baseDir.absolutePath}"
-		         		    
+			System.setProperty("base.dir", baseDir.absolutePath)
+					         		    
 		    rootLoader = getClass().classLoader ? getClass().classLoader.rootLoader : Thread.currentThread().getContextClassLoader().rootLoader
 			def baseName = new File(baseDir.absolutePath).name
 		    classesDir = new File("${userHome}/.grails/${grailsVersion}/projects/${baseName}/classes")
 		
 			def allArgs = args[0].trim()
 
-            allArgs = processSystemArguments(allArgs).trim().split(" ")
-            def currentParamIndex = 0
-            if( isEnvironmentArgs(allArgs[currentParamIndex]) ) {
-                // use first argument as environment name and step further
-                calculateEnvironment(allArgs[currentParamIndex++])
-            } else {
-                // first argument is a script name so check for default environment
-                setDefaultEnvironment(allArgs[currentParamIndex])
-            }
+			def scriptName = processArgumentsAndReturnScriptName(allArgs)
+			
 
-            if( currentParamIndex >= allArgs.size() ) {
-                println "You should specify a script to run. Run 'grails help' for a complete list of available scripts."
-                System.exit(0)
-            }
-
-            // use current argument as script name and step further
-            def paramName = allArgs[currentParamIndex++]
-            if (paramName[0] == '-') {
-                paramName = paramName[1..-1]
-            }
-            System.setProperty("current.gant.script", paramName)
-            def scriptName = GCU.getNameFromScript(paramName)
-
-            if( currentParamIndex < allArgs.size() ) {
-                // if we have additional params provided - store it in system property
-                System.setProperty("grails.cli.args", allArgs[currentParamIndex..-1].join("\n"))
-            }
 
             def scriptsAllowedOutsideProject = ['CreateApp','CreatePlugin','PackagePlugin','Help','ListPlugins','PluginInfo','SetProxy']
             if(!new File(baseDir.absolutePath, "grails-app").exists() && (!scriptsAllowedOutsideProject.contains(scriptName))) {
@@ -117,10 +94,33 @@ Grails home is set to: ${grailsHome}
             	System.exit(-1)
             }          
 
-			System.setProperty("base.dir", baseDir.absolutePath)
+
 			
 			try {      
-				callPluginOrGrailsScript(scriptName)
+				if(scriptName.equalsIgnoreCase('interactive')) {
+					//disable exiting
+					System.metaClass.static.exit = { int code ->}
+					int messageNumber = 0
+					while(true) {
+						println "--------------------------------------------------------"
+						ANT.input(message:"Interactive mode ready, type your command name in to continue (hit ENTER to run the last command):", addproperty:"grails.script.name${messageNumber}")				
+
+						def enteredName = ANT.antProject.properties."grails.script.name${messageNumber++}"
+						if(enteredName) {
+							scriptName = processArgumentsAndReturnScriptName(enteredName)							
+						}
+                        def now = System.currentTimeMillis()
+						callPluginOrGrailsScript(scriptName)
+						def end = System.currentTimeMillis()
+						println "--------------------------------------------------------"
+						println "Command [$scriptName] completed in ${end-now}ms"
+					}
+				}
+				else {
+					System.exit(callPluginOrGrailsScript(scriptName))
+				}
+				
+
 			}
 			catch(Throwable t) {
 				println "Error executing script ${scriptName}: ${t.message}"
@@ -129,10 +129,41 @@ Grails home is set to: ${grailsHome}
 
 		}
 		else {           
-			println "No script name specified. Use 'grails help' for more info"
+			println "No script name specified. Use 'grails help' for more info or 'grails interactive' to enter interactive mode"
 			System.exit(0)
 		}
 	}  
+	
+	private static processArgumentsAndReturnScriptName(allArgs) {
+        allArgs = processSystemArguments(allArgs).trim().split(" ")
+        def currentParamIndex = 0
+        if( isEnvironmentArgs(allArgs[currentParamIndex]) ) {
+            // use first argument as environment name and step further
+            calculateEnvironment(allArgs[currentParamIndex++])
+        } else {
+            // first argument is a script name so check for default environment
+            setDefaultEnvironment(allArgs[currentParamIndex])
+        }
+
+        if( currentParamIndex >= allArgs.size() ) {
+            println "You should specify a script to run. Run 'grails help' for a complete list of available scripts."
+            System.exit(0)
+        }
+
+        // use current argument as script name and step further
+        def paramName = allArgs[currentParamIndex++]
+        if (paramName[0] == '-') {
+            paramName = paramName[1..-1]
+        }
+        System.setProperty("current.gant.script", paramName)
+        def scriptName = GCU.getNameFromScript(paramName)
+
+        if( currentParamIndex < allArgs.size() ) {
+            // if we have additional params provided - store it in system property
+            System.setProperty("grails.cli.args", allArgs[currentParamIndex..-1].join("\n"))
+        }
+	    return scriptName
+	}	
 	    
 	static ENV_ARGS = [dev:GrailsApplication.ENV_DEVELOPMENT,prod:GrailsApplication.ENV_PRODUCTION,test:GrailsApplication.ENV_TEST]
     // this map contains default environments for several scripts in form 'script-name':'env-code'
@@ -157,45 +188,57 @@ Grails home is set to: ${grailsHome}
         }
     }
 
+	static SCRIPT_CACHE = [:]
 	private static callPluginOrGrailsScript(scriptName) {
-		def potentialScripts = [] 
+		def potentialScripts  
+		def binding
+		if(SCRIPT_CACHE[scriptName]) {
+			def cachedScript = SCRIPT_CACHE[scriptName]
+			potentialScripts = cachedScript.potentialScripts
+			binding = cachedScript.binding
+		}
+		else {
+			potentialScripts = []
+			def userHome = ANT.antProject.properties."user.home"
 
-		def userHome = ANT.antProject.properties."user.home"
-		
-		def scriptLocations = ["${baseDir.absolutePath}/scripts", "${grailsHome}/scripts", "${userHome}/.grails/scripts"]
-		scriptLocations.each {
-			def scriptFile = new File("${it}/${scriptName}.groovy")
-			if(scriptFile.exists()) {
-				potentialScripts << scriptFile
+			def scriptLocations = ["${baseDir.absolutePath}/scripts", "${grailsHome}/scripts", "${userHome}/.grails/scripts"]
+			scriptLocations.each {
+				def scriptFile = new File("${it}/${scriptName}.groovy")
+				if(scriptFile.exists()) {
+					potentialScripts << scriptFile
+				}
 			}
+
+			try {
+				def pluginScripts = RESOLVER.getResources("file:${baseDir.absolutePath}/plugins/*/scripts/${scriptName}.groovy")
+				potentialScripts += pluginScripts.collect { it.file }			
+			}
+			catch(Exception e) {
+				println "Note: No plugin scripts found"
+			}
+
+			// Get the paths of any installed plugins and add them to the
+	        // initial binding as '<pluginName>PluginDir'.
+	        binding = new Binding()
+	        try {
+
+	            def plugins = RESOLVER.getResources("file:${baseDir.absolutePath}/plugins/*/*GrailsPlugin.groovy")
+
+	            plugins.each { resource ->
+	                def matcher = resource.filename =~ /(\S+)GrailsPlugin.groovy/
+	                def pluginName = GrailsClassUtils.getPropertyName(matcher[0][1])
+
+	                // Add the plugin path to the binding.
+	                binding.setVariable("${pluginName}PluginDir", resource.file.parentFile)
+	            }
+	        }
+	        catch(Exception e) {
+	            // No plugins found.
+	        }
+			SCRIPT_CACHE[scriptName] = new CachedScript(binding:binding, potentialScripts:potentialScripts)	
 		}
 
-		try {
-			def pluginScripts = RESOLVER.getResources("file:${baseDir.absolutePath}/plugins/*/scripts/${scriptName}.groovy")
-			potentialScripts += pluginScripts.collect { it.file }			
-		}
-		catch(Exception e) {
-			println "Note: No plugin scripts found"
-		}
 
-		// Get the paths of any installed plugins and add them to the
-        // initial binding as '<pluginName>PluginDir'.
-        def binding = new Binding()
-        try {
-
-            def plugins = RESOLVER.getResources("file:${baseDir.absolutePath}/plugins/*/*GrailsPlugin.groovy")
-
-            plugins.each { resource ->
-                def matcher = resource.filename =~ /(\S+)GrailsPlugin.groovy/
-                def pluginName = GrailsClassUtils.getPropertyName(matcher[0][1])
-
-                // Add the plugin path to the binding.
-                binding.setVariable("${pluginName}PluginDir", resource.file.parentFile)
-            }
-        }
-        catch(Exception e) {
-            // No plugins found.
-        }
 
         if(potentialScripts.size()>0) {
 			potentialScripts = potentialScripts.unique()
@@ -203,7 +246,7 @@ Grails home is set to: ${grailsHome}
 				println "Running script ${potentialScripts[0].absolutePath}"
 				
 				def gant = new Gant(binding, new URLClassLoader([classesDir.toURL()] as URL[], rootLoader))
-				System.exit(gant.processArgs(["-f", potentialScripts[0].absolutePath,"-c","-d","${userHome}/.grails/${version}/scriptCache"] as String[]))
+				return gant.processArgs(["-f", potentialScripts[0].absolutePath,"-c","-d","${userHome}/.grails/${version}/scriptCache"] as String[])
 			}                                      
 			else {
 				println "Multiple options please select:"  
@@ -217,12 +260,13 @@ Grails home is set to: ${grailsHome}
 
 				println "Running script ${potentialScripts[number-1].absolutePath}"				
 				def gant = new Gant(binding, new URLClassLoader([classesDir.toURL()] as URL[], rootLoader))
-				System.exit(gant.processArgs(["-f", potentialScripts[number-1].absolutePath] as String[]))
+				return gant.processArgs(["-f", potentialScripts[number-1].absolutePath] as String[])
 			}
 		}
 		else {
 			println "Script $scriptName not found."
             println "Run 'grails help' for a complete list of available scripts."
+			return 0
 		}    		
 	}
 	
@@ -273,3 +317,9 @@ Grails home is set to: ${grailsHome}
 	}      
 
 }
+
+class CachedScript {
+	Binding binding
+	List potentialScripts
+}
+

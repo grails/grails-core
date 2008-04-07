@@ -75,6 +75,7 @@ target ( runApp : "Main implementation that executes a Grails application") {
 }
 target( watchContext: "Watches the WEB-INF/classes directory for changes and restarts the server if necessary") {
     long lastModified = classesDir.lastModified()
+    
     while(true) {
         if (autoRecompile) {
             lastModified = recompileCheck(lastModified) {

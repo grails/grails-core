@@ -169,8 +169,8 @@ target(compileTests: "Compiles the test cases") {
         exit(1)
     }
 
-    def rootLoader = getClass().classLoader.rootLoader
-    rootLoader?.addURL(new File(destDir).toURL())
+	classLoader = new URLClassLoader([new File(destDir).toURL()] as URL[],getClass().classLoader.rootLoader)
+	Thread.currentThread().contextClassLoader = classLoader
 
     event("CompileEnd", ['tests'])
 }
@@ -292,8 +292,8 @@ target(runUnitTests: "Run Grails' unit tests under the test/unit directory") {
             return
         }
 
-        classLoader.rootLoader.addURL(new File("test/unit").toURL())
         def suite = new TestSuite()
+		classLoader.rootLoader.addURL(new File("test/unit").toURL())
         populateTestSuite(suite, testFiles, classLoader, appCtx, "test/unit/")
         if (suite.testCount() > 0) {
 
