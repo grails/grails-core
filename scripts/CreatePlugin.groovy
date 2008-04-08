@@ -43,11 +43,22 @@ target( createPlugin: "The implementation target")  {
     
     pluginName = GCU.getNameFromScript(grailsAppName)
  	new File("${basedir}/${pluginName}GrailsPlugin.groovy") <<
-"""
+"""\
 class ${pluginName}GrailsPlugin {
     def version = 0.1
     def dependsOn = [:]
-	
+
+    // TODO Fill in these fields
+    def author = "Your name"
+    def authorEmail = ""
+    def title = "Plugin summary/headline"
+    def description = '''\\
+Brief description of the plugin.
+'''
+
+    // URL to the plugin's documentation
+    def documentation = "http://grails.org/${pluginName}+Plugin"
+
     def doWithSpring = {
         // TODO Implement runtime spring config (optional)
     }
@@ -65,18 +76,19 @@ class ${pluginName}GrailsPlugin {
     }
 	
     def onChange = { event ->
-        // TODO Implement code that is executed when this class plugin class is changed  
-        // the event contains: event.application and event.applicationContext objects
+        // TODO Implement code that is executed when any artefact that this plugin is
+        // watching is modified and reloaded. The event contains: event.source,
+        // event.application, event.manager, event.ctx, and event.plugin.
     }
-                                                                                  
-    def onApplicationChange = { event ->
-        // TODO Implement code that is executed when any class in a GrailsApplication changes
-        // the event contain: event.source, event.application and event.applicationContext objects
+
+    def onConfigChange = { event ->
+        // TODO Implement code that is executed when the project configuration changes.
+        // The event is the same as for 'onChange'.
     }
 }
 """
     new File("${basedir}/scripts/_Install.groovy") <<
-"""
+"""\
 //
 // This script is executed by Grails after plugin was installed to project.
 // This script is a Gant script so you can use all special variables provided
@@ -92,7 +104,7 @@ grailsHome = Ant.antProject.properties."env.GRAILS_HOME"
 
 """
     new File("${basedir}/scripts/_Upgrade.groovy") <<
-"""
+"""\
 //
 // This script is executed by Grails during application upgrade ('grails upgrade' command).
 // This script is a Gant script so you can use all special variables
