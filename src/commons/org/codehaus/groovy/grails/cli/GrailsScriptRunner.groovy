@@ -100,7 +100,8 @@ Grails home is set to: ${grailsHome}
 				if(scriptName.equalsIgnoreCase('interactive')) {
 					//disable exiting
 					System.metaClass.static.exit = { int code ->}
-					int messageNumber = 0
+                    System.setProperty("grails.interactive.mode", "true")                    
+                    int messageNumber = 0
 					while(true) {
 						println "--------------------------------------------------------"
 						ANT.input(message:"Interactive mode ready, type your command name in to continue (hit ENTER to run the last command):", addproperty:"grails.script.name${messageNumber}")				
@@ -134,7 +135,7 @@ Grails home is set to: ${grailsHome}
 		}
 	}  
 	
-	private static processArgumentsAndReturnScriptName(allArgs) {
+	static processArgumentsAndReturnScriptName(allArgs) {
         allArgs = processSystemArguments(allArgs).trim().split(" ")
         def currentParamIndex = 0
         if( isEnvironmentArgs(allArgs[currentParamIndex]) ) {
@@ -189,7 +190,7 @@ Grails home is set to: ${grailsHome}
     }
 
 	static SCRIPT_CACHE = [:]
-	private static callPluginOrGrailsScript(scriptName) {
+	static callPluginOrGrailsScript(scriptName) {
 		def potentialScripts  
 		def binding
 		if(SCRIPT_CACHE[scriptName]) {

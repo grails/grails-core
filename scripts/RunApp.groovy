@@ -32,6 +32,7 @@ import javax.naming.*
 
 import org.codehaus.groovy.tools.RootLoader
 import org.codehaus.groovy.grails.plugins.PluginManagerHolder
+import org.codehaus.groovy.grails.cli.GrailsScriptRunner
 
 
 Ant.property(environment:"env")
@@ -75,8 +76,52 @@ target ( runApp : "Main implementation that executes a Grails application") {
 }
 target( watchContext: "Watches the WEB-INF/classes directory for changes and restarts the server if necessary") {
     long lastModified = classesDir.lastModified()
+    boolean keepRunning = true
+    boolean isInteractive = System.getProperty("grails.interactive.mode") == "true"
+
+    if(isInteractive) {
+        def daemonThread = new Thread( {
+            println "--------------------------------------------------------"
+            println "Application loaded in interactive mode, type 'exit' to shutdown server or your command name in to continue (hit ENTER to run the last command):"            
+
+            def reader = new BufferedReader(new InputStreamReader(System.in))
+            def cmd = reader.readLine()
+            def scriptName
+            while(cmd!=null) {
+                if(cmd == 'exit' || cmd == 'quit') break
+                if(cmd != 'run-app') {
+                    scriptName = cmd ? GrailsScriptRunner.processArgumentsAndReturnScriptName(cmd) : scriptName
+                    if(scriptName) {
+                        def now = System.currentTimeMillis()
+                        GrailsScriptRunner.callPluginOrGrailsScript(scriptName)
+                        def end = System.currentTimeMillis()
+                        println "--------------------------------------------------------"
+                        println "Command [$scriptName] completed in ${end-now}ms"
+                    }
+                }
+                else {
+                    println "Cannot run the 'run-app' command. Server already running!"
+                }
+                try {
+                    println "--------------------------------------------------------"
+                    println "Application loaded in interactive mode, type 'exit' to shutdown server or your command name in to continue (hit ENTER to run the last command):"
+
+                    cmd = reader.readLine()
+                } catch (IOException e) {
+                    cmd = ""
+                }
+            }
+
+            println "Stopping Grails server..."
+            grailsServer.stop()
+            keepRunning = false
+
+        })
+        daemonThread.daemon = true
+        daemonThread.run()
+    }
     
-    while(true) {
+    while(keepRunning) {
         if (autoRecompile) {
             lastModified = recompileCheck(lastModified) {
                 try {
