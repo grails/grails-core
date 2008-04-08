@@ -70,6 +70,7 @@
       <file url="file:///Users/graemerocher/Library/Caches/IntelliJIDEA70/compiler/grails.grailsad1ec4b3/.generated/Groovy_to_java_source_code_generator/Grails_Docs.2adb568b/production/org/grails/doc/filters/ListFilter.java" />
       <file url="file:///Users/graemerocher/Library/Caches/IntelliJIDEA70/compiler/grails.grailsad1ec4b3/.generated/Groovy_to_java_source_code_generator/Grails_Docs.2adb568b/production/org/grails/doc/SourceMacro.java" />
       <file url="file:///Users/graemerocher/Library/Caches/IntelliJIDEA70/compiler/grails.grailsad1ec4b3/.generated/Groovy_to_java_source_code_generator/Grails_Docs.2adb568b/production/org/grails/doc/DocEngine.java" />
+      <file url="file://$PROJECT_DIR$/test/tiger/org/codehaus/groovy/grails/orm/hibernate/UnidirectionalOneToManyHibernateMappedTests.groovy" />
     </excludeFromCompile>
     <resourceExtensions>
       <entry name=".+\.(properties|xml|html|dtd|tld)" />
