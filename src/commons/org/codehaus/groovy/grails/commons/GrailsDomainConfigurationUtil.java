@@ -128,7 +128,8 @@ public class GrailsDomainConfigurationUtil {
 
         if(prop.equals(referencedProp)) return false;
         if(prop.isOneToMany() && referencedProp.isOneToMany() && domainClass.equals(referencedProp.getDomainClass())) return false;
-        boolean isTypeCompatible = referencedProp.getReferencedPropertyType().isAssignableFrom(domainClass.getClazz());
+        Class referencedPropertyType = referencedProp.getReferencedPropertyType();
+        if (referencedPropertyType == null || ! referencedPropertyType.isAssignableFrom(domainClass.getClazz())) return false;
         Map mappedBy = domainClass.getMappedBy();
 
         Object propertyMapping = mappedBy.get(prop.getName());
@@ -139,8 +140,7 @@ public class GrailsDomainConfigurationUtil {
         boolean mappedFromDifferentProperty = propertyMapping != null && !propertyMapping.equals(prop.getName());
 
 
-        return !mappedToDifferentProperty && !mappedFromDifferentProperty && isTypeCompatible;
-
+        return !mappedToDifferentProperty && !mappedFromDifferentProperty;
     }
 
     /**
