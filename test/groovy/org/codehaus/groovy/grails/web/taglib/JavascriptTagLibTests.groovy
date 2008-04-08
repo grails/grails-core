@@ -6,7 +6,7 @@ import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.springframework.web.util.WebUtils;
 
 
-public class JavaScriptTagLibTests extends AbstractGrailsTagTests {
+public class JavascriptTagLibTests extends AbstractGrailsTagTests {
 
     void onInit() {
         def urlMappingsClass = gcl.parseClass('''\
