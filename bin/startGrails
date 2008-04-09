@@ -86,7 +86,7 @@ if $cygwin ; then
 fi
 
 # Remove possible trailing slash (after possible cygwin correction)
-GRAILS_HOME=${GRAILS_HOME%/}
+GRAILS_HOME=`echo $GRAILS_HOME | sed -e 's|/$||g'`
 
 # Locate GRAILS_HOME if not it is not set
 if [ -z "$GRAILS_HOME" -o ! -d "$GRAILS_HOME" ] ; then
