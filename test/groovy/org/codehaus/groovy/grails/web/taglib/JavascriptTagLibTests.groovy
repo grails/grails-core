@@ -3,7 +3,8 @@ package org.codehaus.groovy.grails.web.taglib;
 
 import org.codehaus.groovy.grails.commons.UrlMappingsArtefactHandler
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
-import org.springframework.web.util.WebUtils;
+import org.springframework.web.util.WebUtils
+import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
 
 
 public class JavascriptTagLibTests extends AbstractGrailsTagTests {
@@ -21,11 +22,9 @@ class TestUrlMappings {
 
     void testRemoteFieldWithExtraParams() {
         def template = '<g:remoteField controller="test" action="hello" id="1" params="[var1: \'one\', var2: \'two\']" update="success" name="myname" value="myvalue"/>'
-
-         request.setAttribute("org.codehaus.grails.INCLUDED_JS_LIBRARIES", ['prototype'])
+        request.setAttribute("org.codehaus.grails.INCLUDED_JS_LIBRARIES", ['prototype'])
 
         assertOutputEquals '<input type="text" name="myname" value="myvalue" onkeyup="new Ajax.Updater(\'success\',\'/test/hello/1\',{asynchronous:true,evalScripts:true,parameters:\'value=\'+this.value+\'&var1=one&var2=two\'});" />', template
-
     }
 
     void testPrototypeSubmitToRemoteWithExtraParams() {
@@ -33,14 +32,44 @@ class TestUrlMappings {
         request.setAttribute("org.codehaus.grails.INCLUDED_JS_LIBRARIES", ['prototype'])
 
         assertOutputEquals('<input onclick="new Ajax.Request(\'/people/details/one\',{asynchronous:true,evalScripts:true,parameters:Form.serialize(this.form)+\'&var2=two\'});return false" type="button" name="myButton"></input>', template)
-
     }
+
     void testPrototypeFormRemoteWithExtraParams() {
         def template = '<g:formRemote name="myForm" url="[controller:\'person\', action:\'show\', params:[var1:\'one\', var2:\'two\']]" ><g:textField name="foo" /></g:formRemote>'
         request.setAttribute("org.codehaus.grails.INCLUDED_JS_LIBRARIES", ['prototype'])
 
         assertOutputEquals('<form onsubmit="new Ajax.Request(\'/people/details/one\',{asynchronous:true,evalScripts:true,parameters:Form.serialize(this)+\'&var2=two\'});return false" method="POST" action="/people/details/one?var2=two" name="myForm" id="myForm"><input type="text" name="foo" id="foo" value="" /></form>', template)
+    }
 
+    /**
+     * Tests that the 'formRemote' tag complains if a 'params' attribute
+     * is given.
+     */
+    void testPrototypeFormRemoteWithParamsAttribute() {
+        def template = '<g:formRemote name="myForm" url="[controller:\'person\', action:\'list\']" params="[var1:\'one\', var2:\'two\']"><g:textField name="foo" /></g:formRemote>'
+        request.setAttribute("org.codehaus.grails.INCLUDED_JS_LIBRARIES", ['prototype'])
+
+        shouldFail(GrailsTagException) {
+            applyTemplate(template)
+        }
+    }
+
+    /**
+     * Tests that the 'formRemote' tag defaults to supplied 'method'
+     * and 'action' attributes in fallback mode, i.e. when javascript
+     * is unavailable or disabled.
+     */
+    void testPrototypeFormRemoteWithOverrides() {
+        def template = '''\
+<g:formRemote name="myForm" method="GET" action="/person/showOld?var1=one&var2=two"
+              url="[controller:'person', action:'show', params: [var1:'one', var2:'two']]" >\
+<g:textField name="foo" />\
+</g:formRemote>'''
+        request.setAttribute("org.codehaus.grails.INCLUDED_JS_LIBRARIES", ['prototype'])
+
+        assertOutputEquals('''\
+<form onsubmit="new Ajax.Request('/people/details/one',{asynchronous:true,evalScripts:true,parameters:Form.serialize(this)+'&var2=two'});return false" method="GET"\
+ action="/person/showOld?var1=one&var2=two" name="myForm" id="myForm"><input type="text" name="foo" id="foo" value="" /></form>''', template)
     }
 
     void testPrototypeFormRemoteWithExactParams() {
@@ -48,7 +77,6 @@ class TestUrlMappings {
         request.setAttribute("org.codehaus.grails.INCLUDED_JS_LIBRARIES", ['prototype'])
 
         assertOutputEquals('<form onsubmit="new Ajax.Request(\'/people/details/one\',{asynchronous:true,evalScripts:true,parameters:Form.serialize(this)});return false" method="POST" action="/people/details/one" name="myForm" id="myForm"><input type="text" name="foo" id="foo" value="" /></form>', template)
-
     }
 
 

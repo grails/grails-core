@@ -82,8 +82,8 @@ class JavascriptTagLib  {
 							javascriptInclude(newattrs)
 					    }
 					}
-					request[INCLUDED_LIBRARIES] << attrs.library					
-				}				
+					request[INCLUDED_LIBRARIES] << attrs.library
+				}
 			}
 			else {
 				if(!request[INCLUDED_LIBRARIES].contains(attrs.library)) {
@@ -223,7 +223,14 @@ class JavascriptTagLib  {
         }        
         if(!attrs.url) {
             throwTagError("Tag [formRemote] is missing required attribute [url]")
-        }        
+        }
+
+        // 'formRemote' does not support the 'params' attribute.
+        if(attrs.params != null) {
+            throwTagError("""\
+Tag [formRemote] does not support the [params] attribute - add\
+a 'params' key to the [url] attribute instead.""")
+        }
         
         // get javascript provider
  		def p = getProvider()				
@@ -437,7 +444,7 @@ class PrototypeProvider implements JavascriptProvider {
                 allParams << "${key.encodeAsURL()}='+${value.value}+'"
             }
             else {
-                allParams << "${key.encodeAsURL()}=${value.encodeAsURL()}".encodeAsJavascript()
+                allParams << "${key.encodeAsURL()}=${value.encodeAsURL()}".encodeAsJavaScript()
             }
         }
         if(allParams.size() == 1) {
