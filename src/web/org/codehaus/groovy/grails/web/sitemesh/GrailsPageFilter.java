@@ -54,7 +54,11 @@ public class GrailsPageFilter extends PageFilter {
         FactoryHolder.setFactory(this.factory);        
     }
 
-   /*
+    public void destroy() {
+        super.destroy();
+        FactoryHolder.setFactory(null);
+    }
+    /*
      * TODO: This method has been copied from the parent to fix a bug in sitemesh 2.3. When sitemesh 2.4 is release this method and the two private methods below can removed
 
      * Main method of the Filter.
