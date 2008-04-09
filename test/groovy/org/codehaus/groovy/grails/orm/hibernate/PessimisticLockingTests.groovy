@@ -30,7 +30,23 @@ class PessimisticLockingTests extends AbstractGrailsHibernateTests {
 
 	}
 
-	void onSetUp() {
+    void testLockStaticMethod() {
+        def domainClass = ga.getDomainClass("Book2").clazz
+
+        def book = domainClass.newInstance()
+
+        book.title = "The Stand"
+        book.save(flush:true)
+
+        session.clear()
+
+        book = domainClass.lock(1)
+
+        assert book
+
+    }
+
+    void onSetUp() {
 		gcl.parseClass(
 """
 class Book2 {

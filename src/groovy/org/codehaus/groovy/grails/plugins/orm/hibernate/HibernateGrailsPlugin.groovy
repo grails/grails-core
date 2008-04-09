@@ -291,6 +291,12 @@ class HibernateGrailsPlugin {
         metaClass.lock = {->
             template.lock(delegate, LockMode.UPGRADE)
         }
+        metaClass.static.lock = { Serializable id ->
+            def identityType = dc.identifier.type
+            id = convertToType(id, identityType)
+
+            template.get(delegate, id, LockMode.UPGRADE)   
+        }
 
     }
 
