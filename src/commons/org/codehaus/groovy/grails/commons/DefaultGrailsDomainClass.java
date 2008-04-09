@@ -477,9 +477,11 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
             else if(descriptors.length > 1) {
             	if(mappedBy.containsValue(property.getName())) {
             		for (Iterator i = mappedBy.keySet().iterator(); i.hasNext();) {
-						String key = (String) i.next();
-						if(property.getName().equals(mappedBy.get(key))) {
-							relatedClassPropertyType = GrailsClassUtils.getPropertyType( propType, key );
+						String mappedByPropertyName = (String) i.next();
+						if(property.getName().equals(mappedBy.get(mappedByPropertyName))) {
+                            Class mappedByRelatedType = (Class)relatedClassRelationships.get(mappedByPropertyName);
+                            if(mappedByRelatedType != null && propType.isAssignableFrom(mappedByRelatedType))
+                                relatedClassPropertyType = GrailsClassUtils.getPropertyType( propType, mappedByPropertyName );
 						}
 					}
             	}
