@@ -21,6 +21,14 @@ class NamedTagBodyParamsTests extends AbstractGrailsTagTests {
         assertOutputEquals('foo: bar one: 2', template)
     }
 
+    void testOverridingParam() {
+        def template = '''\
+<g:set var="foo">Test</g:set>
+<g:test1>foo: ${foo} one: ${one}</g:test1>
+<% assert foo == 'Test' %>
+'''
+        assertOutputEquals('foo: bar one: 2', template)
+    }
 
     void onInit() {
         def tagClass = gcl.parseClass( '''

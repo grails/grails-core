@@ -21,8 +21,8 @@ import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 
 import java.io.StringWriter;
 import java.io.Writer;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.Iterator;
 
 /**
  * A closure that represents the body of a tag and captures its output returning the result when invoked
@@ -66,18 +66,36 @@ public class GroovyPageTagBody extends Closure {
 
             if(args!=null) {
                 if(args instanceof Map) {
-                    Map delegate = binding.getVariables();
+                    // The body can be passed a set of variables as a map that
+                    // are then made available in the binding. This allows the
+                    // contents of the body to reference any of these variables
+                    // directly.
+                    //
+                    // For example, body(foo: 1, bar: 'test') would allow this
+                    // GSP fragment to work:
+                    //
+                    //   <td>Foo: ${foo} and bar: ${bar}</td>
+                    //
+                    // Note that any variables with the same name as one of the
+                    // new ones will be overridden for the scope of the host
+                    // tag's body.
 
-                    final Map argMap = (Map) args;
-                    delegate.putAll(argMap);
+                    // GRAILS-2675: Copy the current binding so that we can restore
+                    // it to its original state.
+                    Map currentBinding = binding.getVariables();
+                    Map originalBinding = new HashMap(currentBinding);
+
+                    // Add the extra variables passed into the body to the
+                    // current binding.
+                    currentBinding.putAll((Map) args);
 
                     try {
                         bodyClosure.call(args);
-                    } finally {
-                        for (Iterator i = argMap.keySet().iterator(); i.hasNext();) {
-                            Object o =  i.next();
-                            delegate.remove(o);                            
-                        }
+                    }
+                    finally {
+                        // GRAILS-2675: Restore the original binding.
+                        currentBinding.clear();
+                        currentBinding.putAll(originalBinding);
                     }
                 }
                 else {
