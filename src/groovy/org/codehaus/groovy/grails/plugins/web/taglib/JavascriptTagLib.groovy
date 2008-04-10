@@ -109,7 +109,10 @@ class JavascriptTagLib  {
             def baseUri = grailsAttributes.getApplicationUri(request)
             out << baseUri
             out << (baseUri.endsWith('/') ? '' : '/')
-			out << (requestPluginContext ? "${requestPluginContext}/" : "")
+			if (requestPluginContext) {
+			  out << (requestPluginContext.startsWith("/") ? requestPluginContext.substring(1) : requestPluginContext)
+			  out << "/"
+			} 
 			out << 'js/'
 		} else {
 			out << attrs.base

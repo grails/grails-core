@@ -4,10 +4,17 @@ package org.codehaus.groovy.grails.web.taglib;
 import org.codehaus.groovy.grails.commons.UrlMappingsArtefactHandler
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.springframework.web.util.WebUtils
-import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
+import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException
+import org.codehaus.groovy.grails.plugins.web.taglib.JavascriptTagLib;
 
 
 public class JavascriptTagLibTests extends AbstractGrailsTagTests {
+
+    public void onSetUp() {
+        gcl.parseClass('''
+class TestController {}
+''')
+    }
 
     void onInit() {
         def urlMappingsClass = gcl.parseClass('''\
@@ -16,10 +23,39 @@ class TestUrlMappings {
         "/$controller/$action?/$id?" {}
         "/people/details/$var1"(controller: 'person', action: 'show' )
     }
-}''')
+}
+''')
         grailsApplication.addArtefact(UrlMappingsArtefactHandler.TYPE, urlMappingsClass)
     }
 
+    void testJavascriptInclude() {
+        def template = '<g:javascript src="foo.js" />'
+
+        assertOutputEquals '''<script type="text/javascript" src="/js/foo.js"></script>
+''', template
+    }
+
+    void testJavascriptIncludeWithPlugin() {
+        def controllerClass = ga.getControllerClass("TestController").clazz
+        def template = '<g:javascript src="foo.js" />'
+
+        controllerClass.metaClass.getPluginContextPath = {->"/plugin/one"}
+        request.setAttribute(JavascriptTagLib.CONTROLLER, controllerClass.newInstance())
+        assertOutputEquals '''<script type="text/javascript" src="/plugin/one/js/foo.js"></script>
+''', template
+    }
+
+    void testJavascriptIncludeWithPluginNoLeadingSlash() {
+        def controllerClass = ga.getControllerClass("TestController").clazz
+        def template = '<g:javascript src="foo.js" />'
+
+        controllerClass.metaClass.getPluginContextPath = {->"plugin/one"}
+        request.setAttribute(JavascriptTagLib.CONTROLLER, controllerClass.newInstance())
+        assertOutputEquals '''<script type="text/javascript" src="/plugin/one/js/foo.js"></script>
+''', template
+    }
+
+    
     void testRemoteFieldWithExtraParams() {
         def template = '<g:remoteField controller="test" action="hello" id="1" params="[var1: \'one\', var2: \'two\']" update="success" name="myname" value="myvalue"/>'
         request.setAttribute("org.codehaus.grails.INCLUDED_JS_LIBRARIES", ['prototype'])
