@@ -1209,9 +1209,12 @@ public final class GrailsDomainBinder {
         for(int i = 0; i < persistentProperties.length;i++) {
 
 			GrailsDomainClassProperty currentGrailsProp = persistentProperties[i];
-			// if its inherited skip
-			if(currentGrailsProp.isInherited() && !isBidirectionalManyToOne(currentGrailsProp))
+            // if its inherited skip
+            boolean isBidirectionalManyToOne = isBidirectionalManyToOne(currentGrailsProp);
+            if(currentGrailsProp.isInherited() && !isBidirectionalManyToOne)
 				continue;
+            else if(currentGrailsProp.isInherited() && isBidirectionalManyToOne && currentGrailsProp.isCircular())
+                continue;
             if (isCompositeIdProperty(gormMapping, currentGrailsProp)) continue;
 
             if(LOG.isDebugEnabled())
