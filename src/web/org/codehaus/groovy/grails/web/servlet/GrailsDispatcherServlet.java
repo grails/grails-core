@@ -19,10 +19,8 @@ import grails.util.GrailsUtil;
 import org.codehaus.groovy.grails.commons.*;
 import org.codehaus.groovy.grails.commons.spring.GrailsApplicationContext;
 import org.codehaus.groovy.grails.web.context.GrailsConfigUtils;
-import org.codehaus.groovy.grails.web.context.ServletContextHolder;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.servlet.mvc.SimpleGrailsController;
-import org.codehaus.groovy.grails.plugins.PluginManagerHolder;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.context.i18n.LocaleContext;
@@ -169,13 +167,6 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
         GrailsClass[] bootstraps =  application.getArtefacts(BootstrapArtefactHandler.TYPE);
         for (int i = 0; i < bootstraps.length; i++) {
             ((GrailsBootstrapClass)bootstraps[i]).callDestroy();
-        }
-        // clean up in war mode, in run-app these references may be needed again
-        if(application.isWarDeployed()) {
-            ApplicationHolder.setApplication(null);
-            ServletContextHolder.setServletContext(null);
-            PluginManagerHolder.setPluginManager(null);
-            ConfigurationHolder.setConfig(null);
         }
         super.destroy();
     }

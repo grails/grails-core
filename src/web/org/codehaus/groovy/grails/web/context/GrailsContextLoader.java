@@ -14,18 +14,20 @@
  */
 package org.codehaus.groovy.grails.web.context;
 
+import grails.util.GrailsUtil;
 import groovy.lang.ExpandoMetaClass;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.commons.ApplicationHolder;
+import org.codehaus.groovy.grails.commons.ConfigurationHolder;
+import org.codehaus.groovy.grails.plugins.PluginManagerHolder;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.context.ContextLoader;
 import org.springframework.web.context.WebApplicationContext;
 
 import javax.servlet.ServletContext;
-
-import grails.util.GrailsUtil;
 
 /**
  * @author graemerocher
@@ -34,8 +36,9 @@ import grails.util.GrailsUtil;
 public class GrailsContextLoader extends ContextLoader {
 
 	public static final Log LOG = LogFactory.getLog(GrailsContextLoader.class);
-	
-	protected WebApplicationContext createWebApplicationContext(ServletContext servletContext, ApplicationContext parent) throws BeansException {
+    GrailsApplication application;
+
+    protected WebApplicationContext createWebApplicationContext(ServletContext servletContext, ApplicationContext parent) throws BeansException {
 
         ExpandoMetaClass.enableGlobally();
 
@@ -46,7 +49,7 @@ public class GrailsContextLoader extends ContextLoader {
         try {
             ctx = super.createWebApplicationContext(servletContext, parent);
 
-            GrailsApplication application = (GrailsApplication) ctx.getBean(GrailsApplication.APPLICATION_ID, GrailsApplication.class);
+            application = (GrailsApplication) ctx.getBean(GrailsApplication.APPLICATION_ID, GrailsApplication.class);
             ctx =  GrailsConfigUtils.configureWebApplicationContext(servletContext, ctx);
             GrailsConfigUtils.executeGrailsBootstraps(application, ctx, servletContext);
         } catch (BeansException e) {
@@ -56,4 +59,17 @@ public class GrailsContextLoader extends ContextLoader {
         return ctx;
     }
 
+    public void closeWebApplicationContext(ServletContext servletContext) {
+        super.closeWebApplicationContext(servletContext);    
+
+        // clean up in war mode, in run-app these references may be needed again
+        if(application!= null && application.isWarDeployed()) {
+            ApplicationHolder.setApplication(null);
+            ServletContextHolder.setServletContext(null);
+            PluginManagerHolder.setPluginManager(null);
+            ConfigurationHolder.setConfig(null);
+            application = null;
+        }
+
+    }
 }
