@@ -38,23 +38,24 @@ class LoggingGrailsPlugin {
         def contextParams = xml.'context-param'
         def log4j = contextParams.find {it.'param-name'.text() == 'log4jConfigLocation'}
 
+        def runningScript = System.getProperty('current.gant.script')
+
         if(log4j) {
-             def runningScript = System.getProperty('current.gant.script')
 
              if(runningScript != 'war' && runningScript != 'run-war') {
                  def resources = System.getProperty(GrailsApplication.PROJECT_RESOURCES_DIR)
                  log4j.'param-value' = "file:$resources/log4j.properties"
+                 if (GrailsUtil.isDevelopmentEnv() && !application.warDeployed) {
+                     log4j + {
+                         'context-param' {
+                             'param-name'('log4jRefreshInterval')
+                             'param-value'(1000)
+                         }
+                     }
+                 }
              }
         }
 
-        if (GrailsUtil.isDevelopmentEnv() && log4j) {
-            log4j + {
-                'context-param' {
-                    'param-name'('log4jRefreshInterval')
-                    'param-value'(1000)
-                }
-            }
-        }
     }
 
     def doWithDynamicMethods = {applicationContext ->

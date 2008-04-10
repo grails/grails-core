@@ -62,9 +62,12 @@ class LoggingGrailsPluginTests extends AbstractGrailsPluginTests {
         def xml = new XmlSlurper().parseText( xmlText  )
         System.setProperty(GrailsApplication.PROJECT_RESOURCES_DIR, "/test")
         def plugin = new LoggingGrailsPlugin()
+        plugin.doWithWebDescriptor.delegate = [application:ga]
         plugin.doWithWebDescriptor(xml)
 
         assertEquals 'file:/test/log4j.properties',xml.'context-param'.'param-value'.text()
+
+        println xml
 
         System.setProperty('current.gant.script','war')
 
