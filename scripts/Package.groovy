@@ -331,7 +331,7 @@ recompileCheck = { lastModified, callback ->
     catch(Exception e) {
         compilationError = true
         event("StatusUpdate", ["Error automatically restarting container: ${e.message}"])
-        GrailsUtil.sanitizeStackTrace(e)
+        GrailsUtil.sanitize(e)
         e.printStackTrace()
     }
 
