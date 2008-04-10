@@ -409,7 +409,7 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
 
     public boolean isCircular() {
 		if(this.otherSide != null) {
-			if(this.otherSide.getDomainClass().equals(this.domainClass))
+            if(this.otherSide.getDomainClass().getClazz().isAssignableFrom(this.domainClass.getClazz()))            
 				return true;
 		}
 		return false;
