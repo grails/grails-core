@@ -71,7 +71,7 @@
         pw.println "    <li><g:link controller=\"${property.referencedDomainClass.propertyName}\" action=\"show\" id=\"\${${property.name[0]}.id}\">\${${property.name[0]}}</g:link></li>"
         pw.println "</g:each>"
         pw.println "</ul>"
-        pw.println "<g:link controller=\"${property.referencedDomainClass.propertyName}\" params=\"[\"${domainClass.propertyName}.id\":${domainClass.propertyName}?.id]\" action=\"create\">Add ${property.referencedDomainClass.shortName}</g:link>"
+        pw.println "<g:link controller=\"${property.referencedDomainClass.propertyName}\" params=\"['${domainClass.propertyName}.id':${domainClass.propertyName}?.id]\" action=\"create\">Add ${property.referencedDomainClass.shortName}</g:link>"
         return sw.toString()
     }
 
