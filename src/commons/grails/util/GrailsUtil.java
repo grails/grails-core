@@ -95,7 +95,7 @@ public class GrailsUtil {
             }
 
             if(isBlank(version)) {
-                LOG.error("Unable to read Grails version from MANIFEST.MF. Are you sure it the grails-core jar is on the classpath? " );
+                LOG.error("Unable to read Grails version from MANIFEST.MF. Are you sure the grails-core jar is on the classpath? " );
                 version = "Unknown";
             }
         } catch (IOException e) {
