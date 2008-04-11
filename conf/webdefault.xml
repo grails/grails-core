@@ -263,6 +263,15 @@
         <param-value>?</param-value>
     </init-param>
     -->
+
+    <init-param>
+        <param-name>development</param-name>
+        <param-value>true</param-value>
+    </init-param>
+    <init-param>
+        <param-name>modificationTestInterval</param-name>
+        <param-value>60</param-value>
+    </init-param>      
     <load-on-startup>0</load-on-startup>
   </servlet>
 
