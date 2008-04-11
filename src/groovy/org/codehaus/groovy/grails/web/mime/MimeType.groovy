@@ -38,6 +38,9 @@ public class MimeType {
     String extension
     Map parameters
 
+    String toString() {
+        return "MimeType { name=$name,extension=$extension,parameters=$parameters }".toString()
+    }
 
     static MimeType[] getConfiguredMimeTypes() {
         if(MIMES) return MIMES
