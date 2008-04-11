@@ -33,10 +33,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 
 /**
  * An instance of groovy.lang.Writable that writes itself to the specified
@@ -52,7 +49,7 @@ import java.util.Map;
 class GroovyPageWritable implements Writable {
 
     private static final Log LOG = LogFactory.getLog(GroovyPageWritable.class);
-    
+
     private HttpServletResponse response;
     private HttpServletRequest request;
     private GroovyPageMetaInfo metaInfo;
@@ -103,7 +100,7 @@ class GroovyPageWritable implements Writable {
         if (showSource) {
             // Set it to TEXT
             response.setContentType(GROOVY_SOURCE_CONTENT_TYPE); // must come before response.getOutputStream()
-            writeInputStreamToResponse(metaInfo.getGroovySource(), out);
+            writeGroovySourceToResponse(metaInfo, out);
         } else {
             // Set it to HTML by default
 
@@ -164,6 +161,63 @@ class GroovyPageWritable implements Writable {
                 out.write(buf, 0, read);
             }
         } finally {
+            out.close();
+            in.close();
+        }
+    }
+
+    /**
+     * Writes the Groovy source code attached to the given info object
+     * to the response, prefixing each line with its line number. The
+     * line numbers make it easier to match line numbers in exceptions
+     * to the generated source.
+     * @param info The meta info for the GSP page that we want to write
+     * the generated source for.
+     * @param out The writer to send the source to.
+     * @throws IOException If there is either a problem with the input
+     * stream for the Groovy source, or the writer.
+     */
+    protected void writeGroovySourceToResponse(GroovyPageMetaInfo info, Writer out) throws IOException {
+        InputStream in = info.getGroovySource();
+        try {
+            in.reset();
+            BufferedReader reader = new BufferedReader(new InputStreamReader(in, "UTF-8"));
+
+            int lineNum = 1;
+            int maxPaddingSize = 3;
+
+            // Prepare the buffer containing the whitespace padding.
+            // The padding is used to right-align the line numbers.
+            StringBuffer paddingBuffer = new StringBuffer(maxPaddingSize);
+            for (int i = 0; i < maxPaddingSize; i++) {
+                paddingBuffer.append(' ');
+            }
+
+            // Set the initial padding.
+            String padding = paddingBuffer.toString();
+
+            // Read the Groovy source line by line and write it to the
+            // response, prefixing each line with the line number.
+            for (String line = reader.readLine(); line != null; line = reader.readLine(), lineNum++) {
+                // Get the current line number as a string.
+                String numberText = String.valueOf(lineNum);
+
+                // Decrease the padding if the current line number has
+                // more digits than the previous one.
+                if (padding.length() + numberText.length() > 4) {
+                    paddingBuffer.deleteCharAt(padding.length() - 1);
+                    padding = paddingBuffer.toString();
+                }
+
+                // Write out this line.
+                out.write(padding);
+                out.write(numberText);
+                out.write(": ");
+                out.write(line);
+                out.write('\n');
+            }
+        }
+        finally {
             out.close();
             in.close();
         }
