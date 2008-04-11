@@ -421,6 +421,9 @@ target(runIntegrationTests: "Runs Grails' tests under the test/integration direc
         event("StatusFinal", ["Error running tests: ${e.toString()}"])
         exit(1)
     }
+    finally {
+        shutdownApp()
+    }
 }
 
 def resolveTestResources(patternResolver) {

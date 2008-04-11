@@ -1,19 +1,16 @@
-import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
-import org.codehaus.groovy.grails.commons.ApplicationAttributes;
-import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.ApplicationHolder;
-import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator;
-import org.springframework.context.ApplicationContext;
-import org.codehaus.groovy.grails.plugins.*
-import org.springframework.core.io.*
-import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
+import grails.spring.WebBeanBuilder
+import org.codehaus.groovy.grails.cli.support.CommandLineResourceLoader
+import org.codehaus.groovy.grails.commons.ApplicationAttributes
+import org.codehaus.groovy.grails.commons.ApplicationHolder
+import org.codehaus.groovy.grails.commons.ConfigurationHolder
+import org.codehaus.groovy.grails.plugins.DefaultPluginMetaManager
+import org.codehaus.groovy.grails.plugins.PluginManagerHolder
+import org.codehaus.groovy.grails.web.context.ServletContextHolder
+import org.springframework.core.io.FileSystemResourceLoader
 import org.springframework.mock.web.MockServletContext
-import org.codehaus.groovy.grails.cli.support.CommandLineResourceLoader;
-import grails.spring.*
 import org.springframework.web.context.WebApplicationContext
 
-Ant.property(environment:"env")                             
+Ant.property(environment:"env")
 grailsHome = Ant.antProject.properties."env.GRAILS_HOME"    
 
 includeTargets << new File ( "${grailsHome}/scripts/Package.groovy" )  
@@ -70,6 +67,14 @@ target(configureApp:"Configures the Grails application and builds an Application
         servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, appCtx);
 	}
 	event("ConfigureAppEnd", [grailsApp, appCtx])		
+}
+
+target(shutdownApp:"Shuts down the running Grails application") {
+    appCtx?.close()
+    ApplicationHolder.setApplication(null);
+    ServletContextHolder.setServletContext(null);
+    PluginManagerHolder.setPluginManager(null);
+    ConfigurationHolder.setConfig(null);    
 }
 
 monitorCallback = {}
