@@ -28,7 +28,7 @@ public class GrailsResourceHolder {
 
     public static final String APPLICATION_CONTEXT_ID = "grailsResourceHolder";
 
-    private Resource[] resources;
+    private Resource[] resources = {};
 
     public Resource[] getResources() {
         return resources;
