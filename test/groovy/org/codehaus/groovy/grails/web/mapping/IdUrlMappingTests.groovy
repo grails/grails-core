@@ -77,4 +77,31 @@ class ContentController {
            assertEquals "foo",c.params.id
     }
 
+     void testMappingWithUrlEncodedCharsInId() {
+          def res = new ByteArrayResource(mappingScript.bytes)
+
+           def evaluator = new DefaultUrlMappingEvaluator()
+           def mappings = evaluator.evaluateMappings(res)
+
+           def holder = new DefaultUrlMappingsHolder(mappings)
+           assert webRequest
+
+           def infos = holder.matchAll("/emailConfirmation/my%20foo")
+           assert infos
+
+           infos[0].configure(webRequest)
+
+           def c = ga.getControllerClass("EmailConfirmationController").newInstance()
+
+           assertEquals "my foo",c.params.id
+
+           infos = holder.matchAll("/emailConfirmation/my%2Ffoo")
+           assert infos
+
+           infos[0].configure(webRequest)
+
+           c = ga.getControllerClass("EmailConfirmationController").newInstance()
+
+           assertEquals "my/foo",c.params.id
+    }
 }
