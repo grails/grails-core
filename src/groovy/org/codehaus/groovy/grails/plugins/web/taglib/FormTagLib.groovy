@@ -92,8 +92,16 @@ class FormTagLib {
         attrs.id = attrs.id ? attrs.id : attrs.name
         def value = attrs.remove('value')
         def name = attrs.remove('name')
-        def checked = attrs.remove('checked')
-        if (checked == null) checked = true
+
+        // Deal with the "checked" attribute. If it doesn't exist, we
+        // default to a value of "true", otherwise we use Groovy Truth
+        // to determine whether the HTML attribute should be displayed
+        // or not.
+        def checked = true
+        if (attrs.containsKey('checked')) {
+            checked = attrs.remove('checked')
+        }
+
         if (checked instanceof String) checked = Boolean.valueOf(checked)
 
         if (value == null) value = false
