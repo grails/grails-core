@@ -314,19 +314,19 @@ public class SimpleGrailsControllerTests extends TestCase {
 	public void testAllowedMethods() throws Exception {
         GrailsClass controllerClass = grailsApplication.getArtefact(ControllerArtefactHandler.TYPE,"RestrictedController");
         assertNotNull(controllerClass);
-        assertResponseStatusCode("restricted","action1","/restricted/action1", "GET", HttpServletResponse.SC_FORBIDDEN);
-		assertResponseStatusCode("restricted","action1","/restricted/action1", "PUT", HttpServletResponse.SC_FORBIDDEN);
+        assertResponseStatusCode("restricted","action1","/restricted/action1", "GET", HttpServletResponse.SC_METHOD_NOT_ALLOWED);
+		assertResponseStatusCode("restricted","action1","/restricted/action1", "PUT", HttpServletResponse.SC_METHOD_NOT_ALLOWED);
 		assertResponseStatusCode("restricted","action1","/restricted/action1", "POST", HttpServletResponse.SC_OK);
-		assertResponseStatusCode("restricted","action1","/restricted/action1", "DELETE", HttpServletResponse.SC_FORBIDDEN);
+		assertResponseStatusCode("restricted","action1","/restricted/action1", "DELETE", HttpServletResponse.SC_METHOD_NOT_ALLOWED);
 
 		assertResponseStatusCode("restricted","action2","/restricted/action2", "GET", HttpServletResponse.SC_OK);
 		assertResponseStatusCode("restricted","action2","/restricted/action2", "PUT", HttpServletResponse.SC_OK);
 		assertResponseStatusCode("restricted","action2","/restricted/action2", "POST", HttpServletResponse.SC_OK);
 		assertResponseStatusCode("restricted","action2","/restricted/action2", "DELETE", HttpServletResponse.SC_OK);
 
-		assertResponseStatusCode("restricted","action3","/restricted/action3", "GET", HttpServletResponse.SC_FORBIDDEN);
+		assertResponseStatusCode("restricted","action3","/restricted/action3", "GET", HttpServletResponse.SC_METHOD_NOT_ALLOWED);
 		assertResponseStatusCode("restricted","action3","/restricted/action3", "PUT", HttpServletResponse.SC_OK);
-		assertResponseStatusCode("restricted","action3","/restricted/action3", "POST", HttpServletResponse.SC_FORBIDDEN);
+		assertResponseStatusCode("restricted","action3","/restricted/action3", "POST", HttpServletResponse.SC_METHOD_NOT_ALLOWED);
 		assertResponseStatusCode("restricted","action3","/restricted/action3", "DELETE", HttpServletResponse.SC_OK);
 	}
 

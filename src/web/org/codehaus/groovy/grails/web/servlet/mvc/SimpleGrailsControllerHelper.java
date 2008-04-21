@@ -195,7 +195,7 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
 
         if(!controllerClass.isHttpMethodAllowedForAction(controller, request.getMethod(), actionName)) {
         	try {
-				response.sendError(HttpServletResponse.SC_FORBIDDEN);
+				response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
 				return null;
 			} catch (IOException e) {
 				throw new ControllerExecutionException("I/O error sending 403 error",e);

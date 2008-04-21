@@ -231,7 +231,7 @@ public class DefaultGrailsScaffolder implements GrailsScaffolder {
 		public Object call(Object[] args) {
 			if(!"POST".equals(request.getMethod())) {
 				try {
-					response.sendError(HttpServletResponse.SC_FORBIDDEN);
+					response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
 					return null;
 				} catch (IOException e) {
 					throw new ControllerExecutionException("I/O error sending 403 error",e);
@@ -267,7 +267,7 @@ public class DefaultGrailsScaffolder implements GrailsScaffolder {
 		public Object call(Object[] args) {
 			if(!"POST".equals(request.getMethod())) {
 				try {
-					response.sendError(HttpServletResponse.SC_FORBIDDEN);
+					response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
 					return null;
 				} catch (IOException e) {
 					throw new ControllerExecutionException("I/O error sending 403 error",e);
@@ -317,7 +317,7 @@ public class DefaultGrailsScaffolder implements GrailsScaffolder {
 		public Object call(Object[] args) {
 			if(!"POST".equals(request.getMethod())) {
 				try {
-					response.sendError(HttpServletResponse.SC_FORBIDDEN);
+					response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
 					return null;
 				} catch (IOException e) {
 					throw new ControllerExecutionException("I/O error sending 403 error",e);
