@@ -57,7 +57,6 @@ target( createApp: "The implementation target")  {
 target( createIDESupportFiles: "Creates the IDE suppot files (Eclipse, TextMate etc.) project files") {
 	Ant.copy(todir:"${basedir}") {
 		fileset(dir:"${grailsHome}/src/grails/templates/ide-support/eclipse",
-				includes:"*.*",
 				excludes:".launch")
 	}   
 	Ant.copy(todir:"${basedir}", file:"${grailsHome}/src/grails/build.xml") 
