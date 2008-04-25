@@ -135,7 +135,7 @@ def buildPluginInfo = {root, pluginName ->
         }
 
         def localRelease = pluginNode.'@latest-release'
-        def latestRelease
+        def latestRelease = null
         try {
             new URL("${DEFAULT_PLUGIN_DIST}/grails-${pluginName}/tags/LATEST_RELEASE/plugin.xml").withReader {Reader reader ->
                 def line = reader.readLine()
@@ -169,7 +169,7 @@ def buildPluginInfo = {root, pluginName ->
                 // no plugin release info available
             }
 
-            if (latestVersion && pluginNode.'release'.find {it.'@version' == latestVersion}) pluginNode.setAttribute('latest-release', latestVersion as String)
+            if (latestRelease && pluginNode.'release'.find {it.'@version' == latestRelease}) pluginNode.setAttribute('latest-release', latestRelease as String)
         }
     }
 }
