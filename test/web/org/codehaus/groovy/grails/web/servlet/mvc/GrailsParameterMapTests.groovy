@@ -15,8 +15,19 @@ class GrailsParameterMapTests extends GroovyTestCase {
         mockRequest.addParameter("a.b.c", "cValue")
         mockRequest.addParameter("a.b", "bValue")
         mockRequest.addParameter("a.bc", "bcValue")
+        mockRequest.addParameter("a.b.d", "dValue")
+        mockRequest.addParameter("a.e.f", "fValue")
+        mockRequest.addParameter("a.e.g", "gValue")
         theMap = new GrailsParameterMap(mockRequest);
         assert theMap['a'] instanceof Map
+        assert theMap.a.b == "bValue"
+        assert theMap.a.'b.c' == "cValue"
+        assert theMap.a.'bc' == "bcValue"
+        assert theMap.a.'b.d' == "dValue"
+
+        assert theMap.a['e'] instanceof Map
+        assert theMap.a.e.f == "fValue"
+        assert theMap.a.e.g == "gValue"
     }
 
     void testToQueryString() {

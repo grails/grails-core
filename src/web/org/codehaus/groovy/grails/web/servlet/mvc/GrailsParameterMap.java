@@ -86,13 +86,25 @@ public class GrailsParameterMap implements Map {
     private void processNestedKeys(HttpServletRequest request, Map requestMap, String key, String nestedKey, Map nestedLevel) {
         final int nestedIndex = nestedKey.indexOf('.');
         if(nestedIndex > -1) {
+            // We have at least one sub-key, so extract the first element
+            // of the nested key as the prfix. In other words, if we have
+            // 'nestedKey' == "a.b.c", the prefix is "a".
             final String nestedPrefix = nestedKey.substring(0, nestedIndex);
-            if(request.getParameter(nestedPrefix)==null) {
-                Map nestedMap = (Map)nestedLevel.get(nestedPrefix);
-                if(nestedMap == null) {
-                    nestedMap = new GrailsParameterMap(new HashMap(), request);
-                    nestedLevel.put(nestedPrefix, nestedMap);
-                }
+
+            // Let's see if we already have a value in the current map
+            // for the prefix.
+            Object prefixValue = nestedLevel.get(nestedPrefix);
+            if(prefixValue == null) {
+                // No value. So, since there is at least one sub-key,
+                // we create a sub-map for this prefix.
+                prefixValue = new GrailsParameterMap(new HashMap(), request);
+                nestedLevel.put(nestedPrefix, prefixValue);
+            }
+
+            // If the value against the prefix is a map, then we store
+            // the sub-keys in that map.
+            if (prefixValue instanceof Map) {
+                Map nestedMap = (Map)prefixValue;
                 if(nestedIndex < nestedKey.length()-1) {
                     final String remainderOfKey = nestedKey.substring(nestedIndex + 1, nestedKey.length());
                     nestedMap.put(remainderOfKey,getParameterValue(requestMap, key) );
