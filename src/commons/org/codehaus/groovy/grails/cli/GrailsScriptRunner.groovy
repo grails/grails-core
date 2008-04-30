@@ -246,7 +246,7 @@ Grails home is set to: ${grailsHome}
             if(potentialScripts.size() == 1) {
 				println "Running script ${potentialScripts[0].absolutePath}"
 				
-				def gant = new Gant(binding, new URLClassLoader([classesDir.toURL()] as URL[], rootLoader))
+				def gant = new Gant(binding, new URLClassLoader([classesDir.toURI().toURL()] as URL[], rootLoader))
 				return gant.processArgs(["-f", potentialScripts[0].absolutePath,"-c","-d","${userHome}/.grails/${version}/scriptCache"] as String[])
 			}                                      
 			else {
@@ -260,7 +260,7 @@ Grails home is set to: ${grailsHome}
                 def number = ANT.antProject.properties."grails.script.number".toInteger()        
 
 				println "Running script ${potentialScripts[number-1].absolutePath}"				
-				def gant = new Gant(binding, new URLClassLoader([classesDir.toURL()] as URL[], rootLoader))
+				def gant = new Gant(binding, new URLClassLoader([classesDir.toURI().toURL()] as URL[], rootLoader))
 				return gant.processArgs(["-f", potentialScripts[number-1].absolutePath] as String[])
 			}
 		}

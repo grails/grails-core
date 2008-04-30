@@ -129,7 +129,7 @@ target( watchContext: "Watches the WEB-INF/classes directory for changes and res
                     compile()
                     Thread currentThread = Thread.currentThread()
                     ClassLoader contextLoader = currentThread.getContextClassLoader()
-                    classLoader = new URLClassLoader([classesDir.toURL()] as URL[], contextLoader)
+                    classLoader = new URLClassLoader([classesDir.toURI().toURL()] as URL[], contextLoader)
                     currentThread.setContextClassLoader classLoader
                     PluginManagerHolder.pluginManager = null
                     // reload plugins

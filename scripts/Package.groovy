@@ -56,7 +56,7 @@ target( createConfig: "Creates the configuration object") {
    if(configFile.exists()) { 
 		try {              
 			config = configSlurper.parse(classLoader.loadClass("Config"))
-			config.setConfigFile(configFile.toURL())
+			config.setConfigFile(configFile.toURI().toURL())
 
             ConfigurationHolder.setConfig(config)
 		}   

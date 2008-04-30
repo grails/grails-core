@@ -38,7 +38,7 @@ includeTargets << new File ( "${grailsHome}/scripts/Package.groovy" )
 generateViews = true
 generateController = true
 
-target ('default': "Generates a CRUD interface (contoroller + views) for a domain class") {
+target ('default': "Generates a CRUD interface (controller + views) for a domain class") {
 	depends( checkVersion, packageApp )
 	typeName = "Domain Class"
 	promptForName()
@@ -47,7 +47,7 @@ target ('default': "Generates a CRUD interface (contoroller + views) for a domai
 
 target(generateAll:"The implementation target") {
 	                                     
-	rootLoader.addURL(classesDir.toURL())
+	rootLoader.addURL(classesDir.toURI().toURL())
 	def beans = new grails.spring.WebBeanBuilder().beans {
 		resourceHolder(org.codehaus.groovy.grails.commons.spring.GrailsResourceHolder) {
 			this.resources = "file:${basedir}/grails-app/domain/**/*.groovy"

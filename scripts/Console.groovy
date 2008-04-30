@@ -38,7 +38,7 @@ target ('default': "Load the Grails interactive Swing console") {
 
 target(console:"The console implementation target") {
 
-    classLoader = new URLClassLoader([classesDir.toURL()] as URL[], rootLoader)
+    classLoader = new URLClassLoader([classesDir.toURI().toURL()] as URL[], rootLoader)
     Thread.currentThread().setContextClassLoader(classLoader)
 	loadApp()
 	configureApp()

@@ -158,7 +158,7 @@ move it to the new location of '${basedir}/test/integration'. Please move the di
         def configFile = new File(baseFile, '/grails-app/conf/Config.groovy')
         if(configFile.exists()) {
             def configSlurper = new ConfigSlurper()
-            def configObject = configSlurper.parse(configFile.toURL())
+            def configObject = configSlurper.parse(configFile.toURI().toURL())
             def defaultCodec = configObject.grails.views.default.codec
             def gspEncoding = configObject.grails.views.gsp.encoding
 

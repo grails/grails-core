@@ -89,7 +89,7 @@ target(monitorApp:"Monitors an application for changes using the PluginManager a
             lastModified = recompileCheck(lastModified) {
                 compile()
                 ClassLoader contextLoader = Thread.currentThread().getContextClassLoader()
-                classLoader = new URLClassLoader([classesDir.toURL()] as URL[], contextLoader.rootLoader)
+                classLoader = new URLClassLoader([classesDir.toURI().toURL()] as URL[], contextLoader.rootLoader)
                 Thread.currentThread().setContextClassLoader(classLoader)
                 // reload plugins
                 loadPlugins()
