@@ -9,6 +9,7 @@ import org.codehaus.groovy.grails.plugins.web.taglib.JavascriptTagLib;
 
 
 public class JavascriptTagLibTests extends AbstractGrailsTagTests {
+    private static final String EOL = System.getProperty("line.separator")
 
     public void onSetUp() {
         gcl.parseClass('''
@@ -31,8 +32,7 @@ class TestUrlMappings {
     void testJavascriptInclude() {
         def template = '<g:javascript src="foo.js" />'
 
-        assertOutputEquals '''<script type="text/javascript" src="/js/foo.js"></script>
-''', template
+        assertOutputEquals '<script type="text/javascript" src="/js/foo.js"></script>' + EOL, template
     }
 
     void testJavascriptIncludeWithPlugin() {
@@ -41,8 +41,7 @@ class TestUrlMappings {
 
         controllerClass.metaClass.getPluginContextPath = {->"/plugin/one"}
         request.setAttribute(JavascriptTagLib.CONTROLLER, controllerClass.newInstance())
-        assertOutputEquals '''<script type="text/javascript" src="/plugin/one/js/foo.js"></script>
-''', template
+        assertOutputEquals '<script type="text/javascript" src="/plugin/one/js/foo.js"></script>' + EOL, template
     }
 
     void testJavascriptIncludeWithPluginNoLeadingSlash() {
@@ -51,8 +50,7 @@ class TestUrlMappings {
 
         controllerClass.metaClass.getPluginContextPath = {->"plugin/one"}
         request.setAttribute(JavascriptTagLib.CONTROLLER, controllerClass.newInstance())
-        assertOutputEquals '''<script type="text/javascript" src="/plugin/one/js/foo.js"></script>
-''', template
+        assertOutputEquals '<script type="text/javascript" src="/plugin/one/js/foo.js"></script>' + EOL, template
     }
 
     
