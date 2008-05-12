@@ -23,6 +23,7 @@ import org.codehaus.groovy.grails.commons.ApplicationHolder;
 import org.codehaus.groovy.grails.commons.ConfigurationHolder;
 import org.codehaus.groovy.grails.plugins.PluginManagerHolder;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.access.BootstrapException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.context.ContextLoader;
 import org.springframework.web.context.WebApplicationContext;
@@ -52,9 +53,12 @@ public class GrailsContextLoader extends ContextLoader {
             application = (GrailsApplication) ctx.getBean(GrailsApplication.APPLICATION_ID, GrailsApplication.class);
             ctx =  GrailsConfigUtils.configureWebApplicationContext(servletContext, ctx);
             GrailsConfigUtils.executeGrailsBootstraps(application, ctx, servletContext);
-        } catch (BeansException e) {
+        } catch (Exception e) {
             GrailsUtil.deepSanitize(e);
-            throw e; // rethrow sanitized version, as we have nowhere above us on stack that catches
+            if(e instanceof BeansException) throw (BeansException)e;
+            else {
+                throw new BootstrapException("Error executing bootstraps", e);
+            }
         }
         return ctx;
     }

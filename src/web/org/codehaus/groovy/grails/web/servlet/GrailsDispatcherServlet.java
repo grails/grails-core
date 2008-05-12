@@ -23,6 +23,7 @@ import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.servlet.mvc.SimpleGrailsController;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
+import org.springframework.beans.factory.access.BootstrapException;
 import org.springframework.context.i18n.LocaleContext;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.util.Assert;
@@ -113,7 +114,15 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
     	}
     	else {
             webContext = GrailsConfigUtils.configureWebApplicationContext(getServletContext(), parent);
-            GrailsConfigUtils.executeGrailsBootstraps(application, webContext, getServletContext());
+            try {
+                GrailsConfigUtils.executeGrailsBootstraps(application, webContext, getServletContext());
+            } catch (Exception e) {
+                GrailsUtil.deepSanitize(e);
+                if(e instanceof BeansException) throw (BeansException)e;
+                else {
+                    throw new BootstrapException("Error executing bootstraps", e);
+                }
+            }
         }
 
         initGrailsController(webContext);
