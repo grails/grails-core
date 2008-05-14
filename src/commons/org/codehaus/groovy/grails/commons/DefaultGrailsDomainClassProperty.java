@@ -22,8 +22,8 @@ import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 import org.hibernate.MappingException;
 import org.springframework.validation.Validator;
 
-import java.beans.PropertyDescriptor;
 import java.beans.IntrospectionException;
+import java.beans.PropertyDescriptor;
 import java.util.*;
 
 /**
@@ -439,6 +439,35 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
         }
     }
 
+  /**
+     * Overriddent equals to take into account inherited properties
+     * e.g. childClass.propertyName is equal to parentClass.propertyName if the types match and
+     * childClass.property.isInherited
+     *
+     * @param o the Object to compare this property to
+     * @return boolean indicating equality of the two objects
+     */
+    public boolean equals(Object o) {
+        if(o == null){
+            return false;
+        }
+        if(o instanceof GrailsDomainClassProperty){
+            if(!super.equals(o)){
+                GrailsDomainClassProperty otherProp = (GrailsDomainClassProperty) o;
+                boolean namesMatch = otherProp.getName().equals(getName());
+                boolean typesMatch = otherProp.getReferencedPropertyType().equals(getReferencedPropertyType());
+                Class myActualClass = getDomainClass().getClazz();
+                Class otherActualClass = otherProp.getDomainClass().getClazz() ;
+                boolean classMatch = otherActualClass.isAssignableFrom(myActualClass) ||
+                        myActualClass.isAssignableFrom(otherActualClass);
+                return namesMatch && typesMatch && classMatch;
+            }else{
+                return true;
+            }
+        }else{
+          return false;
+        }
+    }
 
     private class ComponentDomainClass extends AbstractGrailsClass implements GrailsDomainClass {
         private GrailsDomainClassProperty[] properties;

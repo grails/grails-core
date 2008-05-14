@@ -97,11 +97,11 @@
 		<delete dir="${grails.test.reports}" />
         <mkdir dir="${grails.test.reports}" />
         <echo>Test being run ${test} from ${grails.test.build}</echo>
-        <junit fork="true" maxmemory="512m" forkmode="once">
+        <junit fork="true" maxmemory="1G" forkmode="once">
 			<!-- only fork VMs as needed -->
             <sysproperty key="grails.cli.testing" value="true"/>
             <jvmarg value="-server" />
-			<jvmarg value="-Xmx512M" />
+			<jvmarg value="-Xmx1G" />
 			<jvmarg value="-XX:MaxPermSize=256m"/>
 			<classpath location="${coverage.build}" />
 			<!-- must be first in cp!    -->
