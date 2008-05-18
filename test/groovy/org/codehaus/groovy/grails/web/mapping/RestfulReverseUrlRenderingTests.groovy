@@ -9,7 +9,7 @@ import org.codehaus.groovy.grails.web.taglib.AbstractGrailsTagTests
 *
 * Created: Jan 31, 2008
 */
-class RestulReverseUrlRenderingTests extends AbstractGrailsTagTests {
+class RestfulReverseUrlRenderingTests extends AbstractGrailsTagTests {
 
     public void onSetUp() {
         gcl.parseClass '''
