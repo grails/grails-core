@@ -33,7 +33,7 @@ class DataSourceGrailsPlugin {
 	def version = grails.util.GrailsUtil.getGrailsVersion()
 	def dependsOn = [core:GrailsPluginUtils.getGrailsVersion()]
 	
-	def watchedResources = "**/grails-app/conf/DataSource.groovy"
+	def watchedResources = "file:./grails-app/conf/DataSource.groovy"
 		
 	def doWithSpring = {
         addBeanFactoryPostProcessor(new TransactionManagerPostProcessor())
