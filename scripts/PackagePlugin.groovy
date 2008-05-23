@@ -67,7 +67,7 @@ target ( "default" : "Packages a Grails plugin into a zip for distribution") {
 }
 
 target(packagePlugin:"Implementation target") {
-    depends (packagePlugins, packageApp,compile)
+    depends (checkVersion,packagePlugins, packageApp,compile)
 
     def pluginFile
     new File("${basedir}").eachFile {
