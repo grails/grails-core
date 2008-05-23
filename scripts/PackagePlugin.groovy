@@ -40,8 +40,7 @@ pluginIncludes = [
 	"lib/**",
     "scripts/**",
 	"web-app/**",
-	"src/**",
-    "test/**"
+	"src/**"
 ]
 
 pluginExcludes = [
@@ -53,6 +52,7 @@ pluginExcludes = [
     "grails-app/conf/UrlMappings.groovy",
     "grails-app/conf/log4j.*.properties",
 	"**/.svn/**",
+	"test/**",	
 	"**/CVS/**"
 ]
 
