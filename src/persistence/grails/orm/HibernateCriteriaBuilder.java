@@ -741,6 +741,7 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
                     // Drop the projection, add settings for the pagination parameters,
                     // and then execute the query.
                     this.criteria.setProjection(null);
+                    this.criteria.setResultTransformer(CriteriaSpecification.ROOT_ENTITY);
                     GrailsHibernateUtil.populateArgumentsForCriteria(this.criteria, (Map)args[0]);
                     PagedResultList pagedRes = new PagedResultList(this.criteria.list());
 
