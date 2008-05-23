@@ -15,7 +15,6 @@
 package org.codehaus.groovy.grails.web.mapping;
 
 import groovy.lang.Closure;
-import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.web.mapping.exceptions.UrlMappingException;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
@@ -24,9 +23,9 @@ import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.springframework.web.context.request.RequestContextHolder;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.*;
-import java.net.URLDecoder;
 import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.util.*;
 
 /**
  * A Class that implements the UrlMappingInfo interface and holds information established from a matched
@@ -134,7 +133,13 @@ public class DefaultUrlMappingInfo implements UrlMappingInfo {
     }
 
     public String getActionName() {
-        return evaluateNameForValue(this.actionName);
+        GrailsWebRequest webRequest = (GrailsWebRequest) RequestContextHolder.getRequestAttributes();
+        String name =  checkDispatchAction(webRequest.getCurrentRequest(), null);
+
+        if(name == null) {
+            name = evaluateNameForValue(this.actionName);
+        }
+        return name;
     }
 
     public String getViewName() {
@@ -147,6 +152,10 @@ public class DefaultUrlMappingInfo implements UrlMappingInfo {
 
     private String evaluateNameForValue(Object value) {
         GrailsWebRequest webRequest = (GrailsWebRequest) RequestContextHolder.getRequestAttributes();
+        return evaluateNameForValue(value, webRequest);
+    }
+
+    private String evaluateNameForValue(Object value, GrailsWebRequest webRequest) {
         if (value == null) {
             return null;
         }
@@ -161,10 +170,7 @@ public class DefaultUrlMappingInfo implements UrlMappingInfo {
         } else {
             name = value.toString();
         }
-        if (StringUtils.isBlank(name) && webRequest != null)
-            return checkDispatchAction(webRequest.getRequest(), name);
-        else
-            return name;
+        return name;
     }
 
     private String checkDispatchAction(HttpServletRequest request, String actionName) {
