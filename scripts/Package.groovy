@@ -144,13 +144,16 @@ target( packageApp : "Implementation of package target") {
     else if(!log4jFile.exists()) {
         createDefaultLog4J(log4jFile)
     }
-    Log4jConfigurer.initLogging("file:${log4jFile.absolutePath}")
+    startLogging()
         
     loadPlugins()
     generateWebXml()
     event("PackagingEnd",[])
 }
 
+target(startLogging:"Bootstraps logging") {
+    Log4jConfigurer.initLogging("file:${log4jFile.absolutePath}")    
+}
 target(generateLog4j:"Generates the Log4j config File") {
     profile("log4j-generation") {
         def log4jConfig = config.log4j
