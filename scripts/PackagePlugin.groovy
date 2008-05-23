@@ -45,6 +45,7 @@ pluginIncludes = [
 
 pluginExcludes = [
 	"web-app/WEB-INF/**",
+	"web-app/plugins/**",	
     "grails-app/conf/spring/resources.groovy",
 	"grails-app/conf/*DataSource.groovy",
     "grails-app/conf/Config.groovy",
