@@ -547,7 +547,9 @@ class HibernateGrailsPlugin {
             def identityType = dc.identifier.type
 
             id = convertToType(id, identityType)
-            template.get(dc.clazz, id)
+            if(id) {
+                return template.get(dc.clazz, id)
+            }
         }
 
 
@@ -563,7 +565,7 @@ class HibernateGrailsPlugin {
     private convertToType(value, targetType) {
         SimpleTypeConverter typeConverter = new SimpleTypeConverter()
 
-        if (!targetType.isAssignableFrom(value.class)) {
+        if (value != null && !targetType.isAssignableFrom(value.class)) {
             if (value instanceof Number && Long.class.equals(targetType)) {
                 value = value.toLong()
             }
