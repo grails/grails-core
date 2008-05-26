@@ -35,7 +35,9 @@ target ('default': "Cleans a Grails project") {
 }   
 
 target ( clean: "Implementation of clean") {
-    depends( cleanCompiledSources, cleanGrailsApp, cleanWarFile)
+    event("CleanStart", [])
+    depends(cleanCompiledSources, cleanGrailsApp, cleanWarFile)
+    event("CleanEnd", [])
 }
 
 target ( cleanCompiledSources : "Cleans compiled Java and Groovy sources") {
