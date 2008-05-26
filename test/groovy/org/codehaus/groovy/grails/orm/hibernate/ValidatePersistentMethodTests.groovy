@@ -95,7 +95,28 @@ class ValidatePersistentMethodTests extends AbstractGrailsHibernateTests {
 
 	}
 
-	void onSetUp() {
+    void testFilteringValidation() {
+        // Test validation on a sub-set of the available fields.
+        def profileClass = ga.getDomainClass('Profile')
+        def profile = profileClass.newInstance()
+        profile.email = "This is not an e-mail address"
+        assertFalse "Validation should have failed for invalid e-mail address", profile.validate([ "email" ])
+        assertEquals 'Profile should have only one error', 1, profile.errors.errorCount
+        assertTrue "'email' field should have errors associated with it", profile.errors.hasFieldErrors("email")
+
+        // Now test the behaviour when the object has errors, but none
+        // of the fields included in the filter has errors.
+        profile.email = "someone@somewhere.org"
+        assertTrue "Validation should not have failed for valid e-mail address", profile.validate([ "email" ])
+        assertFalse 'Profile should have no errors', profile.hasErrors()
+
+        // Finally check that without the filtering, the target would
+        // have errors.
+        assertFalse "Validation should have failed", profile.validate()
+        assertTrue 'Profile should have errors', profile.hasErrors()
+    }
+
+    void onSetUp() {
 		this.gcl.parseClass('''
 class Person {
     Long id
@@ -103,6 +124,21 @@ class Person {
     Integer age
     static constraints = {
       age(max:99)
+    }
+}
+class Profile {
+    Long id
+    Long version
+    String firstName
+    String lastName
+    String email
+    Date dateOfBirth
+
+    static constraints = {
+        firstName(nullable: false, blank: false)
+        lastName(nullable: false, blank: false)
+        email(nullable: true, blank: true, email: true)
+        dateOfBirth(nullable: true)
     }
 }
 class Book {

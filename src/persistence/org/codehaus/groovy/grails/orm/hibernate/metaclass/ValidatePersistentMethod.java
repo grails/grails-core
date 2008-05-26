@@ -96,11 +96,11 @@ public class ValidatePersistentMethod extends AbstractDynamicPersistentMethod {
                 validator.validate(target,errors);
             }
 
-
+            int oldErrorCount = errors.getErrorCount();
             errors = filterErrors(errors, validatedFields, target);
 
             if(errors.hasErrors()) {
-                valid = Boolean.valueOf(false);
+                valid = Boolean.FALSE;
                 if(evict) {
                     // if an boolean argument 'true' is passed to the method
                     // and validation fails then the object will be evicted
@@ -110,6 +110,11 @@ public class ValidatePersistentMethod extends AbstractDynamicPersistentMethod {
                         getHibernateTemplate().evict(target);
                     }
                 }
+            }
+
+            // If the errors have been filtered, update the 'errors'
+            // object attached to the target.
+            if (errors.getErrorCount() != oldErrorCount) {
                 MetaClass metaClass = GroovySystem.getMetaClassRegistry().getMetaClass(target.getClass());
                 metaClass.setProperty(target, DomainClassMethods.ERRORS_PROPERTY, errors);
             }
