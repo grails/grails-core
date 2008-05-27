@@ -53,20 +53,27 @@ target ('default': "Packages a Grails application. Note: To create WAR use 'grai
 }                     
   
 target( createConfig: "Creates the configuration object") {
-   if(configFile.exists()) { 
-		try {              
-			config = configSlurper.parse(classLoader.loadClass("Config"))
-			config.setConfigFile(configFile.toURI().toURL())
+   if(configFile.exists()) {
+       def configClass
+       try {
+           configClass = classLoader.loadClass("Config")
+       } catch (ClassNotFoundException cnfe) {
+           // ignore, empty config
+       }
+       if(configClass) {
+           try {
+               config = configSlurper.parse(configClass)
+               config.setConfigFile(configFile.toURI().toURL())
 
-            ConfigurationHolder.setConfig(config)
-		}   
-		catch(Exception e) {
-            e.printStackTrace()
-            
-			event("StatusFinal", ["Failed to compile configuration file ${configFile}: ${e.message}"])
-			exit(1)
-		}
+               ConfigurationHolder.setConfig(config)
+           }
+           catch(Exception e) {
+               e.printStackTrace()
 
+               event("StatusFinal", ["Failed to compile configuration file ${configFile}: ${e.message}"])
+               exit(1)
+           }
+       }
    } 
    def dataSourceFile = new File("${basedir}/grails-app/conf/DataSource.groovy")
    if(dataSourceFile.exists()) {
