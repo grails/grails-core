@@ -15,9 +15,9 @@
  */
 package org.codehaus.groovy.grails.web.metaclass;
 
+import grails.util.GrailsWebUtil;
 import grails.util.JSonBuilder;
 import grails.util.OpenRicoBuilder;
-import grails.util.GrailsWebUtil;
 import groovy.lang.*;
 import groovy.text.Template;
 import groovy.xml.StreamingMarkupBuilder;
@@ -28,12 +28,15 @@ import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsControllerClass;
 import org.codehaus.groovy.grails.commons.metaclass.AbstractDynamicMethodInvocation;
+import org.codehaus.groovy.grails.plugins.GrailsPlugin;
+import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.codehaus.groovy.grails.web.pages.GSPResponseWriter;
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
+import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.Resource;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.servlet.ModelAndView;
@@ -80,6 +83,7 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
     private static final String TEXT_HTML = "text/html";
     private String gspEncoding;
     private static final String DEFAULT_ENCODING = "utf-8";
+    private Object ARGUMENT_PLUGIN = "plugin";
 
 
     public RenderDynamicMethod() {
@@ -151,55 +155,10 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
                 String text = argMap.get(ARGUMENT_TEXT).toString();
                 renderView = renderText(text, out);
             } else if (argMap.containsKey(ARGUMENT_VIEW)) {
-                String viewName = argMap.get(ARGUMENT_VIEW).toString();
-                Object modelObject = argMap.get(ARGUMENT_MODEL);
 
-                renderView(viewName, modelObject, target, webRequest, application, controller);
+                renderView(argMap, target, webRequest, application, controller);
             } else if (argMap.containsKey(ARGUMENT_TEMPLATE)) {
-                String templateName = argMap.get(ARGUMENT_TEMPLATE).toString();
-                Object cp = argMap.get(ARGUMENT_CONTEXTPATH);
-                String contextPath = (cp != null ? cp.toString() : "");
-                String var = (String) argMap.get(ARGUMENT_VAR);
-                // get the template uri
-                GrailsApplicationAttributes attrs = (GrailsApplicationAttributes) controller.getProperty(ControllerDynamicMethods.GRAILS_ATTRIBUTES);
-                String templateUri = attrs.getTemplateUri(templateName, request);
-
-                // retrieve gsp engine
-                GroovyPagesTemplateEngine engine = attrs.getPagesTemplateEngine();
-                try {
-                    Resource r = engine.getResourceForUri(contextPath + templateUri);
-                    if (!r.exists()) {
-                    	r = engine.getResourceForUri(contextPath + "/grails-app/views/"  + templateUri);
-                    }
-                	
-                    Template t = engine.createTemplate(r); //templateUri);
-
-                    if (t == null) {
-                        throw new ControllerExecutionException("Unable to load template for uri [" + templateUri + "]. Template not found.");
-                    }
-                    Map binding = new HashMap();
-
-                    if (argMap.containsKey(ARGUMENT_BEAN)) {
-                        Object bean = argMap.get(ARGUMENT_BEAN);
-                        renderTemplateForBean(t, binding, bean, var, out);
-                    } else if (argMap.containsKey(ARGUMENT_COLLECTION)) {
-                        Object colObject = argMap.get(ARGUMENT_COLLECTION);
-                        renderTemplateForCollection(t, binding, colObject, var, out);
-                    } else if (argMap.containsKey(ARGUMENT_MODEL)) {
-                        Object modelObject = argMap.get(ARGUMENT_MODEL);
-                        renderTemplateForModel(t, modelObject, target, out);
-                    } else {
-                        Writable w = t.make(new BeanMap(target));
-                        w.writeTo(out);
-                    }
-                    renderView = false;
-                }
-                catch (GroovyRuntimeException gre) {
-                    throw new ControllerExecutionException("Error rendering template [" + templateName + "]: " + gre.getMessage(), gre);
-                }
-                catch (IOException ioex) {
-                    throw new ControllerExecutionException("I/O error executing render method for arguments [" + argMap + "]: " + ioex.getMessage(), ioex);
-                }
+                renderView = renderTemplate(target, controller, webRequest, argMap, out);
             } else {
                 Object object = arguments[0];
                 renderView = renderObject(object, out);
@@ -216,6 +175,69 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
         }
         webRequest.setRenderView(renderView);
         return null;
+    }
+
+    private boolean renderTemplate(Object target, GroovyObject controller, GrailsWebRequest webRequest, Map argMap, Writer out) {
+        boolean renderView;
+        String templateName = argMap.get(ARGUMENT_TEMPLATE).toString();
+        String contextPath = getContextPath(webRequest, argMap);
+
+        String var = (String) argMap.get(ARGUMENT_VAR);
+        // get the template uri
+        GrailsApplicationAttributes attrs = (GrailsApplicationAttributes) controller.getProperty(ControllerDynamicMethods.GRAILS_ATTRIBUTES);
+        String templateUri = attrs.getTemplateUri(templateName, webRequest.getRequest());
+
+        // retrieve gsp engine
+        GroovyPagesTemplateEngine engine = attrs.getPagesTemplateEngine();
+        try {
+            Resource r = engine.getResourceForUri(contextPath + templateUri);
+            if (!r.exists()) {
+                r = engine.getResourceForUri(contextPath + "/grails-app/views/"  + templateUri);
+            }
+
+            Template t = engine.createTemplate(r); //templateUri);
+
+            if (t == null) {
+                throw new ControllerExecutionException("Unable to load template for uri [" + templateUri + "]. Template not found.");
+            }
+            Map binding = new HashMap();
+
+            if (argMap.containsKey(ARGUMENT_BEAN)) {
+                Object bean = argMap.get(ARGUMENT_BEAN);
+                renderTemplateForBean(t, binding, bean, var, out);
+            } else if (argMap.containsKey(ARGUMENT_COLLECTION)) {
+                Object colObject = argMap.get(ARGUMENT_COLLECTION);
+                renderTemplateForCollection(t, binding, colObject, var, out);
+            } else if (argMap.containsKey(ARGUMENT_MODEL)) {
+                Object modelObject = argMap.get(ARGUMENT_MODEL);
+                renderTemplateForModel(t, modelObject, target, out);
+            } else {
+                Writable w = t.make(new BeanMap(target));
+                w.writeTo(out);
+            }
+            renderView = false;
+        }
+        catch (GroovyRuntimeException gre) {
+            throw new ControllerExecutionException("Error rendering template [" + templateName + "]: " + gre.getMessage(), gre);
+        }
+        catch (IOException ioex) {
+            throw new ControllerExecutionException("I/O error executing render method for arguments [" + argMap + "]: " + ioex.getMessage(), ioex);
+        }
+        return renderView;
+    }
+
+    private String getContextPath(GrailsWebRequest webRequest, Map argMap) {
+        Object cp = argMap.get(ARGUMENT_CONTEXTPATH);
+        String contextPath = (cp != null ? cp.toString() : "");
+
+        Object pluginName = argMap.get(ARGUMENT_PLUGIN);
+        if(pluginName!=null) {
+            ApplicationContext applicationContext = webRequest.getApplicationContext();
+            GrailsPluginManager pluginManager = (GrailsPluginManager) applicationContext.getBean(GrailsPluginManager.BEAN_NAME);
+            GrailsPlugin plugin = pluginManager.getGrailsPlugin(pluginName.toString());
+            if(plugin!=null) contextPath = plugin.getPluginPath();
+        }
+        return contextPath;
     }
 
     private void setContentType(HttpServletResponse response, String contentType, String encoding) {
@@ -281,7 +303,10 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
         w.writeTo(out);
     }
 
-    private void renderView(String viewName, Object modelObject, Object target, GrailsWebRequest webRequest, GrailsApplication application, GroovyObject controller) {
+    private void renderView(Map argMap, Object target, GrailsWebRequest webRequest, GrailsApplication application, GroovyObject controller) {
+        String viewName = argMap.get(ARGUMENT_VIEW).toString();
+        Object modelObject = argMap.get(ARGUMENT_MODEL);
+
         GrailsControllerClass controllerClass = (GrailsControllerClass) application.getArtefact(ControllerArtefactHandler.TYPE,
                 target.getClass().getName());
         if (controllerClass == null && webRequest.getControllerName() != null) {

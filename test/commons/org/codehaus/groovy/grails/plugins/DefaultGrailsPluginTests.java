@@ -35,6 +35,7 @@ public class DefaultGrailsPluginTests extends AbstractGrailsMockTests {
 	private Class notPluginClass;
     private Class disabled;
     private Class observed;
+    private Class camelCased;
 
     protected void onTearDown()
     {
@@ -71,6 +72,10 @@ public class DefaultGrailsPluginTests extends AbstractGrailsMockTests {
                                           "def observe = ['another'];" +
                                           "def version = 1.1; " +
                                             "def status = 'disabled'; }");
+
+        camelCased = gcl.parseClass("class CamelCasedGrailsPlugin {" +
+                                          "def version = 2.1; " +
+                                            "def status = 'disabled'; }");
     }
 
 	public void testDefaultGrailsPlugin() {
@@ -90,6 +95,16 @@ public class DefaultGrailsPluginTests extends AbstractGrailsMockTests {
 			// expected
 		}
 	}
+
+    public void testGetPluginPath() {
+       GrailsPlugin versionPlugin = new DefaultGrailsPlugin(versioned, ga);
+
+        assertEquals("/plugins/my-1.1", versionPlugin.getPluginPath());
+
+        GrailsPlugin camelCasedPlugin = new DefaultGrailsPlugin(camelCased, ga);
+
+        assertEquals("/plugins/camel-cased-2.1", camelCasedPlugin.getPluginPath());
+    }
 
     public void testDisabledPlugin() {
         GrailsPlugin disabledPlugin = new DefaultGrailsPlugin(disabled, ga);

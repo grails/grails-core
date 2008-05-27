@@ -64,7 +64,7 @@ import java.util.Map;
  */
 public interface GrailsPluginManager extends ApplicationContextAware, ServletContextAware {
 
-	String BEAN_NAME = "grailsPluginManager";
+	String BEAN_NAME = "pluginManager";
 
     /**
      * Returns an array of all the loaded plug-ins

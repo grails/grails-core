@@ -19,6 +19,7 @@ import groovy.lang.GroovyObjectSupport;
 import groovy.util.slurpersupport.GPathResult;
 import org.codehaus.groovy.grails.commons.AbstractGrailsClass;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
@@ -103,7 +104,11 @@ public abstract class AbstractGrailsPlugin extends GroovyObjectSupport implement
 		return this.version;
 	}
 
-	public GrailsPluginManager getManager() {
+    public String getPluginPath() {
+        return PLUGINS_PATH + '/' + GrailsClassUtils.getScriptName(getName()) + '-' + getVersion();
+    }
+
+    public GrailsPluginManager getManager() {
 		return this.manager;
 	}
 

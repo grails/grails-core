@@ -31,12 +31,16 @@ import org.springframework.web.context.ServletConfigAware
 import javax.servlet.ServletConfig
 import org.springframework.beans.factory.InitializingBean;
 import org.codehaus.groovy.grails.web.sitemesh.FactoryHolder
+import org.codehaus.groovy.grails.plugins.PluginManagerHolder
+import org.codehaus.groovy.grails.plugins.GrailsPluginManager
 
 class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants {
 	def out // to facilitate testing
 
     ServletConfig servletConfig
     GroovyPagesTemplateEngine groovyPagesTemplateEngine
+    GrailsPluginManager pluginManager
+
 
     protected getPage() {
     	return request[PAGE]
@@ -398,6 +402,11 @@ class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants 
         def uri = grailsAttributes.getTemplateUri(attrs.template,request)
         def var = attrs['var']
         def contextPath = attrs.contextPath ? attrs.contextPath : ""
+        
+        if(attrs.plugin) {
+            def plugin = pluginManager?.getGrailsPlugin(attrs.plugin)
+            if(plugin) contextPath = plugin.getPluginPath()
+        }
 
         def r = engine.getResourceForUri("${contextPath}${uri}")
         if(!r.exists()) r = engine.getResourceForUri("${contextPath}/grails-app/views/${uri}")

@@ -47,7 +47,12 @@ public interface GrailsPlugin extends ApplicationContextAware {
     int EVENT_ON_CONFIG_CHANGE = 1;
 
     String DO_WITH_DYNAMIC_METHODS = "doWithDynamicMethods";
-	/**
+
+    /**
+     * The prefix used in plug-ins paths 
+     */
+    String PLUGINS_PATH = "/plugins";
+    /**
 	 * Defines the name of the property that specifies resources which this plugin monitors for changes
 	 * in the format a Ant-style path
 	 */
@@ -161,7 +166,15 @@ public interface GrailsPlugin extends ApplicationContextAware {
 	String getVersion();
 
 
-	/**
+    /**
+     * Returns the path of the plug-in
+     *
+     * @return A String that makes up the path to the plug-in in the format /plugins/PLUGIN_NAME-PLUGIN_VERSION
+     */
+    String getPluginPath();
+
+
+    /**
 	 * 
 	 * @return The names of the plugins this plugin is dependant on
 	 */
