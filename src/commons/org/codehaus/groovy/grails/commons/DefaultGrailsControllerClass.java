@@ -65,13 +65,14 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass
     private final Set commandObjectActions = new HashSet();
     private final Set commandObjectClasses = new HashSet();
     private Map flows = new HashMap();
+    private String defaultActionName;
 
 
     public DefaultGrailsControllerClass(Class clazz) {
         super(clazz, CONTROLLER);
         //this.uri = SLASH + (StringUtils.isNotBlank(getPackageName()) ? getPackageName().replace('.', '/')  + SLASH : "" ) + WordUtils.uncapitalize(getName());
         this.uri = SLASH + WordUtils.uncapitalize(getName());
-        String defaultActionName = (String)getPropertyOrStaticPropertyOrFieldValue(DEFAULT_CLOSURE_PROPERTY, String.class);
+        defaultActionName = (String)getPropertyOrStaticPropertyOrFieldValue(DEFAULT_CLOSURE_PROPERTY, String.class);
         if(defaultActionName == null) {
             defaultActionName = INDEX_ACTION;
         }
@@ -173,6 +174,7 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass
 
         if (closureNames.size() == 1) {
             String closureName = ((String)closureNames.iterator().next());
+            this.defaultActionName = closureName;
             this.uri2closureMap.put(uri, closureName);
             this.uri2closureMap.put(controllerPath, closureName);
             if (!this.uri2viewMap.isEmpty()) {
@@ -332,5 +334,9 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass
 
     public boolean isFlowAction(String actionName) {
         return this.flows.containsKey(actionName);
+    }
+
+    public String getDefaultAction() {
+        return this.defaultActionName;
     }
 }

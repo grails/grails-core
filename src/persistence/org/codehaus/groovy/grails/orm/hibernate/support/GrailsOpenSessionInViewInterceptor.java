@@ -53,8 +53,8 @@ public class GrailsOpenSessionInViewInterceptor extends OpenSessionInViewInterce
     }
 
     public void postHandle(WebRequest request, ModelMap model) throws DataAccessException {
-        final boolean isWebRequest = request.getAttribute(IS_FLOW_REQUEST_ATTRIBUTE, WebRequest.SCOPE_REQUEST) != null;
-        if(!isWebRequest) {
+        final boolean isFlowRequest = request.getAttribute(IS_FLOW_REQUEST_ATTRIBUTE, WebRequest.SCOPE_REQUEST) != null;
+        if(!isFlowRequest) {
 
             super.postHandle(request, model);
             SessionHolder sessionHolder =

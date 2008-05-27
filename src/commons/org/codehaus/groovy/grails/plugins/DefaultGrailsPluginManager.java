@@ -232,13 +232,6 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager impl
               processDelayedEvictions();
           }
 
-          // TODO: Remove this message in further releases
-          if( new File("./grails-app/jobs").exists() && plugins.get("quartz") == null ) {
-              GrailsUtil.deprecated( "Job scheduling with Quartz was moved from Grails core " +
-                      "to Quartz plugin. Please, install this plugin with " +
-                      "'grails install-plugin Quartz 0.1'. If you don't want use scheduling " +
-                      "just remove 'jobs' folder under 'grails-app'" );
-          }
           initializePlugins();
           initialised = true;
       }
@@ -416,14 +409,29 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager impl
           GrailsPlugin other = (GrailsPlugin) i.next();
           for (int j = 0; j < loadAfterNames.length; j++) {
               String name = loadAfterNames[j];
-              if(other.getName().equals(name) && areDependenciesResolved(other))
-                  return true;
+              if(other.getName().equals(name)) {
+                  return hasDelayedDependencies(other) || areDependenciesResolved(other);
+
+              }
           }
       }
       return false;
   }
 
-  /**
+    private boolean hasDelayedDependencies(GrailsPlugin other) {
+        String[] dependencyNames = other.getDependencyNames();
+        for (int i = 0; i < dependencyNames.length; i++) {
+            String dependencyName = dependencyNames[i];
+            for (Iterator j = delayedLoadPlugins.iterator(); j.hasNext();) {
+                GrailsPlugin grailsPlugin = (GrailsPlugin) j.next();
+                if(grailsPlugin.getName().equals(dependencyName)) return true;
+            }
+        }
+        return false;
+    }
+
+
+    /**
    * Checks whether the first plugin is dependant on the second plugin
    * @param plugin The plugin to check
    * @param dependancy The plugin which the first argument may be dependant on

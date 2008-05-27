@@ -60,6 +60,7 @@ class WebFlowGrailsPlugin {
                 sessionFactory.currentSessionContextClass = org.codehaus.groovy.grails.webflow.persistence.FlowAwareCurrentSessionContext                
             } catch (MissingPropertyException mpe) {
                 // no session factory, this is ok
+                log.info "Webflow loading without Hibernate integration. SessionFactory not found."
             }
 
         }

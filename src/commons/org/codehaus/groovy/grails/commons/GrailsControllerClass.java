@@ -184,4 +184,12 @@ public interface GrailsControllerClass extends InjectableGrailsClass {
      * @return True if it is a flow action
      */
     public boolean isFlowAction(String actionName);
+
+
+    /**
+     * Returns the default action for this Controller
+     *
+     * @return The default action
+     */
+    public String getDefaultAction();
 }

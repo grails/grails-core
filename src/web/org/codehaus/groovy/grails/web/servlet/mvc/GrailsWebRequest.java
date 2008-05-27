@@ -15,7 +15,6 @@
  */
 package org.codehaus.groovy.grails.web.servlet.mvc;
 
-import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsControllerClass;
@@ -208,10 +207,14 @@ public class GrailsWebRequest extends DispatcherServletWebRequest implements Par
      * @return True if it is a flow request
      */
     public boolean isFlowRequest() {
-        final String actionName = getActionName();
-        if(StringUtils.isBlank(actionName))return false;
         GrailsApplication application = getAttributes().getGrailsApplication();
         GrailsControllerClass controllerClass = (GrailsControllerClass)application.getArtefactByLogicalPropertyName(ControllerArtefactHandler.TYPE,getControllerName());
+
+        String actionName = getActionName();
+        if(actionName == null) actionName = controllerClass.getDefaultAction();
+
+        if(actionName == null) return false;
+
         if(controllerClass != null && controllerClass.isFlowAction(actionName)) return true;
         return false;
     }
