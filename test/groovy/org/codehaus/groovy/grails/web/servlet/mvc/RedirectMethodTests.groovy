@@ -40,13 +40,27 @@ class RedirectController {
     }
 
 }
+
+class NewsSignupController {
+    def testNoController = {
+        redirect(action: 'thankyou')
+    }
+
+    def thankyou = {
+    }
+}
+
 class UrlMappings {
     static mappings = {
-      "/$controller/$action?/$id?"{
-	      constraints {
-			 // apply constraints here
-		  }
-	  }
+        "/little-brown-bottle/$action?" {
+        	controller = "newsSignup"
+        }
+
+        "/$controller/$action?/$id?"{
+	        constraints {
+		        // apply constraints here
+		    }
+	    }
 	}
 }
         ''')
@@ -103,5 +117,12 @@ class UrlMappings {
         c.toControllerWithDuplicateArrayParams.call()
         assertEquals "/test/foo?one=two&one=three", response.redirectedUrl
 
+    }
+
+    void testRedirectToActionWithMapping() {
+        def c = ga.getControllerClass("NewsSignupController").newInstance()
+        webRequest.controllerName = 'newsSignup'
+        c.testNoController.call()
+        assertEquals "/little-brown-bottle/thankyou", response.redirectedUrl
     }
 }
