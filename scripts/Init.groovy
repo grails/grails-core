@@ -70,6 +70,10 @@ System.setProperty(GrailsApplication.PROJECT_RESOURCES_DIR, resourcesDirPath)
 classesDir = new File(classesDirPath)
 System.setProperty("grails.classes.dir", classesDirPath)
 
+// Pattern that matches artefacts in the 'grails-app' directory.
+// Note that the capturing group matches any package directory
+// structure.
+artefactPattern = /\S+?\/grails-app\/\S+?\/(\S+?)\.groovy/
 
 resolver = new PathMatchingResourcePatternResolver()
 grailsAppName = null
@@ -549,8 +553,9 @@ void setClasspath() {
 
 	def preInitFile = new File("./grails-app/conf/PreInit.groovy")
 	if(preInitFile.exists()) {
-		config = configSlurper.parse(preInitFile.toURL())
-		config.setConfigFile(preInitFile.toURL())		
+        URL preInitUrl = preInitFile.toURI().toURL()
+        config = configSlurper.parse(preInitUrl)
+		config.setConfigFile(preInitUrl)
 	}
 
 
@@ -582,8 +587,8 @@ void setClasspath() {
     rootLoader = getClass().classLoader.rootLoader
     populateRootLoader(rootLoader, jarFiles)
 
-    rootLoader?.addURL(new File("${basedir}/grails-app/conf/hibernate").toURL())
-    rootLoader?.addURL(new File("${basedir}/src/java").toURL())
+    rootLoader?.addURL(new File("${basedir}/grails-app/conf/hibernate").toURI().toURL())
+    rootLoader?.addURL(new File("${basedir}/src/java").toURI().toURL())
 
     // The resources directory must be created before it is added to
     // the root loader, otherwise it is quietly ignored. In other words,
@@ -593,7 +598,7 @@ void setClasspath() {
     if (!resourcesDir.exists()) {
         resourcesDir.mkdirs()
     }
-    rootLoader?.addURL(resourcesDir.toURL())
+    rootLoader?.addURL(resourcesDir.toURI().toURL())
 
     parentLoader = getClass().getClassLoader()
     classpathSet = true
@@ -634,8 +639,8 @@ populateRootLoader = {rootLoader, jarFiles ->
 	for(jar in getExtraDependencies()) {
     	rootLoader?.addURL(jar.URL)		
 	}
-    rootLoader?.addURL(new File("${basedir}/web-app/WEB-INF/classes").toURL())
-    rootLoader?.addURL(new File("${basedir}/web-app/WEB-INF").toURL())
+    rootLoader?.addURL(new File("${basedir}/web-app/WEB-INF/classes").toURI().toURL())
+    rootLoader?.addURL(new File("${basedir}/web-app/WEB-INF").toURI().toURL())
 }
 
 target(configureProxy: "The implementation target") {

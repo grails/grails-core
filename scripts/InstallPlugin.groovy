@@ -138,7 +138,7 @@ target(installPlugin:"Implementation target") {
                     mkp.plugin(name:pluginName, version:pluginVersion) {
                         resources {
                             for(r in resourceList) {
-                                 def matcher = r.URL.toString() =~ /\S+?\/grails-app\/\S+?\/(\S+?).groovy/
+                                 def matcher = r.URL.toString() =~ artefactPattern
                                  def name = matcher[0][1].replaceAll('/', /\./)
                                  resource(name)
                             }

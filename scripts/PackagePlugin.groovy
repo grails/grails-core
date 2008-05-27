@@ -101,10 +101,10 @@ target(packagePlugin:"Implementation target") {
         }
         resources {
             for(r in resourceList) {
-                 def matcher = r.URL.toString() =~ /\S+?\/grails-app\/\S+?\/(\S+?).groovy/
+                 def matcher = r.URL.toString() =~ artefactPattern
                  def name = matcher[0][1].replaceAll('/', /\./)
                  resource(name)
-            }             
+            }
         }
     }
 

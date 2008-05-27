@@ -61,6 +61,82 @@ class WarTests  extends AbstractCliTests {
         }
     }
 
+    void testArtefactDescriptor() {
+        def appDir = createTestApp()
+
+        // Create some artefacts in packages.
+        def pkgDir = new File("${appDir}/grails-app/domain/org/example/domain")
+        pkgDir.mkdirs()
+        new File(pkgDir, "Book.groovy").withWriter { writer ->
+            writer << """\
+package org.example.domain
+
+class Book {
+    String title
+    String author
+}
+"""
+        }
+
+        pkgDir = new File("${appDir}/grails-app/controllers/org/example/controllers")
+        pkgDir.mkdirs()
+        new File(pkgDir, "BookController.groovy").withWriter { writer ->
+            writer << """\
+package org.example.controllers
+
+class BookController {
+    def scaffold = true
+}
+"""
+        }
+
+        // And a domain class without a package.
+        new File(pkgDir, "Person.groovy").withWriter { writer ->
+            writer << """\
+class Person {
+    String firstName
+    String lastName
+}
+"""
+        }
+
+        // And finally, a domain class whose package includes "groovy"
+        // (GRAILS-2846).
+        pkgDir = new File("${appDir}/grails-app/domain/org/groovy/example")
+        pkgDir.mkdirs()
+        new File(pkgDir, "Item.groovy").withWriter { writer ->
+            writer << """\
+package org.groovy.example
+
+class Item {
+    String name
+    String colour
+}
+"""
+        }
+
+
+        // Now create the WAR file and check it.
+        gantRun( ["-f", "scripts/War.groovy"] as String[])
+		checkWarFile("testapp-0.1.war")
+
+        // The 'grails.xml' descriptor has now been unpacked, so check
+        // that it contains the expected entries.
+        def descriptor = new XmlSlurper().parse(new File("${appBase}/unzipped/WEB-INF/grails.xml"))
+        assertNotNull(
+                "Book domain resource missing.",
+                descriptor.resources.resource.find { it.text() == "org.example.domain.Book" })
+        assertNotNull(
+                "Book controller resource missing.",
+                descriptor.resources.resource.find { it.text() == "org.example.controllers.BookController" })
+        assertNotNull(
+                "Person domain resource missing.",
+                descriptor.resources.resource.find { it.text() == "Person" })
+        assertNotNull(
+                "Item domain resource missing.",
+                descriptor.resources.resource.find { it.text() == "org.groovy.example.Item" })
+    }
+    
     /**
      * Checks that the WAR file with the given filename exists in the
      * expected location and contains all the required files.

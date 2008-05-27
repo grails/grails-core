@@ -249,7 +249,7 @@ target(createDescriptor:"Creates the WEB-INF/grails.xml file used to load Grails
 		xml.grails {
 			resources {
 			    for(r in resourceList) {
-                    def matcher = r.URL.toString() =~ /\S+?\/grails-app\/\S+?\/(\S+?).groovy/
+                    def matcher = r.URL.toString() =~ artefactPattern
 
                     // Replace the slashes in the capture group with '.' so
                     // that we get a qualified class name. So for example,
