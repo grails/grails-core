@@ -35,9 +35,7 @@ import javax.servlet.ServletContext;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Iterator;
+import java.util.*;
 
 /**
  * NOTE: Based on work done by on the GSP standalone project (https://gsp.dev.java.net/)
@@ -68,6 +66,20 @@ public abstract class GroovyPage extends Script {
     public static final String WEB_REQUEST = "webRequest";
     public static final String DEFAULT_NAMESPACE = "g";
     public static final String PAGE_SCOPE = "pageScope";
+    public static final Collection RESERVED_NAMES = new ArrayList() {{
+        add(REQUEST);
+        add(SERVLET_CONTEXT);
+        add(RESPONSE);
+        add(OUT);
+        add(ATTRIBUTES);
+        add(APPLICATION_CONTEXT);
+        add(SESSION);
+        add(PARAMS);
+        add(FLASH);
+        add(PLUGIN_CONTEXT_PATH);
+        add(PAGE_SCOPE);
+
+    }};
 
     private static final String BINDING = "binding";
     private GrailsApplication application;
@@ -435,5 +447,15 @@ public abstract class GroovyPage extends Script {
 			}
 		};
 	}
+
+    /**
+     * Return whether the given name cannot be used within the binding of a GSP
+     *
+     * @param name True if it can't
+     * @return A boolean true or false
+     */
+    public static boolean isReservedName(String name) {
+        return RESERVED_NAMES.contains(name);
+    }
 } // GroovyPage
 

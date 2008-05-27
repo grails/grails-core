@@ -255,13 +255,25 @@ class GroovyPageWritable implements Writable {
         // Go through request attributes and add them to the binding as the model
         for (Enumeration attributeEnum =  request.getAttributeNames(); attributeEnum.hasMoreElements();) {
             String key = (String) attributeEnum.nextElement();
-            if(!binding.getVariables().containsKey(key)) {
-                binding.setVariable( key, request.getAttribute(key) );
+            if(!GroovyPage.isReservedName(key)) {
+
+                if(!binding.getVariables().containsKey(key)) {
+                    binding.setVariable( key, request.getAttribute(key) );
+                }
+            }
+            else {
+                LOG.debug("Variable [" + key + "] cannot be placed within the GSP model, the name used is a reserved name.");
             }
         }
         for (Iterator i = additionalBinding.keySet().iterator(); i.hasNext();) {
             String key =  (String)i.next();
-            binding.setVariable(key, additionalBinding.get(key));
+            if(!GroovyPage.isReservedName(key)) {
+
+                binding.setVariable(key, additionalBinding.get(key));
+            }
+            else {
+                LOG.debug("Variable [" + key + "] cannot be placed within the GSP model, the name used is a reserved name.");
+            }
         }
     }
 

@@ -69,7 +69,20 @@ public class GroovyPageTests extends AbstractGrailsControllerTests {
 		gcl.parseClass(taglibCode)
 		
 	}
-	public void testRunPage() throws Exception {
+
+    void testReservedNames() {
+        assertTrue GroovyPage.isReservedName(GroovyPage.REQUEST)
+        assertTrue GroovyPage.isReservedName(GroovyPage.RESPONSE)
+        assertTrue GroovyPage.isReservedName(GroovyPage.SESSION)
+        assertTrue GroovyPage.isReservedName(GroovyPage.SERVLET_CONTEXT)
+        assertTrue GroovyPage.isReservedName(GroovyPage.APPLICATION_CONTEXT)
+        assertTrue GroovyPage.isReservedName(GroovyPage.PARAMS)
+        assertTrue GroovyPage.isReservedName(GroovyPage.OUT)
+        assertTrue GroovyPage.isReservedName(GroovyPage.FLASH)
+        assertTrue GroovyPage.isReservedName(GroovyPage.PAGE_SCOPE)
+    }
+
+    public void testRunPage() throws Exception {
 		
 		String pageCode = "import org.codehaus.groovy.grails.web.pages.GroovyPage\n" +
 		"import org.codehaus.groovy.grails.web.taglib.*\n"+
