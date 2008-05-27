@@ -2,6 +2,7 @@ package org.codehaus.groovy.grails.cli;
 
 import org.codehaus.groovy.tools.RootLoader
 import org.codehaus.groovy.tools.LoaderConfiguration
+import org.codehaus.groovy.grails.plugins.PluginManagerHolder
 
 abstract class AbstractCliTests extends GroovyTestCase {
 
@@ -17,7 +18,8 @@ abstract class AbstractCliTests extends GroovyTestCase {
 	}
 	
 	void tearDown() {
-		ant.delete(dir:appBase, failonerror:false)
+        PluginManagerHolder.pluginManager = null
+        ant.delete(dir:appBase, failonerror:false)
 		ant = null
 	}
 
