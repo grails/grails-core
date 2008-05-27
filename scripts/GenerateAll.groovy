@@ -91,11 +91,11 @@ target(generateAll:"The implementation target") {
 		def generator = new DefaultGrailsTemplateGenerator()                                        
 		if(generateViews) {
 			event("StatusUpdate", ["Generating views for domain class ${domainClass.fullName}"])				
-			generator.generateViews(domainClass,".")                                            			
+			generator.generateViews(domainClass, basedir)
 		}                                                                                       
 		if(generateController) {
 			event("StatusUpdate", ["Generating controller for domain class ${domainClass.fullName}"])		
-			generator.generateController(domainClass,".")				
+			generator.generateController(domainClass, basedir)				
 		}
 		event("StatusFinal", ["Finished generation for domain class ${domainClass.fullName}"])
 	}                                                

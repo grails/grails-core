@@ -85,8 +85,16 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator  {
             throw new IllegalArgumentException("Argument [destdir] not specified")
 
         if(domainClass) {
-            def destFile = new File("${destdir}/grails-app/controllers/${domainClass.shortName}Controller.groovy")
-			if(canWrite(destFile)) {				
+            def fullName = domainClass.fullName
+            def pkg = ""
+            def pos = fullName.lastIndexOf('.')
+            if (pos != -1) {
+                // Package name with trailing '.'
+                pkg = fullName[0..pos]
+            }
+
+            def destFile = new File("${destdir}/grails-app/controllers/${pkg.replace('.' as char, '/' as char)}${domainClass.shortName}Controller.groovy")
+			if(canWrite(destFile)) {
 	            destFile.parentFile.mkdirs()
 
 	            destFile.withWriter { w ->
