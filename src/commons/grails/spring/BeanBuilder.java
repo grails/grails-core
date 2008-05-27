@@ -624,7 +624,7 @@ public class BeanBuilder extends GroovyObjectSupport {
 	/**
 	 * This method overrides property retrieval in the scope of the BeanBuilder to either:
 	 * 
-	 * a) Retrieve a variable from the bean builder's binding if it exits
+	 * a) Retrieve a variable from the bean builder's binding if it exists
 	 * b) Retrieve a RuntimeBeanReference for a specific bean if it exists
 	 * c) Otherwise just delegate to super.getProperty which will resolve properties from the BeanBuilder itself
 	 */
