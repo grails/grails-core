@@ -14,7 +14,11 @@ class ServletsGrailsPluginTests extends AbstractGrailsPluginTests {
 
 		pluginsToLoad << gcl.loadClass("org.codehaus.groovy.grails.plugins.CoreGrailsPlugin")
 		pluginsToLoad << gcl.loadClass("org.codehaus.groovy.grails.plugins.web.ServletsGrailsPlugin")
-	}
+
+        def remove = GroovySystem.metaClassRegistry.&removeMetaClass
+
+        remove MockServletContext
+    }
 
 	void testServletContextObject() {
         def context = new MockServletContext()
