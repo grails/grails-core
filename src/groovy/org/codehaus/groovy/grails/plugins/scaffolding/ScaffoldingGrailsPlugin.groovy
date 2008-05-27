@@ -121,7 +121,7 @@ class ScaffoldingGrailsPlugin {
                 def ctx = event.ctx
 
                 if(!scaffoldClass) {
-                    scaffoldClass = application.getDomainClass(controller.name)?.clazz
+                    scaffoldClass = application.getDomainClass(controllerClass.name)?.clazz
                 }
 
                 if(scaffoldClass) {
