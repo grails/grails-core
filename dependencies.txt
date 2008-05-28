@@ -71,10 +71,6 @@ The following libraries are included in Grails because they are required either 
 - required for building Grails core
 - required for running Grails applications
 
-* ehcache-1.2.4.jar
-- Ehcache 1.2.4 (http://ehcache.sourceforge.net/) Apache 2.0 License
-- required for running Grails applications (When using Hibernate caching)
-
 * ejb3-persistence.jar
 - EJB 3.0 Final Release
 - required for running Grails applications (When using Hibernate EJB3 annotations)
@@ -156,6 +152,10 @@ Jetty JNDI Support 6.1.4 (http://www.mortbay.org)
 * oro-2.0.8.jar
 - Jakarta ORO 2.0.8 (http://jakarta.apache.org/oro/) Apache 2.0 License
 - required for running Grails applications
+
+* oscache-2.4.1.jar
+- OSCache 2.4.1 (http://www.opensymphony.com/oscache) OpenSymphony Software License (see http://www.opensymphony.com/oscache/license.action)
+- required for running Grails applications (When using Hibernate caching)
 
 * sitemesh-2.3.jar
 - Sitemesh 2.3 (http://www.opensymphony.com/sitemesh) OpenSymphony Software License (see http://www.opensymphony.com/sitemesh/license.action) 
