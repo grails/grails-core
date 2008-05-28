@@ -196,7 +196,7 @@ public class GrailsHibernateUtil {
             Map fetch = (Map)fetchObj;
             for (Iterator i = fetch.keySet().iterator(); i.hasNext();) {
                 String associationName = (String) i.next();
-                c.setFetchMode(associationName, getFetchMode(fetch.get(i)));
+                c.setFetchMode(associationName, getFetchMode(fetch.get(associationName)));
             }
         }
 
