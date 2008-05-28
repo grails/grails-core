@@ -15,13 +15,10 @@
 package org.codehaus.groovy.grails.web.converters;
 
 import org.apache.commons.lang.UnhandledException;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
-import org.springframework.core.JdkVersion;
 
 import java.io.StringWriter;
-import java.lang.reflect.Method;
 import java.lang.reflect.Constructor;
 
 /**
@@ -50,21 +47,6 @@ public abstract class AbstractConverter implements Converter {
         return writer.toString();
     }
 
-
-	protected boolean isJdk5Enum(Class type) {
-		if (JdkVersion.getMajorJavaVersion() >= JdkVersion.JAVA_15) {
-            Method m = BeanUtils.findMethod(type.getClass(),"isEnum", null);
-            if(m == null) return false;
-            try {
-                Object result = m.invoke(type, null);
-                return result instanceof Boolean && ((Boolean) result).booleanValue();
-            } catch (Exception e ) {
-                return false;
-            }
-		} else {
-			return false;
-		}
-	}
 
     protected BeanWrapper createBeanWrapper(Object o) {
         BeanWrapper beanWrapper;

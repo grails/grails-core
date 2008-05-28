@@ -134,6 +134,10 @@ public class GrailsHibernateDomainClassProperty implements GrailsDomainClassProp
         return association;
     }
 
+    public boolean isEnum() {
+        return GrailsClassUtils.isJdk5Enum(getType());
+    }
+
     public void setAssociation(boolean association) {
         this.association = association;
     }

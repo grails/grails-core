@@ -14,12 +14,14 @@
  */
 package grails.converters;
 
+import grails.util.GrailsWebUtil;
 import groovy.lang.GString;
 import groovy.lang.GroovyObject;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.ConfigurationHolder;
+import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
 import org.codehaus.groovy.grails.web.converters.AbstractConverter;
@@ -39,11 +41,12 @@ import java.beans.PropertyDescriptor;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Writer;
-import java.lang.reflect.*;
+import java.lang.reflect.Array;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.util.*;
-
-import grails.util.GrailsWebUtil;
 
 /**
  * A converter that converts domain classes, Maps, Lists, Arrays, POJOs and POGOs to JSON
@@ -292,7 +295,7 @@ public class JSON extends AbstractConverter implements Converter {
                 writer.value(null);
             } else if (o instanceof GroovyObject && ConverterUtil.isDomainClass(o.getClass())) {
                 domain(o);
-            } else if(isJdk5Enum(o.getClass())) {
+            } else if(GrailsClassUtils.isJdk5Enum(o.getClass())) {
                 enumeration(o);
             } else if (o instanceof Class) {
                 writer.value(((Class) o).getName());

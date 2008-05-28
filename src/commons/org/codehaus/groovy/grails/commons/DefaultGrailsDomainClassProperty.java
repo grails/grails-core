@@ -334,6 +334,10 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
                 isEmbedded();
 	}
 
+    public boolean isEnum() {
+        return GrailsClassUtils.isJdk5Enum(getType());
+    }
+
     public String getNaturalName() {
         return this.naturalName;
     }

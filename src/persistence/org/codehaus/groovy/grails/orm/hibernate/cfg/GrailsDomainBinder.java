@@ -37,6 +37,7 @@ import org.hibernate.mapping.*;
 import org.hibernate.mapping.Collection;
 import org.hibernate.persister.entity.JoinedSubclassEntityPersister;
 import org.hibernate.persister.entity.SingleTableEntityPersister;
+import org.hibernate.type.EnumType;
 import org.hibernate.type.ForeignKeyDirection;
 import org.hibernate.usertype.UserType;
 import org.hibernate.util.StringHelper;
@@ -1237,7 +1238,11 @@ public final class GrailsDomainBinder {
 				mappings.addCollection(collection);
 				value = collection;
 			}
-			// work out what type of relationship it is and bind value
+            else if(currentGrailsProp.isEnum()) {
+                value = new SimpleValue( table );
+                bindEnumType(currentGrailsProp, (SimpleValue)value, EMPTY_PATH, mappings);
+            }
+            // work out what type of relationship it is and bind value
 			else if ( currentGrailsProp.isManyToOne() ) {
 				if(LOG.isDebugEnabled())
 					LOG.debug("[GrailsDomainBinder] Binding property [" + currentGrailsProp.getName() + "] as ManyToOne");
@@ -1273,6 +1278,23 @@ public final class GrailsDomainBinder {
 			}
 		}
 	}
+
+    private static void bindEnumType(GrailsDomainClassProperty property, SimpleValue simpleValue, String path, Mappings mappings) {
+        Properties enumProperties = new Properties();
+        enumProperties.put(EnumType.ENUM, property.getType().getName());
+
+        simpleValue.setTypeParameters(enumProperties);
+        simpleValue.setTypeName(EnumType.class.getName());
+        Table t = simpleValue.getTable();
+		Column column = new Column();
+		column.setNullable(property.isOptional());
+		column.setValue(simpleValue);
+		column.setName(getColumnNameForPropertyAndPath(property, path));
+		if(t!=null)t.addColumn(column);
+
+		simpleValue.addColumn(column);
+
+    }
 
 
     private static boolean isUserType(Class userType) {

@@ -19,6 +19,7 @@ import groovy.lang.*;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.*;
 import org.springframework.util.Assert;
+import org.springframework.core.JdkVersion;
 
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
@@ -978,5 +979,26 @@ public class GrailsClassUtils {
         String className = logicalName.substring(0,1).toUpperCase() + logicalName.substring(1);
         if(trailingName != null) className = className + trailingName;
         return className;
+    }
+
+    /**
+     * Checks whether the given class is a JDK 1.5 enum or not
+     *
+     * @param type The class to check
+     * @return True if it is an enum
+     */
+    public static boolean isJdk5Enum(Class type) {
+        if (JdkVersion.getMajorJavaVersion() >= JdkVersion.JAVA_15) {
+            Method m = BeanUtils.findMethod(type.getClass(),"isEnum", null);
+            if(m == null) return false;
+            try {
+                Object result = m.invoke(type, null);
+                return result instanceof Boolean && ((Boolean) result).booleanValue();
+            } catch (Exception e ) {
+                return false;
+            }
+        } else {
+            return false;
+        }
     }
 }

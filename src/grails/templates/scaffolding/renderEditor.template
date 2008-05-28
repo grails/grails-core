@@ -10,6 +10,8 @@
         out << renderDateEditor(domainClass,property)  
     else if(property.type == URL.class) 
         out << renderStringEditor(domainClass,property)
+    else if(property.isEnum())
+        out << renderEnumEditor(domainClass,property)
     else if(property.type == TimeZone.class)
         out << renderSelectTypeEditor("timeZone",domainClass,property)
     else if(property.type == Locale.class)
@@ -24,6 +26,12 @@
         out << renderManyToOne(domainClass,property)
     else if(property.oneToMany || property.manyToMany)
         out << renderOneToMany(domainClass,property)
+
+    private renderEnumEditor(domainClass,property) {
+        if(property.isEnum()) {
+            return "<g:select  from=\"\${${property.type.name}?.values()}\" value=\"\${${domainClass.propertyName}?.${property.name}}\" name=\"${property.name}\" ${renderNoSelection(property)}></g:select>"
+        }
+    }
 
     private renderStringEditor(domainClass, property) {
         if(!cp) {

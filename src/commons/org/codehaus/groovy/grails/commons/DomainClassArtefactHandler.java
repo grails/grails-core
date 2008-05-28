@@ -56,6 +56,7 @@ public class DomainClassArtefactHandler extends ArtefactHandlerAdapter {
         if(Closure.class.isAssignableFrom(clazz)) {
             return false;
         }
+        if(GrailsClassUtils.isJdk5Enum(clazz)) return false;
         Class testClass = clazz;
         boolean result = false;
         while(testClass!=null&&!testClass.equals(GroovyObject.class)&&!testClass.equals(Object.class)) {

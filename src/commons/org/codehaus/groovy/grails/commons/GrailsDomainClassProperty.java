@@ -151,6 +151,12 @@ public interface GrailsDomainClassProperty {
 	public boolean isAssociation();
 
     /**
+     * Returns true if this properties type is an enum
+     * @return True if it is
+     */
+    public boolean isEnum();
+
+    /**
      * @return The natural name representation of the property (eg. 'lastName' becomes 'Last Name'
      */
     public String getNaturalName();
