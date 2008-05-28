@@ -143,6 +143,48 @@ class Author {
         assertEquals "Stephen King", b.author?.name
     }
 
+    void testNullAssociations() {
+        def c = ga.getControllerClass("TestController").newInstance()
+
+        request.addParameter("title", "The Stand")
+        request.addParameter("author.id", "null")
+
+
+        def params = c.params
+        def b = ga.getDomainClass("Book").newInstance()
+
+        b.properties = params
+        assertEquals "Wrong 'title' property", "The Stand", b.title
+        assertNull "Expected null for property 'author'", b.author
+    }
+
+    void testAssociationsBinding() {
+        def c = ga.getControllerClass("TestController").newInstance()
+
+        def authorClass = ga.getDomainClass("Author").getClazz()
+        authorClass.metaClass.'static'.get = { id ->
+            def result = authorClass.newInstance()
+            result.id = id
+            result.name = "Mocked ${id}"
+            result
+        }
+
+        request.addParameter("title", "The Stand")
+        request.addParameter("author.id", "5")
+
+        def params = c.params
+
+        def b = ga.getDomainClass("Book").newInstance()
+
+        b.properties = params
+
+
+        assertEquals "Wrong 'title' property", "The Stand", b.title
+        assertNotNull "Association 'author' should be binded", b.author
+        assertEquals 5, b.author.id
+        assertEquals "Mocked 5", b.author.name
+    }
+
     void testMultiDBinding() {
         def c = ga.getControllerClass("TestController").newInstance()
 
