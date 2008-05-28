@@ -30,7 +30,7 @@ grailsHome = Ant.antProject.properties."env.GRAILS_HOME"
 
 includeTargets << new File ( "${grailsHome}/scripts/GenerateAll.groovy" )
 
-target ('default': "Generates the CRUD views for a specified domain class") {
+target ('default': "Generates the CRUD controller for a specified domain class") {
 	depends( checkVersion, packageApp )
 	typeName = "Domain Class"
 	promptForName()  
