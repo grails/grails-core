@@ -124,7 +124,8 @@ class HibernateGrailsPlugin {
                 hibProps.putAll(hibConfig.flatten().toProperties('hibernate'))
             }
 
-            hibernateProperties(PropertiesFactoryBean) {
+            hibernateProperties(PropertiesFactoryBean) { bean ->
+                bean.scope = "prototype"
                 properties = hibProps
             }
 			lobHandlerDetector(SpringLobHandlerDetectorFactoryBean) {
