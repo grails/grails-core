@@ -58,7 +58,6 @@
 	<classpathentry kind="lib" path="lib/sitemesh-2.3.jar"/>
 	<classpathentry kind="lib" path="lib/spring-binding-2.0-m1.jar"/>
 	<classpathentry kind="lib" path="lib/spring-webflow-2.0-m1.jar"/>
-	<classpathentry kind="lib" path="lib/springmodules-sandbox.jar"/>
 	<classpathentry kind="lib" path="lib/standard-2.3.jar"/>
 	<classpathentry kind="lib" path="lib/standard-2.4.jar"/>
 	<classpathentry kind="lib" path="lib/start.jar"/>
