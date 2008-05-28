@@ -62,18 +62,19 @@ class TransactionalService {
         "foo"
     }
 }
-class ApplicationDataSource {
-	   boolean pooling = true
-	   boolean logSql = true
-	   String dbCreate = "create-drop" // one of 'create', 'create-drop','update'
-	   String url = "jdbc:hsqldb:mem:testDB"
-	   String driverClassName = "org.hsqldb.jdbcDriver"
-	   String username = "sa"
-	   String password = ""
-}
+''')
 
-'''
-        )
+        gcl.parseClass('''\
+dataSource {
+	   pooling = true
+	   logSql = true
+	   dbCreate = "create-drop" // one of 'create', 'create-drop','update'
+	   url = "jdbc:hsqldb:mem:testDB"
+	   driverClassName = "org.hsqldb.jdbcDriver"
+	   username = "sa"
+	   password = ""
+}
+''', "DataSource")
 
        pluginsToLoad << gcl.loadClass("org.codehaus.groovy.grails.plugins.CoreGrailsPlugin")
        pluginsToLoad << gcl.loadClass("org.codehaus.groovy.grails.plugins.i18n.I18nGrailsPlugin")

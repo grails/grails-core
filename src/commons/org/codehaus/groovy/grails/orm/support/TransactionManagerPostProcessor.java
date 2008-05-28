@@ -15,38 +15,74 @@
  */ 
 package org.codehaus.groovy.grails.orm.support;
 
-import java.util.Iterator;
-import java.util.Map;
-
 import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
+import org.springframework.beans.factory.config.InstantiationAwareBeanPostProcessorAdapter;
 import org.springframework.transaction.PlatformTransactionManager;
 
 /**
+ * This is a bean post processor that injects the platform transaction
+ * manager into beans that implement the {@link TransactionManagerAware}
+ * interface.
  * @author Graeme Rocher
  * @since 0.4
- *
  */
-public class TransactionManagerPostProcessor implements
-		BeanFactoryPostProcessor {
+public class TransactionManagerPostProcessor extends InstantiationAwareBeanPostProcessorAdapter implements BeanFactoryAware {
+    private ConfigurableListableBeanFactory beanFactory;
+    private PlatformTransactionManager transactionManager;
+    private boolean initialized = false;
 
-	/* (non-Javadoc)
-	 * @see org.springframework.beans.factory.config.BeanFactoryPostProcessor#postProcessBeanFactory(org.springframework.beans.factory.config.ConfigurableListableBeanFactory)
-	 */
-	public void postProcessBeanFactory(
-			ConfigurableListableBeanFactory beanFactory) throws BeansException {
-		
-		String[] beanNames = beanFactory.getBeanNamesForType(PlatformTransactionManager.class);
-		if(beanNames.length > 0) {
-			PlatformTransactionManager ptm = (PlatformTransactionManager)beanFactory.getBean(beanNames[0]);
-			
-			Map beans = beanFactory.getBeansOfType(TransactionManagerAware.class);
-			for (Iterator i = beans.values().iterator(); i.hasNext();) {
-				TransactionManagerAware tma = (TransactionManagerAware) i.next();
-				tma.setTransactionManager(ptm);
-			}
-		}
-	}
+    public void setTransactionManager(PlatformTransactionManager transactionManager) {
+        this.transactionManager = transactionManager;
+    }
 
+    /**
+     * Gets the platform transaction manager from the bean factory if
+     * there is one.
+     * @param beanFactory The bean factory handling this post processor.
+     * @throws BeansException
+     */
+    public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
+        if (!(beanFactory instanceof ConfigurableListableBeanFactory)) {
+            throw new IllegalArgumentException(
+                    "TransactionManagerPostProcessor requires a ConfigurableListableBeanFactory");
+	    }
+
+	    this.beanFactory = (ConfigurableListableBeanFactory) beanFactory;
+    }
+
+    /**
+     * Injects the platform transaction manager into the given bean if
+     * that bean implements the {@link TransactionManagerAware} interface.
+     * @param bean The bean to process.
+     * @param name The name of the bean.
+     * @return The bean after the transaction manager has been injected.
+     * @throws BeansException
+     */
+    public synchronized boolean postProcessAfterInstantiation(Object bean, String name) throws BeansException {
+        // Lazily retrieve the transaction manager from the bean factory.
+        // Attempting to retrieve it within 'setBeanFactory()' blocks
+        // other bean post processors from processing the beans in the
+        // factory!
+        if (!this.initialized) {
+            String[] beanNames = this.beanFactory.getBeanNamesForType(PlatformTransactionManager.class);
+
+            // If at least one is found, use the first of them as the
+            // transaction manager for the application.
+            if (beanNames.length > 0) {
+                this.transactionManager = (PlatformTransactionManager)beanFactory.getBean(beanNames[0]);
+            }
+
+            // Don't attempt to retrieve the transaction manager again.
+            this.initialized = true;
+        }
+        
+        if (bean instanceof TransactionManagerAware) {
+            TransactionManagerAware tma = (TransactionManagerAware) bean;
+            tma.setTransactionManager(this.transactionManager);
+        }
+        return true;
+    }
 }

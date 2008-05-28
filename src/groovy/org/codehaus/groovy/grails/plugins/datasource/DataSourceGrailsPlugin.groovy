@@ -36,7 +36,7 @@ class DataSourceGrailsPlugin {
 	def watchedResources = "file:./grails-app/conf/DataSource.groovy"
 		
 	def doWithSpring = {
-        addBeanFactoryPostProcessor(new TransactionManagerPostProcessor())
+        transactionManagerPostProcessor(TransactionManagerPostProcessor)
                 
         def ds = application.config.dataSource
 		if(ds || application.domainClasses.size() > 0) {
