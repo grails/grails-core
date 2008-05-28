@@ -503,8 +503,11 @@ target(createArtifact: "Creates a specific Grails artifact") {
         Ant.replace(file: artifactFile, token: "@artifact.package@", value: "")
     }
 
+    // When creating a domain class, "typename" is empty. So, in order
+    // to make the status message sensible, we have to pass something
+    // else in.
     event("CreatedFile", [artifactFile])
-    event("CreatedArtefact", [typeName, className])
+    event("CreatedArtefact", [ typeName ?: "Domain Class", className])
 }
 
 target(promptForName: "Prompts the user for the name of the Artifact if it isn't specified as an argument") {
