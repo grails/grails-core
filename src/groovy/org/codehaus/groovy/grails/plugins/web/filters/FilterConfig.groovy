@@ -49,8 +49,10 @@ class FilterConfig {
      * the request on to the filter definition class.
      */
     def propertyMissing(String propertyName) {
-        if(!initialised) {
-            log.warn "Setting $propertyName is invalid for filter config $name"
+        if (!initialised) {
+            throw new IllegalStateException(
+                    "Invalid filter definition in ${this.filtersDefinition.getClass().name} - trying "
+                    + "to access property '${propertyName}' outside of an interceptor.")
         }
 
         // Delegate to the parent definition if it has this property.
@@ -69,6 +71,12 @@ class FilterConfig {
      * the call on to the filter definition class.
      */
     def methodMissing(String methodName, args) {
+        if (!initialised) {
+            throw new IllegalStateException(
+                    "Invalid filter definition in ${this.filtersDefinition.getClass().name} - trying "
+                    + "to call method '${methodName}' outside of an interceptor.")
+        }
+        
         // Delegate to the parent definition if it has this method.
         if (this.filtersDefinition.metaClass.respondsTo(this.filtersDefinition, methodName)) {
             if (!args) {

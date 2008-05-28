@@ -20,7 +20,7 @@ class FirstFilters {
     def filters = {
         all(controller:"*", action:"*") {
             before = {
-
+                log.info "Request received with parameters ${params.dump()}"
             }
             after = {
 
@@ -93,6 +93,8 @@ class FirstFilters {
     void testNoScope() {
         def testClass = gcl.parseClass('''\
 class FirstFilters {
+    def after = "Test"
+
     def filters = {
         all {
             before = {
@@ -130,6 +132,8 @@ class FirstFilters {
     void testMultipleDefinitions() {
         def testClass = gcl.parseClass('''\
 class FirstFilters {
+    def before = "Test"
+
     def filters = {
         all(uri: '/**') {
             before = {
@@ -204,5 +208,43 @@ class FirstFilters {
         assertTrue third.before instanceof Closure
         assertTrue third.after instanceof Closure
         assertTrue third.afterView instanceof Closure
+    }
+
+    /**
+     * Tests that any property access or method calls in a filter
+     * definition but outside an interceptor throw an exception.
+     */
+    void testInvalidFilterDefinition() {
+        // First test invalid property access.
+        def testClass = gcl.parseClass('''\
+class FirstFilters {
+    def filters = {
+        all(controller:"*", action:"*") {
+            log.info "Request received with parameters ${params.dump()}"
+        }
+    }
+}
+''')
+        def filterClass = new DefaultGrailsFiltersClass(testClass)
+
+        shouldFail(IllegalStateException) {
+            filterClass.getConfigs(filterClass.newInstance())
+        }
+
+        // And now try an invalid method call.
+        testClass = gcl.parseClass('''\
+class SecondFilters {
+    def filters = {
+        all(controller:"*", action:"*") {
+            myMethod("Some argument")
+        }
+    }
+}
+''')
+        filterClass = new DefaultGrailsFiltersClass(testClass)
+
+        shouldFail(IllegalStateException) {
+            filterClass.getConfigs(filterClass.newInstance())
+        }
     }
 }
