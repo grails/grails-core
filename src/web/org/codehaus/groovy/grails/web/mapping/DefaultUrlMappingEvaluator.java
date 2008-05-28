@@ -270,11 +270,9 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
             Object[] args = (Object[])arg;
             final boolean isResponseCode = isResponseCode(methodName);
             if(methodName.startsWith(SLASH) || isResponseCode) {
+                // Create a new parameter map for this mapping.
                 this.parameterValues = new HashMap();
                 try {
-                    // Create a new parameter map for this mapping.
-                    this.parameterValues = new HashMap();
-
                     urlDefiningMode = false;
                     args = args != null && args.length > 0 ? args : new Object[] {Collections.EMPTY_MAP};                    
                     if(args[0] instanceof Closure) {
