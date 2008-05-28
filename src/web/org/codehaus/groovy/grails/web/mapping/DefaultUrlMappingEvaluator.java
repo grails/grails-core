@@ -118,7 +118,8 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
     public List evaluateMappings(Closure closure) {
     	UrlMappingBuilder builder = new UrlMappingBuilder();
     	closure.setDelegate(builder);
-    	closure.call();
+        closure.setResolveStrategy(Closure.DELEGATE_FIRST);
+        closure.call();
     	builder.urlDefiningMode = false;
     	List mappings = builder.getUrlMappings();
     	configureUrlMappingDynamicObjects(closure);
@@ -269,6 +270,7 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
             Object[] args = (Object[])arg;
             final boolean isResponseCode = isResponseCode(methodName);
             if(methodName.startsWith(SLASH) || isResponseCode) {
+                this.parameterValues = new HashMap();
                 try {
                     // Create a new parameter map for this mapping.
                     this.parameterValues = new HashMap();
