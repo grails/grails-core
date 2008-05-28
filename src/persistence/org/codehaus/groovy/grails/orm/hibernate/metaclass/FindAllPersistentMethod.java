@@ -146,7 +146,7 @@ public class FindAllPersistentMethod
 								throw new GrailsQueryException("Named parameter's name must be String: "
 										+ queryNamedArgs.toString());
 							String stringKey = (String) entry.getKey();
-							// Won't try to bind these parameters since they are proceeded separately
+							// Won't try to bind these parameters since they are processed separately
 							if( GrailsHibernateUtil.ARGUMENT_MAX.equals(stringKey) || GrailsHibernateUtil.ARGUMENT_OFFSET.equals(stringKey) ) continue;
 							Object value = entry.getValue();
 							if (value instanceof GString) {
