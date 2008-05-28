@@ -49,12 +49,6 @@ class FilterConfig {
      * the request on to the filter definition class.
      */
     def propertyMissing(String propertyName) {
-        if (!initialised) {
-            throw new IllegalStateException(
-                    "Invalid filter definition in ${this.filtersDefinition.getClass().name} - trying "
-                    + "to access property '${propertyName}' outside of an interceptor.")
-        }
-
         // Delegate to the parent definition if it has this property.
         if (this.filtersDefinition.metaClass.hasProperty(this.filtersDefinition, propertyName)) {
             def getterName = GrailsClassUtils.getGetterName(propertyName)
@@ -62,7 +56,7 @@ class FilterConfig {
             return this.filtersDefinition."$propertyName"
         }
         else {
-            throw new MissingPropertyException(propertyName, this.class)
+            throw new MissingPropertyException(propertyName, this.filtersDefinition.getClass())
         }
     }
 
@@ -71,12 +65,6 @@ class FilterConfig {
      * the call on to the filter definition class.
      */
     def methodMissing(String methodName, args) {
-        if (!initialised) {
-            throw new IllegalStateException(
-                    "Invalid filter definition in ${this.filtersDefinition.getClass().name} - trying "
-                    + "to call method '${methodName}' outside of an interceptor.")
-        }
-        
         // Delegate to the parent definition if it has this method.
         if (this.filtersDefinition.metaClass.respondsTo(this.filtersDefinition, methodName)) {
             if (!args) {
@@ -96,9 +84,20 @@ class FilterConfig {
             return this.filtersDefinition."$methodName"(*args)
         }
         else {
-            // The required method was not found on the parent filter
-            // definition either.
-            throw new MissingMethodException(methodName, this.class, args)
+            // Ideally, we would throw a MissingMethodException here
+            // whether the filter config is intialised or not. However,
+            // if it's in the initialisation phase, the MME gets
+            // swallowed somewhere.
+            if (!initialised) {
+                throw new IllegalStateException(
+                        "Invalid filter definition in ${this.filtersDefinition.getClass().name} - trying "
+                        + "to call method '${methodName}' outside of an interceptor.")
+            }
+            else {
+                // The required method was not found on the parent filter
+                // definition either.
+                throw new MissingMethodException(methodName, this.filtersDefinition.getClass(), args)
+            }
         }
     }
 

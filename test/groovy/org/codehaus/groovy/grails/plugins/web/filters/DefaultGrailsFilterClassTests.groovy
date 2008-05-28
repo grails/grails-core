@@ -211,6 +211,57 @@ class FirstFilters {
     }
 
     /**
+     * Tests that interceptor closures can be defined as fields of the
+     * filters class and re-used from with the filter definitions.
+     */
+    void testSharedInterceptors() {
+        // Define a filters class that uses shared interceptors.
+        def testClass = gcl.parseClass('''\
+class FirstFilters {
+    def beforeClosure = {
+        println "Before closure!"
+    }
+
+    def afterClosure = {
+        println "After closure!"
+    }
+
+    def filters = {
+        all(controller:"*", action:"*") {
+            before = beforeClosure
+            after = afterClosure
+        }
+
+        other(controller: "book", action: "*") {
+            after = afterClosure
+        }
+    }
+}
+''')
+        def filterClass = new DefaultGrailsFiltersClass(testClass)
+
+        def configs = filterClass.getConfigs(filterClass.newInstance())
+        def first = configs[0]
+
+        assertEquals "all", first.name
+        assert first.scope
+        assertEquals "*", first.scope.controller
+        assertEquals "*", first.scope.action
+        assertNull first.scope.uri
+        assertTrue first.before instanceof Closure
+        assertTrue first.after instanceof Closure
+
+        def second = configs[1]
+
+        assertEquals "other", second.name
+        assert second.scope
+        assertEquals "book", second.scope.controller
+        assertEquals "*", second.scope.action
+        assertNull second.scope.uri
+        assertTrue second.after instanceof Closure
+    }
+
+    /**
      * Tests that any property access or method calls in a filter
      * definition but outside an interceptor throw an exception.
      */
@@ -227,7 +278,23 @@ class FirstFilters {
 ''')
         def filterClass = new DefaultGrailsFiltersClass(testClass)
 
-        shouldFail(IllegalStateException) {
+        shouldFail(MissingPropertyException) {
+            filterClass.getConfigs(filterClass.newInstance())
+        }
+
+        // And now try an invalid method call.
+        testClass = gcl.parseClass('''\
+class SecondFilters {
+    def filters = {
+        all {
+            myProperty = "test"
+        }
+    }
+}
+''')
+        filterClass = new DefaultGrailsFiltersClass(testClass)
+
+        shouldFail(MissingPropertyException) {
             filterClass.getConfigs(filterClass.newInstance())
         }
 
