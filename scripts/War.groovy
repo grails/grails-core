@@ -53,7 +53,6 @@ DEFAULT_DEPS = [
     "jdbc2_0-stdext.jar",
     "jta.jar",
     "groovy-all-*.jar",
-    "springmodules-sandbox.jar",
     "standard-${servletVersion}.jar",
     "jstl-${servletVersion}.jar",
     "antlr-*.jar",

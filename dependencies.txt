@@ -173,11 +173,6 @@ Jetty JNDI Support 6.1.4 (http://www.mortbay.org)
 - required for building Grails core
 - required for running Grails applications (When using Web flows)
 
-* springmodules-sandbox.jar
-- Spring Modules Snapshot (https://springmodules.dev.java.net/) Apache 2.0 License
-- required for building Grails core
-- required for running Grails applications
-
 * svnkit.jar
 - SVNKit 1.1.2 (http://svnkit.com/) TMate Open Source License (see http://svnkit.com/license.html)
 - required for the command line tools (Gant)

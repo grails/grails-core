@@ -13,36 +13,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.plugins.orm.hibernate;
+package org.codehaus.groovy.grails.plugins.orm.hibernate
 
-import grails.util.*
-import grails.orm.*
-import grails.spring.*
-
-import org.codehaus.groovy.grails.commons.*
-import org.codehaus.groovy.grails.validation.*
-import org.codehaus.groovy.grails.plugins.support.*
-import org.codehaus.groovy.grails.orm.hibernate.*
-import org.codehaus.groovy.grails.orm.hibernate.cfg.*
-import org.codehaus.groovy.grails.orm.hibernate.support.*
-import org.codehaus.groovy.grails.orm.hibernate.validation.*
-import org.codehaus.groovy.grails.commons.spring.*
-import org.codehaus.groovy.runtime.*
-import org.codehaus.groovy.grails.commons.metaclass.*
+import grails.orm.HibernateCriteriaBuilder
+import grails.util.GrailsUtil
+import org.codehaus.groovy.grails.commons.GrailsApplication
+import org.codehaus.groovy.grails.commons.GrailsClassUtils
+import org.codehaus.groovy.grails.commons.GrailsDomainClass
+import org.codehaus.groovy.grails.commons.metaclass.StaticMethodInvocation
+import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator
+import org.codehaus.groovy.grails.commons.spring.WebRuntimeSpringConfiguration
+import org.codehaus.groovy.grails.orm.hibernate.ConfigurableLocalSessionFactoryBean
+import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil
 import org.codehaus.groovy.grails.orm.hibernate.metaclass.*
-
-import org.hibernate.*
-
-import org.springframework.orm.hibernate3.*
-import org.springframework.orm.hibernate3.support.*
-import org.springmodules.beans.factory.config.*
-import org.springframework.beans.*
-import org.springframework.transaction.support.*
-import org.springframework.context.*
-import org.springframework.core.io.*
-import org.springframework.util.ClassUtils;
+import org.codehaus.groovy.grails.orm.hibernate.support.*
+import org.codehaus.groovy.grails.orm.hibernate.validation.PersistentConstraintFactory
+import org.codehaus.groovy.grails.orm.hibernate.validation.UniqueConstraint
+import org.codehaus.groovy.grails.validation.ConstrainedProperty
+import org.codehaus.groovy.grails.validation.HibernateDomainClassValidator
+import org.hibernate.LockMode
+import org.hibernate.Query
+import org.hibernate.Session
+import org.hibernate.SessionFactory
+import org.springframework.beans.BeanWrapperImpl
+import org.springframework.beans.SimpleTypeConverter
 import org.springframework.beans.factory.config.BeanDefinition
-
+import org.springframework.beans.factory.config.PropertiesFactoryBean
+import org.springframework.context.ApplicationContext
+import org.springframework.core.io.Resource
+import org.springframework.orm.hibernate3.*
+import org.springframework.transaction.support.TransactionCallback
+import org.springframework.transaction.support.TransactionTemplate;
 
 /**
 * A plug-in that handles the configuration of Hibernate within Grails
@@ -123,9 +124,9 @@ class HibernateGrailsPlugin {
                 hibProps.putAll(hibConfig.flatten().toProperties('hibernate'))
             }
 
-            hibernateProperties(MapToPropertiesFactoryBean) {
-                map = hibProps
-            }  
+            hibernateProperties(PropertiesFactoryBean) {
+                properties = hibProps
+            }
 			lobHandlerDetector(SpringLobHandlerDetectorFactoryBean) {
 				dataSource = dataSource
 			}
