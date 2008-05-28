@@ -21,10 +21,11 @@ import org.codehaus.groovy.grails.commons.ConfigurationHolder;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.web.mapping.UrlMappingInfo;
 import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder;
-import org.codehaus.groovy.grails.web.servlet.GrailsUrlPathHelper;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
+import org.codehaus.groovy.grails.web.servlet.GrailsUrlPathHelper;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 import org.springframework.web.servlet.View;
@@ -177,6 +178,9 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
 
             String id = info.getId();
             if(!StringUtils.isBlank(id))webRequest.getParams().put(GrailsWebRequest.ID_PARAMETER, id);
+
+            // Add all the parameters from the URL mapping.
+            webRequest.getParams().putAll(info.getParameters());
         }
     }
 
@@ -229,5 +233,44 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
         Map config = ConfigurationHolder.getFlatConfig();
         Object o = config.get(ENABLE_FILE_EXTENSIONS);
         return !(o != null && o instanceof Boolean) || ((Boolean) o).booleanValue();
+    }
+
+    /**
+     * Returns the GrailsWebRequest associated with the current request.
+     * This is the preferred means of accessing the GrailsWebRequest
+     * instance. If the exception is undesired, you can use
+     * RequestContextHolder.getRequestAttributes() instead.
+     * @throws IllegalStateException if this is called outside of a
+     * request.
+     */
+    public static GrailsWebRequest retrieveGrailsWebRequest() {
+        return (GrailsWebRequest) RequestContextHolder.currentRequestAttributes();
+    }
+
+    /**
+     * Helper method to store the given GrailsWebRequest for the current
+     * request. Ensures consistency between RequestContextHolder and the
+     * relevant request attribute. This is the preferred means of updating
+     * the current web request.
+     */
+    public static void storeGrailsWebRequest(GrailsWebRequest webRequest) {
+        RequestContextHolder.setRequestAttributes(webRequest);
+        webRequest.getRequest().setAttribute(GrailsApplicationAttributes.WEB_REQUEST, webRequest);
+    }
+
+    /**
+     * Removes any GrailsWebRequest instance from the current request.
+     */
+    public static void clearGrailsWebRequest() {
+        RequestAttributes reqAttrs = RequestContextHolder.getRequestAttributes();
+        if (reqAttrs != null) {
+            // First remove the web request from the HTTP request
+            // attributes.
+            GrailsWebRequest webRequest = (GrailsWebRequest) reqAttrs;
+            webRequest.getRequest().removeAttribute(GrailsApplicationAttributes.WEB_REQUEST);
+
+            // Now remove it from RequestContextHolder.
+            RequestContextHolder.setRequestAttributes(null);
+        }
     }
 }

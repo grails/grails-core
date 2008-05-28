@@ -16,18 +16,21 @@ package org.codehaus.groovy.grails.web.mapping.filter;
 
 import org.codehaus.groovy.grails.web.mapping.UrlMappingInfo;
 import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder;
+import org.codehaus.groovy.grails.web.mapping.exceptions.UrlMappingException;
 import org.codehaus.groovy.grails.web.servlet.GrailsDispatcherServlet;
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequestFilter;
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.util.WebUtils;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 import org.springframework.web.multipart.MultipartException;
+import org.springframework.web.servlet.View;
+import org.springframework.web.servlet.ViewResolver;
 
-import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.Writer;
+import java.util.Collections;
 
 /**
  * A servlet for handling errors
@@ -37,6 +40,8 @@ import java.io.Writer;
  */
 public class ErrorHandlingServlet extends GrailsDispatcherServlet {
     private static final String TEXT_HTML = "text/html";
+    private static final String GSP_SUFFIX = ".gsp";
+    private static final String JSP_SUFFIX = ".jsp";
 
     protected HttpServletRequest checkMultipart(HttpServletRequest request) throws MultipartException {
         return request; // ignore multipart requests when an error occurs
@@ -47,8 +52,6 @@ public class ErrorHandlingServlet extends GrailsDispatcherServlet {
 
         if (request.getAttribute("javax.servlet.error.status_code") != null) {
             statusCode = Integer.parseInt(request.getAttribute("javax.servlet.error.status_code").toString());
-
-
         }
         else {
             statusCode = 500;
@@ -58,14 +61,25 @@ public class ErrorHandlingServlet extends GrailsDispatcherServlet {
         final UrlMappingInfo urlMappingInfo = urlMappingsHolder.matchStatusCode(statusCode);
 
         if (urlMappingInfo != null) {
+            final GrailsWebRequest webRequest = WebUtils.retrieveGrailsWebRequest();
+            urlMappingInfo.configure(webRequest);
 
-            GrailsWebRequestFilter filter = new GrailsWebRequestFilter();
-            filter.setServletContext(getServletContext());
-            filter.doFilter(request, response, new FilterChain() {
-                public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse) throws IOException, ServletException {
-                    WebUtils.forwardRequestForUrlMappingInfo(request, response, urlMappingInfo);
+            String viewName = urlMappingInfo.getViewName();
+            if(viewName == null || viewName.endsWith(GSP_SUFFIX) || viewName.endsWith(JSP_SUFFIX)) {
+                WebUtils.forwardRequestForUrlMappingInfo(request, response, urlMappingInfo);
+            }
+            else {
+                ViewResolver viewResolver = WebUtils.lookupViewResolver(getServletContext());
+                if(viewResolver != null) {
+                    View v;
+                    try {
+                        v = WebUtils.resolveView(request, urlMappingInfo, viewName, viewResolver);
+                        v.render(Collections.EMPTY_MAP, request, response);
+                    } catch (Exception e) {
+                        throw new UrlMappingException("Error mapping onto view ["+viewName+"]: " + e.getMessage(),e);
+                    }
                 }
-            });
+            }
         }
         else {
             renderDefaultResponse(response, statusCode);

@@ -383,6 +383,7 @@ public class RegexUrlMapping extends AbstractUrlMapping implements UrlMapping {
         if(controllerName == null) {
             this.controllerName = createRuntimeConstraintEvaluator(GrailsControllerClass.CONTROLLER, this.constraints);
         }
+
         if(actionName == null) {
             this.actionName = createRuntimeConstraintEvaluator(GrailsControllerClass.ACTION, this.constraints);
         }

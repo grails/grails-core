@@ -268,9 +268,11 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
         private Object _invoke(String methodName, Object arg, Object delegate) {
             Object[] args = (Object[])arg;
             final boolean isResponseCode = isResponseCode(methodName);
-            this.parameterValues = new HashMap();
             if(methodName.startsWith(SLASH) || isResponseCode) {
                 try {
+                    // Create a new parameter map for this mapping.
+                    this.parameterValues = new HashMap();
+
                     urlDefiningMode = false;
                     args = args != null && args.length > 0 ? args : new Object[] {Collections.EMPTY_MAP};                    
                     if(args[0] instanceof Closure) {
@@ -354,8 +356,21 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
                         this.parameterValues.put(key, vars.get(key));
                     }
                 }
+
                 this.binding.getVariables().clear();
             }
+
+            // Add the controller and action to the params map if
+            // they are set. This ensures consistency of behaviour
+            // for the application, i.e. "controller" and "action"
+            // parameters will always be available to it.
+            if (urlMapping.getControllerName() != null) {
+                this.parameterValues.put("controller", urlMapping.getControllerName());
+            }
+            if (urlMapping.getActionName() != null) {
+                this.parameterValues.put("action", urlMapping.getActionName());
+            }
+
             urlMapping.setParameterValues(this.parameterValues);
             urlMappings.add(urlMapping);
         }

@@ -21,6 +21,7 @@ import org.codehaus.groovy.grails.commons.spring.GrailsApplicationContext;
 import org.codehaus.groovy.grails.web.context.GrailsConfigUtils;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.servlet.mvc.SimpleGrailsController;
+import org.codehaus.groovy.grails.web.util.WebUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.access.BootstrapException;
@@ -38,7 +39,6 @@ import org.springframework.web.servlet.*;
 import org.springframework.web.servlet.handler.WebRequestHandlerInterceptorAdapter;
 import org.springframework.web.util.NestedServletException;
 import org.springframework.web.util.UrlPathHelper;
-import org.springframework.web.util.WebUtils;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -225,7 +225,8 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
                 requestAttributes = new GrailsWebRequest(processedRequest, response, getServletContext());
                 copyParamsFromPreviousRequest(previousRequestAttributes, requestAttributes);
 
-                RequestContextHolder.setRequestAttributes(requestAttributes);
+                // Update the current web request.
+                WebUtils.storeGrailsWebRequest(requestAttributes);
 
                 if (logger.isDebugEnabled()) {
                     logger.debug("Bound request context to thread: " + request);
@@ -324,7 +325,7 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
             if(requestAttributes != null) {
 
                 requestAttributes.requestCompleted();
-                RequestContextHolder.setRequestAttributes(previousRequestAttributes);
+                WebUtils.storeGrailsWebRequest(previousRequestAttributes);
             }
             // Reset thread-bound LocaleContext.
             LocaleContextHolder.setLocaleContext(previousLocaleContext);

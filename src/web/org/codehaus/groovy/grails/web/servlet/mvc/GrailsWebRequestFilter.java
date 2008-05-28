@@ -15,11 +15,10 @@
  */
 package org.codehaus.groovy.grails.web.servlet.mvc;
 
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.FlashScope;
+import org.codehaus.groovy.grails.web.util.WebUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.i18n.LocaleContextHolder;
-import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -49,13 +48,11 @@ public class GrailsWebRequestFilter extends OncePerRequestFilter {
 		GrailsWebRequest webRequest = new GrailsWebRequest(request, response, getServletContext());
         configureParameterCreationListeners(webRequest);
 
-
-        RequestContextHolder.setRequestAttributes(webRequest);
 		if (logger.isDebugEnabled()) {
 			logger.debug("Bound Grails request context to thread: " + request);
 		}
 		try {
-            request.setAttribute(GrailsApplicationAttributes.WEB_REQUEST, webRequest);
+            WebUtils.storeGrailsWebRequest(webRequest);
 
             // Set the flash scope instance to its next state. We do
             // this here so that the flash is available from Grails
@@ -69,9 +66,8 @@ public class GrailsWebRequestFilter extends OncePerRequestFilter {
 		}
 		finally {
 			webRequest.requestCompleted();
-            request.removeAttribute(GrailsApplicationAttributes.WEB_REQUEST);
-            RequestContextHolder.setRequestAttributes(null);
-			LocaleContextHolder.setLocale(null);
+            WebUtils.clearGrailsWebRequest();
+            LocaleContextHolder.setLocale(null);
 			if (logger.isDebugEnabled()) {
 				logger.debug("Cleared Grails thread-bound request context: " + request);
 			}

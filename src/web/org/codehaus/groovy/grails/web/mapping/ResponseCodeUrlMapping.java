@@ -17,7 +17,6 @@ package org.codehaus.groovy.grails.web.mapping;
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -102,7 +101,7 @@ public class ResponseCodeUrlMapping implements UrlMapping {
                 controllerName,
                 actionName,
                 viewName,
-                new HashMap(),
+                parameterValues,
                 urlData);
         return null;
     }
