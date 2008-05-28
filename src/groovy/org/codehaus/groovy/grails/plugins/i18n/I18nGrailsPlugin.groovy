@@ -19,10 +19,10 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.grails.plugins.support.GrailsPluginUtils;
 import org.springframework.web.servlet.i18n.SessionLocaleResolver;
-import org.springframework.web.servlet.i18n.LocaleChangeInterceptor;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource
 import org.codehaus.groovy.grails.commons.GrailsApplication
-import org.codehaus.groovy.grails.support.DevelopmentResourceLoader;
+import org.codehaus.groovy.grails.support.DevelopmentResourceLoader
+import org.codehaus.groovy.grails.web.i18n.ParamsAwareLocaleChangeInterceptor;
 
 /**
  * A plug-in that configures Grails' internationalisation support 
@@ -63,7 +63,7 @@ class I18nGrailsPlugin {
         messageSource(ReloadableResourceBundleMessageSource) {
 			basenames = baseNames.toArray()
         }
-		localeChangeInterceptor(LocaleChangeInterceptor) {
+		localeChangeInterceptor(ParamsAwareLocaleChangeInterceptor) {
 			paramName = "lang"
 		}
 		localeResolver(SessionLocaleResolver) 
