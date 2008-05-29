@@ -107,7 +107,6 @@ class HibernateGrailsPluginTests extends AbstractGrailsMockTests {
 
         def props = appCtx.getBean("hibernateProperties")
         assertEquals "org.hibernate.dialect.HSQLDialect", props."hibernate.dialect"
-        assertEquals "create-drop", props."hibernate.hbm2ddl.auto"
         
         assert appCtx.containsBean("openSessionInViewInterceptor")
         assert appCtx.containsBean("TestValidator")
