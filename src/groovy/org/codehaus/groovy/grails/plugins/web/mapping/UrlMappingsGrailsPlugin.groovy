@@ -68,7 +68,7 @@ class UrlMappingsGrailsPlugin {
         lastServlet + {
             'servlet' {
                 'servlet-name'("grails-errorhandler")
-                'servlet-class'(org.codehaus.groovy.grails.web.mapping.filter.ErrorHandlingServlet.getName())
+                'servlet-class'(org.codehaus.groovy.grails.web.servlet.ErrorHandlingServlet.getName())
             }
         }
 
