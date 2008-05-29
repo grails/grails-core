@@ -5,7 +5,9 @@ import org.codehaus.groovy.grails.commons.UrlMappingsArtefactHandler
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.springframework.web.util.WebUtils
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException
-import org.codehaus.groovy.grails.plugins.web.taglib.JavascriptTagLib;
+import org.codehaus.groovy.grails.plugins.web.taglib.JavascriptTagLib
+import org.codehaus.groovy.grails.plugins.web.taglib.JavascriptProvider
+import org.codehaus.groovy.grails.support.MockStringResourceLoader;
 
 
 public class JavascriptTagLibTests extends AbstractGrailsTagTests {
@@ -29,6 +31,20 @@ class TestUrlMappings {
         grailsApplication.addArtefact(UrlMappingsArtefactHandler.TYPE, urlMappingsClass)
     }
 
+    void testJavascriptLibraryWithNestedTemplates() {
+        JavascriptTagLib.PROVIDER_MAPPINGS["test"] = TestProvider
+
+        def resourceLoader = new MockStringResourceLoader()
+        resourceLoader.registerMockResource("/foo/_part.gsp", '<g:remoteLink controller="foo" action="list" />')
+        appCtx.groovyPagesTemplateEngine.resourceLoader = resourceLoader
+        webRequest.controllerName = "foo"
+        def template = '''<g:javascript library="test" /><p><g:remoteLink controller="bar" action="list" /></p><g:render template="part" model="['foo1':foo2]" />'''
+
+
+        assertOutputEquals('''<script type="text/javascript" src="/js/test.js"></script>
+<p><a href="/bar/list" onclick="<remote>return false;" action="list" controller="bar"></a></p><a href="/foo/list" onclick="<remote>return false;" action="list" controller="foo"></a>''', template)
+
+    }
     void testJavascriptInclude() {
         def template = '<g:javascript src="foo.js" />'
 
@@ -346,4 +362,14 @@ class TestUrlMappings {
             assertEquals("This is some \\\"text\\\" to be \\'escaped\\'", sw.toString());
         }
     }
+}
+class TestProvider implements JavascriptProvider {
+
+    public doRemoteFunction(Object taglib, Object attrs, Object out) {
+        out << "<remote>"
+    }
+
+    public prepareAjaxForm(Object attrs) {        
+    }
+
 }
