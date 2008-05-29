@@ -18,6 +18,7 @@ package org.codehaus.groovy.grails.orm.support;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
+import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.config.InstantiationAwareBeanPostProcessorAdapter;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -33,10 +34,6 @@ public class TransactionManagerPostProcessor extends InstantiationAwareBeanPostP
     private ConfigurableListableBeanFactory beanFactory;
     private PlatformTransactionManager transactionManager;
     private boolean initialized = false;
-
-    public void setTransactionManager(PlatformTransactionManager transactionManager) {
-        this.transactionManager = transactionManager;
-    }
 
     /**
      * Gets the platform transaction manager from the bean factory if
@@ -67,7 +64,16 @@ public class TransactionManagerPostProcessor extends InstantiationAwareBeanPostP
         // other bean post processors from processing the beans in the
         // factory!
         if (!this.initialized) {
-            String[] beanNames = this.beanFactory.getBeanNamesForType(PlatformTransactionManager.class);
+            // Fetch the names of all the beans that are of type
+            // PlatformTransactionManager. Note that we have to pass
+            // "false" for the last argument to avoid eager initialisation,
+            // otherwise we end up in an endless loop (it triggers the
+            // current method).
+            String[] beanNames = BeanFactoryUtils.beanNamesForTypeIncludingAncestors(
+                    this.beanFactory,
+                    PlatformTransactionManager.class,
+                    false,
+                    false);
 
             // If at least one is found, use the first of them as the
             // transaction manager for the application.
