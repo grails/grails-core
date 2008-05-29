@@ -43,7 +43,7 @@ log4j {
     appender.stdout = "org.apache.log4j.ConsoleAppender"
     appender.'stdout.layout'="org.apache.log4j.PatternLayout"
     appender.'stdout.layout.ConversionPattern'='[%r] %c{2} %m%n'
-    appender.errors = "org.apache.log4j.FileAppender"
+    appender.stacktraceLog = "org.apache.log4j.FileAppender"
     appender.'stacktraceLog.layout'="org.apache.log4j.PatternLayout"
     appender.'stacktraceLog.layout.ConversionPattern'='[%r] %c{2} %m%n'
     appender.'stacktraceLog.File'="stacktrace.log"
