@@ -51,7 +51,6 @@ userHome = Ant.antProject.properties."user.home"
 grailsApp = null
 eventsClassLoader = new GroovyClassLoader(getClass().classLoader)
 
-
 // common directories and paths
 grailsWorkDir = System.getProperty(GrailsApplication.WORK_DIR) ?: "${userHome}/.grails/${grailsVersion}"
 grailsTmp = "${grailsWorkDir}/tmp"

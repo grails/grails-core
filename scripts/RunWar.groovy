@@ -56,7 +56,7 @@ target ( runWar : "Main implementation that executes a Grails application WAR") 
         profile("start server") {
             server.start()
         }
-        event("StatusFinal", ["Server running. Browse to http://localhost:$serverPort/$grailsAppName"])
+        event("StatusFinal", ["Server running. Browse to http://localhost:$serverPort$serverContextPath"])
     } catch(Throwable t) {
         t.printStackTrace()
         event("StatusFinal", ["Server failed to start: $t"])
@@ -81,7 +81,7 @@ target( configureHttpServerForWar : "Returns a jetty server configured with an H
     connectors[0].setPort(serverPort)
     server.setConnectors( (Connector [])connectors )
 
-    webContext = new WebAppContext(war:warName, contextPath:"/${grailsAppName}")
+    webContext = new WebAppContext(war:warName, contextPath:serverContextPath)
     
 
     server.setHandler( webContext )

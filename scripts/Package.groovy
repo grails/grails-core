@@ -105,7 +105,22 @@ target( packageApp : "Implementation of package target") {
         createConfig()
     }
 
-	String i18nDir = "${resourcesDirPath}/grails-app/i18n"
+    // Get the application context path by looking for a property named 'app.context' in the following order of precedence:
+    //	System properties
+    //	application.properties
+    //	config
+    //	default to grailsAppName if not specified
+
+    serverContextPath = System.getProperty("app.context")
+    serverContextPath = serverContextPath ?: Ant.antProject.properties.'app.context'
+    serverContextPath = serverContextPath ?: config.grails.app.context
+    serverContextPath = serverContextPath ?: grailsAppName
+    
+    if(!serverContextPath.startsWith('/')) {
+        serverContextPath = "/${serverContextPath}"
+    }
+
+    String i18nDir = "${resourcesDirPath}/grails-app/i18n"
     Ant.mkdir(dir:i18nDir)
 
     def files = Ant.fileScanner {

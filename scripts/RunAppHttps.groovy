@@ -70,7 +70,7 @@ target ( runAppHttps : "Main implementation that executes a Grails application w
     	connectors.add(secureListener)
         server.setConnectors(connectors.toArray(new Connector[0]))
         server.start()
-        event("StatusFinal", ["Server running. Browse to https://localhost:$serverPortHttps/$grailsAppName"])
+        event("StatusFinal", ["Server running. Browse to https://localhost:$serverPortHttps$serverContextPath"])
     } catch(Throwable t) {
         t.printStackTrace()
         event("StatusFinal", ["Server failed to start: $t"])

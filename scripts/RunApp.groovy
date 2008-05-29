@@ -68,7 +68,7 @@ target ( runApp : "Main implementation that executes a Grails application") {
         profile("start server") {            
             server.start()
         }
-        event("StatusFinal", ["Server running. Browse to http://localhost:$serverPort/$grailsAppName"])
+        event("StatusFinal", ["Server running. Browse to http://localhost:$serverPort$serverContextPath"])
     } catch(Throwable t) {
         t.printStackTrace()
         event("StatusFinal", ["Server failed to start: $t"])
@@ -160,7 +160,7 @@ target( configureHttpServer : "Returns a jetty server configured with an HTTP co
 }
 
 target( setupWebContext: "Sets up the Jetty web context") {
-    webContext = new WebAppContext("${basedir}/web-app", "/${grailsAppName}")
+    webContext = new WebAppContext("${basedir}/web-app", serverContextPath)
     def configurations = [org.mortbay.jetty.webapp.WebInfConfiguration, 
                           org.mortbay.jetty.plus.webapp.Configuration, 
                           org.mortbay.jetty.webapp.JettyWebXmlConfiguration, 
