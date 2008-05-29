@@ -165,10 +165,10 @@ class RenderTagLibTests extends AbstractGrailsTagTests {
 			webRequest.controllerName = "book" 
 			// use sorted map to be able to predict the order in which tag attributes are generated
 			// adding the class property is a dirty hack to predict the order; it will be overridden in the tag anyway
-			def attrs = new TreeMap([property:"title", title:"Title", class:"will be overridden", style:"width: 200px;"])
+			def attrs = new TreeMap([property:"title", title:"Title", class:"other", style:"width: 200px;"])
 			tag.call(attrs)
 			
-			checkTagOutput(sw.toString(), 'sortable', 'asc', 'Title', ' style="width: 200px;"')
+			checkTagOutput(sw.toString(), 'other sortable', 'asc', 'Title', ' style="width: 200px;"')
     	}
 	}
 	

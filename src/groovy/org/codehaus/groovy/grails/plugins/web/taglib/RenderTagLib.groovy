@@ -354,7 +354,7 @@ class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants 
 		if(attrs.params) linkParams.putAll(attrs.remove("params"))
 
 		// determine and add sorting order for this column to link params
-		attrs.class = "sortable"
+		attrs.class = (attrs.class ? "${attrs.class} sortable" : "sortable")
 		if(property == sort) {
 			attrs.class = attrs.class + " sorted " + order
 			if(order == "asc") {
