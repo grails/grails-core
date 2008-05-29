@@ -37,7 +37,6 @@ import org.hibernate.mapping.*;
 import org.hibernate.mapping.Collection;
 import org.hibernate.persister.entity.JoinedSubclassEntityPersister;
 import org.hibernate.persister.entity.SingleTableEntityPersister;
-import org.hibernate.type.EnumType;
 import org.hibernate.type.ForeignKeyDirection;
 import org.hibernate.usertype.UserType;
 import org.hibernate.util.StringHelper;
@@ -72,6 +71,8 @@ public final class GrailsDomainBinder {
     private static final String BACKTICK = "`";
     
     private static final Map MAPPING_CACHE = new HashMap();
+    private static final String ENUM_TYPE_CLASS = "org.hibernate.type.EnumType";
+    private static final String ENUM_CLASS_PROP = "enumClass";
 
 
     /**
@@ -1281,10 +1282,10 @@ public final class GrailsDomainBinder {
 
     private static void bindEnumType(GrailsDomainClassProperty property, SimpleValue simpleValue, String path, Mappings mappings) {
         Properties enumProperties = new Properties();
-        enumProperties.put(EnumType.ENUM, property.getType().getName());
+        enumProperties.put(ENUM_CLASS_PROP, property.getType().getName());
 
         simpleValue.setTypeParameters(enumProperties);
-        simpleValue.setTypeName(EnumType.class.getName());
+        simpleValue.setTypeName(ENUM_TYPE_CLASS);
         Table t = simpleValue.getTable();
 		Column column = new Column();
 		column.setNullable(property.isOptional());
