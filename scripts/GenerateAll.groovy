@@ -27,13 +27,14 @@ import groovy.text.SimpleTemplateEngine
 import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator;
 import org.codehaus.groovy.grails.scaffolding.*
 import org.springframework.mock.web.MockServletContext
-import org.springframework.core.io.Resource;
+import org.springframework.core.io.Resource
+import org.codehaus.groovy.grails.commons.ApplicationHolder;
 
 
 Ant.property(environment:"env")                             
 grailsHome = Ant.antProject.properties."env.GRAILS_HOME"    
 
-includeTargets << new File ( "${grailsHome}/scripts/Package.groovy" )
+includeTargets << new File ( "${grailsHome}/scripts/Bootstrap.groovy" )
     
 generateViews = true
 generateController = true
@@ -48,29 +49,9 @@ target ('default': "Generates a CRUD interface (controller + views) for a domain
 target(generateAll:"The implementation target") {
 	                                     
 	rootLoader.addURL(classesDir.toURI().toURL())
-	def beans = new grails.spring.WebBeanBuilder().beans {
-		resourceHolder(org.codehaus.groovy.grails.commons.spring.GrailsResourceHolder) {
-			this.resources = "file:${basedir}/grails-app/domain/**/*.groovy"
-		}
-		grailsResourceLoader(org.codehaus.groovy.grails.commons.GrailsResourceLoaderFactoryBean) {
-			grailsResourceHolder = resourceHolder
-		}
-		def pluginResources = [] as Resource[]
-        if(new File("${basedir}/plugins/*/plugin.xml").exists()) {
-            pluginResources = "file:${basedir}/plugins/*/plugin.xml"
-        }
-
-		pluginMetaManager(org.codehaus.groovy.grails.plugins.DefaultPluginMetaManager, pluginResources) 
-		grailsApplication(org.codehaus.groovy.grails.commons.DefaultGrailsApplication.class, ref("grailsResourceLoader"))
-	}
-                                                    
-	appCtx = beans.createApplicationContext()     
-	appCtx.servletContext = new MockServletContext()
-	grailsApp = appCtx.grailsApplication  
-	
-
-	grailsApp.initialise()
-	def name = args.trim()
+    loadApp()
+    
+    def name = args.trim()
     name = name.indexOf('.') > -1 ? name : GCU.getClassNameRepresentation(name)
     def domainClass = grailsApp.getDomainClass(name)
 	
