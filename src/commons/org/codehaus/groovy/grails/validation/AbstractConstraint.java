@@ -25,9 +25,9 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.Errors;
 import org.springframework.validation.FieldError;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 /**
  * @author Graeme Rocher
@@ -113,10 +113,12 @@ public abstract class AbstractConstraint implements Constraint {
 
     public void rejectValueWithDefaultMessage(Object target, Errors errors, String defaultMessage, String[] codes, Object[] args) {
         BindingResult result = (BindingResult) errors;
-        List newCodes = new ArrayList();
-        String[] resolved = result.resolveMessageCodes( classShortName + '.'  + constraintPropertyName + '.' + getName() + ".error", constraintPropertyName);
-        newCodes.addAll( Arrays.asList( resolved ) );
+        Set newCodes = new LinkedHashSet();
+        //Qualified class name is added first to match before unqualified class (which is still resolved for backwards compatibility)
+        newCodes.addAll( Arrays.asList( result.resolveMessageCodes( constraintOwningClass.getName() + '.'  + constraintPropertyName + '.' + getName() + ".error", constraintPropertyName)));
+        newCodes.addAll( Arrays.asList( result.resolveMessageCodes( classShortName + '.'  + constraintPropertyName + '.' + getName() + ".error", constraintPropertyName) ) );
         for( int i = 0; i < codes.length; i++ ) {
+            newCodes.addAll( Arrays.asList( result.resolveMessageCodes( constraintOwningClass.getName()  + '.'  + constraintPropertyName + '.' + codes[i], constraintPropertyName)));
             newCodes.addAll( Arrays.asList( result.resolveMessageCodes( classShortName + '.'  + constraintPropertyName + '.' + codes[i], constraintPropertyName)));
             //We resolve the error code on it's own last so that a global code doesn't override a class/field specific error
             newCodes.addAll( Arrays.asList( result.resolveMessageCodes( codes[i], constraintPropertyName)));
