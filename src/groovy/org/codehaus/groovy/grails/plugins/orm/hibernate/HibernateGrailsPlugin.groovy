@@ -121,6 +121,16 @@ class HibernateGrailsPlugin {
             log.info "Set db generation strategy to '${hibProps.'hibernate.hbm2ddl.auto'}'"
 
             if(hibConfig) {
+                def cacheProvider = hibConfig.cache.provider_class
+                if('org.hibernate.cache.EhCacheProvider' == cacheProvider) {
+                    try {
+                        def cacheClass = getClass().classLoader.loadClass('net.sf.ehcache.Cache')
+                    } catch (Throwable t) {
+                        hibConfig.remove('cache')
+                        log.error """WARNING: Your cache provider is set to 'org.hibernate.cache.EhCacheProvider' in DataSource.groovy, however the classes for this provider cannot be found.
+Try using Grails' default cache provider: 'org.hibernate.cache.OSCacheProvider'"""
+                    }
+                }
                 hibProps.putAll(hibConfig.flatten().toProperties('hibernate'))
             }
 
@@ -656,15 +666,7 @@ class HibernateGrailsPlugin {
 
     def onChange = {event ->
         if (event.source instanceof Resource) {
-            def classesDir = System.getProperty("grails.classes.dir")
-            if (classesDir) {
-                new AntBuilder().sequential {
-                    copy(todir: classesDir) {
-                        fileset(dir: "./grails-app/conf/hibernate", includes: "**/**")
-                    }
-                    touch(dir: classesDir)
-                }
-            }
+            restartContainer()
         }
     }
 
