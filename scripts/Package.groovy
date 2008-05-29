@@ -332,6 +332,7 @@ recompileCheck = { lastModified, callback ->
                     projectName:baseName) {
                     src(path:"${basedir}/src/groovy")
                     src(path:"${basedir}/grails-app/domain")
+                    src(path:"${basedir}/grails-app/utils")
                     src(path:"${basedir}/src/java")
                     javac(classpathref:"grails.classpath", debug:"yes")
 
