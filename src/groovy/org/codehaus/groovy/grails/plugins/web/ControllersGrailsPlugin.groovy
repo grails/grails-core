@@ -47,6 +47,7 @@ import org.springframework.web.servlet.ModelAndView
 import org.codehaus.groovy.grails.web.multipart.ContentLengthAwareCommonsMultipartResolver
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory
 import org.codehaus.groovy.grails.commons.metaclass.LazyMetaPropertyMap
+import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine
 
 /**
 * A plug-in that handles the configuration of controllers for Grails
@@ -71,6 +72,11 @@ class ControllersGrailsPlugin {
             ValidationTagLib
             ]
 
+    def doWithApplicationContext = { ApplicationContext ctx ->
+        GroovyPagesTemplateEngine templateEngine = ctx.getBean("groovyPagesTemplateEngine")
+        templateEngine.clearPageCache()
+    }
+    
     def doWithSpring = {
         exceptionHandler(GrailsExceptionResolver) {
             exceptionMappings = ['java.lang.Exception': '/error']
