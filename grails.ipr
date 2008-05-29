@@ -367,6 +367,25 @@
     <option name="GENERATE_IIOP_STUBS" value="false" />
     <option name="ADDITIONAL_OPTIONS_STRING" value="" />
   </component>
+  <component name="SvnBranchConfigurationManager">
+    <option name="myConfigurationMap">
+      <map>
+        <entry key="$PROJECT_DIR$">
+          <value>
+            <SvnBranchConfiguration>
+              <option name="branchUrls">
+                <list>
+                  <option value="https://svn.codehaus.org/grails/branches" />
+                  <option value="https://svn.codehaus.org/grails/tags" />
+                </list>
+              </option>
+              <option name="trunkUrl" value="https://svn.codehaus.org/grails/trunk" />
+            </SvnBranchConfiguration>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
   <component name="VcsDirectoryMappings">
     <mapping directory="" vcs="svn" />
   </component>
@@ -405,8 +424,8 @@
         <root url="jar://$PROJECT_DIR$/lib/jta.jar!/" />
         <root url="jar://$PROJECT_DIR$/lib/antlr-2.7.6.jar!/" />
         <root url="jar://$PROJECT_DIR$/lib/cglib-nodep-2.1_3.jar!/" />
-        <root url="jar://$PROJECT_DIR$/lib/ehcache-1.2.4.jar!/" />
         <root url="jar://$PROJECT_DIR$/lib/hibernate-commons-annotations.jar!/" />
+        <root url="jar://$PROJECT_DIR$/lib/oscache-2.4.1.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES>

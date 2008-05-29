@@ -11,10 +11,10 @@
     <facet type="Groovy" name="Groovy">
       <configuration />
     </facet>
-    <facet type="Spring" name="Spring" implicit="true">
+    <facet type="Spring" name="Spring">
       <configuration>
         <options>
-          <option name="enableValidation" value="true" />
+          <option name="enableValidation" value="false" />
           <option name="reportErrorsAsWarnings" value="true" />
         </options>
         <customNs />
