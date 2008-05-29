@@ -125,8 +125,8 @@ public class MockApplicationContext extends GroovyObjectSupport implements WebAp
 
 	public String[] getBeanNamesForType(Class type, boolean includePrototypes,
 			boolean includeFactoryBeans) {
-		throw new UnsupportedOperationException("Method not supported by implementation");
-	}
+        return getBeanNamesForType(type);
+    }
 
 	public Map getBeansOfType(Class type) throws BeansException {
         String[] beanNames = getBeanNamesForType(type);
