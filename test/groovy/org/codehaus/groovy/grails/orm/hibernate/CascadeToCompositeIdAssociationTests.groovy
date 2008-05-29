@@ -10,34 +10,34 @@ class CascadeToCompositeIdAssociationTests extends AbstractGrailsHibernateTests 
     protected void onSetUp() {
         gcl.parseClass('''
 
-class Trade {
+class CascadeToCompositeIdAssociationTrade {
     Long id
     Long version
     Set segments
-    static hasMany = [segments:Segment]
+    static hasMany = [segments:CascadeToCompositeIdAssociationSegment]
 
 }
 
-class Segment{
+class CascadeToCompositeIdAssociationSegment{
     Long id
     Long version
     Set products
-    static hasMany = [products:Product]
+    static hasMany = [products:CascadeToCompositeIdAssociationProduct]
 }
 
-class Product implements Serializable{
+class CascadeToCompositeIdAssociationProduct implements Serializable{
     Long id
     Long version
 
-    Country country
-    Segment segment
+    CascadeToCompositeIdAssociationCountry country
+    CascadeToCompositeIdAssociationSegment segment
 
     static mapping = {
         id composite:['country','segment']
     }
 
 }
-class Country implements Serializable{
+class CascadeToCompositeIdAssociationCountry implements Serializable{
     Long id
     Long version
     String name
@@ -47,10 +47,10 @@ class Country implements Serializable{
 
 
     void testCascadeToCompositeIdEntity() {
-        def tradeClass = ga.getDomainClass("Trade").clazz
-        def segmentClass = ga.getDomainClass("Segment").clazz
-        def productClass = ga.getDomainClass("Product").clazz
-        def countryClass = ga.getDomainClass("Country").clazz
+        def tradeClass = ga.getDomainClass("CascadeToCompositeIdAssociationTrade").clazz
+        def segmentClass = ga.getDomainClass("CascadeToCompositeIdAssociationSegment").clazz
+        def productClass = ga.getDomainClass("CascadeToCompositeIdAssociationProduct").clazz
+        def countryClass = ga.getDomainClass("CascadeToCompositeIdAssociationCountry").clazz
 
         def trade = tradeClass.newInstance()
         def segment = segmentClass.newInstance()
