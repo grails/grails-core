@@ -207,15 +207,27 @@ hibernate {
 		assertTrue manager.hasGrailsPlugin("shouldEvictSomeOther")
 	}
 
+    void testShutdownCalled() {
+        def manager = new DefaultGrailsPluginManager([MyGrailsPlugin,AnotherGrailsPlugin] as Class[], ga)
 
+        manager.loadPlugins()
+
+        assertEquals "nullme",MyGrailsPlugin.SHUTDOWN_FIELD
+        manager.shutdown()
+        assertNull MyGrailsPlugin.SHUTDOWN_FIELD
+    }
 
 }
 class MyGrailsPlugin {
-	def dependsOn = [another:1.2]
+    static SHUTDOWN_FIELD = "nullme"
+    def dependsOn = [another:1.2]
 	def version = 1.1
 	def doWithSpring = {
 		classEditor(org.springframework.beans.propertyeditors.ClassEditor,application.classLoader )				
 	}
+    def onShutdown = {
+         SHUTDOWN_FIELD = null
+    }
 }
 class AnotherGrailsPlugin {
 	def version = 1.2

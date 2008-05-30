@@ -197,4 +197,12 @@ public abstract class AbstractGrailsPluginManager implements GrailsPluginManager
             plugin.doArtefactConfiguration();
         }
     }
+
+    public void shutdown() {
+        checkInitialised();
+        for (Iterator i = pluginList.iterator(); i.hasNext();) {
+            GrailsPlugin plugin = (GrailsPlugin) i.next();
+            plugin.notifyOfEvent(GrailsPlugin.EVENT_ON_SHUTDOWN, plugin);
+        }
+    }
 }

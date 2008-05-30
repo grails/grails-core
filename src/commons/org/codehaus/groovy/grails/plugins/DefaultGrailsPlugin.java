@@ -62,18 +62,18 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
     private static final String PLUGIN_CHANGE_EVENT_SOURCE = "source";
     private static final String PLUGIN_CHANGE_EVENT_MANAGER = "manager";
     private static final String PLUGIN_LOAD_AFTER_NAMES = "loadAfter";
+
     private static final String PLUGIN_OBSERVE = "observe";
-    
     private static final Log LOG = LogFactory.getLog(DefaultGrailsPlugin.class);
     private GrailsPluginClass pluginGrailsClass;
     private GroovyObject plugin;
-    protected BeanWrapper pluginBean;
 
+    protected BeanWrapper pluginBean;
     private Closure onChangeListener;
     private Resource[] watchedResources = new Resource[0];
     private long[] modifiedTimes = new long[0];
-    private PathMatchingResourcePatternResolver resolver;
 
+    private PathMatchingResourcePatternResolver resolver;
     private String[] resourcesReferences;
     private int[] resourceCount;
     private String[] loadAfterNames = new String[0];
@@ -83,6 +83,7 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
     private long pluginLastModified = Long.MAX_VALUE;
     private URL pluginUrl;
     private Closure onConfigChangeListener;
+    private Closure onShutdownListener;
     private Class[] providedArtefacts = new Class[0];
 
 
@@ -163,6 +164,9 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
     private void evaluateOnChangeListener() {
         if(this.pluginBean.isReadableProperty(ON_CONFIG_CHANGE)) {
             this.onConfigChangeListener = (Closure)GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(this.plugin, ON_CONFIG_CHANGE);
+        }
+        if(this.pluginBean.isReadableProperty(ON_SHUTDOWN)) {
+            this.onShutdownListener= (Closure)GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(this.plugin, ON_SHUTDOWN);
         }
         if(this.pluginBean.isReadableProperty(ON_CHANGE)) {
             this.onChangeListener = (Closure) GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(this.plugin, ON_CHANGE);
@@ -730,6 +734,10 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
             case EVENT_ON_CHANGE:
                 notifyOfEvent(event);
             break;
+            case EVENT_ON_SHUTDOWN:
+                invokeOnShutdownEventListener(event);
+            break;
+
             case EVENT_ON_CONFIG_CHANGE:
                 invokeOnConfigChangeListener(event);
             break;
@@ -740,10 +748,17 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
         return event;
     }
 
+    private void invokeOnShutdownEventListener(Map event) {
+        callEvent(onShutdownListener,event);    }
+
     private void invokeOnConfigChangeListener(Map event) {
-        if(onConfigChangeListener!=null) {
-            onConfigChangeListener.setDelegate(this);
-            onConfigChangeListener.call(new Object[]{event});
+        callEvent(onConfigChangeListener,event);
+    }
+
+    private void callEvent(Closure closureHook, Map event) {
+        if(closureHook !=null) {
+            closureHook.setDelegate(this);
+            closureHook.call(new Object[]{event});
         }
     }
 

@@ -214,4 +214,9 @@ public interface GrailsPluginManager extends ApplicationContextAware, ServletCon
      * @param application The GrailsApplication object
      */
     void registerProvidedArtefacts(GrailsApplication application);
+
+    /**
+     * Shuts down the PluginManager
+     */
+    void shutdown();
 }

@@ -45,6 +45,7 @@ public interface GrailsPlugin extends ApplicationContextAware {
 
     int EVENT_ON_CHANGE = 0;
     int EVENT_ON_CONFIG_CHANGE = 1;
+    int EVENT_ON_SHUTDOWN = 2;
 
     String DO_WITH_DYNAMIC_METHODS = "doWithDynamicMethods";
 
@@ -81,12 +82,16 @@ public interface GrailsPlugin extends ApplicationContextAware {
      * A influenced plugin will be refreshed (@see refresh()) when a watched resource changes
      */
 	String INFLUENCES = "influences";
-	/**
+    /**
 	 * Defines the name of the property that defines the closure that will be invoked
 	 * when a watched resource changes
 	 */
 	String ON_CHANGE = "onChange";
-	/**
+    /**
+     * Defines the name of the property that holds a closure to be invoked when shutdown is called
+     */
+    String ON_SHUTDOWN = "onShutdown";
+    /**
 	 * Defines the name of the property that defines the closure that will be invoked
 	 * when a the Grails configuration object changes
 	 */
@@ -96,29 +101,29 @@ public interface GrailsPlugin extends ApplicationContextAware {
 	 * when the web.xml is being generated
 	 */
 	String DO_WITH_WEB_DESCRIPTOR = "doWithWebDescriptor";
-	/**
+    /**
 	 * Defines the convention that appears within plugin class names
 	 */
 	String TRAILING_NAME = "GrailsPlugin";
-	/**
+    /**
 	 * Defines the name of the property that specifies the plugin version
 	 */
 	String VERSION = "version";
-	/**
+    /**
 	 * Defines the name of the property that defines the closure that will be invoked during runtime spring configuration
 	 */
 	String DO_WITH_SPRING = "doWithSpring";
-	/**
+    /**
 	 * Defines the name of the property that defines a closure that will be invoked after intialisation
 	 * and when the application context has been built
 	 */
 	String DO_WITH_APPLICATION_CONTEXT = "doWithApplicationContext";
-	/**
+
+    /**
 	 * Defines the name of the property that specifies which plugins this plugin depends on
 	 */
 	String DEPENDS_ON = "dependsOn";
-
-	/**
+    /**
 	 * Define the list of ArtefactHandlers supporting by the plugin
 	 */
 	String ARTEFACTS = "artefacts";
