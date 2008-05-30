@@ -16,22 +16,13 @@
 package org.codehaus.groovy.grails.commons.spring;
 
 import groovy.lang.GroovyObject;
-import groovy.lang.MetaClass;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.orm.support.TransactionManagerPostProcessor;
-import org.codehaus.groovy.runtime.InvokerHelper;
-import org.springframework.beans.BeanWrapper;
-import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.StaticApplicationContext;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.ResourcePatternResolver;
-import org.springframework.ui.context.Theme;
 import org.springframework.ui.context.ThemeSource;
-import org.springframework.ui.context.support.UiApplicationContextUtils;
 import org.springframework.web.context.ConfigurableWebApplicationContext;
 import org.springframework.web.context.ServletContextAware;
 import org.springframework.web.context.request.RequestScope;
@@ -76,6 +67,7 @@ public class GrailsWebApplicationContext extends GrailsApplicationContext
         else
             return super.getClassLoader();
     }
+
 
     /**
 	 * Set the ServletContext that this WebApplicationContext runs in.

@@ -16,18 +16,23 @@ package org.codehaus.groovy.grails.web.context;
 
 import grails.util.GrailsUtil;
 import groovy.lang.ExpandoMetaClass;
+import groovy.lang.GroovyClassLoader;
+import groovy.lang.GroovySystem;
+import groovy.lang.MetaClassRegistry;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.commons.ApplicationHolder;
 import org.codehaus.groovy.grails.commons.ConfigurationHolder;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.commons.ApplicationHolder;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.codehaus.groovy.grails.plugins.PluginManagerHolder;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.access.BootstrapException;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.web.context.ContextLoader;
 import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.context.support.WebApplicationContextUtils;
 
 import javax.servlet.ServletContext;
 
@@ -65,12 +70,17 @@ public class GrailsContextLoader extends ContextLoader {
     }
 
     public void closeWebApplicationContext(ServletContext servletContext) {
-        super.closeWebApplicationContext(servletContext);    
-
         // clean up in war mode, in run-app these references may be needed again
         if(application!= null && application.isWarDeployed()) {
-            ApplicationHolder.setApplication(null);
-            ServletContextHolder.setServletContext(null);
+            if(application!= null) {
+                GroovyClassLoader classLoader = application.getClassLoader();
+                MetaClassRegistry metaClassRegistry = GroovySystem.getMetaClassRegistry();
+                Class[] loadedClasses = classLoader.getLoadedClasses();
+                for (int i = 0; i < loadedClasses.length; i++) {
+                    Class loadedClass = loadedClasses[i];
+                    metaClassRegistry.removeMetaClass(loadedClass);
+                }
+            }
             GrailsPluginManager pluginManager = PluginManagerHolder.currentPluginManager();
             try {
                 pluginManager.shutdown();
@@ -78,8 +88,23 @@ public class GrailsContextLoader extends ContextLoader {
                 GrailsUtil.sanitize(e);
                 LOG.error("Error occurred shutting down plug-in manager: " + e.getMessage(), e);
             }
+            WebApplicationContext ctx = WebApplicationContextUtils.getRequiredWebApplicationContext(servletContext);
+            ConfigurableApplicationContext parent = (ConfigurableApplicationContext) ctx.getParent();
+
+            super.closeWebApplicationContext(servletContext);
+
+            if(parent!= null) {
+                LOG.info("Destroying Spring parent WebApplicationContext " + parent.getDisplayName());
+                parent.close();
+            }
+
+            Thread.currentThread().setContextClassLoader(getClass().getClassLoader());
+            
+            ApplicationHolder.setApplication(null);
+            ServletContextHolder.setServletContext(null);
             PluginManagerHolder.setPluginManager(null);
             ConfigurationHolder.setConfig(null);
+            ExpandoMetaClass.disableGlobally();
             application = null;
         }
 
