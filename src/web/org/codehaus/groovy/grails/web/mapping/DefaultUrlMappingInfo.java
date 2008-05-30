@@ -134,10 +134,10 @@ public class DefaultUrlMappingInfo implements UrlMappingInfo {
 
     public String getActionName() {
         GrailsWebRequest webRequest = (GrailsWebRequest) RequestContextHolder.getRequestAttributes();
-        String name =  webRequest!=null ? checkDispatchAction(webRequest.getCurrentRequest(), null) : null;
+        String name = evaluateNameForValue(this.actionName);
 
         if(name == null) {
-            name = evaluateNameForValue(this.actionName);
+            name =  webRequest!=null ? checkDispatchAction(webRequest.getCurrentRequest(), null) : null;
         }
         return name;
     }
