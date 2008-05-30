@@ -18,9 +18,10 @@ import grails.util.GrailsUtil;
 import groovy.lang.ExpandoMetaClass;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.ApplicationHolder;
 import org.codehaus.groovy.grails.commons.ConfigurationHolder;
+import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.codehaus.groovy.grails.plugins.PluginManagerHolder;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.access.BootstrapException;
@@ -70,6 +71,13 @@ public class GrailsContextLoader extends ContextLoader {
         if(application!= null && application.isWarDeployed()) {
             ApplicationHolder.setApplication(null);
             ServletContextHolder.setServletContext(null);
+            GrailsPluginManager pluginManager = PluginManagerHolder.currentPluginManager();
+            try {
+                pluginManager.shutdown();
+            } catch (Exception e) {
+                GrailsUtil.sanitize(e);
+                LOG.error("Error occurred shutting down plug-in manager: " + e.getMessage(), e);
+            }
             PluginManagerHolder.setPluginManager(null);
             ConfigurationHolder.setConfig(null);
             application = null;
