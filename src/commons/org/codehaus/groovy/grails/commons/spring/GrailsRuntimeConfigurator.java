@@ -103,6 +103,7 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
             this.pluginManager = PluginManagerHolder.getPluginManager();
             if (this.pluginManager == null) {
                 this.pluginManager = new DefaultGrailsPluginManager("**/plugins/*/**GrailsPlugin.groovy", application);
+                PluginManagerHolder.setPluginManager(this.pluginManager);
             } else {
                 LOG.debug("Retrieved thread-bound PluginManager instance");
                 this.pluginManager.setApplication(application);

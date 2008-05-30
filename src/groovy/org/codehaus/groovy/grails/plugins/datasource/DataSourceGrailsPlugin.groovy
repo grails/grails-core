@@ -21,6 +21,8 @@ import org.springframework.jdbc.datasource.DriverManagerDataSource
 import org.springframework.jndi.JndiObjectFactoryBean
 import javax.sql.DataSource
 import org.codehaus.groovy.grails.orm.support.TransactionManagerPostProcessor
+import org.springframework.context.ApplicationContext
+import java.sql.Connection
 
 /**
  * A plug-in that handles the configuration of Hibernate within Grails 
@@ -84,7 +86,27 @@ class DataSourceGrailsPlugin {
 	}
 		
 	def onChange = {
-	    restartContainer()	
-	}
+	    restartContainer()
+    }
+
+    def onShutdown = { event ->
+
+        ApplicationContext appCtx = event.ctx
+
+        if(appCtx.containsBean("dataSource")) {
+            DataSource dataSource = appCtx.dataSource
+            Connection connection
+            try {
+                connection = dataSource.getConnection()
+                def dbName =connection.metaData.databaseProductName
+                if(dbName == 'HSQL Database Engine') {
+                    connection.createStatement().executeUpdate('SHUTDOWN')
+                }
+            } finally {
+                connection?.close()
+            }
+        }
+
+    }
 
 }

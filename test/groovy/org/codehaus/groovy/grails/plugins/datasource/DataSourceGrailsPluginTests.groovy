@@ -9,7 +9,34 @@ import javax.sql.DataSource
 
 class DataSourceGrailsPluginTests extends AbstractGrailsMockTests {
 
-	void testDataSourcePluginOtherDriverWithUserAndPass() {
+    void testShutdownHSqlDbDataSource() {
+          def config = new ConfigSlurper().parse('''
+                dataSource {
+                    pooled = true
+                    driverClassName = "org.hsqldb.jdbcDriver"
+                    url="jdbc:hsqldb:mem:devDB"
+                    username = "sa"
+                    password = ""
+                    dbCreate = "create-drop"
+                }
+    ''')
+
+            ConfigurationHolder.config = config
+        gcl.loadClass("org.codehaus.groovy.grails.plugins.CoreGrailsPlugin")
+        gcl.loadClass("org.codehaus.groovy.grails.plugins.datasource.DataSourceGrailsPlugin")
+
+        def configurator = new GrailsRuntimeConfigurator(ga, ctx)
+        def appCtx = configurator.configure(ctx.getServletContext())
+
+        DataSource dataSource = appCtx.getBean("dataSource")
+        assert dataSource
+
+        def pluginManager = PluginManagerHolder.currentPluginManager()
+
+        pluginManager.shutdown()
+    }
+
+    void testDataSourcePluginOtherDriverWithUserAndPass() {
 
             def config = new ConfigSlurper("test").parse(
             '''
