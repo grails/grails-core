@@ -31,7 +31,9 @@ import org.springframework.context.ApplicationContext;
 import org.codehaus.groovy.grails.commons.ApplicationHolder; 
 import org.codehaus.groovy.grails.commons.ConfigurationHolder;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
-import grails.util.GrailsUtil;
+import grails.util.GrailsUtil
+import org.codehaus.groovy.grails.commons.ControllerArtefactHandler
+import org.codehaus.groovy.grails.commons.GrailsControllerClass;
 
 class ApplicationTagLib implements ApplicationContextAware {
 
@@ -182,6 +184,12 @@ class ApplicationTagLib implements ApplicationContextAware {
         else {
             def controller = urlAttrs.containsKey("controller") ? urlAttrs.remove("controller") : grailsAttributes.getController(request)?.controllerName
             def action = urlAttrs.remove("action")
+            if(controller && !action) {
+                GrailsControllerClass controllerClass = grailsApplication.getArtefactByLogicalPropertyName(ControllerArtefactHandler.TYPE, controller)
+                String defaultAction = controllerClass?.getDefaultAction()
+                if(controllerClass?.hasProperty(defaultAction))
+                    action = defaultAction
+            }
             def id = urlAttrs.remove("id")
             def frag = urlAttrs.remove('fragment')
             def params = urlAttrs.params && urlAttrs.params instanceof Map ? urlAttrs.remove('params') : [:]
