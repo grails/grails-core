@@ -160,71 +160,14 @@ public class GrailsStarter {
     // after migration from classworlds to the rootloader rename
     // the rootLoader method to main and remove this method as
     // well as the classworlds method
-   /* public static void main(String args[],ClassWorld classWorld ) {
-        classworlds(args,classWorld);
-    }*/
-
     public static void main(String args[]) {
         try {
             rootLoader(args);
         } catch (Throwable t) {
-            t.printStackTrace();
-        }
-    }
-
-    /*public static void classworlds(String oldArgs[],ClassWorld classWorld ) {
-        try {
-            // Creates a realm with *just* the system classloader
-            ClassRealm system = classWorld.newRealm("system");
-
-            // Get the groovy realm
-            ClassRealm groovy = classWorld.getRealm("groovy");
-
-            // import everything from the system realm, because imports
-            // are searched *first* in Classworlds
-            groovy.importFrom("system", "");
-
-            //add tools.jar to classpath
-            String tools = System.getProperty("tools.jar");
-            if (tools!=null) {
-            	URL ref = (new File(tools)).toURI().toURL();
-            	groovy.addConstituent(ref);
-            }
-
-            if (oldArgs.length==0) {
-                printUsage();
-                System.exit(1);
-            }
-
-            String program = oldArgs[0].toLowerCase();
-            String[] args = new String[oldArgs.length-1];
-            for (int i=0; i<args.length; i++) {
-                args[i] = oldArgs[i+1];
-            }
-
-            if (program.equals("groovyc")) {
-                org.codehaus.groovy.tools.FileSystemCompiler.main(args);
-            } else if (program.equals("groovy")) {
-                GroovyMain.main(args);
-            } else if (program.equals("console")) {
-                // work around needed, because the console is compiled after this files
-                Class c = Class.forName("groovy.ui.Console");
-                Method m= c.getMethod("main", new Class[]{String[].class});
-                m.invoke(null, new Object[]{args});
-            } else if (program.equals("groovysh")) {
-                InteractiveShell.main(args);
-            } else {
-                System.out.println("unknown program "+program);
-                printUsage();
-                System.exit(1);
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
+            System.out.println("Error starting Grails: " + t.getMessage());
+            t.printStackTrace(System.err);
             System.exit(1);
         }
-
-    }*/
-
+    }
 }
 

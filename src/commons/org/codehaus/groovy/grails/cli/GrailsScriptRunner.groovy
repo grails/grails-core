@@ -126,7 +126,8 @@ Grails home is set to: ${grailsHome}
 			catch(Throwable t) {
 				println "Error executing script ${scriptName}: ${t.message}"
 				t.printStackTrace(System.out)
-			}
+                System.exit(1)
+            }
 
 		}
 		else {           
