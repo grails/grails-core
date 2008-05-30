@@ -148,6 +148,8 @@ target (war: "The implementation target") {
 			}
         }
 
+
+
         Ant.mkdir(dir:"${stagingDir}/WEB-INF/spring")
         Ant.copy(todir:"${stagingDir}/WEB-INF/spring") {
             fileset(dir:"${basedir}/grails-app/conf/spring", includes:"**/*.xml")            
@@ -288,11 +290,28 @@ target(cleanUpAfterWar:"Cleans up after performing a WAR") {
 target(warPlugins:"Includes the plugins in the WAR") {
 	Ant.sequential {
 		mkdir(dir:"${stagingDir}/WEB-INF/plugins")
-		copy(todir:"${stagingDir}/WEB-INF/plugins", failonerror:false) {
-			fileset(dir:"${basedir}/plugins")  {    
-				include(name:"**/*plugin.xml")
-			}
-		}
-	}
+        copy(todir:"${stagingDir}/WEB-INF/plugins", failonerror:false) {
+            fileset(dir:"${basedir}/plugins")  {
+                include(name:"**/*plugin.xml")
+            }
+        }
+        
+        pluginResources += resolveResources("file:${basedir}/plugins/*/*GrailsPlugin.groovy").toList()
+        for(p in pluginResources) {
+           def pluginBase = p.file.parentFile.canonicalFile
+           def pluginPath = pluginBase.absolutePath
+           def pluginName = pluginBase.name
+           def pluginNameWithVersion = pluginBase.name
+
+           if(new File("${pluginBase}/grails-app/views").exists()) {
+               def pluginViews = "${stagingDir}/WEB-INF/plugins/${pluginNameWithVersion}/grails-app/views"
+               mkdir(dir:pluginViews)
+               copy(todir:pluginViews, failonerror:false) {
+                  fileset(dir:"${pluginBase}/grails-app/views", includes:"**")
+               }
+           }
+
+        }
+    }
 }
 

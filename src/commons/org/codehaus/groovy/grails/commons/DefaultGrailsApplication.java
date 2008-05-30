@@ -211,7 +211,7 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
 
     protected Map loadMetadata() {
         final Properties meta = new Properties();
-        Resource r = new ClassPathResource(PROJECT_META_FILE);
+        Resource r = new ClassPathResource(PROJECT_META_FILE, getClassLoader());
         try {
             meta.load(r.getInputStream());
         }

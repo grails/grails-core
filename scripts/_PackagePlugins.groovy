@@ -51,11 +51,6 @@ target( packagePlugins : "Packages any Grails plugins that are installed for thi
 			def pluginNameWithVersion = pluginBase.name
 			
 	   		Ant.sequential {            
-			   /* if(new File("${pluginBase}/lib").exists()) {
-		   			copy(todir:"${basedir}/web-app/WEB-INF/lib", failonerror:false) {
-		   				fileset(dir:"${pluginBase}/lib", includes:"**")
-		   			}   			                     					
-				}*/                
 				if(new File("${pluginBase}/grails-app/conf/hibernate").exists()) {
 		   			copy(todir:classesDirPath, failonerror:false) {
 		   				fileset(dir:"${pluginBase}/grails-app/conf/hibernate", includes:"**", excludes:"*.groovy")
@@ -66,13 +61,6 @@ target( packagePlugins : "Packages any Grails plugins that are installed for thi
 		   				fileset(dir:"${pluginBase}/grails-app/conf", includes:"*", excludes:"*.groovy")
 		   			}   			                     										
 				}
-				if(new File("${pluginBase}/grails-app/views").exists()) { 
-					def pluginViews = "${basedir}/web-app/WEB-INF/plugins/${pluginNameWithVersion}/grails-app/views"
-					mkdir(dir:pluginViews)   			
-	   				copy(todir:pluginViews, failonerror:false) {
-	   					fileset(dir:"${pluginBase}/grails-app/views", includes:"**")
-	   				}
-	            }
 	            if(new File("${pluginPath}/web-app").exists()) {
 					Ant.mkdir(dir:"${basedir}/web-app/plugins/${pluginName}")                           
 					if(basePlugin != p) {
