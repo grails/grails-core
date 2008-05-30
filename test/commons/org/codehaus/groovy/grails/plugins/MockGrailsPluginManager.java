@@ -16,19 +16,18 @@
 package org.codehaus.groovy.grails.plugins;
 
 import groovy.lang.GroovyClassLoader;
-
-import java.io.File;
-import java.io.Writer;
-import java.math.BigDecimal;
-import java.util.Collection;
-import java.util.Map;
-
+import junit.framework.Assert;
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.plugins.exceptions.PluginException;
 import org.springframework.core.io.Resource;
 
 import javax.servlet.ServletContext;
+import java.io.File;
+import java.io.Writer;
+import java.math.BigDecimal;
+import java.util.Collection;
+import java.util.Map;
 
 /**
  * @author Graeme Rocher
@@ -38,7 +37,7 @@ import javax.servlet.ServletContext;
 
 public class MockGrailsPluginManager extends AbstractGrailsPluginManager {
     private ServletContext servletContext;
-
+    private boolean checkForChangesExpected = false;
 
     public ServletContext getServletContext() {
         return servletContext;
@@ -75,8 +74,9 @@ public class MockGrailsPluginManager extends AbstractGrailsPluginManager {
 	}
 
 	public void checkForChanges() {
-		// do nothing		
-	}
+        Assert.assertTrue(this.checkForChangesExpected);
+        this.checkForChangesExpected = false;
+    }
 
 	public void doWebDescriptor(Resource descriptor, Writer target) {
 		// do nothing
@@ -109,4 +109,12 @@ public class MockGrailsPluginManager extends AbstractGrailsPluginManager {
         this.servletContext = servletContext;
     }
 
+    public void expectCheckForChanges() {
+        Assert.assertFalse(this.checkForChangesExpected);
+        this.checkForChangesExpected = true;
+    }
+
+    public void verify() {
+        Assert.assertFalse(this.checkForChangesExpected);
+    }
 }

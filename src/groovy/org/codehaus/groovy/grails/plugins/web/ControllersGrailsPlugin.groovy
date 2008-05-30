@@ -220,10 +220,28 @@ class ControllersGrailsPlugin {
                 'url-pattern'("/*")
             }
             if (grailsEnv == "development") {
+                // Install the reload filter, which allows you to make
+                // changes to artefacts and views while the app is
+                // running.
+                //
+                // Note that no normal URIs map to the main Grails
+                // servlet, so it's not possible to simply map the
+                // filter to the servlet (the URL mappings filter
+                // forwards the request to the servlet).
+                //
+                // The thing to note here is that we are assuming the
+                // development environment is running in a container
+                // that supports the 2.4 servlet spec.
                 'filter-mapping' {
                     'filter-name'('reloadFilter')
-                    'url-pattern'("/*")
+                    'servlet-name'('grails')
+                    'dispatcher'('FORWARD')
                 }
+
+                'filter-mapping' {
+                     'filter-name'('reloadFilter')
+                     'servlet-name'('gsp')
+                 }
             }
         }
         if (charEncodingFilterMapping) {

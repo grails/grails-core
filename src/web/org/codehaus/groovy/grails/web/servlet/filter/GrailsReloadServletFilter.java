@@ -34,7 +34,6 @@ import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
-import org.springframework.web.util.UrlPathHelper;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -54,78 +53,49 @@ import java.util.Map;
 public class GrailsReloadServletFilter extends OncePerRequestFilter {
     public static final Log LOG = LogFactory.getLog(GrailsReloadServletFilter.class);
     private static final int BUFFER_SIZE = 8024;
-    
-    GrailsApplicationContext context;
-    GrailsApplication application;
 
-    private GrailsRuntimeConfigurator config;
-
-	private GrailsPluginManager manager;
-    private UrlPathHelper urlHelper = new UrlPathHelper();
+    private GrailsApplicationContext context;
     private WebApplicationContext parent;
+    private GrailsApplicationAttributes appAttributes;
 
-    public GrailsReloadServletFilter() {
+    protected void initFilterBean() throws ServletException {
+        super.initFilterBean();
+        appAttributes = new DefaultGrailsApplicationAttributes(getServletContext());
+        context = (GrailsApplicationContext)appAttributes.getApplicationContext();
+        parent = (WebApplicationContext)
+                getServletContext().getAttribute(GrailsApplicationAttributes.PARENT_APPLICATION_CONTEXT);
     }
-
 
     protected void doFilterInternal(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, FilterChain filterChain) throws ServletException, IOException {
 
-
-      GrailsApplicationAttributes attrs = new DefaultGrailsApplicationAttributes(getServletContext());
-      context = (GrailsApplicationContext)attrs.getApplicationContext();
-
-      if(LOG.isDebugEnabled()) {
-	      LOG.debug("Executing Grails reload filter...");
-      }
-      if(context == null) {
-          filterChain.doFilter(httpServletRequest,httpServletResponse);
-          return;
-      }
-      application = (GrailsApplication)context.getBean(GrailsApplication.APPLICATION_ID);
-      if(application == null) {
-          filterChain.doFilter(httpServletRequest,httpServletResponse);
-          return;
-      }      
-      if(config == null) {
-    	  this.parent = (WebApplicationContext)getServletContext().getAttribute(GrailsApplicationAttributes.PARENT_APPLICATION_CONTEXT);
-    	  config = new GrailsRuntimeConfigurator(application,parent);  
-      }
-
-
-      String uri = urlHelper.getPathWithinApplication(httpServletRequest);
-      String lastPart = uri.substring(uri.lastIndexOf("/"));
-      if(lastPart.indexOf('.') > -1) {
-          filterChain.doFilter(httpServletRequest, httpServletResponse);
-          return;
-      }
-
-
-        
-        if(manager == null) {
-        	manager = PluginManagerHolder.getPluginManager();
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Executing Grails reload filter...");
         }
+
         try {
-            if(manager != null) {
-                if(LOG.isDebugEnabled())
-                    LOG.debug("Checking Plugin manager for changes..");
+            GrailsApplication application = (GrailsApplication)context.getBean(GrailsApplication.APPLICATION_ID);
+            GrailsPluginManager manager = PluginManagerHolder.getPluginManager();
+            if (manager != null) {
+                LOG.debug("Checking Plugin manager for changes..");
+
                 manager.checkForChanges();
-                if(!application.isInitialised()) {
+                if (!application.isInitialised()) {
                     application.rebuild();
-                    config = new GrailsRuntimeConfigurator(application,parent);
+                    GrailsRuntimeConfigurator config = new GrailsRuntimeConfigurator(application, parent);
                     config.reconfigure(context, getServletContext(), true);
                 }
-                
             }
-            else if(LOG.isDebugEnabled()) {
+            else {
                 LOG.debug("Plugin manager not found, skipping change check");
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             GrailsUtil.deepSanitize(e);
             LOG.error("Error occured reloading application: " + e.getMessage(),e);
 
             httpServletResponse.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 
-            GroovyPagesTemplateEngine engine = attrs.getPagesTemplateEngine();
+            GroovyPagesTemplateEngine engine = appAttributes.getPagesTemplateEngine();
 
             Template t = engine.createTemplate(GrailsApplicationAttributes.PATH_TO_VIEWS + "/error.gsp");
 
