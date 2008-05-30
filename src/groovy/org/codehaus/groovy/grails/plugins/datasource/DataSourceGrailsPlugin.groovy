@@ -93,7 +93,7 @@ class DataSourceGrailsPlugin {
 
         ApplicationContext appCtx = event.ctx
 
-        if(appCtx.containsBean("dataSource")) {
+        if(appCtx?.containsBean("dataSource")) {
             DataSource dataSource = appCtx.dataSource
             Connection connection
             try {
