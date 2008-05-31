@@ -46,6 +46,10 @@ public class GrailsUtilTests extends TestCase {
         assertEquals("myenvironment", GrailsUtil.getEnvironment());        
     }
 
+    void testGrailsVersion() {
+
+        assertEquals("1.0.3-SNAPSHOT", GrailsUtil.getGrailsVersion());
+    }
 
     protected void tearDown() throws Exception {
         System.setProperty(GrailsApplication.ENVIRONMENT, "");
