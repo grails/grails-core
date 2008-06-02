@@ -39,7 +39,7 @@
         }
         else {
             if("textarea" == cp.widget || (cp.maxSize > 250 && !cp.password && !cp.inList)) {
-                return "<textarea rows=\"5\" cols=\"40\" name=\"${property.name}\">\${${domainClass.propertyName}?.${property.name}?.encodeAsHTML()}</textarea>"
+                return "<textarea rows=\"5\" cols=\"40\" name=\"${property.name}\">\${fieldValue(bean:${domainClass.propertyName}, field:'${property.name}')}</textarea>"
             }
              else {
                 if(cp.inList) {
