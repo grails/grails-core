@@ -18,9 +18,12 @@ import junit.framework.TestCase;
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.mock.web.MockHttpServletRequest;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.Locale;
 
 /**
  * @author Graeme Rocher
@@ -31,6 +34,10 @@ public class GrailsDataBinderTests extends TestCase {
     class TestBean {
         private Date myDate;
         private String name;
+        private Long securityNumber;
+        private BigInteger bigNumber;
+        private BigDecimal credit;
+        private Double angle;
 
         public String getName() {
             return name;
@@ -46,6 +53,38 @@ public class GrailsDataBinderTests extends TestCase {
 
         public void setMyDate(Date myDate) {
             this.myDate = myDate;
+        }
+
+        public Long getSecurityNumber() {
+            return securityNumber;
+        }
+
+        public void setSecurityNumber(Long securityNumber) {
+            this.securityNumber = securityNumber;
+        }
+
+        public BigInteger getBigNumber() {
+            return bigNumber;
+        }
+
+        public void setBigNumber(BigInteger bigNumber) {
+            this.bigNumber = bigNumber;
+        }
+
+        public BigDecimal getCredit() {
+            return credit;
+        }
+
+        public void setCredit(BigDecimal credit) {
+            this.credit = credit;
+        }
+
+        public Double getAngle() {
+            return angle;
+        }
+
+        public void setAngle(Double angle) {
+            this.angle = angle;
         }
     }
 
@@ -180,6 +219,53 @@ public class GrailsDataBinderTests extends TestCase {
         assertEquals(33, author2.getAge());
    }
 
+    public void testNumberBinding() throws Exception {
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.addPreferredLocale(Locale.US);
+
+        // JDK 1.4 and Spring 2.5.4 do not support localised parsing
+        // of extra large numbers. Until we have resolved this problem,
+        // we won't test a proper big integer.
+        String securityNumber = "349,587,927,070";
+        String bigNumber = "4,120,834,546";
+        String credit = "1,203.45";
+        String angle = "103.48674";
+        request.addParameter("securityNumber", securityNumber);
+        request.addParameter("bigNumber", bigNumber);
+        request.addParameter("credit", credit);
+        request.addParameter("angle", angle);
+
+        TestBean testBean = new TestBean();
+        GrailsDataBinder binder = GrailsDataBinder.createBinder(testBean, "testBean", request);
+        binder.bind(request);
+
+        assertEquals(349587927070L, (long) testBean.getSecurityNumber());
+        assertEquals(new BigInteger("4120834546"), testBean.getBigNumber());
+        assertEquals(new BigDecimal("1203.45"), testBean.getCredit());
+        assertEquals(103.48674D, testBean.getAngle(), 0.1D);
+
+        // Now try German, which uses '.' and ',' instead of ',' and '.'.
+        request = new MockHttpServletRequest();
+        request.addPreferredLocale(Locale.GERMANY);
+
+        securityNumber = "349.587.927.070";
+        bigNumber = "4.120.834.546";
+        credit = "1.203,45";
+        angle = "103,48674";
+        request.addParameter("securityNumber", securityNumber);
+        request.addParameter("bigNumber", bigNumber);
+        request.addParameter("credit", credit);
+        request.addParameter("angle", angle);
+
+        testBean = new TestBean();
+        binder = GrailsDataBinder.createBinder(testBean, "testBean", request);
+        binder.bind(request);
+
+        assertEquals(349587927070L, (long) testBean.getSecurityNumber());
+        assertEquals(new BigInteger("4120834546"), testBean.getBigNumber());
+        assertEquals(new BigDecimal("1203.45"), testBean.getCredit());
+        assertEquals(103.48674D, testBean.getAngle(), 0.1D);
+    }
 
 
 

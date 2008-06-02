@@ -41,9 +41,10 @@ import org.springframework.web.servlet.support.RequestContextUtils;
 import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.net.URI;
 import java.text.DateFormat;
-import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.*;
 
 /**
@@ -113,8 +114,20 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
      */
     public static GrailsDataBinder createBinder(Object target, String objectName, HttpServletRequest request) {
         GrailsDataBinder binder = createBinder(target,objectName);
-        binder.registerCustomEditor( Date.class, new CustomDateEditor(DateFormat.getDateInstance( DateFormat.SHORT, RequestContextUtils.getLocale(request) ),true) );
-		binder.registerCustomEditor( BigDecimal.class, new CustomNumberEditor(BigDecimal.class, DecimalFormat.getInstance(RequestContextUtils.getLocale(request)),true));
+        Locale locale = RequestContextUtils.getLocale(request);
+
+        // Formatters for the different number types.
+        NumberFormat floatFormat = NumberFormat.getInstance(locale);
+        NumberFormat integerFormat = NumberFormat.getIntegerInstance(locale);
+
+        binder.registerCustomEditor( Date.class, new CustomDateEditor(DateFormat.getDateInstance( DateFormat.SHORT, locale),true) );
+		binder.registerCustomEditor( BigDecimal.class, new CustomNumberEditor(BigDecimal.class, floatFormat, true));
+        binder.registerCustomEditor( BigInteger.class, new CustomNumberEditor(BigInteger.class, floatFormat, true));
+        binder.registerCustomEditor( Double.class, new CustomNumberEditor(Double.class, floatFormat, true));
+        binder.registerCustomEditor( Float.class, new CustomNumberEditor(Float.class, floatFormat, true));
+        binder.registerCustomEditor( Long.class, new CustomNumberEditor(Long.class, integerFormat, true));
+        binder.registerCustomEditor( Integer.class, new CustomNumberEditor(Integer.class, integerFormat, true));
+        binder.registerCustomEditor( Short.class, new CustomNumberEditor(Short.class, integerFormat, true));
         return binder;
     }
 
