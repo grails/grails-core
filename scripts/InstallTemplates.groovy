@@ -51,7 +51,6 @@ target ('default': "Installs the artifact and scaffolding templates") {
 	}    
 	Ant.mkdir(dir:"${targetDir}/war")
 	Ant.copy(tofile:"${targetDir}/war/web.xml", file:"${grailsHome}/src/war/WEB-INF/web${servletVersion}.template.xml")
-    Ant.replace(file:"${targetDir}/war/web.xml",token:"@grails.project.key@", value:baseName)
 	
     event("StatusUpdate", [ "Templates installed successfully"])
 }

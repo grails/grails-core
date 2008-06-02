@@ -284,15 +284,16 @@ target( generateWebXml : "Generates the web.xml file") {
 	}
 	else {
 	    webXml = new FileSystemResource("${basedir}/src/templates/war/web.xml")
-	    if(!webXml.exists()) {
-	    	def tmpWebXml = "${userHome}/.grails/${grailsVersion}/projects/${baseName}/web.xml.tmp"
+        def tmpWebXml = "${userHome}/.grails/${grailsVersion}/projects/${baseName}/web.xml.tmp"
+        if(!webXml.exists()) {
 	    	Ant.copy(file:"${grailsHome}/src/war/WEB-INF/web${servletVersion}.template.xml", tofile:tmpWebXml, overwrite:true)
-
-			Ant.replace(file:tmpWebXml, token:"@grails.project.key@", value:"${grailsAppName}-${grailsEnv}-${grailsAppVersion}")
-
-	       webXml = new FileSystemResource(tmpWebXml)
-	    }		
-	}
+        }
+        else {
+            Ant.copy(file:webXml.file, tofile:tmpWebXml, overwrite:true)
+        }
+        webXml = new FileSystemResource(tmpWebXml)
+        Ant.replace(file:tmpWebXml, token:"@grails.project.key@", value:"${grailsAppName}-${grailsEnv}-${grailsAppVersion}")
+    }
 	def sw = new StringWriter()
 
     try {
