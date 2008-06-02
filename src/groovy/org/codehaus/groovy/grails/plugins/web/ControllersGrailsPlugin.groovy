@@ -481,7 +481,7 @@ class ControllersGrailsPlugin {
                                 }
                                 def params = RCH.currentRequestAttributes().params
                                 bind.invoke(commandObject, "bindData", [commandObject, params] as Object[])
-                                def errors = new BindException(commandObject, paramType.name)
+                                def errors = commandObject.errors ?: new BindException(commandObject, paramType.name)
                                 def constrainedProperties = commandObject.constraints?.values()
                                 constrainedProperties.each {constrainedProperty ->
                                     constrainedProperty.messageSource = ctx.getBean("messageSource")
