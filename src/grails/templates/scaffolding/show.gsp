@@ -32,7 +32,9 @@
                         props.each { p -> %>
                         <tr class="prop">
                             <td valign="top" class="name">${p.naturalName}:</td>
-                            <%  if(p.oneToMany) { %>
+                            <% if(p.isEnum()) { %>
+                            <td valign="top" class="value">\${${propertyName}?.${p.name}?.encodeAsHTML()}</td>
+                            <% } else if(p.oneToMany) { %>
                             <td  valign="top" style="text-align:left;" class="value">
                                 <ul>
                                 <g:each var="${p.name[0]}" in="\${${propertyName}.${p.name}}">
