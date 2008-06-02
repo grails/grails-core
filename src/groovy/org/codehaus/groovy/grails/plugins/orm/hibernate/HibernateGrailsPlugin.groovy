@@ -548,10 +548,20 @@ Try using Grails' default cache provider: 'org.hibernate.cache.OSCacheProvider'"
             mergeMethod.invoke(delegate, "merge", [] as Object[])
         }
 
-        metaClass.delete = {->template.delete(delegate)}
+        metaClass.delete = {->
+            def obj = delegate
+            template.execute({Session session ->
+                session.delete obj
+            } as HibernateCallback)
+        }
         metaClass.delete = { Map args ->
-            template.delete(delegate)
-            if(args?.flush) template.flush()                
+            def obj = delegate
+            template.execute({Session session ->
+                session.delete obj
+                if(args?.flush) {
+                    session.flush()
+                }
+            } as HibernateCallback)
         }
         metaClass.refresh = {->template.refresh(delegate)}
         metaClass.discard = {->template.evict(delegate)}
