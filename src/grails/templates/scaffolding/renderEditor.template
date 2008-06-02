@@ -44,7 +44,7 @@
              else {
                 if(cp.inList) {
                     def sb = new StringBuffer('<g:select ')
-                    sb << "id=\"${property.name}\" name=\"${property.name}\" from=\"\${${domainClass.propertyName}.constraints.${property.name}.inList.collect{it.encodeAsHTML()}}\" value=\"\${fieldValue(bean:${domainClass.propertyName},field:'${property.name}')}\" ${renderNoSelection(property)}>"
+                    sb << "id=\"${property.name}\" name=\"${property.name}\" from=\"\${${domainClass.propertyName}.constraints.${property.name}.inList}\" value=\"\${${domainClass.propertyName}.${property?.name}}\" ${renderNoSelection(property)}>"
                     sb << '</g:select>'
                     return sb.toString()
                 }
