@@ -43,7 +43,7 @@
                             <%  } else if(p.manyToOne || p.oneToOne) { %>
                             <td valign="top" class="value"><g:link controller="${p.referencedDomainClass?.propertyName}" action="show" id="\${${propertyName}?.${p.name}?.id}">\${${propertyName}?.${p.name}}</g:link></td>
                             <%  } else  { %>
-                            <td valign="top" class="value">\${${propertyName}.${p.name}}</td>
+                            <td valign="top" class="value">\${fieldValue(bean:${propertyName}, field:'${p.name}')}</td>
                             <%  } %>
                         </tr>
                     <%  } %>
