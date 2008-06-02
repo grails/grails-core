@@ -76,7 +76,7 @@
         pw.println()
         pw.println "<ul>"
         pw.println "<g:each var=\"${property.name[0]}\" in=\"\${${domainClass.propertyName}?.${property.name}?}\">"
-        pw.println "    <li><g:link controller=\"${property.referencedDomainClass.propertyName}\" action=\"show\" id=\"\${${property.name[0]}.id}\">\${${property.name[0]}}</g:link></li>"
+        pw.println "    <li><g:link controller=\"${property.referencedDomainClass.propertyName}\" action=\"show\" id=\"\${${property.name[0]}.id}\">\${${property.name[0]}?.encodeAsHTML()}</g:link></li>"
         pw.println "</g:each>"
         pw.println "</ul>"
         pw.println "<g:link controller=\"${property.referencedDomainClass.propertyName}\" params=\"['${domainClass.propertyName}.id':${domainClass.propertyName}?.id]\" action=\"create\">Add ${property.referencedDomainClass.shortName}</g:link>"
