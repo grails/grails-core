@@ -42,7 +42,6 @@ import org.springframework.context.ApplicationContext
 import org.springframework.core.io.FileSystemResource
 import org.springframework.validation.BindException
 import org.springframework.validation.Errors
-import org.springframework.web.multipart.commons.CommonsMultipartResolver
 import org.springframework.web.servlet.ModelAndView
 import org.codehaus.groovy.grails.web.multipart.ContentLengthAwareCommonsMultipartResolver
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory
