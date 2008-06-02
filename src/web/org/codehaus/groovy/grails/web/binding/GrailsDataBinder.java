@@ -254,33 +254,54 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
             //super.
             
             if(propertyName.indexOf('.') > -1) {
-                propertyName = propertyName.split("\\.")[0];
+                String[] propertyNames = propertyName.split("\\.");
+                ConfigurablePropertyAccessor currentBean = bean;
+
+                for (int j = 0; j < propertyNames.length; j++) {
+                    String name = propertyNames[j];
+                    Object created = autoCreatePropertyIfPossible(currentBean, name);
+                    if(created!=null)
+                        currentBean = new BeanWrapperImpl(created);
+                    else
+                        break;
+                }
+
             }
-            Class type = bean.getPropertyType(propertyName);
-            LOG.debug("Checking if auto-create is possible for property ["+propertyName+"] and type ["+type+"]");
-            if(type != null) {
-                if(GroovyObject.class.isAssignableFrom(type)) {
-                    if(bean.getPropertyValue(propertyName) == null) {
-                        if(bean.isWritableProperty(propertyName)) {
-                            try {
-                                MetaClass mc = GroovySystem.getMetaClassRegistry()
-                                                             .getMetaClass(type);
-                                if(mc!=null) {
-                                    Object created = mc.invokeStaticMethod(type,CreateDynamicMethod.METHOD_NAME, new Object[0]);
-                                    bean.setPropertyValue(propertyName,created);
-                                }
+            else {
+
+                autoCreatePropertyIfPossible(bean,propertyName);
+            }
+        }
+    }
+
+    private Object autoCreatePropertyIfPossible(ConfigurablePropertyAccessor bean,String propertyName) {
+        Class type = bean.getPropertyType(propertyName);
+        Object val = bean.isReadableProperty(propertyName) ? bean.getPropertyValue(propertyName) : null; 
+        LOG.debug("Checking if auto-create is possible for property ["+propertyName+"] and type ["+type+"]");
+        if(type != null && val == null) {
+            if(GroovyObject.class.isAssignableFrom(type)) {
+                if(bean.getPropertyValue(propertyName) == null) {
+                    if(bean.isWritableProperty(propertyName)) {
+                        try {
+                            MetaClass mc = GroovySystem.getMetaClassRegistry()
+                                    .getMetaClass(type);
+                            if(mc!=null) {
+                                Object created = mc.invokeStaticMethod(type, CreateDynamicMethod.METHOD_NAME, new Object[0]);
+                                bean.setPropertyValue(propertyName,created);
+                                val = created;
                             }
-                            catch(MissingMethodException mme) {
-                                LOG.warn("Unable to auto-create type, 'create' method not found");
-                            }
-                            catch(GroovyRuntimeException gre) {
-                                LOG.warn("Unable to auto-create type, Groovy Runtime error: " + gre.getMessage(),gre) ;
-                            }
+                        }
+                        catch(MissingMethodException mme) {
+                            LOG.warn("Unable to auto-create type, 'create' method not found");
+                        }
+                        catch(GroovyRuntimeException gre) {
+                            LOG.warn("Unable to auto-create type, Groovy Runtime error: " + gre.getMessage(),gre) ;
                         }
                     }
                 }
             }
         }
+        return val;
     }
 
     /**

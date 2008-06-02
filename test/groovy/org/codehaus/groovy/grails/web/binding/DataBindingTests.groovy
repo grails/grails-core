@@ -43,14 +43,36 @@ class Author {
     Long version
     String name
     String hairColour
+    City placeOfBirth
 
     static constraints = {
         name(nullable:true)
     }
 }
+class City {
+    Long id
+    Long version
+    String name
+}
         ''')
     }
 
+    void testThreeLevelDataBinding() {
+        def c = ga.getControllerClass("TestController").newInstance()
+        def b = ga.getDomainClass("Book").newInstance()
+
+        def params = c.params
+        params.title = "The Stand"
+        params.'author.placeOfBirth.name' = 'Maine'
+        params.'author.name' = "Stephen King"
+
+        b.properties = params
+
+        assertEquals "The Stand",b.title
+        assertEquals "Maine", b.author.placeOfBirth.name
+        assertEquals "Stephen King", b.author.name
+
+    }
     void testBindBlankToNullWhenNullable() {
         def c = ga.getControllerClass("TestController").newInstance()
         def a = ga.getDomainClass("Author").newInstance()
