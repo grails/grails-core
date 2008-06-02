@@ -18,7 +18,6 @@ package org.codehaus.groovy.grails.scaffolding;
 import groovy.lang.Closure;
 import groovy.lang.GroovyObject;
 import org.codehaus.groovy.grails.scaffolding.exceptions.ScaffoldingException;
-import org.codehaus.groovy.grails.web.metaclass.ChainDynamicMethod;
 import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods;
 import org.codehaus.groovy.grails.web.metaclass.RedirectDynamicMethod;
 import org.codehaus.groovy.grails.web.metaclass.RenderDynamicMethod;
@@ -27,7 +26,6 @@ import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -281,7 +279,7 @@ public class DefaultGrailsScaffolder implements GrailsScaffolder {
 				Closure showAction = (Closure)controller.getProperty(SHOW_ACTION);
 				Map arguments = new HashMap();
 				arguments.put( RedirectDynamicMethod.ARGUMENT_ACTION, showAction );
-                arguments.put( RedirectDynamicMethod.ARGUMENT_ID, model.get(ChainDynamicMethod.ARGUMENT_ID) );
+                arguments.put( RedirectDynamicMethod.ARGUMENT_ID, model.get(RedirectDynamicMethod.ARGUMENT_ID) );
 				return controller.invokeMethod(RedirectDynamicMethod.METHOD_SIGNATURE,new Object[]{ arguments });
 			}
 			else {

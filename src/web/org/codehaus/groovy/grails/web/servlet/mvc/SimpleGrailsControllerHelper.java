@@ -28,7 +28,6 @@ import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsControllerClass;
 import org.codehaus.groovy.grails.scaffolding.GrailsScaffolder;
-import org.codehaus.groovy.grails.web.metaclass.ChainDynamicMethod;
 import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods;
 import org.codehaus.groovy.grails.web.servlet.DefaultGrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.FlashScope;
@@ -86,6 +85,7 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
     private static final Log LOG = LogFactory.getLog(SimpleGrailsControllerHelper.class);
     private static final char SLASH = '/';
 
+    private static final String PROPERTY_CHAIN_MODEL = "chainModel";
     private static final String FLOW_EXECUTOR_BEAN = "flowExecutor";
     private String id;
     private String controllerName;
@@ -579,8 +579,8 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
 
 	private void initChainModel(GroovyObject controller) {
 		FlashScope fs = this.grailsAttributes.getFlashScope((HttpServletRequest)controller.getProperty(ControllerDynamicMethods.REQUEST_PROPERTY));
-        if(fs.containsKey(ChainDynamicMethod.PROPERTY_CHAIN_MODEL)) {
-            this.chainModel = (Map)fs.get(ChainDynamicMethod.PROPERTY_CHAIN_MODEL);
+        if(fs.containsKey(PROPERTY_CHAIN_MODEL)) {
+            this.chainModel = (Map)fs.get(PROPERTY_CHAIN_MODEL);
             if(this.chainModel == null)
                 this.chainModel = Collections.EMPTY_MAP;
         }

@@ -587,7 +587,6 @@ class ControllersGrailsPlugin {
         }
 
         def redirect = new RedirectDynamicMethod(ctx)
-        def chain = new ChainDynamicMethod()
         def render = new RenderDynamicMethod()
         def bind = new BindDynamicMethod()
         // the redirect dynamic method
@@ -595,7 +594,7 @@ class ControllersGrailsPlugin {
             redirect.invoke(delegate, "redirect", args)
         }
         mc.chain = {Map args ->
-            chain.invoke(delegate, "chain", args)
+            ChainMethod.invoke delegate, args
         }
         // the render method
         mc.render = {Object o ->

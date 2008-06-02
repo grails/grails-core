@@ -31,7 +31,7 @@ import java.util.*;
 public class GrailsFlashScope implements FlashScope {
     private HashMap current = new HashMap();
     private HashMap next = new HashMap();
-    private static final String ERRORS_PREFIX = "org.codehaus.groovy.grails.ERRORS_";
+    public static final String ERRORS_PREFIX = "org.codehaus.groovy.grails.ERRORS_";
     private static final String ERRORS_PROPERTY = "errors";
 
     public GrailsFlashScope() {
@@ -144,27 +144,36 @@ public class GrailsFlashScope implements FlashScope {
         if(current.containsKey(key)) {
             current.remove(key);
         }
-        storeErrorsIfPossible(value);
+        storeErrorsIfPossible(next,value);
 
         return next.put(key,value);
     }
 
-    private void storeErrorsIfPossible(Object value) {
+    private void storeErrorsIfPossible(Map scope,Object value) {
         if(value != null) {
 
             if(value instanceof Collection) {
                 Collection values = (Collection)value;
                 for (Iterator i = values.iterator(); i.hasNext();) {
                     Object current = i.next();
-                    storeErrorsIfPossible(current);
+                    storeErrorsIfPossible(scope,current);
                 }            
+            }
+            else if(value instanceof Map) {
+                Map map = (Map)value;
+                Set keys = map.keySet();
+                for (Iterator i = keys.iterator(); i.hasNext();) {
+                    Object key = i.next();
+                    Object val = map.get(key);
+                    storeErrorsIfPossible(map,val);
+                }
             }
             else {
                 MetaClass mc = GroovySystem.getMetaClassRegistry().getMetaClass(value.getClass());
                 if(mc.hasProperty(value, ERRORS_PROPERTY)!=null) {
                     Object errors = mc.getProperty(value, ERRORS_PROPERTY);
                     if(errors != null) {
-                        next.put(ERRORS_PREFIX + System.identityHashCode(value), errors);
+                        scope.put(ERRORS_PREFIX + System.identityHashCode(value), errors);
                     }
                 }
             }

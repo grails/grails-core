@@ -16,7 +16,10 @@ package grails.util;
 
 import groovy.lang.GroovyObject;
 import org.apache.commons.lang.StringUtils;
+import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
+import org.codehaus.groovy.grails.commons.GrailsControllerClass;
 import org.codehaus.groovy.grails.commons.spring.GrailsWebApplicationContext;
+import org.codehaus.groovy.grails.scaffolding.GrailsScaffolder;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.servlet.mvc.ParameterCreationListener;
@@ -39,6 +42,7 @@ import javax.servlet.http.HttpServletRequest;
 public class GrailsWebUtil {
     public static final String DEFAULT_ENCODING = "UTF-8";
     private static final String CHARSET_ATTRIBUTE = ";charset=";
+    private static final String SCAFFOLDER = "Scaffolder";
 
     public static GrailsWebRequest bindMockWebRequest(GrailsWebApplicationContext ctx) {
         MockHttpServletRequest request = new MockHttpServletRequest();
@@ -93,5 +97,14 @@ public class GrailsWebUtil {
     public static String getContentType(String name, String encoding) {
         if(StringUtils.isBlank(encoding)) encoding = DEFAULT_ENCODING;
         return name + CHARSET_ATTRIBUTE + encoding;
+    }
+
+    public static GrailsScaffolder getScaffolderForController(String controllerName, GrailsWebRequest webRequest) {
+    	GrailsApplicationAttributes attributes = webRequest.getAttributes();
+		GrailsControllerClass controllerClass = (GrailsControllerClass) attributes.getGrailsApplication().getArtefact(
+            ControllerArtefactHandler.TYPE, controllerName);
+        return (GrailsScaffolder)attributes
+        							.getApplicationContext()
+        							.getBean(controllerClass.getFullName() + SCAFFOLDER);
     }
 }
