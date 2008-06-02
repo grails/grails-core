@@ -18,12 +18,16 @@ import org.codehaus.groovy.grails.web.mapping.UrlCreator
  */
 class ChainMethod {
 
+
     static invoke(target, Map args = [:]) {
         def controller = args.controller ?: GCU.getLogicalPropertyName(target.class.name,ControllerArtefactHandler.TYPE )
         def action = args.action
         def id = args.id
         def params = args.params ?: [:]
         def model = args.model ?: [:]
+
+        def actionParams = params.findAll { it.key?.startsWith('_action_') }
+        actionParams?.each { params.remove(it.key) }
 
 
         GrailsWebRequest webRequest = RequestContextHolder.currentRequestAttributes()
