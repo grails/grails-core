@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Iterator;
 import java.util.Collection;
 import java.util.ListIterator;
+import java.io.Serializable;
 
 /**
 * A result list for Criteria list calls, which is aware of the totalCount for the paged result
@@ -26,7 +27,7 @@ import java.util.ListIterator;
 * @author Siegfried Puchbauer
 * @since 1.0
 */
-public class PagedResultList implements List {
+public class PagedResultList implements List, Serializable {
 
     protected List list;
 
