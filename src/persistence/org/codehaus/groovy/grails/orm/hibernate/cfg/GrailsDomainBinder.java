@@ -1213,7 +1213,7 @@ public final class GrailsDomainBinder {
 			GrailsDomainClassProperty currentGrailsProp = persistentProperties[i];
             // if its inherited skip
             boolean isBidirectionalManyToOne = isBidirectionalManyToOne(currentGrailsProp);
-            if(currentGrailsProp.isInherited() && !isBidirectionalManyToOne)
+            if(currentGrailsProp.isInherited() )
 				continue;
             else if(currentGrailsProp.isInherited() && isBidirectionalManyToOne && currentGrailsProp.isCircular())
                 continue;
