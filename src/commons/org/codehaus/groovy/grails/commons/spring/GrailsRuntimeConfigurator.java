@@ -410,6 +410,8 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
         }
     }
 
+    private static volatile boolean springGroovyResourcesLoaded = false;
+
     /**
      * Attempt to load the beans defined by a BeanBuilder DSL closure in "resources.groovy"
      *
@@ -418,34 +420,43 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
      * @param context
      */
     private static void doLoadSpringGroovyResources(RuntimeSpringConfiguration config, ClassLoader classLoader,
+
                                                     GenericApplicationContext context) {
-        try {
-            Class groovySpringResourcesClass = null;
+        
+        if(!springGroovyResourcesLoaded) {
             try {
-                groovySpringResourcesClass = ClassUtils.forName(GrailsRuntimeConfigurator.SPRING_RESOURCES_CLASS,
-                    classLoader);
-            } catch (ClassNotFoundException e) {
-                // ignore
-            }
-            if (groovySpringResourcesClass != null) {
-                final BeanBuilder bb = new BeanBuilder(Thread.currentThread().getContextClassLoader());
-                bb.setSpringConfig(config);
-                Script script = (Script) groovySpringResourcesClass.newInstance();
-                script.run();
-                Object beans = script.getProperty("beans");
-                bb.beans((Closure) beans);
-                if (context != null) {
-                    bb.registerBeans(context);
+                Class groovySpringResourcesClass = null;
+                try {
+                    groovySpringResourcesClass = ClassUtils.forName(GrailsRuntimeConfigurator.SPRING_RESOURCES_CLASS,
+                        classLoader);
+                } catch (ClassNotFoundException e) {
+                    // ignore
                 }
+                if (groovySpringResourcesClass != null) {
+                    final BeanBuilder bb = new BeanBuilder(Thread.currentThread().getContextClassLoader());
+                    bb.setSpringConfig(config);
+                    Script script = (Script) groovySpringResourcesClass.newInstance();
+                    script.run();
+                    Object beans = script.getProperty("beans");
+                    bb.beans((Closure) beans);
+                    if (context != null) {
+                        bb.registerBeans(context);
+                    }
+                }
+            } catch (Exception ex) {
+                LOG.warn("[RuntimeConfiguration] Unable to perform load beans from resources.groovy", ex);
             }
-        } catch (Exception ex) {
-            LOG.warn("[RuntimeConfiguration] Unable to perform load beans from resources.groovy", ex);
+            springGroovyResourcesLoaded = true;
         }
+
     }
 
+
+
     public static void loadSpringGroovyResources(RuntimeSpringConfiguration config, ClassLoader classLoader) {
-        doLoadSpringGroovyResources(config, classLoader, null);
+            doLoadSpringGroovyResources(config, classLoader, null);
     }
+
 
     public static void loadSpringGroovyResourcesIntoContext(RuntimeSpringConfiguration config, ClassLoader classLoader,
                                                             GenericApplicationContext context) {
