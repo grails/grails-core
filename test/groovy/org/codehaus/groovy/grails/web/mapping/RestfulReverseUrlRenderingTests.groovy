@@ -41,5 +41,19 @@ class BookController {
 
     }
 
+    void testFormTagRenderingWithControllerAndAction() {
+        def template = '<g:form controller="book" action="save" name="myForm" method="POST">save</g:form>'
+
+        assertOutputEquals '<form action="/book/save" method="POST" name="myForm" id="myForm" >save</form>', template
+
+    }
+
+    void testFormTagRenderGETRequest() {
+        def template = '<g:form controller="book" name="myForm" method="GET">create</g:form>'
+
+        assertOutputEquals '<form action="/book" method="GET" name="myForm" id="myForm" >create</form>', template
+
+    }
+
 
 }
