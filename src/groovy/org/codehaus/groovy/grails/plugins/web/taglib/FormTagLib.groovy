@@ -556,8 +556,8 @@ class FormTagLib {
         def optionKey = attrs.remove('optionKey')
         def optionValue = attrs.remove('optionValue')
         def value = attrs.remove('value')
-        if (value instanceof Collection) {
-            attrs.multiple = true
+        if (value instanceof Collection && attrs.multiple == null) {
+            attrs.multiple = 'multiple'
         }
         def valueMessagePrefix = attrs.remove('valueMessagePrefix')
         def noSelection = attrs.remove('noSelection')

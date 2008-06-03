@@ -148,7 +148,6 @@ public class FormTagLib3Tests extends AbstractGrailsTagTests {
     		tag.call(attributes)
     	}
 
-
         def doc = DocumentHelper.parseText( sw.toString() )
         assertNotNull( doc)
 
@@ -283,6 +282,48 @@ public class FormTagLib3Tests extends AbstractGrailsTagTests {
 
     }
 
+    public void testMultipleSelect() {
+    	final StringWriter sw = new StringWriter();
+    	final PrintWriter pw = new PrintWriter(sw);
+
+        def categories = [
+                new Expando(code: 'M', label: 'Mystery'),
+                new Expando(code: 'T', label: 'Thriller'),
+                new Expando(code: 'F', label: 'Fantasy'),
+                new Expando(code: 'SF', label: 'Science Fiction'),
+                new Expando(code: 'C', label: 'Crime') ]
+        def selected = [ 'T', 'C']
+
+        // Execute the tag.
+        withTag("select", pw) { tag ->
+	    	// use sorted map to be able to predict the order in which tag attributes are generated
+    		def attributes = new TreeMap(
+                    name: SELECT_TAG_NAME,
+                    from: categories,
+                    value: selected,
+                    optionKey: 'code',
+                    optionValue: 'label')
+            tag.call(attributes)
+    	}
+
+        def doc = DocumentHelper.parseText( sw.toString() )
+        assertNotNull( doc )
+
+        // Make sure that the "multiple" attribute is there.
+        XPath xpath = new DefaultXPath("//select[@name='" + SELECT_TAG_NAME + "']/@multiple");
+        assertEquals("multiple", xpath.valueOf(doc));
+
+        // assert select field uses value for both the value as the text (as there is no text found within messages)
+        categories.each() { cat ->
+            if (selected.contains(cat)) {
+                assertSelectFieldPresentWithSelectedValueAndText( doc, SELECT_TAG_NAME, cat.code, cat.label )
+            }
+            else {
+                assertSelectFieldPresentWithValueAndText( doc, SELECT_TAG_NAME, cat.code, cat.label )
+            }
+        }
+    }
+
     public void testCheckboxTag() {
         def template = '<g:checkBox name="foo" value="${test}"/>'
 
@@ -360,6 +401,11 @@ public class FormTagLib3Tests extends AbstractGrailsTagTests {
 
     private void assertSelectFieldPresentWithValueAndText(Document document, String fieldName, String value, String label) {
         XPath xpath = new DefaultXPath("//select[@name='" + fieldName + "']/option[@value='" + value + "' and text()='"+label+"']");
+        assertTrue(xpath.booleanValueOf(document));
+    }
+
+    private void assertSelectFieldPresentWithSelectedValueAndText(Document document, String fieldName, String value, String label) {
+        XPath xpath = new DefaultXPath("//select[@name='" + fieldName + "']/option[@selected='selected' and @value='" + value + "' and text()='"+label+"']");
         assertTrue(xpath.booleanValueOf(document));
     }
 
