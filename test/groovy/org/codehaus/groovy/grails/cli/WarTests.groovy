@@ -66,22 +66,24 @@ class WarTests  extends AbstractCliTests {
 
         // Add the 'grails.war.copyToWebApp' configuration option to
         // the test application's Config.
-        new File("${appBase}/testapp/grails-app/conf", "Config.groovy") << """
+        new File("${appBase}/testapp/grails-app/conf", "Config.groovy") << '''
 grails.war.copyToWebApp = {
-    fileset(dir: "web-app") {
+    fileset(dir: "${basedir}/web-app") {
         include(name: "css/main.css")
         include(name: "js/application.js")
+        include(name: "WEB-INF/**")
     }
-    fileset(dir: ".", includes: "dummy.txt")
+    fileset(dir: basedir, includes: "dummy.txt")
 }
-"""
+'''
+
         // Create the dummy file that is included in the copy.
         new File("$appBase/testapp/dummy.txt").createNewFile()
 
         // Run the war script and do the standard checks.
         gantRun( ["-f", "scripts/War.groovy"] as String[])
 
-        def unzippedFile = checkWarFile(warName)
+        def unzippedFile = checkWarFile("testapp-0.1.war")
 
         // Check that the dummy file was copied across, but none of the
         // unspecified files in "web-app".
@@ -175,6 +177,9 @@ class Item {
         def warFile = new File(warPath)
         if (!warFile.absolute) {
             warFile = new File("${appBase}/testapp", warPath)
+        }
+        warFile.parentFile.eachFile {
+            println ">>> $it"
         }
         assert warFile.exists()
 
