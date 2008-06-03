@@ -84,7 +84,8 @@ class VetoingNullableBehaviourBook {
         assertFieldHasError(book.errors, 'onlineFormatDescription')
     }
 
-	//this test will fail, but should pass.  it never gets to the custom validator because the blank constraint stops further validation
+	//this validation will fail because the custom validator does not
+    // allow blank values, even if the "blank" constraint does.
     void testOnlineFormatDescriptionValidates_blank() {
         def book = ga.getDomainClass("VetoingNullableBehaviourBook").newInstance()
         book.online = true
