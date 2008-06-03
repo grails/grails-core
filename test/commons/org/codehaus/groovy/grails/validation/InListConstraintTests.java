@@ -42,6 +42,12 @@ public class InListConstraintTests extends AbstractConstraintTests {
                 null
         );
 
+        // A blank string must also be allowed
+        testConstraintPassed(
+                getConstraint( "testString", avail ),
+                "   "
+        );
+
         testConstraintDefaultMessage(
                 getConstraint( "testString", avail ),
                 "a",

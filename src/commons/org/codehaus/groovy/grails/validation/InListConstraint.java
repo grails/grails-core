@@ -61,6 +61,8 @@ class InListConstraint extends AbstractConstraint {
     }
 
     protected void processValidate(Object target, Object propertyValue, Errors errors) {
+        // Check that the list contains the given value. If not, add
+        // an error.
         if(!this.list.contains(propertyValue)) {
             Object[] args = new Object[] { constraintPropertyName, constraintOwningClass, propertyValue, list  };
             super.rejectValue(target,errors,ConstrainedProperty.DEFAULT_NOT_INLIST_MESSAGE_CODE,ConstrainedProperty.NOT_PREFIX + ConstrainedProperty.IN_LIST_CONSTRAINT,args);

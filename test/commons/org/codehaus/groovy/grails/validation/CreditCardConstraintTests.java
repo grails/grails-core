@@ -57,6 +57,12 @@ public class CreditCardConstraintTests extends AbstractConstraintTests {
                 null
         );
 
+        // blank value should always pass validation
+        testConstraintPassed(
+                getConstraint( "testString", Boolean.TRUE ),
+                " "
+        );
+
         testConstraintPassed(
                 getConstraint( "testString", Boolean.TRUE ),
                 VALID_VISA

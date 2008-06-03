@@ -42,6 +42,27 @@ public class ValidatorConstraintTests extends AbstractConstraintTests {
                 "test",
                 "Property [{0}] of class [{1}] with value [{2}] does not pass custom validation"
         );
+
+        // Test null and blank values.
+        testConstraintFailed(
+                getConstraint( "{val,obj -> return val == null}" ),
+                "test"
+        );
+
+        testConstraintPassed(
+                getConstraint( "{val,obj -> return val == null}" ),
+                null
+        );
+
+        testConstraintFailed(
+                getConstraint( "{val,obj -> return val?.trim() == ''}" ),
+                "test"
+        );
+
+        testConstraintPassed(
+                getConstraint( "{val,obj -> return val?.trim() == ''}" ),
+                "     "
+        );
     }
 
 

@@ -33,6 +33,11 @@ public class BlankConstraintTests extends AbstractConstraintTests {
                 ""
         );
 
+        testConstraintFailed(
+                getConstraint( "testString", Boolean.FALSE ),
+                "    "
+        );
+
         testConstraintDefaultMessage(
                 getConstraint( "testString", Boolean.FALSE ),
                 "",

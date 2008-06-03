@@ -59,6 +59,10 @@ class BlankConstraint extends AbstractVetoingConstraint {
         return ConstrainedProperty.BLANK_CONSTRAINT;
     }
 
+    protected boolean skipBlankValues() {
+        return false;
+    }
+
     protected boolean processValidateWithVetoing(Object target, Object propertyValue, Errors errors) {
         if(propertyValue instanceof String && StringUtils.isBlank((String)propertyValue)) {
             if(!blank) {

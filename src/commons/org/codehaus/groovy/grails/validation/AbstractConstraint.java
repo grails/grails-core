@@ -84,12 +84,27 @@ public abstract class AbstractConstraint implements Constraint {
     
     public void validate(Object target, Object propertyValue, Errors errors) {
         checkState();
+
+        // Skip null values if desired.
         if(propertyValue == null && skipNullValues()) return;
+
+        // Skip blank values if desired.
+        if(skipBlankValues() && propertyValue instanceof String && StringUtils.isBlank((String) propertyValue)) {
+            return;
+        }
+
+        // Do the validation for this constraint.
         processValidate(target, propertyValue, errors);
     }
 
     protected boolean skipNullValues() {
         // a null is not a value we should even check in most cases
+        return true;
+    }
+
+    protected boolean skipBlankValues() {
+        // Most constraints ignore blank values, leaving it to the
+        // explicit "blank" constraint.
         return true;
     }
 
