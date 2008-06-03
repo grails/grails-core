@@ -239,10 +239,10 @@ public class GrailsDataBinderTests extends TestCase {
         GrailsDataBinder binder = GrailsDataBinder.createBinder(testBean, "testBean", request);
         binder.bind(request);
 
-        assertEquals(349587927070L, (long) testBean.getSecurityNumber());
+        assertEquals(349587927070L, testBean.getSecurityNumber().longValue());
         assertEquals(new BigInteger("4120834546"), testBean.getBigNumber());
         assertEquals(new BigDecimal("1203.45"), testBean.getCredit());
-        assertEquals(103.48674D, testBean.getAngle(), 0.1D);
+        assertEquals(103.48674D, testBean.getAngle().doubleValue(), 0.1D);
 
         // Now try German, which uses '.' and ',' instead of ',' and '.'.
         request = new MockHttpServletRequest();
@@ -261,10 +261,10 @@ public class GrailsDataBinderTests extends TestCase {
         binder = GrailsDataBinder.createBinder(testBean, "testBean", request);
         binder.bind(request);
 
-        assertEquals(349587927070L, (long) testBean.getSecurityNumber());
+        assertEquals(349587927070L, testBean.getSecurityNumber().longValue());
         assertEquals(new BigInteger("4120834546"), testBean.getBigNumber());
         assertEquals(new BigDecimal("1203.45"), testBean.getCredit());
-        assertEquals(103.48674D, testBean.getAngle(), 0.1D);
+        assertEquals(103.48674D, testBean.getAngle().doubleValue(), 0.1D);
     }
 
 
