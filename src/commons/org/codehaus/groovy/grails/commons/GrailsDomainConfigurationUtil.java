@@ -34,6 +34,8 @@ import java.sql.Clob;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.*;
+import java.lang.reflect.Method;
+import java.lang.reflect.InvocationTargetException;
 
 /**
  * Utility methods used in configuring the Grails Hibernate integration
@@ -43,6 +45,29 @@ import java.util.*;
  */
 public class GrailsDomainConfigurationUtil {
 
+
+    private static final Class[] EMPTY_CLASS_ARRAY = new Class[0];
+
+    public static Serializable getAssociationIdentifier(Object target, String propertyName, GrailsDomainClass referencedDomainClass) {
+        String getterName = GrailsClassUtils.getGetterName(propertyName);
+
+        try {
+            Method m = target.getClass().getDeclaredMethod(getterName, EMPTY_CLASS_ARRAY);
+            Object value = m.invoke(target, null);
+            if(value != null && referencedDomainClass != null) {
+                String identifierGetter = GrailsClassUtils.getGetterName(referencedDomainClass.getIdentifier().getName());
+                m = value.getClass().getDeclaredMethod(identifierGetter, EMPTY_CLASS_ARRAY);
+                return (Serializable)m.invoke(value, null);
+            }
+        } catch (NoSuchMethodException e) {
+           // ignore
+        } catch (IllegalAccessException e) {
+           // ignore
+        } catch (InvocationTargetException e) {
+            // ignore
+        }
+        return null;
+    }
 
     /**
      * Configures the relationships between domain classes after they have been all loaded.

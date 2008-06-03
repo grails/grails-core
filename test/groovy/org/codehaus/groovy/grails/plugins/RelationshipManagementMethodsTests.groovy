@@ -1,7 +1,6 @@
-package org.codehaus.groovy.grails.orm.hibernate;
+package org.codehaus.groovy.grails.plugins;
 
-import org.codehaus.groovy.grails.commons.*
-import org.codehaus.groovy.grails.commons.test.*
+import org.codehaus.groovy.grails.orm.hibernate.AbstractGrailsHibernateTests
 
 class RelationshipManagementMethodsTests extends AbstractGrailsHibernateTests {
 

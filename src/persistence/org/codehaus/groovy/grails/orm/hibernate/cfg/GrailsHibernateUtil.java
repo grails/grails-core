@@ -19,7 +19,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.commons.metaclass.DynamicMethods;
 import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator;
@@ -35,10 +34,7 @@ import org.springframework.beans.SimpleTypeConverter;
 import org.springframework.context.ApplicationContext;
 
 import java.beans.IntrospectionException;
-import java.io.Serializable;
-import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -64,29 +60,6 @@ public class GrailsHibernateUtil {
     public static final String ORDER_ASC = "asc";
     public static final String ARGUMENT_FETCH = "fetch";
     public static final String ARGUMENT_IGNORE_CASE = "ignoreCase";
-    private static final Class[] EMPTY_CLASS_ARRAY = new Class[0];
-
-
-    public static Serializable getAssociationIdentifier(Object target, String propertyName, GrailsDomainClass referencedDomainClass) {
-        String getterName = GrailsClassUtils.getGetterName(propertyName);
-
-        try {
-            Method m = target.getClass().getDeclaredMethod(getterName, EMPTY_CLASS_ARRAY);
-            Object value = m.invoke(target, null);
-            if(value != null && referencedDomainClass != null) {
-                String identifierGetter = GrailsClassUtils.getGetterName(referencedDomainClass.getIdentifier().getName());
-                m = value.getClass().getDeclaredMethod(identifierGetter, EMPTY_CLASS_ARRAY);
-                return (Serializable)m.invoke(value, null);
-            }
-        } catch (NoSuchMethodException e) {
-           // ignore
-        } catch (IllegalAccessException e) {
-           // ignore
-        } catch (InvocationTargetException e) {
-            // ignore
-        }
-        return null;
-    }
 
     public static void configureDynamicMethods(SessionFactory sessionFactory, GrailsApplication application) {
         LOG.trace("Configuring dynamic methods");

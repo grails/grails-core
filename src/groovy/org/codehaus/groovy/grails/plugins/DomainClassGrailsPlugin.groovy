@@ -16,18 +16,15 @@
 package org.codehaus.groovy.grails.plugins
 
 import org.codehaus.groovy.grails.validation.*
-import org.codehaus.groovy.grails.plugins.support.GrailsPluginUtils
 import org.springframework.beans.factory.config.MethodInvokingFactoryBean
-import org.springframework.aop.framework.ProxyFactoryBean
-import org.springframework.aop.target.HotSwappableTargetSource
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler
 import org.codehaus.groovy.grails.commons.GrailsDomainClass
 import org.springframework.beans.BeanUtils
 import org.springframework.validation.Errors
-import org.springframework.validation.BindException
-import org.codehaus.groovy.runtime.metaclass.ThreadManagedMetaBeanProperty    
 import org.springframework.web.context.request.RequestContextHolder as RCH
 import org.springframework.validation.BeanPropertyBindingResult
+import org.codehaus.groovy.grails.commons.GrailsClassUtils
+import org.codehaus.groovy.grails.commons.GrailsDomainConfigurationUtil
 
 /**
 * A plug-in that configures the domain classes in the spring context
@@ -119,6 +116,79 @@ class DomainClassGrailsPlugin {
                 }
             }
 
+            addRelationshipManagementMethods(dc)
         }
 	}
+
+    private addRelationshipManagementMethods(GrailsDomainClass dc) {
+        for( p in dc.persistantProperties) {
+            def prop = p
+            def metaClass = dc.metaClass
+            if(prop.oneToOne || prop.manyToOne) {
+                def identifierPropertyName = "${prop.name}Id"
+                if(!metaClass.hasProperty(dc.reference.wrappedInstance,identifierPropertyName)) {
+                    def getterName = GrailsClassUtils.getGetterName(identifierPropertyName)
+                    metaClass."$getterName" = {-> GrailsDomainConfigurationUtil.getAssociationIdentifier(delegate, prop.name, prop.referencedDomainClass) }
+                }
+            }
+            else if (prop.oneToMany || prop.manyToMany) {
+                if (metaClass instanceof ExpandoMetaClass) {
+                    def propertyName = prop.name
+                    def collectionName = propertyName.size() == 1 ? propertyName.toUpperCase() : "${propertyName[0].toUpperCase()}${propertyName[1..-1]}"
+                    def otherDomainClass = prop.referencedDomainClass
+
+                    metaClass."addTo${collectionName}" = {Object arg ->
+                        Object obj
+                        if (delegate[prop.name] == null) {
+                            delegate[prop.name] = GrailsClassUtils.createConcreteCollection(prop.type)
+                        }
+                        if (arg instanceof Map) {
+                            obj = otherDomainClass.newInstance()
+                            obj.properties = arg
+                            delegate[prop.name].add(obj)
+                        }
+                        else if (otherDomainClass.clazz.isInstance(arg)) {
+                            obj = arg
+                            delegate[prop.name].add(obj)
+                        }
+                        else {
+                            throw new MissingMethodException("addTo${collectionName}", dc.clazz, [arg] as Object[])
+                        }
+                        if (prop.bidirectional) {
+                            if (prop.manyToMany) {
+                                String name = prop.otherSide.name
+                                if (!obj[name]) {
+                                    obj[name] = GrailsClassUtils.createConcreteCollection(prop.otherSide.type)
+                                }
+                                obj[prop.otherSide.name].add(delegate)
+                            }
+                            else {
+                                obj[prop.otherSide.name] = delegate
+                            }
+                        }
+                        delegate
+                    }
+                    metaClass."removeFrom${collectionName}" = {Object arg ->
+                        if (otherDomainClass.clazz.isInstance(arg)) {
+                            delegate[prop.name]?.remove(arg)
+                            if (prop.bidirectional) {
+                                if (prop.manyToMany) {
+                                    String name = prop.otherSide.name
+                                    arg[name]?.remove(delegate)
+                                }
+                                else {
+                                    arg[prop.otherSide.name] = null
+                                }
+                            }
+                        }
+                        else {
+                            throw new MissingMethodException("removeFrom${collectionName}", dc.clazz, [arg] as Object[])
+                        }
+                        delegate
+                    }
+                }
+            }
+        }
+
+    }
 }
