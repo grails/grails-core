@@ -17,10 +17,6 @@ import org.dom4j.Attribute;
 import org.dom4j.Document;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
-import org.dom4j.XPath;
-import org.dom4j.xpath.DefaultXPath;
-
-import org.springframework.web.servlet.support.RequestContextUtils as RCU;
 
 /**
  * Tests for the FormTagLib.groovy file which contains tags to help with the
@@ -33,7 +29,6 @@ public class FormTagLib3Tests extends AbstractGrailsTagTests {
 
     /** The name used for the datePicker tags created in the test cases. */
     private static final String DATE_PICKER_TAG_NAME = "testDatePicker";
-    private static final def SELECT_TAG_NAME = "testSelect";
 
     private static final Collection DATE_PRECISIONS_INCLUDING_MINUTE = Collections.unmodifiableCollection(Arrays.asList( ["minute", null] as String[] ))
     private static final Collection DATE_PRECISIONS_INCLUDING_HOUR = Collections.unmodifiableCollection(Arrays.asList(["hour", "minute",null] as String[] ))
@@ -135,195 +130,6 @@ public class FormTagLib3Tests extends AbstractGrailsTagTests {
            }
        }
 
-
-    public void testSelectTag() {
-    	final StringWriter sw = new StringWriter();
-    	final PrintWriter pw = new PrintWriter(sw);
-
-        def range = 1..10
-
-    	withTag("select", pw) { tag ->
-	    	// use sorted map to be able to predict the order in which tag attributes are generated
-    		def attributes = new TreeMap([name: SELECT_TAG_NAME, from: range ])
-    		tag.call(attributes)
-    	}
-
-        def doc = DocumentHelper.parseText( sw.toString() )
-        assertNotNull( doc)
-
-        range.each() {
-            assertSelectFieldPresentWithValue( doc, SELECT_TAG_NAME, it.toString() )
-        }
-
-    	sw = new StringWriter();
-    	pw = new PrintWriter(sw);
-
-        def sel = '5'
-
-    	withTag("select", pw) { tag ->
-	    	// use sorted map to be able to predict the order in which tag attributes are generated
-    		def attributes = new TreeMap([name: SELECT_TAG_NAME, value: sel, from: range ])
-    		tag.call(attributes)
-    	}
-
-
-        doc = DocumentHelper.parseText( sw.toString() )
-        assertNotNull( doc)
-
-        range.each() {
-            if (it != sel) {
-                assertSelectFieldPresentWithValue( doc, SELECT_TAG_NAME, it.toString() )
-            } else {
-                assertSelectFieldPresentWithSelectedValue( doc, SELECT_TAG_NAME, it.toString() )
-            }
-        }
-
-
-    }
-
-    public void testSelectTagWithNoSelectionSet() {
-    	final StringWriter sw = new StringWriter();
-    	final PrintWriter pw = new PrintWriter(sw);
-
-        def range = ['a', 'b', 'c', 'd', 'e']
-
-    	withTag("select", pw) { tag ->
-	    	// use sorted map to be able to predict the order in which tag attributes are generated
-    		def attributes = new TreeMap([name: SELECT_TAG_NAME, noSelection:['?':'NONE'], from: range ])
-    		tag.call(attributes)
-    	}
-
-
-        println "SELECT = $sw"
-
-        def xml = new XmlSlurper().parseText(sw.toString())
-
-        assertEquals "testSelect", xml.@name?.toString()
-        assertEquals "testSelect", xml.@id?.toString()
-        assertEquals "NONE", xml.option[0].text()
-        assertEquals "?", xml.option[0].@value.toString()
-
-        range.eachWithIndex { e, i ->
-            assertEquals e, xml.option[i+1].text()
-            assertEquals e, xml.option[i+1].@value.toString()
-        }
-
-
-    	sw = new StringWriter();
-    	pw = new PrintWriter(sw);
-
-    	withTag("select", pw) { tag ->
-	    	// use sorted map to be able to predict the order in which tag attributes are generated
-    		def attributes = new TreeMap([name: SELECT_TAG_NAME, value: '', noSelection:['':'NONE'], from: range ])
-    		tag.call(attributes)
-    	}
-
-
-        def doc = DocumentHelper.parseText( sw.toString() )
-        assertNotNull( doc)
-
-        assertSelectFieldPresentWithSelectedValue( doc, SELECT_TAG_NAME, '')
-        range.each() {
-            assertSelectFieldPresentWithValue( doc, SELECT_TAG_NAME, it.toString() )
-        }
-
-
-    }
-    
-    public void testSelectTagWithValueMessagePrefixSet() {
-    	final StringWriter sw = new StringWriter();
-    	final PrintWriter pw = new PrintWriter(sw);
-
-        def categoryMap = ['M':'Mystery' , 'T':'Thriller', 'F':'Fantasy']
-        def categoryList = categoryMap.keySet()
-        
-    	def valueMessagePrefix = "book.category"
-
-		// test without messages set; value will be used as text
-
-    	withTag("select", pw) { tag ->
-	    	// use sorted map to be able to predict the order in which tag attributes are generated
-    		def attributes = new TreeMap([name: SELECT_TAG_NAME, valueMessagePrefix: valueMessagePrefix, from: categoryList])
-    		tag.call(attributes)
-    	}
-
-        def doc = DocumentHelper.parseText( sw.toString() )
-        assertNotNull( doc )
-
-		// assert select field uses value for both the value as the text (as there is no text found within messages)
-        categoryMap.each() { value, text ->
-	        assertSelectFieldPresentWithValueAndText( doc, SELECT_TAG_NAME, value, value )
-        }
-        
-        
-        // test with messages set
-        
-        categoryMap.each() { value, text ->
-        	messageSource.addMessage(valueMessagePrefix + "." + value, RCU.getLocale(request), text)
-        }
-        
-        sw = new StringWriter();
-    	pw = new PrintWriter(sw);
-
-    	withTag("select", pw) { tag ->
-	    	// use sorted map to be able to predict the order in which tag attributes are generated
-    		def attributes = new TreeMap([name: SELECT_TAG_NAME, valueMessagePrefix: valueMessagePrefix, from: categoryList])
-    		tag.call(attributes)
-    	}
-
-        doc = DocumentHelper.parseText( sw.toString() )
-        assertNotNull( doc )
-
-		// assert select field uses value and text
-        categoryMap.each() { value, text ->
-            assertSelectFieldPresentWithValueAndText( doc, SELECT_TAG_NAME, value, text )
-        }
-
-
-    }
-
-    public void testMultipleSelect() {
-    	final StringWriter sw = new StringWriter();
-    	final PrintWriter pw = new PrintWriter(sw);
-
-        def categories = [
-                new Expando(code: 'M', label: 'Mystery'),
-                new Expando(code: 'T', label: 'Thriller'),
-                new Expando(code: 'F', label: 'Fantasy'),
-                new Expando(code: 'SF', label: 'Science Fiction'),
-                new Expando(code: 'C', label: 'Crime') ]
-        def selected = [ 'T', 'C']
-
-        // Execute the tag.
-        withTag("select", pw) { tag ->
-	    	// use sorted map to be able to predict the order in which tag attributes are generated
-    		def attributes = new TreeMap(
-                    name: SELECT_TAG_NAME,
-                    from: categories,
-                    value: selected,
-                    optionKey: 'code',
-                    optionValue: 'label')
-            tag.call(attributes)
-    	}
-
-        def doc = DocumentHelper.parseText( sw.toString() )
-        assertNotNull( doc )
-
-        // Make sure that the "multiple" attribute is there.
-        XPath xpath = new DefaultXPath("//select[@name='" + SELECT_TAG_NAME + "']/@multiple");
-        assertEquals("multiple", xpath.valueOf(doc));
-
-        // assert select field uses value for both the value as the text (as there is no text found within messages)
-        categories.each() { cat ->
-            if (selected.contains(cat)) {
-                assertSelectFieldPresentWithSelectedValueAndText( doc, SELECT_TAG_NAME, cat.code, cat.label )
-            }
-            else {
-                assertSelectFieldPresentWithValueAndText( doc, SELECT_TAG_NAME, cat.code, cat.label )
-            }
-        }
-    }
-
     public void testCheckboxTag() {
         def template = '<g:checkBox name="foo" value="${test}"/>'
 
@@ -388,32 +194,4 @@ public class FormTagLib3Tests extends AbstractGrailsTagTests {
     	
     	}
     }
-
-    private void assertSelectFieldPresentWithSelectedValue(Document document, String fieldName, String value) {
-        XPath xpath = new DefaultXPath("//select[@name='" + fieldName + "']/option[@selected='selected' and @value='" + value + "']");
-        assertTrue(xpath.booleanValueOf(document));
-    }
-
-    private void assertSelectFieldPresentWithValue(Document document, String fieldName, String value) {
-        XPath xpath = new DefaultXPath("//select[@name='" + fieldName + "']/option[@value='" + value + "']");
-        assertTrue(xpath.booleanValueOf(document));
-    }
-
-    private void assertSelectFieldPresentWithValueAndText(Document document, String fieldName, String value, String label) {
-        XPath xpath = new DefaultXPath("//select[@name='" + fieldName + "']/option[@value='" + value + "' and text()='"+label+"']");
-        assertTrue(xpath.booleanValueOf(document));
-    }
-
-    private void assertSelectFieldPresentWithSelectedValueAndText(Document document, String fieldName, String value, String label) {
-        XPath xpath = new DefaultXPath("//select[@name='" + fieldName + "']/option[@selected='selected' and @value='" + value + "' and text()='"+label+"']");
-        assertTrue(xpath.booleanValueOf(document));
-    }
-
-    private void assertSelectFieldNotPresent(Document document, String fieldName) {
-        XPath xpath = new DefaultXPath("//select[@name='" + fieldName + "']");
-        assertFalse(xpath.booleanValueOf(document));
-    }
-    
-
 }
-
