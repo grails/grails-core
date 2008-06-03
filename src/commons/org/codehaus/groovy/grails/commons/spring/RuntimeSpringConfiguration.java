@@ -201,4 +201,12 @@ public interface RuntimeSpringConfiguration {
      * @param beanName The bean
      */
     void addAlias(String alias, String beanName);
+
+    /**
+     * Obtains a BeanDefinition instance for the given beanName
+     *
+     * @param beanName The beanName
+     * @return The BeanDefinition or null if it doesn't exit
+     */
+    BeanDefinition getBeanDefinition(String beanName);
 }

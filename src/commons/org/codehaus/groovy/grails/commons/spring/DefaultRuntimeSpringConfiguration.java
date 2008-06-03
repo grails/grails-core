@@ -306,4 +306,8 @@ public class DefaultRuntimeSpringConfiguration implements
         }
         beanAliases.add(alias);
     }
+
+    public BeanDefinition getBeanDefinition(String beanName) {
+        return (BeanDefinition) this.beanDefinitions.get(beanName);
+    }
 }

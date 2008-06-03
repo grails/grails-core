@@ -410,7 +410,7 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
         }
     }
 
-    private static volatile boolean springGroovyResourcesLoaded = false;
+    private static volatile BeanBuilder springGroovyResourcesBeanBuilder = null;
 
     /**
      * Attempt to load the beans defined by a BeanBuilder DSL closure in "resources.groovy"
@@ -423,7 +423,7 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
 
                                                     GenericApplicationContext context) {
         
-        if(!springGroovyResourcesLoaded) {
+        if(springGroovyResourcesBeanBuilder == null) {
             try {
                 Class groovySpringResourcesClass = null;
                 try {
@@ -433,20 +433,36 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
                     // ignore
                 }
                 if (groovySpringResourcesClass != null) {
-                    final BeanBuilder bb = new BeanBuilder(Thread.currentThread().getContextClassLoader());
-                    bb.setSpringConfig(config);
+                    springGroovyResourcesBeanBuilder = new BeanBuilder(Thread.currentThread().getContextClassLoader());
+                    springGroovyResourcesBeanBuilder.setSpringConfig(config);
                     Script script = (Script) groovySpringResourcesClass.newInstance();
                     script.run();
                     Object beans = script.getProperty("beans");
-                    bb.beans((Closure) beans);
-                    if (context != null) {
-                        bb.registerBeans(context);
-                    }
+                    springGroovyResourcesBeanBuilder.beans((Closure) beans);
                 }
             } catch (Exception ex) {
                 LOG.warn("[RuntimeConfiguration] Unable to perform load beans from resources.groovy", ex);
             }
-            springGroovyResourcesLoaded = true;
+
+        }
+        else {
+            RuntimeSpringConfiguration existingSpringConfig = springGroovyResourcesBeanBuilder.getSpringConfig();
+            List beanNames = existingSpringConfig.getBeanNames();
+            for (Iterator i = beanNames.iterator(); i.hasNext();) {
+                String beanName = i.next().toString();
+                BeanConfiguration beanConfig = existingSpringConfig.getBeanConfig(beanName);
+                if(beanConfig!= null) {
+                    config.addBeanConfiguration(beanName, beanConfig);
+                }
+                else {
+                    BeanDefinition definition = existingSpringConfig.getBeanDefinition(beanName);
+                    if(definition!=null)
+                        config.addBeanDefinition(beanName, definition);
+                }
+            }
+        }
+        if (context != null) {
+            springGroovyResourcesBeanBuilder.registerBeans(context);
         }
 
     }
