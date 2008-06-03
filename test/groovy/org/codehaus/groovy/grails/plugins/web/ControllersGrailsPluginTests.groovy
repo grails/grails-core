@@ -1,10 +1,5 @@
 package org.codehaus.groovy.grails.plugins.web
 
-import org.codehaus.groovy.grails.commons.test.*
-import org.codehaus.groovy.grails.commons.*
-import org.codehaus.groovy.grails.commons.spring.*
-import org.codehaus.groovy.grails.plugins.*
-import org.codehaus.groovy.grails.web.plugins.*
 import grails.spring.BeanBuilder
 import org.springframework.core.io.FileSystemResource
 
