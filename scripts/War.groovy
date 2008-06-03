@@ -75,7 +75,6 @@ DEFAULT_DEPS = [
     "commons-validator-*.jar",
     "commons-fileupload-*.jar",
     "commons-io-*.jar",
-    "commons-io-*.jar",
     "*oro-*.jar",
     "jaxen-*.jar",
     "xercesImpl.jar",
@@ -111,7 +110,7 @@ target (war: "The implementation target") {
             // Find out whether WAR name is an absolute file path or a
             // relative one.
             def warFile = new File(warName)
-            if (!warFile.absolute) {
+            if(!warFile.absolute) {
                 // It's a relative path, so adjust it for 'basedir'.
                 warFile = new File(basedir, warFile.path)
                 warName = warFile.canonicalPath
@@ -123,9 +122,10 @@ target (war: "The implementation target") {
         else {
             def fileName = grailsAppName	
             def version = Ant.antProject.properties.'app.version'
-            if (version) {
+            if(version) {
                 version = '-'+version
-            } else {
+            }
+            else {
                 version = ''
             }
             warName = "${basedir}/${fileName}${version}.war"
@@ -133,7 +133,17 @@ target (war: "The implementation target") {
         Ant.mkdir(dir:stagingDir)
 
 		Ant.copy(todir:stagingDir, overwrite:true) {
-			fileset(dir:"${basedir}/web-app", includes:"**") 
+            // Allow the application to override the step that copies
+            // 'web-app' to the staging directory.
+            if(config.grails.war.copyToWebApp instanceof Closure) {
+				def callable = config.grails.war.copyToWebApp
+				callable.delegate = delegate
+				callable.resolveStrategy = Closure.DELEGATE_FIRST
+				callable(args)
+			}
+			else {
+			    fileset(dir:"${basedir}/web-app", includes:"**")
+            }
 		}       
 		Ant.copy(todir:"${stagingDir}/WEB-INF/grails-app", overwrite:true) {
 			fileset(dir:"${basedir}/grails-app", includes:"views/**")
@@ -147,8 +157,6 @@ target (war: "The implementation target") {
 				exclude(name:"spring/*")
 			}
         }
-
-
 
         Ant.mkdir(dir:"${stagingDir}/WEB-INF/spring")
         Ant.copy(todir:"${stagingDir}/WEB-INF/spring") {
@@ -222,18 +230,24 @@ target (war: "The implementation target") {
 		Ant.replace(file:"${stagingDir}/WEB-INF/applicationContext.xml",
 				token:"classpath*:", value:"" )
 				
-	    if(config.grails.war.resources) {
-			def callable = config.grails.war.resources
+	    if(config.grails.war.resources instanceof Closure) {
+			Closure callable = config.grails.war.resources
 			callable.delegate = Ant
 			callable.resolveStrategy = Closure.DELEGATE_FIRST
-			callable(stagingDir)
-		}
+
+            if(callable.maximumNumberOfParameters == 1) {
+                callable(stagingDir)
+            }
+            else {
+                callable(stagingDir, args)
+            }
+        }
 
 		warPlugins()
 		createDescriptor()
-    	event("WarStart", ["Creating WAR ${warName}"])		
+    	event("WarStart", [warName])
 		Ant.jar(destfile:warName, basedir:stagingDir)
-    	event("WarEnd", ["Created WAR ${warName}"])				
+    	event("WarEnd", [warName])
 	}   
 	finally {
 		cleanUpAfterWar()

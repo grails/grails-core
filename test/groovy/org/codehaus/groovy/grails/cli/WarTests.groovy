@@ -61,6 +61,35 @@ class WarTests  extends AbstractCliTests {
         }
     }
 
+    void testCustomCopyStep() {
+        createTestApp()
+
+        // Add the 'grails.war.copyToWebApp' configuration option to
+        // the test application's Config.
+        new File("${appBase}/testapp/grails-app/conf", "Config.groovy") << """
+grails.war.copyToWebApp = {
+    fileset(dir: "web-app") {
+        include(name: "css/main.css")
+        include(name: "js/application.js")
+    }
+    fileset(dir: ".", includes: "dummy.txt")
+}
+"""
+        // Create the dummy file that is included in the copy.
+        new File("$appBase/testapp/dummy.txt").createNewFile()
+
+        // Run the war script and do the standard checks.
+        gantRun( ["-f", "scripts/War.groovy"] as String[])
+
+        def unzippedFile = checkWarFile(warName)
+
+        // Check that the dummy file was copied across, but none of the
+        // unspecified files in "web-app".
+        assertTrue new File(unzippedFile, "dummy.txt").exists()
+        assertFalse new File(unzippedFile, "images").exists()
+        assertFalse new File(unzippedFile, "index.gsp").exists()
+    }
+
     void testArtefactDescriptor() {
         def appDir = createTestApp()
 
@@ -141,7 +170,7 @@ class Item {
      * Checks that the WAR file with the given filename exists in the
      * expected location and contains all the required files.
      */
-    void checkWarFile(String warPath) {
+    File checkWarFile(String warPath) {
         // First check that the WAR file exists.
         def warFile = new File(warPath)
         if (!warFile.absolute) {
@@ -155,12 +184,16 @@ class Item {
         // Now unpack the WAR and check that the critical files that
         // must be there actually are.
         ant.unzip(src:warFile.path, dest:"${appBase}/unzipped")
-		assert new File("${appBase}/unzipped/WEB-INF/applicationContext.xml").exists()
-		assert new File("${appBase}/unzipped/WEB-INF/sitemesh.xml").exists()
-		assert new File("${appBase}/unzipped/WEB-INF/grails.xml").exists()
-		assert new File("${appBase}/unzipped/WEB-INF/web.xml").exists()
-		assert new File("${appBase}/unzipped/css/main.css").exists()
-		assert new File("${appBase}/unzipped/js/application.js").exists()
-		assert new File("${appBase}/unzipped/WEB-INF/grails-app/i18n/messages.properties").exists()
+
+        def unzippedDir = new File("$appBase/unzipped")
+        assert new File(unzippedDir, "WEB-INF/applicationContext.xml").exists()
+		assert new File(unzippedDir, "WEB-INF/sitemesh.xml").exists()
+		assert new File(unzippedDir, "WEB-INF/grails.xml").exists()
+		assert new File(unzippedDir, "WEB-INF/web.xml").exists()
+		assert new File(unzippedDir, "css/main.css").exists()
+		assert new File(unzippedDir, "js/application.js").exists()
+		assert new File(unzippedDir, "WEB-INF/grails-app/i18n/messages.properties").exists()
+
+        return unzippedDir
     }
 }
