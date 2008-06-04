@@ -167,6 +167,11 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
     }
     
     void tearDown() {
+        // Clear the page cache in the template engine since it's
+        // static and likely to cause tests to interfere with each
+        // other.
+        appCtx.groovyPagesTemplateEngine.clearPageCache()
+
         RequestContextHolder.setRequestAttributes(null)
 		GroovySystem.metaClassRegistry.setMetaClassCreationHandle(originalHandler);
     	
