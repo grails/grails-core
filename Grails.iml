@@ -22,9 +22,9 @@
     </facet>
   </component>
   <component name="NewModuleRootManager" LANGUAGE_LEVEL="JDK_1_5" inherit-compiler-output="false">
-    <output url="file://$MODULE_DIR$/target/classes" />
+    <output url="file://$MODULE_DIR$/idea-target/classes" />
     <exclude-output />
-    <output-test url="file://$MODULE_DIR$/target/test-classes" />
+    <output-test url="file://$MODULE_DIR$/idea-target/test-classes" />
     <content url="file://$MODULE_DIR$">
       <sourceFolder url="file://$MODULE_DIR$/src/commons" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/groovy" isTestSource="false" />
@@ -45,19 +45,6 @@
       <excludeFolder url="file://$MODULE_DIR$/sandbox" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
       <excludeFolder url="file://$MODULE_DIR$/tmp" />
-    </content>
-    <content url="file://$MODULE_DIR$/test/cliTestApp/testapp">
-      <sourceFolder url="file://$MODULE_DIR$/test/cliTestApp/testapp/grails-app/conf" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/test/cliTestApp/testapp/grails-app/conf/hibernate" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/test/cliTestApp/testapp/grails-app/controllers" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/test/cliTestApp/testapp/grails-app/domain" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/test/cliTestApp/testapp/grails-app/services" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/test/cliTestApp/testapp/grails-app/taglib" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/test/cliTestApp/testapp/grails-app/views" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/test/cliTestApp/testapp/src/groovy" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/test/cliTestApp/testapp/src/java" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/test/cliTestApp/testapp/test/integration" isTestSource="true" />
-      <sourceFolder url="file://$MODULE_DIR$/test/cliTestApp/testapp/test/unit" isTestSource="true" />
     </content>
     <orderEntry type="library" name="GROOVY" level="application" />
     <orderEntry type="inheritedJdk" />
@@ -118,8 +105,8 @@
     <orderEntry type="module-library">
       <library name="Groovy">
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/gant-1.1.0_groovy-1.5.2.jar!/" />
           <root url="jar://$MODULE_DIR$/lib/groovy-all-1.5.4.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/groovy-all-1.5.6.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES>

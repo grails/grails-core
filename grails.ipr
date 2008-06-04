@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project relativePaths="false" version="4">
+<project relativePaths="true" version="4">
   <component name="AntConfiguration">
     <defaultAnt bundledAnt="true" />
     <buildFile url="file://$PROJECT_DIR$/build.xml">
@@ -13,6 +13,13 @@
       <executeOn event="beforeRun" target="jar" runConfigurationType="JUnit" runConfigurationName="Grails Test Case" />
       <executeOn event="beforeRun" target="jar" runConfigurationType="JUnit" runConfigurationName="GroovyPageResourceLoaderTests" />
       <executeOn event="beforeRun" target="jar" runConfigurationType="JUnit" runConfigurationName="PluginMetaManagerTests" />
+    </buildFile>
+    <buildFile url="file://$PROJECT_DIR$/../grails-doc/build.xml">
+      <additionalClassPath />
+      <antReference projectDefault="true" />
+      <customJdkName value="" />
+      <maximumHeapSize value="128" />
+      <properties />
     </buildFile>
   </component>
   <component name="BuildJarProjectSettings">
@@ -151,14 +158,7 @@
       </facet-type>
       <facet-type id="Grails">
         <modules>
-          <module name="Grails">
-            <files>
-              <file url="file://$PROJECT_DIR$/test/cliTestApp/testapp/grails-app/conf/BootStrap.groovy" />
-              <file url="file://$PROJECT_DIR$/test/cliTestApp/testapp/grails-app/conf/Config.groovy" />
-              <file url="file://$PROJECT_DIR$/test/cliTestApp/testapp/grails-app/conf/DataSource.groovy" />
-              <file url="file://$PROJECT_DIR$/test/cliTestApp/testapp/grails-app/conf/UrlMappings.groovy" />
-            </files>
-          </module>
+          <module name="Grails" />
         </modules>
       </facet-type>
       <facet-type id="Spring">
@@ -349,10 +349,12 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/Grails.iml" filepath="$PROJECT_DIR$/Grails.iml" />
-      <module fileurl="file:///Developer/grails-dev/doc/Grails Docs.iml" filepath="/Developer/grails-dev/doc/Grails Docs.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../grails-doc/Grails Docs.iml" filepath="$PROJECT_DIR$/../grails-doc/Grails Docs.iml" />
     </modules>
   </component>
-  <component name="ProjectRootManager" version="2" assert-keyword="true" jdk-15="false" project-jdk-name="1.5" project-jdk-type="JavaSDK" />
+  <component name="ProjectRootManager" version="2" assert-keyword="true" jdk-15="false" project-jdk-name="1.5" project-jdk-type="JavaSDK">
+    <output url="file://$PROJECT_DIR$/idea" />
+  </component>
   <component name="ResourceManagerContainer">
     <option name="myResourceBundles">
       <value>
@@ -445,12 +447,11 @@
     </library>
     <library name="Spring">
       <CLASSES>
-        <root url="jar://$PROJECT_DIR$/lib/springmodules-sandbox.jar!/" />
         <root url="jar://$PROJECT_DIR$/lib/spring-test.jar!/" />
         <root url="jar://$PROJECT_DIR$/lib/spring-webmvc.jar!/" />
         <root url="jar://$PROJECT_DIR$/lib/spring-webflow-2.0-m1.jar!/" />
         <root url="jar://$PROJECT_DIR$/lib/spring-binding-2.0-m1.jar!/" />
-        <root url="jar://$PROJECT_DIR$/lib/spring-2.5.1.jar!/" />
+        <root url="jar://$PROJECT_DIR$/lib/spring-2.5.4.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES>
@@ -458,9 +459,10 @@
         <root url="file:///Developer/spring-webflow-2.0-m1/projects/spring-webflow/src/main" />
         <root url="file:///Developer/spring-webflow-2.0-m1/projects/spring-webflow/src/main/java" />
         <root url="file:///Developer/spring-webflow-2.0-m1/projects/spring-binding/src/main/java" />
-        <root url="file:///Developer/spring-framework-2.5.1/src" />
-        <root url="file:///Developer/spring-framework-2.5.1/mock" />
-        <root url="file:///Developer/spring-framework-2.5.1/tiger/src" />
+        <root url="file://$PROJECT_DIR$/../../libs/spring-framework-2.5.4/src" />
+        <root url="file://$PROJECT_DIR$/../../libs/spring-framework-2.5.4/mock" />
+        <root url="file://$PROJECT_DIR$/../../libs/spring-framework-2.5.4/tiger/mock" />
+        <root url="file://$PROJECT_DIR$/../../libs/spring-framework-2.5.4/tiger/src" />
       </SOURCES>
     </library>
     <library name="dom4j">
