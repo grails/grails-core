@@ -14,7 +14,6 @@
  */
 package org.codehaus.groovy.grails.support;
 
-import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 
 import java.util.HashMap;
@@ -50,7 +49,7 @@ public class MockStringResourceLoader extends MockResourceLoader {
      * @param contents The contents of the resource
      */
     public void registerMockResource(String location, String contents) {
-        this.mockResources.put(location, new ByteArrayResource(contents.getBytes(), location));
+        this.mockResources.put(location, new GrailsByteArrayResource(contents.getBytes(), location));
     }
 
     /**
@@ -61,6 +60,6 @@ public class MockStringResourceLoader extends MockResourceLoader {
      * @param contents The contents of the resource
      */
     public void registerMockResource(String location, byte[] contents) {
-        this.mockResources.put(location, new ByteArrayResource(contents, location));
+        this.mockResources.put(location, new GrailsByteArrayResource(contents, location));
     }
 }

@@ -91,7 +91,10 @@ public class GrailsWebApplicationContext extends GrailsApplicationContext
 		return namespace;
 	}
 
-	public void setConfigLocations(String[] configLocations) {
+    public void setConfigLocation(String s) {
+    }
+
+    public void setConfigLocations(String[] configLocations) {
 	}
 
     public String[] getConfigLocations() {

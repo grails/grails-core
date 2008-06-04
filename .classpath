@@ -11,7 +11,7 @@
 	<classpathentry kind="src" output="target/eclipse/test-output" path="test/persistence"/>
 	<classpathentry kind="src" output="target/eclipse/test-output" path="test/scaffolding"/>
 	<classpathentry kind="lib" path="lib/hibernate3.jar" sourcepath="/HIBERNATE_HOME/src"/>
-	<classpathentry kind="lib" path="lib/spring-2.5.1.jar" sourcepath="/SPRING_HOME/src"/>
+	<classpathentry kind="lib" path="lib/spring-2.5.4.jar" sourcepath="/SPRING_HOME/src"/>
     <classpathentry kind="lib" path="lib/spring-webmvc.jar" sourcepath="/SPRING_HOME/src"/>
     <classpathentry kind="lib" path="lib/spring-test.jar" sourcepath="/SPRING_HOME/mock"/>
 	<classpathentry kind="lib" path="lib/ant-junit.jar"/>

@@ -84,7 +84,11 @@ public class MockApplicationContext extends GroovyObjectSupport implements WebAp
 		throw new UnsupportedOperationException("Method not supported by implementation");
 	}
 
-	public String getDisplayName() {
+    public String getId() {
+        return "MockApplicationContext";
+    }
+
+    public String getDisplayName() {
 		throw new UnsupportedOperationException("Method not supported by implementation");
 	}
 
