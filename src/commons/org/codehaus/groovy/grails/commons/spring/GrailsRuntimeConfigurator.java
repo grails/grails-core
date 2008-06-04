@@ -495,4 +495,11 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.parent = applicationContext;
     }
+
+    /**
+     * Resets the GrailsRumtimeConfigurator
+     */
+    public void reset() {
+        springGroovyResourcesBeanBuilder = null;
+    }
 }

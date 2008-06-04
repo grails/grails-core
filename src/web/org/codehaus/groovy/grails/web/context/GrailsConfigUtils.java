@@ -95,6 +95,7 @@ public class GrailsConfigUtils {
                 configurator.setPluginManager(pluginManager);
             }            
         }
+
         servletContext.setAttribute(ApplicationAttributes.PLUGIN_MANAGER, configurator.getPluginManager());
         // use config file locations if available
         servletContext.setAttribute(ApplicationAttributes.PARENT_APPLICATION_CONTEXT,parent);
@@ -105,7 +106,8 @@ public class GrailsConfigUtils {
 
         // return a context that obeys grails' settings
 	    WebApplicationContext webContext = configurator.configure( servletContext );
-	    configurator.getPluginManager().setApplicationContext(webContext);
+        configurator.reset();
+        configurator.getPluginManager().setApplicationContext(webContext);
 	    servletContext.setAttribute(ApplicationAttributes.APPLICATION_CONTEXT,webContext );
         servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, webContext);
         LOG.info("[GrailsContextLoader] Grails application loaded.");
