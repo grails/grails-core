@@ -106,7 +106,6 @@ public class GrailsConfigUtils {
 
         // return a context that obeys grails' settings
 	    WebApplicationContext webContext = configurator.configure( servletContext );
-        configurator.reset();
         configurator.getPluginManager().setApplicationContext(webContext);
 	    servletContext.setAttribute(ApplicationAttributes.APPLICATION_CONTEXT,webContext );
         servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, webContext);
