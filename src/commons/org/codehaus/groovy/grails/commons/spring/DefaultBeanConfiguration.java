@@ -202,18 +202,16 @@ public class DefaultBeanConfiguration extends GroovyObjectSupport implements Bea
             else {
                 bd = new ChildBeanDefinition(parentName,clazz,cav, null);
             }
-            bd.setSingleton(singleton);
 		}
 		else {
             if(parentName == null) {
-                bd = new RootBeanDefinition(clazz,singleton);
+                bd = new RootBeanDefinition(clazz);
             }
             else {
                 bd = new ChildBeanDefinition(parentName,clazz, null,null);
-                bd.setSingleton(singleton);
             }
-
 		}
+        bd.setScope(singleton ? AbstractBeanDefinition.SCOPE_SINGLETON : AbstractBeanDefinition.SCOPE_PROTOTYPE);
 		wrapper = new BeanWrapperImpl(bd);
 		return bd;
 	}
