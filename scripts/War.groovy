@@ -59,6 +59,7 @@ DEFAULT_DEPS = [
     "cglib-*.jar",
     "dom4j-*.jar",
     "oscache-*.jar",
+    "ehcache-*.jar",
     "junit-*.jar",
     "commons-logging-*.jar",
     "sitemesh-*.jar",
