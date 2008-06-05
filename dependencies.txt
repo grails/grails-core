@@ -75,8 +75,8 @@ The following libraries are included in Grails because they are required either 
 - EJB 3.0 Final Release
 - required for running Grails applications (When using Hibernate EJB3 annotations)
 
-* ehcache-1.4.1.jar
-- EHCache 1.4.1 (http://ehcache.sourceforge.net/) Apache 2.0 License
+* ehcache-1.3.0.jar
+- EHCache 1.3.0 (http://ehcache.sourceforge.net/) Apache 2.0 License
 - required if you want to use EHCache as your second-level cache
 - optional otherwise
 
