@@ -38,6 +38,27 @@ class SelectTagTests extends AbstractGrailsTagTests {
         assertOutputContains('<option value="3" selected="selected" >3</option>', template)
     }
 
+    void testSelectWithCustomOptionKeyAndValue() {
+
+        def list = [new SelectTestObject(id:1L, name:"Foo"),new SelectTestObject(id:2L, name:"Bar")]
+
+        def template = '<g:select optionKey="id" optionValue="name" name="foo" from="${objList}" value="2" />'
+        assertOutputContains('<option value="2" selected="selected" >Bar</option>', template,[objList:list])
+        assertOutputContains('<option value="1" >Foo</option>', template,[objList:list])
+
+    }
+
+    void testSelectWithCustomOptionKeyAndValueAsClosure() {
+        def list = [new SelectTestObject(id:1L, name:"Foo"),new SelectTestObject(id:2L, name:"Bar")]
+
+        def template = '<g:select optionKey="id" optionValue="${{it.name?.toUpperCase()}}" name="foo" from="${objList}" value="2" />'
+
+        
+        assertOutputContains('<option value="2" selected="selected" >BAR</option>', template,[objList:list])
+        assertOutputContains('<option value="1" >FOO</option>', template,[objList:list])
+
+    }
+
     void testSelectTag() {
     	final StringWriter sw = new StringWriter();
     	final PrintWriter pw = new PrintWriter(sw);
@@ -250,4 +271,8 @@ class SelectTagTests extends AbstractGrailsTagTests {
         XPath xpath = new DefaultXPath("//select[@name='" + fieldName + "']");
         assertFalse(xpath.booleanValueOf(document));
     }
+}
+class SelectTestObject {
+    Long id
+    String name
 }
