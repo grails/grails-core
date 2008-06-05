@@ -361,4 +361,57 @@ class OneToOneTest2 {
 			assertTrue(persistantProperties[i].isPersistent());
 		}
 	}
+
+/*
+    public void testManyToManyInSubclass() throws Exception {
+        this.gcl.parseClass('''
+class Bookmark {
+    Long id;
+    Long version;
+    Set tags
+
+    static hasMany = ["tags" : Tag]
+    static belongsTo = [Tag]
+}
+
+class BookmarkSubclass extends Bookmark {
+    Long id;
+    Long version;
+}
+
+class Tag {
+    Long id;
+    Long version;
+    Set bookmarks
+
+    static hasMany = ["bookmarks": Bookmark]
+}
+''')
+        def ga = new DefaultGrailsApplication(gcl.loadedClasses, gcl)
+        ga.initialise()
+
+
+        def bookmarkClass = ga.getDomainClass("Bookmark")
+        def bookmarkSubclassClass = ga.getDomainClass("BookmarkSubclass")
+        def tagClass = ga.getDomainClass("Tag")
+
+        GrailsDomainClassProperty tagBookmarks = tagClass.getPropertyByName("bookmarks")
+        GrailsDomainClassProperty bookmarkTags = bookmarkClass.getPropertyByName("tags")
+        GrailsDomainClassProperty bookmarkSubclassTags = bookmarkSubclassClass.getPropertyByName("tags")
+
+        assertNotNull "Property 'bookmarks' should exist in Tag class", tagBookmarks
+        assertNotNull "Property 'tags' should exist in Bookmark class", bookmarkTags
+        assertNotNull "Property 'tags' should exist in BookmarkSubclass class", bookmarkSubclassTags
+
+        assertEquals "Property 'bookmarks' of class Tag should relate to property 'tags' of class Bookmark", tagBookmarks.otherSide, bookmarkTags
+        assertEquals "Property 'tags' of class Bookmark should relate to property 'bookmarks' of class Tag", bookmarkTags.otherSide, tagBookmarks
+        assertEquals "Property 'tags' of class BookmarkSubclass should relate to property 'bookmarks' of class Tag",  bookmarkSubclassTags.otherSide, tagBookmarks
+
+        assertEquals "Inherited property 'tags' in class Bookmark should be the same as parent property in class Bookmark", bookmarkSubclassTags, bookmarkTags
+
+        assertTrue "Property 'bookmarks' of class Tag should have type many-to-many", tagBookmarks.isManyToMany()
+        assertTrue "Property 'tags' of class Bookmark should have type many-to-many", bookmarkTags.isManyToMany()
+        assertTrue "Property 'tags' of class BookmarkSubclass should have type many-to-many", bookmarkSubclassTags.isManyToMany()
+    }
+*/
 }
