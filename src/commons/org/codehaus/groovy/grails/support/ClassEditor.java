@@ -15,7 +15,9 @@
  */ 
 package org.codehaus.groovy.grails.support;
 
+
 import java.beans.PropertyEditorSupport;
+import org.springframework.util.ClassUtils;
 
 /**
  * 
@@ -27,6 +29,7 @@ public class ClassEditor extends PropertyEditorSupport {
 
 	private ClassLoader classLoader = null;
 	
+
 	public ClassEditor() {
 		super();
 	}
@@ -45,9 +48,17 @@ public class ClassEditor extends PropertyEditorSupport {
 	
 	public void setAsText(String className) throws IllegalArgumentException {
 		try {
-			setValue(this.classLoader.loadClass(className));
+
+                        Class clazz = ClassUtils.resolvePrimitiveClassName(className);
+ 	                if (clazz != null) {
+ 	                        setValue(clazz);
+ 	                } 
+                        else {
+			    setValue(this.classLoader.loadClass(className));
+                        }
 		} catch (ClassNotFoundException e) {
 			throw new IllegalArgumentException("Could not load class [" + className + "]!");
 		}
 	}
+
 }
