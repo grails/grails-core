@@ -73,7 +73,28 @@ class RelationshipManagementMethodsTests extends AbstractGrailsHibernateTests {
         assert !tag.bookmarks.contains(bookmark)
 
     }
+/*
+	void testSubclassWithManyToManyRelationship() {
+	    def bookmarkClass = ga.getDomainClass("BookmarkSubclass")
+	    def tagClass = ga.getDomainClass("Tag")
 
+        def bookmark = bookmarkClass.newInstance()
+        bookmark.url='http://www.ru'
+
+        def tag = tagClass.newInstance()
+        tag.name = "foo"
+
+        bookmark.addToTags(tag)
+
+        assert bookmark.tags.contains(tag)
+        assert tag.bookmarks.contains(bookmark)
+
+        bookmark.removeFromTags(tag)
+        assert !bookmark.tags.contains(tag)
+        assert !tag.bookmarks.contains(bookmark)
+
+    }
+*/
 
 	void onSetUp() {
 
@@ -99,6 +120,8 @@ class Bookmark {
     Set tags = new HashSet()
     static hasMany = [tags:Tag]
     static belongsTo = [Tag]
+}
+class BookmarkSubclass extends Bookmark {
 }
 class Tag {
 	Long id
