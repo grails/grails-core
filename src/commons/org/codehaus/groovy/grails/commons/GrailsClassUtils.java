@@ -217,6 +217,31 @@ public class GrailsClassUtils {
     }
 
     /**
+     * Retrieves all the properties of the given class which are assignable to the given type
+     *
+     * @param clazz             The class to retrieve the properties from
+     * @param propertySuperType The type of the properties you wish to retrieve
+     * @return An array of PropertyDescriptor instances
+     */
+    public static PropertyDescriptor[] getPropertiesAssignableToType(Class clazz, Class propertySuperType) {
+        if (clazz == null || propertySuperType == null) return new PropertyDescriptor[0];
+
+        Set properties = new HashSet();
+        try {
+            PropertyDescriptor[] descriptors = BeanUtils.getPropertyDescriptors(clazz);
+
+            for (int i = 0; i < descriptors.length; i++) {
+                if (propertySuperType.isAssignableFrom(descriptors[i].getPropertyType())) {
+                    properties.add(descriptors[i]);
+                }
+            }
+        } catch (Exception e) {
+            return new PropertyDescriptor[0];
+        }
+        return (PropertyDescriptor[]) properties.toArray(new PropertyDescriptor[properties.size()]);
+    }
+
+    /**
      * Retrieves a property of the given class of the specified name and type
      * @param clazz The class to retrieve the property from
      * @param propertyName The name of the property

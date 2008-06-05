@@ -269,60 +269,70 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
                 Map relatedClassRelationships = GrailsDomainConfigurationUtil.getAssociationMap(relatedClassType);
                 Class relatedClassPropertyType = null;
 
-                // if the related type has a relationships map it may be a many-to-many
-                // figure out if there is a many-to-many relationship defined
-                if(	isRelationshipManyToMany(property, relatedClassType, relatedClassRelationships)) {
+                // First check whether there is an explicit relationship
+                // mapping for this property (as provided by "mappedBy").
+                String mappingProperty = (String)this.mappedBy.get(property.getName());
+                if(!StringUtils.isBlank(mappingProperty)) {
+                    // First find the specified property on the related
+                    // class, if it exists.
+                    PropertyDescriptor pd = findProperty(GrailsClassUtils.getPropertiesOfType(relatedClassType, getClazz()), mappingProperty);
 
-                    String relatedClassPropertyName = null;
-                    // retrieve the relationship property
-                    for(Iterator i = relatedClassRelationships.keySet().iterator();i.hasNext();) {
-                        String currentKey = (String)i.next();
-                        Class currentClass = (Class) relatedClassRelationships.get( currentKey );
-                        if(currentClass.getName().equals(  getClazz().getName() )) {
-                            relatedClassPropertyName = currentKey;
-                            break;
+                    // If a property of the required type does not exist,
+                    // search for any collection properties on the related
+                    // class.
+                    if(pd == null) pd = findProperty(GrailsClassUtils.getPropertiesAssignableToType(relatedClassType, Collection.class), mappingProperty);
+
+                    // We've run out of options. The given "mappedBy"
+                    // setting is invalid.
+                    if(pd == null)
+                        throw new GrailsDomainException("Non-existent mapping property ["+mappingProperty+"] specified for property ["+property.getName()+"] in class ["+getClazz()+"]");
+
+                    // Tie the properties together.
+                    relatedClassPropertyType = pd.getPropertyType();
+                    property.setReferencePropertyName(pd.getName());
+                }
+                else {
+                    // if the related type has a relationships map it may be a many-to-many
+                    // figure out if there is a many-to-many relationship defined
+                    if(	isRelationshipManyToMany(property, relatedClassType, relatedClassRelationships)) {
+                        String relatedClassPropertyName = null;
+                        // retrieve the relationship property
+                        for(Iterator i = relatedClassRelationships.keySet().iterator();i.hasNext();) {
+                            String currentKey = (String)i.next();
+                            Class currentClass = (Class) relatedClassRelationships.get( currentKey );
+                            if(currentClass.isAssignableFrom(getClazz())) {
+                                relatedClassPropertyName = currentKey;
+                                break;
+                            }
+                        }
+
+                        // if there is one defined get the type
+                        if(relatedClassPropertyName != null) {
+                            relatedClassPropertyType = GrailsClassUtils.getPropertyType( relatedClassType, relatedClassPropertyName);
                         }
                     }
+                    // otherwise figure out if there is a one-to-many relationship by retrieving any properties that are of the related type
+                    // if there is more than one property then (for the moment) ignore the relationship
+                    if(relatedClassPropertyType == null) {
+                        PropertyDescriptor[] descriptors = GrailsClassUtils.getPropertiesOfType(relatedClassType, getClazz());
 
-                    // if there is one defined get the type
-                    if(relatedClassPropertyName != null) {
-                        relatedClassPropertyType = GrailsClassUtils.getPropertyType( relatedClassType, relatedClassPropertyName);
-                    }
-                }
-                // otherwise figure out if there is a one-to-many relationship by retrieving any properties that are of the related type
-                // if there is more than one property then (for the moment) ignore the relationship
-                if(relatedClassPropertyType == null) {
-                    PropertyDescriptor[] descriptors = GrailsClassUtils.getPropertiesOfType(relatedClassType, getClazz());
+                        if(descriptors.length == 1) {
+                            relatedClassPropertyType = descriptors[0].getPropertyType();
+                            property.setReferencePropertyName(descriptors[0].getName());
+                        }
+                        else if(descriptors.length > 1) {
+                            // try now to use the class name by convention
+                            String classPropertyName = getPropertyName();
+                            PropertyDescriptor pd = findProperty(descriptors, classPropertyName);
+                            if(pd == null) {
+                                throw new GrailsDomainException("Property ["+property.getName()+"] in class ["+getClazz()+"] is a bidirectional one-to-many with two possible properties on the inverse side. "+
+                                        "Either name one of the properties on other side of the relationship ["+classPropertyName+"] or use the 'mappedBy' static to define the property " +
+                                        "that the relationship is mapped with. Example: static mappedBy = ["+property.getName()+":'myprop']");
 
-                    if(descriptors.length == 1) {
-                        relatedClassPropertyType = descriptors[0].getPropertyType();
-                        property.setReferencePropertyName(descriptors[0].getName());
-                    }
-                    else if(descriptors.length > 1) {
-                    	// if there is more than one related property type then we need to check if there is a mappedBy property. If
-                    	// there isn't then try find if there is one matching the class name by convention otherwise throw helpful exception
-                    	String mappingProperty = (String)this.mappedBy.get(property.getName());
-                    	if(!StringUtils.isBlank(mappingProperty)) {
-                        	PropertyDescriptor pd = findProperty(descriptors, mappingProperty);
-                        	if(pd == null)
-                        		throw new GrailsDomainException("Non-existent mapping property ["+mappingProperty+"] specified for property ["+property.getName()+"] in class ["+getClazz()+"]");
-                        	relatedClassPropertyType = pd.getPropertyType();
-                        	property.setReferencePropertyName(pd.getName());
-                    	}
-                    	else {
-                    		// try now to use the class name by convention
-                    		String classPropertyName = getPropertyName();
-                        	PropertyDescriptor pd = findProperty(descriptors, classPropertyName);
-                        	if(pd == null) {
-                        		throw new GrailsDomainException("Property ["+property.getName()+"] in class ["+getClazz()+"] is a bidirectional one-to-many with two possible properties on the inverse side. "+
-										"Either name one of the properties on other side of the relationship ["+classPropertyName+"] or use the 'mappedBy' static to define the property " +
-										"that the relationship is mapped with. Example: static mappedBy = ["+property.getName()+":'myprop']");
-
-                        	}
-                        	relatedClassPropertyType = pd.getPropertyType();
-                        	property.setReferencePropertyName(pd.getName());
-                    	}
-
+                            }
+                            relatedClassPropertyType = pd.getPropertyType();
+                            property.setReferencePropertyName(pd.getName());
+                        }
                     }
                 }
 

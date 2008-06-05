@@ -362,7 +362,6 @@ class OneToOneTest2 {
 		}
 	}
 
-/*
     public void testManyToManyInSubclass() throws Exception {
         this.gcl.parseClass('''
 class Bookmark {
@@ -413,5 +412,4 @@ class Tag {
         assertTrue "Property 'tags' of class Bookmark should have type many-to-many", bookmarkTags.isManyToMany()
         assertTrue "Property 'tags' of class BookmarkSubclass should have type many-to-many", bookmarkSubclassTags.isManyToMany()
     }
-*/
 }

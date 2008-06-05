@@ -73,7 +73,7 @@ class RelationshipManagementMethodsTests extends AbstractGrailsHibernateTests {
         assert !tag.bookmarks.contains(bookmark)
 
     }
-/*
+
 	void testSubclassWithManyToManyRelationship() {
 	    def bookmarkClass = ga.getDomainClass("BookmarkSubclass")
 	    def tagClass = ga.getDomainClass("Tag")
@@ -94,7 +94,6 @@ class RelationshipManagementMethodsTests extends AbstractGrailsHibernateTests {
         assert !tag.bookmarks.contains(bookmark)
 
     }
-*/
 
 	void onSetUp() {
 
