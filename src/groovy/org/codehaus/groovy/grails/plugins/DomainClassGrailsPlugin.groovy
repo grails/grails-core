@@ -25,6 +25,7 @@ import org.springframework.web.context.request.RequestContextHolder as RCH
 import org.springframework.validation.BeanPropertyBindingResult
 import org.codehaus.groovy.grails.commons.GrailsClassUtils
 import org.codehaus.groovy.grails.commons.GrailsDomainConfigurationUtil
+import org.springframework.context.ApplicationContext
 
 /**
 * A plug-in that configures the domain classes in the spring context
@@ -70,60 +71,69 @@ class DomainClassGrailsPlugin {
             MetaClass metaClass = domainClass.metaClass
 
             metaClass.ident = {-> delegate[domainClass.identifier.name] }
-            metaClass.'static'.getConstraints = {->    
-                domainClass.constrainedProperties
-            }
-            metaClass.getConstraints = {->
-                domainClass.constrainedProperties
-            }
-            
+
             metaClass.'static'.create = {-> BeanUtils.instantiateClass(domainClass.getClazz()) }
-            metaClass.hasErrors = {-> delegate.errors?.hasErrors() }
-			metaClass.getErrors = {->      
-				def request = RCH.getRequestAttributes()?.request
-				def errors
-				def storage = request ? request : PROPERTY_INSTANCE_MAP.get()
-				def key = "org.codehaus.groovy.grails.ERRORS_${delegate.class.name}_${System.identityHashCode(delegate)}"
-				errors = storage[key]
-				if(!errors) {
-					errors =  new BeanPropertyBindingResult( delegate, delegate.getClass().getName())
-					storage[key] = errors
-				}					
-				errors
-		   	}                                                                                                          
-			metaClass.setErrors = { Errors errors -> 
-				def request = RCH.getRequestAttributes()?.request
-				def storage = request ? request : PROPERTY_INSTANCE_MAP.get()
-				def key = "org.codehaus.groovy.grails.ERRORS_${delegate.class.name}_${System.identityHashCode(delegate)}"
-				storage[key] = errors
-		    }
-            metaClass.clearErrors = {->
-                delegate.setErrors (new BeanPropertyBindingResult(delegate, delegate.getClass().getName()))
-            }
-            if (!metaClass.respondsTo(dc.getReference(), "validate")) {
-                metaClass.validate = {->
-                    def localErrors = new org.springframework.validation.BeanPropertyBindingResult(delegate, delegate.class.name)
-                    for (prop in constraints.values()) {
-                        prop.messageSource = ctx.getBean("messageSource")
-                        prop.validate(delegate, delegate.getProperty(prop.getPropertyName()), localErrors);
-                    }
 
-                    if (localErrors.hasErrors()) {
-                        delegate.errors.addAllErrors(localErrors)
-                    }
-
-                    !delegate.errors.hasErrors()
-                }
-            }
-
+            addValidationMethods(dc, ctx)
             addRelationshipManagementMethods(dc)
         }
 	}
 
+    private addValidationMethods(GrailsDomainClass dc, ApplicationContext ctx) {
+        def metaClass = dc.metaClass
+        def domainClass = dc
+
+        metaClass.'static'.getConstraints = {->
+            domainClass.constrainedProperties
+        }
+
+        metaClass.getConstraints = {->
+            domainClass.constrainedProperties
+        }
+
+        metaClass.hasErrors = {-> delegate.errors?.hasErrors() }
+        metaClass.getErrors = {->
+            def request = RCH.getRequestAttributes()?.request
+            def errors
+            def storage = request ? request : PROPERTY_INSTANCE_MAP.get()
+            def key = "org.codehaus.groovy.grails.ERRORS_${delegate.class.name}_${System.identityHashCode(delegate)}"
+            errors = storage[key]
+            if(!errors) {
+                errors =  new BeanPropertyBindingResult( delegate, delegate.getClass().getName())
+                storage[key] = errors
+            }
+            errors
+           }
+        metaClass.setErrors = { Errors errors ->
+            def request = RCH.getRequestAttributes()?.request
+            def storage = request ? request : PROPERTY_INSTANCE_MAP.get()
+            def key = "org.codehaus.groovy.grails.ERRORS_${delegate.class.name}_${System.identityHashCode(delegate)}"
+            storage[key] = errors
+        }
+        metaClass.clearErrors = {->
+            delegate.setErrors (new BeanPropertyBindingResult(delegate, delegate.getClass().getName()))
+        }
+        if (!metaClass.respondsTo(dc.getReference(), "validate")) {
+            metaClass.validate = {->
+                def localErrors = new org.springframework.validation.BeanPropertyBindingResult(delegate, delegate.class.name)
+                for (prop in constraints.values()) {
+                    prop.messageSource = ctx.getBean("messageSource")
+                    prop.validate(delegate, delegate.getProperty(prop.getPropertyName()), localErrors);
+                }
+
+                if (localErrors.hasErrors()) {
+                    delegate.errors.addAllErrors(localErrors)
+                }
+
+                !delegate.errors.hasErrors()
+            }
+        }
+    }
+
     private addRelationshipManagementMethods(GrailsDomainClass dc) {
-        for( p in dc.persistantProperties) {
+        def metaClass = dc.metaClass
+        for(p in dc.persistantProperties) {
             def prop = p
-            def metaClass = dc.metaClass
             if(prop.oneToOne || prop.manyToOne) {
                 def identifierPropertyName = "${prop.name}Id"
                 if(!metaClass.hasProperty(dc.reference.wrappedInstance,identifierPropertyName)) {
@@ -160,6 +170,7 @@ class DomainClassGrailsPlugin {
                                 if (!obj[name]) {
                                     obj[name] = GrailsClassUtils.createConcreteCollection(prop.otherSide.type)
                                 }
+                                println "$obj - ${obj.properties} - ${prop.otherSide.name}"
                                 obj[prop.otherSide.name].add(delegate)
                             }
                             else {
