@@ -34,11 +34,9 @@ class MyBean {
   Long version
   Integer someIntProperty
   Integer someOtherIntProperty
-  Date someDatetime
   static constraints = {
     someIntProperty(min:1, nullable:true)
     someOtherIntProperty(max:99)
-    someDatetime(nullable:true)
   }
 }
 class Author {
