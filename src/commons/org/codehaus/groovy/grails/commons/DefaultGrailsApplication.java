@@ -435,10 +435,10 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
                 log.debug("Cound not find data source class [" + DATA_SOURCE_CLASS + "]. This may be what you are expecting, but will result in Grails loading with an in-memory database");
                 // ignore
             }
+            if (c == null) c = new ConfigObject();
+            ConfigurationHelper.initConfig(c,null, getClassLoader());
+            ConfigurationHolder.setConfig(c);
         }
-        if (c == null) c = new ConfigObject();
-        ConfigurationHelper.initConfig(c,null, getClassLoader());        
-        ConfigurationHolder.setConfig(c);
         return c;
     }
 
