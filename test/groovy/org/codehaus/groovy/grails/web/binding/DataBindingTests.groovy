@@ -11,6 +11,7 @@
 package org.codehaus.groovy.grails.web.binding
 
 import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
+import java.text.SimpleDateFormat
 
 class DataBindingTests extends AbstractGrailsControllerTests {
 
@@ -33,9 +34,11 @@ class MyBean {
   Long version
   Integer someIntProperty
   Integer someOtherIntProperty
+  Date someDatetime
   static constraints = {
     someIntProperty(min:1, nullable:true)
     someOtherIntProperty(max:99)
+    someDatetime(nullable:true)
   }
 }
 class Author {

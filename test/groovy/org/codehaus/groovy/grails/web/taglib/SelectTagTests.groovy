@@ -16,6 +16,17 @@ import org.springframework.web.servlet.support.RequestContextUtils as RCU;
 class SelectTagTests extends AbstractGrailsTagTests {
     private static final def SELECT_TAG_NAME = "testSelect";
 
+    void testSelectUsesExpressionForDisable() {
+        def template = '<g:set var="flag" value="${true}"/><g:select disabled="${flag}" name="foo" id="foo" from="[1,2,3]" />'
+        assertOutputContains('disabled="disabled"', template)
+        template = '<g:set var="flag" value="${false}"/><g:select disabled="${flag}" name="foo" id="foo" from="[1,2,3]" />'
+        assertOutputContains('<select name="foo" id="foo" >', template)
+        template = '<g:select disabled="true" name="foo" id="foo" from="[1,2,3]" />'
+        assertOutputContains('disabled="disabled"', template)
+        template = '<g:select disabled="false" name="foo" id="foo" from="[1,2,3]" />'
+        assertOutputContains('<select name="foo" id="foo" >', template)
+    }
+
     void testSelectWithBigDecimal() {
         def template = '<g:set var="value" value="${2.4}"/><g:select name="foo" from="[1,2,3]" value="${value}" />'
         assertOutputContains('<option value="2" selected="selected" >2</option>', template)

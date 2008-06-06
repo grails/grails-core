@@ -92,6 +92,10 @@ class FormTagLib {
         attrs.id = attrs.id ? attrs.id : attrs.name
         def value = attrs.remove('value')
         def name = attrs.remove('name')
+        def disabled = attrs.remove('disabled')
+        if (disabled && Boolean.valueOf(disabled)) {
+            attrs.disabled = 'disabled'
+        }
 
         // Deal with the "checked" attribute. If it doesn't exist, we
         // default to a value of "true", otherwise we use Groovy Truth
@@ -564,6 +568,10 @@ class FormTagLib {
         if (noSelection != null) {
             noSelection = noSelection.entrySet().iterator().next()
         }
+        def disabled = attrs.remove('disabled')
+        if (disabled && Boolean.valueOf(disabled)) {
+            attrs.disabled = 'disabled'
+        }
 
         writer << "<select name=\"${attrs.remove('name')}\" "
         // process remaining attributes
@@ -668,6 +676,10 @@ class FormTagLib {
         def value = attrs.remove('value')
         attrs.id = attrs.id ? attrs.id : attrs.name
         def name = attrs.remove('name')
+        def disabled = attrs.remove('disabled')
+        if (disabled && Boolean.valueOf(disabled)) {
+            attrs.disabled = 'disabled'
+        }
         def checked = (attrs.remove('checked') ? true : false)
         out << '<input type="radio" '
         out << "name=\"${name}\" "

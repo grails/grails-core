@@ -73,6 +73,17 @@ public class FormTagLib3Tests extends AbstractGrailsTagTests {
     	}
     }
 
+    void testRadioUsesExpressionForDisable() {
+        def template = '<g:set var="flag" value="${true}"/><g:radio disabled="${flag}" name="foo" value="bar" />'
+        assertOutputContains('disabled="disabled"', template)
+        template = '<g:set var="flag" value="${false}"/><g:radio disabled="${flag}" name="foo" value="bar" />'
+        assertOutputContains('<input type="radio" name="foo" value="bar"', template)
+        template = '<g:radio disabled="true" name="foo" value="bar" />'
+        assertOutputContains('disabled="disabled"', template)
+        template = '<g:radio disabled="false" name="foo" value="bar" />'
+        assertOutputContains('<input type="radio" name="foo" value="bar"', template)
+    }
+
     public void testRadioGroupTagWithLabels() {
            StringWriter sw = new StringWriter();
            PrintWriter pw = new PrintWriter(sw);
@@ -150,6 +161,17 @@ public class FormTagLib3Tests extends AbstractGrailsTagTests {
         template = '<g:checkBox name="foo.bar" value="${test}" checked="${null}"/>'
 
         assertOutputEquals('<input type="hidden" name="foo._bar" /><input type="checkbox" name="foo.bar" value="hello" id="foo.bar"  />', template, [test:"hello"])
+    }
+
+    void testCheckBoxUsesExpressionForDisable() {
+        def template = '<g:set var="flag" value="${true}"/><g:checkBox disabled="${flag}" name="foo"/>'
+        assertOutputContains('disabled="disabled"', template)
+        template = '<g:set var="flag" value="${false}"/><g:checkBox disabled="${flag}" name="foo"/>'
+        assertOutputContains('<input type="checkbox" name="foo" id="foo"', template)
+        template = '<g:checkBox disabled="true" name="foo"/>'
+        assertOutputContains('disabled="disabled"', template)
+        template = '<g:checkBox disabled="false" name="foo"/>'
+        assertOutputContains('<input type="checkbox" name="foo" id="foo"', template)
     }
 
     void testRenderingNoSelectionOption() {
