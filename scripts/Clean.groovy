@@ -32,6 +32,7 @@ includeTargets << new File ( "${grailsHome}/scripts/Package.groovy" )
 
 target ('default': "Cleans a Grails project") {
 	clean()
+	cleanTestReports()
 }   
 
 target ( clean: "Implementation of clean") {
@@ -42,15 +43,17 @@ target ( clean: "Implementation of clean") {
 
 target ( cleanCompiledSources : "Cleans compiled Java and Groovy sources") {
 	def webInf = "${basedir}/web-app/WEB-INF"
-	Ant.delete(dir:"${webInf}/classes")		
-	Ant.delete(dir:"${basedir}/test/reports", failonerror:false)		
+	Ant.delete(dir:"${webInf}/classes")
 	Ant.delete(file:webXmlFile.absolutePath, failonerror:false)
 	Ant.delete(dir:"${webInf}/lib")
 	Ant.delete(dir:classesDirPath)
 	Ant.delete(dir:resourcesDirPath)
-	Ant.delete(dir:testDirPath)
-}   
+    Ant.delete(dir:testDirPath)
+}
 
+target ( cleanTestReports:"Cleans the test reports") {
+	Ant.delete(dir:"${basedir}/test/reports", failonerror:false)    
+}
 target (cleanGrailsApp : "Cleans the Grails application sources") {
 	def appDir = "${basedir}/web-app/WEB-INF/grails-app"
 	Ant.delete(dir:appDir)
