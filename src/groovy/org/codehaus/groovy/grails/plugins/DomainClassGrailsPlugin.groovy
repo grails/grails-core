@@ -170,7 +170,6 @@ class DomainClassGrailsPlugin {
                                 if (!obj[name]) {
                                     obj[name] = GrailsClassUtils.createConcreteCollection(prop.otherSide.type)
                                 }
-                                println "$obj - ${obj.properties} - ${prop.otherSide.name}"
                                 obj[prop.otherSide.name].add(delegate)
                             }
                             else {
