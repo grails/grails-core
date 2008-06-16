@@ -14,7 +14,7 @@ includeTargets << new File ( "${grailsHome}/scripts/Init.groovy" )
 includeTargets << new File ( "${grailsHome}/scripts/PackagePlugin.groovy" )
   
 pluginSVN = "https://svn.codehaus.org/grails-plugins"
-//pluginSVN = "file:///Developer/localsvn" 
+//pluginSVN = "file:///Developer/localsvn"
 authManager = null	      
 message = null    
 trunk = null    
@@ -108,7 +108,7 @@ This command will perform the following steps to release your plug-in into Grail
 * Tag the release
 
 NOTE: This command will not add new resources for you, if you have additional sources to add please run 'svn add' before running this command.
-NOTE: Make sure you have updated the version number if you *GrailsPlugin.groovy descriptor.                                                   
+NOTE: Make sure you have updated the version number in your *GrailsPlugin.groovy descriptor.                                                   
 
 Are you sure you wish to proceed?
 """) 
@@ -177,60 +177,48 @@ Future changes should be made to the SVN controlled sources!"""])
 }                      
 
 target(tagPluginRelease:"Tags a plugin-in with the LATEST_RELEASE tag and version tag within the /tags area of SVN") {
-	
 
 	copyClient = new SVNCopyClient((ISVNAuthenticationManager)authManager, null)
 	commitClient = new SVNCommitClient((ISVNAuthenticationManager)authManager, null)
 	
-	if(!message) askForMessage()                                    	
+	if(!message) askForMessage()
 	
 	println "Tagging release. Please wait..."
 
 	tags = SVNURL.parseURIDecoded("${remoteLocation}/tags")
 	latest = SVNURL.parseURIDecoded(latestRelease)
-	release = SVNURL.parseURIDecoded(versionedRelease)               
-		
-    try {  commitClient.doMkDir([tags] as SVNURL[], message)}	                       
+	release = SVNURL.parseURIDecoded(versionedRelease)
+
+    try {  commitClient.doMkDir([tags] as SVNURL[], message)}
 	catch(SVNException e) {
 		// ok - already exists
 	}
-	try { commitClient.doDelete([latest] as SVNURL[], message)	}                                                                                                      
-	catch(SVNException e) {  
+	try { commitClient.doDelete([latest] as SVNURL[], message)	}
+	catch(SVNException e) {
 	  // ok - already exists
 	}
-	try { commitClient.doDelete([release] as SVNURL[], message)	}                                                                                                      
-	catch(SVNException e) {  
+	try { commitClient.doDelete([release] as SVNURL[], message)	}
+	catch(SVNException e) {
 	  // ok - already exists
-	}	
-	try { commitClient.doMkDir([latest] as SVNURL[], message)	}	
-	catch(SVNException e) {
-	   // ok - already exists 
-	}
-	try { commitClient.doMkDir([release] as SVNURL[], message)	}	
-	catch(SVNException e) {
-	   // ok - already exists 
-	}
-	
+    }
 
 	repository = SVNRepositoryFactory.create( trunk )
 	//repository.setAuthenticationManager( authManager )
-	 
-	// we need to get a list of SVNURL entries to copy into the tags/LATEST_RELEASE directory
-	def entries = []
-	def root = repository.getDir("",-1,false	, entries)
-	def urls = entries.collect { it.URL }  
-	
-	def commit          
-	println "Tagging latest release, please wait..."	
-	urls.each { url -> commit = copyClient.doCopy(url,SVNRevision.HEAD,latest, false, false, message ) }
-	println "Copied trunk to ${latestRelease} with revision ${commit.newRevision} on ${commit.date}"
-	
-	println "Tagging version release, please wait..."			
-	urls.each { url -> commit = copyClient.doCopy(url,SVNRevision.HEAD,release, false, false, message ) }	
-	println "Copied trunk to ${versionedRelease} with revision ${commit.newRevision} on ${commit.date}"    	
-}  
+
+	def commit
+
+    // First tag this release with the version number.
+    println "Tagging version release, please wait..."
+    commit = copyClient.doCopy(trunk, SVNRevision.HEAD, release, false, false, message )
+    println "Copied trunk to ${versionedRelease} with revision ${commit.newRevision} on ${commit.date}"
+
+    // And now make it the latest release.
+    println "Tagging latest release, please wait..."
+    commit = copyClient.doCopy(release, SVNRevision.HEAD, latest, false, false, message )
+    println "Copied trunk to ${latestRelease} with revision ${commit.newRevision} on ${commit.date}"
+}
 
 target(askForMessage:"Asks for the users commit message") {
 	Ant.input(message:"Enter a SVN commit message:", addproperty:"commit.message")
- 	message = Ant.antProject.properties."commit.message"	
+ 	message = Ant.antProject.properties."commit.message"
 }
