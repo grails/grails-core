@@ -54,7 +54,7 @@ import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine
 * @author Graeme Rocher
 * @since 0.4
 */
-class relControllersGrailsPlugin {
+class ControllersGrailsPlugin {
 
     def watchedResources = ["file:./grails-app/controllers/**/*Controller.groovy",
             "file:./plugins/*/grails-app/controllers/**/*Controller.groovy",
