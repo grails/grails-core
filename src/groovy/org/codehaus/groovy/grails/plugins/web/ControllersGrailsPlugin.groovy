@@ -54,7 +54,7 @@ import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine
 * @author Graeme Rocher
 * @since 0.4
 */
-class ControllersGrailsPlugin {
+class relControllersGrailsPlugin {
 
     def watchedResources = ["file:./grails-app/controllers/**/*Controller.groovy",
             "file:./plugins/*/grails-app/controllers/**/*Controller.groovy",
@@ -234,7 +234,7 @@ class ControllersGrailsPlugin {
                 'filter-mapping' {
                     'filter-name'('reloadFilter')
                     'servlet-name'('grails')
-                    'dispatcher'('FORWARD')
+                    'url-pattern'("/*")
                 }
 
                 'filter-mapping' {
