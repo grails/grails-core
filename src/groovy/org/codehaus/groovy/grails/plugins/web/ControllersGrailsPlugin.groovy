@@ -223,24 +223,13 @@ class ControllersGrailsPlugin {
                 // changes to artefacts and views while the app is
                 // running.
                 //
-                // Note that no normal URIs map to the main Grails
-                // servlet, so it's not possible to simply map the
-                // filter to the servlet (the URL mappings filter
-                // forwards the request to the servlet).
-                //
-                // The thing to note here is that we are assuming the
-                // development environment is running in a container
-                // that supports the 2.4 servlet spec.
+                // All URLs are filtered, including any images, JS, CSS,
+                // etc. Fortunately the reload filter now has much less
+                // of an impact on reponse times.
                 'filter-mapping' {
                     'filter-name'('reloadFilter')
-                    'servlet-name'('grails')
                     'url-pattern'("/*")
                 }
-
-                'filter-mapping' {
-                     'filter-name'('reloadFilter')
-                     'servlet-name'('gsp')
-                 }
             }
         }
         if (charEncodingFilterMapping) {
