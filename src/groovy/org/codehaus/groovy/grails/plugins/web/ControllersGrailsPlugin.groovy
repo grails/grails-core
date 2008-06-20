@@ -225,7 +225,7 @@ class ControllersGrailsPlugin {
                 //
                 // All URLs are filtered, including any images, JS, CSS,
                 // etc. Fortunately the reload filter now has much less
-                // of an impact on reponse times.
+                // of an impact on response times.
                 'filter-mapping' {
                     'filter-name'('reloadFilter')
                     'url-pattern'("/*")
