@@ -224,7 +224,7 @@ class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants 
 		def linkParams = [offset:offset - max, max:max]
 		if(params.sort) linkParams.sort = params.sort
 		if(params.order) linkParams.order = params.order
-		if(attrs.params) linkParams.putAll(attrs.params)
+        if(attrs.params) linkParams.putAll(attrs.params)
 
 		def linkTagAttrs = [action:action]
 		if(attrs.controller) {
@@ -244,7 +244,8 @@ class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants 
 		// display previous link when not on firststep
 		if(currentstep > firststep) {
 			linkTagAttrs.class = 'prevLink'
-			writer << link(linkTagAttrs.clone()) {
+            linkParams.offset = offset - max
+            writer << link(linkTagAttrs.clone()) {
 				(attrs.prev ? attrs.prev : messageSource.getMessage('paginate.prev', null, messageSource.getMessage('default.paginate.prev', null, 'Previous', locale), locale))
 			 }
 		}
