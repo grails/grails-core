@@ -71,9 +71,9 @@ class RangeConstraint extends AbstractConstraint {
 
             if(from instanceof Number && propertyValue instanceof Number) {
                 // Upgrade the numbers to Long, so all integer types can be compared.
-                from = ((Number) from).longValue();
-                to = ((Number) to).longValue();
-                propertyValue = ((Number) propertyValue).longValue();
+                from = new Long(((Number) from).longValue());
+                to = new Long(((Number) to).longValue());
+                propertyValue = new Long(((Number) propertyValue).longValue());
             }
 
             if(from.compareTo(propertyValue) > 0) {
