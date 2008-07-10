@@ -16,15 +16,15 @@ public class RangeConstraintTests extends AbstractConstraintTests {
     public void testValidation() {
         testConstraintMessageCodes(
                 getConstraint( "testInteger", new IntRange( 1, 5 )),
-                new Integer(7),
-                new String[] {"testClass.testInteger.range.error","testClass.testInteger.size.toobig"},
-                new Object[] {"testInteger",TestClass.class,new Integer(7),new Integer(1),new Integer(5)}
+                new Long(7),
+                new String[] {"testClass.testInteger.range.error","testClass.testInteger.range.toobig"},
+                new Object[] {"testInteger",TestClass.class,new Long(7),new Integer(1),new Integer(5)}
         );
 
         testConstraintMessageCodes(
                 getConstraint( "testInteger", new IntRange( 1, 5 )),
                 new Integer(0),
-                new String[] {"testClass.testInteger.range.error","testClass.testInteger.size.toosmall"},
+                new String[] {"testClass.testInteger.range.error","testClass.testInteger.range.toosmall"},
                 new Object[] {"testInteger",TestClass.class,new Integer(0),new Integer(1),new Integer(5)}
         );
 

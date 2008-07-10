@@ -66,11 +66,21 @@ class RangeConstraint extends AbstractConstraint {
         if(!this.range.contains(propertyValue)) {
             Object[] args = new Object[] { constraintPropertyName, constraintOwningClass, propertyValue, range.getFrom(), range.getTo()  };
 
-            if(range.getFrom().compareTo( propertyValue ) == 1) {
-                super.rejectValue(target,errors,ConstrainedProperty.DEFAULT_INVALID_RANGE_MESSAGE_CODE, ConstrainedProperty.SIZE_CONSTRAINT + ConstrainedProperty.TOOSMALL_SUFFIX,args );
+            Comparable from = range.getFrom();
+            Comparable to = range.getTo();
+
+            if(from instanceof Number && propertyValue instanceof Number) {
+                // Upgrade the numbers to Long, so all integer types can be compared.
+                from = ((Number) from).longValue();
+                to = ((Number) to).longValue();
+                propertyValue = ((Number) propertyValue).longValue();
             }
-            else if(range.getTo().compareTo(propertyValue) == -1) {
-                super.rejectValue(target,errors,ConstrainedProperty.DEFAULT_INVALID_RANGE_MESSAGE_CODE, ConstrainedProperty.SIZE_CONSTRAINT + ConstrainedProperty.TOOBIG_SUFFIX,args );
+
+            if(from.compareTo(propertyValue) > 0) {
+                super.rejectValue(target,errors,ConstrainedProperty.DEFAULT_INVALID_RANGE_MESSAGE_CODE, ConstrainedProperty.RANGE_CONSTRAINT + ConstrainedProperty.TOOSMALL_SUFFIX,args );
+            }
+            else if (to.compareTo(propertyValue) < 0) {
+                super.rejectValue(target,errors,ConstrainedProperty.DEFAULT_INVALID_RANGE_MESSAGE_CODE, ConstrainedProperty.RANGE_CONSTRAINT + ConstrainedProperty.TOOBIG_SUFFIX,args );
             }
         }
     }
