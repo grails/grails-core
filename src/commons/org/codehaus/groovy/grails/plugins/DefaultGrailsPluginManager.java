@@ -92,9 +92,8 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager impl
             new Class[]{Boolean.class, Byte.class, Character.class, Class.class, Double.class,Float.class, Integer.class, Long.class,
                         Number.class, Short.class, String.class, BigInteger.class, BigDecimal.class, URL.class, URI.class};
 
-
-
-
+    private final GrailsPluginChangeChecker pluginChangeScanner = new GrailsPluginChangeChecker(this);
+    private static final int SCAN_INTERVAL = 1000; //in ms
 
     private List delayedLoadPlugins = new LinkedList();
     private ApplicationContext parentCtx;
@@ -122,6 +121,7 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager impl
           //this.corePlugins = new PathMatchingResourcePatternResolver().getResources("classpath:org/codehaus/groovy/grails/**/plugins/**GrailsPlugin.groovy");
           this.application = application;
           setPluginFilter();
+          startPluginChangeScanner();
       }
 
 
@@ -149,6 +149,7 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager impl
           this.pluginResources = (Resource[])resourceList.toArray(new Resource[resourceList.size()]);
           this.application = application;
           setPluginFilter();
+          startPluginChangeScanner();
       }
 
       public DefaultGrailsPluginManager(Class[] plugins, GrailsApplication application) throws IOException {
@@ -158,6 +159,7 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager impl
           //this.corePlugins = new PathMatchingResourcePatternResolver().getResources("classpath:org/codehaus/groovy/grails/**/plugins/**GrailsPlugin.groovy");
           this.application = application;
           setPluginFilter();
+          startPluginChangeScanner();
       }
 
       public DefaultGrailsPluginManager(Resource[] pluginFiles, GrailsApplication application) {
@@ -166,12 +168,17 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager impl
           this.pluginResources = pluginFiles;
           this.application = application;
           setPluginFilter();
+          startPluginChangeScanner();
       }
       
       private void setPluginFilter() {
   		 this.pluginFilter = new PluginFilterRetriever().getPluginFilter(this.application.getConfig().toProperties());
   	  }
 
+      private void startPluginChangeScanner(){
+          this.pluginChangeScanner.start();
+          LOG.info("Started to scan for plugin changes in every " + SCAN_INTERVAL + "ms.");
+      }
 
       public void refreshPlugin(String name) {
           if(hasGrailsPlugin(name)) {
@@ -1770,4 +1777,23 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager impl
               "<!ATTLIST welcome-file-list id ID #IMPLIED>";
   }
 
+    private class GrailsPluginChangeChecker extends Thread{
+        DefaultGrailsPluginManager pluginManager;
+        boolean enabled = true;
+
+        GrailsPluginChangeChecker(DefaultGrailsPluginManager pluginManager){
+          this.pluginManager = pluginManager;
+        }
+
+        public void run(){
+            while(enabled){
+                try{      
+                    pluginManager.checkForChanges();
+                    sleep(DefaultGrailsPluginManager.SCAN_INTERVAL);
+                }catch(Exception e){
+                    LOG.error("Error occured scanning for changes: " + e.getMessage(),e);
+                }
+            }
+        }
+  }
 }

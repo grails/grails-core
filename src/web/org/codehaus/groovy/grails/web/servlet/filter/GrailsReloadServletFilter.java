@@ -23,8 +23,6 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.spring.GrailsApplicationContext;
 import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator;
-import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
-import org.codehaus.groovy.grails.plugins.PluginManagerHolder;
 import org.codehaus.groovy.grails.web.errors.GrailsWrappedRuntimeException;
 import org.codehaus.groovy.grails.web.pages.GSPResponseWriter;
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
@@ -74,20 +72,11 @@ public class GrailsReloadServletFilter extends OncePerRequestFilter {
 
         try {
             GrailsApplication application = (GrailsApplication)context.getBean(GrailsApplication.APPLICATION_ID);
-            GrailsPluginManager manager = PluginManagerHolder.getPluginManager();
-            if (manager != null) {
-                LOG.debug("Checking Plugin manager for changes..");
-
-                manager.checkForChanges();
                 if (!application.isInitialised()) {
                     application.rebuild();
                     GrailsRuntimeConfigurator config = new GrailsRuntimeConfigurator(application, parent);
                     config.reconfigure(context, getServletContext(), true);
                 }
-            }
-            else {
-                LOG.debug("Plugin manager not found, skipping change check");
-            }
         }
         catch (Exception e) {
             GrailsUtil.deepSanitize(e);
