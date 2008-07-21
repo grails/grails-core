@@ -15,6 +15,7 @@
 package org.codehaus.groovy.grails.orm.hibernate.validation;
 
 import groovy.lang.GString;
+import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.hibernate.Criteria;
@@ -27,6 +28,7 @@ import org.springframework.orm.hibernate3.HibernateTemplate;
 import org.springframework.validation.Errors;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -121,16 +123,25 @@ public class UniqueConstraint extends AbstractPersistentConstraint {
                     session.setFlushMode(FlushMode.MANUAL);
 
                     try {
-                    	Criteria criteria = session.createCriteria( constraintOwningClass )
-                    		.add( Restrictions.eq( constraintPropertyName, propertyValue ) );
-                    	if( uniquenessGroup != null ) {
-                    		for( Iterator it = uniquenessGroup.iterator(); it.hasNext(); ) {
-                    			String propertyName = (String) it.next();
-                    			criteria.add(Restrictions.eq( propertyName, 
-                    					GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(target, propertyName)));
-                    		}
-                    	}
-                        return criteria.list();
+                        boolean shouldValidate = true;
+                        if(propertyValue != null && DomainClassArtefactHandler.isDomainClass(propertyValue.getClass())) {
+                            shouldValidate = session.contains(propertyValue);
+                        }
+                        if(shouldValidate) {
+                            Criteria criteria = session.createCriteria( constraintOwningClass )
+                                    .add( Restrictions.eq( constraintPropertyName, propertyValue ) );
+                            if( uniquenessGroup != null ) {
+                                for( Iterator it = uniquenessGroup.iterator(); it.hasNext(); ) {
+                                    String propertyName = (String) it.next();
+                                    criteria.add(Restrictions.eq( propertyName,
+                                            GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(target, propertyName)));
+                                }
+                            }
+                            return criteria.list();
+                        }
+                        else {
+                            return Collections.EMPTY_LIST;
+                        }
                     } finally {
                         session.setFlushMode(FlushMode.AUTO);
                     }
