@@ -176,8 +176,11 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager impl
   	  }
 
       private void startPluginChangeScanner(){
-          this.pluginChangeScanner.start();
-          LOG.info("Started to scan for plugin changes in every " + SCAN_INTERVAL + "ms.");
+          boolean inTestSuite = System.getProperty("grails.cli.testing") != null;
+          if(!application.isWarDeployed() && GrailsUtil.isDevelopmentEnv() && !inTestSuite) {
+              this.pluginChangeScanner.start();
+              LOG.info("Started to scan for plugin changes in every " + SCAN_INTERVAL + "ms.");              
+          }
       }
 
       public void refreshPlugin(String name) {
