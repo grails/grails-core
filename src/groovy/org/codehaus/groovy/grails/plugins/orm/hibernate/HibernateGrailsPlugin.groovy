@@ -565,6 +565,7 @@ Try using Grails' default cache provider: 'org.hibernate.cache.OSCacheProvider'"
         metaClass.refresh = {->template.refresh(delegate)}
         metaClass.discard = {->template.evict(delegate)}
         metaClass.attach = {->template.lock(delegate, LockMode.NONE)}
+        metaClass.isAttached = {-> template.contains(delegate) }
         metaClass.'static'.get = {id ->
             def identityType = dc.identifier.type
 

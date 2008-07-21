@@ -26,14 +26,22 @@ class AttachMethod {
         assert test.save(flush:true)
 
         assert session.contains(test)
+        assert test.isAttached()
+        assert test.attached
 
         test.discard()
 
         assert !session.contains(test)
+        assert !test.isAttached()
+        assert !test.attached
 
         test.attach()
 
         assert session.contains(test)
+        assert test.isAttached()
+        assert test.attached
+
+        
     }
 
 }
