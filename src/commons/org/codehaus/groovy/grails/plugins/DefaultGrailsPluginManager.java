@@ -1789,13 +1789,14 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager impl
         }
 
         public void run(){
-            while(enabled){
-                try{      
-                    pluginManager.checkForChanges();
-                    sleep(DefaultGrailsPluginManager.SCAN_INTERVAL);
-                }catch(Exception e){
-                    LOG.error("Error occured scanning for changes: " + e.getMessage(),e);
+            try{
+                sleep(15000); // delay start of scanner
+                while(enabled){
+                        pluginManager.checkForChanges();
+                        sleep(DefaultGrailsPluginManager.SCAN_INTERVAL);
                 }
+            }catch(Exception e){
+                LOG.error("Error occured scanning for changes: " + e.getMessage(),e);
             }
         }
   }
