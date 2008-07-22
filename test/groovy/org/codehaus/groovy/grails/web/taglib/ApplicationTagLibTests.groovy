@@ -51,6 +51,25 @@ class ApplicationTagLibTests extends AbstractGrailsTagTests {
 
     }
 
+    void testCreateLinkWithFlowExecutionKeyAndEvent() {
+        request.flowExecutionKey = '12345'
+
+        def template = '<g:createLink controller="foo" action="bar" event="boo" />'
+
+        assertOutputEquals('/foo/bar?_flowExecutionKey=12345&_eventId=boo', template)
+
+    }
+
+    void testLinkWithFlowExecutionKeyAndEvent() {
+        request.flowExecutionKey = '12345'
+
+        def template = '<g:link controller="foo" action="bar" event="boo" >link</g:link>'
+
+        assertOutputEquals('<a href="/foo/bar?_flowExecutionKey=12345&amp;_eventId=boo">link</a>', template)
+
+    }
+
+
     void testSetTag() {
         def template = '<g:set var="one" value="two" />one: ${one}'
 

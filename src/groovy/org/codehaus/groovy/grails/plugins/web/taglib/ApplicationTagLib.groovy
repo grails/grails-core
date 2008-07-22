@@ -141,12 +141,6 @@ class ApplicationTagLib implements ApplicationContextAware {
     def link = { attrs, body ->  
 		def writer = out
         writer << '<a href="'
-        // create the link 
-		if(request['flowExecutionKey']) {
-			if(!attrs.params) attrs.params = [:]
-			attrs.params."_flowExecutionKey" = request['flowExecutionKey']
-		}
-
         writer << createLink(attrs).encodeAsHTML()
         writer << '"'
         // process remaining attributes
@@ -194,8 +188,12 @@ class ApplicationTagLib implements ApplicationContextAware {
             def frag = urlAttrs.remove('fragment')
             def params = urlAttrs.params && urlAttrs.params instanceof Map ? urlAttrs.remove('params') : [:]
 
+			if(request['flowExecutionKey']) {			
+				params."_flowExecutionKey" = request['flowExecutionKey']
+			}
+
             if(urlAttrs.event) {
-                params."_eventId" = urlAttrs.event
+                params."_eventId" = urlAttrs.remove('event')
             }
             def url
             if(id != null) params.id = id
