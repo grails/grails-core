@@ -66,7 +66,7 @@ class FormTagLib {
       * Creates a submit button
       */
     def submitButton = {attrs ->
-        attrs.type = "submit"
+        attrs.type = attrs.type ?: "submit"
         attrs.tagName = "submitButton"
         if (request['flowExecutionKey']) {
             attrs.name = attrs.event ? "_eventId_${attrs.event}" : "_eventId_${attrs.name}"
