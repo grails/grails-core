@@ -81,7 +81,7 @@ class LoggingGrailsPluginTests extends AbstractGrailsPluginTests {
 	void testLogAvailableToController() {
         def registry = GroovySystem.metaClassRegistry
 
-        registry.removeMetaClass(controllerClass)
+//        registry.removeMetaClass(controllerClass)
 
         def controller = controllerClass.newInstance()
         assertEquals "grails.app.controller.TestController", controller.log?.name
@@ -90,7 +90,7 @@ class LoggingGrailsPluginTests extends AbstractGrailsPluginTests {
 	void testLogAvailableToService() {
         def registry = GroovySystem.metaClassRegistry
 
-        registry.removeMetaClass(serviceClass)
+//        registry.removeMetaClass(serviceClass)
 
         def service = serviceClass.newInstance()
         assertEquals "grails.app.service.TestService", service.log?.name
@@ -99,7 +99,7 @@ class LoggingGrailsPluginTests extends AbstractGrailsPluginTests {
 	void testLogAvailableToTagLib() {
         def registry = GroovySystem.metaClassRegistry
 
-        registry.removeMetaClass(serviceClass)
+//        registry.removeMetaClass(serviceClass)
 
         def taglib = taglibClass.newInstance()
         assertEquals "grails.app.tagLib.TestTagLib", taglib.log?.name
