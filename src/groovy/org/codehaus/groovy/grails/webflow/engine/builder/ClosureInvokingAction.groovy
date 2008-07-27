@@ -45,10 +45,9 @@ import java.util.Map;
  *        Created: Jun 12, 2007
  *        Time: 12:00:23 PM
  */
-public class ClosureInvokingAction extends AbstractAction implements GroovyObject {
+public class ClosureInvokingAction extends AbstractAction {
     private Closure callable;
     private static final Log LOG = LogFactory.getLog(ClosureInvokingAction.class);
-    private transient MetaClass metaClass;
     private static final String RESULT = "result";
 
     def commandClasses
@@ -58,7 +57,6 @@ public class ClosureInvokingAction extends AbstractAction implements GroovyObjec
 
     public ClosureInvokingAction(Closure callable) {
         this.callable = callable;
-        this.metaClass = InvokerHelper.getMetaClass(this)
         this.commandClasses = callable.parameterTypes
         this.noOfParams = commandClasses.size()
         this.hasCommandObjects = noOfParams > 1 || (noOfParams == 1 && commandClasses[0] != Object.class && commandClasses[0] != RequestContext.class)
@@ -167,13 +165,11 @@ public class ClosureInvokingAction extends AbstractAction implements GroovyObjec
     }
 
     public Object invokeMethod(String name, args) {
-        if(metaClass instanceof ExpandoMetaClass) {
-            def emc = metaClass
+        def emc = metaClass
+        if(emc instanceof ExpandoMetaClass) {
             MetaMethod metaMethod = emc.getMetaMethod(name, args)
-            if(metaMethod) return metaMethod.invoke(this, args)
-            else {
-                return invokeMethodAsEvent(name, args)
-            }
+            if(metaMethod)
+                return metaMethod.invoke(this, args)
         }
         return invokeMethodAsEvent(name, args)
     }
@@ -188,21 +184,5 @@ public class ClosureInvokingAction extends AbstractAction implements GroovyObjec
         else {
             return result(name,name, args)
         }
-    }
-
-    public Object getProperty(String property) {
-        return metaClass.getProperty(this, property)
-    }
-
-    public void setProperty(String property, Object newValue) {
-         metaClass.setProperty(this, property, newValue)
-    }
-
-    public MetaClass getMetaClass() {
-        return metaClass
-    }
-
-    public void setMetaClass(MetaClass metaClass) {
-        this.metaClass = metaClass
     }
 }
