@@ -42,7 +42,7 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
     private GrailsDomainClassProperty identifier;
     private GrailsDomainClassProperty version;
     private GrailsDomainClassProperty[] properties;
-    private GrailsDomainClassProperty[] persistantProperties;
+    private GrailsDomainClassProperty[] persistentProperties;
     private Map propertyMap;
     private Map relationshipMap;
 
@@ -97,11 +97,11 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
         // establish relationships
         establishRelationships();
 
-        // set persistant properties
+        // set persistent properties
         establishPersistentProperties();
         // process the constraints
         try {
-            this.constraints = GrailsDomainConfigurationUtil.evaluateConstraints(getReference().getWrappedInstance(), this.persistantProperties);
+            this.constraints = GrailsDomainConfigurationUtil.evaluateConstraints(getReference().getWrappedInstance(), this.persistentProperties);
         } catch (IntrospectionException e) {
             LOG.error("Error reading class ["+getClazz()+"] constraints: " +e .getMessage(), e);
         }
@@ -127,7 +127,7 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
                 tempList.add(currentProp);
             }
         }
-        this.persistantProperties = (GrailsDomainClassProperty[])tempList.toArray( new GrailsDomainClassProperty[tempList.size()]);
+        this.persistentProperties = (GrailsDomainClassProperty[])tempList.toArray( new GrailsDomainClassProperty[tempList.size()]);
 	}
 
 	/**
@@ -590,11 +590,11 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
      * @deprecated
      */
     public GrailsDomainClassProperty[] getPersistantProperties() {
-        return this.persistantProperties;
+        return this.persistentProperties;
     }
 
     public GrailsDomainClassProperty[] getPersistentProperties() {
-        return this.persistantProperties;
+        return this.persistentProperties;
     }
 
     /* (non-Javadoc)
@@ -695,7 +695,17 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
 
     public void refreshConstraints() {
         try {
-            this.constraints = GrailsDomainConfigurationUtil.evaluateConstraints(getReference().getWrappedInstance(), this.persistantProperties);
+            this.constraints = GrailsDomainConfigurationUtil.evaluateConstraints(getReference().getWrappedInstance(), this.persistentProperties);
+
+            // Embedded components have their own ComponentDomainClass
+            // instance which won't be refreshed by the application.
+            // So, we have to do it here.
+            for (int i = 0; i < this.persistentProperties.length; i++) {
+                GrailsDomainClassProperty property = this.persistentProperties[i];
+                if (property.isEmbedded()) {
+                    property.getComponent().refreshConstraints();
+                }
+            }
         } catch (IntrospectionException e) {
             LOG.error("Error reading class ["+getClazz()+"] constraints: " +e .getMessage(), e);
         }
@@ -706,9 +716,9 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
     }
 
     public boolean hasPersistentProperty(String propertyName) {
-        for (int i = 0; i < persistantProperties.length; i++) {
-            GrailsDomainClassProperty persistantProperty = persistantProperties[i];
-            if(persistantProperty.getName().equals(propertyName)) return true;
+        for (int i = 0; i < persistentProperties.length; i++) {
+            GrailsDomainClassProperty persistentProperty = persistentProperties[i];
+            if(persistentProperty.getName().equals(propertyName)) return true;
         }
         return false;  
     }

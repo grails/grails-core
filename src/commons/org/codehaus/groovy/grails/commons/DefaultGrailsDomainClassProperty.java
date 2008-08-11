@@ -600,7 +600,14 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
         }
 
         public void refreshConstraints() {
-            // do nothing
+            try {
+                GrailsDomainClassProperty[] props = getPersistentProperties();
+                this.constraints = GrailsDomainConfigurationUtil.evaluateConstraints(
+                        getReference().getWrappedInstance(),
+                        props);
+            } catch (IntrospectionException e) {
+                LOG.error("Error reading class [" + getClazz() + "] constraints: " + e.getMessage(), e);
+            }
         }
 
         public boolean hasSubClasses() {
