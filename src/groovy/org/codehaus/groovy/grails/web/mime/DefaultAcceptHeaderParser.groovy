@@ -20,6 +20,10 @@ import org.codehaus.groovy.grails.commons.ConfigurationHolder
 import org.apache.commons.logging.*
 
 /**
+* Parsed the HTTP accept header into a a list of MimeType instances in the order of priority. Priority is dictated
+* by the order of the mime entries and the associated q parameter. The higher the q parameter the higher the prioirity.
+ 
+*
 * @author Graeme Rocher
 * @since 1.0
 *
@@ -51,8 +55,7 @@ class DefaultAcceptHeaderParser implements AcceptHeaderParser{
                         def i = it.indexOf('=')
                         params[it[0..i-1].trim()] = it[i+1..-1].trim()
                     }
-                    def mimeList = params.q ? qualifiedMimes : mimes
-                    createMimeTypeAndAddToList(t[0].trim(),mimeConfig, mimeList, params)
+                    createMimeTypeAndAddToList(t[0].trim(),mimeConfig, mimes, params)
                 }
                 else {
                     createMimeTypeAndAddToList(t.trim(),mimeConfig, mimes)
@@ -64,7 +67,37 @@ class DefaultAcceptHeaderParser implements AcceptHeaderParser{
                return MimeType.createDefaults()
             }
         }
-        return (qualifiedMimes.sort { it.parameters.q.toBigDecimal() }.reverse() + mimes) as MimeType[]
+
+        
+        // remove duplicate text/xml and application/xml entries
+        MimeType textXml = mimes.find { it.name == 'text/xml' }
+        MimeType appXml = mimes.find { it.name ==  MimeType.XML }
+        if(textXml && appXml) {
+            // take the largest q value
+            appXml.parameters.q = [textXml.parameters.q.toBigDecimal(), appXml.parameters.q.toBigDecimal()].max()
+
+            mimes.remove(textXml)
+        }
+        else if(textXml) {
+            textXml.name = MimeType.XML
+        }
+
+        if(appXml) {
+            // prioritise more specific XML types like xhtml+xml if they are of equal quality
+            def specificTypes = mimes.findAll { it.name ==~ /\S+?\+xml$/ }
+            def appXmlIndex = mimes.indexOf(appXml)
+            def appXmlQuality = appXml.parameters.q.toBigDecimal()
+            for(mime in specificTypes) {
+                if(mime.parameters.q.toBigDecimal() < appXmlQuality) continue
+                
+                def mimeIndex = mimes.indexOf(mime)
+                if(mimeIndex > appXmlIndex) {
+                    mimes.remove(mime)
+                    mimes.add(appXmlIndex, mime)
+                }
+            }
+        }
+        return mimes.sort(new QualityComparator()) as MimeType[]
     }
 
     private createMimeTypeAndAddToList(name, mimeConfig, mimes, params = null) {
@@ -81,5 +114,15 @@ class DefaultAcceptHeaderParser implements AcceptHeaderParser{
         }
     }
 
+}
+class QualityComparator implements Comparator {
+
+    public int compare(Object t, Object t1) {
+        def left = t.parameters.q.toBigDecimal()
+        def right = t1.parameters.q.toBigDecimal()
+        if(left > right) return -1
+        else if(left < right ) return 1
+        return 0;
+    }
 
 }

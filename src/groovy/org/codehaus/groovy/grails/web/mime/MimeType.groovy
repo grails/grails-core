@@ -26,9 +26,12 @@ import org.codehaus.groovy.grails.commons.ConfigurationHolder
  */
 public class MimeType {
 
+    static final XML = 'application/xml'
+    
+
     private static MIMES
 
-    MimeType(String n, Map params = null) {
+    MimeType(String n, Map params = [q:"1.0"]) {
         this.name = n
         this.parameters = params
     }
@@ -37,6 +40,10 @@ public class MimeType {
     String name
     String extension
     Map parameters
+
+    boolean equals(Object o) { o instanceof MimeType && name.equals(o.name) }
+    public int hashCode() { name.hashCode() }  
+
 
     String toString() {
         return "MimeType { name=$name,extension=$extension,parameters=$parameters }".toString()

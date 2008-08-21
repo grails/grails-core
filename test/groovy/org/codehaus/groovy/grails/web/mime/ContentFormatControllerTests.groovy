@@ -43,6 +43,13 @@ class ContentController {
         }
     }
 
+    def testWithFormatAndEqualQualityGrading = {
+        withFormat {
+            html { render "<html></html>" }
+            xml { render(contentType:"text/xml",text: "<xml></xml>") }
+        }
+    }
+
     def testWithFormatAndModel = {
         withFormat {
             js { render "alert('hello')" }
@@ -163,6 +170,35 @@ class Gizmo {
          assertEquals "html", response.contentAsString
     }
 
+    void testFirefox2AcceptHeader() {
+        request.addHeader "Accept", "text/xml,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5"
+        def c = ga.getControllerClass("ContentController").newInstance()
+         webRequest.controllerName = 'content'
+         c.testFormat.call()
+
+
+         assertEquals "html", response.contentAsString
+    }
+
+    void testFirefox3AcceptHeader() {
+        request.addHeader "Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+        def c = ga.getControllerClass("ContentController").newInstance()
+         webRequest.controllerName = 'content'
+         c.testFormat.call()
+
+         
+         assertEquals "html", response.contentAsString
+    }
+
+    void testFirefox2AcceptHeaderWithFormatOrdering() {
+        request.addHeader "Accept", "text/xml,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5"
+        def c = ga.getControllerClass("ContentController").newInstance()
+         webRequest.controllerName = 'content'
+         c.testWithFormatAndEqualQualityGrading.call()
+
+         assertEquals "<html></html>", response.contentAsString
+         assertEquals "html", request.format
+    }
 
 
     void testPrototypeFormat() {

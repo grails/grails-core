@@ -37,30 +37,51 @@ grails.mime.types = [ xml: ['text/xml', 'application/xml'],
         def mimes = new DefaultAcceptHeaderParser().parse("text/xml; charset=UTF-8")
 
         assertEquals 1, mimes.size()
-        assertEquals "text/xml", mimes[0].name
+        assertEquals "application/xml", mimes[0].name
         assertEquals "xml", mimes[0].extension
         assertEquals( [charset:'UTF-8'], mimes[0].parameters )
     }
 
 
-    void testAcceptHeaderOrdering() {
+    void testFirefox2AcceptHeaderOrdering() {
+
+
         def mimes = new DefaultAcceptHeaderParser().parse("text/xml,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5")
 
-        assertEquals 6, mimes.size()
+        assertEquals 5, mimes.size()
 
-        assertEquals( ['text/html', 'text/plain', '*/*','text/xml', 'application/xml', 'application/xhtml+xml'], mimes.name )
-        assertEquals( ['html', 'text', 'all', 'xml','xml', 'html'], mimes.extension )
-        
+        assertEquals( ['application/xhtml+xml','application/xml', 'text/html', 'text/plain', '*/*'], mimes.name )
+        assertEquals( ['html', 'xml', 'html', 'text', 'all'], mimes.extension )
+
+    }
+    
+    void testFirefox3AcceptHeaderOrdering() {
+        	
+        def mimes = new DefaultAcceptHeaderParser().parse("text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")
+
+        assertEquals 4, mimes.size()
+      
+        assertEquals( ['html','html','xml', 'all'], mimes.extension )
+
+    }
+
+    void testAcceptHeaderWithQNumberOrdering() {
+        def mimes = new DefaultAcceptHeaderParser().parse("text/html,application/xhtml+xml,application/xml;q=1.1,*/*;q=0.8")
+
+        assertEquals 4, mimes.size()
+
+        assertEquals( ['xml','html','html', 'all'], mimes.extension )
+
     }
 
     void testPrototypeHeaderOrdering() {
         def mimes = new DefaultAcceptHeaderParser().parse("text/javascript, text/html, application/xml, text/xml, */*")
+                                                                                                                                                                                        
+        assertEquals 4, mimes.size()
 
-        assertEquals 5, mimes.size()
+        assertEquals( ["js",'html', 'xml', 'all'], mimes.extension )
+        assertEquals( ["text/javascript",'text/html', 'application/xml', '*/*'], mimes.name )
 
-        assertEquals( ["text/javascript",'text/html', 'application/xml', 'text/xml', '*/*'], mimes.name )
-        assertEquals( ["js",'html', 'xml', 'xml', 'all'], mimes.extension )
-        
     }
 
     void testOldBrowserHeader() {
