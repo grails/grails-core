@@ -21,6 +21,7 @@ import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.util.WebUtils;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.springframework.web.context.request.RequestContextHolder;
+import org.apache.commons.lang.StringUtils;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.UnsupportedEncodingException;
@@ -46,7 +47,7 @@ public class DefaultUrlMappingInfo implements UrlMappingInfo {
     private static final String ID_PARAM = "id";
     private UrlMappingData urlData;
     private Object viewName;
-    private URLDecoder decoder;
+
 
     private DefaultUrlMappingInfo(Map params, UrlMappingData urlData) {
         this.params = Collections.unmodifiableMap(params);
@@ -79,10 +80,14 @@ public class DefaultUrlMappingInfo implements UrlMappingInfo {
     /**
      * Populates request parameters for the given UrlMappingInfo instance using the GrailsWebRequest
      *
-     * @param dispatchParams The Map instance
+     * @param webRequest The Map instance
      * @see org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
      */
-    protected void populateParamsForMapping(Map dispatchParams) {
+    protected void populateParamsForMapping(GrailsWebRequest webRequest) {
+        Map dispatchParams = webRequest.getParams();
+        String encoding = webRequest.getRequest().getCharacterEncoding();
+        if(encoding == null) encoding = "UTF-8";
+
         Collection keys = this.params.keySet();
         keys = DefaultGroovyMethods.toList(keys);
         Collections.sort((List) keys, new Comparator() {
@@ -107,14 +112,28 @@ public class DefaultUrlMappingInfo implements UrlMappingInfo {
             }
             if (param instanceof String) {
                 try {
-                    param = decoder.decode((String) param, "UTF-8");
+                    param = URLDecoder.decode((String) param, encoding);
                 } catch (UnsupportedEncodingException e) {
                     param = evaluateNameForValue(param);
                 }
             }
             dispatchParams.put(name, param);
-
         }
+
+        final String viewName = getViewName();
+
+        if (viewName == null) {
+            webRequest.setControllerName(getControllerName());
+            webRequest.setActionName(getActionName());
+        }
+
+        String id = getId();
+        if(!StringUtils.isBlank(id)) try {
+            dispatchParams.put(GrailsWebRequest.ID_PARAMETER, URLDecoder.decode(id, encoding));
+        } catch (UnsupportedEncodingException e) {
+            dispatchParams.put(GrailsWebRequest.ID_PARAMETER, id);
+        }
+
     }
 
     public Map getParameters() {
@@ -122,7 +141,7 @@ public class DefaultUrlMappingInfo implements UrlMappingInfo {
     }
 
     public void configure(GrailsWebRequest webRequest) {
-        populateParamsForMapping(webRequest.getParams());
+        populateParamsForMapping(webRequest);
     }
 
     public String getControllerName() {

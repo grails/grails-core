@@ -167,22 +167,6 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
         return forwardUrl.toString();
     }
 
-    private static void populateWebRequestWithInfo(GrailsWebRequest webRequest, UrlMappingInfo info) {
-        if(webRequest != null) {
-            final String viewName = info.getViewName();
-
-            if (viewName == null) {
-                webRequest.setControllerName(info.getControllerName());
-                webRequest.setActionName(info.getActionName());
-            }
-
-            String id = info.getId();
-            if(!StringUtils.isBlank(id))webRequest.getParams().put(GrailsWebRequest.ID_PARAMETER, id);
-
-            // Add all the parameters from the URL mapping.
-            webRequest.getParams().putAll(info.getParameters());
-        }
-    }
 
 
     public static String forwardRequestForUrlMappingInfo(HttpServletRequest request, HttpServletResponse response, UrlMappingInfo info) throws ServletException, IOException {
@@ -190,12 +174,10 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
     }
 
     public static String forwardRequestForUrlMappingInfo(HttpServletRequest request, HttpServletResponse response, UrlMappingInfo info, Map model) throws ServletException, IOException {
-        GrailsWebRequest webRequest = (GrailsWebRequest) RequestContextHolder.currentRequestAttributes();
         String forwardUrl = buildDispatchUrlForMapping(info);
 
         //populateParamsForMapping(info);
         RequestDispatcher dispatcher = request.getRequestDispatcher(forwardUrl);
-        populateWebRequestWithInfo(webRequest, info);
 
         exposeForwardRequestAttributes(request);
         exposeRequestAttributes(request, model);
