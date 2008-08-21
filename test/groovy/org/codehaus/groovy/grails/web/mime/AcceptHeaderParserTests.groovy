@@ -57,7 +57,7 @@ grails.mime.types = [ xml: ['text/xml', 'application/xml'],
     
     void testFirefox3AcceptHeaderOrdering() {
         	
-        def mimes = new DefaultAcceptHeaderParser().parse("text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")
+            def mimes = new DefaultAcceptHeaderParser().parse("text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")
 
         assertEquals 4, mimes.size()
       
