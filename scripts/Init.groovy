@@ -283,6 +283,10 @@ args = System.getProperty("grails.cli.args")
 argsMap = [params: []]
 
 target(parseArguments: "Parse the arguments passed on the command line") {
+    // Only ever parse the arguments once. We also don't bother parsing
+    // the arguments if the "args" string is empty.
+    if (argsMap.size() > 1 || argsMap["params"] || !args) return
+
     args?.tokenize().each {token ->
         def nameValueSwitch = token =~ "--?(.*)=(.*)"
         if (nameValueSwitch.matches()) { // this token is a name/value pair (ex: --foo=bar or -z=qux)
