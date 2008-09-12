@@ -11,14 +11,13 @@
 	<classpathentry kind="src" output="target/eclipse/test-output" path="test/persistence"/>
 	<classpathentry kind="src" output="target/eclipse/test-output" path="test/scaffolding"/>
 	<classpathentry kind="lib" path="lib/hibernate3.jar" sourcepath="/HIBERNATE_HOME/src"/>
-	<classpathentry kind="lib" path="lib/spring-2.5.4.jar" sourcepath="/SPRING_HOME/src"/>
+	<classpathentry kind="lib" path="lib/spring-2.5.5.jar" sourcepath="/SPRING_HOME/src"/>
     <classpathentry kind="lib" path="lib/spring-webmvc.jar" sourcepath="/SPRING_HOME/src"/>
     <classpathentry kind="lib" path="lib/spring-test.jar" sourcepath="/SPRING_HOME/mock"/>
 	<classpathentry kind="lib" path="lib/ant-junit.jar"/>
 	<classpathentry kind="lib" path="lib/ant-nodeps.jar"/>
 	<classpathentry kind="lib" path="lib/ant.jar"/>
 	<classpathentry kind="lib" path="lib/antlr-2.7.6.jar"/>
-	<classpathentry kind="lib" path="lib/bsf-2.3.0.jar"/>
 	<classpathentry kind="lib" path="lib/cglib-nodep-2.1_3.jar"/>
 	<classpathentry kind="lib" path="lib/commons-beanutils-1.7.0.jar"/>
 	<classpathentry kind="lib" path="lib/commons-cli-1.0.jar"/>
