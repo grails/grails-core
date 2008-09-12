@@ -1,24 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <module relativePaths="true" type="GRAILS_MODULE" version="4">
   <component name="FacetManager">
-    <facet type="hibernate" name="Hibernate">
-      <configuration>
-        <setting name="validation-enabled" value="false" />
-        <datasource-map />
-        <deploymentDescriptor name="hibernate.cfg.xml" url="file://$MODULE_DIR$/test/persistence/hibernate.cfg.xml" optional="false" version="3.0" />
-      </configuration>
-    </facet>
     <facet type="Groovy" name="Groovy">
       <configuration />
-    </facet>
-    <facet type="Spring" name="Spring">
-      <configuration>
-        <options>
-          <option name="enableValidation" value="false" />
-          <option name="reportErrorsAsWarnings" value="true" />
-        </options>
-        <customNs />
-      </configuration>
     </facet>
   </component>
   <component name="NewModuleRootManager" LANGUAGE_LEVEL="JDK_1_5" inherit-compiler-output="false">
@@ -51,12 +35,12 @@
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="Apache Commons" level="project" />
     <orderEntry type="library" name="dom4j" level="project" />
+    <orderEntry type="library" name="Spring" level="project" />
     <orderEntry type="library" name="Hibernate 3" level="project" />
     <orderEntry type="library" name="javax.servlet" level="project" />
     <orderEntry type="library" name="Jetty" level="project" />
     <orderEntry type="library" name="JUnit" level="project" />
     <orderEntry type="library" name="SiteMesh" level="project" />
-    <orderEntry type="library" name="Spring" level="project" />
     <orderEntry type="library" name="HSQLDB" level="project" />
     <orderEntry type="module-library">
       <library>
@@ -105,7 +89,6 @@
     <orderEntry type="module-library">
       <library name="Groovy">
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/groovy-all-1.5.4.jar!/" />
           <root url="jar://$MODULE_DIR$/lib/groovy-all-1.5.6.jar!/" />
         </CLASSES>
         <JAVADOC />
@@ -142,20 +125,10 @@
     <orderEntry type="module-library">
       <library>
         <CLASSES>
-          <root url="jar://$APPLICATION_HOME_DIR$/lib/javaee.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/svnkit.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
-      </library>
-    </orderEntry>
-    <orderEntry type="module-library">
-      <library name="Grails User Library">
-        <CLASSES>
-          <root url="file://$MODULE_DIR$/test/cliTestApp/testapp/lib" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-        <jarDirectory url="file://$MODULE_DIR$/test/cliTestApp/testapp/lib" recursive="false" />
       </library>
     </orderEntry>
     <orderEntryProperties />
