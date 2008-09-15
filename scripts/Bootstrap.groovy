@@ -77,11 +77,19 @@ target(shutdownApp:"Shuts down the running Grails application") {
     ConfigurationHolder.setConfig(null);    
 }
 
-monitorCallback = {}
+// Flag that determines whether the monitor loop should keep running.
+keepMonitoring = true
+
+// Callback invoked by the monitor each time it has checked for changes.
+monitorCheckCallback = {}
+
+// Callback invoked by the monitor each time it recompiles the app and
+// restarts it.
+monitorRecompileCallback = {}
 
 target(monitorApp:"Monitors an application for changes using the PluginManager and reloads changes") {
     long lastModified = classesDir.lastModified()
-    while(true) {
+    while(keepMonitoring) {
         sleep(3500)
         try {
             pluginManager.checkForChanges()
@@ -95,11 +103,13 @@ target(monitorApp:"Monitors an application for changes using the PluginManager a
                 loadPlugins()
                 loadApp()
                 configureApp()
-                monitorCallback()
+                monitorRecompileCallback()
             }
 
         } catch (Exception e) {
             println e.message
+        } finally {
+            monitorCheckCallback()
         }
     }
 }

@@ -22,8 +22,6 @@
  * @since 0.4
  */
 
-import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
-import groovy.text.SimpleTemplateEngine  
 import org.codehaus.groovy.grails.support.*
 
 Ant.property(environment:"env")                             
@@ -45,13 +43,25 @@ target(console:"The console implementation target") {
     createConsole()
     try {
         console.run()
-        monitorCallback = {
+
+        // On each monitor check, determine whether the console window
+        // is still open. If not, we set the monitor flag so that its
+        // thread ends and the script completes.
+        monitorCheckCallback = {
+            if (!console.frame.visible) keepMonitoring = false
+        }
+
+        // If the app is recompiled, we close the console and start it
+        // up again with the new classes.
+        monitorRecompileCallback = {
             println "Exiting console"
             console.exit()
             createConsole()
             println "Restarting console"
             console.run()
         }
+
+        // Start the monitor thread.
         monitorApp()
         //while(true) { sleep(Long.MAX_VALUE) }
     } catch (Exception e) {
