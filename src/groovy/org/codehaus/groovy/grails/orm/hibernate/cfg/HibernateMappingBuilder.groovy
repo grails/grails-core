@@ -27,6 +27,7 @@ package org.codehaus.groovy.grails.orm.hibernate.cfg
  */
 
 import org.apache.commons.logging.LogFactory
+import org.hibernate.InvalidMappingException
 
 class HibernateMappingBuilder {
 
@@ -197,16 +198,35 @@ class HibernateMappingBuilder {
     private handleMethodMissing = { String name, args ->
         if(args && args[0] instanceof Map) {
             def namedArgs = args[0]
-            def column = new ColumnConfig()
-            column.column = namedArgs.column
-            column.type = namedArgs.type
-            column.index = namedArgs.index
-            column.lazy = namedArgs.lazy ? true : false
-            column.unique = namedArgs.unique ? true : false
-            column.length = namedArgs.length ? namedArgs.length : -1
-            column.precision = namedArgs.precision ? namedArgs.precision : -1
-            column.scale = namedArgs.scale ? namedArgs.scale : -1
-            column.cascade = namedArgs.cascade ? namedArgs.cascade : null
+            def property = new PropertyConfig()
+            property.type = namedArgs.type
+            property.lazy = namedArgs.lazy ?: false
+            property.cascade = namedArgs.cascade ?: null
+
+            // Deal with any column configuration for this property.
+            if (args[-1] instanceof Closure) {
+                // Multiple column definitions for this property.
+                Closure c = args[-1]
+                c.delegate = new PropertyDefinitionDelegate(property)
+                c.resolveStrategy = Closure.DELEGATE_ONLY
+                c.call()
+            }
+            else {
+                // There is no sub-closure containing multiple column
+                // definitions, so pick up any column settings from
+                // the argument map.
+                def cc = new ColumnConfig()
+
+                if (namedArgs["column"]) cc.name = namedArgs["column"]
+                if (namedArgs["sqlType"]) cc.sqlType = namedArgs["sqlType"]
+                if (namedArgs["index"]) cc.index = namedArgs["index"]
+                if (namedArgs["unique"]) cc.unique = namedArgs["unique"]
+                cc.length = namedArgs["length"] ?: -1
+                cc.precision = namedArgs["precision"] ?: -1
+                cc.scale = namedArgs["scale"] ?: -1
+
+                property.columns << cc
+            }
 
             if(namedArgs.cache instanceof String) {
                 CacheConfig cc = new CacheConfig()
@@ -214,10 +234,10 @@ class HibernateMappingBuilder {
                     cc.usage = namedArgs.cache
                 else
                     LOG.warn("ORM Mapping Invalid: Specified [usage] of [cache] with value [$args.usage] for association [$name] in class [$className] is not valid")
-                column.cache = cc
+                property.cache = cc
             }
             else if(namedArgs.cache == true) {
-                column.cache = new CacheConfig()
+                property.cache = new CacheConfig()
             }
             else if(namedArgs.cache instanceof Map) {
                 def cacheArgs = namedArgs.cache
@@ -232,7 +252,7 @@ class HibernateMappingBuilder {
                 else
                     LOG.warn("ORM Mapping Invalid: Specified [include] of [cache] with value [$args.include] for association [$name] in class [$className] is not valid")
 
-                column.cache = cc
+                property.cache = cc
 
             }
 
@@ -247,13 +267,13 @@ class HibernateMappingBuilder {
                     if(joinArgs.key) join.key = joinArgs.key
                     if(joinArgs.column) join.column = joinArgs.column
                 }
-                column.joinTable = join
+                property.joinTable = join
             }
             else if(namedArgs.containsKey('joinTable') && namedArgs.joinTable == false) {
-                column.joinTable = null
+                property.joinTable = null
             }
 
-            mapping.columns[name] = column
+            mapping.columns[name] = property
         }
 
     }
@@ -276,5 +296,42 @@ class HibernateMappingBuilder {
         else {
             LOG.warn "ORM Mapping Invalid: Specified config option [$name] does not exist for class [$className]!"
         }
+    }
+}
+
+/**
+ * Builder delegate that handles multiple-column definitions for a
+ * single domain property, e.g.
+ * <pre>
+ *   amount type: MonetaryAmountUserType, {
+ *       column name: "value"
+ *       column name: "currency_code", sqlType: "text"
+ *   }
+ * </pre>
+ */
+class PropertyDefinitionDelegate {
+    PropertyConfig config
+
+    PropertyDefinitionDelegate(PropertyConfig config) {
+        this.config = config
+    }
+
+    def column(Map args) {
+        // Check that this column has a name
+        if (!args["name"]) throw new InvalidMappingException("Column definition must have a name!")
+
+        // Create a new column configuration based on the mapping for
+        // this column.
+        def column = new ColumnConfig()
+        column.name = args["name"]
+        column.sqlType = args["sqlType"]
+        column.index = args["index"]
+        column.unique = args["unique"] ?: false
+        column.length = args["length"] ?: -1
+        column.precision = args["precision"] ?: -1
+        column.scale = args["scale"] ?: -1
+
+        // Append the new column configuration to the property config.
+        config.columns << column
     }
 }

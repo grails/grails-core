@@ -12,7 +12,8 @@ package org.codehaus.groovy.grails.orm.hibernate
 
 import org.codehaus.groovy.grails.orm.hibernate.cfg.CompositeIdentity
 import org.codehaus.groovy.grails.orm.hibernate.cfg.HibernateMappingBuilder
-import org.codehaus.groovy.grails.orm.hibernate.cfg.ColumnConfig
+import org.codehaus.groovy.grails.orm.hibernate.cfg.PropertyConfig
+import org.codehaus.groovy.grails.orm.hibernate.cfg.MyUserType
 
 class HibernateMappingBuilderTests extends GroovyTestCase {
 
@@ -24,7 +25,7 @@ class HibernateMappingBuilderTests extends GroovyTestCase {
             }
         }
 
-        assertEquals 'save-update',mapping.getColumn('things').cascade
+        assertEquals 'save-update',mapping.getPropertyConfig('things').cascade
 
     }
 
@@ -33,7 +34,7 @@ class HibernateMappingBuilderTests extends GroovyTestCase {
         def mapping = builder.evaluate {
              things cascade:'save-update'
         }
-        assertEquals 'save-update',mapping.getColumn('things').cascade
+        assertEquals 'save-update',mapping.getPropertyConfig('things').cascade
     }
 
     void testJoinTableMapping() {
@@ -44,7 +45,7 @@ class HibernateMappingBuilderTests extends GroovyTestCase {
             }
         }
 
-        assert mapping.getColumn('things')?.joinTable
+        assert mapping.getPropertyConfig('things')?.joinTable
 
         mapping = builder.evaluate {
             columns {
@@ -52,9 +53,9 @@ class HibernateMappingBuilderTests extends GroovyTestCase {
             }
         }
 
-        ColumnConfig column = mapping.getColumn('things')
-        assert column?.joinTable
-        assertEquals "foo", column.joinTable.name
+        PropertyConfig property = mapping.getPropertyConfig('things')
+        assert property?.joinTable
+        assertEquals "foo", property.joinTable.name
 
         mapping = builder.evaluate {
             columns {
@@ -62,11 +63,11 @@ class HibernateMappingBuilderTests extends GroovyTestCase {
             }
         }
 
-        column = mapping.getColumn('things')
-        assert column?.joinTable
-        assertEquals "foo", column.joinTable.name
-        assertEquals "foo_id", column.joinTable.key
-        assertEquals "bar_id", column.joinTable.column
+        property = mapping.getPropertyConfig('things')
+        assert property?.joinTable
+        assertEquals "foo", property.joinTable.name
+        assertEquals "foo_id", property.joinTable.key
+        assertEquals "bar_id", property.joinTable.column
     }
 
     void testJoinTableMappingWithoutColumnsBlock() {
@@ -75,25 +76,25 @@ class HibernateMappingBuilderTests extends GroovyTestCase {
             things joinTable:true
         }
 
-        assert mapping.getColumn('things')?.joinTable
+        assert mapping.getPropertyConfig('things')?.joinTable
 
         mapping = builder.evaluate {
             things joinTable:'foo'
         }
 
-        ColumnConfig column = mapping.getColumn('things')
-        assert column?.joinTable
-        assertEquals "foo", column.joinTable.name
+        PropertyConfig property = mapping.getPropertyConfig('things')
+        assert property?.joinTable
+        assertEquals "foo", property.joinTable.name
 
         mapping = builder.evaluate {
             things joinTable:[name:'foo', key:'foo_id', column:'bar_id']
         }
 
-        column = mapping.getColumn('things')
-        assert column?.joinTable
-        assertEquals "foo", column.joinTable.name
-        assertEquals "foo_id", column.joinTable.key
-        assertEquals "bar_id", column.joinTable.column
+        property = mapping.getPropertyConfig('things')
+        assert property?.joinTable
+        assertEquals "foo", property.joinTable.name
+        assertEquals "foo_id", property.joinTable.key
+        assertEquals "bar_id", property.joinTable.column
     }
 
 
@@ -133,7 +134,7 @@ class HibernateMappingBuilderTests extends GroovyTestCase {
             }
         }
 
-        def cc = mapping.getColumn('firstName')
+        def cc = mapping.getPropertyConfig('firstName')
         assertEquals 'read-only', cc.cache.usage
         assertEquals 'non-lazy', cc.cache.include
     }
@@ -145,7 +146,7 @@ class HibernateMappingBuilderTests extends GroovyTestCase {
             firstName cache:[usage:'read-only', include:'non-lazy']
         }
 
-        def cc = mapping.getColumn('firstName')
+        def cc = mapping.getPropertyConfig('firstName')
         assertEquals 'read-only', cc.cache.usage
         assertEquals 'non-lazy', cc.cache.include
     }
@@ -161,7 +162,7 @@ class HibernateMappingBuilderTests extends GroovyTestCase {
             }
         }
 
-        def cc = mapping.getColumn('firstName')
+        def cc = mapping.getPropertyConfig('firstName')
         assertEquals 'read-only', cc.cache.usage
         
     }
@@ -173,7 +174,7 @@ class HibernateMappingBuilderTests extends GroovyTestCase {
             firstName cache:'read-only'
         }
 
-        def cc = mapping.getColumn('firstName')
+        def cc = mapping.getPropertyConfig('firstName')
         assertEquals 'read-only', cc.cache.usage
     }
 
@@ -188,7 +189,7 @@ class HibernateMappingBuilderTests extends GroovyTestCase {
             }
         }
 
-        def cc = mapping.getColumn('firstName')
+        def cc = mapping.getPropertyConfig('firstName')
         assertEquals 'read-write', cc.cache.usage
         assertEquals 'all', cc.cache.include
     }
@@ -200,7 +201,7 @@ class HibernateMappingBuilderTests extends GroovyTestCase {
             firstName cache:true
         }
 
-        def cc = mapping.getColumn('firstName')
+        def cc = mapping.getPropertyConfig('firstName')
         assertEquals 'read-write', cc.cache.usage
         assertEquals 'all', cc.cache.include
     }
@@ -286,8 +287,8 @@ class HibernateMappingBuilderTests extends GroovyTestCase {
          }
 
          assertEquals Long, mapping.identity.type
-         assertEquals 'foo_id', mapping.getColumn("id").column
-         assertEquals Integer, mapping.getColumn("id").type
+         assertEquals 'foo_id', mapping.getPropertyConfig("id").column
+         assertEquals Integer, mapping.getPropertyConfig("id").type
          assertEquals 'native', mapping.identity.generator
 
      }
@@ -342,8 +343,8 @@ class HibernateMappingBuilderTests extends GroovyTestCase {
          }
 
 
-        assertEquals "First_Name",mapping.getColumn('firstName').column
-        assertEquals "Last_Name",mapping.getColumn('lastName').column
+        assertEquals "First_Name",mapping.getPropertyConfig('firstName').column
+        assertEquals "Last_Name",mapping.getPropertyConfig('lastName').column
      }
 
      void testSimpleColumnMappings() {
@@ -358,8 +359,8 @@ class HibernateMappingBuilderTests extends GroovyTestCase {
          }
 
         
-        assertEquals "First_Name",mapping.getColumn('firstName').column
-        assertEquals "Last_Name",mapping.getColumn('lastName').column
+        assertEquals "First_Name",mapping.getPropertyConfig('firstName').column
+        assertEquals "Last_Name",mapping.getPropertyConfig('lastName').column
      }
 
 
@@ -374,7 +375,8 @@ class HibernateMappingBuilderTests extends GroovyTestCase {
                             unique:true,
                             type: java.sql.Clob,
                             length:255,
-                            index:'foo'
+                            index:'foo',
+                            sqlType: 'text'
                             
                  lastName column:'Last_Name'
              }
@@ -387,6 +389,7 @@ class HibernateMappingBuilderTests extends GroovyTestCase {
         assertEquals java.sql.Clob,mapping.columns.firstName.type
         assertEquals 255,mapping.columns.firstName.length
         assertEquals 'foo',mapping.columns.firstName.index
+        assertEquals "text",mapping.columns.firstName.sqlType
         assertEquals "Last_Name",mapping.columns.lastName.column
 
      }
@@ -401,7 +404,8 @@ class HibernateMappingBuilderTests extends GroovyTestCase {
                         unique:true,
                         type: java.sql.Clob,
                         length:255,
-                        index:'foo'
+                        index:'foo',
+                        sqlType: 'text'
 
              lastName column:'Last_Name'
          }
@@ -413,7 +417,27 @@ class HibernateMappingBuilderTests extends GroovyTestCase {
         assertEquals java.sql.Clob,mapping.columns.firstName.type
         assertEquals 255,mapping.columns.firstName.length
         assertEquals 'foo',mapping.columns.firstName.index
+        assertEquals "text",mapping.columns.firstName.sqlType
         assertEquals "Last_Name",mapping.columns.lastName.column
 
      }
+
+    void testPropertyWithMultipleColumns() {
+        def builder = new HibernateMappingBuilder("Foo")
+        def mapping = builder.evaluate {
+            amount type: MyUserType, {
+                column name: "value"
+                column name: "currency", sqlType: "char", length: 3
+            }
+        }
+
+        assertEquals 2, mapping.columns.amount.columns.size()
+        assertEquals "value", mapping.columns.amount.columns[0].name
+        assertEquals "currency", mapping.columns.amount.columns[1].name
+        assertEquals "char", mapping.columns.amount.columns[1].sqlType
+        assertEquals 3, mapping.columns.amount.columns[1].length
+
+        shouldFail { mapping.columns.amount.column }
+        shouldFail { mapping.columns.amount.sqlType }
+    }
 }

@@ -25,10 +25,7 @@ import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 import org.codehaus.groovy.grails.validation.TestClass;
-import org.hibernate.mapping.Column;
-import org.hibernate.mapping.ForeignKey;
-import org.hibernate.mapping.PersistentClass;
-import org.hibernate.mapping.Table;
+import org.hibernate.mapping.*;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
 
@@ -88,6 +85,24 @@ public class GrailsDomainBinderTests extends TestCase {
         "    static hasMany = [specialities:Specialty] \n" +
         "}";
 
+    private static final String MULTI_COLUMN_USER_TYPE_DEFINITION =
+        "import org.codehaus.groovy.grails.orm.hibernate.cfg.*\n" +
+        "class Item {\n" +
+        "    Long id \n" +
+        "    Long version \n" +
+        "    String name \n" +
+        "    MyType other \n" +
+        "    MonetaryAmount price \n" +
+        "    static mapping = {\n" +
+        "        name column: 's_name', sqlType: 'text'\n" +
+        "        other type: MyUserType, sqlType: 'wrapper-characters'\n" +
+        "        price type: MonetaryAmountUserType, {\n" +
+        "            column name: 'value'\n" +
+        "            column name: 'currency_code', sqlType: 'text'\n" +
+        "        }\n" +
+        "    }\n" +
+        "}";
+
     public void testOneToOneBindingTables() {
         DefaultGrailsDomainConfiguration config = getDomainConfig(ONE_TO_ONE_CLASSES_DEFINITION);        
         assertEquals("Tables created", 2, getTableCount(config));
@@ -141,8 +156,50 @@ public class GrailsDomainBinderTests extends TestCase {
         assertColumnNotNullable("vet_specialty", "vets_id", config);
         assertColumnNotNullable("vet_specialty", "specialities_id", config);
     }
+
+    /**
+     * Tests that single- and multi-column user type mappings work
+     * correctly. Also Checks that the "sqlType" property is honoured.
+     */
+    public void testUserTypeMappings() {
+        DefaultGrailsDomainConfiguration config = getDomainConfig(MULTI_COLUMN_USER_TYPE_DEFINITION);
+        PersistentClass persistentClass = config.getClassMapping("Item");
+
+        // First check the "name" property and its associated column.
+        Property nameProperty = persistentClass.getProperty("name");
+        assertEquals(1, nameProperty.getColumnSpan());
+        assertEquals("name", nameProperty.getName());
+
+        Column column = (Column) nameProperty.getColumnIterator().next();
+        assertEquals("s_name", column.getName());
+        assertEquals("text", column.getSqlType());
+
+        // Next the "other" property.
+        Property otherProperty = persistentClass.getProperty("other");
+        assertEquals(1, otherProperty.getColumnSpan());
+        assertEquals("other", otherProperty.getName());
+
+        column = (Column) otherProperty.getColumnIterator().next();
+        assertEquals("other", column.getName());
+        assertEquals("wrapper-characters", column.getSqlType());
+
+        // And now for the "price" property, which should have two
+        // columns.
+        Property priceProperty = persistentClass.getProperty("price");
+        assertEquals(2, priceProperty.getColumnSpan());
+        assertEquals("price", priceProperty.getName());
+
+        Iterator colIter = priceProperty.getColumnIterator();
+        column = (Column) colIter.next();
+        assertEquals("value", column.getName());
+        assertNull("SQL type should have been 'null' for 'value' column.", column.getSqlType());
+
+        column = (Column) colIter.next();
+        assertEquals("currency_code", column.getName());
+        assertEquals("text", column.getSqlType());
+    }
     
-	public void testDomainClassBinding() {
+    public void testDomainClassBinding() {
 		GroovyClassLoader cl = new GroovyClassLoader();
 		GrailsDomainClass domainClass = new DefaultGrailsDomainClass(
 			cl.parseClass(

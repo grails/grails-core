@@ -23,19 +23,15 @@ package org.codehaus.groovy.grails.orm.hibernate.cfg
  * Created: Sep 27, 2007
  */
 class ColumnConfig {
-    String column
-    String cascade
-    def type
+    String name
+    String sqlType
     String index
-    boolean lazy = false
     boolean unique = false
     int length = -1
     int precision = -1
     int scale = -1
-    CacheConfig cache
-    JoinTable joinTable = new JoinTable()
 
     String toString() {
-        "column[name:$name, type:$type, index:$index, lazy:$lazy, unique:$unique, length:$length, precision:$precision, scale:$scale]"
+        "column[name:$name, index:$index, unique:$unique, length:$length, precision:$precision, scale:$scale]"
     }
 }

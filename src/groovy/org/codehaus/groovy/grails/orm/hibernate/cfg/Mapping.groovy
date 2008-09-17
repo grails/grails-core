@@ -57,6 +57,6 @@ class Mapping {
     /**
      * Obtains a ColumnConfig object for the given name
      */
-    ColumnConfig getColumn(String name) { columns[name] }
+    PropertyConfig getPropertyConfig(String name) { columns[name] }
 }
 
