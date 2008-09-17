@@ -229,10 +229,10 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
     class UrlMappingKey {
         String controller;
         String action;
-        Collection paramNames = Collections.EMPTY_SET;
+        Set paramNames = Collections.EMPTY_SET;
 
 
-        public UrlMappingKey(String controller, String action, Collection paramNames) {
+        public UrlMappingKey(String controller, String action, Set paramNames) {
             this.controller = controller;
             this.action = action;
             this.paramNames = paramNames;
@@ -246,7 +246,7 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
             UrlMappingKey that = (UrlMappingKey) o;
 
             if (action != null && !action.equals(that.action)) return false;
-            if (controller != null && !controller.equals(that.controller)) return false;           
+            if (controller != null && !controller.equals(that.controller)) return false;
             if (!paramNames.equals(that.paramNames)) return false;
 
             return true;
