@@ -29,22 +29,22 @@
 
     private renderEnumEditor(domainClass,property) {
         if(property.isEnum()) {
-            return "<g:select  from=\"\${${property.type.name}?.values()}\" value=\"\${${domainClass.propertyName}?.${property.name}}\" name=\"${property.name}\" ${renderNoSelection(property)}></g:select>"
+            return "<g:select  from=\"\${${property.type.name}?.values()}\" value=\"\${${domainInstance}?.${property.name}}\" name=\"${property.name}\" ${renderNoSelection(property)}></g:select>"
         }
     }
 
     private renderStringEditor(domainClass, property) {
         if(!cp) {
-            return "<input type=\"text\" name=\"${property.name}\" id=\"${property.name}\" value=\"\${fieldValue(bean:${domainClass.propertyName},field:'${property.name}')}\" />"
+            return "<input type=\"text\" name=\"${property.name}\" id=\"${property.name}\" value=\"\${fieldValue(bean:${domainInstance},field:'${property.name}')}\" />"
         }
         else {
             if("textarea" == cp.widget || (cp.maxSize > 250 && !cp.password && !cp.inList)) {
-                return "<textarea rows=\"5\" cols=\"40\" name=\"${property.name}\">\${fieldValue(bean:${domainClass.propertyName}, field:'${property.name}')}</textarea>"
+                return "<textarea rows=\"5\" cols=\"40\" name=\"${property.name}\">\${fieldValue(bean:${domainInstance}, field:'${property.name}')}</textarea>"
             }
              else {
                 if(cp.inList) {
                     def sb = new StringBuffer('<g:select ')
-                    sb << "id=\"${property.name}\" name=\"${property.name}\" from=\"\${${domainClass.propertyName}.constraints.${property.name}.inList}\" value=\"\${${domainClass.propertyName}.${property?.name}}\" ${renderNoSelection(property)}>"
+                    sb << "id=\"${property.name}\" name=\"${property.name}\" from=\"\${${domainInstance}.constraints.${property.name}.inList}\" value=\"\${${domainInstance}.${property?.name}}\" ${renderNoSelection(property)}>"
                     sb << '</g:select>'
                     return sb.toString()
                 }
@@ -53,7 +53,7 @@
                     cp.password ? sb << 'type="password" ' : sb << 'type="text" '
                     if(!cp.editable) sb << 'readonly="readonly" '
                     if(cp.maxSize) sb << "maxlength=\"${cp.maxSize}\" "
-                    sb << "id=\"${property.name}\" name=\"${property.name}\" value=\"\${fieldValue(bean:${domainClass.propertyName},field:'${property.name}')}\"/>"
+                    sb << "id=\"${property.name}\" name=\"${property.name}\" value=\"\${fieldValue(bean:${domainInstance},field:'${property.name}')}\"/>"
                     return sb.toString()
                 }
             }
@@ -66,7 +66,7 @@
 
     private renderManyToOne(domainClass,property) {
         if(property.association) {            
-            return "<g:select optionKey=\"id\" from=\"\${${property.type.name}.list()}\" name=\"${property.name}.id\" value=\"\${${domainClass.propertyName}?.${property.name}?.id}\" ${renderNoSelection(property)}></g:select>"
+            return "<g:select optionKey=\"id\" from=\"\${${property.type.name}.list()}\" name=\"${property.name}.id\" value=\"\${${domainInstance}?.${property.name}?.id}\" ${renderNoSelection(property)}></g:select>"
         }
     }
 
@@ -75,42 +75,42 @@
         def pw = new PrintWriter(sw)
         pw.println()
         pw.println "<ul>"
-        pw.println "<g:each var=\"${property.name[0]}\" in=\"\${${domainClass.propertyName}?.${property.name}?}\">"
+        pw.println "<g:each var=\"${property.name[0]}\" in=\"\${${domainInstance}?.${property.name}?}\">"
         pw.println "    <li><g:link controller=\"${property.referencedDomainClass.propertyName}\" action=\"show\" id=\"\${${property.name[0]}.id}\">\${${property.name[0]}?.encodeAsHTML()}</g:link></li>"
         pw.println "</g:each>"
         pw.println "</ul>"
-        pw.println "<g:link controller=\"${property.referencedDomainClass.propertyName}\" params=\"['${domainClass.propertyName}.id':${domainClass.propertyName}?.id]\" action=\"create\">Add ${property.referencedDomainClass.shortName}</g:link>"
+        pw.println "<g:link controller=\"${property.referencedDomainClass.propertyName}\" params=\"['${domainClass.propertyName}.id':${domainInstance}?.id]\" action=\"create\">Add ${property.referencedDomainClass.shortName}</g:link>"
         return sw.toString()
     }
 
     private renderNumberEditor(domainClass,property) {
         if(!cp) {
             if(property.type == Byte.class) {
-                return "<g:select from=\"\${-128..127}\" name=\"${property.name}\" value=\"\${${domainClass.propertyName}?.${property.name}}\"></g:select>"
+                return "<g:select from=\"\${-128..127}\" name=\"${property.name}\" value=\"\${${domainInstance}?.${property.name}}\"></g:select>"
             }
             else {
-                return "<input type=\"text\" id=\"${property.name}\" name=\"${property.name}\" value=\"\${fieldValue(bean:${domainClass.propertyName},field:'${property.name}')}\" />"
+                return "<input type=\"text\" id=\"${property.name}\" name=\"${property.name}\" value=\"\${fieldValue(bean:${domainInstance},field:'${property.name}')}\" />"
             }
         }
         else {
             if(cp.range) {
-                return "<g:select from=\"\${${cp.range.from}..${cp.range.to}}\" id=\"${property.name}\" name=\"${property.name}\" value=\"\${${domainClass.propertyName}?.${property.name}}\" ${renderNoSelection(property)}></g:select>"
+                return "<g:select from=\"\${${cp.range.from}..${cp.range.to}}\" id=\"${property.name}\" name=\"${property.name}\" value=\"\${${domainInstance}?.${property.name}}\" ${renderNoSelection(property)}></g:select>"
             }
             else {
-                return "<input type=\"text\" id=\"${property.name}\" name=\"${property.name}\" value=\"\${fieldValue(bean:${domainClass.propertyName},field:'${property.name}')}\" />"
+                return "<input type=\"text\" id=\"${property.name}\" name=\"${property.name}\" value=\"\${fieldValue(bean:${domainInstance},field:'${property.name}')}\" />"
             }
         }
      }
 
     private renderBooleanEditor(domainClass,property) {
         if(!cp) {
-            return "<g:checkBox name=\"${property.name}\" value=\"\${${domainClass.propertyName}?.${property.name}}\"></g:checkBox>"
+            return "<g:checkBox name=\"${property.name}\" value=\"\${${domainInstance}?.${property.name}}\"></g:checkBox>"
         }
         else {
             def buf = new StringBuffer('<g:checkBox ')
             if(cp.widget) buf << "widget=\"${cp.widget}\"";
 
-            buf << "name=\"${property.name}\" value=\"\${${domainClass.propertyName}?.${property.name}}\" "
+            buf << "name=\"${property.name}\" value=\"\${${domainInstance}?.${property.name}}\" "
             cp.attributes.each { k,v ->
                 buf << "${k}=\"${v}\" "
             }
@@ -121,11 +121,11 @@
 
     private renderDateEditor(domainClass,property) {
         if(!cp) {
-            return "<g:datePicker name=\"${property.name}\" value=\"\${${domainClass.propertyName}?.${property.name}}\"></g:datePicker>"
+            return "<g:datePicker name=\"${property.name}\" value=\"\${${domainInstance}?.${property.name}}\"></g:datePicker>"
         }
         else {
             if(!cp.editable) {
-                return "\${${domainClass.propertyName}?.${property.name}?.toString()}"
+                return "\${${domainInstance}?.${property.name}?.toString()}"
             }
             else {
                 def buf = new StringBuffer('<g:datePicker ')
@@ -134,7 +134,7 @@
                 cp.attributes.each { k,v ->
                     buf << "${k}=\"${v}\" "
                 }
-                buf << "name=\"${property.name}\" value=\"\${${domainClass.propertyName}?.${property.name}}\" ${renderNoSelection(property)}></g:datePicker>"
+                buf << "name=\"${property.name}\" value=\"\${${domainInstance}?.${property.name}}\" ${renderNoSelection(property)}></g:datePicker>"
                 return buf.toString()
             }
         }
@@ -142,7 +142,7 @@
 
     private renderSelectTypeEditor(type,domainClass,property) {
         if(!cp) {
-            return "<g:${type}Select name=\"${property.name}\" value=\"\${${domainClass.propertyName}?.${property.name}}\"></g:${type}Select>"
+            return "<g:${type}Select name=\"${property.name}\" value=\"\${${domainInstance}?.${property.name}}\"></g:${type}Select>"
         }
         else {
             def buf = new StringBuffer("<g:${type}Select ")
@@ -150,7 +150,7 @@
             cp.attributes.each { k,v ->
                 buf << "${k}=\"${v}\" "
             }
-            buf << "name=\"${property.name}\" value=\"\${${domainClass.propertyName}?.${property.name}}\" ${renderNoSelection(property)}></g:${type}Select>"
+            buf << "name=\"${property.name}\" value=\"\${${domainInstance}?.${property.name}}\" ${renderNoSelection(property)}></g:${type}Select>"
             return buf.toString()
         }
     }
