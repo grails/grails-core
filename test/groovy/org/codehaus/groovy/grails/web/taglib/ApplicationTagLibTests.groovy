@@ -121,8 +121,6 @@ class ApplicationTagLibTests extends AbstractGrailsTagTests {
         assertOutputEquals "/images/foo.jpg", template
     }
 
-
-
     void testCreateLinkTo() {
 		StringWriter sw = new StringWriter();
 		withTag("createLinkTo", sw) { tag ->
@@ -142,6 +140,25 @@ class ApplicationTagLibTests extends AbstractGrailsTagTests {
 			assertEquals '', sw.toString()
 		}
 	}
+
+    void testCreateLinkToFilesInRoot() {
+		StringWriter sw = new StringWriter();
+		withTag("createLinkTo", sw) { tag ->
+			def attrs = [dir:'/', file:'test.gsp']
+			tag.call( attrs )
+			assertEquals '/test.gsp', sw.toString()
+		}
+    }
+
+    void testCreateLinkToFilesInRootWithContext() {
+		StringWriter sw = new StringWriter();
+        request.contextPath = "/foo"
+        withTag("createLinkTo", sw) { tag ->
+			def attrs = [dir:'/', file:'test.gsp']
+			tag.call( attrs )
+			assertEquals '/foo/test.gsp', sw.toString()
+		}
+    }
 
     void testCreateLinkWithZeroId() {
         // test case for GRAILS-1123

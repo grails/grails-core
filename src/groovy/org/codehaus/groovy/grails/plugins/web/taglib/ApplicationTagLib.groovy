@@ -128,7 +128,7 @@ class ApplicationTagLib implements ApplicationContextAware {
         }
         def file = attrs['file']
         if(file) {
-           writer << (file.startsWith("/") ?  file : "/${file}")
+           writer << (file.startsWith("/") || dir?.endsWith('/') ?  file : "/${file}")
         }
     }
 
