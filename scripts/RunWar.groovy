@@ -58,9 +58,10 @@ target ( runWar : "Main implementation that executes a Grails application WAR") 
         }
         event("StatusFinal", ["Server running. Browse to http://localhost:$serverPort$serverContextPath"])
     } catch(Throwable t) {
-        t.printStackTrace()
+        if(t.class != java.net.BindException)
+			t.printStackTrace()
         event("StatusFinal", ["Server failed to start: $t"])
-        return
+        exit(1)
     }
 
     try {

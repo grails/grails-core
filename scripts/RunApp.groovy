@@ -16,7 +16,7 @@
 
 /**
  * Gant script that executes Grails using an embedded Jetty server
- * 
+ *
  * @author Graeme Rocher
  *
  * @since 0.4
@@ -35,10 +35,10 @@ import org.codehaus.groovy.grails.plugins.PluginManagerHolder
 import org.codehaus.groovy.grails.cli.GrailsScriptRunner
 
 
-Ant.property(environment:"env")
+Ant.property(environment: "env")
 grailsHome = Ant.antProject.properties."env.GRAILS_HOME"
 grailsServer = null
-grailsContext = null 
+grailsContext = null
 autoRecompile = System.getProperty("disable.auto.recompile") ? !(System.getProperty("disable.auto.recompile").toBoolean()) : true
 
 // How often should recompilation occur while the application is running (in seconds)?
@@ -47,56 +47,58 @@ recompileFrequency = System.getProperty("recompile.frequency")
 recompileFrequency = recompileFrequency ? recompileFrequency.toInteger() : 3
 
 
-includeTargets << new File ( "${grailsHome}/scripts/Package.groovy" )
+includeTargets << new File("${grailsHome}/scripts/Package.groovy")
 
 
-shouldPackageTemplates=true
+shouldPackageTemplates = true
 
 
 
 
-target ('default': "Run's a Grails application in Jetty") {
-	depends( checkVersion, configureProxy, packageApp )
-	runApp()
-	watchContext()
+target('default': "Run's a Grails application in Jetty") {
+    depends(checkVersion, configureProxy, packageApp)
+    runApp()
+    watchContext()
 }
-target ( runApp : "Main implementation that executes a Grails application") {
-	System.setProperty('org.mortbay.xml.XmlParser.NotValidating', 'true')
+target(runApp: "Main implementation that executes a Grails application") {
+    System.setProperty('org.mortbay.xml.XmlParser.NotValidating', 'true')
     try {
-		println "Running Grails application.."
+        println "Running Grails application.."
         def server = configureHttpServer()
-        profile("start server") {            
+        profile("start server") {
             server.start()
         }
         event("StatusFinal", ["Server running. Browse to http://localhost:$serverPort$serverContextPath"])
-    } catch(Throwable t) {
-        t.printStackTrace()
+    } catch (Throwable t) {
+        if (t.class != java.net.BindException)
+            t.printStackTrace()
         event("StatusFinal", ["Server failed to start: $t"])
+        exit(1)
     }
 }
-target( watchContext: "Watches the WEB-INF/classes directory for changes and restarts the server if necessary") {
+target(watchContext: "Watches the WEB-INF/classes directory for changes and restarts the server if necessary") {
     long lastModified = classesDir.lastModified()
     boolean keepRunning = true
     boolean isInteractive = System.getProperty("grails.interactive.mode") == "true"
 
-    if(isInteractive) {
-        def daemonThread = new Thread( {
+    if (isInteractive) {
+        def daemonThread = new Thread({
             println "--------------------------------------------------------"
-            println "Application loaded in interactive mode, type 'exit' to shutdown server or your command name in to continue (hit ENTER to run the last command):"            
+            println "Application loaded in interactive mode, type 'exit' to shutdown server or your command name in to continue (hit ENTER to run the last command):"
 
             def reader = new BufferedReader(new InputStreamReader(System.in))
             def cmd = reader.readLine()
             def scriptName
-            while(cmd!=null) {
-                if(cmd == 'exit' || cmd == 'quit') break
-                if(cmd != 'run-app') {
+            while (cmd != null) {
+                if (cmd == 'exit' || cmd == 'quit') break
+                if (cmd != 'run-app') {
                     scriptName = cmd ? GrailsScriptRunner.processArgumentsAndReturnScriptName(cmd) : scriptName
-                    if(scriptName) {
+                    if (scriptName) {
                         def now = System.currentTimeMillis()
                         GrailsScriptRunner.callPluginOrGrailsScript(scriptName)
                         def end = System.currentTimeMillis()
                         println "--------------------------------------------------------"
-                        println "Command [$scriptName] completed in ${end-now}ms"
+                        println "Command [$scriptName] completed in ${end - now}ms"
                     }
                 }
                 else {
@@ -120,8 +122,8 @@ target( watchContext: "Watches the WEB-INF/classes directory for changes and res
         daemonThread.daemon = true
         daemonThread.run()
     }
-    
-    while(keepRunning) {
+
+    while (keepRunning) {
         if (autoRecompile) {
             lastModified = recompileCheck(lastModified) {
                 try {
@@ -135,7 +137,7 @@ target( watchContext: "Watches the WEB-INF/classes directory for changes and res
                     // reload plugins
                     loadPlugins()
                     setupWebContext()
-                    grailsServer.setHandler( webContext )
+                    grailsServer.setHandler(webContext)
                     grailsServer.start()
                 } catch (Throwable e) {
                     GrailsUtil.sanitizeStackTrace(e)
@@ -147,41 +149,41 @@ target( watchContext: "Watches the WEB-INF/classes directory for changes and res
     }
 }
 
-target( configureHttpServer : "Returns a jetty server configured with an HTTP connector") {
+target(configureHttpServer: "Returns a jetty server configured with an HTTP connector") {
     def server = new Server()
     grailsServer = server
     def connectors = [new SelectChannelConnector()]
     connectors[0].setPort(serverPort)
-    server.setConnectors( (Connector [])connectors )
-	setupWebContext()
-    server.setHandler( webContext )
+    server.setConnectors((Connector[]) connectors)
+    setupWebContext()
+    server.setHandler(webContext)
     event("ConfigureJetty", [server])
     return server
 }
 
-target( setupWebContext: "Sets up the Jetty web context") {
+target(setupWebContext: "Sets up the Jetty web context") {
     webContext = new WebAppContext("${basedir}/web-app", serverContextPath)
-    def configurations = [org.mortbay.jetty.webapp.WebInfConfiguration, 
-                          org.mortbay.jetty.plus.webapp.Configuration, 
-                          org.mortbay.jetty.webapp.JettyWebXmlConfiguration, 
-                          org.mortbay.jetty.webapp.TagLibConfiguration]*.newInstance() 
-    def jndiConfig = new org.mortbay.jetty.plus.webapp.EnvConfiguration()						
-	if(config.grails.development.jetty.env) {
-		def res = resolveResources(config.grails.development.jetty.env)
-		if(res) {
-			jndiConfig.setJettyEnvXml(res[0].URL)			
-		}
-	}
-	configurations.add(1,jndiConfig)
+    def configurations = [org.mortbay.jetty.webapp.WebInfConfiguration,
+            org.mortbay.jetty.plus.webapp.Configuration,
+            org.mortbay.jetty.webapp.JettyWebXmlConfiguration,
+            org.mortbay.jetty.webapp.TagLibConfiguration]*.newInstance()
+    def jndiConfig = new org.mortbay.jetty.plus.webapp.EnvConfiguration()
+    if (config.grails.development.jetty.env) {
+        def res = resolveResources(config.grails.development.jetty.env)
+        if (res) {
+            jndiConfig.setJettyEnvXml(res[0].URL)
+        }
+    }
+    configurations.add(1, jndiConfig)
     webContext.configurations = configurations
     webContext.setDefaultsDescriptor("${grailsHome}/conf/webdefault.xml")
     webContext.setClassLoader(classLoader)
-    webContext.setDescriptor(webXmlFile.absolutePath)	
+    webContext.setDescriptor(webXmlFile.absolutePath)
 }
 
-target( stopServer : "Stops the Grails Jetty server") {
-	if(grailsServer) {
-		grailsServer.stop()		
-	}	
+target(stopServer: "Stops the Grails Jetty server") {
+    if (grailsServer) {
+        grailsServer.stop()
+    }
     event("StatusFinal", ["Server stopped"])
 }
