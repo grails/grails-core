@@ -1,14 +1,18 @@
 package org.codehaus.groovy.grails.plugins.web
 
 import grails.spring.BeanBuilder
+import org.codehaus.groovy.grails.commons.ConfigurationHolder
+import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator
+import org.springframework.beans.factory.NoSuchBeanDefinitionException
 import org.springframework.core.io.FileSystemResource
+import org.springframework.web.multipart.commons.CommonsMultipartResolver
 
 class ControllersGrailsPluginTests extends AbstractGrailsPluginTests {
-	
-	
-	void onSetUp() {
-		gcl.parseClass(
-"""
+
+
+    void onSetUp() {
+        gcl.parseClass(
+                """
 class TestController {
    def list = {}			
 }
@@ -17,46 +21,70 @@ class TestController {
         pluginsToLoad << gcl.loadClass("org.codehaus.groovy.grails.plugins.CoreGrailsPlugin")
         pluginsToLoad << gcl.loadClass("org.codehaus.groovy.grails.plugins.i18n.I18nGrailsPlugin")
         pluginsToLoad << gcl.loadClass("org.codehaus.groovy.grails.plugins.web.ControllersGrailsPlugin")
+    }
 
-	}
-	
-	void testControllersPlugin() {		
-		assert appCtx.containsBean("TestControllerTargetSource")
-		assert appCtx.containsBean("TestControllerProxy")
-		assert appCtx.containsBean("TestControllerClass")
-		assert appCtx.containsBean("TestController")
-	}
+    void testControllersPlugin() {
+        assert appCtx.containsBean("TestControllerTargetSource")
+        assert appCtx.containsBean("TestControllerProxy")
+        assert appCtx.containsBean("TestControllerClass")
+        assert appCtx.containsBean("TestController")
+    }
 
-	void testOldBindDataMethodsDelegateToNewOnes() {
-	    Class testClass = parseTestBean()
-	    def controller = appCtx.getBean("TestController")
-	    def bean = testClass.newInstance()
-	    def params = [name:"beanName", pages:3]
-	    controller.bindData(bean, params, ["pages"])
-	    assertEquals(0, bean.pages)
-	    assertEquals("beanName", bean.name)
+    void testOldBindDataMethodsDelegateToNewOnes() {
+        Class testClass = parseTestBean()
+        def controller = appCtx.getBean("TestController")
+        def bean = testClass.newInstance()
+        def params = [name: "beanName", pages: 3]
+        controller.bindData(bean, params, ["pages"])
+        assertEquals(0, bean.pages)
+        assertEquals("beanName", bean.name)
 
-	    bean = testClass.newInstance()
-	    params = ['a.name':"beanName", 'b.address':"address", 'a.pages':3]
-	    controller.bindData(bean, params, ["pages"], "a")
-	    assertEquals(0, bean.pages)
-	    assertEquals("beanName", bean.name)
-	    assertNull(bean.address)
+        bean = testClass.newInstance()
+        params = ['a.name': "beanName", 'b.address': "address", 'a.pages': 3]
+        controller.bindData(bean, params, ["pages"], "a")
+        assertEquals(0, bean.pages)
+        assertEquals("beanName", bean.name)
+        assertNull(bean.address)
 
-	    }
+    }
 
     void testBindDataConvertsSingleIncludeToListInternally() {
-	    Class testClass = parseTestBean()
-	    def bean = testClass.newInstance()
-	    def params = ['a.name':"beanName", 'b.address':"address", 'a.pages':3]
-	    def controller = appCtx.getBean("TestController")
-	    controller.bindData(bean, params, [include:"name"], "a")
-	    assertEquals(0, bean.pages)
-	    assertEquals("beanName", bean.name)
-	    assertNull(bean.address)
-	}
+        Class testClass = parseTestBean()
+        def bean = testClass.newInstance()
+        def params = ['a.name': "beanName", 'b.address': "address", 'a.pages': 3]
+        def controller = appCtx.getBean("TestController")
+        controller.bindData(bean, params, [include: "name"], "a")
+        assertEquals(0, bean.pages)
+        assertEquals("beanName", bean.name)
+        assertNull(bean.address)
+    }
 
-	void testBeansWhenNotWarDeployedAndDevelopmentEnv() {
+    void testCommonsMultipartCanBeDisabled() {
+        tearDown()
+        ConfigurationHolder.setConfig(null)
+        gcl = new GroovyClassLoader()
+        gcl.parseClass("grails.disableCommonsMultipart=true", 'Config.groovy')
+        setUp()
+
+        assertTrue ga.config.grails.disableCommonsMultipart
+        try {
+            appCtx.getBean(GrailsRuntimeConfigurator.MULTIPART_RESOLVER_BEAN)
+            fail('Multipart was not disabled')
+        } catch (NoSuchBeanDefinitionException e) {
+            //expected
+        }
+
+        tearDown()
+        ConfigurationHolder.setConfig(null)
+        gcl = new GroovyClassLoader()
+        setUp()
+
+        assertTrue ga.config.grails.disableCommonsMultipart.size() == 0
+
+        assertTrue appCtx.getBean(GrailsRuntimeConfigurator.MULTIPART_RESOLVER_BEAN) instanceof CommonsMultipartResolver
+    }
+
+    void testBeansWhenNotWarDeployedAndDevelopmentEnv() {
         try {
             System.setProperty("grails.env", "development")
             def mock = [application: [config: new ConfigObject(), warDeployed: false]]
@@ -76,14 +104,14 @@ class TestController {
 
             beanDef = bb.getBeanDefinition("jspViewResolver")
             assertEquals "groovyPageResourceLoader", beanDef.getPropertyValues().getPropertyValue("resourceLoader").getValue()?.beanName
-            
+
         } finally {
             System.setProperty("grails.env", "")
         }
     }
 
     void testBeansWhenWarDeployedAndDevelopmentEnv() {
-      try {
+        try {
             System.setProperty("grails.env", "development")
             def mock = [application: [config: new ConfigObject(), warDeployed: true]]
             def plugin = new ControllersGrailsPlugin()
@@ -97,15 +125,15 @@ class TestController {
         }
     }
 
-	Class parseTestBean(){
-	    return gcl.parseClass(
-        """
+    Class parseTestBean() {
+        return gcl.parseClass(
+                """
         class TestDomainObject {
            String name
            int pages = 0
            String address
         }
         """)
-     }
+    }
 
 }

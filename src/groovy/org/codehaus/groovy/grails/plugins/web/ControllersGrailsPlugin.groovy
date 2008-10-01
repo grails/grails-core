@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.plugins.web;
+package org.codehaus.groovy.grails.plugins.web
 
 import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
 import org.springframework.web.context.request.RequestContextHolder as RCH
@@ -22,12 +22,15 @@ import grails.util.GrailsUtil
 import java.lang.reflect.Modifier
 import org.codehaus.groovy.grails.beans.factory.UrlMappingFactoryBean
 import org.codehaus.groovy.grails.commons.*
+import org.codehaus.groovy.grails.commons.metaclass.LazyMetaPropertyMap
 import org.codehaus.groovy.grails.plugins.PluginMetaManager
 import org.codehaus.groovy.grails.plugins.web.taglib.*
 import org.codehaus.groovy.grails.validation.ConstrainedPropertyBuilder
 import org.codehaus.groovy.grails.web.errors.GrailsExceptionResolver
 import org.codehaus.groovy.grails.web.metaclass.*
+import org.codehaus.groovy.grails.web.multipart.ContentLengthAwareCommonsMultipartResolver
 import org.codehaus.groovy.grails.web.pages.GroovyPage
+import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine
 import org.codehaus.groovy.grails.web.plugins.support.WebMetaUtils
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsUrlHandlerMapping
@@ -37,23 +40,20 @@ import org.codehaus.groovy.grails.web.servlet.view.GrailsViewResolver
 import org.codehaus.groovy.grails.web.taglib.NamespacedTagDispatcher
 import org.springframework.aop.framework.ProxyFactoryBean
 import org.springframework.aop.target.HotSwappableTargetSource
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory
 import org.springframework.beans.factory.config.MethodInvokingFactoryBean
 import org.springframework.context.ApplicationContext
 import org.springframework.core.io.FileSystemResource
 import org.springframework.validation.BindException
 import org.springframework.validation.Errors
-import org.springframework.web.servlet.ModelAndView
-import org.codehaus.groovy.grails.web.multipart.ContentLengthAwareCommonsMultipartResolver
-import org.springframework.beans.factory.config.AutowireCapableBeanFactory
-import org.codehaus.groovy.grails.commons.metaclass.LazyMetaPropertyMap
-import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine
+import org.springframework.web.servlet.ModelAndView;
 
 /**
-* A plug-in that handles the configuration of controllers for Grails
-*
-* @author Graeme Rocher
-* @since 0.4
-*/
+ * A plug-in that handles the configuration of controllers for Grails
+ *
+ * @author Graeme Rocher
+ * @since 0.4
+ */
 class ControllersGrailsPlugin {
 
     def watchedResources = ["file:./grails-app/controllers/**/*Controller.groovy",
@@ -69,18 +69,20 @@ class ControllersGrailsPlugin {
             JavascriptTagLib,
             RenderTagLib,
             ValidationTagLib
-            ]
+    ]
 
-    def doWithApplicationContext = { ApplicationContext ctx ->
+    def doWithApplicationContext = {ApplicationContext ctx ->
         GroovyPagesTemplateEngine templateEngine = ctx.getBean("groovyPagesTemplateEngine")
         templateEngine.clearPageCache()
     }
-    
+
     def doWithSpring = {
         exceptionHandler(GrailsExceptionResolver) {
             exceptionMappings = ['java.lang.Exception': '/error']
         }
-        multipartResolver(ContentLengthAwareCommonsMultipartResolver)
+        if (!application.config.grails.disableCommonsMultipart) {
+            multipartResolver(ContentLengthAwareCommonsMultipartResolver)
+        }
         def urlMappings = [:]
         grailsUrlMappings(UrlMappingFactoryBean) {
             mappings = urlMappings
@@ -184,13 +186,14 @@ class ControllersGrailsPlugin {
         def grailsEnv = GrailsUtil.getEnvironment()
 
         def mappingElement = webXml.'servlet-mapping'
-        mappingElement = mappingElement[mappingElement.size()-1]
-        
+        mappingElement = mappingElement[mappingElement.size() - 1]
+
         mappingElement + {
-            'servlet-mapping' {
-                'servlet-name'("grails")
-                'url-pattern'("*.dispatch")
-            }
+            'servlet-mapping'
+                    {
+                        'servlet-name'("grails")
+                        'url-pattern'("*.dispatch")
+                    }
         }
 
         def filters = webXml.filter
@@ -214,10 +217,11 @@ class ControllersGrailsPlugin {
             }
         }
         def grailsWebRequestFilter = {
-            'filter-mapping' {
-                'filter-name'('grailsWebRequest')
-                'url-pattern'("/*")
-            }
+            'filter-mapping'
+                    {
+                        'filter-name'('grailsWebRequest')
+                        'url-pattern'("/*")
+                    }
             if (grailsEnv == "development") {
                 // Install the reload filter, which allows you to make
                 // changes to artefacts and views while the app is
@@ -226,10 +230,11 @@ class ControllersGrailsPlugin {
                 // All URLs are filtered, including any images, JS, CSS,
                 // etc. Fortunately the reload filter now has much less
                 // of an impact on response times.
-                'filter-mapping' {
-                    'filter-name'('reloadFilter')
-                    'url-pattern'("/*")
-                }
+                'filter-mapping'
+                        {
+                            'filter-name'('reloadFilter')
+                            'url-pattern'("/*")
+                        }
             }
         }
         if (charEncodingFilterMapping) {
@@ -246,14 +251,15 @@ class ControllersGrailsPlugin {
             // development mode
             def gspServlet = webXml.servlet.find {it.'servlet-name'?.text() == 'gsp'}
             gspServlet.'servlet-class' + {
-                'init-param' {
-                    description """
+                'init-param'
+                        {
+                            description """
 		              Allows developers to view the intermediade source code, when they pass
 		                a spillGroovy argument in the URL.
 							"""
-                    'param-name'('showSource')
-                    'param-value'(1)
-                }
+                            'param-name'('showSource')
+                            'param-value'(1)
+                        }
             }
         }
 
@@ -426,8 +432,6 @@ class ControllersGrailsPlugin {
                 path ? path : ""
             }
 
-
-
             // deal with abstract super classes
             while (superClass != Object.class) {
                 if (Modifier.isAbstract(superClass.getModifiers())) {
@@ -464,7 +468,7 @@ class ControllersGrailsPlugin {
 
                                 if (!commandObject) {
                                     commandObject = paramType.newInstance()
-                                    ctx.autowireCapableBeanFactory.autowireBeanProperties(commandObject,AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false)
+                                    ctx.autowireCapableBeanFactory.autowireBeanProperties(commandObject, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false)
                                     commandObjects << commandObject
                                 }
                                 def params = RCH.currentRequestAttributes().params
