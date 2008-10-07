@@ -6,15 +6,46 @@ import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator
 import org.springframework.beans.factory.NoSuchBeanDefinitionException
 import org.springframework.core.io.FileSystemResource
 import org.springframework.web.multipart.commons.CommonsMultipartResolver
+import grails.util.GrailsWebUtil
 
 class ControllersGrailsPluginTests extends AbstractGrailsPluginTests {
-
 
     void onSetUp() {
         gcl.parseClass(
                 """
 class TestController {
    def list = {}			
+}
+""")
+
+        gcl.parseClass(
+                """
+class TagLibTestController {
+    def list = {
+        StringWriter w = new StringWriter()
+        def builder = new groovy.xml.MarkupBuilder(w)
+            builder.html{
+                head{
+                    title 'Log in'
+                }
+                body{
+                h1 'Hello'
+                form{
+                }
+            }
+        }
+
+        def html = w.toString()
+        render html
+    }
+}
+""")
+
+        gcl.parseClass(
+                """class FormTagLib {
+    def form = {  attrs, body ->
+        out << 'dummy form tag'
+    }
 }
 """)
 
@@ -62,7 +93,8 @@ class TestController {
     void testCommonsMultipartCanBeDisabled() {
         tearDown()
         ConfigurationHolder.setConfig(null)
-        gcl = new GroovyClassLoader()
+
+        this.gcl = new GroovyClassLoader()
         gcl.parseClass("grails.disableCommonsMultipart=true", 'Config.groovy')
         setUp()
 
@@ -76,7 +108,7 @@ class TestController {
 
         tearDown()
         ConfigurationHolder.setConfig(null)
-        gcl = new GroovyClassLoader()
+        this.gcl = new GroovyClassLoader()
         setUp()
 
         assertTrue ga.config.grails.disableCommonsMultipart.size() == 0
@@ -125,6 +157,32 @@ class TestController {
         }
     }
 
+    void testTagLibCallResolution() {
+        def webRequest = GrailsWebUtil.bindMockWebRequest(appCtx)
+        def instance = appCtx.getBean('TagLibTestController')
+        instance.list() // should not throw StackOverflow
+        //TODO GRAILS-1765 get MarkupBuilder methodMissing to get called before Controller methodMissing
+        /*  assertEquals('''<html>
+        <head>
+          <title>Log in</title>
+        </head>
+        <body>
+          <h1>Hello</h1>
+          <form>
+            <input type='text' name='test' />
+          </form>
+        </body>
+      </html>''', response.contentAsString) */
+        assertEquals('''<html>
+  <head>
+    <title>Log in</title>
+  </head>
+  <body>
+    <h1>Hello</h1>
+  </body>
+</html>''', webRequest.currentResponse.contentAsString)
+    }
+
     Class parseTestBean() {
         return gcl.parseClass(
                 """
@@ -135,5 +193,6 @@ class TestController {
         }
         """)
     }
+
 
 }

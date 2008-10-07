@@ -18,10 +18,10 @@ abstract class AbstractGrailsPluginTests extends GroovyTestCase {
 	def webRequest
 	def request
 	def response
-	GroovyClassLoader gcl = new GroovyClassLoader()
-    GrailsApplication ga;
+	def gcl = new GroovyClassLoader()
+    def ga;
 	def mockManager
-    MockApplicationContext ctx;	
+    def ctx;	
 	def originalHandler
 	def springConfig
 	def appCtx

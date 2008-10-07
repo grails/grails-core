@@ -32,16 +32,14 @@ abstract class AbstractGrailsControllerTests extends GroovyTestCase {
 	def originalHandler
 	
 	void onSetUp() {
-		
 	}
-	void setUp() {		
-		
+
+    void setUp() {
         super.setUp();
         
         originalHandler = 	GroovySystem.metaClassRegistry.metaClassCreationHandle
 
 		GroovySystem.metaClassRegistry.metaClassCreationHandle = new ExpandoMetaClassCreationHandle();
-        
 
         ctx = new MockApplicationContext();
         onSetUp();
@@ -71,17 +69,10 @@ abstract class AbstractGrailsControllerTests extends GroovyTestCase {
         ga.setApplicationContext(ctx);
         ctx.registerMockBean(GrailsApplication.APPLICATION_ID, ga);
 
-
-
-
-		
-
 		def springConfig = new WebRuntimeSpringConfiguration(ctx)
 		servletContext = new MockServletContext()
 
-
         springConfig.servletContext = servletContext
-
 
         dependentPlugins*.doWithRuntimeConfiguration(springConfig)
         dependentPlugins.each{ mockManager.registerMockPlugin(it); it.manager = mockManager }

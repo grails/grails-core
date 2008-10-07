@@ -190,10 +190,10 @@ class ControllersGrailsPlugin {
 
         mappingElement + {
             'servlet-mapping'
-                    {
-                        'servlet-name'("grails")
-                        'url-pattern'("*.dispatch")
-                    }
+            {
+                'servlet-name'("grails")
+                'url-pattern'("*.dispatch")
+            }
         }
 
         def filters = webXml.filter
@@ -218,10 +218,10 @@ class ControllersGrailsPlugin {
         }
         def grailsWebRequestFilter = {
             'filter-mapping'
-                    {
-                        'filter-name'('grailsWebRequest')
-                        'url-pattern'("/*")
-                    }
+            {
+                'filter-name'('grailsWebRequest')
+                'url-pattern'("/*")
+            }
             if (grailsEnv == "development") {
                 // Install the reload filter, which allows you to make
                 // changes to artefacts and views while the app is
@@ -231,10 +231,10 @@ class ControllersGrailsPlugin {
                 // etc. Fortunately the reload filter now has much less
                 // of an impact on response times.
                 'filter-mapping'
-                        {
-                            'filter-name'('reloadFilter')
-                            'url-pattern'("/*")
-                        }
+                {
+                    'filter-name'('reloadFilter')
+                    'url-pattern'("/*")
+                }
             }
         }
         if (charEncodingFilterMapping) {
@@ -252,14 +252,14 @@ class ControllersGrailsPlugin {
             def gspServlet = webXml.servlet.find {it.'servlet-name'?.text() == 'gsp'}
             gspServlet.'servlet-class' + {
                 'init-param'
-                        {
-                            description """
+                {
+                    description """
 		              Allows developers to view the intermediade source code, when they pass
 		                a spillGroovy argument in the URL.
 							"""
-                            'param-name'('showSource')
-                            'param-value'(1)
-                        }
+                    'param-name'('showSource')
+                    'param-value'(1)
+                }
             }
         }
 
@@ -535,10 +535,11 @@ class ControllersGrailsPlugin {
 
             def result
             if (tagLibraryClass) {
-                synchronized (mc) {
-                    WebMetaUtils.registerMethodMissingForTags(mc, ctx, tagLibraryClass, name)
+                def controllerMc = delegate.class.metaClass
+                synchronized (controllerMc) {
+                    WebMetaUtils.registerMethodMissingForTags(controllerMc, ctx, tagLibraryClass, name)
                 }
-                result = mc.invokeMethod(delegate, name, args)
+                result = controllerMc.invokeMethod(delegate, name, args)
             }
             else {
                 throw new MissingMethodException(name, delegate.class, args)

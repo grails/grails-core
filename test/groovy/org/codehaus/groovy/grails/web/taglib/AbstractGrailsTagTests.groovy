@@ -32,8 +32,6 @@ import org.springframework.mock.web.MockHttpServletResponse
 
 abstract class AbstractGrailsTagTests extends GroovyTestCase {
 
-
-
 	MockServletContext servletContext
 	def webRequest
 	MockHttpServletRequest request
@@ -47,7 +45,6 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
 
 	GrailsApplication grailsApplication;
 	StaticMessageSource messageSource;
-
 
     def withConfig(String text, Closure callable) {
         def config = new ConfigSlurper().parse(text)

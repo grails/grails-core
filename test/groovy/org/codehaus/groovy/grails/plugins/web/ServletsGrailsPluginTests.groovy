@@ -124,7 +124,10 @@ class ServletsGrailsPluginTests extends AbstractGrailsPluginTests {
         request["bar"] = "foo"
         request["foobar"] = "yes!"
 
-        def results = request.findAll { it.key.startsWith("foo") }
+        def results = request.findAll {
+            println it
+            it.key.startsWith("foo")
+        }
 
         assertEquals( [foo:"bar",foobar:"yes!"],results )
     }

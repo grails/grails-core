@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */ 
+ */
 package org.codehaus.groovy.grails.web.plugins.support
 
 import org.springframework.context.ApplicationContext
@@ -28,7 +28,7 @@ import org.codehaus.groovy.grails.commons.GrailsApplication
 
  * @author Graeme Rocher
  * @since 1.0
-  *
+ *
  * Created: Sep 7, 2007
  * Time: 9:06:10 AM
  *
@@ -41,113 +41,126 @@ class WebMetaUtils {
      * are implemented by looking up the current request from the RequestContextHolder (RCH)
      */
     static registerCommonWebProperties(MetaClass mc, GrailsApplication application) {
-           def paramsObject = {->
-                RCH.currentRequestAttributes().params
-            }
-            def flashObject = {->
-                RCH.currentRequestAttributes().flashScope
-            }
-               def sessionObject = {->
-                RCH.currentRequestAttributes().session
-            }
-               def requestObject = {->
-                RCH.currentRequestAttributes().currentRequest
-            }
-               def responseObject = {->
-                RCH.currentRequestAttributes().currentResponse
-            }
-               def servletContextObject = {->
-                    RCH.currentRequestAttributes().servletContext
-            }
-               def grailsAttrsObject = {->
-                    RCH.currentRequestAttributes().attributes
-            }
+        def paramsObject = {->
+            RCH.currentRequestAttributes().params
+        }
+        def flashObject = {->
+            RCH.currentRequestAttributes().flashScope
+        }
+        def sessionObject = {->
+            RCH.currentRequestAttributes().session
+        }
+        def requestObject = {->
+            RCH.currentRequestAttributes().currentRequest
+        }
+        def responseObject = {->
+            RCH.currentRequestAttributes().currentResponse
+        }
+        def servletContextObject = {->
+            RCH.currentRequestAttributes().servletContext
+        }
+        def grailsAttrsObject = {->
+            RCH.currentRequestAttributes().attributes
+        }
 
-           // the params object
-           mc.getParams = paramsObject
-           // the flash object
-           mc.getFlash = flashObject
-           // the session object
-            mc.getSession = sessionObject
-           // the request object
-            mc.getRequest = requestObject
-           // the servlet context
-           mc.getServletContext = servletContextObject
-           // the response object
-            mc.getResponse = responseObject
-           // The GrailsApplicationAttributes object
-           mc.getGrailsAttributes = grailsAttrsObject
-           // The GrailsApplication object
-           mc.getGrailsApplication = {-> RCH.currentRequestAttributes().attributes.grailsApplication }
+        // the params object
+        mc.getParams = paramsObject
+        // the flash object
+        mc.getFlash = flashObject
+        // the session object
+        mc.getSession = sessionObject
+        // the request object
+        mc.getRequest = requestObject
+        // the servlet context
+        mc.getServletContext = servletContextObject
+        // the response object
+        mc.getResponse = responseObject
+        // The GrailsApplicationAttributes object
+        mc.getGrailsAttributes = grailsAttrsObject
+        // The GrailsApplication object
+        mc.getGrailsApplication = {-> RCH.currentRequestAttributes().attributes.grailsApplication }
 
-            mc.getActionName = {->
-                RCH.currentRequestAttributes().actionName
-            }
-            mc.getControllerName = {->
-                RCH.currentRequestAttributes().controllerName
-            }
+        mc.getActionName = {->
+            RCH.currentRequestAttributes().actionName
+        }
+        mc.getControllerName = {->
+            RCH.currentRequestAttributes().controllerName
+        }
 
 
     }
 
 
     static registerMethodMissingForTags(MetaClass mc, ApplicationContext ctx, GrailsTagLibClass tagLibraryClass, String name) {
-        mc."$name" = { Map attrs, Closure body ->
-                def webRequest = RCH.currentRequestAttributes()
-                def tagLibrary = ctx.getBean(tagLibraryClass.fullName)
-                def tagBean = new BeanWrapperImpl(tagLibrary)
-                def originalOut = webRequest.out
-                def capturedOutput
-                try {
-                    capturedOutput = GroovyPage.captureTagOutput(tagLibrary, name, attrs,body, webRequest, tagBean)
-                } finally {
-                    webRequest.out = originalOut
-                }
-                capturedOutput
+        mc."$name" = {Map attrs, Closure body ->
+            def webRequest = RCH.currentRequestAttributes()
+            def tagLibrary = ctx.getBean(tagLibraryClass.fullName)
+            def tagBean = new BeanWrapperImpl(tagLibrary)
+            def originalOut = webRequest.out
+            def capturedOutput
+            try {
+                capturedOutput = GroovyPage.captureTagOutput(tagLibrary, name, attrs, body, webRequest, tagBean)
+            } finally {
+                webRequest.out = originalOut
+            }
+            capturedOutput
         }
-        mc."$name" = { Map attrs, String body ->
-                def webRequest = RCH.currentRequestAttributes()
-                def tagLibrary = ctx.getBean(tagLibraryClass.fullName)
-                def tagBean = new BeanWrapperImpl(tagLibrary)
-                def originalOut = webRequest.out
-                def capturedOutput
-                try {
-                    Closure bodyClosure = {out << body}
-                    bodyClosure.delegate = tagLibrary
-                    bodyClosure.resolveStrategy = Closure.DELEGATE_ONLY
-                    capturedOutput = GroovyPage.captureTagOutput(tagLibrary, name, attrs,bodyClosure, webRequest, tagBean)
-                } finally {
-                    webRequest.out = originalOut
-                }
-                capturedOutput
+        mc."$name" = {Map attrs, String body ->
+            def webRequest = RCH.currentRequestAttributes()
+            def tagLibrary = ctx.getBean(tagLibraryClass.fullName)
+            def tagBean = new BeanWrapperImpl(tagLibrary)
+            def originalOut = webRequest.out
+            def capturedOutput
+            try {
+                Closure bodyClosure = {out << body}
+                bodyClosure.delegate = tagLibrary
+                bodyClosure.resolveStrategy = Closure.DELEGATE_ONLY
+                capturedOutput = GroovyPage.captureTagOutput(tagLibrary, name, attrs, bodyClosure, webRequest, tagBean)
+            } finally {
+                webRequest.out = originalOut
+            }
+            capturedOutput
         }
-        mc."$name" = { Map attrs ->
-                def webRequest = RCH.currentRequestAttributes()
-                def tagLibrary = ctx.getBean(tagLibraryClass.fullName)
-                def tagBean = new BeanWrapperImpl(tagLibrary)
+        mc."$name" = {Map attrs ->
+            def webRequest = RCH.currentRequestAttributes()
+            def tagLibrary = ctx.getBean(tagLibraryClass.fullName)
+            def tagBean = new BeanWrapperImpl(tagLibrary)
 
-                def originalOut = webRequest.out
-                def capturedOutput
-                try {
-                    capturedOutput = GroovyPage.captureTagOutput(tagLibrary, name, attrs,null, webRequest, tagBean)
-                } finally {
-                    webRequest.out = originalOut
-                }
-                capturedOutput
+            def originalOut = webRequest.out
+            def capturedOutput
+            try {
+                capturedOutput = GroovyPage.captureTagOutput(tagLibrary, name, attrs, null, webRequest, tagBean)
+            } finally {
+                webRequest.out = originalOut
+            }
+            capturedOutput
         }
-        mc."$name" = { ->
-                def webRequest = RCH.currentRequestAttributes()
-                def tagLibrary = ctx.getBean(tagLibraryClass.fullName)
-                def tagBean = new BeanWrapperImpl(tagLibrary)
+        mc."$name" = {Closure body ->
+            def webRequest = RCH.currentRequestAttributes()
+            def tagLibrary = ctx.getBean(tagLibraryClass.fullName)
+            def tagBean = new BeanWrapperImpl(tagLibrary)
+            def originalOut = webRequest.out
+            def capturedOutput
+            try {
+                capturedOutput = GroovyPage.captureTagOutput(tagLibrary, name, [:], body, webRequest, tagBean)
+            } finally {
+                webRequest.out = originalOut
+            }
+            capturedOutput
+        } 
+        mc."$name" = {->
+            def webRequest = RCH.currentRequestAttributes()
+            def tagLibrary = ctx.getBean(tagLibraryClass.fullName)
+            def tagBean = new BeanWrapperImpl(tagLibrary)
 
-                def originalOut = webRequest.out
-                def capturedOutput
-                try {
-                    capturedOutput = GroovyPage.captureTagOutput(tagLibrary, name, [:],null, webRequest, tagBean)
-                } finally {
-                    webRequest.out = originalOut
-                }
-                capturedOutput
+            def originalOut = webRequest.out
+            def capturedOutput
+            try {
+                capturedOutput = GroovyPage.captureTagOutput(tagLibrary, name, [:], null, webRequest, tagBean)
+            } finally {
+                webRequest.out = originalOut
+            }
+            capturedOutput
         }
 
 
