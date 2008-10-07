@@ -570,7 +570,7 @@ Try using Grails' default cache provider: 'org.hibernate.cache.OSCacheProvider'"
             def identityType = dc.identifier.type
 
             id = convertToType(id, identityType)
-            if(id) {
+            if(id != null) {
                 return template.get(dc.clazz, id)
             }
         }
