@@ -19,7 +19,10 @@ mappings {
   }
   "/surveys/$action?" {
       controller = "survey"
-   }
+  }
+  "/files/$path**?" {
+	  controller = "files"
+  }
 }
 '''
 
@@ -57,6 +60,11 @@ mappings {
         assertEquals "/blog/foo", m.createURL(entry: "foo", "utf-8")
         assertEquals "/blog/foo", m.createURL(entry: "foo", null)
         shouldFail { m.createURL([:], "utf-8") }
+
+        m = mappings[3]
+        assert m
+
+        assertEquals "/files/path/to/my/file", m.createURL([path:"/path/to/my/file"], "utf-8")
     }
 
     void testCreateUrlWithFragment() {
