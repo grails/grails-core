@@ -62,7 +62,7 @@ class BookController {
 
         servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, appCtx);
 
-        request.method = "GET"                 not
+        request.method = "GET"                 
         request.setRequestURI("/books");
 
         filter.doFilterInternal(request, response, null);
