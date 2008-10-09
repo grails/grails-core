@@ -3,9 +3,10 @@ package org.codehaus.groovy.grails.web.mapping
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 import org.springframework.core.io.*
 import org.codehaus.groovy.grails.web.servlet.mvc.*
+import org.springframework.mock.web.MockServletContext
 
 
-class RestfulMappingTests extends AbstractGrailsControllerTests {
+class RestfulMappingTests extends AbstractGrailsMappingTests {
 
     def mappingScript = '''
 mappings {
@@ -25,10 +26,9 @@ mappings  {
     }
 }
 '''
+
     void testResultMappingsWithAbsolutePaths() {
         def res = new ByteArrayResource(mappingScript.bytes)
-
-        def evaluator = new DefaultUrlMappingEvaluator()
         def mappings = evaluator.evaluateMappings(res)
 
         def holder = new DefaultUrlMappingsHolder(mappings)
@@ -43,63 +43,59 @@ mappings  {
         webRequest.currentRequest.method = "DELETE"
 
         info = holder.match("/books")
-         assertEquals "book", info.controllerName
-         assertEquals "delete", info.actionName
+        assertEquals "book", info.controllerName
+        assertEquals "delete", info.actionName
 
-         webRequest.currentRequest.method = "POST"
+        webRequest.currentRequest.method = "POST"
 
-         info = holder.match("/books")
-          assertEquals "book", info.controllerName
-          assertEquals "update", info.actionName
+        info = holder.match("/books")
+        assertEquals "book", info.controllerName
+        assertEquals "update", info.actionName
 
-         webRequest.currentRequest.method = "PUT"
+        webRequest.currentRequest.method = "PUT"
 
-         info = holder.match("/books")
-          assertEquals "book", info.controllerName
-          assertEquals "save", info.actionName
+        info = holder.match("/books")
+        assertEquals "book", info.controllerName
+        assertEquals "save", info.actionName
 
     }
 
     void testRestfulMappings() {
-           def res = new ByteArrayResource(mappingScript.bytes)
+        def res = new ByteArrayResource(mappingScript.bytes)
+        def mappings = evaluator.evaluateMappings(res)
 
-           def evaluator = new DefaultUrlMappingEvaluator()
-           def mappings = evaluator.evaluateMappings(res)
+        def holder = new DefaultUrlMappingsHolder(mappings)
+        assert webRequest
+        webRequest.currentRequest.method = "GET"
 
-           def holder = new DefaultUrlMappingsHolder(mappings)
-           assert webRequest
-           webRequest.currentRequest.method = "GET"
+        def info = holder.match("/books")
 
-           def info = holder.match("/books")
+        assertEquals "book", info.controllerName
+        assertEquals "list", info.actionName
 
-           assertEquals "book", info.controllerName
-           assertEquals "list", info.actionName
+        webRequest.currentRequest.method = "DELETE"
 
-           webRequest.currentRequest.method = "DELETE"
+        info = holder.match("/books")
+        assertEquals "book", info.controllerName
+        assertEquals "delete", info.actionName
 
-           info = holder.match("/books")
-            assertEquals "book", info.controllerName
-            assertEquals "delete", info.actionName
+        webRequest.currentRequest.method = "POST"
 
-            webRequest.currentRequest.method = "POST"
+        info = holder.match("/books")
+        assertEquals "book", info.controllerName
+        assertEquals "update", info.actionName
 
-            info = holder.match("/books")
-             assertEquals "book", info.controllerName
-             assertEquals "update", info.actionName
+        webRequest.currentRequest.method = "PUT"
 
-            webRequest.currentRequest.method = "PUT"
-
-            info = holder.match("/books")
-             assertEquals "book", info.controllerName
-             assertEquals "save", info.actionName
+        info = holder.match("/books")
+        assertEquals "book", info.controllerName
+        assertEquals "save", info.actionName
 
 
     }
 
     void testRestfulMappings2() {
         def res = new ByteArrayResource(mappingScript2.bytes)
-
-        def evaluator = new DefaultUrlMappingEvaluator()
         def mappings = evaluator.evaluateMappings(res)
 
         def holder = new DefaultUrlMappingsHolder(mappings)

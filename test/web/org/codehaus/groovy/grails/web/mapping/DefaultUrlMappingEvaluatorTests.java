@@ -9,10 +9,11 @@ import junit.framework.TestCase;
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 import org.codehaus.groovy.grails.validation.Constraint;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
+import org.springframework.mock.web.MockServletContext;
 
 import java.util.List;
 
-public class DefaultUrlMappingEvaluatorTests extends TestCase {
+public class DefaultUrlMappingEvaluatorTests extends AbstractGrailsMappingTests {
 	
 	public void testNewMethod () throws Exception {
 		GroovyShell shell = new GroovyShell ();
@@ -30,7 +31,6 @@ public class DefaultUrlMappingEvaluatorTests extends TestCase {
 		script.run();
 		
 		Closure closure = (Closure) binding.getVariable("mappings");
-		DefaultUrlMappingEvaluator evaluator = new DefaultUrlMappingEvaluator ();
 		List mappings = evaluator.evaluateMappings(closure);
 
 		assertEquals(1, mappings.size());
@@ -74,7 +74,7 @@ public class DefaultUrlMappingEvaluatorTests extends TestCase {
 				"	}\n" + 
 				"}\n");
 
-		DefaultUrlMappingEvaluator evaluator = new DefaultUrlMappingEvaluator ();
+		DefaultUrlMappingEvaluator evaluator = new DefaultUrlMappingEvaluator (new MockServletContext("/test"));
 		List mappings = evaluator.evaluateMappings(script.getClass());
 		assertEquals(1, mappings.size());
 		assertNull(((UrlMapping) mappings.get(0)).getActionName());

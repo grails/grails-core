@@ -3,7 +3,7 @@ package org.codehaus.groovy.grails.web.mapping
 import org.springframework.core.io.*
 import org.codehaus.groovy.grails.web.servlet.mvc.*
 
-class DynamicActionNameEvaluatingTests extends AbstractGrailsControllerTests {
+class DynamicActionNameEvaluatingTests extends AbstractGrailsMappingTests {
 
     def mappingScript = '''
 mappings {
@@ -28,22 +28,19 @@ mappings {
 
     void testImplicitNamedAction() {
         runTest {
-             def res = new ByteArrayResource(mappingScript2.bytes)
+            def res = new ByteArrayResource(mappingScript2.bytes)
+            def mappings = evaluator.evaluateMappings(res)
 
-             def evaluator = new DefaultUrlMappingEvaluator()
-             def mappings = evaluator.evaluateMappings(res)
+            def m = mappings[0]
+            assert m
 
+            def info = m.match("/book/show/1")
+            assert info
+            info.configure(webRequest)
 
-             def m = mappings[0]
-             assert m
-
-             def info = m.match("/book/show/1")
-             assert info
-             info.configure(webRequest)
-
-             assertEquals "book", info.controllerName
-             assertEquals "show", info.actionName
-             assertEquals "1", info.id
+            assertEquals "book", info.controllerName
+            assertEquals "show", info.actionName
+            assertEquals "1", info.id
 
         }
 
@@ -51,49 +48,43 @@ mappings {
 
     void testNamedParameterAction() {
         runTest {
-             def res = new ByteArrayResource(mappingScript.bytes)
-
-             def evaluator = new DefaultUrlMappingEvaluator()
-             def mappings = evaluator.evaluateMappings(res)
+            def res = new ByteArrayResource(mappingScript.bytes)
+            def mappings = evaluator.evaluateMappings(res)
 
 
-             def m = mappings[0]
-             assert m
+            def m = mappings[0]
+            assert m
 
-             def info = m.match("/book/graeme/grails/read")
-             assert info
-             info.configure(webRequest)
-             assert info.controllerName
-             assertEquals "read", info.actionName
+            def info = m.match("/book/graeme/grails/read")
+            assert info
+            info.configure(webRequest)
+            assert info.controllerName
+            assertEquals "read", info.actionName
 
         }
     }
 
     void testNamedParameterAction2() {
         runTest {
-             def res = new ByteArrayResource(mappingScript.bytes)
+            def res = new ByteArrayResource(mappingScript.bytes)
+            def mappings = evaluator.evaluateMappings(res)
 
-             def evaluator = new DefaultUrlMappingEvaluator()
-             def mappings = evaluator.evaluateMappings(res)
+            def m = mappings[1]
+            assert m
 
-
-             def m = mappings[1]
-             assert m
-
-             def info = m.match("/book/show/1")
-             assert info
-             info.configure(webRequest)
-             assertEquals "book", info.controllerName
-             assertEquals "book", webRequest.params.ctrl
-             assertEquals "show", info.actionName
-             assertEquals "show", webRequest.params.act
-             assertEquals "1", info.id
-             assertEquals "1", webRequest.params.identity             
+            def info = m.match("/book/show/1")
+            assert info
+            info.configure(webRequest)
+            assertEquals "book", info.controllerName
+            assertEquals "book", webRequest.params.ctrl
+            assertEquals "show", info.actionName
+            assertEquals "show", webRequest.params.act
+            assertEquals "1", info.id
+            assertEquals "1", webRequest.params.identity
 
         }
 
     }
-
 
 
 }

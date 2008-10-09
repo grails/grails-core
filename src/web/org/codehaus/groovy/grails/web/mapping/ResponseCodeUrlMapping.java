@@ -16,6 +16,7 @@ package org.codehaus.groovy.grails.web.mapping;
 
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 
+import javax.servlet.ServletContext;
 import java.util.Collections;
 import java.util.Map;
 
@@ -25,19 +26,14 @@ import java.util.Map;
  * @author mike
  * @since 1.0-RC1
  */
-public class ResponseCodeUrlMapping implements UrlMapping {
+public class ResponseCodeUrlMapping extends AbstractUrlMapping implements UrlMapping {
     private final ResponseCodeMappingData urlData;
-    private final Object controllerName;
-    private final Object actionName;
     private final ConstrainedProperty[] constraints = new ConstrainedProperty[0];
-    private final Object viewName;
     private Map parameterValues = Collections.EMPTY_MAP;
-
-    public ResponseCodeUrlMapping(UrlMappingData urlData, Object controllerName, Object actionName, Object viewName,ConstrainedProperty[] constraints) {
+   
+    public ResponseCodeUrlMapping(UrlMappingData urlData, Object controllerName, Object actionName, Object viewName, ConstrainedProperty[] constraints, ServletContext servletContext) {
+        super(controllerName, actionName, viewName, constraints, servletContext);
         this.urlData = (ResponseCodeMappingData) urlData;
-        this.controllerName = controllerName;
-        this.actionName = actionName;
-        this.viewName = viewName;
 
         if (constraints != null && constraints.length > 0) {
             throw new IllegalArgumentException("Constraints can't be used for response code url mapping");
@@ -97,12 +93,12 @@ public class ResponseCodeUrlMapping implements UrlMapping {
     }
 
     public UrlMappingInfo match(int responseCode) {
-        if (responseCode == urlData.getResponseCode()) return new DefaultUrlMappingInfo(
+       if (responseCode == urlData.getResponseCode()) return new DefaultUrlMappingInfo(
                 controllerName,
                 actionName,
                 viewName,
                 parameterValues,
-                urlData);
+                urlData, servletContext);
         return null;
     }
 }

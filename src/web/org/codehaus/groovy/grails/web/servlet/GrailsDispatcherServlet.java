@@ -18,6 +18,7 @@ package org.codehaus.groovy.grails.web.servlet;
 import grails.util.GrailsUtil;
 import org.codehaus.groovy.grails.commons.*;
 import org.codehaus.groovy.grails.commons.spring.GrailsApplicationContext;
+import org.codehaus.groovy.grails.web.MultipartRequestHolder;
 import org.codehaus.groovy.grails.web.context.GrailsConfigUtils;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.servlet.mvc.SimpleGrailsController;
@@ -70,7 +71,6 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
         super();
         setDetectAllHandlerMappings(false);
     }
-
 
     protected void initFrameworkServlet() throws ServletException, BeansException {
         super.initFrameworkServlet();
@@ -383,23 +383,14 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
 	}
 
 	/**
-	 * Convert the request into a multipart request, and make multipart resolver available.
+	 * Convert the request into a multipart request.
 	 * If no multipart resolver is set, simply use the existing request.
 	 * @param request current HTTP request
 	 * @return the processed request (multipart wrapper if necessary)
 	 */
 	protected HttpServletRequest checkMultipart(HttpServletRequest request) throws MultipartException {
-		if (this.multipartResolver != null && this.multipartResolver.isMultipart(request)) {
-			if (request instanceof MultipartHttpServletRequest) {
-				logger.debug("Request is already a MultipartHttpServletRequest - if not in a forward, " +
-						"this typically results from an additional MultipartFilter in web.xml");
-			}
-			else {
-				return this.multipartResolver.resolveMultipart(request);
-			}
-		}
-		// If not returned before: return original request.
-		return request;
+		MultipartHttpServletRequest mpr = MultipartRequestHolder.getMultipartRequest();
+        return mpr == null ? request : mpr;
 	}
     /**
      * Overrides the default behaviour to establish the handler from the GrailsApplication instance

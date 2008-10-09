@@ -4,7 +4,7 @@
     <defaultAnt bundledAnt="true" />
     <buildFile url="file://$PROJECT_DIR$/build.xml">
       <additionalClassPath />
-      <antReference projectDefault="true" />
+      <antReference name="Grails Ant" />
       <customJdkName value="" />
       <maximumHeapSize value="128" />
       <properties />
@@ -218,6 +218,10 @@
     <option name="IS_EMACS_ERRORS_MODE" value="true" />
     <option name="ADDITIONAL_OPTIONS_STRING" value="" />
   </component>
+  <component name="LiquibaseProjectComponent">
+    <option name="outputChangeLogFile" />
+    <option name="rootChangeLogFile" />
+  </component>
   <component name="LogConsolePreferences">
     <option name="FILTER_ERRORS" value="false" />
     <option name="FILTER_WARNINGS" value="false" />
@@ -353,7 +357,7 @@
     </modules>
   </component>
   <component name="ProjectRootManager" version="2" assert-keyword="true" jdk-15="false" project-jdk-name="1.5" project-jdk-type="JavaSDK">
-    <output url="file://$PROJECT_DIR$/idea" />
+    <output url="file://$PROJECT_DIR$/idea-target" />
   </component>
   <component name="ResourceManagerContainer">
     <option name="myResourceBundles">
@@ -387,6 +391,7 @@
         </entry>
       </map>
     </option>
+    <option name="myVersion" value="123" />
   </component>
   <component name="VcsDirectoryMappings">
     <mapping directory="" vcs="svn" />
@@ -428,6 +433,7 @@
         <root url="jar://$PROJECT_DIR$/lib/cglib-nodep-2.1_3.jar!/" />
         <root url="jar://$PROJECT_DIR$/lib/hibernate-commons-annotations.jar!/" />
         <root url="jar://$PROJECT_DIR$/lib/oscache-2.4.1.jar!/" />
+        <root url="jar://$PROJECT_DIR$/lib/ejb3-persistence.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES>
@@ -451,7 +457,7 @@
         <root url="jar://$PROJECT_DIR$/lib/spring-webmvc.jar!/" />
         <root url="jar://$PROJECT_DIR$/lib/spring-webflow-2.0-m1.jar!/" />
         <root url="jar://$PROJECT_DIR$/lib/spring-binding-2.0-m1.jar!/" />
-        <root url="jar://$PROJECT_DIR$/lib/spring-2.5.4.jar!/" />
+        <root url="jar://$PROJECT_DIR$/lib/spring-2.5.5.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES>
@@ -523,8 +529,14 @@
     </library>
     <library name="Groovy">
       <CLASSES>
-        <root url="jar://$PROJECT_DIR$/lib/gant-1.0.0.jar!/" />
-        <root url="jar://$PROJECT_DIR$/lib/groovy-all-1.5.0.jar!/" />
+        <root url="jar://$PROJECT_DIR$/lib/groovy-all-1.5.6.jar!/" />
+      </CLASSES>
+      <JAVADOC />
+      <SOURCES />
+    </library>
+    <library name="Gant">
+      <CLASSES>
+        <root url="jar://$PROJECT_DIR$/lib/gant-1.1.0_groovy-1.5.2.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES />

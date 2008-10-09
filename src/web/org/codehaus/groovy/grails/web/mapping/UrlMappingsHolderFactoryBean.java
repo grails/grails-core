@@ -15,11 +15,16 @@
 package org.codehaus.groovy.grails.web.mapping;
 
 import groovy.lang.Script;
-import org.codehaus.groovy.grails.commons.*;
+import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.commons.GrailsClass;
+import org.codehaus.groovy.grails.commons.GrailsUrlMappingsClass;
+import org.codehaus.groovy.grails.commons.UrlMappingsArtefactHandler;
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.web.context.ServletContextAware;
 
+import javax.servlet.ServletContext;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,11 +40,12 @@ import java.util.List;
  *        Created: Mar 6, 2007
  *        Time: 6:48:57 PM
  */
-public class UrlMappingsHolderFactoryBean implements FactoryBean, InitializingBean, GrailsApplicationAware {
+public class UrlMappingsHolderFactoryBean implements FactoryBean, InitializingBean, GrailsApplicationAware, ServletContextAware {
     private GrailsApplication grailsApplication;
     private UrlMappingsHolder urlMappingsHolder;
-    private UrlMappingEvaluator mappingEvaluator = new DefaultUrlMappingEvaluator();
+    private UrlMappingEvaluator mappingEvaluator;
     private UrlMappingParser urlParser = new DefaultUrlMappingParser();
+    private ServletContext servletContext;
 
     public Object getObject() throws Exception {
         return this.urlMappingsHolder;
@@ -59,7 +65,9 @@ public class UrlMappingsHolderFactoryBean implements FactoryBean, InitializingBe
         List urlMappings = new ArrayList();
         
         GrailsClass[] mappings = grailsApplication.getArtefacts(UrlMappingsArtefactHandler.TYPE);
-        
+
+        this.mappingEvaluator = new DefaultUrlMappingEvaluator(servletContext);
+
         for (int i = 0; i < mappings.length; i++) {
             GrailsUrlMappingsClass mappingClass = (GrailsUrlMappingsClass) mappings[i];
             List grailsClassMappings;
@@ -81,5 +89,9 @@ public class UrlMappingsHolderFactoryBean implements FactoryBean, InitializingBe
 
     public void setGrailsApplication(GrailsApplication grailsApplication) {
         this.grailsApplication = grailsApplication;
+    }
+
+    public void setServletContext(ServletContext servletContext) {
+        this.servletContext = servletContext;
     }
 }

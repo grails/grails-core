@@ -5,8 +5,9 @@ package org.codehaus.groovy.grails.web.mapping
 
 import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
 import org.springframework.core.io.ByteArrayResource
+import org.springframework.mock.web.MockServletContext
 
-class ResponseCodeUrlMappingTests extends AbstractGrailsControllerTests {
+class ResponseCodeUrlMappingTests extends AbstractGrailsMappingTests {
     def topLevelMapping = '''
 mappings {
     "404"{
@@ -23,7 +24,6 @@ mappings {
         super.setUp()
         def res = new ByteArrayResource(topLevelMapping.bytes)
 
-        def evaluator = new DefaultUrlMappingEvaluator()
         def mappings = evaluator.evaluateMappings(res)
 
         holder = new DefaultUrlMappingsHolder(mappings)

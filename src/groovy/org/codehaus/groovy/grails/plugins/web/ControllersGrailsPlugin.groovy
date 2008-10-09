@@ -28,7 +28,6 @@ import org.codehaus.groovy.grails.plugins.web.taglib.*
 import org.codehaus.groovy.grails.validation.ConstrainedPropertyBuilder
 import org.codehaus.groovy.grails.web.errors.GrailsExceptionResolver
 import org.codehaus.groovy.grails.web.metaclass.*
-import org.codehaus.groovy.grails.web.multipart.ContentLengthAwareCommonsMultipartResolver
 import org.codehaus.groovy.grails.web.pages.GroovyPage
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine
 import org.codehaus.groovy.grails.web.plugins.support.WebMetaUtils
@@ -46,7 +45,8 @@ import org.springframework.context.ApplicationContext
 import org.springframework.core.io.FileSystemResource
 import org.springframework.validation.BindException
 import org.springframework.validation.Errors
-import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.ModelAndView
+import org.codehaus.groovy.grails.web.multipart.ContentLengthAwareCommonsMultipartResolver;
 
 /**
  * A plug-in that handles the configuration of controllers for Grails

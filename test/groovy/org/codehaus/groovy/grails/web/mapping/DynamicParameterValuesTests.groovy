@@ -1,15 +1,16 @@
 /**
  * @author Graeme Rocher
  * @since 1.0
- * 
+ *
  * Created: Oct 10, 2007
  */
 package org.codehaus.groovy.grails.web.mapping
 
 import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
 import org.springframework.core.io.ByteArrayResource
+import org.springframework.mock.web.MockServletContext
 
-class DynamicParameterValuesTests extends AbstractGrailsControllerTests {
+class DynamicParameterValuesTests extends AbstractGrailsMappingTests {
     def mappingScript = '''
 mappings {
   "/book/the_stand" {
@@ -21,7 +22,7 @@ mappings {
 }
 '''
 
-   def mappingScript2 = '''
+    def mappingScript2 = '''
 mappings {
 "/help" { controller = "page"
           action = "index"
@@ -33,41 +34,34 @@ mappings {
 '''
 
     void testImplicitNamedAction() {
+        def res = new ByteArrayResource(mappingScript.bytes)
+        def mappings = evaluator.evaluateMappings(res)
 
-             def res = new ByteArrayResource(mappingScript.bytes)
+        def m = mappings[0]
+        assert m
 
-             def evaluator = new DefaultUrlMappingEvaluator()
-             def mappings = evaluator.evaluateMappings(res)
+        def info = m.match("/book/the_stand")
+        assert info
+        info.configure(webRequest)
 
-
-             def m = mappings[0]
-             assert m
-
-             def info = m.match("/book/the_stand")
-             assert info
-             info.configure(webRequest)
-
-             assertEquals "book", info.controllerName
-             assertEquals "show", info.actionName
-             assertEquals "The Stand", info.id
-             assertEquals "The Stand", webRequest.params.id
-             assertEquals 10.5, webRequest.params.price
+        assertEquals "book", info.controllerName
+        assertEquals "show", info.actionName
+        assertEquals "The Stand", info.id
+        assertEquals "The Stand", webRequest.params.id
+        assertEquals 10.5, webRequest.params.price
 
     }
 
     void testTwoNamedVariableMapping() {
         def res = new ByteArrayResource(mappingScript2.bytes)
 
-        def evaluator = new DefaultUrlMappingEvaluator()
         def mappings = evaluator.evaluateMappings(res)
-
 
         def info = mappings[0].match("/help")
 
         assertEquals "page", info.controllerName
         assertEquals "index", info.actionName
         assertEquals "1", info.id
-
 
         info = mappings[1].match("/thing")
 
@@ -76,6 +70,5 @@ mappings {
         assertEquals "2", info.id
 
     }
-
 
 }

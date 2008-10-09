@@ -16,6 +16,7 @@ package org.codehaus.groovy.grails.web.mapping;
 
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 
+import javax.servlet.ServletContext;
 import java.util.Collections;
 import java.util.Map;
 
@@ -34,6 +35,7 @@ public abstract class AbstractUrlMapping implements UrlMapping {
     protected Object controllerName;
     protected Object actionName;
     protected Object viewName;
+    protected ServletContext servletContext;
     protected Map parameterValues = Collections.EMPTY_MAP;
 
     /**
@@ -42,18 +44,20 @@ public abstract class AbstractUrlMapping implements UrlMapping {
      * @param controllerName The name of the controller
      * @param actionName The name of the action
      * @param constraints Any constraints that apply to the mapping
+     * @param servletContext
      */
-    public AbstractUrlMapping(Object controllerName, Object actionName, Object viewName,ConstrainedProperty[] constraints) {
+    public AbstractUrlMapping(Object controllerName, Object actionName, Object viewName, ConstrainedProperty[] constraints, ServletContext servletContext) {
         this.controllerName = controllerName;
         this.actionName = actionName;
         this.constraints = constraints;
         this.viewName = viewName;
-
+        this.servletContext = servletContext;
     }
 
-    protected AbstractUrlMapping(Object viewName, ConstrainedProperty[] constraints) {
+    protected AbstractUrlMapping(Object viewName, ConstrainedProperty[] constraints, ServletContext servletContext) {
         this.viewName = viewName;
         this.constraints = constraints;
+        this.servletContext = servletContext;
     }
 
     /**

@@ -15,14 +15,22 @@
 package org.codehaus.groovy.grails.web.mapping;
 
 import groovy.lang.Closure;
+import groovy.util.ConfigObject;
+import org.apache.commons.lang.StringUtils;
+import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
+import org.codehaus.groovy.grails.web.MultipartRequestHolder;
 import org.codehaus.groovy.grails.web.mapping.exceptions.UrlMappingException;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.util.WebUtils;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
+import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.request.RequestContextHolder;
-import org.apache.commons.lang.StringUtils;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
+import org.springframework.web.multipart.MultipartResolver;
+import org.springframework.web.servlet.DispatcherServlet;
 
+import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
@@ -47,16 +55,18 @@ public class DefaultUrlMappingInfo implements UrlMappingInfo {
     private static final String ID_PARAM = "id";
     private UrlMappingData urlData;
     private Object viewName;
+    private ServletContext servletContext;
 
 
-    private DefaultUrlMappingInfo(Map params, UrlMappingData urlData) {
+    private DefaultUrlMappingInfo(Map params, UrlMappingData urlData, ServletContext servletContext) {
         this.params = Collections.unmodifiableMap(params);
         this.id = params.get(ID_PARAM);
         this.urlData = urlData;
+        this.servletContext = servletContext;
     }
 
-    public DefaultUrlMappingInfo(Object controllerName, Object actionName, Object viewName, Map params, UrlMappingData urlData) {
-        this(params, urlData);
+    public DefaultUrlMappingInfo(Object controllerName, Object actionName, Object viewName, Map params, UrlMappingData urlData, ServletContext servletContext) {
+        this(params, urlData, servletContext);
         if (controllerName == null && viewName == null)
             throw new IllegalArgumentException("URL mapping must either provide a controller or view name to map to!");
         if (params == null) throw new IllegalArgumentException("Argument [params] cannot be null");
@@ -66,8 +76,8 @@ public class DefaultUrlMappingInfo implements UrlMappingInfo {
             this.viewName = viewName;
     }
 
-    public DefaultUrlMappingInfo(Object viewName, Map params, UrlMappingData urlData) {
-        this(params, urlData);
+    public DefaultUrlMappingInfo(Object viewName, Map params, UrlMappingData urlData, ServletContext servletContext) {
+        this(params, urlData, servletContext);
         this.viewName = viewName;
         if (viewName == null) throw new IllegalArgumentException("Argument [viewName] cannot be null or blank");
 
@@ -86,7 +96,7 @@ public class DefaultUrlMappingInfo implements UrlMappingInfo {
     protected void populateParamsForMapping(GrailsWebRequest webRequest) {
         Map dispatchParams = webRequest.getParams();
         String encoding = webRequest.getRequest().getCharacterEncoding();
-        if(encoding == null) encoding = "UTF-8";
+        if (encoding == null) encoding = "UTF-8";
 
         Collection keys = this.params.keySet();
         keys = DefaultGroovyMethods.toList(keys);
@@ -107,7 +117,7 @@ public class DefaultUrlMappingInfo implements UrlMappingInfo {
 
             String name = (String) j.next();
             Object param = this.params.get(name);
-            if(param instanceof Closure) {
+            if (param instanceof Closure) {
                 param = evaluateNameForValue(param);
             }
             if (param instanceof String) {
@@ -128,7 +138,7 @@ public class DefaultUrlMappingInfo implements UrlMappingInfo {
         }
 
         String id = getId();
-        if(!StringUtils.isBlank(id)) try {
+        if (!StringUtils.isBlank(id)) try {
             dispatchParams.put(GrailsWebRequest.ID_PARAMETER, URLDecoder.decode(id, encoding));
         } catch (UnsupportedEncodingException e) {
             dispatchParams.put(GrailsWebRequest.ID_PARAMETER, id);
@@ -154,8 +164,8 @@ public class DefaultUrlMappingInfo implements UrlMappingInfo {
     public String getActionName() {
         GrailsWebRequest webRequest = (GrailsWebRequest) RequestContextHolder.getRequestAttributes();
 
-        String name =  webRequest!=null ? checkDispatchAction(webRequest.getCurrentRequest(), null) : null;
-        if(name == null) {
+        String name = webRequest != null ? checkDispatchAction(webRequest.getCurrentRequest(), null) : null;
+        if (name == null) {
             name = evaluateNameForValue(this.actionName);
         }
         return name;
@@ -193,8 +203,13 @@ public class DefaultUrlMappingInfo implements UrlMappingInfo {
     }
 
     private String checkDispatchAction(HttpServletRequest request, String actionName) {
-        for (Enumeration e = request.getParameterNames(); e.hasMoreElements();) {
-            String name = (String) e.nextElement();
+        Enumeration paramNames = request.getParameterNames();
+        if (!paramNames.hasMoreElements()) {
+            paramNames = tryMultipartParams(request, paramNames);
+        }
+
+        for (; paramNames.hasMoreElements();) {
+            String name = (String) paramNames.nextElement();
             if (name.startsWith(WebUtils.DISPATCH_ACTION_PARAMETER)) {
                 // remove .x suffix in case of submit image
                 if (name.endsWith(".x") || name.endsWith(".y")) {
@@ -205,6 +220,52 @@ public class DefaultUrlMappingInfo implements UrlMappingInfo {
             }
         }
         return actionName;
+    }
+
+    private Enumeration tryMultipartParams(HttpServletRequest request, Enumeration originalParams) {
+        Enumeration paramNames = originalParams;
+        boolean disabled = getMultipartDisabled();
+        if (!disabled) {
+            MultipartResolver resolver = getResolver();
+            if (resolver.isMultipart(request)) {
+                MultipartHttpServletRequest resolvedMultipartRequest = getResolvedRequest(request, resolver);
+                paramNames = resolvedMultipartRequest.getParameterNames();
+            } else {
+                MultipartRequestHolder.setMultipartRequest(null);
+            }
+        } else {
+            MultipartRequestHolder.setMultipartRequest(null);
+        }
+        return paramNames;
+    }
+
+    private MultipartHttpServletRequest getResolvedRequest(HttpServletRequest request, MultipartResolver resolver) {
+        MultipartHttpServletRequest resolvedMultipartRequest = MultipartRequestHolder.getMultipartRequest();
+        if (resolvedMultipartRequest == null) {
+            resolvedMultipartRequest = resolver.resolveMultipart(request);
+            MultipartRequestHolder.setMultipartRequest(resolvedMultipartRequest);
+        }
+        return resolvedMultipartRequest;
+    }
+
+    private boolean getMultipartDisabled() {
+        GrailsApplication app = (GrailsApplication) servletContext.getAttribute(GrailsApplication.APPLICATION_ID);
+        ConfigObject config = app.getConfig();
+        boolean disabled = false;
+        Object disableMultipart = config.get("disbableMultipart");
+        if (disableMultipart instanceof Boolean) {
+            disabled = ((Boolean) disableMultipart).booleanValue();
+        } else if (disableMultipart instanceof String) {
+            disabled = Boolean.parseBoolean((String) disableMultipart);
+        }
+        return disabled;
+    }
+
+    private MultipartResolver getResolver() {
+        WebApplicationContext ctx = (WebApplicationContext) servletContext.getAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE);
+        MultipartResolver resolver = (MultipartResolver)
+                ctx.getBean(DispatcherServlet.MULTIPART_RESOLVER_BEAN_NAME);
+        return resolver;
     }
 
 

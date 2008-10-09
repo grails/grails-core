@@ -26,7 +26,10 @@ import org.codehaus.groovy.grails.web.mapping.DefaultUrlMappingEvaluator;
 import org.codehaus.groovy.grails.web.mapping.DefaultUrlMappingsHolder;
 
 import java.util.List
-import grails.util.GrailsWebUtil;
+import grails.util.GrailsWebUtil
+import org.codehaus.groovy.grails.web.mapping.AbstractGrailsMappingTests
+import org.codehaus.groovy.grails.web.multipart.ContentLengthAwareCommonsMultipartResolver
+import org.springframework.web.servlet.DispatcherServlet;
 
 /**
  * Tests for the UrlMappingsFilter
@@ -37,7 +40,7 @@ import grails.util.GrailsWebUtil;
  *        Created: Mar 6, 2007
  *        Time: 5:51:17 PM
  */
-public class UrlMappingsFilterTests extends GroovyTestCase {
+public class UrlMappingsFilterTests extends AbstractGrailsMappingTests {
 
     def mappingScript = '''
 mappings {
@@ -59,7 +62,7 @@ mappings {
   }
 }
 '''
- def defaultMappings = '''
+    def defaultMappings = '''
 mappings {
   "/$controller/$action?/$id?" {
         constraints {
@@ -69,18 +72,18 @@ mappings {
 }
 '''
 
-def testController1 = '''
+    def testController1 = '''
 class TestController {
   def index = {}
 }
 '''
-def testController2 = '''
+    def testController2 = '''
 package blogs
 class BlogController {
   def show = {}
 }
 '''
-def testController3 = '''
+    def testController3 = '''
 class NoIndexController {
   def myAction = {}
 
@@ -88,52 +91,40 @@ class NoIndexController {
 }
 '''
 
-def testController4 = '''
+    def testController4 = '''
 class OtherController {
   def myAction = {}
 }
 '''
 
-    def webRequest
-    def servletContext
-    def appCtx
-    def evaluator
-    def gcl
-    def request
-    def response
     def filter
 
     void setUp() {
         super.setUp()
+        appCtx = new MockApplicationContext()
+        appCtx.registerMockBean (DispatcherServlet.MULTIPART_RESOLVER_BEAN_NAME, new ContentLengthAwareCommonsMultipartResolver())
 
-        webRequest = grails.util.GrailsWebUtil.bindMockWebRequest()
-        servletContext = new MockServletContext();
-        appCtx = new MockApplicationContext();
-        evaluator = new DefaultUrlMappingEvaluator();
-        gcl = new GroovyClassLoader()
-        request = webRequest.currentRequest
-        response = webRequest.currentResponse
         filter = new UrlMappingsFilter();
         filter.init(new MockFilterConfig(servletContext));
     }
 
 
     void testUrlMappingFilter() {
-        def mappings = evaluator.evaluateMappings(new ByteArrayResource(mappingScript.getBytes()));
+            def mappings = evaluator.evaluateMappings(new ByteArrayResource(mappingScript.getBytes()));
         appCtx.registerMockBean(UrlMappingsHolder.BEAN_ID, new DefaultUrlMappingsHolder(mappings));
 
         gcl.parseClass(testController1)
         gcl.parseClass(testController2)
-                                                     
-		def app =  new DefaultGrailsApplication(gcl.loadedClasses,gcl)
-		app.initialise()
+
+        def app = new DefaultGrailsApplication(gcl.loadedClasses, gcl)
+        app.initialise()
         appCtx.registerMockBean("grailsApplication", app)
 
-        servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE,appCtx);
+        servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, appCtx);
 
         request.setRequestURI("/my_entry/2007/06/01");
 
-        filter.doFilterInternal(request, response,null);
+        filter.doFilterInternal(request, response, null);
 
         assertEquals "/grails/blog/show.dispatch", response.forwardedUrl
         assertEquals "my_entry", webRequest.params.id
@@ -142,24 +133,24 @@ class OtherController {
         assertEquals "01", webRequest.params.day
     }
 
-    void testFilterWithControllerWithNoIndex(){
+    void testFilterWithControllerWithNoIndex() {
         def mappings = evaluator.evaluateMappings(new ByteArrayResource(defaultMappings.getBytes()));
         appCtx.registerMockBean(UrlMappingsHolder.BEAN_ID, new DefaultUrlMappingsHolder(mappings));
 
         gcl.parseClass(testController3)
         gcl.parseClass(testController4)
-                                             
-		def app =  new DefaultGrailsApplication(gcl.loadedClasses,gcl)
-		app.initialise()
+
+        def app = new DefaultGrailsApplication(gcl.loadedClasses, gcl)
+        app.initialise()
 
         appCtx.registerMockBean("grailsApplication", app)
 
-        servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE,appCtx);
+        servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, appCtx);
 
         request.setRequestURI("/noIndex/myAction");
 
 
-        filter.doFilterInternal(request, response,null);
+        filter.doFilterInternal(request, response, null);
 
         assertEquals "/grails/noIndex/myAction.dispatch", response.forwardedUrl
 
@@ -169,13 +160,13 @@ class OtherController {
         request.setRequestURI("/other/myAction");
 
 
-        filter.doFilterInternal(request, response,null);
+        filter.doFilterInternal(request, response, null);
 
         assertEquals "/grails/other/myAction.dispatch", response.forwardedUrl
 
-        }
+    }
 
-def testController5 = '''
+    def testController5 = '''
 class IndexAndActionController {
   def myAction = {}
 
@@ -183,24 +174,24 @@ class IndexAndActionController {
 }
 '''
 
-void testFilterWithControllerWithIndexAndAction(){
+    void testFilterWithControllerWithIndexAndAction() {
 
         def mappings = evaluator.evaluateMappings(new ByteArrayResource(defaultMappings.getBytes()));
         appCtx.registerMockBean(UrlMappingsHolder.BEAN_ID, new DefaultUrlMappingsHolder(mappings));
 
         gcl.parseClass(testController5)
-                                          
-		def app =  new DefaultGrailsApplication(gcl.loadedClasses,gcl)
-		app.initialise()
+
+        def app = new DefaultGrailsApplication(gcl.loadedClasses, gcl)
+        app.initialise()
 
         appCtx.registerMockBean("grailsApplication", app)
 
-        servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE,appCtx);
+        servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, appCtx);
 
         request.setRequestURI("/indexAndAction/");
 
 
-        filter.doFilterInternal(request, response,null);
+        filter.doFilterInternal(request, response, null);
 
         assertEquals "/grails/indexAndAction.dispatch", response.forwardedUrl
 
@@ -213,11 +204,11 @@ void testFilterWithControllerWithIndexAndAction(){
 
         filter.init(new MockFilterConfig(servletContext));
 
-        filter.doFilterInternal(request, response,null);
+        filter.doFilterInternal(request, response, null);
 
         assertEquals "/grails/indexAndAction.dispatch", response.forwardedUrl
 
-        }
+    }
 
     void testViewMapping() {
         def mappings = evaluator.evaluateMappings(new ByteArrayResource(mappingScript.getBytes()));
@@ -226,15 +217,15 @@ void testFilterWithControllerWithIndexAndAction(){
         gcl.parseClass(testController1)
         gcl.parseClass(testController2)
 
-		def app =  new DefaultGrailsApplication(gcl.loadedClasses,gcl)
-		app.initialise()
+        def app = new DefaultGrailsApplication(gcl.loadedClasses, gcl)
+        app.initialise()
         appCtx.registerMockBean("grailsApplication", app)
 
-        servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE,appCtx);
+        servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, appCtx);
 
         request.setRequestURI("/book/joel");
 
-        filter.doFilterInternal(request, response,null);
+        filter.doFilterInternal(request, response, null);
 
         assertEquals "/book.gsp", response.forwardedUrl
         assertEquals "joel", webRequest.params.name
