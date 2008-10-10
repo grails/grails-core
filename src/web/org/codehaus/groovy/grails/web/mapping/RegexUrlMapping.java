@@ -197,7 +197,7 @@ public class RegexUrlMapping extends AbstractUrlMapping implements UrlMapping {
 
                 try {
                 	String v = value.toString();
-                	if (v.contains(SLASH)
+                	if (v.indexOf(SLASH) > -1
                 		&& CAPTURED_DOUBLE_WILDCARD.equals(token)) {
                 		// individually URL encode path segments
                 		if (v.startsWith(SLASH)) {
