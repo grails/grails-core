@@ -230,4 +230,53 @@ class IndexAndActionController {
         assertEquals "/book.gsp", response.forwardedUrl
         assertEquals "joel", webRequest.params.name
     }
+    
+    def mappingScript2 = '''
+mappings {
+
+    "/$controller/$action?" {}
+
+    "/$controller/blog/$id?" {
+        action="example"
+    }
+
+    "/$lang/$controller/$action?" {
+        constraints {
+            lang("matches": /[a-z]{2}/)
+        }
+    }
+}
+'''
+
+    def testController6 = '''
+package blogs
+
+class BlogController {
+    def defaultAction = "show"
+    def show = {}
+}
+'''
+
+    /**
+     * Regression test for GRAILS-3369.
+     */
+    void testFilterWithMultipleMatchingURLs(){
+        def mappings = evaluator.evaluateMappings(new ByteArrayResource(mappingScript2.getBytes()));
+        appCtx.registerMockBean(UrlMappingsHolder.BEAN_ID, new DefaultUrlMappingsHolder(mappings));
+
+        gcl.parseClass(testController6)
+                                             
+        def app =  new DefaultGrailsApplication(gcl.loadedClasses,gcl)
+        app.initialise()
+
+        appCtx.registerMockBean("grailsApplication", app)
+
+        servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE,appCtx);
+
+        request.setRequestURI("/fr/blog/");
+
+        filter.doFilterInternal(request, response,null);
+        
+        assertEquals "/grails/blog.dispatch", response.forwardedUrl
+    }
 }

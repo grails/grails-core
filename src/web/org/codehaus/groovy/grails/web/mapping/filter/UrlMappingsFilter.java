@@ -37,6 +37,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * <p>A Servlet filter that uses the Grails UrlMappings to match and forward requests to a relevant controller
@@ -94,9 +96,19 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
         WrappedResponseHolder.setWrappedResponse(response);
         boolean dispatched = false;
         try {
+            // GRAILS-3369: Save the original request parameters.
+            Map backupParameters  = new HashMap(webRequest.getParams());
+
             for (int i = 0; i < urlInfos.length; i++) {
                 UrlMappingInfo info = urlInfos[i];
                     if(info!=null) {
+                        // GRAILS-3369: The configure() will modify the
+                        // parameter map attached to the web request. So,
+                        // we need to clear it each time and restore the
+                        // original request parameters.
+                        webRequest.getParams().clear();
+                        webRequest.getParams().putAll(backupParameters);
+
                         info.configure(webRequest);
                         String action = info.getActionName() == null ? "" : info.getActionName();
                         final String viewName = info.getViewName();
