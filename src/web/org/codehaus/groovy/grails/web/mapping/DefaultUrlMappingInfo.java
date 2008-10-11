@@ -256,7 +256,7 @@ public class DefaultUrlMappingInfo implements UrlMappingInfo {
         if (disableMultipart instanceof Boolean) {
             disabled = ((Boolean) disableMultipart).booleanValue();
         } else if (disableMultipart instanceof String) {
-            disabled = Boolean.valueOf((String) disableMultipart);
+            disabled = Boolean.valueOf((String) disableMultipart).booleanValue();
         }
         return disabled;
     }
