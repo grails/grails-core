@@ -149,7 +149,7 @@ public class DefaultGrailsDomainClassInjector implements
     private void injectToStringMethod(ClassNode classNode) {
         final boolean hasToString = GrailsASTUtils.implementsZeroArgMethod(classNode, "toString");
 
-        if (!hasToString) {
+        if (!hasToString && !isEnum(classNode)) {
             GStringExpression ge = new GStringExpression(classNode.getName() + " : ${id}");
             ge.addString(new ConstantExpression(classNode.getName() + " : "));
             ge.addValue(new VariableExpression("id"));
@@ -160,6 +160,15 @@ public class DefaultGrailsDomainClassInjector implements
             }
             classNode.addMethod(mn);
         }
+    }
+
+    private boolean isEnum(ClassNode classNode) {
+        ClassNode parent = classNode.getSuperClass();
+        while (parent != null) {
+            if (parent.getName().equals("java.lang.Enum")) return true;
+            parent = parent.getSuperClass();
+        }
+        return false;
     }
 
     private void injectVersionProperty(ClassNode classNode) {
