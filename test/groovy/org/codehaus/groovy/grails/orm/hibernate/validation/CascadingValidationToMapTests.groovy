@@ -43,7 +43,7 @@ class Door {
         assert vehicle.errors
         assertEquals 1, vehicle.errors.allErrors.size()
 
-        assert vehicle.errors.getFieldError("make")
+        assert vehicle.errors.getFieldError("doors.make")
 
     }
 }

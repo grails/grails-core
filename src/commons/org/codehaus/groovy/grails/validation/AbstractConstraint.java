@@ -142,7 +142,7 @@ public abstract class AbstractConstraint implements Constraint {
 //            System.out.println( "Reject: " + newCodes.get(i));
         FieldError error = new FieldError(
                 errors.getObjectName(),
-                constraintPropertyName,
+                errors.getNestedPath() + constraintPropertyName,
                 getPropertyValue(errors, target),
                 false,
                 (String[]) newCodes.toArray(new String[newCodes.size()]),

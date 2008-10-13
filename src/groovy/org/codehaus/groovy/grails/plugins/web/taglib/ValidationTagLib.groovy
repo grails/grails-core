@@ -39,16 +39,22 @@ class ValidationTagLib {
 		if(bean && field) {
 			if(bean.getClass().metaClass.hasProperty(bean, 'errors')) {
 				def errors = bean.errors
-				def rejectedValue = errors?.getFieldError(field)?.rejectedValue
+                def rejectedValue = errors?.getFieldError(field)?.rejectedValue
 				if(rejectedValue == null ) {
-					rejectedValue = bean."$field"
-				}   
+                    rejectedValue = bean
+                    field.split("\\.").each{ String fieldPart ->
+                        rejectedValue = rejectedValue?."$fieldPart"
+                    }
+                }
 				if(rejectedValue != null) {
 					out << rejectedValue.toString().encodeAsHTML()
 				}                            
-			}                       
+			}
 			else {     
-				def rejectedValue = bean."$field"
+				def rejectedValue = bean
+                field.split("\\.").each{ String fieldPart ->
+                    rejectedValue = rejectedValue?."$fieldPart"
+                }
 				if(rejectedValue != null) {
 					out << rejectedValue.toString().encodeAsHTML()						
 				}
