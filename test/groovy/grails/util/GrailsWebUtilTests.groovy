@@ -1,6 +1,4 @@
-package org.codehaus.groovy.grails.commons;
-
-import grails.util.GrailsWebUtil
+package grails.util
 
 /**
  * Tests for the GrailsWebUtil class
