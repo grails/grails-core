@@ -25,6 +25,7 @@ import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.util.WebUtils;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.context.support.WebApplicationContextUtils;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.springframework.web.multipart.MultipartResolver;
@@ -249,10 +250,10 @@ public class DefaultUrlMappingInfo implements UrlMappingInfo {
     }
 
     private boolean getMultipartDisabled() {
-        GrailsApplication app = (GrailsApplication) servletContext.getAttribute(GrailsApplication.APPLICATION_ID);
+        GrailsApplication app = WebUtils.lookupApplication(servletContext);
         ConfigObject config = app.getConfig();
         boolean disabled = false;
-        Object disableMultipart = config.get("disbableMultipart");
+        Object disableMultipart = config.get("disableMultipart");
         if (disableMultipart instanceof Boolean) {
             disabled = ((Boolean) disableMultipart).booleanValue();
         } else if (disableMultipart instanceof String) {
@@ -262,7 +263,7 @@ public class DefaultUrlMappingInfo implements UrlMappingInfo {
     }
 
     private MultipartResolver getResolver() {
-        WebApplicationContext ctx = (WebApplicationContext) servletContext.getAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE);
+        WebApplicationContext ctx = WebApplicationContextUtils.getRequiredWebApplicationContext(servletContext);
         MultipartResolver resolver = (MultipartResolver)
                 ctx.getBean(DispatcherServlet.MULTIPART_RESOLVER_BEAN_NAME);
         return resolver;
