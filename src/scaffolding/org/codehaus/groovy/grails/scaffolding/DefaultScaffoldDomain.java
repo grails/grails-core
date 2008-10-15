@@ -52,7 +52,9 @@ public class DefaultScaffoldDomain implements ScaffoldDomain {
 
 	private static final Log LOG  = LogFactory.getLog(DefaultScaffoldDomain.class);
 	private static final String LIST_SUFFIX = "List";
-	private Class persistentClass;
+    private static final String SINGULAR_SUFFIX = "Instance";
+    
+    private Class persistentClass;
 	private HibernateTemplate template;
 
 	private BeanWrapper bean;
@@ -317,7 +319,7 @@ public class DefaultScaffoldDomain implements ScaffoldDomain {
 	}
 
 	public String getPluralName() {
-		return GrailsClassUtils.getPropertyNameRepresentation(persistentClass) + LIST_SUFFIX;
+		return getSingularName()  + LIST_SUFFIX;
 	}
 
 	public Class getPersistentClass() {
@@ -325,7 +327,7 @@ public class DefaultScaffoldDomain implements ScaffoldDomain {
 	}
 
 	public String getSingularName() {
-        return GrailsClassUtils.getPropertyNameRepresentation(persistentClass);
+        return GrailsClassUtils.getPropertyNameRepresentation(persistentClass) + SINGULAR_SUFFIX;
 	}
 
 
