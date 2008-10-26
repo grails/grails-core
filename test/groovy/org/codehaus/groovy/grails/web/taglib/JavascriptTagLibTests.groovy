@@ -40,9 +40,8 @@ class TestUrlMappings {
         webRequest.controllerName = "foo"
         def template = '''<g:javascript library="test" /><p><g:remoteLink controller="bar" action="list" /></p><g:render template="part" model="['foo1':foo2]" />'''
 
-
-        assertOutputEquals('''<script type="text/javascript" src="/js/test.js"></script>
-<p><a href="/bar/list" onclick="<remote>return false;" action="list" controller="bar"></a></p><a href="/foo/list" onclick="<remote>return false;" action="list" controller="foo"></a>''', template)
+        assertOutputEquals("""<script type="text/javascript" src="/js/test.js"></script>$EOL\
+<p><a href="/bar/list" onclick="<remote>return false;" action="list" controller="bar"></a></p><a href="/foo/list" onclick="<remote>return false;" action="list" controller="foo"></a>""", template)
 
     }
     void testJavascriptInclude() {

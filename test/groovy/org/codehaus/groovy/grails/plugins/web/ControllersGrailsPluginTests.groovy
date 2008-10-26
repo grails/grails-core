@@ -173,14 +173,15 @@ class TagLibTestController {
           </form>
         </body>
       </html>''', response.contentAsString) */
-        assertEquals('''<html>
-  <head>
-    <title>Log in</title>
-  </head>
-  <body>
-    <h1>Hello</h1>
-  </body>
-</html>''', webRequest.currentResponse.contentAsString)
+        def eol = System.getProperty("line.separator")
+        assertEquals("""<html>$eol\
+  <head>$eol\
+    <title>Log in</title>$eol\
+  </head>$eol\
+  <body>$eol\
+    <h1>Hello</h1>$eol\
+  </body>$eol\
+</html>""", webRequest.currentResponse.contentAsString)
     }
 
     Class parseTestBean() {
