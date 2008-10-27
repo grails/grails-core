@@ -13,8 +13,8 @@ grailsHome = Ant.project.properties."environment.GRAILS_HOME"
 includeTargets << new File ( "${grailsHome}/scripts/Init.groovy" )  
 includeTargets << new File ( "${grailsHome}/scripts/PackagePlugin.groovy" )
   
-pluginSVN = "https://svn.codehaus.org/grails-plugins"
-//pluginSVN = "file:///Developer/localsvn"
+//pluginSVN = "https://svn.codehaus.org/grails-plugins"
+pluginSVN = "file:///home/pal20/dev/repo"
 authManager = null
 message = null
 trunk = null
@@ -30,10 +30,10 @@ target(processAuth:"Prompts user for login details to create authentication mana
         Ant.input(message:"Please enter your SVN username:", addproperty:"user.svn.username")
         Ant.input(message:"Please enter your SVN password:", addproperty:"user.svn.password")
 
-         def username = Ant.antProject.properties."user.svn.username"
+        def username = Ant.antProject.properties."user.svn.username"
         def password = Ant.antProject.properties."user.svn.password"
 
-         authManager = SVNWCUtil.createDefaultAuthenticationManager( username , password )
+        authManager = SVNWCUtil.createDefaultAuthenticationManager( username , password )
     }
 }
 target(releasePlugin: "The implementation target") {
@@ -207,12 +207,14 @@ target(tagPluginRelease:"Tags a plugin-in with the LATEST_RELEASE tag and versio
 
     // First tag this release with the version number.
     println "Tagging version release, please wait..."
-    commit = copyClient.doCopy(trunk, SVNRevision.HEAD, release, false, false, message )
+    def copySource = new SVNCopySource(SVNRevision.HEAD, SVNRevision.HEAD, trunk)
+    commit = copyClient.doCopy([copySource] as SVNCopySource[], release, false, false, true, message, new SVNProperties())
     println "Copied trunk to ${versionedRelease} with revision ${commit.newRevision} on ${commit.date}"
 
     // And now make it the latest release.
     println "Tagging latest release, please wait..."
-    commit = copyClient.doCopy(release, SVNRevision.HEAD, latest, false, false, message )
+    copySource = new SVNCopySource(SVNRevision.HEAD, SVNRevision.HEAD, release)
+    commit = copyClient.doCopy([copySource] as SVNCopySource[], latest, false, false, true, message, new SVNProperties())
     println "Copied trunk to ${latestRelease} with revision ${commit.newRevision} on ${commit.date}"
 }
 
