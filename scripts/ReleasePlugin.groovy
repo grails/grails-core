@@ -13,8 +13,7 @@ grailsHome = Ant.project.properties."environment.GRAILS_HOME"
 includeTargets << new File ( "${grailsHome}/scripts/Init.groovy" )  
 includeTargets << new File ( "${grailsHome}/scripts/PackagePlugin.groovy" )
   
-//pluginSVN = "https://svn.codehaus.org/grails-plugins"
-pluginSVN = "file:///home/pal20/dev/repo"
+pluginSVN = "https://svn.codehaus.org/grails-plugins"
 authManager = null
 message = null
 trunk = null
