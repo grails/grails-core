@@ -268,7 +268,7 @@ Grails home is set to: ${grailsHome}
 		else {
 			println "Script $scriptName not found."
             println "Run 'grails help' for a complete list of available scripts."
-			return 0
+			return 1
 		}    		
 	}
 	
