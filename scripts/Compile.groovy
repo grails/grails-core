@@ -35,7 +35,7 @@ import java.security.CodeSource
 Ant.property(environment:"env")
 grailsHome = Ant.antProject.properties."env.GRAILS_HOME"    
 
-includeTargets << new File ( "${grailsHome}/scripts/Init.groovy" ) 
+includeTargets << grailsScript ( "Init" ) 
        
 if(!Ant.antProject.properties."groovyJarSet") {
 	Ant.path ( id : 'groovyJarSet' ) { 

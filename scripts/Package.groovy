@@ -37,8 +37,8 @@ import grails.util.*
 Ant.property(environment:"env")                             
 grailsHome = Ant.antProject.properties."env.GRAILS_HOME"    
 
-includeTargets << new File ( "${grailsHome}/scripts/Compile.groovy" )  
-includeTargets << new File ( "${grailsHome}/scripts/_PackagePlugins.groovy" ) 
+includeTargets << grailsScript ( "Compile" )
+includeTargets << grailsScript ( "_PackagePlugins" )
 
 scaffoldDir = "${basedir}/web-app/WEB-INF/templates/scaffolding"     
 configFile = new File("${basedir}/grails-app/conf/Config.groovy")

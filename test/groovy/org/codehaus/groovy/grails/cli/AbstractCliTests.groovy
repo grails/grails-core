@@ -55,9 +55,13 @@ abstract class AbstractCliTests extends GroovyTestCase {
 	        loaderConfig.addFile(jarFile)
 	    }
 
+        def grailsScriptClosure = {String name ->
+            return new File("scripts/${name}.groovy")
+        }
+
 	    def rootLoader = new RootLoader(loaderConfig)
 	    def gant = rootLoader.loadClass('gant.Gant', false).newInstance()
-
+        gant.binding.setVariable("grailsScript", grailsScriptClosure)
 	    gant.processArgs(args)
 	}
 }

@@ -47,7 +47,7 @@ recompileFrequency = System.getProperty("recompile.frequency")
 recompileFrequency = recompileFrequency ? recompileFrequency.toInteger() : 3
 
 
-includeTargets << new File("${grailsHome}/scripts/Package.groovy")
+includeTargets << grailsScript ( "Package" )
 
 
 shouldPackageTemplates = true

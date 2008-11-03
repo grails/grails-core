@@ -28,7 +28,7 @@ import groovy.text.SimpleTemplateEngine
 Ant.property(environment:"env")                             
 grailsHome = Ant.antProject.properties."env.GRAILS_HOME"    
 
-includeTargets << new File ( "${grailsHome}/scripts/Package.groovy" )
+includeTargets << grailsScript ( "Package" )
 
 target ('default': "Cleans a Grails project") {
 	clean()

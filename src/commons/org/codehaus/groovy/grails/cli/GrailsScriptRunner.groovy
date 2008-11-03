@@ -237,7 +237,16 @@ Grails home is set to: ${grailsHome}
 	        catch(Exception e) {
 	            // No plugins found.
 	        }
-			SCRIPT_CACHE[scriptName] = new CachedScript(binding:binding, potentialScripts:potentialScripts)	
+
+            // Backport from 1.1 of "grailsScript" closure definition
+            // for scripts. Given a script name, it returns the location
+            // of the corresponding script file under $GRAILS_HOME.
+            def grailsScriptClosure = {String name ->
+                return new File("${grailsHome}/scripts/${name}.groovy")
+            }
+            binding.setVariable("grailsScript", grailsScriptClosure)
+
+            SCRIPT_CACHE[scriptName] = new CachedScript(binding:binding, potentialScripts:potentialScripts)
 		}
 
 

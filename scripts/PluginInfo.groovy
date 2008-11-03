@@ -29,7 +29,7 @@ import groovy.xml.dom.DOMCategory
 Ant.property(environment:"env")
 grailsHome = Ant.antProject.properties."env.GRAILS_HOME"
 
-includeTargets << new File ( "${grailsHome}/scripts/ListPlugins.groovy" )
+includeTargets << grailsScript ( "ListPlugins" )
 
 target ( "default" : "Displays info about plugin") {
     pluginInfo()

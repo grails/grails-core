@@ -29,7 +29,7 @@ appName = ""
 Ant.property(environment:"env")   
 grailsHome = Ant.antProject.properties."env.GRAILS_HOME"    
 
-includeTargets << new File ( "${grailsHome}/scripts/CreateApp.groovy" )
+includeTargets << grailsScript ( "CreateApp" )
 
 target ( "default" : "Creates a Grails plug-in project, including the necessary directory structure and commons files") {
    createPlugin()

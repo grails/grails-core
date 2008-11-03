@@ -34,7 +34,7 @@ BINARY_PLUGIN_DIST = "http://plugins.grails.org/dist"
 Ant.property(environment: "env")
 grailsHome = Ant.antProject.properties."env.GRAILS_HOME"
 
-includeTargets << new File("${grailsHome}/scripts/Init.groovy")
+includeTargets << grailsScript ( "Init" )
 
 pluginsHome = "${userHome}/.grails/${grailsVersion}/plugins/"
 Ant.mkdir(dir: "${pluginsHome}")

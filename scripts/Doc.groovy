@@ -23,7 +23,7 @@
 Ant.property(environment:"env")
 grailsHome = Ant.antProject.properties."env.GRAILS_HOME"
 
-includeTargets << new File ( "${grailsHome}/scripts/Compile.groovy" )
+includeTargets << grailsScript ( "Compile" )
 
 javadocDir = "${basedir}/docs/api"
 groovydocDir = "${basedir}/docs/gapi"

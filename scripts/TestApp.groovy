@@ -48,7 +48,7 @@ appCtx = null
 result = new TestResult()
 compilationFailures = []
 
-includeTargets << new File("${grailsHome}/scripts/Bootstrap.groovy")
+includeTargets << grailsScript ( "Bootstrap" )
 
 generateLog4jFile = true
 

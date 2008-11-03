@@ -13,7 +13,7 @@ import org.springframework.web.context.WebApplicationContext
 Ant.property(environment:"env")
 grailsHome = Ant.antProject.properties."env.GRAILS_HOME"    
 
-includeTargets << new File ( "${grailsHome}/scripts/Package.groovy" )  
+includeTargets << grailsScript ( "Package" )  
 
 target ('default': "This target will load the Grails application context into the command window with a variable named 'ctx'") {
 	bootstrap()

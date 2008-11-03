@@ -27,7 +27,7 @@ import groovy.text.SimpleTemplateEngine
 Ant.property(environment:"env")                             
 grailsHome = Ant.antProject.properties."env.GRAILS_HOME"    
 
-includeTargets << new File ( "${grailsHome}/scripts/Init.groovy" )
+includeTargets << grailsScript ( "Init" )
 
 target ('default': "Generates basic stats for a Grails project") {
 

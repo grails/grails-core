@@ -28,7 +28,7 @@ import groovy.text.SimpleTemplateEngine
 Ant.property(environment:"env")                             
 grailsHome = Ant.antProject.properties."env.GRAILS_HOME"    
 
-includeTargets << new File ( "${grailsHome}/scripts/GenerateAll.groovy" )
+includeTargets << grailsScript ( "GenerateAll" )
 
 target ('default': "Generates the CRUD controller for a specified domain class") {
 	depends( checkVersion, packageApp )

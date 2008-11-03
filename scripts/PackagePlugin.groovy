@@ -57,10 +57,10 @@ pluginExcludes = [
 	"**/CVS/**"
 ]
 
-includeTargets << new File ( "${grailsHome}/scripts/Init.groovy" )
-includeTargets << new File ( "${grailsHome}/scripts/Compile.groovy" )
-includeTargets << new File ( "${grailsHome}/scripts/CreateApp.groovy" )
-includeTargets << new File ( "${grailsHome}/scripts/Package.groovy" )
+includeTargets << grailsScript ( "Init" )
+includeTargets << grailsScript ( "Compile" )
+includeTargets << grailsScript ( "CreateApp" )
+includeTargets << grailsScript ( "Package" )
 
 target ( "default" : "Packages a Grails plugin into a zip for distribution") {
    packagePlugin()

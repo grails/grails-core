@@ -32,9 +32,9 @@ appName = ""
 Ant.property(environment:"env")   
 grailsHome = Ant.antProject.properties."env.GRAILS_HOME"    
 
-includeTargets << new File ( "${grailsHome}/scripts/ListPlugins.groovy" )
-includeTargets << new File ( "${grailsHome}/scripts/Clean.groovy" )
-includeTargets << new File ( "${grailsHome}/scripts/Package.groovy" )
+includeTargets << grailsScript ( "ListPlugins" )
+includeTargets << grailsScript ( "Clean" )
+includeTargets << grailsScript ( "Package" )
 
 ERROR_MESSAGE = """
 You need to specify either the direct URL of the plugin or the name and version

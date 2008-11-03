@@ -30,7 +30,7 @@ import org.codehaus.groovy.tools.shell.*
 Ant.property(environment:"env")                             
 grailsHome = Ant.antProject.properties."env.GRAILS_HOME"    
 
-includeTargets << new File ( "${grailsHome}/scripts/Bootstrap.groovy" )
+includeTargets << grailsScript ( "Bootstrap" )
 
 target ('default': "Load the Grails interactive shell") {
 	depends( configureProxy, packageApp, classpath )

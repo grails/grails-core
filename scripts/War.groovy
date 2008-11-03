@@ -28,8 +28,8 @@ Ant.property(environment:"env")
 grailsHome = Ant.antProject.properties."env.GRAILS_HOME"    
                               
 
-includeTargets << new File ( "${grailsHome}/scripts/Clean.groovy" ) 
-includeTargets << new File ( "${grailsHome}/scripts/Package.groovy" )
+includeTargets << grailsScript ( "Clean" ) 
+includeTargets << grailsScript ( "Package" )
 
 target ('default':'''Creates a WAR archive for deployment onto a Java EE application server.
 

@@ -27,9 +27,9 @@ import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
 Ant.property(environment:"env")       
 grailsHome = Ant.antProject.properties."env.GRAILS_HOME"   
 
-includeTargets << new File ( "${grailsHome}/scripts/CreateApp.groovy" )
-includeTargets << new File ( "${grailsHome}/scripts/Clean.groovy" )
-includeTargets << new File ( "${grailsHome}/scripts/Init.groovy" )
+includeTargets << grailsScript ( "CreateApp" )
+includeTargets << grailsScript ( "Clean" )
+includeTargets << grailsScript ( "Init" )
 
 target( upgrade: "main upgrade target") {
 

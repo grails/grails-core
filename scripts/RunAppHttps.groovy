@@ -42,9 +42,9 @@ keystore = "${userHome}/.grails/${grailsVersion}/ssl/keystore"
 keystoreFile = new File("${keystore}")
 keyPassword = "123456"
 
-includeTargets << new File("${grailsHome}/scripts/Init.groovy")
-includeTargets << new File("${grailsHome}/scripts/Package.groovy")
-includeTargets << new File("${grailsHome}/scripts/RunApp.groovy")
+includeTargets << grailsScript ( "Init" )
+includeTargets << grailsScript ( "Package" )
+includeTargets << grailsScript ( "RunApp" )
 
 target('default': "Run's a Grails application in Jetty with HTTPS listener") {
     depends(checkVersion, configureProxy, packageApp, generateWebXml)

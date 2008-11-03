@@ -40,7 +40,7 @@ grailsWarServer = null
 grailsWarContext = null
 
 
-includeTargets << new File ( "${grailsHome}/scripts/War.groovy" )
+includeTargets << grailsScript ( "War" )
 
 shouldPackageTemplates=true
 

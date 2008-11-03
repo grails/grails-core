@@ -10,8 +10,8 @@ import org.tmatesoft.svn.core.io.diff.SVNDeltaGenerator;
 
 grailsHome = Ant.project.properties."environment.GRAILS_HOME"
 
-includeTargets << new File ( "${grailsHome}/scripts/Init.groovy" )  
-includeTargets << new File ( "${grailsHome}/scripts/PackagePlugin.groovy" )
+includeTargets << grailsScript ( "Init" )
+includeTargets << grailsScript ( "PackagePlugin" )
   
 pluginSVN = "https://svn.codehaus.org/grails-plugins"
 authManager = null

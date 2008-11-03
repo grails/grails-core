@@ -27,8 +27,8 @@ import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
 Ant.property(environment:"env")                             
 grailsHome = Ant.antProject.properties."env.GRAILS_HOME"    
 
-includeTargets << new File ( "${grailsHome}/scripts/Init.groovy" )  
-includeTargets << new File( "${grailsHome}/scripts/CreateIntegrationTest.groovy")
+includeTargets << grailsScript ( "Init" )
+includeTargets << grailsScript ( "CreateIntegrationTest" )
 
 target ('default': "Creates a new tag library") {
     depends(checkVersion)
