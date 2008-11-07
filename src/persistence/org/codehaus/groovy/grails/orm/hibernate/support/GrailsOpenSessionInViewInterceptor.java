@@ -56,12 +56,15 @@ public class GrailsOpenSessionInViewInterceptor extends OpenSessionInViewInterce
         final boolean isFlowRequest = request.getAttribute(IS_FLOW_REQUEST_ATTRIBUTE, WebRequest.SCOPE_REQUEST) != null;
         if(!isFlowRequest) {
 
-            super.postHandle(request, model);
-            SessionHolder sessionHolder =
-                    (SessionHolder) TransactionSynchronizationManager.getResource(getSessionFactory());
+            try {
+                super.postHandle(request, model);
+            } finally {
+                SessionHolder sessionHolder =
+                        (SessionHolder) TransactionSynchronizationManager.getResource(getSessionFactory());
 
-            Session session = sessionHolder.getSession();
-            session.setFlushMode(FlushMode.MANUAL);
+                Session session = sessionHolder.getSession();
+                session.setFlushMode(FlushMode.MANUAL);
+            }
 
         }
     }
