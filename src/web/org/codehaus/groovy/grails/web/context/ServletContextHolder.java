@@ -27,11 +27,12 @@ import javax.servlet.ServletContext;
  */
 public class ServletContextHolder {
 
-    public static synchronized ServletContext getServletContext() {
+    public static ServletContext getServletContext() {
         return servletContext;
     }
 
-    public static synchronized void setServletContext(ServletContext servletContext) {
+    public static void setServletContext(ServletContext servletContext) {
+        if(servletContext != null) throw new IllegalStateException("ServletContext already set!");        
         ServletContextHolder.servletContext = servletContext;
     }
 
