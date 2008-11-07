@@ -18,9 +18,10 @@ package org.codehaus.groovy.grails.plugins.codecs
 
 
 import org.codehaus.groovy.runtime.DefaultGroovyMethods
+import org.apache.commons.codec.binary.Base64
 
  /**
-  * A code that encodes and decodes Objects using Base64 encoding
+  * A codec that encodes and decodes Objects using Base64 encoding
   *
   * @author Drew Varner
   */
@@ -28,18 +29,18 @@ class Base64Codec {
     static encode = { theTarget ->
        if (theTarget == null) {
            return null
-       } else if (theTarget instanceof byte[] || theTarget instanceof Byte[]) {
-           return theTarget.encodeBase64()
-       } else {
-    	   return theTarget.toString().getBytes().encodeBase64()
+       } else if (theTarget instanceof Byte[] || theTarget instanceof byte[]) {
+           return new String(Base64.encodeBase64(theTarget))
        }
     }
 
     static decode = { theTarget ->
         if (theTarget == null) {
             return null
+	    } else if (theTarget instanceof Byte[] || theTarget instanceof byte[]){
+            return Base64.decodeBase64(theTarget)
         } else {
-            return DefaultGroovyMethods.decodeBase64(theTarget.toString())
+            return Base64.decodeBase64(theTarget.toString().getBytes())
         }
     }
 }

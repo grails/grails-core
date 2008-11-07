@@ -5,9 +5,16 @@ import org.springframework.core.io.*
 class Base64CodecTests extends GroovyTestCase{
     def GroovyObject codec
     def resourceLoader = new DefaultResourceLoader()
+
+    byte[] dataPrimitive = new byte[256]
+    Byte[] dataWrapper = new Byte[256]
     
 	void setUp() {
         codec = new org.codehaus.groovy.grails.plugins.codecs.Base64Codec()
+        for (i in 0..255) {
+	        dataPrimitive[i] = i
+	        dataWrapper[i] = i
+	    }
     }
 
     void tearDown() {
@@ -15,19 +22,22 @@ class Base64CodecTests extends GroovyTestCase{
         resourceLoader = null
     }
 
-	void testEncode() {
-        // this test was taken from Dierk Konig's Groovy in action book
-        byte[] data = new byte[256]
-        for (i in 0..255) {data[i] = i}
-        String result = codec.encode(data)
+    void testEncode() {
 
-        assertTrue(result.startsWith('AAECAwQFBg'))
-        assertTrue(result.endsWith('r7/P3+/w=='))
-        
+	    def expectedResult = 'AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gISIjJCUmJygpKissLS4vMDEyMzQ1Njc4OTo7PD0+P0BBQkNERUZHSElKS0xNTk9QUVJTVFVWV1hZWltcXV5fYGFiY2RlZmdoaWprbG1ub3BxcnN0dXZ3eHl6e3x9fn+AgYKDhIWGh4iJiouMjY6PkJGSk5SVlpeYmZqbnJ2en6ChoqOkpaanqKmqq6ytrq+wsbKztLW2t7i5uru8vb6/wMHCw8TFxsfIycrLzM3Oz9DR0tPU1dbX2Nna29zd3t/g4eLj5OXm5+jp6uvs7e7v8PHy8/T19vf4+fr7/P3+/w=='
+
+        // we want to verify that both Byte[] and byte[] inputs work
+        String primitiveResult = codec.encode(dataPrimitive)
+        String wrapperResult = codec.encode(dataPrimitive)
+
+        assertEquals(expectedResult,primitiveResult)
+        assertEquals(expectedResult,wrapperResult)
+
         //make sure encoding null returns null
         assertEquals(codec.encode(null), null)
 	}
-	void testDecode() {
+	
+    void testDecode() {
         String data = 'd2hhdA=='
         byte[] result = codec.decode(data)
         
@@ -38,5 +48,10 @@ class Base64CodecTests extends GroovyTestCase{
         
         //make sure decoding null returns null
         assertEquals(codec.decode(null), null)
+    }
+    void testRountrip() {
+	    assertEquals(dataPrimitive, codec.decode(codec.encode(dataPrimitive)))
+	    assertEquals(dataWrapper, codec.decode(codec.encode(dataWrapper)))
 	}
 }
+

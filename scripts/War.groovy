@@ -68,6 +68,7 @@ DEFAULT_DEPS = [
     "ognl-*.jar",
     "hsqldb-*.jar",
     "commons-lang-*.jar",
+    "commons-codec-*.jar",
     "commons-collections-*.jar",
     "commons-beanutils-*.jar",
     "commons-pool-*.jar",
