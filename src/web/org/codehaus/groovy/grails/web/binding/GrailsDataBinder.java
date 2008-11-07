@@ -23,6 +23,7 @@ import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.metaclass.CreateDynamicMethod;
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
+import org.codehaus.groovy.grails.web.context.ServletContextHolder;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap;
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.springframework.beans.*;
@@ -33,6 +34,8 @@ import org.springframework.beans.propertyeditors.LocaleEditor;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.web.bind.ServletRequestDataBinder;
 import org.springframework.web.bind.ServletRequestParameterPropertyValues;
+import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.context.support.WebApplicationContextUtils;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.springframework.web.multipart.support.ByteArrayMultipartFileEditor;
 import org.springframework.web.multipart.support.StringMultipartFileEditor;
@@ -102,6 +105,22 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
         }
         setDisallowedFields(disallowed);
         setAllowedFields(ALL_OTHER_FIELDS_ALLOWED_BY_DEFAULT);
+        registerCustomEditors();
+    }
+
+    /**
+     * Collects all PropertyEditorRegistrars in the application context and
+     * calls them to register their custom editors
+     */
+    private void registerCustomEditors() {
+        WebApplicationContext context = WebApplicationContextUtils.getWebApplicationContext(ServletContextHolder.getServletContext());
+        if(context != null) {
+            Map editors = context.getBeansOfType(PropertyEditorRegistrar.class);
+            for (Iterator it = editors.entrySet().iterator(); it.hasNext(); ) {
+                PropertyEditorRegistrar editorRegistrar = (PropertyEditorRegistrar) ((Map.Entry) it.next()).getValue();
+                editorRegistrar.registerCustomEditors(getPropertyEditorRegistry());
+            }
+        }
     }
 
     /**
