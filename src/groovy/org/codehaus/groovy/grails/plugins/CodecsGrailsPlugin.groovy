@@ -34,8 +34,7 @@ class CodecsGrailsPlugin {
                                HTMLCodec,
                                JavaScriptCodec,
                                URLCodec,
-                               Base64Codec,
-                               Base64ChunkedCodec
+                               Base64Codec
                             ]
 
 	def onChange = { event ->
