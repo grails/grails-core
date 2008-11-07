@@ -17,6 +17,7 @@ package org.codehaus.groovy.grails.webflow.persistence;
 import org.springframework.webflow.persistence.HibernateFlowExecutionListener;
 import org.springframework.webflow.execution.RequestContext;
 import org.springframework.webflow.execution.FlowSession;
+import org.springframework.webflow.execution.ViewSelection;
 import org.springframework.webflow.core.collection.MutableAttributeMap;
 import org.springframework.webflow.core.collection.AttributeMap;
 import org.springframework.webflow.definition.FlowDefinition;
@@ -108,6 +109,15 @@ public class SessionAwareHibernateFlowExecutionListener extends HibernateFlowExe
 		}
 	}
 
+
+    public void paused(RequestContext context, ViewSelection selectedView) {
+        final Session session = getCurrentSession();
+        unbind(session);
+        if(session!=null) {
+            session.disconnect();
+        }        
+    }
+
     private Session createSession() {
 		Session session = localSessionFactory.openSession();
 		session.setFlushMode(FlushMode.MANUAL);
@@ -117,10 +127,18 @@ public class SessionAwareHibernateFlowExecutionListener extends HibernateFlowExe
     private void obtainCurrentSession(RequestContext context) {
         MutableAttributeMap flowScope = context.getFlowScope();
         if(flowScope.get(HIBERNATE_SESSION_ATTRIBUTE) == null) {
-            SessionHolder sessionHolder = (SessionHolder) TransactionSynchronizationManager.getResource(localSessionFactory);
-            if(sessionHolder!=null)
-                flowScope.put(HIBERNATE_SESSION_ATTRIBUTE, sessionHolder.getSession());
+            final Session session = getCurrentSession();
+            flowScope.put(HIBERNATE_SESSION_ATTRIBUTE, session);
         }
+    }
+
+    private Session getCurrentSession() {
+        SessionHolder sessionHolder = (SessionHolder) TransactionSynchronizationManager.getResource(localSessionFactory);
+        Session session = null;
+        if(sessionHolder!=null){
+            session = sessionHolder.getSession();
+        }
+        return session;
     }
 
     public void resumed(RequestContext context) {
