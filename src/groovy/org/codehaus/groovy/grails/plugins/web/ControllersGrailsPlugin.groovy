@@ -535,11 +535,16 @@ class ControllersGrailsPlugin {
 
             def result
             if (tagLibraryClass) {
-                def controllerMc = delegate.class.metaClass
+                MetaClass controllerMc = delegate.class.metaClass
                 synchronized (controllerMc) {
                     WebMetaUtils.registerMethodMissingForTags(controllerMc, ctx, tagLibraryClass, name)
                 }
-                result = controllerMc.invokeMethod(delegate, name, args)
+                if(controllerMc.respondsTo(delegate, name, args)) {
+                  result = controllerMc.invokeMethod(delegate, name, args)
+                }
+                else {
+                  throw new MissingMethodException(name, delegate.class, args)  
+                }
             }
             else {
                 throw new MissingMethodException(name, delegate.class, args)

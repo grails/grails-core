@@ -26,6 +26,15 @@ import org.codehaus.groovy.grails.support.MockStringResourceLoader
  */
 class RenderMethodTests extends AbstractGrailsControllerTests {
 
+    // bug GRAILS-3393
+    void testMissingNamedArgumentKey() {
+
+      def mockController = ga.getControllerClass("RenderController").newInstance()
+      shouldFail(MissingMethodException) {
+             mockController.renderBug.call()
+      }
+    }
+
     void testRenderObject() {
         def mockController = ga.getControllerClass("RenderController").newInstance()
         mockController.renderObject.call()
@@ -146,6 +155,11 @@ class RenderMethodTests extends AbstractGrailsControllerTests {
 		gcl.parseClass(
 '''
 class RenderController {
+
+    def renderBug = {
+      render(view:'login', [foo:"bar"])
+    }
+
     def renderView = {
         render(view:'testView')
     }
