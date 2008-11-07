@@ -74,15 +74,13 @@ public class DataBindingUtils {
         else if (source instanceof HttpServletRequest) {
             HttpServletRequest request = (HttpServletRequest)source;
             GrailsDataBinder dataBinder = createDataBinder(object, include, exclude, request);
-            dataBinder.bind(request);
             performBindFromRequest(dataBinder, request,filter);
             bindingResult = dataBinder.getBindingResult();
         }
         else if(source instanceof Map) {
 			Map propertyMap = (Map)source;
             propertyMap = convertPotentialGStrings(propertyMap);
-            GrailsDataBinder binder = createDataBinder(object, include, exclude, null);
-            
+            GrailsDataBinder binder = createDataBinder(object, include, exclude, null);            
             performBindFromPropertyValues(binder, new MutablePropertyValues(propertyMap),filter);
             bindingResult = binder.getBindingResult();
         }
