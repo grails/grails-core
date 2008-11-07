@@ -40,7 +40,9 @@ pluginIncludes = [
 	"lib/**",
     "scripts/**",
 	"web-app/**",
-	"src/**"
+	"src/**", 
+	"docs/api/**",
+	"docs/gapi/**"
 ]
 
 pluginExcludes = [
@@ -60,6 +62,7 @@ pluginExcludes = [
 includeTargets << grailsScript ( "Init" )
 includeTargets << grailsScript ( "Compile" )
 includeTargets << grailsScript ( "CreateApp" )
+includeTargets << grailsScript ( "Doc" )
 includeTargets << grailsScript ( "Package" )
 
 target ( "default" : "Packages a Grails plugin into a zip for distribution") {
@@ -67,7 +70,7 @@ target ( "default" : "Packages a Grails plugin into a zip for distribution") {
 }
 
 target(packagePlugin:"Implementation target") {
-    depends (checkVersion,packagePlugins, packageApp,compile)
+    depends (checkVersion,packagePlugins, packageApp,compile, groovydoc, javadoc)
 
     def pluginFile
     new File("${basedir}").eachFile {
