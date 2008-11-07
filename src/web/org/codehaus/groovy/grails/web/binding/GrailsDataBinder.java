@@ -42,6 +42,7 @@ import org.springframework.web.multipart.support.StringMultipartFileEditor;
 import org.springframework.web.servlet.support.RequestContextUtils;
 
 import javax.servlet.ServletRequest;
+import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -113,12 +114,15 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
      * calls them to register their custom editors
      */
     private void registerCustomEditors() {
-        WebApplicationContext context = WebApplicationContextUtils.getWebApplicationContext(ServletContextHolder.getServletContext());
-        if(context != null) {
-            Map editors = context.getBeansOfType(PropertyEditorRegistrar.class);
-            for (Iterator it = editors.entrySet().iterator(); it.hasNext(); ) {
-                PropertyEditorRegistrar editorRegistrar = (PropertyEditorRegistrar) ((Map.Entry) it.next()).getValue();
-                editorRegistrar.registerCustomEditors(getPropertyEditorRegistry());
+        final ServletContext servletContext = ServletContextHolder.getServletContext();
+        if(servletContext!=null) {
+            WebApplicationContext context = WebApplicationContextUtils.getWebApplicationContext(servletContext);
+            if(context != null) {
+                Map editors = context.getBeansOfType(PropertyEditorRegistrar.class);
+                for (Iterator it = editors.entrySet().iterator(); it.hasNext(); ) {
+                    PropertyEditorRegistrar editorRegistrar = (PropertyEditorRegistrar) ((Map.Entry) it.next()).getValue();
+                    editorRegistrar.registerCustomEditors(getPropertyEditorRegistry());
+                }
             }
         }
     }
