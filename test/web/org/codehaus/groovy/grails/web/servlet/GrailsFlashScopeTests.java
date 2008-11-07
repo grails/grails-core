@@ -15,7 +15,12 @@
 package org.codehaus.groovy.grails.web.servlet;
 
 import grails.util.GrailsWebUtil;
+import groovy.lang.GroovySystem;
+import groovy.lang.MetaClass;
 import junit.framework.TestCase;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Graeme Rocher
@@ -23,6 +28,7 @@ import junit.framework.TestCase;
  */
 public class GrailsFlashScopeTests extends TestCase {
 
+    private static final String ERRORS_PROPERTY = "errors";
 
     public void testNextState() {
 
@@ -57,4 +63,82 @@ public class GrailsFlashScopeTests extends TestCase {
         assertEquals(0,fs.size());
 
     }
+
+
+    /**
+     * Bug: GRAILS-3083
+     */
+    public void testPutMap() {
+
+        GrailsWebUtil.bindMockWebRequest();
+
+        //set up a map with ERRORS_PROPERTY
+        Map map = new HashMap();
+        StringWithError value = new StringWithError("flinstone");
+        map.put("fred",value);
+        map.put("barney","rabble");
+        MetaClass mc = GroovySystem.getMetaClassRegistry().getMetaClass(value.getClass());
+        mc.setProperty(value, ERRORS_PROPERTY, new Object());
+
+        //put the map to scope
+        FlashScope fs = new GrailsFlashScope();
+        fs.put("test", "value");
+        fs.put("flinstones", map);
+
+        assertFalse(fs.isEmpty());
+        assertEquals(2, fs.size());
+        assertEquals(map,fs.get("flinstones"));
+        assertEquals("value", fs.get("test"));
+
+        // the state immediately following this one the map should still contain the previous
+        // entries
+        fs.next();
+
+        assertFalse(fs.isEmpty());
+        assertEquals(2, fs.size());
+        assertEquals(map,fs.get("flinstones"));
+        assertEquals("value", fs.get("test"));
+
+        // the next state it should be empty
+        fs.next();
+
+        assertTrue(fs.isEmpty());
+        assertEquals(0,fs.size());
+
+    }
+
+    private class StringWithError {
+        private String value;
+        private Object errors;
+
+        public StringWithError(String value) {
+            this.value = value;
+        }
+
+        public Object getErrors() {
+            return errors;
+        }
+
+        public void setErrors(Object errors) {
+            this.errors = errors;
+        }
+
+        public boolean equals(Object obj) {
+            if (value == null) {
+                return (obj == null);
+            }
+            else {
+                return value.equals(obj);
+            }
+        }
+
+        public int hashCode() {
+            return value.hashCode();
+        }
+
+        public String toString() {
+            return value;
+        }
+    }
+    
 }

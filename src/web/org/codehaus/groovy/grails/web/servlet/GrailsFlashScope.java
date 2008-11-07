@@ -161,7 +161,7 @@ public class GrailsFlashScope implements FlashScope {
             }
             else if(value instanceof Map) {
                 Map map = (Map)value;
-                Set keys = map.keySet();
+                Collection keys = new LinkedList(map.keySet());
                 for (Iterator i = keys.iterator(); i.hasNext();) {
                     Object key = i.next();
                     Object val = map.get(key);
