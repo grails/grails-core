@@ -31,8 +31,7 @@ public class ServletContextHolder {
         return servletContext;
     }
 
-    public static void setServletContext(ServletContext servletContext) {
-        if(servletContext != null) throw new IllegalStateException("ServletContext already set!");        
+    public static void setServletContext(ServletContext servletContext) {        
         ServletContextHolder.servletContext = servletContext;
     }
 
