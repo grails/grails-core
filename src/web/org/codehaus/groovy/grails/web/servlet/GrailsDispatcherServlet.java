@@ -375,6 +375,7 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
 						interceptor.afterCompletion(request, response, mappedHandler.getHandler(), ex);
 					}
 					catch (Throwable ex2) {
+                        GrailsUtil.deepSanitize(ex2);
 						logger.error("HandlerInterceptor.afterCompletion threw exception", ex2);
 					}
 				}
