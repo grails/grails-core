@@ -167,6 +167,10 @@ public class UniqueConstraint extends AbstractPersistentConstraint {
             }
         }
     }
+
+    public List getUniquenessGroup() {
+        return uniquenessGroup;
+    }
     
     public boolean supports(Class type) {
    		return true;

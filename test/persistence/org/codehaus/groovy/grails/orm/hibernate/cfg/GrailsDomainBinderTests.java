@@ -38,12 +38,12 @@ import java.util.List;
  * @author Jason Rudolph
  * @author Sergey Nebolsin
  * @since 0.4
- * 
+ *
  * Created: 06-Jan-2007
  */
 public class GrailsDomainBinderTests extends TestCase {
-    
-    private static final String ONE_TO_ONE_CLASSES_DEFINITION = 
+
+    private static final String ONE_TO_ONE_CLASSES_DEFINITION =
         "class Species {\n" +
         "    Long id \n" +
         "    Long version \n" +
@@ -66,9 +66,9 @@ public class GrailsDomainBinderTests extends TestCase {
         "    Long version \n" +
         "    Set visits \n" +
         "    static hasMany = [visits:Visit] \n" +
-        "    static mapping = { visits joinTable:false, nullable:false }" +                
+        "    static mapping = { visits joinTable:false, nullable:false }" +
         "}";
-        
+
     private static final String MANY_TO_MANY_CLASSES_DEFINITION =
         "class Specialty {\n" +
         "    Long id \n" +
@@ -103,13 +103,53 @@ public class GrailsDomainBinderTests extends TestCase {
         "    }\n" +
         "}";
 
+    private static final String UNIQUE_PROPERTIES =
+        "class User {\n" +
+        "    Long id \n" +
+        "    Long version \n" +
+        "    String login \n" +
+        "    String group \n" +
+        "    String camelCased \n" +
+        "    String employeeID \n" +
+        "    static constraints = {    \n" +
+        "        employeeID(unique:true)     \n" +
+        "        group(unique:'camelCased')     \n" +
+        "        login(unique:['group','camelCased'])   \n" +
+        "   }\n" +
+        "}";
+
+    public void testUniqueConstraintGeneration() {
+        DefaultGrailsDomainConfiguration config = getDomainConfig(UNIQUE_PROPERTIES);
+        assertEquals("Tables created", 1, getTableCount(config));
+        List expectedKeyColumns1 = Arrays.asList(new Column[]{new Column("camel_cased"),new Column("group"),new Column("login")});
+        List expectedKeyColumns2 = Arrays.asList(new Column[]{new Column("camel_cased"),new Column("group")});
+        Table mapping = (Table) config.getTableMappings().next();
+        int cnt = 0;
+        boolean found1 = false, found2 = false;
+        for (Iterator i = mapping.getUniqueKeyIterator(); i.hasNext();) {
+            UniqueKey key = (UniqueKey) i.next();
+            List keyColumns = key.getColumns();
+            if(keyColumns.equals(expectedKeyColumns1)){
+                found1 = true;
+            }
+             if(keyColumns.equals(expectedKeyColumns2)){
+                found2 = true;
+            }
+            cnt++;
+        }
+        assertEquals(2, cnt);
+        assertEquals(true, mapping.getColumn(new Column("employeeID")).isUnique());
+        assertEquals(true, found1);
+        assertEquals(true, found2);
+    }
+
     public void testOneToOneBindingTables() {
-        DefaultGrailsDomainConfiguration config = getDomainConfig(ONE_TO_ONE_CLASSES_DEFINITION);        
+        DefaultGrailsDomainConfiguration config = getDomainConfig(ONE_TO_ONE_CLASSES_DEFINITION);
         assertEquals("Tables created", 2, getTableCount(config));
     }
 
     public void testOneToOneBindingFk() {
-        DefaultGrailsDomainConfiguration config = getDomainConfig(ONE_TO_ONE_CLASSES_DEFINITION);        
+        DefaultGrailsDomainConfiguration config = getDomainConfig(ONE_TO_ONE_CLASSES_DEFINITION);
         assertForeignKey("species", "pet", config);
     }
 
@@ -119,40 +159,40 @@ public class GrailsDomainBinderTests extends TestCase {
     }
 
     public void testOneToManyBindingTables() {
-        DefaultGrailsDomainConfiguration config = getDomainConfig(ONE_TO_MANY_CLASSES_DEFINITION);        
+        DefaultGrailsDomainConfiguration config = getDomainConfig(ONE_TO_MANY_CLASSES_DEFINITION);
         assertEquals("Tables created", 2, getTableCount(config));
     }
 
     public void testOneToManyBindingFk() {
-        DefaultGrailsDomainConfiguration config = getDomainConfig(ONE_TO_MANY_CLASSES_DEFINITION);       
+        DefaultGrailsDomainConfiguration config = getDomainConfig(ONE_TO_MANY_CLASSES_DEFINITION);
         assertForeignKey("pet", "visit", config);
     }
-    
+
 /*    public void testOneToManyBindingFkColumn() {
         DefaultGrailsDomainConfiguration config = getDomainConfig(ONE_TO_MANY_CLASSES_DEFINITION);
         assertColumnNotNullable("visit", "pet_visits_id", config);
     }*/
-    
+
     public void testManyToManyBindingTables() {
-        DefaultGrailsDomainConfiguration config = getDomainConfig(MANY_TO_MANY_CLASSES_DEFINITION);       
+        DefaultGrailsDomainConfiguration config = getDomainConfig(MANY_TO_MANY_CLASSES_DEFINITION);
         assertEquals("Tables created", 3, getTableCount(config));
     }
 
     public void testManyToManyBindingPk() {
-        DefaultGrailsDomainConfiguration config = getDomainConfig(MANY_TO_MANY_CLASSES_DEFINITION);        
+        DefaultGrailsDomainConfiguration config = getDomainConfig(MANY_TO_MANY_CLASSES_DEFINITION);
         Table table = getTableMapping("vet_specialty", config);
         assertNotNull("VET_SPECIALTY table has a PK", table.getPrimaryKey());
         assertEquals("VET_SPECIALTY table has a 2 column PK", 2, table.getPrimaryKey().getColumns().size());
     }
-    
+
     public void testManyToManyBindingFk() {
-        DefaultGrailsDomainConfiguration config = getDomainConfig(MANY_TO_MANY_CLASSES_DEFINITION);        
+        DefaultGrailsDomainConfiguration config = getDomainConfig(MANY_TO_MANY_CLASSES_DEFINITION);
         assertForeignKey("specialty", "vet_specialty", config);
         assertForeignKey("vet", "vet_specialty", config);
     }
 
     public void testManyToManyBindingFkColumn() {
-        DefaultGrailsDomainConfiguration config = getDomainConfig(MANY_TO_MANY_CLASSES_DEFINITION);        
+        DefaultGrailsDomainConfiguration config = getDomainConfig(MANY_TO_MANY_CLASSES_DEFINITION);
         assertColumnNotNullable("vet_specialty", "vets_id", config);
         assertColumnNotNullable("vet_specialty", "specialities_id", config);
     }
@@ -198,7 +238,7 @@ public class GrailsDomainBinderTests extends TestCase {
         assertEquals("currency_code", column.getName());
         assertEquals("text", column.getSqlType());
     }
-    
+
     public void testDomainClassBinding() {
 		GroovyClassLoader cl = new GroovyClassLoader();
 		GrailsDomainClass domainClass = new DefaultGrailsDomainClass(
@@ -228,15 +268,15 @@ public class GrailsDomainBinderTests extends TestCase {
         assertFalse("Property [lastName] must be required in db mapping", persistentClass.getProperty("lastName").isOptional());
         // Property must be required by default
         assertFalse("Property [comment] must be required in db mapping", persistentClass.getProperty("comment").isOptional());
-        
+
         // Test properties
         assertTrue("Property [firstName] must be optional", domainClass.getPropertyByName("firstName").isOptional());
         assertFalse("Property [lastName] must be optional", domainClass.getPropertyByName("lastName").isOptional());
         assertFalse("Property [comment] must be required", domainClass.getPropertyByName("comment").isOptional());
         assertTrue("Property [age] must be optional", domainClass.getPropertyByName("age").isOptional());
-        
+
 	}
-	
+
 	public void testForeignKeyColumnBinding() {
 		GroovyClassLoader cl = new GroovyClassLoader();
 		GrailsDomainClass oneClass = new DefaultGrailsDomainClass(
@@ -264,7 +304,7 @@ public class GrailsDomainBinderTests extends TestCase {
 			            "}")
 		);
 
-        DefaultGrailsDomainConfiguration config = getDomainConfig(cl, 
+        DefaultGrailsDomainConfiguration config = getDomainConfig(cl,
             new Class[]{ oneClass.getClazz(), domainClass.getClazz() });
 
         PersistentClass persistentClass = config.getClassMapping("TestManySide");
@@ -272,7 +312,7 @@ public class GrailsDomainBinderTests extends TestCase {
         Column column = (Column) persistentClass.getProperty("testOneSide").getColumnIterator().next();
         assertEquals("EXPECTED_COLUMN_NAME", column.getName());
 	}
-	
+
 	/**
      * @see GrailsDomainBinder#bindStringColumnConstraints(Column, ConstrainedProperty)
      */
@@ -293,7 +333,7 @@ public class GrailsDomainBinderTests extends TestCase {
 
         // Verify that the correct length is set when an inList constraint is applied
         constrainedProperty = getConstrainedStringProperty();
-        List validValuesList = Arrays.asList(new String[] {"Groovy", "Java", "C++"}); 
+        List validValuesList = Arrays.asList(new String[] {"Groovy", "Java", "C++"});
         constrainedProperty.applyConstraint(ConstrainedProperty.IN_LIST_CONSTRAINT, validValuesList);
         assertColumnLength(constrainedProperty, 6);
 
@@ -397,7 +437,7 @@ public class GrailsDomainBinderTests extends TestCase {
         }
         return result;
     }
-    
+
     private int getTableCount(DefaultGrailsDomainConfiguration config) {
         int count = 0;
         for (Iterator tables = config.getTableMappings(); tables.hasNext(); tables.next()) {
@@ -410,7 +450,7 @@ public class GrailsDomainBinderTests extends TestCase {
         boolean fkFound = false;
         Table childTable = getTableMapping(childTablename, config);
         for (Iterator fks = childTable.getForeignKeyIterator(); fks.hasNext(); ) {
-            ForeignKey fk = (ForeignKey) fks.next();            
+            ForeignKey fk = (ForeignKey) fks.next();
             if (parentTablename.equals(fk.getReferencedTable().getName())) {
                 fkFound = true;
             }
@@ -421,15 +461,15 @@ public class GrailsDomainBinderTests extends TestCase {
     private void assertColumnNotNullable(String tablename, String columnName, DefaultGrailsDomainConfiguration config) {
         Table table = getTableMapping(tablename, config);
         assertTrue(table.getName() + "." + columnName +  " is not nullable",
-            !table.getColumn(new Column(columnName)).isNullable());        
+            !table.getColumn(new Column(columnName)).isNullable());
     }
-    
+
     private void assertColumnLength(ConstrainedProperty constrainedProperty, int expectedLength) {
         Column column = new Column();
         GrailsDomainBinder.bindStringColumnConstraints(column, constrainedProperty);
         assertEquals(expectedLength, column.getLength());
     }
-    
+
     private void assertColumnPrecisionAndScale(ConstrainedProperty constrainedProperty, int expectedPrecision, int expectedScale) {
         Column column = new Column();
         GrailsDomainBinder.bindNumericColumnConstraints(column, constrainedProperty);
