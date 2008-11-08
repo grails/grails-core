@@ -1,12 +1,10 @@
-import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU    
 import org.tmatesoft.svn.core.io.SVNRepositoryFactory
-import org.tmatesoft.svn.core.internal.io.dav.DAVRepositoryFactory  
-import org.tmatesoft.svn.core.internal.io.fs.FSRepositoryFactory;
+import org.tmatesoft.svn.core.internal.io.dav.DAVRepositoryFactory
+import org.tmatesoft.svn.core.internal.io.fs.FSRepositoryFactory
 import org.tmatesoft.svn.core.io.*
-import org.tmatesoft.svn.core.*    
-import org.tmatesoft.svn.core.auth.*    
-import org.tmatesoft.svn.core.wc.*                  
-import org.tmatesoft.svn.core.io.diff.SVNDeltaGenerator;
+import org.tmatesoft.svn.core.*
+import org.tmatesoft.svn.core.auth.*
+import org.tmatesoft.svn.core.wc.*
 
 grailsHome = Ant.project.properties."environment.GRAILS_HOME"
 
@@ -51,21 +49,30 @@ target(releasePlugin: "The implementation target") {
     try {
         def statusClient = new SVNStatusClient((ISVNAuthenticationManager)authManager,null)
 
-        boolean imported = false
         try {
             // get status of base directory, if this fails exception will be thrown
             statusClient.doStatus(baseFile, true)
+            updateAndCommitLatest()
         }
         catch(SVNException ex) {
             // error with status, not in repo, attempt import.
-            importToSVN()
-            imported = true
+            if (ex.message.contains("is not a working copy")) {
+                // Now check whether the plugin is in the repository.
+                // If not, we ask the user whether they want to import
+                // it.
+                SVNRepository repos = SVNRepositoryFactory.create(SVNURL.parseURIDecoded(pluginSVN))
+                if (!repos.info("grails-$pluginName", -1)) {
+                    importToSVN()
+                }
+            }
+            else {
+                event('StatusFinal', ["Failed to stat working directory: ${e.message}"])
+                exit(1)
+            }
         }
-        if(!imported) {
-            updateAndCommitLatest()
-            tagPluginRelease()
-            event('StatusFinal', ["Plug-in release successfully published"])
-        }
+
+        tagPluginRelease()
+        event('StatusFinal', ["Plug-in release successfully published"])
     }
     catch(Exception e) {
         event('StatusFinal', ["Error occurred with release-plugin: ${e.message}"])
@@ -100,7 +107,7 @@ target(checkInPluginZip:"Checks in the plug-in zip if it has not been checked in
 }
 target(updateAndCommitLatest:"Commits the latest revision of the Plug-in") {
    def result = confirmInput("""
-This command will perform the following steps to release your plug-in into Grails' SVN repository:
+This command will perform the following steps to release your plug-in to Grails' SVN repository:
 * Update your sources to the HEAD revision
 * Commit any changes you've made to SVN
 * Tag the release
@@ -137,8 +144,8 @@ target(importToSVN:"Imports a plug-in project to Grails' remote SVN repository")
     def result = confirmInput("""
 This plug-in project is not currently in the repository, this command will now:
 * Perform an SVN import into the repository
-* Tag the plug-in project as the LATEST_RELEASE
 * Checkout the imported version of the project from SVN to '${checkOutDir}'
+* Tag the plug-in project as the LATEST_RELEASE
 Are you sure you wish to proceed?
     """)
     if(result == 'n') exit(0)
@@ -156,10 +163,7 @@ Are you sure you wish to proceed?
     importClient.doImport(new File("${basedir}/unzipped"),svnURL,message,true)
     println "Plug-in project imported to SVN at location '${remoteLocation}/trunk'"
 
-    tagPluginRelease()
-
     Ant.delete(dir:"${basedir}/unzipped")
-
 
     checkOutDir.parentFile.mkdirs()
 
@@ -175,13 +179,12 @@ Future changes should be made to the SVN controlled sources!"""])
 }
 
 target(tagPluginRelease:"Tags a plugin-in with the LATEST_RELEASE tag and version tag within the /tags area of SVN") {
+    println "Preparing to publish the release..."
 
     copyClient = new SVNCopyClient((ISVNAuthenticationManager)authManager, null)
     commitClient = new SVNCommitClient((ISVNAuthenticationManager)authManager, null)
 
     if(!message) askForMessage()
-
-    println "Tagging release. Please wait..."
 
     tags = SVNURL.parseURIDecoded("${remoteLocation}/tags")
     latest = SVNURL.parseURIDecoded(latestRelease)
