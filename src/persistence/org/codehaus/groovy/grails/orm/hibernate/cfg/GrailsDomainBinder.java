@@ -1661,14 +1661,14 @@ public final class GrailsDomainBinder {
     }
 
     private static void logCascadeMapping(GrailsDomainClassProperty grailsProperty, String cascadeStrategy, GrailsDomainClass referenced) {
-        if (LOG.isDebugEnabled() && grailsProperty.isAssociation()) {
+        if (LOG.isDebugEnabled() && grailsProperty.isAssociation() && referenced!=null) {
             String assType = getAssociationDescription(grailsProperty);
             LOG.debug("Mapping cascade strategy for " + assType + " property " + grailsProperty.getDomainClass().getFullName() + "." + grailsProperty.getName() + " referencing type [" + referenced.getClazz() + "] -> [CASCADE: " + cascadeStrategy + "]");
         }
     }
 
     private static String getAssociationDescription(GrailsDomainClassProperty grailsProperty) {
-        String assType = "unknown";
+        String assType = "unknown";l
         if (grailsProperty.isManyToMany()) {
             assType = "many-to-many";
         } else if (grailsProperty.isOneToMany()) {
