@@ -233,7 +233,6 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
 
     protected void doBind(MutablePropertyValues mpvs) {
         filterNestedParameterMaps(mpvs);
-        autoCreateIfPossible(mpvs);
         filterBlankValuesWhenTargetIsNullable(mpvs);
         super.doBind(mpvs);
     }
