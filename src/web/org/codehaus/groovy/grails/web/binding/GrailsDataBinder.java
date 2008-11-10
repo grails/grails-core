@@ -82,6 +82,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
     private static final String CONSTRAINTS_PROPERTY = "constraints";
     private static final String BLANK = "";
     private static final String STRUCTURED_PROPERTY_SEPERATOR = "_";
+    private static final char PATH_SEPARATOR = '.';
 
     /**
      * Create a new GrailsDataBinder instance.
@@ -232,8 +233,8 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
 
     protected void doBind(MutablePropertyValues mpvs) {
         filterNestedParameterMaps(mpvs);
-        filterBlankValuesWhenTargetIsNullable(mpvs);
         autoCreateIfPossible(mpvs);
+        filterBlankValuesWhenTargetIsNullable(mpvs);
         super.doBind(mpvs);
     }
 
@@ -245,12 +246,50 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
             PropertyValue[] valueArray = mpvs.getPropertyValues();
             for (int i = 0; i < valueArray.length; i++) {
                 PropertyValue propertyValue = valueArray[i];
-                ConstrainedProperty cp = (ConstrainedProperty)constrainedProperties.get(propertyValue.getName());
+                ConstrainedProperty cp = getConstrainedPropertyForPropertyValue(constrainedProperties, propertyValue);
                 if(shouldNullifyBlankString(propertyValue, cp)) {
                    propertyValue.setConvertedValue(null); 
                 }
             }
         }
+    }
+
+    private ConstrainedProperty getConstrainedPropertyForPropertyValue(Map constrainedProperties, PropertyValue propertyValue) {
+
+        final String propertyName = propertyValue.getName();
+        if(propertyName.indexOf(PATH_SEPARATOR) > -1) {
+            String[] propertyNames = propertyName.split("\\.");
+            Object target = getTarget();
+            Object value = getPropertyValueForPath(target, propertyNames);
+            if(value != null) {
+                MetaClass mc = GroovySystem.getMetaClassRegistry().getMetaClass(value.getClass());
+                if(mc.hasProperty(value, CONSTRAINTS_PROPERTY) != null) {
+                    Map nestedConstrainedProperties = (Map)mc.getProperty(value, CONSTRAINTS_PROPERTY);
+                    return (ConstrainedProperty)nestedConstrainedProperties.get(propertyNames[propertyNames.length-1]);
+                }
+            }
+
+        }
+        else {
+            return (ConstrainedProperty)constrainedProperties.get(propertyName);
+        }
+        return null;
+    }
+
+    private Object getPropertyValueForPath(Object target, String[] propertyNames) {
+        BeanWrapper bean = new BeanWrapperImpl(target);
+        Object obj = target;
+        for (int i = 0; i < propertyNames.length-1; i++) {
+
+            String propertyName = propertyNames[i];
+            if(bean.isReadableProperty(propertyName)) {
+                obj = bean.getPropertyValue(propertyName);
+                if(obj == null) break;
+                bean = new BeanWrapperImpl(obj);
+            }
+        }
+
+        return obj;
     }
 
     private boolean shouldNullifyBlankString(PropertyValue propertyValue, ConstrainedProperty cp) {
@@ -293,7 +332,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
             String propertyName = pv.getName();
             //super.
             
-            if(propertyName.indexOf('.') > -1) {
+            if(propertyName.indexOf(PATH_SEPARATOR) > -1) {
                 String[] propertyNames = propertyName.split("\\.");
                 ConfigurablePropertyAccessor currentBean = bean;
 
@@ -327,6 +366,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
                                     .getMetaClass(type);
                             if(mc!=null) {
                                 Object created = mc.invokeStaticMethod(type, CreateDynamicMethod.METHOD_NAME, new Object[0]);
+
                                 bean.setPropertyValue(propertyName,created);
                                 val = created;
                             }
