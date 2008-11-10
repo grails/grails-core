@@ -1668,7 +1668,7 @@ public final class GrailsDomainBinder {
     }
 
     private static String getAssociationDescription(GrailsDomainClassProperty grailsProperty) {
-        String assType = "unknown";l
+        String assType = "unknown";
         if (grailsProperty.isManyToMany()) {
             assType = "many-to-many";
         } else if (grailsProperty.isOneToMany()) {
