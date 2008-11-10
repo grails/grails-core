@@ -216,7 +216,7 @@ class TestFaqElement
         assertFalse manyToOne.isCascadeDeleteEnabled()
         assertFalse manyToOne.isEmbedded()
         assertFalse manyToOne.isIgnoreNotFound()
-        assertFalse manyToOne.isLazy()
+        assertTrue manyToOne.isLazy()
         assertFalse manyToOne.isNullable()
         assertTrue manyToOne.isSimpleValue()
         assertTrue manyToOne.isTypeSpecified()
