@@ -101,37 +101,9 @@ target (war: "The implementation target") {
 	depends( configureRunningScript, clean,  packageApp)
 	 
 	try {
-        stagingDir = "${basedir}/staging"		
+        configureWarName()
 
-        if(config.grails.war.destFile || args) {
-            // Pick up the name of the WAR to create from the command-line
-            // argument or the 'grails.war.destFile' configuration option.
-            // The command-line argument takes precedence.
-            warName = args ? args.trim() : config.grails.war.destFile
 
-            // Find out whether WAR name is an absolute file path or a
-            // relative one.
-            def warFile = new File(warName)
-            if(!warFile.absolute) {
-                // It's a relative path, so adjust it for 'basedir'.
-                warFile = new File(basedir, warFile.path)
-                warName = warFile.canonicalPath
-            }
-
-            String parentDir = warFile.parentFile.absolutePath
-            stagingDir = "${parentDir}/staging"
-        }		
-        else {
-            def fileName = grailsAppName	
-            def version = Ant.antProject.properties.'app.version'
-            if(version) {
-                version = '-'+version
-            }
-            else {
-                version = ''
-            }
-            warName = "${basedir}/${fileName}${version}.war"
-        }
         Ant.mkdir(dir:stagingDir)
 
 		Ant.copy(todir:stagingDir, overwrite:true) {
@@ -331,3 +303,35 @@ target(warPlugins:"Includes the plugins in the WAR") {
     }
 }
 
+target(configureWarName: "Configuring WAR name") {
+    stagingDir = "${basedir}/staging"
+
+    if(config.grails.war.destFile || args) {
+        // Pick up the name of the WAR to create from the command-line
+        // argument or the 'grails.war.destFile' configuration option.
+        // The command-line argument takes precedence.
+        warName = args ? args.trim() : config.grails.war.destFile
+        // Find out whether WAR name is an absolute file path or a
+        // relative one.
+        def warFile = new File(warName)
+        if(!warFile.absolute) {
+            // It's a relative path, so adjust it for 'basedir'.
+            warFile = new File(basedir, warFile.path)
+            warName = warFile.canonicalPath
+        }
+
+        String parentDir = warFile.parentFile.absolutePath
+        stagingDir = "${parentDir}/staging"
+    }
+    else {
+        def fileName = grailsAppName
+        def version = Ant.antProject.properties.'app.version'
+        if(version) {
+            version = '-'+version
+        }
+        else {
+            version = ''
+        }
+        warName = "${basedir}/${fileName}${version}.war"
+    }
+}

@@ -105,20 +105,7 @@ target( packageApp : "Implementation of package target") {
         createConfig()
     }
 
-    // Get the application context path by looking for a property named 'app.context' in the following order of precedence:
-    //	System properties
-    //	application.properties
-    //	config
-    //	default to grailsAppName if not specified
-
-    serverContextPath = System.getProperty("app.context")
-    serverContextPath = serverContextPath ?: Ant.antProject.properties.'app.context'
-    serverContextPath = serverContextPath ?: config.grails.app.context
-    serverContextPath = serverContextPath ?: grailsAppName
-    
-    if(!serverContextPath.startsWith('/')) {
-        serverContextPath = "/${serverContextPath}"
-    }
+    configureServerContextPath()
 
     String i18nDir = "${resourcesDirPath}/grails-app/i18n"
     Ant.mkdir(dir:i18nDir)
@@ -172,6 +159,24 @@ target( packageApp : "Implementation of package target") {
     generateWebXml()
     event("PackagingEnd",[])
 }
+
+target(configureServerContextPath: "Configuring server context path") {
+    // Get the application context path by looking for a property named 'app.context' in the following order of precedence:
+    //	System properties
+    //	application.properties
+    //	config
+    //	default to grailsAppName if not specified
+
+    serverContextPath = System.getProperty("app.context")
+    serverContextPath = serverContextPath ?: Ant.antProject.properties.'app.context'
+    serverContextPath = serverContextPath ?: config.grails.app.context
+    serverContextPath = serverContextPath ?: grailsAppName
+
+    if(!serverContextPath.startsWith('/')) {
+        serverContextPath = "/${serverContextPath}"
+    }
+}
+
 
 target(startLogging:"Bootstraps logging") {
     Log4jConfigurer.initLogging("file:${log4jFile.absolutePath}")    

@@ -45,10 +45,18 @@ includeTargets << grailsScript ( "War" )
 shouldPackageTemplates=true
 
 target ('default': "Run's a Grails application's WAR in Jetty") {
-	depends( checkVersion, configureProxy, war )
+	depends( checkVersion, configureProxy, parseArguments )
 	runWar()
 }
 target ( runWar : "Main implementation that executes a Grails application WAR") {
+    if(argsMap.restart) {
+      args -= '-restart'
+      depends(configureServerContextPath,configureWarName)      
+    }
+    else {
+      depends(war)
+    }
+
 	System.setProperty('org.mortbay.xml.XmlParser.NotValidating', 'true')
     try {
 		println "Running Grails application from WAR..."
