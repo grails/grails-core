@@ -36,12 +36,12 @@ import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecution
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.NoClosurePropertyForURIException;
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.NoViewNameDefinedException;
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.UnknownControllerException;
+import org.codehaus.groovy.grails.web.util.WebUtils;
 import org.codehaus.groovy.grails.webflow.executor.support.GrailsConventionsFlowExecutorArgumentHandler;
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.view.RedirectView;
 import org.springframework.web.util.UrlPathHelper;
-import org.springframework.web.util.WebUtils;
 import org.springframework.webflow.context.servlet.ServletExternalContext;
 import org.springframework.webflow.execution.support.ApplicationView;
 import org.springframework.webflow.execution.support.ExternalRedirect;
@@ -261,7 +261,11 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
 
             ServletExternalContext externalContext = new ServletExternalContext(getServletContext(), request, response) {
                 public String getDispatcherPath() {
+
                     String forwardURI = (String)request.getAttribute(WebUtils.FORWARD_REQUEST_URI_ATTRIBUTE);
+                    if(forwardURI == null) {
+                        forwardURI = WebUtils.getRequestURIForGrailsDispatchURI(request);
+                    }
                     UrlPathHelper pathHelper = new UrlPathHelper();
                     String contextPath = pathHelper.getContextPath(request);
                     if(forwardURI.startsWith(contextPath)) {

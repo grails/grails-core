@@ -30,6 +30,7 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 import org.springframework.web.servlet.View;
 import org.springframework.web.servlet.ViewResolver;
+import org.springframework.web.util.UrlPathHelper;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletContext;
@@ -54,6 +55,8 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
     private static final Log LOG = LogFactory.getLog(WebUtils.class);
     public static final String ENABLE_FILE_EXTENSIONS = "grails.mime.file.extensions";
     public static final String DISPATCH_ACTION_PARAMETER = "_action_";
+    private static final String DISPATCH_URI_SUFFIX = ".dispatch";
+    private static final String GRAILS_DISPATCH_SERVLET_NAME = "/grails";
 
     public static ViewResolver lookupViewResolver(ServletContext servletContext) {
         WebApplicationContext wac =
@@ -81,6 +84,26 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
         return (UrlMappingsHolder)wac.getBean(UrlMappingsHolder.BEAN_ID);
     }
 
+    /**
+     * The Grails dispatch servlet maps URIs like /app/grails/example/index.dispatch. This method infers the
+     * controller URI for the dispatch URI so that /app/grails/example/index.dispatch becomes /app/example/index
+     *
+     * @param request The request
+     */
+    public static String getRequestURIForGrailsDispatchURI(HttpServletRequest request) {
+        UrlPathHelper pathHelper = new UrlPathHelper();
+        if(request.getRequestURI().endsWith(DISPATCH_URI_SUFFIX))  {
+            String path = pathHelper.getPathWithinApplication(request);
+            if(path.startsWith(GRAILS_DISPATCH_SERVLET_NAME)) {
+                path = path.substring(GRAILS_DISPATCH_SERVLET_NAME.length(),path.length());
+            }            
+            return path.substring(0, path.length()-DISPATCH_URI_SUFFIX.length());
+
+        }
+        else {
+            return pathHelper.getPathWithinApplication(request);
+        }
+    }
     /**
      * Looks up the GrailsApplication instance
      *

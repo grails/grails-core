@@ -50,6 +50,18 @@ grails.mime.file.extensions=true
         assertEquals "xml", WebUtils.getFormatFromURI("/foo/bar.suff/bar.xml")
     }
 
+    void testGetRequestURIForGrailsDispatchURI() {
+        def request = new MockHttpServletRequest();
+        request.contextPath = "/root"
+        request.requestURI = "/root/example/index.dispatch"
+
+        assertEquals "/example/index",WebUtils.getRequestURIForGrailsDispatchURI(request)
+
+        request.requestURI = "/root/example/index"
+
+        assertEquals "/example/index",WebUtils.getRequestURIForGrailsDispatchURI(request)
+    }
+
     void testRetrieveGrailsWebRequest() {
         // Validate the initial conditions.
         assertNull RequestContextHolder.getRequestAttributes()
