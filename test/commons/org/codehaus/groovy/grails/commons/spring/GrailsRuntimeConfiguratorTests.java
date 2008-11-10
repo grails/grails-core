@@ -33,6 +33,7 @@ public class GrailsRuntimeConfiguratorTests extends TestCase {
 	protected void setUp() throws Exception {
         ExpandoMetaClass.enableGlobally();
         ConfigurationHolder.setConfig(null);
+        ApplicationContextHolder.setApplicationContext(null);
 
         super.setUp();
 	}
@@ -42,6 +43,7 @@ public class GrailsRuntimeConfiguratorTests extends TestCase {
 	 */
 	protected void tearDown() throws Exception {
         ExpandoMetaClass.disableGlobally();
+        ApplicationContextHolder.setApplicationContext(null);
 		super.tearDown();
 	}
 
@@ -122,6 +124,8 @@ public class GrailsRuntimeConfiguratorTests extends TestCase {
 
         GroovyObject controller = (GroovyObject)ctx.getBean("TestController");
         assertEquals(c,controller.getClass());
+
+        assertSame(ctx, ApplicationContextHolder.getApplicationContext());
     }
 
     public void testConfigureScaffolding() throws Exception {
