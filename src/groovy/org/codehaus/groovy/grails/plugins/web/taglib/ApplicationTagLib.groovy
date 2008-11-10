@@ -200,7 +200,7 @@ class ApplicationTagLib implements ApplicationContextAware {
             def urlMappings = applicationContext.getBean("grailsUrlMappingsHolder")
             def mapping = urlMappings.getReverseMapping(controller,action,params)
             url = mapping.createURL(controller, action, params, request.characterEncoding, frag)
-            if (attrs.base) {
+            if (attrs.base != null) {
                 out << attrs.remove('base')
             } else {
                 handleAbsolute(attrs)

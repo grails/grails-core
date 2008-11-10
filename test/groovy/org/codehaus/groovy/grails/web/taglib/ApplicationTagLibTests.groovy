@@ -208,6 +208,20 @@ class ApplicationTagLibTests extends AbstractGrailsTagTests {
 
         assertOutputEquals 'http://localhost:8080/foo/testController/testAction', template    
     }
+    
+    /**
+     * Tests regression of <a href="http://jira.codehaus.org/browse/GRAILS-3368">GRAILS-3368</a>.
+     * The context path should not be included in the generated link
+     * if "base" is set to an empty string.
+     */
+    void testCreateLinkWithNoContextPath() {
+        StringWriter sw = new StringWriter();
+        withTag("createLink", sw) { tag ->
+            def attrs = [base: "", absolute: true, action:'testAction', controller: 'testController']
+            tag.call( attrs )
+            assertEquals '/testController/testAction', sw.toString()
+        }
+    }
 
 	void testCreateLinkWithAbsolute() {
 		StringWriter sw = new StringWriter();
