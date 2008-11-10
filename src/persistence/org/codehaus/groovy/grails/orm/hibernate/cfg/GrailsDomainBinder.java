@@ -1506,7 +1506,7 @@ public final class GrailsDomainBinder {
         if (config != null) {
             manyToOne.setLazy(config.getLazy());
         } else {
-            manyToOne.setLazy(false);
+            manyToOne.setLazy(true);
         }
         // set referenced entity
         manyToOne.setReferencedEntityName(property.getReferencedPropertyType().getName());

@@ -40,7 +40,7 @@ class PropertyConfig {
      */
     List columns = []
 
-    boolean lazy = false
+    boolean lazy = true
     CacheConfig cache
     JoinTable joinTable = new JoinTable()
 

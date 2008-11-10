@@ -17,6 +17,25 @@ import org.codehaus.groovy.grails.orm.hibernate.cfg.MyUserType
 
 class HibernateMappingBuilderTests extends GroovyTestCase {
 
+    void testLazy() {
+      def builder = new HibernateMappingBuilder("Foo")
+      def mapping = builder.evaluate {
+          columns {
+              things cascade:'save-update'
+          }
+      }
+
+      assertTrue "should have been lazy",mapping.getPropertyConfig('things').lazy
+
+      mapping = builder.evaluate {
+          columns {
+              things lazy:false
+          }
+      }
+
+      assertFalse "shouldn't have been lazy", mapping.getPropertyConfig('things').lazy
+    }
+
     void testCascades() {
         def builder = new HibernateMappingBuilder("Foo")
         def mapping = builder.evaluate {

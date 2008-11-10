@@ -200,7 +200,7 @@ class HibernateMappingBuilder {
             def namedArgs = args[0]
             def property = new PropertyConfig()
             property.type = namedArgs.type
-            property.lazy = namedArgs.lazy ?: false
+            property.lazy = namedArgs.lazy != null ? namedArgs.lazy : true
             property.cascade = namedArgs.cascade ?: null
 
             // Deal with any column configuration for this property.
