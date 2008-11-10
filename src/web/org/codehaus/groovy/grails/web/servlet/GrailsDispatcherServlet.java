@@ -213,6 +213,7 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
 
         GrailsWebRequest requestAttributes = null;
         GrailsWebRequest previousRequestAttributes = null;
+        Exception handlerException = null;
         try {
             ModelAndView mv = null;
             try {
@@ -269,12 +270,14 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
             }
             catch (ModelAndViewDefiningException ex) {
                 GrailsUtil.deepSanitize(ex);
+                handlerException = ex;
                 if (logger.isDebugEnabled())
                     logger.debug("ModelAndViewDefiningException encountered", ex);
                 mv = ex.getModelAndView();
             }
             catch (Exception ex) {
                 GrailsUtil.deepSanitize(ex);
+                handlerException = ex;
                 Object handler = (mappedHandler != null ? mappedHandler.getHandler() : null);
                 mv = processHandlerException(request, response, handler, ex);
             }
@@ -288,6 +291,7 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
                     render(mv, processedRequest, response);
                 } catch (Exception e) {
                     mv = super.processHandlerException(processedRequest, response, mappedHandler, e);
+                    handlerException = e;
                     render(mv, processedRequest, response);
                 }
             }
@@ -299,7 +303,7 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
             }
 
             // Trigger after-completion for successful outcome.
-            triggerAfterCompletion(mappedHandler, interceptorIndex, processedRequest, response, null);
+            triggerAfterCompletion(mappedHandler, interceptorIndex, processedRequest, response, handlerException);
         }
 
         catch (Exception ex) {
