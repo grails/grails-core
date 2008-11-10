@@ -14,8 +14,15 @@
  */
 package grails.util;
 
+import groovy.util.XmlSlurper;
+import groovy.util.slurpersupport.GPathResult;
 import junit.framework.TestCase;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.xml.sax.SAXException;
+
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.IOException;
+import java.io.StringWriter;
 
 /**
  * Tests for the GrailsUtils class
@@ -53,5 +60,19 @@ public class GrailsUtilTests extends TestCase {
 
     protected void tearDown() throws Exception {
         System.setProperty(GrailsApplication.ENVIRONMENT, "");
+    }
+
+    public void testWriteSlurperResult() throws SAXException, ParserConfigurationException, IOException {
+        String testXml = "<root><books><book isbn=\"45734957\">" +
+                "<title>Misery</title><author>Stephen King</author>" +
+                "</book></books></root>";
+        GPathResult result = new XmlSlurper().parseText(testXml);
+
+        StringWriter output = new StringWriter(testXml.length() + 20);
+        GrailsUtil.writeSlurperResult(result, output);
+
+        testXml = testXml.replaceAll("<root>", "<root xmlns='http://java.sun.com/xml/ns/j2ee'>");
+        testXml = testXml.replace('"', '\'');
+        assertEquals(testXml, output.toString());
     }
 }

@@ -14,6 +14,10 @@
  */
 package grails.util;
 
+import groovy.lang.Binding;
+import groovy.lang.GroovyShell;
+import groovy.lang.Writable;
+import groovy.util.slurpersupport.GPathResult;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.ApplicationAttributes;
@@ -33,6 +37,7 @@ import org.springframework.util.Assert;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -349,5 +354,25 @@ public class GrailsUtil {
             current = GrailsUtil.sanitize(current.getCause());
         }
         return GrailsUtil.sanitize(t);
+    }
+
+    /**
+     * Writes out a GPathResult (i.e. the result of parsing XML using
+     * XmlSlurper) to the given writer.
+     * @param result The root node of the XML to write out.
+     * @param output Where to write the XML to.
+     * @throws IOException If the writing fails due to a closed stream
+     * or unwritable file.
+     */
+    public static void writeSlurperResult(GPathResult result, Writer output) throws IOException {
+        Binding b = new Binding();
+        b.setVariable("node", result);
+        // this code takes the XML parsed by XmlSlurper and writes it out using StreamingMarkupBuilder
+        // don't ask me how it works, refer to John Wilson ;-)
+        Writable w = (Writable)new GroovyShell(b).evaluate(
+                "new groovy.xml.StreamingMarkupBuilder().bind {" +
+                        " mkp.declareNamespace(\"\":  \"http://java.sun.com/xml/ns/j2ee\");" +
+                        " mkp.yield node}");
+        w.writeTo(output);
     }
 }

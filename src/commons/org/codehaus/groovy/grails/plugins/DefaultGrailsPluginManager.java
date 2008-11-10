@@ -681,14 +681,7 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager impl
               GrailsPlugin plugin = (GrailsPlugin) i.next();
               plugin.doWithWebDescriptor(result);
           }
-          Binding b = new Binding();
-          b.setVariable("node", result);
-          // this code takes the XML parsed by XmlSlurper and writes it out using StreamingMarkupBuilder
-          // don't ask me how it works, refer to John Wilson ;-)
-          Writable w = (Writable)new GroovyShell(b)
-                                      .evaluate("new groovy.xml.StreamingMarkupBuilder().bind { mkp.declareNamespace(\"\":  \"http://java.sun.com/xml/ns/j2ee\"); mkp.yield node}");
-          w.writeTo(target);
-
+          GrailsUtil.writeSlurperResult(result, target);
       } catch (ParserConfigurationException e) {
           throw new PluginException("Unable to configure web.xml due to parser configuration problem: " + e.getMessage(),e);
       } catch (SAXException e) {
