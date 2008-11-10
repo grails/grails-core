@@ -17,15 +17,20 @@ package org.codehaus.groovy.grails.web.servlet;
 import org.codehaus.groovy.grails.web.mapping.UrlMappingInfo;
 import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder;
 import org.codehaus.groovy.grails.web.mapping.exceptions.UrlMappingException;
-import org.codehaus.groovy.grails.web.servlet.GrailsDispatcherServlet;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequestFilter;
 import org.codehaus.groovy.grails.web.util.WebUtils;
 import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 import org.springframework.web.multipart.MultipartException;
 import org.springframework.web.servlet.View;
 import org.springframework.web.servlet.ViewResolver;
 
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -61,25 +66,33 @@ public class ErrorHandlingServlet extends GrailsDispatcherServlet {
         final UrlMappingInfo urlMappingInfo = urlMappingsHolder.matchStatusCode(statusCode);
 
         if (urlMappingInfo != null) {
-            final GrailsWebRequest webRequest = WebUtils.retrieveGrailsWebRequest();
-            urlMappingInfo.configure(webRequest);
+            GrailsWebRequestFilter grailsWebRequestFilter = new GrailsWebRequestFilter();
+            grailsWebRequestFilter.setServletContext(getServletContext());
+            grailsWebRequestFilter.doFilter(request, response, new FilterChain() {
 
-            String viewName = urlMappingInfo.getViewName();
-            if(viewName == null || viewName.endsWith(GSP_SUFFIX) || viewName.endsWith(JSP_SUFFIX)) {
-                WebUtils.forwardRequestForUrlMappingInfo(request, response, urlMappingInfo);
-            }
-            else {
-                ViewResolver viewResolver = WebUtils.lookupViewResolver(getServletContext());
-                if(viewResolver != null) {
-                    View v;
-                    try {
-                        v = WebUtils.resolveView(request, urlMappingInfo, viewName, viewResolver);
-                        v.render(Collections.EMPTY_MAP, request, response);
-                    } catch (Exception e) {
-                        throw new UrlMappingException("Error mapping onto view ["+viewName+"]: " + e.getMessage(),e);
+                public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse) throws IOException, ServletException {
+                    final GrailsWebRequest webRequest = (GrailsWebRequest) RequestContextHolder.getRequestAttributes();
+                    urlMappingInfo.configure(webRequest);
+
+                    String viewName = urlMappingInfo.getViewName();
+                    if(viewName == null || viewName.endsWith(GSP_SUFFIX) || viewName.endsWith(JSP_SUFFIX)) {
+                        WebUtils.forwardRequestForUrlMappingInfo(request, response, urlMappingInfo);
                     }
+                    else {
+                        ViewResolver viewResolver = WebUtils.lookupViewResolver(getServletContext());
+                        if(viewResolver != null) {
+                            View v;
+                            try {
+                                v = WebUtils.resolveView(request, urlMappingInfo, viewName, viewResolver);
+                                v.render(Collections.EMPTY_MAP, request, response);
+                            } catch (Exception e) {
+                                throw new UrlMappingException("Error mapping onto view ["+viewName+"]: " + e.getMessage(),e);
+                            }
+                        }
+                    }
+
                 }
-            }
+            });
         }
         else {
             renderDefaultResponse(response, statusCode);
