@@ -319,7 +319,7 @@ public class GrailsDataBinderTests extends TestCase {
         }
 
         TestBean testBean = new TestBean();
-        GrailsDataBinder binder = new GrailsDataBinder(testBean,"testBean");
+        GrailsDataBinder binder = GrailsDataBinder.createBinder(testBean,"testBean",request);
         binder.bind(request);
 
         assertNotNull(testBean.getMyDate());

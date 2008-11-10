@@ -15,7 +15,6 @@
 package org.codehaus.groovy.grails.web.binding;
 
 import groovy.lang.*;
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.ApplicationHolder;
@@ -44,6 +43,7 @@ import org.springframework.web.servlet.support.RequestContextUtils;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
+import java.beans.PropertyEditor;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.URI;
@@ -81,6 +81,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
     private static final String[] ALL_OTHER_FIELDS_ALLOWED_BY_DEFAULT = new String[0];
     private static final String CONSTRAINTS_PROPERTY = "constraints";
     private static final String BLANK = "";
+    private static final String STRUCTURED_PROPERTY_SEPERATOR = "_";
 
     /**
      * Create a new GrailsDataBinder instance.
@@ -115,7 +116,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
      */
     private void registerCustomEditors() {
         final ServletContext servletContext = ServletContextHolder.getServletContext();
-        if(servletContext!=null) {
+        if(servletContext != null) {
             WebApplicationContext context = WebApplicationContextUtils.getWebApplicationContext(servletContext);
             if(context != null) {
                 Map editors = context.getBeansOfType(PropertyEditorRegistrar.class);
@@ -151,6 +152,9 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
         binder.registerCustomEditor( Long.class, new CustomNumberEditor(Long.class, integerFormat, true));
         binder.registerCustomEditor( Integer.class, new CustomNumberEditor(Integer.class, integerFormat, true));
         binder.registerCustomEditor( Short.class, new CustomNumberEditor(Short.class, integerFormat, true));
+        binder.registerCustomEditor( Date.class, new StructuredDateEditor(DateFormat.getDateInstance( DateFormat.SHORT, locale),true));
+        binder.registerCustomEditor( Calendar.class, new StructuredDateEditor(DateFormat.getDateInstance( DateFormat.SHORT, locale),true));
+
         return binder;
     }
 
@@ -221,7 +225,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
     }
 
     private void preProcessMutablePropertyValues(MutablePropertyValues mpvs) {
-        checkStructuredDateDefinitions(mpvs);
+        checkStructuredProperties(mpvs);
         autoCreateIfPossible(mpvs);
         bindAssociations(mpvs);
     }
@@ -386,65 +390,73 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
         }
     }    
     
-    private int getIntegerPropertyValue(PropertyValues propertyValues, String propertyName, int defaultValue) {
-        int returnValue = defaultValue;
-        PropertyValue propertyValue = propertyValues.getPropertyValue(propertyName);
-        if(propertyValue != null) {
-            returnValue = Integer.parseInt(getStringValue(propertyValue));
+    private String getNameOf(PropertyValue propertyValue) {
+        String name = propertyValue.getName();
+        if (name.indexOf(STRUCTURED_PROPERTY_SEPERATOR) == -1) {
+            return name;
         }
-        
-        return returnValue;
+        return name.substring(0, name.indexOf(STRUCTURED_PROPERTY_SEPERATOR));
     }
 
-    private void checkStructuredDateDefinitions(MutablePropertyValues propertyValues) {
+    private boolean isStructured(PropertyValue propertyValue) {
+        String name = propertyValue.getName();
+        return name.indexOf(STRUCTURED_PROPERTY_SEPERATOR) != -1;
+    }
+
+    /**
+     * Checks for structured properties. Structured properties are properties with a name
+     * containg a "_"
+     * @param propertyValues
+     */
+    private void checkStructuredProperties(MutablePropertyValues propertyValues) {
         PropertyValue[] pvs = propertyValues.getPropertyValues();
         for (int i = 0; i < pvs.length; i++) {
             PropertyValue propertyValue = pvs[i];
-
-            try {
-                String propertyName = propertyValue.getName();
-                Class type = bean.getPropertyType(propertyName);
-                // if its a date check that it hasn't got structured parameters in the request
-                // this is used as an alternative to specifying the date format
-                if(type != null && (Date.class.isAssignableFrom(type)  || Calendar.class.isAssignableFrom(type))) {
+            if (!isStructured(propertyValue)) {
+                continue;
+            }
+            String propertyName = getNameOf(propertyValue);
+            Class type = bean.getPropertyType(propertyName);
+            if (type != null) {
+                PropertyEditor editor = findCustomEditor(type, propertyName);
+                if (null != editor && StructuredPropertyEditor.class.isAssignableFrom(editor.getClass())) {
+                    StructuredPropertyEditor structuredEditor = (StructuredPropertyEditor) editor;
+                    List fields = new ArrayList();
+                    fields.addAll(structuredEditor.getRequiredFields());
+                    fields.addAll(structuredEditor.getOptionalFields());
+                    Map fieldValues = new HashMap();
                     try {
-                        PropertyValue yearProperty = propertyValues.getPropertyValue(propertyName + "_year");
-                        if (yearProperty == null) {
-                            // We can't populate a date without a year
-                            continue;
+                        for (int j = 0; j < fields.size(); j++) {
+                            String field = (String) fields.get(j);
+                            PropertyValue requiredProperty = propertyValues.getPropertyValue(propertyName + STRUCTURED_PROPERTY_SEPERATOR + field);
+                            if (requiredProperty == null && structuredEditor.getRequiredFields().contains(field)) {
+                                break;
+                            }
+                            else if(requiredProperty == null)
+                                continue;
+                            fieldValues.put(field, getStringValue(requiredProperty));
                         }
-
-                        String yearString = getStringValue(yearProperty);
-                        int year;
-
-                        if(StringUtils.isBlank(yearString)) {
-                            // We can't populate a date without a year, it doesn't make sense
-                            // skip out of here and leave the field unset so it fails validation
-                            // if null not permitted
-                            continue;
+                        try {
+                            Object value = structuredEditor.assemble(type, fieldValues);
+                            if (null != value) {
+                                for (int j = 0; j < fields.size(); j++) {
+                                    String requiredField = (String) fields.get(j);
+                                    PropertyValue requiredProperty = propertyValues.getPropertyValue(propertyName + STRUCTURED_PROPERTY_SEPERATOR + requiredField);
+                                    if (null != requiredProperty) {
+                                        requiredProperty.setConvertedValue(getStringValue(requiredProperty));
+                                    }
+                                }
+                                propertyValues.addPropertyValue(new PropertyValue(propertyName, value));
+                            }
                         }
-                        else {
-                            year = Integer.parseInt(yearString);
+                        catch (IllegalArgumentException iae) {
+                            LOG.warn("Unable to parse structured date from request for date ["+propertyName+"]",iae);
                         }
-
-                        int month = getIntegerPropertyValue(propertyValues, propertyName + "_month", 1);
-                        int day = getIntegerPropertyValue(propertyValues, propertyName + "_day", 1);
-                        int hour = getIntegerPropertyValue(propertyValues, propertyName + "_hour", 0);
-                        int minute = getIntegerPropertyValue(propertyValues, propertyName + "_minute", 0);
-
-                        Calendar c = new GregorianCalendar(year,month - 1,day,hour,minute);
-                        if(type == Date.class)
-                            propertyValues.setPropertyValueAt(new PropertyValue(propertyName,c.getTime()),i);
-                        else
-                            propertyValues.setPropertyValueAt(new PropertyValue(propertyName,c),i);
                     }
-                    catch(NumberFormatException nfe) {
-                        LOG.warn("Unable to parse structured date from request for date ["+propertyName+"]",nfe);
+                    catch(InvalidPropertyException ipe) {
+                        // ignore
                     }
                 }
-            }
-            catch(InvalidPropertyException ipe) {
-                // ignore
             }
         }
     }
