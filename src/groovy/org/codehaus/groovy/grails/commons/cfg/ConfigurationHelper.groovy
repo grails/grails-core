@@ -48,6 +48,7 @@ class ConfigurationHelper {
                         try {
                             stream = resource.getInputStream()
                             ConfigSlurper configSlurper = new ConfigSlurper(GrailsUtil.getEnvironment())
+                            configSlurper.setBinding(config) 
                             if(classLoader) {
                                 if(classLoader instanceof GroovyClassLoader)
                                     configSlurper.classLoader = classLoader
