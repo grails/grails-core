@@ -50,11 +50,19 @@ class Article {
         webRequest.currentRequest.addPreferredLocale(Locale.US)
 
         def template = '<g:fieldValue bean="${book}" field="usPrice" />'
-        assertOutputEquals("1,045.99", template, [book:b])
+        assertOutputEquals("1045.99", template, [book:b])
 
         // And then with German.
         webRequest.currentRequest.addPreferredLocale(Locale.GERMANY)
-        assertOutputEquals("1.045,99", template, [book:b])
+        assertOutputEquals("1045,99", template, [book:b])
+
+        // No decimal part.
+        b.properties = [publisherURL:"http://google.com", usPrice: 1045G]
+        assertOutputEquals("1045,00", template, [book:b])
+
+        // Several decimal places.
+        b.properties = [publisherURL:"http://google.com", usPrice: 1045.45567]
+        assertOutputEquals("1045,45567", template, [book:b])
     }
 
     void testHasErrorsTag() {
@@ -81,6 +89,7 @@ class Article {
         b.title = "Groovy in Action"
         b.publisherURL = new URL("http://canoo.com/gia")
         b.releaseDate = new Date()
+        b.usPrice = 10.99
 
         assert b.validate()
         assert !b.hasErrors()
@@ -91,6 +100,7 @@ class Article {
         b.title = "Groovy In Action"
         b.publisherURL = new URL("http://canoo.com/gia")
         b.releaseDate = new Date()
+        b.usPrice = 10.99
         b.validate()
         def a = ga.getDomainClass("Article").newInstance();
         a.validate()
@@ -146,6 +156,7 @@ class Article {
         b.title = "Groovy in Action"
         b.publisherURL = new URL("http://canoo.com/gia")
         b.releaseDate = new Date()
+        b.usPrice = 10.99
 
         assert b.validate()
         assert !b.hasErrors()
