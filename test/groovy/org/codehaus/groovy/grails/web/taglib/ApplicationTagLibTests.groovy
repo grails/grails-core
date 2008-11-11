@@ -217,7 +217,7 @@ class ApplicationTagLibTests extends AbstractGrailsTagTests {
     void testCreateLinkWithNoContextPath() {
         StringWriter sw = new StringWriter();
         withTag("createLink", sw) { tag ->
-            def attrs = [base: "", absolute: true, action:'testAction', controller: 'testController']
+            def attrs = [base: "", action:'testAction', controller: 'testController']
             tag.call( attrs )
             assertEquals '/testController/testAction', sw.toString()
         }
