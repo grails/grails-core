@@ -290,9 +290,6 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
 
         application.refreshConstraints();
 
-        // Finally make the application context available via the static holder.
-        ApplicationContextHolder.setApplicationContext(ctx);
-
         return ctx;
     }
 
