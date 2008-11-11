@@ -83,6 +83,7 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
     private Class[] allClasses = new Class[0];
     private static Log log = LogFactory.getLog(DefaultGrailsApplication.class);
     private ApplicationContext parentContext;
+    private ApplicationContext mainContext;
 
     private Set loadedClasses = new HashSet();
     private GrailsResourceLoader resourceLoader;
@@ -461,6 +462,14 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
      */
     public Class[] getAllClasses() {
         return this.allClasses;
+    }
+
+    public ApplicationContext getMainContext() {
+        return this.mainContext;
+    }
+
+    public void setMainContext(ApplicationContext context) {
+        this.mainContext = context;
     }
 
     /**

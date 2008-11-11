@@ -279,8 +279,8 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
         // TODO GRAILS-720 this causes plugin beans to be re-created - should get getApplicationContext always call refresh?
         WebApplicationContext ctx = (WebApplicationContext) springConfig.getApplicationContext();
 
+        this.application.setMainContext(ctx);
         this.pluginManager.setApplicationContext(ctx);
-
         this.pluginManager.doDynamicMethods();
 
         ctx.publishEvent(new GrailsContextEvent(ctx, GrailsContextEvent.DYNAMIC_METHODS_REGISTERED));

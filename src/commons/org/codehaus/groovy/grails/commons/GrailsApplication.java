@@ -109,7 +109,7 @@ public interface GrailsApplication extends ApplicationContextAware {
      *
      * @return The ConfigObject instance
      */
-    public ConfigObject getConfig();
+    ConfigObject getConfig();
 
 
     /**
@@ -117,7 +117,7 @@ public interface GrailsApplication extends ApplicationContextAware {
      *
      * @return The GroovyClassLoader instance
      */
-    public GroovyClassLoader getClassLoader();
+    GroovyClassLoader getClassLoader();
 
     /**
      * Retrieves the controller that is scaffolding the specified domain class
@@ -131,17 +131,31 @@ public interface GrailsApplication extends ApplicationContextAware {
 	 * Retrieves all java.lang.Class instances loaded by the Grails class loader
 	 * @return An array of classes
 	 */
-	public Class[] getAllClasses();
+	Class[] getAllClasses();
 
 	/**
 	 * Retrieves all java.lang.Class instances considered Artefacts loaded by the Grails class loader
 	 * @return An array of classes
 	 */
-	public Class[] getAllArtefacts();
+	Class[] getAllArtefacts();
+
+    /**
+     * Returns the Spring context for this application. Note that this
+     * will return <code>null</code> until the application is fully
+     * initialised. This context contains all the application artifacts,
+     * plugin beans, the works.
+     */
+    ApplicationContext getMainContext();
+
+    /**
+     * Sets the main Spring context for this application.
+     */
+    void setMainContext(ApplicationContext context);
 
 	/**
-	 * 
-	 * @return The parent application context
+	 * Returns the Spring application context that contains this
+     * application instance. It is the parent of the context returned
+     * by {@link #getMainContext()}.
 	 */
 	ApplicationContext getParentContext();
 
@@ -151,25 +165,25 @@ public interface GrailsApplication extends ApplicationContextAware {
 	 * @param className The name of the class 
 	 * @return The class or null
 	 */
-	public Class getClassForName(String className);
+	Class getClassForName(String className);
 
 
     /**
      * This method will rebuild the constraint definitions
      * @todo move this out? Why ORM dependencies in here?
      */
-    public void refreshConstraints();
+    void refreshConstraints();
 
     /**
      * This method will refresh the entire application
      */
-    public void refresh();
+    void refresh();
 
     /**
      * Rebuilds this Application throwing away the class loader and re-constructing it from the loaded resources again.
      * This method can only be called in development mode and an error will be thrown if called in a different enivronment
      */
-    public void rebuild();
+    void rebuild();
 
     /**
      * Retrieves a Resource instance for the given Grails class or null it doesn't exist
@@ -177,7 +191,7 @@ public interface GrailsApplication extends ApplicationContextAware {
      * @param theClazz The Grails class
      * @return A Resource or null
      */
-    public Resource getResourceForClass(Class theClazz);
+    Resource getResourceForClass(Class theClazz);
 
     /**
      * <p>Call this to find out if the class you have is an artefact loaded by grails.</p>
@@ -185,7 +199,7 @@ public interface GrailsApplication extends ApplicationContextAware {
      * @return True if and only if the class was loaded from grails-app/
      * @since 0.5
      */
-    public boolean isArtefact(Class theClazz);
+    boolean isArtefact(Class theClazz);
 
     /**
      * <p>Check if the specified artefact Class has been loaded by Grails already AND is
@@ -195,7 +209,7 @@ public interface GrailsApplication extends ApplicationContextAware {
      * @return True if Grails considers the class to be managed as an artefact of the type specified.
      * @since 0.5
      */
-    public boolean isArtefactOfType(String artefactType, Class theClazz);
+    boolean isArtefactOfType(String artefactType, Class theClazz);
 
     /**
      * <p>Check if the artefact Class with the name specified is of the type expected</p>
@@ -204,7 +218,7 @@ public interface GrailsApplication extends ApplicationContextAware {
      * @return True if Grails considers the class to be managed as an artefact of the type specified.
      * @since 0.5
      */
-    public boolean isArtefactOfType(String artefactType, String className);
+    boolean isArtefactOfType(String artefactType, String className);
 
     /**
      * <p>Gets the GrailsClass associated with the named artefact class</p>
@@ -214,7 +228,7 @@ public interface GrailsApplication extends ApplicationContextAware {
      * @return The associated GrailsClass or null
      * @since 0.5
      */
-    public GrailsClass getArtefact(String artefactType, String name);
+    GrailsClass getArtefact(String artefactType, String name);
 
     /**
      * <p>Obtain all the class information about the artefactType specified</p>
@@ -222,7 +236,7 @@ public interface GrailsApplication extends ApplicationContextAware {
      * @return The artefact info or null if the artefactType is not recognized
      * @since 0.5
      */
-    public ArtefactInfo getArtefactInfo(String artefactType);
+    ArtefactInfo getArtefactInfo(String artefactType);
 
     /**
      * <p>Get an array of all the GrailsClass instances relating to artefacts of the specified type.</p>
@@ -230,7 +244,7 @@ public interface GrailsApplication extends ApplicationContextAware {
      * @return An array of GrailsClasses which may empty by not null
      * @since 0.5
      */
-    public GrailsClass[] getArtefacts(String artefactType);
+    GrailsClass[] getArtefacts(String artefactType);
 
     /**
      * <p>Get an artefact GrailsClass by a "feature" which depending on the artefact may be a URI or tag name
@@ -240,7 +254,7 @@ public interface GrailsApplication extends ApplicationContextAware {
      * @return The grails class or null if none is found
      * @since 0.5
      */
-    public GrailsClass getArtefactForFeature(String artefactType, Object featureID);
+    GrailsClass getArtefactForFeature(String artefactType, Object featureID);
 
     /**
      * <p>Registers a new artefact</p>
@@ -250,7 +264,7 @@ public interface GrailsApplication extends ApplicationContextAware {
      * @return The new grails class for the artefact class
      * @since 0.5
      */
-    public GrailsClass addArtefact(String artefactType, Class artefactClass);
+    GrailsClass addArtefact(String artefactType, Class artefactClass);
 
     /**
      * <p>Registers a new artefact</p>
@@ -259,30 +273,30 @@ public interface GrailsApplication extends ApplicationContextAware {
      * @return The supplied grails class for the artefact class
      * @since 0.5
      */
-    public GrailsClass addArtefact(String artefactType, GrailsClass artefactGrailsClass);
+    GrailsClass addArtefact(String artefactType, GrailsClass artefactGrailsClass);
 
     /**
      * <p>Register a new artefact handler</p>
      * @param handler The new handler to add
      */
-    public void registerArtefactHandler(ArtefactHandler handler);
+    void registerArtefactHandler(ArtefactHandler handler);
 
     /**
      * <p>Obtain a list of all the artefact handlers</p>
      * @return The list, possible empty but not null, of all currently registered handlers
      */
-    public ArtefactHandler[] getArtefactHandlers();
+    ArtefactHandler[] getArtefactHandlers();
 
     /**
      * Initialise this GrailsApplication
      */
-    public void initialise();
+    void initialise();
 
     /**
      * Returns whether this GrailsApplication has been initialised or not
      * @return True if it has been initialised
      */
-    public boolean isInitialised();
+    boolean isInitialised();
 
     /**
      * <p>Get access to the project's metadata, specified in application.properties</p>
@@ -290,7 +304,7 @@ public interface GrailsApplication extends ApplicationContextAware {
      * but <b>NOT</b> general application settings.</p>
      * @return A read-only Map of data about the application, not environment specific
      */
-    public Map getMetadata();
+    Map getMetadata();
 
     /**
      * Retrieves an artefact by its logical property name. For example the logical property name of BookController would be book
