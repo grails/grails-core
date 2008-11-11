@@ -14,6 +14,7 @@ class Book {
     String title
     URL publisherURL
     Date releaseDate
+    BigDecimal usPrice
 }
         ''')
 
@@ -39,8 +40,21 @@ class Article {
         assert !b.hasErrors()
 
         assertOutputEquals("http://google.com", template, [book:b])
+    }
 
+    void testFieldValueTagWithDecimalNumber() {
+        def b = ga.getDomainClass("Book").newInstance()
+        b.properties = [publisherURL:"http://google.com", usPrice: 1045.99]
 
+        // First test with English.
+        webRequest.currentRequest.addPreferredLocale(Locale.US)
+
+        def template = '<g:fieldValue bean="${book}" field="usPrice" />'
+        assertOutputEquals("1,045.99", template, [book:b])
+
+        // And then with German.
+        webRequest.currentRequest.addPreferredLocale(Locale.GERMANY)
+        assertOutputEquals("1.045,99", template, [book:b])
     }
 
     void testHasErrorsTag() {

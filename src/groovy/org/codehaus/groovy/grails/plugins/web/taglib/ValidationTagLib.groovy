@@ -19,6 +19,9 @@ import org.springframework.context.NoSuchMessageException;
 import org.springframework.web.servlet.support.RequestContextUtils as RCU;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU;   
 import org.codehaus.groovy.grails.commons.ApplicationHolder
+import java.text.DecimalFormatSymbols
+import java.text.DecimalFormatSymbols
+import java.text.NumberFormat
 
 /**
 *  A  tag lib that provides tags to handle validation and errors
@@ -47,7 +50,7 @@ class ValidationTagLib {
                     }
                 }
 				if(rejectedValue != null) {
-					out << rejectedValue.toString().encodeAsHTML()
+					out << formatValue(rejectedValue)
 				}                            
 			}
 			else {     
@@ -56,7 +59,7 @@ class ValidationTagLib {
                     rejectedValue = rejectedValue?."$fieldPart"
                 }
 				if(rejectedValue != null) {
-					out << rejectedValue.toString().encodeAsHTML()						
+					out << formatValue(rejectedValue)
 				}
 			}
 		}
@@ -307,5 +310,25 @@ class ValidationTagLib {
         out << '}\n'
       //  out << "document.forms['${attrs['form']}'].onsubmit = function(e) {return validateForm(this)}\n"
         out << '</script>'
+    }
+
+    /**
+     * Formats a given value for output to an HTML page by converting
+     * it to a string and encoding it. If the value is a number, it is
+     * formatted according to the current user's locale during the
+     * conversion to a string. 
+     */
+    def formatValue(value) {
+        if (value instanceof Number) {
+            def pattern = "0"
+            if (value instanceof Double || value instanceof Float || value instanceof BigDecimal) {
+                pattern = "0.00#####"
+            }
+            def locale = RCU.getLocale(request)
+            def dcfs = locale ? new DecimalFormatSymbols(locale) : new DecimalFormatSymbols()
+            def decimalFormat = new java.text.DecimalFormat(pattern, dcfs)
+            value = decimalFormat.format(value)
+        }
+        value.toString().encodeAsHTML()
     }
 }
