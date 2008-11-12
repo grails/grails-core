@@ -32,6 +32,9 @@ class Base64Codec {
        } else if (theTarget instanceof Byte[] || theTarget instanceof byte[]) {
            return new String(Base64.encodeBase64(theTarget))
        }
+       else {
+         return new String(Base64.encodeBase64(theTarget.toString().bytes)) 
+       }
     }
 
     static decode = { theTarget ->

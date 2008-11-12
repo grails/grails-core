@@ -59,6 +59,7 @@ class CodecsGrailsPluginTests extends AbstractGrailsPluginTests {
 
     void testEncodeDecodeAsBase64() {
          assertEquals "dGVzdA==", "test".bytes.encodeAsBase64()
+         assertEquals "dGVzdA==", "test".encodeAsBase64()
          assertEquals "test",new String("dGVzdA==".decodeBase64())
     }
 }
