@@ -29,13 +29,15 @@ class CodecsGrailsPluginTests extends AbstractGrailsPluginTests {
 				""")
 
 		pluginsToLoad << gcl.loadClass("org.codehaus.groovy.grails.plugins.CoreGrailsPlugin")					
-		pluginsToLoad << gcl.loadClass("org.codehaus.groovy.grails.plugins.CodecsGrailsPlugin")					
+		pluginsToLoad << gcl.loadClass("org.codehaus.groovy.grails.plugins.CodecsGrailsPlugin")
+
+        def registry = GroovySystem.metaClassRegistry
+
+        registry.removeMetaClass(String.class)
 	}
 	
 	void testCodecsPlugin() {
-        def registry = GroovySystem.metaClassRegistry
 
-        registry.removeMetaClass(String.class)                
 	    
 		def someString = 'some string'
 		
@@ -53,4 +55,10 @@ class CodecsGrailsPluginTests extends AbstractGrailsPluginTests {
 			someString.encodeAsThird()
 		}
 	}
+
+
+    void testEncodeDecodeAsBase64() {
+         assertEquals "dGVzdA==", "test".bytes.encodeAsBase64()
+         assertEquals "test",new String("dGVzdA==".decodeBase64())
+    }
 }
