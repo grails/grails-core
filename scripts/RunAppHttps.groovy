@@ -46,12 +46,12 @@ includeTargets << grailsScript ( "Init" )
 includeTargets << grailsScript ( "Package" )
 includeTargets << grailsScript ( "RunApp" )
 
-target('default': "Run's a Grails application in Jetty with HTTPS listener") {
+target('default': "Runs a Grails application in Jetty with HTTPS listener") {
     depends(checkVersion, configureProxy, packageApp, generateWebXml)
     runAppHttps()
     watchContext()
 }
-target(runAppHttps: "Main implementation that executes a Grails application with ans HTTPS listener") {
+target(runAppHttps: "Main implementation that executes a Grails application with an HTTPS listener") {
     System.setProperty('org.mortbay.xml.XmlParser.NotValidating', 'true')
     def server = configureHttpServer()
     try {
@@ -77,6 +77,9 @@ target(runAppHttps: "Main implementation that executes a Grails application with
         event("StatusFinal", ["Server failed to start: $t"])
         exit(1)
     }
+
+    // Start the plugin change scanner.
+    PluginManagerHolder.pluginManager.startPluginChangeScanner()
 }
 
 target(createCert: "Creates a keystore and SSL cert for use with HTTPS") {

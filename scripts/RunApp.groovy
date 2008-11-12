@@ -52,14 +52,12 @@ includeTargets << grailsScript ( "Package" )
 
 shouldPackageTemplates = true
 
-
-
-
 target('default': "Run's a Grails application in Jetty") {
     depends(checkVersion, configureProxy, packageApp)
     runApp()
     watchContext()
 }
+
 target(runApp: "Main implementation that executes a Grails application") {
     System.setProperty('org.mortbay.xml.XmlParser.NotValidating', 'true')
     try {
@@ -75,14 +73,15 @@ target(runApp: "Main implementation that executes a Grails application") {
         event("StatusFinal", ["Server failed to start: $t"])
         exit(1)
     }
+
+    // Start the plugin change scanner.
+    PluginManagerHolder.pluginManager.startPluginChangeScanner()
 }
+
 target(watchContext: "Watches the WEB-INF/classes directory for changes and restarts the server if necessary") {
     long lastModified = classesDir.lastModified()
     boolean keepRunning = true
     boolean isInteractive = System.getProperty("grails.interactive.mode") == "true"
-
-    // Start the plugin change scanner.
-    PluginManagerHolder.pluginManager.startPluginChangeScanner()
 
     if (isInteractive) {
         def daemonThread = new Thread({
