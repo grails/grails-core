@@ -13,7 +13,6 @@ abstract class AbstractCliTests extends GroovyTestCase {
 		ant.delete(dir:appBase, failonerror:false)
 		System.setProperty("base.dir", appBase)
 		System.setProperty("grails.cli.args", "testapp")
-		System.setProperty("grails.cli.testing", "true")
 		System.setProperty("env.GRAILS_HOME", new File("").absolutePath)
 	}
 	
