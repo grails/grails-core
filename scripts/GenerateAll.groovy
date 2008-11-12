@@ -113,9 +113,11 @@ def generateForDomainClass(domainClass) {
     if(generateViews) {
         event("StatusUpdate", ["Generating views for domain class ${domainClass.fullName}"])
         templateGenerator.generateViews(domainClass, basedir)
+        event("GenerateViewsEnd", [domainClass.fullName])
     }
     if(generateController) {
         event("StatusUpdate", ["Generating controller for domain class ${domainClass.fullName}"])
         templateGenerator.generateController(domainClass, basedir)
+        event("GenerateControllerEnd", [domainClass.fullName])
     }
 }
