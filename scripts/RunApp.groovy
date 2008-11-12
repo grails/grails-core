@@ -81,6 +81,9 @@ target(watchContext: "Watches the WEB-INF/classes directory for changes and rest
     boolean keepRunning = true
     boolean isInteractive = System.getProperty("grails.interactive.mode") == "true"
 
+    // Start the plugin change scanner.
+    PluginManagerHolder.pluginManager.startPluginChangeScanner()
+
     if (isInteractive) {
         def daemonThread = new Thread({
             println "--------------------------------------------------------"

@@ -121,7 +121,6 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager impl
           //this.corePlugins = new PathMatchingResourcePatternResolver().getResources("classpath:org/codehaus/groovy/grails/**/plugins/**GrailsPlugin.groovy");
           this.application = application;
           setPluginFilter();
-          startPluginChangeScanner();
       }
 
 
@@ -149,7 +148,6 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager impl
           this.pluginResources = (Resource[])resourceList.toArray(new Resource[resourceList.size()]);
           this.application = application;
           setPluginFilter();
-          startPluginChangeScanner();
       }
 
       public DefaultGrailsPluginManager(Class[] plugins, GrailsApplication application) throws IOException {
@@ -159,7 +157,6 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager impl
           //this.corePlugins = new PathMatchingResourcePatternResolver().getResources("classpath:org/codehaus/groovy/grails/**/plugins/**GrailsPlugin.groovy");
           this.application = application;
           setPluginFilter();
-          startPluginChangeScanner();
       }
 
       public DefaultGrailsPluginManager(Resource[] pluginFiles, GrailsApplication application) {
@@ -168,19 +165,19 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager impl
           this.pluginResources = pluginFiles;
           this.application = application;
           setPluginFilter();
-          startPluginChangeScanner();
       }
       
       private void setPluginFilter() {
   		 this.pluginFilter = new PluginFilterRetriever().getPluginFilter(this.application.getConfig().toProperties());
   	  }
 
-      private void startPluginChangeScanner(){
-          boolean inTestSuite = System.getProperty("grails.cli.testing") != null;
-          if(!application.isWarDeployed() && GrailsUtil.isDevelopmentEnv() && !inTestSuite) {
-              this.pluginChangeScanner.start();
-              LOG.info("Started to scan for plugin changes in every " + SCAN_INTERVAL + "ms.");              
+      public void startPluginChangeScanner() {
+          if (this.pluginChangeScanner.isAlive()) {
+              throw new IllegalStateException("Plugin change scanner is already running!");
           }
+
+          this.pluginChangeScanner.start();
+          LOG.info("Started to scan for plugin changes in every " + SCAN_INTERVAL + "ms.");
       }
 
       public void refreshPlugin(String name) {
@@ -1778,12 +1775,12 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager impl
         boolean enabled = true;
 
         GrailsPluginChangeChecker(DefaultGrailsPluginManager pluginManager){
-          this.pluginManager = pluginManager;
+            this.pluginManager = pluginManager;
+            setDaemon(true);
         }
 
         public void run(){
             try{
-                sleep(15000); // delay start of scanner
                 while(enabled){
                         pluginManager.checkForChanges();
                         sleep(DefaultGrailsPluginManager.SCAN_INTERVAL);
