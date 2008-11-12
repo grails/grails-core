@@ -61,6 +61,7 @@ DEFAULT_DEPS = [
     "oscache-*.jar",
     "backport-util-concurrent*.jar",
     "ehcache-*.jar",
+    "jsr107cache-*.jar",
     "junit-*.jar",
     "commons-logging-*.jar",
     "sitemesh-*.jar",
