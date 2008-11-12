@@ -34,6 +34,8 @@ class CodecsGrailsPluginTests extends AbstractGrailsPluginTests {
         def registry = GroovySystem.metaClassRegistry
 
         registry.removeMetaClass(String.class)
+        registry.removeMetaClass(byte[].class)
+        registry.removeMetaClass(Byte[].class)
 	}
 	
 	void testCodecsPlugin() {
