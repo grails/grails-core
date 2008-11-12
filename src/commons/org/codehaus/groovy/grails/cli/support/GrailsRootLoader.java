@@ -15,7 +15,6 @@
 package org.codehaus.groovy.grails.cli.support;
 
 import org.codehaus.groovy.tools.RootLoader;
-import org.codehaus.groovy.tools.LoaderConfiguration;
 
 import java.net.URL;
 
@@ -30,8 +29,8 @@ public class GrailsRootLoader extends RootLoader {
         super(urls, parent);
     }
 
-    public GrailsRootLoader(LoaderConfiguration lc) {
-        super(lc);
+    public GrailsRootLoader() {
+        super(new URL[0],ClassLoader.getSystemClassLoader());
     }
 
     protected Class loadClass(String name, boolean resolve) throws ClassNotFoundException {

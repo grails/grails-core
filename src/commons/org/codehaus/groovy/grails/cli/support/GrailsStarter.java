@@ -16,13 +16,12 @@ package org.codehaus.groovy.grails.cli.support;
 
 import org.codehaus.groovy.tools.LoaderConfiguration;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.io.IOException;
+import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
+import java.util.Properties;
+import java.util.regex.Pattern;
 
 /**
  * @author Graeme Rocher
@@ -90,11 +89,65 @@ public class GrailsStarter {
                 exit(e);
             }
         }
+
+        // obtain servlet version
+        String servletVersion = "2.4";
+        Pattern standardJarPattern = Pattern.compile(".+?standard-\\d\\.\\d\\.jar");
+        Pattern jstlJarPattern = Pattern.compile(".+?jstl-\\d\\.\\d\\.jar");
+
+        Properties metadata = new Properties();
+        File metadataFile = new File("./application.properties");
+        if(metadataFile.exists()) {
+            FileInputStream inputStream = null;
+            try {
+                inputStream = new FileInputStream(metadataFile);
+                metadata.load(inputStream);
+                Object version = metadata.get("app.servlet.version");
+                if(version!=null) {
+                    servletVersion = version.toString();
+                }
+            } catch (IOException e) {
+                // ignore
+            }
+            finally {
+                try {
+                    if(inputStream!=null) inputStream.close();
+                } catch (IOException e) {
+                    // ignore
+                }
+            }
+        }
+
         // create loader and execute main class
-        GrailsRootLoader loader = new GrailsRootLoader(lc);
+        GrailsRootLoader loader = new GrailsRootLoader();
+        Thread.currentThread().setContextClassLoader(loader);
+
+        final String standardJarName = "standard-" + servletVersion + ".jar";
+        final String jstlJarName = "jstl-" + servletVersion + ".jar";
+
+        // configure class loader
+        URL[] urls = lc.getClassPathUrls();
+        for (int i = 0; i < urls.length; i++) {
+            URL url = urls[i];
+            final String path = url.getPath();
+            if(standardJarPattern.matcher(path).find()) {
+                if(path.endsWith(standardJarName)) {
+                    loader.addURL(url);
+                }
+            }
+            else if(jstlJarPattern.matcher(path).find()) {
+                if(path.endsWith(jstlJarName)) {
+                    loader.addURL(url);
+                }
+            }
+            else {
+                loader.addURL(url);
+            }
+        }
 
         String javaVersion = System.getProperty("java.version");
         String grailsHome = System.getProperty("grails.home");
+
 
         if(javaVersion != null && grailsHome != null) {
             javaVersion = javaVersion.substring(0,3);
@@ -108,8 +161,8 @@ public class GrailsStarter {
                     vmLoaderConfig.configure(in);
                     URL[] vmSpecificClassPath = vmLoaderConfig.getClassPathUrls();
                     for (int i = 0; i < vmSpecificClassPath.length; i++) {
-                        URL url = vmSpecificClassPath[i];
-                        loader.addURL(url);
+                        loader.addURL(vmSpecificClassPath[i]);
+
                     }
                 } catch (IOException e) {
                     System.out.println("WARNING: I/O error reading VM specific classpath ["+vmConfig+"]: " + e.getMessage() );
