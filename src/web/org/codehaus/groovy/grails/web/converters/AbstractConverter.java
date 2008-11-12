@@ -19,7 +19,6 @@ import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
 
 import java.io.StringWriter;
-import java.lang.reflect.Constructor;
 
 /**
  * Abstract base implementation of the Converter interface that provides a default toString()
@@ -28,7 +27,6 @@ import java.lang.reflect.Constructor;
  * @author Siegfried Puchbauer
  */
 public abstract class AbstractConverter implements Converter {
-    private static final String PERSISTENCE_BEAN_WRAPPER_CLASS = "org.codehaus.groovy.grails.orm.hibernate.support.HibernateBeanWrapper";
 
     public abstract void setTarget(Object target);
 
@@ -49,14 +47,6 @@ public abstract class AbstractConverter implements Converter {
 
 
     protected BeanWrapper createBeanWrapper(Object o) {
-        BeanWrapper beanWrapper;
-        try {
-            Class c = Class.forName(PERSISTENCE_BEAN_WRAPPER_CLASS);
-            Constructor init = c.getConstructor(new Class[]{Object.class});
-            beanWrapper = (BeanWrapper)init.newInstance(new Object[]{o});
-        } catch (Exception e) {
-            beanWrapper = new BeanWrapperImpl(o);
-        }
-        return beanWrapper;
+        return new BeanWrapperImpl(o);
     }
 }

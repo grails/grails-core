@@ -58,8 +58,8 @@ public class JSON extends AbstractConverter implements Converter {
     private final static Log log = LogFactory.getLog(JSON.class);
 
     private Object target;
-		private String encoding;
-		
+    private String encoding;
+
     private JSONWriter writer;
 
     private boolean renderDomainClassRelations = false;
@@ -95,7 +95,7 @@ public class JSON extends AbstractConverter implements Converter {
             this.encoding = enc.toString();
         } else {
             this.encoding = DEFAULT_ENCODING;
-        }    	    		
+        }
         this.target = null;
     }
 
@@ -105,7 +105,7 @@ public class JSON extends AbstractConverter implements Converter {
      * @param target the Object to convert
      */
     public JSON(Object target) {
-    		this();
+        this();
         this.target = target;
     }
 
@@ -137,7 +137,7 @@ public class JSON extends AbstractConverter implements Converter {
      * @throws ConverterException
      */
     public void render(HttpServletResponse response) throws ConverterException {
-        response.setContentType(GrailsWebUtil.getContentType("application/json",this.encoding));
+        response.setContentType(GrailsWebUtil.getContentType("application/json", this.encoding));
         try {
             render(response.getWriter());
         } catch (IOException e) {
@@ -204,8 +204,7 @@ public class JSON extends AbstractConverter implements Converter {
         try {
             BeanWrapper beanWrapper = createBeanWrapper(o);
             GrailsDomainClass domainClass = ConverterUtil.getDomainClass(o.getClass().getName());
-            if(domainClass != null) {
-
+            if (domainClass != null) {
                 writer.object();
                 GrailsDomainClassProperty id = domainClass.getIdentifier();
                 property(id.getName(), beanWrapper.getPropertyValue(id.getName()));
@@ -230,7 +229,11 @@ public class JSON extends AbstractConverter implements Converter {
                                 writer.value(null);
                             }
                         } else if (prop.isOneToOne() || prop.isManyToOne() || prop.isEmbedded()) {
-                            value(extractIdValue(refValue, prop.getReferencedDomainClass().getIdentifier()));
+                            if (GrailsClassUtils.isJdk5Enum(prop.getType())) {
+                                enumeration(refValue);
+                            } else {
+                                value(extractIdValue(refValue, prop.getReferencedDomainClass().getIdentifier()));
+                            }
                         } else {
                             //Class referenceClass = prop.getType();
                             GrailsDomainClassProperty refIdProperty = prop.getReferencedDomainClass().getIdentifier();
@@ -295,7 +298,7 @@ public class JSON extends AbstractConverter implements Converter {
                 writer.value(null);
             } else if (o instanceof GroovyObject && ConverterUtil.isDomainClass(o.getClass())) {
                 domain(o);
-            } else if(GrailsClassUtils.isJdk5Enum(o.getClass())) {
+            } else if (GrailsClassUtils.isJdk5Enum(o.getClass())) {
                 enumeration(o);
             } else if (o instanceof Class) {
                 writer.value(((Class) o).getName());
@@ -348,7 +351,7 @@ public class JSON extends AbstractConverter implements Converter {
         property("enumType", enumClass.getName());
         Method nameMethod = BeanUtils.findDeclaredMethod(enumClass, "name", null);
         try {
-            property("name",nameMethod.invoke(en,null));
+            property("name", nameMethod.invoke(en, null));
         } catch (Exception e) {
             property("name", "");
         }
@@ -419,13 +422,13 @@ public class JSON extends AbstractConverter implements Converter {
      */
     public static Object parse(HttpServletRequest request) throws ConverterException {
         Object json = request.getAttribute(CACHED_JSON);
-        if(json != null) return json;
+        if (json != null) return json;
         String encoding = request.getCharacterEncoding();
         if (encoding == null)
             encoding = Converter.DEFAULT_REQUEST_ENCODING;
         try {
             json = parse(request.getInputStream(), encoding);
-            request.setAttribute(CACHED_JSON,json);
+            request.setAttribute(CACHED_JSON, json);
             return json;
         } catch (IOException e) {
             throw new ConverterException("Error parsing JSON", e);

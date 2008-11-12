@@ -21,6 +21,7 @@ import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
+import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.web.converters.ConverterUtil;
 import org.hibernate.collection.AbstractPersistentCollection;
 import org.springframework.beans.BeanWrapper;
@@ -108,35 +109,39 @@ public class DomainClassConverter implements Converter {
                         writer.endNode();
                     } else {
                         GrailsDomainClass referencedDomainClass = property.getReferencedDomainClass();
-                        GrailsDomainClassProperty referencedIdProperty = referencedDomainClass.getIdentifier();
-                        if (property.isOneToOne() || property.isManyToOne() || property.isEmbedded()) {
-                            // Property contains 1 foreign Domain Object
-                            writer.addAttribute("id", String.valueOf(extractIdValue(referenceObject, referencedIdProperty)));
+                        if (GrailsClassUtils.isJdk5Enum(property.getType())) {
+                            context.convertAnother(referenceObject);
                         } else {
-                            String refPropertyName = referencedDomainClass.getPropertyName();
-                            if (referenceObject instanceof Collection) {
-                                Collection o = (Collection) referenceObject;
-                                for (Iterator it = o.iterator(); it.hasNext();) {
-                                    Object el = (Object) it.next();
-                                    writer.startNode(refPropertyName);
-                                    writer.addAttribute("id", String.valueOf(extractIdValue(el, referencedIdProperty)));
-                                    writer.endNode();
-                                }
+                            GrailsDomainClassProperty referencedIdProperty = referencedDomainClass.getIdentifier();
+                            if (property.isOneToOne() || property.isManyToOne() || property.isEmbedded()) {
+                                // Property contains 1 foreign Domain Object
+                                writer.addAttribute("id", String.valueOf(extractIdValue(referenceObject, referencedIdProperty)));
+                            } else {
+                                String refPropertyName = referencedDomainClass.getPropertyName();
+                                if (referenceObject instanceof Collection) {
+                                    Collection o = (Collection) referenceObject;
+                                    for (Iterator it = o.iterator(); it.hasNext();) {
+                                        Object el = (Object) it.next();
+                                        writer.startNode(refPropertyName);
+                                        writer.addAttribute("id", String.valueOf(extractIdValue(el, referencedIdProperty)));
+                                        writer.endNode();
+                                    }
 
-                            } else if (referenceObject instanceof Map) {
-                                Map map = (Map) referenceObject;
-                                Iterator iterator = map.keySet().iterator();
-                                while (iterator.hasNext()) {
-                                    String key = String.valueOf(iterator.next());
-                                    Object o = map.get(key);
-                                    writer.startNode("entry");
-                                    writer.startNode("string"); // key of map entry has to be a string
-                                    writer.setValue(key);
-                                    writer.endNode(); // end string
-                                    writer.startNode(refPropertyName);
-                                    writer.addAttribute("id", String.valueOf(extractIdValue(o, referencedIdProperty)));
-                                    writer.endNode(); // end refPropertyName
-                                    writer.endNode(); // end entry
+                                } else if (referenceObject instanceof Map) {
+                                    Map map = (Map) referenceObject;
+                                    Iterator iterator = map.keySet().iterator();
+                                    while (iterator.hasNext()) {
+                                        String key = String.valueOf(iterator.next());
+                                        Object o = map.get(key);
+                                        writer.startNode("entry");
+                                        writer.startNode("string"); // key of map entry has to be a string
+                                        writer.setValue(key);
+                                        writer.endNode(); // end string
+                                        writer.startNode(refPropertyName);
+                                        writer.addAttribute("id", String.valueOf(extractIdValue(o, referencedIdProperty)));
+                                        writer.endNode(); // end refPropertyName
+                                        writer.endNode(); // end entry
+                                    }
                                 }
                             }
                         }
@@ -149,32 +154,6 @@ public class DomainClassConverter implements Converter {
 
     public Object unmarshal(HierarchicalStreamReader reader,
                             UnmarshallingContext context) {
-//        Under development:
-//        try {
-//            Class clazz = context.getRequiredType();
-//            GrailsDomainClass domainClass = ConverterUtil.getDomainClass(clazz.getName());
-//            Object o = clazz.newInstance();
-//            BeanWrapper beanWrapper = new BeanWrapperImpl(o);
-//            //GroovyObject go = (GroovyObject) clazz.newInstance();
-//
-//            while (reader.hasMoreChildren()) {
-//                reader.moveDown();
-//                String propertyName = reader.getNodeName();
-//                GrailsDomainClassProperty property = domainClass.getPropertyByName(propertyName);
-//
-//                if (property.isAssociation()) {
-//                    //  TODO
-//                } else {
-//                    Object value = context.convertAnother(o, property.getType());
-//                    beanWrapper.setPropertyValue(property.getName(), value);
-//                }
-//                reader.moveUp();
-//            }
-//
-//            return null;
-//        } catch (Exception e) {
-//            throw new UnhandledException(e);
-//        }
         return null;
     }
 
