@@ -80,6 +80,7 @@ def processResults = {
 
 unitOnly = false
 integrationOnly = false
+xmlOnly = false
 
 target(testApp: "The test app implementation target") {
     depends(packageApp)
@@ -100,8 +101,11 @@ target(testApp: "The test app implementation target") {
         args -= '-integration'
         integrationOnly = true
     }
-
-
+    if (args?.indexOf('-xml') > -1) {
+        args -= '-xml'
+        xmlOnly = true
+    }
+    
     compileTests()
     packageTests()
 
@@ -114,7 +118,9 @@ target(testApp: "The test app implementation target") {
             runIntegrationTests()
         }
         event("AllTestsEnd", ["Finishing test-app"])
-        produceReports()
+        if (!xmlOnly) {
+            produceReports()
+        }
     }
     catch (Exception ex) {
         ex.printStackTrace()
@@ -217,9 +223,14 @@ def runTests = {suite, TestResult result, Closure callback ->
                     System.out = new PrintStream(outBytes)
                     System.err = new PrintStream(errBytes)
                     def xmlOutput = new XMLJUnitResultFormatter(output: xmlOut)
-                    def plainOutput = new PlainJUnitResultFormatter(output: plainOut)
+                    def plainOutput
+                    if (!xmlOnly){
+                        plainOutput = new PlainJUnitResultFormatter(output: plainOut)
+                    }
                     def junitTest = new JUnitTest(test.name)
-                    plainOutput.startTestSuite(junitTest)
+                    if (!xmlOnly){
+                        plainOutput.startTestSuite(junitTest)
+                    }
                     xmlOutput.startTestSuite(junitTest)
                     savedOut.println "Running test ${test.name}..."
                     def start = System.currentTimeMillis()
@@ -230,7 +241,9 @@ def runTests = {suite, TestResult result, Closure callback ->
                     for (i in 0..<test.testCount()) {
                         def thisTest = new TestResult()
                         thisTest.addListener(xmlOutput)
-                        thisTest.addListener(plainOutput)
+                        if (!xmlOnly){
+                            thisTest.addListener(plainOutput)
+                        }
                         def t = test.testAt(i)
                         System.out.println "--Output from ${t.name}--"
                         System.err.println "--Output from ${t.name}--"
@@ -258,11 +271,13 @@ def runTests = {suite, TestResult result, Closure callback ->
 
                     def outString = outBytes.toString()
                     def errString = errBytes.toString()
-                    new File("${testDir}/TEST-${test.name}-out.txt").write(outString)
-                    new File("${testDir}/TEST-${test.name}-err.txt").write(errString)
-                    plainOutput.setSystemOutput(outString)
-                    plainOutput.setSystemError(errString)
-                    plainOutput.endTestSuite(junitTest)
+                    if (!xmlOnly){
+                        new File("${testDir}/TEST-${test.name}-out.txt").write(outString)
+                        new File("${testDir}/TEST-${test.name}-err.txt").write(errString)
+                        plainOutput.setSystemOutput(outString)
+                        plainOutput.setSystemError(errString)
+                        plainOutput.endTestSuite(junitTest)
+                    }
                     xmlOutput.setSystemOutput(outString)
                     xmlOutput.setSystemError(errString)
                     xmlOutput.endTestSuite(junitTest)
