@@ -4,6 +4,7 @@ import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 import org.springframework.core.io.*
 import grails.util.GrailsWebUtil
 import org.springframework.mock.web.MockServletContext
+import org.codehaus.groovy.grails.web.mapping.exceptions.UrlMappingException
 
 class RegexUrlMappingTests extends AbstractGrailsMappingTests {
 
@@ -23,12 +24,19 @@ mappings {
   "/files/$path**?" {
 	  controller = "files"
   }
+  "/filenameext/$fname$fext?" {
+	  controller = "download"
+  }
+  "/another/arbitrary/something-$prefix.$ext" {
+	  controller = "myFiles"
+      action = "index"
+  }
 }
 '''
 
     void testNullableConstraintsInMapping() {
-   def res = new ByteArrayResource(mappingScript.bytes)
- def mappings = evaluator.evaluateMappings(res)
+        def res = new ByteArrayResource(mappingScript.bytes)
+        def mappings = evaluator.evaluateMappings(res)
 
         def m = mappings[2]
 
@@ -63,9 +71,26 @@ mappings {
 
         m = mappings[3]
         assert m
-
         assertEquals "/files/path/to/my/file", m.createURL([path:"/path/to/my/file"], "utf-8")
+
+        m = mappings[4] //filename+fileextension case
+        assert m
+        assertEquals "/filenameext/grails", m.createURL([fname:'grails'], "utf-8")
+        assertEquals "/filenameext/grails.", m.createURL([fname:'grails.'], "utf-8")
+        assertEquals "/filenameext/grails.jpg", m.createURL(fname:"grails",fext:".jpg", "utf-8")
+
+        m = mappings[5]
+        assert m
+        assertEquals "/another/arbitrary/something-source.jar",
+                m.createURL(controller:"myFiles",action:"index", prefix:"source", ext:"jar", "utf-8")
+
+        // "ext" is a required property, so if it isn't specified an
+        // exception should be thrown.
+        shouldFail(UrlMappingException) {
+            m.createURL(controller:"myFiles",action:"index", prefix:"source", "utf-8")
+        }
     }
+
 
     void testCreateUrlWithFragment() {
         GrailsWebUtil.bindMockWebRequest()
@@ -218,7 +243,4 @@ mappings {
         info = m.match("/foo/bar/test")
         assertNull info
     }
-
-
 }
-

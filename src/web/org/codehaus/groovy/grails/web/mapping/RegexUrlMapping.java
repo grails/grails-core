@@ -106,12 +106,24 @@ public class RegexUrlMapping extends AbstractUrlMapping implements UrlMapping {
 
         }
         if (constraints != null) {
+            String pattern = data.getUrlPattern();
+            int pos = 0;
             for (int i = 0; i < constraints.length; i++) {
-
                 ConstrainedProperty constraint = constraints[i];
-                if (data.isOptional(i)) {
+                pos = pattern.indexOf("(*)", pos);
+
+                if (pos == -1) {
                     constraint.setNullable(true);
                 }
+                else if (pos + 3 < pattern.length() && pattern.charAt(pos + 3) == '?') {
+                    constraint.setNullable(true);
+                }
+                else {
+                    constraint.setNullable(false);
+                }
+
+                // Move on to the next place-holder.
+                pos += 3;
             }
         }
     }
@@ -127,7 +139,13 @@ public class RegexUrlMapping extends AbstractUrlMapping implements UrlMapping {
         Pattern regex;
         String pattern = null;
         try {
-            pattern = "^" + url.replaceAll("([^\\*])\\*([^\\*])", "$1[^/]+$2").replaceAll("([^\\*])\\*$", "$1[^/]+").replaceAll("\\*\\*", ".*");
+            // Escape any characters that have special meaning in regular expressions,
+            // such as '.' and '+'.
+            pattern = StringUtils.replace(url, ".", "\\.");
+            pattern = StringUtils.replace(pattern, "+", "\\+");
+
+            // Now replace "*" with "[^/]" and "**" with ".*".
+            pattern = "^" + pattern.replaceAll("([^\\*])\\*([^\\*])", "$1[^/]+$2").replaceAll("([^\\*])\\*$", "$1[^/]+").replaceAll("\\*\\*", ".*");
             pattern += "/??$";
             regex = Pattern.compile(pattern);
         } catch (PatternSyntaxException pse) {
@@ -181,41 +199,56 @@ public class RegexUrlMapping extends AbstractUrlMapping implements UrlMapping {
         StringBuffer uri = new StringBuffer(contextPath);
         Set usedParams = new HashSet();
 
+        Pattern p = Pattern.compile("\\(\\*\\*?\\)");
+
         String[] tokens = urlData.getTokens();
         int paramIndex = 0;
         for (int i = 0; i < tokens.length; i++) {
             String token = tokens[i];
-            if (CAPTURED_WILDCARD.equals(token) || CAPTURED_DOUBLE_WILDCARD.equals(token)) {
-                ConstrainedProperty prop = this.constraints[paramIndex++];
-                String propName = prop.getPropertyName();
-                Object value = parameterValues.get(propName);
-                usedParams.add(propName);
-                if (value == null && !prop.isNullable())
-                    throw new UrlMappingException("Unable to create URL for mapping [" + this + "] and parameters [" + parameterValues + "]. Parameter [" + prop.getPropertyName() + "] is required, but was not specified!");
-                else if (value == null)
-                    break;
+            Matcher m = p.matcher(token);
+            if (m.find()) {
+                StringBuffer buf = new StringBuffer();
+//            if (CAPTURED_WILDCARD.equals(token) || CAPTURED_DOUBLE_WILDCARD.equals(token)) {
+                do {
+                    ConstrainedProperty prop = this.constraints[paramIndex++];
+                    String propName = prop.getPropertyName();
+                    Object value = parameterValues.get(propName);
+                    usedParams.add(propName);
+                    if (value == null && !prop.isNullable()) {
+                        throw new UrlMappingException("Unable to create URL for mapping [" + this + "] and parameters [" + parameterValues + "]. Parameter [" + prop.getPropertyName() + "] is required, but was not specified!");
+                    }
+                    else if (value == null) {
+                        m.appendReplacement(buf, "");
+                    }
+                    else {
+                        m.appendReplacement(buf, value.toString());
+                    }
+                }
+                while (m.find());
+
+                m.appendTail(buf);
 
                 try {
-                	String v = value.toString();
-                	if (v.indexOf(SLASH) > -1
-                		&& CAPTURED_DOUBLE_WILDCARD.equals(token)) {
-                		// individually URL encode path segments
-                		if (v.startsWith(SLASH)) {
-                			// get rid of leading slash
-                			v = v.substring(SLASH.length());
-                		}
-                		String[] segs = v.split(SLASH);
-                		for (int s = 0; s < segs.length; s++) {
-							String segment = segs[s];
-							uri.append(SLASH).append(URLEncoder.encode(segment, encoding));
-						}
-                	}
-                	else {
-                		// original behavior
-                		uri.append(SLASH).append(URLEncoder.encode(v, encoding));
-                	}
+                    String v = buf.toString();
+                    if (v.indexOf(SLASH) > -1
+                        && CAPTURED_DOUBLE_WILDCARD.equals(token)) {
+                        // individually URL encode path segments
+                        if (v.startsWith(SLASH)) {
+                            // get rid of leading slash
+                            v = v.substring(SLASH.length());
+                        }
+                        String[] segs = v.split(SLASH);
+                        for (int s = 0; s < segs.length; s++) {
+                            String segment = segs[s];
+                            uri.append(SLASH).append(URLEncoder.encode(segment, encoding));
+                        }
+                    }
+                    else if (v.length() > 0) {
+                        // original behavior
+                        uri.append(SLASH).append(URLEncoder.encode(v, encoding));
+                    }
                 } catch (UnsupportedEncodingException e) {
-                    throw new ControllerExecutionException("Error creating URL for parameters [" + parameterValues + "], problem encoding URL part [" + value + "]: " + e.getMessage(), e);
+                    throw new ControllerExecutionException("Error creating URL for parameters [" + parameterValues + "], problem encoding URL part [" + buf + "]: " + e.getMessage(), e);
                 }
             } else {
                 uri.append(SLASH).append(token);

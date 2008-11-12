@@ -31,6 +31,12 @@ mappings {
   }
 
   "/music/$band/$album" (controller:'music', action:'show')
+
+  "/myFiles/something-$fname.$fext" {
+	  controller = "files"
+  }
+
+  "/long/$path**"(controller: 'files')
 }
 '''
     
@@ -41,7 +47,7 @@ mappings {
          def mappings = evaluator.evaluateMappings(res)
 
          assert mappings
-         assertEquals 5, mappings.size()
+         assertEquals 7, mappings.size()
 
          def m1 = mappings[0]
          assertEquals "/(*)/(*)?/(*)?/(*)?", m1.urlData.urlPattern
@@ -98,6 +104,20 @@ mappings {
          assertEquals "Hemispheres", info.parameters.album
          assertEquals "show", info.actionName
          assertEquals "music", info.controllerName
+
+         def m6 = mappings[5]
+         info = m6.match("/myFiles/something-hello.txt")
+         assert info
+         assertEquals "files", info.controllerName
+         assertEquals "hello", info.parameters.fname
+         assertEquals "txt", info.parameters.fext
+
+        // Test the double-wildcard, "**".
+         def m = mappings[6]
+         info = m.match("/long/path/to/some/file")
+         assert info
+         assertEquals "path/to/some/file", info.parameters.path
+         assertEquals "files", info.controllerName
     }
 }
 
