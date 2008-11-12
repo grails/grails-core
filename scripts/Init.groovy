@@ -168,14 +168,28 @@ eventExiting = { returnCode ->
 
 loadEventHooks = {
     // Look for user script
-    def f = new File(userHome, ".grails/scripts/Events.groovy")
+    def f = new File(userHome, ".grails/scripts/_Events.groovy")
+    if(!f.exists()) {
+      f = new File(userHome, ".grails/scripts/Events.groovy")
+      if(f.exists()) {
+        println "Use of 'Events.groovy' is DEPRECATED.  Please rename to '_Events.groovy'."
+      }
+    }
+
     if (f.exists()) {
         println "Found user events script"
         loadEventScript(f)
     }
 
     // Look for app-supplied scripts
-    f = new File(basedir, "scripts/Events.groovy")
+    f = new File(basedir, "scripts/_Events.groovy")
+    if(!f.exists()) {
+      f = new File(basedir, "scripts/Events.groovy")
+      if(f.exists()) {
+        println "Use of 'Events.groovy' is DEPRECATED.  Please rename to '_Events.groovy'."
+      }
+    }
+
     if (f.exists()) {
         println "Found application events script"
         loadEventScript(f)
@@ -185,7 +199,13 @@ loadEventHooks = {
     def pluginsDir = new File(basedir, "plugins")
     if (pluginsDir.exists()) {
         pluginsDir.eachDir() {
-            f = new File(it, "scripts/Events.groovy")
+            f = new File(it, "scripts/_Events.groovy")
+            if(!f.exists()) {
+              f = new File(it, "scripts/Events.groovy")
+              if(f.exists()) {
+                println "Use of 'Events.groovy' is DEPRECATED.  Please rename to '_Events.groovy'."
+              }
+            }
             if (f.exists()) {
                 println "Found events script in plugin ${it.name}"
                 loadEventScript(f)
