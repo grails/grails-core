@@ -30,7 +30,7 @@ import grails.converters.JSON
 class JSONCodec {
 
 	static encode = { target ->
-		return new JSON(target).toString(true)
+		return new JSON(target).toString()
 	}
 
 }
