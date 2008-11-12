@@ -67,6 +67,7 @@ mappings {
         assertEquals "/blog/foo/2007", m.createURL(entry: "foo", year: 2007, null)
         assertEquals "/blog/foo", m.createURL(entry: "foo", "utf-8")
         assertEquals "/blog/foo", m.createURL(entry: "foo", null)
+        assertEquals "/blog/foo?day=24", m.createURL(entry: "foo", day: 24, "utf-8")
         shouldFail { m.createURL([:], "utf-8") }
 
         m = mappings[3]

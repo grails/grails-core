@@ -208,7 +208,6 @@ public class RegexUrlMapping extends AbstractUrlMapping implements UrlMapping {
             Matcher m = p.matcher(token);
             if (m.find()) {
                 StringBuffer buf = new StringBuffer();
-//            if (CAPTURED_WILDCARD.equals(token) || CAPTURED_DOUBLE_WILDCARD.equals(token)) {
                 do {
                     ConstrainedProperty prop = this.constraints[paramIndex++];
                     String propName = prop.getPropertyName();
@@ -216,15 +215,12 @@ public class RegexUrlMapping extends AbstractUrlMapping implements UrlMapping {
                     usedParams.add(propName);
                     if (value == null && !prop.isNullable()) {
                         throw new UrlMappingException("Unable to create URL for mapping [" + this + "] and parameters [" + parameterValues + "]. Parameter [" + prop.getPropertyName() + "] is required, but was not specified!");
-                    }
-                    else if (value == null) {
+                    } else if (value == null) {
                         m.appendReplacement(buf, "");
-                    }
-                    else {
+                    } else {
                         m.appendReplacement(buf, value.toString());
                     }
-                }
-                while (m.find());
+                } while (m.find());
 
                 m.appendTail(buf);
 
@@ -242,10 +238,12 @@ public class RegexUrlMapping extends AbstractUrlMapping implements UrlMapping {
                             String segment = segs[s];
                             uri.append(SLASH).append(URLEncoder.encode(segment, encoding));
                         }
-                    }
-                    else if (v.length() > 0) {
+                    } else if (v.length() > 0) {
                         // original behavior
                         uri.append(SLASH).append(URLEncoder.encode(v, encoding));
+                    } else {
+                        // Stop processing tokens once we hit an empty one.
+                        break;
                     }
                 } catch (UnsupportedEncodingException e) {
                     throw new ControllerExecutionException("Error creating URL for parameters [" + parameterValues + "], problem encoding URL part [" + buf + "]: " + e.getMessage(), e);
