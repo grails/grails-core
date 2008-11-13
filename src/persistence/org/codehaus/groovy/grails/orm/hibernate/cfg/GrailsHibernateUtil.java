@@ -126,7 +126,7 @@ public class GrailsHibernateUtil {
                     GrailsDomainClass gdc = (GrailsDomainClass) hibernateDomainClassMap.get(superClass.getName());
 
                     if (gdc == null || gdc.getSubClasses() == null) {
-                        LOG.error("did not find superclass names when mapping inheritance....");
+                        LOG.debug("did not find superclass names when mapping inheritance....");
                         break;
                     }
                     gdc.getSubClasses().add(baseClass);
