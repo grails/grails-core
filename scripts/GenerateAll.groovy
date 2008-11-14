@@ -75,9 +75,6 @@ target(generateForOne: "Generates controllers and views for only one domain clas
 }
 
 target(uberGenerate: "Generates controllers and views for all domain classes.") {
-    rootLoader.addURL(classesDir.toURI().toURL())
-    loadApp()
-
     def domainClasses = grailsApp.domainClasses
 
     if (!domainClasses) {
@@ -87,7 +84,6 @@ target(uberGenerate: "Generates controllers and views for all domain classes.") 
     }
 
    if (domainClasses) {
-        def generator = new DefaultGrailsTemplateGenerator()
         domainClasses.each { domainClass ->
             generateForDomainClass(domainClass)
         }
