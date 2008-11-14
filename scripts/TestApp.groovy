@@ -452,7 +452,7 @@ def getFailedTests() {
     File file = new File("${testDir}/TESTS-TestSuites.xml")
     if (file.exists()) {
         def xmlParser = new XmlParser().parse(file)
-        def failedTests = xmlParser.testsuite.findAll { it.'@failures' =~ /.*[1-9].*/}
+        def failedTests = xmlParser.testsuite.findAll { it.'@failures' =~ /.*[1-9].*/ || it.'@errors' =~ /.*[1-9].*/}
         String allFailedTests = ""
 
         failedTests.each {
