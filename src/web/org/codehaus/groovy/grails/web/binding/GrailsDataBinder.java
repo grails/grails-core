@@ -149,10 +149,15 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
 		binder.registerCustomEditor( BigDecimal.class, new CustomNumberEditor(BigDecimal.class, floatFormat, true));
         binder.registerCustomEditor( BigInteger.class, new CustomNumberEditor(BigInteger.class, floatFormat, true));
         binder.registerCustomEditor( Double.class, new CustomNumberEditor(Double.class, floatFormat, true));
+        binder.registerCustomEditor( double.class, new CustomNumberEditor(Double.class, floatFormat, true));
         binder.registerCustomEditor( Float.class, new CustomNumberEditor(Float.class, floatFormat, true));
+        binder.registerCustomEditor( float.class, new CustomNumberEditor(Float.class, floatFormat, true));
         binder.registerCustomEditor( Long.class, new CustomNumberEditor(Long.class, integerFormat, true));
+        binder.registerCustomEditor( long.class, new CustomNumberEditor(Long.class, integerFormat, true));
         binder.registerCustomEditor( Integer.class, new CustomNumberEditor(Integer.class, integerFormat, true));
+        binder.registerCustomEditor( int.class, new CustomNumberEditor(Integer.class, integerFormat, true));
         binder.registerCustomEditor( Short.class, new CustomNumberEditor(Short.class, integerFormat, true));
+        binder.registerCustomEditor( short.class, new CustomNumberEditor(Short.class, integerFormat, true));
         binder.registerCustomEditor( Date.class, new StructuredDateEditor(DateFormat.getDateInstance( DateFormat.SHORT, locale),true));
         binder.registerCustomEditor( Calendar.class, new StructuredDateEditor(DateFormat.getDateInstance( DateFormat.SHORT, locale),true));
 
