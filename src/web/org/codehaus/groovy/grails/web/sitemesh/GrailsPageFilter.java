@@ -18,13 +18,12 @@ package org.codehaus.groovy.grails.web.sitemesh;
 import com.opensymphony.module.sitemesh.Decorator;
 import com.opensymphony.module.sitemesh.DecoratorMapper;
 import com.opensymphony.module.sitemesh.Page;
-import com.opensymphony.module.sitemesh.util.Container;
 import com.opensymphony.module.sitemesh.filter.PageFilter;
-import com.opensymphony.module.sitemesh.filter.PageResponseWrapper;
+import com.opensymphony.module.sitemesh.util.Container;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.commons.ConfigurationHolder;
+import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.springframework.web.util.UrlPathHelper;
 
 import javax.servlet.*;
@@ -108,7 +107,7 @@ public class GrailsPageFilter extends PageFilter {
      */
     protected Page parsePage(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException {
         try {
-            PageResponseWrapper pageResponse = new PageResponseWrapper(response, factory);
+            GrailsPageResponseWrapper pageResponse = new GrailsPageResponseWrapper(response, factory);
             UrlPathHelper urlHelper = new UrlPathHelper();
             String requestURI = urlHelper.getOriginatingRequestUri(request);
             // static content?
