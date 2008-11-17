@@ -125,6 +125,7 @@ target(watchContext: "Watches the WEB-INF/classes directory for changes and rest
         daemonThread.run()
     }
 
+    def killFile = new File("${basedir}/.kill-run-app")
     while (keepRunning) {
         if (autoRecompile) {
             lastModified = recompileCheck(lastModified) {
@@ -148,6 +149,16 @@ target(watchContext: "Watches the WEB-INF/classes directory for changes and rest
             }
         }
         sleep(recompileFrequency * 1000)
+
+        // Check whether the kill file exists. This is a hack for the
+        // functional tests so that we can stop the servers that are
+        // started.
+        if (killFile.exists()) {
+            println "Stopping Jetty server..."
+            grailsServer.stop()
+            killFile.delete()
+            keepRunning = false
+        }
     }
 }
 
