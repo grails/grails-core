@@ -66,7 +66,7 @@ target(releasePlugin: "The implementation target") {
                 }
             }
             else {
-                event('StatusFinal', ["Failed to stat working directory: ${e.message}"])
+                event('StatusFinal', ["Failed to stat working directory: ${ex.message}"])
                 exit(1)
             }
         }
