@@ -16,6 +16,7 @@ package grails.converters;
 
 
 import com.thoughtworks.xstream.XStream;
+import grails.util.GrailsWebUtil;
 import groovy.util.XmlSlurper;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -32,9 +33,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Writer;
-import java.util.*;
-
-import grails.util.GrailsWebUtil;
+import java.util.Map;
 
 /**
  * A converter that converts domain classes to XML
@@ -123,7 +122,7 @@ public class XML extends AbstractConverter implements Converter {
      */
     public static Object parse(String source) throws ConverterException {
         try {
-            return new XmlSlurper().parse(source);
+            return new XmlSlurper().parseText(source);
         } catch (Exception e) {
             throw new ConverterException("Error parsing XML", e);
         }
