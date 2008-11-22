@@ -45,9 +45,10 @@ public class DefaultGrailsDomainClassInjector implements
 
     private static final Log LOG = LogFactory.getLog(DefaultGrailsDomainClassInjector.class);
 
+    private List classesWithInjectedToString = new ArrayList();
+
     public void performInjection(SourceUnit source, GeneratorContext context,
                                  ClassNode classNode) {
-
         if (shouldInjectClass(classNode)) {
             injectIdProperty(classNode);
 
@@ -106,9 +107,7 @@ public class DefaultGrailsDomainClassInjector implements
                 MapEntryExpression mme = (MapEntryExpression) i.next();
                 String key = mme.getKeyExpression().getText();
 
-                String type = mme.getValueExpression().getText();
-
-                properties.add(new PropertyNode(key, Modifier.PUBLIC, ClassHelper.make(type), classNode, null, null, null));
+                properties.add(new PropertyNode(key, Modifier.PUBLIC, mme.getValueExpression().getType(), classNode, null, null, null));
             }
         }
 
@@ -147,7 +146,7 @@ public class DefaultGrailsDomainClassInjector implements
     }
 
     private void injectToStringMethod(ClassNode classNode) {
-        final boolean hasToString = GrailsASTUtils.implementsZeroArgMethod(classNode, "toString");
+        final boolean hasToString = GrailsASTUtils.implementsOrInheritsZeroArgMethod(classNode, "toString", classesWithInjectedToString);
 
         if (!hasToString && !isEnum(classNode)) {
             GStringExpression ge = new GStringExpression(classNode.getName() + " : ${id}");
@@ -159,6 +158,7 @@ public class DefaultGrailsDomainClassInjector implements
                 LOG.debug("[GrailsDomainInjector] Adding method [toString()] to class [" + classNode.getName() + "]");
             }
             classNode.addMethod(mn);
+            classesWithInjectedToString.add(classNode);
         }
     }
 
@@ -172,7 +172,7 @@ public class DefaultGrailsDomainClassInjector implements
     }
 
     private void injectVersionProperty(ClassNode classNode) {
-        final boolean hasVersion = GrailsASTUtils.hasProperty(classNode, GrailsDomainClassProperty.VERSION);
+        final boolean hasVersion = GrailsASTUtils.hasOrInheritsProperty(classNode, GrailsDomainClassProperty.VERSION);
 
         if (!hasVersion) {
             if (LOG.isDebugEnabled()) {
@@ -183,7 +183,7 @@ public class DefaultGrailsDomainClassInjector implements
     }
 
     private void injectIdProperty(ClassNode classNode) {
-        final boolean hasId = GrailsASTUtils.hasProperty(classNode, GrailsDomainClassProperty.IDENTITY);
+        final boolean hasId = GrailsASTUtils.hasOrInheritsProperty(classNode, GrailsDomainClassProperty.IDENTITY);
 
         if (!hasId) {
             if (LOG.isDebugEnabled()) {

@@ -67,7 +67,7 @@ public class GrailsAwareClassLoader extends GroovyClassLoader {
     */
     protected CompilationUnit createCompilationUnit(CompilerConfiguration config, CodeSource source) {
         CompilationUnit cu = super.createCompilationUnit(config, source);
-        cu.addPhaseOperation(new GrailsAwareInjectionOperation(getResourceLoader(), classInjectors), Phases.CONVERSION);
+        cu.addPhaseOperation(new GrailsAwareInjectionOperation(getResourceLoader(), classInjectors), Phases.CANONICALIZATION);
         return cu;
     }
 

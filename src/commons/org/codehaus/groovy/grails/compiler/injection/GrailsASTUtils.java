@@ -44,12 +44,27 @@ public class GrailsASTUtils {
     public static boolean hasProperty(ClassNode classNode, String propertyName) {
         if (classNode == null || StringUtils.isBlank(propertyName))
             return false;
-
         List properties = classNode.getProperties();
         for (Iterator i = properties.iterator(); i.hasNext();) {
             PropertyNode pn = (PropertyNode) i.next();
-            if (pn.getName().equals(propertyName))
+            if (pn.getName().equals(propertyName) && !pn.isPrivate()) {
                 return true;
+            }
+        }
+        return false;
+    }
+
+    public static boolean hasOrInheritsProperty(ClassNode classNode, String propertyName) {
+        if (hasProperty(classNode, propertyName)) {
+            return true;
+        } else {
+            ClassNode parent = classNode.getSuperClass();
+            while (parent != null && !getFullName(parent).equals("java.lang.Object")) {
+                if (hasProperty(parent, propertyName)) {
+                    return true;
+                }
+                parent = parent.getSuperClass();
+            }
         }
         return false;
     }
@@ -62,13 +77,21 @@ public class GrailsASTUtils {
      * @return True if it does implement the method
      */
     public static boolean implementsZeroArgMethod(ClassNode classNode, String methodName) {
-        List methods = classNode.getMethods();
-        for (Iterator i = methods.iterator(); i.hasNext();) {
-            MethodNode mn = (MethodNode) i.next();
-            Parameter[] argTypes = mn.getParameters();
-            boolean isZeroArg = argTypes.length == 0;
-            boolean methodMatch = mn.getName().equals(methodName) && isZeroArg;
-            if (methodMatch) return true;
+        MethodNode method = classNode.getDeclaredMethod(methodName, new Parameter[]{});
+        return method != null && (method.isPublic() || method.isProtected()) && !method.isAbstract();
+    }
+
+    public static boolean implementsOrInheritsZeroArgMethod(ClassNode classNode, String methodName, List ignoreClasses) {
+        if (implementsZeroArgMethod(classNode, methodName)) {
+            return true;
+        } else {
+            ClassNode parent = classNode.getSuperClass();
+            while (parent != null && !getFullName(parent).equals("java.lang.Object")) {
+                if (!ignoreClasses.contains(parent) && implementsZeroArgMethod(parent, methodName)) {
+                    return true;
+                }
+                parent = parent.getSuperClass();
+            }
         }
         return false;
     }
@@ -80,9 +103,7 @@ public class GrailsASTUtils {
      * @return The full name
      */
     public static String getFullName(ClassNode classNode) {
-        String className = classNode.getPackageName();
-
-        return className == null ? classNode.getName() : (className += classNode.getName());
+      return classNode.getName();
     }
 
 }

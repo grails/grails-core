@@ -7,8 +7,9 @@ import org.codehaus.groovy.grails.compiler.injection.GrailsAwareClassLoader
 
 
 class DomainClassGrailsPluginTests extends AbstractGrailsPluginTests {
+   
     void onSetUp() {
-        gcl = new GrailsAwareClassLoader(gcl)
+        gcl = new GrailsAwareClassLoader()
         def injector = new AlwaysInjector()
         gcl.setClassInjectors([injector] as ClassInjector[]);
 
@@ -24,20 +25,26 @@ class DomainClassGrailsPluginTests extends AbstractGrailsPluginTests {
    Date someDate
 } """, "myapp${fs}grails-app${fs}domain${fs}Child.groovy")
 
-        gcl.parseClass("""class Parent2 {
+        gcl.parseClass("""package grails.test
+class Parent2 {
    Date someDate
     String toString(){
         return 'my toString'
     }
-} """, "myapp${fs}grails-app${fs}domain${fs}Parent2.groovy")
+} """, "myapp${fs}grails-app${fs}domain${fs}grails${fs}test${fs}Parent2.groovy")
 
-        gcl.parseClass("""class Child2 extends Parent2 {
+        gcl.parseClass("""class Child2 extends grails.test.Parent2 {
    String someField
   String toString(){
         return 'my other toString'
     }
 
 } """, "myapp${fs}grails-app${fs}domain${fs}Child2.groovy")
+
+       gcl.parseClass("""class Child3 extends grails.test.Parent2 {
+   String someField
+
+} """, "myapp${fs}grails-app${fs}domain${fs}Child3.groovy")
 
         pluginsToLoad << gcl.loadClass("org.codehaus.groovy.grails.plugins.DomainClassGrailsPlugin")
     }
@@ -58,13 +65,104 @@ class DomainClassGrailsPluginTests extends AbstractGrailsPluginTests {
         instance.id = 2
         assertEquals('Test : 2', instance.toString())
 
-        instance = appCtx.getBean("Parent2DomainClass").newInstance()
+        instance = appCtx.getBean("grails.test.Parent2DomainClass").newInstance()
         instance.id = 3
-        assertEquals('my toString', instance.toString())
+        def parent2ToString = 'my toString'
+        assertEquals(parent2ToString, instance.toString())  
 
         instance = appCtx.getBean("Child2DomainClass").newInstance()
         instance.id = 4
         assertEquals('my other toString', instance.toString())
+
+        instance = appCtx.getBean("Child3DomainClass").newInstance()
+        instance.id = 5
+        assertEquals(parent2ToString, instance.toString())
+    }
+
+
+
+    void testInjectIds() {
+        def clz = gcl.parseClass('''
+class IdTest {}
+''')
+
+        def obj = clz.newInstance()
+        obj.id = 10
+        obj.version = 2
+
+        assertEquals 10, obj.id
+        assertEquals 2, obj.version
+    }
+
+    void testInjectHasManyAsssociation() {
+        def clz = gcl.parseClass('''
+class IdTest {
+    static hasMany = [others:AssocTest]
+}
+class AssocTest {}
+''')
+
+        def obj = clz.newInstance()
+        obj.id = 10
+        obj.version = 2
+        obj.others = [] as Set
+        assertEquals 10, obj.id
+        assertEquals 2, obj.version
+        assertTrue obj.others instanceof Set
+
+    }
+
+    void testInjectBelongsToAssociation()  {
+        gcl.parseClass('''
+class AssocTest {}
+class IdTest {
+    static belongsTo = [other:AssocTest]
+}
+''')
+        def clz = gcl.loadClass("IdTest")
+        def obj = clz.newInstance()
+        obj.id = 10
+        obj.version = 2
+        def assocTest = gcl.loadClass("AssocTest")
+        obj.other = assocTest.newInstance()
+
+
+        assertEquals 10, obj.id
+        assertEquals 2, obj.version
+        assertTrue assocTest.isInstance(obj.other)
+    }
+
+    void testSubclassProvidedIdWithDifferentType() {
+        gcl.parseClass('''
+class TheClass {
+    String id
+    String name
+}
+class TheSubClass extends TheClass {
+    String secondName
+}
+''')
+
+        def clz = gcl.loadClass("TheClass")
+        def subClz = gcl.loadClass("TheSubClass")
+
+        def obj = clz.newInstance()
+        obj.id = "foo"
+        obj.name = "bar"
+
+        assertEquals "foo", obj.id
+        assertEquals "bar", obj.name
+
+        def sub  = subClz.newInstance()
+
+        sub.id = "foo"
+        sub.name = "bar"
+        sub.secondName = "stuff"
+
+        assertEquals "foo", sub.id
+        assertEquals "bar", sub.name
+        assertEquals "stuff", sub.secondName
+
     }
 }
 
