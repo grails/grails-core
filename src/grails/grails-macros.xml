@@ -68,7 +68,7 @@
         <classpath>
           <pathelement location="@{cwd}"/>
           <pathelement location="${grails.home}/lib/groovy-all-1.5.6.jar"/>
-          <pathelement location="${grails.home}/dist/grails-cli-1.0.4.jar"/>
+          <pathelement location="${grails.home}/dist/grails-cli-1.0.5.jar"/>
           <extend-classpath/>
         </classpath>
         <arg value="--main org.codehaus.groovy.grails.cli.GrailsScriptRunner"/>
