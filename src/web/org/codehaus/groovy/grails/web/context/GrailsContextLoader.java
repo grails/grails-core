@@ -81,15 +81,17 @@ public class GrailsContextLoader extends ContextLoader {
                     metaClassRegistry.removeMetaClass(loadedClass);
                 }
             }
-            GrailsPluginManager pluginManager = PluginManagerHolder.currentPluginManager();
-            try {
-                pluginManager.shutdown();
-            } catch (Exception e) {
-                GrailsUtil.sanitize(e);
-                LOG.error("Error occurred shutting down plug-in manager: " + e.getMessage(), e);
+            GrailsPluginManager pluginManager = PluginManagerHolder.getPluginManager();
+            if(pluginManager!=null) {
+                try {
+                    pluginManager.shutdown();
+                } catch (Exception e) {
+                    GrailsUtil.sanitize(e);
+                    LOG.error("Error occurred shutting down plug-in manager: " + e.getMessage(), e);
+                }
             }
-            WebApplicationContext ctx = WebApplicationContextUtils.getRequiredWebApplicationContext(servletContext);
-            ConfigurableApplicationContext parent = (ConfigurableApplicationContext) ctx.getParent();
+            WebApplicationContext ctx = WebApplicationContextUtils.getWebApplicationContext(servletContext);
+            ConfigurableApplicationContext parent = ctx!=null? (ConfigurableApplicationContext) ctx.getParent() : null;
 
             super.closeWebApplicationContext(servletContext);
 
