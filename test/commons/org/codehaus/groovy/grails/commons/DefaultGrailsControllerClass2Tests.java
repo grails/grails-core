@@ -59,36 +59,6 @@ public class DefaultGrailsControllerClass2Tests extends TestCase {
         assertTrue(grailsClass.mapsToURI("/test/action/**"));
     }
 	
-	public void testScaffoldedController() throws Exception {
-		
-		GroovyClassLoader cl = new GroovyClassLoader();
-		Class clazz = cl.parseClass("class TestController { def scaffold = Test.class } \nclass Test {  Long id\n Long version\n}");
-		GrailsControllerClass grailsClass = new DefaultGrailsControllerClass(clazz);
-
-        assertEquals("Test", grailsClass.getName());
-		assertEquals("TestController", grailsClass.getFullName());
-		assertEquals("/test/list", grailsClass.getViewByURI("/test/list"));
-        assertEquals("index",grailsClass.getClosurePropertyName("/test"));
-        assertEquals("create",grailsClass.getClosurePropertyName("/test/create"));
-        assertTrue(grailsClass.mapsToURI("/test"));
-        assertTrue(grailsClass.mapsToURI("/test/show"));
-        assertTrue(grailsClass.mapsToURI("/test/show/**"));
-        assertTrue(grailsClass.mapsToURI("/test/list"));
-        assertTrue(grailsClass.mapsToURI("/test/list/**"));
-        assertTrue(grailsClass.mapsToURI("/test/create"));
-        assertTrue(grailsClass.mapsToURI("/test/create/**"));
-        assertTrue(grailsClass.mapsToURI("/test/save"));
-        assertTrue(grailsClass.mapsToURI("/test/save/**"));
-        assertTrue(grailsClass.mapsToURI("/test/edit"));
-        assertTrue(grailsClass.mapsToURI("/test/edit/**"));
-        assertTrue(grailsClass.mapsToURI("/test/delete"));
-        assertTrue(grailsClass.mapsToURI("/test/delete/**"));
-        assertTrue(grailsClass.mapsToURI("/test/update"));
-        assertTrue(grailsClass.mapsToURI("/test/update/**"));        
-        assertEquals(18, grailsClass.getURIs().length);
-
-	}
-
 	public void testInterceptors() throws Exception {
 		GroovyClassLoader cl = new GroovyClassLoader();
 		Class clazz = cl.parseClass("class TestController { \n" +
