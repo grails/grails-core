@@ -1,6 +1,6 @@
 <project name="grails-bundle">
 
-	<target name="jar" depends="build-test" description="Build the entire source, run all tests and create the Grails JAR file.">
+	<target name="jar" depends="build" description="Build the entire source, run all tests and create the Grails JAR file.">
 		<delete>
 			<fileset dir="${grails.dist}" includes="*"/>
 		</delete>
