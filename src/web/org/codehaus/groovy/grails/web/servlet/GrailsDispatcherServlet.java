@@ -324,16 +324,15 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
                 if(multipartResolver != null)
                     this.multipartResolver.cleanupMultipart((MultipartHttpServletRequest) processedRequest);
             }
+            MultipartRequestHolder.setMultipartRequest(null);
 
-            // Reset thread-bound RequestAttributes.
+            // Reset thread-bound holders
             if(requestAttributes != null) {
-
                 requestAttributes.requestCompleted();
                 WebUtils.storeGrailsWebRequest(previousRequestAttributes);
             }
-            // Reset thread-bound LocaleContext.
+            
             LocaleContextHolder.setLocaleContext(previousLocaleContext);
-
 
             if (logger.isDebugEnabled()) {
                 logger.debug("Cleared thread-bound request context: " + request);

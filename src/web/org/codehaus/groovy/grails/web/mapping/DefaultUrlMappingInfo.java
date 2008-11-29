@@ -206,7 +206,10 @@ public class DefaultUrlMappingInfo implements UrlMappingInfo {
     private String checkDispatchAction(HttpServletRequest request, String actionName) {
         Enumeration paramNames = request.getParameterNames();
         if (!paramNames.hasMoreElements()) {
+            //TODO Move this multipart code out of here if possible and only do once per request
             paramNames = tryMultipartParams(request, paramNames);
+        }else{
+            MultipartRequestHolder.setMultipartRequest(null); 
         }
 
         for (; paramNames.hasMoreElements();) {
@@ -253,7 +256,7 @@ public class DefaultUrlMappingInfo implements UrlMappingInfo {
         GrailsApplication app = WebUtils.lookupApplication(servletContext);
         ConfigObject config = app.getConfig();
         boolean disabled = false;
-        Object disableMultipart = config.get("disableMultipart");
+        Object disableMultipart = config.get("disableCommonsMultipart");
         if (disableMultipart instanceof Boolean) {
             disabled = ((Boolean) disableMultipart).booleanValue();
         } else if (disableMultipart instanceof String) {
