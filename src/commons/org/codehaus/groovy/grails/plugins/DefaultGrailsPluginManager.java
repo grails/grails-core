@@ -92,7 +92,7 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager impl
                     Number.class, Short.class, String.class, BigInteger.class, BigDecimal.class, URL.class, URI.class};
 
     private final GrailsPluginChangeChecker pluginChangeScanner = new GrailsPluginChangeChecker(this);
-    private static final int SCAN_INTERVAL = 1000; //in ms
+    private static final int SCAN_INTERVAL = Integer.getInteger("grails.scan.interval", 5000).intValue(); //in ms
 
     private List delayedLoadPlugins = new LinkedList();
     private ApplicationContext parentCtx;
@@ -1762,7 +1762,8 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager impl
     }
 
     private class GrailsPluginChangeChecker extends Thread {
-        DefaultGrailsPluginManager pluginManager;
+        final DefaultGrailsPluginManager pluginManager;
+        Thread scanner;
         boolean enabled = true;
 
         GrailsPluginChangeChecker(DefaultGrailsPluginManager pluginManager) {
@@ -1773,8 +1774,24 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager impl
         public void run() {
             try {
                 while (enabled) {
-                    pluginManager.checkForChanges();
-                    sleep(DefaultGrailsPluginManager.SCAN_INTERVAL);
+                    if (scanner != null && scanner.isAlive()){
+                        LOG.warn("plugin change scanner is still running after the scanning interval. You should set " +
+                                "the grails.scan.interval system property to a higher value. The current value is " + 
+                                DefaultGrailsPluginManager.SCAN_INTERVAL + " ms");
+                        scanner.interrupt();
+                    }else{
+                       try{
+                        scanner = new Thread(){
+                               public void run(){
+                                  pluginManager.checkForChanges();
+                              }
+                        };
+                        scanner.start();
+                       }catch(Exception e){
+                            LOG.error("Error occured scanning for changes: " + e.getMessage(), e);   
+                       }
+                       sleep(DefaultGrailsPluginManager.SCAN_INTERVAL);
+                    }
                 }
             }
             catch (Exception e) {
