@@ -149,7 +149,10 @@ public class FindAllPersistentMethod
 							// Won't try to bind these parameters since they are processed separately
 							if( GrailsHibernateUtil.ARGUMENT_MAX.equals(stringKey) || GrailsHibernateUtil.ARGUMENT_OFFSET.equals(stringKey) ) continue;
 							Object value = entry.getValue();
-							if (value instanceof GString) {
+                            if(value == null) {
+                               q.setParameter(stringKey, null); 
+                            }
+							else if (value instanceof GString) {
 								q.setParameter(stringKey, value.toString());
 							} else if (List.class.isAssignableFrom(value.getClass())) {
 								q.setParameterList(stringKey, (List) value);

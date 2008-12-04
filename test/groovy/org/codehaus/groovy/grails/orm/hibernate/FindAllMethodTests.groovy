@@ -17,6 +17,16 @@ class FindAllTest {
 '''
     }
 
+    void testHQLWithNamedArgs() {
+        def theClass = ga.getDomainClass("FindAllTest").clazz
+
+
+        theClass.newInstance(name:"fred").save(flush:true)
+
+        assertEquals 1, theClass.findAll("from FindAllTest as t where t.name = :name", [name:'fred']).size()
+        assertEquals 0, theClass.findAll("from FindAllTest as t where t.name = :name", [name:null]).size()
+    }
+
 
     void testNoArgs() {
         def theClass = ga.getDomainClass("FindAllTest").clazz
