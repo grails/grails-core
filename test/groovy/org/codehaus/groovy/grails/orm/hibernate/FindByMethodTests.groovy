@@ -1,7 +1,7 @@
 /**
  * @author Graeme Rocher
  * @since 1.0
- * 
+ *
  * Created: Nov 28, 2007
  */
 package org.codehaus.groovy.grails.orm.hibernate
@@ -22,6 +22,9 @@ class User {
     Long id
     Long version
     String firstName
+
+    Set books
+    static hasMany = [books:Book]
 }
 '''
     }
@@ -48,6 +51,23 @@ class User {
         users = userClass.findAllByFirstNameIsNotNull()
 
         assertEquals 3, users.size()
+    }
+
+    // test for GRAILS-3712
+    void testFindByWithJoinQueryOnAssociation() {
+
+        def User = ga.getDomainClass("User").clazz
+
+        def user = User.newInstance(firstName:"Stephen")
+        assert user.addToBooks(title:"The Shining")
+                 .addToBooks(title:"The Stand")
+                 .save(flush:true)
+
+        session.clear()
+        
+        user = User.findByFirstName("Stephen", [fetch:[books:'eager']])
+
+        assertEquals 2, user.books.size()
     }
 
 }
