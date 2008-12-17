@@ -9,7 +9,7 @@ class FindByMethodTests extends AbstractGrailsHibernateTests {
 
     protected void onSetUp() {
         gcl.parseClass '''
-class Book {
+class FindByMethodBook {
     Long id
     Long version
     String title
@@ -18,20 +18,20 @@ class Book {
         releaseDate(nullable:true)
     }
 }
-class User {
+class FindByMethodUser {
     Long id
     Long version
     String firstName
 
     Set books
-    static hasMany = [books:Book]
+    static hasMany = [books:FindByMethodBook]
 }
 '''
     }
 
 
     void testNullParameters() {
-        def bookClass = ga.getDomainClass("Book").clazz
+        def bookClass = ga.getDomainClass("FindByMethodBook").clazz
 
         assert bookClass.newInstance(title:"The Stand").save()
 
@@ -41,7 +41,7 @@ class User {
     }
 
     void testFindByIsNotNull() {
-        def userClass = ga.getDomainClass("User").clazz
+        def userClass = ga.getDomainClass("FindByMethodUser").clazz
 
         userClass.newInstance(firstName:"Bob").save()
         userClass.newInstance(firstName:"Jerry").save()
@@ -56,7 +56,7 @@ class User {
     // test for GRAILS-3712
     void testFindByWithJoinQueryOnAssociation() {
 
-        def User = ga.getDomainClass("User").clazz
+        def User = ga.getDomainClass("FindByMethodUser").clazz
 
         def user = User.newInstance(firstName:"Stephen")
         assert user.addToBooks(title:"The Shining")
