@@ -22,6 +22,7 @@ import org.springframework.aop.framework.ProxyFactoryBean
 import org.springframework.aop.target.HotSwappableTargetSource
 import org.springframework.context.ApplicationContext
 import org.springframework.core.io.Resource
+import grails.spring.BeanBuilder
 
 /**
 * A plug-in that handles the configuration of URL mappings for Grails
@@ -45,11 +46,6 @@ class UrlMappingsGrailsPlugin {
             targetSource = urlMappingsTargetSource
             proxyInterfaces = [org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder]
         }
-	}
-
-    def doWithApplicationContext = { ApplicationContext ctx ->
-        def beans = beans(doWithSpring)
-        beans.registerBeans(ctx)        	
 	}
 
 	def doWithWebDescriptor = { webXml ->
@@ -119,12 +115,17 @@ class UrlMappingsGrailsPlugin {
 	    if(application.isUrlMappingsClass(event.source)) {
 	        application.addArtefact( UrlMappingsArtefactHandler.TYPE, event.source )	        
 
-			def factory = new UrlMappingsHolderFactoryBean(grailsApplication:application)
-			factory.afterPropertiesSet()
-			def mappings = factory.getObject()
+            BeanBuilder beans = beans {
+                grailsUrlMappingsHolderBean(UrlMappingsHolderFactoryBean) {
+                    grailsApplication = application
+                }
+            }
 
-			HotSwappableTargetSource ts = event.ctx.getBean("urlMappingsTargetSource")
-			ts.swap mappings			
+            ApplicationContext appCtx = event.ctx
+            beans.registerBeans(appCtx)
+
+			HotSwappableTargetSource ts = appCtx.getBean("urlMappingsTargetSource")
+			ts.swap appCtx.getBean("grailsUrlMappingsHolderBean")			
         }
 	}
 }
