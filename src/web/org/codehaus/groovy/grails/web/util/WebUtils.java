@@ -209,7 +209,8 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
     }
 
     /**
-     * Obtains the format from the URI. The format is the string following the . file extension in the last token of the URI
+     * Obtains the format from the URI. The format is the string following the . file extension in the last token of the URI.
+     * If nothing comes after the ".", this method assumes that there is no format and returns <code>null</code>.
      *
      * @param uri The URI
      * @return The format or null if none
@@ -222,8 +223,8 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
         if(idx > -1) {
             String lastToken = uri.substring(idx+1, uri.length());
             idx = lastToken.lastIndexOf('.');
-            if(idx > -1) {
-                return lastToken.substring(idx+1, lastToken.length());
+            if(idx > -1 && idx != lastToken.length() - 1) {
+                return lastToken.substring(idx+1);
             }
         }
         return null;
