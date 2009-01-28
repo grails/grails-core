@@ -10,9 +10,6 @@
       <maximumStackSize value="32" />
       <properties />
       <executeOn event="beforeRun" target="jar" />
-      <executeOn event="beforeRun" target="jar" runConfigurationType="JUnit" runConfigurationName="All ORM Tests" />
-      <executeOn event="beforeRun" target="jar" runConfigurationType="JUnit" runConfigurationName="DefaultGrailsDomainClassTest" />
-      <executeOn event="beforeRun" target="jar" runConfigurationType="JUnit" runConfigurationName="Grails Test Case" />
     </buildFile>
   </component>
   <component name="BuildJarProjectSettings">
@@ -520,8 +517,10 @@
     <library name="Jetty">
       <CLASSES>
         <root url="jar://$PROJECT_DIR$/lib/start.jar!/" />
-        <root url="jar://$PROJECT_DIR$/lib/jetty-util-6.1.4.jar!/" />
-        <root url="jar://$PROJECT_DIR$/lib/jetty-6.1.4.jar!/" />
+        <root url="jar://$PROJECT_DIR$/lib/jetty-plus-6.1.12.jar!/" />
+        <root url="jar://$PROJECT_DIR$/lib/jetty-naming-6.1.12.jar!/" />
+        <root url="jar://$PROJECT_DIR$/lib/jetty-util-6.1.12.jar!/" />
+        <root url="jar://$PROJECT_DIR$/lib/jetty-6.1.12.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES />
