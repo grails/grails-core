@@ -233,7 +233,7 @@ public class FindAllPersistentMethod
 					Criteria crit = session.createCriteria(clazz);
 					crit.add(example);
 
-                    if(arguments.length > 1 && arguments[0] instanceof Map) {
+                    if(arguments.length > 1 && arguments[1] instanceof Map) {
                         GrailsHibernateUtil.populateArgumentsForCriteria(crit, (Map)arguments[1] );
                     }
 

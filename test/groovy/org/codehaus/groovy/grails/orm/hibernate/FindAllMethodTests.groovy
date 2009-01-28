@@ -13,6 +13,11 @@ class FindAllTest {
     Long id
     Long version
     String name
+    Long index
+
+    static constraints = {
+        index(nullable: true)
+    }
 }
 '''
     }
@@ -92,4 +97,31 @@ class FindAllTest {
         assertEquals(  ["Bar", "Bar"], theClass.findAll(theClass.newInstance(name:"Bar"),[sort:'name']).name )
     }
 
+    void testWithExampleAndSort() {
+        def theClass = ga.getDomainClass("FindAllTest").clazz
+
+        assertEquals 0, theClass.findAll().size()
+
+
+        theClass.newInstance(name:"Foo", index: 1).save()
+        theClass.newInstance(name:"Bar", index: 2).save()
+        theClass.newInstance(name:"Bar", index: 3).save()
+        theClass.newInstance(name:"Stuff", index: 4).save()
+        theClass.newInstance(name:"Bar", index: 5).save(flush:true)
+
+        // Execute the query
+        def results = theClass.findAll(theClass.newInstance(name: "Bar"), [max: 1])
+        assertEquals 1, results.size()
+        assertEquals( ["Bar"], results*.name )
+
+        // Try the sort arguments now.
+        results = theClass.findAll(theClass.newInstance(name: "Bar"), [sort: "index", order: "asc"])
+        assertEquals 3, results.size()
+        assertEquals( [2, 3, 5], results*.index )
+
+        // Now all the arguments together.
+        results = theClass.findAll(theClass.newInstance(name: "Bar"), [sort: "index", order: "desc", offset: 1])
+        assertEquals 2, results.size()
+        assertEquals( [3, 2], results*.index )
+    }
 }
