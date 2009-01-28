@@ -22,15 +22,11 @@
  * @since 0.4
  */
 
-import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
 import org.mortbay.jetty.*
 import org.mortbay.jetty.nio.*
-import org.mortbay.jetty.handler.*
+import org.mortbay.jetty.plus.webapp.EnvConfiguration
 import org.mortbay.jetty.webapp.*
-import org.mortbay.jetty.plus.naming.*
-import javax.naming.*
 
-import org.codehaus.groovy.tools.RootLoader
 import org.codehaus.groovy.grails.plugins.PluginManagerHolder
 import org.codehaus.groovy.grails.cli.GrailsScriptRunner
 
@@ -176,11 +172,12 @@ target(configureHttpServer: "Returns a jetty server configured with an HTTP conn
 
 target(setupWebContext: "Sets up the Jetty web context") {
     webContext = new WebAppContext("${basedir}/web-app", serverContextPath)
-    def configurations = [org.mortbay.jetty.webapp.WebInfConfiguration,
-            org.mortbay.jetty.plus.webapp.Configuration,
-            org.mortbay.jetty.webapp.JettyWebXmlConfiguration,
-            org.mortbay.jetty.webapp.TagLibConfiguration]*.newInstance()
-    def jndiConfig = new org.mortbay.jetty.plus.webapp.EnvConfiguration()
+    def configurations = [
+            WebInfConfiguration,
+            Configuration,
+            JettyWebXmlConfiguration,
+            TagLibConfiguration]*.newInstance()
+    def jndiConfig = new EnvConfiguration()
     if (config.grails.development.jetty.env) {
         def res = resolveResources(config.grails.development.jetty.env)
         if (res) {
