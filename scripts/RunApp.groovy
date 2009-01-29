@@ -22,13 +22,19 @@
  * @since 0.4
  */
 
-import org.mortbay.jetty.*
-import org.mortbay.jetty.nio.*
-import org.mortbay.jetty.plus.webapp.EnvConfiguration
-import org.mortbay.jetty.webapp.*
 
 import org.codehaus.groovy.grails.plugins.PluginManagerHolder
 import org.codehaus.groovy.grails.cli.GrailsScriptRunner
+
+import org.mortbay.jetty.Connector
+import org.mortbay.jetty.Server
+import org.mortbay.jetty.nio.SelectChannelConnector
+import org.mortbay.jetty.plus.webapp.Configuration
+import org.mortbay.jetty.plus.webapp.EnvConfiguration
+import org.mortbay.jetty.webapp.JettyWebXmlConfiguration
+import org.mortbay.jetty.webapp.TagLibConfiguration
+import org.mortbay.jetty.webapp.WebAppContext
+import org.mortbay.jetty.webapp.WebInfConfiguration
 
 
 Ant.property(environment: "env")
