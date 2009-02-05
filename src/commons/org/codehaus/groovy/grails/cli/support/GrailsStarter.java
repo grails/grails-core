@@ -37,7 +37,39 @@ public class GrailsStarter {
 
 
     public static void rootLoader(String args[]) {
-        String conf = System.getProperty("groovy.starter.conf",null);
+        final String separator = System.getProperty("file.separator");
+
+        // Set some default values for various system properties if
+        // they don't already have values.
+        String javaVersion = System.getProperty("java.version");
+        String grailsHome = System.getProperty("grails.home");
+        if (System.getProperty("base.dir") == null) System.setProperty("base.dir", ".");
+        if (System.getProperty("program.name") == null) System.setProperty("program.name", "grails");
+        if (System.getProperty("groovy.starter.conf") == null) {
+            System.setProperty(
+                    "groovy.starter.conf",
+                    grailsHome + separator + "conf" + separator + "groovy-starter.conf");
+        }
+
+        // Initialise the Grails version if it's not set already.
+        if (System.getProperty("grails.version") == null) {
+            Properties grailsProps = new Properties();
+            FileInputStream is = null;
+            try {
+                // Load Grails' "build.properties" file.
+                is = new FileInputStream(grailsHome + separator + "build.properties");
+                grailsProps.load(is);
+
+                // Extract the Grails version and store as a system
+                // property so that it can be referenced from the
+                // starter configuration file.
+                System.setProperty("grails.version", grailsProps.getProperty("grails.version"));
+            }
+            catch (IOException ex) { System.out.println("Failed to load Grails file: " + ex.getMessage()); System.exit(1); }
+            finally { if (is != null) try { is.close(); } catch (IOException ex2) {} }
+        }
+
+        String conf = System.getProperty("groovy.starter.conf", null);
         LoaderConfiguration lc = new LoaderConfiguration();
 
         // evaluate parameters
@@ -144,10 +176,6 @@ public class GrailsStarter {
                 loader.addURL(url);
             }
         }
-
-        String javaVersion = System.getProperty("java.version");
-        String grailsHome = System.getProperty("grails.home");
-
 
         if(javaVersion != null && grailsHome != null) {
             javaVersion = javaVersion.substring(0,3);

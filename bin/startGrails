@@ -238,10 +238,7 @@ startGrails() {
   	if [ $# -eq 0 ] ; then         # no argument given
          exec "$JAVACMD" $JAVA_OPTS \
           -classpath "$STARTER_CLASSPATH" \
-          -Dprogram.name="$PROGNAME" \
-          -Dgroovy.starter.conf="$GROOVY_CONF" \
           -Dgrails.home="$GRAILS_HOME" \
-          -Dbase.dir="." \
           -Dtools.jar="$TOOLS_JAR" \
           $STARTER_MAIN_CLASS \
           --main $CLASS \
@@ -250,10 +247,7 @@ startGrails() {
   	else
          exec "$JAVACMD" $JAVA_OPTS \
           -classpath "$STARTER_CLASSPATH" \
-          -Dprogram.name="$PROGNAME" \
-          -Dgroovy.starter.conf="$GROOVY_CONF" \
           -Dgrails.home="$GRAILS_HOME" \
-          -Dbase.dir="." \
           -Dtools.jar="$TOOLS_JAR" \
           $STARTER_MAIN_CLASS \
           --main $CLASS \
