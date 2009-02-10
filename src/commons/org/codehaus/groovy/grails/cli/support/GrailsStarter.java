@@ -103,7 +103,7 @@ public class GrailsStarter {
         }
 
         // We need to know the class we want to start
-        if (lc.getMainClass()==null && conf==null) {
+        if (lc.getMainClass()==null) {
             lc.setMainClass("org.codehaus.groovy.grails.cli.GrailsScriptRunner");
         }
 
