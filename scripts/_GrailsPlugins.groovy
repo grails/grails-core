@@ -123,8 +123,8 @@ target(installPlugin:"Installs a plug-in for the given URL or name and version")
 
 
 target(installDefaultPluginSet:"Installs the default plugin set used by Grails") {
-    for(pluginName in grailsSettings.defaultPluginSet) {
-        def zipName = "grails-${pluginName}-${grailsSettings.grailsVersion}"
+    for(plugin in grailsSettings.defaultPluginMap) {
+        def zipName = "grails-${plugin.key}-${plugin.value}"
         def pluginZip = new File("${grailsSettings.grailsHome}/plugins/${zipName}.zip")
         if(!pluginZip.exists()) {
             pluginZip = new File("${grailsSettings.grailsWorkDir}/plugins/${zipName}.zip")
@@ -133,7 +133,7 @@ target(installDefaultPluginSet:"Installs the default plugin set used by Grails")
            doInstallPluginZip pluginZip
         }
         else {
-           doInstallPlugin pluginName
+           doInstallPlugin plugin.key, plugin.value
         }
     }    
 }

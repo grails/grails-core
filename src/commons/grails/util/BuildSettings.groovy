@@ -145,9 +145,14 @@ xpp3_min-).*\\.jar"""
     Closure grailsScriptClosure;
 
     /**
-     * A list of plugin names that represent the default set of plugins installed when creating Grails applications 
+     * A Set of plugin names that represent the default set of plugins installed when creating Grails applications
      */
-    List defaultPluginSet
+    Set defaultPluginSet
+
+    /**
+     * A Set of plugin names and versions that represent the default set of plugins installed when creating Grails applications
+     */    
+    Map defaultPluginMap
 
     /** List containing the compile-time dependencies of the app as File instances. */
     List compileDependencies
@@ -210,7 +215,8 @@ xpp3_min-).*\\.jar"""
         }
 
         // If 'grailsHome' is set, add the JAR file dependencies.
-        this.defaultPluginSet = ['hibernate']
+        this.defaultPluginMap = [hibernate:grailsVersion]
+        this.defaultPluginSet = defaultPluginMap.keySet()
         this.compileDependencies = []
         this.testDependencies = []
         this.runtimeDependencies = []
