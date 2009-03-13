@@ -36,6 +36,7 @@ commitMessage = null
 trunk = null
 latestRelease = null
 versionedRelease = null
+skipLatest = false
 
 target ('default': "A target for plug-in developers that uploads and commits the current plug-in as the latest revision. The command will prompt for your SVN login details.") {
     releasePlugin()
@@ -57,6 +58,9 @@ target(releasePlugin: "The implementation target") {
 
     if(argsMap.repository) {
       configureRepositoryForName(argsMap.repository, "distribution")
+    }
+    if(argsMap.snapshot || argsMap.'skip-latest') {
+        skipLatest = true
     }
     remoteLocation = "${pluginSVN}/grails-${pluginName}"
     trunk = SVNURL.parseURIDecoded("${remoteLocation}/trunk")
@@ -299,9 +303,11 @@ target(tagPluginRelease:"Tags a plugin-in with the LATEST_RELEASE tag and versio
     catch (SVNException e) {
         // ok - already exists
     }
-    try { commitClient.doDelete([latest] as SVNURL[], commitMessage) }
-    catch (SVNException e) {
-        // ok - the tag doesn't exist yet
+    if(!skipLatest ) {
+        try { commitClient.doDelete([latest] as SVNURL[], commitMessage) }
+        catch (SVNException e) {
+            // ok - the tag doesn't exist yet
+        }    
     }
     try { commitClient.doDelete([release] as SVNURL[], commitMessage) }
     catch (SVNException e) {
@@ -323,10 +329,12 @@ target(tagPluginRelease:"Tags a plugin-in with the LATEST_RELEASE tag and versio
         println "Copied trunk to ${versionedRelease} with revision ${commit.newRevision} on ${commit.date}"
 
         // And now make it the latest release.
-        println "Tagging latest release, please wait..."
-        copySource = new SVNCopySource(SVNRevision.HEAD, SVNRevision.HEAD, release)
-        commit = copyClient.doCopy([copySource] as SVNCopySource[], latest, false, false, true, commitMessage, new SVNProperties())
-        println "Copied trunk to ${latestRelease} with revision ${commit.newRevision} on ${commit.date}"
+        if(!skipLatest) {
+            println "Tagging latest release, please wait..."
+            copySource = new SVNCopySource(SVNRevision.HEAD, SVNRevision.HEAD, release)
+            commit = copyClient.doCopy([copySource] as SVNCopySource[], latest, false, false, true, commitMessage, new SVNProperties())
+            println "Copied trunk to ${latestRelease} with revision ${commit.newRevision} on ${commit.date}"
+        }
 
     }
     catch (SVNException e) {
