@@ -18,6 +18,7 @@ package grails.build.eclipse
 
 class EclipseClasspathTests extends GroovyTestCase {
     void testClasspath() {
+        if(Boolean.getBoolean("groovy.grails.joint")) return;
         def result = new XmlSlurper().parse(new File('.classpath'))
         def libs = result.classpathentry.grep {it.'@kind' == 'lib'}
         String errorMessage = ''
@@ -33,6 +34,7 @@ class EclipseClasspathTests extends GroovyTestCase {
      * version of Groovy.
      */
     void testLaunchTemplate() {
+        if(Boolean.getBoolean("groovy.grails.joint")) return;
         // Extract the classpath entry for Groovy from the .launch file.
         def result = new XmlSlurper().parse(new File('src/grails/templates/ide-support/eclipse/.launch'))
         def classpathEntries = result.listAttribute.find {it.'@key' == 'org.eclipse.jdt.launching.CLASSPATH'}
