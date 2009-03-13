@@ -1,0 +1,68 @@
+<project name="grails-javadoc">
+
+
+
+	<target name="javadoc">
+		<delete dir="${grails.javadoc}"/>
+		<mkdir dir="${grails.javadoc}"/>
+        <mkdir dir="${grails.target}/docs/stubs"/>
+        <mkdir dir="${grails.target}/docs/classes"/>
+
+        <taskdef name="generatestubs" classname="org.codehaus.groovy.grails.cli.GenerateStubsTask">
+             <classpath>
+                 <fileset dir="${grails.dist}">
+                       <include name="**/*.jar"/>
+                  </fileset>
+             </classpath>
+             <classpath refid="classpath" />
+        </taskdef>
+        <!-- Need to generate the stubs for javadoc to work -->
+        <generatestubs destdir="${grails.target}/docs/stubs">
+            <classpath>
+                <pathelement location="${grails.target}/docs/classes"/>
+                <path refid="classpath"/>
+            </classpath>
+            <src>
+                 <dirset dir="${grails.src.commons}">
+                    <exclude name="**/*.properties" />
+                 </dirset>
+
+            </src>
+            <src path="${grails.src.web}"/>
+            <src path="${grails.src.persistence}"/>
+            <src path="${grails.src.scaffolding}"/>
+            <src path="${grails.src.groovy}"/>
+        </generatestubs>
+
+
+		<javadoc sourcepath="${grails.src.commons},${grails.src.web}, ${grails.target}/docs/stubs" destdir="${grails.javadoc}" windowtitle="Grails ${grails.version}" source="1.5" encoding="UTF-8" access="package" author="true" version="true" use="true" defaultexcludes="true" breakiterator="true">
+			<doctitle><![CDATA[<h1>Grails</h1>]]></doctitle>
+			<bottom><![CDATA[<i>Copyright (c) 2005-2009 The Grails project</i>]]></bottom>
+			<classpath refid="classpath"/>
+			<packageset dir="${grails.src.commons}">
+				<include name="org/codehaus/groovy/grails/**"/>
+				<include name="grails/**"/>
+			</packageset>
+			<packageset dir="${grails.src.web}">
+				<include name="org/codehaus/groovy/grails/**"/>
+				<include name="grails/**"/>
+			</packageset>
+			<packageset dir="${grails.src.persistence}">
+				<include name="org/codehaus/groovy/grails/**"/>
+				<include name="grails/**"/>
+			</packageset>
+			<packageset dir="${grails.src.scaffolding}">
+				<include name="org/codehaus/groovy/grails/**"/>
+				<include name="grails/**"/>
+			</packageset>
+			<link href="http://java.sun.com/j2ee/1.4/docs/api"/>
+			<link href="http://java.sun.com/j2se/1.5.0/docs/api"/>
+			<link href="http://static.springframework.org/spring/docs/2.5.x/api"/>
+			<tag name="todo" description="To do:" />
+		</javadoc>
+
+       <delete dir="${grails.target}/docs"/>
+
+	</target>
+
+</project>

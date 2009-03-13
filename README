@@ -1,0 +1,76 @@
+Grails, release 1.1.1 (April, 2009)
+--------------------------------------------------
+http://grails.org
+
+
+1. INTRODUCTION
+=============================================================================
+
+
+Grails is a web application framework based on the Groovy language that endorses the DRY (don't repeat yourself) and coding-by-convention philosophies. Grails runs on the Java Virtual Machine and thus has access to the entire Java Platform.
+
+With Grails you can easily create web applications thanks to:
+
+- a complete development and deployment environment. All dependencies and configuration that is required to the run Grails applications in a web server are provided by Grails. The only thing you have to worry about is your application code.
+
+- inclusion of an embedded Jetty web server
+
+- development mode that automatically reloads changes made to application code, without having to restart the web server.
+
+- automatic persistence mapping of domain classes with automatic relationship management.
+
+- scaffolding on data access classes for rapid development of CRUD (Create, Read, Update, Delete) operations.
+
+- powerful view technology with dynamic tag libraries and support for Groovy Server Pages (GSP)
+
+
+2. GETTING STARTED
+=============================================================================
+
+
+To get started follow these steps:
+
+- create a GRAILS_HOME environment variable that points to the path of the Grails distribution (the folder contain this file).
+
+- add the bin folder in the Grails distribution to the PATH environment variable
+
+On a Windows computer these step are done as follows:
+
+> set GRAILS_HOME=C:\download\grails
+> echo %GRAILS_HOME%
+C:\download\grails
+> set PATH=%GRAILS_HOME%\bin;%PATH%
+
+On a Unix-like computer these steps are done as follows:
+
+> set GRAILS_HOME=~/download/grails
+> export GRAILS_HOME
+> echo ${GRAILS_HOME}
+~/download/grails
+> cd ${GRAILS_HOME}
+> chmod a+x bin/grails
+> set PATH=${GRAILS_HOME}/bin:${PATH}
+> export PATH
+
+You can now run the grails command, as follows:
+
+> grails create-app YourProject
+
+For more info checkout the Grails homepage at http://grails.org
+
+
+3. UPGRADING
+=============================================================================
+
+
+To upgrade your existing Grails projects you must run:
+
+grails clean
+grails upgrade
+
+...for each project.
+
+=============================================================================
+Enjoy working with Grails.
+
+The Grails team

@@ -1,0 +1,18 @@
+<ivy-conf>         
+		<conf defaultResolver="grails"/>
+		<include url="${ivy.default.conf.dir}/ivyconf-public.xml"/>
+		<include url="${ivy.default.conf.dir}/ivyconf-shared.xml"/>
+		<include url="${ivy.default.conf.dir}/ivyconf-local.xml"/>
+		<include url="${ivy.default.conf.dir}/ivyconf-main-chain.xml"/>
+		<include url="${ivy.default.conf.dir}/ivyconf-default-chain.xml"/>   
+		 
+        <resolvers>       
+ 			<ibiblio pattern="[organisation]/[type]s/[artifact]-[revision].[ext]"
+	                  name="ibiblio-retry"  />       
+			<chain name="grails" dual="true">
+				<resolver ref="shared"/>
+				<resolver ref="public"/>
+				<resolver ref="ibiblio-retry"/>  				
+			</chain>			
+		</resolvers>     	   	
+</ivy-conf>                     

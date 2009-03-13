@@ -1,0 +1,84 @@
+<project name="grails-eclipse">
+
+    <taskdef name="groovy"  classname="org.codehaus.groovy.ant.Groovy" classpathref="classpath" />
+	
+	<target name="eclipse-classpath" description="Regenerates Eclipse project class path.">
+		<groovy>
+			
+			import org.apache.tools.ant.Project
+			
+			def binOutput = "target/eclipse/bin-output"
+			def testOutput = "target/eclipse/test-output"
+			generateOutputDir(project, binOutput)
+			generateOutputDir(project, testOutput)
+			
+			def sw = new FileWriter(".classpath")
+			def pw = new PrintWriter(sw)
+			def mkp = new groovy.xml.MarkupBuilder(pw)
+			
+			pw.println('&lt;?xml version="1.0" encoding="UTF-8"?&gt;')
+			def added = new HashSet()
+			
+			mkp.doubleQuotes = true
+			mkp.classpath {
+			
+				classpathentry(kind:"src", path: "src/commons")
+				classpathentry(kind:"src", path: "src/config")
+				classpathentry(kind:"src", path: "src/tiger")
+				classpathentry(kind:"src", path: "src/web")
+				classpathentry(kind:"src", path: "src/persistence")
+				classpathentry(kind:"src", path: "src/scaffolding")
+				classpathentry(kind:"src", path: "test/groovy", output: testOutput)
+				classpathentry(kind:"src", path: "test/commons", output: testOutput)
+				classpathentry(kind:"src", path: "test/web", output: testOutput)
+				classpathentry(kind:"src", path: "test/persistence", output: testOutput)
+				classpathentry(kind:"src", path: "test/scaffolding", output: testOutput)
+			    classpathentry(kind:"output", path: binOutput)
+			
+				classpathentry(kind:"lib", path: "lib/hibernate3.jar", sourcepath: "/HIBERNATE_HOME/src")
+				added.add("hibernate3.jar")
+				classpathentry(kind:"lib", path: "lib/spring-2.0.2.jar", sourcepath: "/SPRING_HOME/src")
+				added.add("spring-2.0.2.jar")
+				classpathentry(kind:"lib", path: "lib/spring-mock-2.0.2.jar", sourcepath: "/SPRING_HOME/mock")
+				added.add("spring-mock-2.0.2.jar")
+			
+				new File('lib').eachFile { f -> 
+					if (!(f.directory || added.contains(f.name)))
+					{
+						classpathentry(kind: "lib", path: "lib/" + f.name)
+					} 
+				}			
+			
+				classpathentry(kind:"lib", path: "ant/lib/ant.jar")
+			    classpathentry(kind:"con", path: "org.eclipse.jdt.launching.JRE_CONTAINER")
+			
+				if (project.properties["plugin.disabled"])
+				{
+					project.log("Eclipse plugin disabled. Adding Groovy compile targets to classpath", Project.MSG_WARN)
+			
+					//plugin is disabled, which means you need to build
+					//groovy using the ant scripts. 
+					//This adds the ant scripts to the classpath
+					classpathentry(kind:"lib", path: "target/classes/core")
+					classpathentry(kind:"lib", path: "target/classes/crud")
+					classpathentry(kind:"lib", path: "target/classes/gorm")
+					classpathentry(kind:"lib", path: "target/classes/web")
+					classpathentry(kind:"lib", path: "target/classes/config")
+				}
+			
+			}
+			
+			void generateOutputDir(project, dirName)
+			{
+				def output = new File(dirName)
+				if (!output.exists())
+				{
+					output.mkdirs()
+					project.log("Generating Eclipse output folder " + output.path, Project.MSG_INFO)
+				}
+			}
+	
+		</groovy>
+    </target>
+
+</project>

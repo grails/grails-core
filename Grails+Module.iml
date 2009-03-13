@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module version="4" relativePaths="true" type="JAVA_MODULE">
+  <component name="ModuleRootManager" />
+  <component name="NewModuleRootManager">
+    <output url="file://$MODULE_DIR$/target/classes" />
+    <exclude-output />
+    <output-test url="file://$MODULE_DIR$/target/test-classes" />
+    <content url="file://$MODULE_DIR$">
+      <sourceFolder url="file://$MODULE_DIR$/src/commons" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/persistence" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/scaffolding" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/web" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/test/commons" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/test/persistence" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/test/scaffolding" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/test/web" isTestSource="true" />
+    </content>
+    <orderEntry type="inheritedJdk" />
+    <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" name="Apache Commons" level="project" />
+    <orderEntry type="library" name="Groovy" level="project" />
+    <orderEntry type="library" name="Hibernate 3" level="project" />
+    <orderEntry type="library" name="Spring" level="project" />
+    <orderEntry type="library" name="dom4j" level="project" />
+    <orderEntry type="library" name="SiteMesh" level="project" />
+    <orderEntry type="library" name="Jetty" level="project" />
+    <orderEntry type="library" name="javax.servlet" level="project" />
+    <orderEntry type="library" name="OGNL" level="project" />
+    <orderEntry type="library" name="JUnit" level="project" />
+    <orderEntryProperties />
+  </component>
+</module>
+

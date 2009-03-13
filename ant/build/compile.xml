@@ -1,0 +1,78 @@
+<project name="grails-compile">
+
+    <taskdef name="groovyc"
+             classname="org.codehaus.groovy.ant.Groovyc">
+        <classpath>
+            <fileset dir="${grails.lib}" includes="groovy-all*.jar"/>
+        </classpath>
+    </taskdef>
+
+    <target name="build-init">
+		<mkdir dir="${grails.build}"/> 
+		<mkdir dir="${grails.test.build}"/>
+		<mkdir dir="${grails.test.reports}"/>
+		<mkdir dir="${grails.dist}"/>
+        <mkdir dir="${grails.stubs}" />
+    </target>
+
+	<target name="build" depends="build-init" description="compile Java and Groovy sources" >
+
+        <copy todir="${grails.build}">
+            <fileset dir="${grails.src.commons}" includes="**/*.properties" />
+            <fileset dir="${grails.src.web}" includes="**/*.properties" />
+            <fileset dir="${grails.src.persistence}" includes="**/*.properties" />
+            <fileset dir="${grails.src.scaffolding}" includes="**/*.properties" />
+            <fileset dir="${grails.src.groovy}" includes="**/*.properties" />
+        </copy>
+
+        <groovyc destdir="${grails.build}"  encoding="UTF-8">
+            <classpath>
+                <pathelement location="${grails.build}"/>
+                <path refid="classpath"/>
+            </classpath>
+            <src path="${grails.src.commons}"/>
+            <src path="${grails.src.web}"/>
+            <src path="${grails.src.persistence}"/>
+            <src path="${grails.src.scaffolding}"/>
+            <src path="${grails.src.groovy}"/>
+
+            <javac includeantruntime="false" deprecation="on" debug="yes" source="1.5" target="1.5" />
+        </groovyc>
+
+
+        <!-- Compile the JSP 2.1 classes separately because we use a slightly different classpath -->
+        <groovyc destdir="${grails.build}"  encoding="UTF-8">
+            <classpath>
+                <pathelement location="${grails.build}"/>
+                <pathelement location="${grails.lib}/jsp-api-2.1.jar"/>
+                <path refid="classpath"/>
+            </classpath>
+            <src path="${grails.src.jsp21}"/>
+
+            <javac includeantruntime="false" deprecation="on" debug="yes" source="1.5" target="1.5" />
+        </groovyc>
+
+
+        <mkdir dir="${grails.build}/META-INF"  />
+        <manifest file="${grails.build}/META-INF/MANIFEST.MF">
+          <attribute name="Built-By" value="${user.name}"/>
+          <attribute name="Implementation-Title" value="Grails"/>
+          <attribute name="Implementation-Version" value="${grails.version}"/>
+          <attribute name="Implementation-Vendor" value="grails.org"/>
+        </manifest>
+
+    </target>
+
+    <target name="build-scripts" depends="build">
+        <mkdir dir="${grails.target}/compiled-scripts"/>
+        <groovyc destdir="${grails.target}/compiled-scripts"  encoding="UTF-8" fork="true">
+            <classpath>
+                <pathelement location="${grails.build}"/>
+                <path refid="classpath"/>
+            </classpath>
+            <src path="${basedir}/scripts"/>
+        </groovyc>
+    </target>
+
+
+</project>

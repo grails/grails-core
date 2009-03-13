@@ -1,0 +1,36 @@
+<project name="grails-resolve" xmlns:ivy="antlib:fr.jayasoft.ivy.ant">
+    <property name="ivy.install.version" value="1.4-RC1" />
+    <condition property="ivy.home" value="${env.IVY_HOME}">
+        <isset property="env.IVY_HOME" />
+    </condition>
+    <property name="ivy.home" value="${user.home}/.ivy" />
+    <property name="ivy.jar.dir" value="${ivy.home}/jars" />
+    <property name="ivy.jar.file" value="${ivy.jar.dir}/ivy.jar" />
+    <target name="download-ivy" unless="offline">
+        <mkdir dir="${ivy.jar.dir}"/>
+        <!-- download Ivy from web site so that it can be used even without any special installation -->
+        <get src="http://www.jayasoft.org/downloads/ivy/${ivy.install.version}/ivy-${ivy.install.version}.jar"
+            dest="${ivy.jar.file}" usetimestamp="true"/>
+    </target>
+    <target name="init-ivy" depends="download-ivy">
+     <!-- try to load ivy here from ivy home, in case the user has not already dropped
+              it into ant's lib dir (note that the latter copy will always take precedence).
+              We will not fail as long as local lib dir exists (it may be empty) and
+              ivy is in at least one of ant's lib dir or the local lib dir. -->
+        <path id="ivy.lib.path">
+            <fileset dir="${ivy.jar.dir}" includes="*.jar"/>
+        </path>
+        <taskdef resource="fr/jayasoft/ivy/ant/antlib.xml"
+                uri="antlib:fr.jayasoft.ivy.ant" classpathref="ivy.lib.path"/>
+    </target>	   
+	
+	<target name="resolve" depends="init-ivy">
+		  <ivy:retrieve />
+	</target> 
+	
+	<target name="dep-report" depends="init-ivy">
+		  <mkdir dir="${grails.dist}/ivy" />
+		  <ivy:report organisation="codehaus" module="grails" conf="compile" todir="${grails.dist}/ivy" />
+	</target>
+	
+</project>
