@@ -1,3 +1,0 @@
-constraints = {
-		name(blank:false)
-}
