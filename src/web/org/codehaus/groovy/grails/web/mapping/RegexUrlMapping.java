@@ -300,6 +300,11 @@ public class RegexUrlMapping extends AbstractUrlMapping implements UrlMapping {
         return createURLInternal(controller, action, parameterValues, encoding, false);
     }
 
+    public String createRelativeURL(String controller, String action, Map parameterValues, String encoding, String fragment) {
+        final String url = createURLInternal(controller, action, parameterValues, encoding, false);
+        return createUrlWithFragment(url, fragment, encoding);
+    }
+
     public String createURL(String controller, String action, Map parameterValues, String encoding, String fragment) {
         String url = createURL(controller, action, parameterValues, encoding);
         return createUrlWithFragment(url, fragment, encoding);

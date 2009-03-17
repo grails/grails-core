@@ -124,6 +124,11 @@ public class DefaultUrlCreator implements UrlCreator {
          return createURLInternal(controller, action, parameterValues, false );
     }
 
+    public String createRelativeURL(String controller, String action, Map parameterValues, String encoding, String fragment) {
+        final String url = createURLInternal(controller, action, parameterValues, false);
+        return  createUrlWithFragment(encoding, fragment, url);
+    }
+
     public String createURL(String controller, String action, Map parameterValues, String encoding, String fragment) {
         String url = createURL(controller, action, parameterValues, encoding);
         return createUrlWithFragment(encoding, fragment, url);

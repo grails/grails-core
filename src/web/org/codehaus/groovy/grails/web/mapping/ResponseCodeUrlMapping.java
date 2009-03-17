@@ -89,6 +89,10 @@ public class ResponseCodeUrlMapping extends AbstractUrlMapping implements UrlMap
         throw new UnsupportedOperationException("Method createRelativeURL not implemented in " + getClass());
     }
 
+    public String createRelativeURL(String controller, String action, Map parameterValues, String encoding, String fragment) {
+        throw new UnsupportedOperationException("Method createRelativeURL not implemented in " + getClass());
+    }
+
     public String createURL(String controller, String action, Map parameterValues, String encoding, String fragment) {
         throw new UnsupportedOperationException("Method createURL not implemented in " + getClass());
     }

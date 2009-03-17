@@ -6,6 +6,7 @@ import org.springframework.mock.web.MockHttpServletResponse
 import javax.servlet.http.HttpServletResponse
 import org.springframework.mock.web.MockHttpServletRequest
 import org.codehaus.groovy.grails.plugins.web.taglib.ApplicationTagLib
+import org.codehaus.groovy.grails.commons.ConfigurationHolder
 
 class ApplicationTagLibTests extends AbstractGrailsTagTests {
 
@@ -246,7 +247,11 @@ class ApplicationTagLibTests extends AbstractGrailsTagTests {
         request.contextPath = "/foo"
         def template = '<g:createLink action="testAction" controller="testController" absolute="true" />'
 
-        assertOutputEquals 'http://localhost:8080/foo/testController/testAction', template    
+        assertOutputEquals 'http://localhost:8080/testController/testAction', template
+
+        ConfigurationHolder.config.grails.serverURL="http://www.mysite.com"
+        assertOutputEquals 'http://www.mysite.com/testController/testAction', template
+        ConfigurationHolder.config.grails.serverURL=null
     }
     
     /**

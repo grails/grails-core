@@ -37,7 +37,8 @@ import org.codehaus.groovy.grails.commons.GrailsControllerClass
 import grails.util.BuildSettings
 import org.springframework.beans.factory.InitializingBean
 import grails.util.Environment
-import grails.util.Metadata;
+import grails.util.Metadata
+import org.codehaus.groovy.grails.web.mapping.UrlCreator;
 
 class ApplicationTagLib implements ApplicationContextAware, InitializingBean {
 
@@ -121,6 +122,9 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean {
                 throwTagError("Attribute absolute='true' specified but no grails.serverURL set in Config")
             }
         }
+        else {
+           out << grailsAttributes.getApplicationUri(request)
+        }
     }
 
     /**
@@ -144,8 +148,7 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean {
 		    writer << attrs.remove('base')
 		} else {
 		    handleAbsolute(attrs)
-	    }
-        writer << grailsAttributes.getApplicationUri(request);
+	    }       
         def dir = attrs['dir']
         if(dir) {
            writer << (dir.startsWith("/") ?  dir : "/${dir}")
@@ -217,8 +220,8 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean {
             def url
             if(id != null) params.id = id
             def urlMappings = applicationContext.getBean("grailsUrlMappingsHolder")
-            def mapping = urlMappings.getReverseMapping(controller,action,params)
-            url = mapping.createURL(controller, action, params, request.characterEncoding, frag)
+            UrlCreator mapping = urlMappings.getReverseMapping(controller,action,params)
+            url = mapping.createRelativeURL(controller, action, params, request.characterEncoding, frag)
             if (attrs.base != null) {
                 out << attrs.remove('base')
             } else {

@@ -399,6 +399,10 @@ class MockUrlMapping implements UrlMapping {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
+    public String createRelativeURL(String controller, String action, Map parameterValues, String encoding, String fragment) {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
     public String createURL(String controller, String action, Map parameterValues, String encoding, String fragment) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
