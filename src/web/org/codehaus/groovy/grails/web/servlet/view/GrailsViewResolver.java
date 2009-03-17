@@ -36,6 +36,8 @@ import org.springframework.web.servlet.view.InternalResourceViewResolver;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Locale;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * A Grails view resolver which evaluates the existance of a view for different extensions choosing which
@@ -58,6 +60,7 @@ public class GrailsViewResolver extends InternalResourceViewResolver implements 
     private PluginMetaManager pluginMetaManager;
     
     private static final String GROOVY_PAGE_RESOURCE_LOADER = "groovyPageResourceLoader";
+    private static final Map<String, View> VIEW_CACHE = new ConcurrentHashMap<String, View>();
     private static final char DOT = '.';
     private static final char SLASH = '/';
 
@@ -91,51 +94,59 @@ public class GrailsViewResolver extends InternalResourceViewResolver implements 
         if(this.templateEngine == null) throw new IllegalStateException("Property [templateEngine] cannot be null");
         if(this.pluginMetaManager == null) throw new IllegalStateException("Property [pluginMetaManager] cannot be null");
 
-
-
-        // try GSP if res is null
-
-        GrailsWebRequest webRequest = WebUtils.retrieveGrailsWebRequest();
-
-        HttpServletRequest request = webRequest.getCurrentRequest();
-        GroovyObject controller = webRequest
-                                        .getAttributes()
-                                        .getController(request);
-
-        GrailsApplication application = (GrailsApplication) getApplicationContext().getBean(GrailsApplication.APPLICATION_ID);
-
-        ResourceLoader resourceLoader = establishResourceLoader(application);
-
-        String format = request.getAttribute(GrailsApplicationAttributes.CONTENT_FORMAT) != null ? request.getAttribute(GrailsApplicationAttributes.CONTENT_FORMAT).toString() : null;
-        String gspView = localPrefix + viewName + DOT + format + GSP_SUFFIX;
-        Resource res = null;
-
-        if(format != null) {
-            res = resourceLoader.getResource(gspView);
-            if(!res.exists()) {
-                gspView = resolveViewForController(controller, application, viewName, resourceLoader);
-                res = resourceLoader.getResource(gspView);
-            }
-        }
-
-        if(res == null || !res.exists()) {
-            gspView = localPrefix + viewName + GSP_SUFFIX;
-            res = resourceLoader.getResource(gspView);
-            if(!res.exists()) {
-                gspView = resolveViewForController(controller, application, viewName, resourceLoader);
-                res = resourceLoader.getResource(gspView);
-            }
-        }
-
-        if(res.exists()) {
-            return createGroovyPageView(webRequest, gspView);
+        if(VIEW_CACHE.containsKey(viewName) && !templateEngine.isReloadEnabled()) {
+             return VIEW_CACHE.get(viewName);           
         }
         else {
-            AbstractUrlBasedView view = buildView(viewName);
-            view.setApplicationContext(getApplicationContext());
-            view.afterPropertiesSet();
-            return view;
+            // try GSP if res is null
+
+            GrailsWebRequest webRequest = WebUtils.retrieveGrailsWebRequest();
+
+            HttpServletRequest request = webRequest.getCurrentRequest();
+            GroovyObject controller = webRequest
+                                            .getAttributes()
+                                            .getController(request);
+
+            GrailsApplication application = (GrailsApplication) getApplicationContext().getBean(GrailsApplication.APPLICATION_ID);
+
+            ResourceLoader resourceLoader = establishResourceLoader(application);
+
+            String format = request.getAttribute(GrailsApplicationAttributes.CONTENT_FORMAT) != null ? request.getAttribute(GrailsApplicationAttributes.CONTENT_FORMAT).toString() : null;
+            String gspView = localPrefix + viewName + DOT + format + GSP_SUFFIX;
+            Resource res = null;
+
+            if(format != null) {
+                res = resourceLoader.getResource(gspView);
+                if(!res.exists()) {
+                    gspView = resolveViewForController(controller, application, viewName, resourceLoader);
+                    res = resourceLoader.getResource(gspView);
+                }
+            }
+
+            if(res == null || !res.exists()) {
+                gspView = localPrefix + viewName + GSP_SUFFIX;
+                res = resourceLoader.getResource(gspView);
+                if(!res.exists()) {
+                    gspView = resolveViewForController(controller, application, viewName, resourceLoader);
+                    res = resourceLoader.getResource(gspView);
+                }
+            }
+
+            if(res.exists()) {
+                final View view = createGroovyPageView(webRequest, gspView);
+                VIEW_CACHE.put(viewName, view);
+                return view;
+            }
+            else {
+                AbstractUrlBasedView view = buildView(viewName);
+                view.setApplicationContext(getApplicationContext());
+                view.afterPropertiesSet();
+                VIEW_CACHE.put(viewName, view);
+                return view;
+            }
+
         }
+
     }
 
     private View createGroovyPageView(GrailsWebRequest webRequest, String gspView) {

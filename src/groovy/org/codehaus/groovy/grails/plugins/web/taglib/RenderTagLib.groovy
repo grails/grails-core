@@ -36,6 +36,8 @@ import org.codehaus.groovy.grails.plugins.GrailsPluginManager
 import grails.util.GrailsNameUtils
 import org.codehaus.groovy.grails.web.mapping.ForwardUrlMappingInfo
 import org.codehaus.groovy.grails.web.util.WebUtils
+import java.util.concurrent.ConcurrentHashMap
+import groovy.text.Template
 
 class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants {
 	def out // to facilitate testing
@@ -422,6 +424,7 @@ class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants 
      *  <g:render template="atemplate" model="[user:user,company:company]" />
      *  <g:render template="atemplate" bean="${user}" />
      */
+    static Map TEMPLATE_CACHE = new ConcurrentHashMap()
     def render = { attrs, body ->
         if(!groovyPagesTemplateEngine) throw new IllegalStateException("Property [groovyPagesTemplateEngine] must be set!")
         if(!attrs.template)
@@ -437,9 +440,16 @@ class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants 
             if(plugin && !plugin.isBasePlugin()) contextPath = plugin.getPluginPath()
         }
 
-        def r = engine.getResourceForUri("${contextPath}${uri}")
-        if(!r.exists()) r = engine.getResourceForUri("${contextPath}/grails-app/views/${uri}")
-        def t = engine.createTemplate( r )
+        Template t
+        if(TEMPLATE_CACHE.containsKey(uri) && !engine.isReloadEnabled()) {
+           t = TEMPLATE_CACHE[uri]
+        }
+        else {
+          def r = engine.getResourceForUri("${contextPath}${uri}")
+          if(!r.exists()) r = engine.getResourceForUri("${contextPath}/grails-app/views/${uri}")
+          t = engine.createTemplate( r )
+          TEMPLATE_CACHE[uri] = t
+        }
 
         if(attrs.containsKey('bean')) {
         	def b = [:]
