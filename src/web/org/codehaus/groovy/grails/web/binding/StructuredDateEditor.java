@@ -76,6 +76,8 @@ public class StructuredDateEditor extends CustomDateEditor implements Structured
             Calendar c = new GregorianCalendar(year,month - 1,day,hour,minute);
             if(type == Date.class) {
                 return c.getTime();
+            } else if(type == java.sql.Date.class) {
+                return new java.sql.Date(c.getTime().getTime());
             }
             return c;
         }

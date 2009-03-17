@@ -33,6 +33,7 @@ public class GrailsDataBinderTests extends TestCase {
 
     class TestBean {
         private Date myDate;
+        private java.sql.Date mySqlDate;
         private String name;
         private Long securityNumber;
         private BigInteger bigNumber;
@@ -53,6 +54,14 @@ public class GrailsDataBinderTests extends TestCase {
 
         public void setMyDate(Date myDate) {
             this.myDate = myDate;
+        }
+
+        public java.sql.Date getMySqlDate() {
+            return mySqlDate;
+        }
+
+        public void setMySqlDate(java.sql.Date mySqlDate) {
+            this.mySqlDate = mySqlDate;
         }
 
         public Long getSecurityNumber() {
@@ -96,7 +105,7 @@ public class GrailsDataBinderTests extends TestCase {
         testBindStructuredDate("1999", "1", null, null, null); // January 1st, 1999 - 00:00
         testBindStructuredDate("1999", "12", null, null, null); // December 1st, 1999 - 00:00
     }
-    
+
     public void testAllowedAndDissallowedDefaultToEmptyArray(){
         TestBean testBean = new TestBean();
         GrailsDataBinder binder = new GrailsDataBinder(testBean,"testBean");
@@ -289,11 +298,13 @@ public class GrailsDataBinderTests extends TestCase {
         assertNotNull(year);
         int expectedYearValue = Integer.parseInt(year);
         request.addParameter("myDate_year",year);
+        request.addParameter("mySqlDate_year",year);
 
         // If the month is null, we expect a default value of January
         int expectedMonthValue = 0;
         if (month != null) {
             request.addParameter("myDate_month",month);
+            request.addParameter("mySqlDate_month",month);
             expectedMonthValue = Integer.parseInt(month)-1; // Subtract 1, because Calendar treats January as 0, February as 1, etc.
         }
 
@@ -302,6 +313,7 @@ public class GrailsDataBinderTests extends TestCase {
         if (day != null) {
             expectedDayValue = Integer.parseInt(day);
             request.addParameter("myDate_day",day);
+            request.addParameter("mySqlDate_day",day);
         }
 
         // If the hour is null, we expect a default hour value of 00 (i.e., 12:00 AM)
@@ -331,5 +343,11 @@ public class GrailsDataBinderTests extends TestCase {
         assertEquals(expectedDayValue,c.get(Calendar.DAY_OF_MONTH));
         assertEquals(expectedHourValue,c.get(Calendar.HOUR_OF_DAY));
         assertEquals(expectedMinuteValue,c.get(Calendar.MINUTE));
+
+        c.setTime(testBean.getMySqlDate());
+
+        assertEquals(expectedYearValue,c.get(Calendar.YEAR));
+        assertEquals(expectedMonthValue,c.get(Calendar.MONTH));
+        assertEquals(expectedDayValue,c.get(Calendar.DAY_OF_MONTH));
     }
 }
