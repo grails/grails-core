@@ -140,8 +140,9 @@
     }
 
     private renderDateEditor(domainClass,property) {
+        def precision = property.type == java.sql.Date ? 'day' : 'minute';
         if(!cp) {
-            return "<g:datePicker name=\"${property.name}\" value=\"\${${domainInstance}?.${property.name}}\"></g:datePicker>"
+            return "<g:datePicker name=\"${property.name}\" value=\"\${${domainInstance}?.${property.name}}\" precision=\"${precision}\"></g:datePicker>"
         }
         else {
             if(!cp.editable) {
@@ -154,7 +155,7 @@
                 cp.attributes.each { k,v ->
                     buf << "${k}=\"${v}\" "
                 }
-                buf << "name=\"${property.name}\" value=\"\${${domainInstance}?.${property.name}}\" ${renderNoSelection(property)}></g:datePicker>"
+                buf << "name=\"${property.name}\" value=\"\${${domainInstance}?.${property.name}}\" precision=\"${precision}\" ${renderNoSelection(property)}></g:datePicker>"
                 return buf.toString()
             }
         }

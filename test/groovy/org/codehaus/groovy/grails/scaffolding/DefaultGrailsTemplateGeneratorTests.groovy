@@ -10,7 +10,7 @@ import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
 /**
  * @author Graeme Rocher
  * @since 1.1
- * 
+ *
  * Created: Dec 8, 2008
  */
 
@@ -36,6 +36,8 @@ class ScaffoldingTest {
    Long version
 
    Integer status
+   Date regularDate
+   java.sql.Date sqlDate
 
    static constraints = {
       status inList:[1,2,3,4]
@@ -44,6 +46,25 @@ class ScaffoldingTest {
 '''
 
 
+    void testGenerateDateSelect() {
+        def templateGenerator = new DefaultGrailsTemplateGenerator()
+        gcl.parseClass(testDomain)
+        def testClass = gcl.loadClass("ScaffoldingTest")
+
+        def cp = new ConstraintsEvaluatingDynamicProperty()
+        def constrainedProperties = cp.get(testClass.newInstance())
+        testClass.metaClass.getConstraints = {-> constrainedProperties }
+
+        def domainClass = new DefaultGrailsDomainClass(testClass)
+
+        StringWriter sw = new StringWriter()
+        templateGenerator.generateView domainClass, "create", sw
+
+
+        println "sw: ${sw.toString()}"
+        assertTrue "Should have rendered a datePicker for regularDate",sw.toString().contains('g:datePicker name="regularDate" value="${scaffoldingTestInstance?.regularDate}" precision="minute" ></g:datePicker>')
+        assertTrue "Should have rendered a datePicker for sqlDate",sw.toString().contains('g:datePicker name="sqlDate" value="${scaffoldingTestInstance?.sqlDate}" precision="day" ></g:datePicker>')
+    }
 
     void testGenerateNumberSelect() {
         def templateGenerator = new DefaultGrailsTemplateGenerator()
