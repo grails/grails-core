@@ -328,6 +328,7 @@ public class GrailsUtil {
      * @param result The root node of the XML to write out.
      * @param output Where to write the XML to.
      * @throws IOException If the writing fails due to a closed stream
+     * @deprecated Will be removed in a future release
      * or unwritable file.
      */
     public static void writeSlurperResult(GPathResult result, Writer output) throws IOException {

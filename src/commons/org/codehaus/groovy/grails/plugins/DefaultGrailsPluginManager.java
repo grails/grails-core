@@ -17,10 +17,8 @@ package org.codehaus.groovy.grails.plugins;
 
 import grails.util.Environment;
 import grails.util.GrailsUtil;
-import groovy.lang.GroovyClassLoader;
-import groovy.lang.GroovyRuntimeException;
-import groovy.lang.GroovySystem;
-import groovy.lang.MetaClassRegistry;
+import grails.util.Metadata;
+import groovy.lang.*;
 import groovy.util.ConfigObject;
 import groovy.util.ConfigSlurper;
 import groovy.util.XmlSlurper;
@@ -722,6 +720,7 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager impl
         checkInitialised();
         try {
             XmlSlurper slurper = new XmlSlurper();
+
             slurper.setEntityResolver(new EntityResolver() {
                 public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
                     if (systemId != null && systemId.equals("http://java.sun.com/dtd/web-app_2_3.dtd")) {
@@ -739,7 +738,7 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager impl
                     plugin.doWithWebDescriptor(result);
                 }
             }
-            GrailsUtil.writeSlurperResult(result, target);
+            writeWebDescriptorResult(result, target);
         }
         catch (ParserConfigurationException e) {
             throw new PluginException("Unable to configure web.xml due to parser configuration problem: " + e.getMessage(), e);
@@ -751,6 +750,27 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager impl
             throw new PluginException("Unable to read web.xml" + e.getMessage(), e);
         }
     }
+
+    private void writeWebDescriptorResult(GPathResult result, Writer output) throws IOException {
+        Binding b = new Binding();
+        b.setVariable("node", result);
+        String namespace;
+        Metadata metadata = Metadata.getCurrent();
+        String servletVersion = metadata.getServletVersion();
+        if(servletVersion == null || "2.4".equals(servletVersion)) {
+            namespace = "http://java.sun.com/xml/ns/j2ee";
+        }
+        else {
+            namespace = "http://java.sun.com/xml/ns/javaee";
+        }
+
+        Writable w = (Writable)new GroovyShell(b).evaluate(
+                "new groovy.xml.StreamingMarkupBuilder().bind {" +
+                        " mkp.declareNamespace(\"\":  \""+namespace+"\");" +
+                        " mkp.yield node}");
+        w.writeTo(output);
+    }
+
 
     public void doWebDescriptor(File descriptor, Writer target) {
         try {
