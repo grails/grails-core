@@ -32,6 +32,7 @@ import org.codehaus.groovy.grails.web.converters.exceptions.ConverterException;
 import org.codehaus.groovy.grails.web.converters.marshaller.ClosureOjectMarshaller;
 import org.codehaus.groovy.grails.web.converters.marshaller.NameAwareMarshaller;
 import org.codehaus.groovy.grails.web.converters.marshaller.ObjectMarshaller;
+import org.codehaus.groovy.grails.web.pages.FastStringWriter;
 import org.codehaus.groovy.grails.web.xml.PrettyPrintXMLStreamWriter;
 import org.codehaus.groovy.grails.web.xml.StreamingMarkupWriter;
 import org.codehaus.groovy.grails.web.xml.XMLStreamWriter;
@@ -260,7 +261,7 @@ public class XML extends AbstractConverter<XMLStreamWriter> implements Converter
     }
 
     public String toString() {
-        StringWriter strw = new StringWriter();
+        FastStringWriter strw = new FastStringWriter();
         render(strw);
         strw.flush();
         return strw.toString();
@@ -421,7 +422,7 @@ public class XML extends AbstractConverter<XMLStreamWriter> implements Converter
             callable.setDelegate(this);
             callable.call();
         }
-        
+
         protected Object createNode(Object name) {
             return createNode(name, null, null);
         }

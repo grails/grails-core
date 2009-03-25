@@ -14,8 +14,7 @@
  */
 package org.codehaus.groovy.grails.web.taglib;
 
-import java.io.PrintWriter;
-import java.io.Writer;
+import org.codehaus.groovy.grails.web.pages.FastStringWriter;
 
 /**
  * A temporary writer used by GSP to write to a StringWriter and later retrieve the value. It also converts
@@ -28,46 +27,12 @@ import java.io.Writer;
  *        Created: Apr 19, 2007
  *        Time: 5:49:46 PM
  */
-public class GroovyPageTagWriter extends PrintWriter {
-
-    private static final String BLANK_STRING = "";
-    private Writer stringWriter;
-
-    public GroovyPageTagWriter(Writer writer) {
-        super(writer);
-        this.stringWriter = writer;
+public class GroovyPageTagWriter extends FastStringWriter {
+    public GroovyPageTagWriter() {
+        super();
     }
 
-    public Writer getStringWriter() {
-        return stringWriter;
-    }
-
-    public void print(String s) {
-        if( s == null) s = BLANK_STRING;
-        super.print(s);
-    }
-
-    public void print(Object o) {
-        if(o == null) o = BLANK_STRING;
-        super.print(o);
-    }
-
-    public void write(String s) {
-        if(s == null) s = BLANK_STRING;
-        super.write(s);
-    }
-
-    public void println(String s) {
-        if(s == null) s = BLANK_STRING;
-        super.println(s);
-    }
-
-    public void println(Object o) {
-        if(o==null)o = BLANK_STRING;
-        super.println(o);    
-    }
     public String getValue() {
-        return stringWriter.toString();
+        return super.toString();
     }
-
 }

@@ -15,10 +15,9 @@
 package org.codehaus.groovy.grails.web.converters;
 
 import org.apache.commons.lang.UnhandledException;
+import org.codehaus.groovy.grails.web.pages.FastStringWriter;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
-
-import java.io.StringWriter;
 
 /**
  * Abstract base implementation of the Converter interface that provides a default toString()
@@ -36,7 +35,7 @@ public abstract class AbstractConverter<W> implements Converter<W> {
      * @return The converted object as a string
      */
     public String toString() {
-        StringWriter writer = new StringWriter();
+        FastStringWriter writer = new FastStringWriter();
         try {
             render(writer);
         } catch (Exception e) {

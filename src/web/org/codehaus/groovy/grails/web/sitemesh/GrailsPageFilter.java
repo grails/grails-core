@@ -15,6 +15,22 @@
  */
 package org.codehaus.groovy.grails.web.sitemesh;
 
+import java.io.IOException;
+
+import javax.servlet.FilterChain;
+import javax.servlet.FilterConfig;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.grails.commons.ConfigurationHolder;
+import org.springframework.web.util.UrlPathHelper;
+
 import com.opensymphony.module.sitemesh.Config;
 import com.opensymphony.module.sitemesh.Factory;
 import com.opensymphony.sitemesh.Content;
@@ -22,20 +38,8 @@ import com.opensymphony.sitemesh.ContentProcessor;
 import com.opensymphony.sitemesh.Decorator;
 import com.opensymphony.sitemesh.DecoratorSelector;
 import com.opensymphony.sitemesh.webapp.ContainerTweaks;
-import com.opensymphony.sitemesh.webapp.ContentBufferingResponse;
 import com.opensymphony.sitemesh.webapp.SiteMeshFilter;
 import com.opensymphony.sitemesh.webapp.SiteMeshWebAppContext;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.commons.ConfigurationHolder;
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
-import org.codehaus.groovy.grails.web.util.WebUtils;
-import org.springframework.web.util.UrlPathHelper;
-
-import javax.servlet.*;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 
 /**
  * Extends the default page filter to overide the apply decorator behaviour
@@ -56,7 +60,7 @@ public class GrailsPageFilter extends SiteMeshFilter {
 
     private FilterConfig filterConfig;
  	private ContainerTweaks containerTweaks;
-    
+
     public void init(FilterConfig filterConfig) {
 		super.init(filterConfig);
 		this.filterConfig = filterConfig;
@@ -145,27 +149,7 @@ public class GrailsPageFilter extends SiteMeshFilter {
                                    HttpServletRequest request, HttpServletResponse response, FilterChain chain)
              throws IOException, ServletException {
 
-         ContentBufferingResponse contentBufferingResponse = new ContentBufferingResponse(response, contentProcessor, webAppContext) {
-             public void sendError(int sc) throws IOException {
-                 GrailsWebRequest webRequest = WebUtils.retrieveGrailsWebRequest();
-                 try {
-                     super.sendError(sc);
-                 } finally {
-                     WebUtils.storeGrailsWebRequest(webRequest);
-                 }
-             }
-
-             public void sendError(int sc, String msg) throws IOException {
-                 GrailsWebRequest webRequest = WebUtils.retrieveGrailsWebRequest();
-                 try {
-                     super.sendError(sc, msg);
-                 } finally {
-                     WebUtils.storeGrailsWebRequest(webRequest);
-                 }
-
-             }
-
-         };
+         GrailsContentBufferingResponse contentBufferingResponse = new GrailsContentBufferingResponse(response, contentProcessor, webAppContext);
 
          setDefaultConfiguredEncoding(request, contentBufferingResponse);
          chain.doFilter(request, contentBufferingResponse);
@@ -179,7 +163,7 @@ public class GrailsPageFilter extends SiteMeshFilter {
          return contentBufferingResponse.getContent();
      }
 
-    private void setDefaultConfiguredEncoding(HttpServletRequest request, ContentBufferingResponse contentBufferingResponse) {
+    private void setDefaultConfiguredEncoding(HttpServletRequest request, GrailsContentBufferingResponse contentBufferingResponse) {
         UrlPathHelper urlHelper = new UrlPathHelper();
         String requestURI = urlHelper.getOriginatingRequestUri(request);
         // static content?
@@ -190,9 +174,9 @@ public class GrailsPageFilter extends SiteMeshFilter {
         }
 
     }
-    
 
- 
+
+
 
 
 

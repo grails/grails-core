@@ -37,12 +37,12 @@ class JavascriptTagLib  {
 	static final LIBRARY_MAPPINGS = [
 										prototype : ['prototype/prototype']
 									]
-										
+
 	static {
-		LIBRARY_MAPPINGS.scriptaculous = LIBRARY_MAPPINGS.prototype + ['prototype/scriptaculous','prototype/builder','prototype/controls','prototype/effects','prototype/slider','prototype/dragdrop']		
-		LIBRARY_MAPPINGS.rico = LIBRARY_MAPPINGS.prototype + ['prototype/rico']				
+		LIBRARY_MAPPINGS.scriptaculous = LIBRARY_MAPPINGS.prototype + ['prototype/scriptaculous','prototype/builder','prototype/controls','prototype/effects','prototype/slider','prototype/dragdrop']
+		LIBRARY_MAPPINGS.rico = LIBRARY_MAPPINGS.prototype + ['prototype/rico']
 	}
-	
+
 	static final PROVIDER_MAPPINGS = [
 	                                     prototype: PrototypeProvider.class,
 	                                     scriptaculous: PrototypeProvider.class,
@@ -55,12 +55,12 @@ class JavascriptTagLib  {
 	 *
 	 * <g:javascript>alert('hello')</g:javascript>
 	 *
-	 * The 'library' attribute will attempt to use the library mappings defined above to import the 
+	 * The 'library' attribute will attempt to use the library mappings defined above to import the
 	 * right js files and not duplicate imports eg.
 	 *
 	 * <g:javascript library="scripaculous" /> // imports all the necessary js for the scriptaculous library
 	 *
-	 * The 'src' attribute will merely import the js file but within the right context (ie inside the /js/ directory of 
+	 * The 'src' attribute will merely import the js file but within the right context (ie inside the /js/ directory of
 	 * the Grails application:
 	 *
 	 * <g:javascript src="myscript.js" /> // actually imports '/app/js/myscript.js'
@@ -92,7 +92,7 @@ class JavascriptTagLib  {
 					newattrs.src = newattrs.remove('library')+'.js'
 					javascriptInclude(newattrs)
 					request[INCLUDED_LIBRARIES] << attrs.library
-					request[INCLUDED_JS] << attrs.library					
+					request[INCLUDED_JS] << attrs.library
 				}
 			}
 		}
@@ -113,7 +113,7 @@ class JavascriptTagLib  {
 			if (requestPluginContext) {
 			  out << (requestPluginContext.startsWith("/") ? requestPluginContext.substring(1) : requestPluginContext)
 			  out << "/"
-			} 
+			}
 			out << 'js/'
 		} else {
 			out << attrs.base
@@ -121,11 +121,11 @@ class JavascriptTagLib  {
 		out << attrs.src
  		out.println '"></script>'
 	}
-		
+
     /**
      *  Creates a remote function call using the prototype library
      */
-    def remoteFunction = { attrs  ->    
+    def remoteFunction = { attrs  ->
 		// before remote function
 		def after = ''
 		if(attrs["before"])
@@ -138,7 +138,7 @@ class JavascriptTagLib  {
 		attrs.remove('update')
 		// after remote function
 		if(after)
-		   out <<  after			           		   
+		   out <<  after
     }
 
     private setUpRequestAttributes(){
@@ -156,23 +156,23 @@ class JavascriptTagLib  {
 			   cloned[k] = deepClone(v)
    	        }
             else {
-		     cloned[k] = v  		    
+		     cloned[k] = v
 		    }
-		}                
+		}
 		return cloned
     }
     /**
      * A link to a remote uri that used the prototype library to invoke the link via ajax
      */
-    def remoteLink = { attrs, body ->  
-       out << "<a href=\""    
+    def remoteLink = { attrs, body ->
+       out << "<a href=\""
 
        def cloned = deepClone(attrs)
-	   out << createLink(cloned)               
+	   out << createLink(cloned)
 
 	   out << "\" onclick=\""
         // create remote function
-        out << remoteFunction(attrs)   
+        out << remoteFunction(attrs)
 		attrs.remove('url')
         out << "return false;\""
         // process remaining attributes
@@ -192,17 +192,17 @@ class JavascriptTagLib  {
 	 */
 	def remoteField = { attrs, body ->
 		def paramName = attrs.paramName ? attrs.remove('paramName') : 'value'
-		def value = attrs.remove('value') 
+		def value = attrs.remove('value')
 		if(!value) value = ''
-		
+
 		out << "<input type=\"text\" name=\"${attrs.remove('name')}\" value=\"${value}\" onkeyup=\""
-        
+
         if(attrs.params) {
 			if(attrs.params instanceof Map) {
 				attrs.params.put(paramName, new JavascriptValue('this.value'))
 			}
 			else {
-				attrs.params += "+'${paramName}='+this.value"	
+				attrs.params += "+'${paramName}='+this.value"
 			}
 		}
 		else {
@@ -210,7 +210,7 @@ class JavascriptTagLib  {
 		}
 		out << remoteFunction(attrs)
 		attrs.remove('params')
-		out << "\""   
+		out << "\""
 		attrs.remove('url')
 		attrs.each { k,v->
 			out << " $k=\"$v\""
@@ -224,7 +224,7 @@ class JavascriptTagLib  {
     def formRemote = { attrs, body ->
         if(!attrs.name) {
             throwTagError("Tag [formRemote] is missing required attribute [name]")
-        }        
+        }
         if(!attrs.url) {
             throwTagError("Tag [formRemote] is missing required attribute [url]")
         }
@@ -235,25 +235,25 @@ class JavascriptTagLib  {
 Tag [formRemote] does not support the [params] attribute - add\
 a 'params' key to the [url] attribute instead.""")
         }
-        
+
         // get javascript provider
- 		def p = getProvider()				
+ 		def p = getProvider()
 		def url = deepClone(attrs.url)
- 		
+
 		// prepare form settings
 		p.prepareAjaxForm(attrs)
-        
+
         def params = [  onsubmit:remoteFunction(attrs) + 'return false',
 					    method: (attrs.method? attrs.method : 'POST' ),
-					    action: (attrs.action? attrs.action : createLink(url))		                 
+					    action: (attrs.action? attrs.action : createLink(url))
 		             ]
-		attrs.remove('url')		             
+		attrs.remove('url')
 	    params.putAll(attrs)
 		if(params.name && !params.id)
 			params.id = params.name
 	    out << withTag(name:'form',attrs:params) {
-			out << body()   
-	    }		
+			out << body()
+	    }
     }
 
     /**
@@ -261,23 +261,23 @@ a 'params' key to the [url] attribute instead.""")
      */
     def submitToRemote = { attrs, body ->
     	// get javascript provider
-		def p = getProvider()    
-		// prepare form settings 
+		def p = getProvider()
+		// prepare form settings
 		attrs.forSubmitTag = ".form"
-		p.prepareAjaxForm(attrs)    
+		p.prepareAjaxForm(attrs)
         def params = [  onclick:remoteFunction(attrs) + 'return false',
 					    type: 'button',
 					    name: attrs.remove('name'),
-					    value: attrs.remove('value'), 
+					    value: attrs.remove('value'),
 					    id: attrs.remove('id'),
 					    'class':attrs.remove('class')
 		             ]
-		             
+
 		out << withTag(name:'input', attrs:params) {
-			out << body()	
+			out << body()
 		}
     }
-	
+
 	/**
 	 * Escapes a javasacript string replacing single/double quotes and new lines
 	 *
@@ -288,25 +288,25 @@ a 'params' key to the [url] attribute instead.""")
 		if(body instanceof Closure) {
 			def tmp = out
 			def sw = new FastStringWriter()
-			out = new PrintWriter(out)
+			out = sw
 			// invoke body
 			out << body()
 			// restore out
 			out = tmp
 			js = sw.toString()
-			
+
 		}
 		else if(body instanceof String) {
 			js = body
 		}
 		else if(attrs instanceof String) {
-			js = attrs	
+			js = attrs
 		}
 		out << 	js.replaceAll(/\r\n|\n|\r/, '\\\\n')
 					.replaceAll('"','\\\\"')
 					  .replaceAll("'","\\\\'")
 	}
-	 
+
 	def setProvider = { attrs, body ->
 		if (request[JavascriptTagLib.INCLUDED_LIBRARIES] == null) {
 		    request[JavascriptTagLib.INCLUDED_LIBRARIES] = []
@@ -340,7 +340,7 @@ interface JavascriptProvider {
 	 * @param The output to write to
 	 */
 	def doRemoteFunction(taglib,attrs, out)
-	
+
 	def prepareAjaxForm(attrs)
 }
 
@@ -387,8 +387,8 @@ class PrototypeProvider implements JavascriptProvider {
 		else {
 			out << "Request("
 		}
-		out << "'"						
-		
+		out << "'"
+
 		//def pms = attrs.remove('params')
         def url
         def jsParams = attrs.params?.findAll { it.value instanceof JavascriptValue }
@@ -407,12 +407,12 @@ class PrototypeProvider implements JavascriptProvider {
         if(!attrs.params) attrs.params = [:]
         jsParams?.each { attrs.params[it.key] = it.value }
 
-        
+
         def i = url?.indexOf('?')
 
         if(i >-1) {
             if(attrs.params instanceof String) {
-                attrs.params += "+'&${url[i+1..-1].encodeAsJavaScript()}'"                
+                attrs.params += "+'&${url[i+1..-1].encodeAsJavaScript()}'"
             }
             else if(attrs.params instanceof Map) {
                 def params = createQueryString(attrs.params)
@@ -475,8 +475,8 @@ class PrototypeProvider implements JavascriptProvider {
        if(eval != null)
            ajaxOptions << "evalScripts:${eval}"
        else
-           ajaxOptions << "evalScripts:true" 
-           
+           ajaxOptions << "evalScripts:true"
+
         if(options) {
             // process callbacks
             def callbacks = options.findAll { k,v ->
@@ -509,10 +509,10 @@ class PrototypeProvider implements JavascriptProvider {
 
         return "{${ajaxOptions.join(',')}}"
     }
-	
+
     def prepareAjaxForm(attrs) {
 		if(!attrs.forSubmitTag) attrs.forSubmitTag = ""
-        
+
         attrs.params = "Form.serialize(this${attrs.remove('forSubmitTag')})".toString()
     }
 }

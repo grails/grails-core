@@ -16,6 +16,9 @@ package org.codehaus.groovy.grails.web.pages.ext.jsp;
 
 import javax.servlet.jsp.JspWriter;
 import javax.servlet.jsp.tagext.BodyContent;
+
+import org.codehaus.groovy.grails.web.util.StreamCharBuffer;
+
 import java.io.*;
 
 /**
@@ -30,7 +33,8 @@ import java.io.*;
  class BodyContentImpl extends BodyContent {
     static final char[] LINE_BREAK = System.getProperty("line.separator").toCharArray();
 
-    private CharArrayWriter buf;
+    private StreamCharBuffer streamBuffer;
+    private Writer streamBufferWriter;
 
     BodyContentImpl(JspWriter out, boolean buffer) {
         super(out);
@@ -38,27 +42,23 @@ import java.io.*;
     }
 
     void initBuffer() {
-        buf = new CharArrayWriter();
+    	streamBuffer = new StreamCharBuffer();
+    	streamBufferWriter = streamBuffer.getWriter();
     }
 
     public void flush() throws IOException {
-        if(buf == null) {
+        if(streamBuffer == null) {
             getEnclosingWriter().flush();
         }
     }
 
     public void clear() throws IOException {
-        if(buf != null) {
-            buf = new CharArrayWriter();
-        }
-        else {
-            throw new IOException("Can't clear unitialized buffer");
-        }
+    	clearBuffer();
     }
 
     public void clearBuffer() throws IOException {
-        if(buf != null) {
-            buf = new CharArrayWriter();
+        if(streamBuffer != null) {
+        	initBuffer();
         }
         else {
             throw new IOException("Can't clear");
@@ -181,8 +181,8 @@ import java.io.*;
 
     public void write(int c) throws IOException
     {
-        if(buf != null) {
-            buf.write(c);
+        if(streamBufferWriter != null) {
+        	streamBufferWriter.write(c);
         }
         else {
             getEnclosingWriter().write(c);
@@ -191,8 +191,8 @@ import java.io.*;
 
     public void write(char[] cbuf, int off, int len) throws IOException
     {
-        if(buf != null) {
-            buf.write(cbuf, off, len);
+        if(streamBufferWriter != null) {
+        	streamBufferWriter.write(cbuf, off, len);
         }
         else {
             getEnclosingWriter().write(cbuf, off, len);
@@ -200,15 +200,15 @@ import java.io.*;
     }
 
     public String getString() {
-        return buf.toString();
+        return streamBuffer.toString();
     }
 
     public Reader getReader() {
-        return new CharArrayReader(buf.toCharArray());
+        return streamBuffer.getReader();
     }
 
     public void writeOut(Writer out) throws IOException {
-        buf.writeTo(out);
+        streamBuffer.writeTo(out);
     }
 
 }

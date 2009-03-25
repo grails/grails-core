@@ -14,81 +14,40 @@
  */
 package org.codehaus.groovy.grails.web.pages;
 
-import java.io.Writer;
-import java.io.IOException;
+import java.io.Reader;
+
+import org.codehaus.groovy.grails.web.util.GrailsPrintWriter;
+import org.codehaus.groovy.grails.web.util.StreamCharBuffer;
 
 /**
- * Java's default StringWriter uses a StringBuffer which is synchronized. This implementation uses
- * StringBuilder which doesn't use synchronization
- * 
+ * Java's default StringWriter uses a StringBuffer which is synchronized.
+ * This implementation doesn't use synchronization
+ *
  * @author Graeme Rocher
+ * @author Lari Hotari
  * @since 1.1
  *        <p/>
  *        Created: Jan 20, 2009
  */
-public class FastStringWriter extends Writer {
-    private StringBuilder builder;
+public class FastStringWriter extends GrailsPrintWriter {
+    private StreamCharBuffer streamBuffer;
 
     public FastStringWriter() {
-        this.builder = new StringBuilder();
+    	super(new StreamCharBuffer().getWriter());
+        this.streamBuffer = ((StreamCharBuffer.StreamCharBufferWriter)this.out).getBuffer();
     }
 
     protected FastStringWriter(Object o) {
-        builder.append(o);
-    }
-
-    @Override
-    public void write(int i) throws IOException {
-        builder.append(i);
-    }
-
-    @Override
-    public void write(char[] chars) throws IOException {
-        builder.append(chars);
-    }
-
-    @Override
-    public void write(String s) throws IOException {
-        builder.append(s);
-    }
-
-    @Override
-    public void write(String s, int i, int i1) throws IOException {
-        builder.append(s, i, i1);
-    }
-
-    @Override
-    public Writer append(CharSequence charSequence) throws IOException {
-        builder.append(charSequence);
-        return this;
-    }
-
-    @Override
-    public Writer append(CharSequence charSequence, int i, int i1) throws IOException {
-        builder.append(charSequence,i,i1);
-        return this;
-    }
-
-    @Override
-    public Writer append(char c) throws IOException {
-        builder.append(c);
-        return this;
-    }
-
-    public void write(char[] chars, int i, int i1) throws IOException {
-        builder.append(chars,i,i1);
-    }
-
-    public void flush() throws IOException {
-        // do nothing
-    }
-
-    public void close() throws IOException {
-        // do nothing
+    	this();
+    	this.print(o);
     }
 
     @Override
     public String toString() {
-        return builder.toString();
+        return streamBuffer.toString();
+    }
+
+    public Reader getReader() {
+    	return streamBuffer.getReader();
     }
 }
