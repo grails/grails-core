@@ -1037,7 +1037,7 @@ public final class GrailsDomainBinder {
      * @return A Mapping object or null
      */
     public static Mapping getMapping(Class theClass) {
-        return MAPPING_CACHE.get(theClass);
+        return theClass != null ? MAPPING_CACHE.get(theClass) : null;
     }
 
     /**
@@ -1047,7 +1047,7 @@ public final class GrailsDomainBinder {
      * @return A Mapping object or null
      */
     public static Mapping getMapping(GrailsDomainClass domainClass) {
-        return MAPPING_CACHE.get(domainClass.getClazz());
+        return domainClass != null ? MAPPING_CACHE.get(domainClass.getClazz()) : null;
     }
 
     /**
