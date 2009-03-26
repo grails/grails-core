@@ -312,7 +312,7 @@ Try using Grails' default cache provider: 'org.hibernate.cache.OSCacheProvider'"
         metaClass.setProperties = {Object o ->
             originalPropertiesProperty.setProperty delegate, o
             if(delegate.hasErrors()) {
-                GrailsHibernateUtil.setObjectToReadyOnly o,sessionFactory
+                GrailsHibernateUtil.setObjectToReadyOnly delegate,sessionFactory
             }
         }
 

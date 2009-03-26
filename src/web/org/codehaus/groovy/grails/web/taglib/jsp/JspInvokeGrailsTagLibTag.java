@@ -1,11 +1,11 @@
 /* Copyright 2004-2005 the original author or authors.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,6 +20,7 @@ import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsTagLibClass;
 import org.codehaus.groovy.grails.commons.TagLibArtefactHandler;
 import org.codehaus.groovy.grails.web.metaclass.TagLibDynamicMethods;
+import org.codehaus.groovy.grails.web.pages.FastStringWriter;
 import org.codehaus.groovy.grails.web.pages.GroovyPage;
 import org.codehaus.groovy.grails.web.servlet.DefaultGrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
@@ -72,7 +73,7 @@ public class JspInvokeGrailsTagLibTag extends BodyTagSupport implements DynamicA
     private List invocationBodyContent = new ArrayList();
     private BeanWrapper bean;
     protected Map attributes = new HashMap();
-    private StringWriter sw;
+    private FastStringWriter sw;
     private PrintWriter out;
     private JspWriter jspWriter;
     private GrailsApplicationAttributes grailsAttributes;
@@ -141,7 +142,7 @@ public class JspInvokeGrailsTagLibTag extends BodyTagSupport implements DynamicA
         }
         GrailsTagLibClass tagLibClass = (GrailsTagLibClass) application.getArtefactForFeature(
             TagLibArtefactHandler.TYPE, GroovyPage.DEFAULT_NAMESPACE+':'+tagName);
-        
+
         GroovyObject tagLib;
         if(tagLibs.containsKey(tagLibClass.getFullName())) {
              tagLib = (GroovyObject)tagLibs.get(tagLibClass.getFullName());
@@ -164,8 +165,8 @@ public class JspInvokeGrailsTagLibTag extends BodyTagSupport implements DynamicA
     protected int doStartTagInternal() {
       GroovyObject tagLib = getTagLib(getTagName());
         if(tagLib != null) {
-            sw = new StringWriter();
-            out = new PrintWriter(sw);
+            sw = new FastStringWriter();
+            out = sw;
             tagLib.setProperty( TagLibDynamicMethods.OUT_PROPERTY, out );
             Object tagLibProp;
             final Map tagLibProperties = DefaultGroovyMethods.getProperties(tagLib);

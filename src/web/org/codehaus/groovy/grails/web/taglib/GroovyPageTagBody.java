@@ -119,8 +119,7 @@ public class GroovyPageTagBody extends Closure {
 
     private GroovyPageTagWriter createWriter() {
 
-        FastStringWriter capturedOut = new FastStringWriter();
-        GroovyPageTagWriter out = new GroovyPageTagWriter(capturedOut);
+        GroovyPageTagWriter out = new GroovyPageTagWriter();
         if(binding!=null) {
             binding.setVariable(GroovyPage.OUT, out);
         }

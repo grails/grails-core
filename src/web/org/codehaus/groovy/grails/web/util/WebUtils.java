@@ -57,7 +57,7 @@ import java.util.*;
 /**
  *
  * Utility methods to access commons objects and perform common web related functions for the internal framework
- * 
+ *
  * @author Graeme Rocher
  * @since 1.0
  *        <p/>
@@ -147,7 +147,7 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
             String path = pathHelper.getPathWithinApplication(request);
             if(path.startsWith(GRAILS_DISPATCH_SERVLET_NAME)) {
                 path = path.substring(GRAILS_DISPATCH_SERVLET_NAME.length(),path.length());
-            }            
+            }
             return path.substring(0, path.length()-DISPATCH_URI_SUFFIX.length());
 
         }
@@ -302,7 +302,7 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
      * @param response The response
      * @param info The UrlMappingInfo
      * @param model The model
-     * 
+     *
      * @return The included content
      */
     public static String includeForUrlMappingInfo(HttpServletRequest request, HttpServletResponse response, UrlMappingInfo info, Map model) {
@@ -372,7 +372,7 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
      * Converts the given parameters to a query string using the default  UTF-8 encoding
      * @param parameters The parameters
      * @return The query string
-     * @throws UnsupportedEncodingException If UTF-8 encoding is not supported 
+     * @throws UnsupportedEncodingException If UTF-8 encoding is not supported
      */
     public static String toQueryString(Map parameters) throws UnsupportedEncodingException {
         return toQueryString(parameters, "UTF-8");
@@ -403,7 +403,7 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
 
     static class IncludeResponseWrapper extends HttpServletResponseWrapper {
         private FastStringWriter sw = new FastStringWriter();
-        private PrintWriter pw = new PrintWriter(sw);
+        private PrintWriter pw = sw;
         private FastByteArrayOutputStream os = new FastByteArrayOutputStream();
         private ServletOutputStream sos = new ServletOutputStream() {
             public void write(int i) throws IOException {

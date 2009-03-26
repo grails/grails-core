@@ -277,7 +277,7 @@ class FlowBuilder extends AbstractFlowBuilder implements GroovyObject, Applicati
                                             [] as ViewVariable[],
                                             null,
                                             viewFactory,
-                                            false,
+                                            null,
                                             false,
                                             [renderAction] as Action[],
                                             transitions,

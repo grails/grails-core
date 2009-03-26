@@ -63,6 +63,7 @@
     <target name="-init-grails" depends="-resolve">
         <path id="grails.classpath">
             <fileset dir="${lib.dir}/build"/>
+			<fileset dir="${lib.dir}"/>
         </path>
 
         <path id="compile.classpath">
@@ -89,10 +90,20 @@
     <!-- =================================
           target: clean
          ================================= -->
-    <target name="clean" depends="-init-grails" description="--> Cleans a Grails application">
-        <grails script="Clean"/>
-        <delete dir="${lib.dir}" includes="**/*"/>
-    </target>
+ 	<target name="clean" description="--> Cleans a Grails application">
+		<delete failonerror="true">
+		<fileset dir="${lib.dir}/build" includes="*/"/>
+		<fileset dir="${lib.dir}/compile" includes="*/"/>
+		<fileset dir="${lib.dir}/runtime" includes="*/"/>
+		<fileset dir="${lib.dir}/test" includes="*/"/>
+		</delete>
+		<antcall target="--grails-clean"/>
+	</target>
+
+	<!-- extra target to avoid errors on Windows because libs on classpath can not be deleted -->
+	<target name="--grails-clean" depends="-init-grails">
+		<grails script="Clean"/>
+	</target>
 
     <!-- =================================
           target: compile

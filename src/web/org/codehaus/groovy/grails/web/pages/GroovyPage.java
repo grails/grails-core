@@ -97,7 +97,7 @@ public abstract class GroovyPage extends Script {
 
     /**
      * Sets the GSP tag library lookup class
-     * @param gspTagLibraryLookup The class used to lookup a GSP tag library 
+     * @param gspTagLibraryLookup The class used to lookup a GSP tag library
      */
     public void setGspTagLibraryLookup(TagLibraryLookup gspTagLibraryLookup) {
         this.gspTagLibraryLookup = gspTagLibraryLookup;
@@ -141,7 +141,7 @@ public abstract class GroovyPage extends Script {
 
         MetaProperty mp = getMetaClass().getMetaProperty(property);
         if(mp!= null)return mp.getProperty(this);
-        
+
         Object value = getBinding().getVariables().get(property);
         if(value == null) {
             value = gspTagLibraryLookup!=null ? gspTagLibraryLookup.lookupNamespaceDispatcher(property) : null;
@@ -167,7 +167,7 @@ public abstract class GroovyPage extends Script {
     public void invokeTag(String tagName, Map attrs, Closure body) {
     	invokeTag(tagName, GroovyPage.DEFAULT_NAMESPACE, attrs, body);
     }
-    
+
     /**
      * Attempts to invokes a dynamic tag
      *
@@ -268,7 +268,7 @@ public abstract class GroovyPage extends Script {
     private GroovyObject getTagLib(String tagName) {
     	return getTagLib(tagName,DEFAULT_NAMESPACE);
     }
-    
+
     private GroovyObject getTagLib(String tagName, String namespace) {
         return gspTagLibraryLookup != null ? gspTagLibraryLookup.lookupTagLibrary(namespace, tagName) : null;
     }
@@ -326,7 +326,7 @@ public abstract class GroovyPage extends Script {
         Object tagLibProp;// retrieve tag lib and create wrapper writer
 		Writer originalOut = webRequest.getOut();
 		try {
-	        final GroovyPageTagWriter out = new GroovyPageTagWriter(new FastStringWriter());
+	        final GroovyPageTagWriter out = new GroovyPageTagWriter();
 	        webRequest.setOut(out);
 
 	        // in a direct invocation the body is expected to return a string
@@ -352,8 +352,8 @@ public abstract class GroovyPage extends Script {
 	        }else {
 	            throw new GrailsTagException("Tag ["+methodName+"] does not exist in tag library ["+tagLib.getClass().getName()+"]");
 	        }
-			
-		}   
+
+		}
 		finally {
 			webRequest.setOut(originalOut);
 		}
