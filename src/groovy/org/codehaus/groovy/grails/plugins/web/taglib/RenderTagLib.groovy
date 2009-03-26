@@ -71,7 +71,7 @@ class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants 
 													id:attrs.id,
                                                     params:attrs.params)
 
-			out << WebUtils.includeForUrlMappingInfo(request,response,mapping, attrs.model ?: [:] )
+			out << WebUtils.includeForUrlMappingInfo(request,response,mapping, attrs.model ?: [:] )?.content
 		}
 	}
 

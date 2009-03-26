@@ -305,7 +305,7 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
      *
      * @return The included content
      */
-    public static String includeForUrlMappingInfo(HttpServletRequest request, HttpServletResponse response, UrlMappingInfo info, Map model) {
+    public static IncludedContent includeForUrlMappingInfo(HttpServletRequest request, HttpServletResponse response, UrlMappingInfo info, Map model) {
         String includeUrl = buildDispatchUrlForMapping(info, true);
 
         return includeForUrl(includeUrl, request, response, model);
@@ -320,7 +320,7 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
      * @param model The model
      * @return The content
      */
-    public static String includeForUrl(String includeUrl, HttpServletRequest request, HttpServletResponse response, Map model) {
+    public static IncludedContent includeForUrl(String includeUrl, HttpServletRequest request, HttpServletResponse response, Map model) {
         RequestDispatcher dispatcher = request.getRequestDispatcher(includeUrl);
         HttpServletResponse wrapped = WrappedResponseHolder.getWrappedResponse();
         response = wrapped != null ? wrapped : response;
@@ -335,7 +335,7 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
             try {
                 WrappedResponseHolder.setWrappedResponse(responseWrapper);
                 dispatcher.include(request, responseWrapper);
-                return responseWrapper.getContent();
+                return new IncludedContent(responseWrapper.getContentType(), responseWrapper.getContent());
             }
             finally {
                 WrappedResponseHolder.setWrappedResponse(wrapped);
@@ -413,9 +413,14 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
         private boolean usingStream;
         private boolean usingWriter;
         private int status;
+        private String contentType;
 
         public IncludeResponseWrapper(HttpServletResponse httpServletResponse) {
             super(httpServletResponse);
+        }
+
+        public String getContentType() {
+            return contentType;
         }
 
         @Override
@@ -429,7 +434,7 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
 
         @Override
         public void setContentType(String s) {
-            // do nothing
+            this.contentType = s;
         }
         @Override
         public void setLocale(Locale locale) {

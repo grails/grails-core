@@ -29,6 +29,7 @@ import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequestFilter;
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
 import org.codehaus.groovy.grails.web.sitemesh.FactoryHolder;
 import org.codehaus.groovy.grails.web.util.WebUtils;
+import org.codehaus.groovy.grails.web.util.IncludedContent;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.support.WebApplicationContextUtils;
@@ -103,10 +104,10 @@ public class ErrorHandlingServlet extends GrailsDispatcherServlet {
                     String viewName = urlMappingInfo.getViewName();
                     if(viewName == null || viewName.endsWith(GSP_SUFFIX) || viewName.endsWith(JSP_SUFFIX)) {
 
-                        String contents = WebUtils.includeForUrlMappingInfo(request, response, urlMappingInfo, Collections.EMPTY_MAP);
+                        IncludedContent includeResult = WebUtils.includeForUrlMappingInfo(request, response, urlMappingInfo, Collections.EMPTY_MAP);
                         final Factory factory = FactoryHolder.getFactory();
                         PageParser parser = getPageParser(factory, response);
-                        Page p = parser != null ? parser.parse(contents.toCharArray()) : null;
+                        Page p = parser != null ? parser.parse(includeResult.getContent().toCharArray()) : null;
                         String layout = p != null ? p.getProperty("meta.layout") : null;
                         if(layout != null && p != null) {
                             final HTMLPage2Content content = new HTMLPage2Content((HTMLPage) p);
@@ -118,12 +119,12 @@ public class ErrorHandlingServlet extends GrailsDispatcherServlet {
                                 d.render(content, webAppContext);
                             }
                             else {
-                                writeOriginal(response, contents);
+                                writeOriginal(response, includeResult);
                             }
 
                         }
                         else {
-                            writeOriginal(response, contents);
+                            writeOriginal(response, includeResult);
                         }
 
                     }
@@ -148,16 +149,17 @@ public class ErrorHandlingServlet extends GrailsDispatcherServlet {
         }
     }
 
-    private void writeOriginal(HttpServletResponse response, String contents) {
+    private void writeOriginal(HttpServletResponse response, IncludedContent includeResult) {
         try {
             PrintWriter printWriter;
+            response.setContentType(includeResult.getContentType());
             try {
                 printWriter= response.getWriter();
             }
             catch (IllegalStateException e) {
                 printWriter = new PrintWriter(new OutputStreamWriter(response.getOutputStream()));
             }
-            printWriter.write(contents);
+            printWriter.write(includeResult.getContent());
             printWriter.flush();
         }
         catch (IOException e) {
