@@ -6,7 +6,7 @@
   *
  * Created: Sep 26, 2007
  * Time: 2:29:54 PM
- * 
+ *
  */
 package org.codehaus.groovy.grails.orm.hibernate
 
@@ -70,7 +70,7 @@ class HibernateMappingBuilderTests extends GroovyTestCase {
 
         assertEquals "one", mapping.discriminator
         assertNull mapping.discriminatorColumn
-        
+
         mapping = builder.evaluate {
             discriminator value:'one', column:'type'
         }
@@ -192,7 +192,7 @@ class HibernateMappingBuilderTests extends GroovyTestCase {
         assertEquals "name", mapping.sort
         assertEquals "desc", mapping.order
         assertEquals 'name',mapping.getPropertyConfig('things').sort
-        
+
 
     }
 
@@ -264,7 +264,7 @@ class HibernateMappingBuilderTests extends GroovyTestCase {
             }
         }
 
-        assertEquals 'string',mapping.getPropertyConfig('things').enumType
+        assertEquals 'default',mapping.getPropertyConfig('things').enumType
 
         mapping = builder.evaluate {
             columns {
@@ -359,7 +359,7 @@ class HibernateMappingBuilderTests extends GroovyTestCase {
             tablePerSubclass true
         }
 
-        assertEquals false, mapping.tablePerHierarchy                
+        assertEquals false, mapping.tablePerHierarchy
     }
 
     void testAutoTimeStamp() {
@@ -411,7 +411,7 @@ class HibernateMappingBuilderTests extends GroovyTestCase {
 
         def cc = mapping.getPropertyConfig('firstName')
         assertEquals 'read-only', cc.cache.usage
-        
+
     }
 
     void testCustomAssociationCachingConfig2WithoutColumnsBlock() {
@@ -605,7 +605,7 @@ class HibernateMappingBuilderTests extends GroovyTestCase {
              }
          }
 
-        
+
         assertEquals "First_Name",mapping.getPropertyConfig('firstName').column
         assertEquals "Last_Name",mapping.getPropertyConfig('lastName').column
      }
@@ -624,7 +624,7 @@ class HibernateMappingBuilderTests extends GroovyTestCase {
                             length:255,
                             index:'foo',
                             sqlType: 'text'
-                            
+
                  lastName column:'Last_Name'
              }
          }

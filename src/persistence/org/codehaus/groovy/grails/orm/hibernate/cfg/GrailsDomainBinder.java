@@ -80,6 +80,7 @@ public final class GrailsDomainBinder {
     private static final String ENUM_TYPE_CLASS = "org.hibernate.type.EnumType";
     private static final String ENUM_CLASS_PROP = "enumClass";
     private static final String ENUM_TYPE_PROP = "type";
+    private static final String DEFAULT_ENUM_TYPE = "default";
 
 
     /**
@@ -1562,12 +1563,12 @@ public final class GrailsDomainBinder {
         enumProperties.put(ENUM_CLASS_PROP, propertyType.getName());
 
         PropertyConfig pc = getPropertyConfig(property);
-        String enumType = pc != null ? pc.getEnumType() : null;
-        if(enumType == null && IdentityEnumType.supports(propertyType)) {
+        String enumType = pc != null ? pc.getEnumType() : DEFAULT_ENUM_TYPE;
+        if(enumType.equals(DEFAULT_ENUM_TYPE) && IdentityEnumType.supports(propertyType)) {
             simpleValue.setTypeName(IdentityEnumType.class.getName());
         } else {
             simpleValue.setTypeName(ENUM_TYPE_CLASS);
-            if(enumType == null || "string".equalsIgnoreCase(enumType)) {
+            if(enumType.equals(DEFAULT_ENUM_TYPE) || "string".equalsIgnoreCase(enumType)) {
                 enumProperties.put(ENUM_TYPE_PROP, String.valueOf(Types.VARCHAR));
             }
             else if(!"ordinal".equalsIgnoreCase(enumType)) {

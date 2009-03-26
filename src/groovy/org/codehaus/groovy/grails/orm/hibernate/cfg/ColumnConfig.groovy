@@ -25,7 +25,7 @@ package org.codehaus.groovy.grails.orm.hibernate.cfg
 class ColumnConfig {
     String name
     String sqlType
-    String enumType = 'string'
+    String enumType = 'default'
     String index
     boolean unique = false
     int length = -1
