@@ -52,6 +52,7 @@ import org.hibernate.Criteria
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil
 import org.hibernate.proxy.HibernateProxy
 import org.hibernate.proxy.LazyInitializer
+import org.apache.commons.beanutils.PropertyUtils
 
 
 /**
@@ -259,6 +260,30 @@ Try using Grails' default cache provider: 'org.hibernate.cache.OSCacheProvider'"
         }
 
     }
+
+
+    static final LAZY_PROPERTY_HANDLER = { String propertyName ->
+      def propertyValue = PropertyUtils.getProperty(delegate, propertyName)
+      if(propertyValue instanceof HibernateProxy) {          
+          return GrailsHibernateUtil.unwrapProxy(propertyValue)
+      }
+      return propertyValue
+    }
+
+    /**
+     * This method overrides a getter on a property that is a Hibernate proxy in order to make sure the initialized object is returned hence avoiding Hibernate proxy hell
+     */
+    public static void handleLazyProxy ( GrailsDomainClass domainClass, org.codehaus.groovy.grails.commons.GrailsDomainClassProperty property) {
+        String propertyName = property.name
+        def getterName = GrailsClassUtils.getGetterName(propertyName)
+        def setterName = GrailsClassUtils.getSetterName(propertyName)
+        domainClass.metaClass."${getterName}" = LAZY_PROPERTY_HANDLER.curry(propertyName)
+        domainClass.metaClass."${setterName}" = { PropertyUtils.setProperty(delegate, propertyName, it)  }
+        for(GrailsDomainClass sub in domainClass.subClasses) {
+            handleLazyProxy(sub, sub.getPropertyByName(property.name))
+        }
+    }
+
 
     private static registerDynamicMethods(GrailsDomainClass dc, GrailsApplication application, ApplicationContext ctx, SessionFactory sessionFactory) {
         dc.metaClass.methodMissing = { String name, args ->
@@ -708,5 +733,6 @@ Try using Grails' default cache provider: 'org.hibernate.cache.OSCacheProvider'"
         }
         return null
     }
+
 
 }

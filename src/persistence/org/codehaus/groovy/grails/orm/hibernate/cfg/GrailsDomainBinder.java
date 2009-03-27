@@ -28,6 +28,7 @@ import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
 import org.codehaus.groovy.grails.exceptions.GrailsDomainException;
 import org.codehaus.groovy.grails.orm.hibernate.validation.UniqueConstraint;
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
+import org.codehaus.groovy.grails.plugins.orm.hibernate.HibernatePluginSupport;
 import org.hibernate.FetchMode;
 import org.hibernate.Hibernate;
 import org.hibernate.MappingException;
@@ -1741,14 +1742,6 @@ public final class GrailsDomainBinder {
         Property prop = new Property();
 
         PropertyConfig config = getPropertyConfig(grailsProperty);
-
-        if (config != null) {
-            prop.setLazy(config.getLazy());
-        } else if (grailsProperty.isManyToOne() || grailsProperty.isOneToOne()) {
-            prop.setLazy(true);
-        }
-
-
         prop.setValue(value);
 
         bindProperty(grailsProperty, prop, mappings);
@@ -1879,12 +1872,6 @@ public final class GrailsDomainBinder {
         }
 
 
-        if (config != null) {
-            oneToOne.setLazy(config.getLazy());
-        } else {
-            oneToOne.setLazy(true);
-        }
-
         final GrailsDomainClassProperty otherSide = property.getOtherSide();
         oneToOne.setReferencedEntityName(otherSide.getDomainClass().getFullName());
         oneToOne.setReferencedPropertyName(otherSide.getName());
@@ -1906,13 +1893,8 @@ public final class GrailsDomainBinder {
         }
 
         if (config != null) {
-           manyToOne.setLazy(config.getLazy());
            manyToOne.setIgnoreNotFound(config.getIgnoreNotFound());
         }
-        else {
-            manyToOne.setLazy(true);
-        }
-
 
         // set referenced entity
         manyToOne.setReferencedEntityName(property.getReferencedPropertyType().getName());
@@ -2017,7 +1999,21 @@ public final class GrailsDomainBinder {
         setCascadeBehaviour(grailsProperty, prop);
 
         // lazy to true
-        prop.setLazy(true);
+        boolean isLazyable = grailsProperty.isOneToOne() ||
+                             grailsProperty.isManyToOne() ||
+                             grailsProperty.isEmbedded() ||
+                             grailsProperty.isPersistent() && !grailsProperty.isAssociation() && !grailsProperty.isIdentity();
+
+        if(isLazyable) {
+            PropertyConfig config = getPropertyConfig(grailsProperty);
+            final boolean isLazy = config!=null ? config.getLazy() : true;
+            prop.setLazy(isLazy);
+
+            if(isLazy && (grailsProperty.isManyToOne() || grailsProperty.isOneToOne())) {
+                HibernatePluginSupport.handleLazyProxy(grailsProperty.getDomainClass(), grailsProperty);
+            }
+
+        }
 
     }
 
