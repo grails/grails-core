@@ -335,7 +335,12 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
             try {
                 WrappedResponseHolder.setWrappedResponse(responseWrapper);
                 dispatcher.include(request, responseWrapper);
-                return new IncludedContent(responseWrapper.getContentType(), responseWrapper.getContent());
+                if(responseWrapper.getRedirectURL()!=null) {
+                    return new IncludedContent(responseWrapper.getRedirectURL());
+                }
+                else {
+                    return new IncludedContent(responseWrapper.getContentType(), responseWrapper.getContent());
+                }
             }
             finally {
                 WrappedResponseHolder.setWrappedResponse(wrapped);
@@ -414,9 +419,16 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
         private boolean usingWriter;
         private int status;
         private String contentType;
+        private boolean committed;
+        private String redirectURL;
 
         public IncludeResponseWrapper(HttpServletResponse httpServletResponse) {
             super(httpServletResponse);
+        }
+
+
+        public String getRedirectURL() {
+            return redirectURL;
         }
 
         public String getContentType() {
@@ -426,6 +438,18 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
         @Override
         public void setStatus(int i) {
             this.status = i;
+        }
+
+        @Override
+        public boolean isCommitted() {
+            return this.committed;
+        }
+
+        @Override
+        public void sendRedirect(String s) throws IOException {
+            this.committed = true;
+            this.redirectURL = s;
+            super.sendRedirect(s);
         }
 
         public int getStatus() {

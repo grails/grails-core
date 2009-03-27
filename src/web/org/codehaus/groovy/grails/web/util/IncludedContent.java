@@ -28,7 +28,8 @@ import grails.util.GrailsWebUtil;
 public class IncludedContent {
 
     private String contentType = GrailsWebUtil.getContentType("text/html","UTF-8");
-    private String content;
+    private String content = "";
+    private String redirectURL;
 
     public IncludedContent(String contentType, String content) {
         if(contentType!=null)
@@ -36,14 +37,30 @@ public class IncludedContent {
         this.content = content;
     }
 
-    public IncludedContent(String content) {
-        this(null, content);
+    public IncludedContent(String redirectURL) {
+        this.redirectURL = redirectURL;
     }
 
+    /**
+     * Returns the URL of a redirect if a redirect was issue in the Include otherwise it returns null if there was no redirect
+     * @return The redirect URL
+     */
+    public String getRedirectURL() {
+        return redirectURL;
+    }
+
+    /**
+     * Returns the included content type (default is text/html;charset=UTF=8)
+     * @return The content type
+     */
     public String getContentType() {
         return contentType;
     }
 
+    /**
+     * Returns the included content
+     * @return The content
+     */
     public String getContent() {
         return content;
     }

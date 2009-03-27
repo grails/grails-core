@@ -105,26 +105,31 @@ public class ErrorHandlingServlet extends GrailsDispatcherServlet {
                     if(viewName == null || viewName.endsWith(GSP_SUFFIX) || viewName.endsWith(JSP_SUFFIX)) {
 
                         IncludedContent includeResult = WebUtils.includeForUrlMappingInfo(request, response, urlMappingInfo, Collections.EMPTY_MAP);
-                        final Factory factory = FactoryHolder.getFactory();
-                        PageParser parser = getPageParser(factory, response);
-                        Page p = parser != null ? parser.parse(includeResult.getContent().toCharArray()) : null;
-                        String layout = p != null ? p.getProperty("meta.layout") : null;
-                        if(layout != null && p != null) {
-                            final HTMLPage2Content content = new HTMLPage2Content((HTMLPage) p);
-                            DecoratorSelector decoratorSelector = new DecoratorMapper2DecoratorSelector(factory.getDecoratorMapper());
-                            SiteMeshWebAppContext webAppContext = new SiteMeshWebAppContext(request, response, webRequest.getServletContext());
-                            com.opensymphony.sitemesh.Decorator d = decoratorSelector.selectDecorator(content, webAppContext);
+                        if(includeResult.getRedirectURL()!=null) {
+                            response.sendRedirect(includeResult.getRedirectURL());
+                        }
+                        else {
+                            final Factory factory = FactoryHolder.getFactory();
+                            PageParser parser = getPageParser(factory, response);
+                            Page p = parser != null ? parser.parse(includeResult.getContent().toCharArray()) : null;
+                            String layout = p != null ? p.getProperty("meta.layout") : null;
+                            if(layout != null && p != null) {
+                                final HTMLPage2Content content = new HTMLPage2Content((HTMLPage) p);
+                                DecoratorSelector decoratorSelector = new DecoratorMapper2DecoratorSelector(factory.getDecoratorMapper());
+                                SiteMeshWebAppContext webAppContext = new SiteMeshWebAppContext(request, response, webRequest.getServletContext());
+                                com.opensymphony.sitemesh.Decorator d = decoratorSelector.selectDecorator(content, webAppContext);
 
-                            if(d!=null) {
-                                d.render(content, webAppContext);
+                                if(d!=null) {
+                                    d.render(content, webAppContext);
+                                }
+                                else {
+                                    writeOriginal(response, includeResult);
+                                }
+
                             }
                             else {
                                 writeOriginal(response, includeResult);
                             }
-
-                        }
-                        else {
-                            writeOriginal(response, includeResult);
                         }
 
                     }
