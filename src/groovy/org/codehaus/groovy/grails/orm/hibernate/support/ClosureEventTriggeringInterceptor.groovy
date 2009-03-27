@@ -157,7 +157,7 @@ class ClosureEventTriggeringInterceptor extends SaveOrUpdateEventListener implem
     }
 
 
-    private boolean triggerEvent(String event, entity, AbstractEvent eventObject) {
+    private boolean triggerEvent(String event, entity, Object eventObject) {
         def result = false
         if(entity.metaClass.hasProperty(entity, event)) {
              def callable = entity."$event"
