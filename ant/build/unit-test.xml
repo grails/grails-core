@@ -43,7 +43,7 @@
 			<fileset dir="${coverage.report}" />
 		</delete>
 		<mkdir dir="${coverage.report}" />
-		<cobertura-report format="html" destdir="cruise/coverage/report">
+		<cobertura-report format="xml" destdir="cruise/coverage/report">
 			<fileset dir="${grails.src.commons}" />
 			<fileset dir="${grails.src.groovy}" />
 			<fileset dir="${grails.src.web}" />
