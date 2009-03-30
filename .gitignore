@@ -1,3 +1,6 @@
+doc
+cobertura.ser
+cruise/coverage/report
 downloads
 test/groovy/grails/config
 test/grails-app
