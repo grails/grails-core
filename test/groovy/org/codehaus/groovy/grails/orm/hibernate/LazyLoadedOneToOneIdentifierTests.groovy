@@ -2,6 +2,8 @@ package org.codehaus.groovy.grails.orm.hibernate
 
 import org.hibernate.Hibernate
 
+import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil
+
 /**
 * @author Graeme Rocher
 * @since 1.0
@@ -47,14 +49,14 @@ class LazyLoadedUser {
 
 
         println "one"
-        assertFalse "user should have been lazy loaded", Hibernate.isInitialized(id.user)
+        assertFalse "user should have been lazy loaded", GrailsHibernateUtil.isInitialized(id, "user")
         println "two"
 
         def dbId = id.userId
 
         assertEquals 1, dbId
 
-        assertFalse "accessed identifier, but lazy association should not have been initialized", Hibernate.isInitialized(id.user) 
+        assertFalse "accessed identifier, but lazy association should not have been initialized", GrailsHibernateUtil.isInitialized(id, "user") 
     }
 
 }

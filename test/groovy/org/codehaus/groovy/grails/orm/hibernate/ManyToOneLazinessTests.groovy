@@ -1,6 +1,7 @@
 package org.codehaus.groovy.grails.orm.hibernate
 
 import org.hibernate.Hibernate
+import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil
 
 /**
 * @author Graeme Rocher
@@ -49,14 +50,12 @@ class ManyToOneLazinessTestsAuthor {
 
         def book = bookClass.get(1)
 
-        author = book.author
 
+        assertFalse "many-to-one association should have been lazy loaded", GrailsHibernateUtil.isInitialized(book, "author")
 
-        assertFalse "many-to-one association should have been lazy loaded", Hibernate.isInitialized(author)
+        assertEquals "Stephen King", book.author.name
 
-        assertEquals "Stephen King", author.name
-
-        assertTrue "lazy many-to-one association should have been initialized",Hibernate.isInitialized(author)
+        assertTrue "lazy many-to-one association should have been initialized",GrailsHibernateUtil.isInitialized(book, "author")
     }
 
 }

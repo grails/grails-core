@@ -46,22 +46,22 @@ class Article extends Content {
 }
 
 @Entity
-class Person {
+class LazyProxiedAssociationsWithInheritancePerson {
     String name
 
 }
 @Entity
-class Author extends Person {
-    Address address
+class LazyProxiedAssociationsWithInheritanceAuthor extends LazyProxiedAssociationsWithInheritancePerson {
+    LazyProxiedAssociationsWithInheritanceAddress address
 }
 @Entity
-class Address {
+class LazyProxiedAssociationsWithInheritanceAddress {
     String houseNumber
 }
 @Entity
-class Book {
+class LazyProxiedAssociationsWithInheritanceBook {
     String title
-    Person author
+    LazyProxiedAssociationsWithInheritancePerson author
 }
 
 
@@ -99,9 +99,9 @@ class Book {
 
     void testLazyProxiesWithInheritance2() {
 
-      def Author = ga.getDomainClass("Author").clazz
-      def Address = ga.getDomainClass("Address").clazz
-      def Book = ga.getDomainClass("Book").clazz
+      def Author = ga.getDomainClass("LazyProxiedAssociationsWithInheritanceAuthor").clazz
+      def Address = ga.getDomainClass("LazyProxiedAssociationsWithInheritanceAddress").clazz
+      def Book = ga.getDomainClass("LazyProxiedAssociationsWithInheritanceBook").clazz
 
 
       def addr = Address.newInstance(houseNumber:'52')

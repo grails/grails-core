@@ -1,10 +1,13 @@
 package org.codehaus.groovy.grails.orm.hibernate
+
+
 /**
  * @author Graeme Rocher
  * @since 1.1
  */
 
 import org.hibernate.Hibernate
+import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil
 
 public class OneToOneLazinessTests extends AbstractGrailsHibernateTests{
 
@@ -39,14 +42,12 @@ class OneToOneLazinessTestsAuthor {
 
         author = authorClass.get(1)
 
-        def book = author.book
-
-        assertFalse "one-to-one association should have been lazy loaded", Hibernate.isInitialized(book)
+        assertFalse "one-to-one association should have been lazy loaded", GrailsHibernateUtil.isInitialized(author, "book")
 
 
-        assertEquals "The Stand", book.title
+        assertEquals "The Stand", author.book.title
 
-        assertTrue "lazy one-to-one association should have been initialized",Hibernate.isInitialized(book)
+        assertTrue "lazy one-to-one association should have been initialized",GrailsHibernateUtil.isInitialized(author, "book")
     }
 
     void testDynamicFinderWithLazyProxy() {
@@ -61,11 +62,11 @@ class OneToOneLazinessTestsAuthor {
 
         author = authorClass.get(1)
 
-        def book = author.book
+        def book = GrailsHibernateUtil.getAssociationProxy(author, "book")
 
         author.discard()
 
-        assertFalse "one-to-one association should have been lazy loaded", Hibernate.isInitialized(book)
+        assertFalse "one-to-one association should have been lazy loaded", GrailsHibernateUtil.isInitialized(author, "book")
 
 
 

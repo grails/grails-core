@@ -1,6 +1,7 @@
 package org.codehaus.groovy.grails.orm.hibernate
 import org.hibernate.Hibernate
 import org.hibernate.proxy.HibernateProxy
+import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil
 
 /**
  * @author Graeme Rocher
@@ -50,9 +51,9 @@ class AttributeB extends AttributeA {
 
         b = B.get(1)
 
-        def type = b.type
+        def type = GrailsHibernateUtil.getAssociationProxy(b, "type")
 
-        assertFalse "should not have been initialized",Hibernate.isInitialized(type)
+        assertFalse "should not have been initialized",GrailsHibernateUtil.isInitialized(b, "type")
 
 
         b.discard()
@@ -81,13 +82,14 @@ class AttributeB extends AttributeA {
 
         b = B.get(1)
 
-        def type = b.type
+        def type = GrailsHibernateUtil.getAssociationProxy(b, "type")
 
-        assertFalse "should not have been initialized",Hibernate.isInitialized(type)
+        assertFalse "should not have been initialized",GrailsHibernateUtil.isInitialized(b, "type")
         assertTrue "should be a hibernate proxy", (type instanceof HibernateProxy)
 
         assertTrue "instanceOf method should have returned true",type.instanceOf(AttributeA)
         assertTrue "instanceOf method should have returned true",type.instanceOf(AttributeB)
+
 
     }
 

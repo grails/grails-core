@@ -20,6 +20,7 @@ import groovy.lang.MetaClass;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.commons.beanutils.PropertyUtils;
 import org.codehaus.groovy.grails.commons.*;
 import org.codehaus.groovy.grails.orm.hibernate.GrailsHibernateDomainClass;
 import org.hibernate.*;
@@ -35,6 +36,7 @@ import org.springframework.orm.hibernate3.HibernateCallback;
 import org.springframework.orm.hibernate3.HibernateTemplate;
 
 import java.lang.reflect.Modifier;
+import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
@@ -300,5 +302,52 @@ public class GrailsHibernateUtil {
             lazyInitializer.initialize();
         }
         return lazyInitializer.getImplementation();        
+    }
+
+    /**
+     * Returns the proxy for a given association or null if it is not proxied
+     *
+     * @param obj The object
+     * @param associationName The named assoication
+     * @return A proxy
+     */
+    public static HibernateProxy getAssociationProxy(Object obj, String associationName) {
+        try {
+            Object proxy = PropertyUtils.getProperty(obj, associationName);
+            if(proxy instanceof HibernateProxy) return (HibernateProxy) proxy;
+            else return null;
+        }
+        catch (IllegalAccessException e) {
+            return null;
+        }
+        catch (InvocationTargetException e) {
+            return null;
+        }
+        catch (NoSuchMethodException e) {
+            return null;
+        }
+    }
+
+    /**
+     * Checks whether an associated property is initialized and returns true if it is
+     *
+     * @param obj The name of the object
+     * @param associationName The name of the association
+     * @return True if is initialized
+     */
+    public static boolean isInitialized(Object obj, String associationName) {
+        try {
+            Object proxy = PropertyUtils.getProperty(obj, associationName);
+            return Hibernate.isInitialized(proxy);
+        }
+        catch (IllegalAccessException e) {
+            return false;
+        }
+        catch (InvocationTargetException e) {
+            return false;
+        }
+        catch (NoSuchMethodException e) {
+            return false;
+        }
     }
 }
