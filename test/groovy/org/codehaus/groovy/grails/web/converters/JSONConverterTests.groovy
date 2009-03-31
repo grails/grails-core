@@ -18,6 +18,7 @@ import org.springframework.validation.Errors
 import org.springframework.validation.BeanPropertyBindingResult
 import org.hibernate.proxy.LazyInitializer
 import org.hibernate.proxy.HibernateProxy
+import grails.converters.JSON
 
 class JSONConverterTests extends AbstractGrailsControllerTests {
 
@@ -39,7 +40,14 @@ class JSONConverterTests extends AbstractGrailsControllerTests {
 
            // @todo this test is fragile and depends on runtime environment because
            // of hash key ordering variations
-           assertEquals( '{"errors":[{"object":"Book","field":"title","rejected-value":null,"message":"Property [title] of class [class Book] cannot be null"},{"object":"Book","field":"author","rejected-value":null,"message":"Property [author] of class [class Book] cannot be null"}]}', response.contentAsString)
+           def json = JSON.parse(response.contentAsString)
+
+           def titleError = json.errors.find { it.field == 'title' }
+
+            assertEquals "Property [title] of class [class Book] cannot be null", titleError.message
+            def authorError = json.errors.find { it.field == 'author' }
+
+            assertEquals "Property [author] of class [class Book] cannot be null", authorError.message
 
        }
 

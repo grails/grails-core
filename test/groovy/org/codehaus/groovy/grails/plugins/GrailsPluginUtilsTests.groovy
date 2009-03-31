@@ -104,20 +104,20 @@ grails {
 
     void testGetPluginDirectories() {
         def pluginDirs = GrailsPluginUtils.getPluginDirectories()
-        assertEquals 5, pluginDirs.size()
+        assertEquals 4, pluginDirs.size()
         assertNotNull pluginDirs.find { it.filename == "jsecurity-0.3" }
         assertNotNull pluginDirs.find { it.filename == "logging-0.1" }
-        assertNotNull pluginDirs.find { it.filename == "searchable-0.5" }
+        //assertNotNull pluginDirs.find { it.filename == "searchable-0.5" }
         assertNotNull pluginDirs.find { it.filename == "grails-debug" }
         assertNotNull pluginDirs.find { it.filename == "grails-dummy" }
     }
 
     void testGetImplicitPluginDirectories() {
         def pluginDirs = GrailsPluginUtils.getImplicitPluginDirectories()
-        assertEquals 3, pluginDirs.size()
+        assertEquals 2, pluginDirs.size()
         assertNotNull pluginDirs.find { it.filename == "jsecurity-0.3" }
         assertNotNull pluginDirs.find { it.filename == "logging-0.1" }
-        assertNotNull pluginDirs.find { it.filename == "searchable-0.5" }
+        //assertNotNull pluginDirs.find { it.filename == "searchable-0.5" }
     }
 
     void testGetPluginScripts() {

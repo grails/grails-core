@@ -46,8 +46,14 @@ class XMLConverterTests extends AbstractGrailsControllerTests {
 
            // @todo this test is fragile and depends on runtime environment because
            // of hash key ordering variations
-           println response.contentAsString
-           assertEquals( '''<?xml version="1.0" encoding="UTF-8"?><errors><error object="Book" field="title"><rejected-value /><message>Property [title] of class [class Book] cannot be null</message></error><error object="Book" field="author"><rejected-value /><message>Property [author] of class [class Book] cannot be null</message></error></errors>''', response.contentAsString)
+
+           def xml = new XmlSlurper().parseText(response.contentAsString)
+
+           def titleError = xml.error.find { it.@field == 'title' }
+           assertEquals 'Property [title] of class [class Book] cannot be null', titleError.message.text()
+           def authorError = xml.error.find { it.@field == 'author' }
+           assertEquals 'Property [author] of class [class Book] cannot be null', authorError.message.text()
+          
        }
 
         void testProxiedDomainClassWithXMLConverter() {
