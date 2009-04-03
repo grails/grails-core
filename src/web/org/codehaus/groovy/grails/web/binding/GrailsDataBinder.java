@@ -116,6 +116,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
         }
         setDisallowedFields(disallowed);
         setAllowedFields(ALL_OTHER_FIELDS_ALLOWED_BY_DEFAULT);
+        setIgnoreInvalidFields(true);
 
     }
 
