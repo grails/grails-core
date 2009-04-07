@@ -66,7 +66,7 @@ public class GrailsBuildEventListener implements BuildListener{
         if(buildSettings!=null) {
             loadEventsScript( findEventsScript(new File(buildSettings.getUserHome(),".grails/scripts")) );
             loadEventsScript( findEventsScript(new File(buildSettings.getBaseDir(), "scripts")) );
-            
+
             for (Resource pluginBase : GrailsPluginUtils.getPluginDirectories()) {
                 try {
                     loadEventsScript( findEventsScript(new File(pluginBase.getFile(), "scripts")) );
@@ -81,24 +81,29 @@ public class GrailsBuildEventListener implements BuildListener{
     public void loadEventsScript(File eventScript) {
         if(eventScript!=null) {
             try {
-                Script script = (Script) classLoader.parseClass(eventScript).newInstance();
-                script.setBinding(new Binding(this.binding.getVariables()) {
-                    @Override
-                    public void setVariable(String var, Object o) {
-                        final Matcher matcher = EVENT_NAME_PATTERN.matcher(var);
-                        if(matcher.matches() && (o instanceof Closure)) {
-                            String eventName = matcher.group(1);
-                            List<Closure> hooks = globalEventHooks.get(eventName);
-                            if(hooks == null) {
-                                hooks = new ArrayList<Closure>();
-                                globalEventHooks.put(eventName, hooks);
+                Class scriptClass = classLoader.parseClass(eventScript);
+                if(scriptClass != null) {
+                    Script script = (Script) scriptClass.newInstance();
+                    script.setBinding(new Binding(this.binding.getVariables()) {
+                        @Override
+                        public void setVariable(String var, Object o) {
+                            final Matcher matcher = EVENT_NAME_PATTERN.matcher(var);
+                            if(matcher.matches() && (o instanceof Closure)) {
+                                String eventName = matcher.group(1);
+                                List<Closure> hooks = globalEventHooks.get(eventName);
+                                if(hooks == null) {
+                                    hooks = new ArrayList<Closure>();
+                                    globalEventHooks.put(eventName, hooks);
+                                }
+                                hooks.add((Closure) o);
                             }
-                            hooks.add((Closure) o);
+                            super.setVariable(var, o);
                         }
-                        super.setVariable(var, o);
-                    }
-                });
-                script.run();
+                    });
+                    script.run();
+                } else {
+                    System.err.println("Could not load event script (script may be empty): " + eventScript);
+                }
             }
 
             catch (Throwable e) {
@@ -108,7 +113,6 @@ public class GrailsBuildEventListener implements BuildListener{
             }
 
         }
-
     }
 
     protected File findEventsScript(File dir) {
