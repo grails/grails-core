@@ -3,8 +3,6 @@
 	<property file="build.properties"/>
 	<property environment="env" />
 
-
-
     <path id="classpath">
         <fileset dir="${grails.lib}">
             <include name="*.jar"/>
