@@ -488,8 +488,23 @@ public class RegexUrlMapping extends AbstractUrlMapping implements UrlMapping {
     /**
      * Compares this UrlMapping instance with the specified UrlMapping instance and deals with URL mapping precedence rules.
      *
+     *  URL Mapping Precedence Order
+     *
+     *   1. Less wildcard tokens.
+     *
+     *       /foo          <- match
+     *       /foo/(*)
+     *
+     *      /foo/(*)/bar/  <- match
+     *      /foo/(*)/(*)
+     *
+     *    2. More static tokens.
+     *
+     *      /foo/(*)/bar   <- match
+     *      /foo/(*)
+     *
      * @param o An instance of the UrlMapping interface
-     * @return 1 if this UrlMapping should match before the specified UrlMapping. 0 if they are equal or -1 if this UrlMapping should match after the given UrlMapping
+     * @return greater than 0 if this UrlMapping should match before the specified UrlMapping. 0 if they are equal or less than 0 if this UrlMapping should match after the given UrlMapping
      */
     public int compareTo(Object o) {
         if (!(o instanceof UrlMapping))
@@ -497,47 +512,33 @@ public class RegexUrlMapping extends AbstractUrlMapping implements UrlMapping {
 
         UrlMapping other = (UrlMapping) o;
 
-        String[] otherTokens = other
-                .getUrlData()
-                .getTokens();
+        // less wildcard tokens
+        Integer wildDiff = getWildcardCount(other) - getWildcardCount(this);
+        if (wildDiff != 0) return wildDiff;
 
+        // more static tokens
+        Integer staticDiff = getStaticTokenCount(this) - getStaticTokenCount(other);
+        if (staticDiff != 0) return staticDiff;
 
-        String[] tokens = getUrlData().getTokens();
-
-        if (isWildcard(this) && !isWildcard(other)) return -1;
-        if (!isWildcard(this) && isWildcard(other)) return 1;
-
-        if (tokens.length < otherTokens.length) {
-            return -1;
-        } else if (tokens.length > otherTokens.length) {
-            return 1;
-        }
-
-        int result = 0;
-        for (int i = 0; i < tokens.length; i++) {
-            String token = tokens[i];
-            if (otherTokens.length > i) {
-                String otherToken = otherTokens[i];
-                if (isWildcard(token) && !isWildcard(otherToken)) {
-                    result = -1;
-                    break;
-                } else if (!isWildcard(token) && isWildcard(otherToken)) {
-                    result = 1;
-                    break;
-                }
-            } else {
-                break;
-            }
-        }
-        return result;
+        return 0;
     }
 
-    private boolean isWildcard(UrlMapping mapping) {
+    private Integer getWildcardCount(UrlMapping mapping) {
         String[] tokens = mapping.getUrlData().getTokens();
+        Integer count = 0;
         for (String token : tokens) {
-            if (isWildcard(token)) return true;
+            if (isWildcard(token)) count++;
         }
-        return false;
+        return count;
+    }
+
+    private Integer getStaticTokenCount(UrlMapping mapping) {
+        String[] tokens = mapping.getUrlData().getTokens();
+        Integer count = 0;
+        for (String token : tokens) {
+            if (!isWildcard(token)) count++;
+        }
+        return count;
     }
 
     private boolean isWildcard(String token) {
