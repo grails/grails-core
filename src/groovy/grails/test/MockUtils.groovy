@@ -585,6 +585,8 @@ class MockUtils {
                     // result (or null if there are none).
                     return result ? result[0] : null
                 }
+            } else {
+                throw new MissingMethodException(method, delegate, args)
             }
         }
     }

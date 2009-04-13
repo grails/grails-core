@@ -100,6 +100,18 @@ class MockUtilsTests extends GroovyTestCase {
     }
 
     /**
+     * Tests that calling a missing static method throws MissingMethodException
+     */
+    void testMissingMethod() {
+        MockUtils.mockDomain(TestDomain)
+
+        def msg = shouldFail(MissingMethodException) {
+            TestDomain.noSuchMethod()
+        }
+        assertEquals 'No signature of method: grails.test.TestDomain.noSuchMethod() is applicable for argument types: () values: []', msg
+    }
+
+    /**
      * Tests the {@link MockUtils#mockDomain(Class, Map, List)} method.
      */
     void testDynamicFinders() {
