@@ -39,6 +39,10 @@
 			<doctitle><![CDATA[<h1>Grails</h1>]]></doctitle>
 			<bottom><![CDATA[<i>Copyright (c) 2005-2009 The Grails project</i>]]></bottom>
 			<classpath refid="classpath"/>
+			<packageset dir="${grails.target}/docs/stubs">
+				<include name="org/codehaus/groovy/grails/**"/>
+				<include name="grails/**"/>
+			</packageset>
 			<packageset dir="${grails.src.commons}">
 				<include name="org/codehaus/groovy/grails/**"/>
 				<include name="grails/**"/>
