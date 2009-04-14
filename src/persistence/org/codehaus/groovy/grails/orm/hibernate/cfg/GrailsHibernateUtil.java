@@ -21,7 +21,6 @@ import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.commons.beanutils.PropertyUtils;
 import org.codehaus.groovy.grails.commons.*;
 import org.codehaus.groovy.grails.orm.hibernate.GrailsHibernateDomainClass;
 import org.hibernate.*;
@@ -38,7 +37,6 @@ import org.springframework.orm.hibernate3.HibernateTemplate;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
-import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
@@ -65,6 +63,7 @@ public class GrailsHibernateUtil {
     public static final String ARGUMENT_IGNORE_CASE = "ignoreCase";
     public static final String ARGUMENT_CACHE = "cache";
     public static final String ARGUMENT_LOCK = "lock";
+    public static final String CONFIG_PROPERTY_CACHE_QUERIES="grails.hibernate.cache.queries";
 
 
     public static void configureHibernateDomainClasses(SessionFactory sessionFactory, GrailsApplication application) {
