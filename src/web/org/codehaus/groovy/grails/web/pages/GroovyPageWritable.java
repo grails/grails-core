@@ -200,7 +200,12 @@ class GroovyPageWritable implements Writable {
     protected void writeGroovySourceToResponse(GroovyPageMetaInfo info, Writer out) throws IOException {
         InputStream in = info.getGroovySource();
         try {
-            in.reset();
+            try {
+                in.reset();
+            }
+            catch (IOException e) {
+                // ignore
+            }
             BufferedReader reader = new BufferedReader(new InputStreamReader(in, "UTF-8"));
 
             int lineNum = 1;
