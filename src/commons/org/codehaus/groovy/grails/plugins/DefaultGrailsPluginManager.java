@@ -93,7 +93,7 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager impl
             new Class[]{Boolean.class, Byte.class, Character.class, Class.class, Double.class, Float.class, Integer.class, Long.class,
                     Number.class, Short.class, String.class, BigInteger.class, BigDecimal.class, URL.class, URI.class};
 
-    private GrailsPluginChangeChecker pluginChangeScanner = new GrailsPluginChangeChecker(this);
+    private GrailsPluginChangeChecker pluginChangeScanner = null;
     private static final int SCAN_INTERVAL = Integer.getInteger("grails.scan.interval", 5000).intValue(); //in ms
 
     private List<GrailsPlugin> delayedLoadPlugins = new LinkedList<GrailsPlugin>();
@@ -172,6 +172,9 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager impl
     }
 
     public void startPluginChangeScanner() {
+        if(this.pluginChangeScanner==null) {
+            pluginChangeScanner = new GrailsPluginChangeChecker(this);
+        }
         if (this.pluginChangeScanner.isAlive()) {
             throw new IllegalStateException("Plugin change scanner is already running!");
         }
