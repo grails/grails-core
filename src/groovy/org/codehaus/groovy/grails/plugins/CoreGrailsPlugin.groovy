@@ -26,6 +26,8 @@ import org.codehaus.groovy.grails.commons.spring.DefaultRuntimeSpringConfigurati
 import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration
 import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAwareBeanPostProcessor
+import org.codehaus.groovy.grails.support.DevelopmentShutdownHook
+import grails.util.Environment
 
 /**
  * A plug-in that configures the core shared beans within the Grails application context 
@@ -53,6 +55,9 @@ class CoreGrailsPlugin {
 		classEditor(ClassEditor) {
 			classLoader = classLoader
 		}
+        if(Environment.current == Environment.DEVELOPMENT)
+            shutdownHook(DevelopmentShutdownHook)
+        
 		customEditors(CustomEditorConfigurer) {
 			customEditors = [(java.lang.Class.class):classEditor]
 		}
