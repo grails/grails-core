@@ -15,24 +15,8 @@
  */
 package org.codehaus.groovy.grails.web.sitemesh;
 
-import java.io.IOException;
-
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.commons.ConfigurationHolder;
-import org.springframework.web.util.UrlPathHelper;
-
 import com.opensymphony.module.sitemesh.Config;
-import com.opensymphony.module.sitemesh.Factory;
+import com.opensymphony.module.sitemesh.factory.DefaultFactory;
 import com.opensymphony.sitemesh.Content;
 import com.opensymphony.sitemesh.ContentProcessor;
 import com.opensymphony.sitemesh.Decorator;
@@ -40,6 +24,15 @@ import com.opensymphony.sitemesh.DecoratorSelector;
 import com.opensymphony.sitemesh.webapp.ContainerTweaks;
 import com.opensymphony.sitemesh.webapp.SiteMeshFilter;
 import com.opensymphony.sitemesh.webapp.SiteMeshWebAppContext;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.grails.commons.ConfigurationHolder;
+import org.springframework.web.util.UrlPathHelper;
+
+import javax.servlet.*;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
 /**
  * Extends the default page filter to overide the apply decorator behaviour
@@ -50,7 +43,7 @@ import com.opensymphony.sitemesh.webapp.SiteMeshWebAppContext;
  */
 public class GrailsPageFilter extends SiteMeshFilter {
 
-	private static final Log LOG = LogFactory.getLog( GrailsPageFilter.class );
+    private static final Log LOG = LogFactory.getLog( GrailsPageFilter.class );
 
     private static final String ALREADY_APPLIED_KEY = "com.opensymphony.sitemesh.APPLIED_ONCE";
     private static final String HTML_EXT = ".html";
@@ -59,13 +52,17 @@ public class GrailsPageFilter extends SiteMeshFilter {
 
 
     private FilterConfig filterConfig;
- 	private ContainerTweaks containerTweaks;
+    private ContainerTweaks containerTweaks;
 
     public void init(FilterConfig filterConfig) {
-		super.init(filterConfig);
-		this.filterConfig = filterConfig;
+        super.init(filterConfig);
+        this.filterConfig = filterConfig;
         this.containerTweaks = new ContainerTweaks();
-        FactoryHolder.setFactory(Factory.getInstance(new Config(filterConfig)));
+        Config config = new Config(filterConfig);
+        DefaultFactory defaultFactory = new DefaultFactory(config);
+        config.getServletContext().setAttribute("sitemesh.factory", defaultFactory);
+        defaultFactory.refresh();
+        FactoryHolder.setFactory(defaultFactory);
     }
 
     public void destroy() {
