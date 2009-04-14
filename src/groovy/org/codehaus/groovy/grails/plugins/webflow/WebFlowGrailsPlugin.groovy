@@ -51,6 +51,7 @@ import org.springframework.webflow.execution.FlowExecutionFactory
 import org.codehaus.groovy.grails.webflow.context.servlet.GrailsFlowUrlHandler
 import org.codehaus.groovy.grails.webflow.execution.GrailsFlowExecutorImpl
 import org.codehaus.groovy.grails.webflow.scope.ScopeRegistrar
+import org.codehaus.groovy.grails.webflow.mvc.servlet.GrailsFlowHandlerAdapter
 
 
 
@@ -105,7 +106,8 @@ class WebFlowGrailsPlugin {
          flowExecutionSnapshotFactory(SerializedFlowExecutionSnapshotFactory, flowExecutionFactory, flowRegistry)
          flowExecutionRepository(DefaultFlowExecutionRepository, conversationManager, flowExecutionSnapshotFactory )
          flowExecutor(GrailsFlowExecutorImpl, flowRegistry, flowExecutionFactory, flowExecutionRepository)
-         mainFlowController(FlowHandlerAdapter) {
+
+         mainFlowController(GrailsFlowHandlerAdapter) {
              flowExecutor = flowExecutor
              flowUrlHandler = { GrailsFlowUrlHandler uh -> }
          }
