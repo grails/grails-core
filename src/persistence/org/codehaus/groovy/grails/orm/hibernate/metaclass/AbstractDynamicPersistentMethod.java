@@ -15,13 +15,13 @@
  */ 
 package org.codehaus.groovy.grails.orm.hibernate.metaclass;
 
+import java.util.regex.Pattern;
+
 import org.codehaus.groovy.grails.commons.metaclass.AbstractDynamicMethodInvocation;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil;
 import org.hibernate.SessionFactory;
 import org.springframework.orm.hibernate3.HibernateTemplate;
 import org.springframework.util.Assert;
-
-import java.util.regex.Pattern;
 
 /**
  * 
@@ -32,18 +32,19 @@ import java.util.regex.Pattern;
 public abstract class AbstractDynamicPersistentMethod extends
         AbstractDynamicMethodInvocation {
 
-    private SessionFactory sessionFactory = null;
     private ClassLoader classLoader = null;
+    private HibernateTemplate hibernateTemplate;
 
     public AbstractDynamicPersistentMethod(Pattern pattern, SessionFactory sessionFactory, ClassLoader classLoader) {
         super(pattern);
-        this.sessionFactory = sessionFactory;
         this.classLoader = classLoader;
+        Assert.notNull(sessionFactory, "Session factory is required!");
+        hibernateTemplate=new HibernateTemplate(sessionFactory);
+        hibernateTemplate.setCacheQueries(GrailsHibernateUtil.isCacheQueriesByDefault());
     }
 
     protected HibernateTemplate getHibernateTemplate() {
-        Assert.notNull(sessionFactory, "Session factory is required!");
-        return new HibernateTemplate(this.sessionFactory);
+    	return hibernateTemplate;
     }
 
     public Object invoke(Object target, String methodName, Object[] arguments) {

@@ -68,6 +68,9 @@ public class ExecuteQueryPersistentMethod
                 if( paginateParams.containsKey( GrailsHibernateUtil.ARGUMENT_OFFSET ) ) {
                     q.setFirstResult( ((Number)paginateParams.remove( GrailsHibernateUtil.ARGUMENT_OFFSET )).intValue() );
                 }
+                if( paginateParams.containsKey( GrailsHibernateUtil.ARGUMENT_CACHE ) ) {
+                    q.setCacheable( ((Boolean)paginateParams.remove( GrailsHibernateUtil.ARGUMENT_CACHE )).booleanValue() );
+                }
                 // process positional HQL params
                 int index = 0;
                 for( Iterator iterator = positionalParams.iterator(); iterator.hasNext(); index++ ) {
@@ -114,6 +117,7 @@ public class ExecuteQueryPersistentMethod
             Map sourceMap = (Map) arguments[paginateParamsIndex];
             if( sourceMap.containsKey( GrailsHibernateUtil.ARGUMENT_MAX )) result.put( GrailsHibernateUtil.ARGUMENT_MAX, sourceMap.get(GrailsHibernateUtil.ARGUMENT_MAX));
             if( sourceMap.containsKey( GrailsHibernateUtil.ARGUMENT_OFFSET )) result.put( GrailsHibernateUtil.ARGUMENT_OFFSET, sourceMap.get(GrailsHibernateUtil.ARGUMENT_OFFSET));
+            if( sourceMap.containsKey( GrailsHibernateUtil.ARGUMENT_CACHE )) result.put( GrailsHibernateUtil.ARGUMENT_CACHE, sourceMap.get(GrailsHibernateUtil.ARGUMENT_CACHE));
         }
         return result;
     }
@@ -137,9 +141,10 @@ public class ExecuteQueryPersistentMethod
         Map result = new HashMap();
         if( arguments.length < 2 || !(arguments[1] instanceof Map) ) return result;
         result.putAll( (Map) arguments[1] );
-        // max and offset are processed by paginate params
+        // max, offset and cache are processed by paginate params
         result.remove( GrailsHibernateUtil.ARGUMENT_MAX );
         result.remove( GrailsHibernateUtil.ARGUMENT_OFFSET );
+        result.remove( GrailsHibernateUtil.ARGUMENT_CACHE );
         return result;
     }
 }

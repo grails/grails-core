@@ -17,6 +17,7 @@ package org.codehaus.groovy.grails.orm.hibernate.cfg;
 import groovy.lang.GroovyObject;
 import groovy.lang.GroovySystem;
 import groovy.lang.MetaClass;
+import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -35,6 +36,7 @@ import org.springframework.beans.SimpleTypeConverter;
 import org.springframework.orm.hibernate3.HibernateCallback;
 import org.springframework.orm.hibernate3.HibernateTemplate;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLException;
@@ -176,7 +178,7 @@ public class GrailsHibernateUtil {
                 }
             }
         }
-        
+
     }
 
     /**
@@ -258,7 +260,7 @@ public class GrailsHibernateUtil {
                 if(canModifyReadWriteState(session, target)) {
                     SessionImplementor sessionImpl = (SessionImplementor) session;
                     EntityEntry ee = sessionImpl.getPersistenceContext().getEntry(target);
-                    
+
                     if(ee != null && ee.getStatus() == Status.READ_ONLY) {
                         Object actualTarget = target;
                         if(target instanceof HibernateProxy) {
@@ -301,7 +303,7 @@ public class GrailsHibernateUtil {
         if(lazyInitializer.isUninitialized()) {
             lazyInitializer.initialize();
         }
-        return lazyInitializer.getImplementation();        
+        return lazyInitializer.getImplementation();
     }
 
     /**
@@ -349,5 +351,10 @@ public class GrailsHibernateUtil {
         catch (NoSuchMethodException e) {
             return false;
         }
+    }
+
+    public static boolean isCacheQueriesByDefault() {
+        Object o = ConfigurationHolder.getFlatConfig().get(CONFIG_PROPERTY_CACHE_QUERIES);
+        return (o != null && o instanceof Boolean)?((Boolean)o).booleanValue():false;
     }
 }

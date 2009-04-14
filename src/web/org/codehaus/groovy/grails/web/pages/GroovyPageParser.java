@@ -16,6 +16,8 @@
 package org.codehaus.groovy.grails.web.pages;
 
 import grails.util.Environment;
+
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -23,6 +25,8 @@ import org.codehaus.groovy.grails.commons.*;
 import org.codehaus.groovy.grails.web.taglib.GrailsTagRegistry;
 import org.codehaus.groovy.grails.web.taglib.GroovySyntaxTag;
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
+import org.codehaus.groovy.grails.web.util.StreamByteBuffer;
+import org.codehaus.groovy.grails.web.util.StreamCharBuffer;
 
 import java.io.*;
 import java.util.*;
@@ -89,6 +93,7 @@ public class GroovyPageParser implements Tokens {
     };
     private static final String CONFIG_PROPERTY_DEFAULT_CODEC = "grails.views.default.codec";
     private static final String CONFIG_PROPERTY_GSP_ENCODING = "grails.views.gsp.encoding";
+    private static final String CONFIG_PROPERTY_GSP_KEEPGENERATED_DIR = "grails.views.gsp.keepgenerateddir";
 
     private String codecClassName;
     private String codecName;
@@ -101,6 +106,8 @@ public class GroovyPageParser implements Tokens {
     private String gspEncoding;
     public static final String GROOVY_SOURCE_CHAR_ENCODING = "UTF-8";
     private Map jspTags = new HashMap();
+    
+    private File keepGeneratedDirectory;
 
     public String getContentType() {
         return this.contentType;
@@ -148,7 +155,17 @@ public class GroovyPageParser implements Tokens {
         makeName(name);
         Object o = config.get(CONFIG_PROPERTY_DEFAULT_CODEC);
         lookupCodec(o);
-
+        
+        Object keepDirObj = config.get(CONFIG_PROPERTY_GSP_KEEPGENERATED_DIR);
+        if(keepDirObj instanceof File) {
+        	keepGeneratedDirectory=((File)keepDirObj);
+        } else if (keepDirObj != null) {
+        	keepGeneratedDirectory=new File(String.valueOf(keepDirObj));
+        }
+        if(keepGeneratedDirectory != null && !keepGeneratedDirectory.isDirectory()) {
+        	LOG.warn("The directory specified with " + CONFIG_PROPERTY_GSP_KEEPGENERATED_DIR + " config parameter doesn't exist or isn't a readable directory. Absolute path: '" + keepGeneratedDirectory.getAbsolutePath() + "' Keepgenerated will be disabled.");
+        	keepGeneratedDirectory=null;
+        }
     } // Parse()
 
     private void lookupCodec(Object o) {
@@ -168,30 +185,54 @@ public class GroovyPageParser implements Tokens {
     public int[] getLineNumberMatrix() {
         return out.getLineNumbers();
     }
+    
     public InputStream parse() {
+    	StreamCharBuffer streamBuffer=new StreamCharBuffer(1024);
+    	StreamByteBuffer byteOutputBuffer=new StreamByteBuffer(1024);
+    	
+    	try {
+    		streamBuffer.connectTo(new OutputStreamWriter(byteOutputBuffer.getOutputStream(), GROOVY_SOURCE_CHAR_ENCODING), true);
+	    } catch (UnsupportedEncodingException e) {
+	        throw new RuntimeException("Grails cannot run unless your environment supports UTF-8!");
+	    }
+	    
+	    File keepGeneratedFile = null;
+    	Writer keepGeneratedWriter = null;
+    	if(keepGeneratedDirectory != null) {
+    		keepGeneratedFile = new File(keepGeneratedDirectory, className);
+	    	try {
+	    		keepGeneratedWriter = new OutputStreamWriter(new FileOutputStream(keepGeneratedFile), GROOVY_SOURCE_CHAR_ENCODING);
+	    	} catch (IOException e) {
+	    		LOG.warn("Cannot open keepgenerated file for writing. File's absolute path is '" + keepGeneratedFile.getAbsolutePath() + "'");
+	    		keepGeneratedFile=null;
+	    	}
+	    	streamBuffer.connectTo(keepGeneratedWriter, true);
+	    }
 
-        StringWriter sw = new StringWriter();
-        out = new GSPWriter(sw,this);
-        page();
-        finalPass = true;
-        scan.reset();
-        previousContentWasNonWhitespace = false;
-        currentlyBufferingWhitespace = false;
-        page();
-
-        // This gets bytes in system's default encoding
-        InputStream in = null;
-        try {
-            in = new ByteArrayInputStream(sw.toString().getBytes(GROOVY_SOURCE_CHAR_ENCODING));
-        } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException("Grails cannot run unless your environment supports UTF-8!");
-        }
-        //System.out.println("Compiled GSP into Groovy code: " + sw.toString());
-        if(LOG.isDebugEnabled()) {
-            LOG.debug("Compiled GSP into Groovy code: " + sw.toString());
-        }
-        scan = null;
-        return in;
+    	try {
+		    out = new GSPWriter(streamBuffer.getWriter(),this);
+	        page();
+	        finalPass = true;
+	        scan.reset();
+	        previousContentWasNonWhitespace = false;
+	        currentlyBufferingWhitespace = false;
+	        page();
+	        
+	        out.flush();	
+	        
+	        if(LOG.isDebugEnabled()) {
+	        	if(keepGeneratedFile != null) {
+	        		LOG.debug("Compiled GSP into Groovy code. Source is in " + keepGeneratedFile);
+	        	}  else {
+	        		LOG.debug("Configure " + CONFIG_PROPERTY_GSP_KEEPGENERATED_DIR + " property to view generated source.");
+	        	}
+	        }
+	        scan = null;
+	        InputStream in = byteOutputBuffer.getInputStream();
+	        return in;
+    	} finally {
+    		IOUtils.closeQuietly(keepGeneratedWriter);
+    	}
     } 
 
 
@@ -754,20 +795,8 @@ public class GroovyPageParser implements Tokens {
     }
 
     private String readStream(InputStream in) throws IOException {
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        try {
-            byte[] buf = new byte[8192];
-            for (;;) {
-                int read = in.read(buf);
-                if (read <= 0) break;
-                out.write(buf, 0, read);
-            }
-            return out.toString( gspEncoding);
-        } finally {
-            out.close();
-            in.close();
-        }
-    } // readStream()
+    	return IOUtils.toString(in, gspEncoding);
+    }
 
     private void script(boolean gsp) {
         if (!finalPass) return;
