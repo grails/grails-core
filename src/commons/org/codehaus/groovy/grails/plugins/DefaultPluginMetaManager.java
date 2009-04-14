@@ -23,22 +23,19 @@ import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsResourceUtils;
 import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException;
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware;
+
+import org.dom4j.Document;
+import org.dom4j.Element;
+import org.dom4j.XPath;
+import org.dom4j.DocumentHelper;
+import org.dom4j.io.SAXReader;
+
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ResourceLoaderAware;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathFactory;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -52,6 +49,7 @@ import java.util.Map;
  * set of resources
  *
  * @author Graeme Rocher
+ * @author Chanwit Kaewkasi 
  * @since 0.6
  *
  *        <p/>
@@ -117,25 +115,22 @@ public class DefaultPluginMetaManager implements PluginMetaManager, GrailsApplic
 
             try {
                 inputStream = pluginDescriptor.getInputStream();
-                DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-                Document doc = builder.parse(inputStream);
-                Element pluginElement = doc.getDocumentElement();
+                SAXReader reader = new SAXReader();
+                Document doc = reader.read(inputStream);
+                Element pluginElement = doc.getRootElement();
 
-                String pluginName = pluginElement.getAttribute("name");
-                String pluginVersion = pluginElement.getAttribute("version");
+                String pluginName = pluginElement.attribute("name").getText();
+                String pluginVersion = pluginElement.attribute("version").getText();
 
                 if(StringUtils.isBlank(pluginName)) throw new GrailsConfigurationException("Plug-in descriptor ["+pluginDescriptor+"] doesn't specify a plug-in name. It must be corrupted, try re-install the plug-in");
                 if(StringUtils.isBlank(pluginVersion)) throw new GrailsConfigurationException("Plug-in descriptor ["+pluginDescriptor+"] with name ["+pluginName+"] doesn't specify a plug-in version. It must be corrupted, try re-install the plug-in");
 
-                XPath xpath = XPathFactory.newInstance().newXPath();
-                NodeList nodes = (NodeList) xpath.evaluate(
-                        "/plugin/resources/resource",
-                        doc,
-                        XPathConstants.NODESET);
+                XPath xpath = DocumentHelper.createXPath("/plugin/resources/resource");
+                List nodes = xpath.selectNodes(doc);
                 List pluginResources = new ArrayList();
-                for (int j = 0; j < nodes.getLength(); j++) {
-                    Node node = nodes.item(j);
-                    pluginResources.add(node.getTextContent());
+                for (int j = 0; j < nodes.size(); j++) {
+                    Element node = (Element) nodes.get(j);
+                    pluginResources.add(node.getText());
                 }
 
                 PluginMeta pluginMeta = new PluginMeta(pluginName, pluginVersion);

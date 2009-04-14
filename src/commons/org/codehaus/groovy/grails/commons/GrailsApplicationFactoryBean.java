@@ -21,17 +21,17 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.grails.compiler.injection.GrailsInjectionOperation;
 import org.codehaus.groovy.grails.compiler.support.GrailsResourceLoader;
+
+import org.dom4j.DocumentHelper;
+import org.dom4j.Element;
+import org.dom4j.XPath;
+import org.dom4j.io.SAXReader;
+
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.core.io.Resource;
 import org.springframework.util.Assert;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
 
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathFactory;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -41,6 +41,7 @@ import java.util.List;
  * 
  * @author Steven Devijver
  * @author Graeme Rocher
+ * @author Chanwit Kaewkasi 
  *
  * @since 0.1
  *
@@ -64,7 +65,7 @@ public class GrailsApplicationFactoryBean implements FactoryBean, InitializingBe
 	}
 
 	public GrailsApplicationFactoryBean() {
-		super();		
+		super();
 	}
 
 
@@ -81,20 +82,18 @@ public class GrailsApplicationFactoryBean implements FactoryBean, InitializingBe
                 inputStream = descriptor.getInputStream();
 
                 // Get all the resource nodes in the descriptor.
-                XPath xpath = XPathFactory.newInstance().newXPath();
-                NodeList grailsClasses = (NodeList) xpath.evaluate(
-                        "/grails/resources/resource",
-                        new InputSource(inputStream),
-                        XPathConstants.NODESET);
+                SAXReader reader = new SAXReader();
+                XPath xpath = DocumentHelper.createXPath("/grails/resources/resource");
+                List grailsClasses = xpath.selectNodes(reader.read(inputStream));
 
                 // Each resource node should contain a full class name,
                 // so we attempt to load them as classes.
-                for (int i = 0; i < grailsClasses.getLength(); i++) {
-                    Node node = grailsClasses.item(i);
+                for (int i = 0; i < grailsClasses.size(); i++) {
+                    Element node = (Element) grailsClasses.get(i);
                     try {
-                        classes.add(classLoader.loadClass(node.getTextContent()));
+                        classes.add(classLoader.loadClass(node.getText()));
                     } catch (ClassNotFoundException e) {
-                        LOG.warn("Class with name ["+node.getTextContent()+"] was not found, and hence not loaded. Possible empty class or script definition?");
+                        LOG.warn("Class with name ["+node.getText()+"] was not found, and hence not loaded. Possible empty class or script definition?");
                     }
                 }
             } finally {

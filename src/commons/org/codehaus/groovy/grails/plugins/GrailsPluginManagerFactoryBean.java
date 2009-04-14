@@ -19,6 +19,10 @@ import groovy.lang.GroovyClassLoader;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.dom4j.DocumentHelper;
+import org.dom4j.Element;
+import org.dom4j.XPath;
+import org.dom4j.io.SAXReader;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
@@ -26,13 +30,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
 
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathFactory;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -41,6 +39,7 @@ import java.util.List;
  * A factory bean for loading the GrailsPluginManager instance
  * 
  * @author Graeme Rocher
+ * @author Chanwit Kaewkasi
  * @since 0.4
  *
  */
@@ -87,14 +86,13 @@ public class GrailsPluginManagerFactoryBean implements FactoryBean, Initializing
 
             try {
                 inputStream = descriptor.getInputStream();
-                XPath xpath = XPathFactory.newInstance().newXPath();
-                NodeList nodes = (NodeList) xpath.evaluate(
-                        "/grails/plugins/plugin",
-                        new InputSource(inputStream),
-                        XPathConstants.NODESET);
-                for (int i = 0; i < nodes.getLength(); i++) {
-                    Node node = nodes.item(i);
-                    final String pluginName = node.getTextContent();
+                SAXReader reader = new SAXReader();
+                XPath xpath = DocumentHelper.createXPath("/grails/plugins/plugin");
+                List nodes = xpath.selectNodes(reader.read(inputStream));  
+
+                for (int i = 0; i < nodes.size(); i++) {
+                    Element node = (Element) nodes.get(i);
+                    final String pluginName = node.getText();
                     classes.add(classLoader.loadClass(pluginName));
                 }
             } finally {
