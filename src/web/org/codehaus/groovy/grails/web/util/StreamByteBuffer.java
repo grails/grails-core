@@ -1,16 +1,13 @@
 package org.codehaus.groovy.grails.web.util;
 
+import org.apache.commons.lang.ArrayUtils;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
-import java.nio.charset.CharacterCodingException;
-import java.nio.charset.Charset;
-import java.nio.charset.CharsetDecoder;
-import java.nio.charset.CoderResult;
-import java.nio.charset.CodingErrorAction;
-import java.util.Arrays;
+import java.nio.charset.*;
 import java.util.LinkedList;
 
 /**
@@ -104,7 +101,7 @@ public class StreamByteBuffer {
 				int len=charbuffer.remaining();
 				char[] ch=charbuffer.array();
 				if(len != ch.length) {
-					ch=Arrays.copyOfRange(ch, 0, len);
+					ch= ArrayUtils.subarray(ch, 0, len);
 				}
 				str=StringCharArrayAccessor.createString(ch);
 			} else {
