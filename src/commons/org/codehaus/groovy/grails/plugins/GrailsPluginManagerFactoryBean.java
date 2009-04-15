@@ -16,6 +16,8 @@
 package org.codehaus.groovy.grails.plugins;
 
 import groovy.lang.GroovyClassLoader;
+import groovy.util.XmlSlurper;
+import groovy.util.slurpersupport.GPathResult;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
@@ -26,13 +28,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
 
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathFactory;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -41,6 +37,7 @@ import java.util.List;
  * A factory bean for loading the GrailsPluginManager instance
  * 
  * @author Graeme Rocher
+ * @author Chanwit Kaewkasi
  * @since 0.4
  *
  */
@@ -87,14 +84,15 @@ public class GrailsPluginManagerFactoryBean implements FactoryBean, Initializing
 
             try {
                 inputStream = descriptor.getInputStream();
-                XPath xpath = XPathFactory.newInstance().newXPath();
-                NodeList nodes = (NodeList) xpath.evaluate(
-                        "/grails/plugins/plugin",
-                        new InputSource(inputStream),
-                        XPathConstants.NODESET);
-                for (int i = 0; i < nodes.getLength(); i++) {
-                    Node node = nodes.item(i);
-                    final String pluginName = node.getTextContent();
+
+                // Xpath: /grails/plugins/plugin, where root is /grails
+                GPathResult root = new XmlSlurper().parse(inputStream);
+                GPathResult plugins = (GPathResult) root.getProperty("plugins");
+                GPathResult nodes = (GPathResult) plugins.getProperty("plugin");
+                
+                for (int i = 0; i < nodes.size(); i++) {
+                    GPathResult node = (GPathResult) nodes.getAt(i);
+                    final String pluginName = node.text();
                     classes.add(classLoader.loadClass(pluginName));
                 }
             } finally {
