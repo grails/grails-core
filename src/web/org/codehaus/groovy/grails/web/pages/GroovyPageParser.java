@@ -188,7 +188,7 @@ public class GroovyPageParser implements Tokens {
     
     public InputStream parse() {
     	StreamCharBuffer streamBuffer=new StreamCharBuffer(1024);
-    	StreamByteBuffer byteOutputBuffer=new StreamByteBuffer(1024);
+    	StreamByteBuffer byteOutputBuffer=new StreamByteBuffer(1024, StreamByteBuffer.ReadMode.RETAIN_AFTER_READING);
     	
     	try {
     		streamBuffer.connectTo(new OutputStreamWriter(byteOutputBuffer.getOutputStream(), GROOVY_SOURCE_CHAR_ENCODING), true);

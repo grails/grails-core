@@ -46,6 +46,17 @@ public class StreamByteBufferTest extends TestCase {
 		assertEquals("Hello öäåÖÄÅ", byteBuffer.readAsString("UTF-8"));
 	}
 
+	public void testToStringRetain() throws IOException {
+		StreamByteBuffer byteBuffer = new StreamByteBuffer(1024, StreamByteBuffer.ReadMode.RETAIN_AFTER_READING);
+		PrintWriter pw=new PrintWriter(new OutputStreamWriter(byteBuffer.getOutputStream(),"UTF-8"));
+		pw.print("Hello öäåÖÄÅ");
+		pw.close();
+		assertEquals("Hello öäåÖÄÅ", byteBuffer.readAsString("UTF-8"));
+		byteBuffer.reset();
+		// call a second time to test if the RETAIN_AFTER_READING mode works as expected
+		assertEquals("Hello öäåÖÄÅ", byteBuffer.readAsString("UTF-8"));
+	}
+	
 	public void testToInputStream() throws IOException {
 		StreamByteBuffer byteBuffer = createTestInstance();
 		InputStream input = byteBuffer.getInputStream();
