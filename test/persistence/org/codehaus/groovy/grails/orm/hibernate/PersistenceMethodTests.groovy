@@ -46,7 +46,7 @@ public class PersistentMethodTestsDescendent extends PersistentMethodTests {
 
     public void testMethodSignatures() {
 
-        FindByPersistentMethod findBy = new FindByPersistentMethod( grailsApplication,null,new GroovyClassLoader());
+        FindByPersistentMethod findBy = new FindByPersistentMethod( grailsApplication,sessionFactory,new GroovyClassLoader());
         assertTrue(findBy.isMethodMatch("findByFirstName"));
         assertTrue(findBy.isMethodMatch("findByFirstNameAndLastName"));
         assertFalse(findBy.isMethodMatch("rubbish"));
