@@ -25,13 +25,13 @@ import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsResourceUtils;
 import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException;
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware;
+
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ResourceLoaderAware;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 
-import javax.xml.xpath.XPathConstants;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -119,7 +119,7 @@ public class DefaultPluginMetaManager implements PluginMetaManager, GrailsApplic
                 if(StringUtils.isBlank(pluginName)) throw new GrailsConfigurationException("Plug-in descriptor ["+pluginDescriptor+"] doesn't specify a plug-in name. It must be corrupted, try re-install the plug-in");
                 if(StringUtils.isBlank(pluginVersion)) throw new GrailsConfigurationException("Plug-in descriptor ["+pluginDescriptor+"] with name ["+pluginName+"] doesn't specify a plug-in version. It must be corrupted, try re-install the plug-in");
 
-                // XPath: /plugin/resources/resource, where pluginElement is /plugin 
+                // XPath: /plugin/resources/resource, where pluginElement is /plugin
                 GPathResult resources = (GPathResult) pluginElement.getProperty("resources");
                 GPathResult nodes = (GPathResult) resources.getProperty("resource");
                 List pluginResources = new ArrayList();

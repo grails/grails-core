@@ -61,7 +61,7 @@ public class GrailsApplicationFactoryBean implements FactoryBean, InitializingBe
 	}
 
 	public GrailsApplicationFactoryBean() {
-		super();		
+		super();
 	}
 
 
@@ -78,7 +78,7 @@ public class GrailsApplicationFactoryBean implements FactoryBean, InitializingBe
                 inputStream = descriptor.getInputStream();
 
                 // Get all the resource nodes in the descriptor.
-                // Xpath: /grails/resources/resource, where root is /grails 
+                // Xpath: /grails/resources/resource, where root is /grails
                 GPathResult root = new XmlSlurper().parse(inputStream);
                 GPathResult resources = (GPathResult) root.getProperty("resources");
                 GPathResult grailsClasses = (GPathResult) resources.getProperty("resource");
