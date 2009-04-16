@@ -41,7 +41,6 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator, Resourc
     String basedir = "."
     boolean overwrite = false
     def engine = new SimpleTemplateEngine()
-    def ant = new AntBuilder()
     ResourceLoader resourceLoader
     Template renderEditorTemplate
 
@@ -210,6 +209,7 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator, Resourc
     private canWrite(testFile) {
         if (!overwrite && testFile.exists()) {
             try {
+                def ant = new AntBuilder()
                 ant.input(message: "File ${testFile} already exists. Overwrite?", "y,n,a", addproperty: "overwrite.${testFile.name}")
                 overwrite = (ant.antProject.properties."overwrite.${testFile.name}" == "a") ? true : overwrite
                 return overwrite || ((ant.antProject.properties."overwrite.${testFile.name}" == "y") ? true : false)

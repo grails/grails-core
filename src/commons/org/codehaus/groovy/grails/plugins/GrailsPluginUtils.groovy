@@ -36,9 +36,13 @@ public class GrailsPluginUtils {
     static final String WILDCARD = "*";
     public static final GRAILS_HOME
     static {
-        def ant = new AntBuilder()
-        ant.property(environment: "env")
-        GRAILS_HOME = ant.antProject.properties."env.GRAILS_HOME"
+        try {
+            GRAILS_HOME = System.getenv("GRAILS_HOME")
+        }
+        catch (Throwable t) {
+            // probably due to permissions error
+            GRAILS_HOME = "UNKNOWN"
+        }
     }
 
 
