@@ -255,7 +255,12 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
         }
 
 
-        Thread.currentThread().setContextClassLoader(cl);
+        try {
+            Thread.currentThread().setContextClassLoader(cl);
+        }
+        catch (java.security.AccessControlException e) {
+            // container doesn't allow this, in WAR deployment this should be an issue
+        }
 
         return cl;
 

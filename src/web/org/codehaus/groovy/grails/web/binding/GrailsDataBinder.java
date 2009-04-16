@@ -578,7 +578,13 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
         ClassLoader currentClassLoader = Thread.currentThread().getContextClassLoader();
         ClassLoader grailsClassLoader = getTarget().getClass().getClassLoader();
         try {
-            Thread.currentThread().setContextClassLoader(grailsClassLoader);
+            try {
+                Thread.currentThread().setContextClassLoader(grailsClassLoader);
+            }
+            catch (java.security.AccessControlException e) {
+                // container doesn't allow, probably related to WAR deployment on AppEngine. proceed.
+            }
+
 
             try {
                 persisted = InvokerHelper.invokeStaticMethod(type, "get", id);
@@ -588,7 +594,12 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
             }
 
         } finally {
-            Thread.currentThread().setContextClassLoader(currentClassLoader);
+            try {
+                Thread.currentThread().setContextClassLoader(currentClassLoader);
+            }
+            catch (java.security.AccessControlException e) {
+                // container doesn't allow, probably related to WAR deployment on AppEngine. proceed.
+            }            
         }
         return persisted;
     }
