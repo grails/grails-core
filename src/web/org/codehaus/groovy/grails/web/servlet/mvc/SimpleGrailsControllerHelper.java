@@ -284,7 +284,12 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
             }
 
         } finally {
-            Thread.currentThread().setContextClassLoader(cl);
+            try {
+                Thread.currentThread().setContextClassLoader(cl);
+            }
+            catch (java.security.AccessControlException e) {
+                // not allowed by container, probably related to WAR deployment on AppEngine. Proceed.
+            }
         }
     }
 

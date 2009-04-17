@@ -108,8 +108,13 @@ public class GrailsContextLoader extends ContextLoader {
                 parent.close();
             }
 
-            Thread.currentThread().setContextClassLoader(getClass().getClassLoader());
-            
+            try {
+                Thread.currentThread().setContextClassLoader(getClass().getClassLoader());
+            }
+            catch (java.security.AccessControlException e) {
+                // container doesn't allow, probably related to WAR deployment on AppEngine. proceed.
+            }
+
             ApplicationHolder.setApplication(null);
             ServletContextHolder.setServletContext(null);
             PluginManagerHolder.setPluginManager(null);

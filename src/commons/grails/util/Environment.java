@@ -20,6 +20,7 @@ package grails.util;
 import java.util.HashMap;
 import java.util.Locale;
 
+
 /**
  * An enum that represents the current environment
  *
@@ -30,22 +31,30 @@ import java.util.Locale;
  */
 public enum Environment {
     DEVELOPMENT, PRODUCTION, TEST, APPLICATION, CUSTOM;
-
     /**
      * Constant used to resolve the environment via System.getProperty(Environment.KEY)
      */
     public static String KEY = "grails.env";
 
     /**
+     * Specify whether reloading is enabled for this environment
+     */
+    public static String RELOAD_ENABLED = "grails.reload.enabled";
+
+    /**
+     * The location where to reload resources from
+     */
+    public static final String RELOAD_LOCATION = "grails.reload.location";
+
+
+    /**
      * Constants that indicates whether this GrailsApplication is running in the default environment
      */
     public static final String DEFAULT = "grails.env.default";
-
-
     private static final String PRODUCTION_ENV_SHORT_NAME = "prod";
     private static final String DEVELOPMENT_ENVIRONMENT_SHORT_NAME = "dev";
-    private static final String TEST_ENVIRONMENT_SHORT_NAME = "test";
 
+    private static final String TEST_ENVIRONMENT_SHORT_NAME = "test";
     private static HashMap<String, String> envNameMappings = new HashMap<String, String>() {{
         put(DEVELOPMENT_ENVIRONMENT_SHORT_NAME, Environment.DEVELOPMENT.getName());
         put(PRODUCTION_ENV_SHORT_NAME, Environment.PRODUCTION.getName());
@@ -135,5 +144,40 @@ public enum Environment {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    /**
+     * @return Returns whether reload is enabled for the environment
+     */
+    public boolean isReloadEnabled() {
+        final boolean reloadOverride = Boolean.getBoolean(RELOAD_ENABLED);
+
+        final String reloadLocation = getReloadLocationInternal();
+        final boolean reloadLocationSpecified = isNotBlank(reloadLocation);
+        if(this == DEVELOPMENT && reloadLocationSpecified && !Metadata.getCurrent().isWarDeployed()) return true;
+        return reloadOverride && reloadLocationSpecified;
+    }
+
+    private boolean isNotBlank(String reloadLocation) {
+        return (reloadLocation !=null && reloadLocation.length()>0 );
+    }
+
+    /**
+     * @return Obtains the location to reload resources from
+     */
+    public String getReloadLocation() {
+        String location = getReloadLocationInternal();
+        if(isNotBlank(location)) {
+            return location;
+        }
+        else {
+            throw new IllegalStateException("Cannot check reload enabled, ["+RELOAD_LOCATION+"] or ["+BuildSettings.APP_BASE_DIR+"] not set! Specify the system property.") ;
+        }
+    }
+
+    private String getReloadLocationInternal() {
+        String location = System.getProperty(RELOAD_LOCATION);
+        if(location==null) location = System.getProperty(BuildSettings.APP_BASE_DIR);
+        return location;
     }
 }

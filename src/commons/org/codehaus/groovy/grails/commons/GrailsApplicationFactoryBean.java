@@ -16,6 +16,8 @@
 package org.codehaus.groovy.grails.commons;
 
 import groovy.lang.GroovyClassLoader;
+import groovy.util.XmlSlurper;
+import groovy.util.slurpersupport.GPathResult;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.control.CompilerConfiguration;
@@ -25,13 +27,7 @@ import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.core.io.Resource;
 import org.springframework.util.Assert;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
 
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathFactory;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -41,6 +37,7 @@ import java.util.List;
  * 
  * @author Steven Devijver
  * @author Graeme Rocher
+ * @author Chanwit Kaewkasi 
  *
  * @since 0.1
  *
@@ -64,7 +61,7 @@ public class GrailsApplicationFactoryBean implements FactoryBean, InitializingBe
 	}
 
 	public GrailsApplicationFactoryBean() {
-		super();		
+		super();
 	}
 
 
@@ -81,20 +78,19 @@ public class GrailsApplicationFactoryBean implements FactoryBean, InitializingBe
                 inputStream = descriptor.getInputStream();
 
                 // Get all the resource nodes in the descriptor.
-                XPath xpath = XPathFactory.newInstance().newXPath();
-                NodeList grailsClasses = (NodeList) xpath.evaluate(
-                        "/grails/resources/resource",
-                        new InputSource(inputStream),
-                        XPathConstants.NODESET);
+                // Xpath: /grails/resources/resource, where root is /grails
+                GPathResult root = new XmlSlurper().parse(inputStream);
+                GPathResult resources = (GPathResult) root.getProperty("resources");
+                GPathResult grailsClasses = (GPathResult) resources.getProperty("resource");
 
                 // Each resource node should contain a full class name,
                 // so we attempt to load them as classes.
-                for (int i = 0; i < grailsClasses.getLength(); i++) {
-                    Node node = grailsClasses.item(i);
+                for (int i = 0; i < grailsClasses.size(); i++) {
+                    GPathResult node = (GPathResult) grailsClasses.getAt(i);
                     try {
-                        classes.add(classLoader.loadClass(node.getTextContent()));
+                        classes.add(classLoader.loadClass(node.text()));
                     } catch (ClassNotFoundException e) {
-                        LOG.warn("Class with name ["+node.getTextContent()+"] was not found, and hence not loaded. Possible empty class or script definition?");
+                        LOG.warn("Class with name ["+node.text()+"] was not found, and hence not loaded. Possible empty class or script definition?");
                     }
                 }
             } finally {

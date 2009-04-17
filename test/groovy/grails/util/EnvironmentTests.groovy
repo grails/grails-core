@@ -54,4 +54,38 @@ grails.env=production
 
     }
 
+    void testReloadEnabled() {
+        Metadata.getInstance(new ByteArrayInputStream('''
+grails.env=production
+'''.bytes))
+
+        
+        assertFalse "reload should be disabled by default in production", Environment.getCurrent().isReloadEnabled()
+
+
+        System.setProperty("grails.env", "dev")
+
+        assertFalse "reload should be disabled by default in development unless base.dir set", Environment.getCurrent().isReloadEnabled()
+
+        System.setProperty("base.dir", ".")
+
+        assertTrue "reload should be enabled by default in development if base.dir set", Environment.getCurrent().isReloadEnabled()
+
+        System.setProperty("base.dir", "")
+
+        System.setProperty("grails.env", "prod")
+
+        assertFalse "reload should be disabled by default in production if base.dir set", Environment.getCurrent().isReloadEnabled()
+
+        System.setProperty(Environment.RELOAD_ENABLED, "true")
+
+        assertFalse "reload should be disabled by default in production if reload enabled set but not location", Environment.getCurrent().isReloadEnabled()
+
+        System.setProperty(Environment.RELOAD_LOCATION, ".")
+
+        assertTrue "reload should be enabled by default in production if reload enabled and location set", Environment.getCurrent().isReloadEnabled()
+
+
+    }
+
 }
