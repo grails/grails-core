@@ -14,7 +14,9 @@
  */
 package org.codehaus.groovy.grails.web.pages;
 
+import grails.util.Environment;
 import grails.util.GrailsUtil;
+import grails.util.Metadata;
 import groovy.lang.GroovyClassLoader;
 import groovy.text.Template;
 import org.apache.commons.lang.StringUtils;
@@ -23,11 +25,11 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.grails.commons.GrailsResourceUtils;
 import org.codehaus.groovy.grails.support.ResourceAwareTemplateEngine;
+import org.codehaus.groovy.grails.web.errors.GrailsExceptionResolver;
 import org.codehaus.groovy.grails.web.pages.exceptions.GroovyPagesException;
 import org.codehaus.groovy.grails.web.pages.ext.jsp.TagLibraryResolver;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
-import org.codehaus.groovy.grails.web.errors.GrailsExceptionResolver;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -360,9 +362,14 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
 
     private Resource getResourceWithinContext(String uri) {
         if(resourceLoader == null) throw new IllegalStateException("TemplateEngine not initialised correctly, no [resourceLoader] specified!");
-        Resource r = servletContextLoader.getResource(uri);
-        if(r.exists()) return r;
-        return resourceLoader.getResource(uri);
+        if(Environment.getCurrent().isReloadEnabled() && Metadata.getCurrent().isWarDeployed()) {
+            return resourceLoader.getResource(uri);
+        }
+        else {
+            Resource r = servletContextLoader.getResource(uri);
+            if(r.exists()) return r;
+            return resourceLoader.getResource(uri);
+        }
     }
 
 

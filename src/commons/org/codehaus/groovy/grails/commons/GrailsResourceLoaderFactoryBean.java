@@ -14,11 +14,17 @@
  */
 package org.codehaus.groovy.grails.commons;
 
-import org.codehaus.groovy.grails.compiler.support.GrailsResourceLoaderHolder;
+import grails.util.Environment;
 import org.codehaus.groovy.grails.compiler.support.GrailsResourceLoader;
+import org.codehaus.groovy.grails.compiler.support.GrailsResourceLoaderHolder;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+import org.springframework.core.io.support.ResourcePatternResolver;
 import org.springframework.util.Assert;
+
+import java.io.IOException;
 
 /**
  * A factory bean that constructs the Grails ResourceLoader used to load Grails classes
@@ -55,8 +61,24 @@ public class GrailsResourceLoaderFactoryBean implements FactoryBean, Initializin
 
         this.resourceLoader = GrailsResourceLoaderHolder.getResourceLoader();
         if(resourceLoader == null) {
-            this.resourceLoader = new GrailsResourceLoader(grailsResourceHolder.getResources());
+            if(Environment.getCurrent().isReloadEnabled()) {
+                ResourcePatternResolver resolver = new  PathMatchingResourcePatternResolver();
+                try {
+                    Resource[] resources = resolver.getResources("file:"+Environment.getCurrent().getReloadLocation() + "/grails-app/**/*.groovy");
+                    this.resourceLoader = new GrailsResourceLoader(resources);
+                }
+                catch (IOException e) {
+                    createDefaultInternal();
+                }
+            }
+            else {
+                createDefaultInternal();
+            }
             GrailsResourceLoaderHolder.setResourceLoader(this.resourceLoader);
         }
+    }
+
+    private void createDefaultInternal() {
+        this.resourceLoader = new GrailsResourceLoader(grailsResourceHolder.getResources());
     }
 }

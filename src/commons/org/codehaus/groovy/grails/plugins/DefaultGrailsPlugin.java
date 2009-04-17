@@ -316,7 +316,18 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
                         // Try to load the resources that match the "res" pattern.
                         Resource[] tmp = new Resource[0];
                         try {
-                            tmp = resolver.getResources(res);
+                            final Environment env = Environment.getCurrent();
+                            if(Metadata.getCurrent().isWarDeployed() && env.isReloadEnabled()) {
+                                String location = env.getReloadLocation();
+                                if(!location.endsWith(File.separator)) location = location + File.separator;
+                                if(res.startsWith(".")) res = res.substring(1);
+                                else if(res.startsWith("file:./")) res = res.substring(7);
+                                res = "file:"+location + res;
+                                tmp = resolver.getResources(res);
+                            }
+                            else {
+                                tmp = resolver.getResources(res);
+                            }
                         }
                         catch (IllegalArgumentException ex) {
                             // The pattern is invalid so we continue as if there

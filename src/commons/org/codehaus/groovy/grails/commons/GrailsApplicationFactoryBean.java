@@ -15,6 +15,7 @@
  */ 
 package org.codehaus.groovy.grails.commons;
 
+import grails.util.Environment;
 import groovy.lang.GroovyClassLoader;
 import groovy.util.XmlSlurper;
 import groovy.util.slurpersupport.GPathResult;
@@ -23,6 +24,7 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.grails.compiler.injection.GrailsInjectionOperation;
 import org.codehaus.groovy.grails.compiler.support.GrailsResourceLoader;
+import org.codehaus.groovy.grails.compiler.GrailsClassLoader;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.core.io.Resource;
@@ -70,8 +72,17 @@ public class GrailsApplicationFactoryBean implements FactoryBean, InitializingBe
             // Enforce UTF-8 on source code for reloads
             CompilerConfiguration config = CompilerConfiguration.DEFAULT;
             config.setSourceEncoding("UTF-8");
+            GroovyClassLoader classLoader;
+            final ClassLoader parentLoader = Thread.currentThread().getContextClassLoader();
+            if(Environment.getCurrent().isReloadEnabled()) {
+                CompilerConfiguration compilerConfig = CompilerConfiguration.DEFAULT;
+                config.setSourceEncoding("UTF-8");
 
-            GroovyClassLoader classLoader = new GroovyClassLoader(Thread.currentThread().getContextClassLoader(), config);
+                classLoader = new GrailsClassLoader(parentLoader, compilerConfig, resourceLoader);
+            }
+            else {
+                classLoader = new GroovyClassLoader(parentLoader, config);
+            }
             List classes = new ArrayList();
             InputStream inputStream = null;
             try {
