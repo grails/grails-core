@@ -10,6 +10,8 @@ public class EnvironmentTests extends GroovyTestCase{
 
     protected void tearDown() {
         System.setProperty(Environment.KEY, "")
+        System.setProperty(Environment.RELOAD_ENABLED, "")
+        System.setProperty(Environment.RELOAD_LOCATION, "")
     }
 
 
