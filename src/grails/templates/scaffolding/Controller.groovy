@@ -76,7 +76,7 @@
         }
         else {
             flash.message = "${className} not found with id \${params.id}"
-            redirect(action:edit,id:params.id)
+            redirect(action:list)
         }
     }
 
