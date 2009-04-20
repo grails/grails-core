@@ -177,7 +177,7 @@ public enum Environment {
 
     private String getReloadLocationInternal() {
         String location = System.getProperty(RELOAD_LOCATION);
-        if(location==null) location = System.getProperty(BuildSettings.APP_BASE_DIR);
+        if(!isNotBlank(location)) location = System.getProperty(BuildSettings.APP_BASE_DIR);
         return location;
     }
 }
