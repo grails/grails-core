@@ -20,7 +20,6 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
 /**
@@ -37,8 +36,8 @@ public class TagLibArtefactHandler extends ArtefactHandlerAdapter {
     private static Log LOG = LogFactory.getLog(TagLibArtefactHandler.class);
     public static final String TYPE = "TagLib";
 
-    private Map tag2libMap = new HashMap();
-    private Map namespace2tagLibMap = new HashMap();
+    private Map<String, GrailsTagLibClass> tag2libMap = new HashMap<String, GrailsTagLibClass>();
+    private Map<String, GrailsTagLibClass> namespace2tagLibMap = new HashMap<String, GrailsTagLibClass>();
 
 
     public TagLibArtefactHandler() {
@@ -49,22 +48,22 @@ public class TagLibArtefactHandler extends ArtefactHandlerAdapter {
      * Creates a map of tags (keyed on "${namespace}:${tagName}") to tag libraries
      */
     public void initialize(ArtefactInfo artefacts) {
-        this.tag2libMap = new HashMap();
+        this.tag2libMap = new HashMap<String, GrailsTagLibClass>();
         GrailsClass[] classes = artefacts.getGrailsClasses();
-        for (int i = 0; i < classes.length; i++) {
-            GrailsTagLibClass taglibClass = (GrailsTagLibClass) classes[i];
+        for (GrailsClass aClass : classes) {
+            GrailsTagLibClass taglibClass = (GrailsTagLibClass) aClass;
             String namespace = taglibClass.getNamespace();
             namespace2tagLibMap.put(namespace, taglibClass);
-            for (Iterator j = taglibClass.getTagNames().iterator(); j.hasNext();) {
-               	String tagName = namespace + ":" + (String) j.next();
+            for (Object o : taglibClass.getTagNames()) {
+                String tagName = namespace + ":" + o;
                 if (!tag2libMap.containsKey(tagName)) {
                     this.tag2libMap.put(tagName, taglibClass);
                 }
                 else {
-                    GrailsTagLibClass current = (GrailsTagLibClass) tag2libMap.get(tagName);
+                    GrailsTagLibClass current = tag2libMap.get(tagName);
                     if (!taglibClass.equals(current)) {
-                       	LOG.info("There are conflicting tags: " + taglibClass.getFullName() + "." + tagName + " vs. " + current.getFullName() + "." + tagName + ". The former will take precedence.");
-                       	this.tag2libMap.put(tagName, taglibClass);
+                        LOG.info("There are conflicting tags: " + taglibClass.getFullName() + "." + tagName + " vs. " + current.getFullName() + "." + tagName + ". The former will take precedence.");
+                        this.tag2libMap.put(tagName, taglibClass);
                     }
                     else {
                         throw new GrailsConfigurationException("Cannot configure tag library [" + taglibClass.getName() + "]. Library [" + current.getName() + "] already contains a tag called [" + tagName + "]");
@@ -85,7 +84,7 @@ public class TagLibArtefactHandler extends ArtefactHandlerAdapter {
         if(tagLib!= null)
             return (GrailsClass) tagLib;
         else {
-             return (GrailsClass)namespace2tagLibMap.get(feature);
+             return namespace2tagLibMap.get(feature);
         }
     }
 }

@@ -191,7 +191,7 @@ public abstract class AbstractGrailsPluginManager implements GrailsPluginManager
                 for (Class artefact : artefacts) {
                     String shortName = GrailsNameUtils.getShortName(artefact);
                     if (!isAlreadyRegistered(application, artefact, shortName)) {
-                        application.addArtefact(artefact);
+                        application.addOverridableArtefact(artefact);
                     }
 
                 }

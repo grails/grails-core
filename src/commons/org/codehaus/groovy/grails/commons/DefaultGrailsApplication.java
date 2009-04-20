@@ -817,8 +817,7 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
     }
 
     public void addArtefact(Class artefact) {
-        for (int i = 0; i < artefactHandlers.length; i++) {
-            ArtefactHandler artefactHandler = artefactHandlers[i];
+        for (ArtefactHandler artefactHandler : artefactHandlers) {
             if (artefactHandler.isArtefact(artefact)) {
                 addArtefact(artefactHandler.getType(), artefact);
             }
@@ -833,4 +832,51 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
     public void setBeanClassLoader(ClassLoader classLoader) {
         this.beanClassLoader = classLoader;
     }
+
+    public void addOverridableArtefact(Class artefact) {
+        for (ArtefactHandler artefactHandler : artefactHandlers) {
+            if (artefactHandler.isArtefact(artefact)) {
+                addOverridableArtefact(artefactHandler.getType(), artefact);
+            }
+        }
+    }
+
+
+    /**
+     * Adds an artefact of the given type for the given Class.
+     *
+     * @param artefactType  The type of the artefact as defined by a ArtefactHandler instance
+     * @param artefactClass A Class instance that matches the type defined by the ArtefactHandler
+     * @return The GrailsClass if successful or null if it couldn't be added
+     * @throws GrailsConfigurationException If the specified Class is not the same as the type defined by the ArtefactHandler
+     * @see org.codehaus.groovy.grails.commons.ArtefactHandler
+     */
+    public GrailsClass addOverridableArtefact(String artefactType, Class artefactClass) {
+        // @todo should we filter abstracts here?
+        if (Modifier.isAbstract(artefactClass.getModifiers())) {
+            return null;
+        }
+
+        ArtefactHandler handler = (ArtefactHandler) artefactHandlersByName.get(artefactType);
+        if (handler.isArtefact(artefactClass)) {
+            GrailsClass artefactGrailsClass = handler.newArtefactClass(artefactClass);
+
+            // Store the GrailsClass in cache
+            DefaultArtefactInfo info = getArtefactInfo(artefactType, true);
+            info.addOverridableGrailsClass(artefactGrailsClass);
+            info.updateComplete();
+
+            addToLoaded(artefactClass);
+
+            if (isInitialised())
+                initializeArtefacts(artefactType);
+
+
+            return artefactGrailsClass;
+        } else {
+            throw new GrailsConfigurationException("Cannot add " + artefactType + " class ["
+                    + artefactClass + "]. It is not a " + artefactType + "!");
+        }
+    }
+
 }

@@ -368,4 +368,10 @@ public interface GrailsApplication extends ApplicationContextAware {
      * @return True if the application is WAR deployed
      */
     boolean isWarDeployed();
+
+    /**
+     * Adds an artefact that can be overriden by user defined classes
+     * @param artefact An overridable artefact
+     */
+    void addOverridableArtefact(Class artefact);
 }
