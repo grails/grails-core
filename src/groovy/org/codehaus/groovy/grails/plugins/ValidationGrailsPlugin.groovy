@@ -29,16 +29,21 @@ public class ValidationGrailsPlugin {
 
         // grab all of the classes annotated with @Validateable
         def simpleRegistry = new SimpleBeanDefinitionRegistry();
-        def scanner = new ClassPathBeanDefinitionScanner(simpleRegistry, false);
-        scanner.setIncludeAnnotationConfig(false);
-        scanner.addIncludeFilter(new AnnotationTypeFilter(Validateable))
-
-        def packagesToScan = application.config?.grails?.validateable?.packages
-        if(!packagesToScan) {
-            packagesToScan = ['']
+        try {
+            def scanner = new ClassPathBeanDefinitionScanner(simpleRegistry, false)
+            scanner.setIncludeAnnotationConfig(false)
+            scanner.addIncludeFilter(new AnnotationTypeFilter(Validateable))
+            def packagesToScan = application.config?.grails?.validateable?.packages
+            if(!packagesToScan) {
+                packagesToScan = ['']
+            }
+            scanner.scan(packagesToScan as String[])
         }
+        catch (e) {
+            // Workaround for http://jira.springframework.org/browse/SPR-5120
+            log.warn "WARNING: Cannot scan for @Validateable due to container classloader issues. This feature has been disabled for this environment. Message: ${e.message}"
+        };
 
-        scanner.scan(packagesToScan as String[])
         simpleRegistry.beanDefinitionNames?.each {beanDefinitionName ->
             def beanDefinition = simpleRegistry.getBeanDefinition(beanDefinitionName)
             def beanClass = application.classLoader.loadClass(beanDefinition.beanClassName)

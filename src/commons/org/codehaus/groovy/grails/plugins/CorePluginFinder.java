@@ -19,7 +19,6 @@ package org.codehaus.groovy.grails.plugins;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.plugins.exceptions.PluginException;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 
@@ -68,9 +67,9 @@ public class CorePluginFinder {
 				loadCorePluginsStatically();
 			}
 		} catch (IOException e) {
-			throw new PluginException(
-					"I/O exception configuring core plug-ins: "
-							+ e.getMessage(), e);
+            LOG.warn("WARNING: I/O exception loading core plugin dynamically, attempting static load. This is usually due to deployment onto containers with unusual classloading setups. Message: " + e.getMessage());
+            loadCorePluginsStatically();
+
 		}
 		return foundPluginClasses;
 	}
