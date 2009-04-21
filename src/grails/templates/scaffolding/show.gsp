@@ -8,7 +8,7 @@
     </head>
     <body>
         <div class="nav">
-            <span class="menuButton"><a class="home" href="\${createLinkTo(dir:'')}">Home</a></span>
+            <span class="menuButton"><a class="home" href="\${resource(dir:'')}">Home</a></span>
             <span class="menuButton"><g:link class="list" action="list">${className} List</g:link></span>
             <span class="menuButton"><g:link class="create" action="create">New ${className}</g:link></span>
         </div>
