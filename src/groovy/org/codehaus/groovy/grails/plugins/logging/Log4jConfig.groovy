@@ -32,6 +32,7 @@ import org.apache.log4j.helpers.LogLog
 import org.apache.log4j.Appender
 import org.apache.log4j.RollingFileAppender
 import org.apache.commons.beanutils.BeanUtils
+import grails.util.Environment
 
 /**
  * Encapsulates the configuration of Log4j
@@ -68,13 +69,45 @@ class Log4jConfig {
         else if(LAYOUTS.containsKey(name) && args) {
             return LAYOUTS[name].newInstance(args[0])
         }
+        else if(isCustomEnvironmentMethod(name, args)) {
+            invokeCallable args[0]        
+        }
 
         LogLog.error "Method missing when configuring log4j: $name"
+    }
+
+    private boolean isCustomEnvironmentMethod(String name, args) {
+        return (Environment.current == Environment.CUSTOM) && (Environment.current.name == name) && (args && (args[0] instanceof Closure))
     }
 
     def configure() {
         configure {}
     }
+
+    def environments(Closure callable) {
+        invokeCallable(callable)
+    }
+
+    private def invokeCallable(Closure callable) {
+        callable.delegate = this
+        callable.resolveStrategy = Closure.DELEGATE_FIRST
+        callable.call()
+    }
+
+    def development(Closure callable) {
+        if(Environment.current == Environment.DEVELOPMENT)
+            invokeCallable(callable)
+    }
+    def production(Closure callable) {
+        if(Environment.current == Environment.PRODUCTION)
+            invokeCallable(callable)
+    }
+    def test(Closure callable) {
+        if(Environment.current == Environment.TEST)
+            invokeCallable(callable)
+    }
+
+
     def configure(Closure callable) {
 
         Logger root = Logger.getRootLogger()
@@ -99,7 +132,9 @@ class Log4jConfig {
             Logger logger = Logger.getLogger("StackTrace")
             logger.additivity = false
             def fileAppender = createFullstackTraceAppender()
-            logger.addAppender fileAppender
+            if(!logger.allAppenders.hasMoreElements()) {
+                logger.addAppender fileAppender
+            }
 
         } catch (Exception e) {
             org.apache.log4j.helpers.LogLog.error "WARNING: Exception occured configuring log4j logging: $e.message"

@@ -32,6 +32,36 @@ class Log4jDslTests extends GroovyTestCase {
         System.setProperty(Environment.KEY, "")
     }
 
+    protected void tearDown() {
+        System.setProperty(Environment.KEY, "")
+    }
+
+
+
+
+    void testEnvironmentSpecificLogging() {
+        System.setProperty(Environment.KEY, "production")
+
+
+        LogManager.resetConfiguration()
+
+        Log4jConfig config = new Log4jConfig()
+        config.configure {
+            environments {
+                development {
+                    trace 'org.hibernate.SQL'
+                }
+                production {
+                    error 'org.hibernate.SQL'
+                }
+            }
+
+        }
+        def hibernateLogger = Logger.getLogger("org.hibernate.SQL")
+
+        assertEquals hibernateLogger.level, Level.ERROR
+
+    }
 
     void testTraceLevel() {
         LogManager.resetConfiguration()
