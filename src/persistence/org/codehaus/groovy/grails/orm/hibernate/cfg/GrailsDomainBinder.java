@@ -26,9 +26,11 @@ import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
 import org.codehaus.groovy.grails.exceptions.GrailsDomainException;
+import org.codehaus.groovy.grails.orm.hibernate.persister.entity.GroovyAwareJoinedSubclassEntityPersister;
+import org.codehaus.groovy.grails.orm.hibernate.persister.entity.GroovyAwareSingleTableEntityPersister;
 import org.codehaus.groovy.grails.orm.hibernate.validation.UniqueConstraint;
-import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 import org.codehaus.groovy.grails.plugins.orm.hibernate.HibernatePluginSupport;
+import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 import org.hibernate.FetchMode;
 import org.hibernate.Hibernate;
 import org.hibernate.MappingException;
@@ -40,7 +42,6 @@ import org.hibernate.id.PersistentIdentifierGenerator;
 import org.hibernate.mapping.*;
 import org.hibernate.mapping.Collection;
 import org.hibernate.mapping.Table;
-import org.hibernate.persister.entity.JoinedSubclassEntityPersister;
 import org.hibernate.persister.entity.SingleTableEntityPersister;
 import org.hibernate.type.ForeignKeyDirection;
 import org.hibernate.type.Type;
@@ -1067,6 +1068,8 @@ public final class GrailsDomainBinder {
         persistentClass.setEntityName(domainClass.getFullName());
         persistentClass.setProxyInterfaceName(domainClass.getFullName());
         persistentClass.setClassName(domainClass.getFullName());
+        persistentClass.setEntityPersisterClass(GroovyAwareSingleTableEntityPersister.class);
+//        persistentClass.setEntityPersisterClass(SingleTableEntityPersister.class);
 
         // set dynamic insert to false
         persistentClass.setDynamicInsert(false);
@@ -1206,7 +1209,7 @@ public final class GrailsDomainBinder {
 
         if (joinedSubclass.getEntityPersisterClass() == null) {
             joinedSubclass.getRootClass()
-                    .setEntityPersisterClass(JoinedSubclassEntityPersister.class);
+                    .setEntityPersisterClass(GroovyAwareJoinedSubclassEntityPersister.class);
         }
 
         Table mytable = mappings.addTable(
@@ -1262,7 +1265,8 @@ public final class GrailsDomainBinder {
 
         if (subClass.getEntityPersisterClass() == null) {
             subClass.getRootClass()
-                    .setEntityPersisterClass(SingleTableEntityPersister.class);
+                    .setEntityPersisterClass(GroovyAwareSingleTableEntityPersister.class);
+//                    .setEntityPersisterClass(SingleTableEntityPersister.class);
         }
 
         if (LOG.isDebugEnabled())

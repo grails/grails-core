@@ -53,6 +53,7 @@ import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil
 import org.hibernate.proxy.HibernateProxy
 import org.hibernate.proxy.LazyInitializer
 import org.apache.commons.beanutils.PropertyUtils
+import org.hibernate.Hibernate
 
 
 /**
@@ -217,6 +218,33 @@ Try using Grails' default cache provider: 'org.hibernate.cache.OSCacheProvider'"
         enhanceSessionFactory(sessionFactory, application, ctx)
     }
 
+    public static void enhanceProxy ( HibernateProxy proxy ) {
+        
+        proxy.metaClass.propertyMissing = { String name, val ->
+            if(delegate instanceof HibernateProxy) {
+                def obj = GrailsHibernateUtil.unwrapProxy(delegate)
+                if(val != null) {
+                    obj?."$name" = value
+                }
+                return obj."$name"
+            }
+            else {
+                throw new MissingPropertyException(name, delegate.class)
+            }
+        }
+
+        proxy.metaClass.methodMissing = { String name, args ->
+            if(delegate instanceof HibernateProxy) {
+                def obj = GrailsHibernateUtil.unwrapProxy(delegate)
+                return obj."$name"(*args)
+            }
+            else {
+                throw new MissingPropertyException(name, delegate.class)
+            }
+
+        }
+    }
+
     static enhanceSessionFactory(SessionFactory sessionFactory, GrailsApplication application, ApplicationContext ctx) {
         // we're going to configure Grails to lazily initialise the dynamic methods on domain classes to avoid
         // the overhead of doing so at start-up time
@@ -279,6 +307,7 @@ Try using Grails' default cache provider: 'org.hibernate.cache.OSCacheProvider'"
         def setterName = GrailsClassUtils.getSetterName(propertyName)
         domainClass.metaClass."${getterName}" = LAZY_PROPERTY_HANDLER.curry(propertyName)
         domainClass.metaClass."${setterName}" = { PropertyUtils.setProperty(delegate, propertyName, it)  }
+
         for(GrailsDomainClass sub in domainClass.subClasses) {
             handleLazyProxy(sub, sub.getPropertyByName(property.name))
         }
@@ -287,8 +316,13 @@ Try using Grails' default cache provider: 'org.hibernate.cache.OSCacheProvider'"
 
     private static registerDynamicMethods(GrailsDomainClass dc, GrailsApplication application, ApplicationContext ctx, SessionFactory sessionFactory) {
         dc.metaClass.methodMissing = { String name, args ->
+//            println "METHOD MISSING $name"
             throw new MissingMethodException(name, dc.clazz, args, true)
         }
+//        dc.metaClass.propertyMissing = { String name ->
+//            println "PROPERTY MISSING HERE ! $name"
+//
+//        }
         addBasicPersistenceMethods(dc, application, ctx)
         addQueryMethods(dc, application, ctx)
         addTransactionalMethods(dc, application, ctx)
@@ -310,7 +344,7 @@ Try using Grails' default cache provider: 'org.hibernate.cache.OSCacheProvider'"
         // otherwise it trys to match the method invocation to one of the dynamic methods. If it matches it will
         // register a new method with the ExpandoMetaClass so the next time it is invoked it doesn't have this overhead.
         mc.static.methodMissing = {String methodName, args ->
-            def result = null
+            def result = null            
             StaticMethodInvocation method = dynamicMethods.find {it.isMethodMatch(methodName)}
             if (method) {
                 // register the method invocation for next time

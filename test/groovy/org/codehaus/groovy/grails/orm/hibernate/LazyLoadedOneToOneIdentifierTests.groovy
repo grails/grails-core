@@ -3,6 +3,8 @@ package org.codehaus.groovy.grails.orm.hibernate
 import org.hibernate.Hibernate
 
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil
+import org.apache.commons.beanutils.PropertyUtils
+import org.hibernate.proxy.HibernateProxy
 
 /**
 * @author Graeme Rocher
@@ -27,6 +29,30 @@ class LazyLoadedUser {
     String name
 }
 '''
+    }
+
+    void testMethodCallsOnProxiedObjects() {
+
+        def userClass = ga.getDomainClass("LazyLoadedUser").clazz
+        def identifierClass = ga.getDomainClass("LazyLoadedUserIdentifier").clazz
+
+        def user = userClass.newInstance(name:"Fred")
+
+        assert user.save(flush:true)
+
+        def id = identifierClass.newInstance(user:user)
+        assert id.save(flush:true)
+
+        session.clear()
+
+
+        id = identifierClass.get(1)
+
+        def proxy = PropertyUtils.getProperty(id, "user")
+        assertTrue "should be a hibernate proxy", (proxy instanceof HibernateProxy)
+        assertFalse "proxy should not be initialized", Hibernate.isInitialized(proxy)
+
+        assertEquals "Fred", proxy.name
     }
 
 

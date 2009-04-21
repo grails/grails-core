@@ -23,14 +23,19 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.*;
 import org.codehaus.groovy.grails.orm.hibernate.GrailsHibernateDomainClass;
+import org.codehaus.groovy.grails.orm.hibernate.proxy.GroovyAwareJavassistProxyFactory;
 import org.hibernate.*;
 import org.hibernate.criterion.Order;
 import org.hibernate.engine.EntityEntry;
 import org.hibernate.engine.SessionImplementor;
 import org.hibernate.engine.Status;
+import org.hibernate.mapping.PersistentClass;
 import org.hibernate.metadata.ClassMetadata;
+import org.hibernate.property.Getter;
+import org.hibernate.property.Setter;
 import org.hibernate.proxy.HibernateProxy;
 import org.hibernate.proxy.LazyInitializer;
+import org.hibernate.type.AbstractComponentType;
 import org.springframework.beans.SimpleTypeConverter;
 import org.springframework.orm.hibernate3.HibernateCallback;
 import org.springframework.orm.hibernate3.HibernateTemplate;
@@ -39,7 +44,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * A class containing utility methods for configuring Hibernate inside Grails
@@ -305,6 +312,7 @@ public class GrailsHibernateUtil {
         return lazyInitializer.getImplementation();
     }
 
+
     /**
      * Returns the proxy for a given association or null if it is not proxied
      *
@@ -355,5 +363,40 @@ public class GrailsHibernateUtil {
     public static boolean isCacheQueriesByDefault() {
         Object o = ConfigurationHolder.getFlatConfig().get(CONFIG_PROPERTY_CACHE_QUERIES);
         return (o != null && o instanceof Boolean)?((Boolean)o).booleanValue():false;
+    }
+
+    public static GroovyAwareJavassistProxyFactory buildProxyFactory(PersistentClass persistentClass) {
+        GroovyAwareJavassistProxyFactory proxyFactory = new GroovyAwareJavassistProxyFactory();
+
+
+        Set<Class> proxyInterfaces = new HashSet<Class>() {{
+            add(HibernateProxy.class);
+          }
+        };
+
+
+        final Class javaClass = persistentClass.getMappedClass();
+        final Getter idGetter = persistentClass.getIdentifierProperty().getGetter(javaClass);
+        final Setter idSetter = persistentClass.getIdentifierProperty().getSetter(javaClass);
+
+
+        try {
+            proxyFactory.postInstantiate(persistentClass.getEntityName(),
+                                    javaClass,
+                                     proxyInterfaces,
+                                     idGetter.getMethod(),
+                                     idSetter.getMethod(),
+                                     persistentClass.hasEmbeddedIdentifier() ?
+                                                 (AbstractComponentType) persistentClass.getIdentifier().getType() :
+                                                        null
+                                            );
+        }
+        catch (HibernateException e) {
+
+            LOG.warn("Cannot instantiate proxy factory: " + e.getMessage());
+            return null;
+        }
+
+        return proxyFactory;
     }
 }
