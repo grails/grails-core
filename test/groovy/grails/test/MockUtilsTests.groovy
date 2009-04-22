@@ -160,6 +160,9 @@ class MockUtilsTests extends GroovyTestCase {
 
         result = TestDomain.findByNameLikeOrCountry("%Jones", "UK")
         assertEquals  janeDoeUK, result
+        
+        result = TestDomain.findAll()
+        assertEquals  12, result.size()
 
         result = TestDomain.findAllByName("Peter Pan")
         assertEquals( [ peterPan ], result )

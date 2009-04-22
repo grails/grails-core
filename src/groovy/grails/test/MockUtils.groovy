@@ -528,6 +528,11 @@ class MockUtils {
 
     private static void addDynamicFinders(Class clazz, List testInstances) {
         // Implement the dynamic class methods for domain classes.
+
+        clazz.metaClass.'static'.findAll = { ->
+            return TEST_INSTANCES[clazz]
+        }
+
         clazz.metaClass.'static'.methodMissing = { method, args ->
             def m = method =~ /^find(All)?By${DYNAMIC_FINDER_RE}$/
             if (m) {
