@@ -94,7 +94,8 @@ public class GroovyPagesGrailsPlugin {
         gspTagLibraryLookup(TagLibraryLookup)
 
         boolean developmentMode = !application.warDeployed
-        boolean enableReload = Environment.current.isReloadEnabled() || application.config.grails.gsp.enable.reload == true
+        Environment env = Environment.current
+        boolean enableReload = env.isReloadEnabled() || application.config.grails.gsp.enable.reload == true || (developmentMode && env == Environment.DEVELOPMENT)
         boolean warDeployedWithReload = application.warDeployed && enableReload
 
         // If the development environment is used we need to load GSP files relative to the base directory
@@ -115,7 +116,7 @@ public class GroovyPagesGrailsPlugin {
             else {
                 if (warDeployedWithReload) {
                     groovyPageResourceLoader(org.codehaus.groovy.grails.web.pages.GroovyPageResourceLoader) {
-                        def location = Environment.current.reloadLocation
+                        def location = env.reloadLocation
                         if(!location.endsWith(File.separator)) location = "${location}${File.separator}"
                         baseResource = "file:${location}"
                     }

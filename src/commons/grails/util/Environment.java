@@ -154,8 +154,7 @@ public enum Environment {
 
         final String reloadLocation = getReloadLocationInternal();
         final boolean reloadLocationSpecified = isNotBlank(reloadLocation);
-        if(this == DEVELOPMENT && reloadLocationSpecified && !Metadata.getCurrent().isWarDeployed()) return true;
-        return reloadOverride && reloadLocationSpecified;
+        return this == DEVELOPMENT && reloadLocationSpecified && !Metadata.getCurrent().isWarDeployed() || reloadOverride && reloadLocationSpecified;
     }
 
     private boolean isNotBlank(String reloadLocation) {
