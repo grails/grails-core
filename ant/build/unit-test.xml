@@ -22,7 +22,6 @@
 		<classpath refid="classpath" />
 	</taskdef>
 
-
 	<property name="coverage.build" value="cruise/coverage/build/instrumented-classes" />
 	<property name="coverage.report" value="cruise/coverage/report" />
 
