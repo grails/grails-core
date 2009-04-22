@@ -42,7 +42,6 @@ import org.hibernate.id.PersistentIdentifierGenerator;
 import org.hibernate.mapping.*;
 import org.hibernate.mapping.Collection;
 import org.hibernate.mapping.Table;
-import org.hibernate.persister.entity.SingleTableEntityPersister;
 import org.hibernate.type.ForeignKeyDirection;
 import org.hibernate.type.Type;
 import org.hibernate.type.TypeFactory;
@@ -1068,8 +1067,6 @@ public final class GrailsDomainBinder {
         persistentClass.setEntityName(domainClass.getFullName());
         persistentClass.setProxyInterfaceName(domainClass.getFullName());
         persistentClass.setClassName(domainClass.getFullName());
-        persistentClass.setEntityPersisterClass(GroovyAwareSingleTableEntityPersister.class);
-//        persistentClass.setEntityPersisterClass(SingleTableEntityPersister.class);
 
         // set dynamic insert to false
         persistentClass.setDynamicInsert(false);
@@ -1096,29 +1093,13 @@ public final class GrailsDomainBinder {
     public static void bindRoot(GrailsDomainClass domainClass, Mappings mappings) {
         if (mappings.getClass(domainClass.getFullName()) == null) {
             RootClass root = new RootClass();
+            if(!domainClass.hasSubClasses()) {
+                root.setPolymorphic(false);
+            }
             bindClass(domainClass, root, mappings);
 
             Mapping m = getMapping(domainClass);
 
-            if (m != null) {
-                CacheConfig cc = m.getCache();
-                if (cc != null && cc.getEnabled()) {
-                    root.setCacheConcurrencyStrategy(cc.getUsage());
-                    root.setLazyPropertiesCacheable(!"non-lazy".equals(cc.getInclude()));
-                }
-
-                Integer bs = m.getBatchSize();
-                if(bs != null) {
-                    root.setBatchSize(bs.intValue());
-                }
-
-                if(m.getDynamicUpdate()) {
-                    root.setDynamicUpdate(true);
-                }
-                if(m.getDynamicInsert()) {
-                    root.setDynamicInsert(true);
-                }
-            }
 
             bindRootPersistentClassCommonValues(domainClass, root, mappings);
 
@@ -1130,6 +1111,10 @@ public final class GrailsDomainBinder {
                 }
                 // bind the sub classes
                 bindSubClasses(domainClass, root, mappings);
+            }
+
+            if(root.getEntityPersisterClass() == null) {
+                root.setEntityPersisterClass(GroovyAwareSingleTableEntityPersister.class);
             }
             mappings.addClass(root);
         } else {
@@ -1327,6 +1312,27 @@ public final class GrailsDomainBinder {
         Mapping m = getMapping(domainClass.getClazz());
         String schema = mappings.getSchemaName();
         String catalog = mappings.getCatalogName();
+
+
+        if (m != null) {
+            CacheConfig cc = m.getCache();
+            if (cc != null && cc.getEnabled()) {
+                root.setCacheConcurrencyStrategy(cc.getUsage());
+                root.setLazyPropertiesCacheable(!"non-lazy".equals(cc.getInclude()));
+            }
+
+            Integer bs = m.getBatchSize();
+            if(bs != null) {
+                root.setBatchSize(bs.intValue());
+            }
+
+            if(m.getDynamicUpdate()) {
+                root.setDynamicUpdate(true);
+            }
+            if(m.getDynamicInsert()) {
+                root.setDynamicInsert(true);
+            }
+        }
 
         final boolean hasTableDefinition = m != null && m.getTable() != null;
         if(hasTableDefinition && m.getTable().getSchema() != null)  {

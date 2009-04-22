@@ -30,6 +30,7 @@ import org.hibernate.engine.EntityEntry;
 import org.hibernate.engine.SessionImplementor;
 import org.hibernate.engine.Status;
 import org.hibernate.mapping.PersistentClass;
+import org.hibernate.mapping.Property;
 import org.hibernate.metadata.ClassMetadata;
 import org.hibernate.property.Getter;
 import org.hibernate.property.Setter;
@@ -376,10 +377,11 @@ public class GrailsHibernateUtil {
 
 
         final Class javaClass = persistentClass.getMappedClass();
-        final Getter idGetter = persistentClass.getIdentifierProperty().getGetter(javaClass);
-        final Setter idSetter = persistentClass.getIdentifierProperty().getSetter(javaClass);
+        final Property identifierProperty = persistentClass.getIdentifierProperty();
+        final Getter idGetter = identifierProperty!=null?  identifierProperty.getGetter(javaClass) : null;
+        final Setter idSetter =identifierProperty!=null? identifierProperty.getSetter(javaClass) : null;
 
-
+        if(idGetter == null ||  idSetter==null) return null;
         try {
             proxyFactory.postInstantiate(persistentClass.getEntityName(),
                                     javaClass,

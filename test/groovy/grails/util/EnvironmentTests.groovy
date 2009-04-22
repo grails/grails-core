@@ -12,6 +12,8 @@ public class EnvironmentTests extends GroovyTestCase{
         System.setProperty(Environment.KEY, "")
         System.setProperty(Environment.RELOAD_ENABLED, "")
         System.setProperty(Environment.RELOAD_LOCATION, "")
+
+        Metadata.getCurrent().clear()
     }
 
 
