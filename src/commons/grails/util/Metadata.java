@@ -51,7 +51,10 @@ public class Metadata extends Properties {
     public static Metadata getCurrent() {
         if(!metadata.initialized) {
             try {
-                InputStream input = Metadata.class.getClassLoader().getResourceAsStream(FILE);
+                InputStream input = Thread.currentThread().getContextClassLoader().getResourceAsStream(FILE);
+                if(input == null) {
+                    input = Metadata.class.getClassLoader().getResourceAsStream(FILE);
+                }
                 if(input != null) {
                     metadata.load(input);
                 }
@@ -70,7 +73,7 @@ public class Metadata extends Properties {
 
     /***
      * Loads a Metadata instance from a Reader
-     * @param reader The reader
+     * @param inputStream The InputStream
      * @return a Metadata instance
      */
     public static Metadata getInstance(InputStream inputStream) {
