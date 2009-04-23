@@ -36,6 +36,7 @@ import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine
 import org.springframework.context.ApplicationContext
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager
+import org.codehaus.groovy.grails.web.pages.GSPResponseWriter
 
 abstract class AbstractGrailsTagTests extends GroovyTestCase {
 
@@ -305,12 +306,13 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
 
         def w = t.make(params)
 
-        def sw = new StringWriter()
-        def out = new PrintWriter(sw)
-        webRequest.out = out
-        w.writeTo(out)
+        MockHttpServletResponse mockResponse = new MockHttpServletResponse()
+        GSPResponseWriter writer = GSPResponseWriter.getInstance(mockResponse, 1024)
+        webRequest.out = writer
+        w.writeTo(writer)
 
-        assertEquals expected, transform(sw)
+        writer.flush()
+        assertEquals expected, transform(mockResponse.contentAsString)
     }	
 
 	def applyTemplate(template, params = [:] ) {
