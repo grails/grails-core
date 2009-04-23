@@ -16,14 +16,16 @@
 package org.codehaus.groovy.grails.web.sitemesh;
 
 import com.opensymphony.module.sitemesh.Config;
+import com.opensymphony.module.sitemesh.Factory;
 import com.opensymphony.module.sitemesh.factory.DefaultFactory;
-import com.opensymphony.sitemesh.Content;
-import com.opensymphony.sitemesh.ContentProcessor;
-import com.opensymphony.sitemesh.Decorator;
-import com.opensymphony.sitemesh.DecoratorSelector;
+import com.opensymphony.sitemesh.*;
+import com.opensymphony.sitemesh.compatability.DecoratorMapper2DecoratorSelector;
+import com.opensymphony.sitemesh.compatability.Content2HTMLPage;
+import com.opensymphony.sitemesh.compatability.OldDecorator2NewDecorator;
 import com.opensymphony.sitemesh.webapp.ContainerTweaks;
 import com.opensymphony.sitemesh.webapp.SiteMeshFilter;
 import com.opensymphony.sitemesh.webapp.SiteMeshWebAppContext;
+import com.opensymphony.sitemesh.webapp.decorator.NoDecorator;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.ConfigurationHolder;
@@ -135,6 +137,54 @@ public class GrailsPageFilter extends SiteMeshFilter {
              throw e;
          }
 
+    }
+
+    @Override
+
+    protected DecoratorSelector initDecoratorSelector(SiteMeshWebAppContext webAppContext) {
+        // TODO: Remove heavy coupling on horrible SM2 Factory
+        final Factory factory = Factory.getInstance(new Config(filterConfig));
+        factory.refresh();
+        return new DecoratorMapper2DecoratorSelector(factory.getDecoratorMapper()) {
+            public Decorator selectDecorator(Content content, SiteMeshContext context) {
+                SiteMeshWebAppContext webAppContext = (SiteMeshWebAppContext) context;
+                final com.opensymphony.module.sitemesh.Decorator decorator =
+                        factory.getDecoratorMapper().getDecorator(webAppContext.getRequest(), new Content2HTMLPage(content));
+                if (decorator == null || decorator.getPage() == null) {
+                    return new NoDecorator();
+                } else {
+                    return new OldDecorator2NewDecorator(decorator) {
+
+
+                        protected void render(Content content, HttpServletRequest request, HttpServletResponse response,
+                                              ServletContext servletContext, SiteMeshWebAppContext webAppContext)
+                                throws IOException, ServletException {
+
+                            request.setAttribute(PAGE, new Content2HTMLPage(content));
+
+                            // see if the URI path (webapp) is set
+                            if (decorator.getURIPath() != null) {
+                                // in a security conscious environment, the servlet container
+                                // may return null for a given URL
+                                if (servletContext.getContext(decorator.getURIPath()) != null) {
+                                    servletContext = servletContext.getContext(decorator.getURIPath());
+                                }
+                            }
+                            // get the dispatcher for the decorator
+                            RequestDispatcher dispatcher = servletContext.getRequestDispatcher(decorator.getPage());
+                            if(response.isCommitted()) {
+                                dispatcher.include(request, response);
+                            }
+                            else {
+                                dispatcher.forward(request, response);
+                            }
+
+                            request.removeAttribute(PAGE);
+                        }
+                    };
+                }
+            }
+        };
     }
 
     /**
