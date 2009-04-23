@@ -627,7 +627,7 @@ public final class GrailsDomainBinder {
         if (config != null) {
             collection.setLazy(config.getLazy());
         } else {
-            collection.setLazy(true);
+            collection.setLazy(false);
         }
     }
 
