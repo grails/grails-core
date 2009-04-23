@@ -314,8 +314,8 @@ target(warPlugins:"Includes the plugins in the WAR") {
                     def pluginBase = info.pluginDir.file
                     fileset(dir:pluginBase.absolutePath) {
                         include(name:"plugin.xml")
-                        include(name:"grails-app/views/**")
-                        include(name:"${pluginBase.name}/grails-app/i18n/**")
+                        include(name:"grails-app/**")
+                        exclude(name:"grails-app/**/*.groovy")                        
                     }
                 }
             }
