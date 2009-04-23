@@ -625,9 +625,10 @@ public final class GrailsDomainBinder {
 
     private static void bindCollectionForPropertyConfig(Collection collection, PropertyConfig config) {
         if (config != null) {
-            collection.setLazy(config.getLazy());
+            collection.setLazy(config.getLazy());            
         } else {
-            collection.setLazy(false);
+            collection.setLazy(true);
+            collection.setExtraLazy(false);
         }
     }
 
