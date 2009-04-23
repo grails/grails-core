@@ -148,6 +148,9 @@ class ControllersGrailsPlugin {
             {
                 'filter-name'('grailsWebRequest')
                 'url-pattern'("/*")
+                'dispatcher'("FORWARD")
+                'dispatcher'("REQUEST")
+                
             }
             if (grailsEnv == "development") {
                 // Install the reload filter, which allows you to make
