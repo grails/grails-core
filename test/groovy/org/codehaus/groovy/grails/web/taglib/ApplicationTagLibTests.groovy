@@ -124,7 +124,7 @@ class ApplicationTagLibTests extends AbstractGrailsTagTests {
 	void testSetTagWithMap() {
         def template = '<g:set var="e" value="${c.a}"/>${e?.b}'
 
-        assertOutputEquals('null', template, [c:[:]])
+        assertOutputEquals('', template, [c:[:]])
         assertOutputEquals('foo', template, [c:[a:[b:'foo']]])
 
     }

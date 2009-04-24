@@ -40,14 +40,14 @@ class TestUrlMappings {
         def template = '''<g:javascript library="test" /><p><g:remoteLink controller="bar" action="list" /></p><g:render template="part" model="['foo1':foo2]" />'''
 
         String newLine = System.getProperty("line.separator")
-        assertOutputEquals('<script type="text/javascript" src="/js/test.js"></script>' + newLine + '<p><a href="/bar/list" onclick="<remote>return false;" action="list" controller="bar"></a></p><a href="/foo/list" onclick="<remote>return false;" action="list" controller="foo"></a>', template)
+        assertOutputContains('<script type="text/javascript" src="/js/test.js"></script>' + newLine + '<p><a href="/bar/list" onclick="<remote>return false;" action="list" controller="bar"></a></p><a href="/foo/list" onclick="<remote>return false;" action="list" controller="foo"></a>', template)
 
     }
 
     void testJavascriptInclude() {
         def template = '<g:javascript src="foo.js" />'
 
-        assertOutputEquals '<script type="text/javascript" src="/js/foo.js"></script>' + EOL, template
+        assertOutputContains '<script type="text/javascript" src="/js/foo.js"></script>', template
     }
 
     void testJavascriptIncludeWithPlugin() {
@@ -56,7 +56,7 @@ class TestUrlMappings {
 
         controllerClass.metaClass.getPluginContextPath = {-> "/plugin/one"}
         request.setAttribute(JavascriptTagLib.CONTROLLER, controllerClass.newInstance())
-        assertOutputEquals '<script type="text/javascript" src="/plugin/one/js/foo.js"></script>' + EOL, template
+        assertOutputContains '<script type="text/javascript" src="/plugin/one/js/foo.js"></script>' + EOL, template
     }
 
     void testJavascriptIncludeWithPluginNoLeadingSlash() {
@@ -65,7 +65,7 @@ class TestUrlMappings {
 
         controllerClass.metaClass.getPluginContextPath = {-> "plugin/one"}
         request.setAttribute(JavascriptTagLib.CONTROLLER, controllerClass.newInstance())
-        assertOutputEquals '<script type="text/javascript" src="/plugin/one/js/foo.js"></script>' + EOL, template
+        assertOutputContains '<script type="text/javascript" src="/plugin/one/js/foo.js"></script>' + EOL, template
     }
 
 
