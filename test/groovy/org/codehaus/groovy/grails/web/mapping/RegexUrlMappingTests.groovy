@@ -140,6 +140,9 @@ mappings {
         def m7 = new RegexUrlMapping(parser.parse("/foo/(*)/(*)"), "test", null, null, null, servletContext)
         def m8 = new RegexUrlMapping(parser.parse("/(*)/(*)/(*)"), "test", null, null, null, servletContext)
         def m9 = new RegexUrlMapping(parser.parse("/"), "test", null, null, null, servletContext)
+        def m10 = new RegexUrlMapping(parser.parse("/(*)"), "test", null, null, null, servletContext)
+
+        assertTrue(m7.compareTo(m10) > 0)
 
         assertEquals(0, m1.compareTo(m1))
         assertTrue(m1.compareTo(m2) > 0)

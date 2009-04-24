@@ -510,31 +510,37 @@ public class RegexUrlMapping extends AbstractUrlMapping implements UrlMapping {
         if (!(o instanceof UrlMapping))
             throw new IllegalArgumentException("Cannot compare with Object [" + o + "]. It is not an instance of UrlMapping!");
 
+        if(this.equals(o)) return 0;
+
         UrlMapping other = (UrlMapping) o;
 
+        // more static tokens
+        final int thisStaticTokenCount = getStaticTokenCount(this);
+        final int otherStaticTokenCount = getStaticTokenCount(other);
+        // if there are no static tokens at all in the other one this this has priority
+        if(otherStaticTokenCount==0) return 1;
         // less wildcard tokens
-        Integer wildDiff = getWildcardCount(other) - getWildcardCount(this);
+        int wildDiff = getWildcardCount(other) - getWildcardCount(this);
         if (wildDiff != 0) return wildDiff;
 
-        // more static tokens
-        Integer staticDiff = getStaticTokenCount(this) - getStaticTokenCount(other);
+        int staticDiff = thisStaticTokenCount - otherStaticTokenCount;
         if (staticDiff != 0) return staticDiff;
 
         return 0;
     }
 
-    private Integer getWildcardCount(UrlMapping mapping) {
+    private int getWildcardCount(UrlMapping mapping) {
         String[] tokens = mapping.getUrlData().getTokens();
-        Integer count = 0;
+        int count = 0;
         for (String token : tokens) {
             if (isWildcard(token)) count++;
         }
         return count;
     }
 
-    private Integer getStaticTokenCount(UrlMapping mapping) {
+    private int getStaticTokenCount(UrlMapping mapping) {
         String[] tokens = mapping.getUrlData().getTokens();
-        Integer count = 0;
+        int count = 0;
         for (String token : tokens) {
             if (!isWildcard(token)) count++;
         }
