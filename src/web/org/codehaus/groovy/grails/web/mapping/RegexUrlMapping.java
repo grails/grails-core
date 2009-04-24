@@ -518,7 +518,9 @@ public class RegexUrlMapping extends AbstractUrlMapping implements UrlMapping {
         final int thisStaticTokenCount = getStaticTokenCount(this);
         final int otherStaticTokenCount = getStaticTokenCount(other);
         // if there are no static tokens at all in the other one this this has priority
-        if(otherStaticTokenCount==0) return 1;
+        if(otherStaticTokenCount==0 && thisStaticTokenCount>0) return 1;
+        else if(thisStaticTokenCount==0&&otherStaticTokenCount>0) return -1;
+
         // less wildcard tokens
         int wildDiff = getWildcardCount(other) - getWildcardCount(this);
         if (wildDiff != 0) return wildDiff;
