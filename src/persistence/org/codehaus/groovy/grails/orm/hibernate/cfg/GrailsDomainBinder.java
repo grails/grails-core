@@ -666,7 +666,7 @@ public final class GrailsDomainBinder {
             bindCompositeIdentifierToManyToOne(property, key, ci, refDomainClass, EMPTY_PATH);
         }
         else {
-            bindSimpleValue(property, key, EMPTY_PATH, mappings);
+            bindSimpleValue(property, null, key, EMPTY_PATH, mappings);
         }
 
 
@@ -1503,7 +1503,7 @@ public final class GrailsDomainBinder {
                     LOG.debug("[GrailsDomainBinder] Binding property [" + currentGrailsProp.getName() + "] as SimpleValue");
 
                 value = new SimpleValue(table);
-                bindSimpleValue(currentGrailsProp, (SimpleValue) value, EMPTY_PATH, mappings);
+                bindSimpleValue(currentGrailsProp, null, (SimpleValue) value, EMPTY_PATH, mappings);
             }
 
             if (value != null) {
@@ -1712,7 +1712,7 @@ public final class GrailsDomainBinder {
                 LOG.debug("[GrailsDomainBinder] Binding property [" + currentGrailsProp.getName() + "] as SimpleValue");
 
             value = new SimpleValue(table);
-            bindSimpleValue(currentGrailsProp, (SimpleValue) value, path, mappings);
+            bindSimpleValue(currentGrailsProp,componentProperty, (SimpleValue) value, path, mappings);
         }
 
         if (value != null) {
@@ -1835,7 +1835,7 @@ public final class GrailsDomainBinder {
             else {
 
                 // bind column
-                bindSimpleValue(property, manyToOne, path, mappings);
+                bindSimpleValue(property, null, manyToOne, path, mappings);
             }
 
         }
@@ -1919,7 +1919,7 @@ public final class GrailsDomainBinder {
 
         SimpleValue val = new SimpleValue(entity.getTable());
 
-        bindSimpleValue(version, val, EMPTY_PATH, mappings);
+        bindSimpleValue(version, null, val, EMPTY_PATH, mappings);
 
         if (!val.isTypeSpecified()) {
             val.setTypeName("version".equals(version.getName()) ? "integer" : "timestamp");
@@ -1971,7 +1971,7 @@ public final class GrailsDomainBinder {
         id.setIdentifierGeneratorProperties(params);
 
         // bind value
-        bindSimpleValue(identifier, id, EMPTY_PATH, mappings);
+        bindSimpleValue(identifier, null, id, EMPTY_PATH, mappings);
 
         // create property
         Property prop = new Property();
@@ -2107,18 +2107,23 @@ public final class GrailsDomainBinder {
      * Binds a simple value to the Hibernate metamodel. A simple value is
      * any type within the Hibernate type system
      *
-     * @param grailsProp  The grails domain class property
+     * @param property
+     * @param parentProperty
      * @param simpleValue The simple value to bind
      * @param path
      * @param mappings    The Hibernate mappings instance
      */
-    private static void bindSimpleValue(GrailsDomainClassProperty grailsProp, SimpleValue simpleValue, String path, Mappings mappings) {
+    private static void bindSimpleValue(GrailsDomainClassProperty property, GrailsDomainClassProperty parentProperty, SimpleValue simpleValue, String path, Mappings mappings) {
         // set type
-        PropertyConfig propertyConfig = getPropertyConfig(grailsProp);
-        bindSimpleValue(grailsProp, simpleValue, path, propertyConfig);
+        PropertyConfig propertyConfig = getPropertyConfig(property);
+        bindSimpleValue(property,parentProperty, simpleValue, path, propertyConfig);
     }
 
     private static void bindSimpleValue(GrailsDomainClassProperty grailsProp, SimpleValue simpleValue, String path, PropertyConfig propertyConfig) {
+        bindSimpleValue(grailsProp, null, simpleValue, path, propertyConfig);
+    }
+
+    private static void bindSimpleValue(GrailsDomainClassProperty grailsProp, GrailsDomainClassProperty parentProperty, SimpleValue simpleValue, String path, PropertyConfig propertyConfig) {
         setTypeForPropertyConfig(grailsProp, simpleValue, propertyConfig);
         Table table = simpleValue.getTable();
 
@@ -2144,7 +2149,7 @@ public final class GrailsDomainBinder {
             }
 
             column.setValue(simpleValue);
-            bindColumn(grailsProp, column, cc, path, table);
+            bindColumn(grailsProp, parentProperty,column, cc, path, table);
 
             if (table != null) table.addColumn(column);
 
@@ -2191,12 +2196,14 @@ public final class GrailsDomainBinder {
      * Binds a Column instance to the Hibernate meta model
      *
      * @param property The Grails domain class property
+     * @param parentProperty
      * @param column     The column to bind
      * @param path
      * @param table      The table name
      */
     private static void bindColumn(
             GrailsDomainClassProperty property,
+            GrailsDomainClassProperty parentProperty,
             Column column,
             ColumnConfig cc,
             String path,
@@ -2223,7 +2230,7 @@ public final class GrailsDomainBinder {
         }
         else {
             column.setName(columnName);
-            column.setNullable(property.isOptional());
+            column.setNullable(property.isOptional() || (parentProperty != null && parentProperty.isOptional() ));
 
             // Use the constraints for this property to more accurately define
             // the column's length, precision, and scale
