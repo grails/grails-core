@@ -262,10 +262,10 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator, Resourc
             def templatesDir = new FileSystemResource(templatesDirPath)
             if(templatesDir.exists()) {
                 try {
-                    resources = resolver.getResources("$templatesDirPath/*.gsp").filename.collect(filter)
+                    resources = resolver.getResources("file:$templatesDirPath/*.gsp").filename.collect(filter)
                 }
                 catch (e) {
-                    // ignore
+                    LOG.info("Error while loading views from grails-app scaffolding folder", e)
                 }
             }
 
