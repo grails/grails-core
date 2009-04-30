@@ -196,7 +196,7 @@ target (war: "The implementation target") {
                 }
             }
         }
-        ant.copy(file:webXmlFile.absolutePath, tofile:"${stagingDir}/WEB-INF/web.xml")
+        ant.copy(file:webXmlFile.absolutePath, tofile:"${stagingDir}/WEB-INF/web.xml", overwrite:true)
         ant.delete(file:webXmlFile)
 
 
