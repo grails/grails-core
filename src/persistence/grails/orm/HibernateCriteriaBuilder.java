@@ -74,6 +74,7 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
     public static final String ID_EQUALS = "idEq"; // builder
     public static final String IS_EMPTY = "isEmpty"; //builder
     public static final String IS_NOT_EMPTY = "isNotEmpty"; //builder
+    public static final String RLIKE = "rlike";//method
 
 
     public static final String BETWEEN = "between";//method
@@ -600,6 +601,22 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
         propertyValue = calculatePropertyValue(propertyValue);
         return addToCriteria(Restrictions.like(propertyName, propertyValue));
     }
+    /**
+     * Creates a Criterion with from the specified property name and "rlike" (a regular expression version of "like") expression
+     * @param propertyName The property name
+     * @param propertyValue The ilike value
+     *
+     * @return A Criterion instance
+    */
+   public Object rlike(String propertyName, Object propertyValue) {
+       if(!validateSimpleExpression()) {
+           throwRuntimeException( new IllegalArgumentException("Call to [rlike] with propertyName ["+propertyName+"] and value ["+propertyValue+"] not allowed here."));
+       }
+       propertyName = calculatePropertyName(propertyName);
+       propertyValue = calculatePropertyValue(propertyValue);
+       return addToCriteria(new RlikeExpression(propertyName, propertyValue));
+   }
+
     /**
      * Creates a Criterion with from the specified property name and "ilike" (a case sensitive version of "like") expression
      * @param propertyName The property name

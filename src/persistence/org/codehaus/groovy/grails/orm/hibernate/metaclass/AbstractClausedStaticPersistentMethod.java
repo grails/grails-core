@@ -14,6 +14,7 @@
  */ 
 package org.codehaus.groovy.grails.orm.hibernate.metaclass;
 
+import grails.orm.RlikeExpression;
 import groovy.lang.GString;
 import groovy.lang.MissingMethodException;
 import org.apache.commons.logging.Log;
@@ -54,6 +55,7 @@ public abstract class AbstractClausedStaticPersistentMethod extends
 		private static final String GREATER_THAN_OR_EQUAL = "GreaterThanEquals";
 		private static final String LIKE = "Like";
         private static final String ILIKE = "Ilike";
+        private static final String RLIKE = "Rlike";
 		private static final String BETWEEN = "Between";
         private static final String IN_LIST= "InList";
         private static final String IS_NOT_NULL = "IsNotNull";
@@ -241,6 +243,20 @@ public abstract class AbstractClausedStaticPersistentMethod extends
                         return Restrictions.ilike( this.propertyName, arguments[0] );
                     }
 
+                };
+            }
+            else if(queryParameter.endsWith( RLIKE )) {
+                return new GrailsMethodExpression(
+                        application,
+                        clazz,
+                        calcPropertyName(queryParameter, RLIKE),
+                        RLIKE,
+                        1,
+                        isNegation(queryParameter, RLIKE) ) {
+                            Criterion createCriterion() {
+                                    if(arguments[0] == null) return Restrictions.isNull(this.propertyName);
+                                    return new RlikeExpression( this.propertyName, arguments[0] );
+                             }
                 };
             }
 			else if(queryParameter.endsWith( IS_NOT_NULL )) {
