@@ -204,8 +204,18 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
      * @param params The GrailsParameterMap object
      */
     public void bind(GrailsParameterMap params) {
-        bindWithRequestAndPropertyValues(params.getRequest(), new MutablePropertyValues(params));        
+        bind(params,null);
     }
+
+    public void bind(GrailsParameterMap params, String prefix) {
+        Map paramsMap = params;
+        if(prefix != null) {
+            Object o = params.get(prefix);
+            if(o instanceof Map) paramsMap = (Map) o;
+        }
+        bindWithRequestAndPropertyValues(params.getRequest(), new MutablePropertyValues(paramsMap));
+    }
+
 
     public void bind(PropertyValues propertyValues, String prefix) {
         PropertyValues values = filterPropertyValues(propertyValues, prefix);
@@ -736,4 +746,5 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
         }
         return (String)value ;
     }
+
 }

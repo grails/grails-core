@@ -144,7 +144,7 @@ public class DataBindingUtils {
 			GrailsParameterMap parameterMap = (GrailsParameterMap)source;
 			HttpServletRequest request = parameterMap.getRequest();
 			GrailsDataBinder dataBinder = createDataBinder(object, include, exclude, request);
-			dataBinder.bind(parameterMap);
+			dataBinder.bind(parameterMap, filter);
             bindingResult = dataBinder.getBindingResult();
         }
         else if (source instanceof HttpServletRequest) {
