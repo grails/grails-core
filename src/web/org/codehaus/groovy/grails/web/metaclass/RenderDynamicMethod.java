@@ -258,7 +258,7 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
             ApplicationContext applicationContext = webRequest.getApplicationContext();
             GrailsPluginManager pluginManager = (GrailsPluginManager) applicationContext.getBean(GrailsPluginManager.BEAN_NAME);
             GrailsPlugin plugin = pluginManager.getGrailsPlugin(pluginName.toString());
-            if(plugin!=null) contextPath = plugin.getPluginPath();
+            if(plugin!=null && !plugin.isBasePlugin()) contextPath = plugin.getPluginPath();
         }
         return contextPath;
     }
