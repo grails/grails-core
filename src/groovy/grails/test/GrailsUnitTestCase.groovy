@@ -63,6 +63,7 @@ class GrailsUnitTestCase extends GroovyTestCase {
         ConfigurationHolder.config = null
         // Restore all the saved meta classes.
         savedMetaClasses.each { clazz, metaClass ->
+            GroovySystem.metaClassRegistry.removeMetaClass(clazz) 
             GroovySystem.metaClassRegistry.setMetaClass(clazz, metaClass)
         }
     }
