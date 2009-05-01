@@ -63,6 +63,7 @@ public abstract class GroovyPage extends Script {
     public static final String TEMPLATE_NAMESPACE = "tmpl";
     public static final String PAGE_SCOPE = "pageScope";
     public static final String CONTROLLER_NAME = "controllerName";
+    public static final String SUFFIX = ".gsp";
     public static final String ACTION_NAME = "actionName";
 
     public static final Collection<String> RESERVED_NAMES = new ArrayList<String>() {{
@@ -79,7 +80,6 @@ public abstract class GroovyPage extends Script {
         add(PAGE_SCOPE);
 
     }};
-
     private static final String BINDING = "binding";
     private static final String BLANK_STRING = "";
     private Map jspTags = Collections.EMPTY_MAP;

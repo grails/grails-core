@@ -15,9 +15,13 @@
  */
 package org.codehaus.groovy.grails.web.metaclass;
 
-import groovy.lang.*;
+import grails.util.GrailsNameUtils;
+import groovy.lang.Closure;
+import groovy.lang.GroovyObject;
+import groovy.lang.MissingMethodException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.commons.metaclass.AbstractDynamicMethodInvocation;
@@ -33,7 +37,9 @@ import org.springframework.web.context.request.RequestContextHolder;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 /**
@@ -89,7 +95,7 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
 
 
         Object actionRef = argMap.get(ARGUMENT_ACTION);
-        String controllerName = argMap.containsKey(ARGUMENT_CONTROLLER) ? argMap.get(ARGUMENT_CONTROLLER).toString() : null;
+        String controllerName = getControllerName(target, argMap);
 
         Object id = argMap.get(ARGUMENT_ID);
         String frag = argMap.get(ARGUMENT_FRAGMENT) != null ? argMap.get(ARGUMENT_FRAGMENT).toString() : null;
@@ -154,6 +160,10 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
         }
 
         return redirectResponse(actualUri, response);
+    }
+
+    private String getControllerName(Object target, Map argMap) {
+        return argMap.containsKey(ARGUMENT_CONTROLLER) ? argMap.get(ARGUMENT_CONTROLLER).toString() : GrailsNameUtils.getLogicalPropertyName(target.getClass().getName(), ControllerArtefactHandler.TYPE);
     }
 
 

@@ -23,6 +23,7 @@ import org.codehaus.groovy.grails.commons.TagLibArtefactHandler;
 import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods;
 import org.codehaus.groovy.grails.web.pages.GroovyPage;
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
+import org.codehaus.groovy.grails.web.pages.GroovyPageUtils;
 import org.codehaus.groovy.grails.web.pages.exceptions.GroovyPagesException;
 import org.codehaus.groovy.grails.plugins.PluginMetaManager;
 import org.springframework.context.ApplicationContext;
@@ -83,12 +84,18 @@ public class DefaultGrailsApplicationAttributes implements GrailsApplicationAttr
     }
 
     public String getControllerUri(ServletRequest request) {
+        return "/"+getControllerName(request);
+    }
+
+    private String getControllerName(ServletRequest request) {
         GroovyObject controller = getController(request);
+        String controllerName;
         if(controller != null)
-            return (String)controller.getProperty(ControllerDynamicMethods.CONTROLLER_URI_PROPERTY);
+            controllerName = (String)controller.getProperty(ControllerDynamicMethods.CONTROLLER_NAME_PROPERTY);
         else {
-            return "/" + request.getAttribute(GrailsApplicationAttributes.CONTROLLER_NAME_ATTRIBUTE);
+            controllerName = (String) request.getAttribute(GrailsApplicationAttributes.CONTROLLER_NAME_ATTRIBUTE);
         }
+        return controllerName != null ? controllerName : "";
     }
 
     public String getApplicationUri(ServletRequest request) {
@@ -124,40 +131,9 @@ public class DefaultGrailsApplicationAttributes implements GrailsApplicationAttr
         return null;
     }
 
-    public String getTemplateUri(String templateName, ServletRequest request) {       	
-       StringBuilder buf = new StringBuilder();
-       
-       if(templateName.startsWith("/")) {
-    	   String tmp = templateName.substring(1,templateName.length());
-    	   if(tmp.indexOf('/') > -1) {
-    		   buf.append('/');
-               int i = tmp.lastIndexOf('/');
-               buf.append(tmp.substring(0, i));
-    		   buf.append("/_");
-    		   buf.append(tmp.substring(i + 1,tmp.length()));
-    	   }
-    	   else {
-    		   buf.append("/_");
-    		   buf.append(templateName.substring(1,templateName.length()));
-    	   }
-       }
-       else {
-           String pathToTemplate = "";
 
-           int lastSlash = templateName.lastIndexOf('/');
-           if (lastSlash > -1) {
-               pathToTemplate = templateName.substring(0, lastSlash + 1);
-               templateName = templateName.substring(lastSlash + 1);
-           }
-           buf.append(getControllerUri(request))
-                   .append("/")
-                   .append(pathToTemplate)
-                   .append("_")
-                   .append(templateName);
-       }
-       return buf
-       			.append(".gsp")
-       			.toString();
+    public String getTemplateUri(String templateName, ServletRequest request) {
+        return GroovyPageUtils.getTemplateURI(getControllerName(request), templateName);
    }
 
     public String getControllerActionUri(ServletRequest request) {
@@ -202,30 +178,7 @@ public class DefaultGrailsApplicationAttributes implements GrailsApplicationAttr
 	}
 
 	public String getViewUri(String viewName, HttpServletRequest request) {
-	       StringBuilder buf = new StringBuilder(PATH_TO_VIEWS);
-	       
-	       if(viewName.startsWith("/")) {
-	    	   String tmp = viewName.substring(1,viewName.length());
-	    	   if(tmp.indexOf('/') > -1) {
-	    		   buf.append('/');
-	    		   buf.append(tmp.substring(0,tmp.lastIndexOf('/')));
-	    		   buf.append("/");
-	    		   buf.append(tmp.substring(tmp.lastIndexOf('/') + 1,tmp.length()));
-	    	   }
-	    	   else {
-	    		   buf.append("/");
-	    		   buf.append(viewName.substring(1,viewName.length()));
-	    	   }
-	       }
-	       else {
-	           buf.append(getControllerUri(request))
-	           .append("/")
-	           .append(viewName);
-	    	   
-	       }
-	       return buf
-	       			.append(".gsp")
-	       			.toString();
+        return GroovyPageUtils.getViewURI(getControllerName(request), viewName);
 	}
 
 

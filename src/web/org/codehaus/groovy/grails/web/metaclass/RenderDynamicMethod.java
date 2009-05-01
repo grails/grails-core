@@ -24,15 +24,13 @@ import groovy.xml.StreamingMarkupBuilder;
 import org.apache.commons.beanutils.BeanMap;
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.grails.commons.ConfigurationHolder;
-import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.GrailsControllerClass;
 import org.codehaus.groovy.grails.commons.metaclass.AbstractDynamicMethodInvocation;
 import org.codehaus.groovy.grails.plugins.GrailsPlugin;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.codehaus.groovy.grails.web.pages.GSPResponseWriter;
+import org.codehaus.groovy.grails.web.pages.GroovyPageUtils;
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
@@ -169,7 +167,7 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
                 renderView = renderText(text, out);
             } else if (argMap.containsKey(ARGUMENT_VIEW)) {
 
-                renderView(argMap, target, webRequest, application, controller);
+                renderView(argMap, target, controller);
             } else if (argMap.containsKey(ARGUMENT_TEMPLATE)) {
                 renderView = renderTemplate(target, controller, webRequest, argMap, out);
             } else {
@@ -197,11 +195,10 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
 
         String var = (String) argMap.get(ARGUMENT_VAR);
         // get the template uri
-        GrailsApplicationAttributes attrs = (GrailsApplicationAttributes) controller.getProperty(ControllerDynamicMethods.GRAILS_ATTRIBUTES);
-        String templateUri = attrs.getTemplateUri(templateName, webRequest.getRequest());
+        String templateUri = GroovyPageUtils.getTemplateURI(controller, templateName);
 
         // retrieve gsp engine
-        GroovyPagesTemplateEngine engine = attrs.getPagesTemplateEngine();
+        GroovyPagesTemplateEngine engine = (GroovyPagesTemplateEngine) webRequest.getApplicationContext().getBean(GroovyPagesTemplateEngine.BEAN_ID);
         try {
             Resource r = engine.getResourceForUri(contextPath + templateUri);
             if (!r.exists()) {
@@ -326,30 +323,15 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
         w.writeTo(out);
     }
 
-    private void renderView(Map argMap, Object target, GrailsWebRequest webRequest, GrailsApplication application, GroovyObject controller) {
+    private void renderView(Map argMap, Object target, GroovyObject controller) {
         String viewName = argMap.get(ARGUMENT_VIEW).toString();
         Object modelObject = argMap.get(ARGUMENT_MODEL);
 
-        GrailsControllerClass controllerClass = (GrailsControllerClass) application.getArtefact(ControllerArtefactHandler.TYPE,
-                target.getClass().getName());
-        if (controllerClass == null && webRequest.getControllerName() != null) {
-            controllerClass = (GrailsControllerClass) application.getArtefactByLogicalPropertyName(ControllerArtefactHandler.TYPE, webRequest.getControllerName());
-        }
-        String viewUri;
-        if (viewName.indexOf('/') > -1) {
-            if (!viewName.startsWith("/")) {
-                viewName = '/' + viewName;
-            }
-            viewUri = viewName;
-        } else {
-            viewUri = controllerClass.getViewByName(viewName);
-        }
-
-
+        String viewUri = GroovyPageUtils.getViewURI((GroovyObject) target, viewName);
         Map model;
         if (modelObject instanceof Map) {
             model = (Map) modelObject;
-        } else if (controllerClass.getClazz().isInstance(target)) {
+        } else if (target instanceof GroovyObject) {
             model = new BeanMap(target);
         } else {
             model = new HashMap();
