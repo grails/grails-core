@@ -14,9 +14,14 @@
  */
 package org.codehaus.groovy.grails.web.pages;
 
-import groovy.lang.GroovyObject;
 import grails.util.GrailsNameUtils;
+import groovy.lang.GroovyObject;
+import groovy.lang.MissingPropertyException;
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
+import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods;
+import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
+
+import javax.servlet.ServletRequest;
 
 /**
  * Methods to establish template names, paths and so on.
@@ -73,7 +78,18 @@ public class GroovyPageUtils {
     }
 
     private static String getLogicalName(GroovyObject controller) {
-        return GrailsNameUtils.getLogicalPropertyName(controller.getClass().getName(), ControllerArtefactHandler.TYPE);
+        ServletRequest request = null;
+        try {
+            request = (ServletRequest) controller.getProperty(ControllerDynamicMethods.REQUEST_PROPERTY);
+        }
+        catch (MissingPropertyException mpe) {
+            // ignore
+        }
+        String logicalName = request != null ? (String) request.getAttribute(GrailsApplicationAttributes.CONTROLLER_NAME_ATTRIBUTE) : null;
+        if(logicalName == null){
+            logicalName = GrailsNameUtils.getLogicalPropertyName(controller.getClass().getName(), ControllerArtefactHandler.TYPE);
+        }
+        return logicalName;
     }
 
     /**
