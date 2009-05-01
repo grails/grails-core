@@ -73,6 +73,7 @@ buildProps = buildConfig.toProperties()
 enableJndi = getPropertyValue("enable.jndi", false).toBoolean()
 enableProfile = getPropertyValue("grails.script.profile", false).toBoolean()
 pluginsHome = grailsSettings.projectPluginsDir.path
+buildExplodedWar = getPropertyValue("grails.war.exploded", false).toBoolean()
 
 // These are legacy settings...
 serverPort = getPropertyValue("server.port", 8080).toInteger()

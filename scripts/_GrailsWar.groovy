@@ -125,7 +125,7 @@ target (war: "The implementation target") {
     depends( parseArguments, configureRunningScript, cleanWarFile, packageApp)
 
     includeJars = argsMap.nojars ? !argsMap.nojars : true
-    stagingDir = "${grailsSettings.projectWorkDir}/staging"
+    stagingDir = grailsSettings.projectWarExplodedDir
 
     try {
         configureWarName()
@@ -238,13 +238,19 @@ target (war: "The implementation target") {
         warPlugins()
         createDescriptor()
     	event("CreateWarStart", [warName, stagingDir])
-        ant.jar(destfile:warName, basedir:stagingDir)
+        if (!buildExplodedWar) ant.jar(destfile:warName, basedir:stagingDir)
     	event("CreateWarEnd", [warName, stagingDir])
     }
     finally {
-        cleanUpAfterWar()
+        if (!buildExplodedWar) cleanUpAfterWar()
     }
-    event("StatusFinal", ["Done creating WAR ${warName}"])
+
+    if (buildExplodedWar) {
+      event("StatusFinal", ["Done creating Unpacked WAR at ${stagingDir}"])
+    }
+    else {
+      event("StatusFinal", ["Done creating WAR ${warName}"])
+    }
 }
 
 

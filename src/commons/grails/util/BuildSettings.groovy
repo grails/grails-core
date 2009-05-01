@@ -54,6 +54,11 @@ xpp3_min-).*\\.jar"""
     public static final String PROJECT_WORK_DIR = "grails.project.work.dir"
 
     /**
+     * The name of the system property for {@link #projectWarExplodedDir}.
+     */
+    public static final String PROJECT_WAR_EXPLODED_DIR = "grails.project.war.exploded.dir"
+
+    /**
      * The name of the system property for {@link #projectPluginsDir}.
      */
     public static final String PLUGINS_DIR = "grails.project.plugins.dir"
@@ -117,6 +122,9 @@ xpp3_min-).*\\.jar"""
     /** The location of the project working directory for project-specific temporary files. */
     File projectWorkDir
 
+    /** The location of the Grails WAR directory where exploded WAR is built. */
+    File projectWarExplodedDir
+
     /** The location to which Grails compiles a project's classes. */
     File classesDir
 
@@ -176,6 +184,7 @@ xpp3_min-).*\\.jar"""
      */
     private boolean grailsWorkDirSet
     private boolean projectWorkDirSet
+    private boolean projectWarExplodedDirSet
     private boolean classesDirSet
     private boolean testClassesDirSet
     private boolean resourcesDirSet
@@ -327,6 +336,15 @@ xpp3_min-).*\\.jar"""
         this.projectWorkDirSet = true
     }
 
+    public File getProjectWarExplodedDir() {
+        return this.projectWarExplodedDir
+    }
+
+    public void setProjectWarExplodedDir(File dir) {
+        this.projectWarExplodedDir = dir
+        this.projectWarExplodedDirSet = true
+    }
+
     public File getClassesDir() {
         return this.classesDir
     }
@@ -452,6 +470,10 @@ xpp3_min-).*\\.jar"""
 
         if (!projectWorkDirSet) {
             projectWorkDir = new File(getPropertyValue(PROJECT_WORK_DIR, props, "$grailsWorkDir/projects/${baseDir.name}"))
+        }
+
+        if (!projectWarExplodedDirSet) {
+            projectWarExplodedDir = new File(getPropertyValue(PROJECT_WAR_EXPLODED_DIR, props,  "${projectWorkDir}/stage"))
         }
 
         if (!classesDirSet) {
