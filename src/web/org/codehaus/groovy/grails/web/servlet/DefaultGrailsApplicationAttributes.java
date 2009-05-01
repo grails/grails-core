@@ -178,7 +178,7 @@ public class DefaultGrailsApplicationAttributes implements GrailsApplicationAttr
 	}
 
 	public String getViewUri(String viewName, HttpServletRequest request) {
-        return GroovyPageUtils.getViewURI(getControllerName(request), viewName);
+        return GroovyPageUtils.getDeployedViewURI(getControllerName(request), viewName);
 	}
 
 

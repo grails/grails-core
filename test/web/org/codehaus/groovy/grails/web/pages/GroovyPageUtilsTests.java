@@ -31,6 +31,13 @@ public class GroovyPageUtilsTests extends TestCase{
         assertEquals("/foo/bar/foo.gsp", GroovyPageUtils.getViewURI("foo", "bar/foo"));
     }
 
+    public void testNoSuffxGetViewURI() {
+        assertEquals("/foo/bar", GroovyPageUtils.getNoSuffixViewURI("foo", "bar"));
+        assertEquals("/bar/foo", GroovyPageUtils.getNoSuffixViewURI("foo", "/bar/foo"));
+        assertEquals("/foo/bar/foo", GroovyPageUtils.getNoSuffixViewURI("foo", "bar/foo"));
+    }
+
+
     public void testGetTemplateURI() {
         assertEquals("/foo/_bar.gsp", GroovyPageUtils.getTemplateURI("foo", "bar"));
         assertEquals("/bar/_foo.gsp", GroovyPageUtils.getTemplateURI("foo", "/bar/foo"));
@@ -51,5 +58,12 @@ public class GroovyPageUtilsTests extends TestCase{
         assertEquals("/foo/bar.gsp", GroovyPageUtils.getViewURI(controller, "bar"));
         assertEquals("/bar/foo.gsp", GroovyPageUtils.getViewURI(controller, "/bar/foo"));
         assertEquals("/foo/bar/foo.gsp", GroovyPageUtils.getViewURI(controller, "bar/foo"));
+    }
+
+   public void testNoSuffixGetViewURIForController() throws IllegalAccessException, InstantiationException {
+        GroovyObject controller = (GroovyObject) new GroovyClassLoader().parseClass("class FooController { }").newInstance();
+        assertEquals("/foo/bar", GroovyPageUtils.getNoSuffixViewURI(controller, "bar"));
+        assertEquals("/bar/foo", GroovyPageUtils.getNoSuffixViewURI(controller, "/bar/foo"));
+        assertEquals("/foo/bar/foo", GroovyPageUtils.getNoSuffixViewURI(controller, "bar/foo"));
     }
 }

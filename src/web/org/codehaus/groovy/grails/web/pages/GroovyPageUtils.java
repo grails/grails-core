@@ -28,6 +28,7 @@ import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
  *        Created: May 1, 2009
  */
 public class GroovyPageUtils {
+    public static final String PATH_TO_VIEWS = "/WEB-INF/grails-app/views";
     private static final char SLASH = '/';
     private static final String SLASH_STR = "/";
     private static final String SLASH_UNDR = "/_";
@@ -55,6 +56,19 @@ public class GroovyPageUtils {
     public static String getViewURI(GroovyObject controller, String viewName) {
         if(controller == null) throw new IllegalArgumentException("Argument [controller] cannot be null");
         return getViewURI(getLogicalName(controller),viewName);
+
+    }
+
+
+    /**
+    * Obtains a view URI of the given controller and view name without the suffix
+    * @param controller The name of the controller
+    * @param viewName The name of the view
+    * @return The view URI
+    */
+    public static String getNoSuffixViewURI(GroovyObject controller, String viewName) {
+        if(controller == null) throw new IllegalArgumentException("Argument [controller] cannot be null");
+        return getNoSuffixViewURI(getLogicalName(controller),viewName);
 
     }
 
@@ -115,6 +129,36 @@ public class GroovyPageUtils {
     public static String getViewURI(String controllerName, String viewName) {
         FastStringWriter buf = new FastStringWriter();
 
+        return getViewURIInternal(controllerName, viewName, buf, true);
+    }
+
+    /**
+     * Obtains a view URI of the given controller name and view name without the suffix
+     * @param controllerName The name of the controller
+     * @param viewName The name of the view
+     * @return The view URI
+     */
+    public static String getNoSuffixViewURI(String controllerName, String viewName) {
+        FastStringWriter buf = new FastStringWriter();
+
+        return getViewURIInternal(controllerName, viewName, buf, false);
+    }
+
+
+
+    /**
+     * Obtains a view URI when deployed within the /WEB-INF/grails-app/views context
+     * @param controllerName The name of the controller
+     * @param viewName The name of the view
+     * @return The view URI
+     */
+    public static String getDeployedViewURI(String controllerName, String viewName) {
+        FastStringWriter buf = new FastStringWriter(PATH_TO_VIEWS);
+        return getViewURIInternal(controllerName, viewName, buf, true);
+
+    }
+
+    private static String getViewURIInternal(String controllerName, String viewName, FastStringWriter buf, boolean includeSuffix) {
         if(viewName.startsWith(SLASH_STR)) {
             String tmp = viewName.substring(1,viewName.length());
             if(tmp.indexOf(SLASH) > -1) {
@@ -136,9 +180,13 @@ public class GroovyPageUtils {
               .append(viewName);
 
         }
-        return buf
+        if(includeSuffix) {
+            return buf
                     .append(GroovyPage.SUFFIX)
                     .toString();
-
+        }
+        else {
+            return buf.toString();
+        }
     }
 }

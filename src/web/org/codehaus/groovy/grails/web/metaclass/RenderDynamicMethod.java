@@ -327,7 +327,7 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
         String viewName = argMap.get(ARGUMENT_VIEW).toString();
         Object modelObject = argMap.get(ARGUMENT_MODEL);
 
-        String viewUri = GroovyPageUtils.getViewURI((GroovyObject) target, viewName);
+        String viewUri = GroovyPageUtils.getNoSuffixViewURI((GroovyObject) target, viewName);
         Map model;
         if (modelObject instanceof Map) {
             model = (Map) modelObject;

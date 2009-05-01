@@ -12,6 +12,7 @@ class DefaultGrailsApplicationAttributesTests extends GroovyTestCase {
         grailsApplicationAttributes = new DefaultGrailsApplicationAttributes(null)
         def controller = new Expando()
         controller."${ControllerDynamicMethods.CONTROLLER_URI_PROPERTY}" = '/mycontroller'
+        controller."${ControllerDynamicMethods.CONTROLLER_NAME_PROPERTY}" = 'mycontroller'
         request = new MockHttpServletRequest()
         request.setAttribute(GrailsApplicationAttributes.CONTROLLER, controller)
     }

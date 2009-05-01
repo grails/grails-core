@@ -31,6 +31,7 @@ public class GrailsApplicationAttributesTests extends TestCase {
 		GroovyClassLoader gcl = new GroovyClassLoader();
         Class controllerClass = gcl.parseClass( "class TestController {\n" +
                 "def "+ControllerDynamicMethods.CONTROLLER_URI_PROPERTY+" = '/test'\n" +
+                "def "+ControllerDynamicMethods.CONTROLLER_NAME_PROPERTY+" = 'test'\n" +
                 "}" );	
         
         MockHttpServletRequest request = new MockHttpServletRequest();
