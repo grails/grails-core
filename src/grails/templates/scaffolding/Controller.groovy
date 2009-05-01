@@ -26,7 +26,7 @@
         def ${propertyName} = ${className}.get( params.id )
         if(${propertyName}) {
             try {
-                ${propertyName}.delete()
+                ${propertyName}.delete(flush:true)
                 flash.message = "${className} \${params.id} deleted"
                 redirect(action:list)
             }

@@ -678,12 +678,9 @@ Try using Grails' default cache provider: 'org.hibernate.cache.OSCacheProvider'"
         }
         metaClass.delete = { Map args ->
             def obj = delegate
-            template.execute({Session session ->
-                session.delete obj
-                if(args?.flush) {
-                    session.flush()
-                }
-            } as HibernateCallback)
+            template.delete obj
+            if(args?.flush)
+                template.flush()
         }
         metaClass.refresh = {-> template.refresh(delegate); delegate }
         metaClass.discard = {->template.evict(delegate); delegate }
