@@ -17,6 +17,8 @@ package grails.test
 import org.codehaus.groovy.grails.plugins.codecs.HTMLCodec
 import grails.converters.JSON
 import grails.converters.XML
+import org.codehaus.groovy.grails.commons.ConfigurationHolder
+import junit.framework.AssertionFailedError
 
 /**
  * Test case for {@link GrailsUnitTestCase}.
@@ -26,6 +28,18 @@ class GrailsUnitTestCaseTests extends GroovyTestCase {
         super.setUp()
     }
 
+    void testMockConfig() {
+        def testCase = new TestUnitTestCase()
+        testCase.setUp()
+        testCase.mockConfig '''
+            foo.bar = "good"
+        '''
+
+        new GrailsUnitTestClass().testConfig()
+
+        testCase.tearDown()
+
+    }
     void testMockLogging() {
         def testCase = new TestUnitTestCase()
         testCase.setUp()
@@ -306,6 +320,10 @@ class GrailsUnitTestClass {
         log.debug "Test debug with exception", new Exception("something went wrong!")
         log.trace "Test trace"
         log.trace "Test trace with exception", new Exception("something went wrong!")
+    }
+
+    void testConfig() {
+        assert ConfigurationHolder.config.foo.bar == "good"
     }
 
     static constraints = {

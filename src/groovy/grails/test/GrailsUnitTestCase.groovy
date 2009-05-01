@@ -22,6 +22,7 @@ import org.codehaus.groovy.grails.web.converters.ConverterUtil
 import org.codehaus.groovy.grails.web.converters.configuration.ConvertersConfigurationInitializer
 import org.springframework.validation.Errors
 import grails.util.GrailsNameUtils
+import org.codehaus.groovy.grails.commons.ConfigurationHolder
 
 /**
  * Support class for writing unit tests in Grails. It mainly provides
@@ -59,6 +60,7 @@ class GrailsUnitTestCase extends GroovyTestCase {
     protected void tearDown() {
         super.tearDown()
 
+        ConfigurationHolder.config = null
         // Restore all the saved meta classes.
         savedMetaClasses.each { clazz, metaClass ->
             GroovySystem.metaClassRegistry.setMetaClass(clazz, metaClass)
@@ -173,6 +175,11 @@ class GrailsUnitTestCase extends GroovyTestCase {
     protected void mockLogging(Class clazz, boolean enableDebug = false) {
         registerMetaClass(clazz)
         MockUtils.mockLogging(clazz, enableDebug)
+    }
+
+    protected void mockConfig(String config) {
+        def c = new ConfigSlurper().parse(config)
+        ConfigurationHolder.config = c
     }
 
     /**
