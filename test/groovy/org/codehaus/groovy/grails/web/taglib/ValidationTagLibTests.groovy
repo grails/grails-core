@@ -2,7 +2,9 @@ package org.codehaus.groovy.grails.web.taglib;
 
 import org.springframework.validation.Errors
 import org.springframework.validation.FieldError
-import org.springframework.util.StringUtils;
+import org.springframework.util.StringUtils
+import org.springframework.web.context.request.RequestContextHolder
+import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 
 class ValidationTagLibTests extends AbstractGrailsTagTests {
 
@@ -80,19 +82,20 @@ class Article {
         webRequest.currentRequest.addPreferredLocale(Locale.US)
 
         def template = '<g:fieldValue bean="${book}" field="usPrice" />'
-        assertOutputEquals("1045.99", template, [book:b])
+        assertOutputEquals("1,045.99", template, [book:b])
 
+        webRequest.currentRequest.removeAttribute(GrailsApplicationAttributes.PROPERTY_REGISTRY) 
         // And then with German.
         webRequest.currentRequest.addPreferredLocale(Locale.GERMANY)
-        assertOutputEquals("1045,99", template, [book:b])
+        assertOutputEquals("1.045,99", template, [book:b])
 
         // No decimal part.
         b.properties = [publisherURL:"http://google.com", usPrice: 1045G]
-        assertOutputEquals("1045,00", template, [book:b])
+        assertOutputEquals("1.045", template, [book:b])
 
         // Several decimal places.
         b.properties = [publisherURL:"http://google.com", usPrice: 1045.45567]
-        assertOutputEquals("1045,45567", template, [book:b])
+        assertOutputEquals("1.045,456", template, [book:b])
     }
 
     void testHasErrorsTag() {

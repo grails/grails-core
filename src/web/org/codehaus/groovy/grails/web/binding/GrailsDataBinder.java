@@ -123,9 +123,9 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
     /**
      * Collects all PropertyEditorRegistrars in the application context and
      * calls them to register their custom editors
-     * @param binder The GrailsDataBinder instance
+     * @param registry The PropertyEditorRegistry instance
      */
-    private static void registerCustomEditors(GrailsDataBinder binder) {
+    private static void registerCustomEditors(PropertyEditorRegistry registry) {
         final ServletContext servletContext = ServletContextHolder.getServletContext();
         if(servletContext != null) {
             WebApplicationContext context = WebApplicationContextUtils.getWebApplicationContext(servletContext);
@@ -133,7 +133,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
                 Map editors = context.getBeansOfType(PropertyEditorRegistrar.class);
                 for (Object o : editors.entrySet()) {
                     PropertyEditorRegistrar editorRegistrar = (PropertyEditorRegistrar) ((Map.Entry) o).getValue();
-                    editorRegistrar.registerCustomEditors(binder.getPropertyEditorRegistry());
+                    editorRegistrar.registerCustomEditors(registry);
                 }
             }
         }
@@ -150,29 +150,40 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
     public static GrailsDataBinder createBinder(Object target, String objectName, HttpServletRequest request) {
         GrailsDataBinder binder = createBinder(target,objectName);
         Locale locale = RequestContextUtils.getLocale(request);
+        registerCustomEditors(binder, locale);
 
+
+        return binder;
+    }
+
+
+    /**
+     * Registers all known
+     * @param registry
+     * @param locale
+     */
+    public static void registerCustomEditors(PropertyEditorRegistry registry, Locale locale) {
         // Formatters for the different number types.
         NumberFormat floatFormat = NumberFormat.getInstance(locale);
         NumberFormat integerFormat = NumberFormat.getIntegerInstance(locale);
 
-        binder.registerCustomEditor( Date.class, new CustomDateEditor(DateFormat.getDateInstance( DateFormat.SHORT, locale),true) );
-		binder.registerCustomEditor( BigDecimal.class, new CustomNumberEditor(BigDecimal.class, floatFormat, true));
-        binder.registerCustomEditor( BigInteger.class, new CustomNumberEditor(BigInteger.class, floatFormat, true));
-        binder.registerCustomEditor( Double.class, new CustomNumberEditor(Double.class, floatFormat, true));
-        binder.registerCustomEditor( double.class, new CustomNumberEditor(Double.class, floatFormat, true));
-        binder.registerCustomEditor( Float.class, new CustomNumberEditor(Float.class, floatFormat, true));
-        binder.registerCustomEditor( float.class, new CustomNumberEditor(Float.class, floatFormat, true));
-        binder.registerCustomEditor( Long.class, new CustomNumberEditor(Long.class, integerFormat, true));
-        binder.registerCustomEditor( long.class, new CustomNumberEditor(Long.class, integerFormat, true));
-        binder.registerCustomEditor( Integer.class, new CustomNumberEditor(Integer.class, integerFormat, true));
-        binder.registerCustomEditor( int.class, new CustomNumberEditor(Integer.class, integerFormat, true));
-        binder.registerCustomEditor( Short.class, new CustomNumberEditor(Short.class, integerFormat, true));
-        binder.registerCustomEditor( short.class, new CustomNumberEditor(Short.class, integerFormat, true));
-        binder.registerCustomEditor( Date.class, new StructuredDateEditor(DateFormat.getDateInstance( DateFormat.SHORT, locale),true));
-        binder.registerCustomEditor( Calendar.class, new StructuredDateEditor(DateFormat.getDateInstance( DateFormat.SHORT, locale),true));
+        registry.registerCustomEditor( Date.class, new CustomDateEditor(DateFormat.getDateInstance( DateFormat.SHORT, locale),true) );
+        registry.registerCustomEditor( BigDecimal.class, new CustomNumberEditor(BigDecimal.class, floatFormat, true));
+        registry.registerCustomEditor( BigInteger.class, new CustomNumberEditor(BigInteger.class, floatFormat, true));
+        registry.registerCustomEditor( Double.class, new CustomNumberEditor(Double.class, floatFormat, true));
+        registry.registerCustomEditor( double.class, new CustomNumberEditor(Double.class, floatFormat, true));
+        registry.registerCustomEditor( Float.class, new CustomNumberEditor(Float.class, floatFormat, true));
+        registry.registerCustomEditor( float.class, new CustomNumberEditor(Float.class, floatFormat, true));
+        registry.registerCustomEditor( Long.class, new CustomNumberEditor(Long.class, integerFormat, true));
+        registry.registerCustomEditor( long.class, new CustomNumberEditor(Long.class, integerFormat, true));
+        registry.registerCustomEditor( Integer.class, new CustomNumberEditor(Integer.class, integerFormat, true));
+        registry.registerCustomEditor( int.class, new CustomNumberEditor(Integer.class, integerFormat, true));
+        registry.registerCustomEditor( Short.class, new CustomNumberEditor(Short.class, integerFormat, true));
+        registry.registerCustomEditor( short.class, new CustomNumberEditor(Short.class, integerFormat, true));
+        registry.registerCustomEditor( Date.class, new StructuredDateEditor(DateFormat.getDateInstance( DateFormat.SHORT, locale),true));
+        registry.registerCustomEditor( Calendar.class, new StructuredDateEditor(DateFormat.getDateInstance( DateFormat.SHORT, locale),true));
 
-        registerCustomEditors(binder);
-        return binder;
+        registerCustomEditors(registry);
     }
 
     /**
@@ -190,6 +201,8 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
         binder.registerCustomEditor( Locale.class, new LocaleEditor());
         binder.registerCustomEditor( TimeZone.class, new TimeZoneEditor());
         binder.registerCustomEditor( URI.class, new UriEditor());
+
+        registerCustomEditors(binder);
 
 		return binder;
     }

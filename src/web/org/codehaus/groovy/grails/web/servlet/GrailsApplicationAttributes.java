@@ -26,6 +26,7 @@ public interface GrailsApplicationAttributes extends ApplicationAttributes {
     String FLASH_SCOPE = "org.codehaus.groovy.grails.FLASH_SCOPE";
     String PARAMS_OBJECT = "org.codehaus.groovy.grails.PARAMS_OBJECT";
     String CONTROLLER = "org.codehaus.groovy.grails.CONTROLLER";
+    String PROPERTY_REGISTRY = "org.codehaus.groovy.grails.PROPERTY_REGISTRY";
     String ERRORS =  "org.codehaus.groovy.grails.ERRORS";
     String MODEL_AND_VIEW = "org.codehaus.groovy.grails.MODEL_AND_VIEW";
     String OUT = "org.codehaus.groovy.grails.RESPONSE_OUT";

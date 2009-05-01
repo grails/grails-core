@@ -14,15 +14,17 @@
  */
 package org.codehaus.groovy.grails.plugins.web.taglib
 
+import org.springframework.web.servlet.support.RequestContextUtils as RCU
+
 import groovy.xml.MarkupBuilder
+import java.beans.PropertyEditor
+import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
 import org.apache.commons.lang.StringEscapeUtils
-import org.codehaus.groovy.grails.commons.ApplicationHolder
-import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU;   
-import org.springframework.context.NoSuchMessageException;
-import org.springframework.validation.Errors;
-import org.springframework.web.servlet.support.RequestContextUtils as RCU
-import org.codehaus.groovy.grails.plugins.codecs.HTMLCodec;
+import org.codehaus.groovy.grails.plugins.codecs.HTMLCodec
+import org.springframework.beans.PropertyEditorRegistry
+import org.springframework.validation.Errors
+import org.springframework.web.context.request.RequestContextHolder
 
 /**
 *  A  tag lib that provides tags to handle validation and errors
@@ -56,10 +58,10 @@ class ValidationTagLib {
     */ 
    def fieldValue =  { attrs, body ->
    		def bean = attrs.bean
-		def field = attrs.field
+		def field = attrs.field?.toString()
 		if(bean && field) {
 			if(bean.metaClass.hasProperty( bean,'errors')) {
-				def errors = bean.errors
+				Errors errors = bean.errors
                 def rejectedValue = errors?.getFieldError(field)?.rejectedValue
 				if(rejectedValue == null ) {
                     rejectedValue = bean
@@ -349,17 +351,26 @@ class ValidationTagLib {
      * conversion to a string. 
      */
     def formatValue(value) {
-        if (value instanceof Number) {
-            def pattern = "0"
-            if (value instanceof Double || value instanceof Float || value instanceof BigDecimal) {
-                pattern = "0.00#####"
-            }
-            def locale = RCU.getLocale(request)
-            def dcfs = locale ? new DecimalFormatSymbols(locale) : new DecimalFormatSymbols()
-            def decimalFormat = new java.text.DecimalFormat(pattern, dcfs)
-            value = decimalFormat.format(value)
+        PropertyEditorRegistry registry = RequestContextHolder.currentRequestAttributes().getPropertyEditorRegistry()
+        PropertyEditor editor = registry.getCustomEditor(value.getClass())
+        if(editor!=null) {
+            editor.setValue(value)
+            return HTMLCodec.shouldEncode() ? editor.asText?.encodeAsHTML() : editor.asText
         }
+        else {
 
-        HTMLCodec.shouldEncode() ? value.toString().encodeAsHTML() : value
+            if (value instanceof Number) {
+                def pattern = "0"
+                if (value instanceof Double || value instanceof Float || value instanceof BigDecimal) {
+                    pattern = "0.00#####"
+                }
+                def locale = RCU.getLocale(request)
+                def dcfs = locale ? new DecimalFormatSymbols(locale) : new DecimalFormatSymbols()
+                def decimalFormat = new java.text.DecimalFormat(pattern, dcfs)
+                value = decimalFormat.format(value)
+            }
+
+            HTMLCodec.shouldEncode() ? value.toString().encodeAsHTML() : value
+        }
     }
 }

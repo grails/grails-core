@@ -18,12 +18,16 @@ package org.codehaus.groovy.grails.web.servlet.mvc;
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsControllerClass;
+import org.codehaus.groovy.grails.web.binding.GrailsDataBinder;
 import org.codehaus.groovy.grails.web.servlet.DefaultGrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.FlashScope;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
+import org.springframework.beans.PropertyEditorRegistry;
+import org.springframework.beans.PropertyEditorRegistrySupport;
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.servlet.handler.DispatcherServletWebRequest;
+import org.springframework.web.servlet.support.RequestContextUtils;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
@@ -233,6 +237,22 @@ public class GrailsWebRequest extends DispatcherServletWebRequest implements Par
     }
 
     /**
+     * Obtains the PropertyEditorRegistry instance
+     * @return The PropertyEditorRegistry
+     */
+    public PropertyEditorRegistry getPropertyEditorRegistry() {
+        final HttpServletRequest servletRequest = getCurrentRequest();
+        PropertyEditorRegistry registry = (PropertyEditorRegistry) servletRequest.getAttribute(GrailsApplicationAttributes.PROPERTY_REGISTRY);
+        if(registry == null) {
+            registry = new PropertyEditorRegistrySupport();
+            GrailsDataBinder.registerCustomEditors(registry, RequestContextUtils.getLocale(servletRequest));
+            servletRequest.setAttribute(GrailsApplicationAttributes.PROPERTY_REGISTRY, registry);
+
+        }        
+        return registry;
+    }
+
+    /**
      * Looks up the GrailsWebRequest from the current request
      * @param request The current request
      * @return The GrailsWebRequest
@@ -240,4 +260,6 @@ public class GrailsWebRequest extends DispatcherServletWebRequest implements Par
     public static GrailsWebRequest lookup(HttpServletRequest request) {
         return (GrailsWebRequest) request.getAttribute(GrailsApplicationAttributes.WEB_REQUEST);
     }
+
+
 }

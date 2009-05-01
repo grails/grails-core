@@ -37,6 +37,7 @@ import org.springframework.context.ApplicationContext
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager
 import org.codehaus.groovy.grails.web.pages.GSPResponseWriter
+import org.codehaus.groovy.grails.web.context.ServletContextHolder
 
 abstract class AbstractGrailsTagTests extends GroovyTestCase {
 
@@ -171,6 +172,7 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
         def springConfig = new WebRuntimeSpringConfiguration(ctx)
 
         servletContext =  webRequest.servletContext
+        ServletContextHolder.servletContext = servletContext
 
 		springConfig.servletContext = servletContext
 
@@ -206,6 +208,7 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
         onDestroy()
 
         servletContext = null
+        ServletContextHolder.servletContext = null
         webRequest = null
         request = null
         response = null
