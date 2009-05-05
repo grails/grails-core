@@ -22,8 +22,12 @@ class CountryTagLibTests extends AbstractGrailsTagTests {
         def template = '<g:countrySelect name="foo" value="gbr" />'
 
         def result = applyTemplate(template, [:])
+
+        def expected = '<option value="gbr" selected="selected" >United Kingdom</option>'
+        assertTrue "Output does not contain expected string [$expected]. Output was: ${result}", result.indexOf(expected) > -1
+
         CountryTagLib.ISO3166_3.each {
-            def expected = "<option value=\"${it.key}\""
+            expected = "<option value=\"${it.key}\""
             assertTrue "Output does not contain expected string [$expected]. Output was: ${result}", result.indexOf(expected) > -1
             expected = ">${it.value.encodeAsHTML()}</option>"
             assertTrue "Output does not contain expected string [$expected]. Output was: ${result}", result.indexOf(expected) > -1
@@ -32,37 +36,49 @@ class CountryTagLibTests extends AbstractGrailsTagTests {
 
     void testReducedCountryListWithSelection() {
         def template = '<g:countrySelect name="foo" value="usa" from="[\'gbr\', \'usa\', \'deu\']"/>'
+        def result = applyTemplate(template, [:])
 
-        assertOutputContains('<option value="usa" selected="selected" >United States</option>', template,[:])
+        def expected = '<option value="usa" selected="selected" >United States</option>'
+        assertTrue "Output does not contain expected string [$expected]. Output was: ${result}", result.indexOf(expected) > -1
 
         ['gbr', 'usa', 'deu'].each {
             def value = CountryTagLib.ISO3166_3[it]
-            assertOutputContains("<option value=\"${it}\"", template,[:])
-            assertOutputContains(">${value.encodeAsHTML()}</option>", template,[:])
+            expected = "<option value=\"${it}\""
+            assertTrue "Output does not contain expected string [$expected]. Output was: ${result}", result.indexOf(expected) > -1
+            expected = ">${value.encodeAsHTML()}</option>"
+            assertTrue "Output does not contain expected string [$expected]. Output was: ${result}", result.indexOf(expected) > -1
         }
     }
 
     void testCountryNamesWithValueMessagePrefix() {
         def template = '<g:countrySelect name="foo" valueMessagePrefix="country" value="usa" from="[\'gbr\', \'usa\', \'deu\']"/>'
+        def result = applyTemplate(template, [:])
 
-        assertOutputContains('<option value="usa" selected="selected" >country.usa</option>', template,[:])
+        def expected = '<option value="usa" selected="selected" >country.usa</option>'
+        assertTrue "Output does not contain expected string [$expected]. Output was: ${result}", result.indexOf(expected) > -1
 
         ['gbr', 'usa', 'deu'].each {
             def value = CountryTagLib.ISO3166_3[it]
-            assertOutputContains("<option value=\"${it}\"", template,[:])
-            assertOutputContains(">country.${it.encodeAsHTML()}</option>", template,[:])
+            expected = "<option value=\"${it}\""
+            assertTrue "Output does not contain expected string [$expected]. Output was: ${result}", result.indexOf(expected) > -1
+            expected = ">country.${it.encodeAsHTML()}</option>"
+            assertTrue "Output does not contain expected string [$expected]. Output was: ${result}", result.indexOf(expected) > -1
         }
     }
 
     void testDefault() {
         def template = '<g:countrySelect name="foo" default="deu" from="[\'gbr\', \'usa\', \'deu\']"/>'
+        def result = applyTemplate(template, [:])
 
-        assertOutputContains('<option value="deu" selected="selected" >Germany</option>', template,[:])
+        def expected = '<option value="deu" selected="selected" >Germany</option>'
+        assertTrue "Output does not contain expected string [$expected]. Output was: ${result}", result.indexOf(expected) > -1
 
         ['gbr', 'usa', 'deu'].each {
             def value = CountryTagLib.ISO3166_3[it]
-            assertOutputContains("<option value=\"${it}\"", template,[:])
-            assertOutputContains(">${value.encodeAsHTML()}</option>", template,[:])
+            expected = "<option value=\"${it}\""
+            assertTrue "Output does not contain expected string [$expected]. Output was: ${result}", result.indexOf(expected) > -1
+            expected = ">${value.encodeAsHTML()}</option>"
+            assertTrue "Output does not contain expected string [$expected]. Output was: ${result}", result.indexOf(expected) > -1
         }
     }
 
