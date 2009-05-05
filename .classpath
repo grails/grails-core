@@ -33,7 +33,7 @@
 	<classpathentry kind="lib" path="lib/dom4j-1.6.1.jar"/>
 	<classpathentry kind="lib" path="lib/oscache-2.4.1.jar"/>
 	<classpathentry kind="lib" path="lib/ejb3-persistence-3.3.0.jar"/>
-	<classpathentry kind="lib" path="lib/gant_groovy1.6-1.6.0.jar"/>
+	<classpathentry kind="lib" path="lib/gant_groovy1.6.3-1.7.0-SNAPSHOT.jar"/>
 	<classpathentry kind="lib" path="lib/groovy-all-1.6.3-SNAPSHOT.jar"/>
 	<classpathentry kind="lib" path="lib/hibernate-annotations-3.3.0.jar"/>
 	<classpathentry kind="lib" path="lib/hsqldb-1.8.0.5.jar"/>
