@@ -23,14 +23,11 @@ class CountryTagLibTests extends AbstractGrailsTagTests {
 
         def result = applyTemplate(template, [:])
 
-        def expected = '<option value="gbr" selected="selected" >United Kingdom</option>'
-        assertTrue "Output does not contain expected string [$expected]. Output was: ${result}", result.indexOf(expected) > -1
+        assertResultContains result, '<option value="gbr" selected="selected" >United Kingdom</option>'
 
         CountryTagLib.ISO3166_3.each {
-            expected = "<option value=\"${it.key}\""
-            assertTrue "Output does not contain expected string [$expected]. Output was: ${result}", result.indexOf(expected) > -1
-            expected = ">${it.value.encodeAsHTML()}</option>"
-            assertTrue "Output does not contain expected string [$expected]. Output was: ${result}", result.indexOf(expected) > -1
+            assertResultContains result, "<option value=\"${it.key}\""
+            assertResultContains result, ">${it.value.encodeAsHTML()}</option>"
         }
     }
 
@@ -38,15 +35,12 @@ class CountryTagLibTests extends AbstractGrailsTagTests {
         def template = '<g:countrySelect name="foo" value="usa" from="[\'gbr\', \'usa\', \'deu\']"/>'
         def result = applyTemplate(template, [:])
 
-        def expected = '<option value="usa" selected="selected" >United States</option>'
-        assertTrue "Output does not contain expected string [$expected]. Output was: ${result}", result.indexOf(expected) > -1
+        assertResultContains result, '<option value="usa" selected="selected" >United States</option>'
 
         ['gbr', 'usa', 'deu'].each {
             def value = CountryTagLib.ISO3166_3[it]
-            expected = "<option value=\"${it}\""
-            assertTrue "Output does not contain expected string [$expected]. Output was: ${result}", result.indexOf(expected) > -1
-            expected = ">${value.encodeAsHTML()}</option>"
-            assertTrue "Output does not contain expected string [$expected]. Output was: ${result}", result.indexOf(expected) > -1
+            assertResultContains result, "<option value=\"${it}\""
+            assertResultContains result, ">${value.encodeAsHTML()}</option>"
         }
     }
 
@@ -54,15 +48,12 @@ class CountryTagLibTests extends AbstractGrailsTagTests {
         def template = '<g:countrySelect name="foo" valueMessagePrefix="country" value="usa" from="[\'gbr\', \'usa\', \'deu\']"/>'
         def result = applyTemplate(template, [:])
 
-        def expected = '<option value="usa" selected="selected" >country.usa</option>'
-        assertTrue "Output does not contain expected string [$expected]. Output was: ${result}", result.indexOf(expected) > -1
+        assertResultContains result, '<option value="usa" selected="selected" >country.usa</option>'
 
         ['gbr', 'usa', 'deu'].each {
             def value = CountryTagLib.ISO3166_3[it]
-            expected = "<option value=\"${it}\""
-            assertTrue "Output does not contain expected string [$expected]. Output was: ${result}", result.indexOf(expected) > -1
-            expected = ">country.${it.encodeAsHTML()}</option>"
-            assertTrue "Output does not contain expected string [$expected]. Output was: ${result}", result.indexOf(expected) > -1
+            assertResultContains result, "<option value=\"${it}\""
+            assertResultContains result, ">country.${it.encodeAsHTML()}</option>"
         }
     }
 
@@ -70,15 +61,12 @@ class CountryTagLibTests extends AbstractGrailsTagTests {
         def template = '<g:countrySelect name="foo" default="deu" from="[\'gbr\', \'usa\', \'deu\']"/>'
         def result = applyTemplate(template, [:])
 
-        def expected = '<option value="deu" selected="selected" >Germany</option>'
-        assertTrue "Output does not contain expected string [$expected]. Output was: ${result}", result.indexOf(expected) > -1
+        assertResultContains result, '<option value="deu" selected="selected" >Germany</option>'
 
         ['gbr', 'usa', 'deu'].each {
             def value = CountryTagLib.ISO3166_3[it]
-            expected = "<option value=\"${it}\""
-            assertTrue "Output does not contain expected string [$expected]. Output was: ${result}", result.indexOf(expected) > -1
-            expected = ">${value.encodeAsHTML()}</option>"
-            assertTrue "Output does not contain expected string [$expected]. Output was: ${result}", result.indexOf(expected) > -1
+            assertResultContains result, "<option value=\"${it}\""
+            assertResultContains result, ">${value.encodeAsHTML()}</option>"
         }
     }
 
@@ -86,6 +74,9 @@ class CountryTagLibTests extends AbstractGrailsTagTests {
         def template = '<g:country code="deu"/>'
 
         assertOutputContains('Germany', template,[:])
-
+    }
+    
+    void assertResultContains(result, expectedSubstring) {
+        assertTrue "Result does not contain expected string [$expectedSubstring]. Result was: ${result}", result.indexOf(expectedSubstring) > -1
     }
 }
