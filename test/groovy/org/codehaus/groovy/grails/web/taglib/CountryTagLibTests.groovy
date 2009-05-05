@@ -21,11 +21,12 @@ class CountryTagLibTests extends AbstractGrailsTagTests {
     void testFullCountryListWithSelection() {
         def template = '<g:countrySelect name="foo" value="gbr" />'
 
-        assertOutputContains('<option value="gbr" selected="selected" >United Kingdom</option>', template,[:])
-
+        def result = applyTemplate(template, [:])
         CountryTagLib.ISO3166_3.each {
-            assertOutputContains("<option value=\"${it.key}\"", template,[:])
-            assertOutputContains(">${it.value.encodeAsHTML()}</option>", template,[:])
+            def expected = "<option value=\"${it.key}\""
+            assertTrue "Output does not contain expected string [$expected]. Output was: ${result}", result.indexOf(expected) > -1
+            expected = ">${it.value.encodeAsHTML()}</option>"
+            assertTrue "Output does not contain expected string [$expected]. Output was: ${result}", result.indexOf(expected) > -1
         }
     }
 
