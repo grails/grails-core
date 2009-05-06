@@ -45,14 +45,21 @@ public class ValidatePersistentMethod extends AbstractDynamicPersistentMethod {
     private static final String ARGUMENT_DEEP_VALIDATE = "deepValidate";
     private static final String ARGUMENT_EVICT = "evict";
     private static final String ERRORS_PROPERTY = "errors";
+    private Validator validator;
 
 
     public ValidatePersistentMethod(SessionFactory sessionFactory, ClassLoader classLoader, GrailsApplication application) {
+       this(sessionFactory, classLoader, application, null);
+    }
+
+    public ValidatePersistentMethod(SessionFactory sessionFactory, ClassLoader classLoader, GrailsApplication application, Validator validator) {
         super(METHOD_PATTERN, sessionFactory, classLoader);
         if(application == null)
             throw new IllegalArgumentException("Constructor argument 'application' cannot be null");
         this.application = application;
+        this.validator = validator;
     }
+
 
     protected Object doInvokeInternal(final Object target, Object[] arguments) {
         MetaClass mc = GroovySystem.getMetaClassRegistry().getMetaClass(target.getClass());
@@ -62,9 +69,8 @@ public class ValidatePersistentMethod extends AbstractDynamicPersistentMethod {
         
         GrailsDomainClass domainClass = (GrailsDomainClass) application.getArtefact(DomainClassArtefactHandler.TYPE,
             target.getClass().getName() );
-        Validator validator = null;
 
-        if(domainClass != null)
+        if(validator == null && domainClass != null)
             validator = domainClass.getValidator();
 
         Boolean valid = Boolean.TRUE;

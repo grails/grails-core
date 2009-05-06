@@ -54,6 +54,7 @@ import org.hibernate.proxy.HibernateProxy
 import org.hibernate.proxy.LazyInitializer
 import org.apache.commons.beanutils.PropertyUtils
 import org.hibernate.Hibernate
+import org.springframework.validation.Validator
 
 
 /**
@@ -365,7 +366,8 @@ Try using Grails' default cache provider: 'org.hibernate.cache.OSCacheProvider'"
     private static addValidationMethods(GrailsDomainClass dc, GrailsApplication application, ApplicationContext ctx, SessionFactory sessionFactory) {
         def metaClass = dc.metaClass
 
-        def validateMethod = new ValidatePersistentMethod(sessionFactory, application.classLoader, application)
+        Validator validator = ctx.getBean("${dc.fullName}Validator")
+        def validateMethod = new ValidatePersistentMethod(sessionFactory, application.classLoader, application,validator)
 
         MetaProperty originalPropertiesProperty = metaClass.getMetaProperty("properties")
         metaClass.setProperties = {Object o ->
