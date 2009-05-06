@@ -179,8 +179,14 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
      * @return A UrlMapping instance or null
      */
     protected UrlMapping lookupMapping(String controller, String action, Map params) {
-    	SortedSet mappingKeysSet = mappingsListLookup.get(new UrlMappingsListKey(controller,action));
-    	if(null == mappingKeysSet) return null;
+        final UrlMappingsListKey lookupKey = new UrlMappingsListKey(controller, action);
+        SortedSet mappingKeysSet = mappingsListLookup.get(lookupKey);
+
+    	if(null == mappingKeysSet) {
+            lookupKey.action=null;
+            mappingKeysSet = mappingsListLookup.get(lookupKey);
+        }
+        if(null == mappingKeysSet) return null;
 		
     	UrlMappingKey[] mappingKeys = (UrlMappingKey[]) mappingKeysSet.toArray(new UrlMappingKey[mappingKeysSet.size()]);
     	Set mappingConstraintNames = new HashSet();
