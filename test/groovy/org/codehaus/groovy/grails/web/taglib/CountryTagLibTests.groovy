@@ -21,47 +21,52 @@ class CountryTagLibTests extends AbstractGrailsTagTests {
     void testFullCountryListWithSelection() {
         def template = '<g:countrySelect name="foo" value="gbr" />'
 
-        assertOutputContains('<option value="gbr" selected="selected" >United Kingdom</option>', template,[:])
+        def result = applyTemplate(template, [:])
+
+        assertResultContains result, '<option value="gbr" selected="selected" >United Kingdom</option>'
 
         CountryTagLib.ISO3166_3.each {
-            assertOutputContains("<option value=\"${it.key}\"", template,[:])
-            assertOutputContains(">${it.value.encodeAsHTML()}</option>", template,[:])
+            assertResultContains result, "<option value=\"${it.key}\""
+            assertResultContains result, ">${it.value.encodeAsHTML()}</option>"
         }
     }
 
     void testReducedCountryListWithSelection() {
         def template = '<g:countrySelect name="foo" value="usa" from="[\'gbr\', \'usa\', \'deu\']"/>'
+        def result = applyTemplate(template, [:])
 
-        assertOutputContains('<option value="usa" selected="selected" >United States</option>', template,[:])
+        assertResultContains result, '<option value="usa" selected="selected" >United States</option>'
 
         ['gbr', 'usa', 'deu'].each {
             def value = CountryTagLib.ISO3166_3[it]
-            assertOutputContains("<option value=\"${it}\"", template,[:])
-            assertOutputContains(">${value.encodeAsHTML()}</option>", template,[:])
+            assertResultContains result, "<option value=\"${it}\""
+            assertResultContains result, ">${value.encodeAsHTML()}</option>"
         }
     }
 
     void testCountryNamesWithValueMessagePrefix() {
         def template = '<g:countrySelect name="foo" valueMessagePrefix="country" value="usa" from="[\'gbr\', \'usa\', \'deu\']"/>'
+        def result = applyTemplate(template, [:])
 
-        assertOutputContains('<option value="usa" selected="selected" >country.usa</option>', template,[:])
+        assertResultContains result, '<option value="usa" selected="selected" >country.usa</option>'
 
         ['gbr', 'usa', 'deu'].each {
             def value = CountryTagLib.ISO3166_3[it]
-            assertOutputContains("<option value=\"${it}\"", template,[:])
-            assertOutputContains(">country.${it.encodeAsHTML()}</option>", template,[:])
+            assertResultContains result, "<option value=\"${it}\""
+            assertResultContains result, ">country.${it.encodeAsHTML()}</option>"
         }
     }
 
     void testDefault() {
         def template = '<g:countrySelect name="foo" default="deu" from="[\'gbr\', \'usa\', \'deu\']"/>'
+        def result = applyTemplate(template, [:])
 
-        assertOutputContains('<option value="deu" selected="selected" >Germany</option>', template,[:])
+        assertResultContains result, '<option value="deu" selected="selected" >Germany</option>'
 
         ['gbr', 'usa', 'deu'].each {
             def value = CountryTagLib.ISO3166_3[it]
-            assertOutputContains("<option value=\"${it}\"", template,[:])
-            assertOutputContains(">${value.encodeAsHTML()}</option>", template,[:])
+            assertResultContains result, "<option value=\"${it}\""
+            assertResultContains result, ">${value.encodeAsHTML()}</option>"
         }
     }
 
@@ -69,6 +74,9 @@ class CountryTagLibTests extends AbstractGrailsTagTests {
         def template = '<g:country code="deu"/>'
 
         assertOutputContains('Germany', template,[:])
-
+    }
+    
+    void assertResultContains(result, expectedSubstring) {
+        assertTrue "Result does not contain expected string [$expectedSubstring]. Result was: ${result}", result.indexOf(expectedSubstring) > -1
     }
 }

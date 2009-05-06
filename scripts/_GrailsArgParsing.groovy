@@ -22,6 +22,10 @@
  * @since 1.1
  */
 
+// No point doing this stuff more than once.
+if (getBinding().variables.containsKey("_grails_arg_parsing_called")) return
+_grails_arg_parsing_called = true
+
 includeTargets << grailsScript("_GrailsEvents")
 
 argsMap = [params: []]
