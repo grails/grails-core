@@ -366,7 +366,7 @@ Try using Grails' default cache provider: 'org.hibernate.cache.OSCacheProvider'"
     private static addValidationMethods(GrailsDomainClass dc, GrailsApplication application, ApplicationContext ctx, SessionFactory sessionFactory) {
         def metaClass = dc.metaClass
 
-        Validator validator = ctx.getBean("${dc.fullName}Validator")
+        Validator validator = ctx.containsBean("${dc.fullName}Validator") ? ctx.getBean("${dc.fullName}Validator") : null
         def validateMethod = new ValidatePersistentMethod(sessionFactory, application.classLoader, application,validator)
 
         MetaProperty originalPropertiesProperty = metaClass.getMetaProperty("properties")
