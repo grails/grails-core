@@ -16,9 +16,9 @@ package org.codehaus.groovy.grails.web.binding;
 
 import grails.util.GrailsNameUtils;
 import groovy.lang.*;
-import org.apache.commons.collections.set.ListOrderedSet;
-import org.apache.commons.collections.list.LazyList;
 import org.apache.commons.collections.Factory;
+import org.apache.commons.collections.list.LazyList;
+import org.apache.commons.collections.set.ListOrderedSet;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.*;
@@ -51,6 +51,7 @@ import java.math.BigInteger;
 import java.net.URI;
 import java.text.DateFormat;
 import java.text.NumberFormat;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -87,6 +88,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
     private static final char PATH_SEPARATOR = '.';
     private static final String IDENTIFIER_SUFFIX = ".id";
     private List transients = Collections.EMPTY_LIST;
+    private static final String DEFAULT_DATE_FORMAT = "yyyy-MM-dd HH:mm:ss.S";
 
     /**
      * Create a new GrailsDataBinder instance.
@@ -167,7 +169,9 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
         NumberFormat floatFormat = NumberFormat.getInstance(locale);
         NumberFormat integerFormat = NumberFormat.getIntegerInstance(locale);
 
-        registry.registerCustomEditor( Date.class, new CustomDateEditor(DateFormat.getDateInstance( DateFormat.SHORT, locale),true) );
+        DateFormat dateFormat = new SimpleDateFormat(DEFAULT_DATE_FORMAT, locale);
+
+        registry.registerCustomEditor( Date.class, new CustomDateEditor(dateFormat,true) );
         registry.registerCustomEditor( BigDecimal.class, new CustomNumberEditor(BigDecimal.class, floatFormat, true));
         registry.registerCustomEditor( BigInteger.class, new CustomNumberEditor(BigInteger.class, floatFormat, true));
         registry.registerCustomEditor( Double.class, new CustomNumberEditor(Double.class, floatFormat, true));
@@ -180,8 +184,8 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
         registry.registerCustomEditor( int.class, new CustomNumberEditor(Integer.class, integerFormat, true));
         registry.registerCustomEditor( Short.class, new CustomNumberEditor(Short.class, integerFormat, true));
         registry.registerCustomEditor( short.class, new CustomNumberEditor(Short.class, integerFormat, true));
-        registry.registerCustomEditor( Date.class, new StructuredDateEditor(DateFormat.getDateInstance( DateFormat.SHORT, locale),true));
-        registry.registerCustomEditor( Calendar.class, new StructuredDateEditor(DateFormat.getDateInstance( DateFormat.SHORT, locale),true));
+        registry.registerCustomEditor( Date.class, new StructuredDateEditor(dateFormat,true));
+        registry.registerCustomEditor( Calendar.class, new StructuredDateEditor(dateFormat,true));
 
         registerCustomEditors(registry);
     }
