@@ -369,7 +369,7 @@ class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants 
 			throwTagError("Tag [sortableColumn] is missing required attribute [title] or [titleKey]")
 
 		def property = attrs.remove("property")
-		def action = attrs.action ? attrs.remove("action") : (params.action ? params.action : "list")
+		def action = attrs.action ? attrs.remove("action") : (actionName ?: "list")
 
 		def defaultOrder = attrs.remove("defaultOrder")
 		if(defaultOrder != "desc") defaultOrder = "asc"
