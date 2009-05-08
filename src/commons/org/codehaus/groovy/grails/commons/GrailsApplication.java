@@ -273,6 +273,13 @@ public interface GrailsApplication extends ApplicationContextAware {
     GrailsClass getArtefact(String artefactType, String name);
 
     /**
+     * Returns the ArtefactHandler for the given class or null
+     * @param theClass The class
+     * @return The ArtefactHandler
+     */
+    ArtefactHandler getArtefactType(Class theClass);
+
+    /**
      * <p>Obtain all the class information about the artefactType specified</p>
      * @param artefactType An artefact type identifier i.e. "Domain"
      * @return The artefact info or null if the artefactType is not recognized

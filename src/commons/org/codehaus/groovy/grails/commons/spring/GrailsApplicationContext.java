@@ -19,8 +19,11 @@ import groovy.lang.GroovySystem;
 import groovy.lang.MetaClass;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.context.support.StaticApplicationContext;
+import org.springframework.beans.factory.support.GenericBeanDefinition;
+import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.ui.context.Theme;
 import org.springframework.ui.context.ThemeSource;
 import org.springframework.ui.context.support.UiApplicationContextUtils;
@@ -34,18 +37,18 @@ import org.springframework.ui.context.support.UiApplicationContextUtils;
  *        <p/>
  *        Created: Nov 23, 2007
  */
-public class GrailsApplicationContext extends StaticApplicationContext implements GroovyObject {
+public class GrailsApplicationContext extends GenericApplicationContext implements GroovyObject {
     protected MetaClass metaClass;
     private BeanWrapper ctxBean = new BeanWrapperImpl(this);
     private ThemeSource themeSource;
 
     public GrailsApplicationContext(org.springframework.context.ApplicationContext parent) throws org.springframework.beans.BeansException {
-        super(parent);
+        super(new ReloadAwareAutowireCapableBeanFactory(),parent);
         this.metaClass = GroovySystem.getMetaClassRegistry().getMetaClass(getClass());
     }
 
     public GrailsApplicationContext() throws org.springframework.beans.BeansException {
-        super();
+        super(new ReloadAwareAutowireCapableBeanFactory());
         this.metaClass = GroovySystem.getMetaClassRegistry().getMetaClass(getClass());
     }
 
@@ -94,4 +97,56 @@ public class GrailsApplicationContext extends StaticApplicationContext implement
 			metaClass.setProperty(this, property, newValue);
 		}
 	}
+
+
+    /**
+     * Register a singleton bean with the underlying bean factory.
+     * <p>For more advanced needs, register with the underlying BeanFactory directly.
+     * @see #getDefaultListableBeanFactory
+     */
+    public void registerSingleton(String name, Class clazz) throws BeansException {
+        GenericBeanDefinition bd = new GenericBeanDefinition();
+        bd.setBeanClass(clazz);
+        getDefaultListableBeanFactory().registerBeanDefinition(name, bd);
+    }
+
+    /**
+     * Register a singleton bean with the underlying bean factory.
+     * <p>For more advanced needs, register with the underlying BeanFactory directly.
+     * @see #getDefaultListableBeanFactory
+     */
+    public void registerSingleton(String name, Class clazz, MutablePropertyValues pvs) throws BeansException {
+        GenericBeanDefinition bd = new GenericBeanDefinition();
+        bd.setBeanClass(clazz);
+        bd.setPropertyValues(pvs);
+        getDefaultListableBeanFactory().registerBeanDefinition(name, bd);
+    }
+
+    /**
+     * Register a prototype bean with the underlying bean factory.
+     * <p>For more advanced needs, register with the underlying BeanFactory directly.
+     * @see #getDefaultListableBeanFactory
+     */
+    public void registerPrototype(String name, Class clazz) throws BeansException {
+        GenericBeanDefinition bd = new GenericBeanDefinition();
+        bd.setScope(GenericBeanDefinition.SCOPE_PROTOTYPE);
+        bd.setBeanClass(clazz);
+        getDefaultListableBeanFactory().registerBeanDefinition(name, bd);
+    }
+
+    /**
+     * Register a prototype bean with the underlying bean factory.
+     * <p>For more advanced needs, register with the underlying BeanFactory directly.
+     * @see #getDefaultListableBeanFactory
+     */
+    public void registerPrototype(String name, Class clazz, MutablePropertyValues pvs) throws BeansException {
+        GenericBeanDefinition bd = new GenericBeanDefinition();
+        bd.setScope(GenericBeanDefinition.SCOPE_PROTOTYPE);
+        bd.setBeanClass(clazz);
+        bd.setPropertyValues(pvs);
+        getDefaultListableBeanFactory().registerBeanDefinition(name, bd);
+    }
+
+
 }
+

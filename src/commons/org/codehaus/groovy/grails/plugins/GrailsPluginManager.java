@@ -249,4 +249,10 @@ public interface GrailsPluginManager extends ApplicationContextAware, ServletCon
      * @param shouldLoadCorePlugins True if they should
      */
     void setLoadCorePlugins(boolean shouldLoadCorePlugins);
+
+    /**
+     * Method for handling changes to a class and triggering on change events etc.
+     * @param aClass The class
+     */
+    void informOfClassChange(Class aClass);
 }

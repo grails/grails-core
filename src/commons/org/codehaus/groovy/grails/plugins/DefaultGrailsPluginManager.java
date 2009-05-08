@@ -35,7 +35,7 @@ import org.codehaus.groovy.grails.support.ParentApplicationContextAware;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.context.support.StaticApplicationContext;
+import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.xml.sax.EntityResolver;
@@ -704,7 +704,7 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager impl
         springConfig.setServletContext(getServletContext());
 
         this.doRuntimeConfiguration(plugin.getName(), springConfig);
-        springConfig.registerBeansWithContext((StaticApplicationContext) this.applicationContext);
+        springConfig.registerBeansWithContext((GenericApplicationContext)this.applicationContext);
 
         plugin.doWithApplicationContext(this.applicationContext);
         plugin.doWithDynamicMethods(this.applicationContext);

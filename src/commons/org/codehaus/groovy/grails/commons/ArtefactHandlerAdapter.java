@@ -52,6 +52,10 @@ public class ArtefactHandlerAdapter implements ArtefactHandler {
         this.allowAbstract = allowAbstract;
     }
 
+    public String getPluginName() {
+        return type.toLowerCase();
+    }
+
     public String getType() {
         return type;
     }

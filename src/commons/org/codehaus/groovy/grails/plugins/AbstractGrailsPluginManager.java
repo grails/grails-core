@@ -7,6 +7,7 @@ import grails.util.BuildScope;
 import grails.util.GrailsNameUtils;
 import groovy.lang.ExpandoMetaClass;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.commons.ArtefactHandler;
 import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration;
 import org.codehaus.groovy.grails.plugins.exceptions.PluginException;
 import org.springframework.beans.BeansException;
@@ -231,5 +232,21 @@ public abstract class AbstractGrailsPluginManager implements GrailsPluginManager
 
     public void setLoadCorePlugins(boolean shouldLoadCorePlugins) {
         this.loadCorePlugins = shouldLoadCorePlugins;
+    }
+
+    public void informOfClassChange(Class aClass) {
+        if(aClass !=null && application!=null) {
+            ArtefactHandler handler = application.getArtefactType(aClass);
+            if(handler!=null) {
+                String pluginName = handler.getPluginName();
+                if(pluginName!=null) {
+                    GrailsPlugin plugin = getGrailsPlugin(pluginName);
+                    if(plugin!=null) {
+                        plugin.notifyOfEvent(GrailsPlugin.EVENT_ON_CHANGE, aClass);
+                    }
+                }
+
+            }
+        }
     }
 }

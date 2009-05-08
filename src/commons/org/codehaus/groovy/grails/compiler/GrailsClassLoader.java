@@ -52,8 +52,9 @@ public class GrailsClassLoader extends GroovyClassLoader {
     public Class reloadClass(String name) {
         try {
             URL resourceURL = grailsResourceLoader.loadGroovySource(name);
-            GroovyClassLoader innerLoader = new GrailsAwareClassLoader(parent);
+            GroovyClassLoader innerLoader = new GrailsAwareClassLoader(this);
             InputStream inputStream = null;
+            clearCache();
 
             try {
                 inputStream = resourceURL.openStream();

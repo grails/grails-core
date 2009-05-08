@@ -22,6 +22,7 @@ public class ControllerArtefactHandler extends ArtefactHandlerAdapter {
 
     public static final String TYPE = "Controller";
     private GrailsClass[] controllerClasses;
+    public static final String PLUGIN_NAME = "controllers";
 
 
     public ControllerArtefactHandler() {
@@ -32,6 +33,11 @@ public class ControllerArtefactHandler extends ArtefactHandlerAdapter {
 
     public void initialize(ArtefactInfo artefacts) {
         controllerClasses = artefacts.getGrailsClasses();
+    }
+
+    @Override
+    public String getPluginName() {
+        return PLUGIN_NAME;
     }
 
     public GrailsClass getArtefactForFeature(Object feature) {

@@ -21,10 +21,16 @@ package org.codehaus.groovy.grails.commons;
 public class ServiceArtefactHandler extends ArtefactHandlerAdapter {
 
     public static final String TYPE = "Service";
+    public static final String PLUGIN_NAME = "services";
 
     public ServiceArtefactHandler() {
         super(TYPE, GrailsServiceClass.class, DefaultGrailsServiceClass.class, DefaultGrailsServiceClass.SERVICE,
             false);
+    }
+
+    @Override
+    public String getPluginName() {
+        return PLUGIN_NAME;
     }
 
     public boolean isArtefactClass(Class clazz) {

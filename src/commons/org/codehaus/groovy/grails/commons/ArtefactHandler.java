@@ -31,6 +31,12 @@ package org.codehaus.groovy.grails.commons;
 public interface ArtefactHandler {
 
     /**
+     * Obtains the plugin name that deals with this artefact
+     * @return The plugin name or null if there isn't one
+     */
+    String getPluginName();
+
+    /**
      * <p>Implementations must return a name such as "Domain" to indicate the type of artefact they represent</p>
      * @return The aretfact type, as a String
      */

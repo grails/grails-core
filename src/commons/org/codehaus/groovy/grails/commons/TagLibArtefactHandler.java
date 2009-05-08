@@ -34,14 +34,20 @@ import java.util.Map;
 public class TagLibArtefactHandler extends ArtefactHandlerAdapter {
 
     private static Log LOG = LogFactory.getLog(TagLibArtefactHandler.class);
+    public static final String PLUGIN_NAME = "groovyPages";
     public static final String TYPE = "TagLib";
-
+    
     private Map<String, GrailsTagLibClass> tag2libMap = new HashMap<String, GrailsTagLibClass>();
     private Map<String, GrailsTagLibClass> namespace2tagLibMap = new HashMap<String, GrailsTagLibClass>();
 
 
     public TagLibArtefactHandler() {
         super(TYPE, GrailsTagLibClass.class, DefaultGrailsTagLibClass.class, DefaultGrailsTagLibClass.TAG_LIB);
+    }
+
+    @Override
+    public String getPluginName() {
+        return PLUGIN_NAME;
     }
 
     /**

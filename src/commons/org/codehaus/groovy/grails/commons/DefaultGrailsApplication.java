@@ -552,6 +552,14 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
         return info == null ? null : info.getGrailsClass(name);
     }
 
+    public ArtefactHandler getArtefactType(Class theClass) {
+        for (ArtefactHandler artefactHandler : artefactHandlers) {
+            if(artefactHandler.isArtefact(theClass)) return artefactHandler;
+        }
+        return null;
+        
+    }
+
     private GrailsClass getFirstArtefact(String artefactType) {
         ArtefactInfo info = getArtefactInfo(artefactType);
         // This will throw AIOB if we have none
