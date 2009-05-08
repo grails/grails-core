@@ -675,11 +675,14 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
     }
 
     private Class getReferencedTypeForCollection(String name, Object target) {
-        GrailsDomainClass domainClass = (GrailsDomainClass) ApplicationHolder.getApplication().getArtefact(DomainClassArtefactHandler.TYPE, target.getClass().getName());
-        if(domainClass!=null) {
-            GrailsDomainClassProperty domainProperty = domainClass.getPropertyByName(name);
-            if(domainProperty!=null && (domainProperty.isOneToMany()|| domainProperty.isManyToMany())) {
-                return domainProperty.getReferencedPropertyType();
+        final GrailsApplication grailsApplication = ApplicationHolder.getApplication();
+        if(grailsApplication!=null) {
+            GrailsDomainClass domainClass = (GrailsDomainClass) grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE, target.getClass().getName());
+            if(domainClass!=null) {
+                GrailsDomainClassProperty domainProperty = domainClass.getPropertyByName(name);
+                if(domainProperty!=null && (domainProperty.isOneToMany()|| domainProperty.isManyToMany())) {
+                    return domainProperty.getReferencedPropertyType();
+                }
             }
         }
         return null;
