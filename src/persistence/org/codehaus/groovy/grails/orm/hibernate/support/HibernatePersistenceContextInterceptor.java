@@ -49,13 +49,28 @@ public class HibernatePersistenceContextInterceptor implements
             LOG.debug("Closing single Hibernate session in GrailsDispatcherServlet");
             try {
                 Session session = holder.getSession();
-                SessionFactoryUtils.releaseSession(session, sessionFactory);
+                SessionFactoryUtils.closeSession(session);
             }
             catch (RuntimeException ex) {
             	LOG.error("Unexpected exception on closing Hibernate Session", ex);
             }
         }       
 	}
+
+    public void disconnect() {
+        try {
+            Session session = SessionFactoryUtils.getSession(sessionFactory,false);
+            session.disconnect();
+        }
+        catch (IllegalStateException e) {
+            // no session ignore
+        }
+    }
+
+    public void reconnect() {
+        Session session = SessionFactoryUtils.getSession(sessionFactory,true);
+        session.reconnect();        
+    }
 
     public void flush() {
         Session session = SessionFactoryUtils.getSession(sessionFactory,true);
@@ -66,6 +81,27 @@ public class HibernatePersistenceContextInterceptor implements
         Session session = SessionFactoryUtils.getSession(sessionFactory,true);
         session.clear();		
 	}
+
+    public void setReadOnly() {
+        Session session = SessionFactoryUtils.getSession(sessionFactory,true);
+        session.setFlushMode(FlushMode.MANUAL);
+    }
+
+    public void setReadWrite() {
+        Session session = SessionFactoryUtils.getSession(sessionFactory,true);
+        session.setFlushMode(FlushMode.AUTO);
+    }
+
+    public boolean isOpen() {
+        try {
+            Session session = SessionFactoryUtils.getSession(sessionFactory,false);
+            return session.isOpen();
+        }
+        catch (IllegalStateException e) {
+            return false;
+        }
+
+    }
 
     /* (non-Javadoc)
       * @see org.codehaus.groovy.grails.support.PersistenceContextInterceptor#init()

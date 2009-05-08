@@ -19,8 +19,8 @@ import com.opensymphony.module.sitemesh.Config;
 import com.opensymphony.module.sitemesh.Factory;
 import com.opensymphony.module.sitemesh.factory.DefaultFactory;
 import com.opensymphony.sitemesh.*;
-import com.opensymphony.sitemesh.compatability.DecoratorMapper2DecoratorSelector;
 import com.opensymphony.sitemesh.compatability.Content2HTMLPage;
+import com.opensymphony.sitemesh.compatability.DecoratorMapper2DecoratorSelector;
 import com.opensymphony.sitemesh.compatability.OldDecorator2NewDecorator;
 import com.opensymphony.sitemesh.webapp.ContainerTweaks;
 import com.opensymphony.sitemesh.webapp.SiteMeshFilter;
@@ -29,12 +29,17 @@ import com.opensymphony.sitemesh.webapp.decorator.NoDecorator;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.ConfigurationHolder;
+import org.codehaus.groovy.grails.support.NullPersistentContextInterceptor;
+import org.codehaus.groovy.grails.support.PersistenceContextInterceptor;
+import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.context.support.WebApplicationContextUtils;
 import org.springframework.web.util.UrlPathHelper;
 
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Map;
 
 /**
  * Extends the default page filter to overide the apply decorator behaviour
@@ -55,6 +60,8 @@ public class GrailsPageFilter extends SiteMeshFilter {
 
     private FilterConfig filterConfig;
     private ContainerTweaks containerTweaks;
+    private WebApplicationContext applicationContext;
+    private PersistenceContextInterceptor persistenceInterceptor = new NullPersistentContextInterceptor();
 
     public void init(FilterConfig filterConfig) {
         super.init(filterConfig);
@@ -65,6 +72,12 @@ public class GrailsPageFilter extends SiteMeshFilter {
         config.getServletContext().setAttribute("sitemesh.factory", defaultFactory);
         defaultFactory.refresh();
         FactoryHolder.setFactory(defaultFactory);
+
+        this.applicationContext = WebApplicationContextUtils.getRequiredWebApplicationContext(filterConfig.getServletContext());
+        Map interceptors = applicationContext.getBeansOfType(PersistenceContextInterceptor.class);
+        if(!interceptors.isEmpty()) {
+            persistenceInterceptor = (PersistenceContextInterceptor) interceptors.values().iterator().next();
+        }
     }
 
     public void destroy() {
@@ -118,6 +131,7 @@ public class GrailsPageFilter extends SiteMeshFilter {
 
              detectContentTypeFromPage(content, response);
              Decorator decorator = decoratorSelector.selectDecorator(content, webAppContext);
+             persistenceInterceptor.reconnect();
              decorator.render(content, webAppContext);
 
          } catch (IllegalStateException e) {
@@ -135,6 +149,11 @@ public class GrailsPageFilter extends SiteMeshFilter {
          } catch (ServletException e) {
              request.setAttribute(ALREADY_APPLIED_KEY, null);
              throw e;
+         }
+         finally {
+            if(persistenceInterceptor.isOpen()) {
+                persistenceInterceptor.destroy();
+            }
          }
 
     }

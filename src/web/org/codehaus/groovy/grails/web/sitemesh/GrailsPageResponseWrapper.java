@@ -14,19 +14,6 @@
  */
 package org.codehaus.groovy.grails.web.sitemesh;
 
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.Writer;
-
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpServletResponseWrapper;
-
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
-import org.codehaus.groovy.grails.web.util.GrailsPrintWriter;
-import org.codehaus.groovy.grails.web.util.StreamCharBuffer;
-import org.codehaus.groovy.grails.web.util.WebUtils;
-
 import com.opensymphony.module.sitemesh.Page;
 import com.opensymphony.module.sitemesh.PageParser;
 import com.opensymphony.module.sitemesh.PageParserSelector;
@@ -34,6 +21,17 @@ import com.opensymphony.module.sitemesh.filter.HttpContentType;
 import com.opensymphony.module.sitemesh.filter.RoutableServletOutputStream;
 import com.opensymphony.module.sitemesh.filter.TextEncoder;
 import com.opensymphony.module.sitemesh.util.FastByteArrayOutputStream;
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
+import org.codehaus.groovy.grails.web.util.GrailsPrintWriter;
+import org.codehaus.groovy.grails.web.util.StreamCharBuffer;
+import org.codehaus.groovy.grails.web.util.WebUtils;
+
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpServletResponseWrapper;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.Writer;
 
 /**
  * @author Graeme Rocher
@@ -198,7 +196,7 @@ public class GrailsPageResponseWrapper extends HttpServletResponseWrapper{
     }
 
     public Page getPage() throws IOException {
-        if (aborted || !parseablePage) {
+        if (isSitemeshNotActive()) {
             return null;
         } else {
             return buffer.parse();
@@ -215,11 +213,19 @@ public class GrailsPageResponseWrapper extends HttpServletResponseWrapper{
     }
 
     public char[] getContents() throws IOException {
-        if (aborted || !parseablePage) {
+        if (isSitemeshNotActive()) {
             return null;
         } else {
             return buffer.getContents();
         }
+    }
+
+    public boolean isSitemeshActive() {
+        return !isSitemeshNotActive();
+    }
+
+    private boolean isSitemeshNotActive() {
+        return aborted || !parseablePage;
     }
 
     private static class GrailsBuffer {

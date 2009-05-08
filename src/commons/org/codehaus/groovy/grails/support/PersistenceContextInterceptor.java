@@ -36,6 +36,16 @@ public interface PersistenceContextInterceptor  {
 	void destroy();
 
     /**
+     * Disconnects the persistence context
+     */
+    void disconnect();
+
+    /**
+     * Reconnects the persistence context
+     */
+    void reconnect();
+
+    /**
      *  Flushes any pending changes to the DB
      */
     void flush();    
@@ -44,4 +54,20 @@ public interface PersistenceContextInterceptor  {
 	 * Clear any pending changes
 	 */
 	void clear();
+
+    /**
+     * Sets the persistence context to read-only mode
+     */
+    void setReadOnly();
+
+    /**
+     * Sets the persistence context to read-write mode
+     */
+    void setReadWrite();
+
+    /**
+     * Checks whether the persistence context is open
+     * @return Returns whether the persistence context is open
+     */
+    boolean isOpen();
 }

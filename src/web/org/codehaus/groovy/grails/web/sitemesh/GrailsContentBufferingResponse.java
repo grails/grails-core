@@ -1,18 +1,16 @@
 package org.codehaus.groovy.grails.web.sitemesh;
 
-import java.io.IOException;
-
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpServletResponseWrapper;
-
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
-import org.codehaus.groovy.grails.web.util.WebUtils;
-
 import com.opensymphony.module.sitemesh.PageParser;
 import com.opensymphony.module.sitemesh.PageParserSelector;
 import com.opensymphony.sitemesh.Content;
 import com.opensymphony.sitemesh.ContentProcessor;
 import com.opensymphony.sitemesh.webapp.SiteMeshWebAppContext;
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
+import org.codehaus.groovy.grails.web.util.WebUtils;
+
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpServletResponseWrapper;
+import java.io.IOException;
 
 public class GrailsContentBufferingResponse extends HttpServletResponseWrapper {
     private final GrailsPageResponseWrapper pageResponseWrapper;
@@ -42,6 +40,11 @@ public class GrailsContentBufferingResponse extends HttpServletResponseWrapper {
 
     public boolean isUsingStream() {
         return pageResponseWrapper.isUsingStream();
+    }
+
+    public boolean isActive() {
+        GrailsPageResponseWrapper superResponse= (GrailsPageResponseWrapper) getResponse();
+        return superResponse.isSitemeshActive();
     }
 
     public Content getContent() throws IOException {
