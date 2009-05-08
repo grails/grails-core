@@ -431,14 +431,20 @@ class MockUtils {
     static GrailsDomainClass mockDomain(Class clazz, Map errorsMap, List testInstances = []) {
         def dc = new DefaultGrailsDomainClass(clazz)
 
-        TEST_INSTANCES[clazz] = testInstances
-        addDynamicFinders(clazz, testInstances)
-        addGetMethods(clazz, dc, testInstances)
-        addCountMethods(clazz, dc, testInstances)
-        addListMethod(clazz, testInstances)
-        addValidateMethod(clazz, dc, errorsMap, testInstances)
-        addDynamicInstanceMethods(clazz, testInstances)
-        addOtherStaticMethods(clazz, testInstances)
+        def rootInstances = testInstances.findAll { clazz.isInstance(it) }
+        def childInstances = testInstances.findAll { clazz.isInstance(it) && it.class != clazz }.groupBy { it.class }
+
+
+        TEST_INSTANCES[clazz] = rootInstances
+        addDynamicFinders(clazz, rootInstances)
+        addGetMethods(clazz, dc, rootInstances)
+        addCountMethods(clazz, dc, rootInstances)
+        addListMethod(clazz, rootInstances)
+        addValidateMethod(clazz, dc, errorsMap, rootInstances)
+        addDynamicInstanceMethods(clazz, rootInstances)
+        addOtherStaticMethods(clazz, rootInstances)
+
+
 
         // Note that if the test instances are of type "clazz", they
         // will not have the extra dynamic methods because they were
@@ -447,7 +453,22 @@ class MockUtils {
         // So, for each test object that is an instance of "clazz", we
         // manually change its metaclass to "clazz"'s so that it gets
         // the extra methods.
-        updateMetaClassForClass(testInstances, clazz)
+        updateMetaClassForClass(rootInstances, clazz)
+
+        childInstances.each { Class childClass, List instances ->
+            TEST_INSTANCES[childClass] = instances
+            def childDomain = new DefaultGrailsDomainClass(childClass)
+            addDynamicFinders(childClass, instances)
+            addGetMethods(childClass, childDomain, instances)
+            addCountMethods(childClass, childDomain, instances)
+            addListMethod(childClass, instances)
+            addValidateMethod(childClass, childDomain, errorsMap, instances)
+            addDynamicInstanceMethods(childClass, instances)
+            addOtherStaticMethods(childClass, instances)
+            updateMetaClassForClass(rootInstances, childClass)
+
+        }
+
         return dc
     }
 

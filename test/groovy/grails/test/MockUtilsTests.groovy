@@ -497,7 +497,7 @@ class MockUtilsTests extends GroovyTestCase {
 
         aliceSmithOz.delete()
         assertNull TestDomain.get(3)
-        assertEquals 3, testInstances.size()
+        assertEquals 3, TestDomain.count()
     }
 
     /**
