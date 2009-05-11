@@ -5,7 +5,10 @@ package grails.test;
  */
 class ControllerUnitTestCaseTests extends GroovyTestCase {
     void testControllerClass() {
-        new UnitTestControllerTestCase().testControllerClass()
+        UnitTestControllerTestCase testCase = new UnitTestControllerTestCase()
+        testCase.setUp()
+        testCase.testControllerClass()
+        testCase.tearDown()
     }
 
     void testExplicitControllerClass() {
@@ -27,6 +30,11 @@ class ControllerUnitTestCaseTests extends GroovyTestCase {
 class UnitTestControllerTestCase extends ControllerUnitTestCase {
     void testControllerClass() {
         assertEquals UnitTestController, controllerClass
+        assertEquals "unitTest", controller.controllerName
+
+        assertNull controller.actionName
+        webRequest.actionName = "foo"
+        assertEquals "foo", controller.actionName
     }
 
     void testCommandObject() {

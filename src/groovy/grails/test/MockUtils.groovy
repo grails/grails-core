@@ -35,6 +35,7 @@ import org.springframework.beans.BeanUtils
 import org.springframework.beans.SimpleTypeConverter
 import org.springframework.mock.web.MockHttpSession
 import org.springframework.validation.Errors
+import org.springframework.web.context.request.RequestContextHolder
 
 /**
  * This is a utility/helper class for mocking various types of Grails
@@ -294,6 +295,9 @@ class MockUtils {
         clazz.metaClass.getSession = {-> mockSession}
         clazz.metaClass.getParams = {-> mockParams}
         clazz.metaClass.getFlash = {-> mockFlash}
+        clazz.metaClass.getActionName = {-> RequestContextHolder.currentRequestAttributes().actionName }
+        clazz.metaClass.getControllerName = {-> RequestContextHolder.currentRequestAttributes().controllerName }
+        clazz.metaClass.getServletContext = {-> mockRequest.servletContext }
 
         // Provide access to "g" taglib namespace.
         clazz.metaClass.getG = {-> return delegate }

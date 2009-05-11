@@ -17,6 +17,12 @@ package grails.test
 import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletRequest
 import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletResponse
 import org.springframework.mock.web.MockHttpSession
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
+import grails.util.GrailsWebUtil
+import org.springframework.mock.web.MockServletContext
+import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
+import org.springframework.web.context.request.RequestContextHolder
+import grails.util.GrailsNameUtils
 
 /**
  * Common test case support class for controllers, tag libraries, and
@@ -32,6 +38,7 @@ class MvcUnitTestCase extends GrailsUnitTestCase {
     protected GrailsMockHttpServletRequest mockRequest
     protected GrailsMockHttpServletResponse mockResponse
     protected MockHttpSession mockSession
+    protected GrailsWebRequest webRequest
 
     protected Map forwardArgs
     protected Map redirectArgs
@@ -67,6 +74,12 @@ class MvcUnitTestCase extends GrailsUnitTestCase {
         super.setUp()
     }
 
+    protected void tearDown() {
+        super.tearDown();
+        RequestContextHolder.setRequestAttributes(null)
+    }
+
+
     Class getTestClass() {
         return this.testClass
     }
@@ -97,6 +110,15 @@ class MvcUnitTestCase extends GrailsUnitTestCase {
 
         mockParams = instance.params
         mockFlash = instance.flash
+        webRequest = new GrailsWebRequest(
+                                mockRequest,
+                                mockResponse,
+                                mockRequest.servletContext
+                     )
+       
+        mockRequest.setAttribute(GrailsApplicationAttributes.WEB_REQUEST, webRequest);
+        RequestContextHolder.setRequestAttributes(webRequest);
+
         return instance
     }
 }
