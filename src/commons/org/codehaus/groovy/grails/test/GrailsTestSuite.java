@@ -23,7 +23,6 @@ import junit.framework.TestResult;
 import junit.framework.TestSuite;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.commons.spring.GrailsWebApplicationContext;
-import org.codehaus.groovy.grails.web.context.GrailsConfigUtils;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
@@ -83,8 +82,6 @@ public class GrailsTestSuite extends TestSuite {
         try {
             GrailsWebRequest webRequest = GrailsWebUtil.bindMockWebRequest(applicationContext);
             webRequest.getServletContext().setAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT, applicationContext);
-
-            GrailsConfigUtils.executeGrailsBootstraps(webRequest.getAttributes().getGrailsApplication(), applicationContext, webRequest.getServletContext() );
 
             if (isTransactional(test)) {
                 if (applicationContext.containsBean("transactionManager")) {
