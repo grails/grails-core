@@ -22,6 +22,7 @@ import org.apache.commons.logging.*
 import grails.util.GrailsUtil
 import org.codehaus.groovy.grails.commons.ConfigurationHolder
 import org.codehaus.groovy.grails.commons.GrailsApplication
+import org.apache.log4j.helpers.LogLog
 
 /**
 * Helper methods for initialising config object
@@ -128,8 +129,7 @@ class ConfigurationHelper {
                        }
 
                 } catch (Exception e) {
-                        LOG.warn "Unable to load specified config location $location : ${e.message}"
-                        LOG.debug "Unable to load specified config location $location : ${e.message}", e
+                        System.err << "Unable to load specified config location $location : ${e.message}"
                     }
                 }
             }
