@@ -43,6 +43,7 @@ import java.util.*;
  */
 public class DataBindingUtils {
 
+    private static final String BLANK = "";
     /**
      * Associations both sides of any bidirectional relationships found in the object and source map to bind
      *
@@ -175,9 +176,14 @@ public class DataBindingUtils {
             for (Object error : bindingResult.getAllErrors()) {
                 if(error instanceof FieldError) {
                     FieldError fieldError = (FieldError)error;
-                    if(domain.hasPersistentProperty(fieldError.getField())) {
-                        if(!domain.getPropertyByName(fieldError.getField()).isOptional()) {
-                            newResult.addError(fieldError);   
+                    final boolean isBlank = BLANK.equals(fieldError.getRejectedValue());
+                    if(!isBlank) {
+                            newResult.addError(fieldError);
+                    }
+                    else if(domain.hasPersistentProperty(fieldError.getField())) {
+                        final boolean isOptional = domain.getPropertyByName(fieldError.getField()).isOptional();
+                        if(!isOptional) {
+                            newResult.addError(fieldError);
                         }
                     }
                     else {
