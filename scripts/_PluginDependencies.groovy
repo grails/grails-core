@@ -35,6 +35,16 @@ import org.codehaus.groovy.grails.plugins.PluginManagerHolder
 import org.springframework.core.io.Resource
 import org.w3c.dom.Document
 import org.apache.commons.io.FilenameUtils
+import org.tmatesoft.svn.core.io.SVNRepositoryFactory
+import org.tmatesoft.svn.core.internal.io.dav.DAVRepositoryFactory
+import org.tmatesoft.svn.core.internal.io.fs.FSRepositoryFactory
+import org.tmatesoft.svn.core.io.*
+import org.tmatesoft.svn.core.*
+import org.tmatesoft.svn.core.auth.*
+import org.tmatesoft.svn.core.wc.*
+import org.tmatesoft.svn.core.wc.SVNWCUtil
+import org.tmatesoft.svn.core.SVNAuthenticationException
+
 
 /**
  * Plugin stuff. If included, must be included after "_ClasspathAndEvents".
@@ -346,7 +356,7 @@ target(updatePluginsList:"Updates the plugin list from the remote plugin-list.xm
         def localRevision = pluginsList ? new Integer(pluginsList.getAttribute('revision')) : -1
         // extract plugins svn repository revision - used for determining cache up-to-date
         def remoteRevision = 0
-        new URL(remotePluginList).withReader { Reader reader ->
+        fetchPluginListFile(remotePluginList).withReader { Reader reader ->
             def line = reader.readLine()
             while(line) {
                 Matcher matcher = line =~ /<plugins revision="(\d+?)">/
@@ -403,7 +413,7 @@ def parsePluginList() {
 def readRemotePluginList() {
     ant.delete(file:pluginsListFile, failonerror:false)
     ant.mkdir(dir:pluginsListFile.parentFile)
-    ant.get(src: remotePluginList, dest: pluginsListFile, verbose: "yes",usetimestamp:true)
+    fetchRemoteFile(remotePluginList, pluginsListFile)
 }
 
 target(updatePluginsListManually: "Updates the plugin list by manually reading each URL, the slow way") {
@@ -437,47 +447,49 @@ target(updatePluginsListManually: "Updates the plugin list by manually reading e
         // extract plugins svn repository revision - used for determining cache up-to-date
         def remoteRevision = 0
         try {
-            new URL(pluginDistURL).withReader { Reader reader ->
-                def line = reader.readLine()
-                line.eachMatch(/Revision (.*):/) {
-                     remoteRevision = it[1].toInteger()
-                }
-
-
-                if (remoteRevision > localRevision) {
-                //if(true) {
-                    // Plugins list cache is expired, need to update
-                    event("StatusUpdate", ["Plugins list cache has expired. Updating, please wait"])
-                    pluginsList.setAttribute('revision', remoteRevision as String)
-                    // for each plugin directory under Grails Plugins SVN in form of 'grails-*'
-                    while(line=reader.readLine()) {
-                        line.eachMatch(/<li><a href="grails-(.+?)">/) {
-                            // extract plugin name
-                            def pluginName = it[1][0..-2]
-
-
-                            // collect information about plugin
-                            buildPluginInfo(pluginsList, pluginName)
+            // determine if this is a secure plugin spot..
+            if (isSecureUrl(pluginDistURL)) {
+                withSVNRepo(pluginDistURL) { repo ->
+                    remoteRevision = repo.getLatestRevision()
+                    if (remoteRevision > localRevision) {
+                        repo.getDir('.', -1,null,(Collection)null).each() { entry ->
+                            final String PREFIX = "grails-"
+                            if (entry.name.startsWith(PREFIX)) {
+                                def pluginName = entry.name.substring(PREFIX.length())
+                                buildPluginInfo(pluginsList, pluginName)
+                            }
                         }
                     }
                 }
             }
+            else {                
+                new URL(pluginDistURL).withReader { Reader reader ->
+                    def line = reader.readLine()
+                    line.eachMatch(/Revision (.*):/) {
+                         remoteRevision = it[1].toInteger()
+                    }
+                    if (remoteRevision > localRevision) {
+                        // Plugins list cache is expired, need to update
+                        event("StatusUpdate", ["Plugins list cache has expired. Updating, please wait"])
+                        pluginsList.setAttribute('revision', remoteRevision as String)
+                        // for each plugin directory under Grails Plugins SVN in form of 'grails-*'
+                        while(line=reader.readLine()) {
+                            line.eachMatch(/<li><a href="grails-(.+?)">/) {
+                                // extract plugin name
+                                def pluginName = it[1][0..-2]
+                                // collect information about plugin
+                                buildPluginInfo(pluginsList, pluginName)
+                            }
+                        }
+                    }
+                }
+           }
 
         }
         catch(Exception e) {
             event("StatusError", ["Unable to list plugins, please check you have a valid internet connection: ${e.message}" ])
         }
 
-        try {
-          // proceed binary distribution repository (http://plugins.grails.org/dist/
-          def binaryPluginsList = new URL(pluginBinaryDistURL).text
-          binaryPluginsList.eachMatch(/<a href="grails-(.+?).zip">/) {
-              buildBinaryPluginInfo(pluginsList, it[1])
-          }
-        }
-        catch(Exception e) {
-           // ignore, binary distributions are supported for backwards compatibility only, so this is ok
-        }
         // update plugins list cache file
         writePluginsFile()
     } catch (Exception e) {
@@ -564,11 +576,7 @@ downloadRemotePlugin = { url, pluginsBase ->
     def slash = url.file.lastIndexOf('/')
     def fullPluginName = "${url.file[slash + 8..-5]}"
     String zipLocation = "${pluginsBase}/grails-${fullPluginName}.zip"
-    ant.get(dest: zipLocation,
-            src: "${url}",
-            verbose: true,
-            usetimestamp: true)
-
+    fetchRemoteFile("${url}", zipLocation)
     readMetadataFromZip(zipLocation, url)
 
     return fullPluginName
@@ -650,10 +658,7 @@ cacheKnownPlugin = { String pluginName, String pluginRelease ->
           def pluginCacheFileName = "${pluginsBase}/grails-${plugin.'@name'}-${pluginRelease}.zip"
           if (!new File(pluginCacheFileName).exists() || pluginRelease.endsWith("SNAPSHOT")) {
               ant.mkdir(dir:pluginsBase)
-              ant.get(dest: pluginCacheFileName,
-                      src: "${pluginDistName}",
-                      verbose: true,
-                      usetimestamp:true)
+              fetchRemoteFile("${pluginDistName}", pluginCacheFileName)
           }
           fullPluginName = "$pluginName-$pluginRelease"
           currentPluginName = pluginName
@@ -836,21 +841,26 @@ def registerPluginWithMetadata(String pluginName, pluginVersion) {
 }
 
 
-def buildReleaseInfo(root, pluginName, releasePath, releaseTag ) {
-    if (releaseTag == '..' || releaseTag == 'LATEST_RELEASE') return
-    def releaseNode = root.'release'.find {it.'@tag' == releaseTag && it.'&type' == 'svn'}
+def buildReleaseInfo(root, pluginName, releasePath, releaseTag) {
+    // quick exit nothing to do..
+    if (releaseTag == '..' || releaseTag == 'LATEST_RELEASE') {
+        return
+    }
+    // remove previous version..
+    def releaseNode = root.'release'.find() {
+        it.'@tag' == releaseTag && it.'&type' == 'svn'
+    }
     if (releaseNode) {
-        if (releaseTag != 'trunk') return
-        else root.removeChild(releaseNode)
+        root.removeChild(releaseNode)
     }
     try {
+
+        // copy the properties to the new node..
+        def releaseUrl = "${releasePath}/${releaseTag}"
         def properties = ['title', 'author', 'authorEmail', 'description', 'documentation']
-        def releaseDescriptor = parseRemoteXML("${releasePath}/${releaseTag}/plugin.xml").documentElement
+        def releaseDescriptor = parseRemoteXML("${releaseUrl}/plugin.xml").documentElement
         def version = releaseDescriptor.'@version'
-        if (releaseTag == 'trunk' && !(version.endsWith('SNAPSHOT'))) return
-        def releaseContent = new URL("${releasePath}/${releaseTag}/").text
-        // we don't want to proceed release if zip distribution for this release is not published
-        if (releaseContent.indexOf("grails-${pluginName}-${version}.zip") < 0) return
+
         releaseNode = builder.createNode('release', [tag: releaseTag, version: version, type: 'svn'])
         root.appendChild(releaseNode)
         properties.each {
@@ -858,9 +868,10 @@ def buildReleaseInfo(root, pluginName, releasePath, releaseTag ) {
                 releaseNode.appendChild(builder.createNode(it, releaseDescriptor."${it}".text()))
             }
         }
-        releaseNode.appendChild(builder.createNode('file', "${releasePath}/${releaseTag}/grails-${pluginName}-${version}.zip"))
-    } catch (Exception e) {
-        // no plugin release info available
+        releaseNode.appendChild(builder.createNode('file', "${releaseUrl}/grails-${pluginName}-${version}.zip"))
+    }
+    catch(e) {
+        // no release info available, probably an older plugin with no plugin.xml defined.        
     }
 }
 
@@ -875,7 +886,7 @@ def writePluginsFile() {
 }
 
 def parseRemoteXML(url) {
-    DOMBuilder.parse(new URL(url).openStream().newReader())
+    fetchPluginListFile(url).withReader() { DOMBuilder.parse(it) }
 }
 
 
@@ -910,49 +921,149 @@ def buildBinaryPluginInfo(root, pluginName ){
 
 def buildPluginInfo(root, pluginName) {
     use(DOMCategory) {
+        // determine the plugin node..
         def pluginNode = root.'plugin'.find {it.'@name' == pluginName}
         if (!pluginNode) {
+            // add it if it doesn't exist..
             pluginNode = builder.'plugin'(name: pluginName)
             root.appendChild(pluginNode)
         }
 
-        def localRelease = pluginNode.'@latest-release'
-        def latestRelease = null
+        // add each of the releases..
+        event("StatusUpdate", ["Reading [$pluginName] plugin info"])
+        // determine if this is a secure plugin spot..
+        def tagsUrl = "${pluginDistURL}/grails-${pluginName}/tags"
         try {
-            new URL("${pluginDistURL}/grails-${pluginName}/tags/LATEST_RELEASE/plugin.xml").withReader {Reader reader ->
+            if (isSecureUrl(tagsUrl)) {
+                withSVNRepo(tagsUrl) { repo ->
+                    repo.getDir('.',-1,null,(Collection)null).each() { entry ->
+                        buildReleaseInfo(pluginNode, pluginName, tagsUrl, entry.name)
+                    }
+                }
+            }
+            else {
+                def releaseTagsList = new URL(tagsUrl).text
+                releaseTagsList.eachMatch(/<li><a href="(.+?)">/) {
+                    def releaseTag = it[1][0..-2]
+                    buildReleaseInfo(pluginNode, pluginName, tagsUrl, releaseTag)
+                }
+            }
+        }
+        catch(e) {
+            // plugin has not tags
+        }
+
+        try {
+            def latestRelease = null
+            def url = "${pluginDistURL}/grails-${pluginName}/tags/LATEST_RELEASE/plugin.xml"
+            fetchPluginListFile(url).withReader {Reader reader ->
                 def line = reader.readLine()
                 line.eachMatch (/.+?version='(.+?)'.+/) {
                     latestRelease = it[1]
                 }
             }
-        } catch (Exception e) {
-            // ignore
+            if (latestRelease && pluginNode.'release'.find {it.'@version' == latestRelease}) {
+                pluginNode.setAttribute('latest-release', latestRelease as String)
+            }
         }
-
-        if(!localRelease || !latestRelease || localRelease != latestRelease) {
-
-            event("StatusUpdate", ["Reading [$pluginName] plugin info"])
-
-            // proceed tagged releases
-            try {
-                def releaseTagsList = new URL("${pluginDistURL}/grails-${pluginName}/tags/").text
-                releaseTagsList.eachMatch(/<li><a href="(.+?)">/) {
-                    def releaseTag = it[1][0..-2]
-                    buildReleaseInfo(pluginNode, pluginName, "${pluginDistURL}/grails-${pluginName}/tags", releaseTag)
-                }
-            } catch (Exception e) {
-                // no plugin release info available
-            }
-
-            // proceed trunk release
-            try {
-                buildReleaseInfo(pluginNode, pluginName, "${pluginDistURL}/grails-${pluginName}", "trunk")
-            } catch (Exception e) {
-                // no plugin release info available
-            }
-
-            if (latestRelease && pluginNode.'release'.find {it.'@version' == latestRelease}) pluginNode.setAttribute('latest-release', latestRelease as String)
+        catch(e) {
+            // plugin doesn't have a latest release
         }
     }
 }
+
+def fetchRemoteFile(url, destfn) {
+    if (isSecureUrl(url)) {
+        // fetch the remote file..
+        fetchRemote(url) { repo, file ->
+            // get the latest file from the repository..
+            def f = (destfn instanceof File) ? destfn : new File(destfn)
+            f.withOutputStream() { os ->
+                def props = new SVNProperties()
+                repo.getFile(file , (long)-1L, props , os)
+            }
+        }
+    } else {
+        ant.get(src:url, dest:destfn, verbose:"yes", usetimestamp:true)
+    }
+}
+
+/**
+ * Fetch the entire plugin list file.
+ */
+def fetchPluginListFile(url) {
+    // attempt to fetch the file using SVN.
+    if (isSecureUrl(url)) {
+        def rdr = fetchRemote(url) { repo, file ->
+            // get the latest file from the repository..
+            def props = new SVNProperties()
+            def baos = new ByteArrayOutputStream()
+            def ver = repo.getFile(file , (long)-1L, props , baos)
+            def mimeType = props.getSVNPropertyValue(SVNProperty.MIME_TYPE)
+            if (!SVNProperty.isTextMimeType(mimeType)) {
+                throw new Exception("Must be a text file..")
+            }
+            def bytes = baos.toByteArray()
+            def str = new String(bytes, 'utf-8')
+            return new StringReader(str)
+        }
+        return rdr
+    }
+    // attempt using URL
+    return new URL(url)
+}
+
+def fetchRemote(url, closure) {
+    def idx = url.lastIndexOf('/')
+    def svnUrl = url.substring(0,idx)
+    def file = url.substring(idx+1,url.length())
+
+    withSVNRepo(svnUrl) { repo ->
+        // determine if the file exists
+        SVNNodeKind nodeKind = repo.checkPath(file , -1)
+        if (nodeKind == SVNNodeKind.NONE) {
+            throw new Exception("The file does not exist.")
+        } else if (nodeKind != SVNNodeKind.FILE) {
+            throw new Exception("Error not a file..")
+        }
+        // present w/ file etc for repo extraction
+        closure.call(repo, file)
+    }
+}
+
+def isSecureUrl(Object url) {
+    url.startsWith('https://') || url.startsWith('svn://')
+}
+
+def withSVNRepo(url, closure) {
+    // support file based SVN
+    FSRepositoryFactory.setup()
+    // support the server http/https
+    DAVRepositoryFactory.setup()
+    // create a authetication manager using the defaults
+    ISVNAuthenticationManager authMgr =
+        SVNWCUtil.createDefaultAuthenticationManager()
+    // create the url
+    SVNURL svnUrl = SVNURL.parseURIEncoded(url)
+    SVNRepository repo = SVNRepositoryFactory.create(svnUrl, null)
+    repo.setAuthenticationManager(authMgr)
+    // trigger authentication failure?.?.
+    try {
+        repo.getLatestRevision()
+    } catch (SVNAuthenticationException ex) {
+        println "Default authentication failed please enter credentials."
+        // prompt for login information..
+        ant.input(message:"Please enter your SVN username:", addproperty:"user.svn.username")
+        ant.input(message:"Please enter your SVN password:", addproperty:"user.svn.password")
+        def username = ant.antProject.properties."user.svn.username"
+        def password = ant.antProject.properties."user.svn.password"
+        authMgr = SVNWCUtil.createDefaultAuthenticationManager( username , password )
+        repo.setAuthenticationManager(authMgr)
+        // don't bother to catch this one let it bubble up..
+        repo.getLatestRevision()
+    }
+    // make sure the closure return is returned..
+    closure.call(repo)
+}
+
 

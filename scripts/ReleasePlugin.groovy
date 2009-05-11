@@ -125,10 +125,12 @@ a working copy and make your changes there. Alternatively, do you want to procee
 
 target(commitNewGlobalPluginList:"updates the plugins.xml descriptor stored in the repo") {
 
-   if(!commitMessage) askForMessage()
-   ant.delete(file:pluginsListFile)
-   println "Building plugin list for commit..."
-   updatePluginsListManually()
+    if(!commitMessage) {
+        askForMessage()
+    }
+    ant.delete(file:pluginsListFile)
+    println "Building plugin list for commit..."
+    updatePluginsListManually()
 
     def pluginMetaDir = new File("${grailsSettings.grailsWorkDir}/${repositoryName}/.plugin-meta")
     def updateClient = new SVNUpdateClient((ISVNAuthenticationManager)authManager, null)
@@ -136,19 +138,19 @@ target(commitNewGlobalPluginList:"updates the plugins.xml descriptor stored in t
     def addClient = new SVNWCClient((ISVNAuthenticationManager)authManager, null)
 
     String remotePluginMetadata = "${pluginSVN}/.plugin-meta"
-   if(!pluginMetaDir.exists()) {
-       println "Checking out locally to '${pluginMetaDir}'."
-       checkoutOrImportPluginMetadata(pluginMetaDir, remotePluginMetadata, updateClient, importClient)
-   }
-   else {
-       try {
-           updateClient.doUpdate(pluginMetaDir, SVNRevision.HEAD, true)
-           commitNewestPluginList(pluginMetaDir, importClient)
-       } catch (SVNException e) {
-           println "Plugin meta directory corrupt, checking out again"
-           checkoutOrImportPluginMetadata(pluginMetaDir, remotePluginMetadata, updateClient, importClient)
-       }
-   }
+    if(!pluginMetaDir.exists()) {
+        println "Checking out locally to '${pluginMetaDir}'."
+        checkoutOrImportPluginMetadata(pluginMetaDir, remotePluginMetadata, updateClient, importClient)
+    }
+    else {
+        try {
+            updateClient.doUpdate(pluginMetaDir, SVNRevision.HEAD, true)
+            commitNewestPluginList(pluginMetaDir, importClient)
+        } catch (SVNException e) {
+            println "Plugin meta directory corrupt, checking out again"
+            checkoutOrImportPluginMetadata(pluginMetaDir, remotePluginMetadata, updateClient, importClient)
+        }
+    }
 }
 
 private checkoutOrImportPluginMetadata (File pluginMetaDir, String remotePluginMetadata, SVNUpdateClient updateClient, SVNCommitClient importClient) {

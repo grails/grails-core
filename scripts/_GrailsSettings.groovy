@@ -103,10 +103,14 @@ if (!grailsAppName) {
     grailsAppName = grailsSettings.baseDir.name
 }
 
-if(grailsAppName.indexOf('/') >-1)
+// FIXME: Fails if 'grails list-plugins is called from a directory
+// that starts w/ a '.'
+if(grailsAppName.indexOf('/') >-1) {
     appClassName = grailsAppName[grailsAppName.lastIndexOf('/')..-1]
-else
+}
+else {
     appClassName = GrailsNameUtils.getClassNameRepresentation(grailsAppName)
+}
 
 
 // Other useful properties.
