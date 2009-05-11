@@ -1,12 +1,12 @@
 /**
  * Tests Grails data binding capabilities
- 
+
  * @author Graeme Rocher
  * @since 1.0
   *
  * Created: Sep 12, 2007
  * Time: 11:50:39 AM
- * 
+ *
  */
 package org.codehaus.groovy.grails.web.binding
 
@@ -134,7 +134,7 @@ class City {
     void testValidationAfterBindingFails() {
         def c = ga.getControllerClass("TestController").newInstance()
 
-        // data binding should fail, but since its optional no error should be reported
+        // binding should fail for this one
         request.addParameter("someIntProperty", "foo")
 
         // validation should fail for this one...
@@ -235,7 +235,7 @@ class City {
         b.properties = params
         assertEquals "The Stand", b.title
         assertEquals "Stephen King", b.author?.name
-                               
+
     }
 
 }
