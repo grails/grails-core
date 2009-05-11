@@ -617,6 +617,42 @@ class BeanBuilderTests extends GroovyTestCase {
 		
 	}
 
+    void testAbstractBeanSpecifyingClass() {
+        def bb = new BeanBuilder()
+
+        bb.beans {
+            abstractKnight(KnightOfTheRoundTable) { bean ->
+                bean.'abstract' = true
+                leader = "King Arthur"
+            }
+
+            lancelot("lancelot") { bean ->
+                bean.parent = ref("abstractKnight")
+            }
+
+            abstractPerson(Bean1) { bean ->
+                bean.'abstract'=true
+                age = 45
+            }
+            homerBean { bean ->
+                bean.parent = ref("abstractPerson")
+                person = "homer"
+            }
+        }
+
+
+        def ctx = bb.createApplicationContext()
+
+        def lancelot = ctx.getBean("lancelot")
+        assertEquals "King Arthur", lancelot.leader
+        assertEquals "lancelot", lancelot.name
+
+        def homerBean = ctx.getBean("homerBean")
+
+        assertEquals 45, homerBean.age
+        assertEquals "homer", homerBean.person 
+    }
+
 	void testBeanBuilderWithScript() {
         def script = '''
 def bb = new grails.spring.BeanBuilder()

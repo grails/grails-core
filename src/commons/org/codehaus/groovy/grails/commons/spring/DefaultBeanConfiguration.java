@@ -23,8 +23,7 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.ConstructorArgumentValues;
 import org.springframework.beans.factory.config.RuntimeBeanReference;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
-import org.springframework.beans.factory.support.ChildBeanDefinition;
-import org.springframework.beans.factory.support.RootBeanDefinition;
+import org.springframework.beans.factory.support.GenericBeanDefinition;
 
 import java.util.*;
 
@@ -195,29 +194,20 @@ public class DefaultBeanConfiguration extends GroovyObjectSupport implements Bea
     }
 
     protected AbstractBeanDefinition createBeanDefinition() {
-		AbstractBeanDefinition bd;
-		if(constructorArgs.size() > 0) {
-			ConstructorArgumentValues cav = new ConstructorArgumentValues();
-			for (Iterator i = constructorArgs.iterator(); i.hasNext();) {
-				cav.addGenericArgumentValue(i.next());
-			}
-            if(parentName == null) {
-                bd = new RootBeanDefinition(clazz,cav,null);
+		AbstractBeanDefinition bd = new GenericBeanDefinition();
+        if(constructorArgs.size() > 0) {
+            ConstructorArgumentValues cav = new ConstructorArgumentValues();
+            for (Object constructorArg : constructorArgs) {
+                cav.addGenericArgumentValue(constructorArg);
             }
-            else {
-                bd = new ChildBeanDefinition(parentName,clazz,cav, null);
-            }
+            bd.setConstructorArgumentValues(cav);
 		}
-		else {
-            if(parentName == null) {
-                bd = new RootBeanDefinition(clazz);
-            }
-            else {
-                bd = new ChildBeanDefinition(parentName,clazz, null,null);
-            }
-		}
+        bd.setBeanClass(clazz);
         bd.setScope(singleton ? AbstractBeanDefinition.SCOPE_SINGLETON : AbstractBeanDefinition.SCOPE_PROTOTYPE);
-		wrapper = new BeanWrapperImpl(bd);
+        if(parentName != null) {
+            bd.setParentName(parentName);
+        }
+        wrapper = new BeanWrapperImpl(bd);
 		return bd;
 	}
 	
@@ -297,6 +287,8 @@ public class DefaultBeanConfiguration extends GroovyObjectSupport implements Bea
         else if(obj instanceof BeanConfiguration) {
             this.parentName = ((BeanConfiguration)obj).getName();
         }
+        getBeanDefinition().setParentName(parentName);
+        setAbstract(false);
     }
 
 
