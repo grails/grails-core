@@ -31,6 +31,30 @@ import org.springframework.stereotype.Component
 
 class BeanBuilderTests extends GroovyTestCase {
 
+    void testInheritPropertiesFromAbstractBean() {
+        def bb = new grails.spring.BeanBuilder()
+
+        bb.beans {
+            myB(Bean1){
+                person = "wombat"
+            }
+
+            myAbstractA(Bean2){ bean ->
+                bean.'abstract' = true
+                age = 10
+                bean1 = myB
+            }
+            myConcreteB {  
+                it.parent = myAbstractA
+            }
+        }
+
+        def ctx = bb.createApplicationContext()
+        def bean = ctx.getBean("myConcreteB")
+
+        assertEquals 10, bean.age  
+        assertNotNull bean.bean1
+    }
 
     void testContextComponentScanSpringTag() {
         def bb = new BeanBuilder()
@@ -698,6 +722,7 @@ class Bean1 {
 }
 // bean referencing other bean
 class Bean2 {
+    int age
 	String person
 	Bean1 bean1
 	Properties props
