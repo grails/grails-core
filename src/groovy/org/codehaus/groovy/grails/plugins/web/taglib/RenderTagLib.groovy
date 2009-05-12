@@ -143,9 +143,10 @@ class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants 
 	            throwTagError("Tag [pageProperty] is missing required attribute [name]")
             }
 
+            def propertyName = attrs.name
             def htmlPage = getPage()
 
-            String propertyValue = htmlPage.getProperty(attrs.name)
+            String propertyValue = htmlPage.getProperty(propertyName)
 
             if (!propertyValue)
                 propertyValue = attrs.'default';

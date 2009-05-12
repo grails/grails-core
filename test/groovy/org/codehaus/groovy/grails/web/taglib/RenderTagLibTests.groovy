@@ -16,7 +16,10 @@
 package org.codehaus.groovy.grails.web.taglib;
 
 import org.springframework.web.servlet.support.RequestContextUtils as RCU
-import org.codehaus.groovy.grails.support.MockStringResourceLoader;
+import org.codehaus.groovy.grails.support.MockStringResourceLoader
+import com.opensymphony.module.sitemesh.RequestConstants
+import com.opensymphony.module.sitemesh.parser.TokenizedHTMLPage
+import com.opensymphony.module.sitemesh.html.util.CharArray;
 
 /**
  * Tests for the RenderTagLib.groovy file which contains tags for rendering
@@ -25,6 +28,22 @@ import org.codehaus.groovy.grails.support.MockStringResourceLoader;
  *
  */
 class RenderTagLibTests extends AbstractGrailsTagTests {
+
+    void testPageProperty() {
+
+        def template = '<g:pageProperty name="foo.bar" />'
+
+        def head = ""
+        TokenizedHTMLPage page = new TokenizedHTMLPage([] as char[], new CharArray(0), new CharArray(0))
+        request[RequestConstants.PAGE] = page
+
+        page.addProperty("foo.bar", "good")
+
+        assertOutputEquals "good", template
+
+        template = '<g:pageProperty name="foo.bar" writeEntireProperty="true" />'
+        assertOutputEquals " bar=\"good\"", template
+    }
 
     void testTemplateNamespace() {
         def resourceLoader = new MockStringResourceLoader()
