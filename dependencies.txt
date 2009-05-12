@@ -44,8 +44,8 @@ The following libraries are included in Grails because they are required either 
 - Commons Expression Language 1.0 (http://commons.apache.org/el/) Apache 2.0 License
 - required for running Grails applications
 
-* commons-fileupload-1.1.1.jar
-- Commons File Upload 1.1.1 (http://commons.apache.org/fileupload/) Apache 2.0 License
+* commons-fileupload-1.2.1.jar
+- Commons File Upload 1.2.1 (http://commons.apache.org/fileupload/) Apache 2.0 License
 - required for running Grails applications (When using file uploads)
 
 * commons-io-1.4.jar
