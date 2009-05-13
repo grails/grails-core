@@ -247,7 +247,13 @@ public class GrailsScriptRunner {
 
         // Load the BuildSettings file for this project if it exists. Note
         // that this does not load any environment-specific settings.
-        settings.loadConfig();
+        try {
+            settings.loadConfig();
+        }
+        catch (Exception e) {
+            System.err.println("WARNING: There was an error loading the BuildConfig: " + e.getMessage());
+            e.printStackTrace(System.err);
+        }
 
         // Add some extra binding variables that are now available.
         settings.setGrailsEnv(env);
