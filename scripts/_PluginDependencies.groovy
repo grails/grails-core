@@ -83,6 +83,140 @@ if(grailsSettings?.config?.grails?.plugin?.repos?.distribution) {
     pluginDistributionRepositories.putAll(grailsSettings?.config?.grails?.plugin?.repos?.distribution)
 }
 
+
+KEY_URL = "url"
+KEY_USER_NAME = "user"
+KEY_USER_PASS = "pswd"
+
+/**
+ * authentication manager Map
+ * EG : INIT CORE OR DEFAULT DISTRIBUTION REPOSITORY
+ * aMap = [url:CORE_PUBLISH_URL,user:"auser",pswd:"apswd"]
+ * ALLOWS ANT PROPERTIES DEFINITION
+ * aAuthManager = getAuthenticationManager("core", "distribution", aMap )
+ * authManagerMap.put("distribution.core", aAuthManager )
+ */
+authManagerMap = [:]
+
+/**
+ * Break down url into separate authentication components from url
+ * @param url to be parsed
+ * @return broken down url in these parts (if exist) url, user and pswd
+ */
+public Map tokenizeUrl(String url) throws SVNException {
+	SVNURL aURL= SVNURL.parseURIDecoded(url)
+	def aHashMap  = [:]
+
+	def userInfo = aURL.userInfo
+	if(userInfo) {
+		def userInfoArray = userInfo.split(":")
+		aHashMap[KEY_USER_NAME] = userInfoArray[0]
+		if (userInfoArray.length>1) {
+			aHashMap[KEY_USER_PASS] = userInfoArray[1]
+		}
+	}
+	aHashMap[KEY_URL] = "${aURL.protocol}://${aURL.host}:${aURL.port}${aURL.path}".toString()
+	return aHashMap
+}
+
+
+//init SVN Kit one time
+// support file based SVN
+FSRepositoryFactory.setup()
+// support the server http/https
+DAVRepositoryFactory.setup()
+
+/**
+ * Replace the url with authentication by url without in discovery and distribution
+ * repository and setup authentication instance in authManagerMap.
+ * if an url like :
+ * {protocol}://{user:password}@url is defined the promt does not occur.
+ * Else the user is prompted for user and password values.
+ * The repos "core" and "default" are ignored (see above for default configuration)
+ * For all other repo, a defultAuthenticationManager is created.
+ */
+public Map configureAuth(Map repoMap,String repoType) {
+	repoMapTmp = [:]
+	repoMap.each{
+        ISVNAuthenticationManager aAuthManager=SVNWCUtil.createDefaultAuthenticationManager()
+        if ("core"==it.key||"default"==it.key){
+            repoMapTmp[it.key] = it.value
+        } else {
+            if(isSecureUrl(it.value)) {
+                event "StatusUpdate", ["Authentication for svn repo at ${it.key} ${repoType} is required."]
+                aMap =  tokenizeUrl(it.value)
+                repoMapTmp[it.key] = aMap[KEY_URL]
+                aAuthManager = getAuthenticationManager(it.key, repoType, aMap)
+            } else {
+                event "StatusUpdate", ["No authentication for svn repo at ${it.key}"]
+            }
+        }
+        authManagerMap[repoType+"."+it.key] = aAuthManager
+    }
+	return repoMapTmp
+}
+//configure authentication for discovery repository
+pluginDiscoveryRepositories = configureAuth(pluginDiscoveryRepositories, "discovery")
+
+//configure authentication for distribution repository
+pluginDistributionRepositories = configureAuth(pluginDistributionRepositories, "distribution")
+
+/**
+ * Provide an authentication manager object.
+ * This method tries to use the configuration in settings.groovy
+ * (see comment of configureAuth for configuration pattern). If
+ * there's no configuration the user is prompted.
+ * @param repoKey
+ * @param repoType discovery or distribution
+ * @param tokenizeUrl the broken down url
+ * @return an ISVNAuthenticationManager impl instance building
+ */
+private ISVNAuthenticationManager getAuthenticationManager(String repoKey, String repoType, Map tokenizeUrl) {
+	ISVNAuthenticationManager aAuthManager
+    usr = "user.svn.username.${repoType}.${repoKey}".toString()
+    psw = "user.svn.password.${repoType}.${repoKey}".toString()
+    if(tokenizeUrl[KEY_USER_NAME]) {
+    	ant.antProject.setNewProperty usr, ""+tokenizeUrl[KEY_USER_NAME]
+    	String pswd = tokenizeUrl[KEY_USER_PASS] ?: ""
+	    ant.antProject.setNewProperty(psw,pswd)
+    }
+    //If no provided info, the user have to be prompt
+    ant.input(message:"Please enter your SVN username:", addproperty:usr)
+    ant.input(message:"Please enter your SVN password:", addproperty:psw)
+    def username = ant.antProject.getProperty(usr)
+    def password = ant.antProject.getProperty(psw)
+    authManager = SVNWCUtil.createDefaultAuthenticationManager( username , password )
+    //Test connection
+    aUrl = tokenizeUrl[KEY_URL]
+    def svnUrl = SVNURL.parseURIEncoded(aUrl)
+    def repo = SVNRepositoryFactory.create(svnUrl, null)
+    repo.authenticationManager = authManager
+    try {
+        repo.testConnection()
+        //only if it works...
+    	repo.closeSession()
+    } catch (SVNAuthenticationException ex) {
+    	//GRAVE BAD CONFIGURATION :  EXITING
+    	event("StatusError",["Bad authentication configuration for $aUrl"])
+    	exit(1)
+    }
+    return authManager
+
+}
+/**
+ * Get an authenticationManager object starting from url
+ * @param url of SVN repo
+ * @param repoType discovery or distribution
+ * @return ISVNAuthenticationManager for SVN connection on on repo with auth
+ **/
+private ISVNAuthenticationManager getAuthFromUrl(url, repoType) {
+    keyValue = repoType+"."+pluginDiscoveryRepositories.find { url.startsWith(it.value) }?.key
+    return authManagerMap[keyValue]
+}
+
+
+
+
 pluginResolveOrder = grailsSettings?.config?.grails?.plugin?.repos?.resolveOrder
 if(!pluginResolveOrder) {
     pluginResolveOrder = pluginDiscoveryRepositories.keySet()
@@ -1036,22 +1170,18 @@ def isSecureUrl(Object url) {
 }
 
 def withSVNRepo(url, closure) {
-    // support file based SVN
-    FSRepositoryFactory.setup()
-    // support the server http/https
-    DAVRepositoryFactory.setup()
     // create a authetication manager using the defaults
-    ISVNAuthenticationManager authMgr =
-        SVNWCUtil.createDefaultAuthenticationManager()
+    ISVNAuthenticationManager authMgr = getAuthFromUrl(url,"discovery")
+    
     // create the url
-    SVNURL svnUrl = SVNURL.parseURIEncoded(url)
-    SVNRepository repo = SVNRepositoryFactory.create(svnUrl, null)
-    repo.setAuthenticationManager(authMgr)
+    def svnUrl = SVNURL.parseURIEncoded(url)
+    def repo = SVNRepositoryFactory.create(svnUrl, null)
+    repo.authenticationManager = authMgr
     // trigger authentication failure?.?.
     try {
         repo.getLatestRevision()
     } catch (SVNAuthenticationException ex) {
-        println "Default authentication failed please enter credentials."
+        event "StatusUpdate", ["Default authentication failed please enter credentials."]
         // prompt for login information..
         ant.input(message:"Please enter your SVN username:", addproperty:"user.svn.username")
         ant.input(message:"Please enter your SVN password:", addproperty:"user.svn.password")

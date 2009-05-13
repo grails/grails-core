@@ -44,13 +44,28 @@ target ('default': "A target for plug-in developers that uploads and commits the
 
 target(processAuth:"Prompts user for login details to create authentication manager") {
     if(!authManager) {
-        ant.input(message:"Please enter your SVN username:", addproperty:"user.svn.username")
-        ant.input(message:"Please enter your SVN password:", addproperty:"user.svn.password")
+        def authKey = argsMap.repository ? "distribution.${argsMap.repository}".toString() : "distribution.default"
+        if(authManagerMap[authKey]) {
+            authManager = authManagerMap[authKey] 
+        }
+        else {
+            usr = "user.svn.username.distribution"
+            psw = "user.svn.password.distribution"
+            if(argsMap.repository) {
+                usr = usr+"."+argsMap.repository
+                psw = psw+"."+argsMap.repository
+            }
+            else {
+                usr = usr+".default"
+                psw = psw+".default"
+            }
+            ant.input(message:"Please enter your SVN username:", addproperty:usr)
+            ant.input(message:"Please enter your SVN password:", addproperty:psw)
+            def username = ant.antProject.getProperty(usr)
+            def password = ant.antProject.getProperty(psw)
+            authManager = SVNWCUtil.createDefaultAuthenticationManager( username , password )
+        }
 
-        def username = ant.antProject.properties."user.svn.username"
-        def password = ant.antProject.properties."user.svn.password"
-
-        authManager = SVNWCUtil.createDefaultAuthenticationManager( username , password )
     }
 }
 target(releasePlugin: "The implementation target") {
@@ -233,7 +248,7 @@ Are you sure you wish to proceed?
 
     updateClient = new SVNUpdateClient((ISVNAuthenticationManager)authManager, null)
 
-    println "Updating from SVN '${remoteLocation}'"
+    println "Updating from SVN..."
     long r = updateClient.doUpdate(baseFile, SVNRevision.HEAD, true)
     println "Updated to revision ${r}. Committing local, please wait..."
 
