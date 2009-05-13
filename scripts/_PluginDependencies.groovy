@@ -148,6 +148,7 @@ public Map configureAuth(Map repoMap,String repoType) {
                 repoMapTmp[it.key] = aMap[KEY_URL]
                 aAuthManager = getAuthenticationManager(it.key, repoType, aMap)
             } else {
+                repoMapTmp[it.key] = it.value
                 event "StatusUpdate", ["No authentication for svn repo at ${it.key}"]
             }
         }
