@@ -127,7 +127,7 @@ set TOOLS_JAR=%JAVA_HOME%\lib\tools.jar
 if "%JAVA_OPTS%" == "" set JAVA_OPTS="-Xmx512m"
 set JAVA_OPTS=%JAVA_OPTS% -Dprogram.name="%PROGNAME%"
 set JAVA_OPTS=%JAVA_OPTS% -Dgrails.home="%GRAILS_HOME%"
-set JAVA_OPTS=%JAVA_OPTS% -Dgrails.version="1.1.1-SNAPSHOT"
+set JAVA_OPTS=%JAVA_OPTS% -Dgrails.version="1.1.1"
 set JAVA_OPTS=%JAVA_OPTS% -Dbase.dir="."
 set JAVA_OPTS=%JAVA_OPTS% -Dtools.jar="%TOOLS_JAR%"
 set JAVA_OPTS=%JAVA_OPTS% -Dgroovy.starter.conf="%STARTER_CONF%"
