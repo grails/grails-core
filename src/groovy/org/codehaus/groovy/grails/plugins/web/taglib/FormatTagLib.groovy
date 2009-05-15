@@ -92,7 +92,7 @@ class FormatTagLib {
         def format = attrs.get('format')
         
         if(!format && formatName) {
-            format = message(code:formatName)
+            format = message(code:formatName, default:'')
             if(!format) throwTagError("Attribute [formatName] of Tag [formatDate] specifies a format key [$formatName] that does not exist within a message bundle!")
         }
         else if (!format) {
