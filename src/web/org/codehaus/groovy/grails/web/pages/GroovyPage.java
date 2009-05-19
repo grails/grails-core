@@ -40,6 +40,7 @@ import java.util.*;
  *
  * @author Troy Heninger
  * @author Graeme Rocher
+ * @author Lari Hotari
  *
  * Date: Jan 10, 2004
  *
@@ -66,7 +67,7 @@ public abstract class GroovyPage extends Script {
     public static final String CONTROLLER_NAME = "controllerName";
     public static final String SUFFIX = ".gsp";
     public static final String ACTION_NAME = "actionName";
-
+    
     public static final Collection<String> RESERVED_NAMES = new ArrayList<String>() {{
         add(REQUEST);
         add(SERVLET_CONTEXT);
@@ -86,9 +87,34 @@ public abstract class GroovyPage extends Script {
     private Map jspTags = Collections.EMPTY_MAP;
     private TagLibraryResolver jspTagLibraryResolver;
     private TagLibraryLookup gspTagLibraryLookup;
+    private String[] htmlParts;
+    
+    private static final Closure EMPTY_BODY_CLOSURE = new Closure(null) {
+		public Object doCall(Object obj) {
+			return BLANK_STRING;
+		}
+		public Object doCall() {
+			return BLANK_STRING;
+		}
+		public Object doCall(Object[] args) {
+			return BLANK_STRING;
+		}
+		public Object call(Object[] args) {
+			return BLANK_STRING;
+		}
+    };
 
 
-    /**
+    public GroovyPage() {
+		super();
+		init();
+	}
+    
+    protected void init() {
+    	
+    }
+
+	/**
      * Sets the JSP tag library resolver to use to resolve JSP tags
      * @param jspTagLibraryResolver The JSP tag resolve
      */
@@ -229,7 +255,7 @@ public abstract class GroovyPage extends Script {
 
                             case 2:
                                 if(tag.getParameterTypes().length == 2) {
-                                    tag.call( new Object[] { attrs, body });
+                                    tag.call( new Object[] { attrs, (body!=null)?body:EMPTY_BODY_CLOSURE });
                                 }
                             break;
                         }
@@ -429,5 +455,13 @@ public abstract class GroovyPage extends Script {
     public void setJspTags(Map jspTags) {
         this.jspTags = jspTags;
     }
+
+	public String[] getHtmlParts() {
+		return htmlParts;
+	}
+
+	public void setHtmlParts(String[] htmlParts) {
+		this.htmlParts = htmlParts;
+	}
 } // GroovyPage
 

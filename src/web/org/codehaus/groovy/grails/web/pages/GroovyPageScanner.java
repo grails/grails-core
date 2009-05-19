@@ -168,10 +168,11 @@ class GroovyPageScanner implements Tokens {
                         return found(HTML,1);
                     }
                     else if(c == '/' && c1 == '>') {
-                       return found(GEND_TAG,1);
+                       return found(GEND_EMPTY_TAG,1);
                     }
                     break;
                 case GEND_TAG:
+                case GEND_EMPTY_TAG:
                     if(c == '>') {
                         return found(HTML,1);
                     }

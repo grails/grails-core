@@ -46,5 +46,7 @@ public class GroovyPageTemplate implements Template {
         return gptw;
     }
 
-
+	public GroovyPageMetaInfo getMetaInfo() {
+		return metaInfo;
+	}
 }

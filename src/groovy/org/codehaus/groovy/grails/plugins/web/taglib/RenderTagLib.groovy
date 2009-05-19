@@ -446,9 +446,7 @@ class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants 
            t = TEMPLATE_CACHE[uri]
         }
         else {
-          def r = engine.getResourceForUri("${contextPath}${uri}")
-          if(!r.exists()) r = engine.getResourceForUri("${contextPath}/grails-app/views/${uri}")
-          t = engine.createTemplate( r )
+          t = engine.createTemplateForUri(["${contextPath}${uri}", "${contextPath}/grails-app/views/${uri}"] as String[])
           TEMPLATE_CACHE[uri] = t
         }
 

@@ -18,15 +18,11 @@ package org.codehaus.groovy.grails.web.pages;
 import grails.util.GrailsUtil;
 import groovy.lang.Writable;
 import groovy.text.Template;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.web.errors.GrailsWrappedRuntimeException;
-import org.codehaus.groovy.grails.web.servlet.DefaultGrailsApplicationAttributes;
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
-import org.springframework.core.io.Resource;
-import org.springframework.web.context.request.RequestContextHolder;
+
+import java.io.IOException;
+import java.io.Writer;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
@@ -34,10 +30,15 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.io.Writer;
-import java.util.HashMap;
-import java.util.Map;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.grails.web.errors.GrailsWrappedRuntimeException;
+import org.codehaus.groovy.grails.web.servlet.DefaultGrailsApplicationAttributes;
+import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
+import org.springframework.web.context.request.RequestContextHolder;
 
 /**
  * NOTE: Based on work done by on the GSP standalone project (https://gsp.dev.java.net/)
@@ -63,7 +64,6 @@ import java.util.Map;
  *
  */
 public class GroovyPagesServlet extends HttpServlet  {
-	
 	private static final Log LOG = LogFactory.getLog(GroovyPagesServlet.class);
 	
     private ServletContext context;
@@ -124,14 +124,14 @@ public class GroovyPagesServlet extends HttpServlet  {
             pageName = engine.getCurrentRequestUri(request);
         }
 
-        Resource page = engine.getResourceForUri(pageName);
-        if (page == null) {
+        Template template = engine.createTemplateForUri(pageName);
+        if (template == null) {
             context.log("GroovyPagesServlet:  \"" + pageName + "\" not found");
             response.sendError(404, "\"" + pageName + "\" not found.");
             return;
         }
 
-        renderPageWithEngine(engine, request, response, page);
+        renderPageWithEngine(engine, request, response, template);
     }
 
     /**
@@ -145,18 +145,10 @@ public class GroovyPagesServlet extends HttpServlet  {
      * @throws IOException Thrown when an I/O exception occurs rendering the page
      * @throws ServletException Thrown when an exception occurs in the servlet environment
      */
-    protected void renderPageWithEngine(GroovyPagesTemplateEngine engine, HttpServletRequest request, HttpServletResponse response, Resource pageResource) throws IOException, ServletException {
+    protected void renderPageWithEngine(GroovyPagesTemplateEngine engine, HttpServletRequest request, HttpServletResponse response, Template t) throws IOException, ServletException {
          Writer out = createResponseWriter(response);
         try {
-            Template t = engine.createTemplate(pageResource);
-            if(t == null) {
-                context.log("GroovyPagesServlet:  \"" + pageResource.getDescription() + "\" not found");
-                response.sendError(404, "\"" + pageResource.getDescription() + "\" not found.");
-                return;
-            }
             Writable w = t.make();
-
-
             w.writeTo(out);
         }
         catch(Exception e) {
