@@ -157,6 +157,24 @@ class GroovyPagesTemplateEngineTests extends GroovyTestCase {
 
         assertEquals "hello", sw.toString()
     }
+    
+    void testForEachInProductionMode() {
+    	System.setProperty("grails.env", "production")
+        GrailsWebUtil.bindMockWebRequest()
+        
+        def gpte = new GroovyPagesTemplateEngine(new MockServletContext())
+
+        def t = gpte.createTemplate("<g:each var='num' in='\${1..5}'>\${num} </g:each>", "foreach_test")
+        def w = t.make()
+
+        def sw = new StringWriter()
+        def pw = new PrintWriter(sw)
+
+        w.writeTo(pw)
+		System.setProperty("grails.env", "development")
+		
+        assertEquals "1 2 3 4 5 ", sw.toString()
+    }    
 
     void testGetUriWithinGrailsViews() {
         def gpte = new GroovyPagesTemplateEngine(new MockServletContext())

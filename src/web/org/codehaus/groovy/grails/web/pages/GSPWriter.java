@@ -56,15 +56,19 @@ public class GSPWriter extends PrintWriter {
     }
 
     public void println() {
-        if(lineNumber >= lineNumbers.length) {
+        addLineNumber();
+        super.println();
+    }
+
+	private void addLineNumber() {
+		if(lineNumber >= lineNumbers.length) {
             lineNumbers = (int[])resizeArray(lineNumbers, lineNumbers.length * 2);
         }
         else {
             lineNumbers[lineNumber - 1] = parse.getCurrentOutputLineNumber();
             lineNumber++;
         }
-        super.println();
-    }
+	}
 
     private Object resizeArray (Object oldArray, int newSize) {
        int oldSize = java.lang.reflect.Array.getLength(oldArray);

@@ -98,7 +98,7 @@ class JspTagImpl implements JspTag {
                     int state = tag.doStartTag()
                     BodyContent bodyContent
                     def out = pageContext.getOut()
-                    if(state == Tag.EVAL_BODY_INCLUDE || state == IterationTag.EVAL_BODY_AGAIN && body) {
+                    if((state == Tag.EVAL_BODY_INCLUDE || state == IterationTag.EVAL_BODY_AGAIN) && body) {
                         if(state == BodyTag.EVAL_BODY_BUFFERED && isBody()) {
                             bodyContent = pageContext.pushBody()
                             out = bodyContent

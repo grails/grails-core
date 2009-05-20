@@ -3,6 +3,8 @@ package org.codehaus.groovy.grails.web.pages;
 import groovy.util.ConfigObject;
 import groovy.util.ConfigSlurper;
 import junit.framework.TestCase;
+
+import org.apache.commons.io.IOUtils;
 import org.codehaus.groovy.grails.commons.ConfigurationHolder;
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
 
@@ -21,6 +23,21 @@ import java.io.*;
  *
  */
 public class ParseTests extends TestCase {
+	
+	class ParsedResult {
+		String generatedGsp;
+		GroovyPageParser parser;
+		String[] htmlParts;
+		
+		public String toString() { return generatedGsp; }
+	}
+	
+	protected static final String GSP_FOOTER = "public static final Map JSP_TAGS = new HashMap()\n"
+			+ "protected void init() {\n"
+			+ "\tthis.jspTags = JSP_TAGS\n"
+			+ "}\n"
+			+ "public static final String CONTENT_TYPE = 'text/html;charset=UTF-8'\n"
+			+ "public static final long LAST_MODIFIED = 0L\n" + "}\n";
 
     protected String makeImports() {
         StringBuffer result = new StringBuffer();
@@ -29,30 +46,37 @@ public class ParseTests extends TestCase {
         }
         return result.toString();
     }
+    
+    private void configureKeepgen() {
+		File tempdir=new File(System.getProperty("java.io.tmpdir"),"gspgen");
+        tempdir.mkdir();
+        ConfigObject config = new ConfigSlurper().parse("grails.views.gsp.keepgenerateddir = \"" + tempdir.getAbsolutePath() + "\"");
+        ConfigurationHolder.setConfig( config);        
+    }
 
     public void testParse() throws Exception {
-		String output = parseCode("myTest", "<div>hi</div>");
+		ParsedResult result = parseCode("myTest1", "<div>hi</div>");
 		String expected = makeImports() +
             "\n"+
-			"class myTest extends GroovyPage {\n"+
-            "public String getGroovyPageFileName() { \"myTest\" }\n"+
+			"class myTest1 extends GroovyPage {\n"+
+            "public String getGroovyPageFileName() { \"myTest1\" }\n"+
 			"public Object run() {\n"+
             "def params = binding.params\n"+
             "def request = binding.request\n"+            
             "def flash = binding.flash\n"+
             "def response = binding.response\n"+
-			"out.print('<div>hi</div>')\n"+
-			"}\n"+
-			"}";
-		assertEquals(trimAndRemoveCR(expected), trimAndRemoveCR(output));
+			"out.print(htmlParts[0])\n"+
+			"}\n"+ GSP_FOOTER;
+		assertEquals(trimAndRemoveCR(expected), trimAndRemoveCR(result.generatedGsp));
+		assertEquals("<div>hi</div>", result.htmlParts[0]);
 	}
 
     public void testParseWithUnclosedSquareBracket() throws Exception {
-		String output = parseCode("myTest", "<g:message code=\"[\"/>");
+		String output = parseCode("myTest2", "<g:message code=\"[\"/>").generatedGsp;
 		String expected = makeImports() +
 			"\n"+
-			"class myTest extends GroovyPage {\n"+
-            "public String getGroovyPageFileName() { \"myTest\" }\n"+
+			"class myTest2 extends GroovyPage {\n"+
+            "public String getGroovyPageFileName() { \"myTest2\" }\n"+
 			"public Object run() {\n"+
             "def params = binding.params\n"+
             "def request = binding.request\n"+
@@ -60,20 +84,17 @@ public class ParseTests extends TestCase {
             "def response = binding.response\n"+
 
             "attrs1 = [\"code\":evaluate('\"[\"', 1, it) { return \"[\" }]\n" +
-            "body1 = new GroovyPageTagBody(this,binding.webRequest) {\n" +
-            "}\n" +
-            "invokeTag('message','g',1,attrs1,body1)\n"+
-			"}\n"+
-			"}";
+            "invokeTag('message','g',1,attrs1,null)\n"+
+			"}\n" + GSP_FOOTER;
 
 		assertEquals(trimAndRemoveCR(expected), trimAndRemoveCR(output));
 	}
 
     public void testParseWithUnclosedGstringThrowsException() throws IOException {
         try{
-            parseCode("myTest", "<g:message value=\"${boom\">");
+            parseCode("myTest3", "<g:message value=\"${boom\">");
         }catch(GrailsTagException e){
-            assertEquals("Unexpected end of file encountered parsing Tag [message] for myTest. Are you missing a closing brace '}'?", e.getMessage());
+            assertEquals("Unexpected end of file encountered parsing Tag [message] for myTest3. Are you missing a closing brace '}'?", e.getMessage());
             return;
         }
 		fail("Expected parse exception not thrown");
@@ -91,27 +112,27 @@ public class ParseTests extends TestCase {
         ConfigObject config = new ConfigSlurper().parse("grails.views.gsp.encoding = \"UTF-8\"");
 
         ConfigurationHolder.setConfig( config);
-        String output = null;
+        ParsedResult output = null;
         try {
-            output = parseCode("myTest", src);
+            output = parseCode("myTest4", src);
         }
         finally {
             ConfigurationHolder.setConfig(null);
         }
         String expected = makeImports() +
             "\n"+
-            "class myTest extends GroovyPage {\n"+
-            "public String getGroovyPageFileName() { \"myTest\" }\n"+
+            "class myTest4 extends GroovyPage {\n"+
+            "public String getGroovyPageFileName() { \"myTest4\" }\n"+
             "public Object run() {\n"+
             "def params = binding.params\n"+
             "def request = binding.request\n"+
             "def flash = binding.flash\n"+
             "def response = binding.response\n"+
 
-            "out.print('"+src+"')\n"+
-            "}\n"+
-            "}";
-        assertEquals(trimAndRemoveCR(expected), trimAndRemoveCR(output));
+            "out.print(htmlParts[0])\n"+
+            "}\n" + GSP_FOOTER;;
+        assertEquals(trimAndRemoveCR(expected), trimAndRemoveCR(output.generatedGsp));
+        assertEquals(src, output.htmlParts[0]);
 
     }
 
@@ -125,17 +146,17 @@ public class ParseTests extends TestCase {
         ConfigObject config = new ConfigSlurper().parse("grails.views.gsp.encoding = \"\"");
 
         ConfigurationHolder.setConfig( config);
-        String output = null;
+        ParsedResult output = null;
         try {
-            output = parseCode("myTest", src);
+            output = parseCode("myTest5", src);
         }
         finally {
             ConfigurationHolder.setConfig(null);
         }
         String expected = makeImports() +
             "\n"+
-            "class myTest extends GroovyPage {\n"+
-            "public String getGroovyPageFileName() { \"myTest\" }\n"+
+            "class myTest5 extends GroovyPage {\n"+
+            "public String getGroovyPageFileName() { \"myTest5\" }\n"+
             "public Object run() {\n"+
 
             "def params = binding.params\n"+
@@ -143,10 +164,10 @@ public class ParseTests extends TestCase {
             "def flash = binding.flash\n"+
             "def response = binding.response\n"+
 
-            "out.print('"+src+"')\n"+
-            "}\n"+
-            "}";
-        assertEquals(trimAndRemoveCR(expected), trimAndRemoveCR(output));
+            "out.print(htmlParts[0])\n"+
+            "}\n" + GSP_FOOTER;;
+        assertEquals(trimAndRemoveCR(expected), trimAndRemoveCR(output.generatedGsp));
+        assertEquals(src, output.htmlParts[0]);
 
     }
 
@@ -171,10 +192,7 @@ public class ParseTests extends TestCase {
 		return sb.toString();
 	}
 	
-	public String parseCode(String uri, String gsp) throws IOException {
-		StringWriter sw = new StringWriter();
-		PrintWriter pw = new PrintWriter(sw);
-
+	public ParsedResult parseCode(String uri, String gsp) throws IOException {
         // Simulate what the parser does so we get it in the encoding expected
         Object enc = ConfigurationHolder.getFlatConfig().get("grails.views.gsp.encoding");
         if ((enc == null) || (enc.toString().trim().length() == 0)) {
@@ -184,43 +202,40 @@ public class ParseTests extends TestCase {
         InputStream gspIn = new ByteArrayInputStream(gsp.getBytes(enc.toString()));
         GroovyPageParser parse = new GroovyPageParser(uri, uri, gspIn);
         InputStream in = parse.parse();
-        send(in, pw, enc.toString());
-
-		return sw.toString();
+        ParsedResult result=new ParsedResult();
+        result.parser=parse;
+        result.generatedGsp = IOUtils.toString(in, enc.toString());
+        result.htmlParts = parse.getHtmlPartsArray();
+        return result;
 	}
 
  	public void testParseGTagsWithNamespaces() throws Exception {
- 		String output = parseCode("myTest",
+ 		String output = parseCode("myTest6",
  		"<tbody>\n" +
  		"  <tt:form />\n" +
-		"</tbody>");
+		"</tbody>").generatedGsp;
          System.out.println("output = " + output);
-        assertTrue( "should have call to tag with 'tt' namespace", output.indexOf("invokeTag('form','tt',2,[:],body1)") > -1);
+        assertTrue( "should have call to tag with 'tt' namespace", output.indexOf("invokeTag('form','tt',2,[:],null)") > -1);
  	}
 
     public void testParseWithWhitespaceNotEaten() throws Exception {
         String expected = makeImports() +
             "\n" +
-            "class myTest extends GroovyPage {\n" +
-            "public String getGroovyPageFileName() { \"myTest\" }\n"+                
+            "class myTest7 extends GroovyPage {\n" +
+            "public String getGroovyPageFileName() { \"myTest7\" }\n"+                
             "public Object run() {\n" +
             "def params = binding.params\n"+
             "def request = binding.request\n"+
             "def flash = binding.flash\n"+
             "def response = binding.response\n"+
 
-            "out.print(STATIC_HTML_CONTENT_0)\n" +
+            "out.print(htmlParts[0])\n" +
             "out.print(evaluate('uri', 3, it) { return uri })\n"+
-            "out.print(STATIC_HTML_CONTENT_1)\n" +
-            "}\n" +
-            "static final STATIC_HTML_CONTENT_0 = '''Please click the link below to confirm your email address:\n\\n'''\n" +
-            "\n" +
-            "static final STATIC_HTML_CONTENT_1 = '''\\n\\n\\nThanks'''\n" +
-            "\n" +
-            "}\n";
+            "out.print(htmlParts[1])\n" +
+            "}\n" + GSP_FOOTER;
 
 
-        String output = parseCode("myTest",
+        ParsedResult output = parseCode("myTest7",
         "Please click the link below to confirm your email address:\n" +
         "\n" +
         "${uri}\n" +
@@ -228,30 +243,11 @@ public class ParseTests extends TestCase {
         "\n"+
         "Thanks");
 
-        System.out.println("Output: "+output);
+        System.out.println("Output: "+output.generatedGsp);
         System.out.println("Expect: "+expected);
-        assertEquals(expected, output);
+        assertEquals(expected, output.generatedGsp);
+        assertEquals("Please click the link below to confirm your email address:\n\n", output.htmlParts[0]);
+        assertEquals("\n\n\nThanks", output.htmlParts[1]);
+        
     }
-
-    /**
-     * Copy all of input to output.
-     * @param in
-     * @param out
-     * @param encoding
-     * @throws IOException
-     */
-    public static void send(InputStream in, Writer out, String encoding) throws IOException {
-        try {
-            Reader reader = new InputStreamReader(in, encoding);
-            char[] buf = new char[8192];
-            for (;;) {
-                int read = reader.read(buf);
-                if (read <= 0) break;
-                out.write(buf, 0, read);
-            }
-        } finally {
-            out.close();
-            in.close();
-        }
-    } // writeInputStreamToResponse()
 }

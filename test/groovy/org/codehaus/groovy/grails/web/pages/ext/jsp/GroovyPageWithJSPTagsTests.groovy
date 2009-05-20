@@ -54,6 +54,11 @@ class GroovyPageWithJSPTagsTests extends AbstractGrailsTagTests{
 
     void testGRAILS3797() {
         println request.locale
+		
+		File tempdir=new File(System.getProperty("java.io.tmpdir"),"gspgen")
+        tempdir.mkdir()
+		
+        withConfig("grails.views.gsp.keepgenerateddir='${tempdir.absolutePath}'") {
 
         messageSource.addMessage("A_ICON",request.locale, "test")
         
@@ -70,6 +75,8 @@ class GroovyPageWithJSPTagsTests extends AbstractGrailsTagTests{
 </html>
 '''
          assertOutputContains '<img src="test"/>', template
+        }
+        println "gsp source generated to ${tempdir}"
 
     }
 

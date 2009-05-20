@@ -109,18 +109,14 @@ public class GroovyPageParser implements Tokens {
 
 	private StringBuffer whitespaceBuffer = new StringBuffer();
 
-	private int currentOutputLine = 1;
 	private String contentType = DEFAULT_CONTENT_TYPE;
 	private boolean doNextScan = true;
 	private int state;
-	private static final String START_MULTILINE_STRING = "'''";
-	private static final String END_MULTILINE_STRING = "'''";
 	private static final String DEFAULT_CONTENT_TYPE = "text/html;charset=UTF-8";
 	private int constantCount = 0;
 	private Map constantsToNames = new HashMap();
 
 	private final String pageName;
-	private static final String EMPTY_MULTILINE_STRING = "''''''";
 	public static final String[] DEFAULT_IMPORTS = new String[] {
 			"org.codehaus.groovy.grails.web.pages.GroovyPage",
 			"org.codehaus.groovy.grails.web.taglib.*",
@@ -149,7 +145,7 @@ public class GroovyPageParser implements Tokens {
 	}
 
 	public int getCurrentOutputLineNumber() {
-		return currentOutputLine;
+		return scan.getLineNumberForToken();
 	}
 
 	public Map getJspTags() {
@@ -478,6 +474,10 @@ public class GroovyPageParser implements Tokens {
 			text = "evaluate('" + escaped + "', "
 					+ getCurrentOutputLineNumber() + ", it) { return " + text
 					+ " }" + (safeDereference ? "?" : "");
+		} else {
+			// add extra parenthesis, see http://jira.codehaus.org/browse/GRAILS-4351 
+			// or GroovyPagesTemplateEngineTests.testForEachInProductionMode
+			text = "(" + text + ")";
 		}
 		return text;
 	}
@@ -485,30 +485,6 @@ public class GroovyPageParser implements Tokens {
 	private String escapeGroovy(String text) {
 		return text.replace("\\", "\\\\").replace("'", "\\'").replace("\n",
 				"\\n").replace("\r", "\\r");
-	}
-
-	/**
-	 * Split the input text on new lines, but keeping blank entries for blank
-	 * lines unlike String.split
-	 * 
-	 * @param text
-	 * @return
-	 */
-	private String[] splitLinesKeepingBlanks(String text) {
-		ArrayList results = new ArrayList();
-		final int len = text.length();
-		int pos = 0;
-		while (pos < len) {
-			int EOLpos = text.indexOf('\n', pos);
-			if (EOLpos >= 0) {
-				results.add(text.substring(pos, EOLpos));
-				pos = EOLpos + 1;
-			} else {
-				results.add(text.substring(pos, len));
-				pos = len;
-			}
-		}
-		return (String[]) results.toArray(new String[results.size()]);
 	}
 
 	/**
@@ -631,8 +607,6 @@ public class GroovyPageParser implements Tokens {
 
 		}
 
-		int lastState = -1;
-
 		loop: for (;;) {
 			if (doNextScan)
 				state = scan.nextToken();
@@ -686,12 +660,10 @@ public class GroovyPageParser implements Tokens {
 				break;
 			}
 
-			lastState = state;
 		}
 
 		if (finalPass) {
 			if (!tagMetaStack.isEmpty()) {
-				TagMeta tag = (TagMeta) tagMetaStack.iterator().next();
 				throw new GrailsTagException("Grails tags were not closed! ["
 						+ tagMetaStack + "] in GSP " + pageName + "", pageName,
 						out.getCurrentLineNumber());
@@ -971,30 +943,6 @@ public class GroovyPageParser implements Tokens {
 		}
 	} // pageImport()
 
-	private String escapeGroovy(CharSequence text) {
-		StringBuffer buf = new StringBuffer();
-		for (int ix = 0, ixz = text.length(); ix < ixz; ix++) {
-			char c = text.charAt(ix);
-			String rep = null;
-			if (c == '\n') {
-				incrementLineNumber();
-				rep = "\\n";
-			} else if (c == '\r')
-				rep = "\\r";
-			else if (c == '\t')
-				rep = "\\t";
-			else if (c == '\'')
-				rep = "\\'";
-			else if (c == '\\')
-				rep = "\\\\";
-			if (rep != null)
-				buf.append(rep);
-			else
-				buf.append(c);
-		}
-		return buf.toString();
-	}
-
 	private String readStream(InputStream in) throws IOException {
 		return IOUtils.toString(in, gspEncoding);
 	}
@@ -1043,7 +991,7 @@ public class GroovyPageParser implements Tokens {
 			} else if (c == '<') {
 				if (match("<br>", text, ix) || match("<hr>", text, ix)) {
 					rep = "\n";
-					incrementLineNumber();
+					//incrementLineNumber();
 					ix += 3;
 				} else {
 					int end = match(PARA_BREAK, text, ix);
@@ -1051,7 +999,7 @@ public class GroovyPageParser implements Tokens {
 						end = match(ROW_BREAK, text, ix);
 					if (end > 0) {
 						rep = "\n";
-						incrementLineNumber();
+						//incrementLineNumber();
 						ix = end;
 					}
 				}
@@ -1062,10 +1010,6 @@ public class GroovyPageParser implements Tokens {
 				out.print(c);
 		}
 	} // write()
-
-	private void incrementLineNumber() {
-		currentOutputLine++;
-	}
 
 	public long getLastModified() {
 		return lastModified;

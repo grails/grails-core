@@ -399,42 +399,46 @@ public abstract class GroovyPage extends Script {
     }
 
 	private static Closure createTagOutputCapturingClosure(Object wrappedInstance, final String methodName, final Writer out, final Object body1) {
-		return new Closure(wrappedInstance) {
-			public Object doCall(Object obj) {
-				return call(new Object[] {obj} );
-			}
-			public Object doCall() {
-				return call(new Object[0]);
-			}
-			public Object doCall(Object[] args) {
-				return call(args);
-			}
-			public Object call(Object[] args) {
-				if(body1 != null) {
-					Object bodyResponse;
-					if(body1 instanceof Closure) {
-                           if(args!=null && args.length>0){
-                                   bodyResponse = ((Closure)body1).call(args);
-                           }
-                           else {
-                                   bodyResponse = ((Closure)body1).call();
-                           }
-					}
-					else {
-						bodyResponse = body1;
-					}
-
-					if(bodyResponse != null && !(bodyResponse instanceof Writer) ){
-						try {
-                            out.write(bodyResponse.toString());
-						} catch (IOException e) {
-							throw new GrailsTagException("I/O error invoking tag library closure ["+methodName+"] as method: " + e.getMessage(),e);
+		if(body1==null) {
+			return EMPTY_BODY_CLOSURE;
+		} else {
+			return new Closure(wrappedInstance) {
+				public Object doCall(Object obj) {
+					return call(new Object[] {obj} );
+				}
+				public Object doCall() {
+					return call(new Object[0]);
+				}
+				public Object doCall(Object[] args) {
+					return call(args);
+				}
+				public Object call(Object[] args) {
+					if(body1 != null) {
+						Object bodyResponse;
+						if(body1 instanceof Closure) {
+	                           if(args!=null && args.length>0){
+	                                   bodyResponse = ((Closure)body1).call(args);
+	                           }
+	                           else {
+	                                   bodyResponse = ((Closure)body1).call();
+	                           }
+						}
+						else {
+							bodyResponse = body1;
+						}
+	
+						if(bodyResponse != null && !(bodyResponse instanceof Writer) ){
+							try {
+	                            out.write(bodyResponse.toString());
+							} catch (IOException e) {
+								throw new GrailsTagException("I/O error invoking tag library closure ["+methodName+"] as method: " + e.getMessage(),e);
+							}
 						}
 					}
+					return BLANK_STRING;
 				}
-				return BLANK_STRING;
-			}
-		};
+			};
+		}
 	}
 
     /**
