@@ -1,4 +1,5 @@
-<ivy-module version="1.0">
+<?xml version="1.0" encoding="UTF-8"?>
+<ivy-module version="2.0">
     <info organisation="codehaus" module="grails"/>
     <dependencies>
         <dependency org="apache" name="commons-lang" rev="2.1"/>

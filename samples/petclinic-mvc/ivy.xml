@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <ivy-module version="2.0">
     <info organisation="org.grails" module="petclinic-mvc"/>
     <configurations defaultconfmapping="build->default;compile->compile(*),master(*);test,runtime->runtime(*),master(*)">
