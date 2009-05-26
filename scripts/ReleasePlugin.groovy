@@ -64,6 +64,7 @@ target(processAuth:"Prompts user for login details to create authentication mana
             def username = ant.antProject.getProperty(usr)
             def password = ant.antProject.getProperty(psw)
             authManager = SVNWCUtil.createDefaultAuthenticationManager( username , password )
+	    authManagerMap.put(authKey,authManager)
         }
 
     }

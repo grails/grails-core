@@ -58,10 +58,13 @@ includeTargets << grailsScript("_GrailsClean")
 includeTargets << grailsScript("_GrailsArgParsing")
 includeTargets << grailsScript("_GrailsProxy")
 
+
 CORE_PLUGIN_DIST = "http://svn.codehaus.org/grails/trunk/grails-plugins"
 CORE_PUBLISH_URL = "https://svn.codehaus.org/grails/trunk/grails-plugins"
 DEFAULT_PLUGIN_DIST = "http://plugins.grails.org"
 DEFAULT_PUBLISH_URL = "https://svn.codehaus.org/grails-plugins"
+
+
 // TODO: temporary until we refactor Grails core into real plugins
 CORE_PLUGINS = ['core', 'i18n','converters','mimeTypes', 'controllers','webflow', 'dataSource', 'domainClass', 'filters','logging', 'groovyPages']
 
@@ -141,18 +144,24 @@ public Map configureAuth(Map repoMap,String repoType) {
         ISVNAuthenticationManager aAuthManager=SVNWCUtil.createDefaultAuthenticationManager()
         if ("core"==it.key||"default"==it.key){
             repoMapTmp[it.key] = it.value
+ 	    if(!isSecureUrl(it.value)) {
+		authManagerMap[repoType+"."+it.key] = aAuthManager	
+	    }
+	    // else no authentication manager provides to authManagerMap : case of CORE_PUBLISH_URL and DEFAULT_PUBLISH_URL
         } else {
             if(isSecureUrl(it.value)) {
                 event "StatusUpdate", ["Authentication for svn repo at ${it.key} ${repoType} is required."]
                 aMap =  tokenizeUrl(it.value)
                 repoMapTmp[it.key] = aMap[KEY_URL]
                 aAuthManager = getAuthenticationManager(it.key, repoType, aMap)
+                authManagerMap[repoType+"."+it.key] = aAuthManager
             } else {
                 repoMapTmp[it.key] = it.value
                 event "StatusUpdate", ["No authentication for svn repo at ${it.key}"]
+                authManagerMap[repoType+"."+it.key] = aAuthManager
             }
         }
-        authManagerMap[repoType+"."+it.key] = aAuthManager
+        
     }
 	return repoMapTmp
 }
@@ -1196,5 +1205,4 @@ def withSVNRepo(url, closure) {
     // make sure the closure return is returned..
     closure.call(repo)
 }
-
 
