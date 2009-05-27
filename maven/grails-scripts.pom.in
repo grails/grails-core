@@ -159,6 +159,13 @@
             </exclusions>
         </dependency>
 
+        <dependency>
+            <groupId>org.tmatesoft.svnkit</groupId>
+            <artifactId>svnkit</artifactId>
+            <version>1.2.3.5521</version>
+            <scope>runtime</scope>
+        </dependency>
+
 <!-- Test Dependencies -->
     </dependencies>
 </project>
