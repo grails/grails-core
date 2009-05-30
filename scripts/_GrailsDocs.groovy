@@ -36,8 +36,7 @@ links = [
         ]
 
 target(docs: "Produces documentation for a Grails project") {
-    //depends(compile, javadoc, groovydoc, refdocs)
-    depends(compile, refdocs)
+    depends(compile, javadoc, groovydoc, refdocs)
 }
 
 target(setupDoc:"Sets up the doc directories") {
