@@ -46,6 +46,10 @@
                   <include name="grails-app/views/error.gsp" />
             </fileset>
         </jar>
+
+        <!--Package up files used for generating documentation-->
+        <jar basedir="${basedir}/src/grails/docs" destfile="${grails.target}/grails-doc-files.jar" />
+
     </target>
 
     <target name="jar" depends="build,build-scripts,-jar-app-files" description="Build the entire source, run all tests and create the Grails JAR file.">
@@ -58,6 +62,13 @@
                 <include name="grails/test/**" />
             </fileset>
         </jar>
+        <jar destfile="${grails.dist}/grails-doc-${grails.version}.jar" manifest="${grails.build}/META-INF/MANIFEST.MF">
+            <fileset dir="${grails.build}">
+                <include name="META-INF/**" />
+                <include name="grails/doc/**" />
+            </fileset>
+        </jar>
+
         <jar destfile="${grails.dist}/grails-spring-${grails.version}.jar" manifest="${grails.build}/META-INF/MANIFEST.MF">
             <fileset dir="${grails.build}">
                 <include name="META-INF/**" />
