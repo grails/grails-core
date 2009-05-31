@@ -1,3 +1,17 @@
+/* Copyright 2004-2005 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package grails.doc
 
 import grails.doc.filters.HeaderFilter
@@ -15,6 +29,13 @@ import org.radeox.macro.parameter.MacroParameter
 import org.radeox.regex.MatchResult
 import org.radeox.filter.*
 
+
+/**
+ * A Radeox Wiki engine for generating documentation using a confluence style syntax
+ * 
+ * @author Graeme Rocher
+ * @since 1.2
+ */
 class DocEngine extends BaseRenderEngine implements WikiRenderEngine {
     static final CONTEXT_PATH = "contextPath"
     static final SOURCE_FILE = "sourceFile"
