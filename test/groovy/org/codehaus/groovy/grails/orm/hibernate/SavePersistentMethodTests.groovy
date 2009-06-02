@@ -3,7 +3,7 @@ package org.codehaus.groovy.grails.orm.hibernate;
 import org.codehaus.groovy.grails.commons.*
 import org.codehaus.groovy.grails.commons.test.*
 
-class SavePersistentMethodTests extends AbstractGrailsHibernateTests {     
+class SavePersistentMethodTests extends AbstractGrailsHibernateTests {
 
     void testFlush() {
         def bookClass = ga.getDomainClass("SaveBook")
@@ -37,10 +37,10 @@ class SavePersistentMethodTests extends AbstractGrailsHibernateTests {
 
         assert book.save()
 
-        def author = authorClass.newInstance()        
+        def author = authorClass.newInstance()
         author.name = "Bar"
         author.save()
-        
+
         book.author = author
 
         // will validate book is owned by author
@@ -56,7 +56,7 @@ class SavePersistentMethodTests extends AbstractGrailsHibernateTests {
         author.address = address
 
         assert !author.save()
-        
+
 
         address.location = "Foo Bar"
 
@@ -91,18 +91,41 @@ class SavePersistentMethodTests extends AbstractGrailsHibernateTests {
 
         author.addToBooks(book)
         assert !author.save()
-        
+
 
         book.title = "TDGTG"
         assert author.save()
         assert author.save(deepValidate:false)
 	}
 
-	void onSetUp() {
+    void testValidationAfterBindingErrors() {
+        def teamClass = ga.getDomainClass('Team')
+        def team = teamClass.newInstance()
+        team.properties = [homePage: 'invalidurl']
+        assertNull 'validation should have failed', team.save()
+        assertEquals 'wrong number of errors found', 2, team.errors.errorCount
+        assertEquals 'wrong number of homePage errors found', 1, team.errors.getFieldErrors('homePage')?.size()
+        def homePageError = team.errors.getFieldError('homePage')
+        assertTrue 'did not find typeMismatch error', 'typeMismatch' in homePageError.codes
+
+        team.homePage = new URL('http://grails.org')
+        assertNull 'validation should have failed', team.save()
+        assertEquals 'wrong number of errors found', 1, team.errors.errorCount
+        assertEquals 'wrong number of homePage errors found', 0, team.errors.getFieldErrors('homePage')?.size()
+    }
+
+    void onSetUp() {
 		this.gcl.parseClass('''
+import grails.persistence.*
+
+@Entity
+class Team {
+    String name
+    URL homePage
+}
+
+@Entity
 class SaveBook {
-    Long id
-    Long version
     String title
     SaveAuthor author
     static belongsTo = SaveAuthor
@@ -111,21 +134,20 @@ class SaveBook {
        author(nullable:true)
     }
 }
+
+@Entity
 class SaveAuthor {
-   Long id
-   Long version
    String name
    SaveAddress address
-   Set books = new HashSet()
    static hasMany = [books:SaveBook]
    static constraints = {
         address(nullable:true)
         name(size:1..255, blank:false)
    }
 }
+
+@Entity
 class SaveAddress {
-    Long id
-    Long version
     SaveAuthor author
     String location
     static belongsTo = SaveAuthor
@@ -137,8 +159,8 @@ class SaveAddress {
 '''
 		)
 	}
-	
+
 	void onTearDown() {
-		
+
 	}
 }

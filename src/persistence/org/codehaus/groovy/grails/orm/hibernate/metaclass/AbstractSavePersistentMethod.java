@@ -1,18 +1,18 @@
 /*
  * Copyright 2004-2005 the original author or authors.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */ 
+ */
 package org.codehaus.groovy.grails.orm.hibernate.metaclass;
 
 import groovy.lang.GroovyObject;
@@ -28,14 +28,16 @@ import org.springframework.orm.hibernate3.HibernateTemplate;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
+import org.springframework.validation.FieldError;
 
 import java.io.Serializable;
 import java.util.Map;
+import java.util.List;
 import java.util.regex.Pattern;
 
 /**
  * Abstract class for different implementations that perform saving to implement
- * 
+ *
  * @author Graeme Rocher
  * @since 0.3
  *
@@ -54,7 +56,7 @@ public abstract class AbstractSavePersistentMethod extends
 		super(pattern, sessionFactory, classLoader);
         if(application == null)
             throw new IllegalArgumentException("Constructor argument 'application' cannot be null");
-		
+
 		this.application = application;
 	}
 
@@ -64,14 +66,24 @@ public abstract class AbstractSavePersistentMethod extends
 	protected Object doInvokeInternal(final Object target, Object[] arguments) {
         GrailsDomainClass domainClass = (GrailsDomainClass) application.getArtefact(DomainClassArtefactHandler.TYPE,
             target.getClass().getName() );
-        
+
         if(shouldValidate(arguments, domainClass)) {
         	Validator validator = domainClass.getValidator();
             MetaClass mc = GroovySystem.getMetaClassRegistry().getMetaClass(target.getClass());
 
             Errors errors = new BeanPropertyBindingResult(target, target.getClass().getName());
+
+            Errors originalErrors = (Errors) mc.getProperty(target, ERRORS_PROPERTY);
+            List originalFieldErrors = originalErrors.getFieldErrors();
+            for(Object o : originalFieldErrors) {
+                FieldError fe = (FieldError) o;
+                if(fe.isBindingFailure()) {
+                    errors.rejectValue(fe.getField(), fe.getCode(), fe.getArguments(), fe.getDefaultMessage());
+                }
+            }
+
             mc.setProperty(target, ERRORS_PROPERTY, errors);
-            
+
             if(validator != null) {
                 boolean deepValidate = true;
                 if(arguments.length > 0) {
@@ -102,7 +114,7 @@ public abstract class AbstractSavePersistentMethod extends
         // this piece of code will retrieve a persistent instant
         // of a domain class property is only the id is set thus
         // relieving this burden off the developer
-        if(domainClass != null) {            
+        if(domainClass != null) {
             autoRetrieveAssocations(domainClass, target);
         }
 
