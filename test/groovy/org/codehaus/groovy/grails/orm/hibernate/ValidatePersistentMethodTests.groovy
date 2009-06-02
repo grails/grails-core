@@ -121,8 +121,13 @@ class ValidatePersistentMethodTests extends AbstractGrailsHibernateTests {
         def team = teamClass.newInstance()
         team.properties = [homePage: 'invalidurl']
         assertFalse 'validation should have failed', team.validate()
-        assertEquals 'wrong number of errors found', 3, team.errors.errorCount
-        assertEquals 'wrong number of homePage errors found', 2, team.errors.getFieldErrors('homePage')?.size()
+        assertEquals 'wrong number of errors found', 2, team.errors.errorCount
+        assertEquals 'wrong number of homePage errors found', 1, team.errors.getFieldErrors('homePage')?.size()
+
+        team.homePage = new URL('http://grails.org')
+        assertFalse 'validation should have failed', team.validate()
+        assertEquals 'wrong number of errors found', 1, team.errors.errorCount
+        assertEquals 'wrong number of homePage errors found', 0, team.errors.getFieldErrors('homePage')?.size()
     }
 
     void onSetUp() {

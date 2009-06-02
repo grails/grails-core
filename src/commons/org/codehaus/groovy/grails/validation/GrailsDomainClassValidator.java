@@ -1,17 +1,17 @@
 /* Copyright 2004-2005 the original author or authors.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */ 
+ */
 package org.codehaus.groovy.grails.validation;
 
 import groovy.lang.GroovyObject;
@@ -26,14 +26,15 @@ import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.context.MessageSource;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
+import org.springframework.validation.FieldError;
 
 import java.util.*;
 
 /**
  * A specialised Spring validator that validates a domain class instance using the constraints defined in the
  * static constraints closure.
- *  
- * 
+ *
+ *
  * @author Graeme Rocher
  * @since 0.1
  *
@@ -183,7 +184,7 @@ public class GrailsDomainClassValidator implements Validator, CascadingValidator
             Map map = (Map)collection;
             for (Iterator i = map.keySet().iterator(); i.hasNext();) {
                 Object key = i.next();
-                cascadeValidationToOne(errors, bean,map.get(key), persistentProperty, propertyName);    
+                cascadeValidationToOne(errors, bean,map.get(key), persistentProperty, propertyName);
             }
         }
     }
@@ -191,15 +192,18 @@ public class GrailsDomainClassValidator implements Validator, CascadingValidator
     private void validatePropertyWithConstraint(String propertyName, Object obj, Errors errors, BeanWrapper bean, Map constrainedProperties) {
         int i = propertyName.lastIndexOf(".");
         String constrainedPropertyName;
-        if(i > -1){
-            constrainedPropertyName = propertyName.substring(i+1,propertyName.length());
+        if (i > -1) {
+            constrainedPropertyName = propertyName.substring(i + 1, propertyName.length());
         }
         else {
             constrainedPropertyName = propertyName;
         }
-        ConstrainedProperty c = (ConstrainedProperty)constrainedProperties.get(constrainedPropertyName);
-        c.setMessageSource(this.messageSource);
-        c.validate(obj, bean.getPropertyValue(constrainedPropertyName), errors);
+        FieldError fieldError = errors.getFieldError(constrainedPropertyName);
+        if (fieldError == null) {
+            ConstrainedProperty c = (ConstrainedProperty) constrainedProperties.get(constrainedPropertyName);
+            c.setMessageSource(this.messageSource);
+            c.validate(obj, bean.getPropertyValue(constrainedPropertyName), errors);
+        }
     }
 
 
@@ -269,7 +273,7 @@ public class GrailsDomainClassValidator implements Validator, CascadingValidator
                 return (GrailsDomainClass) grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE, associatedObject.getClass().getName());
             else
                 return persistentProperty.getReferencedDomainClass();
-        }        
+        }
     }
 
     private boolean isOwningInstance(BeanWrapper bean, GrailsDomainClass associatedDomainClass) {

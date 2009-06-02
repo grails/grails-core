@@ -66,6 +66,15 @@ public class ValidatePersistentMethod extends AbstractDynamicPersistentMethod {
 
         Errors originalErrors = (Errors) mc.getProperty(target, ERRORS_PROPERTY);
         Errors errors = new BeanPropertyBindingResult(target, target.getClass().getName());
+
+        List originalFieldErrors = originalErrors.getFieldErrors();
+        for(Object o : originalFieldErrors) {
+            FieldError fe = (FieldError) o;
+            if(fe.isBindingFailure()) {
+                errors.rejectValue(fe.getField(), fe.getCode(), fe.getArguments(), fe.getDefaultMessage());
+            }
+        }
+
         mc.setProperty(target, ERRORS_PROPERTY, errors);
 
         GrailsDomainClass domainClass = (GrailsDomainClass) application.getArtefact(DomainClassArtefactHandler.TYPE,
@@ -104,14 +113,6 @@ public class ValidatePersistentMethod extends AbstractDynamicPersistentMethod {
                 validator.validate(target,errors);
             }
 
-            List originalFieldErrors = originalErrors.getFieldErrors();
-            Errors n = new BeanPropertyBindingResult(target, target.getClass().getName());
-            for(Object o : originalFieldErrors) {
-                FieldError fe = (FieldError) o;
-                if(fe.isBindingFailure()) {
-                    errors.rejectValue(fe.getField(), fe.getCode(), fe.getArguments(), fe.getDefaultMessage());
-                }
-            }
             int oldErrorCount = errors.getErrorCount();
             errors = filterErrors(errors, validatedFields, target);
 
