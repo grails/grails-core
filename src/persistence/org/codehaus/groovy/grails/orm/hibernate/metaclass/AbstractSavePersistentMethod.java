@@ -25,14 +25,11 @@ import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.beans.InvalidPropertyException;
 import org.springframework.orm.hibernate3.HibernateTemplate;
-import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
-import org.springframework.validation.FieldError;
 
 import java.io.Serializable;
 import java.util.Map;
-import java.util.List;
 import java.util.regex.Pattern;
 
 /**
@@ -50,7 +47,6 @@ public abstract class AbstractSavePersistentMethod extends
     private static final String ARGUMENT_DEEP_VALIDATE = "deepValidate";
     private static final String ARGUMENT_FLUSH = "flush";
     private static final String ARGUMENT_INSERT = "insert";
-    private static final String ERRORS_PROPERTY = "errors";
 
     public AbstractSavePersistentMethod(Pattern pattern, SessionFactory sessionFactory, ClassLoader classLoader, GrailsApplication application) {
 		super(pattern, sessionFactory, classLoader);
@@ -69,20 +65,7 @@ public abstract class AbstractSavePersistentMethod extends
 
         if(shouldValidate(arguments, domainClass)) {
         	Validator validator = domainClass.getValidator();
-            MetaClass mc = GroovySystem.getMetaClassRegistry().getMetaClass(target.getClass());
-
-            Errors errors = new BeanPropertyBindingResult(target, target.getClass().getName());
-
-            Errors originalErrors = (Errors) mc.getProperty(target, ERRORS_PROPERTY);
-            List originalFieldErrors = originalErrors.getFieldErrors();
-            for(Object o : originalFieldErrors) {
-                FieldError fe = (FieldError) o;
-                if(fe.isBindingFailure()) {
-                    errors.rejectValue(fe.getField(), fe.getCode(), fe.getArguments(), fe.getDefaultMessage());
-                }
-            }
-
-            mc.setProperty(target, ERRORS_PROPERTY, errors);
+            Errors errors = setupErrorsProperty(target);
 
             if(validator != null) {
                 boolean deepValidate = true;

@@ -44,7 +44,6 @@ public class ValidatePersistentMethod extends AbstractDynamicPersistentMethod {
     private GrailsApplication application;
     private static final String ARGUMENT_DEEP_VALIDATE = "deepValidate";
     private static final String ARGUMENT_EVICT = "evict";
-    private static final String ERRORS_PROPERTY = "errors";
     private Validator validator;
 
 
@@ -64,18 +63,7 @@ public class ValidatePersistentMethod extends AbstractDynamicPersistentMethod {
     protected Object doInvokeInternal(final Object target, Object[] arguments) {
         MetaClass mc = GroovySystem.getMetaClassRegistry().getMetaClass(target.getClass());
 
-        Errors originalErrors = (Errors) mc.getProperty(target, ERRORS_PROPERTY);
-        Errors errors = new BeanPropertyBindingResult(target, target.getClass().getName());
-
-        List originalFieldErrors = originalErrors.getFieldErrors();
-        for(Object o : originalFieldErrors) {
-            FieldError fe = (FieldError) o;
-            if(fe.isBindingFailure()) {
-                errors.rejectValue(fe.getField(), fe.getCode(), fe.getArguments(), fe.getDefaultMessage());
-            }
-        }
-
-        mc.setProperty(target, ERRORS_PROPERTY, errors);
+        Errors errors = setupErrorsProperty(target);
 
         GrailsDomainClass domainClass = (GrailsDomainClass) application.getArtefact(DomainClassArtefactHandler.TYPE,
             target.getClass().getName() );
