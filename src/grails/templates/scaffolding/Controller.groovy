@@ -88,7 +88,7 @@
 
     def save = {
         def ${propertyName} = new ${className}(params)
-        if(!${propertyName}.hasErrors() && ${propertyName}.save()) {
+        if(${propertyName}.save()) {
             flash.message = "${className} \${${propertyName}.id} created"
             redirect(action:show,id:${propertyName}.id)
         }
