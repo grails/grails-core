@@ -514,20 +514,34 @@ public class RegexUrlMapping extends AbstractUrlMapping implements UrlMapping {
 
         UrlMapping other = (UrlMapping) o;
 
-        // more static tokens
         final int thisStaticTokenCount = getStaticTokenCount(this);
         final int otherStaticTokenCount = getStaticTokenCount(other);
-        // if there are no static tokens at all in the other one this this has priority
-        if(otherStaticTokenCount==0 && thisStaticTokenCount>0) return 1;
-        else if(thisStaticTokenCount==0&&otherStaticTokenCount>0) return -1;
+        final int otherWildcardCount = getWildcardCount(other);
+        final int thisWildcardCount = getWildcardCount(this);
 
-        // less wildcard tokens
-        int wildDiff = getWildcardCount(other) - getWildcardCount(this);
+        int wildDiff = otherWildcardCount - thisWildcardCount;
         if (wildDiff != 0) return wildDiff;
+
+        if(otherStaticTokenCount==0 && thisStaticTokenCount>0) {
+            return 1;
+        }
+        else if(thisStaticTokenCount==0&&otherStaticTokenCount>0) {
+            return -1;
+        }
 
         int staticDiff = thisStaticTokenCount - otherStaticTokenCount;
         if (staticDiff != 0) return staticDiff;
-
+        String[] thisTokens = this.getUrlData().getTokens();
+        String[] otherTokens = other.getUrlData().getTokens();
+        for(int i = 0; i < thisTokens.length; i++) {
+            boolean thisTokenIsWildcard = isWildcard(thisTokens[i]);
+            boolean otherTokenIsWildcard = isWildcard(otherTokens[i]);
+            if(thisTokenIsWildcard && !otherTokenIsWildcard) {
+                return -1;
+            } else if(!thisTokenIsWildcard && otherTokenIsWildcard) {
+                return 1;
+            }
+        }
         return 0;
     }
 
@@ -544,7 +558,7 @@ public class RegexUrlMapping extends AbstractUrlMapping implements UrlMapping {
         String[] tokens = mapping.getUrlData().getTokens();
         int count = 0;
         for (String token : tokens) {
-            if (!isWildcard(token)) count++;
+            if (!isWildcard(token) && !"".equals(token)) count++;
         }
         return count;
     }
