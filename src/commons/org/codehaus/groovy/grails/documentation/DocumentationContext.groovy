@@ -16,6 +16,8 @@
 package org.codehaus.groovy.grails.documentation
 
 import groovy.util.slurpersupport.GPathResult
+import grails.util.GrailsNameUtils
+import org.codehaus.groovy.grails.commons.GrailsClassUtils
 
 /**
  * A Class that gather information about the behavior a plugin adds at runtime.
@@ -26,45 +28,84 @@ import groovy.util.slurpersupport.GPathResult
 
 @Singleton
 public class DocumentationContext {
-    
+
+    String currentDocumentation
     List<DocumentedMethod> methods = []
     List<DocumentedMethod> staticMethods = []
     List<DocumentedProperty> properties = []
     boolean active = false
 
-    DocumentationContext documentMethod(String artefact, Class type, String name, Class[] arguments) {
-        methods << new DocumentedMethod(name:name, arguments:arguments,type:type,artefact:artefact)
+    /**
+     * Stores documentation for the next method or property to be added
+     */
+    DocumentationContext document(String doc) {
+        currentDocumentation = doc
         return this
     }
 
-    DocumentationContext documentStaticMethod(String artefact, Class type, String name, Class[] arguments) {
-        staticMethods << new DocumentedMethod(name:name, arguments:arguments,type:type,artefact:artefact)
+    /**
+     * Documents an instance method
+     */
+    DocumentationContext documentMethod(String artefact, Class type, String name, Class[] arguments) {
+        if(!currentDocumentation) {
+            if(GrailsClassUtils.isGetter(name, arguments)) {
+                currentDocumentation = properties.find { it.name == GrailsClassUtils.getPropertyForGetter(name) }?.text
+            }
+            if(GrailsClassUtils.isSetter(name, arguments)) {
+                currentDocumentation = properties.find { it.name == GrailsClassUtils.getPropertyForSetter(name) }?.text
+            }
+
+
+        }
+        methods << new DocumentedMethod(name:name, arguments:arguments,type:type,artefact:artefact, text:currentDocumentation)
+        currentDocumentation = null
         return this
     }
-    
+
+    /**
+     * Documents a static method
+     */
+    DocumentationContext documentStaticMethod(String artefact, Class type, String name, Class[] arguments) {
+        staticMethods << new DocumentedMethod(name:name, arguments:arguments,type:type,artefact:artefact,text:currentDocumentation)
+        currentDocumentation = null
+        return this
+    }
+
+
+
+    /**
+     * Documents a property
+     */
     DocumentationContext documentProperty(String artefact, Class type, String name) {
-        properties << new DocumentedProperty(artefact:artefact, type:type, name:name)
+
+        if(!currentDocumentation) {
+            def getterOrSetter = methods.find {it.name == GrailsClassUtils.getGetterName(name) || it.name == GrailsClassUtils.getSetterName(name)}
+            if(getterOrSetter && getterOrSetter.text) {
+                currentDocumentation = getterOrSetter.text
+            }
+        }
+        properties << new DocumentedProperty(artefact:artefact, type:type, name:name, text:currentDocumentation)
+        currentDocumentation = null
         return this
     }
 
 }
-class DocumentedMethod {
+protected class DocumentedElement {
     String name
-    Class[] arguments
     Class type
     String artefact
-
+    String text
+}
+class DocumentedMethod extends DocumentedElement{
+    Class[] arguments
     public String toString() {
         return "${type.name}.${name}(${arguments*.name.join(',')})"
     }
 
 
 }
-class DocumentedProperty {
-    String name
+class DocumentedProperty extends DocumentedElement {
     Class type = Object
-    String artefact
-
     public String toString() {
         return "${type.name}.${name}"
     }
