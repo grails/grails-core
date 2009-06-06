@@ -50,6 +50,7 @@ import org.codehaus.groovy.grails.web.metaclass.WithFormMethod
 import org.codehaus.groovy.grails.web.metaclass.ForwardMethod
 import org.springframework.beans.BeanUtils
 import org.codehaus.groovy.grails.plugins.DomainClassPluginSupport
+import org.springframework.validation.BeanPropertyBindingResult
 
 /**
  * A plug-in that handles the configuration of controllers for Grails
@@ -310,6 +311,9 @@ class ControllersGrailsPlugin {
                     commandObjectMetaClass.constraints = constrainedPropertyBuilder.constrainedProperties
                 } else {
                     commandObjectMetaClass.constraints = [:]
+                }
+                commandObjectMetaClass.clearErrors = {->
+                    delegate.setErrors (new BeanPropertyBindingResult(delegate, delegate.getClass().getName()))
                 }
             }
         }
