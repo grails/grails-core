@@ -113,6 +113,15 @@
       </library>
     </orderEntry>
     <orderEntry type="module-library">
+      <library name="Radeox">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/radeox.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
       <library name="Gant">
         <CLASSES>
           <root url="jar://$MODULE_DIR$/lib/gant_groovy1.6-1.6.0.jar!/" />
