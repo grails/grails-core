@@ -1,6 +1,9 @@
 import grails.util.GrailsUtil
 import org.radeox.engine.context.BaseInitialRenderContext
 import grails.doc.DocEngine
+import org.codehaus.groovy.grails.documentation.DocumentationContext
+import org.codehaus.groovy.grails.documentation.DocumentedMethod
+import grails.util.GrailsNameUtils
 
 /*
 * Copyright 2004-2005 the original author or authors.
@@ -94,7 +97,45 @@ target(javadoc:"Produces javadoc documentation") {
 
 target(refdocs:"Generates Grails style reference documentation") {
 
-    if(new File("${basedir}/src/docs").exists()) {
+    def srcDocs = new File("${basedir}/src/docs")
+
+
+
+    def context = DocumentationContext.getInstance()
+    if(context?.hasMetadata()) {
+        for(DocumentedMethod m in context.methods) {
+            if(m.artefact && m.artefact != 'Unknown') {
+                String refDir = "${srcDocs}/ref/${GrailsNameUtils.getNaturalName(m.artefact)}"
+                ant.mkdir(dir:refDir)
+                def refFile = new File("${refDir}/${m.name}.gdoc")
+                if(!refFile.exists()) {
+                    println "Generating documentation ${refFile}"
+                    refFile.write """
+h1. ${m.name}
+
+h2. Purpose
+
+${m.text ?: ''}
+
+h2. Examples
+
+{code:java}
+foo.${m.name}(${m.arguments?.collect {GrailsNameUtils.getPropertyName(it)}.join(',')})
+{code}
+
+h2. Description
+
+${m.text ?: ''}
+
+Arguments:
+
+${m.arguments?.collect { '* @'+GrailsNameUtils.getPropertyName(it)+'@\n' }}
+"""
+                }
+            }
+        }
+    }
+    if(srcDocs.exists()) {
         // unpack documentation resources
         String docResources = "${grailsWorkDir}/doc-resources"
         ant.mkdir(dir:docResources)
@@ -130,7 +171,6 @@ target(refdocs:"Generates Grails style reference documentation") {
         version = grailsAppVersion
         authors = ""
         license = ""
-
         // if this is a plugin obtain additional metadata from the plugin
         readPluginMetadataForDocs()
 
@@ -155,7 +195,7 @@ target(refdocs:"Generates Grails style reference documentation") {
         },
          equals: { false }] as Comparator
 
-        files = new File("${basedir}/src/docs/guide").listFiles()?.findAll { it.name.endsWith(".gdoc") }?.sort(comparator) ?: []
+        files = new File("${srcDocs}/guide").listFiles()?.findAll { it.name.endsWith(".gdoc") }?.sort(comparator) ?: []
         context = new BaseInitialRenderContext()
         context.set(DocEngine.CONTEXT_PATH, "..")
 
@@ -251,7 +291,7 @@ target(refdocs:"Generates Grails style reference documentation") {
         }
 
         menu = new StringBuilder()
-        files = new File("${basedir}/src/docs/ref").listFiles()?.toList()?.sort() ?: []
+        files = new File("${srcDocs}/ref").listFiles()?.toList()?.sort() ?: []
         reference = [:]
         new File("${docResources}/style/referenceItem.html").withReader {reader ->
             template = templateEngine.createTemplate(reader)
@@ -317,7 +357,8 @@ void writeChapter(String title, StringBuffer content) {
 
 
 def readPluginMetadataForDocs() {
-    if (binding.variables.containsKey("basePlugin")) {
+    def basePlugin = loadBasePlugin()
+    if (basePlugin) {
         if (basePlugin.hasProperty("title"))
             title = basePlugin.title
         if (basePlugin.hasProperty("description"))
@@ -329,4 +370,8 @@ def readPluginMetadataForDocs() {
         if (basePlugin.hasProperty("author"))
             authors = basePlugin.author
     }
+}
+
+private def loadBasePlugin() {
+		pluginManager?.allPlugins?.find { it.basePlugin }
 }

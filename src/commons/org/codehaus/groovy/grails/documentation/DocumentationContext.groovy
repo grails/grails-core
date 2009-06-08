@@ -38,6 +38,10 @@ public class DocumentationContext {
     List<DocumentedProperty> properties = []
     private boolean active = false
 
+    boolean hasMetadata() {
+        !methods?.isEmpty() || !staticMethods?.isEmpty() || !properties?.isEmpty()
+    }
+
     boolean isActive() {
         this.active
     }
