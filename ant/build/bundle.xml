@@ -66,6 +66,7 @@
             <fileset dir="${grails.build}">
                 <include name="META-INF/**" />
                 <include name="grails/doc/**" />
+                <include name="**/groovy/grails/documentation/**" />
             </fileset>
         </jar>
 

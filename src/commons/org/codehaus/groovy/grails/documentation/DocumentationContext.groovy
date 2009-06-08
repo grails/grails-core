@@ -15,8 +15,6 @@
 
 package org.codehaus.groovy.grails.documentation
 
-import groovy.util.slurpersupport.GPathResult
-import grails.util.GrailsNameUtils
 import org.codehaus.groovy.grails.commons.GrailsClassUtils
 
 /**
@@ -26,14 +24,29 @@ import org.codehaus.groovy.grails.commons.GrailsClassUtils
  * @since 1.2
  */
 
-@Singleton
 public class DocumentationContext {
 
+    private static DocumentationContextThreadLocal threadLocalDocumentContext = new DocumentationContextThreadLocal()
+    public static DocumentationContext getInstance() {        
+        threadLocalDocumentContext.get() 
+    }
+
+    String artefactType = "Unknown"
     String currentDocumentation
     List<DocumentedMethod> methods = []
     List<DocumentedMethod> staticMethods = []
     List<DocumentedProperty> properties = []
-    boolean active = false
+    private boolean active = false
+
+    boolean isActive() {
+        this.active
+    }
+    void setActive(boolean b) { this.active = b }
+
+    void reset() {
+        active = false
+        artefactType = "Unknown"
+    }
 
     /**
      * Stores documentation for the next method or property to be added
@@ -90,7 +103,14 @@ public class DocumentationContext {
     }
 
 }
-protected class DocumentedElement {
+class DocumentationContextThreadLocal extends InheritableThreadLocal{
+
+    protected Object initialValue() {
+        return new DocumentationContext()
+    }
+
+}
+class DocumentedElement {
     String name
     Class type
     String artefact

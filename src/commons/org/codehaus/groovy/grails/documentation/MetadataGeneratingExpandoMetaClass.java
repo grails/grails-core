@@ -12,12 +12,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.documentation
+package org.codehaus.groovy.grails.documentation;
 
-import org.springframework.core.io.Resource
-import groovy.util.slurpersupport.GPathResult
-import groovy.xml.StreamingMarkupBuilder
-import groovy.util.slurpersupport.Node
+import groovy.lang.Closure;
+import groovy.lang.ExpandoMetaClass;
+import groovy.lang.MetaBeanProperty;
+import groovy.lang.MetaMethod;
 
 /**
  * A specialized version of ExpandoMetaClass that is capable of generating metadata about the dynamic methods and properties
@@ -29,34 +29,30 @@ import groovy.util.slurpersupport.Node
  * @since 1.2
  */
 
-public class MetadataGeneratingExpandoMetaClass extends ExpandoMetaClass{
-
-    private String artefactType
+public class MetadataGeneratingExpandoMetaClass extends ExpandoMetaClass {
 
 
-    public MetadataGeneratingExpandoMetaClass(Class theClass, String artefactType) {
-        super(theClass,true, true)
-        this.artefactType = artefactType
-
+    public MetadataGeneratingExpandoMetaClass(Class theClass) {
+        super(theClass,true, true);
     }
 
 
     public void addMetaBeanProperty(MetaBeanProperty mp) {
-        super.addMetaBeanProperty(mp)
+        super.addMetaBeanProperty(mp);
 
-        DocumentationContext context = DocumentationContext.instance
+        DocumentationContext context = DocumentationContext.getInstance();
 
-        if(context.active) {
-            context.documentProperty(artefactType,javaClass, mp.name)
+        if(context.isActive() && isInitialized()) {
+            context.documentProperty(context.getArtefactType(),getJavaClass(), mp.getName());
         }
 
     }
 
     protected void registerStaticMethod(String name, Closure callable) {
         super.registerStaticMethod(name, callable);
-        DocumentationContext context = DocumentationContext.instance
-        if(context.active) {
-               context.documentStaticMethod(artefactType,javaClass, name, callable.parameterTypes)
+        DocumentationContext context = DocumentationContext.getInstance();
+        if(context.isActive() && isInitialized()) {
+               context.documentStaticMethod(context.getArtefactType(),getJavaClass(), name, callable.getParameterTypes());
         }
 
     }
@@ -65,13 +61,13 @@ public class MetadataGeneratingExpandoMetaClass extends ExpandoMetaClass{
 
     public void registerInstanceMethod(MetaMethod method) {
         super.registerInstanceMethod(method);
-        DocumentationContext context = DocumentationContext.instance
-        if(context.active) {
+        DocumentationContext context = DocumentationContext.getInstance();
+        if(context.isActive() && isInitialized()) {
             if(method.isStatic()) {
-               context.documentStaticMethod(artefactType,javaClass, method.name, method.nativeParameterTypes)
+               context.documentStaticMethod(context.getArtefactType(),getJavaClass(), method.getName(), method.getNativeParameterTypes());
             }
             else {
-               context.documentMethod(artefactType,javaClass, method.name, method.nativeParameterTypes)
+               context.documentMethod(context.getArtefactType(),getJavaClass(), method.getName(), method.getNativeParameterTypes());
             }
         }
 

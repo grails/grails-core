@@ -10,12 +10,13 @@ import groovy.xml.StreamingMarkupBuilder
 public class MetadataGeneratingExpandoMetaClassTests extends GroovyTestCase {
 
     void testGeneratedMetadata() {
-        def emc = new MetadataGeneratingExpandoMetaClass(TestController, ControllerArtefactHandler.TYPE )
+        def emc = new MetadataGeneratingExpandoMetaClass(TestController)
         emc.initialize()
 
 
         DocumentationContext context = DocumentationContext.instance
         context.active=true
+        context.artefactType="Controller"
 
 
         context.document "A test instance method"
@@ -25,7 +26,7 @@ public class MetadataGeneratingExpandoMetaClassTests extends GroovyTestCase {
             context.document "A test property"
             getSomeProp = {-> "one" }
 
-            anotherMethod = { Integer i -> }
+            anotherMethod { Integer i -> }
 
 
 
@@ -82,6 +83,7 @@ public class MetadataGeneratingExpandoMetaClassTests extends GroovyTestCase {
 
 
     }
+
 
 }
 class TestController {}
