@@ -29,6 +29,11 @@ name myNamedMapping: '/people/list' {
   controller = 'person'
   action = 'list'
 }
+
+name myOtherNamedMapping: "/showPeople/$lastName" {
+  controller = 'person'
+  action = 'byLastName'
+}
 }}'''
 
         gcl.parseClass '''
@@ -64,6 +69,10 @@ class ProductController {
         def template6 = '<g:link mapping="myNamedMapping">List People</g:link>'
 
         assertOutputEquals '<a href="/people/list">List People</a>', template6, [:]
+
+        def template7 = '<g:link mapping="myOtherNamedMapping" params="[lastName:\'Keenan\']">List People</g:link>'
+
+        assertOutputEquals '<a href="/showPeople/Keenan">List People</a>', template7, [:]
     }
 
 }
