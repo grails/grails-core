@@ -194,9 +194,13 @@ public abstract class GroovyPage extends Script {
             }};
         } else if(tagNamespace.equals(LINK_NAMESPACE)) {
             final String tmpTagName = tagName;
+            final Map tmpAttrs = attrs;
             tagName = "link";
             tagNamespace = DEFAULT_NAMESPACE;
             attrs = new HashMap() {{
+                if(tmpAttrs.size() > 0) {
+                    put("params", tmpAttrs);
+                }
                 put("mapping", tmpTagName);
             }};
         }

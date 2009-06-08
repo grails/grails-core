@@ -17,7 +17,12 @@ class TestUrlMappings {
 	      controller = "product"
 	      action = "list"
       }
-	}
+
+      name productDetail: "/showProduct/$productName" {
+          controller = "product"
+          action = "show"
+      }
+    }
 }
         ''')
 
@@ -27,6 +32,11 @@ class TestUrlMappings {
     void testNoParameters() {
         def template = '<link:productListing>Product Listing</link:productListing>'
         assertOutputEquals '<a href="/products/list">Product Listing</a>', template 
+    }
+
+    void testAttributesForParameters() {
+        def template = '<link:productDetail productName="Scotch">Scotch Details</link:productDetail>'
+        assertOutputEquals '<a href="/showProduct/Scotch">Scotch Details</a>', template 
     }
 
 }
