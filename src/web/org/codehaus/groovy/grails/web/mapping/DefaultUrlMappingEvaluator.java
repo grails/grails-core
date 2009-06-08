@@ -267,6 +267,12 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
             this.viewName = viewName;
         }
 
+        public void name(Map<String, UrlMapping> m) {
+            for(Map.Entry<String, UrlMapping> entry: m.entrySet()) {
+                entry.getValue().setMappingName(entry.getKey());
+            }
+        }
+
         public Object invokeMethod(String methodName, Object arg) {
             if (binding == null) {
                 return invokeMethodClosure(methodName, arg);

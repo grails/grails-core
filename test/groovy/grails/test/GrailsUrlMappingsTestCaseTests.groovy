@@ -431,4 +431,10 @@ class MockUrlMapping implements UrlMapping {
         // do nothing
     }
 
+    public String getMappingName() {
+        return null;
+    }
+
+    public void setMappingName(String name) {
+    }
 }
