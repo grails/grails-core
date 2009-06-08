@@ -1,0 +1,53 @@
+<!-- 
+This file is referenced from cruisecontrol's config.xml and contains the project definition.
+
+Available entities are:
+basedir
+hostname
+defaultmailhost
+-->
+
+
+<project name="Grails" buildafterfailed="false">
+		<modificationset quietperiod="120">
+			<svn localworkingcopy="&basedir;/grails/cruisecontrol/checkout"/>
+		</modificationset>
+		<schedule>
+			<!-- buildfile is relative to checkout dir -->
+			<ant
+				buildfile="&basedir;/grails/cruisecontrol/checkout/cruise/build.xml"
+				antWorkingDir="&basedir;/grails/cruisecontrol/checkout"
+				usedebug="false"
+				uselogger="true"
+				>
+                            <property name="reporting-app-dir" value="&basedir;/grails/&hostname;/grails/"/>
+                        </ant>
+		</schedule>
+		<listeners>
+                    <currentbuildstatuslistener file="&basedir;/grails/cruisecontrol/logs/status.txt"/>
+                </listeners>
+                <log dir="&basedir;/grails/cruisecontrol/logs">
+			<merge dir="&basedir;/grails/cruisecontrol/checkout/target/test-reports/"/>
+		</log>
+		<publishers>
+			<!-- htmlemail is used only for explicit subscribers -->
+			<htmlemail
+				buildresultsurl="http://&hostname;/grails/"
+				mailhost="&defaultmailhost;"
+				returnaddress="build-support@canoo.com"
+				spamwhilebroken="false"
+				skipusers="true"
+				logdir="&basedir;/grails/cruisecontrol/logs"
+				xslfile="&basedir;/grails/cruisecontrol/checkout/cruise/grailsCCHtmlMail.xsl"
+				>
+				<!--propertiesmapper file="&basedir;/grails/cruisecontrol/checkout/cruise/emailmap.properties"/-->
+				<always address="scm@grails.codehaus.org"/>
+				<always address="build-support@canoo.com"/>
+			</htmlemail>
+			<XSLTLogPublisher
+				directory="&basedir;/grails/&hostname;/grails/"
+				outfilename="buildstatus.rss"
+				xsltfile="&basedir;/grails/cruisecontrol/checkout/cruise/buildstatus.xsl"
+				/>
+		</publishers>
+</project>
