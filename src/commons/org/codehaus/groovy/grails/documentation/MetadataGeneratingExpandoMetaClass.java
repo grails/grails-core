@@ -42,7 +42,7 @@ public class MetadataGeneratingExpandoMetaClass extends ExpandoMetaClass {
 
         DocumentationContext context = DocumentationContext.getInstance();
 
-        if(context.isActive() && isInitialized()) {
+        if(context.isActive() && getExpandoProperties().contains(mp)) {
             context.documentProperty(context.getArtefactType(),getJavaClass(), mp.getName());
         }
 
