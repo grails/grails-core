@@ -14,7 +14,6 @@
 	<taskdef resource="tasks.properties">
 		<classpath>
 			<pathelement path="${grails.build}" />
-			<fileset dir="cruise/coverage/lib" includes="*.jar" />
 		</classpath>
 		<classpath refid="classpath" />
 	</taskdef>
