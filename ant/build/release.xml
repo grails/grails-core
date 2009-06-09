@@ -164,7 +164,7 @@
         </antcall>
 
         <mkdir dir="${grails.release.dir}/plugins" />
-        <get src="http://svn.codehaus.org/grails/trunk/grails-plugins/grails-hibernate/tags/LATEST_RELEASE/grails-hibernate-${grails.version}.zip"
+        <get src="http://svn.codehaus.org/grails/trunk/grails-plugins/grails-hibernate/trunk/grails-hibernate-${grails.version}.zip"
              dest="${grails.release.dir}/plugins/grails-hibernate-${grails.version}.zip"
              verbose="true"
              usetimestamp="true" />
