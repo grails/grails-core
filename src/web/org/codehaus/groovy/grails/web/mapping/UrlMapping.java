@@ -107,4 +107,8 @@ public interface UrlMapping extends Comparable, UrlCreator {
      * @param shouldParse True if it should
      */
     void setParseRequest(boolean shouldParse);
+
+    String getMappingName();
+
+    void setMappingName(String name);
 }

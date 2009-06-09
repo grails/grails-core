@@ -24,6 +24,16 @@ static mappings = {
     controller = "controller_name"
     action = "action_name"
 }
+
+name myNamedMapping: '/people/list' {
+  controller = 'person'
+  action = 'list'
+}
+
+name myOtherNamedMapping: "/showPeople/$lastName" {
+  controller = 'person'
+  action = 'byLastName'
+}
 }}'''
 
         gcl.parseClass '''
@@ -55,6 +65,14 @@ class ProductController {
         def template5 = '<g:link controller="controller_name" action="action_name" params="[mslug:mslug,nslug:nslug,oslug:oslug]">New Product</g:link>'
 
         assertOutputEquals '<a href="/controller_name/acme/action_name/Coyote/RoadRunner">New Product</a>', template5, [mslug:"acme",nslug:"Coyote",oslug:"RoadRunner"]
+
+        def template6 = '<g:link mapping="myNamedMapping">List People</g:link>'
+
+        assertOutputEquals '<a href="/people/list">List People</a>', template6, [:]
+
+        def template7 = '<g:link mapping="myOtherNamedMapping" params="[lastName:\'Keenan\']">List People</g:link>'
+
+        assertOutputEquals '<a href="/showPeople/Keenan">List People</a>', template7, [:]
     }
 
 }

@@ -44,6 +44,9 @@ import org.tmatesoft.svn.core.auth.*
 import org.tmatesoft.svn.core.wc.*
 import org.tmatesoft.svn.core.wc.SVNWCUtil
 import org.tmatesoft.svn.core.SVNAuthenticationException
+import org.codehaus.groovy.grails.documentation.DocumentationContext
+import org.codehaus.groovy.grails.documentation.DocumentedMethod
+import org.codehaus.groovy.grails.documentation.DocumentedProperty
 
 
 /**
@@ -393,6 +396,35 @@ generatePluginXml = { File descriptor ->
             if(plugin.metaClass.hasProperty(plugin,'dependsOn')) {
                 for(d in plugin.dependsOn) {
                     delegate.plugin(name:d.key, version:d.value)
+                }
+            }
+        }
+
+        def docContext = DocumentationContext.instance
+        behavior {
+            for(DocumentedMethod m in docContext.methods) {
+                method(name:m.name, artefact:m.artefact, type:m.type?.name) {
+                    description m.text
+                    if(m.arguments) {
+                        for(arg in m.arguments) {
+                            argument type:arg.name
+                        }
+                    }
+                }
+            }
+            for(DocumentedMethod m in docContext.staticMethods) {
+                'static-method'(name:m.name, artefact:m.artefact, type:m.type?.name) {
+                    description m.text
+                    if(m.arguments) {
+                        for(arg in m.arguments) {
+                            argument type:arg.name
+                        }
+                    }
+                }
+            }
+            for(DocumentedProperty p in docContext.properties) {
+                property(name:p.name, type:p?.type?.name, artefact:p.artefact) {
+                    description p.text
                 }
             }
         }

@@ -36,6 +36,7 @@ import org.codehaus.groovy.grails.compiler.support.GrailsResourceLoaderHolder;
 import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException;
 import org.codehaus.groovy.grails.plugins.exceptions.PluginException;
 import org.codehaus.groovy.grails.support.ParentApplicationContextAware;
+import org.codehaus.groovy.grails.documentation.DocumentationContext;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.context.ApplicationContext;
@@ -468,11 +469,22 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
     }
 
     public void doWithApplicationContext(ApplicationContext applicationContext) {
-        if(this.pluginBean.isReadableProperty(DO_WITH_APPLICATION_CONTEXT)) {
-            Closure c = (Closure)this.plugin.getProperty(DO_WITH_APPLICATION_CONTEXT);
-            c.setDelegate(this);
-            c.call(new Object[]{applicationContext});
+        try {
+
+            if(this.pluginBean.isReadableProperty(DO_WITH_APPLICATION_CONTEXT)) {
+                Closure c = (Closure)this.plugin.getProperty(DO_WITH_APPLICATION_CONTEXT);
+                if(isBasePlugin()) {
+                    DocumentationContext.getInstance().setActive(true);
+                }
+
+                c.setDelegate(this);
+                c.call(new Object[]{applicationContext});
+            }
         }
+        finally {
+            DocumentationContext.getInstance().reset();
+        }
+
     }
 
     public void doWithRuntimeConfiguration(
@@ -533,6 +545,11 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
     public String getVersion() {
         return this.version;
     }
+
+    public void doc(String text) {
+        DocumentationContext.getInstance().document(text);
+    }
+
     public String[] getDependencyNames() {
         return this.dependencyNames;
     }
@@ -871,10 +888,21 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
     }
 
     public void doWithDynamicMethods(ApplicationContext applicationContext) {
-        if(this.pluginBean.isReadableProperty(DO_WITH_DYNAMIC_METHODS)) {
-            Closure c = (Closure)this.plugin.getProperty(DO_WITH_DYNAMIC_METHODS);
-            c.setDelegate(this);
-            c.call(new Object[]{applicationContext});
+
+        try {
+
+            if(this.pluginBean.isReadableProperty(DO_WITH_DYNAMIC_METHODS)) {
+                Closure c = (Closure)this.plugin.getProperty(DO_WITH_DYNAMIC_METHODS);
+                if(isBasePlugin()) {
+                    DocumentationContext.getInstance().setActive(true);
+                }
+
+                c.setDelegate(this);
+                c.call(new Object[]{applicationContext});
+            }
+        }
+        finally {
+            DocumentationContext.getInstance().reset();
         }
     }
 

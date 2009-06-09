@@ -60,6 +60,7 @@ public abstract class GroovyPage extends Script {
     public static final String EXTENSION = ".gsp";
     public static final String WEB_REQUEST = "webRequest";
     public static final String DEFAULT_NAMESPACE = "g";
+    public static final String LINK_NAMESPACE = "link";
     public static final String TEMPLATE_NAMESPACE = "tmpl";
     public static final String PAGE_SCOPE = "pageScope";
     public static final String CONTROLLER_NAME = "controllerName";
@@ -181,6 +182,7 @@ public abstract class GroovyPage extends Script {
     }
 
     public void invokeTag(String tagName, String tagNamespace, int lineNumber, Map attrs, Closure body) {
+        // TODO custom namespace stuff needs to be generalized and pluggable
         if(tagNamespace.equals(TEMPLATE_NAMESPACE)) {
             final String tmpTagName = tagName;
             final Map tmpAttrs = attrs;
@@ -189,6 +191,17 @@ public abstract class GroovyPage extends Script {
             attrs = new HashMap() {{
                 put("model", tmpAttrs);
                 put("template", tmpTagName);
+            }};
+        } else if(tagNamespace.equals(LINK_NAMESPACE)) {
+            final String tmpTagName = tagName;
+            final Map tmpAttrs = attrs;
+            tagName = "link";
+            tagNamespace = DEFAULT_NAMESPACE;
+            attrs = new HashMap() {{
+                if(tmpAttrs.size() > 0) {
+                    put("params", tmpAttrs);
+                }
+                put("mapping", tmpTagName);
             }};
         }
 

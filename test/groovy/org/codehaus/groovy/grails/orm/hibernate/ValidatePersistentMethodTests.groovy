@@ -116,8 +116,31 @@ class ValidatePersistentMethodTests extends AbstractGrailsHibernateTests {
         assertTrue 'Profile should have errors', profile.hasErrors()
     }
 
+    void testValidationAfterBindingErrors() {
+        def teamClass = ga.getDomainClass('Team')
+        def team = teamClass.newInstance()
+        team.properties = [homePage: 'invalidurl']
+        assertFalse 'validation should have failed', team.validate()
+        assertEquals 'wrong number of errors found', 2, team.errors.errorCount
+        assertEquals 'wrong number of homePage errors found', 1, team.errors.getFieldErrors('homePage')?.size()
+        def homePageError = team.errors.getFieldError('homePage')
+        assertTrue 'did not find typeMismatch error', 'typeMismatch' in homePageError.codes
+
+        team.homePage = new URL('http://grails.org')
+        assertFalse 'validation should have failed', team.validate()
+        assertEquals 'wrong number of errors found', 1, team.errors.errorCount
+        assertEquals 'wrong number of homePage errors found', 0, team.errors.getFieldErrors('homePage')?.size()
+    }
+
     void onSetUp() {
 		this.gcl.parseClass('''
+class Team {
+    Long id
+    Long version
+    String name
+    URL homePage
+}
+
 class Person {
     Long id
     Long version
@@ -178,8 +201,8 @@ class Address {
 '''
 		)
 	}
-	
+
 	void onTearDown() {
-		
+
 	}
 }

@@ -209,7 +209,7 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean {
             def id = urlAttrs.remove("id")
             def frag = urlAttrs.remove('fragment')
             def params = urlAttrs.params && urlAttrs.params instanceof Map ? urlAttrs.remove('params') : [:]
-
+            params.mappingName = urlAttrs.remove('mapping')
 			if(request['flowExecutionKey']) {
 				params."execution" = request['flowExecutionKey']
 			}

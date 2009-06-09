@@ -34,10 +34,10 @@
       <excludeFolder url="file://$MODULE_DIR$/target" />
       <excludeFolder url="file://$MODULE_DIR$/tmp" />
     </content>
-    <orderEntry type="library" name="groovy-1.6" level="application" />
     <orderEntry type="library" name="groovy-1.6.0" level="application" />
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" name="groovy-1.6.3" level="application" />
     <orderEntry type="library" exported="" name="Apache Commons" level="project" />
     <orderEntry type="library" exported="" name="dom4j" level="project" />
     <orderEntry type="library" exported="" name="Spring" level="project" />
@@ -107,6 +107,15 @@
       <library name="SVNKit">
         <CLASSES>
           <root url="jar://$MODULE_DIR$/lib/svnkit-1.2.0.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="Radeox">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/radeox.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
