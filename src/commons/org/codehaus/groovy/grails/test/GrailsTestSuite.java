@@ -25,6 +25,7 @@ import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.commons.spring.GrailsWebApplicationContext;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
+import org.codehaus.groovy.grails.web.context.ServletContextHolder;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -81,6 +82,7 @@ public class GrailsTestSuite extends TestSuite {
 
         try {
             GrailsWebRequest webRequest = GrailsWebUtil.bindMockWebRequest(applicationContext);
+            ServletContextHolder.setServletContext(webRequest.getServletContext());
             webRequest.getServletContext().setAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT, applicationContext);
 
             if (isTransactional(test)) {
@@ -106,6 +108,7 @@ public class GrailsTestSuite extends TestSuite {
         }
         finally {
             RequestContextHolder.setRequestAttributes(null);
+            ServletContextHolder.setServletContext(null);
         }
 	}
 
