@@ -21,10 +21,15 @@ import javax.servlet.jsp.tagext.SimpleTag
 import org.springframework.beans.BeanWrapperImpl
 import javax.servlet.jsp.tagext.BodyTag
 import javax.servlet.jsp.tagext.Tag
+import javax.servlet.jsp.tagext.TagAdapter
 import javax.servlet.jsp.tagext.IterationTag
 import javax.servlet.jsp.tagext.BodyContent
 import org.apache.commons.logging.LogFactory
 import javax.servlet.jsp.tagext.TryCatchFinally
+import javax.servlet.jsp.tagext.JspFragment
+import javax.servlet.jsp.JspContext
+import javax.servlet.jsp.JspWriter
+import org.codehaus.groovy.grails.web.pages.FastStringWriter
 
 /**
  * @author Graeme Rocher
@@ -67,8 +72,14 @@ class JspTagImpl implements JspTag {
 
         
         def parentTag = pageContext.peekTopTag(javax.servlet.jsp.tagext.JspTag.class)
+        if (parentTag) {
+            if(tag instanceof Tag && parentTag instanceof SimpleTag) {
+                tag.parent = new TagAdapter(parentTag)
+            } else {
+                tag.parent = parentTag
+            }
+        }
 
-        if (parentTag) tag.parent = parentTag
         def tagBean = new BeanWrapperImpl(tag)
 
         for (entry in attributes) {
@@ -108,7 +119,7 @@ class JspTagImpl implements JspTag {
                     }
                     state = tag.doEndTag()
                     if(state == Tag.SKIP_PAGE) {
-                        LOG.warn "Tag ${tag.getClass().getName()} returned SKIP_BODY which is not supported in GSP"
+                        LOG.warn "Tag ${tag.getClass().getName()} returned SKIP_PAGE which is not supported in GSP"
                     }
                 }
                 catch(Throwable t) {
@@ -146,18 +157,20 @@ class JspTagImpl implements JspTag {
             if (body) {
                 pageContext.pushTopTag tag
                 try {
+                    FastStringWriter buffer = new FastStringWriter()
+                    JspWriter bufferedOut = new JspWriterDelegate(buffer)
+                    pageContext.pushWriter bufferedOut
                     if(body) {
-                        pageContext.out << body()
+                        bufferedOut << body.call()
+                        tag.setJspBody(new JspFragmentImpl(pageContext, buffer))
                     }
                 }
                 finally {
+                    pageContext.popWriter()
                     pageContext.popTopTag()
                 }
             }
-            else {
-                tag.doTag()
-            }
-
+            tag.doTag()
         }
     }
 
@@ -175,4 +188,25 @@ class JspTagImpl implements JspTag {
     public boolean isTryCatchFinallyTag() {
         return tryCatchFinally
     }
+
+}
+
+class JspFragmentImpl extends JspFragment {
+
+    GroovyPagesPageContext pageContext
+    FastStringWriter body
+    
+    public JspFragmentImpl(GroovyPagesPageContext pageContext, FastStringWriter body) {
+        this.pageContext = pageContext
+        this.body = body
+    }
+    
+    public JspContext getJspContext() {
+        return pageContext
+    }
+    
+    public void invoke(Writer out) {
+        out << body.toString()
+    }
+
 }
