@@ -16,39 +16,21 @@
 package org.codehaus.groovy.grails.web.pages;
 
 import grails.util.Environment;
-
-import java.io.BufferedOutputStream;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStreamWriter;
-import java.io.UnsupportedEncodingException;
-import java.io.Writer;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.commons.ApplicationHolder;
-import org.codehaus.groovy.grails.commons.CodecArtefactHandler;
-import org.codehaus.groovy.grails.commons.ConfigurationHolder;
-import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.GrailsClass;
+import org.codehaus.groovy.grails.commons.*;
 import org.codehaus.groovy.grails.web.taglib.GrailsTagRegistry;
 import org.codehaus.groovy.grails.web.taglib.GroovySyntaxTag;
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
 import org.codehaus.groovy.grails.web.util.StreamByteBuffer;
 import org.codehaus.groovy.grails.web.util.StreamCharBuffer;
+
+import java.io.*;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * NOTE: Based on work done by the GSP standalone project
@@ -463,13 +445,13 @@ public class GroovyPageParser implements Tokens {
 	 * @return An expression text
 	 */
 	public String getExpressionText(String text) {
-		if (!precompileMode
+        boolean safeDereference = false;
+        if (text.endsWith("?")) {
+            text = text.substring(0, text.length() - 1);
+            safeDereference = true;
+        }
+        if (!precompileMode
 				&& (environment == Environment.DEVELOPMENT || environment == Environment.TEST)) {
-			boolean safeDereference = false;
-			if (text.endsWith("?")) {
-				text = text.substring(0, text.length() - 1);
-				safeDereference = true;
-			}
 			String escaped = escapeGroovy(text);
 			text = "evaluate('" + escaped + "', "
 					+ getCurrentOutputLineNumber() + ", it) { return " + text
@@ -477,7 +459,8 @@ public class GroovyPageParser implements Tokens {
 		} else {
 			// add extra parenthesis, see http://jira.codehaus.org/browse/GRAILS-4351 
 			// or GroovyPagesTemplateEngineTests.testForEachInProductionMode
-			text = "(" + text + ")";
+
+			text = "(" + text + ")"+ (safeDereference ? "?" : "");
 		}
 		return text;
 	}
