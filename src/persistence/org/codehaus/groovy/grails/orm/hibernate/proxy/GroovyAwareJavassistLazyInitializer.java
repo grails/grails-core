@@ -46,6 +46,7 @@ public class GroovyAwareJavassistLazyInitializer extends BasicLazyInitializer im
     private static final Set GROOVY_METHODS = new HashSet() {{
         add("invokeMethod");
         add("getMetaClass");
+        add("metaClass");
         add("getProperty");
         add("setProperty");
 
@@ -150,6 +151,7 @@ public class GroovyAwareJavassistLazyInitializer extends BasicLazyInitializer im
 		}
 		( ( ProxyObject ) proxy ).setHandler( instance );
 		instance.constructed = true;
+        HibernatePluginSupport.initializeDomain(persistentClass);
         HibernatePluginSupport.enhanceProxy(proxy);
 		return proxy;
 	}

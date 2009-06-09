@@ -31,6 +31,31 @@ class LazyLoadedUser {
 '''
     }
 
+    void testDynamicMethodOnProxiedObject() {
+        def userClass = ga.getDomainClass("LazyLoadedUser").clazz
+        def identifierClass = ga.getDomainClass("LazyLoadedUserIdentifier").clazz
+
+        def user = userClass.newInstance(name:"Fred")
+
+        assert user.save(flush:true)
+
+        def id = identifierClass.newInstance(user:user)
+        assert id.save(flush:true)
+
+        session.clear()
+
+
+        id = identifierClass.get(1)
+
+        def proxy = PropertyUtils.getProperty(id, "user")
+        assertTrue "should be a hibernate proxy", (proxy instanceof HibernateProxy)
+        assertFalse "proxy should not be initialized", Hibernate.isInitialized(proxy)
+
+        assertNotNull "calling save() on the proxy should have worked",proxy.save()
+        
+
+
+    }
     void testMethodCallsOnProxiedObjects() {
 
         def userClass = ga.getDomainClass("LazyLoadedUser").clazz
