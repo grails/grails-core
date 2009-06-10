@@ -169,7 +169,7 @@ target(compilegsp : "Compile GSP files") {
 	// compile gsps in web-app directory
     ant.gspc( destdir:classesDir,
               srcdir:"${basedir}/web-app",
-              packagename:"${grailsAppName}_webapp",
+              packagename:"${GrailsNameUtils.getPropertyNameForLowerCaseHyphenSeparatedName(grailsAppName)}_webapp",
               serverpath:"/",
               classpathref:"grails.compile.classpath",
               tmpdir:gspTmpDir)
