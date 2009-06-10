@@ -76,7 +76,7 @@ target( packageApp : "Implementation of package target") {
 
 	try {
         profile("compile") {
-            compilepackage()
+            compile()
         }
 	}
 	catch(Exception e) {

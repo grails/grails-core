@@ -122,7 +122,7 @@ target(startLogging:"Bootstraps logging") {
 }
 
 target (war: "The implementation target") {
-    depends( parseArguments, configureRunningScript, cleanWarFile, packageApp)
+    depends( parseArguments, configureRunningScript, cleanWarFile, packageApp, compilegsp)
 
     includeJars = argsMap.nojars ? !argsMap.nojars : true
     stagingDir = grailsSettings.projectWarExplodedDir
