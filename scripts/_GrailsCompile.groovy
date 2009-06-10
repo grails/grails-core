@@ -17,6 +17,7 @@
 import org.codehaus.groovy.control.CompilationUnit
 import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
 import org.codehaus.groovy.grails.plugins.PluginInfo
+import grails.util.GrailsNameUtils
 
 /**
  * Gant script that compiles Groovy and Java files in the src tree
@@ -148,139 +149,48 @@ findPluginDescriptor = { File dir ->
 }
 
 
-def compileGSPClassloader = null
-
-def compileGSPRegistry = null
-
 target(compilepackage : "Compile & Compile GSP files") {
 	depends(compile, compilegsp)
 }
 
+ant.taskdef (name: 'gspc', classname : 'org.codehaus.groovy.grails.web.pages.GroovyPageCompilerTask')
+
 target(compilegsp : "Compile GSP files") {
-	compileGSPClassloader=new GroovyClassLoader(classLoader) 
-	compConfig.setTargetDirectory(classesDir)
-	compileGSPRegistry = [:]
-	
 	// compile gsps in grails-app/views directory
-	compileGSPFiles(new File("${basedir}/grails-app/views"), "/WEB-INF/grails-app/views/", grailsAppName)
+    File gspTmpDir = new File(grailsSettings.projectWorkDir, "gspcompile")
+    ant.gspc( destdir:classesDir,
+              srcdir:"${basedir}/grails-app/views",
+              packagename:GrailsNameUtils.getPropertyNameForLowerCaseHyphenSeparatedName(grailsAppName),
+              serverpath:"/WEB-INF/grails-app/views/",
+              classpathref:"grails.compile.classpath",
+              tmpdir:gspTmpDir)
+
 
 	// compile gsps in web-app directory
-	compileGSPFiles(new File("${basedir}/web-app"), "/", grailsAppName + "_webapp")
+    ant.gspc( destdir:classesDir,
+              srcdir:"${basedir}/web-app",
+              packagename:"${grailsAppName}_webapp",
+              serverpath:"/",
+              classpathref:"grails.compile.classpath",
+              tmpdir:gspTmpDir)
 
 	// compile views in plugins
 	loadPlugins()
 	def pluginInfos = GrailsPluginUtils.getSupportedPluginInfos(pluginsHome)
 	if(pluginInfos) {
 		for(PluginInfo info in pluginInfos) {
-			def viewPrefix="/WEB-INF/plugins/${info.name}-${info.version}/grails-app/views/"
-			compileGSPFiles(new File(info.pluginDir.file, "grails-app/views"), viewPrefix, info.name)
+            File pluginViews = new File(info.pluginDir.file, "grails-app/views")
+            if(pluginViews.exists()) {                
+                def viewPrefix="/WEB-INF/plugins/${info.name}-${info.version}/grails-app/views/"
+                ant.gspc( destdir:classesDir,
+                          srcdir:pluginViews,
+                          packagename:GrailsNameUtils.getPropertyNameForLowerCaseHyphenSeparatedName(info.name),
+                          serverpath:viewPrefix,
+                          classpathref:"grails.compile.classpath",
+                          tmpdir:gspTmpDir)
+            }
 		}
 	}
 	
-	compileGSPClassloader=null
-
-	// write the view registry to a properties file (this is read by GroovyPagesTemplateEngine at runtime)
-	File viewregistryFile=new File(classesDir, "gsp/views.properties")
-	Properties views=new Properties()
-	if(viewregistryFile.exists()) {
-		// only changed files are added to the mapping, read the existing mapping file
-		def propinput=new FileInputStream(viewregistryFile)
-		views.load(propinput)
-		propinput.close()
-	}	
-	views.putAll(compileGSPRegistry)
-	def viewsOut=new FileOutputStream(viewregistryFile)
-	views.store(viewsOut, "Precompiled views for ${grailsAppName}")
-	viewsOut.close()
 }
 
-compileGSPFiles = { File viewsDir, String viewPrefix, String packagePrefix ->
-	if(viewsDir.exists()) {
-		def gspfiles = ant.fileScanner {
-			fileset(dir:viewsDir, includes:"**/*.gsp")
-		}
-		gspfiles.each {
-			compileGSP(viewsDir, it, viewPrefix, generateJavaName(packagePrefix))    
-		}
-	}
-}
-
-// precompiles a single gsp file
-compileGSP = { File viewsDir, File gspfile, String viewPrefix, String packagePrefix ->
-	def gspgroovydir = new File(grailsSettings.projectWorkDir, "gspcompile")
-	
-	def relPath = relativePath(viewsDir, gspfile)
-	def viewuri = viewPrefix + relPath
-	
-	def relPackagePath = relativePath(viewsDir, gspfile.getParentFile())
-	def packageDir = "gsp/${packagePrefix}"
-	if(relPackagePath.length() > 0) {
-		packageDir += "/" + generateJavaName(relPackagePath)
-	}
-
-	def className = generateJavaName(gspfile.name - '.gsp')
-	def classFile = new File(new File(grailsSettings.classesDir, packageDir), "${className}.class")
-
-	// compile check
-	if (gspfile.lastModified() > classFile.lastModified()) {
-		ant.echo(message: "Compiling gsp ${gspfile}...")
-
-		def packageName = packageDir.replace('/','.')
-		
-		def gspgroovyfile = new File(new File(gspgroovydir, packageDir), className + ".groovy")
-		gspgroovyfile.getParentFile().mkdirs()
-		
-		InputStream gspinput=new FileInputStream(gspfile)
-		org.codehaus.groovy.grails.web.pages.GroovyPageParser gpp=new org.codehaus.groovy.grails.web.pages.GroovyPageParser(viewuri - '.gsp', viewuri, gspinput)
-		gpp.packageName = packageName
-		gpp.className = className
-		gpp.lastModified = gspfile.lastModified()
-		Writer gsptarget=new FileWriter(gspgroovyfile)
-		// generate gsp groovy source
-		gpp.generateGsp(gsptarget)
-		gsptarget.close()
-		gspinput.close()
-		// write static html parts to data file (read from classpath at runtime)
-		def htmlDataFile = new File(new File(grailsSettings.classesDir, packageDir),  className + org.codehaus.groovy.grails.web.pages.GroovyPageMetaInfo.HTML_DATA_POSTFIX)
-		htmlDataFile.getParentFile().mkdirs()
-		gpp.writeHtmlParts(htmlDataFile)
-		// write linenumber mapping info to data file
-		def lineNumbersDataFile = new File(new File(grailsSettings.classesDir, packageDir),  className + org.codehaus.groovy.grails.web.pages.GroovyPageMetaInfo.LINENUMBERS_DATA_POSTFIX)
-		gpp.writeLineNumbers(lineNumbersDataFile)
-		
-		// register viewuri -> classname mapping
-		compileGSPRegistry[viewuri] = packageName + "." + className
-	
-		def unit = new CompilationUnit(compConfig, null, compileGSPClassloader)
-		unit.addSource(gspgroovyfile)
-		unit.compile()
-	}
-}
-
-// find out the relative path from relbase to file
-relativePath = { File relbase, File file ->
-	def pathParts = []
-	def currentFile = file
-	while(currentFile != null && currentFile != relbase) {
-		pathParts += currentFile.name
-		currentFile = currentFile.parentFile
-	}
-	pathParts.reverse().join('/')
-}
-
-generateJavaName = { String str ->
-	StringBuffer sb = new StringBuffer()
-	int i = 0
-	char ch = str.charAt(i)
-	if (Character.isJavaIdentifierStart(ch)) {
-		sb.append(ch)
-		i++
-	} else if (Character.isJavaIdentifierPart(ch)) {
-		sb.append('_')
-	}
-	while (i < str.length()) {
-		ch = str.charAt(i++)
-		sb.append((ch=='/' || Character.isJavaIdentifierPart(ch)) ? ch : '_')
-	}
-	sb.toString()
-}
