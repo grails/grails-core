@@ -15,6 +15,9 @@
  */
 package org.codehaus.groovy.grails.web.pages;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * NOTE: Based on work done by on the GSP standalone project (https://gsp.dev.java.net/)
  *
@@ -32,6 +35,8 @@ class GroovyPageScanner implements Tokens {
 	private boolean str1, str2;
 	private String lastNamespace;
     private int exprBracketCount = 0;
+    private List<Integer> lineNumberPositions;
+    private int lastLineNumberIndex=-1;
 
     GroovyPageScanner(String text) {
 		Strip strip = new Strip(text);
@@ -39,9 +44,23 @@ class GroovyPageScanner implements Tokens {
 		this.text = strip.toString();
 		len = this.text.length();
 		this.lastNamespace = null;
+		resolveLineNumberPositions();		
 	} // Scan()
 
-    private int found(int newState, int skip) {
+    // add line starting positions to array
+    private void resolveLineNumberPositions() {
+    	lineNumberPositions = new ArrayList<Integer>();
+    	// first line starts at 0
+    	lineNumberPositions.add(0);
+    	for(int i=0;i < len; i++) {
+    		if(text.charAt(i)=='\n') {
+    			// next line starts after LF
+    			lineNumberPositions.add(i+1);
+    		}
+    	}
+	}
+
+	private int found(int newState, int skip) {
 		begin2 = begin1;
 		end2 = --end1;
 		begin1 = end1 += skip;
@@ -63,6 +82,17 @@ class GroovyPageScanner implements Tokens {
 	String getToken() {
 		return text.substring(begin2, end2);
 	} // getToken()
+	
+	int getLineNumberForToken() {
+		for(int i=lastLineNumberIndex+1;i < lineNumberPositions.size();i++) {
+			if(lineNumberPositions.get(i) > begin2) {
+				lastLineNumberIndex = i - 1;
+				return i;
+			}
+		}
+		// unknown
+		return 1;
+	}
 	
 	String getNamespace() {
 		return lastNamespace;
@@ -168,10 +198,11 @@ class GroovyPageScanner implements Tokens {
                         return found(HTML,1);
                     }
                     else if(c == '/' && c1 == '>') {
-                       return found(GEND_TAG,1);
+                       return found(GEND_EMPTY_TAG,1);
                     }
                     break;
                 case GEND_TAG:
+                case GEND_EMPTY_TAG:
                     if(c == '>') {
                         return found(HTML,1);
                     }
@@ -231,6 +262,7 @@ class GroovyPageScanner implements Tokens {
 		end1= begin1 = end2 = begin2 = level = 0;
 		state = HTML;
 		lastNamespace = null;
+		lastLineNumberIndex = -1;
 	} // reset()
 
 } // Scan

@@ -40,6 +40,7 @@ import org.codehaus.groovy.grails.commons.GrailsClassUtils
 import org.springframework.web.context.request.RequestContextHolder
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import java.lang.reflect.Modifier
+import org.springframework.beans.factory.config.PropertiesFactoryBean
 
 /**
  * A Plugin that sets up and configures the GSP and GSP tag library support in Grails 
@@ -135,8 +136,12 @@ public class GroovyPagesGrailsPlugin {
             }
             tagLibraryLookup = gspTagLibraryLookup
             jspTagLibraryResolver = jspTagLibraryResolver
+			precompiledGspMap = { PropertiesFactoryBean pfb -> 
+				ignoreResourceNotFound = true
+				location = "classpath:gsp/views.properties"
+			}
         }
-
+        
         // Configure a Spring MVC view resolver
         jspViewResolver(GrailsViewResolver) {
             viewClass = org.springframework.web.servlet.view.JstlView.class

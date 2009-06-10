@@ -68,7 +68,7 @@ class GroovyPageWritable implements Writable {
 
 
         this.context = webRequest.getServletContext();
-        this.showSource = request.getParameter("showSource") != null && GrailsUtil.isDevelopmentEnv();
+        this.showSource = request.getParameter("showSource") != null && GrailsUtil.isDevelopmentEnv() && metaInfo.getGroovySource() != null;
         this.metaInfo = metaInfo;
     }
 
@@ -135,6 +135,7 @@ class GroovyPageWritable implements Writable {
             page.setJspTags(metaInfo.getJspTags());
             page.setJspTagLibraryResolver(metaInfo.getJspTagLibraryResolver());
             page.setGspTagLibraryLookup(metaInfo.getTagLibraryLookup());
+            page.setHtmlParts(metaInfo.getHtmlParts());
 
             page.run();
             request.setAttribute(GrailsApplicationAttributes.PAGE_SCOPE, oldBinding);        
