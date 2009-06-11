@@ -769,7 +769,7 @@ public class GroovyPageParser implements Tokens {
 		tagIndex++;
 
 		String text;
-		StringBuffer buf = new StringBuffer(scan.getToken().trim());
+		StringBuffer buf = new StringBuffer(scan.getToken());
 		String ns = scan.getNamespace();
 
 		boolean emptyTag = false;
