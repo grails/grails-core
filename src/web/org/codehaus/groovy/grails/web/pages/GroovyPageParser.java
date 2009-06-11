@@ -782,7 +782,7 @@ public class GroovyPageParser implements Tokens {
 				buf.append(scan.getToken().trim());
 				buf.append("}");
 			} else {
-				buf.append(scan.getToken().trim());
+				buf.append(scan.getToken());
 			}
 			state = scan.nextToken();
 		}
