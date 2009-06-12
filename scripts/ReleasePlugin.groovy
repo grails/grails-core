@@ -74,14 +74,15 @@ target(processAuth:"Prompts user for login details to create authentication mana
 target(releasePlugin: "The implementation target") {
     depends(parseArguments)
 
+    println "Generating plugin project behavior metadata..."
+    MetadataGeneratingMetaClassCreationHandle.enable()
+    bootstrap()
+    MetadataGeneratingMetaClassCreationHandle.disable()
+    println "Packaging plugin project..."
+    packagePlugin()
+    docs()
+    
     if(argsMap.packageOnly) {
-        println "Generating plugin project behavior metadata..."
-        MetadataGeneratingMetaClassCreationHandle.enable()
-        bootstrap()
-        MetadataGeneratingMetaClassCreationHandle.disable()
-        println "Packaging plugin project..."
-        packagePlugin()
-        docs()
         return
     }
     processAuth()
