@@ -15,9 +15,12 @@
 package org.codehaus.groovy.grails.orm.support;
 
 import org.springframework.transaction.interceptor.NameMatchTransactionAttributeSource;
+import org.springframework.transaction.interceptor.TransactionAttribute;
 
-import java.util.Set;
 import java.util.HashSet;
+import java.util.Properties;
+import java.util.Set;
+import java.lang.reflect.Method;
 
 /**
  * @author Graeme Rocher
@@ -35,8 +38,18 @@ public class GroovyAwareNamedTransactionAttributeSource extends NameMatchTransac
     }};
 
     @Override
+    public TransactionAttribute getTransactionAttribute(Method method, Class targetClass) {
+        if(method.isSynthetic()) return null;
+        return super.getTransactionAttribute(method, targetClass);    
+    }
+
+    @Override
     protected boolean isMatch(String methodName, String mappedName) {
         if(NONTRANSACTIONAL_GROOVY_METHODS.contains(methodName)) return false;
         return super.isMatch(methodName, mappedName);
+    }
+
+    public void setTransactionalAttributes(Properties properties) {
+        super.setProperties(properties);    
     }
 }
