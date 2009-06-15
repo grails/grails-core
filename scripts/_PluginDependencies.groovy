@@ -628,6 +628,9 @@ target(updatePluginsListManually: "Updates the plugin list by manually reading e
                 withSVNRepo(pluginDistURL) { repo ->
                     remoteRevision = repo.getLatestRevision()
                     if (remoteRevision > localRevision) {
+						// Plugins list cache is expired, need to update
+						event("StatusUpdate", ["Plugins list cache has expired. Updating, please wait"])
+						pluginsList.setAttribute('revision', remoteRevision as String)	
                         repo.getDir('.', -1,null,(Collection)null).each() { entry ->
                             final String PREFIX = "grails-"
                             if (entry.name.startsWith(PREFIX)) {
