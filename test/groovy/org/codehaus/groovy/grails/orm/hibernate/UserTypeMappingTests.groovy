@@ -110,11 +110,11 @@ class Weight {
     }
 }
 '''
-        
+
        gcl.parseClass '''
 class UserTypeMappingTestsPerson {
     Long id
-    Long version 
+    Long version
     String name
     Weight weight
 
@@ -173,6 +173,23 @@ class UserTypeMappingTestsPerson {
          } finally {
              con.close()
          }
+    }
+
+    void testUserTypePropertyMetadata() {
+        def personDomainClass = ga.getDomainClass("UserTypeMappingTestsPerson")
+        def personClass = personDomainClass.clazz
+        def weightClass = ga.classLoader.loadClass("Weight")
+
+        def person = personClass.newInstance(name:"Fred", weight:weightClass.newInstance(200))
+
+        // the metaClass should report the correct type, not Object
+        assertEquals weightClass, personClass.metaClass.hasProperty(person, "weight").type
+
+        // GrailsDomainClassProperty should not appear to be an association
+        def prop = personDomainClass.getPropertyByName("weight")
+        assertFalse prop.isAssociation()
+        assertFalse prop.isOneToOne()
+        assertEquals weightClass, prop.type
     }
 
 
