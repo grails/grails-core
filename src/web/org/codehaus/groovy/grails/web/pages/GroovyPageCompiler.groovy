@@ -176,6 +176,7 @@ public class GroovyPageCompiler {
             ch = str.charAt(i++)
             sb.append((ch=='/' || Character.isJavaIdentifierPart(ch)) ? ch : '_')
         }
+        sb.append("_gsp")
         sb.toString()
     }
 
