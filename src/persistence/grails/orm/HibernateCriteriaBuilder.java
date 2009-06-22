@@ -965,7 +965,7 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
                     this.logicalExpressionStack.add(new LogicalExpression(name));
                     invokeClosureNode(args[0]);
 
-                    LogicalExpression logicalExpression = logicalExpressionStack.get(logicalExpressionStack.size()-1);
+                    LogicalExpression logicalExpression = logicalExpressionStack.remove(logicalExpressionStack.size()-1);
                     addToCriteria(logicalExpression.toCriterion());
 
                     return name;
@@ -1003,7 +1003,7 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
                         if(!aliasInstanceStack.isEmpty()) {
                             aliasInstanceStack.remove(aliasInstanceStack.size() - 1);
                         }
-                        LogicalExpression logicalExpression = (LogicalExpression) logicalExpressionStack.remove(logicalExpressionStack.size()-1);
+                        LogicalExpression logicalExpression = logicalExpressionStack.remove(logicalExpressionStack.size()-1);
                         if (!logicalExpression.args.isEmpty()) {
                             addToCriteria(logicalExpression.toCriterion());
                         }
