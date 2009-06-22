@@ -41,6 +41,44 @@ class CriteriaBuilderAuthor {
 ''')
     }
 
+
+    void testIdEq() {
+        def authorClass = ga.getDomainClass("CriteriaBuilderAuthor").clazz
+        def bookClass = ga.getDomainClass("CriteriaBuilderBook").clazz
+
+        assert authorClass.newInstance(name:"Stephen King")
+                                    .addToBooks(title:"The Shining")
+                                    .addToBooks(title:"The Stand")
+                                    .addToBooks(title:"Rose Madder")
+                                    .save(flush:true)
+
+        assert authorClass.newInstance(name:"James Patterson")
+                                    .addToBooks(title:"Along Came a Spider")
+                                    .addToBooks(title:"A Time to Kill")
+                                    .addToBooks(title:"Killing Me Softly")
+                                    .addToBooks(title:"The Quickie")
+                                    .save(flush:true)
+
+
+        
+
+        session.clear()
+        def book = bookClass.findByTitle("The Quickie")
+
+        assertNotNull "should have found book", book
+
+        def authors = authorClass.withCriteria {
+            books {
+                idEq book.id
+            }
+        }
+
+        assertNotNull "should have returned a list of authors", authors
+
+        assertEquals 1, authors.size()
+        assertEquals "James Patterson", authors[0].name
+    }
+
     void testSizeCriterion() {
         def authorClass = ga.getDomainClass("CriteriaBuilderAuthor").clazz
 
