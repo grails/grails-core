@@ -124,7 +124,7 @@ set STARTER_CONF=%GRAILS_HOME%\conf\groovy-starter.conf
 set JAVA_EXE=%JAVA_HOME%\bin\java.exe
 set TOOLS_JAR=%JAVA_HOME%\lib\tools.jar
 
-if "%JAVA_OPTS%" == "" set JAVA_OPTS="-Xmx512m"
+if "%JAVA_OPTS%" == "" set JAVA_OPTS="-Xmx512m -XX:MaxPermSize=96m"
 set JAVA_OPTS=%JAVA_OPTS% -Dprogram.name="%PROGNAME%"
 set JAVA_OPTS=%JAVA_OPTS% -Dgrails.home="%GRAILS_HOME%"
 set JAVA_OPTS=%JAVA_OPTS% -Dgrails.version="1.1.1"
