@@ -39,6 +39,7 @@ public abstract class AbstractUrlMapping implements UrlMapping {
     protected Map parameterValues = Collections.EMPTY_MAP;
     protected boolean parseRequest;
     protected String mappingName;
+    protected boolean restful;
 
     /**
      * Base constructor required to construct a UrlMapping instance
@@ -105,5 +106,13 @@ public abstract class AbstractUrlMapping implements UrlMapping {
 
     public void setMappingName(String name) {
         mappingName = name;
+    }
+
+    public void setRestfulMapping(boolean isREST) {
+        this.restful = isREST;
+    }
+
+    public boolean isRestfulMapping() {
+        return restful;
     }
 }

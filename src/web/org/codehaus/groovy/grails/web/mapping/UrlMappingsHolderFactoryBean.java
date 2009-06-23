@@ -69,10 +69,10 @@ public class UrlMappingsHolderFactoryBean implements FactoryBean, InitializingBe
 
         this.mappingEvaluator = new DefaultUrlMappingEvaluator(servletContext);
 
-        for (int i = 0; i < mappings.length; i++) {
-            GrailsUrlMappingsClass mappingClass = (GrailsUrlMappingsClass) mappings[i];
+        for (GrailsClass mapping : mappings) {
+            GrailsUrlMappingsClass mappingClass = (GrailsUrlMappingsClass) mapping;
             List grailsClassMappings;
-            if(Script.class.isAssignableFrom(mappingClass.getClass())) {
+            if (Script.class.isAssignableFrom(mappingClass.getClass())) {
                 grailsClassMappings = mappingEvaluator.evaluateMappings(mappingClass.getClazz());
             }
             else {
@@ -80,7 +80,7 @@ public class UrlMappingsHolderFactoryBean implements FactoryBean, InitializingBe
             }
 
             urlMappings.addAll(grailsClassMappings);
-            if(mappingClass.getExcludePatterns()!=null) excludePatterns.addAll(mappingClass.getExcludePatterns());
+            if (mappingClass.getExcludePatterns() != null) excludePatterns.addAll(mappingClass.getExcludePatterns());
         }
 
 

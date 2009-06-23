@@ -111,4 +111,14 @@ public interface UrlMapping extends Comparable, UrlCreator {
     String getMappingName();
 
     void setMappingName(String name);
+
+    /**
+     * @param isREST Set whether this is a RESTful mapping
+     */
+    void setRestfulMapping(boolean isREST);
+
+    /**
+     * @return Whether this is a RESTful mapping
+     */
+    boolean isRestfulMapping();
 }
