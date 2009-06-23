@@ -208,8 +208,8 @@ class ValidationTagLib {
           def locale = RCU.getLocale(request)
           def text
 
-          if(attrs['error']) {
-                def error = attrs['error']
+          if(attrs['error'] || attrs['message']) {
+                def error = attrs['error'] ?: attrs['message']
                 def message = messageSource.getMessage( error,
                                                         locale )
                 if(message) {
