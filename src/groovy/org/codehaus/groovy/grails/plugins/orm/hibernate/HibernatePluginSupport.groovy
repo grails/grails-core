@@ -55,6 +55,7 @@ import org.hibernate.proxy.LazyInitializer
 import org.apache.commons.beanutils.PropertyUtils
 import org.hibernate.Hibernate
 import org.springframework.validation.Validator
+import org.hibernate.EmptyInterceptor
 
 
 /**
@@ -154,6 +155,7 @@ Try using Grails' default cache provider: 'org.hibernate.cache.OSCacheProvider'"
                 nativeJdbcExtractor = ref("nativeJdbcExtractor")
 			}
 			eventTriggeringInterceptor(ClosureEventTriggeringInterceptor)
+            entityInterceptor(EmptyInterceptor)
             sessionFactory(ConfigurableLocalSessionFactoryBean) {
                 dataSource = dataSource
                 if (application.classLoader.getResource("hibernate.cfg.xml")) {
@@ -165,7 +167,7 @@ Try using Grails' default cache provider: 'org.hibernate.cache.OSCacheProvider'"
                 hibernateProperties = hibernateProperties
                 grailsApplication = ref("grailsApplication", true)
 				lobHandler = lobHandlerDetector
-
+                entityInterceptor = entityInterceptor
 				eventListeners = ['pre-load':eventTriggeringInterceptor,
                                   'post-load':eventTriggeringInterceptor,
                                   'save':eventTriggeringInterceptor,
