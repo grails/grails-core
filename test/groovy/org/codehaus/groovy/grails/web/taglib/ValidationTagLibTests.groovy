@@ -251,7 +251,7 @@ class Article {
         assertOutputEquals("", template, [:])
     }
 
-    void testMessageTagWithBean() {
+    void testMessageTagWithMessage() {
         def resolvable = [
                 getArguments: {-> [] as Object[] },
                 getCodes: {-> ["my.message.code"] as String[] },
