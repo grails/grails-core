@@ -381,6 +381,15 @@ public final class GrailsDomainBinder {
                     + collection.getCollectionTable().getName());
 
         PropertyConfig propConfig = getPropertyConfig(property);
+
+        if(propConfig != null && !StringUtils.isBlank(propConfig.getSort())) {
+            GrailsDomainClass referenced = property.getReferencedDomainClass();
+            if(referenced != null) {
+                GrailsDomainClassProperty propertyToSortBy = referenced.getPropertyByName(propConfig.getSort());                
+                collection.setOrderBy(getColumnNameForPropertyAndPath(propertyToSortBy,"",null));
+            }
+        }
+
         // Configure one-to-many
         if (collection.isOneToMany()) {
 
@@ -852,9 +861,6 @@ public final class GrailsDomainBinder {
             }
         }
 
-        if(pc != null && !StringUtils.isBlank(pc.getSort())) {
-            collection.setOrderBy(pc.getSort());
-        }
         if(pc != null && pc.getBatchSize() != null) {
             collection.setBatchSize(pc.getBatchSize().intValue());
         }
