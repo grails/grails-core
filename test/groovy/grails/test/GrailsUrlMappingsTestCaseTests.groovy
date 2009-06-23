@@ -361,6 +361,7 @@ class GrailsUrlMappingsTestCaseFakeController {
 class MockUrlMapping implements UrlMapping {
     String controller
     String action
+    boolean restfulMapping
 
     MockUrlMapping(String controller, String action) {
         this.controller = controller
@@ -437,4 +438,5 @@ class MockUrlMapping implements UrlMapping {
 
     public void setMappingName(String name) {
     }
+
 }

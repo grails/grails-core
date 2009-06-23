@@ -17,6 +17,7 @@ package org.codehaus.groovy.grails.web.mapping;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
+import org.codehaus.groovy.grails.commons.GrailsControllerClass;
 import org.springframework.core.style.ToStringCreator;
 
 import java.io.PrintWriter;
@@ -192,9 +193,13 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
         final UrlMappingsListKey lookupKey = new UrlMappingsListKey(controller, action);
         SortedSet mappingKeysSet = mappingsListLookup.get(lookupKey);
 
-    	if(null == mappingKeysSet) {
+        final String actionName = lookupKey.action;
+        boolean secondAttempt = false;
+        final boolean isIndexAction = GrailsControllerClass.INDEX_ACTION.equals(actionName);
+        if(null == mappingKeysSet && actionName != null) {
             lookupKey.action=null;
             mappingKeysSet = mappingsListLookup.get(lookupKey);
+            secondAttempt = true;
         }
         if(null == mappingKeysSet) return null;
 		
@@ -203,10 +208,17 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
     	for(int i=mappingKeys.length;i>0;i--){
     		UrlMappingKey mappingKey = mappingKeys[i-1];
     		if(params.keySet().containsAll(mappingKey.paramNames)) {
-    			return mappingsLookup.get(mappingKey);
+                final UrlMapping mapping = mappingsLookup.get(mappingKey);
+                if(canInferAction(actionName, secondAttempt, isIndexAction, mapping))
+                    return mapping;
+                else if(!secondAttempt) return mapping;
     		}
     	}
     	return null;
+    }
+
+    private boolean canInferAction(String actionName, boolean secondAttempt, boolean indexAction, UrlMapping mapping) {
+        return secondAttempt && (mapping.getActionName() == null || indexAction || (mapping.isRestfulMapping() && UrlMappingEvaluator.DEFAULT_REST_MAPPING.containsValue(actionName) ));
     }
 
     /**
