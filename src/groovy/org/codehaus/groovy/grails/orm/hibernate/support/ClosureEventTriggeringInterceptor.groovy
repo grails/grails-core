@@ -44,6 +44,7 @@ import org.hibernate.event.AbstractEvent
 import org.hibernate.persister.entity.EntityPersister
 import org.hibernate.EntityMode
 import org.hibernate.engine.EntityEntry
+import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler
 
 /**
  * <p>An interceptor that invokes closure events on domain entities such as beforeInsert, beforeUpdate and beforeDelete
@@ -65,7 +66,7 @@ class ClosureEventTriggeringInterceptor extends SaveOrUpdateEventListener implem
     public void onSaveOrUpdate(SaveOrUpdateEvent event) {
 
         def entity = event.getObject()
-        if(entity) {
+        if(shouldTrigger(entity)) {
             boolean newEntity = !event.session.contains(entity)
             if(newEntity) {
                 triggerEvent(BEFORE_INSERT_EVENT, entity, null)
@@ -91,6 +92,10 @@ class ClosureEventTriggeringInterceptor extends SaveOrUpdateEventListener implem
         super.onSaveOrUpdate event
     }
 
+    private boolean shouldTrigger(entity) {
+        return entity && DomainClassArtefactHandler.is(entity.class)
+    }
+
     static final String ONLOAD_EVENT = 'onLoad'
     static final String ONLOAD_SAVE = 'onSave'
     static final String BEFORE_LOAD_EVENT = "beforeLoad"
@@ -104,50 +109,63 @@ class ClosureEventTriggeringInterceptor extends SaveOrUpdateEventListener implem
 
     public void onPreLoad(PreLoadEvent event) {
         def entity = event.getEntity()
-        if(entity.metaClass.hasProperty(entity, ONLOAD_EVENT))
-            triggerEvent(ONLOAD_EVENT, event.entity, event)
-        else if(entity.metaClass.hasProperty(entity, BEFORE_LOAD_EVENT))
-            triggerEvent(BEFORE_LOAD_EVENT, event.entity, event)
+
+        if(shouldTrigger(entity)) {
+            if(entity.metaClass.hasProperty(entity, ONLOAD_EVENT))
+                triggerEvent(ONLOAD_EVENT, event.entity, event)
+            else if(entity.metaClass.hasProperty(entity, BEFORE_LOAD_EVENT))
+                triggerEvent(BEFORE_LOAD_EVENT, event.entity, event)
+        }
     }
 
     public void onPostLoad(PostLoadEvent event) {
         def entity = event.getEntity()
-        applicationContext?.autowireCapableBeanFactory?.autowireBeanProperties(entity,AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false)
-        triggerEvent(AFTER_LOAD_EVENT, entity, event)
+
+        if(shouldTrigger(entity)) {
+            applicationContext?.autowireCapableBeanFactory?.autowireBeanProperties(entity,AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false)
+            triggerEvent(AFTER_LOAD_EVENT, entity, event)
+        }
     }
 
     public void onPostInsert(PostInsertEvent event) {
-        triggerEvent(AFTER_INSERT_EVENT, event.entity, event)
+        if(shouldTrigger(event.entity)) {
+            triggerEvent(AFTER_INSERT_EVENT, event.entity, event)
+        }
     }
 
     public boolean onPreUpdate(PreUpdateEvent event) {
         def entity = event.getEntity()
 
-        def result = triggerEvent(BEFORE_UPDATE_EVENT, event.entity, event)
+        if(shouldTrigger(entity)) {
+            def result = triggerEvent(BEFORE_UPDATE_EVENT, event.entity, event)
 
-        Mapping m = GrailsDomainBinder.getMapping(entity.getClass())
-        boolean shouldTimestamp = m && !m.autoTimestamp ? false : true
-        MetaProperty property = entity.metaClass.hasProperty(entity, GrailsDomainClassProperty.LAST_UPDATED)
-        if(property && shouldTimestamp) {
+            Mapping m = GrailsDomainBinder.getMapping(entity.getClass())
+            boolean shouldTimestamp = m && !m.autoTimestamp ? false : true
+            MetaProperty property = entity.metaClass.hasProperty(entity, GrailsDomainClassProperty.LAST_UPDATED)
+            if(property && shouldTimestamp) {
 
-            def now = property.getType().newInstance([System.currentTimeMillis()] as Object[] )
-            event.getState()[ArrayUtils.indexOf(event.persister.propertyNames, GrailsDomainClassProperty.LAST_UPDATED)] = now; 
-            entity."$property.name" = now
+                def now = property.getType().newInstance([System.currentTimeMillis()] as Object[] )
+                event.getState()[ArrayUtils.indexOf(event.persister.propertyNames, GrailsDomainClassProperty.LAST_UPDATED)] = now;
+                entity."$property.name" = now
+            }
+
+            return result
         }
-
-        return result
     }
 
     public void onPostUpdate(PostUpdateEvent event) {
-        triggerEvent(AFTER_UPDATE_EVENT, event.entity, event)
+        if(shouldTrigger(event.entity))
+            triggerEvent(AFTER_UPDATE_EVENT, event.entity, event)
     }
 
     public void onPostDelete(PostDeleteEvent event) {
-        triggerEvent(AFTER_DELETE_EVENT, event.entity, event)
+        if(shouldTrigger(event.entity))
+            triggerEvent(AFTER_DELETE_EVENT, event.entity, event)
     }
 
     public boolean onPreDelete(PreDeleteEvent event) {
-        return triggerEvent(BEFORE_DELETE_EVENT,event.entity, event)
+        if(shouldTrigger(event.entity))
+            return triggerEvent(BEFORE_DELETE_EVENT,event.entity, event)
     }
 
     private transient ApplicationContext applicationContext
