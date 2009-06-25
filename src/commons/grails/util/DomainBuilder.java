@@ -35,7 +35,7 @@ import java.util.Collection;
  * </code></pre>
  * @author Scott Vlaminck
  */
-class DomainBuilder extends ObjectGraphBuilder
+public class DomainBuilder extends ObjectGraphBuilder
 {
 	public DomainBuilder()
 	{
