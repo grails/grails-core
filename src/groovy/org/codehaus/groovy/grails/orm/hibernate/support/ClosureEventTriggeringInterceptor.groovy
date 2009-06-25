@@ -178,7 +178,17 @@ class ClosureEventTriggeringInterceptor extends SaveOrUpdateEventListener implem
 
     private boolean triggerEvent(String event, entity, Object eventObject) {
         def result = false
-        if(entity.metaClass.hasProperty(entity, event)) {
+        boolean eventTriggered = false
+        if(entity.respondsTo(event, [] as Object[])) {
+            eventTriggered = true
+            result = entity."$event"()
+            if(result instanceof Boolean) result = !result
+            else {
+                result = false
+            }            
+        }
+        else if(entity.hasProperty(event)) {
+             eventTriggered = true
              def callable = entity."$event"
              if(callable instanceof Closure) {
                  callable.resolveStrategy = Closure.DELEGATE_FIRST
@@ -189,40 +199,43 @@ class ClosureEventTriggeringInterceptor extends SaveOrUpdateEventListener implem
                      result = false
                  }
              }
+        }
 
-             if(eventObject instanceof PreUpdateEvent) {
-                 PreUpdateEvent updateEvent = eventObject
-                 EntityPersister persister = updateEvent.persister
-                 def propertyNames = persister.propertyNames.toList()
-                 def state = updateEvent.state
-                 for(p in propertyNames) {
-                     if(['version','id'].contains(p)) continue
-                    def i = propertyNames.indexOf(p)
-                    def value = entity."$p"
-                    state[i] = value                     
-                    persister.setPropertyValue(entity,i,value,EntityMode.POJO)
-                 }
-             }
-             else if(eventObject instanceof SaveOrUpdateEvent) {
-                 SaveOrUpdateEvent updateEvent = eventObject
+        if(eventTriggered) {
+            if(eventObject instanceof PreUpdateEvent) {
+                PreUpdateEvent updateEvent = eventObject
+                EntityPersister persister = updateEvent.persister
+                def propertyNames = persister.propertyNames.toList()
+                def state = updateEvent.state
+                for(p in propertyNames) {
+                    if(['version','id'].contains(p)) continue
+                   def i = propertyNames.indexOf(p)
+                   def value = entity."$p"
+                   state[i] = value
+                   persister.setPropertyValue(entity,i,value,EntityMode.POJO)
+                }
+            }
+            else if(eventObject instanceof SaveOrUpdateEvent) {
+                SaveOrUpdateEvent updateEvent = eventObject
 
-                 if(updateEvent.session.contains(entity)) {
-                     EntityEntry entry = updateEvent.getEntry()
-                     if(entry) {
-                         def propertyNames = entry.persister.propertyNames.toList()
-                         def state = entry.loadedState
-                         for(p in propertyNames) {
-                            if(['version','id'].contains(p)) continue
-                            def i = propertyNames.indexOf(p)
-                            def value = entity."$p"
-                            state[i] = value
-                            entry.persister.setPropertyValue(entity,i,value,EntityMode.POJO)
-                         }
+                if(updateEvent.session.contains(entity)) {
+                    EntityEntry entry = updateEvent.getEntry()
+                    if(entry) {
+                        def propertyNames = entry.persister.propertyNames.toList()
+                        def state = entry.loadedState
+                        for(p in propertyNames) {
+                           if(['version','id'].contains(p)) continue
+                           def i = propertyNames.indexOf(p)
+                           def value = entity."$p"
+                           state[i] = value
+                           entry.persister.setPropertyValue(entity,i,value,EntityMode.POJO)
+                        }
 
-                     }
-                 }
-             }
-         }
+                    }
+                }
+            }
+        }
+
         return result
 
     }
