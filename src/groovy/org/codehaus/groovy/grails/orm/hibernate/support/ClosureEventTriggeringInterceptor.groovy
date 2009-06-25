@@ -93,7 +93,7 @@ class ClosureEventTriggeringInterceptor extends SaveOrUpdateEventListener implem
     }
 
     private boolean shouldTrigger(entity) {
-        return entity && DomainClassArtefactHandler.is(entity.class)
+        return entity && DomainClassArtefactHandler.isDomainClass(entity.class)
     }
 
     static final String ONLOAD_EVENT = 'onLoad'
@@ -151,6 +151,7 @@ class ClosureEventTriggeringInterceptor extends SaveOrUpdateEventListener implem
 
             return result
         }
+        
     }
 
     public void onPostUpdate(PostUpdateEvent event) {

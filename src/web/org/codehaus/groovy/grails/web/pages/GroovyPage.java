@@ -25,6 +25,7 @@ import org.codehaus.groovy.grails.web.pages.exceptions.GroovyPagesException;
 import org.codehaus.groovy.grails.web.pages.ext.jsp.TagLibraryResolver;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.taglib.GroovyPageTagWriter;
+import org.codehaus.groovy.grails.web.taglib.GroovyPageTagBody;
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
 import org.codehaus.groovy.grails.web.errors.GrailsExceptionResolver;
 
@@ -401,7 +402,11 @@ public abstract class GroovyPage extends Script {
 	private static Closure createTagOutputCapturingClosure(Object wrappedInstance, final String methodName, final Writer out, final Object body1) {
 		if(body1==null) {
 			return EMPTY_BODY_CLOSURE;
-		} else {
+		}
+        else if(body1 instanceof GroovyPageTagBody) {
+            return (Closure) body1;
+        }
+        else {
 			return new Closure(wrappedInstance) {
 				public Object doCall(Object obj) {
 					return call(new Object[] {obj} );

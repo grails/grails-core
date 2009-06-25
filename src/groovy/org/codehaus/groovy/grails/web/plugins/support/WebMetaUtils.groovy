@@ -21,6 +21,7 @@ import org.springframework.beans.BeanWrapperImpl
 import org.codehaus.groovy.grails.web.pages.GroovyPage
 import org.springframework.web.context.request.RequestContextHolder as RCH
 import org.codehaus.groovy.grails.commons.GrailsApplication
+import org.codehaus.groovy.grails.web.taglib.GroovyPageTagBody
 
 /**
  * Provides utility methods used to support meta-programming. In particular commons methods to
@@ -97,6 +98,10 @@ class WebMetaUtils {
             def originalOut = webRequest.out
             def capturedOutput
             try {
+                if(body && !(body instanceof GroovyPageTagBody)) {
+                    body = new GroovyPageTagBody(delegate, webRequest, true, body)
+
+                }
                 capturedOutput = GroovyPage.captureTagOutput(tagLibrary, name, attrs, body, webRequest)
             } finally {
                 webRequest.out = originalOut
@@ -104,19 +109,10 @@ class WebMetaUtils {
             capturedOutput
         }
         mc."$name" = {Map attrs, String body ->
-            def webRequest = RCH.currentRequestAttributes()
-
-            def originalOut = webRequest.out
-            def capturedOutput
-            try {
-                Closure bodyClosure = {out << body}
-                bodyClosure.delegate = tagLibrary
-                bodyClosure.resolveStrategy = Closure.DELEGATE_ONLY
-                capturedOutput = GroovyPage.captureTagOutput(tagLibrary, name, attrs, bodyClosure, webRequest)
-            } finally {
-                webRequest.out = originalOut
+            Closure bodyClosure = {
+                out << body
             }
-            capturedOutput
+            delegate."$name"(attrs, bodyClosure)
         }
         mc."$name" = {Map attrs ->
             def webRequest = RCH.currentRequestAttributes()
