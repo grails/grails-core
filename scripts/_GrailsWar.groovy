@@ -311,9 +311,13 @@ target(warPlugins:"Includes the plugins in the WAR") {
         def pluginInfos = GrailsPluginUtils.getSupportedPluginInfos(pluginsHome)
         if(pluginInfos) {
             for(PluginInfo info in pluginInfos) {
+                def pluginBase = info.pluginDir.file
+
                 // Note that with in-place plugins, the name of the plugin's
                 // directory may not match the "<name>-<version>" form that
                 // should be used in the WAR file.
+
+                // copy views and i18n to /WEB-INF/plugins/...
                 def targetPluginDir = "${stagingDir}/WEB-INF/plugins/${info.name}-${info.version}"
                 mkdir(dir:targetPluginDir)
                 copy(todir:targetPluginDir, failonerror:true) {
@@ -321,7 +325,28 @@ target(warPlugins:"Includes the plugins in the WAR") {
                     fileset(dir:pluginBase.absolutePath) {
                         include(name:"plugin.xml")
                         include(name:"grails-app/**")
-                        exclude(name:"grails-app/**/*.groovy")                        
+                        exclude(name:"grails-app/**/*.groovy")
+                    }
+                }
+
+                // copy spring configs to /WEB-INF/spring/...
+                ant.copy(todir:"${stagingDir}/WEB-INF/spring", failonerror:false) {
+                    fileset(dir:"${pluginBase.absolutePath}/grails-app/conf/spring", includes:"**/*.xml")
+                }
+
+                // copy everything else from grails-app/conf to /WEB-INF/classes
+                def targetClassesDir = "${stagingDir}/WEB-INF/classes"
+                ant.copy(todir:targetClassesDir, failonerror:false) {
+                    fileset(dir:"${pluginBase.absolutePath}/grails-app/conf") {
+                        exclude(name:"*.groovy")
+                        exclude(name:"log4j.*")
+                        exclude(name:"**/hibernate/**")
+                        exclude(name:"**/spring/**")
+                    }
+                    fileset(dir:"${pluginBase.absolutePath}/grails-app/conf/hibernate", includes:"**/**")
+                    fileset(dir:"${pluginBase.absolutePath}/src/java") {
+                        include(name:"**/**")
+                        exclude(name:"**/*.java")
                     }
                 }
             }
