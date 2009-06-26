@@ -135,6 +135,8 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
         Assert.notNull(application);
 
         WebRuntimeSpringConfiguration springConfig = new WebRuntimeSpringConfiguration(parent, application.getClassLoader());
+        springConfig.setBeanFactory(new ReloadAwareAutowireCapableBeanFactory());
+        
         if (context != null) {
             springConfig.setServletContext(context);
             this.pluginManager.setServletContext(context);

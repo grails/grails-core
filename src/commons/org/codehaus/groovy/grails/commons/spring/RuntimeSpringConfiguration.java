@@ -19,6 +19,7 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.GenericApplicationContext;
 
@@ -225,4 +226,10 @@ public interface RuntimeSpringConfiguration {
      * @return The BeanDefinition or null if it doesn't exit
      */
     BeanDefinition getBeanDefinition(String beanName);
+
+    /**
+     * Sets the BeanFactory implementation to use
+     * @param beanFactory The BeanFactory implementation
+     */
+    void setBeanFactory(ListableBeanFactory beanFactory);
 }
