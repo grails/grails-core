@@ -321,7 +321,6 @@ target(warPlugins:"Includes the plugins in the WAR") {
                 def targetPluginDir = "${stagingDir}/WEB-INF/plugins/${info.name}-${info.version}"
                 mkdir(dir:targetPluginDir)
                 copy(todir:targetPluginDir, failonerror:true) {
-                    def pluginBase = info.pluginDir.file
                     fileset(dir:pluginBase.absolutePath) {
                         include(name:"plugin.xml")
                         include(name:"grails-app/**")
