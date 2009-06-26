@@ -62,7 +62,7 @@
                 <include name="grails/test/**" />
             </fileset>
         </jar>
-        <jar destfile="${grails.dist}/grails-doc-${grails.version}.jar" manifest="${grails.build}/META-INF/MANIFEST.MF">
+        <jar destfile="${grails.dist}/grails-docs-${grails.version}.jar" manifest="${grails.build}/META-INF/MANIFEST.MF">
             <fileset dir="${grails.build}">
                 <include name="META-INF/**" />
                 <include name="grails/doc/**" />
@@ -259,6 +259,7 @@
         <maven.pom dir="${pom.target.dir}" id="grails.pom"/>
         <maven.pom dir="${pom.target.dir}" id="grails-bootstrap.pom"/>
         <maven.pom dir="${pom.target.dir}" id="grails-core.pom"/>
+        <maven.pom dir="${pom.target.dir}" id="grails-docs.pom"/>
         <maven.pom dir="${pom.target.dir}" id="grails-crud.pom"/>
         <maven.pom dir="${pom.target.dir}" id="grails-gorm.pom"/>
         <maven.pom dir="${pom.target.dir}" id="grails-resources.pom"/>
@@ -274,6 +275,7 @@
             description="Installs the Grails artifacts in the local Maven repository.">
         <mavenInstallRepo version="${grails.version}" prefix="grails"/>
         <mavenInstallRepo version="${grails.version}" prefix="grails-bootstrap"/>
+        <mavenInstallRepo version="${grails.version}" prefix="grails-docs"/>        
         <mavenInstallRepo version="${grails.version}" prefix="grails-core"/>
         <mavenInstallRepo version="${grails.version}" prefix="grails-crud"/>
         <mavenInstallRepo version="${grails.version}" prefix="grails-gorm"/>
@@ -291,6 +293,7 @@
         <mavenDeploy version="${grails.version}" prefix="grails"/>
         <mavenDeploy version="${grails.version}" prefix="grails-bootstrap"/>
         <mavenDeploy version="${grails.version}" prefix="grails-core"/>
+        <mavenDeploy version="${grails.version}" prefix="grails-docs"/>
         <mavenDeploy version="${grails.version}" prefix="grails-crud"/>
         <mavenDeploy version="${grails.version}" prefix="grails-gorm"/>
         <mavenDeploy version="${grails.version}" prefix="grails-resources"/>
