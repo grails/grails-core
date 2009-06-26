@@ -23,7 +23,9 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.GenericBeanDefinition;
+import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.context.support.GenericApplicationContext;
+import org.springframework.context.ApplicationContext;
 import org.springframework.ui.context.Theme;
 import org.springframework.ui.context.ThemeSource;
 import org.springframework.ui.context.support.UiApplicationContextUtils;
@@ -42,13 +44,22 @@ public class GrailsApplicationContext extends GenericApplicationContext implemen
     private BeanWrapper ctxBean = new BeanWrapperImpl(this);
     private ThemeSource themeSource;
 
+    public GrailsApplicationContext(DefaultListableBeanFactory defaultListableBeanFactory) {
+        super(defaultListableBeanFactory);
+        this.metaClass = GroovySystem.getMetaClassRegistry().getMetaClass(getClass());
+    }
+
+    public GrailsApplicationContext(DefaultListableBeanFactory defaultListableBeanFactory, ApplicationContext applicationContext) {
+        super(defaultListableBeanFactory, applicationContext);
+        this.metaClass = GroovySystem.getMetaClassRegistry().getMetaClass(getClass());
+    }
+
     public GrailsApplicationContext(org.springframework.context.ApplicationContext parent) throws org.springframework.beans.BeansException {
-        super(new ReloadAwareAutowireCapableBeanFactory(),parent);
+        super(parent);
         this.metaClass = GroovySystem.getMetaClassRegistry().getMetaClass(getClass());
     }
 
     public GrailsApplicationContext() throws org.springframework.beans.BeansException {
-        super(new ReloadAwareAutowireCapableBeanFactory());
         this.metaClass = GroovySystem.getMetaClassRegistry().getMetaClass(getClass());
     }
 

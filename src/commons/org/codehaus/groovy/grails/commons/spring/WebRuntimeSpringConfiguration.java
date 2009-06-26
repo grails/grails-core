@@ -18,6 +18,7 @@ import org.springframework.web.context.ConfigurableWebApplicationContext;
 import org.springframework.web.context.ServletContextAware;
 import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.context.ApplicationContext;
+import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 
 import javax.servlet.ServletContext;
 
@@ -40,9 +41,26 @@ public class WebRuntimeSpringConfiguration extends DefaultRuntimeSpringConfigura
     }
 
     protected GenericApplicationContext createApplicationContext(ApplicationContext parent) {
-        if(parent != null) return new GrailsWebApplicationContext(parent);
-        return new GrailsWebApplicationContext();
-
+        if(parent != null && beanFactory!=null) {
+            if(beanFactory instanceof DefaultListableBeanFactory) {
+                return new GrailsWebApplicationContext((DefaultListableBeanFactory) beanFactory,parent);
+            }
+            else {
+                throw new IllegalArgumentException("ListableBeanFactory set must be a subclass of DefaultListableBeanFactory");
+            }
+        }
+        else if(beanFactory!=null) {
+            if(beanFactory instanceof DefaultListableBeanFactory) {
+                return new GrailsWebApplicationContext((DefaultListableBeanFactory) beanFactory);
+            }
+            else {
+                throw new IllegalArgumentException("ListableBeanFactory set must be a subclass of DefaultListableBeanFactory");
+            }
+        }
+        else {
+            return new GrailsWebApplicationContext();
+        }
+        
     }
 
     public void setServletContext(ServletContext servletContext) {

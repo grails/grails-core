@@ -23,6 +23,7 @@ import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.parsing.BeanDefinitionParsingException;
 import org.springframework.beans.factory.parsing.Location;
 import org.springframework.beans.factory.parsing.Problem;
+import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.ResourcePatternResolver;
@@ -62,6 +63,14 @@ public class GrailsWebApplicationContext extends GrailsApplicationContext
 	public GrailsWebApplicationContext(ApplicationContext parent) throws BeansException {
 		super(parent);
 	}
+
+    public GrailsWebApplicationContext(DefaultListableBeanFactory defaultListableBeanFactory) {
+        super(defaultListableBeanFactory);
+    }
+
+    public GrailsWebApplicationContext(DefaultListableBeanFactory defaultListableBeanFactory, ApplicationContext parent) {
+        super(defaultListableBeanFactory, parent);
+    }
 
     public ClassLoader getClassLoader() {
         ApplicationContext parent = getParent();
