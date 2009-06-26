@@ -79,6 +79,12 @@
             <artifactId>junit</artifactId>
             <version>3.8.2</version>
         </dependency>
+
+        <dependency>
+            <groupId>org.tmatesoft.svnkit</groupId>
+            <artifactId>svnkit</artifactId>
+            <version>1.2.3.5521</version>
+        </dependency>
         
         <dependency>
             <groupId>org.apache.ant</groupId>

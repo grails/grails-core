@@ -33,21 +33,18 @@ import org.codehaus.groovy.grails.plugins.DefaultGrailsPluginManager
 import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
 import org.codehaus.groovy.grails.plugins.PluginManagerHolder
 import org.springframework.core.io.Resource
-import org.w3c.dom.Document
 import org.apache.commons.io.FilenameUtils
-import org.tmatesoft.svn.core.io.SVNRepositoryFactory
-import org.tmatesoft.svn.core.internal.io.dav.DAVRepositoryFactory
-import org.tmatesoft.svn.core.internal.io.fs.FSRepositoryFactory
-import org.tmatesoft.svn.core.io.*
-import org.tmatesoft.svn.core.*
-import org.tmatesoft.svn.core.auth.*
-import org.tmatesoft.svn.core.wc.*
-import org.tmatesoft.svn.core.wc.SVNWCUtil
-import org.tmatesoft.svn.core.SVNAuthenticationException
 import org.codehaus.groovy.grails.documentation.DocumentationContext
 import org.codehaus.groovy.grails.documentation.DocumentedMethod
 import org.codehaus.groovy.grails.documentation.DocumentedProperty
 
+import org.tmatesoft.svn.core.io.SVNRepositoryFactory
+import org.tmatesoft.svn.core.internal.io.dav.DAVRepositoryFactory
+import org.tmatesoft.svn.core.internal.io.fs.FSRepositoryFactory
+import org.tmatesoft.svn.core.*
+import org.tmatesoft.svn.core.auth.*
+import org.tmatesoft.svn.core.wc.SVNWCUtil
+import org.tmatesoft.svn.core.SVNAuthenticationException
 
 /**
  * Plugin stuff. If included, must be included after "_ClasspathAndEvents".
