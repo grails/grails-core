@@ -63,6 +63,18 @@ class RenderTagLibTests extends AbstractGrailsTagTests {
         assertOutputEquals '<tr><td class="prop">one</td><td class="value">two</td></tr>', template
     }
 
+
+    void testRenderTagWithBody() {
+        def resourceLoader = new MockStringResourceLoader()
+        resourceLoader.registerMockResource('/book/_book.gsp', 'content ${foo}: ${body()}')
+        appCtx.groovyPagesTemplateEngine.resourceLoader = resourceLoader
+
+
+        def template = '<g:render template="/book/book" model="[foo: \'bar\']">hello</g:render>'
+
+        assertOutputEquals 'content bar: hello', template 
+    }
+
     void testRenderTagCollectionAndModel() {
 
 
