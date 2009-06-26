@@ -178,9 +178,12 @@ class ValidationTagLib {
         if(!renderAs) renderAs = 'list'
 
         if(renderAs == 'list') {
+            def codec = attrs.codec ?: 'HTML'
+            if (codec=='none') codec = ''
+
             out << "<ul>"
             out << eachError(attrs, {
-                out << "<li>${message(error:it, encodeAs:"HTML")}</li>"
+                out << "<li>${message(error:it, encodeAs:codec)}</li>"
               }
             )
             out << "</ul>"
