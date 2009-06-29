@@ -259,6 +259,7 @@
     <option name="FILTER_INFO" value="true" />
     <option name="CUSTOM_FILTER" />
   </component>
+  <component name="NewModuleRootManager" />
   <component name="Palette2">
     <group name="Swing">
       <item class="com.intellij.uiDesigner.HSpacer" tooltip-text="Horizontal Spacer" icon="/com/intellij/uiDesigner/icons/hspacer.png" removable="false" auto-create-binding="false" can-attach-label="false">
@@ -570,7 +571,7 @@
     </library>
   </component>
   <UsedPathMacros>
-    <macro name="SPRING_DIR" description="" />
+    <macro name="SPRING_DIR" />
   </UsedPathMacros>
 </project>
 

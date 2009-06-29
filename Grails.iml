@@ -146,5 +146,6 @@
       <root url="file://$MODULE_DIR$/../spring-framework-2.0/docs/api" />
     </javadoc-paths>
   </component>
+  <component name="libraryTable" />
 </module>
 
