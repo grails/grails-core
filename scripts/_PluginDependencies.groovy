@@ -373,6 +373,10 @@ generatePluginXml = { File descriptor ->
     // Write the content!
     def props = ['author','authorEmail','title','description','documentation']
     def resourceList = GrailsPluginUtils.getArtefactResourcesForOne(descriptor.parentFile.absolutePath)
+
+    def rcComparator = [ compare: {a, b -> a.URI.compareTo(b.URI) } ] as Comparator
+    Arrays.sort(resourceList, rcComparator)
+
     def pluginGrailsVersion = "${GrailsUtil.grailsVersion} > *"
     if(plugin.metaClass.hasProperty(plugin,"grailsVersion")) {
         pluginGrailsVersion = plugin.grailsVersion
