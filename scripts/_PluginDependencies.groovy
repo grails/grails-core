@@ -849,11 +849,12 @@ cacheKnownPlugin = { String pluginName, String pluginRelease ->
     }
 }
 
-
 cleanupPluginInstallAndExit = { message ->
   event("StatusError", [message])
   for(pluginDir in installedPlugins) {
-    ant.delete(dir:pluginDir, failonerror:false)
+    if (checkPluginPath(pluginDir)) {
+        ant.delete(dir:pluginDir, failonerror:false)
+    }
   }
   exit(1)
 }
@@ -879,8 +880,9 @@ uninstallPluginForName = { name, version=null ->
 
         def uninstallScript = new File("${pluginDir}/scripts/_Uninstall.groovy")
         runPluginScript(uninstallScript, pluginDir.name, "uninstall script")
-
-        ant.delete(dir:pluginDir, failonerror:true)
+        if (checkPluginPath(pluginDir)) {
+            ant.delete(dir:pluginDir, failonerror:true)
+        }
         resetClasspathAndState()
     }
     else {
@@ -907,9 +909,12 @@ installPluginForName = { String fullPluginName ->
             }
         }
         installedPlugins << pluginInstallPath
-        ant.delete(dir: pluginInstallPath, failonerror: false)
-        ant.mkdir(dir: pluginInstallPath)
-        ant.unzip(dest: pluginInstallPath, src: "${pluginsBase}/grails-${fullPluginName}.zip")
+
+        if (checkPluginPath(pluginInstallPath)) {
+            ant.delete(dir: pluginInstallPath, failonerror: false)
+            ant.mkdir(dir: pluginInstallPath)
+            ant.unzip(dest: pluginInstallPath, src: "${pluginsBase}/grails-${fullPluginName}.zip")
+        }
 
 
         def pluginXmlFile = new File("${pluginInstallPath}/plugin.xml")
@@ -1236,5 +1241,14 @@ def withSVNRepo(url, closure) {
     }
     // make sure the closure return is returned..
     closure.call(repo)
+}
+
+/**
+ * Check to see if the plugin directory is in plugins home.
+ */
+checkPluginPath = { pluginDir ->
+  // insure all the directory is in the pluginsHome
+  def absPluginsHome = new File(pluginsHome).absolutePath
+  new File(pluginDir).absolutePath.startsWith(absPluginsHome)
 }
 
