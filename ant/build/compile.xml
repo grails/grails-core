@@ -18,11 +18,7 @@
 	<target name="build" depends="build-init" description="compile Java and Groovy sources" >
 
         <copy todir="${grails.build}">
-            <fileset dir="${grails.src.commons}" includes="**/*.properties" />
-            <fileset dir="${grails.src.web}" includes="**/*.properties,**/*.dtd,**/*.xsd" />
-            <fileset dir="${grails.src.persistence}" includes="**/*.properties" />
-            <fileset dir="${grails.src.scaffolding}" includes="**/*.properties" />
-            <fileset dir="${grails.src.groovy}" includes="**/*.properties" />
+            <fileset dir="${grails.src}" includes="**/*.properties" />
         </copy>
 
         <groovyc destdir="${grails.build}"  encoding="UTF-8">
@@ -30,11 +26,7 @@
                 <pathelement location="${grails.build}"/>
                 <path refid="classpath"/>
             </classpath>
-            <src path="${grails.src.commons}"/>
-            <src path="${grails.src.web}"/>
-            <src path="${grails.src.persistence}"/>
-            <src path="${grails.src.scaffolding}"/>
-            <src path="${grails.src.groovy}"/>
+            <src path="${grails.src}"/>
 
             <javac includeantruntime="false" deprecation="on" debug="yes" source="1.5" target="1.5" />
         </groovyc>

@@ -135,7 +135,7 @@
             </fileset>
         </copy>
         <copy todir="${grails.build}">
-            <fileset dir="${grails.src.persistence}" includes="**/*.xsd" />
+            <fileset dir="${grails.src}" includes="**/*.xsd" />
         </copy>
 
         <jar destfile="${grails.dist}/grails-gorm-${grails.version}.jar" manifest="${grails.build}/META-INF/MANIFEST.MF">
