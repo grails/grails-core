@@ -1234,6 +1234,22 @@ class MockUtilsTests extends GroovyTestCase {
         assertTrue obj.log.debugEnabled
         assertFalse obj.log.traceEnabled
     }
+
+    /**
+     * Tests that the <code>instanceOf()</code> method is mocked.
+     */
+    void testInstanceOf() {
+        MockUtils.mockDomain(TestDomain)
+        def domain = new TestDomain()
+        assertTrue domain.instanceOf(TestDomain)
+        assertFalse domain.instanceOf(A)
+
+        MockUtils.mockDomain(A)
+        def a = new A()
+        assertTrue a.instanceOf(TestDomain)
+        assertTrue a.instanceOf(A)
+        assertFalse a.instanceOf(B)
+    }
 }
 
 /**
