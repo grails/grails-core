@@ -729,6 +729,11 @@ class MockUtils {
         // discard() method - doesn't need to do anything.
         clazz.metaClass.discard = {-> delegate}
 
+        // instanceOf() method - just delegates to regular operator
+        clazz.metaClass.instanceOf = { Class c ->
+            c.isInstance(delegate)
+        }
+
         // Add the "addTo*" and "removeFrom*" methods.
         Introspector.getBeanInfo(clazz).propertyDescriptors.each { PropertyDescriptor pd ->
             if (Collection.isAssignableFrom(pd.propertyType)) {
