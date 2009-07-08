@@ -51,6 +51,9 @@ grails {
     void testVersionValidity() {
         assertTrue "version should be within range", GrailsPluginUtils.isValidVersion(  "1.1-SNAPSHOT","1.0 > *")
         assertTrue "version should be within range", GrailsPluginUtils.isValidVersion(  "1.0","1.0 > *")
+        assertTrue "version should be within range", GrailsPluginUtils.isValidVersion(  "1.1.1","1.1 > *")
+        assertTrue "version should be within range", GrailsPluginUtils.isValidVersion(  "1.1.1-SNAPSHOT","1.1 > *")
+        assertTrue "version should be within range", GrailsPluginUtils.isValidVersion(  "1.1.1","1.1-SNAPSHOT > *")
         assertTrue "version should be within range", GrailsPluginUtils.isValidVersion(  "1.0","1.0-SNAPSHOT > *")
         assertTrue "version should be within range", GrailsPluginUtils.isValidVersion(  "1.0","0.6 > 1.1-SNAPSHOT")
         assertTrue "version should be within range", GrailsPluginUtils.isValidVersion(  "0.7","0.6 > 1.0")
