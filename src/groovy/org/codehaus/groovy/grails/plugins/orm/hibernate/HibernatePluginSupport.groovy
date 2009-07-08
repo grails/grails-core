@@ -55,6 +55,7 @@ import org.hibernate.proxy.LazyInitializer
 import org.apache.commons.beanutils.PropertyUtils
 import org.hibernate.Hibernate
 import org.springframework.validation.Validator
+import org.hibernate.EmptyInterceptor
 
 
 /**
@@ -154,6 +155,7 @@ Try using Grails' default cache provider: 'org.hibernate.cache.OSCacheProvider'"
                 nativeJdbcExtractor = ref("nativeJdbcExtractor")
 			}
 			eventTriggeringInterceptor(ClosureEventTriggeringInterceptor)
+            entityInterceptor(EmptyInterceptor)
             sessionFactory(ConfigurableLocalSessionFactoryBean) {
                 dataSource = dataSource
                 if (application.classLoader.getResource("hibernate.cfg.xml")) {
@@ -165,7 +167,7 @@ Try using Grails' default cache provider: 'org.hibernate.cache.OSCacheProvider'"
                 hibernateProperties = hibernateProperties
                 grailsApplication = ref("grailsApplication", true)
 				lobHandler = lobHandlerDetector
-
+                entityInterceptor = entityInterceptor
 				eventListeners = ['pre-load':eventTriggeringInterceptor,
                                   'post-load':eventTriggeringInterceptor,
                                   'save':eventTriggeringInterceptor,
@@ -221,31 +223,40 @@ Try using Grails' default cache provider: 'org.hibernate.cache.OSCacheProvider'"
 
     public static void enhanceProxy ( HibernateProxy proxy ) {
         
-        proxy.metaClass.propertyMissing = { String name, val ->
-            if(delegate instanceof HibernateProxy) {
-                def obj = GrailsHibernateUtil.unwrapProxy(delegate)
-                if(val != null) {
-                    obj?."$name" = value
+        proxy.metaClass {
+            propertyMissing { String name, val ->
+                if(delegate instanceof HibernateProxy) {
+                    def obj = GrailsHibernateUtil.unwrapProxy(delegate)
+                    if(val != null) {
+                        obj?."$name" = value
+                    }
+                    return obj."$name"
                 }
-                return obj."$name"
-            }
-            else {
-                throw new MissingPropertyException(name, delegate.class)
+                else {
+                    throw new MissingPropertyException(name, delegate.class)
+                }
+             }
+
+            methodMissing { String name, args ->
+                if(delegate instanceof HibernateProxy) {
+                    def obj = GrailsHibernateUtil.unwrapProxy(delegate)
+                    return obj."$name"(*args)
+                }
+                else {
+                    throw new MissingMethodException(name, delegate.class, args)
+                }
+
             }
         }
 
-        proxy.metaClass.methodMissing = { String name, args ->
-            if(delegate instanceof HibernateProxy) {
-                def obj = GrailsHibernateUtil.unwrapProxy(delegate)
-                return obj."$name"(*args)
-            }
-            else {
-                throw new MissingPropertyException(name, delegate.class)
-            }
 
-        }
     }
 
+
+    private static DOMAIN_INITIALIZERS = [:]
+    static initializeDomain(Class c) {
+         DOMAIN_INITIALIZERS.get(c)?.call()
+    }
     static enhanceSessionFactory(SessionFactory sessionFactory, GrailsApplication application, ApplicationContext ctx) {
         // we're going to configure Grails to lazily initialise the dynamic methods on domain classes to avoid
         // the overhead of doing so at start-up time
@@ -261,6 +272,7 @@ Try using Grails' default cache provider: 'org.hibernate.cache.OSCacheProvider'"
             //    registerDynamicMethods(dc, application, ctx)
             MetaClass mc = dc.metaClass
             def initDomainClass = lazyInit.curry(dc)
+            DOMAIN_INITIALIZERS[dc.clazz] = initDomainClass
             // these need to be eagerly initialised here, otherwise Groovy's findAll from the DGM is called
             def findAllMethod = new FindAllPersistentMethod(sessionFactory, application.classLoader)
             mc.static.findAll = {->

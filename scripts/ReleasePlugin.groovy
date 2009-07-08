@@ -21,6 +21,7 @@ import org.tmatesoft.svn.core.io.*
 import org.tmatesoft.svn.core.*
 import org.tmatesoft.svn.core.auth.*
 import org.tmatesoft.svn.core.wc.*
+import org.codehaus.groovy.grails.documentation.MetadataGeneratingMetaClassCreationHandle
 
 /**
  * Gant script that handles releasing plugins to a plugin repository.
@@ -29,6 +30,7 @@ import org.tmatesoft.svn.core.wc.*
  */
 
 includeTargets << grailsScript("_GrailsPluginDev")
+includeTargets << grailsScript("_GrailsBootstrap")
 includeTargets << grailsScript("_GrailsDocs")
 
 authManager = null
@@ -70,7 +72,22 @@ target(processAuth:"Prompts user for login details to create authentication mana
     }
 }
 target(releasePlugin: "The implementation target") {
-    depends(parseArguments, packagePlugin, processAuth, docs)
+    depends(parseArguments)
+   
+    if(argsMap.skipMetadata != true) {
+        println "Generating plugin project behavior metadata..."
+        MetadataGeneratingMetaClassCreationHandle.enable()
+        bootstrap()
+        MetadataGeneratingMetaClassCreationHandle.disable()
+        println "Packaging plugin project..."
+    }
+    packagePlugin()
+    docs()
+    
+    if(argsMap.packageOnly) {
+        return
+    }
+    processAuth()
 
     if(argsMap.repository) {
       configureRepositoryForName(argsMap.repository, "distribution")

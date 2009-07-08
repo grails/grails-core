@@ -37,6 +37,11 @@ public class JspWriterDelegate extends JspWriter {
         this.out = out;
     }
 
+    @Override
+    public String toString() {
+        return out.toString();
+    }
+
     public void clear() throws IOException {
         throw new UnsupportedOperationException();
     }

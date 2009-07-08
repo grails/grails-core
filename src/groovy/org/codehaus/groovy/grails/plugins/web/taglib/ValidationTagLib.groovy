@@ -178,9 +178,12 @@ class ValidationTagLib {
         if(!renderAs) renderAs = 'list'
 
         if(renderAs == 'list') {
+            def codec = attrs.codec ?: 'HTML'
+            if (codec=='none') codec = ''
+
             out << "<ul>"
             out << eachError(attrs, {
-                out << "<li>${message(error:it, encodeAs:"HTML")}</li>"
+                out << "<li>${message(error:it, encodeAs:codec)}</li>"
               }
             )
             out << "</ul>"
@@ -208,8 +211,8 @@ class ValidationTagLib {
           def locale = RCU.getLocale(request)
           def text
 
-          if(attrs['error']) {
-                def error = attrs['error']
+          if(attrs['error'] || attrs['message']) {
+                def error = attrs['error'] ?: attrs['message']
                 def message = messageSource.getMessage( error,
                                                         locale )
                 if(message) {

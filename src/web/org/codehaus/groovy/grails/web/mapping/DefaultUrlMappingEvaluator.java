@@ -71,12 +71,6 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
     private static final String EXCEPTION = "exception";
     private static final String PARSE_REQUEST = "parseRequest";
     private static final String RESOURCE = "resource";
-    private static final Map<String,String> DEFAULT_REST_MAPPING = new HashMap<String,String>() {{
-       put("GET", "show");
-       put("POST", "save");
-       put("PUT", "update");
-       put("DELETE", "delete");
-    }};
 
     public DefaultUrlMappingEvaluator(ServletContext servletContext) {
         this.servletContext = servletContext;
@@ -265,6 +259,12 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
 
         public void setView(String viewName) {
             this.viewName = viewName;
+        }
+
+        public void name(Map<String, UrlMapping> m) {
+            for(Map.Entry<String, UrlMapping> entry: m.entrySet()) {
+                entry.getValue().setMappingName(entry.getKey());
+            }
         }
 
         public Object invokeMethod(String methodName, Object arg) {
@@ -466,12 +466,17 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
 
             if(restRequest) {
                 urlMapping.setParseRequest(true);
+                urlMapping.setRestfulMapping(true);
             }
             else {
                 Object parseRequest = getParseRequest(namedArguments,bindingVariables);
                 if(parseRequest instanceof Boolean) {
                     urlMapping.setParseRequest((Boolean) parseRequest);
                 }
+            }
+
+            if(actionName instanceof Map) {
+                urlMapping.setRestfulMapping(true);
             }
 
             return urlMapping;

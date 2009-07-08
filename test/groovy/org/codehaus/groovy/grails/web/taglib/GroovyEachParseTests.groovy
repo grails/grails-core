@@ -5,7 +5,7 @@ import org.codehaus.groovy.grails.web.pages.*;
 class GroovyEachParseTests extends ParseTests {
                               
 	void testEachOutput() {        
-		String output = parseCode("myTest", """
+		def output = parseCode("myTest", """
 <g:each var="t" in="${'blah'}">
 </g:each>
 """);	
@@ -19,17 +19,18 @@ def request = binding.request
 def flash = binding.flash
 def response = binding.response
 
-out.print('\\n')
+out.print(htmlParts[0])
 evaluate('"blah"', 2, it) { return "blah" }.each { t ->
-out.print('\\n')
+out.print(htmlParts[0])
 }
-out.print('\\n')
-}
-}"""),trimAndRemoveCR(output) )
+out.print(htmlParts[0])
+}""" + GSP_FOOTER 
+),trimAndRemoveCR(output.toString()) )
+		assertEquals("\n", output.htmlParts[0])
 	}
 
     void testEachOutputNoLineBreaks() {
-        String output = parseCode("myTest", """
+        def output = parseCode("myTest", """
 <g:each var="t" in="${'blah'}"></g:each>""");
 
         assertEquals(trimAndRemoveCR(makeImports()+"""\n
@@ -41,16 +42,17 @@ def request = binding.request
 def flash = binding.flash
 def response = binding.response
 
-out.print('\\n')
-evaluate('"blah"', 2, it) { return "blah" }.each { t ->
+out.print(htmlParts[0])
+evaluate('"blah"', 1, it) { return "blah" }.each { t ->
 }
-}
-}"""),trimAndRemoveCR(output) )
+}""" + GSP_FOOTER
+),trimAndRemoveCR(output.toString()) )
+		assertEquals("\n", output.htmlParts[0])
     }
 
 		
 		void testEachOutVarAndIndex() {
-			String output = parseCode("myTest2", """
+			def output = parseCode("myTest2", """
 <g:each var="t" status="i" in="${'blah'}">
 </g:each>
 """);
@@ -64,13 +66,14 @@ def request = binding.request
 def flash = binding.flash
 def response = binding.response
 
-out.print('\\n')
+out.print(htmlParts[0])
 evaluate('"blah"', 2, it) { return "blah" }.eachWithIndex { t,i ->
-out.print('\\n')
+out.print(htmlParts[0])
 }
-out.print('\\n')
-}
-}"""),trimAndRemoveCR(output) )
+out.print(htmlParts[0])
+}""" + GSP_FOOTER
+),trimAndRemoveCR(output.toString()) )
+		  assertEquals("\n", output.htmlParts[0])
 		}
 
 }

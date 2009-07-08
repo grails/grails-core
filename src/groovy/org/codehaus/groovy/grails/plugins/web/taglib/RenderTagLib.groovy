@@ -446,14 +446,12 @@ class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants 
            t = TEMPLATE_CACHE[uri]
         }
         else {
-          def r = engine.getResourceForUri("${contextPath}${uri}")
-          if(!r.exists()) r = engine.getResourceForUri("${contextPath}/grails-app/views/${uri}")
-          t = engine.createTemplate( r )
+          t = engine.createTemplateForUri(["${contextPath}${uri}", "${contextPath}/grails-app/views/${uri}"] as String[])
           TEMPLATE_CACHE[uri] = t
         }
 
         if(attrs.containsKey('bean')) {
-        	def b = [:]
+        	def b = [body: body]
             if (attrs.model instanceof Map) {
                 b += attrs.model
             }
@@ -473,7 +471,7 @@ class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants 
                 key = first ? GrailsNameUtils.getPropertyName(first.getClass()) : 'it'
             }
             collection.each {
-            	def b = [:]
+            	def b = [body:body]
                 if (attrs.model instanceof Map) {
                     b += attrs.model
                 }
@@ -488,10 +486,10 @@ class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants 
             }
         }
         else if(attrs.model instanceof Map) {
-            t.make( attrs.model ).writeTo(out)
+            t.make( [body:body] + attrs.model ).writeTo(out)
         }
 		else if(attrs.template) {
-			t.make().writeTo(out)
+			t.make([body:body]).writeTo(out)
 		}
     }
 

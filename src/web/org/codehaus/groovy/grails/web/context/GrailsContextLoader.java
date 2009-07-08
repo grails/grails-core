@@ -67,7 +67,7 @@ public class GrailsContextLoader extends ContextLoader {
             application = (GrailsApplication) ctx.getBean(GrailsApplication.APPLICATION_ID, GrailsApplication.class);
             ctx =  GrailsConfigUtils.configureWebApplicationContext(servletContext, ctx);
             GrailsConfigUtils.executeGrailsBootstraps(application, ctx, servletContext);
-        } catch (Exception e) {
+        } catch (Throwable e) {
             GrailsUtil.deepSanitize(e);
             if(e instanceof BeansException) throw (BeansException)e;
             else {

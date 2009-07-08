@@ -17,6 +17,7 @@ package org.codehaus.groovy.grails.web.mapping;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
+import org.codehaus.groovy.grails.commons.GrailsControllerClass;
 import org.springframework.core.style.ToStringCreator;
 
 import java.io.PrintWriter;
@@ -47,6 +48,7 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
     private UrlMapping[] mappings;
     private List excludePatterns;
     private Map<UrlMappingKey, UrlMapping> mappingsLookup = new HashMap<UrlMappingKey, UrlMapping>();
+    private Map<String, UrlMapping> namedMappings = new HashMap<String, UrlMapping>();
     private UrlMappingsList mappingsListLookup = new UrlMappingsList();
     private Set<String> DEFAULT_CONTROLLER_PARAMS = new HashSet<String>() {{
            add(UrlMapping.CONTROLLER);
@@ -75,6 +77,10 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
         this.mappings = this.urlMappings.toArray(new UrlMapping[this.urlMappings.size()]);
 
         for (UrlMapping mapping : mappings) {
+            String mappingName = mapping.getMappingName();
+            if(mappingName != null) {
+                namedMappings.put(mappingName, mapping);
+            }
             String controllerName = mapping.getControllerName() instanceof String ? mapping.getControllerName().toString() : null;
             String actionName = mapping.getActionName() instanceof String ? mapping.getActionName().toString() : null;
 
@@ -132,7 +138,12 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
     public UrlCreator getReverseMapping(final String controller, final String action, Map params) {
         if(params == null) params = Collections.EMPTY_MAP;
 
-        UrlMapping mapping = lookupMapping(controller, action, params);
+        UrlMapping mapping = null;
+
+        mapping = namedMappings.get(params.remove("mappingName"));
+        if(mapping == null) {
+            mapping = lookupMapping(controller, action, params);
+        }
         if(mapping == null || (mapping instanceof ResponseCodeUrlMapping)) {
             mapping = mappingsLookup.get(new UrlMappingKey(controller, action, Collections.EMPTY_SET));
         }
@@ -182,9 +193,13 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
         final UrlMappingsListKey lookupKey = new UrlMappingsListKey(controller, action);
         SortedSet mappingKeysSet = mappingsListLookup.get(lookupKey);
 
-    	if(null == mappingKeysSet) {
+        final String actionName = lookupKey.action;
+        boolean secondAttempt = false;
+        final boolean isIndexAction = GrailsControllerClass.INDEX_ACTION.equals(actionName);
+        if(null == mappingKeysSet && actionName != null) {
             lookupKey.action=null;
             mappingKeysSet = mappingsListLookup.get(lookupKey);
+            secondAttempt = true;
         }
         if(null == mappingKeysSet) return null;
 		
@@ -193,10 +208,17 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
     	for(int i=mappingKeys.length;i>0;i--){
     		UrlMappingKey mappingKey = mappingKeys[i-1];
     		if(params.keySet().containsAll(mappingKey.paramNames)) {
-    			return mappingsLookup.get(mappingKey);
+                final UrlMapping mapping = mappingsLookup.get(mappingKey);
+                if(canInferAction(actionName, secondAttempt, isIndexAction, mapping))
+                    return mapping;
+                else if(!secondAttempt) return mapping;
     		}
     	}
     	return null;
+    }
+
+    private boolean canInferAction(String actionName, boolean secondAttempt, boolean indexAction, UrlMapping mapping) {
+        return secondAttempt && (mapping.getActionName() == null || indexAction || (mapping.isRestfulMapping() && UrlMappingEvaluator.DEFAULT_REST_MAPPING.containsValue(actionName) ));
     }
 
     /**

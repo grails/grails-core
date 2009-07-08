@@ -24,4 +24,9 @@
 
 includeTargets << grailsScript("_GrailsCompile")
 
-setDefaultTarget("compile")
+
+if(args?.indexOf('--gsp')>-1)
+    setDefaultTarget("compilepackage")
+else {
+    setDefaultTarget("compile")
+}

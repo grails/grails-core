@@ -4,7 +4,8 @@ import org.springframework.validation.Errors
 import org.springframework.validation.FieldError
 import org.springframework.util.StringUtils
 import org.springframework.web.context.request.RequestContextHolder
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
+import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
+import org.springframework.context.MessageSourceResolvable
 
 class ValidationTagLibTests extends AbstractGrailsTagTests {
 
@@ -250,6 +251,16 @@ class Article {
         assertOutputEquals("", template, [:])
     }
 
+    void testMessageTagWithMessage() {
+        def resolvable = [
+                getArguments: {-> [] as Object[] },
+                getCodes: {-> ["my.message.code"] as String[] },
+                getDefaultMessage: {-> "The Default Message" }
+        ] as MessageSourceResolvable
 
+        def template = '<g:message message="${message}" />'
+
+        assertOutputEquals("The Default Message", template, [message: resolvable])
+    }
 
 }

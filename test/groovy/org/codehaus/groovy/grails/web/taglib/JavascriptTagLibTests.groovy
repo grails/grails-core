@@ -152,6 +152,17 @@ class TestUrlMappings {
 
     }
 
+    void testRemoteLinkWithSpaceBeforeGStringVariable() {
+        // see http://jira.codehaus.org/browse/GRAILS-4672
+        def template = '<g:remoteLink controller="people" action="theAction" params="someParams" update="success" onComplete="doSomething();" title="The Album Is ${variable}" class="hoverLT">${variable}</g:remoteLink>'
+        assertOutputContains 'title="The Album Is Undertow"', template, [variable: 'Undertow']
+    }
+
+    void testRemoteLinkWithSpaceBeforeAndAfterGStringVariable() {
+        // see http://jira.codehaus.org/browse/GRAILS-4672
+        def template = '<g:remoteLink controller="people" action="theAction" params="someParams" update="success" onComplete="doSomething();" title="The Album Is ${variable} By Tool" class="hoverLT">${variable}</g:remoteLink>'
+        assertOutputContains 'title="The Album Is Undertow By Tool"', template, [variable: 'Undertow']
+    }
 
     void testRemoteFieldWithAdditionalArgs() {
         def template = '<g:remoteField controller="bar" action="storeField" id="2" name="nv" paramName="pnv" params="\'a=b&\'" />'

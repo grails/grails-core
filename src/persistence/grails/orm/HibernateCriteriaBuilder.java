@@ -115,14 +115,16 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
     private MetaClass criteriaMetaClass;
 
     private boolean uniqueResult = false;
-    private Stack logicalExpressionStack = new Stack();
-    private Stack associationStack = new Stack();
+    private List<LogicalExpression> logicalExpressionStack = new ArrayList<LogicalExpression>();
+    private List<String> associationStack = new ArrayList<String>();
     private boolean participate;
     private boolean scroll;
     private boolean count;
     private ProjectionList projectionList;
     private BeanWrapper targetBean;
     private List<String> aliasStack = new ArrayList<String>();
+    private List<Criteria> aliasInstanceStack = new ArrayList<Criteria>();
+
     private Map<String, String> aliasMap = new HashMap<String, String>();
     private static final String ALIAS = "_alias";
     private ResultTransformer resultTransformer;
@@ -963,7 +965,7 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
                     this.logicalExpressionStack.add(new LogicalExpression(name));
                     invokeClosureNode(args[0]);
 
-                    LogicalExpression logicalExpression = (LogicalExpression) logicalExpressionStack.pop();
+                    LogicalExpression logicalExpression = logicalExpressionStack.remove(logicalExpressionStack.size()-1);
                     addToCriteria(logicalExpression.toCriterion());
 
                     return name;
@@ -991,18 +993,21 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
                         targetClass = sessionFactory.getClassMetadata(otherSideEntityName).getMappedClass(EntityMode.POJO);
                         BeanWrapper oldTargetBean = targetBean;
                         targetBean = new BeanWrapperImpl(BeanUtils.instantiateClass(targetClass));
-                        associationStack.push(name.toString());
+                        associationStack.add(name.toString());
                         final String associationPath = getAssociationPath();
                         createAliasIfNeccessary(name, associationPath);
                         // the criteria within an association node are grouped with an implicit AND
-                        logicalExpressionStack.push(new LogicalExpression(AND));
+                        logicalExpressionStack.add(new LogicalExpression(AND));
                         invokeClosureNode(args[0]);
                         aliasStack.remove(aliasStack.size() - 1);
-                        LogicalExpression logicalExpression = (LogicalExpression) logicalExpressionStack.pop();
+                        if(!aliasInstanceStack.isEmpty()) {
+                            aliasInstanceStack.remove(aliasInstanceStack.size() - 1);
+                        }
+                        LogicalExpression logicalExpression = logicalExpressionStack.remove(logicalExpressionStack.size()-1);
                         if (!logicalExpression.args.isEmpty()) {
                             addToCriteria(logicalExpression.toCriterion());
                         }
-                        associationStack.pop();
+                        associationStack.remove(associationStack.size()-1);
                         targetClass = oldTargetClass;
                         targetBean = oldTargetBean;
                         return name;
@@ -1016,7 +1021,7 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
                 Object value = args[0];
                 Criterion c = null;
                 if(name.equals(ID_EQUALS)) {
-                    c = Restrictions.idEq(value);
+                    return eq("id", value);
                 }
                 else {
 
@@ -1053,6 +1058,16 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
         throw new MissingMethodException(name, getClass(), args) ;
     }
 
+    private void addToCurrentOrAliasedCriteria(Criterion criterion) {
+        if(!aliasInstanceStack.isEmpty()) {
+            Criteria c = aliasInstanceStack.get(aliasInstanceStack.size()-1);
+            c.add(criterion);
+        }
+        else {
+            this.criteria.add(criterion);
+        }
+    }
+
 
     private void createAliasIfNeccessary(String associationName, String associationPath) {
         String newAlias;
@@ -1063,7 +1078,7 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
             aliasCount++;
             newAlias = associationName + ALIAS + aliasCount;
             aliasMap.put(associationPath, newAlias);
-            this.criteria.createAlias(associationPath, newAlias, CriteriaSpecification.LEFT_JOIN);
+            this.aliasInstanceStack.add(this.criteria.createAlias(associationPath, newAlias, CriteriaSpecification.LEFT_JOIN));
         }
         this.aliasStack.add(newAlias);
     }
@@ -1137,7 +1152,7 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
      */
     private Criterion addToCriteria(Criterion c) {
         if (!logicalExpressionStack.isEmpty()) {
-            ((LogicalExpression) logicalExpressionStack.peek()).args.add(c);
+            logicalExpressionStack.get(logicalExpressionStack.size()-1).args.add(c);
         }
         else {
             this.criteria.add(c);

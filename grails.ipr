@@ -259,6 +259,7 @@
     <option name="FILTER_INFO" value="true" />
     <option name="CUSTOM_FILTER" />
   </component>
+  <component name="NewModuleRootManager" />
   <component name="Palette2">
     <group name="Swing">
       <item class="com.intellij.uiDesigner.HSpacer" tooltip-text="Horizontal Spacer" icon="/com/intellij/uiDesigner/icons/hspacer.png" removable="false" auto-create-binding="false" can-attach-label="false">
@@ -393,7 +394,7 @@
       <module fileurl="file://$PROJECT_DIR$//JSP21.iml" filepath="$PROJECT_DIR$//JSP21.iml" />
     </modules>
   </component>
-  <component name="ProjectRootManager" version="2" languageLevel="JDK_1_5" assert-keyword="true" jdk-15="true" project-jdk-name="1.6" project-jdk-type="JavaSDK">
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_1_5" assert-keyword="true" jdk-15="true" project-jdk-name="1.5" project-jdk-type="JavaSDK">
     <output url="file://$PROJECT_DIR$/idea" />
   </component>
   <component name="ResourceManagerContainer">
@@ -476,12 +477,12 @@
         <root url="jar://$PROJECT_DIR$/lib/commons-dbcp-1.2.1.jar!/" />
         <root url="jar://$PROJECT_DIR$/lib/commons-collections-3.2.jar!/" />
         <root url="jar://$PROJECT_DIR$/lib/commons-validator-1.3.0.jar!/" />
-        <root url="jar://$PROJECT_DIR$/lib/commons-fileupload-1.1.1.jar!/" />
         <root url="jar://$PROJECT_DIR$/lib/oro-2.0.8.jar!/" />
         <root url="jar://$PROJECT_DIR$/lib/log4j-1.2.15.jar!/" />
         <root url="jar://$PROJECT_DIR$/lib/commons-io-1.4.jar!/" />
         <root url="jar://$PROJECT_DIR$/lib/commons-codec-1.3.jar!/" />
         <root url="jar://$PROJECT_DIR$/lib/commons-lang-2.4.jar!/" />
+        <root url="jar://$PROJECT_DIR$/lib/commons-fileupload-1.2.1.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES />
@@ -496,6 +497,7 @@
         <root url="jar://$PROJECT_DIR$/lib/hibernate-commons-annotations-3.3.0.jar!/" />
         <root url="jar://$PROJECT_DIR$/lib/jta-1.1.jar!/" />
         <root url="jar://$PROJECT_DIR$/lib/hibernate3-3.3.1.jar!/" />
+        <root url="jar://$PROJECT_DIR$/lib/javassist-3.4.GA.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES />

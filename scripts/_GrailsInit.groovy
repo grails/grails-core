@@ -62,6 +62,24 @@ eclipseClasspathLibs = {
     result
 }
 
+intellijClasspathLibs = {
+    def builder = new StringBuilder()
+    if (grailsHome) {
+        (new File("${grailsHome}/lib")).eachFileMatch(~/.*\.jar/) {file ->
+            if (!file.name.startsWith("gant-")) {
+                builder << "<root url=\"jar://${grailsHome}/lib/${file.name}!/\" />\n\n"
+            }
+        }
+        (new File("${grailsHome}/dist")).eachFileMatch(~/^grails-.*\.jar/) {file ->
+            builder << "<root url=\"jar://${grailsHome}/diest/${file.name}!/\" />\n\n"
+        }
+
+    }
+
+    return builder.toString()
+}
+
+
 // Generates Eclipse .classpath entries for the Grails distribution
 // JARs. This only works if $GRAILS_HOME is set.
 eclipseClasspathGrailsJars = {args ->
@@ -146,8 +164,16 @@ target( launderIDESupportFiles: "Updates the IDE support files (Eclipse, TextMat
     ant.move(file: "${basedir}/test.launch", tofile: "${basedir}/${grailsAppName}-test.launch", overwrite: true)
     ant.move(file: "${basedir}/project.tmproj", tofile: "${basedir}/${grailsAppName}.tmproj", overwrite: true)
 
+
+    ant.move(file: "${basedir}/ideaGrailsProject.iml", tofile: "${basedir}/${grailsAppName}.iml", overwrite: true)
+    ant.move(file: "${basedir}/ideaGrailsProject.ipr", tofile: "${basedir}/${grailsAppName}.ipr", overwrite: true)
+    ant.move(file: "${basedir}/ideaGrailsProject.iws", tofile: "${basedir}/${grailsAppName}.iws", overwrite: true)
+
+    
+
     def appKey = grailsAppName.replaceAll( /\s/, '.' ).toLowerCase()
     ant.replace(dir:"${basedir}", includes:"*.*") {
+        replacefilter(token:"@grails.intellij.libs@", value: intellijClasspathLibs())
         replacefilter(token: "@grails.libs@", value: eclipseClasspathLibs())
         replacefilter(token: "@grails.jar@", value: eclipseClasspathGrailsJars())
         replacefilter(token: "@grails.version@", value: grailsVersion)

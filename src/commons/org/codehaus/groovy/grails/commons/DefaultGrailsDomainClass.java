@@ -1,11 +1,11 @@
 /* Copyright 2004-2005 the original author or authors.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -238,7 +238,7 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
 
                 establishDomainClassRelationship( currentProp );
             }
-            else if(!GrailsDomainConfigurationUtil.isBasicType(currentProp)) {
+            else if(embedded.contains(currentProp.getName())) {
             	establishDomainClassRelationship( currentProp );
             }
 
@@ -341,7 +341,7 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
                 }
 
                 establishRelationshipForSetToType(property,relatedClassPropertyType);
-                // if its a many-to-many figure out the owning side of the relationship               
+                // if its a many-to-many figure out the owning side of the relationship
                 if(property.isManyToMany()) {
                 	establishOwnerOfManyToMany(property, relatedClassType);
                 }
@@ -349,7 +349,7 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
             // otherwise set it to not persistent as you can't persist
             // relationships to non-domain classes
             else {
-                property.setBasicCollectionType(true);                
+                property.setBasicCollectionType(true);
             }
         }
         else if(!Map.class.isAssignableFrom(property.getType())) {
@@ -521,7 +521,7 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
         //	establish relationship based on this type
         establishDomainClassRelationshipToType( property, relatedClassPropertyType );
     }
-  
+
     private boolean isNotMappedToDifferentProperty(GrailsDomainClassProperty property, String relatedClassPropertyName, Map mappedBy) {
         String mappedByForRelation = (String)mappedBy.get(relatedClassPropertyName);
         if(mappedByForRelation == null) return true;
@@ -724,7 +724,7 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
             GrailsDomainClassProperty persistentProperty = persistentProperties[i];
             if(persistentProperty.getName().equals(propertyName)) return true;
         }
-        return false;  
+        return false;
     }
 
     public void setMappingStrategy(String strategy) {

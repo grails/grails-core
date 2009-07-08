@@ -34,14 +34,45 @@ mappings  {
     "/images/$image**.jpg" (controller: 'userImage', action: 'download')
 }
 '''
+    def mappingsScript3 = '''
+mappings {
+   "/$controller/$action?/$id?"{
+      constraints {
+      }
+   }
+   "/**"{
+           controller = 'doubleWildcard'
+           action = 'otherAction'
+   }
+   "500"(view:'/error')
+   }'''
 
     public void onSetUp() {
         gcl.parseClass '''
+class SomeOtherController {
+    def index = {}
+}
+
 class DoubleWildCardController {
     def index = { params.path }
+    def otherAction = {}
 }
 '''
     }
+
+    void testDoubleWildcardWithMatchingController() {
+           def res = new ByteArrayResource(mappingsScript3.bytes)
+           def mappings = evaluator.evaluateMappings(res)
+           def holder = new DefaultUrlMappingsHolder(mappings)
+           assert webRequest
+
+           def infos = holder.matchAll('/someOther/index')
+           assert infos
+
+           UrlMappingInfo info = infos[0]
+           info.configure webRequest
+           assertEquals 'wrong controller name', 'someOther', info.getControllerName()
+       }
 
 
     void testDoubleWildcardInParam() {

@@ -14,7 +14,26 @@ import org.springframework.mock.web.MockServletContext;
 import java.util.List;
 
 public class DefaultUrlMappingEvaluatorTests extends AbstractGrailsMappingTests {
-	
+
+    public void testNamedMappings() throws Exception {
+        GroovyShell shell = new GroovyShell();
+        Binding binding = new Binding();
+        Script script = shell.parse("mappings = {\n" +
+                "name firstMapping: \"/first/one\" {\n" +
+                "}\n" +
+                "\"/second/one\" {" +
+                "}\n" +
+                "name thirdMapping: \"/third/one\" {\n" +
+                "}\n" +
+        "}");
+
+        script.setBinding(binding);
+        script.run();
+
+        Closure closure = (Closure)binding.getVariable("mappings");
+        List mappings = evaluator.evaluateMappings(closure);
+        assertEquals(3, mappings.size());
+    }
 	public void testNewMethod () throws Exception {
 		GroovyShell shell = new GroovyShell ();
 		Binding binding = new Binding();

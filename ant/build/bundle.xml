@@ -11,6 +11,7 @@
         <!-- Package up the files that are shared by both applications and plugins. -->
         <jar destfile="${grails.target}/grails-shared-files.jar">
             <fileset dir="${basedir}/src/grails/templates/ide-support/eclipse"/>
+            <fileset dir="${basedir}/src/grails/templates/ide-support/intellij"/>
             <fileset dir="${basedir}/src/grails/templates/ide-support/textmate" includes="project.tmproj"/>
             <fileset dir="${basedir}/src/grails/ant"/>
             <zipfileset dir="${basedir}/src/war" prefix="web-app">
@@ -46,6 +47,10 @@
                   <include name="grails-app/views/error.gsp" />
             </fileset>
         </jar>
+
+        <!--Package up files used for generating documentation-->
+        <jar basedir="${basedir}/src/grails/docs" destfile="${grails.target}/grails-doc-files.jar" />
+
     </target>
 
     <target name="jar" depends="build,build-scripts,-jar-app-files" description="Build the entire source, run all tests and create the Grails JAR file.">
@@ -58,6 +63,14 @@
                 <include name="grails/test/**" />
             </fileset>
         </jar>
+        <jar destfile="${grails.dist}/grails-docs-${grails.version}.jar" manifest="${grails.build}/META-INF/MANIFEST.MF">
+            <fileset dir="${grails.build}">
+                <include name="META-INF/**" />
+                <include name="grails/doc/**" />
+                <include name="**/groovy/grails/documentation/**" />
+            </fileset>
+        </jar>
+
         <jar destfile="${grails.dist}/grails-spring-${grails.version}.jar" manifest="${grails.build}/META-INF/MANIFEST.MF">
             <fileset dir="${grails.build}">
                 <include name="META-INF/**" />
@@ -247,6 +260,7 @@
         <maven.pom dir="${pom.target.dir}" id="grails.pom"/>
         <maven.pom dir="${pom.target.dir}" id="grails-bootstrap.pom"/>
         <maven.pom dir="${pom.target.dir}" id="grails-core.pom"/>
+        <maven.pom dir="${pom.target.dir}" id="grails-docs.pom"/>
         <maven.pom dir="${pom.target.dir}" id="grails-crud.pom"/>
         <maven.pom dir="${pom.target.dir}" id="grails-gorm.pom"/>
         <maven.pom dir="${pom.target.dir}" id="grails-resources.pom"/>
@@ -262,6 +276,7 @@
             description="Installs the Grails artifacts in the local Maven repository.">
         <mavenInstallRepo version="${grails.version}" prefix="grails"/>
         <mavenInstallRepo version="${grails.version}" prefix="grails-bootstrap"/>
+        <mavenInstallRepo version="${grails.version}" prefix="grails-docs"/>        
         <mavenInstallRepo version="${grails.version}" prefix="grails-core"/>
         <mavenInstallRepo version="${grails.version}" prefix="grails-crud"/>
         <mavenInstallRepo version="${grails.version}" prefix="grails-gorm"/>
@@ -279,6 +294,7 @@
         <mavenDeploy version="${grails.version}" prefix="grails"/>
         <mavenDeploy version="${grails.version}" prefix="grails-bootstrap"/>
         <mavenDeploy version="${grails.version}" prefix="grails-core"/>
+        <mavenDeploy version="${grails.version}" prefix="grails-docs"/>
         <mavenDeploy version="${grails.version}" prefix="grails-crud"/>
         <mavenDeploy version="${grails.version}" prefix="grails-gorm"/>
         <mavenDeploy version="${grails.version}" prefix="grails-resources"/>

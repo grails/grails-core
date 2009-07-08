@@ -19,6 +19,8 @@ import groovy.lang.Closure;
 import org.springframework.core.io.Resource;
 
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 
 /**
  * An interface that evaluates URL mapping from the given Spring Resource or class
@@ -34,6 +36,13 @@ import java.util.List;
  *        Time: 5:47:23 PM
  */
 public interface UrlMappingEvaluator {
+    // default HTTP method to action name mappings
+    Map<String,String> DEFAULT_REST_MAPPING = new HashMap<String,String>() {{
+       put("GET", "show");
+       put("POST", "save");
+       put("PUT", "update");
+       put("DELETE", "delete");
+    }};
 
     /**
      * Evaluates URL mapping from the give Spring Resource

@@ -25,6 +25,7 @@ import org.codehaus.groovy.grails.web.pages.exceptions.GroovyPagesException;
 import org.codehaus.groovy.grails.web.pages.ext.jsp.TagLibraryResolver;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.taglib.GroovyPageTagWriter;
+import org.codehaus.groovy.grails.web.taglib.GroovyPageTagBody;
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
 import org.codehaus.groovy.grails.web.errors.GrailsExceptionResolver;
 
@@ -40,6 +41,7 @@ import java.util.*;
  *
  * @author Troy Heninger
  * @author Graeme Rocher
+ * @author Lari Hotari
  *
  * Date: Jan 10, 2004
  *
@@ -60,12 +62,13 @@ public abstract class GroovyPage extends Script {
     public static final String EXTENSION = ".gsp";
     public static final String WEB_REQUEST = "webRequest";
     public static final String DEFAULT_NAMESPACE = "g";
+    public static final String LINK_NAMESPACE = "link";
     public static final String TEMPLATE_NAMESPACE = "tmpl";
     public static final String PAGE_SCOPE = "pageScope";
     public static final String CONTROLLER_NAME = "controllerName";
     public static final String SUFFIX = ".gsp";
     public static final String ACTION_NAME = "actionName";
-
+    
     public static final Collection<String> RESERVED_NAMES = new ArrayList<String>() {{
         add(REQUEST);
         add(SERVLET_CONTEXT);
@@ -85,9 +88,34 @@ public abstract class GroovyPage extends Script {
     private Map jspTags = Collections.EMPTY_MAP;
     private TagLibraryResolver jspTagLibraryResolver;
     private TagLibraryLookup gspTagLibraryLookup;
+    private String[] htmlParts;
+    
+    private static final Closure EMPTY_BODY_CLOSURE = new Closure(null) {
+		public Object doCall(Object obj) {
+			return BLANK_STRING;
+		}
+		public Object doCall() {
+			return BLANK_STRING;
+		}
+		public Object doCall(Object[] args) {
+			return BLANK_STRING;
+		}
+		public Object call(Object[] args) {
+			return BLANK_STRING;
+		}
+    };
 
 
-    /**
+    public GroovyPage() {
+		super();
+		init();
+	}
+    
+    protected void init() {
+    	
+    }
+
+	/**
      * Sets the JSP tag library resolver to use to resolve JSP tags
      * @param jspTagLibraryResolver The JSP tag resolve
      */
@@ -181,6 +209,7 @@ public abstract class GroovyPage extends Script {
     }
 
     public void invokeTag(String tagName, String tagNamespace, int lineNumber, Map attrs, Closure body) {
+        // TODO custom namespace stuff needs to be generalized and pluggable
         if(tagNamespace.equals(TEMPLATE_NAMESPACE)) {
             final String tmpTagName = tagName;
             final Map tmpAttrs = attrs;
@@ -189,6 +218,17 @@ public abstract class GroovyPage extends Script {
             attrs = new HashMap() {{
                 put("model", tmpAttrs);
                 put("template", tmpTagName);
+            }};
+        } else if(tagNamespace.equals(LINK_NAMESPACE)) {
+            final String tmpTagName = tagName;
+            final Map tmpAttrs = attrs;
+            tagName = "link";
+            tagNamespace = DEFAULT_NAMESPACE;
+            attrs = new HashMap() {{
+                if(tmpAttrs.size() > 0) {
+                    put("params", tmpAttrs);
+                }
+                put("mapping", tmpTagName);
             }};
         }
 
@@ -216,7 +256,7 @@ public abstract class GroovyPage extends Script {
 
                             case 2:
                                 if(tag.getParameterTypes().length == 2) {
-                                    tag.call( new Object[] { attrs, body });
+                                    tag.call( new Object[] { attrs, (body!=null)?body:EMPTY_BODY_CLOSURE });
                                 }
                             break;
                         }
@@ -360,42 +400,50 @@ public abstract class GroovyPage extends Script {
     }
 
 	private static Closure createTagOutputCapturingClosure(Object wrappedInstance, final String methodName, final Writer out, final Object body1) {
-		return new Closure(wrappedInstance) {
-			public Object doCall(Object obj) {
-				return call(new Object[] {obj} );
-			}
-			public Object doCall() {
-				return call(new Object[0]);
-			}
-			public Object doCall(Object[] args) {
-				return call(args);
-			}
-			public Object call(Object[] args) {
-				if(body1 != null) {
-					Object bodyResponse;
-					if(body1 instanceof Closure) {
-                           if(args!=null && args.length>0){
-                                   bodyResponse = ((Closure)body1).call(args);
-                           }
-                           else {
-                                   bodyResponse = ((Closure)body1).call();
-                           }
-					}
-					else {
-						bodyResponse = body1;
-					}
-
-					if(bodyResponse != null && !(bodyResponse instanceof Writer) ){
-						try {
-                            out.write(bodyResponse.toString());
-						} catch (IOException e) {
-							throw new GrailsTagException("I/O error invoking tag library closure ["+methodName+"] as method: " + e.getMessage(),e);
+		if(body1==null) {
+			return EMPTY_BODY_CLOSURE;
+		}
+        else if(body1 instanceof GroovyPageTagBody) {
+            return (Closure) body1;
+        }
+        else {
+			return new Closure(wrappedInstance) {
+				public Object doCall(Object obj) {
+					return call(new Object[] {obj} );
+				}
+				public Object doCall() {
+					return call(new Object[0]);
+				}
+				public Object doCall(Object[] args) {
+					return call(args);
+				}
+				public Object call(Object[] args) {
+					if(body1 != null) {
+						Object bodyResponse;
+						if(body1 instanceof Closure) {
+	                           if(args!=null && args.length>0){
+	                                   bodyResponse = ((Closure)body1).call(args);
+	                           }
+	                           else {
+	                                   bodyResponse = ((Closure)body1).call();
+	                           }
+						}
+						else {
+							bodyResponse = body1;
+						}
+	
+						if(bodyResponse != null && !(bodyResponse instanceof Writer) ){
+							try {
+	                            out.write(bodyResponse.toString());
+							} catch (IOException e) {
+								throw new GrailsTagException("I/O error invoking tag library closure ["+methodName+"] as method: " + e.getMessage(),e);
+							}
 						}
 					}
+					return BLANK_STRING;
 				}
-				return BLANK_STRING;
-			}
-		};
+			};
+		}
 	}
 
     /**
@@ -416,5 +464,13 @@ public abstract class GroovyPage extends Script {
     public void setJspTags(Map jspTags) {
         this.jspTags = jspTags;
     }
+
+	public String[] getHtmlParts() {
+		return htmlParts;
+	}
+
+	public void setHtmlParts(String[] htmlParts) {
+		this.htmlParts = htmlParts;
+	}
 } // GroovyPage
 

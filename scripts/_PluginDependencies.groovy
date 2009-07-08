@@ -33,18 +33,18 @@ import org.codehaus.groovy.grails.plugins.DefaultGrailsPluginManager
 import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
 import org.codehaus.groovy.grails.plugins.PluginManagerHolder
 import org.springframework.core.io.Resource
-import org.w3c.dom.Document
 import org.apache.commons.io.FilenameUtils
+import org.codehaus.groovy.grails.documentation.DocumentationContext
+import org.codehaus.groovy.grails.documentation.DocumentedMethod
+import org.codehaus.groovy.grails.documentation.DocumentedProperty
+
 import org.tmatesoft.svn.core.io.SVNRepositoryFactory
 import org.tmatesoft.svn.core.internal.io.dav.DAVRepositoryFactory
 import org.tmatesoft.svn.core.internal.io.fs.FSRepositoryFactory
-import org.tmatesoft.svn.core.io.*
 import org.tmatesoft.svn.core.*
 import org.tmatesoft.svn.core.auth.*
-import org.tmatesoft.svn.core.wc.*
 import org.tmatesoft.svn.core.wc.SVNWCUtil
 import org.tmatesoft.svn.core.SVNAuthenticationException
-
 
 /**
  * Plugin stuff. If included, must be included after "_ClasspathAndEvents".
@@ -373,6 +373,10 @@ generatePluginXml = { File descriptor ->
     // Write the content!
     def props = ['author','authorEmail','title','description','documentation']
     def resourceList = GrailsPluginUtils.getArtefactResourcesForOne(descriptor.parentFile.absolutePath)
+
+    def rcComparator = [ compare: {a, b -> a.URI.compareTo(b.URI) } ] as Comparator
+    Arrays.sort(resourceList, rcComparator)
+
     def pluginGrailsVersion = "${GrailsUtil.grailsVersion} > *"
     if(plugin.metaClass.hasProperty(plugin,"grailsVersion")) {
         pluginGrailsVersion = plugin.grailsVersion
@@ -393,6 +397,35 @@ generatePluginXml = { File descriptor ->
             if(plugin.metaClass.hasProperty(plugin,'dependsOn')) {
                 for(d in plugin.dependsOn) {
                     delegate.plugin(name:d.key, version:d.value)
+                }
+            }
+        }
+
+        def docContext = DocumentationContext.instance
+        behavior {
+            for(DocumentedMethod m in docContext.methods) {
+                method(name:m.name, artefact:m.artefact, type:m.type?.name) {
+                    description m.text
+                    if(m.arguments) {
+                        for(arg in m.arguments) {
+                            argument type:arg.name
+                        }
+                    }
+                }
+            }
+            for(DocumentedMethod m in docContext.staticMethods) {
+                'static-method'(name:m.name, artefact:m.artefact, type:m.type?.name) {
+                    description m.text
+                    if(m.arguments) {
+                        for(arg in m.arguments) {
+                            argument type:arg.name
+                        }
+                    }
+                }
+            }
+            for(DocumentedProperty p in docContext.properties) {
+                property(name:p.name, type:p?.type?.name, artefact:p.artefact) {
+                    description p.text
                 }
             }
         }
@@ -596,6 +629,9 @@ target(updatePluginsListManually: "Updates the plugin list by manually reading e
                 withSVNRepo(pluginDistURL) { repo ->
                     remoteRevision = repo.getLatestRevision()
                     if (remoteRevision > localRevision) {
+						// Plugins list cache is expired, need to update
+						event("StatusUpdate", ["Plugins list cache has expired. Updating, please wait"])
+						pluginsList.setAttribute('revision', remoteRevision as String)	
                         repo.getDir('.', -1,null,(Collection)null).each() { entry ->
                             final String PREFIX = "grails-"
                             if (entry.name.startsWith(PREFIX)) {
@@ -817,11 +853,12 @@ cacheKnownPlugin = { String pluginName, String pluginRelease ->
     }
 }
 
-
 cleanupPluginInstallAndExit = { message ->
   event("StatusError", [message])
   for(pluginDir in installedPlugins) {
-    ant.delete(dir:pluginDir, failonerror:false)
+    if (checkPluginPath(pluginDir)) {
+        ant.delete(dir:pluginDir, failonerror:false)
+    }
   }
   exit(1)
 }
@@ -847,8 +884,9 @@ uninstallPluginForName = { name, version=null ->
 
         def uninstallScript = new File("${pluginDir}/scripts/_Uninstall.groovy")
         runPluginScript(uninstallScript, pluginDir.name, "uninstall script")
-
-        ant.delete(dir:pluginDir, failonerror:true)
+        if (checkPluginPath(pluginDir)) {
+            ant.delete(dir:pluginDir, failonerror:true)
+        }
         resetClasspathAndState()
     }
     else {
@@ -875,9 +913,12 @@ installPluginForName = { String fullPluginName ->
             }
         }
         installedPlugins << pluginInstallPath
-        ant.delete(dir: pluginInstallPath, failonerror: false)
-        ant.mkdir(dir: pluginInstallPath)
-        ant.unzip(dest: pluginInstallPath, src: "${pluginsBase}/grails-${fullPluginName}.zip")
+
+        if (checkPluginPath(pluginInstallPath)) {
+            ant.delete(dir: pluginInstallPath, failonerror: false)
+            ant.mkdir(dir: pluginInstallPath)
+            ant.unzip(dest: pluginInstallPath, src: "${pluginsBase}/grails-${fullPluginName}.zip")
+        }
 
 
         def pluginXmlFile = new File("${pluginInstallPath}/plugin.xml")
@@ -1204,5 +1245,14 @@ def withSVNRepo(url, closure) {
     }
     // make sure the closure return is returned..
     closure.call(repo)
+}
+
+/**
+ * Check to see if the plugin directory is in plugins home.
+ */
+checkPluginPath = { pluginDir ->
+  // insure all the directory is in the pluginsHome
+  def absPluginsHome = new File(pluginsHome).absolutePath
+  new File(pluginDir).absolutePath.startsWith(absPluginsHome)
 }
 

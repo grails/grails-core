@@ -85,7 +85,7 @@ public class GORMSessionFactoryDefinitionParser implements BeanDefinitionParser 
         final ClassLoader beanClassLoader = readerContext
                                                 .getBeanClassLoader() != null ?
                                             readerContext.getBeanClassLoader() :
-                                            GORMSessionFactoryDefinitionParser.class.getClassLoader();
+                                            Thread.currentThread().getContextClassLoader();
 
         String[] basePackages =
                 StringUtils.commaDelimitedListToStringArray(element.getAttribute(BASE_PACKAGE_ATTRIBUTE));

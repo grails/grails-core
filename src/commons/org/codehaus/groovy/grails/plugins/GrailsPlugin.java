@@ -219,6 +219,11 @@ public interface GrailsPlugin extends ApplicationContextAware, Comparable {
 	 */
 	String getVersion();
 
+    /**
+     * Write some documentation to the DocumentationContext
+     */
+    void doc(String text);
+
 
     /**
      * Returns the path of the plug-in

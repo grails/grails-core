@@ -24,6 +24,8 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.springframework.beans.factory.support.DefaultListableBeanFactory;
+import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.util.Assert;
@@ -51,7 +53,8 @@ public class DefaultRuntimeSpringConfiguration implements
     private List<String> beanNames = new ArrayList<String>();
     protected ApplicationContext parent;
     protected ClassLoader classLoader;
-    private Map<String, List> aliases = new HashMap<String, List>();
+    protected Map<String, List> aliases = new HashMap<String, List>();
+    protected ListableBeanFactory beanFactory;
 
     public DefaultRuntimeSpringConfiguration() {
         super();
@@ -62,11 +65,28 @@ public class DefaultRuntimeSpringConfiguration implements
      *
      * @param parent The parent ApplicationContext instance. Can be null.
      *
-     * @return An instance of GenericApplicationContext
+     * @return An instance of GenericApplicationContext         
      */
     protected GenericApplicationContext createApplicationContext(ApplicationContext parent) {
-        if(parent != null) return new GrailsApplicationContext(parent);
-        return new GrailsApplicationContext();
+        if(parent != null && beanFactory!=null) {
+            if(beanFactory instanceof DefaultListableBeanFactory) {
+                return new GrailsApplicationContext((DefaultListableBeanFactory) beanFactory,parent);
+            }
+            else {
+                throw new IllegalArgumentException("ListableBeanFactory set must be a subclass of DefaultListableBeanFactory");
+            }
+        }
+        else if(beanFactory!=null) {
+            if(beanFactory instanceof DefaultListableBeanFactory) {
+                return new GrailsApplicationContext((DefaultListableBeanFactory) beanFactory);
+            }
+            else {
+                throw new IllegalArgumentException("ListableBeanFactory set must be a subclass of DefaultListableBeanFactory");
+            }
+        }
+        else {
+            return new GrailsApplicationContext();
+        }
     }
 
     public DefaultRuntimeSpringConfiguration(ApplicationContext parent) {
@@ -333,7 +353,7 @@ public class DefaultRuntimeSpringConfiguration implements
     }
 
     public void addAlias(String alias, String beanName) {
-        List beanAliases = (List)this.aliases.get(beanName);
+        List beanAliases = this.aliases.get(beanName);
         if(beanAliases == null) {
             beanAliases = new ArrayList();
             this.aliases.put(beanName, beanAliases);
@@ -342,6 +362,10 @@ public class DefaultRuntimeSpringConfiguration implements
     }
 
     public BeanDefinition getBeanDefinition(String beanName) {
-        return (BeanDefinition) this.beanDefinitions.get(beanName);
+        return this.beanDefinitions.get(beanName);
+    }
+
+    public void setBeanFactory(ListableBeanFactory beanFactory) {
+        this.beanFactory = beanFactory;
     }
 }

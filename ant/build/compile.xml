@@ -19,7 +19,7 @@
 
         <copy todir="${grails.build}">
             <fileset dir="${grails.src.commons}" includes="**/*.properties" />
-            <fileset dir="${grails.src.web}" includes="**/*.properties" />
+            <fileset dir="${grails.src.web}" includes="**/*.properties,**/*.dtd,**/*.xsd" />
             <fileset dir="${grails.src.persistence}" includes="**/*.properties" />
             <fileset dir="${grails.src.scaffolding}" includes="**/*.properties" />
             <fileset dir="${grails.src.groovy}" includes="**/*.properties" />

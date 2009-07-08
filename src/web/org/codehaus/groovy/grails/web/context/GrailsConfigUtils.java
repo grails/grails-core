@@ -96,20 +96,27 @@ public class GrailsConfigUtils {
             }            
         }
 
-        servletContext.setAttribute(ApplicationAttributes.PLUGIN_MANAGER, configurator.getPluginManager());
-        // use config file locations if available
-        servletContext.setAttribute(ApplicationAttributes.PARENT_APPLICATION_CONTEXT,parent);
-        servletContext.setAttribute(GrailsApplication.APPLICATION_ID,application);
-
-        ServletContextHolder.setServletContext(servletContext);
-
+        final GrailsPluginManager pluginManager = configurator.getPluginManager();
 
         // return a context that obeys grails' settings
-	    WebApplicationContext webContext = configurator.configure( servletContext );
-        configurator.getPluginManager().setApplicationContext(webContext);
-	    servletContext.setAttribute(ApplicationAttributes.APPLICATION_CONTEXT,webContext );
-        servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, webContext);
+        WebApplicationContext webContext = configurator.configure( servletContext );
+        pluginManager.setApplicationContext(webContext);
+
+        configureServletContextAttributes(servletContext, application, pluginManager, webContext);
         LOG.info("[GrailsContextLoader] Grails application loaded.");
 		return webContext;
 	}
+
+    public static void configureServletContextAttributes(ServletContext servletContext, GrailsApplication application, GrailsPluginManager pluginManager, WebApplicationContext webContext) {
+        ServletContextHolder.setServletContext(servletContext);
+
+
+        servletContext.setAttribute(ApplicationAttributes.PLUGIN_MANAGER, pluginManager);
+        // use config file locations if available
+        servletContext.setAttribute(ApplicationAttributes.PARENT_APPLICATION_CONTEXT,webContext.getParent());
+        servletContext.setAttribute(GrailsApplication.APPLICATION_ID,application);
+
+        servletContext.setAttribute(ApplicationAttributes.APPLICATION_CONTEXT,webContext );
+        servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, webContext);
+    }
 }

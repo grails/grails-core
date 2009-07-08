@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project relativePaths="false" version="4">
+  <component name="ProjectFileVersion" converted="true" />
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/@grails.project.name@.iml" filepath="$PROJECT_DIR$/@grails.project.name@.iml" />
+    </modules>
+  </component>
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_1_5" assert-keyword="true" jdk-15="true" project-jdk-name="1.6" project-jdk-type="JavaSDK">
+    <output url="file://$PROJECT_DIR$/out" />
+  </component>
+  <component name="libraryTable">
+    <library name="Grails @grails.version@">
+      <CLASSES>
+        @grails.intellij.libs@
+      </CLASSES>
+    </library>
+  </component>
+</project>

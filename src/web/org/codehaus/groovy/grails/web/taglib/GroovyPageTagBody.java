@@ -16,10 +16,10 @@ package org.codehaus.groovy.grails.web.taglib;
 
 import groovy.lang.Binding;
 import groovy.lang.Closure;
-import org.codehaus.groovy.grails.web.pages.FastStringWriter;
 import org.codehaus.groovy.grails.web.pages.GroovyPage;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 
+import java.io.IOException;
 import java.io.Writer;
 import java.util.HashMap;
 import java.util.Map;
@@ -39,8 +39,13 @@ public class GroovyPageTagBody extends Closure {
     private GrailsWebRequest webRequest;
     private Binding binding;
     private static final String BLANK_STRING = "";
+    private boolean writeStringResult = false;
 
     public GroovyPageTagBody(Object owner, GrailsWebRequest webRequest,Closure bodyClosure) {
+        this(owner, webRequest, false, bodyClosure);
+    }
+
+    public GroovyPageTagBody(Object owner, GrailsWebRequest webRequest,boolean writeStringResult, Closure bodyClosure) {
         super(owner);
 
         if(bodyClosure == null) throw new IllegalStateException("Argument [bodyClosure] cannot be null!");
@@ -52,6 +57,7 @@ public class GroovyPageTagBody extends Closure {
         if(owner instanceof GroovyPage)
             binding = ((GroovyPage) owner).getBinding();
 
+        this.writeStringResult=writeStringResult;
     }
 
 
@@ -62,7 +68,7 @@ public class GroovyPageTagBody extends Closure {
             final GroovyPageTagWriter capturedOut = createWriter();
 
 
-
+            Object bodyResult;
 
             if(args!=null) {
                 if(args instanceof Map) {
@@ -90,7 +96,7 @@ public class GroovyPageTagBody extends Closure {
                     currentBinding.putAll((Map) args);
 
                     try {
-                        bodyClosure.call(args);
+                        bodyResult = bodyClosure.call(args);
                     }
                     finally {
                         // GRAILS-2675: Restore the original binding.
@@ -99,14 +105,26 @@ public class GroovyPageTagBody extends Closure {
                     }
                 }
                 else {
-                    bodyClosure.call(args);
+                    bodyResult = bodyClosure.call(args);
                 }
             }
             else {
-                bodyClosure.call();
+                bodyResult = bodyClosure.call();
             }
             String output = capturedOut.getValue();
-            if(output == null) return BLANK_STRING;
+            if(org.apache.commons.lang.StringUtils.isBlank(output)) {
+                if(writeStringResult && (bodyResult instanceof String)) {
+                    try {
+                        originalOut.write((String)bodyResult);
+                    }
+                    catch (IOException e) {
+                        // ignore
+                    }
+                }
+                else {
+                    return BLANK_STRING;
+                }
+            }
 
             return output;
         } finally {

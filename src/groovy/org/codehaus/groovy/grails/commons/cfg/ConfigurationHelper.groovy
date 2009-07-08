@@ -64,6 +64,7 @@ class ConfigurationHelper {
                 Class scriptClass = classLoader.loadClass(GrailsApplication.CONFIG_CLASS);
 
                 co = configSlurper.parse(scriptClass);
+                ConfigurationHolder.setConfig(co)
             } catch (ClassNotFoundException e) {
                 LOG.debug("Could not find config class [" + GrailsApplication.CONFIG_CLASS + "]. This is probably nothing to worry about, it is not required to have a config: " + e.getMessage());
                 // ignore, it is ok not to have a configuration file

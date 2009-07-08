@@ -19,6 +19,7 @@ import org.springframework.beans.factory.config.MethodInvokingFactoryBean
 import org.springframework.transaction.interceptor.TransactionProxyFactoryBean
 import org.codehaus.groovy.grails.commons.ServiceArtefactHandler
     import org.codehaus.groovy.grails.orm.support.GroovyAwareNamedTransactionAttributeSource
+    import org.codehaus.groovy.grails.commons.GrailsServiceClass
 
     /**
  * A plug-in that configures services in the spring context 
@@ -36,7 +37,8 @@ class ServicesGrailsPlugin {
 
 	                 
 	def doWithSpring = {
-		application.serviceClasses.each { serviceClass ->
+		for(serviceGrailsClass in application.serviceClasses) {
+            GrailsServiceClass serviceClass = serviceGrailsClass
 		    def scope = serviceClass.getPropertyValue("scope")
 
 			"${serviceClass.fullName}ServiceClass"(MethodInvokingFactoryBean) {
@@ -58,9 +60,7 @@ class ServicesGrailsPlugin {
 						if(scope) innerBean.scope = scope
 					}
 					proxyTargetClass = true
-					transactionAttributeSource = { GroovyAwareNamedTransactionAttributeSource source ->
-                        properties = props                           
-                    }
+					transactionAttributeSource = new GroovyAwareNamedTransactionAttributeSource(transactionalAttributes:props)
 					transactionManager = ref("transactionManager")					       
 				}
 			}
@@ -101,9 +101,7 @@ class ServicesGrailsPlugin {
                             if(scope) innerBean.scope = scope
                         }
 						proxyTargetClass = true
-                        transactionAttributeSource = { GroovyAwareNamedTransactionAttributeSource source ->
-                            properties = props
-                        }
+                        transactionAttributeSource = new GroovyAwareNamedTransactionAttributeSource(transactionalAttributes:props)
 						transactionManager = ref("transactionManager")
 					}
 				}     

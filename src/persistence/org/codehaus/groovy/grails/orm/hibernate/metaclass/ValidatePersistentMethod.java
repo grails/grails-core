@@ -1,17 +1,17 @@
 /* Copyright 2004-2005 the original author or authors.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */ 
+ */
 package org.codehaus.groovy.grails.orm.hibernate.metaclass;
 
 
@@ -32,8 +32,8 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 /**
- * A method that validates an instance of a domain class against its constraints 
- * 
+ * A method that validates an instance of a domain class against its constraints
+ *
  * @author Graeme Rocher
  * @since 07-Nov-2005
  */
@@ -44,7 +44,6 @@ public class ValidatePersistentMethod extends AbstractDynamicPersistentMethod {
     private GrailsApplication application;
     private static final String ARGUMENT_DEEP_VALIDATE = "deepValidate";
     private static final String ARGUMENT_EVICT = "evict";
-    private static final String ERRORS_PROPERTY = "errors";
     private Validator validator;
 
 
@@ -64,9 +63,8 @@ public class ValidatePersistentMethod extends AbstractDynamicPersistentMethod {
     protected Object doInvokeInternal(final Object target, Object[] arguments) {
         MetaClass mc = GroovySystem.getMetaClassRegistry().getMetaClass(target.getClass());
 
-        Errors errors = new BeanPropertyBindingResult(target, target.getClass().getName());
-        mc.setProperty(target, ERRORS_PROPERTY, errors);
-        
+        Errors errors = setupErrorsProperty(target);
+
         GrailsDomainClass domainClass = (GrailsDomainClass) application.getArtefact(DomainClassArtefactHandler.TYPE,
             target.getClass().getName() );
 
@@ -89,7 +87,7 @@ public class ValidatePersistentMethod extends AbstractDynamicPersistentMethod {
 
                     if(argsMap.containsKey(ARGUMENT_DEEP_VALIDATE))
                         deepValidate = GrailsClassUtils.getBooleanFromMap(ARGUMENT_DEEP_VALIDATE, argsMap);
-                    
+
                     evict = GrailsClassUtils.getBooleanFromMap(ARGUMENT_EVICT, argsMap);
                 }
                 if (arguments[0] instanceof List) {

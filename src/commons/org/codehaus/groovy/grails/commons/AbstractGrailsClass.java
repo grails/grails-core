@@ -15,6 +15,7 @@
  */ 
 package org.codehaus.groovy.grails.commons;
 
+import grails.util.GrailsNameUtils;
 import groovy.lang.GroovyObject;
 import groovy.lang.GroovySystem;
 import groovy.lang.MetaClass;
@@ -28,8 +29,6 @@ import org.springframework.beans.BeanWrapperImpl;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
-
-import grails.util.GrailsNameUtils;
 
 /**
  * Abstract base class for Grails types that provides common functionality for

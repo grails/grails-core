@@ -15,6 +15,9 @@
 */
 
 import org.codehaus.groovy.control.CompilationUnit
+import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
+import org.codehaus.groovy.grails.plugins.PluginInfo
+import grails.util.GrailsNameUtils
 
 /**
  * Gant script that compiles Groovy and Java files in the src tree
@@ -144,3 +147,50 @@ findPluginDescriptor = { File dir ->
     } as FilenameFilter)
     return files ? files[0] : null
 }
+
+
+target(compilepackage : "Compile & Compile GSP files") {
+	depends(compile, compilegsp)
+}
+
+ant.taskdef (name: 'gspc', classname : 'org.codehaus.groovy.grails.web.pages.GroovyPageCompilerTask')
+
+target(compilegsp : "Compile GSP files") {
+	// compile gsps in grails-app/views directory
+    File gspTmpDir = new File(grailsSettings.projectWorkDir, "gspcompile")
+    ant.gspc( destdir:classesDir,
+              srcdir:"${basedir}/grails-app/views",
+              packagename:GrailsNameUtils.getPropertyNameForLowerCaseHyphenSeparatedName(grailsAppName),
+              serverpath:"/WEB-INF/grails-app/views/",
+              classpathref:"grails.compile.classpath",
+              tmpdir:gspTmpDir)
+
+
+	// compile gsps in web-app directory
+    ant.gspc( destdir:classesDir,
+              srcdir:"${basedir}/web-app",
+              packagename:"${GrailsNameUtils.getPropertyNameForLowerCaseHyphenSeparatedName(grailsAppName)}_webapp",
+              serverpath:"/",
+              classpathref:"grails.compile.classpath",
+              tmpdir:gspTmpDir)
+
+	// compile views in plugins
+	loadPlugins()
+	def pluginInfos = GrailsPluginUtils.getSupportedPluginInfos(pluginsHome)
+	if(pluginInfos) {
+		for(PluginInfo info in pluginInfos) {
+            File pluginViews = new File(info.pluginDir.file, "grails-app/views")
+            if(pluginViews.exists()) {                
+                def viewPrefix="/WEB-INF/plugins/${info.name}-${info.version}/grails-app/views/"
+                ant.gspc( destdir:classesDir,
+                          srcdir:pluginViews,
+                          packagename:GrailsNameUtils.getPropertyNameForLowerCaseHyphenSeparatedName(info.name),
+                          serverpath:viewPrefix,
+                          classpathref:"grails.compile.classpath",
+                          tmpdir:gspTmpDir)
+            }
+		}
+	}
+	
+}
+
