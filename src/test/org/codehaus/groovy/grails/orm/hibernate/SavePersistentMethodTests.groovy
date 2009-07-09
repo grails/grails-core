@@ -2,6 +2,7 @@ package org.codehaus.groovy.grails.orm.hibernate;
 
 import org.codehaus.groovy.grails.commons.*
 import org.codehaus.groovy.grails.commons.test.*
+import org.codehaus.groovy.grails.validation.exceptions.ValidationException
 
 class SavePersistentMethodTests extends AbstractGrailsHibernateTests {
 
@@ -112,6 +113,23 @@ class SavePersistentMethodTests extends AbstractGrailsHibernateTests {
         assertNull 'validation should have failed', team.save()
         assertEquals 'wrong number of errors found', 1, team.errors.errorCount
         assertEquals 'wrong number of homePage errors found', 0, team.errors.getFieldErrors('homePage')?.size()
+    }
+
+    void testFailOnErrorTrueWithValidationErrors() {
+        def teamClass = ga.getDomainClass('Team')
+        def team = teamClass.newInstance()
+        team.properties = [homePage: 'invalidurl']
+        def msg = shouldFail(ValidationException) {
+            team.save(failOnError: true)
+        }
+        assertEquals 'Validation Error(s) Occurred During Save', msg
+    }
+
+    void testFailOnErrorFalseWithValidationErrors() {
+        def teamClass = ga.getDomainClass('Team')
+        def team = teamClass.newInstance()
+        team.properties = [homePage: 'invalidurl']
+        assertNull 'save should have returned null', team.save(failOnError: false)
     }
 
     void onSetUp() {

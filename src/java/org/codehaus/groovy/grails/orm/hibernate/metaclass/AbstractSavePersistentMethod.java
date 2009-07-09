@@ -20,6 +20,7 @@ import groovy.lang.GroovySystem;
 import groovy.lang.MetaClass;
 import org.codehaus.groovy.grails.commons.*;
 import org.codehaus.groovy.grails.validation.CascadingValidator;
+import org.codehaus.groovy.grails.validation.exceptions.ValidationException;
 import org.hibernate.SessionFactory;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
@@ -47,6 +48,7 @@ public abstract class AbstractSavePersistentMethod extends
     private static final String ARGUMENT_DEEP_VALIDATE = "deepValidate";
     private static final String ARGUMENT_FLUSH = "flush";
     private static final String ARGUMENT_INSERT = "insert";
+    private static final String ARGUMENT_FAIL_ON_ERROR = "failOnError";
 
     public AbstractSavePersistentMethod(Pattern pattern, SessionFactory sessionFactory, ClassLoader classLoader, GrailsApplication application) {
 		super(pattern, sessionFactory, classLoader);
@@ -84,7 +86,11 @@ public abstract class AbstractSavePersistentMethod extends
                 }
 
                 if(errors.hasErrors()) {
-                    return handleValidationError(target,errors);
+                    handleValidationError(target,errors);
+                    if (GrailsClassUtils.getBooleanFromMap(ARGUMENT_FAIL_ON_ERROR, argsMap)) {
+                        throw new ValidationException("Validation Error(s) Occurred During Save");
+                    }
+                    return null;
                 }
                 else {
                     setObjectToReadWrite(target);
