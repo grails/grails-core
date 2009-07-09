@@ -69,14 +69,12 @@ public abstract class AbstractSavePersistentMethod extends
 
             if(validator != null) {
                 boolean deepValidate = true;
-                if(arguments.length > 0) {
-                    if(arguments[0] instanceof Map) {
-                        Map argsMap = (Map)arguments[0];
-
-                        if(argsMap.containsKey(ARGUMENT_DEEP_VALIDATE))
-                            deepValidate = GrailsClassUtils.getBooleanFromMap(ARGUMENT_DEEP_VALIDATE, argsMap);
-
-                    }
+                Map argsMap = null;
+                if(arguments.length > 0 && arguments[0] instanceof Map) {
+                    argsMap = (Map) arguments[0];
+                }
+                if (argsMap != null && argsMap.containsKey(ARGUMENT_DEEP_VALIDATE)) {
+                    deepValidate = GrailsClassUtils.getBooleanFromMap(ARGUMENT_DEEP_VALIDATE, argsMap);
                 }
                 if(deepValidate && (validator instanceof CascadingValidator)) {
                     ((CascadingValidator)validator).validate(target, errors, deepValidate);
