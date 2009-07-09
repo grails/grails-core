@@ -26,7 +26,7 @@ import grails.util.Environment
  * @author Jeff Brown
  * @since 0.4
  */
-class NCodecsGrailsPlugin {
+class CodecsGrailsPlugin {
 	
 	def version = grails.util.GrailsUtil.getGrailsVersion()
 	def dependsOn = [core:version]
