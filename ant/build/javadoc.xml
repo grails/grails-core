@@ -23,19 +23,16 @@
                 <path refid="classpath"/>
             </classpath>
             <src>
-                 <dirset dir="${grails.src.commons}">
+                 <dirset dir="${grails.src}">
                     <exclude name="**/*.properties" />
                  </dirset>
 
             </src>
-            <src path="${grails.src.web}"/>
-            <src path="${grails.src.persistence}"/>
-            <src path="${grails.src.scaffolding}"/>
-            <src path="${grails.src.groovy}"/>
+            <src path="${grails.src}"/>
         </generatestubs>
 
 
-		<javadoc sourcepath="${grails.src.commons},${grails.src.web}, ${grails.target}/docs/stubs" destdir="${grails.javadoc}" windowtitle="Grails ${grails.version}" source="1.5" encoding="UTF-8" access="package" author="true" version="true" use="true" defaultexcludes="true" breakiterator="true">
+		<javadoc sourcepath="${grails.src}, ${grails.target}/docs/stubs" destdir="${grails.javadoc}" windowtitle="Grails ${grails.version}" source="1.5" encoding="UTF-8" access="package" author="true" version="true" use="true" defaultexcludes="true" breakiterator="true">
 			<doctitle><![CDATA[<h1>Grails</h1>]]></doctitle>
 			<bottom><![CDATA[<i>Copyright (c) 2005-2009 The Grails project</i>]]></bottom>
 			<classpath refid="classpath"/>
@@ -43,19 +40,7 @@
 				<include name="org/codehaus/groovy/grails/**"/>
 				<include name="grails/**"/>
 			</packageset>
-			<packageset dir="${grails.src.commons}">
-				<include name="org/codehaus/groovy/grails/**"/>
-				<include name="grails/**"/>
-			</packageset>
-			<packageset dir="${grails.src.web}">
-				<include name="org/codehaus/groovy/grails/**"/>
-				<include name="grails/**"/>
-			</packageset>
-			<packageset dir="${grails.src.persistence}">
-				<include name="org/codehaus/groovy/grails/**"/>
-				<include name="grails/**"/>
-			</packageset>
-			<packageset dir="${grails.src.scaffolding}">
+			<packageset dir="${grails.src}">
 				<include name="org/codehaus/groovy/grails/**"/>
 				<include name="grails/**"/>
 			</packageset>

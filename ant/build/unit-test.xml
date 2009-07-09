@@ -43,11 +43,7 @@
 		</delete>
 		<mkdir dir="${coverage.report}" />
 		<cobertura-report format="xml" destdir="cruise/coverage/report">
-			<fileset dir="${grails.src.commons}" />
-			<fileset dir="${grails.src.groovy}" />
-			<fileset dir="${grails.src.web}" />
-			<fileset dir="${grails.src.persistence}" />
-			<fileset dir="${grails.src.scaffolding}" />
+			<fileset dir="${grails.src}" />
 		</cobertura-report>
 	</target>
 
