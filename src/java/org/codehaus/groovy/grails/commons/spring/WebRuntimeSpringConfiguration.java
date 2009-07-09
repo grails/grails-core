@@ -57,6 +57,9 @@ public class WebRuntimeSpringConfiguration extends DefaultRuntimeSpringConfigura
                 throw new IllegalArgumentException("ListableBeanFactory set must be a subclass of DefaultListableBeanFactory");
             }
         }
+        else if(parent != null) {
+            return new GrailsWebApplicationContext(parent);            
+        }
         else {
             return new GrailsWebApplicationContext();
         }

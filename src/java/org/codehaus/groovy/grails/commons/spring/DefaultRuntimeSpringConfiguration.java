@@ -84,6 +84,9 @@ public class DefaultRuntimeSpringConfiguration implements
                 throw new IllegalArgumentException("ListableBeanFactory set must be a subclass of DefaultListableBeanFactory");
             }
         }
+        else if(parent !=null) {
+            return new GrailsApplicationContext(parent);
+        }
         else {
             return new GrailsApplicationContext();
         }

@@ -53,12 +53,7 @@
 
 	<target name="build-test" depends="build,build-scripts">
 
-		<groovyc srcdir="test/groovy" destdir="${grails.test.build}"  >
-            <src path="${grails.test.src.commons}" />
-            <src path="${grails.test.src.web}" />
-            <src path="${grails.test.src.persistence}" />
-            <src path="${grails.test.src.scaffolding}" />
-            <src path="test/groovy" />
+		<groovyc srcdir="${grails.test}" destdir="${grails.test.build}"  >
             <javac debug="on" deprecation="on" encoding="UTF-8"/>
             <classpath refid="classpath" />
 			<classpath location="${grails.test.build}" />
@@ -108,12 +103,7 @@
                 <!-- only needed for coverage -->
                 <path refid="classpath" />
                 <pathelement location="${grails.test.build}" />
-                <pathelement location="${grails.test.src.web}" />
-                <pathelement location="${grails.test.src.commons}" />
-                <pathelement location="${grails.test.src.persistence}" />
-                <pathelement location="${grails.test.src.scaffolding}" />
-                <pathelement location="${grails.test.src.groovy}" />
-                <pathelement location="${grails.test.src.tiger}" />
+                <pathelement location="${grails.test}" />
                 <!-- needed to load codecs -->
                 <pathelement location="${grails.src.codecs}" />
                 <!-- CLI tests require build.properties on the classpath -->
