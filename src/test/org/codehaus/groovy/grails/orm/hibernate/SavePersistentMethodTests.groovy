@@ -2,7 +2,7 @@ package org.codehaus.groovy.grails.orm.hibernate;
 
 import org.codehaus.groovy.grails.commons.*
 import org.codehaus.groovy.grails.commons.test.*
-import org.codehaus.groovy.grails.validation.exceptions.ValidationException
+import grails.validation.ValidationException
 
 class SavePersistentMethodTests extends AbstractGrailsHibernateTests {
 

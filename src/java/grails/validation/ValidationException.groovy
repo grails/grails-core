@@ -1,4 +1,4 @@
-package org.codehaus.groovy.grails.validation.exceptions
+package grails.validation
 
 import org.codehaus.groovy.grails.exceptions.GrailsException
 

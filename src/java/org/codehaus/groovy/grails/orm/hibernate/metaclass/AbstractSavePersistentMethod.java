@@ -20,7 +20,7 @@ import groovy.lang.GroovySystem;
 import groovy.lang.MetaClass;
 import org.codehaus.groovy.grails.commons.*;
 import org.codehaus.groovy.grails.validation.CascadingValidator;
-import org.codehaus.groovy.grails.validation.exceptions.ValidationException;
+import grails.validation.ValidationException;
 import org.hibernate.SessionFactory;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
