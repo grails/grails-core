@@ -375,19 +375,22 @@ Try using Grails' default cache provider: 'org.hibernate.cache.OSCacheProvider'"
         }
     }
 
+	static final SET_PROPERTIES_CLOSURE = {Object o ->
+        originalPropertiesProperty.setProperty delegate, o
+        if(delegate.hasErrors()) {
+            GrailsHibernateUtil.setObjectToReadyOnly delegate,sessionFactory
+        }
+    }
     private static addValidationMethods(GrailsDomainClass dc, GrailsApplication application, ApplicationContext ctx, SessionFactory sessionFactory) {
         def metaClass = dc.metaClass
 
         Validator validator = ctx.containsBean("${dc.fullName}Validator") ? ctx.getBean("${dc.fullName}Validator") : null
         def validateMethod = new ValidatePersistentMethod(sessionFactory, application.classLoader, application,validator)
 
-        MetaProperty originalPropertiesProperty = metaClass.getMetaProperty("properties")
-        metaClass.setProperties = {Object o ->
-            originalPropertiesProperty.setProperty delegate, o
-            if(delegate.hasErrors()) {
-                GrailsHibernateUtil.setObjectToReadyOnly delegate,sessionFactory
-            }
-        }
+		if(!propertiesPropertyRegistered) {
+	        MetaProperty originalPropertiesProperty = metaClass.getMetaProperty("properties")
+	        metaClass.setProperties = 
+		}
 
         metaClass.validate = {->
             validateMethod.invoke(delegate, "validate", [] as Object[])
