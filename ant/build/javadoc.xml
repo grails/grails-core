@@ -53,5 +53,22 @@
        <delete dir="${grails.target}/docs"/>
 
 	</target>
+	
+	<target name="gdoc">
+		<available file="../grails-doc" type="dir"
+		           property="grails.doc.present"/>
+		<antcall target="--gdoc" />
+	</target>
+	
+	<target name="--gdoc" if="grails.doc.present">
+		<ant target="distclean" dir="../grails-doc" inheritAll="false" />
+		<ant target="dist-nojavadoc" dir="../grails-doc" inheritAll="false">		
+			<property name="base.dir" value="../grails-doc" />
+		</ant>
+		<copy todir="doc">
+			<fileset dir="../grails-doc/output" />
+		</copy>		
+	</target>
+	
 
 </project>

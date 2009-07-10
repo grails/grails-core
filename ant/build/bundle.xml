@@ -229,7 +229,7 @@
         </tar>
     </target>
 
-    <target name="package" depends="jar,javadoc" description="Create the release archives for Grails.">
+    <target name="package" depends="jar,javadoc,gdoc" description="Create the release archives for Grails.">
     	<delete failonerror="true">
 		    <fileset dir="${grails.dist}">
                 <include name="*.zip"/>
@@ -238,7 +238,6 @@
 		</delete>
         <delete dir="tmp" failonerror="true"/>
         <antcall target="create-binary-release"/>
-        <antcall target="create-source-release"/>
     </target>
 
     <target name="-mavenPomDefinitions">
