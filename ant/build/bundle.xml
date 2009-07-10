@@ -97,6 +97,7 @@
                 <include name="META-INF/**" />
                 <include name="grails/ui/**" />
                 <include name="grails/util/**" />
+                <include name="grails/validation/**" />
                 <include name="grails/persistence/**" />
                 <include name="**/groovy/grails/beans/factory/**" />
                 <include name="**/groovy/grails/commons/**" />
