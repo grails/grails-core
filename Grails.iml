@@ -27,7 +27,7 @@
       <excludeFolder url="file://$MODULE_DIR$/tmp" />
     </content>
     <orderEntry type="library" name="groovy-1.6.0" level="application" />
-    <orderEntry type="inheritedJdk" />
+    <orderEntry type="jdk" jdkName="1.6" jdkType="JavaSDK" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="groovy-1.6.3" level="application" />
     <orderEntry type="library" exported="" name="Apache Commons" level="project" />
