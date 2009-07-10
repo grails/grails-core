@@ -82,6 +82,9 @@
 		    token="@grails.version@" 
 		    value="${grails.version}"/>
 		</replace>
+		
+
+		
 		<replace 
 		    dir="${release.dir}/bin">
 		  <replacefilter 
@@ -98,6 +101,8 @@
                 <include name="INSTALL"/>
             </fileset>
         </copy>
+
+
     </target>
 
     <target name="copy-exclusive-binary-release-content">
@@ -105,6 +110,14 @@
             <param name="dir.location" value="src/grails"/>
             <param name="dir.destination" value="${release.dir}/src/grails"/>
         </antcall>
+		
+		<replace 
+		    file="${release.dir}/src/grails/grails-macros.xml">
+		  <replacefilter 
+		    token="@grails.version@" 
+		    value="${grails.version}"/>
+		</replace>
+		
         <antcall target="copy-dir">
             <param name="dir.location" value="src/war"/>
             <param name="dir.destination" value="${release.dir}/src/war"/>
