@@ -1253,6 +1253,12 @@ def withSVNRepo(url, closure) {
 checkPluginPath = { pluginDir ->
   // insure all the directory is in the pluginsHome
   def absPluginsHome = new File(pluginsHome).absolutePath
-  new File(pluginDir).absolutePath.startsWith(absPluginsHome)
+  if(pluginDir instanceof File) {
+	pluginDir.absolutePath.startsWith(absPluginsHome)
+  }
+  else {
+	new File(pluginDir).absolutePath.startsWith(absPluginsHome)
+  }
+  
 }
 
