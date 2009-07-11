@@ -49,6 +49,7 @@ public abstract class AbstractSavePersistentMethod extends
     private static final String ARGUMENT_FLUSH = "flush";
     private static final String ARGUMENT_INSERT = "insert";
     private static final String ARGUMENT_FAIL_ON_ERROR = "failOnError";
+    private static final String FAIL_ON_ERROR_CONFIG_PROPERTY = "grails.gorm.save.failOnError";
 
     public AbstractSavePersistentMethod(Pattern pattern, SessionFactory sessionFactory, ClassLoader classLoader, GrailsApplication application) {
 		super(pattern, sessionFactory, classLoader);
@@ -87,7 +88,14 @@ public abstract class AbstractSavePersistentMethod extends
 
                 if(errors.hasErrors()) {
                     handleValidationError(target,errors);
-                    if (GrailsClassUtils.getBooleanFromMap(ARGUMENT_FAIL_ON_ERROR, argsMap)) {
+                    boolean shouldFail = false;
+                    final Map config = ConfigurationHolder.getFlatConfig();
+                    if(config.containsKey(FAIL_ON_ERROR_CONFIG_PROPERTY)) {
+                        shouldFail = Boolean.TRUE == config.get(FAIL_ON_ERROR_CONFIG_PROPERTY);
+                    } else {
+                        shouldFail = GrailsClassUtils.getBooleanFromMap(ARGUMENT_FAIL_ON_ERROR, argsMap);
+                    }
+                    if(shouldFail) {
                         throw new ValidationException("Validation Error(s) Occurred During Save");
                     }
                     return null;

@@ -132,6 +132,23 @@ class SavePersistentMethodTests extends AbstractGrailsHibernateTests {
         assertNull 'save should have returned null', team.save(failOnError: false)
     }
 
+    void testFailOnErrorConfigTrue() {
+        try {
+            ConfigObject config = new ConfigSlurper().parse("grails.gorm.save.failOnError = true");
+
+            ConfigurationHolder.config = config
+            def teamClass = ga.getDomainClass('Team')
+            def team = teamClass.newInstance()
+            team.properties = [homePage: 'invalidurl']
+            def msg = shouldFail(ValidationException) {
+                team.save()
+            }
+            assertEquals 'Validation Error(s) Occurred During Save', msg
+        } finally {
+            ConfigurationHolder.config = null
+        }
+    }
+
     void onSetUp() {
 		this.gcl.parseClass('''
 import grails.persistence.*
