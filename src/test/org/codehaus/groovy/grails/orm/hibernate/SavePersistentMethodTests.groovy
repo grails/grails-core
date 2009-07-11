@@ -134,7 +134,7 @@ class SavePersistentMethodTests extends AbstractGrailsHibernateTests {
 
     void testFailOnErrorConfigTrue() {
         try {
-            ConfigObject config = new ConfigSlurper().parse("grails.gorm.save.failOnError = true");
+            def config = new ConfigSlurper().parse("grails.gorm.save.failOnError = true");
 
             ConfigurationHolder.config = config
             def teamClass = ga.getDomainClass('Team')
@@ -151,7 +151,7 @@ class SavePersistentMethodTests extends AbstractGrailsHibernateTests {
 
     void testFailOnErrorConfigFalse() {
         try {
-            ConfigObject config = new ConfigSlurper().parse("grails.gorm.save.failOnError = false");
+            def config = new ConfigSlurper().parse("grails.gorm.save.failOnError = false");
 
             ConfigurationHolder.config = config
             def teamClass = ga.getDomainClass('Team')
@@ -165,7 +165,7 @@ class SavePersistentMethodTests extends AbstractGrailsHibernateTests {
 
     void testFailOnErrorConfigTrueArgumentFalse() {
         try {
-            ConfigObject config = new ConfigSlurper().parse("grails.gorm.save.failOnError = true");
+            def config = new ConfigSlurper().parse("grails.gorm.save.failOnError = true");
 
             ConfigurationHolder.config = config
             def teamClass = ga.getDomainClass('Team')
@@ -179,7 +179,7 @@ class SavePersistentMethodTests extends AbstractGrailsHibernateTests {
 
     void testFailOnErrorConfigFalseArgumentTrue() {
         try {
-            ConfigObject config = new ConfigSlurper().parse("grails.gorm.save.failOnError = false");
+            def config = new ConfigSlurper().parse("grails.gorm.save.failOnError = false");
 
             ConfigurationHolder.config = config
             def teamClass = ga.getDomainClass('Team')
