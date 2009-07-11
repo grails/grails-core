@@ -132,7 +132,7 @@ class SavePersistentMethodTests extends AbstractGrailsHibernateTests {
         assertNull 'save should have returned null', team.save(failOnError: false)
     }
 
-    void testFailOnErrorConfigTrue() {
+    void testFailOnErrorConfigTrueWithValidationErrors() {
         try {
             def config = new ConfigSlurper().parse("grails.gorm.save.failOnError = true");
 
@@ -149,7 +149,7 @@ class SavePersistentMethodTests extends AbstractGrailsHibernateTests {
         }
     }
 
-    void testFailOnErrorConfigFalse() {
+    void testFailOnErrorConfigFalseWithValidationErrors() {
         try {
             def config = new ConfigSlurper().parse("grails.gorm.save.failOnError = false");
 
@@ -163,7 +163,7 @@ class SavePersistentMethodTests extends AbstractGrailsHibernateTests {
         }
     }
 
-    void testFailOnErrorConfigTrueArgumentFalse() {
+    void testFailOnErrorConfigTrueArgumentFalseWithValidationErrors() {
         try {
             def config = new ConfigSlurper().parse("grails.gorm.save.failOnError = true");
 
@@ -177,7 +177,7 @@ class SavePersistentMethodTests extends AbstractGrailsHibernateTests {
         }
     }
 
-    void testFailOnErrorConfigFalseArgumentTrue() {
+    void testFailOnErrorConfigFalseArgumentTrueWithValidationErrors() {
         try {
             def config = new ConfigSlurper().parse("grails.gorm.save.failOnError = false");
 
