@@ -90,10 +90,10 @@ public abstract class AbstractSavePersistentMethod extends
                     handleValidationError(target,errors);
                     boolean shouldFail = false;
                     final Map config = ConfigurationHolder.getFlatConfig();
-                    if(config.containsKey(FAIL_ON_ERROR_CONFIG_PROPERTY)) {
-                        shouldFail = Boolean.TRUE == config.get(FAIL_ON_ERROR_CONFIG_PROPERTY);
-                    } else {
+                    if(argsMap != null && argsMap.containsKey(ARGUMENT_FAIL_ON_ERROR)) {
                         shouldFail = GrailsClassUtils.getBooleanFromMap(ARGUMENT_FAIL_ON_ERROR, argsMap);
+                    } else if(config.containsKey(FAIL_ON_ERROR_CONFIG_PROPERTY)) {
+                        shouldFail = Boolean.TRUE == config.get(FAIL_ON_ERROR_CONFIG_PROPERTY);
                     }
                     if(shouldFail) {
                         throw new ValidationException("Validation Error(s) Occurred During Save");
