@@ -105,11 +105,11 @@ class JavascriptTagLib  {
 
 	private javascriptInclude(attrs) {
     	def requestPluginContext = request[CONTROLLER]?.pluginContextPath
-		out << '<script type="text/javascript" src="'
+        def writer = out
+		writer << '<script type="text/javascript" src="'
 		if (!attrs.base) {
             def baseUri = grailsAttributes.getApplicationUri(request)
-            out << baseUri
-            out << (baseUri.endsWith('/') ? '' : '/')
+            writer << baseUri << (baseUri.endsWith('/') ? '' : '/')
 			if (requestPluginContext) {
 			  out << (requestPluginContext.startsWith("/") ? requestPluginContext.substring(1) : requestPluginContext)
 			  out << "/"
@@ -119,12 +119,12 @@ class JavascriptTagLib  {
 			out << attrs.base
 		}
 		out << attrs.src
- 		out << '" '
+ 		out << '"'
 		def otherAttrs = [:] + attrs
 		otherAttrs.remove('base')
 		otherAttrs.remove('src')
 		otherAttrs.remove('library')
-		otherAttrs.each {k, v -> out << k << "=\"" << v.encodeAsHTML() << "\" " }
+		otherAttrs.each {k, v -> out << " $k=\"${v.encodeAsHTML()}\"" }
 		out.println '></script>'
 	}
 
