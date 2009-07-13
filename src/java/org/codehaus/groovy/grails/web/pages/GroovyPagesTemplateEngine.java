@@ -452,8 +452,10 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
     private long establishLastModified(Resource resource) {
         if(resource ==null)return -1;
         long lastModified;
+        URLConnection urlc = null;
+
         try {
-            URLConnection urlc = resource.getURL().openConnection();
+            urlc = resource.getURL().openConnection();
 
             urlc.setDoInput(false);
             urlc.setDoOutput(false);
@@ -464,6 +466,20 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
         } catch (IOException e) {
             lastModified = -1;
         }
+        finally {
+            if (urlc != null) 			{
+                try {
+                    InputStream is = urlc.getInputStream();
+                    if (is != null) {
+                        is.close();
+                    }
+                }
+                catch (IOException e) {
+                    // ignore
+                }
+            }
+        }
+        
         return lastModified;
     }
 
