@@ -84,7 +84,7 @@ class FooController {
 
         assert registry
         assertEquals 1,registry.getFlowDefinitionCount()
-        def cartFlow = registry.getFlowDefinition("shoppingCart")
+        def cartFlow = registry.getFlowDefinition("foo/shoppingCart")
          assert cartFlow
         assertEquals 6,cartFlow.stateCount
 
