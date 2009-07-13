@@ -119,7 +119,13 @@ class JavascriptTagLib  {
 			out << attrs.base
 		}
 		out << attrs.src
- 		out.println '"></script>'
+ 		out << '" '
+		def otherAttrs = [:] + attrs
+		otherAttrs.remove('base')
+		otherAttrs.remove('src')
+		otherAttrs.remove('library')
+		otherAttrs.each {k, v -> out << k << "=\"" << v.encodeAsHTML() << "\" " }
+		out.println '></script>'
 	}
 
     /**
