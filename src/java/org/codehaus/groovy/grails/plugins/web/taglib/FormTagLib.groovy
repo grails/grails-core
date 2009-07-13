@@ -728,7 +728,7 @@ class FormTagLib {
             def it = new Expando();
             it.radio = "<input type=\"radio\" name=\"${name}\" "
             if (value?.toString().equals(val.toString())) {
-                it.radio += 'checked '
+                it.radio += 'checked="checked" '
             }
             it.radio += "value=\"${val.toString().encodeAsHTML()}\" />"
 
