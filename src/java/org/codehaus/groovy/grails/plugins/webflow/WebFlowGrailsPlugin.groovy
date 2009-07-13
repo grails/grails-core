@@ -174,8 +174,8 @@ class WebFlowGrailsPlugin {
                  registry.removeMetaClass controllerClass
                  controller.getReference().getWrappedInstance().metaClass = registry.getMetaClass(controllerClass)
                  for(flow in controller.flows) {
-                     def FlowBuilder builder = new FlowBuilder(flow.key, flow.value, appCtx.flowBuilderServices, flowRegistry)
-                     builder.viewPath = "/$controller.logicalPropertyName"
+                     def FlowBuilder builder = new FlowBuilder( ("${controller.logicalPropertyName}/" + flow.key).toString(), flow.value, appCtx.flowBuilderServices, flowRegistry)
+                     builder.viewPath = "/"
                      builder.applicationContext = event.ctx
 
                      FlowAssembler flowAssembler = new FlowAssembler(builder,builder.getFlowBuilderContext())

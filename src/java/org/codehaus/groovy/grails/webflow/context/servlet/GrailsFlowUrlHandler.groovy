@@ -24,6 +24,9 @@ import org.springframework.util.Assert
 import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.mapping.UrlCreator
+import org.springframework.webflow.execution.FlowExecution;
+import org.springframework.webflow.execution.repository.FlowExecutionRepository;
+import org.springframework.webflow.definition.FlowDefinition
 
 /**
  * Changes the default FlowUrlHandler to take into account that Grails request run as part of a forward
@@ -37,13 +40,21 @@ class GrailsFlowUrlHandler extends DefaultFlowUrlHandler implements ApplicationC
 
     ApplicationContext applicationContext
 
+    public String getFlowId(HttpServletRequest request) {
+	return request.getAttribute(GrailsApplicationAttributes.CONTROLLER_NAME_ATTRIBUTE) + "/" + request.getAttribute(GrailsApplicationAttributes.ACTION_NAME_ATTRIBUTE);
+    }
+
     public String createFlowExecutionUrl(String flowId, String flowExecutionKey, HttpServletRequest request) {
         UrlMappingsHolder holder = applicationContext.getBean(UrlMappingsHolder.BEAN_ID)
         def controllerName = request.getAttribute(GrailsApplicationAttributes.CONTROLLER_NAME_ATTRIBUTE);
         Map params = [execution:flowExecutionKey]
+	
+
         UrlCreator creator =holder.getReverseMapping(controllerName, flowId, params)
 
-        return creator.createURL(controllerName, flowId, params, 'utf-8')
+	String actionName = flowId.substring(flowId.lastIndexOf('/')+1);
+
+        return creator.createURL(controllerName, actionName, params, 'utf-8')
     }
 
     public String createFlowDefinitionUrl(String flowId, AttributeMap input, HttpServletRequest request) {
@@ -55,9 +66,9 @@ class GrailsFlowUrlHandler extends DefaultFlowUrlHandler implements ApplicationC
         Map params = input?.asMap() ?: [:]
         UrlCreator creator =holder.getReverseMapping(controllerName, flowId, params)
 
+	String actionName = flowId.substring(flowId.lastIndexOf('/')+1);
 
-
-        return creator.createURL(controllerName, flowId, params, 'utf-8')
+        return creator.createURL(controllerName, actionName, params, 'utf-8')
     }
 
 }

@@ -27,6 +27,11 @@ import org.springframework.webflow.execution.repository.FlowExecutionRestoration
 import org.springframework.webflow.execution.repository.snapshot.SnapshotUnmarshalException;
 import org.springframework.webflow.executor.FlowExecutionResult;
 import org.springframework.webflow.executor.FlowExecutorImpl;
+import org.springframework.webflow.execution.FlowExecution;
+import org.springframework.webflow.execution.FlowExecutionKey;
+import org.springframework.webflow.execution.repository.FlowExecutionLock;
+import org.springframework.webflow.context.ExternalContextHolder;
+import org.springframework.webflow.execution.repository.FlowExecutionRepository;
 
 /**
  * @author Graeme Rocher
@@ -46,10 +51,28 @@ public class GrailsFlowExecutorImpl extends FlowExecutorImpl{
      */
     public GrailsFlowExecutorImpl(FlowDefinitionLocator definitionLocator, FlowExecutionFactory executionFactory, FlowExecutionRepository executionRepository) {
         super(definitionLocator, executionFactory, executionRepository);
+	this.executionRepository=executionRepository;
     }
+
+    FlowExecutionRepository executionRepository;
 
     @Override
     public FlowExecutionResult resumeExecution(String flowExecutionKey, ExternalContext context) throws FlowException {
+
+
+ 	 //Check if FlowExecutions Flowid matches flowId
+	try {
+	    ExternalContextHolder.setExternalContext(context);
+            FlowExecutionKey key = executionRepository.parseFlowExecutionKey(flowExecutionKey);
+            FlowExecution flowExecution = executionRepository.getFlowExecution(key);
+            GrailsWebRequest webRequest = WebUtils.retrieveGrailsWebRequest();
+	    if(!(webRequest.getControllerName()+"/"+webRequest.getActionName()).equals(flowExecution.getDefinition().getId())) {
+	                return super.launchExecution(webRequest.getControllerName()+"/"+webRequest.getActionName(), context.getRequestMap(), context);
+	    }
+        } finally {
+                ExternalContextHolder.setExternalContext(null);
+	}
+
 
         try {
             return super.resumeExecution(flowExecutionKey, context);
@@ -57,7 +80,7 @@ public class GrailsFlowExecutorImpl extends FlowExecutorImpl{
             if(e.getCause() instanceof SnapshotUnmarshalException) {
                 LOG.info("Classes changed during reload, restarting flow...");
                 GrailsWebRequest webRequest = WebUtils.retrieveGrailsWebRequest();
-                return super.launchExecution(webRequest.getActionName(), context.getRequestMap(), context);
+                return super.launchExecution(webRequest.getControllerName()+"/"+webRequest.getActionName(), context.getRequestMap(), context);
             }
             else {
                 throw e;

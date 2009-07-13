@@ -418,8 +418,9 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
         GrailsControllerClass controllerClass = (GrailsControllerClass) application.getArtefactForFeature(
             ControllerArtefactHandler.TYPE, uri);
         final String actionName = (String) request.getAttribute(GrailsApplicationAttributes.ACTION_NAME_ATTRIBUTE);
-
+	
         if(controllerClass!=null) {
+
              HandlerInterceptor[] interceptors;
             // if we're in a development environment we want to re-establish interceptors just in case they
             // have changed at runtime
@@ -431,9 +432,10 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
                   interceptors = this.interceptors;
              }
              if(controllerClass.isFlowAction(actionName)) {
+		 final String flowid = controllerClass.getLogicalPropertyName() + "/" + actionName;
                  FlowHandler flowHandler = new AbstractFlowHandler() {
                      public String getFlowId() {
-                         return actionName;
+                         return flowid;
                      }
                  };
                  return new HandlerExecutionChain(flowHandler, interceptors);
