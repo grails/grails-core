@@ -480,7 +480,7 @@ public class GrailsPluginUtils {
                 // locations, check whether it's an in-place plugin.
                 def pluginLocations = BuildSettingsHolder.settings?.config?.grails?.plugin?.location
                 if (!pluginFile && pluginLocations) {
-                    def pluginLoc = pluginLocations.find { key, value -> pluginName.startsWith(key) }
+                    def pluginLoc = pluginLocations.find { key, value -> pluginName == key }
                     if (pluginLoc) pluginFile = new File(pluginLoc.value)
                 }
 
