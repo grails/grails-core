@@ -337,46 +337,38 @@ class MockUtils {
         if (pos != -1) pos = clazz.name.lastIndexOf('.', pos - 1)
         def shortName = clazz.name.substring(pos + 1)
 
+        def simple = {String key, def msg, Throwable t = null ->
+            println "$key (${shortName}): $msg"
+            if (t) {
+                println " Exception thrown - ${t.message}"
+            }
+        }
+
         // Dynamically inject a mock logger that simply prints the
         // log message (and optional exception) to stdout.
         def mockLogger = [
-                fatal: { String msg, Throwable t = null ->
-                    println "FATAL (${shortName}): $msg"
-                    if (t) {
-                        println "       Exception thrown - ${t.message}"
-                    }
-                },
-                error: { String msg, Throwable t = null ->
-                    println "ERROR (${shortName}): $msg"
-                    if (t) {
-                        println "       Exception thrown - ${t.message}"
-                    }
-                },
-                warn:  { String msg, Throwable t = null ->
-                    println "WARN (${shortName}):  $msg"
-                    if (t) {
-                        println "       Exception thrown - ${t.message}"
-                    }
-                },
-                info:  { String msg, Throwable t = null ->
-                    println "INFO (${shortName}):  $msg"
-                    if (t) {
-                        println "       Exception thrown - ${t.message}"
-                    }
-                },
-                debug: enableDebug ? { String msg, Throwable t = null ->
-                    println "DEBUG (${shortName}): $msg"
-                    if (t) {
-                        println "       Exception thrown - ${t.message}"
-                    }
-                } : { String msg, Throwable t = null -> },
-                trace: { String msg, Throwable t = null -> },
-                isFatalEnabled: {-> true},
-                isErrorEnabled: {-> true},
-                isWarnEnabled: {-> true},
-                isInfoEnabled: {-> true},
-                isDebugEnabled: {-> enableDebug},
-                isTraceEnabled: {-> false} ] as Log
+            fatal: { def msg, Throwable t = null ->
+                simple('FATAL', msg, t)
+            },
+            error: { def msg, Throwable t = null ->
+                simple('ERROR', msg, t)
+            },
+            warn: { def msg, Throwable t = null ->
+                simple('WARN', msg, t)
+            },
+            info: { def msg, Throwable t = null ->
+                simple('INFO', msg, t)
+            },
+            debug: enableDebug ? { def msg, Throwable t = null ->
+                simple('DEBUG', msg, t)
+            } : { def msg, Throwable t = null -> },
+            trace: { String msg, Throwable t = null -> },
+            isFatalEnabled: {-> true},
+            isErrorEnabled: {-> true},
+            isWarnEnabled: {-> true},
+            isInfoEnabled: {-> true},
+            isDebugEnabled: {-> enableDebug},
+            isTraceEnabled: {-> false} ] as Log
         clazz.metaClass.getLog = {-> mockLogger }
     }
 
