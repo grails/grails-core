@@ -77,7 +77,7 @@ public class FormTagLib3Tests extends AbstractGrailsTagTests {
                                             values:[1,2,3], value: "1"])
                tag.call(attributes, {"<p><g:message code=\"${it.label}\" /> ${it.radio}</p>"})
                def lineSep = System.getProperty("line.separator")
-               assertEquals ("<p><g:message code=\"radio.1\" /> <input type=\"radio\" name=\"testRadio\" checked value=\"1\" /></p>"
+               assertEquals ("<p><g:message code=\"radio.1\" /> <input type=\"radio\" name=\"testRadio\" checked=\"checked\" value=\"1\" /></p>"
                 + lineSep + "<p><g:message code=\"radio.2\" /> <input type=\"radio\" name=\"testRadio\" value=\"2\" /></p>"
                 + lineSep + "<p><g:message code=\"radio.3\" /> <input type=\"radio\" name=\"testRadio\" value=\"3\" /></p>"
                 + lineSep , sw.toString())
@@ -107,7 +107,7 @@ public class FormTagLib3Tests extends AbstractGrailsTagTests {
                tag.call(attributes, {"<p><g:message code=\"${it.label}\" /> ${it.radio}</p>"})
                def lineSep = System.getProperty("line.separator")
                assertEquals ("<p><g:message code=\"Radio 4\" /> <input type=\"radio\" name=\"testRadio2\" value=\"4\" /></p>"
-                + lineSep + "<p><g:message code=\"Radio 1\" /> <input type=\"radio\" name=\"testRadio2\" checked value=\"1\" /></p>"
+                + lineSep + "<p><g:message code=\"Radio 1\" /> <input type=\"radio\" name=\"testRadio2\" checked=\"checked\" value=\"1\" /></p>"
                 + lineSep , sw.toString())
            }
        }
