@@ -21,20 +21,20 @@ Brief description of the plugin.
     // URL to the plugin's documentation
     def documentation = "http://grails.org/@plugin.name@+Plugin"
 
+    def doWithWebDescriptor = { xml ->
+        // TODO Implement additions to web.xml (optional), this event occurs before 
+    }
+
     def doWithSpring = {
         // TODO Implement runtime spring config (optional)
     }
 
-    def doWithApplicationContext = { applicationContext ->
-        // TODO Implement post initialization spring config (optional)
-    }
-
-    def doWithWebDescriptor = { xml ->
-        // TODO Implement additions to web.xml (optional)
-    }
-
     def doWithDynamicMethods = { ctx ->
         // TODO Implement registering dynamic methods to classes (optional)
+    }
+
+    def doWithApplicationContext = { applicationContext ->
+        // TODO Implement post initialization spring config (optional)
     }
 
     def onChange = { event ->
