@@ -22,6 +22,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
+import java.lang.annotation.Annotation;
 
 public class MockApplicationContext extends GroovyObjectSupport implements WebApplicationContext {
 
@@ -89,7 +90,7 @@ public class MockApplicationContext extends GroovyObjectSupport implements WebAp
     }
 
     public String getDisplayName() {
-		throw new UnsupportedOperationException("Method not supported by implementation");
+		return getId();
 	}
 
 	public long getStartupDate() {
@@ -132,19 +133,7 @@ public class MockApplicationContext extends GroovyObjectSupport implements WebAp
         return getBeanNamesForType(type);
     }
 
-	public Map getBeansOfType(Class type) throws BeansException {
-        String[] beanNames = getBeanNamesForType(type);
-        Map newMap = new HashMap();
-        for (int i = 0; i < beanNames.length; i++) {
-            String beanName = beanNames[i];
-            newMap.put(beanName, getBean(beanName));
-
-        }
-        return newMap;
-	}
-
-	public Map getBeansOfType(Class type, boolean includePrototypes,
-			boolean includeFactoryBeans) throws BeansException {
+    public <T> Map<String, T> getBeansOfType(Class<T> type) throws BeansException {
         String[] beanNames = getBeanNamesForType(type);
         Map newMap = new HashMap();
         for (int i = 0; i < beanNames.length; i++) {
@@ -155,18 +144,47 @@ public class MockApplicationContext extends GroovyObjectSupport implements WebAp
         return newMap;
     }
 
+    public <T> Map<String, T> getBeansOfType(Class<T> type, boolean includeNonSingletons, boolean allowEagerInit) throws BeansException {
+        return getBeansOfType(type);
+    }
+
+    public <A extends Annotation> A findAnnotationOnBean(String name, Class<A> annotation) {
+        Object o = getBean(name);
+        if(o!=null) {
+            return o.getClass().getAnnotation(annotation);
+        }
+        return null;
+    }
+
+    public Map<String, Object> getBeansWithAnnotation(Class<? extends Annotation> annotation, boolean b, boolean b1) throws BeansException {
+        return getBeansWithAnnotation(annotation);
+    }
+
+    public Map<String, Object> getBeansWithAnnotation(Class<? extends Annotation> annotation) throws BeansException {
+        Map<String, Object> submap = new HashMap<String, Object>();
+        for (Object beanName : beans.keySet()) {
+            Object bean = beans.get(beanName);
+            if(bean!=null&&bean.getClass().getAnnotation(annotation)!=null) {
+                submap.put(beanName.toString(), bean);
+            }
+        }
+        return submap;
+    }
+
+
+
 	public Object getBean(String name) throws BeansException {
 		if(!beans.containsKey(name))throw new NoSuchBeanDefinitionException(name);
 		return beans.get(name);
 	}
 
-	public Object getBean(String name, Class requiredType)
-			throws BeansException {
-		if(!beans.containsKey(name))throw new NoSuchBeanDefinitionException( name);
-		if(requiredType != null && beans.get(name).getClass() != requiredType)throw new NoSuchBeanDefinitionException(name);
+    public <T> T getBean(String name, Class<T> requiredType) throws BeansException {
+        if(!beans.containsKey(name))throw new NoSuchBeanDefinitionException( name);
+        if(requiredType != null && beans.get(name).getClass() != requiredType)throw new NoSuchBeanDefinitionException(name);
 
-		return beans.get(name);
-	}
+        return (T) beans.get(name);
+    }
+
 
     public Object getBean(String name, Object[] args) throws BeansException {
         return getBean(name);

@@ -329,13 +329,8 @@ Try using Grails' default cache provider: 'org.hibernate.cache.OSCacheProvider'"
 
     private static registerDynamicMethods(GrailsDomainClass dc, GrailsApplication application, ApplicationContext ctx, SessionFactory sessionFactory) {
         dc.metaClass.methodMissing = { String name, args ->
-//            println "METHOD MISSING $name"
             throw new MissingMethodException(name, dc.clazz, args, true)
         }
-//        dc.metaClass.propertyMissing = { String name ->
-//            println "PROPERTY MISSING HERE ! $name"
-//
-//        }
         addBasicPersistenceMethods(dc, application, ctx)
         addQueryMethods(dc, application, ctx)
         addTransactionalMethods(dc, application, ctx)
@@ -503,15 +498,14 @@ Try using Grails' default cache provider: 'org.hibernate.cache.OSCacheProvider'"
             template.bulkUpdate(query, GrailsClassUtils.collectionToObjectArray(args))
         }
         metaClass.static.executeUpdate = {String query, Map argMap ->
-            template.execute(  { session ->
+            template.executeWithNativeSession(  { Session session ->
                                     Query queryObject = session.createQuery(query)
                                     SessionFactoryUtils.applyTransactionTimeout(queryObject, template.sessionFactory);
                                     for (entry in argMap) {
                                         queryObject.setParameter(entry.key, entry.value)
                                     }
                                     queryObject.executeUpdate()
-                                } as HibernateCallback
-                            , true);
+                                } as HibernateCallback);
         }
 
 

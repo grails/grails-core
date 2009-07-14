@@ -34,7 +34,7 @@ class BuildSettings {
 commons-codec-|commons-collections-|commons-dbcp-|commons-fileupload-|commons-io-|commons-lang-|\
 commons-pool-|commons-validator-|dom4j-|ehcache-|ejb3-persistence-|groovy-all-|hsqldb-|ivy-|jcl-over-slf4j-|jdbc2_0-stdext|\
 jsr107cache-|jta-|log4j-|ognl-|org\\.springframework\\.\\w+-|oro-|\
-oscache-|sitemesh-|slf4j-api-|slf4j-log4j12-|spring-|xercesImpl-|\
+oscache-|sitemesh-|slf4j-api-|slf4j-log4j12-|xercesImpl-|\
 xpp3_min-).*\\.jar"""
     static final Pattern JAR_PATTERN = ~/^\S+\.jar$/
 

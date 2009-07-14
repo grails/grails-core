@@ -61,7 +61,7 @@ class DataSourceGrailsPluginTests extends AbstractGrailsMockTests {
         def appCtx = configurator.configure(ctx.getServletContext())
 
         DataSource dataSource = appCtx.getBean("dataSource")
-        assert dataSource                       
+        assert dataSource
 
         def pluginManager = PluginManagerHolder.currentPluginManager()
 

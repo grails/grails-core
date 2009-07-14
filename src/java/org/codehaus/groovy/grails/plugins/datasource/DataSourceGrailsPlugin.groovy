@@ -27,6 +27,7 @@ import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException
 import java.sql.SQLException
 import java.sql.Driver
 import java.sql.DriverManager
+import grails.util.Metadata
 
 /**
  * A plug-in that handles the configuration of Hibernate within Grails 
@@ -150,8 +151,10 @@ class DataSourceGrailsPlugin {
                 connection?.close()
             }
         }
-        
-        deregisterJDBCDrivers()
+
+        if(Metadata.current.warDeployed) {            
+            deregisterJDBCDrivers()
+        }
 
     }
     private void deregisterJDBCDrivers() {

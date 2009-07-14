@@ -758,11 +758,6 @@ class TestScope implements Scope {
 
     int instanceCount
 
-    public Object get(String name, ObjectFactory objectFactory) {
-        instanceCount++
-        objectFactory.getObject()
-    }
-
 
     public Object remove(String name) {
          // do nothing
@@ -775,6 +770,15 @@ class TestScope implements Scope {
         return "mock"
     }
 
+    public Object get(String name, ObjectFactory<?> objectFactory) {
+        instanceCount++
+        objectFactory.getObject()
+
+    }
+
+    public Object resolveContextualObject(String s) {
+        return null;  // noop
+    }
 }
 class BirthdayCardSender {
    List peopleSentCards = []

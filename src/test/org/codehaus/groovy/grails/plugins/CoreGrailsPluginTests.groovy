@@ -21,7 +21,6 @@ class CoreGrailsPluginTests extends AbstractGrailsMockTests {
 		
 		def appCtx = springConfig.getApplicationContext()
 		
-		assert appCtx.containsBean("classEditor")
 		assert appCtx.containsBean("classLoader")
 		assert appCtx.containsBean("customEditors")
 	}	

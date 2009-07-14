@@ -4,11 +4,13 @@ import groovy.lang.ExpandoMetaClass;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyObject;
 import junit.framework.TestCase;
-import org.codehaus.groovy.grails.commons.*;
+import org.codehaus.groovy.grails.commons.ConfigurationHolder;
+import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
+import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.plugins.DefaultGrailsPluginManager;
 import org.codehaus.groovy.grails.plugins.DefaultPluginMetaManager;
 import org.codehaus.groovy.grails.plugins.PluginMetaManager;
-import org.codehaus.groovy.grails.support.ClassEditor;
 import org.codehaus.groovy.grails.support.MockApplicationContext;
 import org.codehaus.groovy.grails.web.errors.GrailsExceptionResolver;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsUrlHandlerMapping;
@@ -71,8 +73,7 @@ public class GrailsRuntimeConfiguratorTests extends TestCase {
         
         // test class editor setup
         assertNotNull(ctx);
-        assertTrue(ctx.getBean(GrailsRuntimeConfigurator.CLASS_LOADER_BEAN) instanceof GroovyClassLoader );
-        assertTrue(ctx.getBean(GrailsRuntimeConfigurator.CLASS_EDITOR_BEAN) instanceof ClassEditor);
+        assertTrue(ctx.getBean(GrailsRuntimeConfigurator.CLASS_LOADER_BEAN) instanceof GroovyClassLoader );        
 
         // test exception resolver
         GrailsExceptionResolver er = (GrailsExceptionResolver)ctx.getBean(GrailsRuntimeConfigurator.EXCEPTION_HANDLER_BEAN);

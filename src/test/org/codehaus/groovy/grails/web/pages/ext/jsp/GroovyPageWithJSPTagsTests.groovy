@@ -24,8 +24,9 @@ class GroovyPageWithJSPTagsTests extends AbstractGrailsTagTests{
             def rootLoader = new RootLoader([] as URL[], Thread.currentThread().getContextClassLoader())
             def res = new FileSystemResource("lib/standard-2.4.jar")
             rootLoader.addURL res.getURL()
-            res = resolver.getResources("file:lib/spring-webmvc*.jar")[0]
-            rootLoader.addURL res.getURL()
+            resolver.getResources("file:lib/org.springframework.web*.jar").each {
+                rootLoader.addURL it.getURL()
+            }            
             return rootLoader
         }
         webRequest.getCurrentRequest().setAttribute(GroovyPagesServlet.SERVLET_INSTANCE, new GroovyPagesServlet())

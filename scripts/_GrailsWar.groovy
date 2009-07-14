@@ -57,7 +57,6 @@ DEFAULT_DEPS = [
     "ivy-*.jar",
     "jsr107cache-*.jar",
     "sitemesh-*.jar",
-    "spring-*.jar",
     "org.springframework.*-*.jar",
     "jcl-over-slf4j-*.jar",
     "slf4j-api-*.jar",

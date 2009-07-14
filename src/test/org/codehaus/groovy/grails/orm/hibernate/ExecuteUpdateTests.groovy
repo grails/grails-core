@@ -55,7 +55,6 @@ class Customer {
         assertEquals 3, custClass.count()
 
         custClass.executeUpdate("delete from Customer c where c.name=:name", [name:'Fred'])
-
         assertEquals 2, custClass.count()
     }
 

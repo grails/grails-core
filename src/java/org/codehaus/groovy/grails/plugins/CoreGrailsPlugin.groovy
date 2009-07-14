@@ -52,14 +52,11 @@ class CoreGrailsPlugin {
 			targetObject = ref("grailsApplication", true)
 			targetMethod = "getClassLoader"
 		}
-		classEditor(ClassEditor) {
-			classLoader = classLoader
-		}
         if(Environment.current == Environment.DEVELOPMENT)
             shutdownHook(DevelopmentShutdownHook)
         
 		customEditors(CustomEditorConfigurer) {
-			customEditors = [(java.lang.Class.class):classEditor]
+			customEditors = [(java.lang.Class.name):ClassEditor.name]
 		}
 	}
 	
