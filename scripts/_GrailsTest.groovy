@@ -81,6 +81,14 @@ target(allTests: "Runs the project's tests.") {
     ant.mkdir(dir: "${testReportsDir}/html")
     ant.mkdir(dir: "${testReportsDir}/plain")
 
+    // add test dependencies to classpath
+    def currentClasspathURLs = rootLoader.URLs.toList()
+    grailsSettings.testDependencies.each { file ->
+        def url = file.toURL()        
+        if(!currentClasspathURLs.contains(url))
+            rootLoader.addURL url        
+    }
+
     // If we are to run the tests that failed, replace the list of
     // test names with the failed ones.
     if (reRunTests) testNames = getFailedTests()

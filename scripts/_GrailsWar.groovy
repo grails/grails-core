@@ -99,6 +99,7 @@ defaultWarDependencies = { antBuilder ->
     if (buildConfig.grails.war.dependencies instanceof List) {
         fileset(dir:"${grailsHome}/dist") {
             include(name:"grails-*.jar")
+            exclude(name:"grails-scripts-*.jar")
         }
         
         fileset(dir:"${grailsHome}/lib") {
@@ -108,6 +109,7 @@ defaultWarDependencies = { antBuilder ->
         }
     }
     else {
+        grailsSettings.runtimeDependencies.each {println it}
         grailsSettings.runtimeDependencies?.each { File f ->
             fileset(dir: f.parent, includes: f.name)
         }
@@ -191,7 +193,7 @@ target (war: "The implementation target") {
                     deps.resolveStrategy = Closure.DELEGATE_FIRST
                     deps()
                 }
-                else {
+                else {                    
                     defaultWarDependencies(delegate)
                 }
             }

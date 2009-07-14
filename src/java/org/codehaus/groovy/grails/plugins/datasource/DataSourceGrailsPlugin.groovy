@@ -24,6 +24,9 @@ import org.springframework.context.ApplicationContext
 import java.sql.Connection
 import grails.util.GrailsUtil
 import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException
+import java.sql.SQLException
+import java.sql.Driver
+import java.sql.DriverManager
 
 /**
  * A plug-in that handles the configuration of Hibernate within Grails 
@@ -147,7 +150,20 @@ class DataSourceGrailsPlugin {
                 connection?.close()
             }
         }
+        
+        deregisterJDBCDrivers()
 
+    }
+    private void deregisterJDBCDrivers() {
+        Enumeration<Driver> drivers = DriverManager.getDrivers();
+        while (drivers.hasMoreElements()) {
+            Driver driver = drivers.nextElement();
+            try {
+                DriverManager.deregisterDriver(driver);
+            } catch (SQLException e) {
+                log.error("Error deregisetring JDBC driver ["+driver+"]: " + e.getMessage(), e);
+            }
+        }
     }
 
 }

@@ -624,16 +624,28 @@ public class GrailsScriptRunner {
             urls.add(settings.getResourcesDir().toURI().toURL());
         }
 
+        // Add compilation dependencies
+        List compileDependencies = settings.getCompileDependencies();
+        for (Object compileDependency : compileDependencies) {
+            File file = (File) compileDependency;
+            if (!excludes.contains(file.getName())) {
+                urls.add(file.toURI().toURL());
+                excludes.add(file.getName());
+            }
+
+        }
         // Add the project's runtime dependencies because most of them
         // will be required for the build to work.
         List runtimeDeps = settings.getRuntimeDependencies();
         for (Iterator iter = runtimeDeps.iterator(); iter.hasNext();) {
             File file = (File) iter.next();
+            if(urls.contains(file)) continue;
             if (!excludes.contains(file.getName())) {
                 urls.add(file.toURI().toURL());
                 excludes.add(file.getName());
             }
         }
+
 
         // If we're using a Grails installation, add any remaining JARs
         // from its "lib" directory.

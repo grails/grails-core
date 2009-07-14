@@ -123,10 +123,10 @@
                 <exclude name="**/groovy/grails/plugins/scaffolding/**" />
                 <exclude name="**/groovy/grails/validation/Hibernate**" />
             </fileset>
-            <file file="${basedir}/scripts/log4j.properties"/>
         </jar>
         <jar destfile="${grails.dist}/grails-scripts-${grails.version}.jar" manifest="${grails.build}/META-INF/MANIFEST.MF">
             <fileset dir="${grails.target}/compiled-scripts"/>
+            <file file="${basedir}/scripts/log4j.properties"/>            
         </jar>
 
         <copy todir="${grails.build}/META-INF">

@@ -234,7 +234,17 @@ xpp3_min-).*\\.jar"""
             // Currently all JARs are added to each of the dependency
             // lists.
             new File(this.grailsHome, "lib").eachFileMatch(DEFAULT_DEPS, addJars)
-            new File(this.grailsHome, "dist").eachFileMatch(JAR_PATTERN, addJars)
+            new File(this.grailsHome, "dist").eachFileMatch(JAR_PATTERN) { File jar ->
+                // don't include test or scripts jar in runtime dependencies
+                if(jar.name.startsWith("grails-test") || jar.name.startsWith("grails-scripts")) {
+                    testDependencies <<  jar
+                    compileDependencies << jar
+                }
+                else {
+                    addJars(jar)
+                }
+
+            }
         }
 
         // Update the base directory. This triggers some extra config.

@@ -36,7 +36,7 @@
 	<classpathentry kind="lib" path="lib/gant_groovy1.6-1.6.0.jar"/>
 	<classpathentry kind="lib" path="lib/groovy-all-1.6.3.jar"/>
 	<classpathentry kind="lib" path="lib/hibernate-annotations-3.3.0.jar"/>
-	<classpathentry kind="lib" path="lib/hsqldb-1.8.0.5.jar"/>
+	<classpathentry kind="lib" path="lib/hsqldb-1.8.0.10.jar"/>
 	<classpathentry kind="lib" path="lib/jasper-compiler-5.5.15.jar"/>
 	<classpathentry kind="lib" path="lib/jasper-runtime-5.5.15.jar"/>
 	<classpathentry kind="lib" path="lib/jcl-over-slf4j-1.5.6.jar"/>
