@@ -11,9 +11,24 @@
 	<classpathentry kind="src" output="target/eclipse/test-output" path="test/persistence"/>
 	<classpathentry kind="src" output="target/eclipse/test-output" path="test/scaffolding"/>
 	<classpathentry kind="lib" path="lib/hibernate3-3.3.1.jar" sourcepath="/HIBERNATE_HOME/src"/>
-	<classpathentry kind="lib" path="lib/spring-2.5.6.jar" sourcepath="/SPRING_HOME/src"/>
-    <classpathentry kind="lib" path="lib/spring-webmvc-2.5.6.jar" sourcepath="/SPRING_HOME/src"/>
-    <classpathentry kind="lib" path="lib/spring-test-2.5.6.jar" sourcepath="/SPRING_HOME/mock"/>
+	<classpathentry kind="lib" path="lib/org.springframework.aop-3.0.0.CI-325.jar" sourcepath="/SPRING_HOME/src"/>
+	<classpathentry kind="lib" path="lib/org.springframework.asm-3.0.0.CI-325.jar" sourcepath="/SPRING_HOME/src"/>
+	<classpathentry kind="lib" path="lib/org.springframework.aspects-3.0.0.CI-325.jar" sourcepath="/SPRING_HOME/src"/>
+	<classpathentry kind="lib" path="lib/org.springframework.beans-3.0.0.CI-325.jar" sourcepath="/SPRING_HOME/src"/>
+	<classpathentry kind="lib" path="lib/org.springframework.context-3.0.0.CI-325.jar" sourcepath="/SPRING_HOME/src"/>
+	<classpathentry kind="lib" path="lib/org.springframework.context.support-3.0.0.CI-325.jar" sourcepath="/SPRING_HOME/src"/>
+	<classpathentry kind="lib" path="lib/org.springframework.core-3.0.0.CI-325.jar" sourcepath="/SPRING_HOME/src"/>
+	<classpathentry kind="lib" path="lib/org.springframework.expression-3.0.0.CI-325.jar" sourcepath="/SPRING_HOME/src"/>
+	<classpathentry kind="lib" path="lib/org.springframework.instrument-3.0.0.CI-325.jar" sourcepath="/SPRING_HOME/src"/>
+	<classpathentry kind="lib" path="lib/org.springframework.instrument.classloading-3.0.0.CI-325.jar" sourcepath="/SPRING_HOME/src"/>
+	<classpathentry kind="lib" path="lib/org.springframework.integration-tests-3.0.0.CI-325.jar" sourcepath="/SPRING_HOME/src"/>
+	<classpathentry kind="lib" path="lib/org.springframework.jdbc-3.0.0.CI-325.jar" sourcepath="/SPRING_HOME/src"/>
+	<classpathentry kind="lib" path="lib/org.springframework.jms-3.0.0.CI-325.jar" sourcepath="/SPRING_HOME/src"/>
+	<classpathentry kind="lib" path="lib/org.springframework.orm-3.0.0.CI-325.jar" sourcepath="/SPRING_HOME/src"/>
+	<classpathentry kind="lib" path="lib/org.springframework.test-3.0.0.CI-325.jar" sourcepath="/SPRING_HOME/src"/>
+	<classpathentry kind="lib" path="lib/org.springframework.transaction-3.0.0.CI-325.jar" sourcepath="/SPRING_HOME/src"/>
+	<classpathentry kind="lib" path="lib/org.springframework.web-3.0.0.CI-325.jar" sourcepath="/SPRING_HOME/src"/>
+	<classpathentry kind="lib" path="lib/org.springframework.web.servlet-3.0.0.CI-325.jar" sourcepath="/SPRING_HOME/src"/>	
 	<classpathentry kind="lib" path="lib/ant-junit-1.7.0.jar"/>
 	<classpathentry kind="lib" path="lib/ant-nodeps-1.7.0.jar"/>
 	<classpathentry kind="lib" path="lib/ant-1.7.0.jar"/>
