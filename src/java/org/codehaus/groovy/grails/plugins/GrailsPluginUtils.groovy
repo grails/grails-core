@@ -481,6 +481,10 @@ public class GrailsPluginUtils {
                 def pluginLocations = BuildSettingsHolder.settings?.config?.grails?.plugin?.location
                 if (!pluginFile && pluginLocations) {
                     def pluginLoc = pluginLocations.find { key, value -> pluginName == key }
+                    // maybe the plugin name includes a version suffix so attempt startsWith
+                    if(!pluginLoc) {
+                       pluginLoc = pluginLocations.find { key, value -> pluginName.startsWith(key)  } 
+                    }
                     if (pluginLoc) pluginFile = new File(pluginLoc.value)
                 }
 
