@@ -42,7 +42,7 @@ public class MetadataGeneratingExpandoMetaClass extends ExpandoMetaClass {
 
         DocumentationContext context = DocumentationContext.getInstance();
 
-        if(context.isActive() && getExpandoProperties().contains(mp)) {
+        if(context!=null&&context.isActive() && getExpandoProperties().contains(mp)) {
             context.documentProperty(context.getArtefactType(),getJavaClass(), mp.getName());
         }
 
@@ -51,7 +51,7 @@ public class MetadataGeneratingExpandoMetaClass extends ExpandoMetaClass {
     protected void registerStaticMethod(String name, Closure callable) {
         super.registerStaticMethod(name, callable);
         DocumentationContext context = DocumentationContext.getInstance();
-        if(context.isActive() && isInitialized()) {
+        if(context!=null&&context.isActive() && isInitialized()) {
                context.documentStaticMethod(context.getArtefactType(),getJavaClass(), name, callable.getParameterTypes());
         }
 
@@ -62,7 +62,7 @@ public class MetadataGeneratingExpandoMetaClass extends ExpandoMetaClass {
     public void registerInstanceMethod(MetaMethod method) {
         super.registerInstanceMethod(method);
         DocumentationContext context = DocumentationContext.getInstance();
-        if(context.isActive() && isInitialized()) {
+        if(context!=null&&context.isActive() && isInitialized()) {
             if(method.isStatic()) {
                context.documentStaticMethod(context.getArtefactType(),getJavaClass(), method.getName(), method.getNativeParameterTypes());
             }

@@ -16,6 +16,7 @@
 package org.codehaus.groovy.grails.documentation
 
 import org.codehaus.groovy.grails.commons.GrailsClassUtils
+import grails.util.Metadata
 
 /**
  * A Class that gather information about the behavior a plugin adds at runtime.
@@ -26,9 +27,14 @@ import org.codehaus.groovy.grails.commons.GrailsClassUtils
 
 public class DocumentationContext {
 
-    private static DocumentationContextThreadLocal threadLocalDocumentContext = new DocumentationContextThreadLocal()
+    private static DocumentationContextThreadLocal threadLocalDocumentContext;
+    static {
+        if(!Metadata.current.warDeployed) {
+            threadLocalDocumentContext = new DocumentationContextThreadLocal()
+        }
+    }
     public static DocumentationContext getInstance() {        
-        threadLocalDocumentContext.get() 
+        threadLocalDocumentContext?.get() 
     }
 
     String artefactType = "Unknown"

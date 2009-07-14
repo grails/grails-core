@@ -574,7 +574,9 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
      * @return An array of classes for the given artefact
      */
     public GrailsClass[] getArtefacts(String artefactType) {
-        DocumentationContext.getInstance().setArtefactType(artefactType);
+        if(!isWarDeployed()) {
+            DocumentationContext.getInstance().setArtefactType(artefactType);
+        }
         ArtefactInfo info = getArtefactInfo(artefactType, true);
         return info.getGrailsClasses();
     }

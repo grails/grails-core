@@ -473,7 +473,7 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
 
             if(this.pluginBean.isReadableProperty(DO_WITH_APPLICATION_CONTEXT)) {
                 Closure c = (Closure)this.plugin.getProperty(DO_WITH_APPLICATION_CONTEXT);
-                if(isBasePlugin()) {
+                if(enableDocumentationGeneration()) {
                     DocumentationContext.getInstance().setActive(true);
                 }
 
@@ -482,9 +482,15 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
             }
         }
         finally {
-            DocumentationContext.getInstance().reset();
+            if(enableDocumentationGeneration()) {
+                DocumentationContext.getInstance().reset();
+            }
         }
 
+    }
+
+    private boolean enableDocumentationGeneration() {
+        return !Metadata.getCurrent().isWarDeployed() && isBasePlugin();
     }
 
     public void doWithRuntimeConfiguration(
@@ -547,7 +553,9 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
     }
 
     public void doc(String text) {
-        DocumentationContext.getInstance().document(text);
+        if(enableDocumentationGeneration()) {
+            DocumentationContext.getInstance().document(text);
+        }
     }
 
     public String[] getDependencyNames() {
@@ -893,7 +901,7 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
 
             if(this.pluginBean.isReadableProperty(DO_WITH_DYNAMIC_METHODS)) {
                 Closure c = (Closure)this.plugin.getProperty(DO_WITH_DYNAMIC_METHODS);
-                if(isBasePlugin()) {
+                if(enableDocumentationGeneration()) {
                     DocumentationContext.getInstance().setActive(true);
                 }
 
@@ -902,7 +910,9 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
             }
         }
         finally {
-            DocumentationContext.getInstance().reset();
+            if(enableDocumentationGeneration()) {
+                DocumentationContext.getInstance().reset();
+            }
         }
     }
 
