@@ -28,6 +28,7 @@ import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAwareBeanPostProcessor
 import org.codehaus.groovy.grails.support.DevelopmentShutdownHook
 import grails.util.Environment
+import org.codehaus.groovy.grails.aop.framework.autoproxy.GroovyAwareInfrastructureAdvisorAutoProxyCreator
 
 /**
  * A plug-in that configures the core shared beans within the Grails application context 
@@ -45,6 +46,8 @@ class CoreGrailsPlugin {
         addBeanFactoryPostProcessor(new GrailsOverrideConfigurer())
         addBeanFactoryPostProcessor(new GrailsPlaceholderConfigurer())
 
+        // replace AutoProxy advisor with Groovy aware one
+        "org.springframework.aop.config.internalAutoProxyCreator"(GroovyAwareInfrastructureAdvisorAutoProxyCreator)
 
         grailsApplicationPostProcessor(GrailsApplicationAwareBeanPostProcessor, ref("grailsApplication", true))
 

@@ -20,6 +20,7 @@ import org.springframework.transaction.interceptor.TransactionProxyFactoryBean
 import org.codehaus.groovy.grails.commons.ServiceArtefactHandler
     import org.codehaus.groovy.grails.orm.support.GroovyAwareNamedTransactionAttributeSource
     import org.codehaus.groovy.grails.commons.GrailsServiceClass
+    import org.springframework.transaction.annotation.Transactional
 
     /**
  * A plug-in that configures services in the spring context 
@@ -37,8 +38,12 @@ class ServicesGrailsPlugin {
 
 	                 
 	def doWithSpring = {
+        xmlns tx:"http://www.springframework.org/schema/tx"
+        tx.'annotation-driven'()
+
 		for(serviceGrailsClass in application.serviceClasses) {
             GrailsServiceClass serviceClass = serviceGrailsClass
+
 		    def scope = serviceClass.getPropertyValue("scope")
 
 			"${serviceClass.fullName}ServiceClass"(MethodInvokingFactoryBean) {
@@ -47,8 +52,8 @@ class ServicesGrailsPlugin {
 				arguments = [ServiceArtefactHandler.TYPE, serviceClass.fullName]
 			}
 
-			def hasDataSource = (application.config?.dataSource || application.domainClasses.size() > 0)						
-			if(serviceClass.transactional && hasDataSource) {
+			def hasDataSource = (application.config?.dataSource || application.domainClasses.size() > 0)
+			if(serviceClass.transactional && hasDataSource && !serviceClass.clazz.getAnnotation(Transactional)) {
 				def props = new Properties()
 				props."*"="PROPAGATION_REQUIRED"
 				"${serviceClass.propertyName}"(TransactionProxyFactoryBean) { bean ->
