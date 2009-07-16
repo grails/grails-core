@@ -44,6 +44,8 @@ class CoreGrailsPlugin {
 	
 	def doWithSpring = {
         xmlns context:"http://www.springframework.org/schema/context"
+        xmlns grailsContext:"http://www.grails.org/schema/context"
+
 
         addBeanFactoryPostProcessor(new GrailsOverrideConfigurer())
         addBeanFactoryPostProcessor(new GrailsPlaceholderConfigurer())
@@ -53,7 +55,7 @@ class CoreGrailsPlugin {
 
         // Allow the use of Spring annotated components
         context.'annotation-config'()
-        context.'component-scan'('base-package':'**')
+        grailsContext.'component-scan'('base-package':'**')
 
 
         grailsApplicationPostProcessor(GrailsApplicationAwareBeanPostProcessor, ref("grailsApplication", true))

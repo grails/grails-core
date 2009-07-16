@@ -8,6 +8,8 @@
 			<fileset dir="${grails.target}" includes="grails-*-files.jar"/>
 		</delete>
 
+
+
         <!-- Package up the files that are shared by both applications and plugins. -->
         <jar destfile="${grails.target}/grails-shared-files.jar">
             <fileset dir="${basedir}/src/grails/templates/ide-support/eclipse"/>
@@ -57,6 +59,17 @@
 		<delete>
 			<fileset dir="${grails.dist}" includes="*"/>
 		</delete>
+        <copy todir="${grails.build}">
+            <fileset dir="${grails.src}" includes="**/*.xsd" />
+        </copy>
+
+        <copy todir="${grails.build}/META-INF">
+            <fileset dir="${grails.src.jar}/META-INF">
+                <include name="*.handlers" />
+                <include name="*.schemas" />
+            </fileset>
+        </copy>
+        
         <jar destfile="${grails.dist}/grails-test-${grails.version}.jar" manifest="${grails.build}/META-INF/MANIFEST.MF">
             <fileset dir="${grails.build}">
                 <include name="META-INF/**" />
@@ -130,15 +143,6 @@
             <file file="${basedir}/scripts/log4j.properties"/>            
         </jar>
 
-        <copy todir="${grails.build}/META-INF">
-            <fileset dir="${grails.src.jar}/META-INF">
-                <include name="*.handlers" />
-                <include name="*.schemas" />
-            </fileset>
-        </copy>
-        <copy todir="${grails.build}">
-            <fileset dir="${grails.src}" includes="**/*.xsd" />
-        </copy>
 
         <jar destfile="${grails.dist}/grails-gorm-${grails.version}.jar" manifest="${grails.build}/META-INF/MANIFEST.MF">
             <fileset dir="${grails.build}">
