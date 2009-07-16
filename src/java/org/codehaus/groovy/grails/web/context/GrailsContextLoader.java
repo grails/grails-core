@@ -60,11 +60,11 @@ public class GrailsContextLoader extends ContextLoader {
         if(LOG.isDebugEnabled()) {
 			LOG.debug("[GrailsContextLoader] Loading context. Creating parent application context");
 		}
-        WebApplicationContext  ctx = null;
+        WebApplicationContext  ctx;
         try {
             ctx = super.createWebApplicationContext(servletContext, parent);
 
-            application = (GrailsApplication) ctx.getBean(GrailsApplication.APPLICATION_ID, GrailsApplication.class);
+            application = ctx.getBean(GrailsApplication.APPLICATION_ID, GrailsApplication.class);
             ctx =  GrailsConfigUtils.configureWebApplicationContext(servletContext, ctx);
             GrailsConfigUtils.executeGrailsBootstraps(application, ctx, servletContext);
         } catch (Throwable e) {
@@ -84,8 +84,7 @@ public class GrailsContextLoader extends ContextLoader {
                 GroovyClassLoader classLoader = application.getClassLoader();
                 MetaClassRegistry metaClassRegistry = GroovySystem.getMetaClassRegistry();
                 Class[] loadedClasses = classLoader.getLoadedClasses();
-                for (int i = 0; i < loadedClasses.length; i++) {
-                    Class loadedClass = loadedClasses[i];
+                for (Class loadedClass : loadedClasses) {
                     metaClassRegistry.removeMetaClass(loadedClass);
                 }
             }

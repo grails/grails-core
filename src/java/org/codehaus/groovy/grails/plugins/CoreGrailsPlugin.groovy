@@ -43,11 +43,18 @@ class CoreGrailsPlugin {
 	
 	
 	def doWithSpring = {
+        xmlns context:"http://www.springframework.org/schema/context"
+
         addBeanFactoryPostProcessor(new GrailsOverrideConfigurer())
         addBeanFactoryPostProcessor(new GrailsPlaceholderConfigurer())
 
         // replace AutoProxy advisor with Groovy aware one
         "org.springframework.aop.config.internalAutoProxyCreator"(GroovyAwareInfrastructureAdvisorAutoProxyCreator)
+
+        // Allow the use of Spring annotated components
+        context.'annotation-config'()
+        context.'component-scan'('base-package':'**')
+
 
         grailsApplicationPostProcessor(GrailsApplicationAwareBeanPostProcessor, ref("grailsApplication", true))
 

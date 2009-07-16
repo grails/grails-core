@@ -787,10 +787,17 @@ public class BeanBuilder extends GroovyObjectSupport {
 		}			
 	}
 
-    protected DynamicElementReader createDynamicElementReader(String namespace, boolean decorator) {
+    protected DynamicElementReader createDynamicElementReader(String namespace, final boolean decorator) {
         NamespaceHandler handler = namespaceHandlers.get(namespace);
         ParserContext parserContext = new ParserContext(readerContext, new BeanDefinitionParserDelegate(readerContext));
-        final DynamicElementReader dynamicElementReader = new DynamicElementReader(namespace, this.namespaces, handler, parserContext);
+        final DynamicElementReader dynamicElementReader = new DynamicElementReader(namespace, this.namespaces, handler, parserContext) {
+            @Override
+            protected void afterInvocation() {
+                if(!decorator) {
+                    currentBeanConfig = null;
+                }
+            }
+        };
         dynamicElementReader.setClassLoader(classLoader);
         if(currentBeanConfig!=null) {
             dynamicElementReader.setBeanConfiguration(currentBeanConfig);

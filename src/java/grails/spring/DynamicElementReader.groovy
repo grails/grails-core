@@ -59,6 +59,7 @@ public class DynamicElementReader extends GroovyObjectSupport{
     NamespaceHandler namespaceHandler
     BeanConfiguration beanConfiguration
     boolean beanDecorator  = false
+    boolean firstCall = true
 
     public DynamicElementReader(String namespace, Map namespaceMap=Collections.EMPTY_MAP, NamespaceHandler namespaceHandler = null, ParserContext parserContext = null) {
         super();
@@ -72,13 +73,30 @@ public class DynamicElementReader extends GroovyObjectSupport{
         entityResolver = new DelegatingEntityResolver(classLoader)
     }
 
+    /**
+     * Hook that subclass or anonymous classes can overwrite to implement custom behavior after invocation
+     * completes
+     */
+    protected void afterInvocation() {
+        // NOOP
+    }
+    
     @Override
     public Object invokeMethod(String name, Object args) {
+        boolean invokeAfterInterceptor = false
+        if(firstCall) {
+            invokeAfterInterceptor = true
+            firstCall=false
+        }
         if(name.equals("doCall")) {
             def callable = args[0]
             callable.resolveStrategy = Closure.DELEGATE_FIRST
             callable.delegate = this
-            callable.call()
+            def result = callable.call()
+            if(invokeAfterInterceptor) {
+                afterInvocation()
+            }
+            return result            
         }
         else {
             StreamingMarkupBuilder builder = new StreamingMarkupBuilder();
@@ -124,6 +142,9 @@ public class DynamicElementReader extends GroovyObjectSupport{
             }
             else {
                 throw new BeanDefinitionParsingException(new Problem("No namespace handler found for element ${sw}", new Location(parserContext?.readerContext?.resource ?: new ByteArrayResource(new byte[0]))))
+            }
+            if(invokeAfterInterceptor) {
+                afterInvocation()
             }
             return element
 

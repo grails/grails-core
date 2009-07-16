@@ -21,6 +21,8 @@ import org.codehaus.groovy.grails.commons.ServiceArtefactHandler
     import org.codehaus.groovy.grails.orm.support.GroovyAwareNamedTransactionAttributeSource
     import org.codehaus.groovy.grails.commons.GrailsServiceClass
     import org.springframework.transaction.annotation.Transactional
+    import org.springframework.core.annotation.AnnotationUtils
+    import java.lang.reflect.Method
 
     /**
  * A plug-in that configures services in the spring context 
@@ -53,7 +55,7 @@ class ServicesGrailsPlugin {
 			}
 
 			def hasDataSource = (application.config?.dataSource || application.domainClasses.size() > 0)
-			if(serviceClass.transactional && hasDataSource && !serviceClass.clazz.getAnnotation(Transactional)) {
+			if(hasDataSource && shouldCreateTransactionalProxy(serviceClass)) {
 				def props = new Properties()
 				props."*"="PROPAGATION_REQUIRED"
 				"${serviceClass.propertyName}"(TransactionProxyFactoryBean) { bean ->
@@ -80,7 +82,19 @@ class ServicesGrailsPlugin {
 			}
 		}
 	}
-	
+
+    def shouldCreateTransactionalProxy(GrailsServiceClass serviceClass) {
+        Class javaClass = serviceClass.clazz
+
+        try {
+            serviceClass.transactional &&
+              !AnnotationUtils.findAnnotation(javaClass, Transactional) &&
+                 !javaClass.methods.any { Method m -> AnnotationUtils.findAnnotation(m, Transactional)!=null }
+        }
+        catch (e) {
+            return false
+        }
+    }
 	def onChange = { event ->
 		if(event.source) {
 			def serviceClass = application.addArtefact(ServiceArtefactHandler.TYPE, event.source)
