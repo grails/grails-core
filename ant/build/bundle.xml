@@ -99,6 +99,7 @@
                 <include name="grails/util/**" />
                 <include name="grails/validation/**" />
                 <include name="grails/persistence/**" />
+                <include name="**/groovy/grails/aop/framework/**" />
                 <include name="**/groovy/grails/beans/factory/**" />
                 <include name="**/groovy/grails/commons/**" />
                 <include name="**/groovy/grails/context/**" />
