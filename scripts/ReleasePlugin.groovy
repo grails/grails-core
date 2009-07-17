@@ -62,9 +62,7 @@ target(processAuth:"Prompts user for login details to create authentication mana
                 psw = psw+".default"
             }
             ant.input(message:"Please enter your SVN username:", addproperty:usr)
-            ant.input(message:"Please enter your SVN password:", addproperty:psw) {
-                handler classname:"org.apache.tools.ant.input.SecureInputHandler"
-            }
+            ant.input(message:"Please enter your SVN password:", addproperty:psw)
             def username = ant.antProject.getProperty(usr)
             def password = ant.antProject.getProperty(psw)
             authManager = SVNWCUtil.createDefaultAuthenticationManager( username , password )
