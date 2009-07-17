@@ -44,7 +44,7 @@ class CoreGrailsPlugin {
 	
 	def doWithSpring = {
         xmlns context:"http://www.springframework.org/schema/context"
-        xmlns grailsContext:"http://www.grails.org/schema/context"
+        xmlns grailsContext:"http://grails.org/schema/context"
 
 
         addBeanFactoryPostProcessor(new GrailsOverrideConfigurer())

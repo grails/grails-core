@@ -53,6 +53,17 @@
           <attribute name="Implementation-Vendor" value="grails.org"/>
         </manifest>
 
+        <copy todir="${grails.build}">
+            <fileset dir="${grails.src}" includes="**/*.xsd" />
+        </copy>
+
+        <copy todir="${grails.build}/META-INF">
+            <fileset dir="${grails.src.jar}/META-INF">
+                <include name="*.handlers" />
+                <include name="*.schemas" />
+            </fileset>
+        </copy>
+        
     </target>
 
     <target name="build-scripts" depends="build">

@@ -59,16 +59,6 @@
 		<delete>
 			<fileset dir="${grails.dist}" includes="*"/>
 		</delete>
-        <copy todir="${grails.build}">
-            <fileset dir="${grails.src}" includes="**/*.xsd" />
-        </copy>
-
-        <copy todir="${grails.build}/META-INF">
-            <fileset dir="${grails.src.jar}/META-INF">
-                <include name="*.handlers" />
-                <include name="*.schemas" />
-            </fileset>
-        </copy>
         
         <jar destfile="${grails.dist}/grails-test-${grails.version}.jar" manifest="${grails.build}/META-INF/MANIFEST.MF">
             <fileset dir="${grails.build}">
