@@ -19,6 +19,7 @@ import grails.util.GrailsUtil
 
 import grails.web.container.EmbeddableServerFactory
 import grails.web.container.EmbeddableServer
+import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
 
 
 /**
@@ -29,7 +30,7 @@ import grails.web.container.EmbeddableServer
  * @since 0.4
  */
 
-includeTargets << grailsScript("_GrailsPackage")
+includeTargets << grailsScript("_GrailsPlugins")
 
 SCHEME_HTTP="http"
 SCHEME_HTTPS="https"
@@ -84,10 +85,20 @@ private EmbeddableServerFactory loadServerFactory() {
     def load = { name -> classLoader.loadClass(name).newInstance() }
 
 
-    def containerClass = getPropertyValue("grails.server.factory", "org.codehaus.groovy.grails.web.container.JettyServerFactory")
+    String defaultServer = "org.grails.tomcat.TomcatServerFactory"
+    def containerClass = getPropertyValue("grails.server.factory", defaultServer)
     EmbeddableServerFactory serverFactory
     try {
         serverFactory = load(containerClass)
+    }
+    catch(ClassNotFoundException cnfe) {
+        if(containerClass==defaultServer) {
+            println "WARNING: No default container found, installing Tomcat.."
+            doInstallPluginFromGrailsHomeOrRepository "tomcat", GrailsUtil.grailsVersion
+            GrailsPluginUtils.clearCaches()
+            compilePlugins()
+            serverFactory = load(containerClass)            
+        }
     }
     catch (Throwable e) {
         GrailsUtil.deepSanitize(e)

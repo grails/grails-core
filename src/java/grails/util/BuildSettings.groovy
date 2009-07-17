@@ -224,7 +224,7 @@ xpp3_min-).*\\.jar"""
         }
 
         // If 'grailsHome' is set, add the JAR file dependencies.
-        this.defaultPluginMap = [hibernate:grailsVersion]
+        this.defaultPluginMap = [hibernate:grailsVersion, tomcat:grailsVersion]
         this.defaultPluginSet = defaultPluginMap.keySet()
         this.compileDependencies = []
         this.testDependencies = []

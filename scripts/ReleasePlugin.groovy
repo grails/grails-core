@@ -62,7 +62,9 @@ target(processAuth:"Prompts user for login details to create authentication mana
                 psw = psw+".default"
             }
             ant.input(message:"Please enter your SVN username:", addproperty:usr)
-            ant.input(message:"Please enter your SVN password:", addproperty:psw)
+            ant.input(message:"Please enter your SVN password:", addproperty:psw) {
+                handler classname:"org.apache.tools.ant.input.SecureInputHandler"
+            }
             def username = ant.antProject.getProperty(usr)
             def password = ant.antProject.getProperty(psw)
             authManager = SVNWCUtil.createDefaultAuthenticationManager( username , password )
@@ -76,10 +78,15 @@ target(releasePlugin: "The implementation target") {
    
     if(argsMap.skipMetadata != true) {
         println "Generating plugin project behavior metadata..."
-        MetadataGeneratingMetaClassCreationHandle.enable()
-        bootstrap()
-        MetadataGeneratingMetaClassCreationHandle.disable()
-        println "Packaging plugin project..."
+        try {
+            MetadataGeneratingMetaClassCreationHandle.enable()
+            bootstrap()
+            MetadataGeneratingMetaClassCreationHandle.disable()
+        }
+        catch (e) {
+            println "There was an error generating project behavior metadata: [${e.message}]"
+        }
+
     }
     packagePlugin()
     docs()

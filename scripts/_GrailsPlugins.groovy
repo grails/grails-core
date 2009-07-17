@@ -62,6 +62,39 @@ doInstallPlugin = { name, version = null ->
     }
 }
 
+doInstallPluginFromGrailsHomeOrRepository = { name, version = null ->
+    withPluginInstall {
+        boolean hasVersion = name && version
+        File pluginZip
+        if(hasVersion) {
+            def zipName = "grails-${name}-${version}"
+            pluginZip = new File("${grailsSettings.grailsHome}/plugins/${zipName}.zip")
+            if(!pluginZip.exists()) {
+                pluginZip = new File("${grailsSettings.grailsWorkDir}/plugins/${zipName}.zip")
+            }
+        }
+        else {
+           def zipNameNoVersion = "grails-${name}"
+           pluginZip = findZip(zipNameNoVersion,"${grailsSettings.grailsHome}/plugins")
+           if(!pluginZip?.exists()) {
+              pluginZip = findZip(zipNameNoVersion,"${grailsSettings.grailsWorkDir}/plugins")
+           }
+        }
+
+
+        if(pluginZip?.exists()) {
+           cacheLocalPlugin(pluginZip)
+        }
+        else {
+           cacheKnownPlugin(name,version)
+        }
+    }
+}
+
+File findZip(String name, String dir) {
+    new File(dir).listFiles().find {it.name.startsWith(name)}
+}
+
 private withPluginInstall(Closure callable) {
     try {
         fullPluginName = callable.call()
