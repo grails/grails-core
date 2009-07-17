@@ -149,6 +149,12 @@
 				</fileset>
             </batchtest>
 
+          <batchtest todir="${grails.test.reports}" failureproperty="grails.test.failure" fork="true" >
+			    <fileset dir="${grails.test.build}">
+                    <include name="**/webflow/**${test}Tests.class" />                    <include name="**/orm/hibernate/cfg/${test}Tests.class" />
+                    <exclude name="**/Abstract*" />
+				</fileset>
+            </batchtest>
 
 
             <batchtest todir="${grails.test.reports}" failureproperty="grails.test.failure" fork="true" >
@@ -158,6 +164,7 @@
                     <exclude name="**/TransactionalServiceReloadTests*" />
                     <exclude name="**/ContentFormatControllerTests*" />
                     <exclude name="**/orm/hibernate/**" />
+                    <exclude name="**/webflow/**" />
                     <exclude name="**/cli/**Tests.class" />
 				</fileset>
 			</batchtest>
