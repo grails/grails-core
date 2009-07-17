@@ -56,7 +56,9 @@ public class ClosureClassIgnoringComponentScanBeanDefinitionParser extends Compo
                 final boolean warDeployed = Metadata.getCurrent().isWarDeployed();
                 if(!warDeployed) {
                     BuildSettings buildSettings = BuildSettingsHolder.getSettings();
-                    classesDir = buildSettings.getClassesDir().toURI().toURL();
+                    if(buildSettings != null && buildSettings.getClassesDir()!=null) {
+                        classesDir = buildSettings.getClassesDir().toURI().toURL();
+                    }
                 }
 
                 // only scan classes from project classes directory
@@ -70,7 +72,7 @@ public class ClosureClassIgnoringComponentScanBeanDefinitionParser extends Compo
                     if(!warDeployed && classesDir!= null && url.equals(classesDir)) {
                         result.add(convertClassLoaderURL(url));
                     }
-                    else {
+                    else if(warDeployed){
                         result.add(convertClassLoaderURL(url));
                     }
 
