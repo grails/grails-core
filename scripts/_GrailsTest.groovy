@@ -99,7 +99,17 @@ target(allTests: "Runs the project's tests.") {
     event("TestPhasesStart", [phasesToRun])
 
     // This runs the tests and generates the formatted result files.
-    testRunner = new DefaultGrailsTestRunner(testReportsDir, reportFormats)
+    String testRunnerClassName = System.getProperty("grails.test.runner") ?: "org.codehaus.groovy.grails.test.DefaultGrailsTestRunner";
+    testRunner = null
+    if (testRunnerClassName) {
+        try {
+            testRunner = Class.forName(testRunnerClassName).getConstructor(File, List).newInstance(testReportsDir, reportFormats)
+        }
+        catch (Throwable e) {
+            println "Cannot load test runner class '${testRunnerClassName}'. Reason: ${e.message}"
+            testRunner = new DefaultGrailsTestRunner(testReportsDir, reportFormats)
+        }
+    }
 
     // Process the tests in each phase that is configured to run.
     phasesToRun.each { String phase ->
