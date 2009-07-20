@@ -11,6 +11,20 @@ public class InvokeTagLibWithBodyAsMethodTests extends AbstractGrailsTagTests {
     public void onSetUp() {
         gcl.parseClass('''
 class TestTagLib {
+    def testWithClosureAndGStringReturn = { attrs, body ->
+        def foo = "bar"
+		out << "one" << test(foo:"bar") { "$foo" } << "four"
+	}
+
+    def testWithClosureAndStringReturn = { attrs, body ->
+        
+		out << "one" << test(foo:"bar") { "foo" } << "four"
+	}
+
+    def testWithGStringBody = { attrs, body ->
+        def foo = "bar"
+		out << "one" << test(foo:"bar", "$foo") << "four"
+	}
 
 	def testWithStringBody = { attrs, body ->
 		out << "one" << test(foo:"bar", "foo") << "four"
@@ -28,6 +42,28 @@ class TestTagLib {
 	}
 }
 ''')
+    }
+
+    void testWithClosureAndGStringReturn() {
+        def template = '<g:testWithClosureAndGStringReturn />'
+
+
+        assertOutputEquals 'onetwobarthreefour', template
+    }
+
+
+    void testWithClosureAndStringReturn() {
+        def template = '<g:testWithClosureAndStringReturn />'
+
+
+        assertOutputEquals 'onetwofoothreefour', template
+    }
+    
+    void testInvokeTagLibAsMethodWithGString() {
+        def template = '<g:testWithGStringBody />'
+
+
+        assertOutputEquals 'onetwobarthreefour', template
     }
 
 

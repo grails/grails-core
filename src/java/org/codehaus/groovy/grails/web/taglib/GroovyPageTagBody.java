@@ -16,10 +16,10 @@ package org.codehaus.groovy.grails.web.taglib;
 
 import groovy.lang.Binding;
 import groovy.lang.Closure;
+import groovy.lang.GString;
 import org.codehaus.groovy.grails.web.pages.GroovyPage;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 
-import java.io.IOException;
 import java.io.Writer;
 import java.util.HashMap;
 import java.util.Map;
@@ -113,13 +113,11 @@ public class GroovyPageTagBody extends Closure {
             }
             String output = capturedOut.getValue();
             if(org.apache.commons.lang.StringUtils.isBlank(output)) {
-                if(writeStringResult && (bodyResult instanceof String)) {
-                    try {
-                        originalOut.write((String)bodyResult);
-                    }
-                    catch (IOException e) {
-                        // ignore
-                    }
+                if(bodyResult instanceof String) {
+                    return bodyResult;
+                }
+                else if(bodyResult instanceof GString) {
+                    return bodyResult.toString();
                 }
                 else {
                     return BLANK_STRING;
