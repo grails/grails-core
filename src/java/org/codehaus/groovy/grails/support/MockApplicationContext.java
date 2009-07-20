@@ -180,7 +180,7 @@ public class MockApplicationContext extends GroovyObjectSupport implements WebAp
 
     public <T> T getBean(String name, Class<T> requiredType) throws BeansException {
         if(!beans.containsKey(name))throw new NoSuchBeanDefinitionException( name);
-        if(requiredType != null && beans.get(name).getClass() != requiredType)throw new NoSuchBeanDefinitionException(name);
+        if(requiredType != null && !requiredType.isAssignableFrom(beans.get(name).getClass()) )throw new NoSuchBeanDefinitionException(name);
 
         return (T) beans.get(name);
     }
