@@ -395,13 +395,13 @@ class PrototypeProvider implements JavascriptProvider {
 		}
 		out << "'"
 
-		//def pms = attrs.remove('params')
         def url
-        def jsParams = attrs.params?.findAll { it.value instanceof JavascriptValue }
+        def jsParams = [:]
 
-        jsParams?.each { attrs.params?.remove(it.key) }
-
-
+        if (jsParams instanceof Map) {
+            jsParams = attrs.params?.findAll { it.value instanceof JavascriptValue }
+            jsParams?.each { attrs.params?.remove(it.key) }
+        }
 
         if(attrs.url) {
 			url = taglib.createLink(attrs.url)
