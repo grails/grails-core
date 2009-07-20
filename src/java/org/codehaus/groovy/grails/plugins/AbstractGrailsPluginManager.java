@@ -6,13 +6,14 @@ package org.codehaus.groovy.grails.plugins;
 import grails.util.BuildScope;
 import grails.util.GrailsNameUtils;
 import groovy.lang.ExpandoMetaClass;
-import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.ArtefactHandler;
+import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration;
 import org.codehaus.groovy.grails.plugins.exceptions.PluginException;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.Resource;
+import org.springframework.core.type.filter.TypeFilter;
 
 import java.util.*;
 
@@ -45,6 +46,13 @@ public abstract class AbstractGrailsPluginManager implements GrailsPluginManager
 		this.application = application;
 	}
 
+    public List<TypeFilter> getTypeFilters() {
+        List<TypeFilter> list = new ArrayList<TypeFilter>();
+        for (GrailsPlugin grailsPlugin : pluginList) {
+            list.addAll(grailsPlugin.getTypeFilters());
+        }
+        return Collections.unmodifiableList(list);
+    }
     public GrailsPlugin[] getAllPlugins() {
         return pluginList.toArray(new GrailsPlugin[pluginList.size()]);
     }

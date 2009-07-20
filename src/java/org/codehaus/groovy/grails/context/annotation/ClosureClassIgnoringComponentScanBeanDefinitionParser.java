@@ -18,12 +18,15 @@ import grails.util.BuildSettings;
 import grails.util.BuildSettingsHolder;
 import grails.util.Metadata;
 import org.apache.commons.io.FilenameUtils;
+import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
+import org.codehaus.groovy.grails.plugins.PluginManagerHolder;
 import org.springframework.beans.factory.xml.ParserContext;
+import org.springframework.beans.factory.xml.XmlReaderContext;
 import org.springframework.context.annotation.ClassPathBeanDefinitionScanner;
 import org.springframework.context.annotation.ComponentScanBeanDefinitionParser;
 import org.springframework.core.io.Resource;
-import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+import org.springframework.core.type.filter.TypeFilter;
 import org.springframework.util.AntPathMatcher;
 import org.w3c.dom.Element;
 
@@ -31,6 +34,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Enumeration;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -41,6 +45,19 @@ import java.util.Set;
  * @since 1.2
  */
 public class ClosureClassIgnoringComponentScanBeanDefinitionParser extends ComponentScanBeanDefinitionParser{
+
+    @Override
+    protected ClassPathBeanDefinitionScanner createScanner(XmlReaderContext readerContext, boolean useDefaultFilters) {
+        final ClassPathBeanDefinitionScanner scanner = super.createScanner(readerContext, useDefaultFilters);
+        GrailsPluginManager pluginManager = PluginManagerHolder.getPluginManager();
+        if(pluginManager!=null) {
+            List<TypeFilter> typeFilters = pluginManager.getTypeFilters();
+            for (TypeFilter typeFilter : typeFilters) {
+                scanner.addIncludeFilter(typeFilter);
+            }
+        }
+        return scanner;
+    }
 
     @Override
     protected ClassPathBeanDefinitionScanner configureScanner(ParserContext parserContext, Element element) {
@@ -92,22 +109,5 @@ public class ClosureClassIgnoringComponentScanBeanDefinitionParser extends Compo
         });
         scanner.setResourceLoader(resourceResolver);
         return scanner;
-    }
-
-    class DelegatingResourceLoader implements ResourceLoader{
-        private ResourceLoader delegate;
-
-        DelegatingResourceLoader(ResourceLoader loader) {
-            this.delegate = loader;
-        }
-
-        public Resource getResource(String location) {
-            System.out.println("location = " + location);
-            return delegate.getResource(location);
-        }
-
-        public ClassLoader getClassLoader() {
-            return delegate.getClassLoader();
-        }
     }
 }

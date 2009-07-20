@@ -21,12 +21,14 @@ import org.codehaus.groovy.grails.plugins.exceptions.PluginException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.io.Resource;
+import org.springframework.core.type.filter.TypeFilter;
 import org.springframework.web.context.ServletContextAware;
 
 import java.io.File;
 import java.io.Writer;
 import java.util.Collection;
 import java.util.Map;
+import java.util.List;
 
 /**
  * <p>A class that handles the loading and management of plug-ins in the Grails system.
@@ -255,4 +257,10 @@ public interface GrailsPluginManager extends ApplicationContextAware, ServletCon
      * @param aClass The class
      */
     void informOfClassChange(Class aClass);
+
+    /**
+     * Get all of the TypeFilter definitions defined by the plugins
+     * @return A list of TypeFilter definitions
+     */
+    List<TypeFilter> getTypeFilters();
 }

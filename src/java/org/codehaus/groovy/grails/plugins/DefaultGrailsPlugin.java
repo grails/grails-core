@@ -42,6 +42,7 @@ import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+import org.springframework.core.type.filter.TypeFilter;
 
 import java.io.File;
 import java.io.IOException;
@@ -95,6 +96,7 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
     private Map pluginScopes;
     private Map pluginEnvs;
     private List<String> pluginExcludes = new ArrayList<String>();
+    private Collection<? extends TypeFilter> typeFilters = new ArrayList<TypeFilter>();
 
 
     public DefaultGrailsPlugin(Class pluginClass, Resource resource, GrailsApplication application) {
@@ -149,8 +151,15 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
         evaluatePluginStatus();
         evaluatePluginScopes();
         evaluatePluginExcludes();
+        evaluateTypeFilters();
 
+    }
 
+    private void evaluateTypeFilters() {
+        Object result = GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(this.plugin, TYPE_FILTERS);
+        if(result instanceof List) {
+            this.typeFilters = (List<TypeFilter>) result;
+        }
     }
 
     private void evaluatePluginExcludes() {
@@ -1015,6 +1024,10 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
 
     public List<String> getPluginExcludes() {
         return this.pluginExcludes;
+    }
+
+    public Collection<? extends TypeFilter> getTypeFilters() {
+        return this.typeFilters;
     }
 
 }

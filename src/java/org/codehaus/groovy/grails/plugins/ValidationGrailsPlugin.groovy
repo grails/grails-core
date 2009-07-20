@@ -1,13 +1,28 @@
+/*
+ * Copyright 2004-2005 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.codehaus.groovy.grails.plugins
 
 import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
 
 import grails.util.GrailsUtil
+import org.codehaus.groovy.grails.plugins.DomainClassPluginSupport
 import org.codehaus.groovy.grails.support.SoftThreadLocalMap
 import org.codehaus.groovy.grails.validation.ConstrainedPropertyBuilder
 import org.codehaus.groovy.grails.validation.Validateable
-import org.springframework.beans.factory.support.SimpleBeanDefinitionRegistry
-import org.springframework.context.annotation.ClassPathBeanDefinitionScanner
+import org.springframework.context.ApplicationContext
 import org.springframework.core.type.filter.AnnotationTypeFilter
 import org.springframework.validation.BeanPropertyBindingResult
 import org.springframework.validation.Errors
@@ -16,9 +31,11 @@ public class ValidationGrailsPlugin {
     def version = GrailsUtil.getGrailsVersion()
     def dependsOn = [:]
     def loadAfter = ['hibernate', 'controllers']
+    def typeFilters = [new AnnotationTypeFilter(Validateable)]
+
     static final PROPERTY_INSTANCE_MAP = new SoftThreadLocalMap()
 
-    def doWithDynamicMethods = {ctx ->
+    def doWithDynamicMethods = { ApplicationContext ctx ->
         // list of validateable classes
         def validateables = []
 
@@ -27,31 +44,14 @@ public class ValidationGrailsPlugin {
             validateables << it
         }
 
-        // grab all of the classes annotated with @Validateable
-        def simpleRegistry = new SimpleBeanDefinitionRegistry();
-        try {
-            def scanner = new ClassPathBeanDefinitionScanner(simpleRegistry, false)
-            scanner.setIncludeAnnotationConfig(false)
-            scanner.addIncludeFilter(new AnnotationTypeFilter(Validateable))
-            def packagesToScan = application.config?.grails?.validateable?.packages
-            if(!packagesToScan) {
-                packagesToScan = ['']
-            }
-            scanner.scan(packagesToScan as String[])
-        }
-        catch (e) {
-            // Workaround for http://jira.springframework.org/browse/SPR-5120
-            log.warn "WARNING: Cannot scan for @Validateable due to container classloader issues. This feature has been disabled for this environment. Message: ${e.message}"
-        };
-
-        simpleRegistry.beanDefinitionNames?.each {beanDefinitionName ->
-            def beanDefinition = simpleRegistry.getBeanDefinition(beanDefinitionName)
-            def beanClass = application.classLoader.loadClass(beanDefinition.beanClassName)
-            validateables << beanClass
+        for(entry in ctx.getBeansWithAnnotation(Validateable)) {
+            Class validateable = entry?.value?.class
+            if(validateable)
+                validateables << validateable
         }
 
         // make all of these classes 'validateable'
-        validateables.each {validateableClass ->
+        for(validateableClass in validateables) {
             log.debug "Making Class Validateable: ${validateableClass.name}"
             addValidationMethods(application, validateableClass, ctx)
         }

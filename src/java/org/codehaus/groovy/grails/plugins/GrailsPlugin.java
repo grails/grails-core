@@ -24,9 +24,11 @@ import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.core.type.filter.TypeFilter;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Collection;
 
 /**
  * <p>Plugin interface that adds Spring {@link org.springframework.beans.factory.config.BeanDefinition}s
@@ -159,6 +161,10 @@ public interface GrailsPlugin extends ApplicationContextAware, Comparable {
      */
     String PLUGIN_EXCLUDES = "pluginExcludes";
 
+    /**
+     * The field that reperesents the list of type filters a plugin provides
+     */
+    String TYPE_FILTERS = "typeFilters";
 
     /**
      * <p>This method is called to allow the plugin to add {@link org.springframework.beans.factory.config.BeanDefinition}s
@@ -396,4 +402,11 @@ public interface GrailsPlugin extends ApplicationContextAware, Comparable {
      * @see #isBasePlugin()
      */
     void setBasePlugin(boolean isBase);
+
+    /**
+     * Plugin can provide a list of Spring TypeFilters so that annotated components can
+     * be scanned into the ApplicationContext
+     * @return A collection of TypeFilter instance
+     */
+    Collection<? extends TypeFilter> getTypeFilters();
 }
