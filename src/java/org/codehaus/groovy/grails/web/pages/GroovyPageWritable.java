@@ -20,7 +20,9 @@ import groovy.lang.GroovyObject;
 import groovy.lang.Writable;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.commons.GrailsClass;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.WrappedResponseHolder;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
@@ -32,9 +34,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * An instance of groovy.lang.Writable that writes itself to the specified
@@ -265,11 +265,12 @@ class GroovyPageWritable implements Writable {
 
     protected void populateViewModel(HttpServletRequest request, Binding binding) {
         // Go through request attributes and add them to the binding as the model
+        final Map variables = binding.getVariables();
         for (Enumeration attributeEnum =  request.getAttributeNames(); attributeEnum.hasMoreElements();) {
             String key = (String) attributeEnum.nextElement();
             if(!GroovyPage.isReservedName(key)) {
 
-                if(!binding.getVariables().containsKey(key)) {
+                if(!variables.containsKey(key)) {
                     binding.setVariable( key, request.getAttribute(key) );
                 }
             }
@@ -291,7 +292,7 @@ class GroovyPageWritable implements Writable {
 
     private void formulateBindingFromWebRequest(Binding binding, HttpServletRequest request, HttpServletResponse response, Writer out, GroovyObject controller) {
         // if there is no controller in the request configure using existing attributes, creating objects where necessary
-        GrailsWebRequest webRequest = (GrailsWebRequest)request.getAttribute(GrailsApplicationAttributes.WEB_REQUEST);
+        GrailsWebRequest webRequest = GrailsWebRequest.lookup(request);
         binding.setVariable(GroovyPage.WEB_REQUEST, webRequest);
         binding.setVariable(GroovyPage.REQUEST, request);
         binding.setVariable(GroovyPage.RESPONSE, response);
@@ -300,8 +301,13 @@ class GroovyPageWritable implements Writable {
 
         ApplicationContext appCtx = webRequest.getAttributes().getApplicationContext();
         binding.setVariable(GroovyPage.APPLICATION_CONTEXT, appCtx);
-        if(appCtx!=null)
-                binding.setVariable(GrailsApplication.APPLICATION_ID, webRequest.getAttributes().getGrailsApplication());
+        if(appCtx!=null) {
+            GrailsApplication app = appCtx.getBean(GrailsApplication.APPLICATION_ID, GrailsApplication.class);
+            binding.setVariable(GrailsApplication.APPLICATION_ID, app);
+            Map<String,Class> domainClassesWithoutPackage = getDomainClassMap(app);            
+            final Map variables = binding.getVariables();
+            variables.putAll(domainClassesWithoutPackage);
+        }
         binding.setVariable(GroovyPage.SESSION, webRequest.getSession());
         binding.setVariable(GroovyPage.PARAMS, webRequest.getParams());
         binding.setVariable(GroovyPage.ACTION_NAME, webRequest.getActionName());
@@ -309,9 +315,25 @@ class GroovyPageWritable implements Writable {
         if(controller!= null) {
             binding.setVariable(GrailsApplicationAttributes.CONTROLLER, controller);
             binding.setVariable(GroovyPage.PLUGIN_CONTEXT_PATH, controller.getProperty(GroovyPage.PLUGIN_CONTEXT_PATH));
+
         }
         
         binding.setVariable(GroovyPage.OUT, out);
+    }
+
+    private static Map<String,Class> domainsWithoutPackage = new HashMap<String,Class>();
+    private static Map<String,Class> getDomainClassMap(GrailsApplication application) {
+        GrailsClass[] domainClasses = application.getArtefacts(DomainClassArtefactHandler.TYPE);
+        if(domainClasses.length==domainsWithoutPackage.size()) return domainsWithoutPackage;
+        else {
+            domainsWithoutPackage.clear();
+            for (GrailsClass domainClass : domainClasses) {
+                final Class theClass = domainClass.getClazz();
+                domainsWithoutPackage.put(theClass.getName(),theClass);
+            }
+            return domainsWithoutPackage;
+        }
+
     }
 
 }

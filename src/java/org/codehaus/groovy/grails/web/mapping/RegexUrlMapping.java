@@ -71,6 +71,7 @@ public class RegexUrlMapping extends AbstractUrlMapping implements UrlMapping {
 
     private static final String CAPTURED_DOUBLE_WILDCARD = "(**)";
     private static final Log LOG = LogFactory.getLog(RegexUrlMapping.class);
+    private static final Pattern DOUBLE_WILDCARD_PATTERN = Pattern.compile("\\(\\*\\*?\\)");
 
 
     /**
@@ -197,7 +198,7 @@ public class RegexUrlMapping extends AbstractUrlMapping implements UrlMapping {
         StringBuilder uri = new StringBuilder(contextPath);
         Set usedParams = new HashSet();
 
-        Pattern p = Pattern.compile("\\(\\*\\*?\\)");
+        Pattern p = DOUBLE_WILDCARD_PATTERN;
 
         String[] tokens = urlData.getTokens();
         int paramIndex = 0;
