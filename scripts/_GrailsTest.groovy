@@ -75,7 +75,8 @@ testHelper = null
 testsFailed = false
 
 target(allTests: "Runs the project's tests.") {
-    depends(compile)
+    depends(compile, packagePlugins)
+    packageFiles(basedir)
 
     ant.mkdir(dir: testReportsDir)
     ant.mkdir(dir: "${testReportsDir}/html")
