@@ -21,6 +21,7 @@ import org.apache.commons.collections.list.LazyList;
 import org.apache.commons.collections.set.ListOrderedSet;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.grails.commons.*;
 import org.codehaus.groovy.grails.commons.metaclass.CreateDynamicMethod;
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
@@ -374,7 +375,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
                 BeanWrapper currentBean = bean;
 
                 for (String name : propertyNames) {
-                    Object created = autoCreatePropertyIfPossible(currentBean, name);
+                    Object created = autoCreatePropertyIfPossible(currentBean, name, pv.getValue());
                     if (created != null)
                         currentBean = new BeanWrapperImpl(created);
                     else
@@ -384,12 +385,12 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
             }
             else {
 
-                autoCreatePropertyIfPossible(bean, propertyName);
+                autoCreatePropertyIfPossible(bean, propertyName, pv.getValue());
             }
         }
     }
 
-    private Object autoCreatePropertyIfPossible(BeanWrapper bean,String propertyName) {
+    private Object autoCreatePropertyIfPossible(BeanWrapper bean, String propertyName, Object propertyValue) {
 
         propertyName = PropertyAccessorUtils.canonicalPropertyName(propertyName);
         int currentKeyStart = propertyName.indexOf(PropertyAccessor.PROPERTY_KEY_PREFIX_CHAR);
@@ -406,7 +407,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
         
         LOG.debug("Checking if auto-create is possible for property ["+propertyName+"] and type ["+type+"]");
         if(type != null && val == null && GroovyObject.class.isAssignableFrom(type)) {
-            if(isNullAndWritableProperty(bean, propertyName)) {
+            if(!shouldPropertyValueSkipAutoCreate(propertyValue) && isNullAndWritableProperty(bean, propertyName)) {
 
                 Object created = autoInstantiateDomainInstance(type);
 
@@ -490,6 +491,10 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
         }
 
         return val;
+    }
+
+    private boolean shouldPropertyValueSkipAutoCreate(Object propertyValue) {
+        return (propertyValue instanceof Map) || ((propertyValue instanceof String) && StringUtils.isBlank((String) propertyValue));
     }
 
     private Collection decorateCollectionForDomainAssociation(Collection c, final Class referencedType) {
