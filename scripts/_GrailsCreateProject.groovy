@@ -84,6 +84,9 @@ target(createPlugin: "The implementation target")  {
         replacefilter(token: "@grails.version@", value: grailsVersion)
     }
 
+    // install default plugins into plugin project
+    installDefaultPluginSet()
+
     event("StatusFinal", [ "Created plugin ${pluginName}" ])
 }
 
