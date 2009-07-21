@@ -217,8 +217,10 @@ Try using Grails' default cache provider: 'org.hibernate.cache.OSCacheProvider'"
 
     static final doWithDynamicMethods = {ApplicationContext ctx ->
 
-        SessionFactory sessionFactory = ctx.getBean("sessionFactory")
-        enhanceSessionFactory(sessionFactory, application, ctx)
+        for(entry in ctx.getBeansOfType(SessionFactory)) {            
+            SessionFactory sessionFactory = entry.value
+            enhanceSessionFactory(sessionFactory, application, ctx)
+        }
     }
 
     public static void enhanceProxy ( HibernateProxy proxy ) {
