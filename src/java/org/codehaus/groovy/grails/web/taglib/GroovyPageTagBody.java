@@ -17,6 +17,8 @@ package org.codehaus.groovy.grails.web.taglib;
 import groovy.lang.Binding;
 import groovy.lang.Closure;
 import groovy.lang.GString;
+import groovy.lang.GroovyObject;
+import org.codehaus.groovy.grails.commons.TagLibArtefactHandler;
 import org.codehaus.groovy.grails.web.pages.GroovyPage;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 
@@ -56,6 +58,9 @@ public class GroovyPageTagBody extends Closure {
         binding = null;
         if(owner instanceof GroovyPage)
             binding = ((GroovyPage) owner).getBinding();
+        else if(owner != null && owner.getClass().getName().endsWith(TagLibArtefactHandler.TYPE)) {
+            binding = (Binding) ((GroovyObject)owner).getProperty(GroovyPage.PAGE_SCOPE);
+        }
 
         this.writeStringResult=writeStringResult;
     }
@@ -88,20 +93,27 @@ public class GroovyPageTagBody extends Closure {
 
                     // GRAILS-2675: Copy the current binding so that we can restore
                     // it to its original state.
-                    Map currentBinding = binding.getVariables();
-                    Map originalBinding = new HashMap(currentBinding);
+                    Map currentBinding = null;
+                    Map originalBinding = null;
 
-                    // Add the extra variables passed into the body to the
-                    // current binding.
-                    currentBinding.putAll((Map) args);
+                    if(binding!=null) {
+                        currentBinding = binding.getVariables();
+                        originalBinding = new HashMap(currentBinding);
+                        // Add the extra variables passed into the body to the
+                        // current binding.
+                        currentBinding.putAll((Map) args);
+                    }
+
 
                     try {
                         bodyResult = bodyClosure.call(args);
                     }
                     finally {
-                        // GRAILS-2675: Restore the original binding.
-                        currentBinding.clear();
-                        currentBinding.putAll(originalBinding);
+                        if(binding!=null) {
+                            // GRAILS-2675: Restore the original binding.
+                            currentBinding.clear();
+                            currentBinding.putAll(originalBinding);
+                        }
                     }
                 }
                 else {
