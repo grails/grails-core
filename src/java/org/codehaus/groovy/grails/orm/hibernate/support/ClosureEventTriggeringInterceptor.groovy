@@ -135,9 +135,9 @@ class ClosureEventTriggeringInterceptor extends SaveOrUpdateEventListener implem
 
     public boolean onPreUpdate(PreUpdateEvent event) {
         def entity = event.getEntity()
-
+        def evict = false
         if(shouldTrigger(entity)) {
-            def result = triggerEvent(BEFORE_UPDATE_EVENT, event.entity, event)
+            evict = triggerEvent(BEFORE_UPDATE_EVENT, event.entity, event)
 
             Mapping m = GrailsDomainBinder.getMapping(entity.getClass())
             boolean shouldTimestamp = m && !m.autoTimestamp ? false : true
@@ -149,9 +149,12 @@ class ClosureEventTriggeringInterceptor extends SaveOrUpdateEventListener implem
                 entity."$property.name" = now
             }
 
-            return result
         }
-        
+
+        if(!entity.validate(deepValidate:false)) {
+            evict = true
+        }
+        return evict
     }
 
     public void onPostUpdate(PostUpdateEvent event) {
