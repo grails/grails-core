@@ -764,7 +764,7 @@ Try using Grails' default cache provider: 'org.hibernate.cache.OSCacheProvider'"
                 def xmlBeans = new org.springframework.beans.factory.xml.XmlBeanFactory(resourcesXml);
                 if (xmlBeans.containsBean("dataSource")) {
                     LOG.info("Using dataSource bean definition from ${GrailsRuntimeConfigurator.SPRING_RESOURCES_XML}")
-                    return xmlBeans.getBeanDefinition("dataSource");
+                    return xmlBeans.getMergedBeanDefinition("dataSource");
                 }
             }
         } catch (FileNotFoundException fnfe) {
