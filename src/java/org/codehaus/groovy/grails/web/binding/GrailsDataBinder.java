@@ -406,7 +406,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
         Object val = bean.isReadableProperty(propertyName) ? bean.getPropertyValue(propertyName) : null;
         
         LOG.debug("Checking if auto-create is possible for property ["+propertyName+"] and type ["+type+"]");
-        if(type != null && val == null && GroovyObject.class.isAssignableFrom(type)) {
+        if(type != null && val == null && DomainClassArtefactHandler.isDomainClass(type)) {
             if(!shouldPropertyValueSkipAutoCreate(propertyValue) && isNullAndWritableProperty(bean, propertyName)) {
 
                 Object created = autoInstantiateDomainInstance(type);
