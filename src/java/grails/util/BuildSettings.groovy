@@ -442,17 +442,18 @@ xpp3_min-).*\\.jar"""
         // Find out whether the file exists, and if so parse it.
         def settingsFile = new File("$userHome/.grails/settings.groovy")
         if (settingsFile.exists()) {
-            Script script = gcl.parseClass(settingsFile).newInstance();
-            config = slurper.parse(script)
+            Script script = gcl.parseClass(settingsFile)?.newInstance();
+            if(script)
+                config = slurper.parse(script)
         }
 
         if (configFile.exists()) {
             URL configUrl = configFile.toURI().toURL()
-            Script script = gcl.parseClass(configFile).newInstance();
+            Script script = gcl.parseClass(configFile)?.newInstance();
 
-            if (!config)
+            if (!config && script)
                config = slurper.parse(script)
-            else
+            else if(script)
                config.merge(slurper.parse(script))
 
             config.setConfigFile(configUrl)
