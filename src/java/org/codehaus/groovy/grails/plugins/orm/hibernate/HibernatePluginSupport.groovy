@@ -57,6 +57,7 @@ import org.hibernate.Hibernate
 import org.springframework.validation.Validator
 import org.hibernate.EmptyInterceptor
 import org.codehaus.groovy.grails.orm.hibernate.events.PatchedDefaultFlushEventListener
+import org.springframework.transaction.support.TransactionSynchronizationManager
 
 
 /**
@@ -424,6 +425,23 @@ Try using Grails' default cache provider: 'org.hibernate.cache.OSCacheProvider'"
             new HibernateTemplate(sessionFactory).execute({ session ->
                 callable(session)
             } as HibernateCallback)
+        }
+        metaClass.static.withNewSession = { Closure callable ->
+            HibernateTemplate template = new HibernateTemplate(sessionFactory)
+            SessionHolder sessionHolder = (SessionHolder) TransactionSynchronizationManager.getResource(sessionFactory);
+            Session previousSession = sessionHolder?.getSession()
+            try {
+                template.alwaysUseNewSession=true
+                template.execute({ Session session ->
+                    sessionHolder.addSession(session)
+                    
+                    callable(session)
+                } as HibernateCallback)
+            }
+            finally {
+                if(previousSession!=null) sessionHolder.addSession(previousSession)
+            }
+
         }
         // Initiates a pessimistic lock on the row represented by the object using
         // the dbs "SELECT FOR UPDATE" mechanism
