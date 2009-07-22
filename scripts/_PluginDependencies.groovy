@@ -303,8 +303,7 @@ target(resolveDependencies:"Resolve plugin dependencies") {
         if(!pluginLoc?.exists()) {
             println "Plugin [${fullName}] not installed, resolving.."
 
-            cacheKnownPlugin(name, version)
-            installPluginForName(fullName)
+            doInstallPluginFromGrailsHomeOrRepository name, version
             installedPlugins = true
         }
     }
@@ -1021,6 +1020,78 @@ installPluginForName = { String fullPluginName ->
 
     }
 }
+
+
+doInstallPluginFromURL = { URL url ->
+    withPluginInstall {
+        downloadRemotePlugin(url, pluginsBase)
+    }
+}
+
+doInstallPluginZip = { File file ->
+    withPluginInstall {
+        cacheLocalPlugin(file)
+    }
+}
+
+doInstallPlugin = { name, version = null ->
+    withPluginInstall {
+        cacheKnownPlugin(name,version)
+    }
+}
+
+doInstallPluginFromGrailsHomeOrRepository = { name, version = null ->
+    withPluginInstall {
+        boolean hasVersion = name && version
+        File pluginZip
+        if(hasVersion) {
+            def zipName = "grails-${name}-${version}"
+            pluginZip = new File("${grailsSettings.grailsHome}/plugins/${zipName}.zip")
+            if(!pluginZip.exists()) {
+                pluginZip = new File("${grailsSettings.grailsWorkDir}/plugins/${zipName}.zip")
+            }
+        }
+        else {
+           def zipNameNoVersion = "grails-${name}"
+           pluginZip = findZip(zipNameNoVersion,"${grailsSettings.grailsHome}/plugins")
+           if(!pluginZip?.exists()) {
+              pluginZip = findZip(zipNameNoVersion,"${grailsSettings.grailsWorkDir}/plugins")
+           }
+        }
+
+
+        if(pluginZip?.exists()) {
+           cacheLocalPlugin(pluginZip)
+        }
+        else {
+           cacheKnownPlugin(name,version)
+        }
+    }
+}
+
+File findZip(String name, String dir) {
+    new File(dir).listFiles().find {it.name.startsWith(name)}
+}
+
+private withPluginInstall(Closure callable) {
+    try {
+        fullPluginName = callable.call()
+        completePluginInstall(fullPluginName)
+    }
+    catch (e) {
+        logError("Error installing plugin: ${e.message}", e)
+        exit(1)
+    }
+}
+
+
+private completePluginInstall (fullPluginName) {
+    classpath ()
+    println "Installing plug-in $fullPluginName"
+    installPluginForName(fullPluginName)
+}
+
+
 
 def registerPluginWithMetadata(String pluginName, pluginVersion) {
     metadata['plugins.' + pluginName] = pluginVersion
