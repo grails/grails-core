@@ -641,29 +641,57 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
 
         Collection collection = (Collection) bean.getPropertyValue(pv.getName());
         collection.clear();
-        if(v != null && v.getClass().isArray()) {
-            Object[] identifiers = (Object[])v;
-            for (Object id : identifiers) {
-                if (id != null) {
-                    associateObjectForId(pv, id);
+        final Class associatedType = getReferencedTypeForCollection(pv.getName(), getTarget());
+        final boolean isArray = v != null && v.getClass().isArray();
+        if(isDomainAssociation(associatedType)) {
+            if(isArray) {
+
+                Object[] identifiers = (Object[])v;
+                for (Object id : identifiers) {
+                    if (id != null) {
+                        associateObjectForId(pv, id,associatedType);
+                    }
+                }
+
+                mpvs.removePropertyValue(pv);
+            }
+            else if(v!=null && (v instanceof String)) {
+                associateObjectForId(pv,v, associatedType);
+                mpvs.removePropertyValue(pv);
+            }
+        }
+        else if(GrailsDomainConfigurationUtil.isBasicType(associatedType)) {
+            if(isArray) {
+                Object[] values = (Object[])v;
+                List list = collection instanceof List ? (List)collection : null;
+                for (int i = 0; i < values.length; i++) {
+                    Object value = values[i];
+                    try {
+                        Object newValue = getTypeConverter().convertIfNecessary(value, associatedType);
+                        if(list!=null) {
+                            if(i>list.size()-1) {
+                                list.add(i,newValue);
+                            }
+                            else {
+                                list.set(i, newValue);
+                            }
+                        }
+                        else {
+                            collection.add(newValue);
+                        }
+                    }
+                    catch (TypeMismatchException e) {
+                        // ignore
+                    }
                 }
             }
-
-            mpvs.removePropertyValue(pv);
-        }
-        else if(v!=null && (v instanceof String)) {
-            associateObjectForId(pv,v);
-            mpvs.removePropertyValue(pv);
         }
     }
 
-    private void associateObjectForId(PropertyValue pv, Object id) {
+    private void associateObjectForId(PropertyValue pv, Object id, Class associatedType) {
         final Object target = getTarget();
-        final Class associatedType = getReferencedTypeForCollection(pv.getName(), target);
-        if(isDomainAssociation(associatedType)) {
-            final Object obj = getPersistentInstance(associatedType, id);
-            addAssociationToTarget(pv.getName(), target, obj);
-        }
+        final Object obj = getPersistentInstance(associatedType, id);
+        addAssociationToTarget(pv.getName(), target, obj);        
     }
 
     private boolean isDomainAssociation(Class associatedType) {
@@ -685,7 +713,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
             GrailsDomainClass domainClass = (GrailsDomainClass) grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE, target.getClass().getName());
             if(domainClass!=null) {
                 GrailsDomainClassProperty domainProperty = domainClass.getPropertyByName(name);
-                if(domainProperty!=null && (domainProperty.isOneToMany()|| domainProperty.isManyToMany())) {
+                if(domainProperty!=null) {
                     return domainProperty.getReferencedPropertyType();
                 }
             }
