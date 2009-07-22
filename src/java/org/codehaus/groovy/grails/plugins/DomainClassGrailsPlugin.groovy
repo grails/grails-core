@@ -93,13 +93,7 @@ class DomainClassGrailsPlugin {
         def metaClass = dc.metaClass
         def domainClass = dc
 
-        metaClass.'static'.getConstraints = {->
-            domainClass.constrainedProperties
-        }
-
-        metaClass.getConstraints = {->
-            domainClass.constrainedProperties
-        }
+        registerConstraintsProperty(metaClass, domainClass)
 
         metaClass.hasErrors = {-> delegate.errors?.hasErrors() }
 
@@ -152,6 +146,19 @@ class DomainClassGrailsPlugin {
             metaClass.validate = {->
                 DomainClassPluginSupport.validateInstance(delegate, ctx)
             }
+        }
+    }
+
+    /**
+     * Registers the constraints property for the given MetaClass and domainClass instance
+     */
+    static def registerConstraintsProperty(MetaClass metaClass, GrailsDomainClass domainClass) {
+        metaClass.'static'.getConstraints = {->
+            domainClass.constrainedProperties
+        }
+
+        metaClass.getConstraints = {->
+            domainClass.constrainedProperties
         }
     }
 

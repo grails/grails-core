@@ -21,6 +21,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.exceptions.GrailsDomainException;
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
+import org.codehaus.groovy.grails.plugins.DomainClassGrailsPlugin;
 import org.springframework.validation.Validator;
 
 import java.beans.IntrospectionException;
@@ -512,6 +513,7 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
             this.properties = createDomainClassProperties(this,descriptors);
             try {
                 this.constraints = GrailsDomainConfigurationUtil.evaluateConstraints(getReference().getWrappedInstance(), properties);
+                DomainClassGrailsPlugin.registerConstraintsProperty(getMetaClass(), this);
             } catch (IntrospectionException e) {
                 LOG.error("Error reading embedded component ["+getClazz()+"] constraints: " +e .getMessage(), e);
             }
