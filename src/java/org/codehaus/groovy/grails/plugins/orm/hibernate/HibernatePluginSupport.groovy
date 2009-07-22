@@ -56,6 +56,7 @@ import org.apache.commons.beanutils.PropertyUtils
 import org.hibernate.Hibernate
 import org.springframework.validation.Validator
 import org.hibernate.EmptyInterceptor
+import org.codehaus.groovy.grails.orm.hibernate.events.PatchedDefaultFlushEventListener
 
 
 /**
@@ -168,7 +169,8 @@ Try using Grails' default cache provider: 'org.hibernate.cache.OSCacheProvider'"
                 grailsApplication = ref("grailsApplication", true)
 				lobHandler = lobHandlerDetector
                 entityInterceptor = entityInterceptor
-				eventListeners = ['pre-load':eventTriggeringInterceptor,
+				eventListeners = ['flush': new PatchedDefaultFlushEventListener(),
+                                  'pre-load':eventTriggeringInterceptor,
                                   'post-load':eventTriggeringInterceptor,
                                   'save':eventTriggeringInterceptor,
                                   'save-update':eventTriggeringInterceptor,
