@@ -1864,6 +1864,9 @@ public final class GrailsDomainBinder {
             if(config != null) {
                 c.setUnique(config.isUnique());
             }
+            else if(property.isBidirectional() && property.getOtherSide().isHasOne()) {
+                c.setUnique(true);
+            }
         }
 
     }
