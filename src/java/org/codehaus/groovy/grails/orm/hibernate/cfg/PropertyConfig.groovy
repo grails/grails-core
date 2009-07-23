@@ -17,6 +17,7 @@ package org.codehaus.groovy.grails.orm.hibernate.cfg
 
 import org.hibernate.FetchMode
 
+
 /**
  * Custom mapping for a single domain property. Note that a property
  * can have multiple columns via a component or a user type.
@@ -59,7 +60,7 @@ class PropertyConfig {
     /**
      *
      */
-    List columns = []
+    List<ColumnConfig> columns = []
 
     boolean lazy = true
     CacheConfig cache

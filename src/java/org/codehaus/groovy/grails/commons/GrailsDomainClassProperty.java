@@ -34,6 +34,7 @@ public interface GrailsDomainClassProperty {
 	String MAPPED_BY = "mappedBy";	
     String BELONGS_TO = "belongsTo";
 	String HAS_MANY = "hasMany";
+    String HAS_ONE = "hasOne";
 	String FETCH_MODE = "fetchMode";
     String DATE_CREATED = "dateCreated";
     String MAPPING = "mapping";
@@ -227,4 +228,6 @@ public interface GrailsDomainClassProperty {
      * @return True if it is a collection of basic types
      */
     boolean isBasicCollectionType();
+
+    boolean isHasOne();
 }

@@ -51,7 +51,7 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
 	private boolean manyToMany;
 	private boolean manyToOne;
 	private boolean oneToOne;
-
+    private boolean hasOne = false;
 	private boolean bidirectional;
 
 	private Class referencedPropertyType;
@@ -75,6 +75,7 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
         this.naturalName = GrailsNameUtils.getNaturalName(descriptor.getName());
         this.type = descriptor.getPropertyType();
         this.identity = descriptor.getName().equals( IDENTITY );
+
 
         // establish if property is persistant
         if(domainClass != null) {
@@ -253,8 +254,22 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
 		this.oneToOne = oneToOne;
 	}
 
+    /**
+     * Set whether the foreign key is stored in the parent or child in a one-to-one
+     * @param isHasOne True if its stored in the parent
+     */
+    protected void setHasOne(boolean isHasOne) {
+        this.hasOne = isHasOne;
+    }
 
-	/**
+    /**
+     * @return True if the foreign key in a one-to-one is stored in the parent
+     */
+    public boolean isHasOne() {
+        return hasOne;
+    }
+
+    /**
 	 * @param persistant The persistant to set.
 	 */
 	protected void setPersistant(boolean persistant) {
@@ -411,7 +426,7 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
 	}
 
 	public boolean isOwningSide() {
-		return this.owningSide;
+		return isHasOne() || this.owningSide;
 	}
 
 	public void setOwningSide(boolean b) {

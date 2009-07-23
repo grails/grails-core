@@ -93,14 +93,15 @@ public class DefaultGrailsDomainClassInjector implements
 
         List properties = classNode.getProperties();
         List propertiesToAdd = new ArrayList();
-        for (Iterator p = properties.iterator(); p.hasNext();) {
-            PropertyNode pn = (PropertyNode) p.next();
-            final boolean isHasManyProperty = pn.getName().equals(GrailsDomainClassProperty.RELATES_TO_MANY) || pn.getName().equals(GrailsDomainClassProperty.HAS_MANY);
+        for (Object property : properties) {
+            PropertyNode pn = (PropertyNode) property;
+            final String name = pn.getName();
+            final boolean isHasManyProperty = name.equals(GrailsDomainClassProperty.RELATES_TO_MANY) || name.equals(GrailsDomainClassProperty.HAS_MANY);
             if (isHasManyProperty) {
                 Expression e = pn.getInitialExpression();
                 propertiesToAdd.addAll(createPropertiesForHasManyExpression(e, classNode));
             }
-            final boolean isBelongsTo = pn.getName().equals(GrailsDomainClassProperty.BELONGS_TO);
+            final boolean isBelongsTo = name.equals(GrailsDomainClassProperty.BELONGS_TO) || name.equals(GrailsDomainClassProperty.HAS_ONE);
             if (isBelongsTo) {
                 Expression e = pn.getInitialExpression();
                 propertiesToAdd.addAll(createPropertiesForBelongsToExpression(e, classNode));
@@ -114,8 +115,8 @@ public class DefaultGrailsDomainClassInjector implements
         if (e instanceof MapExpression) {
             MapExpression me = (MapExpression) e;
             List mapEntries = me.getMapEntryExpressions();
-            for (Iterator i = mapEntries.iterator(); i.hasNext();) {
-                MapEntryExpression mme = (MapEntryExpression) i.next();
+            for (Object mapEntry : mapEntries) {
+                MapEntryExpression mme = (MapEntryExpression) mapEntry;
                 String key = mme.getKeyExpression().getText();
                 String type = mme.getValueExpression().getText();
 
@@ -127,8 +128,8 @@ public class DefaultGrailsDomainClassInjector implements
     }
 
     private void injectAssociationProperties(ClassNode classNode, List propertiesToAdd) {
-        for (Iterator i = propertiesToAdd.iterator(); i.hasNext();) {
-            PropertyNode pn = (PropertyNode) i.next();
+        for (Object aPropertiesToAdd : propertiesToAdd) {
+            PropertyNode pn = (PropertyNode) aPropertiesToAdd;
             if (!GrailsASTUtils.hasProperty(classNode, pn.getName())) {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("[GrailsDomainInjector] Adding property [" + pn.getName() + "] to class [" + classNode.getName() + "]");
@@ -143,8 +144,8 @@ public class DefaultGrailsDomainClassInjector implements
         if (e instanceof MapExpression) {
             MapExpression me = (MapExpression) e;
             List mapEntries = me.getMapEntryExpressions();
-            for (Iterator j = mapEntries.iterator(); j.hasNext();) {
-                MapEntryExpression mee = (MapEntryExpression) j.next();
+            for (Object mapEntry : mapEntries) {
+                MapEntryExpression mee = (MapEntryExpression) mapEntry;
                 Expression keyExpression = mee.getKeyExpression();
                 String key = keyExpression.getText();
                 addAssociationForKey(key, properties, classNode);

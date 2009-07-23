@@ -1457,7 +1457,7 @@ public final class GrailsDomainBinder {
             if (LOG.isDebugEnabled())
                 LOG.debug("[GrailsDomainBinder] Binding persistent property [" + currentGrailsProp.getName() + "]");
 
-            Value value;
+            Value value = null;
 
             // see if its a collection type
             CollectionType collectionType = CollectionType.collectionTypeForClass(currentGrailsProp.getType());
@@ -1490,13 +1490,22 @@ public final class GrailsDomainBinder {
                 if (LOG.isDebugEnabled())
                     LOG.debug("[GrailsDomainBinder] Binding property [" + currentGrailsProp.getName() + "] as OneToOne");
 
-                if (canBindOneToOneWithSingleColumnAndForeignKey(currentGrailsProp)) {
+                if(currentGrailsProp.isHasOne()&&!currentGrailsProp.isBidirectional()) {
+                   throw new MappingException("hasOne property ["+currentGrailsProp.getDomainClass().getName()+"."+currentGrailsProp.getName()+"] is not bidirectional. Specify the other side of the relationship!"); 
+                }
+                else if (canBindOneToOneWithSingleColumnAndForeignKey(currentGrailsProp)) {
                     value = new OneToOne(table, persistentClass);
                     bindOneToOne(currentGrailsProp, (OneToOne) value, EMPTY_PATH, mappings);
                 }
                 else {
-                    value = new ManyToOne(table);
-                    bindManyToOne(currentGrailsProp, (ManyToOne) value, EMPTY_PATH, mappings);
+                    if(currentGrailsProp.isHasOne() && currentGrailsProp.isBidirectional()) {
+                        value = new OneToOne(table, persistentClass);
+                        bindOneToOne(currentGrailsProp, (OneToOne) value, EMPTY_PATH, mappings);
+                    }
+                    else {
+                        value = new ManyToOne(table);
+                        bindManyToOne(currentGrailsProp, (ManyToOne) value, EMPTY_PATH, mappings);
+                    }
                 }
             }
             else if (currentGrailsProp.isEmbedded()) {
@@ -1520,6 +1529,7 @@ public final class GrailsDomainBinder {
 
         bindNaturalIdentifier(table, gormMapping, persistentClass);
     }
+
 
     private static void bindNaturalIdentifier(Table table, Mapping mapping, PersistentClass persistentClass) {
         Object o = mapping != null ? mapping.getIdentity() : null;
@@ -1551,6 +1561,7 @@ public final class GrailsDomainBinder {
     private static boolean canBindOneToOneWithSingleColumnAndForeignKey(GrailsDomainClassProperty currentGrailsProp) {
         if(currentGrailsProp.isBidirectional()) {
             final GrailsDomainClassProperty otherSide = currentGrailsProp.getOtherSide();
+            if(otherSide.isHasOne()) return false;
             if(!currentGrailsProp.isOwningSide() && (otherSide != null && otherSide.isOwningSide())) {
                 return true;
             }
@@ -1875,10 +1886,14 @@ public final class GrailsDomainBinder {
         return mapping != null && (mapping.getIdentity() instanceof CompositeIdentity);
     }
 
-    private static void bindOneToOne(GrailsDomainClassProperty property, OneToOne oneToOne, String path, Mappings mappings) {
+    private static void bindOneToOne(final GrailsDomainClassProperty property, OneToOne oneToOne, String path, Mappings mappings) {
         PropertyConfig config = getPropertyConfig(property);
-        oneToOne.setConstrained(false);
-        oneToOne.setForeignKeyType(ForeignKeyDirection.FOREIGN_KEY_TO_PARENT);
+        final GrailsDomainClassProperty otherSide = property.getOtherSide();
+
+        oneToOne.setConstrained(otherSide.isHasOne());
+        oneToOne.setForeignKeyType( oneToOne.isConstrained() ?
+                                    ForeignKeyDirection.FOREIGN_KEY_FROM_PARENT :
+                                    ForeignKeyDirection.FOREIGN_KEY_TO_PARENT);
         oneToOne.setAlternateUniqueKey(true);
         
         if (config != null && config.getFetch() != null) {
@@ -1888,10 +1903,15 @@ public final class GrailsDomainBinder {
             oneToOne.setFetchMode(FetchMode.DEFAULT);
         }
 
-
-        final GrailsDomainClassProperty otherSide = property.getOtherSide();
         oneToOne.setReferencedEntityName(otherSide.getDomainClass().getFullName());
-        oneToOne.setReferencedPropertyName(otherSide.getName());
+        if(otherSide.isHasOne()) {
+            PropertyConfig pc = getPropertyConfig(property);
+            bindSimpleValue(property, oneToOne, path, pc);
+        }
+        else {
+
+            oneToOne.setReferencedPropertyName(otherSide.getName());
+        }
     }
 
 
@@ -2048,7 +2068,10 @@ public final class GrailsDomainBinder {
         if (config != null && config.getCascade() != null) {
             cascadeStrategy = config.getCascade();
         } else if (grailsProperty.isAssociation()) {
-            if (grailsProperty.isOneToOne()) {
+            if(grailsProperty.isHasOne()) {
+               cascadeStrategy = CASCADE_ALL;
+            }
+            else if (grailsProperty.isOneToOne()) {
                 if (referenced != null && referenced.isOwningClass(domainClass.getClazz()))
                     cascadeStrategy = CASCADE_ALL;
             } else if (grailsProperty.isOneToMany()) {
@@ -2225,7 +2248,10 @@ public final class GrailsDomainBinder {
                 column.setNullable(false);
             }
             else if (property.isOneToOne() && property.isBidirectional() && !property.isOwningSide()) {
-                column.setNullable(true);
+                if(property.getOtherSide().isHasOne())
+                    column.setNullable(false);
+                else
+                    column.setNullable(true);
             }
             else if((property.isManyToOne() || property.isOneToOne()) && property.isCircular() ) {
                 column.setNullable(true);

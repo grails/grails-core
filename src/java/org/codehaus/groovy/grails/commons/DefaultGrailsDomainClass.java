@@ -30,6 +30,7 @@ import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Modifier;
 import java.util.*;
+import static java.util.Collections.*;
 
 /**
  * @author Graeme Rocher
@@ -44,8 +45,9 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
     private GrailsDomainClassProperty version;
     private GrailsDomainClassProperty[] properties;
     private GrailsDomainClassProperty[] persistentProperties;
-    private Map propertyMap;
+    private Map<String, GrailsDomainClassProperty> propertyMap;
     private Map relationshipMap;
+    private Map hasOneMap;
 
     private Map constraints = new HashMap();
     private Map mappedBy;
@@ -65,7 +67,7 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
            !Modifier.isAbstract(clazz.getSuperclass().getModifiers())) {
             this.root = false;
         }
-        this.propertyMap = new LinkedHashMap();
+        this.propertyMap = new LinkedHashMap<String, GrailsDomainClassProperty>();
         this.relationshipMap = getAssociationMap();
         this.embedded = getEmbeddedList();
 
@@ -75,7 +77,9 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
 
         // get any mappedBy settings
         this.mappedBy = (Map)getPropertyOrStaticPropertyOrFieldValue(GrailsDomainClassProperty.MAPPED_BY, Map.class);
-        if(this.mappedBy == null)this.mappedBy = Collections.EMPTY_MAP;
+        this.hasOneMap = (Map)getPropertyOrStaticPropertyOrFieldValue(GrailsDomainClassProperty.HAS_ONE, Map.class);
+        if(hasOneMap == null) hasOneMap = EMPTY_MAP;
+        if(this.mappedBy == null)this.mappedBy = EMPTY_MAP;
 
         // establish the owners of relationships
         establishRelationshipOwners();
@@ -93,7 +97,7 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
             throw new GrailsDomainException("Version property not found, but required in domain class ["+getFullName()+"]" );
         }
         // set properties from map values
-        this.properties = (GrailsDomainClassProperty[])this.propertyMap.values().toArray( new GrailsDomainClassProperty[this.propertyMap.size()] );
+        this.properties = this.propertyMap.values().toArray( new GrailsDomainClassProperty[this.propertyMap.size()] );
 
         // establish relationships
         establishRelationships();
@@ -121,14 +125,14 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
 	 * calculates the persistent properties from the evaluated properties
 	 */
 	private void establishPersistentProperties() {
-		Collection tempList = new ArrayList();
-        for(Iterator i = this.propertyMap.values().iterator();i.hasNext();) {
-            GrailsDomainClassProperty currentProp = (GrailsDomainClassProperty)i.next();
-            if(currentProp.getType() != Object.class && currentProp.isPersistent() && !currentProp.isIdentity() && !currentProp.getName().equals( GrailsDomainClassProperty.VERSION )) {
+		Collection<GrailsDomainClassProperty> tempList = new ArrayList<GrailsDomainClassProperty>();
+        for (Object o : this.propertyMap.values()) {
+            GrailsDomainClassProperty currentProp = (GrailsDomainClassProperty) o;
+            if (currentProp.getType() != Object.class && currentProp.isPersistent() && !currentProp.isIdentity() && !currentProp.getName().equals(GrailsDomainClassProperty.VERSION)) {
                 tempList.add(currentProp);
             }
         }
-        this.persistentProperties = (GrailsDomainClassProperty[])tempList.toArray( new GrailsDomainClassProperty[tempList.size()]);
+        this.persistentProperties = tempList.toArray( new GrailsDomainClassProperty[tempList.size()]);
 	}
 
 	/**
@@ -160,22 +164,21 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
 	 * @param propertyDescriptors The property descriptors
 	 */
 	private void populateDomainClassProperties(PropertyDescriptor[] propertyDescriptors) {
-		for(int i = 0; i < propertyDescriptors.length; i++) {
+        for (PropertyDescriptor descriptor : propertyDescriptors) {
 
-            PropertyDescriptor descriptor = propertyDescriptors[i];
-                // ignore certain properties
-                if(GrailsDomainConfigurationUtil.isNotConfigurational(descriptor) )  {
+            // ignore certain properties
+            if (GrailsDomainConfigurationUtil.isNotConfigurational(descriptor)) {
 
 
-                    GrailsDomainClassProperty property = new DefaultGrailsDomainClassProperty(this, descriptor);
-                    this.propertyMap.put(property.getName(), property);
+                GrailsDomainClassProperty property = new DefaultGrailsDomainClassProperty(this, descriptor);
+                this.propertyMap.put(property.getName(), property);
 
-                    if(property.isIdentity()) {
-                        this.identifier = property;
-                    }
-                    else if(property.getName().equals( GrailsDomainClassProperty.VERSION )) {
-                        this.version = property;
-                    }
+                if (property.isIdentity()) {
+                    this.identifier = property;
+                }
+                else if (property.getName().equals(GrailsDomainClassProperty.VERSION)) {
+                    this.version = property;
+                }
             }
 
         }
@@ -212,7 +215,7 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
         if(potentialList instanceof Collection) {
             return (Collection)potentialList;
         }
-        return Collections.EMPTY_LIST;
+        return EMPTY_LIST;
     }
 
 
@@ -221,25 +224,25 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
      *
      */
     private void establishRelationships() {
-        for(Iterator i = this.propertyMap.values().iterator();i.hasNext();  ) {
-            DefaultGrailsDomainClassProperty currentProp = (DefaultGrailsDomainClassProperty)i.next();
+        for (Object o : this.propertyMap.values()) {
+            DefaultGrailsDomainClassProperty currentProp = (DefaultGrailsDomainClassProperty) o;
             Class currentPropType = currentProp.getType();
             // establish if the property is a one-to-many
             // if it is a Set and there are relationships defined
             // and it is defined as persistent
-            if(	Collection.class.isAssignableFrom(currentPropType) || Map.class.isAssignableFrom(currentPropType) &&
-                currentProp.isPersistent() ) {
-
-                establishRelationshipForCollection( currentProp);
-            }
-            // otherwise if the type is a domain class establish relationship
-            else if(DomainClassArtefactHandler.isDomainClass(currentPropType) &&
+            if (Collection.class.isAssignableFrom(currentPropType) || Map.class.isAssignableFrom(currentPropType) &&
                     currentProp.isPersistent()) {
 
-                establishDomainClassRelationship( currentProp );
+                establishRelationshipForCollection(currentProp);
             }
-            else if(embedded.contains(currentProp.getName())) {
-            	establishDomainClassRelationship( currentProp );
+            // otherwise if the type is a domain class establish relationship
+            else if (DomainClassArtefactHandler.isDomainClass(currentPropType) &&
+                    currentProp.isPersistent()) {
+
+                establishDomainClassRelationship(currentProp);
+            }
+            else if (embedded.contains(currentProp.getName())) {
+                establishDomainClassRelationship(currentProp);
             }
 
         }
@@ -369,13 +372,12 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
      */
 	private PropertyDescriptor findProperty(PropertyDescriptor[] descriptors, String propertyName) {
 		PropertyDescriptor d = null;
-		for (int i = 0; i < descriptors.length; i++) {
-			PropertyDescriptor descriptor = descriptors[i];
-			if(descriptor.getName().equals(propertyName)) {
-				d = descriptor;
-				break;
-			}
-		}
+        for (PropertyDescriptor descriptor : descriptors) {
+            if (descriptor.getName().equals(propertyName)) {
+                d = descriptor;
+                break;
+            }
+        }
 		return d;
 	}
 
@@ -490,14 +492,14 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
             // on the mapping property
             else if(descriptors.length > 1) {
             	if(mappedBy.containsValue(property.getName())) {
-            		for (Iterator i = mappedBy.keySet().iterator(); i.hasNext();) {
-						String mappedByPropertyName = (String) i.next();
-						if(property.getName().equals(mappedBy.get(mappedByPropertyName))) {
-                            Class mappedByRelatedType = (Class)relatedClassRelationships.get(mappedByPropertyName);
-                            if(mappedByRelatedType != null && propType.isAssignableFrom(mappedByRelatedType))
-                                relatedClassPropertyType = GrailsClassUtils.getPropertyType( propType, mappedByPropertyName );
-						}
-					}
+                    for (Object o : mappedBy.keySet()) {
+                        String mappedByPropertyName = (String) o;
+                        if (property.getName().equals(mappedBy.get(mappedByPropertyName))) {
+                            Class mappedByRelatedType = (Class) relatedClassRelationships.get(mappedByPropertyName);
+                            if (mappedByRelatedType != null && propType.isAssignableFrom(mappedByRelatedType))
+                                relatedClassPropertyType = GrailsClassUtils.getPropertyType(propType, mappedByPropertyName);
+                        }
+                    }
             	}
             	else {
             		String classNameAsProperty = GrailsNameUtils.getPropertyName(propType);
@@ -531,22 +533,28 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
 
     private String findOneToManyThatMatchesType(DefaultGrailsDomainClassProperty property, Map relatedClassRelationships) {
 		String relatedClassPropertyName = null;
-		for(Iterator i = relatedClassRelationships.keySet().iterator();i.hasNext();) {
-		    String currentKey = (String)i.next();
-		    Class currentClass = (Class)relatedClassRelationships.get( currentKey );
 
-		    if(property.getDomainClass().getClazz().getName().equals(  currentClass.getName()  )) {
-		        relatedClassPropertyName = currentKey;
+        for (Object o : relatedClassRelationships.keySet()) {
+            String currentKey = (String) o;
+            Class currentClass = (Class) relatedClassRelationships.get(currentKey);
 
-		        break;
-		    }
-		}
+            if (property.getDomainClass().getClazz().getName().equals(currentClass.getName())) {
+                relatedClassPropertyName = currentKey;
+
+                break;
+            }
+        }
 		return relatedClassPropertyName;
 	}
 
     private void establishDomainClassRelationshipToType(DefaultGrailsDomainClassProperty property, Class relatedClassPropertyType) {
         // uni-directional one-to-one
+
         if(relatedClassPropertyType == null) {
+
+            if(hasOneMap.containsKey(property.getName())) {
+                property.setHasOne(true);
+            }
             property.setOneToOne(true);
             property.setBidirectional(false);
         }
@@ -557,6 +565,10 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
         }
         // bi-directional one-to-one
         else if(DomainClassArtefactHandler.isDomainClass(relatedClassPropertyType)) {
+            if(hasOneMap.containsKey(property.getName())) {
+                property.setHasOne(true);
+            }
+            
             property.setOneToOne(true);
             if(!getClazz().equals(relatedClassPropertyType))
                 property.setBidirectional(true);
@@ -606,7 +618,7 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
     */
     public GrailsDomainClassProperty getPropertyByName(String name) {
         if(this.propertyMap.containsKey(name)) {
-            return (GrailsDomainClassProperty)this.propertyMap.get(name);
+            return this.propertyMap.get(name);
         }
         else {
             throw new InvalidPropertyException("No property found for name ["+name+"] for class ["+getClazz()+"]");
@@ -666,7 +678,7 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
       * @see org.codehaus.groovy.grails.commons.GrailsDomainClass#getConstraints()
       */
     public Map getConstrainedProperties() {
-        return Collections.unmodifiableMap(this.constraints);
+        return unmodifiableMap(this.constraints);
     }
     /* (non-Javadoc)
       * @see org.codehaus.groovy.grails.commons.GrailsDomainClass#getValidator()
@@ -704,8 +716,7 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
             // Embedded components have their own ComponentDomainClass
             // instance which won't be refreshed by the application.
             // So, we have to do it here.
-            for (int i = 0; i < this.persistentProperties.length; i++) {
-                GrailsDomainClassProperty property = this.persistentProperties[i];
+            for (GrailsDomainClassProperty property : this.persistentProperties) {
                 if (property.isEmbedded()) {
                     property.getComponent().refreshConstraints();
                 }
@@ -720,9 +731,8 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
     }
 
     public boolean hasPersistentProperty(String propertyName) {
-        for (int i = 0; i < persistentProperties.length; i++) {
-            GrailsDomainClassProperty persistentProperty = persistentProperties[i];
-            if(persistentProperty.getName().equals(propertyName)) return true;
+        for (GrailsDomainClassProperty persistentProperty : persistentProperties) {
+            if (persistentProperty.getName().equals(propertyName)) return true;
         }
         return false;
     }

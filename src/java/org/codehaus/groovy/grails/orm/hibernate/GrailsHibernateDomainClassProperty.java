@@ -216,6 +216,10 @@ public class GrailsHibernateDomainClassProperty implements GrailsDomainClassProp
         return false;
     }
 
+    public boolean isHasOne() {
+        return false;
+    }
+
     public void setColumnName(String columnName) {
         this.columnName = columnName;
     }
