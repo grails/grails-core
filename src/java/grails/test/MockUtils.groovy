@@ -292,12 +292,14 @@ class MockUtils {
         def mockSession = new MockHttpSession()
         def mockParams = [:]
         def mockFlash = [:]
+        def mockChainModel = [:]
 
         clazz.metaClass.getRequest = {-> mockRequest}
         clazz.metaClass.getResponse = {-> mockResponse}
         clazz.metaClass.getSession = {-> mockSession}
         clazz.metaClass.getParams = {-> mockParams}
         clazz.metaClass.getFlash = {-> mockFlash}
+        clazz.metaClass.getChainModel = {-> mockChainModel}
         clazz.metaClass.getActionName = {-> RequestContextHolder.currentRequestAttributes().actionName }
         clazz.metaClass.getControllerName = {-> RequestContextHolder.currentRequestAttributes().controllerName }
         clazz.metaClass.getServletContext = {-> mockRequest.servletContext }

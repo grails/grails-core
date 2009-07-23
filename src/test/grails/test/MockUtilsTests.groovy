@@ -867,6 +867,19 @@ class MockUtilsTests extends GroovyTestCase {
     }
 
     /**
+     * Tests that the mock "chainModel" object on a controller works properly.
+     */
+    void testMockControllerChainModelObject() {
+        MockUtils.mockController(TestController)
+
+        def controller = new TestController()
+        controller.chainModel.key = "value"
+        controller.testChainModel()
+
+        assertEquals "chained with [key:value]", controller.response.contentAsString
+    }
+
+    /**
      * Tests that the mock "forward()" method with a controller and
      * action adds the values to the corresponding properties in the
      * "forwardArgs" map.
@@ -898,6 +911,11 @@ class MockUtilsTests extends GroovyTestCase {
         assertEquals "bar", controller.redirectArgs.action
     }
 
+    /**
+     * Tests that the mock "chain()" method with a controller, action
+     * and model adds the values to the corresponding properties in the
+     * "chainArgs" map.
+     */
     void testMockControllerChain() {
         MockUtils.mockController(TestController)
 
@@ -1274,6 +1292,10 @@ class TestController  {
 
     def testParams = {
         render "hello ${params.id}"
+    }
+
+    def testChainModel = {
+        render "chained with ${chainModel}"
     }
 
     def testForward = {
