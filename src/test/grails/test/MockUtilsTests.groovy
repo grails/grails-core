@@ -898,6 +898,18 @@ class MockUtilsTests extends GroovyTestCase {
         assertEquals "bar", controller.redirectArgs.action
     }
 
+    void testMockControllerChain() {
+        MockUtils.mockController(TestController)
+
+        def controller = new TestController()
+
+        controller.testChain()
+
+        assertEquals "foo", controller.chainArgs.controller
+        assertEquals "bar", controller.chainArgs.action
+        assertEquals "baz", controller.chainArgs.model.key
+    }
+
     /**
      * Tests that the mock session added to controllers works OK, and
      * in particular that "session['attr']" and "session.attr" notation
@@ -1270,6 +1282,10 @@ class TestController  {
 
     def testRedirect = {
         redirect(controller: "foo", action: "bar")
+    }
+
+    def testChain = {
+        chain(controller: "foo", action: "bar", model: [key: "baz"])
     }
 
     def testSession = {

@@ -99,13 +99,16 @@ class MockUtils {
         def fwdArgs = [:]
         def redArgs = [:]
         def renArgs = [:]
+        def chaArgs = [:]
         def template = [:]
         def modelAndView = [:]
         clazz.metaClass.getForwardArgs = {-> fwdArgs}
         clazz.metaClass.getRedirectArgs ={-> redArgs}
         clazz.metaClass.getRenderArgs ={-> renArgs}
+        clazz.metaClass.getChainArgs ={-> chaArgs}
         clazz.metaClass.forward = {Map map -> forwardArgs.putAll(map)}
         clazz.metaClass.redirect = {Map map -> redirectArgs.putAll(map)}
+        clazz.metaClass.chain = {Map map -> chainArgs.putAll(map)}
         clazz.metaClass.render = {String text -> delegate.response.writer << text}
         clazz.metaClass.render = {Converter arg -> delegate.response.writer << arg.toString()}
 
