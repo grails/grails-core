@@ -969,8 +969,9 @@ installPluginForName = { String fullPluginName ->
                 }
                 else  {
                     def dependency = readPluginXmlMetadata(depDirName)
-                    if (!GrailsPluginUtils.isValidVersion(dependency.@version.toString(), depVersion)) {
-                        cleanupPluginInstallAndExit("Plug-in requires version [$depVersion] of plugin [$depName], but installed version is [${dependency.version}]. Please upgrade this plugin and try again.")
+					def dependencyVersion = dependency.@version.toString()
+                    if (!GrailsPluginUtils.isValidVersion(dependencyVersion, depVersion)) {
+                        cleanupPluginInstallAndExit("Plugin requires version [$depVersion] of plugin [$depName], but installed version is [${dependencyVersion}]. Please upgrade this plugin and try again.")
                     }
                     else {
                         dependencies.remove(depName)
