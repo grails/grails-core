@@ -90,6 +90,18 @@ public class XML extends AbstractConverter<XMLStreamWriter> implements Converter
         this.target = target;
     }
 
+    private void finalizeRender(Writer out) {
+        try {
+            if(out != null) {
+                out.flush();
+                out.close();
+            }
+        }
+        catch (Exception e) {
+            log.warn("Unexpected exception while closing a writer: " + e.getMessage());
+        }
+    }
+
     public void render(Writer out) throws ConverterException {
         stream = new StreamingMarkupWriter(out, encoding);
         this.writer = config.isPrettyPrint() ? new PrettyPrintXMLStreamWriter(stream): new XMLStreamWriter(stream);
@@ -105,6 +117,7 @@ public class XML extends AbstractConverter<XMLStreamWriter> implements Converter
             throw new ConverterException(e);
         }
         finally {
+            finalizeRender(out);
             isRendering = false;
         }
     }
