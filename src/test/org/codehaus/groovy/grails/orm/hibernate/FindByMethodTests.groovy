@@ -71,12 +71,12 @@ class FindByBooleanPropertyBook {
                  .save(flush:true)
 
         session.clear()
-        
+
         user = User.findByFirstName("Stephen", [fetch:[books:'eager']])
 
         assertEquals 2, user.books.size()
     }
-    
+
     void testBooleanPropertyQuery() {
         def bookClass = ga.getDomainClass("FindByBooleanPropertyBook").clazz
         assert bookClass.newInstance(author: 'Jeff', title: 'Fly Fishing For Everyone', published: false).save()
@@ -94,6 +94,12 @@ class FindByBooleanPropertyBook {
         book = bookClass.findPublishedByTitleAndAuthor('DGGv2', 'Jeff')
         assertEquals 'Jeff', book.author
         assertEquals 'DGGv2', book.title
+
+        def books = bookClass.findAllPublishedByTitle('DGGv2')
+        assertEquals 2, books?.size()
+
+        books = bookClass.findAllPublishedByTitleAndAuthor('DGGv2', 'Graeme')
+        assertEquals 1, books?.size()
     }
 
 }
