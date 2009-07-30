@@ -26,6 +26,13 @@ class FindByMethodUser {
     Set books
     static hasMany = [books:FindByMethodBook]
 }
+class FindByBooleanPropertyBook {
+    Long id
+    Long version
+    String author
+    String title
+    Boolean published
+}
 '''
     }
 
@@ -68,6 +75,25 @@ class FindByMethodUser {
         user = User.findByFirstName("Stephen", [fetch:[books:'eager']])
 
         assertEquals 2, user.books.size()
+    }
+    
+    void testBooleanPropertyQuery() {
+        def bookClass = ga.getDomainClass("FindByBooleanPropertyBook").clazz
+        assert bookClass.newInstance(author: 'Jeff', title: 'Fly Fishing For Everyone', published: false).save()
+        assert bookClass.newInstance(author: 'Jeff', title: 'DGGv2', published: true).save()
+        assert bookClass.newInstance(author: 'Graeme', title: 'DGGv2', published: true).save()
+
+        def book = bookClass.findPublishedByAuthor('Jeff')
+        assertEquals 'Jeff', book.author
+        assertEquals 'DGGv2', book.title
+
+        book = bookClass.findPublishedByAuthor('Graeme')
+        assertEquals 'Graeme', book.author
+        assertEquals 'DGGv2', book.title
+
+        book = bookClass.findPublishedByTitleAndAuthor('DGGv2', 'Jeff')
+        assertEquals 'Jeff', book.author
+        assertEquals 'DGGv2', book.title
     }
 
 }

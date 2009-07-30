@@ -350,6 +350,7 @@ Try using Grails' default cache provider: 'org.hibernate.cache.OSCacheProvider'"
 
         def dynamicMethods = [new FindAllByPersistentMethod(application, sessionFactory, classLoader),
         new FindByPersistentMethod(application, sessionFactory, classLoader),
+        new FindByBooleanPropertyPersistentMethod(application, sessionFactory, classLoader),
         new CountByPersistentMethod(application, sessionFactory, classLoader),
         new ListOrderByPersistentMethod(sessionFactory, classLoader)]
 
