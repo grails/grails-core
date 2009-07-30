@@ -54,10 +54,6 @@ public class FindByPersistentMethod extends AbstractClausedStaticPersistentMetho
  		super(application,sessionFactory, classLoader, Pattern.compile( METHOD_PATTERN ),OPERATORS);
 	}
 
-    public FindByPersistentMethod(GrailsApplication application, SessionFactory sessionFactory, ClassLoader classLoader, Pattern pattern) {
-        super(application, sessionFactory, classLoader, pattern, OPERATORS);
-    }
-
 	protected Object doInvokeInternalWithExpressions(final Class clazz, String methodName, final Object[] arguments, final List expressions, String operatorInUse) {
 
         final String operator = OPERATOR_OR.equals(operatorInUse) ? OPERATOR_OR : OPERATOR_AND;

@@ -38,7 +38,8 @@ public class FindByBooleanPropertyPersistentMethod extends FindByPersistentMetho
 	private static final String METHOD_PATTERN = "(find)(\\w+)(By)(\\w+)";
 
 	public FindByBooleanPropertyPersistentMethod(GrailsApplication application,SessionFactory sessionFactory, ClassLoader classLoader) {
- 		super(application,sessionFactory, classLoader, Pattern.compile( METHOD_PATTERN ));
+ 		super(application,sessionFactory, classLoader);
+        setPattern(Pattern.compile( METHOD_PATTERN ));
 	}
 
 }
