@@ -111,6 +111,11 @@ class FindByBooleanPropertyBook {
         books = bookClass.findAllPublishedByAuthorOrTitle('Graeme', 'GINA')
         assertEquals 2, books?.size()
 
+        books = bookClass.findAllNotPublishedByAuthor('Jeff')
+        assertEquals 1, books?.size()
+
+        books = bookClass.findAllNotPublishedByAuthor('Graeme')
+        assertEquals 0, books?.size()
     }
 
 }
