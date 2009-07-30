@@ -17,6 +17,8 @@ package org.codehaus.groovy.grails.plugins
 
 import org.springframework.context.ApplicationContext
 import org.springframework.validation.BeanPropertyBindingResult
+import org.springframework.validation.ObjectError
+import org.springframework.validation.FieldError
 
 /**
  * @author Graeme Rocher
@@ -38,7 +40,16 @@ public class DomainClassPluginSupport {
             prop.validate(object, object.getProperty(prop.getPropertyName()), localErrors);
         }
         if (localErrors.hasErrors()) {
-            object.errors.addAllErrors(localErrors)
+            def objectErrors = object.errors;
+            localErrors.allErrors.each { localError ->
+                def fieldName = localError.getField()
+                def fieldError = objectErrors.getFieldError(fieldName)
+
+                // if we didn't find an error OR if it is a bindingFailure...
+                if(!fieldError || fieldError.bindingFailure) {
+                    objectErrors.addError(localError)
+                }
+            }
         }
 
         !object.errors.hasErrors()

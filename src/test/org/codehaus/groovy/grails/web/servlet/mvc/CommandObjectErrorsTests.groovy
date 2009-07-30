@@ -26,6 +26,11 @@ class TestController {
         [form:form]
     }
 
+    def four = { Form form ->
+         form.validate()
+        [formErrors:form.errors]
+    }
+
     def validate = { Form form ->
 
         [formErrors:form.validate()]
@@ -79,6 +84,21 @@ class Form {
         controller.params.input = "helloworld"
 
         def model = controller.two()
+
+        Errors errors = model?.formErrors
+        assert errors
+        assert errors.hasErrors()
+        assertEquals 1, errors.allErrors.size()
+    }
+
+    void testValidatingTwice() {
+        // GRAILS-4918
+        def controller = ga.getControllerClass("TestController").newInstance()
+
+        controller.params.url = "http://grails.org"
+        controller.params.input = "someverylongstringthatfailsvalidation"
+
+        def model = controller.four()
 
         Errors errors = model?.formErrors
         assert errors
