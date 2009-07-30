@@ -103,7 +103,7 @@ public class FindByPersistentMethod extends AbstractClausedStaticPersistentMetho
      * be ANDed to the other expressions, not ORed.
      *
      * @return true if the first expression is a required boolean property, false otherwise
-     * @see org.codehaus.groovy.grails.orm.hibernate.metaclass.FindAllByBooleanPropertyPersistentMethod
+     * @see org.codehaus.groovy.grails.orm.hibernate.metaclass.FindByBooleanPropertyPersistentMethod
      */
     protected boolean firstExpressionIsRequiredBoolean() {
         return false;
