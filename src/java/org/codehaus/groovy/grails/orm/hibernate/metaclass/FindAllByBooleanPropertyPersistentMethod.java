@@ -42,4 +42,8 @@ public class FindAllByBooleanPropertyPersistentMethod extends FindAllByPersisten
         setPattern(Pattern.compile( METHOD_PATTERN ));
 	}
 
+    @Override
+    protected boolean firstExpressionIsRequiredBoolean() {
+        return true;
+    }
 }

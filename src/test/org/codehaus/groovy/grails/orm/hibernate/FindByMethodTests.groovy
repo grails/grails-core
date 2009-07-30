@@ -82,6 +82,7 @@ class FindByBooleanPropertyBook {
         assert bookClass.newInstance(author: 'Jeff', title: 'Fly Fishing For Everyone', published: false).save()
         assert bookClass.newInstance(author: 'Jeff', title: 'DGGv2', published: true).save()
         assert bookClass.newInstance(author: 'Graeme', title: 'DGGv2', published: true).save()
+        assert bookClass.newInstance(author: 'Dierk', title: 'GINA', published: true).save()
 
         def book = bookClass.findPublishedByAuthor('Jeff')
         assertEquals 'Jeff', book.author
@@ -103,6 +104,9 @@ class FindByBooleanPropertyBook {
 
         books = bookClass.findAllPublishedByTitleAndAuthor('DGGv2', 'Graeme')
         assertEquals 1, books?.size()
+
+        books = bookClass.findAllPublishedByAuthorOrTitle('Graeme', 'GINA')
+        assertEquals 2, books?.size()
 
     }
 
