@@ -21,6 +21,7 @@ import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware;
 import org.codehaus.groovy.runtime.InvokerHelper;
+import org.hibernate.proxy.HibernateProxy;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.context.MessageSource;
@@ -269,7 +270,7 @@ public class GrailsDomainClassValidator implements Validator, CascadingValidator
             return persistentProperty.getComponent();
         }
         else {
-            if(grailsApplication!=null)
+            if(grailsApplication!=null && !(associatedObject instanceof HibernateProxy))
                 return (GrailsDomainClass) grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE, associatedObject.getClass().getName());
             else
                 return persistentProperty.getReferencedDomainClass();

@@ -144,8 +144,11 @@
             <batchtest todir="${grails.test.reports}" failureproperty="grails.test.failure" fork="true" >
 			    <fileset dir="${grails.test.build}">
                     <include name="**/orm/hibernate/${test}Tests.class" />
+                    <include name="**/orm/hibernate/binding/${test}Tests.class" />
                     <include name="**/orm/hibernate/cfg/${test}Tests.class" />
+                    <include name="**/orm/hibernate/validation/${test}Tests.class" />
                     <exclude name="**/Abstract*" />
+                    <exclude name="**/UniqueConstraint*" />
 				</fileset>
             </batchtest>
 
