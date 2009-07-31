@@ -270,8 +270,13 @@ public class GrailsDomainClassValidator implements Validator, CascadingValidator
             return persistentProperty.getComponent();
         }
         else {
-            if(grailsApplication!=null && !(associatedObject instanceof HibernateProxy))
-                return (GrailsDomainClass) grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE, associatedObject.getClass().getName());
+            if(grailsApplication!=null) {
+                String associatedObjectType = associatedObject.getClass().getName();
+                if (associatedObject instanceof HibernateProxy) {
+                    associatedObjectType = ((HibernateProxy) associatedObject).getHibernateLazyInitializer().getEntityName();
+                }
+                return (GrailsDomainClass) grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE, associatedObjectType);
+            }
             else
                 return persistentProperty.getReferencedDomainClass();
         }
