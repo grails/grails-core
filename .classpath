@@ -49,7 +49,7 @@
 	<classpathentry kind="lib" path="lib/oscache-2.4.1.jar"/>
 	<classpathentry kind="lib" path="lib/ejb3-persistence-3.3.0.jar"/>
 	<classpathentry kind="lib" path="lib/gant_groovy1.6-1.6.0.jar"/>
-	<classpathentry kind="lib" path="lib/groovy-all-1.6.3.jar"/>
+	<classpathentry kind="lib" path="lib/groovy-all-1.6.4.jar"/>
 	<classpathentry kind="lib" path="lib/hibernate-annotations-3.3.0.jar"/>
 	<classpathentry kind="lib" path="lib/hsqldb-1.8.0.10.jar"/>
 	<classpathentry kind="lib" path="lib/jasper-compiler-5.5.15.jar"/>

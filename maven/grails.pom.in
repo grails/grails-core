@@ -43,7 +43,7 @@
         <dependency>
             <groupId>org.codehaus.groovy</groupId>
             <artifactId>groovy-all</artifactId>
-            <version>1.6.3</version>
+            <version>1.6.4</version>
             <exclusions>
                 <exclusion>
                     <groupId>jline</groupId>
