@@ -131,7 +131,7 @@ public abstract class AbstractConstraint implements Constraint {
         BindingResult result = (BindingResult) errors;
         Set<String> newCodes = new LinkedHashSet<String>();
 
-        if(args.length>1) {
+        if(args.length>1 && messageSource!=null) {
             if((args[0] instanceof String) && (args[1] instanceof Class)) {
                 final Locale locale = LocaleContextHolder.getLocale();
                 final Class constrainedClass = (Class) args[1];
