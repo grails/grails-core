@@ -14,6 +14,7 @@
  */
 package org.codehaus.groovy.grails.validation;
 
+import grails.util.GrailsNameUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.springframework.beans.BeanWrapperImpl;
@@ -27,8 +28,7 @@ import org.springframework.validation.FieldError;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.Set;
-
-import grails.util.GrailsNameUtils;
+import java.util.Locale;
 
 /**
  * @author Graeme Rocher
@@ -129,24 +129,57 @@ public abstract class AbstractConstraint implements Constraint {
 
     public void rejectValueWithDefaultMessage(Object target, Errors errors, String defaultMessage, String[] codes, Object[] args) {
         BindingResult result = (BindingResult) errors;
-        Set newCodes = new LinkedHashSet();
+        Set<String> newCodes = new LinkedHashSet<String>();
+
+        if(args.length>1) {
+            if((args[0] instanceof String) && (args[1] instanceof Class)) {
+                final Locale locale = LocaleContextHolder.getLocale();
+                final Class constrainedClass = (Class) args[1];
+                final String fullClassName = constrainedClass.getName();
+
+                String classNameCode = fullClassName +".label";
+                String resolvedClassName = messageSource.getMessage(classNameCode, null, fullClassName, locale);
+                final String classAsPropertyName = GrailsNameUtils.getPropertyName(constrainedClass);
+
+                if(resolvedClassName.equals(fullClassName)) {
+                    // try short version
+                    classNameCode = classAsPropertyName+".label";
+                    resolvedClassName = messageSource.getMessage(classNameCode, null, fullClassName, locale);
+                }
+                // update passed version
+                if(!resolvedClassName.equals(fullClassName)) {
+                    args[1] = resolvedClassName;
+                }
+
+                String propertyName = (String)args[0];
+                String propertyNameCode = fullClassName + '.' + propertyName + ".label";
+                String resolvedPropertyName = messageSource.getMessage(propertyNameCode, null, propertyName, locale);
+                if(resolvedPropertyName.equals(propertyName)) {
+                    propertyNameCode = classAsPropertyName + '.' + propertyName + ".label";
+                    resolvedPropertyName = messageSource.getMessage(propertyNameCode, null, propertyName, locale);
+                }
+                // update passed version
+                if(!resolvedPropertyName.equals(propertyName)) {
+                    args[0] = resolvedPropertyName;
+                }
+
+            }
+        }
         //Qualified class name is added first to match before unqualified class (which is still resolved for backwards compatibility)
         newCodes.addAll( Arrays.asList( result.resolveMessageCodes( constraintOwningClass.getName() + '.'  + constraintPropertyName + '.' + getName() + ".error", constraintPropertyName)));
         newCodes.addAll( Arrays.asList( result.resolveMessageCodes( classShortName + '.'  + constraintPropertyName + '.' + getName() + ".error", constraintPropertyName) ) );
-        for( int i = 0; i < codes.length; i++ ) {
-            newCodes.addAll( Arrays.asList( result.resolveMessageCodes( constraintOwningClass.getName()  + '.'  + constraintPropertyName + '.' + codes[i], constraintPropertyName)));
-            newCodes.addAll( Arrays.asList( result.resolveMessageCodes( classShortName + '.'  + constraintPropertyName + '.' + codes[i], constraintPropertyName)));
+        for (String code : codes) {
+            newCodes.addAll(Arrays.asList(result.resolveMessageCodes(constraintOwningClass.getName() + '.' + constraintPropertyName + '.' + code, constraintPropertyName)));
+            newCodes.addAll(Arrays.asList(result.resolveMessageCodes(classShortName + '.' + constraintPropertyName + '.' + code, constraintPropertyName)));
             //We resolve the error code on it's own last so that a global code doesn't override a class/field specific error
-            newCodes.addAll( Arrays.asList( result.resolveMessageCodes( codes[i], constraintPropertyName)));
+            newCodes.addAll(Arrays.asList(result.resolveMessageCodes(code, constraintPropertyName)));
         }
-//        for( int i = 0; i < newCodes.size(); i++ )
-//            System.out.println( "Reject: " + newCodes.get(i));
         FieldError error = new FieldError(
                 errors.getObjectName(),
                 errors.getNestedPath() + constraintPropertyName,
                 getPropertyValue(errors, target),
                 false,
-                (String[]) newCodes.toArray(new String[newCodes.size()]),
+                newCodes.toArray(new String[newCodes.size()]),
                 args,
                 defaultMessage
         );

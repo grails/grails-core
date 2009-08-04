@@ -178,8 +178,12 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
 
 		dependentPlugins*.doWithRuntimeConfiguration(springConfig)
 
+        springConfig.addSingletonBean("messageSource", StaticMessageSource)
+
 		appCtx = springConfig.getApplicationContext()
 
+        messageSource = appCtx.getBean("messageSource")
+        
 		servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, appCtx)
 		mockManager.applicationContext = appCtx
 		servletContext.setAttribute( GrailsApplicationAttributes.APPLICATION_CONTEXT, appCtx)

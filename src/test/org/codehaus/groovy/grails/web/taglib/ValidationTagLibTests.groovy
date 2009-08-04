@@ -30,6 +30,36 @@ class Article {
         ''')
     }
 
+    void testFieldValueWithClassAndPropertyNameLookupFromBundle() {
+        def domain = ga.getDomainClass("Book")
+
+        messageSource.addMessage("Book.label", Locale.US, "Reading Material")
+        messageSource.addMessage("Book.title.label", Locale.US, "Subject")
+        def b = domain.newInstance()
+        b.validate()
+        assert b.hasErrors()
+
+        def template = '<g:fieldError bean="${book}" field="title" />'
+
+        assertOutputEquals 'Property [Subject] of class [Reading Material] cannot be null', template, [book:b]
+
+    }
+
+   void testFieldValueWithShortClassAndPropertyNameLookupFromBundle() {
+        def domain = ga.getDomainClass("Book")
+
+        messageSource.addMessage("book.label", Locale.US, "Reading Material")
+        messageSource.addMessage("book.title.label", Locale.US, "Subject")
+        def b = domain.newInstance()
+        b.validate()
+        assert b.hasErrors()
+
+        def template = '<g:fieldError bean="${book}" field="title" />'
+
+        assertOutputEquals 'Property [Subject] of class [Reading Material] cannot be null', template, [book:b]
+
+    }
+
     void testRenderErrorTag() {
         def domain = ga.getDomainClass("Book")
         def b = domain.newInstance()
@@ -242,8 +272,19 @@ class Article {
         assertOutputEquals("This is default", template, [error:error])
     }
 
+    void testMessageTagWithLocaleAttribute() {
+        messageSource.addMessage( "welcome.message", Locale.ENGLISH, "Hello!")
+        messageSource.addMessage( "welcome.message", Locale.ITALIAN, "Ciao!")
+
+        def template = '<g:message code="welcome.message" />'
+
+        assertOutputEquals("Hello!", template, [:])
+        assertOutputEquals("Hello!", template, [locale:Locale.ITALIAN])
+
+    }
+
 	void testMessageTagWithBlankButExistingMessageBundleValue() {
-	    println "Locale is ${Locale.ENGLISH}"
+	    
 	    messageSource.addMessage( "test.blank.message", Locale.ENGLISH, "")
 	    
         def template = '<g:message code="test.blank.message" />'

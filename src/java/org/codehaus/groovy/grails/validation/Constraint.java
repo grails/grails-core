@@ -15,6 +15,7 @@
 package org.codehaus.groovy.grails.validation;
 
 import org.springframework.context.MessageSource;
+import org.springframework.context.MessageSourceAware;
 import org.springframework.validation.Errors;
 /**
  * Interface that defines a validatable constraint 
@@ -22,7 +23,7 @@ import org.springframework.validation.Errors;
  * @author Graeme Rocher
  * @since 10-Nov-2005
  */
-public interface Constraint {
+public interface Constraint extends MessageSourceAware {
 	/**
 	 * Returns whether the constraint supports being applied against the specified type;
 	 * 
