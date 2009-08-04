@@ -68,24 +68,41 @@ packageFiles = { String from ->
 
 target( packagePlugins : "Packages any Grails plugins that are installed for this project") {
 	depends( classpath )
-	try {
-        def pluginInfos = GrailsPluginUtils.getPluginInfos(pluginsHome)
-        for(PluginInfo info in pluginInfos) {
-	   		def pluginBase = info.pluginDir.file
-	     	def pluginPath = pluginBase.absolutePath
-			def pluginName = "${info.name}-${info.version}"
+    def pluginInfos = GrailsPluginUtils.getPluginInfos(pluginsHome)
+    for(PluginInfo info in pluginInfos) {
+        try {
+            def pluginBase = info.pluginDir.file
+            packageFiles(pluginBase.path)
+        }
+        catch(Exception e) {
+            e.printStackTrace(System.out)
+            println "Error packaging plugin [${info.name}] : ${e.message}"
+        }
+
+    }
+}
+
+packagePluginsForWar = { targetDir ->
+    def pluginInfos = GrailsPluginUtils.getPluginInfos(pluginsHome)
+    for(PluginInfo info in pluginInfos) {
+        try {
+
+            def pluginBase = info.pluginDir.file
+            def pluginPath = pluginBase.absolutePath
+            def pluginName = "${info.name}-${info.version}"
 
             packageFiles(pluginBase.path)
             if(new File("${pluginPath}/web-app").exists()) {
-                ant.mkdir(dir:"${basedir}/web-app/plugins/${pluginName}")
-                ant.copy(todir:"${basedir}/web-app/plugins/${pluginName}") {
+                ant.mkdir(dir:"${targetDir}/plugins/${pluginName}")
+                ant.copy(todir:"${targetDir}/plugins/${pluginName}") {
                     fileset(dir:"${pluginBase}/web-app", includes:"**", excludes:"**/WEB-INF/**, **/META-INF/**")
                 }
             }
-	   	}
-	}
-	catch(Exception e) {
-        println e.message
-        e.printStackTrace(System.out)
-	}
+        }
+        catch(Exception e) {
+            e.printStackTrace(System.out)
+            println "Error packaging plugin [${info.name}] : ${e.message}"
+        }
+
+    }
 }
