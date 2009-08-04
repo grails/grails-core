@@ -120,6 +120,7 @@ public class ErrorHandlingServlet extends GrailsDispatcherServlet {
                                 com.opensymphony.sitemesh.Decorator d = decoratorSelector.selectDecorator(content, webAppContext);
 
                                 if(d!=null) {
+                                    response.setContentType(includeResult.getContentType());
                                     d.render(content, webAppContext);
                                 }
                                 else {
