@@ -16,22 +16,25 @@ body {
     color: #333;
     font: 11px verdana, arial, helvetica, sans-serif;
 }
+#grailsLogo {
+	padding:20px;
+}
 
 a:link, a:visited, a:hover {
     color: #666;
     font-weight: bold;
     text-decoration: none;
-} 
+}
 
 h1 {
-    color: #006dba;
+    color: #48802c;
     font-weight: normal;
     font-size: 16px;
     margin: .8em 0 .3em 0;
 }
 
 ul {
-    padding-left: 15px;	
+    padding-left: 15px;
 }
 
 input, select, textarea {
@@ -64,7 +67,7 @@ input:focus, select:focus, textarea:focus {
 .nav {
     background: #fff url(../images/skin/shadow.jpg) bottom repeat-x;
     border: 1px solid #ccc;
-    border-style: solid none solid none;	
+    border-style: solid none solid none;
     margin-top: 5px;
     padding: 7px 12px;
 }
@@ -112,7 +115,7 @@ div.errors {
 }
 div.errors ul {
     list-style: none;
-    padding: 0;	
+    padding: 0;
 }
 div.errors li {
 	background: url(../images/skin/exclamation.png) 8px 0% no-repeat;
@@ -136,7 +139,7 @@ table {
 tr {
     border: 0;
 }
-td, th { 
+td, th {
     font: 11px verdana, arial, helvetica, sans-serif;
     line-height: 12px;
     padding: 5px 6px;
