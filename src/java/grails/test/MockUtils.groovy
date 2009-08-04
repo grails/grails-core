@@ -555,6 +555,12 @@ class MockUtils {
             return TEST_INSTANCES[clazz]
         }
 
+        clazz.metaClass.'static'.findAllWhere = { args = [:] ->
+            TEST_INSTANCES[clazz].findAll { instance ->
+                args.every { k,v -> instance[k] == v } 
+            }
+        }
+
         clazz.metaClass.'static'.methodMissing = { method, args ->
             def m = method =~ /^find(All)?By${DYNAMIC_FINDER_RE}$/
             if (m) {

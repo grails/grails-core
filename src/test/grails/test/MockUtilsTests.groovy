@@ -167,6 +167,19 @@ class MockUtilsTests extends GroovyTestCase {
         result = TestDomain.findAllByName("Peter Pan")
         assertEquals( [ peterPan ], result )
 
+        result = TestDomain.findAllWhere(country: 'US')
+        assertEquals( [ johnSmithUS, johnPanUS, aliceDoeUS ], result )
+
+        result = TestDomain.findAllWhere(country: 'US', age: 35)
+        assertEquals( [ aliceDoeUS ], result )
+
+        result = TestDomain.findAllWhere(name: 'John Smith')
+        assertEquals( [ johnSmithUS, johnSmithOz ], result )
+
+        result = TestDomain.findAllWhere(country: 'US', name: 99)
+        assertEquals( [], result )
+
+
         result = TestDomain.findAllByName("Peter Parker")
         assertEquals( [], result )
 
