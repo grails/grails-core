@@ -25,6 +25,8 @@ import org.codehaus.groovy.grails.plugins.codecs.HTMLCodec
 import org.springframework.beans.PropertyEditorRegistry
 import org.springframework.validation.Errors
 import org.springframework.web.context.request.RequestContextHolder
+import org.springframework.context.MessageSource
+import org.springframework.context.MessageSourceAware
 
 /**
 *  A  tag lib that provides tags to handle validation and errors
@@ -33,7 +35,9 @@ import org.springframework.web.context.request.RequestContextHolder
 * @since 17-Jan-2006
 */
 
-class ValidationTagLib {
+class ValidationTagLib implements MessageSourceAware {
+
+    MessageSource messageSource
 
     /**
      * Renders an error message for the given bean and field
@@ -200,15 +204,15 @@ class ValidationTagLib {
             }
         }
     }
+
+
     /**
      * Resolves a message code for a given error or code from the resource bundle
      */
     def message = { attrs ->
-          def messageSource = grailsAttributes
-                                .getApplicationContext()
-                                .getBean("messageSource")
 
-          def locale = RCU.getLocale(request)
+          def locale = attrs.locale ?: RCU.getLocale(request)
+
           def text
 
           if(attrs['error'] || attrs['message']) {
