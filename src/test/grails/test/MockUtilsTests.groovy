@@ -197,9 +197,11 @@ class MockUtilsTests extends GroovyTestCase {
 
         result = TestDomain.findAllByAgeBetween(18, 35)
         assertEquals( [ janeDoeUK, peterPan, aliceSmithOz, chrisJonesOz, aliceDoeUS, chrisPanNull ], result )
+        assertEquals 6, TestDomain.countByAgeBetween(18,35) 
 
         result = TestDomain.findAllByCountryIsNull()
         assertEquals( [ janeDoeNull, chrisPanNull ], result )
+        assertEquals 2, TestDomain.countByCountryIsNull()
 
         result = TestDomain.findAllByAgeLessThanAndCountryIsNotNull(22)
         assertEquals( [ janeDoeUK, johnPanUS, chrisJonesCA ], result )

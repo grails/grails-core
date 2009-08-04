@@ -619,7 +619,20 @@ class MockUtils {
                     return result ? result[0] : null
                 }
             } else {
-                throw new MissingMethodException(method, delegate, args)
+                m = method =~ /^countBy${DYNAMIC_FINDER_RE}$/
+                if(m) {
+                    switch(args.size()) {
+                        case 0: return clazz."findAllBy${method[7..-1]}"().size()
+                        case 1: return clazz."findAllBy${method[7..-1]}"(args[0]).size()
+                        case 2: return clazz."findAllBy${method[7..-1]}"(args[0], args[1]).size()
+                        case 3: return clazz."findAllBy${method[7..-1]}"(args[0], args[1], args[2]).size()
+                        case 4: return clazz."findAllBy${method[7..-1]}"(args[0], args[1], args[2], args[3]).size()
+                    }
+
+                }
+                else {
+                    throw new MissingMethodException(method, delegate, args)
+                }
             }
         }
     }
