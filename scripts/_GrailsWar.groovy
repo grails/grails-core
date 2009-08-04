@@ -146,6 +146,9 @@ target (war: "The implementation target") {
                 fileset(dir:"${basedir}/web-app", includes:"**")
             }
         }
+        // package plugin js/etc.
+        packagePluginsForWar(stagingDir)
+        
         ant.copy(todir:"${stagingDir}/WEB-INF/grails-app", overwrite:true) {
             fileset(dir:"${basedir}/grails-app", includes:"views/**")
             fileset(dir:"${resourcesDirPath}/grails-app", includes:"i18n/**")
