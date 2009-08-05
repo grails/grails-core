@@ -117,9 +117,14 @@ public class GroovyPagesGrailsPlugin {
             else {
                 if (warDeployedWithReload) {
                     groovyPageResourceLoader(org.codehaus.groovy.grails.web.pages.GroovyPageResourceLoader) {
-                        def location = env.reloadLocation
-                        if(!location.endsWith(File.separator)) location = "${location}${File.separator}"
-                        baseResource = "file:${location}"
+                        if(env.hasReloadLocation()) {
+                            def location = env.reloadLocation
+                            if(!location.endsWith(File.separator)) location = "${location}${File.separator}"
+                            baseResource = "file:${location}"
+                        }
+                        else {
+                            baseResource = "/WEB-INF"
+                        }
                     }
                 }
             }

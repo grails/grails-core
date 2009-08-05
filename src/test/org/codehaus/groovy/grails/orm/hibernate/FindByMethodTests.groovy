@@ -26,6 +26,13 @@ class FindByMethodUser {
     Set books
     static hasMany = [books:FindByMethodBook]
 }
+class FindByBooleanPropertyBook {
+    Long id
+    Long version
+    String author
+    String title
+    Boolean published
+}
 '''
     }
 
@@ -64,10 +71,51 @@ class FindByMethodUser {
                  .save(flush:true)
 
         session.clear()
-        
+
         user = User.findByFirstName("Stephen", [fetch:[books:'eager']])
 
         assertEquals 2, user.books.size()
+    }
+
+    void testBooleanPropertyQuery() {
+        def bookClass = ga.getDomainClass("FindByBooleanPropertyBook").clazz
+        assert bookClass.newInstance(author: 'Jeff', title: 'Fly Fishing For Everyone', published: false).save()
+        assert bookClass.newInstance(author: 'Jeff', title: 'DGGv2', published: true).save()
+        assert bookClass.newInstance(author: 'Graeme', title: 'DGGv2', published: true).save()
+        assert bookClass.newInstance(author: 'Dierk', title: 'GINA', published: true).save()
+
+        def book = bookClass.findPublishedByAuthor('Jeff')
+        assertEquals 'Jeff', book.author
+        assertEquals 'DGGv2', book.title
+
+        book = bookClass.findPublishedByAuthor('Graeme')
+        assertEquals 'Graeme', book.author
+        assertEquals 'DGGv2', book.title
+
+        book = bookClass.findPublishedByTitleAndAuthor('DGGv2', 'Jeff')
+        assertEquals 'Jeff', book.author
+        assertEquals 'DGGv2', book.title
+
+        book = bookClass.findNotPublishedByAuthor('Jeff')
+        assertEquals 'Fly Fishing For Everyone', book.title
+
+        book = bookClass.findPublishedByTitleOrAuthor('Fly Fishing For Everyone', 'Dierk')
+        assertEquals 'GINA', book.title
+
+        def books = bookClass.findAllPublishedByTitle('DGGv2')
+        assertEquals 2, books?.size()
+
+        books = bookClass.findAllPublishedByTitleAndAuthor('DGGv2', 'Graeme')
+        assertEquals 1, books?.size()
+
+        books = bookClass.findAllPublishedByAuthorOrTitle('Graeme', 'GINA')
+        assertEquals 2, books?.size()
+
+        books = bookClass.findAllNotPublishedByAuthor('Jeff')
+        assertEquals 1, books?.size()
+
+        books = bookClass.findAllNotPublishedByAuthor('Graeme')
+        assertEquals 0, books?.size()
     }
 
 }

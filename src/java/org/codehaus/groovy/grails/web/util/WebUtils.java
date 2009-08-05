@@ -308,7 +308,29 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
     public static IncludedContent includeForUrlMappingInfo(HttpServletRequest request, HttpServletResponse response, UrlMappingInfo info, Map model) {
         String includeUrl = buildDispatchUrlForMapping(info, true);
 
-        return includeForUrl(includeUrl, request, response, model);
+        final GrailsWebRequest webRequest = GrailsWebRequest.lookup(request);
+
+        String currentController = null;
+        String currentAction = null;
+        String currentId = null;
+        if (webRequest!=null) {
+            currentController = webRequest.getControllerName();
+            currentAction = webRequest.getActionName();
+            currentId = webRequest.getId();
+        }
+        try {
+            if (webRequest!=null) {
+                info.configure(webRequest);
+            }
+            return includeForUrl(includeUrl, request, response, model);
+        }
+        finally {
+            if (webRequest!=null) {
+                webRequest.setId(currentId);
+                webRequest.setControllerName(currentController);
+                webRequest.setActionName(currentAction);
+            }
+        }
     }
 
     /**

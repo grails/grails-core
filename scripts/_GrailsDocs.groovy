@@ -318,7 +318,7 @@ ${m.arguments?.collect { '* @'+GrailsNameUtils.getPropertyName(it)+'@\n' }}
                         def name = txt.name[0..-6]
                         menu << "<div class=\"menuItem\"><a href=\"${f.name}/${name}.html\" target=\"mainFrame\">${name}</a></div>"
                         def data = txt.text
-                        reference."${section}"."$name" = data
+                        reference."${section}".put(name,data)
                         context.set(DocEngine.SOURCE_FILE, txt.name)
                         context.set(DocEngine.CONTEXT_PATH, "../..")
                         def contents = engine.render(data, context)

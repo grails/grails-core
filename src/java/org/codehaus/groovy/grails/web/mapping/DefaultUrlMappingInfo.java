@@ -15,14 +15,11 @@
 package org.codehaus.groovy.grails.web.mapping;
 
 import grails.util.GrailsNameUtils;
-import groovy.lang.Closure;
 import groovy.util.ConfigObject;
-import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.web.mapping.exceptions.UrlMappingException;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.util.WebUtils;
-import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.support.WebApplicationContextUtils;
@@ -32,9 +29,9 @@ import org.springframework.web.servlet.DispatcherServlet;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
-import java.util.*;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.Map;
 
 /**
  * A Class that implements the UrlMappingInfo interface and holds information established from a matched
@@ -47,8 +44,8 @@ import java.util.*;
  *        Created: Mar 1, 2007
  *        Time: 7:19:35 AM
  */
-public class DefaultUrlMappingInfo implements UrlMappingInfo {
-    private Map params = Collections.EMPTY_MAP;
+public class DefaultUrlMappingInfo extends AbstractUrlMappingInfo implements UrlMappingInfo {
+    
     private Object controllerName;
     private Object actionName;
     private Object id;
@@ -89,71 +86,8 @@ public class DefaultUrlMappingInfo implements UrlMappingInfo {
         return urlData.getUrlPattern();
     }
 
-    /**
-     * Populates request parameters for the given UrlMappingInfo instance using the GrailsWebRequest
-     *
-     * @param webRequest The Map instance
-     * @see org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
-     */
-    protected void populateParamsForMapping(GrailsWebRequest webRequest) {
-        Map dispatchParams = webRequest.getParams();
-        String encoding = webRequest.getRequest().getCharacterEncoding();
-        if (encoding == null) encoding = "UTF-8";
-
-        Collection keys = this.params.keySet();
-        keys = DefaultGroovyMethods.toList(keys);
-        Collections.sort((List) keys, new Comparator() {
-
-            public int compare(Object leftKey, Object rightKey) {
-                Object leftValue = params.get(leftKey);
-                Object rightValue = params.get(rightKey);
-                boolean leftIsClosure = leftValue instanceof Closure;
-                boolean rightIsClosure = rightValue instanceof Closure;
-                if (leftIsClosure && rightIsClosure) return 0;
-                else if (leftIsClosure && !rightIsClosure) return 1;
-                else if (rightIsClosure && !leftIsClosure) return -1;
-                return 0;
-            }
-        });
-        for (Iterator j = keys.iterator(); j.hasNext();) {
-
-            String name = (String) j.next();
-            Object param = this.params.get(name);
-            if (param instanceof Closure) {
-                param = evaluateNameForValue(param);
-            }
-            if (param instanceof String) {
-                try {
-                    param = URLDecoder.decode((String) param, encoding);
-                } catch (UnsupportedEncodingException e) {
-                    param = evaluateNameForValue(param);
-                }
-            }
-            dispatchParams.put(name, param);
-        }
-
-        final String viewName = getViewName();
-
-        if (viewName == null) {
-            webRequest.setControllerName(getControllerName());
-            webRequest.setActionName(getActionName());
-        }
-
-        String id = getId();
-        if (!StringUtils.isBlank(id)) try {
-            dispatchParams.put(GrailsWebRequest.ID_PARAMETER, URLDecoder.decode(id, encoding));
-        } catch (UnsupportedEncodingException e) {
-            dispatchParams.put(GrailsWebRequest.ID_PARAMETER, id);
-        }
-
-    }
-
     public Map getParameters() {
         return params;
-    }
-
-    public void configure(GrailsWebRequest webRequest) {
-        populateParamsForMapping(webRequest);
     }
 
     public boolean isParsingRequest() {
@@ -187,32 +121,6 @@ public class DefaultUrlMappingInfo implements UrlMappingInfo {
 
     public String getId() {
         return evaluateNameForValue(this.id);
-    }
-
-    private String evaluateNameForValue(Object value) {
-        GrailsWebRequest webRequest = (GrailsWebRequest) RequestContextHolder.getRequestAttributes();
-        return evaluateNameForValue(value, webRequest);
-    }
-
-    private String evaluateNameForValue(Object value, GrailsWebRequest webRequest) {
-        if (value == null) {
-            return null;
-        }
-        String name;
-        if (value instanceof Closure) {
-            Closure callable = (Closure) value;
-            final Closure cloned = (Closure) callable.clone();
-            cloned.setDelegate(webRequest);
-            cloned.setResolveStrategy(Closure.DELEGATE_FIRST);
-            Object result = cloned.call();
-            name = result != null ? result.toString() : null;
-        } else if (value instanceof Map) {
-            Map httpMethods = (Map) value;
-            name = (String) httpMethods.get(webRequest.getCurrentRequest().getMethod());
-        } else {
-            name = value.toString();
-        }
-        return name != null ? name.trim() : null;
     }
 
     private String checkDispatchAction(HttpServletRequest request, String actionName) {
