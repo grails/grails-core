@@ -35,9 +35,7 @@ import org.springframework.context.MessageSourceAware
 * @since 17-Jan-2006
 */
 
-class ValidationTagLib implements MessageSourceAware {
-
-    MessageSource messageSource
+class ValidationTagLib {
 
     /**
      * Renders an error message for the given bean and field
@@ -210,7 +208,7 @@ class ValidationTagLib implements MessageSourceAware {
      * Resolves a message code for a given error or code from the resource bundle
      */
     def message = { attrs ->
-
+        def messageSource = grailsAttributes.getApplicationContext().getBean("messageSource")
           def locale = attrs.locale ?: RCU.getLocale(request)
 
           def text
