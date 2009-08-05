@@ -25,7 +25,7 @@ import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
  * Created: Jan 27, 2009
  */
 
-class ForwardUrlMappingInfo implements UrlMappingInfo {
+class ForwardUrlMappingInfo extends AbstractUrlMappingInfo {
 
     String controllerName
     String actionName
@@ -38,9 +38,6 @@ class ForwardUrlMappingInfo implements UrlMappingInfo {
     void setView(String view) { viewName = view }
     void setParams(Map params) { parameters = params }
 
-    public void configure(GrailsWebRequest webRequest) {
-        // do nothing
-    }
 
     public boolean isParsingRequest() {
         return false;

@@ -261,5 +261,11 @@ public class GrailsWebRequest extends DispatcherServletWebRequest implements Par
         return (GrailsWebRequest) request.getAttribute(GrailsApplicationAttributes.WEB_REQUEST);
     }
 
-
+    /**
+     * Sets the id of the request
+     * @param id The id
+     */
+    public void setId(Object id) {
+        getParams().put(GrailsWebRequest.ID_PARAMETER, id);
+    }
 }
