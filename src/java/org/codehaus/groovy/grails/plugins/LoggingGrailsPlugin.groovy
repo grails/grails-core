@@ -35,6 +35,11 @@ class LoggingGrailsPlugin {
     def loadBefore = ['core']
     def observe = ['*']
 
+    def doWithSpring = {
+        def juLogMgr = java.util.logging.LogManager.logManager
+        juLogMgr.readConfiguration(new ByteArrayInputStream(".level=INFO".bytes))
+        org.slf4j.bridge.SLF4JBridgeHandler.install()
+    }
 
     def doWithDynamicMethods = {applicationContext ->
         for(handler in application.artefactHandlers) {
