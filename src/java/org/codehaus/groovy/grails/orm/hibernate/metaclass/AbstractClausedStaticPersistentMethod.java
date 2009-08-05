@@ -406,7 +406,22 @@ public abstract class AbstractClausedStaticPersistentMethod extends
 		String[] queryParameters;
 		int totalRequiredArguments = 0;
 		// get the sequence clauses
-		String querySequence = match.group(2);
+		final String querySequence;
+        int groupCount = match.groupCount();
+        if(groupCount == 4) {
+            String booleanProperty = match.group(2);
+            Boolean arg = Boolean.TRUE;
+            if(booleanProperty.matches("Not[A-Z].*")) {
+                booleanProperty = booleanProperty.substring(3);
+                arg = Boolean.FALSE;
+            }
+            GrailsMethodExpression booleanExpression = GrailsMethodExpression.create(this.application, clazz, booleanProperty );
+            booleanExpression.setArguments(new Object[]{arg});
+            expressions.add(booleanExpression);
+            querySequence = match.group(4);
+        } else {
+            querySequence = match.group(2);
+        }
 		// if it contains operator and split
 		boolean containsOperator = false;
         String operatorInUse = null;
