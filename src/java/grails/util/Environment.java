@@ -174,6 +174,13 @@ public enum Environment {
         }
     }
 
+    /**
+     * @return Whether a reload location is specified
+     */
+    public boolean hasReloadLocation() {
+        return isNotBlank(getReloadLocationInternal());
+    }
+
     private String getReloadLocationInternal() {
         String location = System.getProperty(RELOAD_LOCATION);
         if(!isNotBlank(location)) location = System.getProperty(BuildSettings.APP_BASE_DIR);
