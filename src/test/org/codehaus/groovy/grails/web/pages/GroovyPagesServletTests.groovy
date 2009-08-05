@@ -5,6 +5,7 @@ import org.springframework.web.context.request.*
 import org.codehaus.groovy.grails.web.servlet.mvc.*
 import org.codehaus.groovy.grails.web.errors.*
 import grails.util.*
+import org.codehaus.groovy.grails.support.MockApplicationContext
 
 class GroovyPagesServletTests extends GroovyTestCase {
 
@@ -26,20 +27,25 @@ class GroovyPagesServletTests extends GroovyTestCase {
 
     void testHandleException() {
 
-        def webRequest = GrailsWebUtil.bindMockWebRequest()
-        def request = webRequest.currentRequest
+         def webRequest = GrailsWebUtil.bindMockWebRequest()
+         def request = webRequest.currentRequest
         
-        def gpte = new GroovyPagesTemplateEngine(new MockServletContext())
+         MockServletContext servletContext = new MockServletContext()
+         MockApplicationContext ctx = new MockApplicationContext()
 
+         servletContext.setAttribute("app.ctx", ctx) 
+         def gpte = new GroovyPagesTemplateEngine(servletContext)
+         ctx.registerMockBean(GroovyPagesTemplateEngine.BEAN_ID, gpte) 
          def gps = new GroovyPagesServlet()
-         gps.init(new MockServletConfig(new MockServletContext()))
+         gps.contextAttribute = "app.ctx"
+         gps.init(new MockServletConfig(servletContext))
          def e = new Exception()
 
          def response = new MockHttpServletResponse()
 
 
 
-         gps.handleException(e,response.getWriter(),gpte)
+         gps.handleException(request, response,e,response.getWriter(),gpte)
 
     }
 

@@ -18,19 +18,6 @@ package org.codehaus.groovy.grails.web.pages;
 import grails.util.GrailsUtil;
 import groovy.lang.Writable;
 import groovy.text.Template;
-
-import java.io.IOException;
-import java.io.Writer;
-import java.util.HashMap;
-import java.util.Map;
-
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -38,7 +25,21 @@ import org.codehaus.groovy.grails.web.errors.GrailsWrappedRuntimeException;
 import org.codehaus.groovy.grails.web.servlet.DefaultGrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
+import org.springframework.beans.BeansException;
 import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.servlet.FrameworkServlet;
+import org.springframework.web.servlet.HandlerExceptionResolver;
+import org.springframework.web.servlet.ModelAndView;
+
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.Writer;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * NOTE: Based on work done by on the GSP standalone project (https://gsp.dev.java.net/)
@@ -63,7 +64,7 @@ import org.springframework.web.context.request.RequestContextHolder;
  * Date: Jan 10, 2004
  *
  */
-public class GroovyPagesServlet extends HttpServlet  {
+public class GroovyPagesServlet extends FrameworkServlet {
 	private static final Log LOG = LogFactory.getLog(GroovyPagesServlet.class);
 	
     private ServletContext context;
@@ -77,62 +78,42 @@ public class GroovyPagesServlet extends HttpServlet  {
     private static final String ERRORS_VIEW = GrailsApplicationAttributes.PATH_TO_VIEWS+"/error"+GroovyPage.EXTENSION;
     public static final String EXCEPTION_MODEL_KEY = "exception";
     public static final String SERVLET_INSTANCE = "org.codehaus.groovy.grails.GSP_SERVLET";
+    private Collection<HandlerExceptionResolver> exceptionResolvers;
+    private GroovyPagesTemplateEngine templateEngine;
 
 
-    /**
-     * Initialize the servlet, set it's parameters.
-     * @param config servlet settings
-     */
-    public void init(ServletConfig config) {
-        // Get the servlet context
-        context = config.getServletContext();
+    @Override
+    protected void initFrameworkServlet() throws ServletException, BeansException {
+        this.context = getServletContext();
         context.log("GSP servlet initialized");
         context.setAttribute(SERVLET_INSTANCE, this);
 
+        this.exceptionResolvers = getWebApplicationContext().getBeansOfType(HandlerExceptionResolver.class).values();
         this.grailsAttributes = new DefaultGrailsApplicationAttributes(context);
-
+        this.templateEngine = getWebApplicationContext().getBean(GroovyPagesTemplateEngine.BEAN_ID,GroovyPagesTemplateEngine.class);
     }
 
-    public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        doPage(request, response);
-    }
 
-    public void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        doPage(request, response);
-    }
-
-    /**
-     * @return the servlet context
-     */
-    public ServletContext getServletContext() { return context; }
-
-
-    /**
-     * Execute page and produce output.
-     * @param request The HttpServletRequest   insance
-     * @param response The HttpServletResponse instance
-     * @throws ServletException Thrown when an exception occurs executing the servlet
-     * @throws IOException Thrown when an IOException occurs executing the servlet
-     */
-    public void doPage(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doService(HttpServletRequest request, HttpServletResponse response) throws Exception {
     	request.setAttribute(GrailsApplicationAttributes.REQUEST_SCOPE_ID, grailsAttributes);
         request.setAttribute(GroovyPagesServlet.SERVLET_INSTANCE, this);
 
-        GroovyPagesTemplateEngine engine = grailsAttributes.getPagesTemplateEngine();
+
         String pageName = (String)request.getAttribute(GrailsApplicationAttributes.GSP_TO_RENDER);
         if(StringUtils.isBlank(pageName)) {
-            pageName = engine.getCurrentRequestUri(request);
+            pageName = templateEngine.getCurrentRequestUri(request);
         }
 
-        Template template = engine.createTemplateForUri(pageName);
+        Template template = templateEngine.createTemplateForUri(pageName);
         if (template == null) {
             context.log("GroovyPagesServlet:  \"" + pageName + "\" not found");
             response.sendError(404, "\"" + pageName + "\" not found.");
             return;
         }
 
-        renderPageWithEngine(engine, request, response, template);
+        renderPageWithEngine(templateEngine, request, response, template);
     }
+
 
     /**
      * Attempts to render the page with the given arguments
@@ -140,20 +121,20 @@ public class GroovyPagesServlet extends HttpServlet  {
      * @param engine The GroovyPagesTemplateEngine to use
      * @param request The HttpServletRequest
      * @param response The HttpServletResponse
-     * @param pageResource The URL of the page
+     * @param template The template
      *
      * @throws IOException Thrown when an I/O exception occurs rendering the page
      * @throws ServletException Thrown when an exception occurs in the servlet environment
      */
-    protected void renderPageWithEngine(GroovyPagesTemplateEngine engine, HttpServletRequest request, HttpServletResponse response, Template t) throws IOException, ServletException {
+    protected void renderPageWithEngine(GroovyPagesTemplateEngine engine, HttpServletRequest request, HttpServletResponse response, Template template) throws IOException, ServletException {
          Writer out = createResponseWriter(response);
         try {
-            Writable w = t.make();
+            Writable w = template.make();
             w.writeTo(out);
         }
         catch(Exception e) {
             out = createResponseWriter(response);
-            handleException(e, out,engine);
+            handleException(request, response, e, out,engine);
         }
         finally {
             if (out != null) out.close();
@@ -163,17 +144,38 @@ public class GroovyPagesServlet extends HttpServlet  {
     /**
      * Performs exception handling by attempting to render the Errors view
      *
+     * @param request
+     *@param response
      * @param exception The exception that occured
      * @param out The Writer
-     * @param engine The GSP engine
-
-     * @throws IOException Thrown when an I/O exception occurs rendering the page
+     * @param engine The GSP engine    @throws IOException Thrown when an I/O exception occurs rendering the page
      * @throws ServletException Thrown when an exception occurs in the servlet environment
      */
-    protected void handleException(Exception exception,Writer out, GroovyPagesTemplateEngine engine) throws ServletException, IOException {
+    protected void handleException(HttpServletRequest request, HttpServletResponse response, Exception exception, Writer out, GroovyPagesTemplateEngine engine) throws ServletException, IOException {
+        if(exceptionResolvers!= null) {
+            ModelAndView exMv = null;
+            for (HandlerExceptionResolver exceptionResolver : exceptionResolvers) {
+                exMv = exceptionResolver.resolveException(request, response, this, exception);
+                if(exMv !=null) break;
+            }
+            if(exMv!=null) {
+                try {
+                    exMv.getView().render(exMv.getModel(),request, response);
+                }
+                catch (Exception e) {
+                    defaultExceptionHandling(exception, out, engine);
+                }
+            }
+        }
+        else {
+            defaultExceptionHandling(exception, out, engine);
+        }
+    }
+
+    private void defaultExceptionHandling(Exception exception, Writer out, GroovyPagesTemplateEngine engine) {
         GrailsUtil.deepSanitize(exception);
         if(LOG.isErrorEnabled())
-            LOG.error("Error processing GSP: " + exception.getMessage(), exception);
+                LOG.error("Error processing GSP: " + exception.getMessage(), exception);
 
         try {
             Template t = engine.createTemplate(ERRORS_VIEW);
