@@ -27,6 +27,7 @@ import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.springframework.beans.BeansException;
 import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.servlet.FrameworkServlet;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 import org.springframework.web.servlet.ModelAndView;
@@ -70,6 +71,11 @@ public class GroovyPagesServlet extends FrameworkServlet {
     private ServletContext context;
 
     private GrailsApplicationAttributes grailsAttributes;
+
+    public GroovyPagesServlet() {
+        // use the root web application context always
+        setContextAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE);
+    }
 
     /**
      * The size of the buffer used when formulating the response
