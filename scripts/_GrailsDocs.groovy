@@ -96,7 +96,8 @@ target(javadoc:"Produces javadoc documentation") {
 }
 
 target(refdocs:"Generates Grails style reference documentation") {
-
+    depends(loadPlugins)
+    
     def srcDocs = new File("${basedir}/src/docs")
 
 
