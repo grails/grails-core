@@ -28,6 +28,8 @@ import org.springframework.beans.PropertyEditorRegistrySupport;
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.servlet.handler.DispatcherServletWebRequest;
 import org.springframework.web.servlet.support.RequestContextUtils;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.RequestAttributes;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
@@ -258,7 +260,14 @@ public class GrailsWebRequest extends DispatcherServletWebRequest implements Par
      * @return The GrailsWebRequest
      */
     public static GrailsWebRequest lookup(HttpServletRequest request) {
-        return (GrailsWebRequest) request.getAttribute(GrailsApplicationAttributes.WEB_REQUEST);
+        GrailsWebRequest webRequest = (GrailsWebRequest) request.getAttribute(GrailsApplicationAttributes.WEB_REQUEST);
+        if(webRequest== null) {
+            RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
+            if(requestAttributes instanceof GrailsWebRequest) {
+                webRequest = (GrailsWebRequest) requestAttributes;
+            }
+        }
+        return webRequest;
     }
 
     /**

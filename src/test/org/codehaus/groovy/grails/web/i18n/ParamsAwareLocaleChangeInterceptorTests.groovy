@@ -19,6 +19,36 @@ class ParamsAwareLocaleChangeInterceptorTests extends GroovyTestCase{
     }
 
 
+    void testSwitchLocaleWithStringArrayParamsObject() {
+        
+        def webRequest = GrailsWebUtil.bindMockWebRequest()
+
+        def request = webRequest.getCurrentRequest()
+        def response = webRequest.getCurrentResponse()
+
+        SessionLocaleResolver localeResolver = new SessionLocaleResolver()
+
+        request.setAttribute(DispatcherServlet.LOCALE_RESOLVER_ATTRIBUTE,localeResolver)
+
+        def localeChangeInterceptor = new ParamsAwareLocaleChangeInterceptor()
+        localeChangeInterceptor.paramName = "lang"
+
+        def locale = localeResolver.resolveLocale(request)
+        assert localeChangeInterceptor.preHandle(request, response, null)
+
+        assertEquals locale, localeResolver.resolveLocale(request)
+
+        webRequest.params.lang = ["de_DE", "en_GB"] as String[]
+
+        assert localeChangeInterceptor.preHandle(request, response, null)
+
+        assertNotSame locale, localeResolver.resolveLocale(request)
+
+        locale = localeResolver.resolveLocale(request)
+
+        assertEquals "de", locale.getLanguage()
+        assertEquals "DE", locale.getCountry()
+    }
     void testSwitchLocaleWithParamsObject() {
 
         def webRequest = GrailsWebUtil.bindMockWebRequest()
