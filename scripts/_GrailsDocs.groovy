@@ -28,7 +28,7 @@ import grails.util.GrailsNameUtils
  * Created: Sep 20, 2007
  */
 
-includeTargets << grailsScript("_GrailsCompile")
+includeTargets << grailsScript("_GrailsPackage")
 
 javadocDir = "${basedir}/docs/api"
 groovydocDir = "${basedir}/docs/gapi"
@@ -96,7 +96,7 @@ target(javadoc:"Produces javadoc documentation") {
 }
 
 target(refdocs:"Generates Grails style reference documentation") {
-    depends(loadPlugins)
+    depends(createConfig,loadPlugins)
     
     def srcDocs = new File("${basedir}/src/docs")
 
@@ -156,7 +156,8 @@ ${m.arguments?.collect { '* @'+GrailsNameUtils.getPropertyName(it)+'@\n' }}
         ant.mkdir(dir: "${refDocsDir}/css")
         ant.mkdir(dir: "${refDocsDir}/ref")
 
-        ant.copy(file: "${docResources}/style/index.html", todir: refDocsDir)
+
+
         ant.copy(todir: "${refDocsDir}/img") {
             fileset(dir: "${docResources}/img")
         }
@@ -172,8 +173,11 @@ ${m.arguments?.collect { '* @'+GrailsNameUtils.getPropertyName(it)+'@\n' }}
         version = grailsAppVersion
         authors = ""
         license = ""
+        copyright = ""
+        footer = ""
         // if this is a plugin obtain additional metadata from the plugin
         readPluginMetadataForDocs()
+        readDocProperties()
 
         def comparator = [compare: {o1, o2 ->
             def idx1 = o1.name[0..o1.name.indexOf(' ') - 1]
@@ -270,10 +274,10 @@ ${m.arguments?.collect { '* @'+GrailsNameUtils.getPropertyName(it)+'@\n' }}
         vars = [
                 title: title,
                 subtitle: subtitle,
-                footer: "", // TODO - add a way to specify footer
+                footer: footer, // TODO - add a way to specify footer
                 authors: authors,
                 version: version,
-                copyright: "", // TODO - add a way to specify copyright
+                copyright: copyright,
 
                 toc: toc.toString(),
                 body: fullContents.toString()
@@ -290,6 +294,14 @@ ${m.arguments?.collect { '* @'+GrailsNameUtils.getPropertyName(it)+'@\n' }}
                 template.make(vars).writeTo(out)
             }
         }
+
+        new File("${docResources}/style/index.html").withReader {reader ->
+            template = templateEngine.createTemplate(reader)
+            new File("${refDocsDir}/index.html").withWriter {out ->
+                template.make(vars).writeTo(out)
+            }
+        }
+
 
         menu = new StringBuilder()
         files = new File("${srcDocs}/ref").listFiles()?.toList()?.sort() ?: []
@@ -373,6 +385,19 @@ def readPluginMetadataForDocs() {
     }
 }
 
+def readDocProperties() {
+    readIfSet("copyright")
+    readIfSet("license")
+    readIfSet("authors")
+    readIfSet("footer")
+
+}
+private readIfSet(String prop) {
+    if(config.grails.doc."$prop") { 
+        binding[prop] = config.grails.doc."$prop"
+    }
+
+}
 private def loadBasePlugin() {
 		pluginManager?.allPlugins?.find { it.basePlugin }
 }

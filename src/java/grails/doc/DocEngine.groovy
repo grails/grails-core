@@ -28,6 +28,8 @@ import org.radeox.macro.MacroLoader
 import org.radeox.macro.parameter.MacroParameter
 import org.radeox.regex.MatchResult
 import org.radeox.filter.*
+import grails.util.BuildSettingsHolder
+import org.codehaus.groovy.grails.commons.ConfigurationHolder
 
 
 /**
@@ -45,8 +47,14 @@ class DocEngine extends BaseRenderEngine implements WikiRenderEngine {
 
     static {
         def props = new Properties()
+        def settings = BuildSettingsHolder.getSettings()
         try {
             props.load(DocEngine.classLoader.getResourceAsStream("grails/doc/doc.properties"))
+            ConfigObject docConfig = ConfigurationHolder.config?.grails?.doc
+
+            if(docConfig) {
+                props.putAll docConfig.toProperties()
+            }
         }
         catch (e) {
             // ignore
@@ -319,8 +327,13 @@ class ImageFilter  extends RegexTokenFilter {
 
     public void handleMatch(StringBuffer buffer, MatchResult result, FilterContext context) {
         def img = result.group(1)
-        def path = context.renderContext.get("contextPath") ?: "."
-        buffer << "<img border=\"0\" class=\"center\" src=\"$path/img/$img\"></img>"
+        if(img.startsWith("http://")) {
+            buffer << "<img border=\"0\" class=\"center\" src=\"$img\"></img>"
+        }
+        else {            
+            def path = context.renderContext.get("contextPath") ?: "."
+            buffer << "<img border=\"0\" class=\"center\" src=\"$path/img/$img\"></img>"
+        }
     }
 }
 class TextileLinkFilter extends RegexTokenFilter {
