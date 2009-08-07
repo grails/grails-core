@@ -223,9 +223,6 @@ class SelectTagTests extends AbstractGrailsTagTests {
     }
 
     void testMultipleSelect() {
-    	final StringWriter sw = new StringWriter();
-    	final PrintWriter pw = new PrintWriter(sw);
-
         def categories = [
                 new Expando(code: 'M', label: 'Mystery'),
                 new Expando(code: 'T', label: 'Thriller'),
@@ -233,6 +230,27 @@ class SelectTagTests extends AbstractGrailsTagTests {
                 new Expando(code: 'SF', label: 'Science Fiction'),
                 new Expando(code: 'C', label: 'Crime') ]
         def selected = [ 'T', 'C']
+        checkMultiSelect(categories, selected, {cat -> selected.contains(cat.code) })
+    }
+
+
+    void testMultipleSelectWithObjectValues() {
+        def sel1 = new Expando(code: 'T', label: 'Thriller'),
+            sel2 = new Expando(code: 'C', label: 'Crime')
+        def categories = [
+                new Expando(code: 'M', label: 'Mystery'),
+                sel1,
+                new Expando(code: 'F', label: 'Fantasy'),
+                new Expando(code: 'SF', label: 'Science Fiction'),
+                sel2 ]
+        def selected = [ sel1, sel2]
+        checkMultiSelect(categories, selected, {cat -> selected.contains(cat) })
+    }
+
+
+    void checkMultiSelect(List categories, List selected, Closure isSelected) {
+    	final StringWriter sw = new StringWriter();
+    	final PrintWriter pw = new PrintWriter(sw);
 
         // Execute the tag.
         withTag("select", pw) { tag ->
@@ -254,15 +272,20 @@ class SelectTagTests extends AbstractGrailsTagTests {
         assertEquals("multiple", value);
 
         // assert select field uses value for both the value as the text (as there is no text found within messages)
+        int actualSelected = 0
         categories.each() { cat ->
-            if (selected.contains(cat)) {
+            if (isSelected.call(cat)) {
                 assertSelectFieldPresentWithSelectedValueAndText( doc, SELECT_TAG_NAME, cat.code, cat.label )
+                actualSelected++
             }
             else {
                 assertSelectFieldPresentWithValueAndText( doc, SELECT_TAG_NAME, cat.code, cat.label )
             }
         }
+
+        assertEquals("expecting selected options", selected.size(), actualSelected)
     }
+
 
     private void assertSelectFieldPresentWithSelectedValue(Document document, String fieldName, String value) {
         assertXPathExists(

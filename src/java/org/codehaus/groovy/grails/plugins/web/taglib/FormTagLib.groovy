@@ -617,16 +617,19 @@ class FormTagLib {
                     writeValueAndCheckIfSelected(keyValue, value, writer)
                 }
                 else if (optionKey) {
+                    def keyValueObject = null
                     if (optionKey instanceof Closure) {
                         keyValue = optionKey(el)
                     }
                     else if (el != null && optionKey == 'id' && grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE, el.getClass().name)) {
                         keyValue = el.ident()
+                        keyValueObject = el
                     }
                     else {
                         keyValue = el[optionKey]
+                        keyValueObject = el
                     }
-                    writeValueAndCheckIfSelected(keyValue, value, writer)
+                    writeValueAndCheckIfSelected(keyValue, value, writer, keyValueObject)
                 }
                 else {
                     keyValue = el
@@ -668,6 +671,10 @@ class FormTagLib {
 
     def typeConverter = new SimpleTypeConverter()
     private writeValueAndCheckIfSelected(keyValue, value, writer) {
+        writeValueAndCheckIfSelected(keyValue, value, writer, null)
+    }
+
+    private writeValueAndCheckIfSelected(keyValue, value, writer, el) {
 
         boolean selected = false
         def keyClass = keyValue?.getClass()
@@ -675,7 +682,11 @@ class FormTagLib {
             selected = (keyValue == value)
         }
         else if (value instanceof Collection) {
+            // first try keyValue
             selected = value.contains(keyValue)
+            if (! selected && el != null) {
+                selected = value.contains(el)
+            }
         }
         else if (keyClass && value) {
             try {
