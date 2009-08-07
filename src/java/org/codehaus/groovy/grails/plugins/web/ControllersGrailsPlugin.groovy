@@ -51,6 +51,9 @@ import org.codehaus.groovy.grails.web.metaclass.ForwardMethod
 import org.springframework.beans.BeanUtils
 import org.codehaus.groovy.grails.plugins.DomainClassPluginSupport
 import org.springframework.validation.BeanPropertyBindingResult
+import org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping
+import org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter
+import org.springframework.web.servlet.view.DefaultRequestToViewNameTranslator
 
 /**
  * A plug-in that handles the configuration of controllers for Grails
@@ -88,6 +91,13 @@ class ControllersGrailsPlugin {
             interceptors = handlerInterceptors
             mappings = grailsUrlMappings
         }
+        // allow @Controller annotated beans
+        annotationHandlerMapping(DefaultAnnotationHandlerMapping)
+        annotationHandlerAdapter(AnnotationMethodHandlerAdapter)
+        viewNameTranslator(DefaultRequestToViewNameTranslator) {
+             stripLeadingSlash = false
+        }
+
         handlerMappingTargetSource(HotSwappableTargetSource, grailsUrlHandlerMapping)
         handlerMapping(ProxyFactoryBean) {
             targetSource = handlerMappingTargetSource

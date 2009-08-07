@@ -42,9 +42,11 @@ public class ControllerArtefactHandler extends ArtefactHandlerAdapter {
 
     public GrailsClass getArtefactForFeature(Object feature) {
         String uri = feature.toString();
-        for (int i = 0; i < controllerClasses.length; i++) {
-            if (((GrailsControllerClass)controllerClasses[i]).mapsToURI(uri)) {
-                return controllerClasses[i];
+        if(controllerClasses!=null) {
+            for (GrailsClass controllerClass : controllerClasses) {
+                if (((GrailsControllerClass) controllerClass).mapsToURI(uri)) {
+                    return controllerClass;
+                }
             }
         }
         return null;

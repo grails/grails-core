@@ -37,6 +37,7 @@ import org.springframework.web.multipart.MultipartResolver;
 import org.springframework.web.servlet.*;
 import org.springframework.web.servlet.handler.WebRequestHandlerInterceptorAdapter;
 import org.springframework.web.servlet.mvc.Controller;
+import org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter;
 import org.springframework.web.util.NestedServletException;
 import org.springframework.web.util.UrlPathHelper;
 import org.springframework.webflow.mvc.servlet.AbstractFlowHandler;
@@ -72,12 +73,13 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
 
     public GrailsDispatcherServlet() {
         super();
-        setDetectAllHandlerMappings(false);
+        setDetectAllHandlerMappings(true);
     }
 
     protected void initFrameworkServlet() throws ServletException, BeansException {
         super.initFrameworkServlet();
         initMultipartResolver();
+        
     }
 
 
@@ -263,6 +265,11 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
                 HandlerAdapter ha = getHandlerAdapter(mappedHandler.getHandler());
                 mv = ha.handle(processedRequest, response, mappedHandler.getHandler());
 
+				// Do we need view name translation?
+				if ((ha instanceof AnnotationMethodHandlerAdapter) && mv != null && !mv.hasView()) {
+					mv.setViewName(getDefaultViewName(request));
+				}
+
                 // Apply postHandle methods of registered interceptors.
                 if (mappedHandler.getInterceptors() != null) {
                     for (int i = mappedHandler.getInterceptors().length - 1; i >= 0; i--) {
@@ -444,7 +451,9 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
                  return new HandlerExecutionChain(mainController, interceptors);
              }
         }
-        return null;
+        else {
+            return super.getHandler(request, cache);
+        }
     }
 
 }
