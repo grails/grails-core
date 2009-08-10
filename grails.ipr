@@ -491,12 +491,12 @@
         <root url="jar://$PROJECT_DIR$/lib/antlr-2.7.6.jar!/" />
         <root url="jar://$PROJECT_DIR$/lib/cglib-nodep-2.1_3.jar!/" />
         <root url="jar://$PROJECT_DIR$/lib/oscache-2.4.1.jar!/" />
-        <root url="jar://$PROJECT_DIR$/lib/hibernate-annotations-3.3.0.jar!/" />
         <root url="jar://$PROJECT_DIR$/lib/ejb3-persistence-3.3.0.jar!/" />
-        <root url="jar://$PROJECT_DIR$/lib/hibernate-commons-annotations-3.3.0.jar!/" />
         <root url="jar://$PROJECT_DIR$/lib/jta-1.1.jar!/" />
         <root url="jar://$PROJECT_DIR$/lib/hibernate3-3.3.1.jar!/" />
         <root url="jar://$PROJECT_DIR$/lib/javassist-3.4.GA.jar!/" />
+        <root url="jar://$PROJECT_DIR$/lib/hibernate-commons-annotations-3.4.0.jar!/" />
+        <root url="jar://$PROJECT_DIR$/lib/hibernate-annotations-3.4.0.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES>
