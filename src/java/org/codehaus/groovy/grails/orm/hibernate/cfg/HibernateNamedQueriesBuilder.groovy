@@ -68,4 +68,14 @@ class NamedCriteriaProxy {
     def call() {
         list()
     }
+
+    def get(id) {
+        def closureClone = closure.clone()
+        def idClosure = {
+            closureClone()
+            eq 'id', id
+            uniqueResult = true
+        }
+        domainClass.withCriteria(idClosure)
+    }
 }
