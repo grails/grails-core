@@ -34,8 +34,8 @@ class HibernateNamedQueriesBuilder {
         this.domainClass = domainClass
     }
 
-    def evaluate(Closure mappingClosure) {
-        def closure = mappingClosure.clone()
+    def evaluate(Closure namedQueriesClosure) {
+        def closure = namedQueriesClosure.clone()
         closure.resolveStrategy = Closure.DELEGATE_ONLY
         closure.delegate = this
         closure.call()
