@@ -66,6 +66,7 @@ class NamedCriteriaProxy {
         def closureClone = criteriaClosure.clone()
         def listClosure = {
             closureClone.delegate = delegate
+            closureClone()
             if(params.max) {
                 maxResults(params.max)
             }
