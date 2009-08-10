@@ -1,6 +1,5 @@
 package org.codehaus.groovy.grails.orm.hibernate
 
-import org.codehaus.groovy.grails.web.binding.GrailsDataBinderTests.Author
 import org.hibernate.proxy.HibernateProxy
 import org.apache.commons.beanutils.PropertyUtils
 

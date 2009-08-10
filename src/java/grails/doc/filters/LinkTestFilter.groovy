@@ -11,7 +11,6 @@ import org.radeox.api.engine.WikiRenderEngine
 import org.radeox.util.StringBufferWriter
 import org.radeox.filter.interwiki.InterWiki
 import org.radeox.util.Encoder
-import org.codehaus.groovy.runtime.StringBufferWriter
 
 class LinkTestFilter extends RegexTokenFilter {
 
