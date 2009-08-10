@@ -18,6 +18,7 @@ package org.codehaus.groovy.grails.commons.spring;
 import groovy.lang.GroovyObjectSupport;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
+import org.springframework.beans.PropertyValue;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.ConstructorArgumentValues;
@@ -258,10 +259,16 @@ public class DefaultBeanConfiguration extends GroovyObjectSupport implements Bea
     }
 
 	public Object getPropertyValue(String name) {
-		return getBeanDefinition()
+		PropertyValue propertyValue = getBeanDefinition()
 					.getPropertyValues()
-					.getPropertyValue(name)
-					.getValue();
+					.getPropertyValue(name);
+		if(propertyValue== null) {
+			return null;
+		}
+		else {
+			return propertyValue
+						.getValue();			
+		}
 	}
 
 	public boolean hasProperty(String name) {

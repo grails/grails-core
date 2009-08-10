@@ -92,7 +92,9 @@ class ControllersGrailsPlugin {
             mappings = grailsUrlMappings
         }
         // allow @Controller annotated beans
-        annotationHandlerMapping(DefaultAnnotationHandlerMapping)
+        annotationHandlerMapping(DefaultAnnotationHandlerMapping) {
+        	interceptors = handlerInterceptors
+        }
         annotationHandlerAdapter(AnnotationMethodHandlerAdapter)
         viewNameTranslator(DefaultRequestToViewNameTranslator) {
              stripLeadingSlash = false

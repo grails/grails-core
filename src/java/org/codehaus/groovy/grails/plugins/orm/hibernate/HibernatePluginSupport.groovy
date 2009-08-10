@@ -212,6 +212,15 @@ Try using Grails' default cache provider: 'org.hibernate.cache.OSCacheProvider'"
                 if(getSpringConfig().containsBean("grailsUrlHandlerMapping")) {                    
                     grailsUrlHandlerMapping.interceptors << openSessionInViewInterceptor
                 }
+                if(getSpringConfig().containsBean("annotationHandlerMapping")) {
+                	if(annotationHandlerMapping.interceptors) {
+                		annotationHandlerMapping.interceptors << openSessionInViewInterceptor
+                	}
+                	else {
+                		annotationHandlerMapping.interceptors = [openSessionInViewInterceptor]
+                	}
+                	
+                }
             }
 
         }
