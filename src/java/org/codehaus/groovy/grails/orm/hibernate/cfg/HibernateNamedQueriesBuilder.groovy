@@ -43,7 +43,7 @@ class HibernateNamedQueriesBuilder {
 
     private handleMethodMissing = { String name, args ->
         def propertyName = name[0].toUpperCase() + name[1..-1]
-        def proxy = new NamedCriteriaProxy(closure: args[0], domainClass: domainClass.clazz)
+        def proxy = new NamedCriteriaProxy(criteriaClosure: args[0], domainClass: domainClass.clazz)
         domainClass.metaClass.static."get${propertyName}" = { ->
             proxy   
         }
@@ -58,11 +58,12 @@ class HibernateNamedQueriesBuilder {
 }
 
 class NamedCriteriaProxy {
-    private closure
+
+    private criteriaClosure
     private domainClass
 
     def list() {
-        domainClass.withCriteria(closure)
+        domainClass.withCriteria(criteriaClosure)
     }
 
     def call() {
@@ -70,7 +71,7 @@ class NamedCriteriaProxy {
     }
 
     def get(id) {
-        def closureClone = closure.clone()
+        def closureClone = criteriaClosure.clone()
         def getClosure = {
             closureClone()
             eq 'id', id
@@ -80,7 +81,7 @@ class NamedCriteriaProxy {
     }
 
     def count() {
-        def closureClone = closure.clone()
+        def closureClone = criteriaClosure.clone()
         def countClosure = {
             closureClone.delegate = delegate
             closureClone()
