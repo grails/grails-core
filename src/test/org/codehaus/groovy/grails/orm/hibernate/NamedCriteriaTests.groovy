@@ -119,4 +119,15 @@ class Publication {
         assertEquals 1, publicationClass.recentPublications.count()
     }
 
+    void testMaxParam() {
+        def publicationClass = ga.getDomainClass("Publication").clazz
+        (1..25).each { num ->
+            publicationClass.newInstance(title: "Book Number ${num}",
+                datePublished: new Date()).save(flush: true)
+        }
+
+        def pubs = publicationClass.recentPublications(max: 10)
+        assertEquals 10, pubs?.size()
+    }
+
 }

@@ -62,12 +62,19 @@ class NamedCriteriaProxy {
     private criteriaClosure
     private domainClass
 
-    def list() {
-        domainClass.withCriteria(criteriaClosure)
+    def list(params = [:]) {
+        def closureClone = criteriaClosure.clone()
+        def listClosure = {
+            closureClone.delegate = delegate
+            if(params.max) {
+                maxResults(params.max)
+            }
+        }
+        domainClass.withCriteria(listClosure)
     }
 
-    def call() {
-        list()
+    def call(params = [:]) {
+        list(params)
     }
 
     def get(id) {
