@@ -83,7 +83,7 @@ public abstract class AbstractUrlMappingInfo implements UrlMappingInfo{
 
         final String viewName = getViewName();
 
-        if (viewName == null) {
+        if (viewName == null && getURI() == null) {
             webRequest.setControllerName(getControllerName());
             webRequest.setActionName(getActionName());
         }

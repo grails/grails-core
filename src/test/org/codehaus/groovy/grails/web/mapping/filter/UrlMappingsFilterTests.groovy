@@ -106,9 +106,35 @@ class OtherController {
 
     }
 
+    def uriMappingScript = '''
+mappings {
+    	"/foo"(uri:"/test.dispatch")
+}
+'''
+    void testMappingToURI() {
+        def mappings = evaluator.evaluateMappings(new ByteArrayResource(uriMappingScript.getBytes()));
+        appCtx.registerMockBean(UrlMappingsHolder.BEAN_ID, new DefaultUrlMappingsHolder(mappings));
+
+        gcl.parseClass(testController1)
+        def app = new DefaultGrailsApplication(gcl.loadedClasses, gcl)
+        app.initialise()
+        appCtx.registerMockBean("grailsApplication", app)
+
+        servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, appCtx);
+
+        request.setRequestURI("/foo");
+
+        filter = new UrlMappingsFilter();
+        filter.init(new MockFilterConfig(servletContext));
+        
+        filter.doFilterInternal(request, response, null);
+
+        assertEquals "/test.dispatch", response.forwardedUrl
+    	
+    }
 
     void testUrlMappingFilter() {
-            def mappings = evaluator.evaluateMappings(new ByteArrayResource(mappingScript.getBytes()));
+        def mappings = evaluator.evaluateMappings(new ByteArrayResource(mappingScript.getBytes()));
         appCtx.registerMockBean(UrlMappingsHolder.BEAN_ID, new DefaultUrlMappingsHolder(mappings));
 
         gcl.parseClass(testController1)

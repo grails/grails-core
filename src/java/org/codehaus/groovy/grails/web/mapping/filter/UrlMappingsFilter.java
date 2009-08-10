@@ -156,7 +156,7 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
                         info.configure(webRequest);
                         String action = info.getActionName() == null ? "" : info.getActionName();
                         viewName = info.getViewName();
-                        if (viewName == null) {
+                        if (viewName == null && info.getURI() == null) {
                             final String controllerName = info.getControllerName();
                             GrailsClass controller = application.getArtefactForFeature(ControllerArtefactHandler.TYPE, WebUtils.SLASH + controllerName + WebUtils.SLASH + action);
                             if (controller == null) {
@@ -175,6 +175,7 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
                     request = checkMultipart(request);
 
                     if (viewName == null || viewName.endsWith(GSP_SUFFIX) || viewName.endsWith(JSP_SUFFIX)) {
+                    	
                         if(info.isParsingRequest()) {
                             webRequest.informParameterCreationListeners();
                         }

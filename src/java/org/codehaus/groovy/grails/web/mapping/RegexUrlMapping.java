@@ -29,6 +29,7 @@ import org.springframework.web.context.request.RequestContextHolder;
 
 import javax.servlet.ServletContext;
 import java.io.UnsupportedEncodingException;
+import java.net.URI;
 import java.net.URLEncoder;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -89,8 +90,25 @@ public class RegexUrlMapping extends AbstractUrlMapping implements UrlMapping {
         super(controllerName, actionName, viewName, constraints != null ? constraints : new ConstrainedProperty[0], servletContext);
         parse(data, constraints);
     }
+    
+    
+    /**
+     * Constructs a new RegexUrlMapipng for the given pattern that maps to the specified URI
+     * 
+     * @param data The pattern
+     * @param uri The URI
+     * @param constraints Any constraints etc.
+     * @param servletContext The servlet context
+     */
+    public RegexUrlMapping(UrlMappingData data, URI uri, ConstrainedProperty[] constraints,
+			ServletContext servletContext) {
+		super(uri, constraints, servletContext);
+		parse(data, constraints);
+	}
 
-    private void parse(UrlMappingData data, ConstrainedProperty[] constraints) {
+
+
+	private void parse(UrlMappingData data, ConstrainedProperty[] constraints) {
         if (data == null) throw new IllegalArgumentException("Argument [pattern] cannot be null");
 
         String[] urls = data.getLogicalUrls();
@@ -444,7 +462,10 @@ public class RegexUrlMapping extends AbstractUrlMapping implements UrlMapping {
         }
 
         DefaultUrlMappingInfo info;
-        if (viewName != null && this.controllerName == null) {
+        if(forwardURI != null && this.controllerName == null) {
+        	info = new DefaultUrlMappingInfo(forwardURI, this.urlData, servletContext);
+        }
+        else if (viewName != null && this.controllerName == null) {
             info = new DefaultUrlMappingInfo(viewName, params, this.urlData, servletContext);
         } else {
             info =  new DefaultUrlMappingInfo(this.controllerName, this.actionName, getViewName(), params, this.urlData, servletContext);

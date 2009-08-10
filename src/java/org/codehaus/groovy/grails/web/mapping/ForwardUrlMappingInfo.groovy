@@ -30,6 +30,7 @@ class ForwardUrlMappingInfo extends AbstractUrlMappingInfo {
     String controllerName
     String actionName
     String viewName
+    String URI
     String id
     Map parameters
 

@@ -22,18 +22,30 @@ mappings {
       controller = "survey"
   }
   "/files/$path**?" {
-	  controller = "files"
+      controller = "files"
   }
   "/filenameext/$fname$fext?" {
-	  controller = "download"
+      controller = "download"
   }
   "/another/arbitrary/something-$prefix.$ext" {
-	  controller = "myFiles"
+      controller = "myFiles"
       action = "index"
   }
   "/foo"(controller:"foo", parseRequest:true)
+
+  "/bar"(uri:"/x/y")
 }
 '''
+	void testMaptoURI() {
+        def res = new ByteArrayResource(mappingScript.bytes)
+        def mappings = evaluator.evaluateMappings(res)
+
+        def holder = new DefaultUrlMappingsHolder(mappings)
+
+        def info = holder.match("/bar")
+        assertEquals "/x/y", info.getURI()    	
+    }	
+    
     void testParseRequestArgument() {
 
         def res = new ByteArrayResource(mappingScript.bytes)

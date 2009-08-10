@@ -33,6 +33,13 @@ import java.util.Map;
  */
 public interface UrlMappingInfo {
 
+	/**
+	 * The URI to map to. Note when the URI is specified it overrides any explicit controller/action/id mappings. 
+	 * In other words you can either specify the URI or the controller/action/id, but not both
+	 * 
+	 * @return The URI to use
+	 */
+	String getURI();
     /**
      * The name of the controller that the URL mapping maps to
      *

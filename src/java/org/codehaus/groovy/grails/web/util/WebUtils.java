@@ -224,33 +224,39 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
     }
 
     private static String buildDispatchUrlForMapping(UrlMappingInfo info, boolean includeParams) {
-        final StringBuilder forwardUrl = new StringBuilder();
+    	if(info.getURI()!=null) {
+    		return info.getURI();
+    	}
+    	else {
+            final StringBuilder forwardUrl = new StringBuilder();
 
-        if (info.getViewName() != null) {
-            String viewName = info.getViewName();
-            forwardUrl.append(SLASH).append(viewName);
-        }
-        else {
-            forwardUrl.append(GrailsUrlPathHelper.GRAILS_SERVLET_PATH);
-            forwardUrl.append(SLASH)
-                              .append(info.getControllerName());
-
-            if(!StringUtils.isBlank(info.getActionName())) {
+            if (info.getViewName() != null) {
+                String viewName = info.getViewName();
+                forwardUrl.append(SLASH).append(viewName);
+            }
+            else {
+                forwardUrl.append(GrailsUrlPathHelper.GRAILS_SERVLET_PATH);
                 forwardUrl.append(SLASH)
-                          .append(info.getActionName());
-            }
-            forwardUrl.append(GrailsUrlPathHelper.GRAILS_DISPATCH_EXTENSION);
-        }
+                                  .append(info.getControllerName());
 
-        if(info.getParameters()!=null && includeParams) {
-            try {
-                forwardUrl.append(toQueryString(info.getParameters()));
+                if(!StringUtils.isBlank(info.getActionName())) {
+                    forwardUrl.append(SLASH)
+                              .append(info.getActionName());
+                }
+                forwardUrl.append(GrailsUrlPathHelper.GRAILS_DISPATCH_EXTENSION);
             }
-            catch (UnsupportedEncodingException e) {
-                throw new ControllerExecutionException("Unable to include ");
+
+            if(info.getParameters()!=null && includeParams) {
+                try {
+                    forwardUrl.append(toQueryString(info.getParameters()));
+                }
+                catch (UnsupportedEncodingException e) {
+                    throw new ControllerExecutionException("Unable to include ");
+                }
             }
-        }
-        return forwardUrl.toString();
+            return forwardUrl.toString();
+    		
+    	}
     }
 
 

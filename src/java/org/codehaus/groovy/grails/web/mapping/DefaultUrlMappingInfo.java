@@ -55,6 +55,7 @@ public class DefaultUrlMappingInfo extends AbstractUrlMappingInfo implements Url
     private ServletContext servletContext;
     private static final String SETTING_GRAILS_WEB_DISABLE_MULTIPART = "grails.web.disable.multipart";
     private boolean parsingRequest;
+	private Object uri;
 
 
     private DefaultUrlMappingInfo(Map params, UrlMappingData urlData, ServletContext servletContext) {
@@ -80,6 +81,13 @@ public class DefaultUrlMappingInfo extends AbstractUrlMappingInfo implements Url
         this.viewName = viewName;
         if (viewName == null) throw new IllegalArgumentException("Argument [viewName] cannot be null or blank");
 
+    }
+    
+    public DefaultUrlMappingInfo(Object uri, UrlMappingData data, ServletContext servletContext) {
+    	this(Collections.EMPTY_MAP, data,servletContext);
+    	this.uri = uri;
+    	
+    	if (uri == null) throw new IllegalArgumentException("Argument [uri] cannot be null or blank");
     }
 
     public String toString() {
@@ -181,6 +189,10 @@ public class DefaultUrlMappingInfo extends AbstractUrlMappingInfo implements Url
                 ctx.getBean(DispatcherServlet.MULTIPART_RESOLVER_BEAN_NAME);
         return resolver;
     }
+
+	public String getURI() {
+		return evaluateNameForValue(this.uri);
+	}
 
 
 }

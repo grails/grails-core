@@ -33,6 +33,8 @@ import org.springframework.core.io.Resource;
 import javax.servlet.ServletContext;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.*;
 
 /**
@@ -209,6 +211,7 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
         private ServletContext servletContext;
         private Object exception;
         private Object parseRequest;
+		private Object uri;
 
         public UrlMappingBuilder(Binding binding, ServletContext servletContext) {
             this.binding = binding;
@@ -237,7 +240,16 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
             this.exception = exception;
         }
 
-        public void setAction(Object action) {
+        
+        public Object getUri() {
+			return uri;
+		}
+
+		public void setUri(Object uri) {
+			this.uri = uri;
+		}
+
+		public void setAction(Object action) {
             actionName = action;
         }
 
@@ -309,19 +321,34 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
                         Object controllerName;
                         Object actionName;
                         Object viewName;
+                        Object uri;
 
                         if (binding != null) {
                             controllerName = binding.getVariables().get(GrailsControllerClass.CONTROLLER);
                             actionName = binding.getVariables().get(GrailsControllerClass.ACTION);
                             viewName = binding.getVariables().get(GrailsControllerClass.VIEW);
+                            uri = binding.getVariables().get("uri");
                         } else {
                             controllerName = this.controllerName;
                             actionName = this.actionName;
                             viewName = this.viewName;
+                            uri = this.uri;
                         }
 
                         ConstrainedProperty[] constraints = (ConstrainedProperty[]) previousConstraints.toArray(new ConstrainedProperty[previousConstraints.size()]);
-                        UrlMapping urlMapping = createURLMapping(urlData, isResponseCode, controllerName, actionName, viewName, constraints);
+                        UrlMapping urlMapping;
+                        if(uri!=null) {
+                        	try {
+								urlMapping = new RegexUrlMapping(urlData, new URI(uri.toString()), constraints, servletContext);
+							} catch (URISyntaxException e) {
+								throw new UrlMappingException("Cannot map to invalid URI: " + e.getMessage(), e);
+							}
+                        }
+                        else {
+                        	urlMapping = createURLMapping(urlData, isResponseCode, controllerName, actionName, viewName, constraints);
+                        }
+                        
+                        
                         configureUrlMapping(urlMapping);
                         return urlMapping;
                     }
@@ -442,10 +469,22 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
                 viewName = null;
                 LOG.warn("Both [action] and [view] specified in URL mapping [" + mapping + "]. The action takes precendence!");
             }
+            
+            Object uri = getURI(namedArguments, bindingVariables);
 
             ConstrainedProperty[] constraints = previousConstraints.toArray(new ConstrainedProperty[previousConstraints.size()]);
 
-            final UrlMapping urlMapping = createURLMapping(urlData, isResponseCode, controllerName, actionName, viewName, constraints);
+            UrlMapping urlMapping;
+            if(uri!=null) {
+            	try {
+					urlMapping = new RegexUrlMapping(urlData, new URI(uri.toString()), constraints, servletContext);
+				} catch (URISyntaxException e) {
+					throw new UrlMappingException("Cannot map to invalid URI: " + e.getMessage(), e);
+				}
+            }
+            else {
+            	urlMapping = createURLMapping(urlData, isResponseCode, controllerName, actionName, viewName, constraints);
+            }
 
             Object exceptionArg = getException(namedArguments, bindingVariables);
 
@@ -508,6 +547,9 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
 
         private Object getViewName(Map namedArguments, Map bindingVariables) {
             return getVariableFromNamedArgsOrBinding(namedArguments, bindingVariables,GrailsControllerClass.VIEW, this.viewName);
+        }
+        private Object getURI(Map namedArguments, Map bindingVariables) {
+            return getVariableFromNamedArgsOrBinding(namedArguments, bindingVariables,"uri", this.uri);
         }
 
         private Object getException(Map namedArguments, Map bindingVariables) {
