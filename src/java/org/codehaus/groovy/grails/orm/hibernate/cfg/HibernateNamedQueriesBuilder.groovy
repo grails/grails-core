@@ -70,6 +70,9 @@ class NamedCriteriaProxy {
             if(params.max) {
                 maxResults(params.max)
             }
+            if(params.offset) {
+                firstResult params.offset
+            }
         }
         domainClass.withCriteria(listClosure)
     }
