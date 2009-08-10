@@ -8,19 +8,19 @@ class NamedCriteriaTests extends AbstractGrailsHibernateTests {
     protected void onSetUp() {
         gcl.parseClass('''
 
-class Book {
+class Publication {
    Long id
    Long version
    String title
    Date datePublished
 
    static namedQueries = {
-       recentBooks {
+       recentPublications {
            def now = new Date()
            gt 'datePublished', now - 365
        }
 
-       booksWithBookInTitle {
+       publicationsWithBookInTitle {
            like 'title', '%Book%'
        }
    }
@@ -30,93 +30,93 @@ class Book {
     }
 
     void testList() {
-        def bookClass = ga.getDomainClass("Book").clazz
+        def publicationClass = ga.getDomainClass("Publication").clazz
 
         def now = new Date()
-        assert bookClass.newInstance(title: "Some New Book",
+        assert publicationClass.newInstance(title: "Some New Book",
                 datePublished: now - 10).save(flush: true)
-        assert bookClass.newInstance(title: "Some Old Book",
+        assert publicationClass.newInstance(title: "Some Old Book",
                 datePublished: now - 900).save(flush: true)
 
         session.clear()
 
-        def books = bookClass.recentBooks.list()
+        def publications = publicationClass.recentPublications.list()
 
-        assertEquals 1, books?.size()
-        assertEquals 'Some New Book', books[0].title
+        assertEquals 1, publications?.size()
+        assertEquals 'Some New Book', publications[0].title
     }
 
     void testInvokingDirectly() {
-        def bookClass = ga.getDomainClass("Book").clazz
+        def publicationClass = ga.getDomainClass("Publication").clazz
 
         def now = new Date()
-        assert bookClass.newInstance(title: "Some New Book",
+        assert publicationClass.newInstance(title: "Some New Book",
                 datePublished: now - 10).save(flush: true)
-        assert bookClass.newInstance(title: "Some Old Book",
+        assert publicationClass.newInstance(title: "Some Old Book",
                 datePublished: now - 900).save(flush: true)
 
         session.clear()
 
-        def books = bookClass.recentBooks()
+        def publications = publicationClass.recentPublications()
 
-        assertEquals 1, books?.size()
-        assertEquals 'Some New Book', books[0].title
+        assertEquals 1, publications?.size()
+        assertEquals 'Some New Book', publications[0].title
     }
 
     void testGetReturnsCorrectObject() {
-        def bookClass = ga.getDomainClass("Book").clazz
+        def publicationClass = ga.getDomainClass("Publication").clazz
 
         def now = new Date()
-        def newBook = bookClass.newInstance(title: "Some New Book",
+        def newPublication = publicationClass.newInstance(title: "Some New Book",
                 datePublished: now - 10).save(flush: true)
-        assert newBook
-        def oldBook = bookClass.newInstance(title: "Some Old Book",
+        assert newPublication
+        def oldPublication = publicationClass.newInstance(title: "Some Old Book",
                 datePublished: now - 900).save(flush: true)
-        assert oldBook
+        assert oldPublication
 
         session.clear()
 
-        def book = bookClass.recentBooks.get(newBook.id)
-        assert book
-        assertEquals 'Some New Book', book.title
+        def publication = publicationClass.recentPublications.get(newPublication.id)
+        assert publication
+        assertEquals 'Some New Book', publication.title
 
-        book = bookClass.recentBooks.get(oldBook.id)
-        assert book
-        assertEquals 'Some Old Book', book.title
+        publication = publicationClass.recentPublications.get(oldPublication.id)
+        assert publication
+        assertEquals 'Some Old Book', publication.title
     }
 
     void testGetReturnsNull() {
-        def bookClass = ga.getDomainClass("Book").clazz
+        def publicationClass = ga.getDomainClass("Publication").clazz
 
         def now = new Date()
-        def newBook = bookClass.newInstance(title: "Some New Book",
+        def newPublication = publicationClass.newInstance(title: "Some New Book",
                 datePublished: now - 10).save(flush: true)
-        assert newBook
-        def oldBook = bookClass.newInstance(title: "Some Old Book",
+        assert newPublication
+        def oldPublication = publicationClass.newInstance(title: "Some Old Book",
                 datePublished: now - 900).save(flush: true)
-        assert oldBook
+        assert oldPublication
 
         session.clear()
 
-        def book = bookClass.recentBooks.get(42 + oldBook.id)
+        def publication = publicationClass.recentPublications.get(42 + oldPublication.id)
 
-        assert !book
+        assert !publication
     }
 
     void testCount() {
-        def bookClass = ga.getDomainClass("Book").clazz
+        def publicationClass = ga.getDomainClass("Publication").clazz
 
         def now = new Date()
-        def newBook = bookClass.newInstance(title: "Some New Book",
+        def newPublication = publicationClass.newInstance(title: "Some New Book",
                 datePublished: now - 10).save(flush: true)
-        assert newBook
-        def oldBook = bookClass.newInstance(title: "Some Old Book",
+        assert newPublication
+        def oldPublication = publicationClass.newInstance(title: "Some Old Book",
                 datePublished: now - 900).save(flush: true)
-        assert oldBook
+        assert oldPublication
 
         session.clear()
-        assertEquals 2, bookClass.booksWithBookInTitle.count()
-        assertEquals 1, bookClass.recentBooks.count()
+        assertEquals 2, publicationClass.publicationsWithBookInTitle.count()
+        assertEquals 1, publicationClass.recentPublications.count()
     }
 
 }
