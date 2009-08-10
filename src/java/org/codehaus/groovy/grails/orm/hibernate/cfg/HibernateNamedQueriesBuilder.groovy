@@ -71,11 +71,24 @@ class NamedCriteriaProxy {
 
     def get(id) {
         def closureClone = closure.clone()
-        def idClosure = {
+        def getClosure = {
             closureClone()
             eq 'id', id
             uniqueResult = true
         }
-        domainClass.withCriteria(idClosure)
+        domainClass.withCriteria(getClosure)
+    }
+
+    def count() {
+        def closureClone = closure.clone()
+        def countClosure = {
+            closureClone.delegate = delegate
+            closureClone()
+            uniqueResult = true
+            projections {
+                rowCount()
+            }
+        }
+        domainClass.withCriteria(countClosure)
     }
 }

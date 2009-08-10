@@ -19,6 +19,10 @@ class Book {
            def now = new Date()
            gt 'datePublished', now - 365
        }
+
+       booksWithBookInTitle {
+           like 'title', '%Book%'
+       }
    }
 
 }
@@ -94,6 +98,22 @@ class Book {
         def book = bookClass.recentBooks.get(42 + oldBook.id)
 
         assert !book
+    }
+
+    void testCount() {
+        def bookClass = ga.getDomainClass("Book").clazz
+
+        def now = new Date()
+        def newBook = bookClass.newInstance(title: "Some New Book",
+                datePublished: now - 10).save(flush: true)
+        assert newBook
+        def oldBook = bookClass.newInstance(title: "Some Old Book",
+                datePublished: now - 900).save(flush: true)
+        assert oldBook
+
+        session.clear()
+        assertEquals 2, bookClass.booksWithBookInTitle.count()
+        assertEquals 1, bookClass.recentBooks.count()
     }
 
 }
