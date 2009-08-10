@@ -187,6 +187,10 @@
              dest="${grails.release.dir}/plugins/grails-hibernate-${grails.version}.zip"
              verbose="true"
              usetimestamp="true" />
+        <get src="http://svn.codehaus.org/grails/trunk/grails-plugins/grails-tomcat/trunk/grails-tomcat-${grails.version}.zip"
+             dest="${grails.release.dir}/plugins/grails-tomcat-${grails.version}.zip"
+             verbose="true"
+             usetimestamp="true" />
         
         <antcall target="copy-exclusive-binary-release-content">
 	            <param name="release.dir" value="${grails.release.dir}"/>
