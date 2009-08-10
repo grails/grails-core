@@ -59,6 +59,7 @@ DEFAULT_DEPS = [
     "sitemesh-*.jar",
     "org.springframework.*-*.jar",
     "jcl-over-slf4j-*.jar",
+    "jul-to-slf4j-*.jar",
     "slf4j-api-*.jar",
     "slf4j-log4j12-*.jar",
     "log4j-*.jar",
@@ -108,7 +109,6 @@ defaultWarDependencies = { antBuilder ->
         }
     }
     else {
-        grailsSettings.runtimeDependencies.each {println it}
         grailsSettings.runtimeDependencies?.each { File f ->
             fileset(dir: f.parent, includes: f.name)
         }
