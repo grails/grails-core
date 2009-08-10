@@ -77,9 +77,12 @@ class Book {
         session.clear()
 
         def book = bookClass.recentBooks.get(newBook.id)
-
         assert book
         assertEquals 'Some New Book', book.title
+
+        book = bookClass.recentBooks.get(oldBook.id)
+        assert book
+        assertEquals 'Some Old Book', book.title
     }
 
     void testGetReturnsNull() {
