@@ -34,7 +34,7 @@ import org.codehaus.groovy.grails.web.metaclass.RenderDynamicMethod
 class FiltersGrailsPlugin {
     private static TYPE = FiltersConfigArtefactHandler.TYPE
 
-    def version = 0.1
+    def version = grails.util.GrailsUtil.getGrailsVersion()
     def dependsOn = [:]
     def artefacts = [ FiltersConfigArtefactHandler ]
     def watchedResources = "file:./grails-app/conf/**/*Filters.groovy"
