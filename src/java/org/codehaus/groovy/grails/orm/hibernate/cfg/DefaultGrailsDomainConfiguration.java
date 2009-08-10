@@ -90,6 +90,10 @@ public class DefaultGrailsDomainConfiguration extends Configuration implements G
         }
 
         for (GrailsDomainClass domainClass : this.domainClasses) {
+            GrailsDomainBinder.evaluateNamedQueries(domainClass);
+        }
+
+        for (GrailsDomainClass domainClass : this.domainClasses) {
             final Mappings mappings = super.createMappings();
             Mapping m = GrailsDomainBinder.getMapping(domainClass);
             mappings.setAutoImport(m== null || m.getAutoImport());
