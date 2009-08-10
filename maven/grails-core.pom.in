@@ -125,7 +125,7 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring</artifactId>
-            <version>2.5.6</version>
+            <version>3.0-M4</version>
             <exclusions>
                 <!-- We have JCL-over-SLF4J instead. -->
                 <exclusion>
@@ -138,7 +138,7 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-test</artifactId>
-            <version>2.5.6</version>
+            <version>3.0-M4</version>
             <exclusions>
                 <!-- We have JCL-over-SLF4J instead. -->
                 <exclusion>

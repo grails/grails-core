@@ -27,6 +27,7 @@ import org.springframework.orm.hibernate3.support.OpenSessionInViewInterceptor;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.servlet.HandlerExecutionChain;
 import org.springframework.web.servlet.HandlerInterceptor;
+import org.springframework.web.servlet.handler.SimpleUrlHandlerMapping;
 import org.springframework.web.servlet.i18n.LocaleChangeInterceptor;
 import org.springframework.web.servlet.mvc.SimpleControllerHandlerAdapter;
 
@@ -52,13 +53,15 @@ public class GrailsDispatcherServletTests extends TestCase {
             SimpleGrailsController controller = new SimpleGrailsController();
             appCtx.registerMockBean(SimpleGrailsController.APPLICATION_CONTEXT_ID, controller);
             appCtx.registerMockBean("simpleControllerHandlerAdapter", new SimpleControllerHandlerAdapter());
+            appCtx.registerMockBean("handlerMappings", new SimpleUrlHandlerMapping());
 
             GrailsDispatcherServlet dispatcherServlet = new GrailsDispatcherServlet()  {
-
                 protected WebApplicationContext initWebApplicationContext() throws BeansException {
+                	initStrategies(appCtx);
                     return appCtx;
                 }
-            };
+                
+            };            
 
             GroovyClassLoader cl = new GroovyClassLoader();
             cl.parseClass("class TestController {" +
