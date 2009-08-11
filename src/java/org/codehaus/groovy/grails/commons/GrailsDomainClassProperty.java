@@ -38,6 +38,7 @@ public interface GrailsDomainClassProperty {
 	String FETCH_MODE = "fetchMode";
     String DATE_CREATED = "dateCreated";
     String MAPPING = "mapping";
+    String NAMED_QUERIES = "namedQueries";
     String LAST_UPDATED = "lastUpdated";
     String SORT = "sort";
     String EMBEDDED = "embedded";
