@@ -166,8 +166,11 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator, Resourc
 
 
     public void generateView(GrailsDomainClass domainClass, String viewName, String destDir) {
-        new File("$destDir/${viewName}.gsp").withWriter { Writer writer ->
-            generateView domainClass, viewName, writer 
+        File destFile = new File("$destDir/${viewName}.gsp")
+        if (canWrite(destFile)) {
+            destFile.withWriter {Writer writer ->
+                generateView domainClass, viewName, writer
+            }
         }
     }
 
