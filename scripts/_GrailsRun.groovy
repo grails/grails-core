@@ -123,6 +123,7 @@ private runWar(scheme, host, httpPort, httpsPort) {
          event("ConfigureJetty", [grailsServer.grailsServer])
     }
 
+    grails.util.Metadata.getCurrent().put(grails.util.Metadata.WAR_DEPLOYED, "true")
     runServer server:grailsServer, host:host, httpPort:httpPort, httpsPort: httpsPort, scheme: scheme
 
 }

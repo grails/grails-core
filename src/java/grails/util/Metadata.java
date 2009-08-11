@@ -49,6 +49,13 @@ public class Metadata extends Properties {
     }
 
     /**
+     * Resets the current state of the Metadata so it is re-read
+     */
+    public static void reset() {
+    	metadata.clear();
+    	metadata.initialized=false;
+    }
+    /**
      * @return Returns the metadata for the current application
      */
     public static Metadata getCurrent() {
