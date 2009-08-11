@@ -119,30 +119,44 @@ class Publication {
         assertEquals 1, publicationClass.recentPublications.count()
     }
 
-        void testMaxParam() {
-            def publicationClass = ga.getDomainClass("Publication").clazz
-            (1..25).each { num ->
-                publicationClass.newInstance(title: "Book Number ${num}",
+    void testMaxParam() {
+        def publicationClass = ga.getDomainClass("Publication").clazz
+        (1..25).each {num ->
+            publicationClass.newInstance(title: "Book Number ${num}",
                     datePublished: new Date()).save(flush: true)
-            }
-
-            def pubs = publicationClass.recentPublications(max: 10)
-            assertEquals 10, pubs?.size()
         }
 
-        void testMaxAndOffsetParam() {
-            def publicationClass = ga.getDomainClass("Publication").clazz
-            (1..25).each { num ->
-                publicationClass.newInstance(title: "Book Number ${num}",
+        def pubs = publicationClass.recentPublications(max: 10)
+        assertEquals 10, pubs?.size()
+    }
+
+    void testMaxAndOffsetParam() {
+        def publicationClass = ga.getDomainClass("Publication").clazz
+        (1..25).each {num ->
+            publicationClass.newInstance(title: "Book Number ${num}",
                     datePublished: new Date()).save(flush: true)
-            }
+        }
 
-            def pubs = publicationClass.recentPublications(max: 10, offset: 5)
-            assertEquals 10, pubs?.size()
+        def pubs = publicationClass.recentPublications(max: 10, offset: 5)
+        assertEquals 10, pubs?.size()
 
-            (6..15).each { num ->
-                assert pubs.find  { it.title == "Book Number ${num}" }
+        (6..15).each {num ->
+            assert pubs.find { it.title == "Book Number ${num}" }
+        }
+    }
+
+    void testFindAllWhereWithNamedQuery() {
+        def publicationClass = ga.getDomainClass("Publication").clazz
+
+        def now = new Date()
+        (1..5).each { num ->
+            3.times {
+                assert publicationClass.newInstance(title: "Book Number ${num}",
+                        datePublished: now).save(flush: true)
             }
         }
 
+        def pubs = publicationClass.recentPublications.findAllWhere(title: 'Book Number 2')
+        assertEquals 3, pubs?.size()
+    }
 }

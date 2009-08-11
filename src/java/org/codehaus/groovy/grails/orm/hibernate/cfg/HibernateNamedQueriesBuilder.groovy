@@ -103,4 +103,16 @@ class NamedCriteriaProxy {
         }
         domainClass.withCriteria(countClosure)
     }
+
+    def findAllWhere(params) {
+        def closureClone = criteriaClosure.clone()
+        def queryClosure = {
+            closureClone.delegate = delegate
+            closureClone()
+            params.each {key , val ->
+                eq key, val
+            }
+        }
+        domainClass.withCriteria(queryClosure)
+    }
 }
