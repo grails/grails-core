@@ -159,4 +159,19 @@ class Publication {
         def pubs = publicationClass.recentPublications.findAllWhere(title: 'Book Number 2')
         assertEquals 3, pubs?.size()
     }
+
+    void testFindWhereWithNamedQuery() {
+        def publicationClass = ga.getDomainClass("Publication").clazz
+
+        def now = new Date()
+        (1..5).each { num ->
+            3.times {
+                assert publicationClass.newInstance(title: "Book Number ${num}",
+                        datePublished: now).save(flush: true)
+            }
+        }
+
+        def pub = publicationClass.recentPublications.findWhere(title: 'Book Number 2')
+        assertEquals 'Book Number 2', pub.title
+    }
 }

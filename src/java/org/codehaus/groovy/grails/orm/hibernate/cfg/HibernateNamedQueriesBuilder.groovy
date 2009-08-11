@@ -104,13 +104,21 @@ class NamedCriteriaProxy {
         domainClass.withCriteria(countClosure)
     }
 
-    def findAllWhere(params) {
+    def findWhere(params) {
+        findAllWhere(params, true)
+    }
+
+    def findAllWhere(Map params, Boolean uniq = false) {
         def closureClone = criteriaClosure.clone()
         def queryClosure = {
             closureClone.delegate = delegate
             closureClone()
             params.each {key , val ->
                 eq key, val
+            }
+            if(uniq) {
+                maxResults 1
+                uniqueResult = true
             }
         }
         domainClass.withCriteria(queryClosure)
