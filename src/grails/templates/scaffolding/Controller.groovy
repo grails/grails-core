@@ -71,7 +71,7 @@
                 }
             }
             ${propertyName}.properties = params
-            if(!${propertyName}.hasErrors() && ${propertyName}.save()) {
+            if(!${propertyName}.hasErrors() && ${propertyName}.save(flush:true)) {
                 flash.message = "${className} \${params.id} updated"
 
                 redirect action:'show', id:${propertyName}.id
