@@ -39,6 +39,16 @@ public class DomainClassMarshaller implements ObjectMarshaller<XML> {
 
     private final Log log = LogFactory.getLog(getClass());
 
+    private final boolean includeVersion;
+
+    public DomainClassMarshaller() {
+        this.includeVersion = false;
+    }
+
+    public DomainClassMarshaller(boolean includeVersion) {
+        this.includeVersion = includeVersion;
+    }
+
     public boolean supports(Object object) {
         return ConverterUtil.isDomainClass(object.getClass());
     }
@@ -49,9 +59,14 @@ public class DomainClassMarshaller implements ObjectMarshaller<XML> {
         BeanWrapper beanWrapper = new BeanWrapperImpl(value);
 
         GrailsDomainClassProperty id = domainClass.getIdentifier();
-        Object idValue = extractIdValue(value, id);
+        Object idValue = beanWrapper.getPropertyValue(id.getName());
 
         if (idValue != null) xml.attribute("id", String.valueOf(idValue));
+
+        if(includeVersion) {
+            Object versionValue = beanWrapper.getPropertyValue(domainClass.getVersion().getName());
+            xml.attribute("version", String.valueOf(versionValue));
+        }
 
         GrailsDomainClassProperty[] properties = domainClass.getPersistentProperties();
 
@@ -126,111 +141,10 @@ public class DomainClassMarshaller implements ObjectMarshaller<XML> {
         }
     }
 
-
     protected void asShortObject(Object refObj, XML xml, GrailsDomainClassProperty idProperty, GrailsDomainClass referencedDomainClass) throws ConverterException {
-        xml.attribute("id",String.valueOf(extractIdValue(refObj, idProperty)));
+        Object idValue = new BeanWrapperImpl(refObj).getPropertyValue(idProperty.getName());
+        xml.attribute("id",String.valueOf(idValue));
     }
-
-    protected Object extractIdValue(Object domainObject, GrailsDomainClassProperty idProperty) {
-        BeanWrapper beanWrapper = new BeanWrapperImpl(domainObject);
-        return beanWrapper.getPropertyValue(idProperty.getName());
-    }
-
-
-//    public void oldmarshal(Object o, JSON json) throws ConverterException {
-//        JSONWriter writer = json.getWriter();
-//        try {
-//            BeanWrapper beanWrapper = ConverterUtil.createBeanWrapper(o);
-//            GrailsDomainClass domainClass = ConverterUtil.getDomainClass(o.getClass().getName());
-//            if (domainClass != null) {
-//
-//                writer.object();
-//                json.property("class", domainClass.getName());
-//                GrailsDomainClassProperty id = domainClass.getIdentifier();
-//                json.property(id.getName(), beanWrapper.getPropertyValue(id.getName()));
-//                GrailsDomainClassProperty[] properties = domainClass.getPersistentProperties();
-//                for (GrailsDomainClassProperty prop : properties) {
-//                    if (!prop.isAssociation() || isRenderDomainClassRelations()) {
-//                        json.property(prop.getName(), beanWrapper.getPropertyValue(prop.getName()));
-//                    } else {
-//                        writer.key(prop.getName());
-//                        Object refValue = beanWrapper.getPropertyValue(prop.getName());
-//                        if (log.isDebugEnabled()) {
-//                            log.debug("Serializing isAssociation prop: " + DefaultGroovyMethods.inspect(refValue));
-//                        }
-//                        if (refValue == null) {
-//                            log.debug("refValue is null");
-//                            Class propClass = prop.getType();
-//                            if (Collection.class.isAssignableFrom(propClass)) {
-//                                writer.array();
-//                                writer.endArray();
-//                            } else if (Map.class.isAssignableFrom(propClass)) {
-//                                writer.object();
-//                                writer.endObject();
-//                            } else {
-//                                writer.value(null);
-//                            }
-//                        } else if (prop.isOneToOne() || prop.isManyToOne() || prop.isEmbedded()) {
-//                            log.debug(".isOneToOne() || prop.isManyToOne() || prop.isEmbedded()");
-//                            writer.object();
-//                            writer.key("class").value(prop.getType().getName());
-//                            writer.key("id");
-//                            json.value(extractIdValue(refValue, prop.getReferencedDomainClass().getIdentifier()));
-//                            writer.endObject();
-//                        } else {
-//                            GrailsDomainClassProperty refIdProperty = prop.getReferencedDomainClass().getIdentifier();
-//                            if (Collection.class.isAssignableFrom(prop.getType())) {
-//                                log.debug("Collection");
-//                                writer.array();
-//                                Collection col = (Collection) refValue;
-//                                for (Object val : col) {
-//                                    if (val != null) {
-//                                        writer.object();
-//                                        writer.key("class").value(val.getClass().getName());
-//                                        writer.key("id");
-//                                        json.value(extractIdValue(val, refIdProperty));
-//                                        writer.endObject();
-//                                    } else {
-//                                        writer.value(null);
-//                                    }
-//                                }
-//                                writer.endArray();
-//                            } else if (Map.class.isAssignableFrom(prop.getType())) {
-//                                log.debug("Map");
-//                                writer.object();
-//                                Map<String, Object> map = (Map<String, Object>) refValue;
-//                                for (Map.Entry<String, Object> entry : map.entrySet()) {
-//                                    writer.key(entry.getKey());
-//                                    Object mo = entry.getValue();
-//                                    if (mo != null) {
-//                                        writer.object();
-//                                        writer.key("class").value(mo.getClass().getName());
-//                                        writer.key("id");
-//                                        json.value(extractIdValue(mo, refIdProperty));
-//                                        writer.endObject();
-//                                    } else {
-//                                        writer.value(null);
-//                                    }
-//                                }
-//                                writer.endObject();
-//                            } else {
-//                                throw new ConverterException(String.format(
-//                                        "Unable to convert property \"%s\" of Domain Class \"%s\": The association class [%s] is not a Collection or a Map!",
-//                                        prop.getName(), domainClass.getName(), prop.getType().getName()
-//                                ));
-//                            }
-//                        }
-//                    }
-//                }
-//                writer.endObject();
-//            }
-//        } catch (ConverterException ce) {
-//            throw ce;
-//        } catch (
-//                JSONException e) {
-//            throw new ConverterException(e);
-//        }
-//    }
 
     protected boolean isRenderDomainClassRelations() {
         return false;

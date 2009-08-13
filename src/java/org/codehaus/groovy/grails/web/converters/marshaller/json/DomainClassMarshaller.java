@@ -42,6 +42,10 @@ public class DomainClassMarshaller implements ObjectMarshaller<JSON> {
 
     private boolean includeVersion = false;
 
+    public DomainClassMarshaller(boolean includeVersion) {
+        this.includeVersion = includeVersion;
+    }
+
     public boolean isIncludeVersion() {
         return includeVersion;
     }
