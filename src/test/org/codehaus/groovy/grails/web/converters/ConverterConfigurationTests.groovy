@@ -2,7 +2,13 @@ package org.codehaus.groovy.grails.web.converters
 
 import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
 import grails.converters.JSON
-import org.codehaus.groovy.grails.web.converters.configuration.DefaultConverterConfiguration
+import grails.converters.XML
+
+
+import org.codehaus.groovy.grails.web.converters.marshaller.xml.DomainClassMarshaller
+
+
+import org.codehaus.groovy.grails.web.converters.marshaller.xml.DomainClassMarshaller
 
 /**
  * Tests for the customizable Converter Configuration
@@ -79,7 +85,7 @@ class ConverterConfigurationTests extends AbstractGrailsControllerTests {
             "DEFAULT"
         }
 
-        JSON.createNamedConfig("test-config") { DefaultConverterConfiguration cfg ->
+        JSON.createNamedConfig("test-config") { cfg ->
 
             cfg.registerObjectMarshaller(Date) {
                 return "TEST"
@@ -96,6 +102,77 @@ class ConverterConfigurationTests extends AbstractGrailsControllerTests {
 
         assertEquals( (obj as JSON).toString(), """{"d":"DEFAULT"}""")
         
+    }
+
+    void testDomainWithVersionConfiguration() {
+
+        JSON.createNamedConfig("with-version") {
+            it.registerObjectMarshaller(new org.codehaus.groovy.grails.web.converters.marshaller.json.DomainClassMarshaller(true))
+        }
+
+        XML.createNamedConfig("with-version") {
+            it.registerObjectMarshaller(new org.codehaus.groovy.grails.web.converters.marshaller.xml.DomainClassMarshaller(true))
+        }
+
+        JSON.use("with-version") {
+            assertEquals(
+                    """{"class":"Book","id":4711,"version":0,"author":"Graeme Rocher","title":"The Definitive Guide to Grails"}""",
+                    (createBook() as JSON).toString()
+            )
+        }
+        XML.use("with-version") {
+            assertEquals(
+                    """<?xml version="1.0" encoding="UTF-8"?><book id="4711" version="0"><author>Graeme Rocher</author><title>The Definitive Guide to Grails</title></book>""",
+                    (createBook() as XML).toString()
+            )
+        }
+    }
+
+    void testPrettyPrintConfiguration() {
+
+        JSON.createNamedConfig("pretty-print") { cfg ->
+            cfg.prettyPrint = true
+        }
+        XML.createNamedConfig("pretty-print") { cfg ->
+            cfg.prettyPrint = true
+        }
+
+def prettyJSON = """{
+  "class": "Book",
+  "id": 4711,
+  "author": "Graeme Rocher",
+  "title": "The Definitive Guide to Grails"
+}"""
+
+        JSON.use("pretty-print") {
+            println createBook() as JSON
+            assertEquals(prettyJSON, (createBook() as JSON).toString())
+        }
+
+def prettyXML = """<?xml version="1.0" encoding="UTF-8"?>
+<book id="4711">
+  <author>
+    Graeme Rocher
+  </author>
+  <title>
+    The Definitive Guide to Grails
+  </title>
+</book>"""
+        XML.use("pretty-print") {
+            println createBook() as XML
+            assertEquals(prettyXML, (createBook() as XML).toString().trim())
+        }
+
+
+    }
+
+    protected Object createBook() {
+        def book = ga.getDomainClass("Book").clazz.newInstance()
+        book.id = 4711
+        book.version = 0
+        book.title = "The Definitive Guide to Grails"
+        book.author = "Graeme Rocher"
+        return book        
     }
 
     protected void onSetUp() {
