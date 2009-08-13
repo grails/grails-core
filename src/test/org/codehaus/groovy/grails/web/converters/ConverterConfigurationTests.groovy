@@ -49,6 +49,55 @@ class ConverterConfigurationTests extends AbstractGrailsControllerTests {
 
     }
 
+    void testMarshallerRegistrationOrder() {
+
+        JSON.registerObjectMarshaller(Date) {
+            return "FAIL"
+        }
+
+        JSON.registerObjectMarshaller(Date) {
+            return "SUCCESS"
+        }
+
+        assertEquals( ([d: new Date()] as JSON).toString(), """{"d":"SUCCESS"}""")
+    }
+
+    void testMarshallerPriority() {
+
+        def om1 = new org.codehaus.groovy.grails.web.converters.marshaller.ClosureOjectMarshaller(Date.class, { return "SUCCESS" })
+        def om2 = new org.codehaus.groovy.grails.web.converters.marshaller.ClosureOjectMarshaller(Date.class, { return "FAIL" })
+
+        JSON.registerObjectMarshaller(om1, 5)
+        JSON.registerObjectMarshaller(om2, 3)
+
+        assertEquals( ([d: new Date()] as JSON).toString(), """{"d":"SUCCESS"}""")
+    }
+
+    void testNamedConfigurations() {
+
+        JSON.registerObjectMarshaller(Date) {
+            "DEFAULT"
+        }
+
+        JSON.createNamedConfig("test-config") { DefaultConverterConfiguration cfg ->
+
+            cfg.registerObjectMarshaller(Date) {
+                return "TEST"
+            }
+
+        }
+
+        def obj = [d: new Date()]
+        assertEquals( (obj as JSON).toString(), """{"d":"DEFAULT"}""")
+
+        JSON.use("test-config") {
+            assertEquals( (obj as JSON).toString(), """{"d":"TEST"}""")
+        }
+
+        assertEquals( (obj as JSON).toString(), """{"d":"DEFAULT"}""")
+        
+    }
+
     protected void onSetUp() {
 
         gcl.parseClass """
