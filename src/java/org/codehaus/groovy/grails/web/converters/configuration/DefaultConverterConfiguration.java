@@ -21,6 +21,7 @@ import org.codehaus.groovy.grails.web.converters.marshaller.ClosureOjectMarshall
 import org.codehaus.groovy.grails.web.converters.marshaller.ObjectMarshaller;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Mutable Converter Configuration with an priority sorted set of ObjectMarshallers
@@ -32,17 +33,15 @@ public class DefaultConverterConfiguration<C extends Converter> implements Conve
 
     public static final int DEFAULT_PRIORITY = 0;
 
+    private static final AtomicInteger MARSHALLER_SEQUENCE = new AtomicInteger(0);
+
     private ConverterConfiguration<C> delegate;
 
     private String encoding;
 
     private boolean prettyPrint = false;
 
-    private final SortedSet<Entry> objectMarshallers = new TreeSet<Entry>(new Comparator<Entry>(){
-        public int compare(Entry o1, Entry o2) {
-            return o2.priority - o1.priority;
-        }
-    });
+    private final SortedSet<Entry> objectMarshallers = new TreeSet<Entry>();
 
     private Converter.CircularReferenceBehaviour circularReferenceBehaviour;
 
@@ -125,15 +124,22 @@ public class DefaultConverterConfiguration<C extends Converter> implements Conve
         return delegate != null ? delegate.getMarshaller(o) : null;
     }
 
-    public class Entry {
+    public class Entry implements Comparable<Entry> {
 
-        protected ObjectMarshaller<C> marshaller;
+        protected final ObjectMarshaller<C> marshaller;
 
-        protected int priority = DEFAULT_PRIORITY;
+        private final int priority;
+
+        private final int seq;
 
         private Entry(ObjectMarshaller<C> marshaller, int priority) {
             this.marshaller = marshaller;
             this.priority = priority;
+            this.seq = MARSHALLER_SEQUENCE.incrementAndGet();
+        }
+
+        public int compareTo(Entry entry) {
+            return priority == entry.priority ? entry.seq - seq : entry.priority - priority;
         }
     }
 
