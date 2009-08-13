@@ -175,7 +175,7 @@ public class JSON extends AbstractConverter<JSONWriter> implements Converter<JSO
      */
     public void value(Object o) throws ConverterException {
         try {
-            if (o == null) {
+            if (o == null || o.equals(JSONObject.NULL)) {
                 writer.value(null);
             } else if (o instanceof String) {
                 writer.value(o);
