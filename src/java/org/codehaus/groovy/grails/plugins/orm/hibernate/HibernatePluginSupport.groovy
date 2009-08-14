@@ -58,6 +58,7 @@ import org.springframework.validation.Validator
 import org.hibernate.EmptyInterceptor
 import org.codehaus.groovy.grails.orm.hibernate.events.PatchedDefaultFlushEventListener
 import org.springframework.transaction.support.TransactionSynchronizationManager
+import org.codehaus.groovy.grails.commons.ConfigurationHolder
 
 
 /**
@@ -721,12 +722,15 @@ Try using Grails' default cache provider: 'org.hibernate.cache.OSCacheProvider'"
             def obj = delegate
             template.execute({Session session ->
                 session.delete obj
+                if(this.shouldFlush()) {
+                    session.flush()
+                }
             } as HibernateCallback)
         }
         metaClass.delete = { Map args ->
             def obj = delegate
             template.delete obj
-            if(args?.flush)
+            if(shouldFlush(args))
                 template.flush()
         }
         metaClass.refresh = {-> template.refresh(delegate); delegate }
@@ -786,6 +790,17 @@ Try using Grails' default cache provider: 'org.hibernate.cache.OSCacheProvider'"
         return value
     }
 
+    static shouldFlush(Map map = [:]) {
+        def shouldFlush
+
+        if(map?.containsKey('flush')) {
+            shouldFlush = Boolean.TRUE == map.flush
+        } else {
+            def config = ConfigurationHolder.flatConfig
+            shouldFlush = Boolean.TRUE == config.get('grails.gorm.autoFlush')
+        }
+        return shouldFlush
+    }
 
     private static checkExternalBeans(GrailsApplication application) {
         ApplicationContext parent = application.parentContext

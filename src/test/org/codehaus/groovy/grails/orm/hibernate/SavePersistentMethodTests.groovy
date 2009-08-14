@@ -1,13 +1,7 @@
 package org.codehaus.groovy.grails.orm.hibernate;
 
 import org.codehaus.groovy.grails.commons.*
-import org.codehaus.groovy.grails.commons.test.*
 import grails.validation.ValidationException
-import org.springframework.orm.hibernate3.SessionHolder
-import org.springframework.transaction.support.TransactionSynchronizationManager
-import org.hibernate.FlushMode
-import org.hibernate.event.FlushEventListener
-import org.hibernate.event.EventListeners
 
 class SavePersistentMethodTests extends AbstractGrailsHibernateTests {
 
@@ -119,103 +113,6 @@ class SavePersistentMethodTests extends AbstractGrailsHibernateTests {
         assertNull 'validation should have failed', team.save()
         assertEquals 'wrong number of errors found', 1, team.errors.errorCount
         assertEquals 'wrong number of homePage errors found', 0, team.errors.getFieldErrors('homePage')?.size()
-    }
-
-    void testFlushIsDisabledByDefault() {
-        def flushCount = 0
-        def listener = { flushEvent ->
-            ++flushCount
-        } as FlushEventListener
-        session.listeners.setFlushEventListeners(listener as FlushEventListener[])
-        def teamClass = ga.getDomainClass('Team')
-        def team = teamClass.newInstance()
-        team.properties = [homePage: 'http://grails.org', name: 'Grails']
-        assert team.save()
-        assertEquals 0, flushCount
-    }
-
-    void testFlushPropertyTrue() {
-        try {
-            def config = new ConfigSlurper().parse("grails.gorm.save.autoFlush = true");
-
-            ConfigurationHolder.config = config
-            def flushCount = 0
-            def listener = {flushEvent ->
-                ++flushCount
-            } as FlushEventListener
-            session.listeners.setFlushEventListeners(listener as FlushEventListener[])
-            def teamClass = ga.getDomainClass('Team')
-            def team = teamClass.newInstance()
-            team.properties = [homePage: 'http://grails.org', name: 'Grails']
-            assert team.save()
-            assertEquals 1, flushCount
-        }
-        finally {
-            ConfigurationHolder.config = null
-        }
-    }
-
-    void testFlushPropertyFalse() {
-        try {
-            def config = new ConfigSlurper().parse("grails.gorm.save.autoFlush = false");
-
-            ConfigurationHolder.config = config
-            def flushCount = 0
-            def listener = {flushEvent ->
-                ++flushCount
-            } as FlushEventListener
-            session.listeners.setFlushEventListeners(listener as FlushEventListener[])
-            def teamClass = ga.getDomainClass('Team')
-            def team = teamClass.newInstance()
-            team.properties = [homePage: 'http://grails.org', name: 'Grails']
-            assert team.save()
-            assertEquals 0, flushCount
-        }
-        finally {
-            ConfigurationHolder.config = null
-        }
-    }
-
-    void testTrueFlushArgumentOverridesFalsePropertySetting() {
-        try {
-            def config = new ConfigSlurper().parse("grails.gorm.save.autoFlush = false");
-
-            ConfigurationHolder.config = config
-            def flushCount = 0
-            def listener = {flushEvent ->
-                ++flushCount
-            } as FlushEventListener
-            session.listeners.setFlushEventListeners(listener as FlushEventListener[])
-            def teamClass = ga.getDomainClass('Team')
-            def team = teamClass.newInstance()
-            team.properties = [homePage: 'http://grails.org', name: 'Grails']
-            assert team.save(flush: true)
-            assertEquals 1, flushCount
-        }
-        finally {
-            ConfigurationHolder.config = null
-        }
-    }
-
-    void testFalseFlushArgumentOverridesTruePropertySetting() {
-        try {
-            def config = new ConfigSlurper().parse("grails.gorm.save.autoFlush = true");
-
-            ConfigurationHolder.config = config
-            def flushCount = 0
-            def listener = {flushEvent ->
-                ++flushCount
-            } as FlushEventListener
-            session.listeners.setFlushEventListeners(listener as FlushEventListener[])
-            def teamClass = ga.getDomainClass('Team')
-            def team = teamClass.newInstance()
-            team.properties = [homePage: 'http://grails.org', name: 'Grails']
-            assert team.save(flush: false)
-            assertEquals 0, flushCount
-        }
-        finally {
-            ConfigurationHolder.config = null
-        }
     }
 
     void testFailOnErrorTrueWithValidationErrors() {
