@@ -105,13 +105,11 @@ public class DomainClassMarshaller implements ObjectMarshaller<XML> {
                     if (referenceObject != null) {
                         GrailsDomainClass referencedDomainClass = property.getReferencedDomainClass();
 
-                        if (property.isOneToOne() || property.isManyToOne() || property.isEmbedded()) {
-                            // Property contains 1 foreign Domain Object
-                            if(GrailsClassUtils.isJdk5Enum(property.getType())) {
-                                xml.convertAnother(referenceObject);
-                            } else {
-                                asShortObject(referenceObject, xml, referencedDomainClass.getIdentifier(), referencedDomainClass);
-                            }
+                        // Embedded are now always fully rendered
+                        if(referencedDomainClass == null || property.isEmbedded() || GrailsClassUtils.isJdk5Enum(property.getType())) {
+                            xml.convertAnother(referenceObject);
+                        } else if (property.isOneToOne() || property.isManyToOne() || property.isEmbedded()) {
+                            asShortObject(referenceObject, xml, referencedDomainClass.getIdentifier(), referencedDomainClass);
                         } else {
                             GrailsDomainClassProperty referencedIdProperty = referencedDomainClass.getIdentifier();
                             String refPropertyName = referencedDomainClass.getPropertyName();
