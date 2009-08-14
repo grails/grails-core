@@ -22,7 +22,7 @@ public class AutoFlushPropertyTests extends AbstractGrailsHibernateTests {
         def listener = { flushEvent ->
             ++flushCount
         } as FlushEventListener
-        session.listeners.setFlushEventListeners(listener as FlushEventListener[])
+        session.listeners.flushEventListeners = listener as FlushEventListener[]
         def band = createBand('Tool')
         assert band.save()
         band.merge()
@@ -39,7 +39,7 @@ public class AutoFlushPropertyTests extends AbstractGrailsHibernateTests {
             def listener = { flushEvent ->
                 ++flushCount
             } as FlushEventListener
-            session.listeners.setFlushEventListeners(listener as FlushEventListener[])
+            session.listeners.flushEventListeners = listener as FlushEventListener[]
             def band = createBand('Tool')
             assert band.save()
             assertEquals 'Wrong flush count after save', 1, flushCount
@@ -62,7 +62,7 @@ public class AutoFlushPropertyTests extends AbstractGrailsHibernateTests {
             def listener = { flushEvent ->
                 ++flushCount
             } as FlushEventListener
-            session.listeners.setFlushEventListeners(listener as FlushEventListener[])
+            session.listeners.flushEventListeners = listener as FlushEventListener[]
             def band = createBand('Tool')
             assert band.save()
             band.merge()
@@ -83,7 +83,7 @@ public class AutoFlushPropertyTests extends AbstractGrailsHibernateTests {
             def listener = { flushEvent ->
                 ++flushCount
             } as FlushEventListener
-            session.listeners.setFlushEventListeners(listener as FlushEventListener[])
+            session.listeners.flushEventListeners = listener as FlushEventListener[]
             def band = createBand('Tool')
             assert band.save(flush: true)
             assertEquals 'Wrong flush count after save', 1, flushCount
@@ -106,7 +106,7 @@ public class AutoFlushPropertyTests extends AbstractGrailsHibernateTests {
             def listener = { flushEvent ->
                 ++flushCount
             } as FlushEventListener
-            session.listeners.setFlushEventListeners(listener as FlushEventListener[])
+            session.listeners.flushEventListeners = listener as FlushEventListener[]
             def band = createBand('Tool')
             assert band.save(flush: false)
             band.merge(flush: false)
@@ -127,7 +127,7 @@ public class AutoFlushPropertyTests extends AbstractGrailsHibernateTests {
             def listener = { flushEvent ->
                 ++flushCount
             } as FlushEventListener
-            session.listeners.setFlushEventListeners(listener as FlushEventListener[])
+            session.listeners.flushEventListeners = listener as FlushEventListener[]
             def band = createBand('Tool')
             assert band.save([:])
             assertEquals 'Wrong flush count after save', 1, flushCount
@@ -150,7 +150,7 @@ public class AutoFlushPropertyTests extends AbstractGrailsHibernateTests {
             def listener = { flushEvent ->
                 ++flushCount
             } as FlushEventListener
-            session.listeners.setFlushEventListeners(listener as FlushEventListener[])
+            session.listeners.flushEventListeners = listener as FlushEventListener[]
             def band = createBand('Tool')
             assert band.save([:])
             band.merge([:])
