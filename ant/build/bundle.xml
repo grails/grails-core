@@ -95,39 +95,6 @@
             </fileset>
             <file file="${basedir}/build.properties"/>
         </jar>
-        <jar destfile="${grails.dist}/grails-core-${grails.version}.jar" manifest="${grails.build}/META-INF/MANIFEST.MF">
-            <fileset dir="${grails.build}">
-                <include name="META-INF/**" />
-                <include name="grails/ui/**" />
-                <include name="grails/util/**" />
-                <include name="grails/validation/**" />
-                <include name="grails/persistence/**" />
-                <include name="**/groovy/grails/aop/framework/**" />
-                <include name="**/groovy/grails/beans/factory/**" />
-                <include name="**/groovy/grails/commons/**" />
-                <include name="**/groovy/grails/context/**" />
-                <include name="**/groovy/grails/compiler/**" />
-                <include name="**/groovy/grails/orm/support/**" />
-                <include name="**/groovy/grails/exceptions/**" />
-                <include name="**/groovy/grails/support/**" />
-                <include name="**/groovy/grails/test/**" />
-                <include name="**/groovy/grails/validation/**" />
-                <include name="**/groovy/grails/plugins/**" />
-                <exclude name="grails/util/BuildSettings*"/>
-                <exclude name="grails/util/GrailsNameUtils*"/>
-                <exclude name="grails/util/Environment*"/>
-                <exclude name="grails/util/Metadata*"/>
-                <exclude name="grails/util/BuildScope*"/>
-                <exclude name="grails/util/GrailsMain*"/>
-                <exclude name="**/groovy/grails/commons/spring/**" />
-                <exclude name="**/groovy/grails/plugins/orm/hibernate**" />
-                <exclude name="**/groovy/grails/plugins/web/**" />
-                <exclude name="**/groovy/grails/plugins/converters/**" />
-                <exclude name="**/groovy/grails/plugins/webflow/**" />
-                <exclude name="**/groovy/grails/plugins/scaffolding/**" />
-                <exclude name="**/groovy/grails/validation/Hibernate**" />
-            </fileset>
-        </jar>
         <jar destfile="${grails.dist}/grails-scripts-${grails.version}.jar" manifest="${grails.build}/META-INF/MANIFEST.MF">
             <fileset dir="${grails.target}/compiled-scripts"/>
             <file file="${basedir}/scripts/log4j.properties"/>            
@@ -188,6 +155,45 @@
                 <include name="src/war/WEB-INF/tld/*/*.tld"/>
             </fileset>
         </jar>
+    	
+    	<mkdir dir="${grails.build}/META-INF/services"/>
+    	<copy todir="${grails.build}/META-INF/services">
+    		<fileset dir="src/jar/META-INF/services" />
+    	</copy>
+        <jar destfile="${grails.dist}/grails-core-${grails.version}.jar" manifest="${grails.build}/META-INF/MANIFEST.MF">
+            <fileset dir="${grails.build}">
+                <include name="META-INF/**" />
+                <include name="grails/ui/**" />
+                <include name="grails/util/**" />
+                <include name="grails/validation/**" />
+                <include name="grails/persistence/**" />
+                <include name="**/groovy/grails/aop/framework/**" />
+                <include name="**/groovy/grails/beans/factory/**" />
+                <include name="**/groovy/grails/commons/**" />
+                <include name="**/groovy/grails/context/**" />
+                <include name="**/groovy/grails/compiler/**" />
+                <include name="**/groovy/grails/orm/support/**" />
+                <include name="**/groovy/grails/exceptions/**" />
+                <include name="**/groovy/grails/support/**" />
+                <include name="**/groovy/grails/test/**" />
+                <include name="**/groovy/grails/validation/**" />
+                <include name="**/groovy/grails/plugins/**" />
+                <exclude name="grails/util/BuildSettings*"/>
+                <exclude name="grails/util/GrailsNameUtils*"/>
+                <exclude name="grails/util/Environment*"/>
+                <exclude name="grails/util/Metadata*"/>
+                <exclude name="grails/util/BuildScope*"/>
+                <exclude name="grails/util/GrailsMain*"/>
+                <exclude name="**/groovy/grails/commons/spring/**" />
+                <exclude name="**/groovy/grails/plugins/orm/hibernate**" />
+                <exclude name="**/groovy/grails/plugins/web/**" />
+                <exclude name="**/groovy/grails/plugins/converters/**" />
+                <exclude name="**/groovy/grails/plugins/webflow/**" />
+                <exclude name="**/groovy/grails/plugins/scaffolding/**" />
+                <exclude name="**/groovy/grails/validation/Hibernate**" />
+            </fileset>
+        </jar>
+    	<delete dir="${grails.build}/META-INF/services"></delete>
     </target>
 
     <target name="package-minimal" depends="clean,jar" description="Creates a minimal archive that can be used for integrating a Grails project with an existing build system.">

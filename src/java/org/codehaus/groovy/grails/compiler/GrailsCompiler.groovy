@@ -32,7 +32,7 @@ import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
 import grails.util.BuildSettingsHolder
 
 /**
- * <p>An extended version of the Groovy compiler that performs AST injection into Grails domain classes
+ * <p>An extended version of the Groovy compiler that sets up the Grails ResourceLoader upon compilation
 
  * @author Graeme Rocher
  * @since 0.6
@@ -50,11 +50,7 @@ class GrailsCompiler extends Groovyc {
 	def resolver = new org.springframework.core.io.support.PathMatchingResourcePatternResolver()
 	
 	private destList = []
-
-	String projectName  
-	boolean cleanJavaCompile = false
-
-
+    
 	void scanDir(File srcDir, File destDir, String[] files) {
         def srcList = []
         def srcPath = srcDir.absolutePath
@@ -86,19 +82,7 @@ class GrailsCompiler extends Groovyc {
         addToCompileList(srcList as File[])
     }
 
-    File createTempDir()  {
-        File tempFile;
-        try {
-            tempFile = new File(BuildSettingsHolder.settings?.projectWorkDir, "generated-java-source")
-            if(tempFile.exists()) {
-                tempFile.delete();
-            }
-            tempFile.mkdirs();
-        } catch (IOException e) {
-            throw new BuildException(e);
-        }
-        return tempFile;
-    }
+
 
     void compile() {
 
@@ -138,46 +122,6 @@ class GrailsCompiler extends Groovyc {
     }
 
 
-    protected CompilationUnit makeCompileUnit() {
-
-        def unit = super.makeCompileUnit();
-        def classInjectors = [new DefaultGrailsDomainClassInjector()] as ClassInjector[]
-        def injectionOperation = new GrailsAwareInjectionOperation(GrailsResourceLoaderHolder.resourceLoader, classInjectors)
-        unit.addPhaseOperation(injectionOperation, Phases.CONVERSION)
-        return unit        
-    }
-
-    protected GroovyClassLoader buildClassLoaderFor(CompilerConfiguration configuration, def resourceLoader, ClassInjector[] classInjectors) {
-        ClassLoader parent = this.getClass().getClassLoader()
-        if (parent instanceof AntClassLoader) {
-            AntClassLoader antLoader = parent;
-            String[] pathElm = antLoader.getClasspath().split(File.pathSeparator);
-            List classpath = configuration.getClasspath();
-            /*
-             * Iterate over the classpath provided to groovyc, and add any missing path
-             * entries to the AntClassLoader.  This is a workaround, since for some reason
-             * 'directory' classpath entries were not added to the AntClassLoader' classpath.
-             */
-            for (cpEntry in classpath) {
-                boolean found = false;
-                for (pathEntry in pathElm) {
-                    if (cpEntry.equals(pathEntry)) {
-                        found = true;
-                        break;
-                    }
-                }
-                if (!found)
-                    antLoader.addPathElement(cpEntry);
-            }
-        }
-        def classLoader = new GrailsAwareClassLoader(	parent,
-												 		configuration	)
-
-		classLoader.classInjectors  =  classInjectors
-		classLoader.resourceLoader = resourceLoader
-
-		return classLoader
-    }
 
 
 

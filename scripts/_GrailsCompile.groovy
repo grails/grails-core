@@ -64,10 +64,9 @@ target(compile : "Implementation of compilation phase") {
         try {
             String classpathId = "grails.compile.classpath"
             ant.groovyc(destdir:classesDirPath,
-                    projectName:grailsSettings.baseDir.name,
-                    classpathref:classpathId,
-                    encoding:"UTF-8",
-                    compilerPaths.curry(classpathId, false))
+	                    classpathref:classpathId,
+	                    encoding:"UTF-8",
+	                    compilerPaths.curry(classpathId, false))
         }
         catch(Exception e) {
             event("StatusFinal", ["Compilation error: ${e.message}"])
@@ -103,7 +102,6 @@ target(compilePlugins: "Compiles source files of all referenced plugins.") {
             // Only perform the compilation if there are some plugins
             // installed or otherwise referenced.
             ant.groovyc(destdir:classesDirPath,
-                    projectName:grailsSettings.baseDir.name,
                     classpathref:classpathId,
                     encoding:"UTF-8") {
                 for(dir in pluginResources.file) {

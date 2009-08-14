@@ -27,6 +27,7 @@ import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
 import org.codehaus.groovy.grails.commons.GrailsDomainConfigurationUtil;
 import org.codehaus.groovy.grails.commons.GrailsResourceUtils;
 
+import java.io.File;
 import java.lang.reflect.Modifier;
 import java.util.*;
 import java.net.URL;
@@ -43,7 +44,11 @@ import java.net.URL;
 public class DefaultGrailsDomainClassInjector implements
         GrailsDomainClassInjector {
 
-    private static final Log LOG = LogFactory.getLog(DefaultGrailsDomainClassInjector.class);
+    private static final String DOMAIN_DIR = "domain";
+
+	private static final String GRAILS_APP_DIR = "grails-app";
+
+	private static final Log LOG = LogFactory.getLog(DefaultGrailsDomainClassInjector.class);
 
     private List classesWithInjectedToString = new ArrayList();
 
@@ -72,8 +77,17 @@ public class DefaultGrailsDomainClassInjector implements
     protected boolean isDomainClass(ClassNode classNode, SourceUnit sourceNode) {
         String clsName = classNode.getNameWithoutPackage();
         String sourcePath = sourceNode.getName();
-        String sourceFileName = sourcePath.substring(Math.max(sourcePath.lastIndexOf("/"), sourcePath.lastIndexOf("\\"))+1);
-        return String.format("%s.groovy", clsName).equals(sourceFileName);
+        File sourceFile = new File(sourcePath);
+        File parent = sourceFile.getParentFile();
+        while(parent!=null) {
+        	File parentParent = parent.getParentFile();
+			if(parent.getName().equals(DOMAIN_DIR) && parentParent!=null && parentParent.getName().equals(GRAILS_APP_DIR)) {
+        		return true;
+        	}
+			parent = parentParent;
+        }
+        
+        return false;
     }
 
     protected boolean shouldInjectClass(ClassNode classNode) {
@@ -205,5 +219,9 @@ public class DefaultGrailsDomainClassInjector implements
             classNode.addProperty(GrailsDomainClassProperty.IDENTITY, Modifier.PUBLIC, new ClassNode(Long.class), null, null, null);
         }
     }
+
+	public void performInjection(SourceUnit source, ClassNode classNode) {
+		performInjection(source, null, classNode);		
+	}
 
 }
