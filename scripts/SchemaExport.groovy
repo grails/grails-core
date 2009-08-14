@@ -1,5 +1,4 @@
 import org.hibernate.dialect.DialectFactory
-import org.hibernate.tool.hbm2ddl.SchemaExport
 import org.springframework.jdbc.datasource.DriverManagerDataSource
 import org.springframework.jdbc.support.JdbcUtils
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsAnnotationConfiguration

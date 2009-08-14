@@ -16,6 +16,7 @@
 package org.codehaus.groovy.grails.compiler.injection;
 
 import org.codehaus.groovy.ast.ClassNode;
+import org.codehaus.groovy.control.SourceUnit;
 
 /**
  * Mainly just a marker interface for implementations that perform injection
@@ -36,4 +37,7 @@ public interface GrailsDomainClassInjector extends ClassInjector {
       * @since 1.1
      */
       public void performInjectionOnAnnotatedEntity(ClassNode classNode);
+
+      
+      
 }

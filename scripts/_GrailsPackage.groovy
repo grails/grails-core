@@ -234,8 +234,7 @@ recompileCheck = { lastModified, callback ->
 
         ant.groovyc(destdir:classesDirPath,
                     classpathref:classpathId,
-                    encoding:"UTF-8",
-                    projectName:baseName) {
+                    encoding:"UTF-8") {
                     src(path:"${basedir}/src/groovy")
                     src(path:"${basedir}/grails-app/domain")
                     src(path:"${basedir}/grails-app/utils")
