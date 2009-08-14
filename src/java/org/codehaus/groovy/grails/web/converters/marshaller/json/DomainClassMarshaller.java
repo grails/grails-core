@@ -66,7 +66,7 @@ public class DomainClassMarshaller implements ObjectMarshaller<JSON> {
         BeanWrapper beanWrapper = new BeanWrapperImpl(value);
 
         writer.object();
-        writer.key("class").value(domainClass.getName());
+        writer.key("class").value(domainClass.getClazz().getName());
 
         GrailsDomainClassProperty id = domainClass.getIdentifier();
         Object idValue = extractValue(value, id);

@@ -40,9 +40,10 @@ public class ProxyUnwrappingMarshaller<C extends Converter> implements ObjectMar
         return mc.hasProperty(object, HIBERNATE_LAZY_INITIALIZER_PROP) != null;
     }
 
+    @SuppressWarnings("unchecked")
     public void marshalObject(Object object, C converter) throws ConverterException {
         Object unwrapped = unwrap(object);
-        converter.convertAnother(unwrapped);
+        converter.lookupObjectMarshaller(unwrapped).marshalObject(unwrapped, converter);
     }
 
     private Object unwrap(Object o) {

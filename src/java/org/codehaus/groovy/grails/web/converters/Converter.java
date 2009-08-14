@@ -16,9 +16,12 @@ package org.codehaus.groovy.grails.web.converters;
 
 import groovy.lang.Closure;
 import org.codehaus.groovy.grails.web.converters.exceptions.ConverterException;
+import org.codehaus.groovy.grails.web.converters.marshaller.ObjectMarshaller;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.Writer;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * An interface that defines an Object that can convert an instance and render it to the
@@ -53,45 +56,22 @@ public interface Converter<W> {
 
     public void build(Closure c) throws ConverterException;
 
-//    /**
-//     * Unmarshalls the given Source and returns the Java respresention
-//     *
-//     * @param source a String
-//     * @return the Java representation
-//     * @throws ConverterException
-//     */
-//    public Object parse(String source) throws ConverterException;
-//
-//    /**
-//     * Unmarshalls the given Source and returns the Java respresention
-//     *
-//     * @param is The InputStream to read from
-//     * @param encoding The Character Encoding to use
-//     * @return the Java respresentation
-//     * @throws ConverterException
-//     */
-//    public Object parse(InputStream is, String encoding) throws ConverterException;
-//
-//    /**
-//     * Unmarshalls the given Source and returns the Java respresention
-//     *
-//     * @param request The HttpServletRequest to read from
-//     * @return the Java representation
-//     * @throws ConverterException
-//     */
-//    public Object parse(HttpServletRequest request) throws ConverterException;
-//
-//    /**
-//     * Sets the Object which is later converted using the render method
-//     * @param target the Object
-//     */
-//    public void setTarget(Object target);
-
+    public ObjectMarshaller<? extends Converter> lookupObjectMarshaller(Object target);
 
     public enum CircularReferenceBehaviour {
         DEFAULT,
         EXCEPTION,
-        INSERT_NULL
+        INSERT_NULL,
+        IGNORE,
+        PATH;
+
+        public static List<String> allowedValues() {
+            ArrayList<String> v = new ArrayList<String>();
+            for(CircularReferenceBehaviour crb : values()) {
+                v.add(crb.name());
+            }
+            return v;
+        }
     }
 
 }

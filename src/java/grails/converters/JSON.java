@@ -102,6 +102,12 @@ public class JSON extends AbstractConverter<JSONWriter> implements Converter<JSO
         this.writer = this.prettyPrint ?
                 new PrettyPrintJSONWriter(out) :
                 new JSONWriter(out);
+        if(this.circularReferenceBehaviour == CircularReferenceBehaviour.PATH) {
+            if(log.isInfoEnabled()) {
+                log.info(String.format("Using experimental CircularReferenceBehaviour.PATH for %s", getClass().getName()));
+            }
+            this.writer = new PathCapturingJSONWriterWrapper(this.writer);
+        }
         referenceStack = new Stack<Object>();
     }
 
@@ -157,15 +163,6 @@ public class JSON extends AbstractConverter<JSONWriter> implements Converter<JSO
     }
 
     public void build(Closure c) throws ConverterException {
-//        JSonBuilder builder = new JSonBuilder(this.writer);
-//        try {
-//            builder.invokeMethod("json", new Object[]{c});
-//        }
-//        catch (Exception e) {
-//            throw e instanceof ConverterException ?
-//                    (ConverterException) e :
-//                    new ConverterException(e);
-//        }
         new Builder(this).execute(c);
     }
 
@@ -207,6 +204,10 @@ public class JSON extends AbstractConverter<JSONWriter> implements Converter<JSO
         catch (JSONException e) {
             throw new ConverterException(e);
         }
+    }
+
+    public ObjectMarshaller<JSON> lookupObjectMarshaller(Object target) {
+        return config.getMarshaller(target);
     }
 
     public int getDepth() {
@@ -350,20 +351,35 @@ public class JSON extends AbstractConverter<JSONWriter> implements Converter<JSO
     protected void handleCircularRelationship(Object o) throws ConverterException {
         switch (circularReferenceBehaviour) {
             case DEFAULT:
-                Map<String, Object> props = new HashMap<String, Object>();
-                props.put("class", o.getClass());
-                StringBuilder ref = new StringBuilder();
-                int idx = referenceStack.indexOf(o);
-                for (int i = referenceStack.size() - 1; i > idx; i--) {
-                    ref.append("../");
+                {
+                    Map<String, Object> props = new HashMap<String, Object>();
+                    props.put("class", o.getClass());
+                    StringBuilder ref = new StringBuilder();
+                    int idx = referenceStack.indexOf(o);
+                    for (int i = referenceStack.size() - 1; i > idx; i--) {
+                        ref.append("../");
+                    }
+                    props.put("_ref", ref.substring(0, ref.length() - 1));
+                    value(props);
                 }
-                props.put("_ref", ref.substring(0, ref.length() - 1));
-                value(props);
                 break;
             case EXCEPTION:
                 throw new ConverterException("Circular Reference detected: class " + o.getClass().getName());
             case INSERT_NULL:
                 value(null);
+                break;
+            case PATH:
+                {
+                    Map<String, Object> props = new HashMap<String, Object>();
+                    props.put("class", o.getClass());
+                    int idx = referenceStack.indexOf(o);
+                    PathCapturingJSONWriterWrapper pcWriter = (PathCapturingJSONWriterWrapper) this.writer;
+                    props.put("ref", String.format("root%s", pcWriter.getStackReference(idx)));
+                    value(props);
+                }
+                break;
+            case IGNORE:
+                break;
         }
     }
 

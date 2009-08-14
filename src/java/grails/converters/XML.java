@@ -172,6 +172,10 @@ public class XML extends AbstractConverter<XMLStreamWriter> implements Converter
         }
     }
 
+    public ObjectMarshaller<XML> lookupObjectMarshaller(Object target) {
+        return config.getMarshaller(target);
+    }
+
     public int getDepth() {
         return referenceStack.size();
     }

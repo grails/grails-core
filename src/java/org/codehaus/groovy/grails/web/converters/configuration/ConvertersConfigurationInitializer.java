@@ -91,7 +91,7 @@ public class ConvertersConfigurationInitializer implements ApplicationContextAwa
         cfg.setEncoding(GrailsConfig.get("grails.converters.encoding", "UTF-8"));
         String defaultCirRefBehaviour = GrailsConfig.get("grails.converters.default.circular.reference.behaviour", "DEFAULT");
         cfg.setCircularReferenceBehaviour(Converter.CircularReferenceBehaviour.valueOf(
-                GrailsConfig.get("grails.converters.json.circular.reference.behaviour", defaultCirRefBehaviour, Arrays.asList("DEFAULT", "EXCEPTION", "INSERT_NULL"))
+                GrailsConfig.get("grails.converters.json.circular.reference.behaviour", defaultCirRefBehaviour, Converter.CircularReferenceBehaviour.allowedValues())
         ));
 
         Boolean defaultPrettyPrint = GrailsConfig.get("grails.converters.default.pretty.print", false);
@@ -132,9 +132,9 @@ public class ConvertersConfigurationInitializer implements ApplicationContextAwa
 
         DefaultConverterConfiguration<XML> cfg = new DefaultConverterConfiguration<XML>(marshallers);
         cfg.setEncoding(GrailsConfig.get("grails.converters.encoding", "UTF-8"));
-        String defaultCirRefBehaviour = GrailsConfig.get("grails.converters.default.circular.reference.behaviour", "DEFAULT");
+        String defaultCirRefBehaviour = GrailsConfig.get("grails.converters.default.circular.reference.behaviour", "DEFAULT");  
         cfg.setCircularReferenceBehaviour(Converter.CircularReferenceBehaviour.valueOf(
-                GrailsConfig.get("grails.converters.xml.circular.reference.behaviour", defaultCirRefBehaviour, Arrays.asList("DEFAULT", "EXCEPTION", "INSERT_NULL"))
+                GrailsConfig.get("grails.converters.xml.circular.reference.behaviour", defaultCirRefBehaviour, Converter.CircularReferenceBehaviour.allowedValues())
         ));
 
         Boolean defaultPrettyPrint = GrailsConfig.get("grails.converters.default.pretty.print", false);
