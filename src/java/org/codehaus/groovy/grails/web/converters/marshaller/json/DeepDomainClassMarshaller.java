@@ -21,6 +21,10 @@ package org.codehaus.groovy.grails.web.converters.marshaller.json;
  */
 public class DeepDomainClassMarshaller extends DomainClassMarshaller {
 
+    public DeepDomainClassMarshaller(boolean includeVersion) {
+        super(includeVersion);
+    }
+
     protected boolean isRenderDomainClassRelations() {
         return true;
     }

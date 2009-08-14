@@ -42,6 +42,10 @@ public class DomainClassMarshaller implements ObjectMarshaller<JSON> {
 
     private boolean includeVersion = false;
 
+    public DomainClassMarshaller(boolean includeVersion) {
+        this.includeVersion = includeVersion;
+    }
+
     public boolean isIncludeVersion() {
         return includeVersion;
     }
@@ -115,13 +119,11 @@ public class DomainClassMarshaller implements ObjectMarshaller<JSON> {
                     } else {
                         GrailsDomainClass referencedDomainClass = property.getReferencedDomainClass();
 
-                        if (property.isOneToOne() || property.isManyToOne() || property.isEmbedded()) {
-                            // Property contains 1 foreign Domain Object
-                            if(GrailsClassUtils.isJdk5Enum(property.getType())) {
-                                json.convertAnother(referenceObject);
-                            } else {
-                                asShortObject(referenceObject, json, referencedDomainClass.getIdentifier(), referencedDomainClass);
-                            }
+                        // Embedded are now always fully rendered
+                        if(referencedDomainClass == null || property.isEmbedded() || GrailsClassUtils.isJdk5Enum(property.getType())) {
+                            json.convertAnother(referenceObject);
+                        } else if (property.isOneToOne() || property.isManyToOne() || property.isEmbedded()) {
+                            asShortObject(referenceObject, json, referencedDomainClass.getIdentifier(), referencedDomainClass);
                         } else {
                             GrailsDomainClassProperty referencedIdProperty = referencedDomainClass.getIdentifier();
                             String refPropertyName = referencedDomainClass.getPropertyName();

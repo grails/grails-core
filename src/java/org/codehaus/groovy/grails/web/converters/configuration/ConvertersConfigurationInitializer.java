@@ -76,11 +76,13 @@ public class ConvertersConfigurationInitializer implements ApplicationContextAwa
             marshallers.add(new org.codehaus.groovy.grails.web.converters.marshaller.json.DateMarshaller());
         }
         marshallers.add(new org.codehaus.groovy.grails.web.converters.marshaller.json.ToStringBeanMarshaller());
+
+        boolean includeDomainVersion = includeDomainVersionProperty("json");
         if (GrailsConfig.get("grails.converters.json.default.deep", false)) {
             LOG.debug("Using DeepDomainClassMarshaller as default.");
-            marshallers.add(new org.codehaus.groovy.grails.web.converters.marshaller.json.DeepDomainClassMarshaller());
+            marshallers.add(new org.codehaus.groovy.grails.web.converters.marshaller.json.DeepDomainClassMarshaller(includeDomainVersion));
         } else {
-            marshallers.add(new org.codehaus.groovy.grails.web.converters.marshaller.json.DomainClassMarshaller());
+            marshallers.add(new org.codehaus.groovy.grails.web.converters.marshaller.json.DomainClassMarshaller(includeDomainVersion));
         }                            
         marshallers.add(new org.codehaus.groovy.grails.web.converters.marshaller.json.GroovyBeanMarshaller());
         marshallers.add(new org.codehaus.groovy.grails.web.converters.marshaller.json.GenericJavaBeanMarshaller());
@@ -103,7 +105,7 @@ public class ConvertersConfigurationInitializer implements ApplicationContextAwa
 
     private void initDeepJSONConfiguration() {
         DefaultConverterConfiguration<JSON> deepConfig = new DefaultConverterConfiguration<JSON>(ConvertersConfigurationHolder.getConverterConfiguration(JSON.class));
-        deepConfig.registerObjectMarshaller(new org.codehaus.groovy.grails.web.converters.marshaller.json.DeepDomainClassMarshaller());
+        deepConfig.registerObjectMarshaller(new org.codehaus.groovy.grails.web.converters.marshaller.json.DeepDomainClassMarshaller(includeDomainVersionProperty("json")));
         ConvertersConfigurationHolder.setNamedConverterConfiguration(JSON.class, "deep", deepConfig);
     }
 
@@ -118,10 +120,12 @@ public class ConvertersConfigurationInitializer implements ApplicationContextAwa
         marshallers.add(new org.codehaus.groovy.grails.web.converters.marshaller.xml.DateMarshaller());
         marshallers.add(new ProxyUnwrappingMarshaller<XML>());
         marshallers.add(new org.codehaus.groovy.grails.web.converters.marshaller.xml.ToStringBeanMarshaller());
+
+        boolean includeDomainVersion = includeDomainVersionProperty("xml");
         if (GrailsConfig.get("grails.converters.xml.default.deep", false)) {
-            marshallers.add(new org.codehaus.groovy.grails.web.converters.marshaller.xml.DeepDomainClassMarshaller());
+            marshallers.add(new org.codehaus.groovy.grails.web.converters.marshaller.xml.DeepDomainClassMarshaller(includeDomainVersion));
         } else {
-            marshallers.add(new org.codehaus.groovy.grails.web.converters.marshaller.xml.DomainClassMarshaller());
+            marshallers.add(new org.codehaus.groovy.grails.web.converters.marshaller.xml.DomainClassMarshaller(includeDomainVersion));
         }
         marshallers.add(new org.codehaus.groovy.grails.web.converters.marshaller.xml.GroovyBeanMarshaller());
         marshallers.add(new org.codehaus.groovy.grails.web.converters.marshaller.xml.GenericJavaBeanMarshaller());
@@ -142,8 +146,13 @@ public class ConvertersConfigurationInitializer implements ApplicationContextAwa
 
     private void initDeepXMLConfiguration() {
         DefaultConverterConfiguration<XML> deepConfig = new DefaultConverterConfiguration<XML>(ConvertersConfigurationHolder.getConverterConfiguration(XML.class));
-        deepConfig.registerObjectMarshaller(new org.codehaus.groovy.grails.web.converters.marshaller.xml.DeepDomainClassMarshaller());
+        deepConfig.registerObjectMarshaller(new org.codehaus.groovy.grails.web.converters.marshaller.xml.DeepDomainClassMarshaller(includeDomainVersionProperty("xml")));
         ConvertersConfigurationHolder.setNamedConverterConfiguration(XML.class, "deep", deepConfig);
+    }
+
+    private boolean includeDomainVersionProperty(String converterType) {
+        return GrailsConfig.get(String.format("grails.converters.%s.domain.include.version", converterType),
+                GrailsConfig.get("grails.converters.domain.include.version", false));
     }
 
     @SuppressWarnings("unchecked")
