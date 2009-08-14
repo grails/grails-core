@@ -50,6 +50,7 @@ public abstract class AbstractSavePersistentMethod extends
     private static final String ARGUMENT_INSERT = "insert";
     private static final String ARGUMENT_FAIL_ON_ERROR = "failOnError";
     private static final String FAIL_ON_ERROR_CONFIG_PROPERTY = "grails.gorm.save.failOnError";
+    private static final String AUTO_FLUSH_CONFIG_PROPERTY = "grails.gorm.save.autoFlush";
 
     public AbstractSavePersistentMethod(Pattern pattern, SessionFactory sessionFactory, ClassLoader classLoader, GrailsApplication application) {
 		super(pattern, sessionFactory, classLoader);
@@ -126,22 +127,19 @@ public abstract class AbstractSavePersistentMethod extends
     }
 
     private boolean shouldFlush(Object[] arguments) {
-        if(arguments.length > 0) {
-            if(arguments[0] instanceof Boolean) {
-                return ((Boolean)arguments[0]).booleanValue();
-            }
-            else if(arguments[0] instanceof Map) {
-                Map argsMap = (Map)arguments[0];
-                if(argsMap.containsKey(ARGUMENT_FLUSH)) {
-                    return GrailsClassUtils.getBooleanFromMap(ARGUMENT_FLUSH, argsMap);
-                }
-            }
-            else {
-            	return false;
-            }
+        final boolean shouldFlush;
+        if (arguments.length > 0 && arguments[0] instanceof Boolean) {
+            shouldFlush = ((Boolean) arguments[0]).booleanValue();
         }
-        return false;
-	}
+        else if (arguments.length > 0 && arguments[0] instanceof Map && ((Map) arguments[0]).containsKey(ARGUMENT_FLUSH)) {
+            shouldFlush = GrailsClassUtils.getBooleanFromMap(ARGUMENT_FLUSH, ((Map) arguments[0]));
+        }
+        else {
+            final Map config = ConfigurationHolder.getFlatConfig();
+            shouldFlush = Boolean.TRUE == config.get(AUTO_FLUSH_CONFIG_PROPERTY);
+        }
+        return shouldFlush;
+    }
 
     /**
 	 * Performs automatic association retrieval
