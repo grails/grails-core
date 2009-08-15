@@ -71,7 +71,7 @@ intellijClasspathLibs = {
             }
         }
         (new File("${grailsHome}/dist")).eachFileMatch(~/^grails-.*\.jar/) {file ->
-            builder << "<root url=\"jar://${grailsHome}/diest/${file.name}!/\" />\n\n"
+            builder << "<root url=\"jar://${grailsHome}/dist/${file.name}!/\" />\n\n"
         }
 
     }
