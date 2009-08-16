@@ -65,11 +65,11 @@ public class ExecuteQueryPersistentMethod
                 Query q = session.createQuery( query );
                 // process paginate params
                 if( paginateParams.containsKey( GrailsHibernateUtil.ARGUMENT_MAX ) ) {
-                    Integer maxParam = (Integer)converter.convertIfNecessary(paginateParams.get(GrailsHibernateUtil.ARGUMENT_MAX),Integer.class);
+                    Integer maxParam = converter.convertIfNecessary(paginateParams.get(GrailsHibernateUtil.ARGUMENT_MAX),Integer.class);
                     q.setMaxResults( maxParam.intValue() );
                 }
                 if( paginateParams.containsKey( GrailsHibernateUtil.ARGUMENT_OFFSET ) ) {
-                    Integer offsetParam= (Integer)converter.convertIfNecessary(paginateParams.remove( GrailsHibernateUtil.ARGUMENT_OFFSET ), Integer.class);
+                    Integer offsetParam = converter.convertIfNecessary(paginateParams.remove( GrailsHibernateUtil.ARGUMENT_OFFSET ), Integer.class);
                     q.setFirstResult( offsetParam.intValue() );
                 }
                 if( paginateParams.containsKey( GrailsHibernateUtil.ARGUMENT_CACHE ) ) {
