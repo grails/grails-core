@@ -1,11 +1,11 @@
 /* Copyright 2004-2005 the original author or authors.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -23,6 +23,7 @@ import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.springframework.orm.hibernate3.HibernateCallback;
+import org.springframework.beans.SimpleTypeConverter;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -42,6 +43,7 @@ import java.util.regex.Pattern;
 public class ExecuteQueryPersistentMethod
         extends AbstractStaticPersistentMethod {
 
+    public static SimpleTypeConverter converter = new SimpleTypeConverter();
     private static final String METHOD_SIGNATURE = "executeQuery";
     private static final Pattern METHOD_PATTERN = Pattern.compile( "^executeQuery$" );
 
@@ -63,7 +65,8 @@ public class ExecuteQueryPersistentMethod
                 Query q = session.createQuery( query );
                 // process paginate params
                 if( paginateParams.containsKey( GrailsHibernateUtil.ARGUMENT_MAX ) ) {
-                    q.setMaxResults( ((Number)paginateParams.get( GrailsHibernateUtil.ARGUMENT_MAX ) ).intValue() );
+                    Integer maxParam = (Integer)converter.convertIfNecessary(paginateParams.get(GrailsHibernateUtil.ARGUMENT_MAX),Integer.class);
+                    q.setMaxResults( maxParam.intValue() );
                 }
                 if( paginateParams.containsKey( GrailsHibernateUtil.ARGUMENT_OFFSET ) ) {
                     q.setFirstResult( ((Number)paginateParams.remove( GrailsHibernateUtil.ARGUMENT_OFFSET )).intValue() );

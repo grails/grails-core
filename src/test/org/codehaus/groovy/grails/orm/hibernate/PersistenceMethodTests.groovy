@@ -10,7 +10,7 @@ import org.codehaus.groovy.grails.orm.hibernate.exceptions.GrailsQueryException
 /**
  * @author Graeme Rocher
  * @since 1.0
- * 
+ *
  * Created: Jan 14, 2009
  */
 
@@ -825,6 +825,10 @@ public class PersistentMethodTestsDescendent extends PersistentMethodTests {
         // test find with a query and paginate params
         Map paginateParams = new HashMap();
         paginateParams.put( "max", new Integer(1) );
+        listResult = domainClass.executeQuery("select distinct p from PersistentMethodTests as p order by p.firstName", paginateParams );
+        assertEquals(1, listResult.size());
+        assertEquals("fred", ((GroovyObject)listResult.get(0)).getProperty("firstName"));
+        paginateParams.put( "max", "1" );
         listResult = domainClass.executeQuery("select distinct p from PersistentMethodTests as p order by p.firstName", paginateParams );
         assertEquals(1, listResult.size());
         assertEquals("fred", ((GroovyObject)listResult.get(0)).getProperty("firstName"));
