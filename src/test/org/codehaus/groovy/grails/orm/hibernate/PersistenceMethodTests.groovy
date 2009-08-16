@@ -640,6 +640,12 @@ public class PersistentMethodTestsDescendent extends PersistentMethodTests {
         assertEquals(ArrayList.class,returnValue.getClass());
         listResult = (List)returnValue;
         assertEquals(1, listResult.size());
+        resultsMap.put("max", "1");
+        returnValue = domainClass.findAll( "from PersistentMethodTests as p where p.firstName in (:namesList)", namedArgs, resultsMap );
+        assertNotNull(returnValue);
+        assertEquals(ArrayList.class,returnValue.getClass());
+        listResult = (List)returnValue;
+        assertEquals(1, listResult.size());
         // test with 'max' param in named parameter map - for backward compatibility
         namedArgs.put("max", new Integer(1));
         returnValue = domainClass.findAll( "from PersistentMethodTests as p where p.firstName in (:namesList)", namedArgs );
@@ -669,6 +675,14 @@ public class PersistentMethodTestsDescendent extends PersistentMethodTests {
         // test with offset in Map
         resultsMap = new HashMap();
         resultsMap.put("offset", new Integer(1));
+        returnValue = domainClass.findAll( "from PersistentMethodTests as p where p.firstName in (:namesList)", namedArgs, resultsMap );
+        assertNotNull(returnValue);
+        assertEquals(ArrayList.class,returnValue.getClass());
+        listResult = (List)returnValue;
+        // max results not specified and offset = 1 => 1 of 2 result expected
+        assertEquals(1, listResult.size());
+
+        resultsMap.put("offset", "1");
         returnValue = domainClass.findAll( "from PersistentMethodTests as p where p.firstName in (:namesList)", namedArgs, resultsMap );
         assertNotNull(returnValue);
         assertEquals(ArrayList.class,returnValue.getClass());

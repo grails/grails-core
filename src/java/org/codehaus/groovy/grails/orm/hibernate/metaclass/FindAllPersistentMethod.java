@@ -24,6 +24,7 @@ import org.codehaus.groovy.grails.orm.hibernate.exceptions.GrailsQueryException;
 import org.hibernate.*;
 import org.hibernate.criterion.Example;
 import org.springframework.orm.hibernate3.HibernateCallback;
+import org.springframework.beans.SimpleTypeConverter;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -85,10 +86,12 @@ import java.util.regex.Pattern;
  * @since 0.1
  *
  * Created: Aug 8, 2005
- * 
+ *
  */
 public class FindAllPersistentMethod
 		extends AbstractStaticPersistentMethod {
+
+    public static SimpleTypeConverter converter = new SimpleTypeConverter();
 
 	public FindAllPersistentMethod(SessionFactory sessionFactory,
 			ClassLoader classLoader) {
@@ -190,33 +193,34 @@ public class FindAllPersistentMethod
 						}
 						if( arguments.length > 2 && result == -1 ) {
 							if( isMapWithValue(arguments[2], GrailsHibernateUtil.ARGUMENT_OFFSET) ) {
-								result = ((Number)((Map)arguments[2]).get(GrailsHibernateUtil.ARGUMENT_OFFSET)).intValue();
-							} else if( isIntegerOrLong(arguments[1]) && isIntegerOrLong(arguments[2])) {	
+                                result = retrieveInt(arguments[2], GrailsHibernateUtil.ARGUMENT_OFFSET);
+							} else if( isIntegerOrLong(arguments[1]) && isIntegerOrLong(arguments[2])) {
 								result = ((Number)arguments[2]).intValue();
 							}
 						}
 						if( arguments.length > 3 && result == -1 ) {
-							if( isIntegerOrLong(arguments[3]) ) {	
+							if( isIntegerOrLong(arguments[3]) ) {
 								result = ((Number)arguments[3]).intValue();
 							}
 						}
 					}
 					return result;
 				}
-				
+
 				private int retrieveInt( Object param, String key ) {
 					if( isMapWithValue(param, key) ) {
-						return ((Number)((Map)param).get(key)).intValue();
+                        Integer convertedParam = converter.convertIfNecessary(((Map) param).get(key),Integer.class);
+                        return convertedParam.intValue();
 					} else if( isIntegerOrLong(param) ) {
 						return ((Number)param).intValue();
 					}
 					return -1;
 				}
-				
+
 				private boolean isIntegerOrLong( Object param ) {
 					return (param instanceof Integer) || (param instanceof Long);
 				}
-				
+
 				private boolean isMapWithValue( Object param, String key ) {
 					return (param instanceof Map) && ((Map)param).containsKey(key);
 				}
