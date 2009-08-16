@@ -836,6 +836,10 @@ public class PersistentMethodTestsDescendent extends PersistentMethodTests {
         listResult = domainClass.executeQuery("select distinct p from PersistentMethodTests as p order by p.firstName", paginateParams );
         assertEquals(1, listResult.size());
         assertEquals("wilma", ((GroovyObject)listResult.get(0)).getProperty("firstName"));
+        paginateParams.put( "offset", "1" );
+        listResult = domainClass.executeQuery("select distinct p from PersistentMethodTests as p order by p.firstName", paginateParams );
+        assertEquals(1, listResult.size());
+        assertEquals("wilma", ((GroovyObject)listResult.get(0)).getProperty("firstName"));
 
         // test find with query and args
         List args = new ArrayList();

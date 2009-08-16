@@ -69,7 +69,8 @@ public class ExecuteQueryPersistentMethod
                     q.setMaxResults( maxParam.intValue() );
                 }
                 if( paginateParams.containsKey( GrailsHibernateUtil.ARGUMENT_OFFSET ) ) {
-                    q.setFirstResult( ((Number)paginateParams.remove( GrailsHibernateUtil.ARGUMENT_OFFSET )).intValue() );
+                    Integer offsetParam= (Integer)converter.convertIfNecessary(paginateParams.remove( GrailsHibernateUtil.ARGUMENT_OFFSET ), Integer.class);
+                    q.setFirstResult( offsetParam.intValue() );
                 }
                 if( paginateParams.containsKey( GrailsHibernateUtil.ARGUMENT_CACHE ) ) {
                     q.setCacheable( ((Boolean)paginateParams.remove( GrailsHibernateUtil.ARGUMENT_CACHE )).booleanValue() );
