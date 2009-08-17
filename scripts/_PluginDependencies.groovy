@@ -626,14 +626,14 @@ target(updatePluginsListManually: "Updates the plugin list by manually reading e
         def remoteRevision = 0
         try {
             // determine if this is a secure plugin spot..
-            if (isSecureUrl(pluginDistURL)) {
+            if (shouldUseSVNProtocol(pluginDistURL)) {
                 withSVNRepo(pluginDistURL) { repo ->
                     remoteRevision = repo.getLatestRevision()
                     if (remoteRevision > localRevision) {
 						// Plugins list cache is expired, need to update
 						event("StatusUpdate", ["Plugins list cache has expired. Updating, please wait"])
 						pluginsList.setAttribute('revision', remoteRevision as String)	
-                        repo.getDir('.', -1,null,(Collection)null).each() { entry ->
+                        repo.getDir('', -1,null,(Collection)null).each() { entry ->
                             final String PREFIX = "grails-"
                             if (entry.name.startsWith(PREFIX)) {
                                 def pluginName = entry.name.substring(PREFIX.length())
@@ -676,6 +676,10 @@ target(updatePluginsListManually: "Updates the plugin list by manually reading e
     } catch (Exception e) {
         event("StatusError", ["Unable to list plugins, please check you have a valid internet connection: ${e.message}" ])
     }
+}
+
+boolean shouldUseSVNProtocol(pluginDistURL) {
+    return isSecureUrl(pluginDistURL) || pluginDistURL.startsWith("file://")
 }
 
 // Utility Closures
@@ -1193,9 +1197,9 @@ def buildPluginInfo(root, pluginName) {
         // determine if this is a secure plugin spot..
         def tagsUrl = "${pluginDistURL}/grails-${pluginName}/tags"
         try {
-            if (isSecureUrl(tagsUrl)) {
+            if (shouldUseSVNProtocol(pluginDistURL)) {
                 withSVNRepo(tagsUrl) { repo ->
-                    repo.getDir('.',-1,null,(Collection)null).each() { entry ->
+                    repo.getDir('',-1,null,(Collection)null).each() { entry ->
                         buildReleaseInfo(pluginNode, pluginName, tagsUrl, entry.name)
                     }
                 }
@@ -1210,6 +1214,7 @@ def buildPluginInfo(root, pluginName) {
         }
         catch(e) {
             // plugin has not tags
+            println "Plugin [$pluginName] doesn't have any tags"
         }
 
         try {
@@ -1227,12 +1232,13 @@ def buildPluginInfo(root, pluginName) {
         }
         catch(e) {
             // plugin doesn't have a latest release
+            println "Plugin [$pluginName] doesn't have a latest release"
         }
     }
 }
 
 def fetchRemoteFile(url, destfn) {
-    if (isSecureUrl(url)) {
+    if (shouldUseSVNProtocol(pluginDistURL)) {
         // fetch the remote file..
         fetchRemote(url) { repo, file ->
             // get the latest file from the repository..
@@ -1252,7 +1258,7 @@ def fetchRemoteFile(url, destfn) {
  */
 def fetchPluginListFile(url) {
     // attempt to fetch the file using SVN.
-    if (isSecureUrl(url)) {
+    if (shouldUseSVNProtocol(pluginDistURL)) {
         def rdr = fetchRemote(url) { repo, file ->
             // get the latest file from the repository..
             def props = new SVNProperties()
@@ -1264,7 +1270,8 @@ def fetchPluginListFile(url) {
             }
             def bytes = baos.toByteArray()
             def str = new String(bytes, 'utf-8')
-            return new StringReader(str)
+            def r = new StringReader(str)
+            return r
         }
         return rdr
     }
@@ -1291,7 +1298,7 @@ def fetchRemote(url, closure) {
 }
 
 def isSecureUrl(Object url) {
-    url.startsWith('https://') || url.startsWith('svn://')
+    url.startsWith('https://') || url.startsWith('svn://') 
 }
 
 def withSVNRepo(url, closure) {
