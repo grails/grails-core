@@ -80,6 +80,7 @@ target(createPlugin: "The implementation target")  {
         include(name: "*GrailsPlugin.groovy")
         include(name: "scripts/*")
         replacefilter(token: "@plugin.name@", value: pluginName)
+        replacefilter(token: "@plugin.short.name@", value: GrailsNameUtils.getScriptName(pluginName))
         replacefilter(token: "@plugin.version@", value: grailsAppVersion ?: "0.1")
         replacefilter(token: "@grails.version@", value: grailsVersion)
     }

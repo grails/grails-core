@@ -681,7 +681,7 @@ target(updatePluginsListManually: "Updates the plugin list by manually reading e
     }
 }
 
-boolean shouldUseSVNProtocol(pluginDistURL) {
+shouldUseSVNProtocol = { pluginDistURL ->
     return isSecureUrl(pluginDistURL) || pluginDistURL.startsWith("file://")
 }
 
@@ -1240,7 +1240,7 @@ def buildPluginInfo(root, pluginName) {
     }
 }
 
-def fetchRemoteFile(url, destfn) {
+fetchRemoteFile = { url, destfn ->
     if (shouldUseSVNProtocol(pluginDistURL)) {
         // fetch the remote file..
         fetchRemote(url) { repo, file ->
@@ -1259,7 +1259,7 @@ def fetchRemoteFile(url, destfn) {
 /**
  * Fetch the entire plugin list file.
  */
-def fetchPluginListFile(url) {
+fetchPluginListFile = { url ->
     // attempt to fetch the file using SVN.
     if (shouldUseSVNProtocol(pluginDistURL)) {
         def rdr = fetchRemote(url) { repo, file ->
@@ -1304,7 +1304,7 @@ def isSecureUrl(Object url) {
     url.startsWith('https://') || url.startsWith('svn://') 
 }
 
-def withSVNRepo(url, closure) {
+withSVNRepo = { url, closure ->
     // create a authetication manager using the defaults
     ISVNAuthenticationManager authMgr = getAuthFromUrl(url,"discovery")
     

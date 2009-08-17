@@ -17,11 +17,15 @@
 import org.tmatesoft.svn.core.io.SVNRepositoryFactory
 import org.tmatesoft.svn.core.internal.io.dav.DAVRepositoryFactory
 import org.tmatesoft.svn.core.internal.io.fs.FSRepositoryFactory
+import org.tmatesoft.svn.core.internal.io.svn.SVNRepositoryFactoryImpl
 import org.tmatesoft.svn.core.io.*
 import org.tmatesoft.svn.core.*
 import org.tmatesoft.svn.core.auth.*
 import org.tmatesoft.svn.core.wc.*
 import org.codehaus.groovy.grails.documentation.MetadataGeneratingMetaClassCreationHandle
+import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
+import org.codehaus.groovy.grails.plugins.publishing.DefaultPluginPublisher
+import org.springframework.core.io.FileSystemResource
 
 /**
  * Gant script that handles releasing plugins to a plugin repository.
@@ -66,7 +70,7 @@ target(processAuth:"Prompts user for login details to create authentication mana
             def username = ant.antProject.getProperty(usr)
             def password = ant.antProject.getProperty(psw)
             authManager = SVNWCUtil.createDefaultAuthenticationManager( username , password )
-	    authManagerMap.put(authKey,authManager)
+	        authManagerMap.put(authKey,authManager)
         }
 
     }
@@ -87,7 +91,10 @@ target(releasePlugin: "The implementation target") {
 
     }
     packagePlugin()
-    docs()
+    if(argsMap.skipDocs != true) {
+        docs()
+    }
+
     
     if(argsMap.packageOnly) {
         return
@@ -108,10 +115,11 @@ target(releasePlugin: "The implementation target") {
 
     FSRepositoryFactory.setup()
     DAVRepositoryFactory.setup()
+    SVNRepositoryFactoryImpl.setup()
 
     try {
         if(argsMap.pluginlist) {
-            commitNewGlobalPluginList()
+            modifyOrCreatePluginList()
         }
         else {
             def statusClient = new SVNStatusClient((ISVNAuthenticationManager)authManager,null)
@@ -161,14 +169,48 @@ a working copy and make your changes there. Alternatively, do you want to procee
     }
 }
 
-target(commitNewGlobalPluginList:"updates the plugins.xml descriptor stored in the repo") {
+target(modifyOrCreatePluginList:"Updates the remote plugin.xml descriptor or creates a new one in the repo") {
+    withPluginListUpdate {
+        ant.delete(file:pluginsListFile)
+        // get newest version of plugin list
+        fetchRemoteFile("${pluginSVN}/.plugin-meta/plugins-list.xml", pluginsListFile)
 
+        def remoteRevision = "0"
+        if (shouldUseSVNProtocol(pluginDistURL)) {
+            withSVNRepo(pluginDistURL) { repo ->
+                remoteRevision = repo.getLatestRevision().toString()
+            }
+        }
+        else {
+            new URL(pluginDistURL).withReader { Reader reader ->
+                def line = reader.readLine()
+                line.eachMatch(/Revision (.*):/) {
+                     remoteRevision = it[1]
+                }
+            }
+        }
+
+        def publisher = new DefaultPluginPublisher(remoteRevision)
+        def updatedList = publisher.publishRelease(pluginName, new FileSystemResource(pluginsListFile), !skipLatest)
+        pluginsListFile.withWriter { w ->
+            publisher.writePluginList(updatedList, w)    
+        }
+    }
+}
+
+target(commitNewGlobalPluginList:"updates the plugins.xml descriptor stored in the repo") {
+    withPluginListUpdate {
+        ant.delete(file:pluginsListFile)
+        println "Building plugin list for commit..."
+        updatePluginsListManually()
+    }
+}
+
+private withPluginListUpdate(Closure updateLogic) {
     if(!commitMessage) {
         askForMessage()
     }
-    ant.delete(file:pluginsListFile)
-    println "Building plugin list for commit..."
-    updatePluginsListManually()
+    updateLogic()
 
     def pluginMetaDir = new File("${grailsSettings.grailsWorkDir}/${repositoryName}/.plugin-meta")
     def updateClient = new SVNUpdateClient((ISVNAuthenticationManager)authManager, null)
@@ -189,8 +231,8 @@ target(commitNewGlobalPluginList:"updates the plugins.xml descriptor stored in t
             checkoutOrImportPluginMetadata(pluginMetaDir, remotePluginMetadata, updateClient, importClient)
         }
     }
-}
 
+}
 private checkoutOrImportPluginMetadata (File pluginMetaDir, String remotePluginMetadata, SVNUpdateClient updateClient, SVNCommitClient importClient) {
     def svnURL = SVNURL.parseURIDecoded (remotePluginMetadata)
     try {

@@ -19,7 +19,7 @@ Brief description of the plugin.
 '''
 
     // URL to the plugin's documentation
-    def documentation = "http://grails.org/@plugin.name@+Plugin"
+    def documentation = "http://grails.org/plugin/@plugin.short.name@"
 
     def doWithWebDescriptor = { xml ->
         // TODO Implement additions to web.xml (optional), this event occurs before 
