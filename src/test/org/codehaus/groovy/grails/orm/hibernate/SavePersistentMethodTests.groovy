@@ -23,7 +23,7 @@ class SavePersistentMethodTests extends AbstractGrailsHibernateTests {
         assert book.save(flush:true)
         assert book.id
     }
-    
+
 	void testToOneCascadingValidation() {
         def bookClass = ga.getDomainClass("SaveBook")
         def authorClass = ga.getDomainClass("SaveAuthor")
@@ -134,7 +134,7 @@ class SavePersistentMethodTests extends AbstractGrailsHibernateTests {
 
     void testFailOnErrorConfigTrueWithValidationErrors() {
         try {
-            def config = new ConfigSlurper().parse("grails.gorm.save.failOnError = true");
+            def config = new ConfigSlurper().parse("grails.gorm.failOnError = true");
 
             ConfigurationHolder.config = config
             def teamClass = ga.getDomainClass('Team')
@@ -151,7 +151,7 @@ class SavePersistentMethodTests extends AbstractGrailsHibernateTests {
 
     void testFailOnErrorConfigFalseWithValidationErrors() {
         try {
-            def config = new ConfigSlurper().parse("grails.gorm.save.failOnError = false");
+            def config = new ConfigSlurper().parse("grails.gorm.failOnError = false");
 
             ConfigurationHolder.config = config
             def teamClass = ga.getDomainClass('Team')
@@ -165,7 +165,7 @@ class SavePersistentMethodTests extends AbstractGrailsHibernateTests {
 
     void testFailOnErrorConfigTrueArgumentFalseWithValidationErrors() {
         try {
-            def config = new ConfigSlurper().parse("grails.gorm.save.failOnError = true");
+            def config = new ConfigSlurper().parse("grails.gorm.failOnError = true");
 
             ConfigurationHolder.config = config
             def teamClass = ga.getDomainClass('Team')
@@ -179,7 +179,7 @@ class SavePersistentMethodTests extends AbstractGrailsHibernateTests {
 
     void testFailOnErrorConfigFalseArgumentTrueWithValidationErrors() {
         try {
-            def config = new ConfigSlurper().parse("grails.gorm.save.failOnError = false");
+            def config = new ConfigSlurper().parse("grails.gorm.failOnError = false");
 
             ConfigurationHolder.config = config
             def teamClass = ga.getDomainClass('Team')

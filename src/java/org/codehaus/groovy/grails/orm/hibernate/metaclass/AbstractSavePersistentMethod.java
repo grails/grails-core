@@ -49,7 +49,7 @@ public abstract class AbstractSavePersistentMethod extends
     private static final String ARGUMENT_FLUSH = "flush";
     private static final String ARGUMENT_INSERT = "insert";
     private static final String ARGUMENT_FAIL_ON_ERROR = "failOnError";
-    private static final String FAIL_ON_ERROR_CONFIG_PROPERTY = "grails.gorm.save.failOnError";
+    private static final String FAIL_ON_ERROR_CONFIG_PROPERTY = "grails.gorm.failOnError";
     private static final String AUTO_FLUSH_CONFIG_PROPERTY = "grails.gorm.autoFlush";
 
     public AbstractSavePersistentMethod(Pattern pattern, SessionFactory sessionFactory, ClassLoader classLoader, GrailsApplication application) {
