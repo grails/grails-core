@@ -41,6 +41,7 @@ import org.codehaus.groovy.grails.documentation.DocumentedProperty
 import org.tmatesoft.svn.core.io.SVNRepositoryFactory
 import org.tmatesoft.svn.core.internal.io.dav.DAVRepositoryFactory
 import org.tmatesoft.svn.core.internal.io.fs.FSRepositoryFactory
+import org.tmatesoft.svn.core.internal.io.svn.SVNRepositoryFactoryImpl
 import org.tmatesoft.svn.core.*
 import org.tmatesoft.svn.core.auth.*
 import org.tmatesoft.svn.core.wc.SVNWCUtil
@@ -128,6 +129,8 @@ public Map tokenizeUrl(String url) throws SVNException {
 FSRepositoryFactory.setup()
 // support the server http/https
 DAVRepositoryFactory.setup()
+// support svn protocol
+SVNRepositoryFactoryImpl.setup()
 
 /**
  * Replace the url with authentication by url without in discovery and distribution
