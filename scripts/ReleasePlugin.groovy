@@ -119,7 +119,7 @@ target(releasePlugin: "The implementation target") {
 
     try {
         if(argsMap.pluginlist) {
-            modifyOrCreatePluginList()
+            commitNewGlobalPluginList()
         }
         else {
             def statusClient = new SVNStatusClient((ISVNAuthenticationManager)authManager,null)
@@ -160,7 +160,7 @@ a working copy and make your changes there. Alternatively, do you want to procee
                 }
             }
             tagPluginRelease()
-            commitNewGlobalPluginList()
+            modifyOrCreatePluginList()
             event('StatusFinal', ["Plug-in release successfully published"])
         }
     }
